@@ -16,6 +16,7 @@
 - if `spike init` is called while nexus is not ready; spike thinks it's initialized and will not re-init.
 - the website needs a footer.
 - the repo needs COC and other related documents.
+- There are rendering issues on some of the charts on the docs website.
 
 ---------------------------=| PRIORITIZED BACKLOG |=----------------------------
 
