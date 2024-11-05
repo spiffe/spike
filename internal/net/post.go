@@ -7,6 +7,7 @@ package net
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 )
@@ -19,6 +20,8 @@ func body(r *http.Response) (bod []byte, err error) {
 
 	return body, err
 }
+
+var ErrNotFound = errors.New("not found")
 
 // Post performs an HTTP POST request with a JSON payload and returns the
 // response body. It handles the common cases of connection errors, non-200
@@ -61,10 +64,24 @@ func Post(client *http.Client, path string, mr []byte) ([]byte, error) {
 	}
 
 	if r.StatusCode != http.StatusOK {
+		fmt.Println("NOT OK STATUS CODE")
+
+		if r.StatusCode == http.StatusNotFound {
+			return []byte{}, ErrNotFound
+		}
+
 		return []byte{}, errors.New("post: Problem connecting to peer")
 	}
 
+	fmt.Println("OK STATUS CODE")
+
 	b, err := body(r)
+
+	fmt.Println("len b", len(b))
+	if err != nil {
+		fmt.Println("GOT ERRROR TOO", err.Error())
+	}
+
 	if err != nil {
 		return []byte{}, errors.Join(
 			errors.New("post: Problem reading response body"),

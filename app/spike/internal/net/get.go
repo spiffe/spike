@@ -36,6 +36,10 @@ func GetSecret(source *workloadapi.X509Source,
 
 	body, err := net.Post(client, urlSecretGet, mr)
 
+	if errors.Is(err, net.ErrNotFound) {
+		return nil, nil
+	}
+
 	var res reqres.SecretReadResponse
 	err = json.Unmarshal(body, &res)
 	if err != nil {

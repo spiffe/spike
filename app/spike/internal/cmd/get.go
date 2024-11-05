@@ -42,6 +42,11 @@ func NewGetCommand(source *workloadapi.X509Source) *cobra.Command {
 				return
 			}
 
+			if secret == nil {
+				fmt.Println("Secret not found.")
+				return
+			}
+
 			data := secret.Data
 			for k, v := range data {
 				fmt.Printf("%s: %s\n", k, v)

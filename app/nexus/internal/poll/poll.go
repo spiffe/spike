@@ -55,9 +55,14 @@ func Tick(ctx context.Context,
 			}
 			err := net.UpdateCache(source, key)
 			if err != nil {
+				log.Println("")
 				log.Printf("Unable to update the cache: %v\n", err)
+				log.Println("Make sure SPIKE Keeper is up and running")
+				log.Println("")
 				continue
 			}
+
+			log.Println("Successfully updated the cache")
 		case <-ctx.Done():
 			return
 		}
