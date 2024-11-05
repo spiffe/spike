@@ -23,3 +23,29 @@ go.work.sum
 
 # env file
 .env
+
+# Generated binaries.
+/keeper
+/nexus
+/pilot
+/spike
+/keeper-arm
+/keeper-darwin
+/keeper-x86
+/nexus-arm
+/nexus-darwin
+/nexus-x68
+/spike-arm
+/spike-darwin
+/spike-x86
+
+# IDE
+.idea
+.code
+.history
+
+# App-specific:
+.spike-token
+.spire-agent-join-token
+.data
+.pilot-token
