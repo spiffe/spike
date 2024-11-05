@@ -19,6 +19,11 @@
 
 ---------------------------=| PRIORITIZED BACKLOG |=----------------------------
 
+implement:
+  delete
+  list
+  undelete
+
 bug: if keeper not there nexus crashes without attempting to retry
 aegis@aegis:~/Desktop/WORKSPACE/spike$ ./nexus
 2024/11/05 08:31:20 Unable to initialize state: FetchFromCache: failed to unmarshal response: unexpected end of JSON input
