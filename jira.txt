@@ -18,6 +18,7 @@
 - the repo needs COC and other related documents.
 - There are rendering issues on some of the charts on the docs website.
 - make sure that everything sanitizable are properly sanitized.
+- website, too much horizontal text distance when width of the viewport is large
 
 ---------------------------=| PRIORITIZED BACKLOG |=----------------------------
 
@@ -42,6 +43,7 @@ aegis@aegis:~/Desktop/WORKSPACE/spike$ spike get /secrets/main
 Error reading secret: getSecret: Problem parsing response body
 unexpected end of JSON input
 
+optionally not use keeper (configurable) without raising any logs and warnings (like dev mod)
 
 - spike init should ask for db details too.
 (if backing store is in-memory, it won't ask db details)
