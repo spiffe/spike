@@ -22,15 +22,17 @@
 ---------------------------=| PRIORITIZED BACKLOG |=----------------------------
 
 implement:
-  delete
-  list
   undelete
+  list
 
 bug: if keeper not there nexus crashes without attempting to retry
 aegis@aegis:~/Desktop/WORKSPACE/spike$ ./nexus
 2024/11/05 08:31:20 Unable to initialize state: FetchFromCache: failed to unmarshal response: unexpected end of JSON input
 
 create a secret metadata api too.
+
+maybe make kv part of pkg, something non-internal since it can be used by other
+tools as a generic kv store too.
 
 check all handlers; some of them prematurely set w.WriteHeader(http.StatusOK)
 

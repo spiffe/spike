@@ -75,6 +75,7 @@ func UpsertSecret(path string, values map[string]string) {
 func DeleteSecret(path string, versions []int) {
 	kvMu.Lock()
 	defer kvMu.Unlock()
+
 	kv.Delete(path, versions)
 }
 
@@ -139,6 +140,7 @@ func Initialize(source *workloadapi.X509Source) error {
 func RootKey() string {
 	rootKeyMu.RLock()
 	defer rootKeyMu.RUnlock()
+
 	return rootKey
 }
 
@@ -146,5 +148,6 @@ func RootKey() string {
 func SetRootKey(key string) {
 	rootKeyMu.Lock()
 	defer rootKeyMu.Unlock()
+
 	rootKey = key
 }

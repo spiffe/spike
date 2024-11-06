@@ -36,6 +36,16 @@ func (kv *KV) Get(path string, version int) (map[string]string, bool) {
 		return nil, false
 	}
 
+	// #region debug
+	// fmt.Println("########")
+	// vv := secret.Versions
+	// for i, v := range vv {
+	// 	fmt.Println("version", i, "version:", v.Version, "created:",
+	// 		v.CreatedTime, "deleted:", v.DeletedTime, "data:", v.Data)
+	// }
+	// fmt.Println("########")
+	// #endregion
+
 	// If version not specified, use current version
 	if version == 0 {
 		version = secret.Metadata.CurrentVersion

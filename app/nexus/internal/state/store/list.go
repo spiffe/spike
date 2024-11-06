@@ -12,8 +12,10 @@ package store
 //   - []string: A slice containing all keys present in the store
 func (kv *KV) List() []string {
 	keys := make([]string, 0, len(kv.data))
+
 	for k := range kv.data {
 		keys = append(keys, k)
 	}
+
 	return keys
 }

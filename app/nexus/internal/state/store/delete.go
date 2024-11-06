@@ -27,6 +27,7 @@ func (kv *KV) Delete(path string, versions []int) {
 			v.DeletedTime = &now // Mark as deleted.
 			secret.Versions[secret.Metadata.CurrentVersion] = v
 		}
+
 		return
 	}
 
@@ -38,8 +39,8 @@ func (kv *KV) Delete(path string, versions []int) {
 				continue
 			}
 
-			v.DeletedTime = &now
-
+			v.DeletedTime = &now // Mark as deleted.
+			secret.Versions[secret.Metadata.CurrentVersion] = v
 			continue
 		}
 
