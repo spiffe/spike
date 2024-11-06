@@ -11,6 +11,27 @@
 The system provides high availability for secret storage with a manual recovery
 mechanism in case of irrecoverable failure.
 
+```mermaid
+sequenceDiagram
+    participant N as SPIKE Nexus
+    participant K as SPIKE Keeper
+    participant P as SPIKE Pilot (spike)
+        loop
+            N->>+K: save the root key.
+            K-->>N: OK
+        end
+
+        alt root key not available
+            N->>+K: request the root key (if needed).
+            K-->>N: {key}
+        end
+
+        alt day-to-day operations
+        P->>+N: create/update/delete/undelete/list secrets
+        N-->>P: OK
+        end
+```
+
 Here is an overview of each **SPIKE** component:
 
 ### SPIKE Nexus
@@ -36,26 +57,3 @@ Here is an overview of each **SPIKE** component:
 * Deleting/disabling/removing **SPIKE Pilot** reduces the attack surface
   of the system since admin operation will not be possible without
   **SPIKE Pilot**.
-
-## High-Level Component Communication
-
-```mermaid
-sequenceDiagram
-    participant N as SPIKE Nexus
-    participant K as SPIKE Keeper
-    participant P as SPIKE Pilot (spike)
-        loop
-            N->>+K: save the root key.
-            K-->>N: OK
-        end
-
-        alt root key not available
-            N->>+K: request the root key (if needed).
-            K-->>N: {key}
-        end
-
-        alt day-to-day operations
-        P->>+N: create/update/delete/list secrets
-        N-->>P: OK
-        end
-```

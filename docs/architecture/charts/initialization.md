@@ -10,12 +10,12 @@ sequenceDiagram
 
     P->>+N: any API request
 
-    Note over N: Check the database for initialization status.
-    Note over N: Maybe create initial db schema if not exists.
+    Note over N: Check the database<br>for initialization status.
+    Note over N: Maybe create initial<br>db schema<br>if not exists.
 
     N->>+P: not initialized. initialize the system first.
 
-    Note over P: user enters `spike init` from cli.
+    Note over P: user enters<br>`spike init` from cli.
 
     Note over P: prompt for admin password
     Note over P: prompt for db username

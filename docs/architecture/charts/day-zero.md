@@ -28,7 +28,7 @@ sequenceDiagram
             N->>+K: Fetch root key 
             K->>+N: {root key}
 
-            Note right of N: Log, if root key is still empty.
+            Note right of N: Log,<br>if root key is still empty.
             Note right of N: Skip the rest of the loop.
         else is root key in memory
             N->>+K: Send root key

@@ -12,7 +12,7 @@ password manager).
 ```mermaid
 sequenceDiagram
     participant P as Admin User
-        Note over P: This is an out-of-band operation.<br>It will not touch SPIRE #semi;<br>however it will reset SPIKE to its day zero setting.
+        Note over P: This is an out-of-band operation.<br>It will not touch SPIRE #semi;<br>however, it will reset SPIKE<br>to its day zero setting.
     alt skies have fallen apart
         Note over P: Total system crash.<br>Admin forgot their password.<br>Database corrupt.<br>Or the system is in a similar irrecoverable state.
         Note over P: Admin runs `./hack/reset.sh` to reset the system to day zero.

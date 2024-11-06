@@ -1,5 +1,6 @@
 * [Welcome](README.md)
 * [Alpha Release Notice](notice.md)
+* [Changelog](changelog.md)
 * [Quickstart](quickstart.md)
 * [Architecture](architecture/README.md)
   * [System Overview](architecture/system-overview.md)

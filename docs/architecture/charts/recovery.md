@@ -9,7 +9,7 @@ sequenceDiagram
     participant N as SPIKE Nexus
     participant K as SPIKE Keeper
     alt not initialized
-        Note over N: Generate root key with strong entropy
+        Note over N: Generate root key<br>with strong entropy
         Note over N: Validate key format and strength
 
         N->>+K: Send root key 

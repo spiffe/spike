@@ -22,6 +22,10 @@
 
 ---------------------------=| PRIORITIZED BACKLOG |=----------------------------
 
+create a changelog
+create a contact page
+some footer design is due.
+
 implement:
   undelete
   list

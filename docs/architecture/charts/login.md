@@ -7,11 +7,11 @@ sequenceDiagram
     participant P as SPIKE Pilot (spike)
     participant N as SPIKE Nexus
     
-    Note over P: This is for the admin user.<br>Any user that admin user creates will need<br>to provide a username too.
+    Note over P: This is for the admin user.<br>Any user that admin user creates<br>will need to provide a username too.
     Note over P: SPIKE Pilot will ask for password<br>before sending the login request.
     Note over P: Verify root token existence before login.
-    Note over P: If root token cannot be recovered, warn admin that they may need to rekey/recover.
-    Note over P: If not initialized, warn user to initialize first.
+    Note over P: If root token cannot be recovered,<br>warn admin that they may need to rekey/recover.
+    Note over P: If not initialized,<br>warn user to initialize first.
 
     P->>+N: spike login 
     N->>+P: send temporary session token.

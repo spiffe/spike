@@ -12,7 +12,7 @@ sequenceDiagram
     Note over P: Admin logs in (with password)
     Note over P: Admin execute `spike recover`
     Note over P: Confirm: Are you sure?
-    Note over P: Request admin password (i.e. don't trust the session key)
+    Note over P: Request admin password<br>(i.e. don't trust the session key)
 
     P->>+N: POST /v1/recover
 
