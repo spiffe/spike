@@ -39,6 +39,15 @@ go.work.sum
 /spike-arm
 /spike-darwin
 /spike-x86
+/keeper-darwin-arm64
+/keeper-linux-amd64
+/nexus-linux-amd64
+/keeper-linux-arm64
+/nexus-darwin-arm64
+/nexus-linux-arm64
+/spike-darwin-arm64
+/spike-linux-amd64
+/spike-linux-arm64
 
 # IDE
 .idea
@@ -50,3 +59,4 @@ go.work.sum
 .spire-agent-join-token
 .data
 .pilot-token
+
