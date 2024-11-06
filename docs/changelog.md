@@ -1,6 +1,10 @@
 ![SPIKE](assets/spike-banner.png)
 
-## SPIKE Changelog
+# SPIKE Changelog
+
+## Recent
+
+TBD
 
 ## [0.1.0] - 2024-11-06
 
