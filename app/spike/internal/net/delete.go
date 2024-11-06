@@ -7,20 +7,21 @@ package net
 import (
 	"encoding/json"
 	"errors"
+	"strconv"
+
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
+
 	"github.com/spiffe/spike/internal/config"
 	"github.com/spiffe/spike/internal/entity/v1/reqres"
 	"github.com/spiffe/spike/internal/net"
-	"strconv"
 )
 
 // DeleteSecret deletes a secret from SPIKE Nexus.
 func DeleteSecret(source *workloadapi.X509Source,
 	path string, versions []string) error {
-	var vv = []int{}
-
+	var vv []int
 	if len(versions) == 0 {
-		vv = []int{0}
+		vv = []int{}
 	}
 
 	for _, version := range versions {

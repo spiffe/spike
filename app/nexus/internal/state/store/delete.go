@@ -4,7 +4,9 @@
 
 package store
 
-import "time"
+import (
+	"time"
+)
 
 // Delete marks secret versions as deleted for a given path. If no versions are
 // specified, it marks only the current version as deleted. If specific versions
@@ -22,7 +24,7 @@ func (kv *KV) Delete(path string, versions []int) {
 	// If no versions specified, mark the latest version as deleted
 	if len(versions) == 0 {
 		if v, exists := secret.Versions[secret.Metadata.CurrentVersion]; exists {
-			v.DeletedTime = &now
+			v.DeletedTime = &now // Mark as deleted.
 			secret.Versions[secret.Metadata.CurrentVersion] = v
 		}
 		return
@@ -30,8 +32,19 @@ func (kv *KV) Delete(path string, versions []int) {
 
 	// Delete specific versions
 	for _, version := range versions {
-		if v, exists := secret.Versions[version]; exists {
+		if version == 0 {
+			v, exists := secret.Versions[secret.Metadata.CurrentVersion]
+			if !exists {
+				continue
+			}
+
 			v.DeletedTime = &now
+
+			continue
+		}
+
+		if v, exists := secret.Versions[version]; exists {
+			v.DeletedTime = &now // Mark as deleted.
 			secret.Versions[version] = v
 		}
 	}

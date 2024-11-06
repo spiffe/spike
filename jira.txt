@@ -17,6 +17,7 @@
 - the website needs a footer.
 - the repo needs COC and other related documents.
 - There are rendering issues on some of the charts on the docs website.
+- make sure that everything sanitizable are properly sanitized.
 
 ---------------------------=| PRIORITIZED BACKLOG |=----------------------------
 
@@ -29,7 +30,7 @@ bug: if keeper not there nexus crashes without attempting to retry
 aegis@aegis:~/Desktop/WORKSPACE/spike$ ./nexus
 2024/11/05 08:31:20 Unable to initialize state: FetchFromCache: failed to unmarshal response: unexpected end of JSON input
 
-
+create a secret metadata api too.
 
 check all handlers; some of them prematurely set w.WriteHeader(http.StatusOK)
 

@@ -33,7 +33,7 @@ func routeDeleteSecret(r *http.Request, w http.ResponseWriter) {
 	path := req.Path
 	versions := req.Versions
 	if len(versions) == 0 {
-		versions = []int{0}
+		versions = []int{}
 	}
 
 	state.DeleteSecret(path, versions)

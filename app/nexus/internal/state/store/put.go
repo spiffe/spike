@@ -33,18 +33,21 @@ func (kv *KV) Put(path string, values map[string]string) {
 		secret = &Secret{
 			Versions: make(map[int]Version),
 			Metadata: Metadata{
-				CreatedTime:    rightNow,
-				UpdatedTime:    rightNow,
-				MaxVersions:    3,
-				CurrentVersion: 0,
-				OldestVersion:  0,
+				CreatedTime: rightNow,
+				UpdatedTime: rightNow,
+				MaxVersions: 3,
+				// Versions start at 1, so that passing 0 as version will default to
+				// the current version.
+				CurrentVersion: 1,
+				OldestVersion:  1,
 			},
 		}
 		kv.data[path] = secret
+	} else {
+		secret.Metadata.CurrentVersion++
 	}
 
-	// Increment version
-	newVersion := secret.Metadata.CurrentVersion + 1
+	newVersion := secret.Metadata.CurrentVersion
 
 	// Add new version
 	secret.Versions[newVersion] = Version{
@@ -54,19 +57,25 @@ func (kv *KV) Put(path string, values map[string]string) {
 	}
 
 	// Update metadata
-	secret.Metadata.CurrentVersion = newVersion
 	secret.Metadata.UpdatedTime = rightNow
-	if secret.Metadata.OldestVersion == 0 {
-		secret.Metadata.OldestVersion = 1
-	}
 
 	// Cleanup old versions if exceeding MaxVersions
+	var deletedAny bool
 	for version := range secret.Versions {
 		if secret.Metadata.CurrentVersion-version >= secret.Metadata.MaxVersions {
 			delete(secret.Versions, version)
-			if version == secret.Metadata.OldestVersion {
-				secret.Metadata.OldestVersion = version + 1
+			deletedAny = true
+		}
+	}
+
+	// Update OldestVersion if we deleted anything
+	if deletedAny {
+		oldestVersion := secret.Metadata.CurrentVersion
+		for version := range secret.Versions {
+			if version < oldestVersion {
+				oldestVersion = version
 			}
 		}
+		secret.Metadata.OldestVersion = oldestVersion
 	}
 }

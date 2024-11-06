@@ -33,7 +33,9 @@ import (
 // The function will call return an error if it encounters errors during:
 //   - X509Source creation
 //   - X509-SVID retrieval
-func AppSpiffeSource(ctx context.Context) (*workloadapi.X509Source, string, error) {
+func AppSpiffeSource(ctx context.Context) (
+	*workloadapi.X509Source, string, error,
+) {
 	socketPath := config.SpiffeEndpointSocket()
 
 	source, err := workloadapi.NewX509Source(
@@ -76,6 +78,7 @@ func CloseSource(source *workloadapi.X509Source) {
 	if source == nil {
 		return
 	}
+
 	err := source.Close()
 	if err != nil {
 		log.Printf("Unable to close X509Source: %v", err)

@@ -21,6 +21,7 @@ func GetSecret(source *workloadapi.X509Source,
 		Path:    path,
 		Version: version,
 	}
+
 	mr, err := json.Marshal(r)
 	if err != nil {
 		return nil, errors.Join(
@@ -35,7 +36,6 @@ func GetSecret(source *workloadapi.X509Source,
 	}
 
 	body, err := net.Post(client, urlSecretGet, mr)
-
 	if errors.Is(err, net.ErrNotFound) {
 		return nil, nil
 	}
@@ -49,7 +49,5 @@ func GetSecret(source *workloadapi.X509Source,
 		)
 	}
 
-	return &data.Secret{
-		Data: res.Data,
-	}, nil
+	return &data.Secret{Data: res.Data}, nil
 }

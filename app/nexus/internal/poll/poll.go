@@ -44,8 +44,11 @@ import (
 //	defer ticker.Stop()
 //
 //	go Tick(ctx, source, ticker)
-func Tick(ctx context.Context,
-	source *workloadapi.X509Source, ticker *time.Ticker) {
+func Tick(
+	ctx context.Context,
+	source *workloadapi.X509Source,
+	ticker *time.Ticker,
+) {
 	for {
 		select {
 		case <-ticker.C:

@@ -34,6 +34,7 @@ func requestBody(r *http.Request) (bod []byte, err error) {
 // logged.
 func ReadRequestBody(r *http.Request, w http.ResponseWriter) []byte {
 	body, err := requestBody(r)
+
 	if err != nil {
 		log.Println("Problem reading request body:", err.Error())
 		w.WriteHeader(http.StatusBadRequest)
@@ -43,6 +44,7 @@ func ReadRequestBody(r *http.Request, w http.ResponseWriter) []byte {
 		}
 		return []byte{}
 	}
+
 	if body == nil {
 		log.Println("No request body.")
 		w.WriteHeader(http.StatusBadRequest)
@@ -52,6 +54,7 @@ func ReadRequestBody(r *http.Request, w http.ResponseWriter) []byte {
 		}
 		return []byte{}
 	}
+
 	return body
 }
 
@@ -66,5 +69,6 @@ func HandleRequestError(w http.ResponseWriter, err error) error {
 
 	w.WriteHeader(http.StatusBadRequest)
 	_, writeErr := io.WriteString(w, "")
+
 	return errors.Join(err, writeErr)
 }

@@ -61,29 +61,22 @@ Examples:
 			path := args[0]
 			versions, _ := cmd.Flags().GetString("versions")
 
-			if versions == "all" {
-				fmt.Printf("Deleting all versions at path %s\n", path)
-				return
-			}
-
-			if versions == "" || versions == "0" {
-				fmt.Printf("Deleting current version at path %s\n", path)
-				return
-			}
-
 			// Parse and validate versions
 			versionList := strings.Split(versions, ",")
 			for _, v := range versionList {
 				version, err := strconv.Atoi(strings.TrimSpace(v))
+
 				if err != nil {
 					fmt.Printf("Error: invalid version number: %s\n", v)
 					return
 				}
+
 				if version < 0 {
 					fmt.Printf("Error: version numbers cannot be negative: %s\n", v)
 					return
 				}
 			}
+
 			err := net.DeleteSecret(source, path, versionList)
 			if err != nil {
 				fmt.Printf("Error: %v\n", err)

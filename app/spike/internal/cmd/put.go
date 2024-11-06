@@ -83,6 +83,7 @@ func NewPutCommand(source *workloadapi.X509Source) *cobra.Command {
 
 			if len(values) == 0 {
 				fmt.Println("OK")
+				return
 			}
 
 			err = net.PutSecret(source, path, values)
