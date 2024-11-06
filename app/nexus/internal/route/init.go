@@ -6,7 +6,6 @@ package route
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -17,7 +16,7 @@ import (
 )
 
 func routeInit(r *http.Request, w http.ResponseWriter) {
-	fmt.Println("routeInit:", r.Method, r.URL.Path, r.URL.RawQuery)
+	log.Println("routeInit:", r.Method, r.URL.Path, r.URL.RawQuery)
 
 	w.WriteHeader(http.StatusOK)
 

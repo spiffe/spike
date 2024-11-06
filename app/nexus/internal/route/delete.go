@@ -6,7 +6,6 @@ package route
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -17,7 +16,7 @@ import (
 )
 
 func routeDeleteSecret(r *http.Request, w http.ResponseWriter) {
-	fmt.Println("routeDeleteSecret:", r.Method, r.URL.Path, r.URL.RawQuery)
+	log.Println("routeDeleteSecret:", r.Method, r.URL.Path, r.URL.RawQuery)
 
 	body := net.ReadRequestBody(r, w)
 	if body == nil {

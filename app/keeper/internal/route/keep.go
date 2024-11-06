@@ -6,7 +6,6 @@ package route
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -17,7 +16,7 @@ import (
 )
 
 func routeKeep(r *http.Request, w http.ResponseWriter) {
-	fmt.Println("routeKeep:", r.Method, r.URL.Path, r.URL.RawQuery)
+	log.Println("routeKeep:", r.Method, r.URL.Path, r.URL.RawQuery)
 
 	body := net.ReadRequestBody(r, w)
 	if body == nil {

@@ -6,7 +6,6 @@ package route
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -17,7 +16,7 @@ import (
 )
 
 func routePostSecret(r *http.Request, w http.ResponseWriter) {
-	fmt.Println("routePostSecret:", r.Method, r.URL.Path, r.URL.RawQuery)
+	log.Println("routePostSecret:", r.Method, r.URL.Path, r.URL.RawQuery)
 
 	body := net.ReadRequestBody(r, w)
 	if body == nil {
