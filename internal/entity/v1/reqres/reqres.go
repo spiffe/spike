@@ -78,18 +78,16 @@ type SecretDeleteResponse struct {
 
 // SecretUndeleteRequest for recovering soft-deleted versions
 type SecretUndeleteRequest struct {
+	Path     string `json:"path"`
 	Versions []int  `json:"versions"`
-	Err      string `json:"err,omitempty"`
 }
 
 // SecretUndeleteResponse after recovery
 type SecretUndeleteResponse struct {
 	Metadata SecretResponseMetadata `json:"metadata"`
-	Err      string                 `json:"err,omitempty"`
 }
 
 // SecretListResponse for listing secrets
 type SecretListResponse struct {
 	Keys []string `json:"keys"`
-	Err  string   `json:"err,omitempty"`
 }

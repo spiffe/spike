@@ -6,6 +6,7 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/spiffe/spike/app/spike/internal/net"
 	"strconv"
 	"strings"
 
@@ -62,33 +63,33 @@ Examples:
 			path := args[0]
 			versions, _ := cmd.Flags().GetString("versions")
 
-			fmt.Println("###### NEEDS TO BE IMPLEMENTED ######")
-
-			if versions == "" || versions == "0" {
-				fmt.Printf("Undeleting current version at path %s\n", path)
-				return
+			if versions == "" {
+				versions = "0"
 			}
 
 			// Parse and validate versions
 			versionList := strings.Split(versions, ",")
 			for _, v := range versionList {
 				version, err := strconv.Atoi(strings.TrimSpace(v))
+
 				if err != nil {
 					fmt.Printf("Error: invalid version number: %s\n", v)
 					return
 				}
+
 				if version < 0 {
 					fmt.Printf("Error: version numbers cannot be negative: %s\n", v)
 					return
 				}
 			}
 
-			if strings.Contains(versions, "0") {
-				fmt.Printf("Undeleting current version and versions %s at path %s\n",
-					strings.Replace(versions, "0,", "", 1), path)
-			} else {
-				fmt.Printf("Undeleting versions %s at path %s\n", versions, path)
+			err := net.UndeleteSecret(source, path, versionList)
+			if err != nil {
+				fmt.Printf("Error: %v\n", err)
+				return
 			}
+
+			fmt.Println("OK")
 		},
 	}
 

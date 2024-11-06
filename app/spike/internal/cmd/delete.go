@@ -61,6 +61,10 @@ Examples:
 			path := args[0]
 			versions, _ := cmd.Flags().GetString("versions")
 
+			if versions == "" {
+				versions = "0"
+			}
+
 			// Parse and validate versions
 			versionList := strings.Split(versions, ",")
 			for _, v := range versionList {

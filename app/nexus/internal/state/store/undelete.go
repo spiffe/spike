@@ -22,9 +22,31 @@ func (kv *KV) Undelete(path string, versions []int) error {
 		return ErrSecretNotFound
 	}
 
+	// If no versions specified, mark the latest version as undeleted
+	if len(versions) == 0 {
+		if v, exists := secret.Versions[secret.Metadata.CurrentVersion]; exists {
+			v.DeletedTime = nil // Mark as undeleted.
+			secret.Versions[secret.Metadata.CurrentVersion] = v
+		}
+
+		return nil
+	}
+
+	// Delete specific versions
 	for _, version := range versions {
+		if version == 0 {
+			v, exists := secret.Versions[secret.Metadata.CurrentVersion]
+			if !exists {
+				continue
+			}
+
+			v.DeletedTime = nil // Mark as undeleted.
+			secret.Versions[secret.Metadata.CurrentVersion] = v
+			continue
+		}
+
 		if v, exists := secret.Versions[version]; exists {
-			v.DeletedTime = nil
+			v.DeletedTime = nil // Mark as undeleted.
 			secret.Versions[version] = v
 		}
 	}

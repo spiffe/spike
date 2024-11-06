@@ -18,6 +18,8 @@ func factory(p, a, m string) handler {
 		return routeGetSecret
 	case m == http.MethodPost && a == "delete" && p == urlSecrets:
 		return routeDeleteSecret
+	case m == http.MethodPost && a == "undelete" && p == urlSecrets:
+		return routeUndeleteSecret
 	// Fallback route.
 	default:
 		return routeFallback

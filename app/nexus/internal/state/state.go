@@ -79,6 +79,13 @@ func DeleteSecret(path string, versions []int) {
 	kv.Delete(path, versions)
 }
 
+func UndeleteSecret(path string, versions []int) {
+	kvMu.Lock()
+	defer kvMu.Unlock()
+
+	kv.Undelete(path, versions)
+}
+
 // GetSecret retrieves a secret from the specified path and version.
 // It provides thread-safe read access to the secret store.
 //
