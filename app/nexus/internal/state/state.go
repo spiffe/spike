@@ -79,11 +79,52 @@ func DeleteSecret(path string, versions []int) {
 	kv.Delete(path, versions)
 }
 
+// UndeleteSecret restores previously deleted versions of a secret at the
+// specified path. It takes a path string identifying the secret's location and
+// a slice of version numbers to restore. The function acquires a lock on the
+// key-value store to ensure thread-safe operations during the undelete process.
+//
+// The function operates synchronously and will block until the undelete operation
+// is complete. If any specified version numbers don't exist or were not previously
+// deleted, those versions will be silently skipped.
+//
+// Parameters:
+//   - path: The path to the secret to be restored
+//   - versions: A slice of integer version numbers to restore
+//
+// Example:
+//
+//	// Restore versions 1 and 3 of a secret
+//	UndeleteSecret("/app/secrets/api-key", []int{1, 3})
 func UndeleteSecret(path string, versions []int) {
 	kvMu.Lock()
 	defer kvMu.Unlock()
 
 	kv.Undelete(path, versions)
+}
+
+// ListKeys returns a slice of strings containing all keys currently stored
+// in the key-value store. The function acquires a lock on the store to ensure
+// a consistent view of the keys during enumeration.
+//
+// The returned slice contains the paths to all keys, regardless of their
+// version status (active or deleted). The paths are returned in lexicographical
+// order.
+//
+// Returns:
+//   - []string: A slice containing all key paths in the store
+//
+// Example:
+//
+//	keys := ListKeys()
+//	for _, key := range keys {
+//	    fmt.Printf("Found key: %s\n", key)
+//	}
+func ListKeys() []string {
+	kvMu.Lock()
+	defer kvMu.Unlock()
+
+	return kv.List()
 }
 
 // GetSecret retrieves a secret from the specified path and version.

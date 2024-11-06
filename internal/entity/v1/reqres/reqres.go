@@ -87,6 +87,10 @@ type SecretUndeleteResponse struct {
 	Metadata SecretResponseMetadata `json:"metadata"`
 }
 
+// SecretListRequest for listing secrets
+type SecretListRequest struct {
+}
+
 // SecretListResponse for listing secrets
 type SecretListResponse struct {
 	Keys []string `json:"keys"`
