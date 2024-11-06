@@ -14,6 +14,31 @@ import (
 	"github.com/spiffe/spike/internal/crypto"
 )
 
+// NewInitCommand creates and returns a new cobra.Command for initializing the
+// SPIKE system. It configures a command that handles first-time setup by
+// generating and storing authentication credentials.
+//
+// Parameters:
+//   - source: X.509 source for workload API authentication
+//
+// Returns:
+//   - *cobra.Command: Configured init command
+//
+// The command will:
+//  1. Check if SPIKE is already initialized
+//  2. If not initialized:
+//     - Generate a new admin token
+//     - Save the token using the provided X.509 source
+//     - Store the token in ./.spike-token file
+//
+// Error cases:
+//   - Already initialized: Notifies user and exits
+//   - Token save failure: Displays error message
+//
+// Note: This implementation is transitional. Future versions will:
+//   - Replace admin token storage with temporary token exchange
+//   - Integrate with 'pilot login' flow
+//   - Include database configuration
 func NewInitCommand(source *workloadapi.X509Source) *cobra.Command {
 	var initCmd = &cobra.Command{
 		Use:   "init",

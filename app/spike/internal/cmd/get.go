@@ -14,6 +14,32 @@ import (
 	"github.com/spiffe/spike/app/spike/internal/state"
 )
 
+// NewGetCommand creates and returns a new cobra.Command for retrieving secrets.
+// It configures a command that fetches and displays secret data from a
+// specified path.
+//
+// Parameters:
+//   - source: X.509 source for workload API authentication
+//
+// The command accepts a single argument:
+//   - path: Location of the secret to retrieve
+//
+// Flags:
+//   - --version, -v (int): Specific version of the secret to retrieve
+//     (default 0) where 0 represents the current version
+//
+// Returns:
+//   - *cobra.Command: Configured get command
+//
+// The command will:
+//  1. Verify SPIKE initialization status via admin token
+//  2. Retrieve the secret from the specified path and version
+//  3. Display all key-value pairs in the secret's data field
+//
+// Error cases:
+//   - SPIKE not initialized: Prompts user to run 'spike init'
+//   - Secret not found: Displays appropriate message
+//   - Read errors: Displays error message
 func NewGetCommand(source *workloadapi.X509Source) *cobra.Command {
 	var getCmd = &cobra.Command{
 		Use:   "get <path>",

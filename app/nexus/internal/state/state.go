@@ -64,6 +64,20 @@ func UpsertSecret(path string, values map[string]string) {
 	kv.Put(path, values)
 }
 
+// DeleteSecret deletes one or more versions of a secret at the specified path.
+// It acquires a mutex lock before performing the deletion to ensure thread
+// safety.
+//
+// Parameters:
+//   - path: The path to the secret to be deleted
+//   - versions: A slice of version numbers to delete. If empty, deletes the
+//     current version only. Version number 0 is the current version.
+func DeleteSecret(path string, versions []int) {
+	kvMu.Lock()
+	defer kvMu.Unlock()
+	kv.Delete(path, versions)
+}
+
 // GetSecret retrieves a secret from the specified path and version.
 // It provides thread-safe read access to the secret store.
 //

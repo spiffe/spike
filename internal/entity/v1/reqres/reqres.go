@@ -66,7 +66,8 @@ type SecretReadResponse struct {
 
 // SecretDeleteRequest for soft-deleting secret versions
 type SecretDeleteRequest struct {
-	Versions []int `json:"versions"` // Empty means latest version
+	Path     string `json:"path"`
+	Versions []int  `json:"versions"` // Empty means latest version
 }
 
 // SecretDeleteResponse after soft-delete

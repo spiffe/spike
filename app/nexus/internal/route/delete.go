@@ -1,8 +1,8 @@
-package route
-
 //    \\ SPIKE: Secure your secrets with SPIFFE.
 //  \\\\\ Copyright 2024-present SPIKE contributors.
 // \\\\\\\ SPDX-License-Identifier: Apache-2.0
+
+package route
 
 import (
 	"encoding/json"
@@ -16,30 +16,32 @@ import (
 	"github.com/spiffe/spike/internal/net"
 )
 
-func routePostSecret(r *http.Request, w http.ResponseWriter) {
-	fmt.Println("routePostSecret:", r.Method, r.URL.Path, r.URL.RawQuery)
-
-	w.WriteHeader(http.StatusOK)
+func routeDeleteSecret(r *http.Request, w http.ResponseWriter) {
+	fmt.Println("routeDeleteSecret:", r.Method, r.URL.Path, r.URL.RawQuery)
 
 	body := net.ReadRequestBody(r, w)
 	if body == nil {
 		return
 	}
 
-	var req reqres.SecretPutRequest
+	var req reqres.SecretDeleteRequest
 	if err := net.HandleRequestError(w, json.Unmarshal(body, &req)); err != nil {
-		log.Println("routeInit: Problem handling request:", err.Error())
+		log.Println("routeDeleteSecret: Problem handling request:", err.Error())
 		return
 	}
 
-	values := req.Values
 	path := req.Path
+	versions := req.Versions
+	if len(versions) == 0 {
+		versions = []int{0}
+	}
 
-	state.UpsertSecret(path, values)
-	log.Println("routePostSecret: Secret upserted")
+	state.DeleteSecret(path, versions)
+	log.Println("routeDeleteSecret: Secret deleted")
 
+	w.WriteHeader(http.StatusOK)
 	_, err := io.WriteString(w, "")
 	if err != nil {
-		log.Println("routePostSecret: Problem writing response:", err.Error())
+		log.Println("routeDeleteSecret: Problem writing response:", err.Error())
 	}
 }

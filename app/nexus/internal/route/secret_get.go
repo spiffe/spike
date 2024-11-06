@@ -19,8 +19,6 @@ import (
 func routeGetSecret(r *http.Request, w http.ResponseWriter) {
 	fmt.Println("routeGetSecret:", r.Method, r.URL.Path, r.URL.RawQuery)
 
-	// w.WriteHeader(http.StatusOK)
-
 	body := net.ReadRequestBody(r, w)
 	if body == nil {
 		return

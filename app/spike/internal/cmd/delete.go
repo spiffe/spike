@@ -11,8 +11,38 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
+
+	"github.com/spiffe/spike/app/spike/internal/net"
 )
 
+// NewDeleteCommand creates and returns a new cobra.Command for deleting secrets.
+// It configures a command that allows users to delete one or more versions of
+// a secret at a specified path.
+//
+// Parameters:
+//   - source: X.509 source for workload API authentication
+//
+// The command accepts a single argument:
+//   - path: Location of the secret to delete
+//
+// Flags:
+//   - --versions, -v (string): Comma-separated list of version numbers to delete
+//   - "0" or empty: Deletes current version only (default)
+//   - "1,2,3": Deletes specific versions
+//
+// Returns:
+//   - *cobra.Command: Configured delete command
+//
+// Example Usage:
+//
+//	spike delete secret/apocalyptica              # Deletes current version
+//	spike delete secret/apocalyptica -v 1,2,3     # Deletes specific versions
+//	spike delete secret/apocalyptica -v 0,1,2     # Deletes current version plus 1,2
+//
+// The command performs validation to ensure:
+//   - Exactly one path argument is provided
+//   - Version numbers are valid non-negative integers
+//   - Version strings are properly formatted
 func NewDeleteCommand(source *workloadapi.X509Source) *cobra.Command {
 	var deleteCmd = &cobra.Command{
 		Use:   "delete <path>",
@@ -24,7 +54,6 @@ If no version is specified, defaults to deleting the current version.
 
 Examples:
   spike delete secret/apocalyptica              # Deletes current version
-  spike delete secret/apocalyptica -v all       # Deletes all versions
   spike delete secret/apocalyptica -v 1,2,3     # Deletes specific versions
   spike delete secret/apocalyptica -v 0,1,2     # Deletes current version plus versions 1 and 2`,
 		Args: cobra.ExactArgs(1),
@@ -55,15 +84,13 @@ Examples:
 					return
 				}
 			}
-
-			fmt.Println("######### IMPLEMENT ME #########")
-
-			if strings.Contains(versions, "0") {
-				fmt.Printf("Deleting current version and versions %s at path %s\n",
-					strings.Replace(versions, "0,", "", 1), path)
-			} else {
-				fmt.Printf("Deleting versions %s at path %s\n", versions, path)
+			err := net.DeleteSecret(source, path, versionList)
+			if err != nil {
+				fmt.Printf("Error: %v\n", err)
+				return
 			}
+
+			fmt.Println("OK")
 		},
 	}
 

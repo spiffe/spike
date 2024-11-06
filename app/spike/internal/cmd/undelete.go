@@ -13,6 +13,37 @@ import (
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 )
 
+// NewUndeleteCommand creates and returns a new cobra.Command for restoring
+// deleted secrets. It configures a command that allows users to restore one or
+// more previously deleted versions of a secret at a specified path.
+//
+// Parameters:
+//   - source: X.509 source for workload API authentication
+//
+// The command accepts a single argument:
+//   - path: Location of the secret to restore
+//
+// Flags:
+//   - --versions, -v (string): Comma-separated list of version numbers to restore
+//   - "0" or empty: Restores current version only (default)
+//   - "1,2,3": Restores specific versions
+//
+// Returns:
+//   - *cobra.Command: Configured undelete command
+//
+// Example Usage:
+//
+//	spike undelete secret/ella           # Restores current version
+//	spike undelete secret/ella -v 1,2,3  # Restores specific versions
+//	spike undelete secret/ella -v 0,1,2  # Restores current version plus 1,2
+//
+// The command performs validation to ensure:
+//   - Exactly one path argument is provided
+//   - Version numbers are valid non-negative integers
+//   - Version strings are properly formatted
+//
+// Note: Command currently provides feedback about intended operations
+// but actual restoration functionality is pending implementation
 func NewUndeleteCommand(source *workloadapi.X509Source) *cobra.Command {
 	var undeleteCmd = &cobra.Command{
 		Use:   "undelete <path>",
@@ -24,7 +55,6 @@ If no version is specified, defaults to undeleting the current version.
 
 Examples:
   spike undelete secret/ella           # Undeletes current version
-  spike undelete secret/ella -v all    # Undeletes all versions
   spike undelete secret/ella -v 1,2,3  # Undeletes specific versions
   spike undelete secret/ella -v 0,1,2  # Undeletes current version plus versions 1 and 2`,
 		Args: cobra.ExactArgs(1),
@@ -33,11 +63,6 @@ Examples:
 			versions, _ := cmd.Flags().GetString("versions")
 
 			fmt.Println("###### NEEDS TO BE IMPLEMENTED ######")
-
-			if versions == "all" {
-				fmt.Printf("Undeleting all versions at path %s\n", path)
-				return
-			}
 
 			if versions == "" || versions == "0" {
 				fmt.Printf("Undeleting current version at path %s\n", path)

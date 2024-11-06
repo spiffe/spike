@@ -6,3 +6,4 @@ package net
 
 const urlSecretGet = "https://localhost:8553/v1/secrets?action=get"
 const urlSecretPut = "https://localhost:8553/v1/secrets"
+const urlSecretDelete = "https://localhost:8553/v1/secrets?action=delete"
