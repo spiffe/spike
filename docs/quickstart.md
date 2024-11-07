@@ -188,6 +188,11 @@ Enjoy.
 
 ## Setting Up Postgres
 
+> **Future Work**
+> 
+> Postgres setup will be done in the future.
+> Don't worry about it that much for now.
+
 Here are steps to set up Postgres for Ubuntu Linux:
 
 Install Postgres:
