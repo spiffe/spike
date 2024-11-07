@@ -2,6 +2,7 @@
 * [Alpha Release Notice](notice.md)
 * [Changelog](changelog.md)
 * [Quickstart](quickstart.md)
+* [Configuration](configuration.md)
 * [Architecture](architecture/README.md)
   * [System Overview](architecture/system-overview.md)
   * [Security Model](architecture/security-model.md)

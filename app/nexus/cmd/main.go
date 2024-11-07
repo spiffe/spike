@@ -46,7 +46,7 @@ func main() {
 
 	log.Println("SPIKE Nexus: Initializing complete. Has root key?", len(state.RootKey()) > 0)
 
-	ticker := time.NewTicker(10 * time.Second) // for now; will be configurable.
+	ticker := time.NewTicker(env.PollInterval())
 	defer ticker.Stop()
 	go poll.Tick(ctx, source, ticker)
 
