@@ -15,7 +15,7 @@ import (
 	"github.com/spiffe/spike/internal/net"
 )
 
-func routeKeep(r *http.Request, w http.ResponseWriter) {
+func routeKeep(w http.ResponseWriter, r *http.Request) {
 	log.Log().Info("routeKeep",
 		"method", r.Method,
 		"path", r.URL.Path,

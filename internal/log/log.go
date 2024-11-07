@@ -15,7 +15,7 @@ var logger *slog.Logger
 var loggerMutex sync.Mutex
 
 func Log() *slog.Logger {
-	loggerMutex.Unlock()
+	loggerMutex.Lock()
 	defer loggerMutex.Unlock()
 
 	if logger != nil {
@@ -61,5 +61,5 @@ func Audit(entry AuditEntry) {
 		return
 	}
 
-	log.Println(body)
+	log.Println(string(body))
 }

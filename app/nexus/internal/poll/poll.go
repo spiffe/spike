@@ -6,13 +6,13 @@ package poll
 
 import (
 	"context"
-	"log"
 	"time"
 
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 
 	"github.com/spiffe/spike/app/nexus/internal/net"
 	"github.com/spiffe/spike/app/nexus/internal/state"
+	"github.com/spiffe/spike/internal/log"
 )
 
 // Tick continuously updates SPIKE Keeper, sending the root key to be backed up
@@ -58,14 +58,15 @@ func Tick(
 			}
 			err := net.UpdateCache(source, key)
 			if err != nil {
-				log.Println("")
-				log.Printf("Unable to update the cache: %v\n", err)
-				log.Println("Make sure SPIKE Keeper is up and running")
-				log.Println("")
+				log.Log().Error("tick",
+					"msg", "Failed to update the cache",
+					"hint", "Make sure SPIKE Keeper is up and running",
+					"err", err.Error())
+
 				continue
 			}
 
-			log.Println("Successfully updated the cache")
+			log.Log().Info("tick", "msg", "Successfully updated the cache")
 		case <-ctx.Done():
 			return
 		}

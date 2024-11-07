@@ -7,16 +7,19 @@ package route
 import (
 	"encoding/json"
 	"io"
-	"log"
 	"net/http"
 
 	"github.com/spiffe/spike/app/nexus/internal/state"
 	"github.com/spiffe/spike/internal/entity/v1/reqres"
+	"github.com/spiffe/spike/internal/log"
 	"github.com/spiffe/spike/internal/net"
 )
 
-func routeDeleteSecret(r *http.Request, w http.ResponseWriter) {
-	log.Println("routeDeleteSecret:", r.Method, r.URL.Path, r.URL.RawQuery)
+func routeDeleteSecret(w http.ResponseWriter, r *http.Request) {
+	log.Log().Info("routeDeleteSecret",
+		"method", r.Method,
+		"path", r.URL.Path,
+		"query", r.URL.RawQuery)
 
 	body := net.ReadRequestBody(r, w)
 	if body == nil {
@@ -25,7 +28,9 @@ func routeDeleteSecret(r *http.Request, w http.ResponseWriter) {
 
 	var req reqres.SecretDeleteRequest
 	if err := net.HandleRequestError(w, json.Unmarshal(body, &req)); err != nil {
-		log.Println("routeDeleteSecret: Problem handling request:", err.Error())
+		log.Log().Error("routeDeleteSecret",
+			"msg", "Problem unmarshalling request",
+			"err", err.Error())
 		return
 	}
 
@@ -36,11 +41,14 @@ func routeDeleteSecret(r *http.Request, w http.ResponseWriter) {
 	}
 
 	state.DeleteSecret(path, versions)
-	log.Println("routeDeleteSecret: Secret deleted")
+	log.Log().Info("routeDeleteSecret",
+		"msg", "Secret deleted")
 
 	w.WriteHeader(http.StatusOK)
 	_, err := io.WriteString(w, "")
 	if err != nil {
-		log.Println("routeDeleteSecret: Problem writing response:", err.Error())
+		log.Log().Error("routeDeleteSecret",
+			"msg", "Problem writing response",
+			"err", err.Error())
 	}
 }

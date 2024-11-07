@@ -9,5 +9,5 @@ import (
 )
 
 func Route(w http.ResponseWriter, r *http.Request) {
-	factory(r.URL.Path, r.URL.Query().Get("action"), r.Method)(r, w)
+	factory(r.URL.Path, r.URL.Query().Get("action"), r.Method)(w, r)
 }

@@ -7,16 +7,19 @@ package route
 import (
 	"encoding/json"
 	"io"
-	"log"
 	"net/http"
 
 	"github.com/spiffe/spike/app/keeper/internal/state"
 	"github.com/spiffe/spike/internal/entity/v1/reqres"
+	"github.com/spiffe/spike/internal/log"
 	"github.com/spiffe/spike/internal/net"
 )
 
-func routeShow(r *http.Request, w http.ResponseWriter) {
-	log.Println("routeShow:", r.Method, r.URL.Path, r.URL.RawQuery)
+func routeShow(w http.ResponseWriter, r *http.Request) {
+	log.Log().Info("routeShow",
+		"method", r.Method,
+		"path", r.URL.Path,
+		"query", r.URL.RawQuery)
 
 	body := net.ReadRequestBody(r, w)
 	if body == nil {
@@ -25,11 +28,16 @@ func routeShow(r *http.Request, w http.ResponseWriter) {
 
 	var req reqres.RootKeyReadRequest
 	if err := net.HandleRequestError(w, json.Unmarshal(body, &req)); err != nil {
-		log.Println("routeShow: Problem handling request:", err.Error())
+		log.Log().Error("routeShow",
+			"msg", "Problem unmarshalling request",
+			"err", err.Error())
+
 		w.WriteHeader(http.StatusBadRequest)
 		_, err := io.WriteString(w, "")
 		if err != nil {
-			log.Println("routeShow: Problem writing response:", err.Error())
+			log.Log().Error("routeShow",
+				"msg", "Problem writing response",
+				"err", err.Error())
 		}
 		return
 	}
@@ -39,13 +47,17 @@ func routeShow(r *http.Request, w http.ResponseWriter) {
 	res := reqres.RootKeyReadResponse{RootKey: rootKey}
 	md, err := json.Marshal(res)
 	if err != nil {
-		log.Println("routeShow: Problem generating response:", err.Error())
+		log.Log().Error("routeShow",
+			"msg", "Problem generating response",
+			"err", err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 	}
 
 	w.WriteHeader(http.StatusOK)
 	_, err = io.WriteString(w, string(md))
 	if err != nil {
-		log.Println("routeShow: Problem writing response:", err.Error())
+		log.Log().Error("routeShow",
+			"msg", "Problem writing response",
+			"err", err.Error())
 	}
 }

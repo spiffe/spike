@@ -32,7 +32,7 @@ func factory(p, a, m string) handler {
 		return logAndRoute(entry, routeInit)
 	case m == http.MethodPost && a == "" && p == urlSecrets:
 		entry.Action = "create"
-		return logAndRoute(entry, routePostSecret)
+		return logAndRoute(entry, routePutSecret)
 	case m == http.MethodPost && a == "get" && p == urlSecrets:
 		entry.Action = "read"
 		return logAndRoute(entry, routeGetSecret)
