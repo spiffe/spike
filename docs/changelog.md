@@ -4,7 +4,8 @@
 
 ## Recent
 
-TBD
+* Added configuration options for SPIKE Nexus and SPIKE Keeper.
+* Updated quickstart guide.
 
 ## [0.1.0] - 2024-11-06
 

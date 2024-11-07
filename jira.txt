@@ -22,13 +22,15 @@
 
 ---------------------------=| PRIORITIZED BACKLOG |=----------------------------
 
+section: installing SPIRE from source.
+
+create a mini demo about the recent feature set.
+
 create a changelog
 create a contact page
 some footer design is due.
 
 implement:
-  undelete
-  list
 
 bug: if keeper not there nexus crashes without attempting to retry
 aegis@aegis:~/Desktop/WORKSPACE/spike$ ./nexus
