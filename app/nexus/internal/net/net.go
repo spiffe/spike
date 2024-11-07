@@ -6,6 +6,7 @@ package net
 
 import (
 	"errors"
+
 	"github.com/go-jose/go-jose/v4/json"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 
@@ -13,9 +14,6 @@ import (
 	"github.com/spiffe/spike/internal/entity/v1/reqres"
 	"github.com/spiffe/spike/internal/net"
 )
-
-const urlKeep = "https://localhost:8443/v1/keep"
-const urlKeepRead = "https://localhost:8443/v1/keep?action=read"
 
 // UpdateCache sends a cache update request to SPIKE Keep using mutual
 // TLS authentication. It sends the current root key value to

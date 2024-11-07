@@ -7,7 +7,6 @@ package main
 import (
 	"context"
 	"errors"
-	"log"
 	"time"
 
 	"github.com/spiffe/spike/app/nexus/internal/env"
@@ -15,6 +14,7 @@ import (
 	"github.com/spiffe/spike/app/nexus/internal/poll"
 	"github.com/spiffe/spike/app/nexus/internal/state"
 	"github.com/spiffe/spike/internal/config"
+	"github.com/spiffe/spike/internal/log"
 	"github.com/spiffe/spike/internal/net"
 	"github.com/spiffe/spike/internal/spiffe"
 )
@@ -32,30 +32,35 @@ func main() {
 	defer spiffe.CloseSource(source)
 
 	if !config.IsNexus(spiffeid) {
-		log.Fatalf("SPIFFE ID %s is not valid.\n", spiffeid)
+		log.FatalF("SPIFFE ID %s is not valid.\n", spiffeid)
 	}
 
 	err = state.Initialize(source)
 	if err != nil {
 		if errors.Is(err, state.ErrAlreadyInitialized) {
-			log.Println("SPIKE Nexus already initialized. Not creating a new root key.")
+			log.Log().Info(appName,
+				"msg",
+				"SPIKE Nexus already initialized. Not creating a new root key.")
 		} else {
-			log.Fatalf("Unable to initialize SPIKE Nexus state: " + err.Error())
+			log.FatalF("Unable to initialize SPIKE Nexus state: " + err.Error())
 		}
 	}
 
-	log.Println("SPIKE Nexus: Initializing complete. Has root key?", len(state.RootKey()) > 0)
+	log.Log().Info(appName, "msg", "Initializing complete.",
+		"has_root_key", len(state.RootKey()) > 0)
 
 	ticker := time.NewTicker(env.PollInterval())
 	defer ticker.Stop()
 	go poll.Tick(ctx, source, ticker)
 
-	log.Printf("Started service: %s v%s\n", appName, config.NexusVersion)
+	log.Log().Info(appName, "msg",
+		"Starting service.", "version", config.NexusVersion)
+
 	if err := net.Serve(
 		source, handle.InitializeRoutes,
 		config.CanTalkToNexus,
 		env.TlsPort(),
 	); err != nil {
-		log.Fatalf("%s: Failed to serve: %s\n", appName, err.Error())
+		log.FatalF("%s: Failed to serve: %s\n", appName, err.Error())
 	}
 }

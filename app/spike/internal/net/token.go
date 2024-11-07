@@ -16,8 +16,7 @@ import (
 	"github.com/spiffe/spike/internal/net"
 )
 
-const urlInit = "https://localhost:8553/v1/init"
-
+// SendInitRequest sends an init request to SPIKE Nexus.
 func SendInitRequest(source *workloadapi.X509Source, token string) error {
 	log.Println("##### THE SIGNATURE OF THE INIT REQUEST WILL CHANGE ####")
 	r := reqres.AdminTokenWriteRequest{

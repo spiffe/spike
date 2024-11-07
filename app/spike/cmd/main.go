@@ -6,10 +6,11 @@ package main
 
 import (
 	"context"
+
 	"github.com/spiffe/spike/app/spike/internal/cmd"
 	"github.com/spiffe/spike/internal/config"
+	"github.com/spiffe/spike/internal/log"
 	"github.com/spiffe/spike/internal/spiffe"
-	"log"
 )
 
 func main() {
@@ -23,7 +24,7 @@ func main() {
 	defer spiffe.CloseSource(source)
 
 	if !config.IsPilot(spiffeid) {
-		log.Fatalf("SPIFFE ID %s is not valid.\n", spiffeid)
+		log.FatalF("SPIFFE ID %s is not valid.\n", spiffeid)
 	}
 
 	cmd.Initialize(source)

@@ -15,6 +15,7 @@ import (
 	"github.com/spiffe/spike/internal/net"
 )
 
+// GetSecret retrieves a secret from SPIKE Nexus.
 func GetSecret(source *workloadapi.X509Source,
 	path string, version int) (*data.Secret, error) {
 	r := reqres.SecretReadRequest{

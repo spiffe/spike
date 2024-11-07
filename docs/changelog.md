@@ -6,6 +6,8 @@
 
 * Added configuration options for SPIKE Nexus and SPIKE Keeper.
 * Updated quickstart guide.
+* Max secret versions is now configurable.
+* Introduced standard and configurable logging.
 
 ## [0.1.0] - 2024-11-06
 

@@ -7,16 +7,19 @@ package route
 import (
 	"encoding/json"
 	"io"
-	"log"
 	"net/http"
 
 	"github.com/spiffe/spike/app/nexus/internal/state"
 	"github.com/spiffe/spike/internal/entity/v1/reqres"
+	"github.com/spiffe/spike/internal/log"
 	"github.com/spiffe/spike/internal/net"
 )
 
-func routePostSecret(r *http.Request, w http.ResponseWriter) {
-	log.Println("routePostSecret:", r.Method, r.URL.Path, r.URL.RawQuery)
+func routePutSecret(w http.ResponseWriter, r *http.Request) {
+	log.Log().Info("routeGetSecret",
+		"method", r.Method,
+		"path", r.URL.Path,
+		"query", r.URL.RawQuery)
 
 	body := net.ReadRequestBody(r, w)
 	if body == nil {
@@ -25,7 +28,9 @@ func routePostSecret(r *http.Request, w http.ResponseWriter) {
 
 	var req reqres.SecretPutRequest
 	if err := net.HandleRequestError(w, json.Unmarshal(body, &req)); err != nil {
-		log.Println("routeInit: Problem handling request:", err.Error())
+		log.Log().Error("routePutSecret",
+			"msg", "Problem unmarshalling request",
+			"err", err.Error())
 		return
 	}
 
@@ -33,11 +38,13 @@ func routePostSecret(r *http.Request, w http.ResponseWriter) {
 	path := req.Path
 
 	state.UpsertSecret(path, values)
-	log.Println("routePostSecret: Secret upserted")
+
+	log.Log().Info("routePutSecret", "msg", "Secret upserted")
 
 	w.WriteHeader(http.StatusOK)
 	_, err := io.WriteString(w, "")
 	if err != nil {
-		log.Println("routePostSecret: Problem writing response:", err.Error())
+		log.Log().Error("routePutSecret",
+			"msg", "Problem writing response", "err", err.Error())
 	}
 }

@@ -6,4 +6,4 @@ package route
 
 import "net/http"
 
-type handler func(*http.Request, http.ResponseWriter)
+type handler func(http.ResponseWriter, *http.Request)

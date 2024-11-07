@@ -15,6 +15,7 @@ import (
 	"github.com/spiffe/spike/internal/net"
 )
 
+// ListSecretKeys lists the keys of all secrets in SPIKE Nexus.
 func ListSecretKeys(source *workloadapi.X509Source) ([]string, error) {
 	r := reqres.SecretListRequest{}
 	mr, err := json.Marshal(r)

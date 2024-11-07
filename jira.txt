@@ -4,7 +4,6 @@
 
 --------------------------=| LOW-HANGING FRUITS |=------------------------------
 
-- ticker := time.NewTicker(10 * time.Second) // for now; will be configurable.
 - MaxVersions:    3: should be configurable.
 - SPIKE Nexus Root Key Provisioning and Recovery
   sequence diagram issue: create root key if not exist; also check Keep before creating the key.
@@ -21,6 +20,36 @@
 - website, too much horizontal text distance when width of the viewport is large
 
 ---------------------------=| PRIORITIZED BACKLOG |=----------------------------
+
+$SPIKE_ROOT
+neeed to be set; check in scripts.
+
+volkan@spike:~/Desktop/WORKSPACE/spike$ ./hack/spire-server-starter.sh
+rm: cannot remove '.spike-token': No such file or directory
+rm: cannot remove '.spike-agent-join-token': No such file or directory
+could not find config file /config/spire/server/server.conf: please use the -config flag
+volkan@spike:~/Desktop/WORKSPACE/spike$ ll
+
+
+
+
+if .data folder does not exist, it errs out.
+volkan@spike:~/Desktop/WORKSPACE/spike$ ./hack/build-spike.sh
+rm: cannot remove 'keeper': No such file or directory
+volkan@spike:~/Desktop/WORKSPACE/spike$ ./hack/spire-server-starter.sh
+rm: cannot remove '.spike-token': No such file or directory
+rm: cannot remove '.spike-agent-join-token': No such file or directory
+./hack/clear-data.sh: line 7: cd: ./.data: No such file or directory
+could not find config file /config/spire/server/server.conf: please use the -config flag
+volkan@spike:~/Desktop/WORKSPACE/spike$ ll
+
+
+
+for a proper audit these paths should return an error and the auditor should
+log unsuccessful cases
+	case m == http.MethodPost && a == "" && p == urlKeep:
+		return routeKeep
+
 
 section: installing SPIRE from source.
 
