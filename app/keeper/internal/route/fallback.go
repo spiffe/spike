@@ -6,14 +6,18 @@ package route
 
 import (
 	"io"
-	"log"
 	"net/http"
+
+	"github.com/spiffe/spike/internal/log"
 )
 
 func routeFallback(_ *http.Request, w http.ResponseWriter) {
 	w.WriteHeader(http.StatusBadRequest)
 	_, err := io.WriteString(w, "")
 	if err != nil {
-		log.Println("routeFallback: Problem writing response:", err.Error())
+		log.Log().Error("routeFallback",
+			"msg", "Problem writing response",
+			"err", err.Error())
+
 	}
 }

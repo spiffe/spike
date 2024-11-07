@@ -7,16 +7,19 @@ package route
 import (
 	"encoding/json"
 	"io"
-	"log"
 	"net/http"
 
 	"github.com/spiffe/spike/app/keeper/internal/state"
 	"github.com/spiffe/spike/internal/entity/v1/reqres"
+	"github.com/spiffe/spike/internal/log"
 	"github.com/spiffe/spike/internal/net"
 )
 
 func routeKeep(r *http.Request, w http.ResponseWriter) {
-	log.Println("routeKeep:", r.Method, r.URL.Path, r.URL.RawQuery)
+	log.Log().Info("routeKeep",
+		"method", r.Method,
+		"path", r.URL.Path,
+		"query", r.URL.RawQuery)
 
 	body := net.ReadRequestBody(r, w)
 	if body == nil {
@@ -25,11 +28,16 @@ func routeKeep(r *http.Request, w http.ResponseWriter) {
 
 	var req reqres.RootKeyCacheRequest
 	if err := net.HandleRequestError(w, json.Unmarshal(body, &req)); err != nil {
-		log.Println("routKeep: Problem handling request:", err.Error())
+		log.Log().Error("routeKeep",
+			"msg", "Problem unmarshalling request",
+			"err", err.Error())
+
 		w.WriteHeader(http.StatusBadRequest)
 		_, err := io.WriteString(w, "")
 		if err != nil {
-			log.Println("routeKeep: Problem writing response:", err.Error())
+			log.Log().Error("routeKeep",
+				"msg", "Problem writing response",
+				"err", err.Error())
 		}
 		return
 	}
@@ -40,6 +48,10 @@ func routeKeep(r *http.Request, w http.ResponseWriter) {
 	w.WriteHeader(http.StatusOK)
 	_, err := io.WriteString(w, "OK")
 	if err != nil {
-		log.Println("routeKeep: Problem writing response:", err.Error())
+		log.Log().Error("routeKeep",
+			"msg", "Problem writing response:",
+			"err", err.Error())
+		return
 	}
+	log.Log().Info("routeKeep", "OK")
 }

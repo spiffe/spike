@@ -6,12 +6,12 @@ package main
 
 import (
 	"context"
-
-	"log"
+	"fmt"
 
 	"github.com/spiffe/spike/app/keeper/internal/env"
 	"github.com/spiffe/spike/app/keeper/internal/handle"
 	"github.com/spiffe/spike/internal/config"
+	"github.com/spiffe/spike/internal/log"
 	"github.com/spiffe/spike/internal/net"
 	"github.com/spiffe/spike/internal/spiffe"
 )
@@ -24,20 +24,23 @@ func main() {
 
 	source, spiffeid, err := spiffe.AppSpiffeSource(ctx)
 	if err != nil {
-		log.Fatalln(err.Error())
+		log.FatalLn(err.Error())
 	}
 	defer spiffe.CloseSource(source)
 
 	if !config.IsKeeper(spiffeid) {
-		log.Fatalf("SPIFFE ID %s is not valid.\n", spiffeid)
+		log.FatalF("SPIFFE ID %s is not valid.\n", spiffeid)
 	}
 
-	log.Printf("Started service: %s v%s\n", appName, config.KeeperVersion)
+	log.Log().Info(appName,
+		"msg", fmt.Sprintf("Starting service: %s v%s",
+			appName, config.KeeperVersion))
+
 	if err := net.Serve(
 		source, handle.InitializeRoutes,
 		config.CanTalkToKeeper,
 		env.TlsPort(),
 	); err != nil {
-		log.Fatalf("%s: Failed to serve: %s\n", appName, err.Error())
+		log.FatalF("%s: Failed to serve: %s\n", appName, err.Error())
 	}
 }

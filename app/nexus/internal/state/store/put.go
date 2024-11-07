@@ -4,7 +4,10 @@
 
 package store
 
-import "time"
+import (
+	"github.com/spiffe/spike/app/nexus/internal/env"
+	"time"
+)
 
 // Put stores a new version of key-value pairs at the specified path in the store.
 // It implements automatic versioning with a maximum of 3 versions per path.
@@ -35,9 +38,9 @@ func (kv *KV) Put(path string, values map[string]string) {
 			Metadata: Metadata{
 				CreatedTime: rightNow,
 				UpdatedTime: rightNow,
-				MaxVersions: 3,
-				// Versions start at 1, so that passing 0 as version will default to
-				// the current version.
+				MaxVersions: env.MaxSecretVersions(),
+				// Versions start at 1, so that passing 0 as version will
+				// default to the current version.
 				CurrentVersion: 1,
 				OldestVersion:  1,
 			},

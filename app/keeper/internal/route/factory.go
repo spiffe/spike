@@ -6,16 +6,36 @@ package route
 
 import (
 	"net/http"
+	"time"
+
+	"github.com/spiffe/spike/internal/log"
 )
 
+func logAndRoute(entry log.AuditEntry, h handler) handler {
+	log.Audit(entry)
+	return h
+}
+
 func factory(p, a, m string) handler {
+	now := time.Now()
+	entry := log.AuditEntry{
+		Timestamp: now,
+		UserId:    "TBD",
+		Action:    "",
+		Resource:  p,
+		SessionID: "",
+	}
+
 	switch {
 	case m == http.MethodPost && a == "" && p == urlKeep:
-		return routeKeep
+		entry.Action = "create"
+		return logAndRoute(entry, routeKeep)
 	case m == http.MethodPost && a == "read" && p == urlKeep:
-		return routeShow
+		entry.Action = "read"
+		return logAndRoute(entry, routeShow)
 	// Fallback route.
 	default:
-		return routeFallback
+		entry.Action = "fallback"
+		return logAndRoute(entry, routeFallback)
 	}
 }

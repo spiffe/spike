@@ -4,7 +4,6 @@
 
 --------------------------=| LOW-HANGING FRUITS |=------------------------------
 
-- ticker := time.NewTicker(10 * time.Second) // for now; will be configurable.
 - MaxVersions:    3: should be configurable.
 - SPIKE Nexus Root Key Provisioning and Recovery
   sequence diagram issue: create root key if not exist; also check Keep before creating the key.
@@ -21,6 +20,12 @@
 - website, too much horizontal text distance when width of the viewport is large
 
 ---------------------------=| PRIORITIZED BACKLOG |=----------------------------
+
+for a proper audit these paths should return an error and the auditor should
+log unsuccessful cases
+	case m == http.MethodPost && a == "" && p == urlKeep:
+		return routeKeep
+
 
 section: installing SPIRE from source.
 
