@@ -1,5 +1,3 @@
-![SPIKE](../../assets/spike-banner.png)
-
 ## SPIKE Forced Root Key Reset
 
 This will make all the stored secrets obsolete, so it should be done

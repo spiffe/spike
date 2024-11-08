@@ -1,5 +1,3 @@
-![SPIKE](assets/spike-banner.png)
-
 ## Quickstart
 
 In this guide, you will learn how to build, deploy, and test **SPIKE** from the 

@@ -1,5 +1,3 @@
-![SPIKE](assets/spike-banner.png)
-
 ## Configuring SPIKE
 
 You can use environment variables to configure the **SPIKE** components. 

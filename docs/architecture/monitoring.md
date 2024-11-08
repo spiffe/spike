@@ -1,5 +1,3 @@
-![SPIKE](../assets/spike-banner.png)
-
 ## Monitoring and Observability
 
 ### Health Metrics

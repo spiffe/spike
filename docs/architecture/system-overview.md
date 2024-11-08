@@ -1,5 +1,3 @@
-![SPIKE](../assets/spike-banner.png)
-
 ## SPIKE Components
 
 **SPIKE** has the following system components:

@@ -1,5 +1,3 @@
-![SPIKE](../assets/spike-banner.png)
-
 ## What is SPIKE?
 
 SPIKE (*Secure Production Identity for Key Encryption*) is a secrets management

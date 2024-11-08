@@ -14,17 +14,60 @@
   <link rel="icon" type="image/png" href="/assets/spike-favicon-128x128.png" sizes="128x128" />
 </head>
 <body>
-<div id="app"></div>
+<div id="app">
+
+
+
+</div>
+<style>
+  article {
+    min-height: calc( 100vh - 188px - 4em );
+  }
+  footer a {
+    color: #42b983;
+  }
+</style>
+<footer style="text-align:center;padding:1em;padding-top:2em;padding-bottom:2em;background:#fafafa;
+border-top: 1px #eeeeee solid;font-size: 18px;
+" id="footer">
+
+  Copyright © 2024-present <strong>SPIKE Contributors</strong>.<br>
+  <strong>SPIKE</strong>'s code
+  is distributed under <a class="text-blue-600 underline"
+  href="https://www.mozilla.org/en-US/MPL/2.0/">Mozilla Public License (v2.0)</a>.
+  <br>
+  The documentation on this website
+  is distributed under <a class="text-blue-600 underline" href="https://creativecommons.org/licenses/by/4.0/">CC-BY-4.0</a>.
+  <br><br>
+  We do not collect your data. This site does not use any tracking cookies or scripts.
+</footer>
 <script>
   var num = 0;
   mermaid.initialize({ startOnLoad: false });
+  setTimeout(function check() {
+    var main = document.getElementById('main');
+    if (main) {
+      main.parentNode.appendChild(document.getElementById('footer'));
+      return
+    }
+    setTimeout(check, 100);
+  }, 100);
+
+
   window.$docsify = {
+    repo: "https://github.com/spiffe/spike",
+    logo: "/assets/spike-banner.png",
+    name: "SPIKE",
     el: "#app", loadSidebar: true,
     markdown: { renderer: { code: function(code, lang) {
       if (lang === "mermaid") {return ('<div class="mermaid">' +
         mermaid.render('mermaid-svg-' + num++, code) + "</div>");}
+
+    console.log('a')
+    console.log(document.getElementById('main'))
     return this.origin.code.apply(this, arguments);
   }}}};
+
 </script>
 <script src="/assets/docsify.js"></script>
 </body>

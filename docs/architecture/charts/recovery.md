@@ -1,5 +1,3 @@
-![SPIKE](../../assets/spike-banner.png)
-
 ## SPIKE Nexus Automatic Recovery After Crash
 
 ```mermaid

@@ -1,5 +1,3 @@
-![SPIKE](../../assets/spike-banner.png)
-
 ## SPIKE Manual System Re-Initialization
 
 ```mermaid 

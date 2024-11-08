@@ -1,5 +1,3 @@
-![SPIKE](../../assets/spike-banner.png)
-
 ## SPIKE Database Usage
 
 **SPIKE Nexus** is the only client for the backing store (*Postgres DB*).

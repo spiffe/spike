@@ -1,5 +1,3 @@
-![SPIKE](../assets/spike-banner.png)
-
 ## SPIKE Security Model
 
 Here is a brief introduction to **SPIKE** security model.

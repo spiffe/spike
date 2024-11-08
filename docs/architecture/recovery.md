@@ -1,5 +1,3 @@
-![SPIKE](../assets/spike-banner.png)
-
 ## Recovery Mechanisms
 
 ### SPIKE Nexus Crash Recovery
