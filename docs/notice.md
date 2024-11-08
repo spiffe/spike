@@ -1,5 +1,3 @@
-![SPIKE](assets/spike-banner.png)
-
 ## 🚨 Alpha Release Notice 🚨
 
 * **Project Status**: **Alpha**

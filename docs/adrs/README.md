@@ -1,5 +1,3 @@
-![SPIKE](../assets/spike-banner.png)
-
 ## SPIKE Architectural Decision Records (*ADRs*)
 
 * [ADR-0001: Display Secrets in Plain Text in SPIKE Pilot Admin CLI](adrs/adr-0001.md)

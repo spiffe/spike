@@ -1,5 +1,3 @@
-![SPIKE](assets/spike-banner-lg.png)
-
 ## Secure Production Identity for Key Encryption (SPIKE)
 
 **SPIKE**  is a lightweight **secrets store** that uses [SPIFFE][spiffe] 

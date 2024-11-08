@@ -1,5 +1,3 @@
-![SPIKE](../../assets/spike-banner.png)
-
 ## Key-Value Store
 
 ```mermaid 

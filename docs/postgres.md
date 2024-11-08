@@ -1,5 +1,3 @@
-![SPIKE](assets/spike-banner.png)
-
 ## Postgres Setup
 
 > **Future Work**
