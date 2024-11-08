@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--
+#    \\ SPIKE: Secure your secrets with SPIFFE.
+#  \\\\\ Copyright 2024-present SPIKE contributors.
+# \\\\\\\ SPDX-License-Identifier: Apache-2.0
+-->
+<stuff>
+<purpose>
+Our goal is to have a minimally delightful product.
+Strive not to add features just for the sake of adding features.
+If there are half-complete features, missing tests, and the like, they should
+be completed before adding more features.
+</purpose>
+<low-hanging-fruits>
+	<issue>
+	</issue>
+</low-hanging-fruits>
+<immediate-backlog>
+	<issue>
+	SPIKE Nexus Root Key Provisioning and Recovery
+	sequence diagram issue: create root key if not exist;
+	also check Keep before creating the key.
+	</issue>
+	<issue>
+	if `spike init` is called while nexus is not ready; spike thinks it's
+	initialized and will not re-init.
+	</issue>
+	<issue>
+	The website needs a footer.
+	</issue>
+	<issue>
+	mode for keeperless operation (fore development maybe).
+	</issue>
+</immediate-backlog>
+<after-demo>
+	<issue>
+	implement exponential retries.
+	</issue>
+	<issue>
+	make sure that everything sanitizable are properly sanitized.
+	</issue>
+	<issue>
+	Algorithm change in `spike get` (instead of verifying the admin token,
+	use short-lived token you get from SPIKE Nexus)
+	</issue>
+	<issue>
+	`const urlSecretPut = "https://localhost:8553/v1/secrets"` ->
+	these should be configurable.
+	</issue>
+	<issue>
+	state.SetAdminToken(adminToken) // This is temporary, for demo. Update it based on new sequence diagrams.
+	adminToken := req.Data // admin token will be auto created, we just need a strong password, and sanitize that password
+	</issue>
+	<bug>
+	- BUG: Re-initing after failed initialization returns success.
+	aegis@aegis:~/Desktop/WORKSPACE/spike$ spike init
+	Failed to save admin token:
+	failed to save token to nexus
+	Post "https://localhost:8553/v1/init": dial tcp 127.0.0.1:8553: connect: connection refused.
+	post: Problem connecting to peer
+	aegis@aegis:~/Desktop/WORKSPACE/spike$ spike init
+	SPIKE is already initialized.
+	Nothing to do.
+	</bug>
+</after-demo>
+<backlog>
+	<issue>
+	Do some static analysis.
+	</issue>
+	<issue>
+	create community and contact pages.
+	</issue>
+	<issue>
+	Add correlation id to logs where there is context.
+	</issue>
+	<issue>
+	for a proper audit these paths should return an error and the auditor should
+	log unsuccessful cases
+		<!--
+		case m == http.MethodPost && a == "" && p == urlKeep:
+		return routeKeep
+		-->
+	</issue>
+	<issue>
+	Create secret metadata API.
+	</issue>
+	<issue>
+	Maybe move the kv store, and the logger to a `pkg` folder instead of
+	`internal` because they are reusable as they are in isolation.
+	</issue>
+	<issue>
+	Have a way to clean up outdated session tokens to avoid memory leaks.
+	</issue>
+</backlog>
+<after-login-flow-fully-implemented>
+	<issue>
+	Secret metadata API.
+	</issue>
+	<issue>
+	- SPIKE Nexus Sanity Tests
+		- Ensure SPIKE Nexus caches the root key in memory.
+		- Ensure SPIKE Nexus reads from SPIKE keep if it does not have the root key.
+		- Ensure SPIKE Nexus saves the encrypted root key to the database.
+		- Ensure SPIKE Nexus caches the user's session key.
+		- Ensure SPIKE Nexus removes outdated session keys.
+		- Ensure SPIKE Nexus does not re-init (without manual intervention) after
+		being initialized.
+		- Ensure SPIKE Nexus adheres to the bootstrapping sequence diagram.
+		- Ensure SPIKE Nexus backs up the admin token by encrypting it with the root
+		key and storing in the database.
+		- Ensure SPIKE Nexus stores the initialization tombstone in the database.
+	</issue>
+	<issue>
+	- SPIKE Pilot Sanity Tests
+		- Ensure SPIKE Pilot denies any operation if SPIKE Nexus is not initialized.
+		- Ensure SPIKE Pilot can warn if SPIKE Nexus is unreachable
+		- Ensure SPIKE Pilot does not indefinitely hang up if SPIRE is not there.
+		- Ensure SPIKE Pilot can get and set a secret.
+		- Ensure SPIKE Pilot can do a force reset.
+		- Ensure SPIKE Pilot can recover the root password.
+		- Ensure that after `spike init` you have a password-encrypted root key in the db.
+		- Ensure that you can recover the password-encrypted root key.
+	</issue>
+	<issue>
+	- SPIKE Keep Sanity Tests
+		- Ensure that the root key is stored in SPIKE Keep's memory.
+		- Ensure that SPIKE Keep can return the root key back to SPIKE Nexus.
+	</issue>
+	<issue>
+	Consider a health check / heartbeat between Nexus and Keeper.
+	This can be more frequent than the root key sync interval.
+	</issue>
+	<issue>
+	Unit tests and coverage reports.
+	</issue>
+	<issue>
+	Integration tests.
+	</issue>
+	<issue>
+	Test automation.
+	</issue>
+	<issue>
+	Assigning secrets to SPIFFE IDs or SPIFFE ID prefixes.
+	</issue>
+	<issue>
+	RW policies for workloads baesd on path and SPIFFE IDs.
+	(or maybe experiment with S3 policies before reinventing a policy engine)
+	</issue>
+</after-login-flow-fully-implemented>
+<to-plan>
+	<issue>
+	S3 (or compatible) backing store
+	</issue>
+	<issue>
+	File-based backing store
+	</issue>
+	<issue>
+	In memory backing store
+	</issue>
+	<issue>
+	Kubernetes Deployment
+	</issue>
+</to-plan>
+<future>
+	<issue>
+	- Security Measures (SPIKE Nexus)
+		- Encrypting the root key with admin password is good
+		Consider adding salt to the password encryption
+		- Maybe add a key rotation mechanism for the future
+	</issue>
+	<issue>
+	- Error Handling
+		- Good use of exponential retries
+		- Consider adding specific error types/codes for different failure scenarios
+		- Might want to add cleanup steps for partial initialization failures
+	</issue>
+	<issue>
+	Ability to stream logs and audit trails outside of std out.
+	</issue>
+	<issue>
+	Audit logs should write to a separate location.
+	</issue>
+	<issue>
+	Create a dedicated OIDC resource server (that acts like Pilot but exposes a
+	restful API for things like CI/CD integration.
+	</issue>
+	<issue>
+	HSM integration (i.e. root key is managed/provided by an HSM, and the key
+	ever leaves the trust boundary of the HSM.
+	</issue>
+	<issue>
+	double-encryption of nexus-keeper comms (in case mTLS gets compromised, or
+	SPIRE is configured to use an upstream authority that is compromised, this
+	will provide end-to-end encryption and an additional layer of security over
+	the existing PKI)
+	</issue>
+	<issue>
+	Ability to rotate the root key (automatic via Nexus).
+	</issue>
+	<issue>
+	Ability to rotate the admin token (manual).
+	</issue>
+	<issue>
+	Admin tokens can expire.
+	</issue>
+	<issue>
+	Encourage to create users instead of relying on the system user.
+	</issue>
+</future>
+</stuff>
