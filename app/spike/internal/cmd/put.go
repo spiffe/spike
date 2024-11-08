@@ -52,7 +52,7 @@ func NewPutCommand(source *workloadapi.X509Source) *cobra.Command {
 		Short: "Put secrets at the specified path",
 		Args:  cobra.MinimumNArgs(2),
 		Run: func(cmd *cobra.Command, args []string) {
-			fmt.Println("######### WILL CHECK TEMP TOKEN INSTEAD #####")
+			// TODO: fmt.Println("######### WILL CHECK TEMP TOKEN INSTEAD #####")
 
 			adminToken, err := state.AdminToken()
 			if err != nil {

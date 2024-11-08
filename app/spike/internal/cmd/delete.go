@@ -6,6 +6,7 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/spiffe/spike/app/spike/internal/state"
 	"strconv"
 	"strings"
 
@@ -58,6 +59,19 @@ Examples:
   spike delete secret/apocalyptica -v 0,1,2     # Deletes current version plus versions 1 and 2`,
 		Args: cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
+			// TODO: new flow
+			adminToken, err := state.AdminToken()
+			if err != nil {
+				fmt.Println("SPIKE is not initialized.")
+				fmt.Println("Please run `spike init` to initialize SPIKE.")
+				return
+			}
+			if adminToken == "" {
+				fmt.Println("SPIKE is not initialized.")
+				fmt.Println("Please run `spike init` to initialize SPIKE.")
+				return
+			}
+
 			path := args[0]
 			versions, _ := cmd.Flags().GetString("versions")
 
@@ -81,7 +95,7 @@ Examples:
 				}
 			}
 
-			err := net.DeleteSecret(source, path, versionList)
+			err = net.DeleteSecret(source, path, versionList)
 			if err != nil {
 				fmt.Printf("Error: %v\n", err)
 				return

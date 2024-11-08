@@ -7,8 +7,6 @@ package net
 import (
 	"encoding/json"
 	"errors"
-	"log"
-
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 
 	"github.com/spiffe/spike/internal/config"
@@ -18,7 +16,7 @@ import (
 
 // SendInitRequest sends an init request to SPIKE Nexus.
 func SendInitRequest(source *workloadapi.X509Source, token string) error {
-	log.Println("##### THE SIGNATURE OF THE INIT REQUEST WILL CHANGE ####")
+	//TODO: log.Println("##### THE SIGNATURE OF THE INIT REQUEST WILL CHANGE ####")
 	r := reqres.AdminTokenWriteRequest{
 		Data: token,
 	}

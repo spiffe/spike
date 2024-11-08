@@ -4,4 +4,4 @@
 #  \\\\\ Copyright 2024-present SPIKE contributors.
 # \\\\\\\ SPDX-License-Identifier: Apache-2.0
 
-spire-server run -config "$SPIKE_ROOT"/config/spire/server/server.conf
+spire-server run -config ./config/spire/server/server.conf

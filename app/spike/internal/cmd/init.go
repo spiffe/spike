@@ -29,7 +29,7 @@ import (
 //  2. If not initialized:
 //     - Generate a new admin token
 //     - Save the token using the provided X.509 source
-//     - Store the token in ./.spike-token file
+//     - Store the token in ./.spike-admin-token file
 //
 // Error cases:
 //   - Already initialized: Notifies user and exits
@@ -44,9 +44,9 @@ func NewInitCommand(source *workloadapi.X509Source) *cobra.Command {
 		Use:   "init",
 		Short: "Initialize spike configuration",
 		Run: func(cmd *cobra.Command, args []string) {
-			fmt.Println("######## ASK FOR PASSWORD AND DB DETAILS #####")
-			fmt.Println("--this flow will change; no need to save or check admin token--")
-			fmt.Println("--`pilot login` will exchange a temp token instead.")
+			// TODO: fmt.Println("######## ASK FOR PASSWORD AND DB DETAILS #####")
+			// TODO: fmt.Println("--this flow will change; no need to save or check admin token--")
+			// TODO: fmt.Println("--`pilot login` will exchange a temp token instead.")
 
 			if state.AdminTokenExists() {
 				fmt.Println("SPIKE is already initialized.")
@@ -66,7 +66,7 @@ func NewInitCommand(source *workloadapi.X509Source) *cobra.Command {
 			fmt.Println("")
 			fmt.Println("    SPIKE system initialization completed.")
 			fmt.Println("      Generated admin token and saved it to")
-			fmt.Println("        ./.spike-token for future use.")
+			fmt.Println("        ./.spike-admin-token for future use.")
 			fmt.Println("")
 		},
 	}

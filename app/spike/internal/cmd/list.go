@@ -9,6 +9,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	"github.com/spiffe/spike/app/spike/internal/net"
+	"github.com/spiffe/spike/app/spike/internal/state"
 )
 
 // NewListCommand creates and returns a new cobra.Command for listing all secret
@@ -39,9 +40,27 @@ func NewListCommand(source *workloadapi.X509Source) *cobra.Command {
 		Use:   "list",
 		Short: "List all secret paths",
 		Run: func(cmd *cobra.Command, args []string) {
+			// TODO: new flow.
+			adminToken, err := state.AdminToken()
+			if err != nil {
+				fmt.Println("SPIKE is not initialized.")
+				fmt.Println("Please run `spike init` to initialize SPIKE.")
+				return
+			}
+			if adminToken == "" {
+				fmt.Println("SPIKE is not initialized.")
+				fmt.Println("Please run `spike init` to initialize SPIKE.")
+				return
+			}
+
 			keys, err := net.ListSecretKeys(source)
 			if err != nil {
 				fmt.Println("Error listing secret keys:", err)
+				return
+			}
+
+			if len(keys) == 0 {
+				fmt.Println("No secrets found")
 				return
 			}
 

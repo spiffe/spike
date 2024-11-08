@@ -56,6 +56,7 @@ go.work.sum
 
 # App-specific:
 .spike-token
+.spike-admin-token
 .spire-agent-join-token
 .data
 .pilot-token

@@ -26,6 +26,13 @@ ID=ubuntu
 ID_LIKE=debian
 ```
 
+In addition, you will need the usual suspects:
+
+* `git`
+* `make`
+* `node` (*at least [GitHub Copilot][copilot] requires it on Linux*)
+* 
+
 ## Building SPIRE
 
 To get started let's create a development version of SPIRE. Note that this is
@@ -87,18 +94,20 @@ cd $WORKSPACE/spike
 ./hack/build-spike.sh
 
 # Created files:
-keeper*
-keeper-darwin-arm64*
-keeper-linux-amd64*
-keeper-linux-arm64*
-nexus*
-nexus-darwin-arm64*
-nexus-linux-amd64*
-nexus-linux-arm64*
-spike*
-spike-darwin-arm64*
-spike-linux-amd64*
-spike-linux-arm64*
+#   These work on your system:
+#     keeper*
+#     nexus*
+#     spike*
+#   These are for other systems:
+#     keeper-darwin-arm64*
+#     keeper-linux-amd64*
+#     keeper-linux-arm64*
+#     nexus-darwin-arm64*
+#     nexus-linux-amd64*
+#     nexus-linux-arm64*
+#     spike-darwin-arm64*
+#     spike-linux-amd64*
+#     spike-linux-arm64*
 ```
 
 ## Initialize SPIRE Server
@@ -165,8 +174,8 @@ spike
 Let test **SPIKE** by creating a secret
 
 ```text
-spike init 
-# ^ you need to initialize the SPIKE Pilot before you can use it.
+# you need to initialize the SPIKE Pilot before you can use it:
+spike init
 
 # Register a secret:
 spike put /secrets/db-secret username=postgres password=postgres
@@ -185,49 +194,3 @@ spike get /secrets/db-secret
 That's about it.
 
 Enjoy.
-
-## Setting Up Postgres
-
-> **Future Work**
-> 
-> Postgres setup will be done in the future.
-> Don't worry about it that much for now.
-
-Here are steps to set up Postgres for Ubuntu Linux:
-
-Install Postgres:
-
-```bash
-sudo apt install postgres
-```
-
-Configure Postgres to listen everywhere:
-
-```bash 
-sudo vim /etc/postgresql/$version/main/postgresql.conf
-# change listen_address as follows:
-# listen_address = '*'
-```
-
-Create database `spike`:
-
-```bash
-sudo -u postgres psql -c 'create database spike;';
-```
-
-Set a password for the postgres user:
-
-```bash 
-ALTER USER postgres with encrypted password 'your-password-here';
-```
-
-Enable SSL:
-
-```bash
-sudo vim /etc/postgresql/16/main/pg_hba.conf
-
-# Update the file and set your IP range accordingly.
-# hostssl spike postgres 10.211.55.1/24 scram-sha-256
-```
-
-That's it. Your database is configured for local development.

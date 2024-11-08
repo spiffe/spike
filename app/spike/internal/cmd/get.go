@@ -49,7 +49,7 @@ func NewGetCommand(source *workloadapi.X509Source) *cobra.Command {
 			path := args[0]
 			version, _ := cmd.Flags().GetInt("version")
 
-			fmt.Println("######## GET SESSION TOKENS INSTEAD #######")
+			// TODO: fmt.Println("######## GET SESSION TOKENS INSTEAD #######")
 			adminToken, err := state.AdminToken()
 			if err != nil {
 				fmt.Println("SPIKE is not initialized.")

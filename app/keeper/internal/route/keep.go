@@ -53,5 +53,5 @@ func routeKeep(w http.ResponseWriter, r *http.Request) {
 			"err", err.Error())
 		return
 	}
-	log.Log().Info("routeKeep", "OK")
+	log.Log().Info("routeKeep", "msg", "OK")
 }

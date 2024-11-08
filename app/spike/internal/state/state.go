@@ -23,7 +23,7 @@ func AdminToken() (string, error) {
 	defer tokenMutex.RUnlock()
 
 	// Try to read from file:
-	tokenBytes, err := os.ReadFile(".spike-token")
+	tokenBytes, err := os.ReadFile(".spike-admin-token")
 	if err != nil {
 		return "", errors.Join(
 			errors.New("failed to read token from file"),
@@ -41,7 +41,7 @@ func SaveAdminToken(source *workloadapi.X509Source, token string) error {
 	defer tokenMutex.Unlock()
 
 	// Save token to file:
-	err := os.WriteFile(".spike-token", []byte(token), 0600)
+	err := os.WriteFile(".spike-admin-token", []byte(token), 0600)
 	if err != nil {
 		return errors.Join(errors.New("failed to save token to file"), err)
 	}

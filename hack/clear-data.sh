@@ -4,6 +4,8 @@
 #  \\\\\ Copyright 2024-present SPIKE contributors.
 # \\\\\\\ SPDX-License-Identifier: Apache-2.0
 
+mkdir -p ./.data
+
 cd ./.data || exit
 
 # shellcheck disable=SC2035
