@@ -17,21 +17,6 @@ be completed before adding more features.
 </low-hanging-fruits>
 <immediate-backlog>
 	<issue>
-		Create doc snapshots per version.
-	</issue>
-	<issue>
-	SPIKE Nexus Root Key Provisioning and Recovery
-	sequence diagram issue: create root key if not exist;
-	also check Keep before creating the key.
-	</issue>
-	<issue>
-	if `spike init` is called while nexus is not ready; spike thinks it's
-	initialized and will not re-init.
-	</issue>
-	<issue>
-	The website needs a footer.
-	</issue>
-	<issue>
 	mode for keeperless operation (fore development maybe).
 	</issue>
 </immediate-backlog>

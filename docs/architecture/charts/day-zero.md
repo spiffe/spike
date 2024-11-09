@@ -5,8 +5,12 @@ sequenceDiagram
     participant N as SPIKE Nexus
     participant K as SPIKE Keeper
     alt not initialized
-        Note over N: Create root key.
-
+        alt root key does not exist
+            Note over N: check SPIKE Keeper for root key
+            Note over N: Create root key (if not found)
+            Note over N: Update root key (if found)
+        end
+        
         N->>+K: Send root key 
     else already initialized
         alt root key is empty

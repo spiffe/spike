@@ -6,6 +6,7 @@
 * Updated quickstart guide.
 * Max secret versions is now configurable.
 * Introduced standard and configurable logging.
+* Add community section and snapshots to the documentation.
 
 ## [0.1.0] - 2024-11-06
 
