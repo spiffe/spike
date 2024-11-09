@@ -19,6 +19,24 @@ be completed before adding more features.
 	<issue>
 	mode for keeperless operation (fore development maybe).
 	</issue>
+	<issue>
+	we need some form of persistence (for recovery when Nexus crashes).
+	let's start with file, and then S3.
+	</issue>
+	<issue>
+		UndeleteSecret (and maybe other methods too) should return an error:
+		```
+		func UndeleteSecret(path string, versions []int) {
+		kvMu.Lock()
+		defer kvMu.Unlock()
+
+		err := kv.Undelete(path, versions)
+		if err != nil {
+		return
+		}
+		}
+		```
+	</issue>
 </immediate-backlog>
 <after-demo>
 	<issue>

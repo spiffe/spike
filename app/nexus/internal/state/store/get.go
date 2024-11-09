@@ -58,3 +58,12 @@ func (kv *KV) Get(path string, version int) (map[string]string, bool) {
 
 	return v.Data, true
 }
+
+func (kv *KV) GetRawSecret(path string) *Secret {
+	secret, exists := kv.data[path]
+	if !exists {
+		return nil
+	}
+
+	return secret
+}
