@@ -17,6 +17,9 @@ be completed before adding more features.
 </low-hanging-fruits>
 <immediate-backlog>
 	<issue>
+		Create doc snapshots per version.
+	</issue>
+	<issue>
 	SPIKE Nexus Root Key Provisioning and Recovery
 	sequence diagram issue: create root key if not exist;
 	also check Keep before creating the key.

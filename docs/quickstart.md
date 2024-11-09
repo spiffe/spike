@@ -29,7 +29,8 @@ In addition, you will need the usual suspects:
 * `git`
 * `make`
 * `node` (*at least [GitHub Copilot][copilot] requires it on Linux*)
-* 
+
+[copilot]: https://copilot.github.com/ "GitHub Copilot"
 
 ## Building SPIRE
 
