@@ -1,8 +1,14 @@
-* [Welcome](README.md)
-* [Alpha Release Notice](notice.md)
-* [Changelog](changelog.md)
-* [Quickstart](quickstart.md)
-* [Configuration](configuration.md)
+* Getting Started
+  * [Welcome](README.md)
+  * [Alpha Release Notice](notice.md)
+  * [Quickstart](quickstart.md)
+  * [Configuration](configuration.md)
+* Community
+  * [SPIKE Community](community/hello.md)
+  * [Contact Us](community/contact.md)
+* Tracking
+  * [Changelog](changelog.md)
+  * [Documentation Snapshots](snapshots.md)
 * [Architecture](architecture/README.md)
   * [System Overview](architecture/system-overview.md)
   * [Security Model](architecture/security-model.md)
