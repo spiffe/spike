@@ -6,12 +6,11 @@ package state
 
 import (
 	"errors"
+	"github.com/spiffe/spike/app/spike/internal/net"
 	"os"
 	"sync"
 
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
-
-	"github.com/spiffe/spike/app/spike/internal/net"
 )
 
 var tokenMutex sync.RWMutex
@@ -40,18 +39,18 @@ func SaveAdminToken(source *workloadapi.X509Source, token string) error {
 	tokenMutex.Lock()
 	defer tokenMutex.Unlock()
 
-	// Save token to file:
-	err := os.WriteFile(".spike-admin-token", []byte(token), 0600)
-	if err != nil {
-		return errors.Join(errors.New("failed to save token to file"), err)
-	}
-
 	// Save the token to SPIKE Nexus
 	// This token will be used for Nexus to generate
 	// short-lived session tokens for the admin user.
-	err = net.SendInitRequest(source, token)
+	err := net.SendInitRequest(source, token)
 	if err != nil {
 		return errors.Join(errors.New("failed to save token to nexus"), err)
+	}
+
+	// Save token to file:
+	err = os.WriteFile(".spike-admin-token", []byte(token), 0600)
+	if err != nil {
+		return errors.Join(errors.New("failed to save token to file"), err)
 	}
 
 	return nil
