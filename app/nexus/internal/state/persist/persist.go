@@ -6,6 +6,8 @@ package persist
 
 import (
 	"context"
+	"github.com/spiffe/spike/app/nexus/internal/env"
+	"github.com/spiffe/spike/app/nexus/internal/state/backend/memory"
 	"sync"
 	"time"
 
@@ -13,6 +15,12 @@ import (
 	"github.com/spiffe/spike/app/nexus/internal/state/backend/sqlite"
 	"github.com/spiffe/spike/app/nexus/internal/state/store"
 	"github.com/spiffe/spike/internal/log"
+)
+
+var (
+	memoryBackend *memory.NoopStore
+	sqliteBackend *sqlite.DataStore
+	backendMu     sync.RWMutex
 )
 
 func AsyncPersistSecret(kv *store.KV, path string) {
@@ -26,7 +34,10 @@ func AsyncPersistSecret(kv *store.KV, path string) {
 				return // No cache available
 			}
 
-			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+			ctx, cancel := context.WithTimeout(
+				context.Background(),
+				env.DatabaseOperationTimeout(),
+			)
 			defer cancel()
 
 			if err := be.StoreSecret(ctx, path, *secret); err != nil {
@@ -74,19 +85,21 @@ func ReadSecret(path string, version int) *store.Secret {
 }
 
 func InitializeSqliteBackend(rootKey string) backend.Backend {
+	opts := map[string]any{}
+
+	opts[sqlite.KeyDataDir] = env.DatabaseDir()
+	opts[sqlite.KeyDatabaseFile] = "spike.db"
+	opts[sqlite.KeyJournalMode] = env.DatabaseJournalMode()
+	opts[sqlite.KeyBusyTimeoutMs] = env.DatabaseBusyTimeoutMs()
+	opts[sqlite.KeyMaxOpenConns] = env.DatabaseMaxOpenConns()
+	opts[sqlite.KeyMaxIdleConns] = env.DatabaseMaxIdleConns()
+	opts[sqlite.KeyConnMaxLifetimeSeconds] = env.DatabaseConnMaxLifetimeSec()
+
 	// Create SQLite backend configuration
 	cfg := backend.Config{
-		EncryptionKey: rootKey, // Use the root key for encryption
-		Location:      "cache", // Or wherever you want to store the DB
-		Options: map[string]any{
-			"data_dir":                  "./.data/backend", // Or use os.UserCacheDir()
-			"database_file":             "spike.db",
-			"journal_mode":              "WAL", // Write-Ahead Logging for better concurrency
-			"busy_timeout_ms":           5000,  // 5 second busy timeout
-			"max_open_conns":            10,    // Adjust based on your needs
-			"max_idle_conns":            5,
-			"conn_max_lifetime_seconds": 3600, // 1 hour
-		},
+		// Use the root key as the encryption key
+		EncryptionKey: rootKey,
+		Options:       opts,
 	}
 
 	// Initialize SQLite backend
@@ -157,25 +170,34 @@ func AsyncPersistAdminToken(token string) {
 	}()
 }
 
-var (
-	sqliteBackend *sqlite.Backend
-	backendMu     sync.RWMutex
-)
-
 func InitializeBackend(rootKey string) backend.Backend {
 	backendMu.Lock()
 	defer backendMu.Unlock()
 
-	// TODO: create backend based on env config.
-	newBackend := InitializeSqliteBackend(rootKey)
+	storeType := env.BackendStoreType()
 
-	sqliteBackend = newBackend.(*sqlite.Backend)
-	return sqliteBackend
+	switch storeType {
+	case env.Memory:
+		return &memory.NoopStore{}
+	case env.Sqlite:
+		return InitializeSqliteBackend(rootKey)
+	default:
+		return &memory.NoopStore{}
+	}
 }
 
 func Backend() backend.Backend {
 	backendMu.RLock()
 	defer backendMu.RUnlock()
-	// TODO: create backend based on env config.
-	return sqliteBackend
+
+	storeType := env.BackendStoreType()
+
+	switch storeType {
+	case env.Memory:
+		return memoryBackend
+	case env.Sqlite:
+		return sqliteBackend
+	default:
+		return memoryBackend
+	}
 }

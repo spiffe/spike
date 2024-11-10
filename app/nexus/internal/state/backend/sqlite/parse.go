@@ -18,25 +18,25 @@ func parseOptions(opts map[string]any) (*Options, error) {
 	sqliteOpts := &Options{}
 
 	// Parse each field from the map
-	if dataDir, ok := opts["DataDir"].(string); ok {
+	if dataDir, ok := opts[KeyDataDir].(string); ok {
 		sqliteOpts.DataDir = dataDir
 	}
-	if dbFile, ok := opts["DatabaseFile"].(string); ok {
+	if dbFile, ok := opts[KeyDatabaseFile].(string); ok {
 		sqliteOpts.DatabaseFile = dbFile
 	}
-	if journalMode, ok := opts["JournalMode"].(string); ok {
+	if journalMode, ok := opts[KeyJournalMode].(string); ok {
 		sqliteOpts.JournalMode = journalMode
 	}
-	if busyTimeout, ok := opts["BusyTimeoutMs"].(int); ok {
+	if busyTimeout, ok := opts[KeyBusyTimeoutMs].(int); ok {
 		sqliteOpts.BusyTimeoutMs = busyTimeout
 	}
-	if maxOpen, ok := opts["MaxOpenConns"].(int); ok {
+	if maxOpen, ok := opts[KeyMaxOpenConns].(int); ok {
 		sqliteOpts.MaxOpenConns = maxOpen
 	}
-	if maxIdle, ok := opts["MaxIdleConns"].(int); ok {
+	if maxIdle, ok := opts[KeyMaxIdleConns].(int); ok {
 		sqliteOpts.MaxIdleConns = maxIdle
 	}
-	if lifetime, ok := opts["ConnMaxLifetime"].(time.Duration); ok {
+	if lifetime, ok := opts[KeyConnMaxLifetimeSeconds].(time.Duration); ok {
 		sqliteOpts.ConnMaxLifetime = lifetime
 	}
 
