@@ -53,6 +53,10 @@ func ReadSecret(path string, version int) *store.Secret {
 	}
 
 	if cachedSecret != nil {
+		if version == 0 {
+			version = cachedSecret.Metadata.CurrentVersion
+		}
+
 		if sv, ok := cachedSecret.Versions[version]; ok && sv.DeletedTime == nil {
 			return cachedSecret
 		}
@@ -90,7 +94,7 @@ func InitializeSqliteBackend(rootKey string) backend.Backend {
 	defer cancel()
 
 	if err := dbBackend.Initialize(ctxC); err != nil {
-		fmt.Printf("Failed to initialize SQLite backend: %v\n", err)
+		fmt.Printf("Failed to initialize SQLite backend: %v\n", err.Error())
 		return nil
 	}
 
@@ -139,8 +143,14 @@ var (
 )
 
 func InitializeBackend(rootKey string) backend.Backend {
+	backendMu.Lock()
+	defer backendMu.Unlock()
+
 	// TODO: create backend based on env config.
-	return InitializeSqliteBackend(rootKey)
+	newBackend := InitializeSqliteBackend(rootKey)
+
+	sqliteBackend = newBackend.(*sqlite.Backend)
+	return sqliteBackend
 }
 
 func Backend() backend.Backend {

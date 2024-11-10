@@ -37,6 +37,30 @@ be completed before adding more features.
 		}
 		```
 	</issue>
+	<issue>
+		ListKeys() {
+		// TODO: instead of loading keys from cache, load all secrets from db upon crash,
+		// which will also populate the key list.
+	</issue>
+	<issue>
+		to docs:
+		for cgo compatibility you'll need build-essential:
+		sudo apt-get install build-essential
+	</issue>
+	<issue>
+		boltdb plugin for SPIKE Nexus.
+		(benefit: will not require cgo)
+	</issue>
+	<issue>
+		cross compilation will need a dedicated user story:
+		can be done on an M3 mac; but will require some boilerplate.
+
+
+		# Linux ARM64
+		CGO_ENABLED=0 GOEXPERIMENT=boringcrypto go build -o keeper ./app/keeper/cmd/main.go
+		CGO_ENABLED=1 GOEXPERIMENT=boringcrypto go build -o nexus ./app/nexus/cmd/main.go
+		CGO_ENABLED=0 GOEXPERIMENT=boringcrypto go build -o spike ./app/spike/cmd/main.go
+	</issue>
 </immediate-backlog>
 <after-demo>
 	<issue>

@@ -83,6 +83,7 @@ func (s *Backend) Initialize(ctx context.Context) error {
 	}
 
 	dbPath := filepath.Join(s.opts.DataDir, s.opts.DatabaseFile)
+
 	db, err := sql.Open("sqlite3", fmt.Sprintf("%s?_journal_mode=%s&_busy_timeout=%d",
 		dbPath,
 		s.opts.JournalMode,
