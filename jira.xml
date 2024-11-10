@@ -6,10 +6,10 @@
 -->
 <stuff>
 <purpose>
-Our goal is to have a minimally delightful product.
-Strive not to add features just for the sake of adding features.
-If there are half-complete features, missing tests, and the like, they should
-be completed before adding more features.
+- Our goal is to have a minimally delightful product.
+- Strive not to add features just for the sake of adding features.
+- If there are half-complete features, missing tests, and the like, they should
+  be completed before adding more features.
 </purpose>
 <low-hanging-fruits>
 	<issue>
@@ -17,54 +17,33 @@ be completed before adding more features.
 </low-hanging-fruits>
 <immediate-backlog>
 	<issue>
-	mode for keeperless operation (fore development maybe).
+		new initialization flow with password request from the superadmin.
 	</issue>
 	<issue>
-	we need some form of persistence (for recovery when Nexus crashes).
-	let's start with file, and then S3.
+		mode for keeperless operation (fore development maybe).
 	</issue>
 	<issue>
-		UndeleteSecret (and maybe other methods too) should return an error:
-		```
-		func UndeleteSecret(path string, versions []int) {
-		kvMu.Lock()
-		defer kvMu.Unlock()
-
-		err := kv.Undelete(path, versions)
-		if err != nil {
-		return
-		}
-		}
-		```
-	</issue>
-	<issue>
-		ListKeys() {
-		// TODO: instead of loading keys from cache, load all secrets from db upon crash,
-		// which will also populate the key list.
-	</issue>
-	<issue>
-		to docs:
-		for cgo compatibility you'll need build-essential:
-		sudo apt-get install build-essential
-	</issue>
-	<issue>
-		boltdb plugin for SPIKE Nexus.
-		(benefit: will not require cgo)
+		If there is a backing store, load all secrets from the backing store
+		upon crash, which will also populate the key list.
 	</issue>
 	<issue>
 		cross compilation will need a dedicated user story:
 		can be done on an M3 mac; but will require some boilerplate.
-
-
 		# Linux ARM64
 		CGO_ENABLED=0 GOEXPERIMENT=boringcrypto go build -o keeper ./app/keeper/cmd/main.go
 		CGO_ENABLED=1 GOEXPERIMENT=boringcrypto go build -o nexus ./app/nexus/cmd/main.go
 		CGO_ENABLED=0 GOEXPERIMENT=boringcrypto go build -o spike ./app/spike/cmd/main.go
 	</issue>
+	<issue>
+		Kubernetification
+	</issue>
 </immediate-backlog>
-<after-demo>
+<runner-up>
 	<issue>
 	implement exponential retries.
+	</issue>
+	<issue>
+		Charts for the current db backing store.
 	</issue>
 	<issue>
 	make sure that everything sanitizable are properly sanitized.
@@ -81,19 +60,22 @@ be completed before adding more features.
 	state.SetAdminToken(adminToken) // This is temporary, for demo. Update it based on new sequence diagrams.
 	adminToken := req.Data // admin token will be auto created, we just need a strong password, and sanitize that password
 	</issue>
-	<bug>
-	- BUG: Re-initing after failed initialization returns success.
-	aegis@aegis:~/Desktop/WORKSPACE/spike$ spike init
-	Failed to save admin token:
-	failed to save token to nexus
-	Post "https://localhost:8553/v1/init": dial tcp 127.0.0.1:8553: connect: connection refused.
-	post: Problem connecting to peer
-	aegis@aegis:~/Desktop/WORKSPACE/spike$ spike init
-	SPIKE is already initialized.
-	Nothing to do.
-	</bug>
-</after-demo>
+</runner-up>
 <backlog>
+	<issue>
+		UndeleteSecret (and maybe other methods too) should return an error:
+		```
+		func UndeleteSecret(path string, versions []int) {
+		kvMu.Lock()
+		defer kvMu.Unlock()
+
+		err := kv.Undelete(path, versions)
+		if err != nil {
+		return
+		}
+		}
+		```
+	</issue>
 	<issue>
 	Do some static analysis.
 	</issue>
@@ -120,6 +102,9 @@ be completed before adding more features.
 	</issue>
 	<issue>
 	Have a way to clean up outdated session tokens to avoid memory leaks.
+	</issue>
+	<issue>
+	Implement an S3 (or compatible) backing store.
 	</issue>
 </backlog>
 <after-login-flow-fully-implemented>
