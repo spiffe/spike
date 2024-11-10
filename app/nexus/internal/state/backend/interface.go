@@ -7,29 +7,26 @@ package backend
 import (
 	"context"
 	"fmt"
+
 	"github.com/spiffe/spike/app/nexus/internal/state/store"
 )
 
 // Backend defines the interface for secret storage and management backends
 type Backend interface {
+	// Initialize initializes the backend
 	Initialize(ctx context.Context) error
+	// Close closes the backend
 	Close(ctx context.Context) error
 
+	// StoreSecret stores a secret at the specified path
 	StoreSecret(ctx context.Context, path string, secret store.Secret) error
+	// LoadSecret loads a secret from the specified path
 	LoadSecret(ctx context.Context, path string) (*store.Secret, error)
+	// StoreAdminToken stores an admin token
 	StoreAdminToken(ctx context.Context, token string) error
+	// LoadAdminToken loads an admin token
 	LoadAdminToken(ctx context.Context) (string, error)
 }
-
-// Operation represents types of operations that can be performed
-type Operation string
-
-const (
-	OpRead   Operation = "read"
-	OpWrite  Operation = "write"
-	OpDelete Operation = "delete"
-	OpList   Operation = "list"
-)
 
 // Config holds configuration for backend initialization
 type Config struct {

@@ -8,14 +8,11 @@ import (
 	"context"
 	"crypto/aes"
 	"crypto/cipher"
-	"crypto/rand"
 	"database/sql"
 	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
-	"os"
 	"path/filepath"
 	"sync"
 	"time"
@@ -26,18 +23,31 @@ import (
 	"github.com/spiffe/spike/app/nexus/internal/state/store"
 )
 
-func Register() {
-	backend.Register("sqlite", New)
+// Package provides an encrypted SQLite-based implementation of a data store
+// backend. It supports storing and loading encrypted secrets and admin tokens
+// with versioning support.
+
+// DataStore implements the backend.Backend interface providing encrypted storage
+// capabilities using SQLite as the underlying database. It uses AES-GCM for
+// encryption and implements proper locking mechanisms for concurrent access.
+type DataStore struct {
+	db        *sql.DB      // Database connection handle
+	cipher    cipher.AEAD  // Encryption cipher for data protection
+	mu        sync.RWMutex // Mutex for thread-safe operations
+	closeOnce sync.Once    // Ensures the database is closed only once
+	opts      *Options     // Configuration options for the data store
 }
 
-type Backend struct {
-	db        *sql.DB
-	cipher    cipher.AEAD
-	mu        sync.RWMutex
-	closeOnce sync.Once
-	opts      *Options
-}
-
+// New creates a new DataStore instance with the provided configuration.
+// It validates the encryption key and initializes the AES-GCM cipher.
+//
+// The encryption key must be 16, 24, or 32 bytes in length (for AES-128,
+// AES-192, or AES-256 respectively).
+//
+// Returns an error if:
+// - The options are invalid
+// - The encryption key is malformed or has an invalid length
+// - The cipher initialization fails
 func New(cfg backend.Config) (backend.Backend, error) {
 	opts, err := parseOptions(cfg.Options)
 	if err != nil {
@@ -51,7 +61,9 @@ func New(cfg backend.Config) (backend.Backend, error) {
 
 	// Validate key length
 	if len(key) != 16 && len(key) != 24 && len(key) != 32 {
-		return nil, fmt.Errorf("invalid encryption key length: must be 16, 24, or 32 bytes")
+		return nil, fmt.Errorf(
+			"invalid encryption key length: must be 16, 24, or 32 bytes",
+		)
 	}
 
 	block, err := aes.NewCipher(key)
@@ -64,13 +76,26 @@ func New(cfg backend.Config) (backend.Backend, error) {
 		return nil, fmt.Errorf("failed to create GCM: %w", err)
 	}
 
-	return &Backend{
+	return &DataStore{
 		cipher: gcm,
 		opts:   opts,
 	}, nil
 }
 
-func (s *Backend) Initialize(ctx context.Context) error {
+// Initialize prepares the DataStore for use by:
+// - Creating the necessary data directory
+// - Opening the SQLite database connection
+// - Configuring connection pool settings
+// - Creating required database tables
+//
+// It returns an error if:
+// - The backend is already initialized
+// - The data directory creation fails
+// - The database connection fails
+// - Table creation fails
+//
+// This method is thread-safe.
+func (s *DataStore) Initialize(ctx context.Context) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -84,10 +109,12 @@ func (s *Backend) Initialize(ctx context.Context) error {
 
 	dbPath := filepath.Join(s.opts.DataDir, s.opts.DatabaseFile)
 
-	db, err := sql.Open("sqlite3", fmt.Sprintf("%s?_journal_mode=%s&_busy_timeout=%d",
-		dbPath,
-		s.opts.JournalMode,
-		s.opts.BusyTimeoutMs))
+	db, err := sql.Open(
+		"sqlite3",
+		fmt.Sprintf("%s?_journal_mode=%s&_busy_timeout=%d",
+			dbPath,
+			s.opts.JournalMode,
+			s.opts.BusyTimeoutMs))
 	if err != nil {
 		return fmt.Errorf("failed to open database: %w", err)
 	}
@@ -110,60 +137,23 @@ func (s *Backend) Initialize(ctx context.Context) error {
 	return nil
 }
 
-func (s *Backend) createDataDir() error {
-	return os.MkdirAll(s.opts.DataDir, 0750)
-}
-
-func (s *Backend) createTables(ctx context.Context, db *sql.DB) error {
-	_, err := db.ExecContext(ctx, `
-		CREATE TABLE IF NOT EXISTS admin_token (
-			id INTEGER PRIMARY KEY CHECK (id = 1),
-			nonce BLOB NOT NULL,
-			encrypted_token BLOB NOT NULL,
-			updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
-		);
-
-		CREATE TABLE IF NOT EXISTS secrets (
-			path TEXT NOT NULL,
-			version INTEGER NOT NULL,
-			nonce BLOB NOT NULL,
-			encrypted_data BLOB NOT NULL,
-			created_time DATETIME NOT NULL,
-			deleted_time DATETIME,
-			PRIMARY KEY (path, version)
-		);
-
-		CREATE TABLE IF NOT EXISTS secret_metadata (
-			path TEXT PRIMARY KEY,
-			current_version INTEGER NOT NULL,
-			created_time DATETIME NOT NULL,
-			updated_time DATETIME NOT NULL
-		);
-
-		CREATE INDEX IF NOT EXISTS idx_secrets_path ON secrets(path);
-		CREATE INDEX IF NOT EXISTS idx_secrets_created_time ON secrets(created_time);
-	`)
-	return err
-}
-
-func (s *Backend) encrypt(data []byte) ([]byte, []byte, error) {
-	nonce := make([]byte, s.cipher.NonceSize())
-	if _, err := io.ReadFull(rand.Reader, nonce); err != nil {
-		return nil, nil, fmt.Errorf("failed to generate nonce: %w", err)
-	}
-	ciphertext := s.cipher.Seal(nil, nonce, data, nil)
-	return ciphertext, nonce, nil
-}
-
-func (s *Backend) decrypt(ciphertext, nonce []byte) ([]byte, error) {
-	plaintext, err := s.cipher.Open(nil, nonce, ciphertext, nil)
-	if err != nil {
-		return nil, fmt.Errorf("failed to decrypt data: %w", err)
-	}
-	return plaintext, nil
-}
-
-func (s *Backend) StoreSecret(ctx context.Context, path string, secret store.Secret) error {
+// StoreSecret stores a secret at the specified path with its metadata and versions.
+// It performs the following operations atomically within a transaction:
+// - Updates the secret metadata (current version, creation time, update time)
+// - Stores all secret versions with their respective data encrypted using AES-GCM
+//
+// The secret data is JSON-encoded before encryption.
+//
+// Returns an error if:
+// - The transaction fails to begin or commit
+// - Data marshaling fails
+// - Encryption fails
+// - Database operations fail
+//
+// This method is thread-safe.
+func (s *DataStore) StoreSecret(
+	ctx context.Context, path string, secret store.Secret,
+) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -184,13 +174,9 @@ func (s *Backend) StoreSecret(ctx context.Context, path string, secret store.Sec
 	}(tx)
 
 	// Update metadata
-	_, err = tx.ExecContext(ctx, `
-		INSERT INTO secret_metadata (path, current_version, created_time, updated_time)
-		VALUES (?, ?, ?, ?)
-		ON CONFLICT(path) DO UPDATE SET
-			current_version = excluded.current_version,
-			updated_time = excluded.updated_time
-	`, path, secret.Metadata.CurrentVersion, secret.Metadata.CreatedTime, secret.Metadata.UpdatedTime)
+	_, err = tx.ExecContext(ctx, queryUpdateSecretMetadata,
+		path, secret.Metadata.CurrentVersion,
+		secret.Metadata.CreatedTime, secret.Metadata.UpdatedTime)
 	if err != nil {
 		return fmt.Errorf("failed to store secret metadata: %w", err)
 	}
@@ -207,14 +193,8 @@ func (s *Backend) StoreSecret(ctx context.Context, path string, secret store.Sec
 			return fmt.Errorf("failed to encrypt secret data: %w", err)
 		}
 
-		_, err = tx.ExecContext(ctx, `
-			INSERT INTO secrets (path, version, nonce, encrypted_data, created_time, deleted_time)
-			VALUES (?, ?, ?, ?, ?, ?)
-			ON CONFLICT(path, version) DO UPDATE SET
-				nonce = excluded.nonce,
-				encrypted_data = excluded.encrypted_data,
-				deleted_time = excluded.deleted_time
-		`, path, version, nonce, encrypted, sv.CreatedTime, sv.DeletedTime)
+		_, err = tx.ExecContext(ctx, queryUpsertSecret,
+			path, version, nonce, encrypted, sv.CreatedTime, sv.DeletedTime)
 		if err != nil {
 			return fmt.Errorf("failed to store secret version: %w", err)
 		}
@@ -229,18 +209,31 @@ func (s *Backend) StoreSecret(ctx context.Context, path string, secret store.Sec
 	return nil
 }
 
-func (s *Backend) LoadSecret(ctx context.Context, path string) (*store.Secret, error) {
+// LoadSecret retrieves a secret and all its versions from the specified path.
+// It performs the following operations:
+// - Loads the secret metadata
+// - Retrieves all secret versions
+// - Decrypts and unmarshals the version data
+//
+// Returns:
+// - (nil, nil) if the secret doesn't exist
+// - (nil, error) if any operation fails
+// - (*store.Secret, nil) with the decrypted secret and all its versions on success
+//
+// This method is thread-safe.
+func (s *DataStore) LoadSecret(
+	ctx context.Context, path string,
+) (*store.Secret, error) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
 	var secret store.Secret
 
 	// Load metadata
-	err := s.db.QueryRowContext(ctx, `
-		SELECT current_version, created_time, updated_time 
-		FROM secret_metadata 
-		WHERE path = ?
-	`, path).Scan(&secret.Metadata.CurrentVersion, &secret.Metadata.CreatedTime, &secret.Metadata.UpdatedTime)
+	err := s.db.QueryRowContext(ctx, querySecretMetadata, path).Scan(
+		&secret.Metadata.CurrentVersion,
+		&secret.Metadata.CreatedTime,
+		&secret.Metadata.UpdatedTime)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
@@ -249,12 +242,7 @@ func (s *Backend) LoadSecret(ctx context.Context, path string) (*store.Secret, e
 	}
 
 	// Load versions
-	rows, err := s.db.QueryContext(ctx, `
-		SELECT version, nonce, encrypted_data, created_time, deleted_time 
-		FROM secrets 
-		WHERE path = ?
-		ORDER BY version
-	`, path)
+	rows, err := s.db.QueryContext(ctx, querySecretVersions, path)
 	if err != nil {
 		return nil, fmt.Errorf("failed to query secret versions: %w", err)
 	}
@@ -275,7 +263,10 @@ func (s *Backend) LoadSecret(ctx context.Context, path string) (*store.Secret, e
 			deletedTime sql.NullTime
 		)
 
-		if err := rows.Scan(&version, &nonce, &encrypted, &createdTime, &deletedTime); err != nil {
+		if err := rows.Scan(
+			&version, &nonce,
+			&encrypted, &createdTime, &deletedTime,
+		); err != nil {
 			return nil, fmt.Errorf("failed to scan secret version: %w", err)
 		}
 
@@ -307,7 +298,15 @@ func (s *Backend) LoadSecret(ctx context.Context, path string) (*store.Secret, e
 	return &secret, nil
 }
 
-func (s *Backend) StoreAdminToken(ctx context.Context, token string) error {
+// StoreAdminToken encrypts and stores an admin token in the database.
+// The token is encrypted using AES-GCM before storage.
+//
+// Returns an error if:
+// - Encryption fails
+// - Database operation fails
+//
+// This method is thread-safe.
+func (s *DataStore) StoreAdminToken(ctx context.Context, token string) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -316,14 +315,7 @@ func (s *Backend) StoreAdminToken(ctx context.Context, token string) error {
 		return fmt.Errorf("failed to encrypt admin token: %w", err)
 	}
 
-	_, err = s.db.ExecContext(ctx, `
-		INSERT INTO admin_token (id, nonce, encrypted_token, updated_at)
-		VALUES (1, ?, ?, CURRENT_TIMESTAMP)
-		ON CONFLICT(id) DO UPDATE SET
-			nonce = excluded.nonce,
-			encrypted_token = excluded.encrypted_token,
-			updated_at = excluded.updated_at
-	`, nonce, encrypted)
+	_, err = s.db.ExecContext(ctx, queryInsertAdminToken, nonce, encrypted)
 	if err != nil {
 		return fmt.Errorf("failed to store admin token: %w", err)
 	}
@@ -331,16 +323,22 @@ func (s *Backend) StoreAdminToken(ctx context.Context, token string) error {
 	return nil
 }
 
-func (s *Backend) LoadAdminToken(ctx context.Context) (string, error) {
+// LoadAdminToken retrieves and decrypts the stored admin token.
+//
+// Returns:
+// - ("", nil) if no token exists
+// - ("", error) if loading or decryption fails
+// - (token, nil) with the decrypted token on success
+//
+// This method is thread-safe.
+func (s *DataStore) LoadAdminToken(ctx context.Context) (string, error) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
 	var nonce, encrypted []byte
-	err := s.db.QueryRowContext(ctx, `
-		SELECT nonce, encrypted_token 
-		FROM admin_token 
-		WHERE id = 1
-	`).Scan(&nonce, &encrypted)
+	err := s.db.QueryRowContext(
+		ctx, querySelectAdminToken,
+	).Scan(&nonce, &encrypted)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return "", nil
@@ -356,7 +354,11 @@ func (s *Backend) LoadAdminToken(ctx context.Context) (string, error) {
 	return string(decrypted), nil
 }
 
-func (s *Backend) Close(ctx context.Context) error {
+// Close safely closes the database connection.
+// It ensures the database is closed only once even if called multiple times.
+//
+// Returns any error encountered while closing the database connection.
+func (s *DataStore) Close(ctx context.Context) error {
 	var err error
 	s.closeOnce.Do(func() {
 		err = s.db.Close()
