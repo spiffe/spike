@@ -1,6 +1,4 @@
-![SPIKE](assets/spike-banner-lg.png)
-
-## Roadmap
+# SPIKE Roadmap
 
 [Check out `jira.xml` for a roughly-prioritized roadmap of SPIKE features][jira].
 

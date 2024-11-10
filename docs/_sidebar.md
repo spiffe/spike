@@ -7,9 +7,9 @@
   * [SPIKE Community](community/hello.md)
   * [Contact Us](community/contact.md)
 * Tracking
-  * [Changelog](changelog.md)
-  * [Roadmap](roadmap.md)
-  * [Documentation Snapshots](snapshots.md)
+  * [Changelog](tracking/changelog.md)
+  * [Roadmap](tracking/roadmap.md)
+  * [Documentation Snapshots](tracking/snapshots.md)
 * Operations
   * [Cross-Platform Build](operations/build.md)
 * [Architecture](architecture/README.md)
