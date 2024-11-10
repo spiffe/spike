@@ -6,13 +6,13 @@ package persist
 
 import (
 	"context"
-	"fmt"
-	"github.com/spiffe/spike/app/nexus/internal/state/backend/sqlite"
 	"sync"
 	"time"
 
 	"github.com/spiffe/spike/app/nexus/internal/state/backend"
+	"github.com/spiffe/spike/app/nexus/internal/state/backend/sqlite"
 	"github.com/spiffe/spike/app/nexus/internal/state/store"
+	"github.com/spiffe/spike/internal/log"
 )
 
 func AsyncPersistSecret(kv *store.KV, path string) {
@@ -31,7 +31,11 @@ func AsyncPersistSecret(kv *store.KV, path string) {
 
 			if err := be.StoreSecret(ctx, path, *secret); err != nil {
 				// Log error but continue - memory is source of truth
-				fmt.Printf("Failed to cache secret at path %s: %v\n", path, err)
+				log.Log().Warn("asyncPersistSecret",
+					"msg", "Failed to cache secret",
+					"path", path,
+					"err", err.Error(),
+				)
 			}
 		}()
 	}
@@ -48,7 +52,11 @@ func ReadSecret(path string, version int) *store.Secret {
 
 	cachedSecret, err := be.LoadSecret(ctx, path)
 	if err != nil {
-		fmt.Printf("Failed to load secret from cache at path %s: %v\n", path, err)
+		log.Log().Warn("readSecret",
+			"msg", "Failed to load secret from cache",
+			"path", path,
+			"err", err.Error(),
+		)
 		return nil
 	}
 
@@ -86,7 +94,10 @@ func InitializeSqliteBackend(rootKey string) backend.Backend {
 	if err != nil {
 		// Log error but don't fail initialization
 		// The system can still work with just in-memory state
-		fmt.Printf("Failed to create SQLite backend: %v\n", err)
+		log.Log().Warn("initializeSqliteBackend",
+			"msg", "Failed to create SQLite backend",
+			"err", err.Error(),
+		)
 		return nil
 	}
 
@@ -94,7 +105,10 @@ func InitializeSqliteBackend(rootKey string) backend.Backend {
 	defer cancel()
 
 	if err := dbBackend.Initialize(ctxC); err != nil {
-		fmt.Printf("Failed to initialize SQLite backend: %v\n", err.Error())
+		log.Log().Warn("initializeSqliteBackend",
+			"msg", "Failed to initialize SQLite backend",
+			"err", err.Error(),
+		)
 		return nil
 	}
 
@@ -113,7 +127,10 @@ func ReadAdminToken() string {
 	cachedToken, err := be.LoadAdminToken(ctx)
 	if err != nil {
 		// Log error but continue - memory is source of truth
-		fmt.Printf("Failed to load admin token from cache: %v\n", err)
+		log.Log().Warn("readAdminToken",
+			"msg", "Failed to load admin token from cache",
+			"err", err.Error(),
+		)
 		return ""
 	}
 
@@ -132,7 +149,10 @@ func AsyncPersistAdminToken(token string) {
 
 		if err := be.StoreAdminToken(ctx, token); err != nil {
 			// Log error but continue - memory is source of truth
-			fmt.Printf("Failed to cache admin token: %v\n", err)
+			log.Log().Warn("asyncPersistAdminToken",
+				"msg", "Failed to cache admin token",
+				"err", err.Error(),
+			)
 		}
 	}()
 }
