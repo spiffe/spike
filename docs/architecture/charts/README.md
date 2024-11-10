@@ -7,3 +7,4 @@
 * [SPIKE Nexus Automatic Recovery](architecture/charts/recovery.md)
 * [SPIKE Manual System Re-Init](architecture/charts/re-init.md)
 * [SPIKE Forced Reset](architecture/charts/reset.md)
+* [SPIKE Nexus Backing Store](architecture/charts/database.md)
