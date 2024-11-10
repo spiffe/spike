@@ -5,8 +5,10 @@ source.
 
 ## Prerequisites
 
-This quickstart guide assumes you are using an Ubuntu Linux operating system.
+This quickstart guide assumes you are using an [Ubuntu Linux][ubuntu] operating system.
 The steps may slightly differ if you are using a different operating system.
+
+[ubuntu]: https://ubuntu.com/
 
 Here's the OS details that we are testing this guide on:
 

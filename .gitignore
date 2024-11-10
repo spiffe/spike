@@ -61,3 +61,13 @@ go.work.sum
 .data
 .pilot-token
 
+keeper-darwin-arm64.sum.txt
+keeper-linux-amd64.sum.txt
+keeper-linux-arm64.sum.txt
+nexus-darwin-arm64.sum.txt
+checksums.sha256
+nexus-linux-amd64.sum.txt
+nexus-linux-arm64.sum.txt
+spike-darwin-arm64.sum.txt
+spike-linux-amd64.sum.txt
+spike-linux-arm64.sum.txt

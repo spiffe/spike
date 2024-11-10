@@ -10,6 +10,8 @@
   * [Changelog](changelog.md)
   * [Roadmap](roadmap.md)
   * [Documentation Snapshots](snapshots.md)
+* Operations
+  * [Cross-Platform Build](operations/build.md)
 * [Architecture](architecture/README.md)
   * [System Overview](architecture/system-overview.md)
   * [Security Model](architecture/security-model.md)
