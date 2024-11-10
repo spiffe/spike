@@ -4,6 +4,7 @@ go 1.23.2
 
 require (
 	github.com/go-jose/go-jose/v4 v4.0.4
+	github.com/mattn/go-sqlite3 v1.14.24
 	github.com/spf13/cobra v1.8.1
 	github.com/spiffe/go-spiffe/v2 v2.4.0
 )

@@ -11,6 +11,7 @@ import (
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 
 	"github.com/spiffe/spike/app/nexus/internal/net"
+	"github.com/spiffe/spike/app/nexus/internal/state/persist"
 	"github.com/spiffe/spike/app/nexus/internal/state/store"
 	"github.com/spiffe/spike/internal/crypto"
 )
@@ -18,24 +19,35 @@ import (
 var (
 	rootKey   string
 	rootKeyMu sync.RWMutex
-)
 
-var (
 	adminToken   string
 	adminTokenMu sync.RWMutex
-)
 
-var (
 	kv   = store.NewKV()
 	kvMu sync.RWMutex
 )
+
+var initOnce sync.Once
 
 // AdminToken returns the current admin token in a thread-safe manner.
 // The returned token is protected by a read lock to ensure concurrent
 // access safety.
 func AdminToken() string {
 	adminTokenMu.RLock()
-	defer adminTokenMu.RUnlock()
+	token := adminToken
+	adminTokenMu.RUnlock()
+
+	// If token isn't in memory, try loading from SQLite
+	if token == "" {
+		cachedToken := persist.ReadAdminToken()
+		if cachedToken != "" {
+			adminTokenMu.Lock()
+			adminToken = cachedToken
+			adminTokenMu.Unlock()
+			return cachedToken
+		}
+	}
+
 	return adminToken
 }
 
@@ -46,8 +58,10 @@ func AdminToken() string {
 //   - token: The new admin token value to be set
 func SetAdminToken(token string) {
 	adminTokenMu.Lock()
-	defer adminTokenMu.Unlock()
 	adminToken = token
+	adminTokenMu.Unlock()
+
+	persist.AsyncPersistAdminToken(token)
 }
 
 // UpsertSecret stores or updates a secret at the specified path with the
@@ -59,9 +73,10 @@ func SetAdminToken(token string) {
 //   - values: A map containing the secret key-value pairs to be stored
 func UpsertSecret(path string, values map[string]string) {
 	kvMu.Lock()
-	defer kvMu.Unlock()
-
 	kv.Put(path, values)
+	kvMu.Unlock()
+
+	persist.AsyncPersistSecret(kv, path)
 }
 
 // DeleteSecret deletes one or more versions of a secret at the specified path.
@@ -74,9 +89,10 @@ func UpsertSecret(path string, values map[string]string) {
 //     current version only. Version number 0 is the current version.
 func DeleteSecret(path string, versions []int) {
 	kvMu.Lock()
-	defer kvMu.Unlock()
-
 	kv.Delete(path, versions)
+	kvMu.Unlock()
+
+	persist.AsyncPersistSecret(kv, path)
 }
 
 // UndeleteSecret restores previously deleted versions of a secret at the
@@ -98,9 +114,14 @@ func DeleteSecret(path string, versions []int) {
 //	UndeleteSecret("/app/secrets/api-key", []int{1, 3})
 func UndeleteSecret(path string, versions []int) {
 	kvMu.Lock()
-	defer kvMu.Unlock()
+	err := kv.Undelete(path, versions)
+	kvMu.Unlock()
 
-	kv.Undelete(path, versions)
+	if err != nil {
+		return
+	}
+
+	persist.AsyncPersistSecret(kv, path)
 }
 
 // ListKeys returns a slice of strings containing all keys currently stored
@@ -123,7 +144,6 @@ func UndeleteSecret(path string, versions []int) {
 func ListKeys() []string {
 	kvMu.Lock()
 	defer kvMu.Unlock()
-
 	return kv.List()
 }
 
@@ -139,9 +159,27 @@ func ListKeys() []string {
 //   - bool: Whether the secret was found
 func GetSecret(path string, version int) (map[string]string, bool) {
 	kvMu.RLock()
-	defer kvMu.RUnlock()
+	secret, exists := kv.Get(path, version)
+	kvMu.RUnlock()
 
-	return kv.Get(path, version)
+	if !exists {
+		cachedSecret := persist.ReadSecret(path, version)
+		if cachedSecret == nil {
+			return nil, false
+		}
+
+		if version == 0 {
+			version = cachedSecret.Metadata.CurrentVersion
+		}
+
+		kvMu.Lock()
+		kv.Put(path, cachedSecret.Versions[version].Data)
+		kvMu.Unlock()
+
+		return cachedSecret.Versions[version].Data, true
+	}
+
+	return secret, exists
 }
 
 var ErrAlreadyInitialized = errors.New("already initialized")
@@ -149,6 +187,8 @@ var ErrAlreadyInitialized = errors.New("already initialized")
 // Initialize sets up the root key if it hasn't been initialized yet.
 // If a root key already exists, it returns immediately.
 // The root key is generated using AES-256 encryption.
+//
+// This function MUST be called ONCE during the application's startup.
 //
 // Returns:
 //   - error: Any error encountered during initialization, nil on success
@@ -166,7 +206,13 @@ func Initialize(source *workloadapi.X509Source) error {
 		}
 	}
 
-	if existingRootKey != "" { // if key empty, try getting it from SPIKE Keeper
+	if existingRootKey != "" {
+		rootKeyMu.Lock()
+		rootKey = existingRootKey
+		rootKeyMu.Unlock()
+
+		persist.InitializeBackend(existingRootKey)
+
 		return ErrAlreadyInitialized
 	}
 
@@ -178,6 +224,8 @@ func Initialize(source *workloadapi.X509Source) error {
 	rootKeyMu.Lock()
 	rootKey = r
 	rootKeyMu.Unlock()
+
+	persist.InitializeBackend(rootKey)
 
 	return nil
 }
