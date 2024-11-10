@@ -15,20 +15,15 @@ DISTRIB_ID=Ubuntu
 DISTRIB_RELEASE=24.04
 DISTRIB_CODENAME=noble
 DISTRIB_DESCRIPTION="Ubuntu 24.04 LTS"
-PRETTY_NAME="Ubuntu 24.04 LTS"
-NAME="Ubuntu"
-VERSION_ID="24.04"
-VERSION="24.04 LTS (Noble Numbat)"
-VERSION_CODENAME=noble
-ID=ubuntu
-ID_LIKE=debian
 ```
 
 In addition, you will need the usual suspects:
 
-* `git`
-* `make`
-* `node` (*at least [GitHub Copilot][copilot] requires it on Linux*)
+* [`git`](https://git-scm.com/)
+* [`make`](https://www.gnu.org/software/make/)
+* [`node`](https://nodejs.org) (*at least [GitHub Copilot][copilot] requires it on Linux*)
+* [`build-essential`](https://packages.ubuntu.com/hirsute/build-essential)
+  (*i.e., `sudo apt install build-essential`*)
 
 [copilot]: https://copilot.github.com/ "GitHub Copilot"
 
@@ -93,20 +88,9 @@ cd $WORKSPACE/spike
 ./hack/build-spike.sh
 
 # Created files:
-#   These work on your system:
-#     keeper*
-#     nexus*
-#     spike*
-#   These are for other systems:
-#     keeper-darwin-arm64*
-#     keeper-linux-amd64*
-#     keeper-linux-arm64*
-#     nexus-darwin-arm64*
-#     nexus-linux-amd64*
-#     nexus-linux-arm64*
-#     spike-darwin-arm64*
-#     spike-linux-amd64*
-#     spike-linux-arm64*
+#   keeper*
+#   nexus*
+#   spike*
 ```
 
 ## Initialize SPIRE Server

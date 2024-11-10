@@ -8,6 +8,7 @@
   * [Contact Us](community/contact.md)
 * Tracking
   * [Changelog](changelog.md)
+  * [Roadmap](roadmap.md)
   * [Documentation Snapshots](snapshots.md)
 * [Architecture](architecture/README.md)
   * [System Overview](architecture/system-overview.md)
@@ -23,4 +24,3 @@
     * [SPIKE Nexus Automatic Recovery](architecture/charts/recovery.md)
     * [SPIKE Manual System Re-Init](architecture/charts/re-init.md)
     * [SPIKE Forced Reset](architecture/charts/reset.md)
-    * [SPIKE Database Design](architecture/charts/db.md)

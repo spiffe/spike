@@ -79,8 +79,8 @@ func MaxSecretVersions() int {
 type StoreType string
 
 const (
-	// File indicates a file-based storage backend
-	File StoreType = "file"
+	// S3 indicates an Amazon S3 (or compatible) storage backend
+	S3 StoreType = "s3"
 
 	// Sqlite indicates a SQLite database storage backend
 	Sqlite StoreType = "sqlite"
@@ -103,8 +103,8 @@ func BackendStoreType() StoreType {
 	st := os.Getenv("SPIKE_NEXUS_BACKEND_STORE")
 
 	switch strings.ToLower(st) {
-	case string(File):
-		return File
+	case string(S3):
+		return S3
 	case string(Sqlite):
 		return Sqlite
 	case string(Memory):
