@@ -6,7 +6,9 @@ package state
 
 import (
 	"errors"
+	"github.com/golang-jwt/jwt/v5"
 	"sync"
+	"time"
 
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 
@@ -27,7 +29,37 @@ var (
 	kvMu sync.RWMutex
 )
 
-var initOnce sync.Once
+type Credentials struct {
+	PasswordHash string
+	Salt         string
+}
+
+type TokenMetadata struct {
+	Username  string
+	IssuedAt  time.Time
+	ExpiresAt time.Time
+}
+
+type SessionToken struct {
+	Token     string
+	Signature string
+	IssuedAt  time.Time
+	ExpiresAt time.Time
+}
+
+// CustomClaims embeds RegisteredClaims to inherit standard JWT fields
+type CustomClaims struct {
+	AdminTokenID string `json:"adminTokenId"`
+	// Embed the standard claims
+	*jwt.RegisteredClaims
+}
+
+var (
+	adminCredentials   Credentials
+	adminCredentialsMu sync.RWMutex
+)
+
+// var initOnce sync.Once
 
 // AdminToken returns the current admin token in a thread-safe manner.
 // The returned token is protected by a read lock to ensure concurrent
@@ -62,6 +94,29 @@ func SetAdminToken(token string) {
 	adminTokenMu.Unlock()
 
 	persist.AsyncPersistAdminToken(token)
+}
+
+func SetAdminCredentials(passwordHash, salt string) {
+	adminCredentialsMu.Lock()
+	adminCredentials = Credentials{
+		PasswordHash: passwordHash,
+		Salt:         salt,
+	}
+	adminCredentialsMu.Unlock()
+
+	// TODO: implement me!
+	// persist.AsyncPersistAdminCredentials(passwordHash, salt)
+}
+
+func AdminCredentials() Credentials {
+	adminCredentialsMu.RLock()
+	creds := adminCredentials
+	adminCredentialsMu.RUnlock()
+
+	// TODO: implement database lookup.
+
+	return creds
+
 }
 
 // UpsertSecret stores or updates a secret at the specified path with the

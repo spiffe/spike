@@ -50,6 +50,9 @@ func Initialize(source *workloadapi.X509Source) {
 	initCmd := NewInitCommand(source)
 	rootCmd.AddCommand(initCmd)
 
+	loginCmd := NewLoginCommand(source)
+	rootCmd.AddCommand(loginCmd)
+
 	putCmd := NewPutCommand(source)
 	rootCmd.AddCommand(putCmd)
 

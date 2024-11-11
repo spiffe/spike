@@ -6,12 +6,14 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/spiffe/spike/app/spike/internal/net"
+	"github.com/spiffe/spike/internal/entity/data"
+	"syscall"
+
+	"golang.org/x/term"
 
 	"github.com/spf13/cobra"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
-
-	"github.com/spiffe/spike/app/spike/internal/state"
-	"github.com/spiffe/spike/internal/crypto"
 )
 
 // NewInitCommand creates and returns a new cobra.Command for initializing the
@@ -44,19 +46,60 @@ func NewInitCommand(source *workloadapi.X509Source) *cobra.Command {
 		Use:   "init",
 		Short: "Initialize spike configuration",
 		Run: func(cmd *cobra.Command, args []string) {
-			// TODO: fmt.Println("######## ASK FOR PASSWORD AND DB DETAILS #####")
-			// TODO: fmt.Println("--this flow will change; no need to save or check admin token--")
-			// TODO: fmt.Println("--`pilot login` will exchange a temp token instead.")
+			state, err := net.CheckInitState(source)
 
-			if state.AdminTokenExists() {
+			if err != nil {
+				fmt.Println("Failed to check init state:")
+				fmt.Println(err.Error())
+				return
+			}
+
+			if state == data.AlreadyInitialized {
 				fmt.Println("SPIKE is already initialized.")
 				fmt.Println("Nothing to do.")
 				return
 			}
 
-			// Generate and set the token
-			token := crypto.Token()
-			err := state.SaveAdminToken(source, token)
+			fmt.Println("SPIKE is not initialized.")
+			fmt.Println("As the first user, you will be the admin.")
+			fmt.Println("Choose a strong password:")
+			fmt.Println("* The password should be at least 16 characters long.")
+			fmt.Println("* Make sure the password is a mix of letters, numbers, and symbols.")
+			fmt.Println("")
+
+			fmt.Print("Enter admin password: ")
+			password, err := term.ReadPassword(syscall.Stdin)
+			if err != nil {
+				fmt.Println("\nFailed to read password:")
+				fmt.Println(err.Error())
+				return
+			}
+			fmt.Println()
+
+			if len(password) < 16 {
+				fmt.Println("Password is too short.")
+				fmt.Println("Please try again.")
+				return
+			}
+
+			fmt.Print("Confirm admin password: ")
+			confirm, err := term.ReadPassword(syscall.Stdin)
+			if err != nil {
+				fmt.Println("\nFailed to read password:")
+				fmt.Println(err.Error())
+				return
+			}
+			fmt.Println()
+
+			if string(password) != string(confirm) {
+				fmt.Println("Passwords do not match.")
+				fmt.Println("Please try again.")
+				return
+			}
+
+			passwordStr := string(password)
+
+			err = net.Init(source, passwordStr)
 			if err != nil {
 				fmt.Println("Failed to save admin token:")
 				fmt.Println(err.Error())
@@ -65,8 +108,7 @@ func NewInitCommand(source *workloadapi.X509Source) *cobra.Command {
 
 			fmt.Println("")
 			fmt.Println("    SPIKE system initialization completed.")
-			fmt.Println("      Generated admin token and saved it to")
-			fmt.Println("        ./.spike-admin-token for future use.")
+			fmt.Println("    Use `spike login` to authenticate.")
 			fmt.Println("")
 		},
 	}

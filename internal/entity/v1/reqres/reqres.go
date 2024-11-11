@@ -4,7 +4,10 @@
 
 package reqres
 
-import "time"
+import (
+	"github.com/spiffe/spike/internal/entity/data"
+	"time"
+)
 
 // RootKeyCacheRequest is to cache the generated root key in SPIKE Keep.
 // If the root key is lost due to a crash, it will be retrieved from SPIKE Keep.
@@ -35,6 +38,32 @@ type AdminTokenWriteRequest struct {
 type AdminTokenWriteResponse struct {
 }
 
+type CheckInitStateRequest struct {
+}
+
+type CheckInitStateResponse struct {
+	State data.InitState `json:"state"`
+	Err   string         `json:"err,omitempty"`
+}
+
+type InitRequest struct {
+	Password string `json:"password"`
+}
+
+type InitResponse struct {
+	Err string `json:"err,omitempty"`
+}
+
+type AdminLoginRequest struct {
+	Password string `json:"password"`
+}
+
+type AdminLoginResponse struct {
+	Token     string `json:"token"`
+	Signature string `json:"signature"`
+	Err       string `json:"err,omitempty"`
+}
+
 // SecretResponseMetadata is meta information about secrets for internal tracking.
 type SecretResponseMetadata struct {
 	CreatedTime time.Time  `json:"created_time"`
@@ -51,6 +80,7 @@ type SecretPutRequest struct {
 // SecretPutResponse is after successful secret write
 type SecretPutResponse struct {
 	SecretResponseMetadata
+	Err string `json:"err,omitempty"`
 }
 
 // SecretReadRequest is for getting secrets
@@ -62,6 +92,7 @@ type SecretReadRequest struct {
 // SecretReadResponse is for getting secrets
 type SecretReadResponse struct {
 	Data map[string]string `json:"data"`
+	Err  string            `json:"err,omitempty"`
 }
 
 // SecretDeleteRequest for soft-deleting secret versions
@@ -85,6 +116,7 @@ type SecretUndeleteRequest struct {
 // SecretUndeleteResponse after recovery
 type SecretUndeleteResponse struct {
 	Metadata SecretResponseMetadata `json:"metadata"`
+	Err      string                 `json:"err,omitempty"`
 }
 
 // SecretListRequest for listing secrets
@@ -94,4 +126,5 @@ type SecretListRequest struct {
 // SecretListResponse for listing secrets
 type SecretListResponse struct {
 	Keys []string `json:"keys"`
+	Err  string   `json:"err,omitempty"`
 }
