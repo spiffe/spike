@@ -11,16 +11,17 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"golang.org/x/crypto/pbkdf2"
+	"io"
+	"net/http"
+	"time"
+
 	"github.com/golang-jwt/jwt/v5"
 
 	"github.com/spiffe/spike/app/nexus/internal/state"
 	"github.com/spiffe/spike/internal/entity/v1/reqres"
 	"github.com/spiffe/spike/internal/log"
 	"github.com/spiffe/spike/internal/net"
-	"golang.org/x/crypto/pbkdf2"
-	"io"
-	"net/http"
-	"time"
 )
 
 // TODO: may be used elsewhere.
@@ -109,7 +110,7 @@ func routeAdminLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// TODO: adminToken / not initialized checks come to these
+	// TODO: adminToken / not initialized checks some to these
 	// functions now. it's better to send an error message/code instead.
 	// SPIKE Pilot can parse that code and return a proper error message.
 
@@ -150,7 +151,7 @@ func routeAdminLogin(w http.ResponseWriter, r *http.Request) {
 			IssuedAt:  jwt.NewNumericDate(now),
 			NotBefore: jwt.NewNumericDate(now),
 			Issuer:    "nexus",
-			Subject:   "admin", // or user ID
+			Subject:   "spike-admin",
 		},
 		AdminTokenID: "spike-admin-jwt",
 	}
