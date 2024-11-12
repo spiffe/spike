@@ -40,28 +40,83 @@
 </immediate-backlog>
 <runner-up>
 	<issue>
-	implement exponential retries.
+		Add recent recordings to the website.
 	</issue>
 	<issue>
-		Charts for the current db backing store.
+		REST methods shall return meaningful errors.
 	</issue>
 	<issue>
-	make sure that everything sanitizable are properly sanitized.
+		* encrypt the root key with admin password and return it
+		as part of the init response.
+		* notify admin to save it to a secure place and delete it.
+		* tell the admin to save their password to a safe place too.
 	</issue>
 	<issue>
-	Algorithm change in `spike get` (instead of verifying the admin token,
-	use short-lived token you get from SPIKE Nexus)
+		Initial super admin can create other admins.
+		So that, if an admin leaves, the super admin can delete them.
+		or if the password of an admin is compromised, the super admin can
+		reset it.
 	</issue>
 	<issue>
-	`const urlSecretPut = "https://localhost:8553/v1/secrets"` ->
-	these should be configurable.
+		Test edge cases:
+			* call api method w/o token.
+			* call api method w/ invalid token.
+			* call api method w/o initializing the nexus.
+			* call init twice.
+			* call login with bad password.
+		^ all these cases should return meaningful errors and
+		the user should be informed of what went wrong.
 	</issue>
 	<issue>
-	state.SetAdminToken(adminToken) // This is temporary, for demo. Update it based on new sequence diagrams.
-	adminToken := req.Data // admin token will be auto created, we just need a strong password, and sanitize that password
+		Try SPIKE on a Mac.
+	</issue>
+	<issue>
+		Try SPIKE on an x-86 Linux.
+	</issue>
+	<issue>
+		Admin should be able to change their password.
+		(will require old password for security)
+	</issue>
+	<issue>
+	read the current code for cleanliness and clarity:
+		* there are TODO items.
+		* there are things that need to converted to config.
+	</issue>
+	<issue>
+		make sure that everything sanitizable are properly sanitized.
+	</issue>
+	<issue>
+		Algorithm change in `spike get` (instead of verifying the admin token,
+		use short-lived token you get from SPIKE Nexus)
+	</issue>
+	<issue>
+		`const urlSecretPut = "https://localhost:8553/v1/secrets"` ->
+		these should be configurable.
+	</issue>
+	<issue>
+		state.SetAdminToken(adminToken) // This is temporary, for demo. Update it based on new sequence diagrams.
+		adminToken := req.Data // admin token will be auto created, we just need a strong password, and sanitize that password
+	</issue>
+	<issue>
+		try SPIKE on a Mac.
+	</issue>
+	<issue>
+		Try SPIKE on an x-68 Linux.
+	</issue>
+	<issue>
+		encrypt root key with admin password
+		return part of the init response.
+	</issue>
+	<issue>
+		recover root key.
 	</issue>
 </runner-up>
 <backlog>
+	<issue>
+		* super admin can create regular admins and other super admins.
+		* super admin can assign backup admins.
+		(see drafts.txt for more details)
+	</issue>
 	<issue>
 		UndeleteSecret (and maybe other methods too) should return an error:
 		```

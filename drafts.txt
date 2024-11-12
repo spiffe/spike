@@ -1,3 +1,39 @@
+PROPOSAL: Backup Admins
+Backup Admin System:
+Each admin can have one designated backup admin
+The backup admin can reset passwords if needed
+Super admins can assign backups for regular admins
+Only super admins can assign backups for other super admins
+Super admins can create/delete/suspend admins.
+regular admins can only reset passwords and view audit logs
+
+Hierarchy:
+
+Super admins can create/delete other admins (including super admins)
+Regular admins have no special privileges except for any backup duties assigned to them
+
+
+Audit Trail:
+
+All actions are logged with timestamps and acting admin
+Tracks who created each admin
+Logs password resets and backup assignments
+
+
+Recovery Scenarios:
+
+If a super admin leaves company (or forgets password): their backup can reset it
+If a super admin goes rogue: other super admins can delete them
+If a regular admin is compromised: super admins or their backup can reset password
+
+This system addresses the following core issus:
+No single point of failure
+Clear audit trail
+Simple recovery mechanisms
+Works in a single binary context
+
+
+
 		//cid := crypto.Id()
 		//
 		//validation.EnsureSafe(source)
