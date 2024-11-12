@@ -27,9 +27,15 @@ func factory(p, a, m string) handler {
 	}
 
 	switch {
+	case m == http.MethodPost && a == "admin" && p == urlLogin:
+		entry.Action = "admin-login"
+		return logAndRoute(entry, routeAdminLogin)
 	case m == http.MethodPost && a == "" && p == urlInit:
 		entry.Action = "init"
 		return logAndRoute(entry, routeInit)
+	case m == http.MethodPost && a == "check" && p == urlInit:
+		entry.Action = "check"
+		return logAndRoute(entry, routeInitCheck)
 	case m == http.MethodPost && a == "" && p == urlSecrets:
 		entry.Action = "create"
 		return logAndRoute(entry, routePutSecret)

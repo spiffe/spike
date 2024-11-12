@@ -9,7 +9,35 @@ import (
 	"errors"
 	"io"
 	"net/http"
+	"os"
+	"path/filepath"
 )
+
+// readJWTFile attempts to read the JWT from the .spike-admin-token file
+func readJWTFile() (string, error) {
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		return "", err
+	}
+
+	tokenPath := filepath.Join(homeDir, "Desktop", "WORKSPACE", "spike", ".spike-admin-token")
+
+	// Check if file exists
+	if _, err := os.Stat(tokenPath); os.IsNotExist(err) {
+		return "", nil // Return empty string without error if file doesn't exist
+	}
+
+	// Read the file
+	jwt, err := os.ReadFile(tokenPath)
+	if err != nil {
+		return "", errors.Join(
+			errors.New("Failed to read JWT file"),
+			err,
+		)
+	}
+
+	return string(bytes.TrimSpace(jwt)), nil
+}
 
 func body(r *http.Response) (bod []byte, err error) {
 	body, err := io.ReadAll(r.Body)
@@ -53,8 +81,25 @@ var ErrNotFound = errors.New("not found")
 //	    log.Fatalf("failed to post: %v", err)
 //	}
 func Post(client *http.Client, path string, mr []byte) ([]byte, error) {
-	r, err := client.Post(path, "application/json", bytes.NewBuffer(mr))
+	// Create the request while preserving the mTLS client
+	req, err := http.NewRequest("POST", path, bytes.NewBuffer(mr))
+	if err != nil {
+		return nil, errors.Join(
+			errors.New("post: Failed to create request"),
+			err,
+		)
+	}
 
+	// Set headers
+	req.Header.Set("Content-Type", "application/json")
+
+	// Try to read and set JWT if file exists
+	if jwt, err := os.ReadFile(".spike-admin-token"); err == nil {
+		req.Header.Set("Authorization", "Bearer "+string(bytes.TrimSpace(jwt)))
+	}
+
+	// Use the existing mTLS client to make the request
+	r, err := client.Do(req)
 	if err != nil {
 		return []byte{}, errors.Join(
 			errors.New("post: Problem connecting to peer"),
@@ -66,7 +111,6 @@ func Post(client *http.Client, path string, mr []byte) ([]byte, error) {
 		if r.StatusCode == http.StatusNotFound {
 			return []byte{}, ErrNotFound
 		}
-
 		return []byte{}, errors.New("post: Problem connecting to peer")
 	}
 

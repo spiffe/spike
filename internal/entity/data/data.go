@@ -2,8 +2,9 @@
 //  \\\\\ Copyright 2024-present SPIKE contributors.
 // \\\\\\\ SPDX-License-Identifier: Apache-2.0
 
-package route
+package data
 
-const urlInit = "/v1/init"
-const urlSecrets = "/v1/secrets"
-const urlLogin = "/v1/login"
+type InitState string
+
+var AlreadyInitialized InitState = "AlreadyInitialized"
+var NotInitialized InitState = "NotInitialized"

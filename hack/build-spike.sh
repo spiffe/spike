@@ -10,7 +10,7 @@ rm spike
 
 # Build for the current platform.
 echo "Building SPIKE binaries..."
-CGO_ENABLED=0 GOEXPERIMENT=boringcrypto go build -o keeper-darwin-arm64 ./app/keeper/cmd/main.go
-CGO_ENABLED=1 GOEXPERIMENT=boringcrypto go build -o nexus-darwin-arm64 ./app/nexus/cmd/main.go
-CGO_ENABLED=0 GOEXPERIMENT=boringcrypto go build -o spike-darwin-arm64 ./app/spike/cmd/main.go
+CGO_ENABLED=0 GOEXPERIMENT=boringcrypto go build -o keeper ./app/keeper/cmd/main.go
+CGO_ENABLED=1 GOEXPERIMENT=boringcrypto go build -o nexus ./app/nexus/cmd/main.go
+CGO_ENABLED=0 GOEXPERIMENT=boringcrypto go build -o spike ./app/spike/cmd/main.go
 echo "Built SPIKE binaries."
