@@ -33,27 +33,46 @@ func routeShow(w http.ResponseWriter, r *http.Request) {
 			"err", err.Error())
 
 		w.WriteHeader(http.StatusBadRequest)
-		_, err := io.WriteString(w, "")
+
+		res := reqres.RootKeyReadResponse{
+			Err: reqres.ErrBadInput,
+		}
+
+		body, err := json.Marshal(res)
+		if err != nil {
+			res.Err = reqres.ErrServerFault
+
+			log.Log().Error("routeShow",
+				"msg", "Problem generating response",
+				"err", err.Error())
+			w.WriteHeader(http.StatusInternalServerError)
+		}
+
+		_, err = io.WriteString(w, string(body))
 		if err != nil {
 			log.Log().Error("routeShow",
 				"msg", "Problem writing response",
 				"err", err.Error())
 		}
+
 		return
 	}
 
 	rootKey := state.RootKey()
 
+	w.WriteHeader(http.StatusOK)
 	res := reqres.RootKeyReadResponse{RootKey: rootKey}
 	md, err := json.Marshal(res)
 	if err != nil {
+		res.Err = reqres.ErrServerFault
+
 		log.Log().Error("routeShow",
 			"msg", "Problem generating response",
 			"err", err.Error())
+
 		w.WriteHeader(http.StatusInternalServerError)
 	}
 
-	w.WriteHeader(http.StatusOK)
 	_, err = io.WriteString(w, string(md))
 	if err != nil {
 		log.Log().Error("routeShow",

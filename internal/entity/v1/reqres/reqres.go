@@ -15,8 +15,21 @@ type RootKeyCacheRequest struct {
 	RootKey string `json:"rootKey"`
 }
 
+type ErrorCode string
+
+var ErrBadInput = ErrorCode("bad_request")
+var ErrServerFault = ErrorCode("server_fault")
+var ErrUnauthorized = ErrorCode("unauthorized")
+var ErrLowEntropy = ErrorCode("low_entropy")
+var ErrAlreadyInitialized = ErrorCode("already_initialized")
+
+type FallbackResponse struct {
+	Err ErrorCode `json:"err,omitempty"`
+}
+
 // RootKeyCacheResponse is to cache the generated root key in SPIKE Keep.
 type RootKeyCacheResponse struct {
+	Err ErrorCode `json:"error,omitempty"`
 }
 
 // RootKeyReadRequest is a request to get the root key back from remote cache.
@@ -24,7 +37,8 @@ type RootKeyReadRequest struct{}
 
 // RootKeyReadResponse is a response to get the root key back from remote cache.
 type RootKeyReadResponse struct {
-	RootKey string `json:"rootKey"`
+	RootKey string    `json:"rootKey"`
+	Err     ErrorCode `json:"err,omitempty"`
 }
 
 // AdminTokenWriteRequest is to persist the admin token in memory.
@@ -36,6 +50,7 @@ type AdminTokenWriteRequest struct {
 
 // AdminTokenWriteResponse is to persist the admin token in memory.
 type AdminTokenWriteResponse struct {
+	Err ErrorCode `json:"err,omitempty"`
 }
 
 type CheckInitStateRequest struct {
@@ -43,7 +58,7 @@ type CheckInitStateRequest struct {
 
 type CheckInitStateResponse struct {
 	State data.InitState `json:"state"`
-	Err   string         `json:"err,omitempty"`
+	Err   ErrorCode      `json:"err,omitempty"`
 }
 
 type InitRequest struct {
@@ -51,7 +66,7 @@ type InitRequest struct {
 }
 
 type InitResponse struct {
-	Err string `json:"err,omitempty"`
+	Err ErrorCode `json:"err,omitempty"`
 }
 
 type AdminLoginRequest struct {
@@ -59,9 +74,9 @@ type AdminLoginRequest struct {
 }
 
 type AdminLoginResponse struct {
-	Token     string `json:"token"`
-	Signature string `json:"signature"`
-	Err       string `json:"err,omitempty"`
+	Token     string    `json:"token"`
+	Signature string    `json:"signature"`
+	Err       ErrorCode `json:"err,omitempty"`
 }
 
 // SecretResponseMetadata is meta information about secrets for internal tracking.
@@ -75,12 +90,13 @@ type SecretResponseMetadata struct {
 type SecretPutRequest struct {
 	Path   string            `json:"path"`
 	Values map[string]string `json:"values"`
+	Err    ErrorCode         `json:"err,omitempty"`
 }
 
 // SecretPutResponse is after successful secret write
 type SecretPutResponse struct {
 	SecretResponseMetadata
-	Err string `json:"err,omitempty"`
+	Err ErrorCode `json:"err,omitempty"`
 }
 
 // SecretReadRequest is for getting secrets
@@ -92,7 +108,7 @@ type SecretReadRequest struct {
 // SecretReadResponse is for getting secrets
 type SecretReadResponse struct {
 	Data map[string]string `json:"data"`
-	Err  string            `json:"err,omitempty"`
+	Err  ErrorCode         `json:"err,omitempty"`
 }
 
 // SecretDeleteRequest for soft-deleting secret versions
@@ -104,7 +120,7 @@ type SecretDeleteRequest struct {
 // SecretDeleteResponse after soft-delete
 type SecretDeleteResponse struct {
 	Metadata SecretResponseMetadata `json:"metadata"`
-	Err      string                 `json:"err,omitempty"`
+	Err      ErrorCode              `json:"err,omitempty"`
 }
 
 // SecretUndeleteRequest for recovering soft-deleted versions
@@ -116,7 +132,7 @@ type SecretUndeleteRequest struct {
 // SecretUndeleteResponse after recovery
 type SecretUndeleteResponse struct {
 	Metadata SecretResponseMetadata `json:"metadata"`
-	Err      string                 `json:"err,omitempty"`
+	Err      ErrorCode              `json:"err,omitempty"`
 }
 
 // SecretListRequest for listing secrets
@@ -125,6 +141,6 @@ type SecretListRequest struct {
 
 // SecretListResponse for listing secrets
 type SecretListResponse struct {
-	Keys []string `json:"keys"`
-	Err  string   `json:"err,omitempty"`
+	Keys []string  `json:"keys"`
+	Err  ErrorCode `json:"err,omitempty"`
 }

@@ -13,6 +13,7 @@ import (
 	"github.com/spiffe/spike/app/nexus/internal/handle"
 	"github.com/spiffe/spike/app/nexus/internal/poll"
 	"github.com/spiffe/spike/app/nexus/internal/state"
+	"github.com/spiffe/spike/app/nexus/internal/trust"
 	"github.com/spiffe/spike/internal/config"
 	"github.com/spiffe/spike/internal/log"
 	"github.com/spiffe/spike/internal/net"
@@ -31,9 +32,7 @@ func main() {
 	}
 	defer spiffe.CloseSource(source)
 
-	if !config.IsNexus(spiffeid) {
-		log.FatalF("SPIFFE ID %s is not valid.\n", spiffeid)
-	}
+	trust.Authenticate(spiffeid)
 
 	err = state.Initialize(source)
 	if err != nil {

@@ -161,8 +161,36 @@
 	<issue>
 	Implement an S3 (or compatible) backing store.
 	</issue>
+	<issue>
+	Audit log needs more work
+
+	```
+	entry := log.AuditEntry{
+	Timestamp: now,
+	UserId:    "TBD",
+	Action:    "",
+	Resource:  p,
+	SessionID: "",
+	}
+	```
+	</issue>
+	<issue>
+		`routeFallback` is identical in both modules.
+	</issue>
 </backlog>
 <after-login-flow-fully-implemented>
+	<issue>
+		routeInit on nexus can benefit some splitting.
+	</issue>
+	<issue>
+		// Good first issue.
+		// spike init asks to save password on the machine.
+		// will save to ~/.spike/credentials.json
+		// configurable.
+		// if the file does not exist, it will ask for password.
+		// will also remind the risks of doing so.
+		// or maybe not worth it because people are lazy.
+	</issue>
 	<issue>
 	Secret metadata API.
 	</issue>

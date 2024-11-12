@@ -39,7 +39,7 @@ import (
 //	spike undelete secret/ella -v 1,2,3  # Restores specific versions
 //	spike undelete secret/ella -v 0,1,2  # Restores current version plus 1,2
 //
-// The command performs validation to ensure:
+// The command performs trust to ensure:
 //   - Exactly one path argument is provided
 //   - Version numbers are valid non-negative integers
 //   - Version strings are properly formatted

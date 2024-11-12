@@ -33,12 +33,26 @@ func routeKeep(w http.ResponseWriter, r *http.Request) {
 			"err", err.Error())
 
 		w.WriteHeader(http.StatusBadRequest)
-		_, err := io.WriteString(w, "")
+		res := reqres.RootKeyCacheResponse{
+			Err: reqres.ErrBadInput,
+		}
+		body, err := json.Marshal(res)
+		if err != nil {
+			res.Err = reqres.ErrServerFault
+
+			log.Log().Error("routeKeep",
+				"msg", "Problem generating response",
+				"err", err.Error())
+			w.WriteHeader(http.StatusInternalServerError)
+		}
+
+		_, err = io.WriteString(w, string(body))
 		if err != nil {
 			log.Log().Error("routeKeep",
 				"msg", "Problem writing response",
 				"err", err.Error())
 		}
+
 		return
 	}
 
@@ -46,7 +60,18 @@ func routeKeep(w http.ResponseWriter, r *http.Request) {
 	state.SetRootKey(rootKey)
 
 	w.WriteHeader(http.StatusOK)
-	_, err := io.WriteString(w, "OK")
+	res := reqres.RootKeyCacheResponse{}
+	body, err := json.Marshal(res)
+	if err != nil {
+		res.Err = reqres.ErrServerFault
+
+		log.Log().Error("routeKeep",
+			"msg", "Problem generating response",
+			"err", err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+	}
+
+	_, err = io.WriteString(w, string(body))
 	if err != nil {
 		log.Log().Error("routeKeep",
 			"msg", "Problem writing response:",

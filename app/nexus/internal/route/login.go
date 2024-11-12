@@ -10,7 +10,6 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
-	"fmt"
 	"golang.org/x/crypto/pbkdf2"
 	"io"
 	"net/http"
@@ -23,15 +22,6 @@ import (
 	"github.com/spiffe/spike/internal/log"
 	"github.com/spiffe/spike/internal/net"
 )
-
-// TODO: may be used elsewhere.
-func signToken(token, adminToken []byte, metadata state.TokenMetadata) []byte {
-	h := hmac.New(sha256.New, adminToken)
-	h.Write(token)
-	metadataBytes, _ := json.Marshal(metadata)
-	h.Write(metadataBytes)
-	return h.Sum(nil)
-}
 
 func routeAdminLogin(w http.ResponseWriter, r *http.Request) {
 	log.Log().Info("routeAdminLogin",
@@ -59,16 +49,23 @@ func routeAdminLogin(w http.ResponseWriter, r *http.Request) {
 	salt := creds.Salt
 	passwordHash := creds.PasswordHash
 
-	fmt.Println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> GOT ADMIN CREDENTIALS")
-	fmt.Println("SALT: ", salt)
-	fmt.Println("PASSWORD HASH: ", passwordHash)
-
 	s, err := hex.DecodeString(salt)
 	if err != nil {
 		log.Log().Error("routeAdminLogin",
 			"msg", "Problem decoding salt",
 			"err", err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
+
+		res := reqres.AdminLoginResponse{
+			Err: reqres.ErrServerFault,
+		}
+		body, err = json.Marshal(res)
+		if err != nil {
+			log.Log().Error("routeAdminLogin",
+				"msg", "Problem writing response", "err", err.Error())
+			w.WriteHeader(http.StatusInternalServerError)
+		}
+
 		_, err = io.WriteString(w, "")
 		if err != nil {
 			log.Log().Error("routeAdminLogin",

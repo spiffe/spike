@@ -33,7 +33,14 @@ Simple recovery mechanisms
 Works in a single binary context
 
 
-
+//  may be used elsewhere.
+func signToken(token, adminToken []byte, metadata state.TokenMetadata) []byte {
+	h := hmac.New(sha256.New, adminToken)
+	h.Write(token)
+	metadataBytes, _ := json.Marshal(metadata)
+	h.Write(metadataBytes)
+	return h.Sum(nil)
+}
 		//cid := crypto.Id()
 		//
 		//validation.EnsureSafe(source)

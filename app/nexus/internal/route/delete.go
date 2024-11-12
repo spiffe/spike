@@ -23,6 +23,29 @@ func routeDeleteSecret(w http.ResponseWriter, r *http.Request) {
 
 	validJwt := ensureValidJwt(w, r)
 	if !validJwt {
+		w.WriteHeader(http.StatusUnauthorized)
+
+		res := reqres.SecretDeleteResponse{
+			Err: reqres.ErrUnauthorized,
+		}
+
+		body, err := json.Marshal(res)
+		if err != nil {
+			res.Err = reqres.ErrServerFault
+
+			log.Log().Error("routeDeleteSecret",
+				"msg", "Problem generating response",
+				"err", err.Error())
+			w.WriteHeader(http.StatusInternalServerError)
+		}
+
+		_, err = io.WriteString(w, string(body))
+		if err != nil {
+			log.Log().Error("routeDeleteSecret",
+				"msg", "Problem writing response",
+				"err", err.Error())
+		}
+
 		return
 	}
 
