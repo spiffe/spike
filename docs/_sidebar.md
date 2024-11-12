@@ -6,6 +6,7 @@
 * Community
   * [SPIKE Community](community/hello.md)
   * [Contact Us](community/contact.md)
+  * [Presentations and Demos](presentations/README.md)
 * Tracking
   * [Changelog](tracking/changelog.md)
   * [Roadmap](tracking/roadmap.md)
@@ -22,7 +23,7 @@
     * [Key-Value Store](architecture/charts/key-value-store.md)
     * [SPIKE Login](architecture/charts/login.md)
     * [SPIKE Initialization](architecture/charts/initialization.md)
-    * [SPIKE Nexus Admin User Initialization Flow](architecture/charts/user-init-flow.md)
+    * [SPIKE Nexus Admin Init Flow](architecture/charts/user-init-flow.md)
     * [SPIKE Nexus Admin Token Verification](architecture/charts/admin-token-verification.md)
     * [SPIKE Nexus Root Key Provisioning](architecture/charts/day-zero.md)
     * [SPIKE Nexus Automatic Recovery](architecture/charts/recovery.md)
