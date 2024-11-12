@@ -6,7 +6,7 @@ package route
 
 import (
 	"crypto/hmac"
-	"crypto/rand"
+	// "crypto/rand"
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
@@ -127,22 +127,22 @@ func routeAdminLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	const tokenLength = 32
-	// Generate session token
-	token := make([]byte, tokenLength)
-	if _, err := rand.Read(token); err != nil {
-		log.Log().Error("routeAdminLogin",
-			"msg", "Failed to generate session token",
-			"err", err.Error())
-		w.WriteHeader(http.StatusInternalServerError)
-		_, err = io.WriteString(w, "")
-		if err != nil {
-			log.Log().Error("routeAdminLogin",
-				"msg", "Problem writing response", "err", err.Error())
-		}
-		return
-	}
-
+	//const tokenLength = 32
+	//// Generate session token
+	//token := make([]byte, tokenLength)
+	//if _, err := rand.Read(token); err != nil {
+	//	log.Log().Error("routeAdminLogin",
+	//		"msg", "Failed to generate session token",
+	//		"err", err.Error())
+	//	w.WriteHeader(http.StatusInternalServerError)
+	//	_, err = io.WriteString(w, "")
+	//	if err != nil {
+	//		log.Log().Error("routeAdminLogin",
+	//			"msg", "Problem writing response", "err", err.Error())
+	//	}
+	//	return
+	//}
+	//
 	// Create JWT with claims
 	now := time.Now()
 	claims := state.CustomClaims{

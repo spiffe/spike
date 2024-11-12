@@ -21,6 +21,11 @@ func routePutSecret(w http.ResponseWriter, r *http.Request) {
 		"path", r.URL.Path,
 		"query", r.URL.RawQuery)
 
+	validJwt := ensureValidJwt(w, r)
+	if !validJwt {
+		return
+	}
+
 	body := net.ReadRequestBody(r, w)
 	if body == nil {
 		return

@@ -9,6 +9,7 @@
 * Add community section and snapshots to the documentation.
 * Added sqlite3 as a database backend.
 * Enabled cross-compilation and SHA checksums.
+* Now admin users can use jwt authentication and short-lived session tokens.
 
 ## [0.1.0] - 2024-11-06
 

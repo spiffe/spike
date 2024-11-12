@@ -109,6 +109,8 @@ func (s *DataStore) Initialize(ctx context.Context) error {
 
 	dbPath := filepath.Join(s.opts.DataDir, s.opts.DatabaseFile)
 
+	// We don't need a username/password for SQLite.
+	// Access to SQLite is controlled by regular filesystem permissions.
 	db, err := sql.Open(
 		"sqlite3",
 		fmt.Sprintf("%s?_journal_mode=%s&_busy_timeout=%d",
