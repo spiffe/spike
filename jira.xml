@@ -138,6 +138,10 @@
 		```
 	</issue>
 	<issue>
+		spike login being called before spike init should warn the user to
+		init first.
+	</issue>
+	<issue>
 		Create a demo app.
 	</issue>
 	<issue>

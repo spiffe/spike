@@ -40,7 +40,9 @@ func UndeleteSecret(source *workloadapi.X509Source,
 	mr, err := json.Marshal(r)
 	if err != nil {
 		return errors.Join(
-			errors.New("undeleteSecret: I am having problem generating the payload"),
+			errors.New(
+				"undeleteSecret: I am having problem generating the payload",
+			),
 			err,
 		)
 	}
@@ -51,6 +53,9 @@ func UndeleteSecret(source *workloadapi.X509Source,
 	}
 
 	_, err = net.Post(client, urlSecretUndelete, mr)
+	if errors.Is(err, net.ErrUnauthorized) {
+		return errors.New(`unauthorized. Please login first with 'spike login'`)
+	}
 
 	return err
 }

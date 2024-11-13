@@ -40,6 +40,9 @@ func GetSecret(source *workloadapi.X509Source,
 	if errors.Is(err, net.ErrNotFound) {
 		return nil, nil
 	}
+	if errors.Is(err, net.ErrUnauthorized) {
+		return nil, errors.New(`unauthorized. Please login first with 'spike login'`)
+	}
 
 	var res reqres.SecretReadResponse
 	err = json.Unmarshal(body, &res)

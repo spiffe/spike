@@ -76,6 +76,9 @@ type AuditEntry struct {
 	// Action describes what operation was performed
 	Action string
 
+	// Path is the URL path of the request
+	Path string
+
 	// Resource identifies the object or entity that was acted upon
 	Resource string
 
@@ -87,6 +90,9 @@ type AuditEntry struct {
 
 	// Err contains an error message if the action failed
 	Err string
+
+	// Duration is the time taken to process the action
+	Duration time.Duration
 }
 
 // Audit logs an audit entry as JSON to the standard log output.
