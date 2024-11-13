@@ -6,6 +6,7 @@ package net
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 
 	"github.com/spiffe/spike/internal/entity/v1/reqres"
@@ -82,15 +83,16 @@ func Respond(statusCode int, body []byte, w http.ResponseWriter) {
 //   - Status: 400 Bad Request
 //   - Content-Type: application/json
 //   - Body: JSON object with an error field
-func Fallback(w http.ResponseWriter, r *http.Request) {
+func Fallback(w http.ResponseWriter, r *http.Request, audit *log.AuditEntry) error {
 	log.Log().Info("fallback",
 		"method", r.Method,
 		"path", r.URL.Path,
 		"query", r.URL.RawQuery)
+	audit.Action = "fallback"
 
 	body := MarshalBody(reqres.FallbackResponse{Err: reqres.ErrBadInput}, w)
 	if body == nil {
-		return
+		return errors.New("failed to marshal response body")
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -100,5 +102,8 @@ func Fallback(w http.ResponseWriter, r *http.Request) {
 		log.Log().Error("routeFallback",
 			"msg", "Problem writing response",
 			"err", err.Error())
+		return err
 	}
+
+	return nil
 }

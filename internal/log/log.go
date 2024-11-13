@@ -55,9 +55,18 @@ func FatalLn(args ...any) {
 	log.Fatalln(args...)
 }
 
+type AuditState string
+
+var Created AuditState = "created"
+var Errored AuditState = "error"
+var Success AuditState = "success"
+
 // AuditEntry represents a single audit log entry containing information about
 // user actions within the system.
 type AuditEntry struct {
+	// Id is a unique identifier for the audit trail
+	TrailId string
+
 	// Timestamp indicates when the audited action occurred
 	Timestamp time.Time
 
@@ -72,6 +81,12 @@ type AuditEntry struct {
 
 	// SessionID links the action to a specific user session
 	SessionID string
+
+	// State represents the state of the resource after the action
+	State AuditState
+
+	// Err contains an error message if the action failed
+	Err string
 }
 
 // Audit logs an audit entry as JSON to the standard log output.

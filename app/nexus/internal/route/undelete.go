@@ -5,6 +5,7 @@
 package route
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/spiffe/spike/app/nexus/internal/state"
@@ -24,6 +25,14 @@ import (
 // The function validates the JWT, reads and unmarshals the request body,
 // processes the undelete operation, and returns a 200 OK response upon success.
 //
+// Parameters:
+//   - w: http.ResponseWriter to write the HTTP response
+//   - r: *http.Request containing the incoming HTTP request
+//   - audit: *log.AuditEntry for logging audit information
+//
+// Returns:
+//   - error: if an error occurs during request processing.
+//
 // Request body format:
 //
 //	{
@@ -37,18 +46,21 @@ import (
 //   - 401 Unauthorized: Invalid or missing JWT token
 //
 // The function logs its progress at various stages using structured logging.
-func routeUndeleteSecret(w http.ResponseWriter, r *http.Request) {
+func routeUndeleteSecret(
+	w http.ResponseWriter, r *http.Request, audit *log.AuditEntry,
+) error {
 	log.Log().Info("routeUndeleteSecret",
 		"method", r.Method, "path", r.URL.Path, "query", r.URL.RawQuery)
+	audit.Action = "undelete"
 
 	validJwt := net.ValidateJwt(w, r, state.AdminToken())
 	if !validJwt {
-		return
+		return errors.New("invalid or missing JWT token")
 	}
 
 	requestBody := net.ReadRequestBody(r, w)
 	if requestBody == nil {
-		return
+		return errors.New("failed to read request body")
 	}
 
 	req := net.HandleRequest[
@@ -57,7 +69,7 @@ func routeUndeleteSecret(w http.ResponseWriter, r *http.Request) {
 		reqres.SecretUndeleteResponse{Err: reqres.ErrBadInput},
 	)
 	if req == nil {
-		return
+		return errors.New("failed to parse request body")
 	}
 
 	path := req.Path
@@ -71,9 +83,10 @@ func routeUndeleteSecret(w http.ResponseWriter, r *http.Request) {
 
 	responseBody := net.MarshalBody(reqres.SecretUndeleteResponse{}, w)
 	if responseBody == nil {
-		return
+		return errors.New("failed to marshal response body")
 	}
 
 	net.Respond(http.StatusOK, responseBody, w)
 	log.Log().Info("routeUndeleteSecret", "msg", "OK")
+	return nil
 }

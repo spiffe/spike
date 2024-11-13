@@ -5,6 +5,7 @@
 package route
 
 import (
+	"github.com/spiffe/spike/internal/log"
 	"net/http"
 )
 
@@ -16,6 +17,6 @@ import (
 // Parameters:
 //   - w: The HTTP ResponseWriter to write the response to
 //   - r: The HTTP Request containing the client's request details
-func Route(w http.ResponseWriter, r *http.Request) {
-	factory(r.URL.Path, r.URL.Query().Get("action"), r.Method)(w, r)
+func Route(w http.ResponseWriter, r *http.Request, audit *log.AuditEntry) error {
+	return factory(r.URL.Path, r.URL.Query().Get("action"), r.Method)(w, r, audit)
 }

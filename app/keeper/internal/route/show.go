@@ -5,6 +5,7 @@
 package route
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/spiffe/spike/app/keeper/internal/state"
@@ -23,6 +24,14 @@ import (
 //  3. Retrieves the current root key from application state
 //  4. Returns the root key in the response
 //
+// Parameters:
+//   - w: http.ResponseWriter to write the HTTP response
+//   - r: *http.Request containing the incoming HTTP request
+//   - audit: *log.AuditEntry for logging audit information
+//
+// Returns:
+//   - error: if an error occurs during request processing.
+//
 // Request body format:
 //
 //	{} // Empty request body expected
@@ -36,9 +45,10 @@ import (
 // Returns 200 OK on success with the root key, or 400 Bad Request if the
 // request body is malformed. Authentication is handled via SPIFFE rather
 // than JWT as this is an internal system endpoint.
-func routeShow(w http.ResponseWriter, r *http.Request) {
+func routeShow(w http.ResponseWriter, r *http.Request, audit *log.AuditEntry) error {
 	log.Log().Info("routeShow", "method", r.Method, "path", r.URL.Path,
 		"query", r.URL.RawQuery)
+	audit.Action = "read"
 
 	// Note: no JWT validation is performed here because SPIKE Keeper trusts
 	// SPIKE Nexus through SPIFFE authentication. There is no human user
@@ -46,7 +56,7 @@ func routeShow(w http.ResponseWriter, r *http.Request) {
 
 	requestBody := net.ReadRequestBody(r, w)
 	if requestBody == nil {
-		return
+		return errors.New("failed to read request body")
 	}
 
 	request := net.HandleRequest[
@@ -55,7 +65,7 @@ func routeShow(w http.ResponseWriter, r *http.Request) {
 		reqres.RootKeyReadResponse{Err: reqres.ErrBadInput},
 	)
 	if request == nil {
-		return
+		return errors.New("failed to parse request body")
 	}
 
 	rootKey := state.RootKey()
@@ -66,4 +76,5 @@ func routeShow(w http.ResponseWriter, r *http.Request) {
 
 	net.Respond(http.StatusOK, responseBody, w)
 	log.Log().Info("routeShow", "msg", "OK")
+	return nil
 }

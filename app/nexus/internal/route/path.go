@@ -5,6 +5,7 @@
 package route
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/spiffe/spike/app/nexus/internal/state"
@@ -25,6 +26,14 @@ import (
 //  3. Retrieves all secret paths from the state
 //  4. Returns the list of paths
 //
+// Parameters:
+//   - w: http.ResponseWriter to write the HTTP response
+//   - r: *http.Request containing the incoming HTTP request
+//   - audit: *log.AuditEntry for logging audit information
+//
+// Returns:
+//   - error: if an error occurs during request processing.
+//
 // Request body format:
 //
 //	{} // Empty request body expected
@@ -42,18 +51,21 @@ import (
 // All operations are logged using structured logging. This endpoint only returns
 // the paths to secrets and not their contents; use routeGetSecret to retrieve
 // actual secret values.
-func routeListPaths(w http.ResponseWriter, r *http.Request) {
+func routeListPaths(
+	w http.ResponseWriter, r *http.Request, audit *log.AuditEntry,
+) error {
 	log.Log().Info("routeListPaths", "method", r.Method, "path", r.URL.Path,
 		"query", r.URL.RawQuery)
+	audit.Action = "list"
 
 	validJwt := net.ValidateJwt(w, r, state.AdminToken())
 	if !validJwt {
-		return
+		return errors.New("invalid or missing JWT token")
 	}
 
 	requestBody := net.ReadRequestBody(r, w)
 	if requestBody == nil {
-		return
+		return errors.New("failed to read request body")
 	}
 
 	request := net.HandleRequest[
@@ -62,16 +74,17 @@ func routeListPaths(w http.ResponseWriter, r *http.Request) {
 		reqres.SecretListResponse{Err: reqres.ErrBadInput},
 	)
 	if request == nil {
-		return
+		return errors.New("failed to parse request body")
 	}
 
 	keys := state.ListKeys()
 
 	responseBody := net.MarshalBody(reqres.SecretListResponse{Keys: keys}, w)
 	if responseBody == nil {
-		return
+		return errors.New("failed to marshal response body")
 	}
 
 	net.Respond(http.StatusOK, responseBody, w)
 	log.Log().Info("routeListPaths", "msg", "OK")
+	return nil
 }
