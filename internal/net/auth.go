@@ -22,12 +22,30 @@ type CustomClaims struct {
 	*jwt.RegisteredClaims
 }
 
-func ensureValidJwt(w http.ResponseWriter, r *http.Request, adminToken string) bool {
+// ValidateJwt checks if a request has a valid JSON Web Token (JWT).
+//
+// This function validates the JWT token from the request against the provided
+// admin token. If validation fails, it sends a 401 Unauthorized response with
+// a JSON error message.
+//
+// Parameters:
+//   - w: http.ResponseWriter - The response writer for error handling
+//   - r: *http.Request - The incoming request containing the JWT
+//   - adminToken: string - The admin token to validate against
+//
+// Returns:
+//   - bool - true if the JWT is valid, false otherwise
+//
+// Response on failure:
+//   - Status: 401 Unauthorized
+//   - Content-Type: application/json
+//   - Body: {"status": "unauthorized"}
+func ValidateJwt(w http.ResponseWriter, r *http.Request, adminToken string) bool {
 	// Extract JWT from Authorization header
 	authHeader := r.Header.Get("Authorization")
 	if authHeader == "" || !strings.HasPrefix(authHeader, "Bearer ") {
 		log.Log().Info(
-			"ensureValidJwt",
+			"ValidateJwt",
 			"msg", "Missing or invalid authorization header",
 		)
 
@@ -36,7 +54,7 @@ func ensureValidJwt(w http.ResponseWriter, r *http.Request, adminToken string) b
 		_, err := io.WriteString(w, `{"status": "unauthorized"}`)
 		if err != nil {
 			log.Log().Error(
-				"ensureValidJwt",
+				"ValidateJwt",
 				"msg", "Problem writing response",
 				"err", err.Error(),
 			)
@@ -72,7 +90,7 @@ func ensureValidJwt(w http.ResponseWriter, r *http.Request, adminToken string) b
 			errorString = err.Error()
 		}
 
-		log.Log().Info("ensureValidJwt",
+		log.Log().Info("ValidateJwt",
 			"msg", "Invalid token",
 			"err", errorString)
 
@@ -80,7 +98,7 @@ func ensureValidJwt(w http.ResponseWriter, r *http.Request, adminToken string) b
 		w.WriteHeader(http.StatusUnauthorized)
 		_, err := io.WriteString(w, `{"status": "unauthorized"}`)
 		if err != nil {
-			log.Log().Error("ensureValidJwt",
+			log.Log().Error("ValidateJwt",
 				"msg", "Problem writing response",
 				"err", err.Error())
 		}
@@ -89,6 +107,7 @@ func ensureValidJwt(w http.ResponseWriter, r *http.Request, adminToken string) b
 	}
 
 	// Validate custom claims
+	// TODO: there are magic strings here. Replace with consts.
 	claims, ok := token.Claims.(*CustomClaims)
 	if !ok || claims.Issuer != "spike-nexus" ||
 		claims.AdminTokenID != "spike-admin-jwt" {
@@ -107,47 +126,9 @@ func ensureValidJwt(w http.ResponseWriter, r *http.Request, adminToken string) b
 		return false
 	}
 
-	log.Log().Info("routeGetSecret", "msg", "Valid token")
+	log.Log().Info("ValidateJwt", "msg", "Valid token")
 
 	return true
-}
-
-// ValidateJwt checks if a request has a valid JSON Web Token (JWT).
-//
-// This function validates the JWT token from the request against the provided
-// admin token. If validation fails, it sends a 401 Unauthorized response with
-// a JSON error message.
-//
-// Parameters:
-//   - w: http.ResponseWriter - The response writer for error handling
-//   - r: *http.Request - The incoming request containing the JWT
-//   - adminToken: string - The admin token to validate against
-//
-// Returns:
-//   - bool - true if the JWT is valid, false otherwise
-//
-// Response on failure:
-//   - Status: 401 Unauthorized
-//   - Content-Type: application/json
-//   - Body: {"status": "unauthorized"}
-func ValidateJwt(w http.ResponseWriter, r *http.Request, adminToken string) bool {
-	if ensureValidJwt(w, r, adminToken) {
-		return true
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusUnauthorized)
-
-	_, err := io.WriteString(w, `{"status": "unauthorized"}`)
-	if err != nil {
-		errorString := err.Error()
-
-		log.Log().Error("routeDeleteSecret",
-			"msg", "Problem writing response",
-			"err", errorString)
-	}
-
-	return false
 }
 
 // CreateJwt generates a new JWT token for admin authentication.

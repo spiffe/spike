@@ -30,7 +30,16 @@ func Init(source *workloadapi.X509Source, password string) error {
 
 	client, err := net.CreateMtlsClient(source, config.CanTalkToPilot)
 
-	_, err = net.Post(client, urlInit, mr)
+	body, err := net.Post(client, urlInit, mr)
+
+	var res reqres.InitResponse
+	err = json.Unmarshal(body, &res)
+	if err != nil {
+		return errors.Join(
+			errors.New("init: Problem parsing response body"),
+			err,
+		)
+	}
 
 	return err
 }
@@ -48,6 +57,10 @@ func CheckInitState(source *workloadapi.X509Source) (data.InitState, error) {
 	client, err := net.CreateMtlsClient(source, config.CanTalkToPilot)
 
 	body, err := net.Post(client, urlInitState, mr)
+	if errors.Is(err, net.ErrUnauthorized) {
+		return data.NotInitialized, err
+	}
+
 	if err != nil {
 		return data.NotInitialized, errors.Join(
 			errors.New("checkInitState: I am having problem sending the request"), err)

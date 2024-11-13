@@ -46,21 +46,18 @@ func NewGetCommand(source *workloadapi.X509Source) *cobra.Command {
 		Short: "Get secrets from the specified path",
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
-			path := args[0]
-			version, _ := cmd.Flags().GetInt("version")
-
-			// TODO: fmt.Println("######## GET SESSION TOKENS INSTEAD #######")
 			adminToken, err := state.AdminToken()
 			if err != nil {
-				fmt.Println("SPIKE is not initialized.")
-				fmt.Println("Please run `spike init` to initialize SPIKE.")
+				fmt.Println("Please login first with `spike login`.")
 				return
 			}
 			if adminToken == "" {
-				fmt.Println("SPIKE is not initialized.")
-				fmt.Println("Please run `spike init` to initialize SPIKE.")
+				fmt.Println("Please login first with `spike login`.")
 				return
 			}
+
+			path := args[0]
+			version, _ := cmd.Flags().GetInt("version")
 
 			secret, err := net.GetSecret(source, path, version)
 			if err != nil {

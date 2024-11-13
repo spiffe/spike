@@ -52,20 +52,13 @@ func NewPutCommand(source *workloadapi.X509Source) *cobra.Command {
 		Short: "Put secrets at the specified path",
 		Args:  cobra.MinimumNArgs(2),
 		Run: func(cmd *cobra.Command, args []string) {
-			// TODO: fmt.Println("######### WILL CHECK TEMP TOKEN INSTEAD #####")
-
 			adminToken, err := state.AdminToken()
 			if err != nil {
-				fmt.Println("")
-				fmt.Println("SPIKE is not initialized.")
-				fmt.Println("Please run `spike init` to initialize SPIKE.")
+				fmt.Println("Please login first with `spike login`.")
 				return
 			}
-
 			if adminToken == "" {
-				fmt.Println("")
-				fmt.Println("SPIKE is not initialized.")
-				fmt.Println("Please run `spike init` to initialize SPIKE.")
+				fmt.Println("Please login first with `spike login`.")
 				return
 			}
 

@@ -18,10 +18,9 @@ func routeInitCheck(w http.ResponseWriter, r *http.Request) {
 	log.Log().Info("routeInitCheck", "method", r.Method, "path", r.URL.Path,
 		"query", r.URL.RawQuery)
 
-	validJwt := net.ValidateJwt(w, r, state.AdminToken())
-	if !validJwt {
-		return
-	}
+	// No need to check for valid JWT here. System initialization is done
+	// anonymously by the first user (who will be the admin).
+	// If the system is already initialized, this process will err out anyway.
 
 	responseBody := net.ReadRequestBody(r, w)
 	if responseBody == nil {

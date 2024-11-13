@@ -132,6 +132,10 @@
 		```
 	</issue>
 	<issue>
+		The paths that we set in get put etc should look like a unix path.
+		it will require sanitization!
+	</issue>
+	<issue>
 	Do some static analysis.
 	</issue>
 	<issue>
