@@ -113,6 +113,12 @@
 </runner-up>
 <backlog>
 	<issue>
+		check what happens when token is invalid.
+	</issue>
+	<issue>
+		check what happens when token is expired.
+	</issue>
+	<issue>
 		* super admin can create regular admins and other super admins.
 		* super admin can assign backup admins.
 		(see drafts.txt for more details)
@@ -130,6 +136,25 @@
 		}
 		}
 		```
+	</issue>
+	<issue>
+		Create a demo app.
+	</issue>
+	<issue>
+		add missing entries to the audit log.
+	</issue>
+	<issue>
+		workloads should be able to get/set/read secrets.
+		there should be path--workload mapping for that.
+		maybe use OPA.
+
+		1. create a sample binary that emulates a workload.
+		2. it will fetch its secrets from SPIKE Nexus.
+		3. it will update some secrets too.
+
+		Keep the policy management simple and/or delegate it to
+		a policy engine. Our goal is to keep SPIKE simple, and we
+		don't want create a policy engine.
 	</issue>
 	<issue>
 		The paths that we set in get put etc should look like a unix path.

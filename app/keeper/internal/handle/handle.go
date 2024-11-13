@@ -5,9 +5,8 @@
 package handle
 
 import (
-	"net/http"
-
 	"github.com/spiffe/spike/app/keeper/internal/route"
+	"github.com/spiffe/spike/internal/net"
 )
 
 // InitializeRoutes registers the main HTTP route handler for the application.
@@ -17,5 +16,5 @@ import (
 // This function should be called during application startup, before starting
 // the HTTP server.
 func InitializeRoutes() {
-	http.HandleFunc("/", route.Route)
+	net.HandleRoute(route.Route)
 }

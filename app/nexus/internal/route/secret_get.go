@@ -5,6 +5,7 @@
 package route
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/spiffe/spike/app/nexus/internal/state"
@@ -25,6 +26,14 @@ import (
 //  2. Validates and unmarshals the request body
 //  3. Attempts to retrieve the secret
 //  4. Returns the secret data or an appropriate error response
+//
+// Parameters:
+//   - w: http.ResponseWriter to write the HTTP response
+//   - r: *http.Request containing the incoming HTTP request
+//   - audit: *log.AuditEntry for logging audit information
+//
+// Returns:
+//   - error: if an error occurs during request processing.
 //
 // Request body format:
 //
@@ -47,18 +56,21 @@ import (
 //   - 404 Not Found: Secret doesn't exist at specified path/version
 //
 // All operations are logged using structured logging.
-func routeGetSecret(w http.ResponseWriter, r *http.Request) {
+func routeGetSecret(
+	w http.ResponseWriter, r *http.Request, audit *log.AuditEntry,
+) error {
 	log.Log().Info("routeGetSecret", "method", r.Method, "path", r.URL.Path,
 		"query", r.URL.RawQuery)
+	audit.Action = "read"
 
 	validJwt := net.ValidateJwt(w, r, state.AdminToken())
 	if !validJwt {
-		return
+		return errors.New("invalid or missing JWT token")
 	}
 
 	requestBody := net.ReadRequestBody(r, w)
 	if requestBody == nil {
-		return
+		return errors.New("failed to read request body")
 	}
 
 	request := net.HandleRequest[
@@ -67,7 +79,7 @@ func routeGetSecret(w http.ResponseWriter, r *http.Request) {
 		reqres.SecretReadResponse{Err: reqres.ErrBadInput},
 	)
 	if request == nil {
-		return
+		return errors.New("failed to parse request body")
 	}
 
 	version := request.Version
@@ -80,20 +92,21 @@ func routeGetSecret(w http.ResponseWriter, r *http.Request) {
 		res := reqres.SecretReadResponse{Err: reqres.ErrNotFound}
 		responseBody := net.MarshalBody(res, w)
 		if responseBody == nil {
-			return
+			return errors.New("failed to marshal response body")
 		}
 
 		net.Respond(http.StatusNotFound, responseBody, w)
 		log.Log().Info("routeGetSecret", "msg", "not found")
-		return
+		return nil
 	}
 
 	res := reqres.SecretReadResponse{Data: secret}
 	responseBody := net.MarshalBody(res, w)
 	if responseBody == nil {
-		return
+		return errors.New("failed to marshal response body")
 	}
 
 	net.Respond(http.StatusOK, responseBody, w)
 	log.Log().Info("routeGetSecret", "msg", "OK")
+	return nil
 }

@@ -5,6 +5,7 @@
 package route
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/spiffe/spike/app/nexus/internal/state"
@@ -14,9 +15,50 @@ import (
 	"github.com/spiffe/spike/internal/net"
 )
 
-func routeInitCheck(w http.ResponseWriter, r *http.Request) {
+// routeInitCheck handles HTTP requests to check the initialization state of
+// the system. It determines whether the system has been initialized by checking
+// for the presence of an admin token. This endpoint can be accessed anonymously,
+// as it is used during the initial system setup process by the first user who
+// will become the administrator.
+//
+// The function performs the following steps:
+//  1. Logs the incoming request details
+//  2. Reads and validates the request body
+//  3. Checks for an existing admin token
+//  4. Returns the appropriate initialization state in the response
+//
+// Parameters:
+//   - w: http.ResponseWriter to write the HTTP response
+//   - r: *http.Request containing the incoming HTTP request
+//   - audit: *log.AuditEntry for logging audit information
+//
+// Returns:
+//   - error: nil if the check completes successfully, or an error if:
+//   - Request body cannot be read
+//   - Response body cannot be marshaled
+//   - System is already initialized (returns "already initialized" error)
+//
+// Response Status Codes:
+//   - 200 OK: Successfully checked initialization state
+//
+// Response Body:
+//   - JSON object containing:
+//   - State: Either "already_initialized" or "not_initialized"
+//
+// Example Response:
+//
+//	{
+//	  "state": "not_initialized"
+//	}
+//
+// Note: This endpoint intentionally skips JWT validation as it needs to be
+// accessible during initial system setup.
+func routeInitCheck(
+	w http.ResponseWriter, r *http.Request, audit *log.AuditEntry,
+) error {
 	log.Log().Info("routeInitCheck", "method", r.Method, "path", r.URL.Path,
 		"query", r.URL.RawQuery)
+	audit.Action = "init-check"
 
 	// No need to check for valid JWT here. System initialization is done
 	// anonymously by the first user (who will be the admin).
@@ -24,7 +66,7 @@ func routeInitCheck(w http.ResponseWriter, r *http.Request) {
 
 	responseBody := net.ReadRequestBody(r, w)
 	if responseBody == nil {
-		return
+		return errors.New("failed to read request body")
 	}
 
 	adminToken := state.AdminToken()
@@ -35,7 +77,7 @@ func routeInitCheck(w http.ResponseWriter, r *http.Request) {
 			State: data.AlreadyInitialized}, w,
 		)
 		if responseBody == nil {
-			return
+			return errors.New("failed to marshal response body")
 		}
 
 		net.Respond(http.StatusOK, responseBody, w)
@@ -43,16 +85,17 @@ func routeInitCheck(w http.ResponseWriter, r *http.Request) {
 			"already_initialized", true,
 			"msg", "OK",
 		)
-		return
+		return errors.New("already initialized")
 	}
 
 	responseBody = net.MarshalBody(reqres.CheckInitStateResponse{
 		State: data.NotInitialized,
 	}, w)
 	if responseBody == nil {
-		return
+		return errors.New("failed to marshal response body")
 	}
 
 	net.Respond(http.StatusOK, responseBody, w)
 	log.Log().Info("routeInitCheck", "msg", "OK")
+	return nil
 }

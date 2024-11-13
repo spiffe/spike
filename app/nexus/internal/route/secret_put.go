@@ -5,6 +5,7 @@ package route
 // \\\\\\\ SPDX-License-Identifier: Apache-2.0
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/spiffe/spike/app/nexus/internal/state"
@@ -21,6 +22,14 @@ import (
 // The function performs an upsert operation, creating a new secret if it
 // doesn't exist or updating an existing one.
 //
+// Parameters:
+//   - w: http.ResponseWriter to write the HTTP response
+//   - r: *http.Request containing the incoming HTTP request
+//   - audit: *log.AuditEntry for logging audit information
+//
+// Returns:
+//   - error: if an error occurs during request processing.
+//
 // Request body format:
 //
 //	{
@@ -34,18 +43,21 @@ import (
 //   - 401 Unauthorized: Invalid or missing JWT token
 //
 // The function logs its progress at various stages using structured logging.
-func routePutSecret(w http.ResponseWriter, r *http.Request) {
+func routePutSecret(
+	w http.ResponseWriter, r *http.Request, audit *log.AuditEntry,
+) error {
 	log.Log().Info("routeGetSecret", "method", r.Method, "path", r.URL.Path,
 		"query", r.URL.RawQuery)
+	audit.Action = "create"
 
 	validJwt := net.ValidateJwt(w, r, state.AdminToken())
 	if !validJwt {
-		return
+		return errors.New("invalid or missing JWT token")
 	}
 
 	requestBody := net.ReadRequestBody(r, w)
 	if requestBody == nil {
-		return
+		return errors.New("failed to read request body")
 	}
 
 	request := net.HandleRequest[
@@ -54,7 +66,7 @@ func routePutSecret(w http.ResponseWriter, r *http.Request) {
 		reqres.SecretPutResponse{Err: reqres.ErrBadInput},
 	)
 	if request == nil {
-		return
+		return errors.New("failed to parse request body")
 	}
 
 	values := request.Values
@@ -65,9 +77,10 @@ func routePutSecret(w http.ResponseWriter, r *http.Request) {
 
 	responseBody := net.MarshalBody(reqres.SecretPutResponse{}, w)
 	if responseBody == nil {
-		return
+		return errors.New("failed to marshal response body")
 	}
 
 	net.Respond(http.StatusOK, responseBody, w)
 	log.Log().Info("routePutSecret", "msg", "OK")
+	return nil
 }

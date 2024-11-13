@@ -5,6 +5,7 @@
 package route
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/spiffe/spike/app/keeper/internal/state"
@@ -24,6 +25,14 @@ import (
 //  4. Caches it in the application state
 //  5. Returns a success response
 //
+// Parameters:
+//   - w: http.ResponseWriter to write the HTTP response
+//   - r: *http.Request containing the incoming HTTP request
+//   - audit: *log.AuditEntry for logging audit information
+//
+// Returns:
+//   - error: if an error occurs during request processing.
+//
 // Request body format:
 //
 //	{
@@ -32,9 +41,10 @@ import (
 //
 // On success, returns an empty 200 OK response. Returns 400 Bad Request if the
 // request body is invalid or missing required fields.
-func routeKeep(w http.ResponseWriter, r *http.Request) {
+func routeKeep(w http.ResponseWriter, r *http.Request, audit *log.AuditEntry) error {
 	log.Log().Info("routeKeep", "method", r.Method, "path", r.URL.Path,
 		"query", r.URL.RawQuery)
+	audit.Action = "create"
 
 	// Note: no JWT validation is performed here because SPIKE Keeper trusts
 	// SPIKE Nexus through SPIFFE authentication. There is no human user
@@ -42,7 +52,7 @@ func routeKeep(w http.ResponseWriter, r *http.Request) {
 
 	requestBody := net.ReadRequestBody(r, w)
 	if requestBody == nil {
-		return
+		return errors.New("failed to read request body")
 	}
 
 	request := net.HandleRequest[
@@ -51,7 +61,7 @@ func routeKeep(w http.ResponseWriter, r *http.Request) {
 		reqres.RootKeyCacheResponse{Err: reqres.ErrBadInput},
 	)
 	if request == nil {
-		return
+		return errors.New("failed to parse request body")
 	}
 
 	rootKey := request.RootKey
@@ -59,9 +69,10 @@ func routeKeep(w http.ResponseWriter, r *http.Request) {
 
 	responseBody := net.MarshalBody(reqres.RootKeyCacheResponse{}, w)
 	if responseBody == nil {
-		return
+		return errors.New("failed to marshal response body")
 	}
 
 	net.Respond(http.StatusOK, responseBody, w)
 	log.Log().Info("routeKeep", "msg", "OK")
+	return nil
 }

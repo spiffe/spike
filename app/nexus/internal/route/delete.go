@@ -5,6 +5,7 @@
 package route
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/spiffe/spike/app/nexus/internal/state"
@@ -20,6 +21,14 @@ import (
 // rather than JWT tokens, as this is a machine-to-machine interaction without
 // human user involvement.
 //
+// Parameters:
+//   - w: http.ResponseWriter to write the HTTP response
+//   - r: *http.Request containing the incoming HTTP request
+//   - audit: *log.AuditEntry for logging audit information
+//
+// Returns:
+//   - error: if an error occurs during request processing.
+//
 // Request body format:
 //
 //	{
@@ -32,18 +41,19 @@ import (
 //
 // The function logs its progress using structured logging. Unlike other routes,
 // this endpoint relies on SPIFFE authentication rather than JWT validation.
-func routeDeleteSecret(w http.ResponseWriter, r *http.Request) {
+func routeDeleteSecret(w http.ResponseWriter, r *http.Request, audit *log.AuditEntry) error {
 	log.Log().Info("routeDeleteSecret", "method", r.Method, "path", r.URL.Path,
 		"query", r.URL.RawQuery)
+	audit.Action = "delete"
 
 	validJwt := net.ValidateJwt(w, r, state.AdminToken())
 	if !validJwt {
-		return
+		return errors.New("invalid or missing JWT token")
 	}
 
 	requestBody := net.ReadRequestBody(r, w)
 	if requestBody == nil {
-		return
+		return errors.New("failed to read request body")
 	}
 
 	request := net.HandleRequest[
@@ -52,7 +62,7 @@ func routeDeleteSecret(w http.ResponseWriter, r *http.Request) {
 		reqres.SecretDeleteResponse{Err: reqres.ErrBadInput},
 	)
 	if request == nil {
-		return
+		return errors.New("failed to parse request body")
 	}
 
 	path := request.Path
@@ -66,9 +76,10 @@ func routeDeleteSecret(w http.ResponseWriter, r *http.Request) {
 
 	responseBody := net.MarshalBody(reqres.SecretDeleteResponse{}, w)
 	if responseBody == nil {
-		return
+		return errors.New("failed to marshal response body")
 	}
 
 	net.Respond(http.StatusOK, responseBody, w)
 	log.Log().Info("routeDeleteSecret", "msg", "OK")
+	return nil
 }

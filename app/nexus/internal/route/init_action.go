@@ -8,6 +8,7 @@ import (
 	"crypto/rand"
 	"crypto/sha256"
 	"encoding/hex"
+	"errors"
 	"net/http"
 
 	"golang.org/x/crypto/pbkdf2"
@@ -34,6 +35,14 @@ import (
 //   - PBKDF2 iterations: 600,000 (OWASP minimum recommendation)
 //   - Hash output length: 32 bytes (256 bits)
 //
+// Parameters:
+//   - w: http.ResponseWriter to write the HTTP response
+//   - r: *http.Request containing the incoming HTTP request
+//   - audit: *log.AuditEntry for logging audit information
+//
+// Returns:
+//   - error: if an error occurs during request processing.
+//
 // Request body format:
 //
 //	{
@@ -54,9 +63,10 @@ import (
 // The function uses cryptographically secure random number generation for both
 // the admin token and salt. The admin token is prefixed with "spike." before storage.
 // All operations are logged using structured logging.
-func routeInit(w http.ResponseWriter, r *http.Request) {
+func routeInit(w http.ResponseWriter, r *http.Request, audit *log.AuditEntry) error {
 	log.Log().Info("routeInit", "method", r.Method, "path", r.URL.Path,
 		"query", r.URL.RawQuery)
+	audit.Action = "create"
 
 	// No need to check for valid JWT here. System initialization is done
 	// anonymously by the first user (who will be the admin).
@@ -64,7 +74,7 @@ func routeInit(w http.ResponseWriter, r *http.Request) {
 
 	requestBody := net.ReadRequestBody(r, w)
 	if requestBody == nil {
-		return
+		return errors.New("failed to read request body")
 	}
 
 	request := net.HandleRequest[
@@ -73,7 +83,7 @@ func routeInit(w http.ResponseWriter, r *http.Request) {
 		reqres.InitResponse{Err: reqres.ErrBadInput},
 	)
 	if request == nil {
-		return
+		return errors.New("failed to parse request body")
 	}
 
 	password := request.Password
@@ -82,12 +92,12 @@ func routeInit(w http.ResponseWriter, r *http.Request) {
 
 		responseBody := net.MarshalBody(res, w)
 		if responseBody == nil {
-			return
+			return errors.New("failed to marshal response body")
 		}
 
 		net.Respond(http.StatusBadRequest, responseBody, w)
 		log.Log().Info("routeInit", "msg", "exit: Password too short")
-		return
+		return errors.New("password too short")
 	}
 
 	adminToken := state.AdminToken()
@@ -98,12 +108,12 @@ func routeInit(w http.ResponseWriter, r *http.Request) {
 			reqres.InitResponse{Err: reqres.ErrAlreadyInitialized}, w,
 		)
 		if responseBody == nil {
-			return
+			return errors.New("failed to marshal response body")
 		}
 
 		net.Respond(http.StatusInternalServerError, responseBody, w)
 		log.Log().Info("routeInit", "msg", "exit: Already initialized")
-		return
+		return errors.New("already initialized")
 	}
 
 	log.Log().Info("routeInit", "msg", "No admin token. will create one")
@@ -118,12 +128,12 @@ func routeInit(w http.ResponseWriter, r *http.Request) {
 			Err: reqres.ErrServerFault}, w,
 		)
 		if responseBody == nil {
-			return
+			return errors.New("failed to marshal response body")
 		}
 
 		net.Respond(http.StatusInternalServerError, responseBody, w)
 		log.Log().Info("routeInit", "msg", "exit: Failed to generate admin token")
-		return
+		return errors.New("failed to generate admin token")
 	}
 
 	// Generate salt and hash password
@@ -136,12 +146,12 @@ func routeInit(w http.ResponseWriter, r *http.Request) {
 			Err: reqres.ErrServerFault}, w,
 		)
 		if responseBody == nil {
-			return
+			return errors.New("failed to marshal response body")
 		}
 
 		net.Respond(http.StatusInternalServerError, responseBody, w)
 		log.Log().Info("routeInit", "msg", "exit: Failed to generate salt")
-		return
+		return errors.New("failed to generate salt")
 	}
 
 	// TODO: make this configurable.
@@ -161,9 +171,10 @@ func routeInit(w http.ResponseWriter, r *http.Request) {
 
 	responseBody := net.MarshalBody(reqres.InitResponse{}, w)
 	if responseBody == nil {
-		return
+		return errors.New("failed to marshal response body")
 	}
 
 	net.Respond(http.StatusOK, responseBody, w)
 	log.Log().Info("routeInit", "msg", "OK")
+	return nil
 }

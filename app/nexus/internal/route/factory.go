@@ -6,55 +6,30 @@ package route
 
 import (
 	"net/http"
-	"time"
 
-	"github.com/spiffe/spike/internal/log"
 	"github.com/spiffe/spike/internal/net"
 )
 
-func logAndRoute(entry log.AuditEntry, h handler) handler {
-	log.Audit(entry)
-	return h
-}
-
-func factory(p, a, m string) handler {
-	now := time.Now()
-	entry := log.AuditEntry{
-		Timestamp: now,
-		UserId:    "TBD",
-		Action:    "",
-		Resource:  p,
-		SessionID: "",
-	}
-
+func factory(p, a, m string) net.Handler {
 	switch {
 	case m == http.MethodPost && a == "admin" && p == urlLogin:
-		entry.Action = "admin-login"
-		return logAndRoute(entry, routeAdminLogin)
+		return routeAdminLogin
 	case m == http.MethodPost && a == "" && p == urlInit:
-		entry.Action = "init"
-		return logAndRoute(entry, routeInit)
+		return routeInit
 	case m == http.MethodPost && a == "check" && p == urlInit:
-		entry.Action = "check"
-		return logAndRoute(entry, routeInitCheck)
+		return routeInitCheck
 	case m == http.MethodPost && a == "" && p == urlSecrets:
-		entry.Action = "create"
-		return logAndRoute(entry, routePutSecret)
+		return routePutSecret
 	case m == http.MethodPost && a == "get" && p == urlSecrets:
-		entry.Action = "read"
-		return logAndRoute(entry, routeGetSecret)
+		return routeGetSecret
 	case m == http.MethodPost && a == "delete" && p == urlSecrets:
-		entry.Action = "delete"
-		return logAndRoute(entry, routeDeleteSecret)
+		return routeDeleteSecret
 	case m == http.MethodPost && a == "undelete" && p == urlSecrets:
-		entry.Action = "undelete"
-		return logAndRoute(entry, routeUndeleteSecret)
+		return routeUndeleteSecret
 	case m == http.MethodPost && a == "list" && p == urlSecrets:
-		entry.Action = "list"
-		return logAndRoute(entry, routeListPaths)
+		return routeListPaths
 	// Fallback route.
 	default:
-		entry.Action = "fallback"
-		return logAndRoute(entry, net.Fallback)
+		return net.Fallback
 	}
 }

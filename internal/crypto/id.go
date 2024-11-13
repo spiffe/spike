@@ -37,3 +37,12 @@ func Token() string {
 	}
 	return "spike." + id
 }
+
+// Id generates a cryptographically-unique secure random string.
+func Id() string {
+	id, err := RandomString(8)
+	if err != nil {
+		id = fmt.Sprintf("CRYPTO-ERR: %s", err.Error())
+	}
+	return id
+}
