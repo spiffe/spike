@@ -5,7 +5,6 @@
 package route
 
 import (
-	"encoding/json"
 	"net/http"
 
 	"github.com/spiffe/spike/app/nexus/internal/state"
@@ -14,33 +13,27 @@ import (
 	"github.com/spiffe/spike/internal/net"
 )
 
-func newSecretDeleteRequest(
-	requestBody []byte, w http.ResponseWriter,
-) *reqres.SecretDeleteRequest {
-	var request reqres.SecretDeleteRequest
-	if err := net.HandleRequestError(
-		w, json.Unmarshal(requestBody, &request),
-	); err != nil {
-		log.Log().Error("newSecretDeleteRequest",
-			"msg", "Problem unmarshalling request",
-			"err", err.Error())
-
-		responseBody := net.MarshalBody(reqres.SecretDeleteResponse{
-			Err: reqres.ErrBadInput}, w)
-		if responseBody == nil {
-			return nil
-		}
-
-		net.Respond(http.StatusBadRequest, responseBody, w)
-		return nil
-	}
-	return &request
-}
-
+// routeKeep handles HTTP requests to cache a root key from SPIKE Nexus.
+//
+// This endpoint is specifically designed for internal system communication
+// between SPIKE Keeper and SPIKE Nexus. Authentication is handled via SPIFFE
+// rather than JWT tokens, as this is a machine-to-machine interaction without
+// human user involvement.
+//
+// Request body format:
+//
+//	{
+//	    "rootKey": string   // Root key to be cached
+//	}
+//
+// Responses:
+//   - 200 OK: Root key successfully cached
+//   - 400 Bad Request: Invalid request body or parameters
+//
+// The function logs its progress using structured logging. Unlike other routes,
+// this endpoint relies on SPIFFE authentication rather than JWT validation.
 func routeDeleteSecret(w http.ResponseWriter, r *http.Request) {
-	log.Log().Info("routeDeleteSecret",
-		"method", r.Method,
-		"path", r.URL.Path,
+	log.Log().Info("routeDeleteSecret", "method", r.Method, "path", r.URL.Path,
 		"query", r.URL.RawQuery)
 
 	validJwt := net.ValidateJwt(w, r, state.AdminToken())
@@ -53,7 +46,14 @@ func routeDeleteSecret(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	request := newSecretDeleteRequest(requestBody, w)
+	request := net.HandleRequest[
+		reqres.SecretDeleteRequest, reqres.SecretDeleteResponse](
+		requestBody, w,
+		reqres.SecretDeleteResponse{Err: reqres.ErrBadInput},
+	)
+	if request == nil {
+		return
+	}
 
 	path := request.Path
 	versions := request.Versions
@@ -62,12 +62,13 @@ func routeDeleteSecret(w http.ResponseWriter, r *http.Request) {
 	}
 
 	state.DeleteSecret(path, versions)
-	log.Log().Info("routeDeleteSecret",
-		"msg", "Secret deleted")
+	log.Log().Info("routeDeleteSecret", "msg", "Secret deleted")
 
 	responseBody := net.MarshalBody(reqres.SecretDeleteResponse{}, w)
+	if responseBody == nil {
+		return
+	}
 
 	net.Respond(http.StatusOK, responseBody, w)
-
 	log.Log().Info("routeDeleteSecret", "msg", "OK")
 }

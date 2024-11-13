@@ -6,12 +6,13 @@ package net
 
 import (
 	"fmt"
-	"github.com/golang-jwt/jwt/v5"
-	"github.com/spiffe/spike/internal/log"
 	"io"
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/golang-jwt/jwt/v5"
+	"github.com/spiffe/spike/internal/log"
 )
 
 // CustomClaims embeds RegisteredClaims to inherit standard JWT fields
@@ -111,6 +112,24 @@ func ensureValidJwt(w http.ResponseWriter, r *http.Request, adminToken string) b
 	return true
 }
 
+// ValidateJwt checks if a request has a valid JSON Web Token (JWT).
+//
+// This function validates the JWT token from the request against the provided
+// admin token. If validation fails, it sends a 401 Unauthorized response with
+// a JSON error message.
+//
+// Parameters:
+//   - w: http.ResponseWriter - The response writer for error handling
+//   - r: *http.Request - The incoming request containing the JWT
+//   - adminToken: string - The admin token to validate against
+//
+// Returns:
+//   - bool - true if the JWT is valid, false otherwise
+//
+// Response on failure:
+//   - Status: 401 Unauthorized
+//   - Content-Type: application/json
+//   - Body: {"status": "unauthorized"}
 func ValidateJwt(w http.ResponseWriter, r *http.Request, adminToken string) bool {
 	if ensureValidJwt(w, r, adminToken) {
 		return true
@@ -131,6 +150,26 @@ func ValidateJwt(w http.ResponseWriter, r *http.Request, adminToken string) bool
 	return false
 }
 
+// CreateJwt generates a new JWT token for admin authentication.
+//
+// The function creates a JWT with the following characteristics:
+//   - Expires in 24 hours from creation
+//   - Issued by "spike-nexus"
+//   - Subject is "spike-admin"
+//   - Uses HS256 signing method
+//   - Includes custom AdminTokenID claim
+//
+// Parameters:
+//   - adminToken: string - The token used to sign the JWT
+//   - w: http.ResponseWriter - The response writer for error handling
+//
+// Returns:
+//   - string - The signed JWT token, or empty string if signing fails
+//
+// On signing failure:
+//   - Writes 500 Internal Server Error status
+//   - Logs the error
+//   - Returns empty string
 func CreateJwt(adminToken string, w http.ResponseWriter) string {
 	// Create JWT with claims
 	now := time.Now()
@@ -154,8 +193,9 @@ func CreateJwt(adminToken string, w http.ResponseWriter) string {
 		log.Log().Error("routeAdminLogin",
 			"msg", "Failed to sign token",
 			"err", err.Error())
+
 		w.WriteHeader(http.StatusInternalServerError)
-		_, err = io.WriteString(w, "")
+		_, err = io.WriteString(w, `{"error":"internal server error"}`)
 		if err != nil {
 			log.Log().Error("routeAdminLogin",
 				"msg", "Problem writing response", "err", err.Error())

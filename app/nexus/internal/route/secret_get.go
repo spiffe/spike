@@ -5,41 +5,50 @@
 package route
 
 import (
-	"encoding/json"
+	"net/http"
+
 	"github.com/spiffe/spike/app/nexus/internal/state"
 	"github.com/spiffe/spike/internal/entity/v1/reqres"
 	"github.com/spiffe/spike/internal/log"
 	"github.com/spiffe/spike/internal/net"
-	"net/http"
 )
 
-func newSecretReadRequest(
-	requestBody []byte, w http.ResponseWriter,
-) *reqres.SecretReadRequest {
-	var request reqres.SecretReadRequest
-	if err := net.HandleRequestError(
-		w, json.Unmarshal(requestBody, &request),
-	); err != nil {
-		log.Log().Error("newSecretReadRequest",
-			"msg", "Problem unmarshalling request",
-			"err", err.Error())
-
-		responseBody := net.MarshalBody(reqres.SecretReadResponse{
-			Err: reqres.ErrBadInput}, w)
-		if responseBody == nil {
-			return nil
-		}
-
-		net.Respond(http.StatusBadRequest, responseBody, w)
-		return nil
-	}
-	return &request
-}
-
+// routeGetSecret handles requests to retrieve a secret at a specific path
+// and version.
+//
+// This endpoint requires a valid admin JWT token for authentication. The
+// function retrieves a secret based on the provided path and optional version
+// number. If no version is specified, the latest version is returned.
+//
+// The function follows these steps:
+//  1. Validates the JWT token
+//  2. Validates and unmarshals the request body
+//  3. Attempts to retrieve the secret
+//  4. Returns the secret data or an appropriate error response
+//
+// Request body format:
+//
+//	{
+//	    "path": string,     // Path to the secret
+//	    "version": int      // Optional: specific version to retrieve
+//	}
+//
+// Response format on success (200 OK):
+//
+//	{
+//	    "data": {          // The secret data
+//	        // Secret key-value pairs
+//	    }
+//	}
+//
+// Error responses:
+//   - 401 Unauthorized: Invalid or missing JWT token
+//   - 400 Bad Request: Invalid request body
+//   - 404 Not Found: Secret doesn't exist at specified path/version
+//
+// All operations are logged using structured logging.
 func routeGetSecret(w http.ResponseWriter, r *http.Request) {
-	log.Log().Info("routeGetSecret",
-		"method", r.Method,
-		"path", r.URL.Path,
+	log.Log().Info("routeGetSecret", "method", r.Method, "path", r.URL.Path,
 		"query", r.URL.RawQuery)
 
 	validJwt := net.ValidateJwt(w, r, state.AdminToken())
@@ -52,7 +61,11 @@ func routeGetSecret(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	request := newSecretReadRequest(requestBody, w)
+	request := net.HandleRequest[
+		reqres.SecretReadRequest, reqres.SecretReadResponse](
+		requestBody, w,
+		reqres.SecretReadResponse{Err: reqres.ErrBadInput},
+	)
 	if request == nil {
 		return
 	}
@@ -72,7 +85,6 @@ func routeGetSecret(w http.ResponseWriter, r *http.Request) {
 
 		net.Respond(http.StatusNotFound, responseBody, w)
 		log.Log().Info("routeGetSecret", "msg", "not found")
-
 		return
 	}
 

@@ -8,9 +8,9 @@ import (
 	"crypto/rand"
 	"crypto/sha256"
 	"encoding/hex"
-	"encoding/json"
-	"golang.org/x/crypto/pbkdf2"
 	"net/http"
+
+	"golang.org/x/crypto/pbkdf2"
 
 	"github.com/spiffe/spike/app/nexus/internal/state"
 	"github.com/spiffe/spike/internal/entity/v1/reqres"
@@ -18,33 +18,44 @@ import (
 	"github.com/spiffe/spike/internal/net"
 )
 
-func newInitRequest(
-	requestBody []byte, w http.ResponseWriter,
-) *reqres.InitRequest {
-	var request reqres.InitRequest
-	if err := net.HandleRequestError(
-		w, json.Unmarshal(requestBody, &request),
-	); err != nil {
-		log.Log().Error("newInitRequest",
-			"msg", "Problem unmarshalling request",
-			"err", err.Error())
-
-		responseBody := net.MarshalBody(reqres.InitResponse{
-			Err: reqres.ErrBadInput}, w)
-		if responseBody == nil {
-			return nil
-		}
-
-		net.Respond(http.StatusBadRequest, responseBody, w)
-		return nil
-	}
-	return &request
-}
-
+// routeInit handles the initial setup of the system, creating admin credentials
+// and tokens. This endpoint can only be called once - subsequent calls will fail.
+//
+// The function performs system initialization by:
+//  1. Validating the provided admin password meets security requirements
+//  2. Generating a secure random admin token
+//  3. Creating a password hash using PBKDF2-SHA256 with secure parameters
+//  4. Storing the credentials in the system state
+//
+// Security parameters:
+//   - Minimum password length: 16 characters
+//   - Admin token length: 32 bytes (256 bits)
+//   - Salt length: 16 bytes (128 bits)
+//   - PBKDF2 iterations: 600,000 (OWASP minimum recommendation)
+//   - Hash output length: 32 bytes (256 bits)
+//
+// Request body format:
+//
+//	{
+//	    "password": string   // Admin password (min 16 chars)
+//	}
+//
+// Response format on success (200 OK):
+//
+//	{} // Empty response indicates success
+//
+// Error responses:
+//   - 401 Unauthorized: Invalid or missing JWT token
+//   - 400 Bad Request: Invalid request body
+//   - 400 Bad Request: Password too short (err: "low_entropy")
+//   - 500 Internal Server Error: System already initialized (err: "already_initialized")
+//   - 500 Internal Server Error: Failed to generate secure random values (err: "server_fault")
+//
+// The function uses cryptographically secure random number generation for both
+// the admin token and salt. The admin token is prefixed with "spike." before storage.
+// All operations are logged using structured logging.
 func routeInit(w http.ResponseWriter, r *http.Request) {
-	log.Log().Info("routeInit",
-		"method", r.Method,
-		"path", r.URL.Path,
+	log.Log().Info("routeInit", "method", r.Method, "path", r.URL.Path,
 		"query", r.URL.RawQuery)
 
 	validJwt := net.ValidateJwt(w, r, state.AdminToken())
@@ -57,13 +68,16 @@ func routeInit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	request := newInitRequest(requestBody, w)
+	request := net.HandleRequest[
+		reqres.InitRequest, reqres.InitResponse](
+		requestBody, w,
+		reqres.InitResponse{Err: reqres.ErrBadInput},
+	)
 	if request == nil {
 		return
 	}
 
 	password := request.Password
-
 	if len(password) < 16 {
 		res := reqres.InitResponse{Err: reqres.ErrLowEntropy}
 
@@ -73,27 +87,23 @@ func routeInit(w http.ResponseWriter, r *http.Request) {
 		}
 
 		net.Respond(http.StatusBadRequest, responseBody, w)
+		log.Log().Info("routeInit", "msg", "exit: Password too short")
 		return
 	}
 
 	adminToken := state.AdminToken()
 	if adminToken != "" {
-		log.Log().Info("routeInit",
-			"msg", "Already initialized")
+		log.Log().Info("routeInit", "msg", "Already initialized")
 
-		res := reqres.InitResponse{
-			Err: reqres.ErrAlreadyInitialized,
-		}
-
-		responseBody := net.MarshalBody(res, w)
+		responseBody := net.MarshalBody(
+			reqres.InitResponse{Err: reqres.ErrAlreadyInitialized}, w,
+		)
 		if responseBody == nil {
 			return
 		}
 
 		net.Respond(http.StatusInternalServerError, responseBody, w)
-
 		log.Log().Info("routeInit", "msg", "exit: Already initialized")
-
 		return
 	}
 
@@ -105,40 +115,33 @@ func routeInit(w http.ResponseWriter, r *http.Request) {
 		log.Log().Error("routeInit",
 			"msg", "Failed to generate admin token", "err", err.Error())
 
-		res := reqres.InitResponse{
-			Err: reqres.ErrServerFault,
-		}
-
-		responseBody := net.MarshalBody(res, w)
+		responseBody := net.MarshalBody(reqres.InitResponse{
+			Err: reqres.ErrServerFault}, w,
+		)
 		if responseBody == nil {
 			return
 		}
 
 		net.Respond(http.StatusInternalServerError, responseBody, w)
 		log.Log().Info("routeInit", "msg", "exit: Failed to generate admin token")
-
 		return
 	}
 
 	// Generate salt and hash password
 	salt := make([]byte, 16)
 	if _, err := rand.Read(salt); err != nil {
-		log.Log().Error("routeInit",
-			"msg", "Failed to generate salt",
+		log.Log().Error("routeInit", "msg", "Failed to generate salt",
 			"err", err.Error())
 
-		res := reqres.InitResponse{
-			Err: reqres.ErrServerFault,
-		}
-
-		responseBody := net.MarshalBody(res, w)
+		responseBody := net.MarshalBody(reqres.InitResponse{
+			Err: reqres.ErrServerFault}, w,
+		)
 		if responseBody == nil {
 			return
 		}
 
 		net.Respond(http.StatusInternalServerError, responseBody, w)
 		log.Log().Info("routeInit", "msg", "exit: Failed to generate salt")
-
 		return
 	}
 
@@ -146,8 +149,10 @@ func routeInit(w http.ResponseWriter, r *http.Request) {
 	iterationCount := 600_000 // Minimum OWASP recommendation for PBKDF2-SHA256
 	hashLength := 32          // 256 bits output
 
-	passwordHash := pbkdf2.Key([]byte(password), salt,
-		iterationCount, hashLength, sha256.New)
+	passwordHash := pbkdf2.Key(
+		[]byte(password), salt,
+		iterationCount, hashLength, sha256.New,
+	)
 
 	state.SetAdminToken("spike." + string(adminTokenBytes))
 	state.SetAdminCredentials(
@@ -155,9 +160,7 @@ func routeInit(w http.ResponseWriter, r *http.Request) {
 		hex.EncodeToString(salt),
 	)
 
-	res := reqres.InitResponse{}
-
-	responseBody := net.MarshalBody(res, w)
+	responseBody := net.MarshalBody(reqres.InitResponse{}, w)
 	if responseBody == nil {
 		return
 	}

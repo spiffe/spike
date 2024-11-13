@@ -5,7 +5,6 @@
 package route
 
 import (
-	"encoding/json"
 	"net/http"
 
 	"github.com/spiffe/spike/app/keeper/internal/state"
@@ -14,34 +13,32 @@ import (
 	"github.com/spiffe/spike/internal/net"
 )
 
-func newRootKeyCacheRequest(
-	requestBody []byte, w http.ResponseWriter,
-) *reqres.RootKeyCacheRequest {
-	var request reqres.RootKeyCacheRequest
-	if err := net.HandleRequestError(
-		w, json.Unmarshal(requestBody, &request),
-	); err != nil {
-		log.Log().Error("newRootKeyCacheRequest",
-			"msg", "Problem unmarshalling request",
-			"err", err.Error())
-
-		responseBody := net.MarshalBody(reqres.RootKeyCacheResponse{
-			Err: reqres.ErrBadInput}, w)
-		if responseBody == nil {
-			return nil
-		}
-
-		net.Respond(http.StatusBadRequest, responseBody, w)
-		return nil
-	}
-	return &request
-}
-
+// routeKeep handles caching a root key received from SPIKE Nexus.
+//
+// This endpoint is authenticated via SPIFFE for machine-to-machine
+// communication between SPIKE Keeper and SPIKE Nexus, rather than using JWT
+// tokens. The function:
+//  1. Logs the incoming request details
+//  2. Reads and validates the request body
+//  3. Extracts the root key
+//  4. Caches it in the application state
+//  5. Returns a success response
+//
+// Request body format:
+//
+//	{
+//	    "rootKey": string   // The root key to cache
+//	}
+//
+// On success, returns an empty 200 OK response. Returns 400 Bad Request if the
+// request body is invalid or missing required fields.
 func routeKeep(w http.ResponseWriter, r *http.Request) {
-	log.Log().Info("routeKeep",
-		"method", r.Method,
-		"path", r.URL.Path,
+	log.Log().Info("routeKeep", "method", r.Method, "path", r.URL.Path,
 		"query", r.URL.RawQuery)
+
+	// Note: no JWT validation is performed here because SPIKE Keeper trusts
+	// SPIKE Nexus through SPIFFE authentication. There is no human user
+	// involved in this request, so no JWT is needed.
 
 	requestBody := net.ReadRequestBody(r, w)
 	if requestBody == nil {
@@ -66,6 +63,5 @@ func routeKeep(w http.ResponseWriter, r *http.Request) {
 	}
 
 	net.Respond(http.StatusOK, responseBody, w)
-
 	log.Log().Info("routeKeep", "msg", "OK")
 }

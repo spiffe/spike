@@ -5,7 +5,6 @@ package route
 // \\\\\\\ SPDX-License-Identifier: Apache-2.0
 
 import (
-	"encoding/json"
 	"net/http"
 
 	"github.com/spiffe/spike/app/nexus/internal/state"
@@ -14,33 +13,29 @@ import (
 	"github.com/spiffe/spike/internal/net"
 )
 
-func newSecretPutRequest(
-	requestBody []byte, w http.ResponseWriter,
-) *reqres.SecretPutRequest {
-	var request reqres.SecretPutRequest
-	if err := net.HandleRequestError(
-		w, json.Unmarshal(requestBody, &request),
-	); err != nil {
-		log.Log().Error("newSecretPutRequest",
-			"msg", "Problem unmarshalling request",
-			"err", err.Error())
-
-		responseBody := net.MarshalBody(reqres.SecretPutResponse{
-			Err: reqres.ErrBadInput}, w)
-		if responseBody == nil {
-			return nil
-		}
-
-		net.Respond(http.StatusBadRequest, responseBody, w)
-		return nil
-	}
-	return &request
-}
-
+// routePutSecret handles HTTP requests to create or update secrets at a
+// specified path.
+//
+// This endpoint requires a valid admin JWT token for authentication. It accepts
+// a PUT request with a JSON body containing the secret path and values to store.
+// The function performs an upsert operation, creating a new secret if it
+// doesn't exist or updating an existing one.
+//
+// Request body format:
+//
+//	{
+//	    "path": string,           // Path where the secret should be stored
+//	    "values": map[string]any // Key-value pairs representing the secret data
+//	}
+//
+// Responses:
+//   - 200 OK: Secret successfully created or updated
+//   - 400 Bad Request: Invalid request body or parameters
+//   - 401 Unauthorized: Invalid or missing JWT token
+//
+// The function logs its progress at various stages using structured logging.
 func routePutSecret(w http.ResponseWriter, r *http.Request) {
-	log.Log().Info("routeGetSecret",
-		"method", r.Method,
-		"path", r.URL.Path,
+	log.Log().Info("routeGetSecret", "method", r.Method, "path", r.URL.Path,
 		"query", r.URL.RawQuery)
 
 	validJwt := net.ValidateJwt(w, r, state.AdminToken())
@@ -53,20 +48,22 @@ func routePutSecret(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	req := newSecretPutRequest(requestBody, w)
-	if req == nil {
+	request := net.HandleRequest[
+		reqres.SecretPutRequest, reqres.SecretPutResponse](
+		requestBody, w,
+		reqres.SecretPutResponse{Err: reqres.ErrBadInput},
+	)
+	if request == nil {
 		return
 	}
 
-	values := req.Values
-	path := req.Path
+	values := request.Values
+	path := request.Path
 
 	state.UpsertSecret(path, values)
-
 	log.Log().Info("routePutSecret", "msg", "Secret upserted")
 
-	res := reqres.SecretPutResponse{}
-	responseBody := net.MarshalBody(res, w)
+	responseBody := net.MarshalBody(reqres.SecretPutResponse{}, w)
 	if responseBody == nil {
 		return
 	}

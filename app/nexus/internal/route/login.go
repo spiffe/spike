@@ -8,9 +8,9 @@ import (
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/hex"
-	"encoding/json"
-	"golang.org/x/crypto/pbkdf2"
 	"net/http"
+
+	"golang.org/x/crypto/pbkdf2"
 
 	"github.com/spiffe/spike/app/nexus/internal/state"
 	"github.com/spiffe/spike/internal/entity/v1/reqres"
@@ -18,33 +18,8 @@ import (
 	"github.com/spiffe/spike/internal/net"
 )
 
-func newAdminLoginRequest(
-	requestBody []byte, w http.ResponseWriter,
-) *reqres.AdminLoginRequest {
-	var request reqres.AdminLoginRequest
-	if err := net.HandleRequestError(
-		w, json.Unmarshal(requestBody, &request),
-	); err != nil {
-		log.Log().Error("newAdminLoginRequest",
-			"msg", "Problem unmarshalling request",
-			"err", err.Error())
-
-		responseBody := net.MarshalBody(reqres.AdminLoginResponse{
-			Err: reqres.ErrBadInput}, w)
-		if responseBody == nil {
-			return nil
-		}
-
-		net.Respond(http.StatusBadRequest, responseBody, w)
-		return nil
-	}
-	return &request
-}
-
 func routeAdminLogin(w http.ResponseWriter, r *http.Request) {
-	log.Log().Info("routeAdminLogin",
-		"method", r.Method,
-		"path", r.URL.Path,
+	log.Log().Info("routeAdminLogin", "method", r.Method, "path", r.URL.Path,
 		"query", r.URL.RawQuery)
 
 	// TODO: signature should be `w, r` for consistency.
@@ -53,13 +28,19 @@ func routeAdminLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	request := newAdminLoginRequest(requestBody, w)
+	request := net.HandleRequest[
+		reqres.AdminLoginRequest, reqres.AdminLoginResponse](
+		requestBody, w,
+		reqres.AdminLoginResponse{Err: reqres.ErrBadInput},
+	)
+	if request == nil {
+		return
+	}
 
 	password := request.Password
-
 	creds := state.AdminCredentials()
-	salt := creds.Salt
 	passwordHash := creds.PasswordHash
+	salt := creds.Salt
 
 	s, err := hex.DecodeString(salt)
 	if err != nil {
@@ -67,16 +48,15 @@ func routeAdminLogin(w http.ResponseWriter, r *http.Request) {
 			"msg", "Problem decoding salt",
 			"err", err.Error())
 
-		res := reqres.AdminLoginResponse{
+		body := net.MarshalBody(reqres.AdminLoginResponse{
 			Err: reqres.ErrServerFault,
-		}
-
-		body := net.MarshalBody(res, w)
+		}, w)
 		if body == nil {
 			return
 		}
 
 		net.Respond(http.StatusInternalServerError, body, w)
+		log.Log().Info("routeAdminLogin", "msg", "unauthorized")
 		return
 	}
 
@@ -85,7 +65,10 @@ func routeAdminLogin(w http.ResponseWriter, r *http.Request) {
 	iterationCount := 600_000 // Minimum OWASP recommendation for PBKDF2-SHA256
 	hashLength := 32          // 256 bits output
 
-	ph := pbkdf2.Key([]byte(password), s, iterationCount, hashLength, sha256.New)
+	ph := pbkdf2.Key(
+		[]byte(password), s,
+		iterationCount, hashLength, sha256.New,
+	)
 
 	b, err := hex.DecodeString(passwordHash)
 	if err != nil {
@@ -95,10 +78,12 @@ func routeAdminLogin(w http.ResponseWriter, r *http.Request) {
 
 		responseBody := net.MarshalBody(reqres.AdminLoginResponse{
 			Err: reqres.ErrServerFault}, w)
+		if responseBody == nil {
+			return
+		}
 
 		net.Respond(http.StatusInternalServerError, responseBody, w)
 		log.Log().Info("routeAdminLogin", "msg", "OK")
-
 		return
 	}
 
@@ -107,11 +92,12 @@ func routeAdminLogin(w http.ResponseWriter, r *http.Request) {
 
 		responseBody := net.MarshalBody(reqres.AdminLoginResponse{
 			Err: reqres.ErrUnauthorized}, w)
+		if responseBody == nil {
+			return
+		}
 
 		net.Respond(http.StatusUnauthorized, responseBody, w)
-
 		log.Log().Info("routeAdminLogin", "msg", "unauthorized")
-
 		return
 	}
 
@@ -121,10 +107,12 @@ func routeAdminLogin(w http.ResponseWriter, r *http.Request) {
 
 		responseBody := net.MarshalBody(reqres.AdminLoginResponse{
 			Err: reqres.ErrServerFault}, w)
+		if responseBody == nil {
+			return
+		}
 
 		net.Respond(http.StatusInternalServerError, responseBody, w)
 		log.Log().Info("routeAdminLogin", "msg", "unauthorized")
-
 		return
 	}
 
@@ -133,11 +121,9 @@ func routeAdminLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	res := reqres.AdminLoginResponse{
+	responseBody := net.MarshalBody(reqres.AdminLoginResponse{
 		Token: signedToken,
-	}
-
-	responseBody := net.MarshalBody(res, w)
+	}, w)
 	if responseBody == nil {
 		return
 	}

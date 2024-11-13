@@ -6,11 +6,25 @@ package net
 
 import (
 	"encoding/json"
+	"net/http"
+
 	"github.com/spiffe/spike/internal/entity/v1/reqres"
 	"github.com/spiffe/spike/internal/log"
-	"net/http"
 )
 
+// MarshalBody serializes a response object to JSON and handles error cases.
+//
+// This function attempts to marshal the provided response object to JSON bytes.
+// If marshaling fails, it sends a 500 Internal Server Error response to the
+// client and returns nil. The function handles all error logging and response
+// writing for the error case.
+//
+// Parameters:
+//   - res: any - The response object to marshal to JSON
+//   - w: http.ResponseWriter - The response writer for error handling
+//
+// Returns:
+//   - []byte - The marshaled JSON bytes, or nil if marshaling failed
 func MarshalBody(res any, w http.ResponseWriter) []byte {
 	body, err := json.Marshal(res)
 	if err != nil {
@@ -32,6 +46,16 @@ func MarshalBody(res any, w http.ResponseWriter) []byte {
 	return body
 }
 
+// Respond writes a JSON response with the specified status code and body.
+//
+// This function sets the Content-Type header to application/json, writes the
+// provided status code, and sends the response body. Any errors during writing
+// are logged but not returned to the caller.
+//
+// Parameters:
+//   - statusCode: int - The HTTP status code to send
+//   - body: []byte - The pre-marshaled JSON response body
+//   - w: http.ResponseWriter - The response writer to use
 func Respond(statusCode int, body []byte, w http.ResponseWriter) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(statusCode)
@@ -44,6 +68,20 @@ func Respond(statusCode int, body []byte, w http.ResponseWriter) {
 	}
 }
 
+// Fallback handles requests to undefined routes by returning a 400 Bad Request.
+//
+// This function serves as a catch-all handler for undefined routes, logging the
+// request details and returning a standardized error response. It uses MarshalBody
+// to generate the response and handles any errors during response writing.
+//
+// Parameters:
+//   - w: http.ResponseWriter - The response writer
+//   - r: *http.Request - The incoming request
+//
+// The response always includes:
+//   - Status: 400 Bad Request
+//   - Content-Type: application/json
+//   - Body: JSON object with an error field
 func Fallback(w http.ResponseWriter, r *http.Request) {
 	log.Log().Info("fallback",
 		"method", r.Method,
