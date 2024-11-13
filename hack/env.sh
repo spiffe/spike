@@ -6,7 +6,7 @@
 
 # see: https://spike.ist/#/configuration
 
-export SPIKE_NEXUS_POLL_INTERVAL="3000s"
+export SPIKE_NEXUS_POLL_INTERVAL="30s"
 export SPIKE_NEXUS_MAX_SECRET_VERSIONS="10"
 export SPIKE_NEXUS_BACKEND_STORE="memory"
 export SPIKE_NEXUS_DB_OPERATION_TIMEOUT="5s"

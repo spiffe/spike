@@ -7,40 +7,15 @@ package net
 import (
 	"bytes"
 	"errors"
-	"fmt"
 	"io"
 	"net/http"
 	"os"
-	"path/filepath"
 
 	"github.com/spiffe/spike/internal/log"
 )
 
-// readJWTFile attempts to read the JWT from the .spike-admin-token file
-func readJWTFile() (string, error) {
-	homeDir, err := os.UserHomeDir()
-	if err != nil {
-		return "", err
-	}
-
-	tokenPath := filepath.Join(homeDir, "Desktop", "WORKSPACE", "spike", ".spike-admin-token")
-
-	// Check if file exists
-	if _, err := os.Stat(tokenPath); os.IsNotExist(err) {
-		return "", nil // Return empty string without error if file doesn't exist
-	}
-
-	// Read the file
-	jwt, err := os.ReadFile(tokenPath)
-	if err != nil {
-		return "", errors.Join(
-			errors.New("Failed to read JWT file"),
-			err,
-		)
-	}
-
-	return string(bytes.TrimSpace(jwt)), nil
-}
+var ErrNotFound = errors.New("not found")
+var ErrUnauthorized = errors.New("unauthorized")
 
 func body(r *http.Response) (bod []byte, err error) {
 	body, err := io.ReadAll(r.Body)
@@ -50,9 +25,6 @@ func body(r *http.Response) (bod []byte, err error) {
 
 	return body, err
 }
-
-var ErrNotFound = errors.New("not found")
-var ErrUnauthorized = errors.New("unauthorized")
 
 // Post performs an HTTP POST request with a JSON payload and returns the
 // response body. It handles the common cases of connection errors, non-200
@@ -99,6 +71,7 @@ func Post(client *http.Client, path string, mr []byte) ([]byte, error) {
 	// Set headers
 	req.Header.Set("Content-Type", "application/json")
 
+	// TODO: magic string.
 	// Try to read and set JWT if file exists
 	if jwt, err := os.ReadFile(".spike-admin-token"); err == nil {
 		req.Header.Set("Authorization", "Bearer "+string(bytes.TrimSpace(jwt)))
@@ -107,10 +80,6 @@ func Post(client *http.Client, path string, mr []byte) ([]byte, error) {
 	// Use the existing mTLS client to make the request
 	r, err := client.Do(req)
 	if err != nil {
-		fmt.Println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> PROBLEM")
-		fmt.Println(err.Error())
-		fmt.Println("----------------------------------------")
-
 		return []byte{}, errors.Join(
 			errors.New("post: Problem connecting to peer"),
 			err,
