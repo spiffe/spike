@@ -6,14 +6,14 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/spiffe/spike/app/spike/internal/net"
-	"github.com/spiffe/spike/internal/entity/data"
 	"syscall"
-
-	"golang.org/x/term"
 
 	"github.com/spf13/cobra"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
+	"golang.org/x/term"
+
+	"github.com/spiffe/spike/app/spike/internal/net"
+	"github.com/spiffe/spike/internal/entity/data"
 )
 
 // NewInitCommand creates and returns a new cobra.Command for initializing the

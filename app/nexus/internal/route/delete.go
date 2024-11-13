@@ -5,8 +5,6 @@
 package route
 
 import (
-	"encoding/json"
-	"io"
 	"net/http"
 
 	"github.com/spiffe/spike/app/nexus/internal/state"
@@ -15,45 +13,62 @@ import (
 	"github.com/spiffe/spike/internal/net"
 )
 
+// routeKeep handles HTTP requests to cache a root key from SPIKE Nexus.
+//
+// This endpoint is specifically designed for internal system communication
+// between SPIKE Keeper and SPIKE Nexus. Authentication is handled via SPIFFE
+// rather than JWT tokens, as this is a machine-to-machine interaction without
+// human user involvement.
+//
+// Request body format:
+//
+//	{
+//	    "rootKey": string   // Root key to be cached
+//	}
+//
+// Responses:
+//   - 200 OK: Root key successfully cached
+//   - 400 Bad Request: Invalid request body or parameters
+//
+// The function logs its progress using structured logging. Unlike other routes,
+// this endpoint relies on SPIFFE authentication rather than JWT validation.
 func routeDeleteSecret(w http.ResponseWriter, r *http.Request) {
-	log.Log().Info("routeDeleteSecret",
-		"method", r.Method,
-		"path", r.URL.Path,
+	log.Log().Info("routeDeleteSecret", "method", r.Method, "path", r.URL.Path,
 		"query", r.URL.RawQuery)
 
-	validJwt := ensureValidJwt(w, r)
+	validJwt := net.ValidateJwt(w, r, state.AdminToken())
 	if !validJwt {
 		return
 	}
 
-	body := net.ReadRequestBody(r, w)
-	if body == nil {
+	requestBody := net.ReadRequestBody(r, w)
+	if requestBody == nil {
 		return
 	}
 
-	var req reqres.SecretDeleteRequest
-	if err := net.HandleRequestError(w, json.Unmarshal(body, &req)); err != nil {
-		log.Log().Error("routeDeleteSecret",
-			"msg", "Problem unmarshalling request",
-			"err", err.Error())
+	request := net.HandleRequest[
+		reqres.SecretDeleteRequest, reqres.SecretDeleteResponse](
+		requestBody, w,
+		reqres.SecretDeleteResponse{Err: reqres.ErrBadInput},
+	)
+	if request == nil {
 		return
 	}
 
-	path := req.Path
-	versions := req.Versions
+	path := request.Path
+	versions := request.Versions
 	if len(versions) == 0 {
 		versions = []int{}
 	}
 
 	state.DeleteSecret(path, versions)
-	log.Log().Info("routeDeleteSecret",
-		"msg", "Secret deleted")
+	log.Log().Info("routeDeleteSecret", "msg", "Secret deleted")
 
-	w.WriteHeader(http.StatusOK)
-	_, err := io.WriteString(w, "")
-	if err != nil {
-		log.Log().Error("routeDeleteSecret",
-			"msg", "Problem writing response",
-			"err", err.Error())
+	responseBody := net.MarshalBody(reqres.SecretDeleteResponse{}, w)
+	if responseBody == nil {
+		return
 	}
+
+	net.Respond(http.StatusOK, responseBody, w)
+	log.Log().Info("routeDeleteSecret", "msg", "OK")
 }

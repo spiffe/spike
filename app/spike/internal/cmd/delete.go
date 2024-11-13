@@ -6,7 +6,6 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/spiffe/spike/app/spike/internal/state"
 	"strconv"
 	"strings"
 
@@ -14,6 +13,7 @@ import (
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 
 	"github.com/spiffe/spike/app/spike/internal/net"
+	"github.com/spiffe/spike/app/spike/internal/state"
 )
 
 // NewDeleteCommand creates and returns a new cobra.Command for deleting secrets.
@@ -40,7 +40,7 @@ import (
 //	spike delete secret/apocalyptica -v 1,2,3     # Deletes specific versions
 //	spike delete secret/apocalyptica -v 0,1,2     # Deletes current version plus 1,2
 //
-// The command performs validation to ensure:
+// The command performs trust to ensure:
 //   - Exactly one path argument is provided
 //   - Version numbers are valid non-negative integers
 //   - Version strings are properly formatted
@@ -59,16 +59,13 @@ Examples:
   spike delete secret/apocalyptica -v 0,1,2     # Deletes current version plus versions 1 and 2`,
 		Args: cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
-			// TODO: new flow
 			adminToken, err := state.AdminToken()
 			if err != nil {
-				fmt.Println("SPIKE is not initialized.")
-				fmt.Println("Please run `spike init` to initialize SPIKE.")
+				fmt.Println("Please login first with `spike login`.")
 				return
 			}
 			if adminToken == "" {
-				fmt.Println("SPIKE is not initialized.")
-				fmt.Println("Please run `spike init` to initialize SPIKE.")
+				fmt.Println("Please login first with `spike login`.")
 				return
 			}
 

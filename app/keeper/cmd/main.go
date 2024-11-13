@@ -10,6 +10,7 @@ import (
 
 	"github.com/spiffe/spike/app/keeper/internal/env"
 	"github.com/spiffe/spike/app/keeper/internal/handle"
+	"github.com/spiffe/spike/app/keeper/internal/trust"
 	"github.com/spiffe/spike/internal/config"
 	"github.com/spiffe/spike/internal/log"
 	"github.com/spiffe/spike/internal/net"
@@ -28,9 +29,7 @@ func main() {
 	}
 	defer spiffe.CloseSource(source)
 
-	if !config.IsKeeper(spiffeid) {
-		log.FatalF("SPIFFE ID %s is not valid.\n", spiffeid)
-	}
+	trust.Authenticate(spiffeid)
 
 	log.Log().Info(appName,
 		"msg", fmt.Sprintf("Starting service: %s v%s",

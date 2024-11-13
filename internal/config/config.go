@@ -114,7 +114,7 @@ func CanTalkToAnyone(_ string) bool {
 // This is used as a validator in SPIKE Nexus, because currently only SPIKE
 // Keeper or SPIKE Pilot can communicate with SPIKE Nexus.
 //
-// This validation will evolve later.
+// This trust will evolve later.
 //
 // The function compares the input SPIFFE ID against the configured Spike Keeper
 // SPIFFE ID from the environment. This is typically used for validating whether

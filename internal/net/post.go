@@ -7,10 +7,13 @@ package net
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"os"
 	"path/filepath"
+
+	"github.com/spiffe/spike/internal/log"
 )
 
 // readJWTFile attempts to read the JWT from the .spike-admin-token file
@@ -49,6 +52,7 @@ func body(r *http.Response) (bod []byte, err error) {
 }
 
 var ErrNotFound = errors.New("not found")
+var ErrUnauthorized = errors.New("unauthorized")
 
 // Post performs an HTTP POST request with a JSON payload and returns the
 // response body. It handles the common cases of connection errors, non-200
@@ -81,6 +85,8 @@ var ErrNotFound = errors.New("not found")
 //	    log.Fatalf("failed to post: %v", err)
 //	}
 func Post(client *http.Client, path string, mr []byte) ([]byte, error) {
+	log.Log().Info("post", "path", path)
+
 	// Create the request while preserving the mTLS client
 	req, err := http.NewRequest("POST", path, bytes.NewBuffer(mr))
 	if err != nil {
@@ -101,6 +107,10 @@ func Post(client *http.Client, path string, mr []byte) ([]byte, error) {
 	// Use the existing mTLS client to make the request
 	r, err := client.Do(req)
 	if err != nil {
+		fmt.Println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> PROBLEM")
+		fmt.Println(err.Error())
+		fmt.Println("----------------------------------------")
+
 		return []byte{}, errors.Join(
 			errors.New("post: Problem connecting to peer"),
 			err,
@@ -111,6 +121,11 @@ func Post(client *http.Client, path string, mr []byte) ([]byte, error) {
 		if r.StatusCode == http.StatusNotFound {
 			return []byte{}, ErrNotFound
 		}
+
+		if r.StatusCode == http.StatusUnauthorized {
+			return []byte{}, ErrUnauthorized
+		}
+
 		return []byte{}, errors.New("post: Problem connecting to peer")
 	}
 

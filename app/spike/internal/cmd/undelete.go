@@ -39,7 +39,7 @@ import (
 //	spike undelete secret/ella -v 1,2,3  # Restores specific versions
 //	spike undelete secret/ella -v 0,1,2  # Restores current version plus 1,2
 //
-// The command performs validation to ensure:
+// The command performs trust to ensure:
 //   - Exactly one path argument is provided
 //   - Version numbers are valid non-negative integers
 //   - Version strings are properly formatted
@@ -61,16 +61,13 @@ Examples:
   spike undelete secret/ella -v 0,1,2  # Undeletes current version plus versions 1 and 2`,
 		Args: cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
-			// TODO: new flow
 			adminToken, err := state.AdminToken()
 			if err != nil {
-				fmt.Println("SPIKE is not initialized.")
-				fmt.Println("Please run `spike init` to initialize SPIKE.")
+				fmt.Println("Please login first with `spike login`.")
 				return
 			}
 			if adminToken == "" {
-				fmt.Println("SPIKE is not initialized.")
-				fmt.Println("Please run `spike init` to initialize SPIKE.")
+				fmt.Println("Please login first with `spike login`.")
 				return
 			}
 

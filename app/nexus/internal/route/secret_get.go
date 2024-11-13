@@ -5,12 +5,7 @@
 package route
 
 import (
-	"encoding/json"
-	"fmt"
-	"github.com/golang-jwt/jwt/v5"
-	"io"
 	"net/http"
-	"strings"
 
 	"github.com/spiffe/spike/app/nexus/internal/state"
 	"github.com/spiffe/spike/internal/entity/v1/reqres"
@@ -18,119 +13,87 @@ import (
 	"github.com/spiffe/spike/internal/net"
 )
 
-func ensureValidJwt(w http.ResponseWriter, r *http.Request) bool {
-	// Extract JWT from Authorization header
-	authHeader := r.Header.Get("Authorization")
-	if authHeader == "" || !strings.HasPrefix(authHeader, "Bearer ") {
-		log.Log().Info("routeGetSecret", "msg", "Missing or invalid authorization header")
-		w.WriteHeader(http.StatusUnauthorized)
-		_, err := io.WriteString(w, "")
-		if err != nil {
-			log.Log().Error("routeGetSecret",
-				"msg", "Problem writing response", "err", err.Error())
-		}
-		return false
-	}
-
-	tokenString := strings.TrimPrefix(authHeader, "Bearer ")
-
-	// Parse and validate the token
-	token, err := jwt.ParseWithClaims(tokenString, &state.CustomClaims{}, func(token *jwt.Token) (interface{}, error) {
-		// Validate the signing method
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
-		}
-
-		adminToken := state.AdminToken()
-
-		// Return the key used to sign the token
-		return []byte(adminToken), nil
-	})
-
-	if err != nil || !token.Valid {
-		log.Log().Info("routeGetSecret",
-			"msg", "Invalid token",
-			"err", err.Error())
-		w.WriteHeader(http.StatusUnauthorized)
-		_, err := io.WriteString(w, "")
-		if err != nil {
-			log.Log().Error("routeGetSecret",
-				"msg", "Problem writing response", "err", err.Error())
-		}
-		return false
-	}
-
-	// Validate custom claims
-	claims, ok := token.Claims.(*state.CustomClaims)
-	if !ok || claims.Issuer != "nexus" || claims.AdminTokenID != "spike-admin-jwt" {
-		log.Log().Info("routeGetSecret", "msg", "Invalid token claims")
-		w.WriteHeader(http.StatusUnauthorized)
-		_, err := io.WriteString(w, "")
-		if err != nil {
-			log.Log().Error("routeGetSecret",
-				"msg", "Problem writing response", "err", err.Error())
-		}
-		return false
-	}
-
-	log.Log().Info("routeGetSecret", "msg", "Valid token")
-
-	return true
-}
-
+// routeGetSecret handles requests to retrieve a secret at a specific path
+// and version.
+//
+// This endpoint requires a valid admin JWT token for authentication. The
+// function retrieves a secret based on the provided path and optional version
+// number. If no version is specified, the latest version is returned.
+//
+// The function follows these steps:
+//  1. Validates the JWT token
+//  2. Validates and unmarshals the request body
+//  3. Attempts to retrieve the secret
+//  4. Returns the secret data or an appropriate error response
+//
+// Request body format:
+//
+//	{
+//	    "path": string,     // Path to the secret
+//	    "version": int      // Optional: specific version to retrieve
+//	}
+//
+// Response format on success (200 OK):
+//
+//	{
+//	    "data": {          // The secret data
+//	        // Secret key-value pairs
+//	    }
+//	}
+//
+// Error responses:
+//   - 401 Unauthorized: Invalid or missing JWT token
+//   - 400 Bad Request: Invalid request body
+//   - 404 Not Found: Secret doesn't exist at specified path/version
+//
+// All operations are logged using structured logging.
 func routeGetSecret(w http.ResponseWriter, r *http.Request) {
-	log.Log().Info("routeGetSecret",
-		"method", r.Method,
-		"path", r.URL.Path,
+	log.Log().Info("routeGetSecret", "method", r.Method, "path", r.URL.Path,
 		"query", r.URL.RawQuery)
 
-	validJwt := ensureValidJwt(w, r)
+	validJwt := net.ValidateJwt(w, r, state.AdminToken())
 	if !validJwt {
 		return
 	}
 
-	body := net.ReadRequestBody(r, w)
-	if body == nil {
+	requestBody := net.ReadRequestBody(r, w)
+	if requestBody == nil {
 		return
 	}
 
-	var req reqres.SecretReadRequest
-	if err := net.HandleRequestError(w, json.Unmarshal(body, &req)); err != nil {
-		log.Log().Error("routeGetSecret",
-			"msg", "Problem unmarshalling request",
-			"err", err.Error())
+	request := net.HandleRequest[
+		reqres.SecretReadRequest, reqres.SecretReadResponse](
+		requestBody, w,
+		reqres.SecretReadResponse{Err: reqres.ErrBadInput},
+	)
+	if request == nil {
 		return
 	}
 
-	version := req.Version
-	path := req.Path
+	version := request.Version
+	path := request.Path
 
 	secret, exists := state.GetSecret(path, version)
 	if !exists {
 		log.Log().Info("routeGetSecret", "msg", "Secret not found")
-		w.WriteHeader(http.StatusNotFound)
-		_, err := io.WriteString(w, "")
-		if err != nil {
-			log.Log().Error("routeGetSecret",
-				"msg", "Problem writing response", "err", err.Error())
+
+		res := reqres.SecretReadResponse{Err: reqres.ErrNotFound}
+		responseBody := net.MarshalBody(res, w)
+		if responseBody == nil {
+			return
 		}
+
+		net.Respond(http.StatusNotFound, responseBody, w)
+		log.Log().Info("routeGetSecret", "msg", "not found")
 		return
 	}
 
 	res := reqres.SecretReadResponse{Data: secret}
-	md, err := json.Marshal(res)
-	if err != nil {
-		log.Log().Error("routeGetSecret",
-			"msg", "Problem generating response", "err", err.Error())
-		w.WriteHeader(http.StatusInternalServerError)
+	responseBody := net.MarshalBody(res, w)
+	if responseBody == nil {
+		return
 	}
 
-	log.Log().Info("routeGetSecret", "msg", "Got secret")
-
-	w.WriteHeader(http.StatusOK)
-	_, err = io.WriteString(w, string(md))
-	if err != nil {
-		log.Log().Error("routeGetSecret",
-			"msg", "Problem writing response", "err", err.Error())
-	}
+	net.Respond(http.StatusOK, responseBody, w)
+	log.Log().Info("routeGetSecret", "msg", "OK")
 }
