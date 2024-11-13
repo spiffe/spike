@@ -21,6 +21,10 @@ func routeKeep(w http.ResponseWriter, r *http.Request) {
 		"path", r.URL.Path,
 		"query", r.URL.RawQuery)
 
+	// Start with the default response.
+	res := reqres.RootKeyCacheResponse{}
+	statusCode := http.StatusOK
+
 	body := net.ReadRequestBody(r, w)
 	if body == nil {
 		return
@@ -32,19 +36,29 @@ func routeKeep(w http.ResponseWriter, r *http.Request) {
 			"msg", "Problem unmarshalling request",
 			"err", err.Error())
 
-		w.WriteHeader(http.StatusBadRequest)
-		res := reqres.RootKeyCacheResponse{
-			Err: reqres.ErrBadInput,
-		}
+		res.Err = reqres.ErrBadInput
+		statusCode = http.StatusBadRequest
+
 		body, err := json.Marshal(res)
 		if err != nil {
-			res.Err = reqres.ErrServerFault
-
 			log.Log().Error("routeKeep",
 				"msg", "Problem generating response",
 				"err", err.Error())
+
+			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusInternalServerError)
+			_, err = w.Write([]byte(`{"error":"internal server error"}`))
+			if err != nil {
+				log.Log().Error("routeKeep",
+					"msg", "Problem writing response",
+					"err", err.Error())
+				return
+			}
+			return
 		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(statusCode)
 
 		_, err = io.WriteString(w, string(body))
 		if err != nil {
@@ -59,17 +73,33 @@ func routeKeep(w http.ResponseWriter, r *http.Request) {
 	rootKey := req.RootKey
 	state.SetRootKey(rootKey)
 
-	w.WriteHeader(http.StatusOK)
-	res := reqres.RootKeyCacheResponse{}
+	// w.Header().Set("Content-Type", "application/json")
+	// w.WriteHeader(http.StatusOK)
+
+	statusCode = http.StatusOK
+	res.Err = ""
+
 	body, err := json.Marshal(res)
 	if err != nil {
-		res.Err = reqres.ErrServerFault
-
 		log.Log().Error("routeKeep",
 			"msg", "Problem generating response",
 			"err", err.Error())
+
+		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusInternalServerError)
+		_, err = w.Write([]byte(`{"error":"internal server error"}`))
+		if err != nil {
+			log.Log().Error("routeKeep",
+				"msg", "Problem writing response",
+				"err", err.Error())
+			return
+		}
+		return
 	}
+
+	w.Header().Set("Content-Type", "application/json")
+	statusCode = http.StatusOK
+	res.Err = ""
 
 	_, err = io.WriteString(w, string(body))
 	if err != nil {
