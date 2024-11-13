@@ -18,7 +18,8 @@ func HandleRoute(h Handler) {
 			TrailId:   crypto.Id(),
 			Timestamp: now,
 			UserId:    "",
-			Action:    "",
+			Action:    "enter",
+			Path:      request.URL.Path,
 			Resource:  "",
 			SessionID: "",
 			State:     log.Created,
@@ -26,9 +27,14 @@ func HandleRoute(h Handler) {
 		log.Audit(entry)
 
 		err := h(writer, request, &entry)
-		if err != nil {
+		if err == nil {
+			entry.State = log.Success
+		} else {
 			entry.State = log.Errored
 			entry.Err = err.Error()
 		}
+
+		entry.Duration = time.Since(now)
+		log.Audit(entry)
 	})
 }

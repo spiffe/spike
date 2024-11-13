@@ -35,6 +35,10 @@ func ListSecretKeys(source *workloadapi.X509Source) ([]string, error) {
 	if errors.Is(err, net.ErrNotFound) {
 		return []string{}, nil
 	}
+	if errors.Is(err, net.ErrUnauthorized) {
+		return []string{},
+			errors.New(`unauthorized. Please login first with 'spike login'`)
+	}
 
 	var res reqres.SecretListResponse
 	err = json.Unmarshal(body, &res)
