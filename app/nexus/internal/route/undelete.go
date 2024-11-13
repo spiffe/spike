@@ -5,8 +5,6 @@
 package route
 
 import (
-	"encoding/json"
-	"io"
 	"net/http"
 
 	"github.com/spiffe/spike/app/nexus/internal/state"
@@ -21,21 +19,24 @@ func routeUndeleteSecret(w http.ResponseWriter, r *http.Request) {
 		"path", r.URL.Path,
 		"query", r.URL.RawQuery)
 
-	validJwt := ensureValidJwt(w, r)
+	validJwt := net.ValidateJwt(w, r, state.AdminToken())
 	if !validJwt {
 		return
 	}
 
-	body := net.ReadRequestBody(r, w)
-	if body == nil {
+	requestBody := net.ReadRequestBody(r, w)
+	if requestBody == nil {
 		return
 	}
 
-	var req reqres.SecretUndeleteRequest
-	if err := net.HandleRequestError(w, json.Unmarshal(body, &req)); err != nil {
-		log.Log().Error("routeUndeleteSecret",
-			"msg", "Problem unmarshalling request",
-			"err", err.Error())
+	req := net.HandleRequest[
+		reqres.SecretUndeleteRequest, reqres.SecretUndeleteResponse](
+		requestBody, w,
+		reqres.SecretUndeleteResponse{Err: reqres.ErrBadInput},
+	)
+
+	req := newSecretUndeleteRequest(requestBody, w)
+	if req == nil {
 		return
 	}
 
@@ -48,11 +49,12 @@ func routeUndeleteSecret(w http.ResponseWriter, r *http.Request) {
 	state.UndeleteSecret(path, versions)
 	log.Log().Info("routeUndeleteSecret", "msg", "Secret undeleted")
 
-	w.WriteHeader(http.StatusOK)
-	_, err := io.WriteString(w, "")
-	if err != nil {
-		log.Log().Error("routeUndeleteSecret",
-			"msg", "Problem writing response",
-			"err", err.Error())
+	res := reqres.SecretUndeleteResponse{}
+	responseBody := net.MarshalBody(res, w)
+	if responseBody == nil {
+		return
 	}
+
+	net.Respond(http.StatusOK, responseBody, w)
+	log.Log().Info("routeUndeleteSecret", "msg", "OK")
 }

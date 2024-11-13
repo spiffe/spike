@@ -1,3 +1,41 @@
+// HandleRequest is a generic request handler for unmarshalling JSON requests
+func HandleRequest[Req any, Res any](
+    requestBody []byte,
+    w http.ResponseWriter,
+    errorResponse Res,
+) *Req {
+    var request Req
+    if err := net.HandleRequestError(
+        w, json.Unmarshal(requestBody, &request),
+    ); err != nil {
+        log.Log().Error("HandleRequest",
+            "msg", "Problem unmarshalling request",
+            "err", err.Error())
+
+        responseBody := net.MarshalBody(errorResponse, w)
+        if responseBody == nil {
+            return nil
+        }
+
+        net.Respond(http.StatusBadRequest, responseBody, w)
+        return nil
+    }
+    return &request
+}
+
+// Example usage:
+func newSecretUndeleteRequest(
+    requestBody []byte,
+    w http.ResponseWriter,
+) *reqres.SecretUndeleteRequest {
+    return HandleRequest[reqres.SecretUndeleteRequest, reqres.SecretUndeleteResponse](
+        requestBody,
+        w,
+        reqres.SecretUndeleteResponse{Err: reqres.ErrBadInput},
+    )
+}
+
+
 PROPOSAL: Backup Admins
 Backup Admin System:
 Each admin can have one designated backup admin

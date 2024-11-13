@@ -10,7 +10,6 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"golang.org/x/crypto/pbkdf2"
-	"io"
 	"net/http"
 
 	"github.com/spiffe/spike/app/nexus/internal/state"
@@ -19,47 +18,61 @@ import (
 	"github.com/spiffe/spike/internal/net"
 )
 
+func newInitRequest(
+	requestBody []byte, w http.ResponseWriter,
+) *reqres.InitRequest {
+	var request reqres.InitRequest
+	if err := net.HandleRequestError(
+		w, json.Unmarshal(requestBody, &request),
+	); err != nil {
+		log.Log().Error("newInitRequest",
+			"msg", "Problem unmarshalling request",
+			"err", err.Error())
+
+		responseBody := net.MarshalBody(reqres.InitResponse{
+			Err: reqres.ErrBadInput}, w)
+		if responseBody == nil {
+			return nil
+		}
+
+		net.Respond(http.StatusBadRequest, responseBody, w)
+		return nil
+	}
+	return &request
+}
+
 func routeInit(w http.ResponseWriter, r *http.Request) {
 	log.Log().Info("routeInit",
 		"method", r.Method,
 		"path", r.URL.Path,
 		"query", r.URL.RawQuery)
 
-	body := net.ReadRequestBody(r, w)
-	if body == nil {
+	validJwt := net.ValidateJwt(w, r, state.AdminToken())
+	if !validJwt {
 		return
 	}
 
-	var req reqres.InitRequest
-	if err := net.HandleRequestError(w, json.Unmarshal(body, &req)); err != nil {
-		log.Log().Info("routeInit",
-			"msg", "Problem unmarshalling request",
-			"err", err.Error())
+	requestBody := net.ReadRequestBody(r, w)
+	if requestBody == nil {
 		return
 	}
 
-	password := req.Password
+	request := newInitRequest(requestBody, w)
+	if request == nil {
+		return
+	}
+
+	password := request.Password
 
 	if len(password) < 16 {
-		w.WriteHeader(http.StatusBadRequest)
+		res := reqres.InitResponse{Err: reqres.ErrLowEntropy}
 
-		res := reqres.InitResponse{
-			Err: reqres.ErrLowEntropy,
-		}
-		body, err := json.Marshal(res)
-		if err != nil {
-			res.Err = reqres.ErrServerFault
-
-			log.Log().Error("routeInit",
-				"msg", "Problem generating response", "err", err.Error())
-			w.WriteHeader(http.StatusInternalServerError)
+		responseBody := net.MarshalBody(res, w)
+		if responseBody == nil {
+			return
 		}
 
-		_, err = io.WriteString(w, string(body))
-		if err != nil {
-			log.Log().Error("routeInit",
-				"msg", "Problem writing response", "err", err.Error())
-		}
+		net.Respond(http.StatusBadRequest, responseBody, w)
 		return
 	}
 
@@ -68,52 +81,41 @@ func routeInit(w http.ResponseWriter, r *http.Request) {
 		log.Log().Info("routeInit",
 			"msg", "Already initialized")
 
-		w.WriteHeader(http.StatusBadRequest)
-
 		res := reqres.InitResponse{
 			Err: reqres.ErrAlreadyInitialized,
 		}
-		body, err := json.Marshal(res)
-		if err != nil {
-			res.Err = reqres.ErrServerFault
 
-			log.Log().Error("routeInit",
-				"msg", "Problem generating response", "err", err.Error())
-			w.WriteHeader(http.StatusInternalServerError)
+		responseBody := net.MarshalBody(res, w)
+		if responseBody == nil {
+			return
 		}
 
-		_, err = io.WriteString(w, string(body))
-		if err != nil {
-			log.Log().Error("routeInit",
-				"msg", "Problem writing response", "err", err.Error())
-		}
+		net.Respond(http.StatusInternalServerError, responseBody, w)
+
+		log.Log().Info("routeInit", "msg", "exit: Already initialized")
 
 		return
 	}
 
-	// No admin token yet.
+	log.Log().Info("routeInit", "msg", "No admin token. will create one")
 
 	// Generate adminToken (32 bytes)
 	adminTokenBytes := make([]byte, 32)
 	if _, err := rand.Read(adminTokenBytes); err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
 		log.Log().Error("routeInit",
 			"msg", "Failed to generate admin token", "err", err.Error())
 
 		res := reqres.InitResponse{
 			Err: reqres.ErrServerFault,
 		}
-		body, err := json.Marshal(res)
-		if err != nil {
-			log.Log().Error("routeInit",
-				"msg", "Problem generating response", "err", err.Error())
+
+		responseBody := net.MarshalBody(res, w)
+		if responseBody == nil {
+			return
 		}
 
-		_, err = io.WriteString(w, string(body))
-		if err != nil {
-			log.Log().Error("routeInit",
-				"msg", "Problem writing response", "err", err.Error())
-		}
+		net.Respond(http.StatusInternalServerError, responseBody, w)
+		log.Log().Info("routeInit", "msg", "exit: Failed to generate admin token")
 
 		return
 	}
@@ -121,28 +123,26 @@ func routeInit(w http.ResponseWriter, r *http.Request) {
 	// Generate salt and hash password
 	salt := make([]byte, 16)
 	if _, err := rand.Read(salt); err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
 		log.Log().Error("routeInit",
-			"msg", "Failed to generate salt", "err", err.Error())
+			"msg", "Failed to generate salt",
+			"err", err.Error())
 
 		res := reqres.InitResponse{
 			Err: reqres.ErrServerFault,
 		}
-		body, err := json.Marshal(res)
-		if err != nil {
-			log.Log().Error("routeInit",
-				"msg", "Problem generating response", "err", err.Error())
+
+		responseBody := net.MarshalBody(res, w)
+		if responseBody == nil {
+			return
 		}
 
-		_, err = io.WriteString(w, string(body))
-		if err != nil {
-			log.Log().Error("routeInit",
-				"msg", "Problem writing response", "err", err.Error())
-		}
+		net.Respond(http.StatusInternalServerError, responseBody, w)
+		log.Log().Info("routeInit", "msg", "exit: Failed to generate salt")
 
 		return
 	}
 
+	// TODO: make this configurable.
 	iterationCount := 600_000 // Minimum OWASP recommendation for PBKDF2-SHA256
 	hashLength := 32          // 256 bits output
 
@@ -155,21 +155,13 @@ func routeInit(w http.ResponseWriter, r *http.Request) {
 		hex.EncodeToString(salt),
 	)
 
-	w.WriteHeader(http.StatusOK)
-
 	res := reqres.InitResponse{}
-	body, err := json.Marshal(res)
-	if err != nil {
-		res.Err = reqres.ErrServerFault
 
-		log.Log().Error("routeInit",
-			"msg", "Problem generating response", "err", err.Error())
-		w.WriteHeader(http.StatusInternalServerError)
+	responseBody := net.MarshalBody(res, w)
+	if responseBody == nil {
+		return
 	}
 
-	_, err = io.WriteString(w, string(body))
-	if err != nil {
-		log.Log().Error("routeInit",
-			"msg", "Problem writing response", "err", err.Error())
-	}
+	net.Respond(http.StatusOK, responseBody, w)
+	log.Log().Info("routeInit", "msg", "OK")
 }

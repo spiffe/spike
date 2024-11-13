@@ -6,7 +6,6 @@ package route
 
 import (
 	"encoding/json"
-	"io"
 	"net/http"
 
 	"github.com/spiffe/spike/app/nexus/internal/state"
@@ -15,55 +14,49 @@ import (
 	"github.com/spiffe/spike/internal/net"
 )
 
+func newSecretDeleteRequest(
+	requestBody []byte, w http.ResponseWriter,
+) *reqres.SecretDeleteRequest {
+	var request reqres.SecretDeleteRequest
+	if err := net.HandleRequestError(
+		w, json.Unmarshal(requestBody, &request),
+	); err != nil {
+		log.Log().Error("newSecretDeleteRequest",
+			"msg", "Problem unmarshalling request",
+			"err", err.Error())
+
+		responseBody := net.MarshalBody(reqres.SecretDeleteResponse{
+			Err: reqres.ErrBadInput}, w)
+		if responseBody == nil {
+			return nil
+		}
+
+		net.Respond(http.StatusBadRequest, responseBody, w)
+		return nil
+	}
+	return &request
+}
+
 func routeDeleteSecret(w http.ResponseWriter, r *http.Request) {
 	log.Log().Info("routeDeleteSecret",
 		"method", r.Method,
 		"path", r.URL.Path,
 		"query", r.URL.RawQuery)
 
-	validJwt := ensureValidJwt(w, r)
+	validJwt := net.ValidateJwt(w, r, state.AdminToken())
 	if !validJwt {
-		w.WriteHeader(http.StatusUnauthorized)
-
-		res := reqres.SecretDeleteResponse{
-			Err: reqres.ErrUnauthorized,
-		}
-
-		body, err := json.Marshal(res)
-		if err != nil {
-			res.Err = reqres.ErrServerFault
-
-			log.Log().Error("routeDeleteSecret",
-				"msg", "Problem generating response",
-				"err", err.Error())
-			w.WriteHeader(http.StatusInternalServerError)
-		}
-
-		_, err = io.WriteString(w, string(body))
-		if err != nil {
-			log.Log().Error("routeDeleteSecret",
-				"msg", "Problem writing response",
-				"err", err.Error())
-		}
-
 		return
 	}
 
-	body := net.ReadRequestBody(r, w)
-	if body == nil {
+	requestBody := net.ReadRequestBody(r, w)
+	if requestBody == nil {
 		return
 	}
 
-	var req reqres.SecretDeleteRequest
-	if err := net.HandleRequestError(w, json.Unmarshal(body, &req)); err != nil {
-		log.Log().Error("routeDeleteSecret",
-			"msg", "Problem unmarshalling request",
-			"err", err.Error())
-		return
-	}
+	request := newSecretDeleteRequest(requestBody, w)
 
-	path := req.Path
-	versions := req.Versions
+	path := request.Path
+	versions := request.Versions
 	if len(versions) == 0 {
 		versions = []int{}
 	}
@@ -72,11 +65,9 @@ func routeDeleteSecret(w http.ResponseWriter, r *http.Request) {
 	log.Log().Info("routeDeleteSecret",
 		"msg", "Secret deleted")
 
-	w.WriteHeader(http.StatusOK)
-	_, err := io.WriteString(w, "")
-	if err != nil {
-		log.Log().Error("routeDeleteSecret",
-			"msg", "Problem writing response",
-			"err", err.Error())
-	}
+	responseBody := net.MarshalBody(reqres.SecretDeleteResponse{}, w)
+
+	net.Respond(http.StatusOK, responseBody, w)
+
+	log.Log().Info("routeDeleteSecret", "msg", "OK")
 }

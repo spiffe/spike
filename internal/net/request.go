@@ -5,10 +5,12 @@
 package net
 
 import (
+	"encoding/json"
 	"errors"
 	"io"
-	"log"
 	"net/http"
+
+	"github.com/spiffe/spike/internal/log"
 )
 
 func requestBody(r *http.Request) (bod []byte, err error) {
@@ -36,21 +38,31 @@ func ReadRequestBody(r *http.Request, w http.ResponseWriter) []byte {
 	body, err := requestBody(r)
 
 	if err != nil {
-		log.Println("Problem reading request body:", err.Error())
+		log.Log().Info("readRequestBody",
+			"msg", "Problem reading request body",
+			"err", err.Error())
+
 		w.WriteHeader(http.StatusBadRequest)
 		_, err := io.WriteString(w, "")
 		if err != nil {
-			log.Println("Problem writing response:", err.Error())
+			log.Log().Info("readRequestBody",
+				"msg", "Problem writing response",
+				"err", err.Error())
 		}
+
 		return []byte{}
 	}
 
 	if body == nil {
-		log.Println("No request body.")
+		log.Log().Info("readRequestBody",
+			"msg", "No request body.")
+
 		w.WriteHeader(http.StatusBadRequest)
 		_, err := io.WriteString(w, "")
 		if err != nil {
-			log.Println("Problem writing response:", err.Error())
+			log.Log().Info("readRequestBody",
+				"msg", "Problem writing response",
+				"err", err.Error())
 		}
 		return []byte{}
 	}
@@ -71,4 +83,28 @@ func HandleRequestError(w http.ResponseWriter, err error) error {
 	_, writeErr := io.WriteString(w, "")
 
 	return errors.Join(err, writeErr)
+}
+
+func HandleRequest[Req any, Res any](
+	requestBody []byte,
+	w http.ResponseWriter,
+	errorResponse Res,
+) *Req {
+	var request Req
+	if err := HandleRequestError(
+		w, json.Unmarshal(requestBody, &request),
+	); err != nil {
+		log.Log().Error("HandleRequest",
+			"msg", "Problem unmarshalling request",
+			"err", err.Error())
+
+		responseBody := MarshalBody(errorResponse, w)
+		if responseBody == nil {
+			return nil
+		}
+
+		Respond(http.StatusBadRequest, responseBody, w)
+		return nil
+	}
+	return &request
 }

@@ -6,7 +6,6 @@ package route
 
 import (
 	"encoding/json"
-	"io"
 	"net/http"
 
 	"github.com/spiffe/spike/app/nexus/internal/state"
@@ -15,27 +14,47 @@ import (
 	"github.com/spiffe/spike/internal/net"
 )
 
+func newSecretPutRequest(
+	requestBody []byte, w http.ResponseWriter,
+) *reqres.SecretPutRequest {
+	var request reqres.SecretPutRequest
+	if err := net.HandleRequestError(
+		w, json.Unmarshal(requestBody, &request),
+	); err != nil {
+		log.Log().Error("newSecretPutRequest",
+			"msg", "Problem unmarshalling request",
+			"err", err.Error())
+
+		responseBody := net.MarshalBody(reqres.SecretPutResponse{
+			Err: reqres.ErrBadInput}, w)
+		if responseBody == nil {
+			return nil
+		}
+
+		net.Respond(http.StatusBadRequest, responseBody, w)
+		return nil
+	}
+	return &request
+}
+
 func routePutSecret(w http.ResponseWriter, r *http.Request) {
 	log.Log().Info("routeGetSecret",
 		"method", r.Method,
 		"path", r.URL.Path,
 		"query", r.URL.RawQuery)
 
-	validJwt := ensureValidJwt(w, r)
+	validJwt := net.ValidateJwt(w, r, state.AdminToken())
 	if !validJwt {
 		return
 	}
 
-	body := net.ReadRequestBody(r, w)
-	if body == nil {
+	requestBody := net.ReadRequestBody(r, w)
+	if requestBody == nil {
 		return
 	}
 
-	var req reqres.SecretPutRequest
-	if err := net.HandleRequestError(w, json.Unmarshal(body, &req)); err != nil {
-		log.Log().Error("routePutSecret",
-			"msg", "Problem unmarshalling request",
-			"err", err.Error())
+	req := newSecretPutRequest(requestBody, w)
+	if req == nil {
 		return
 	}
 
@@ -46,10 +65,12 @@ func routePutSecret(w http.ResponseWriter, r *http.Request) {
 
 	log.Log().Info("routePutSecret", "msg", "Secret upserted")
 
-	w.WriteHeader(http.StatusOK)
-	_, err := io.WriteString(w, "")
-	if err != nil {
-		log.Log().Error("routePutSecret",
-			"msg", "Problem writing response", "err", err.Error())
+	res := reqres.SecretPutResponse{}
+	responseBody := net.MarshalBody(res, w)
+	if responseBody == nil {
+		return
 	}
+
+	net.Respond(http.StatusOK, responseBody, w)
+	log.Log().Info("routePutSecret", "msg", "OK")
 }

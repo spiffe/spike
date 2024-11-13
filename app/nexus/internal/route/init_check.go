@@ -6,15 +6,37 @@ package route
 
 import (
 	"encoding/json"
-	"github.com/spiffe/spike/internal/entity/data"
-	"io"
 	"net/http"
 
 	"github.com/spiffe/spike/app/nexus/internal/state"
+	"github.com/spiffe/spike/internal/entity/data"
 	"github.com/spiffe/spike/internal/entity/v1/reqres"
 	"github.com/spiffe/spike/internal/log"
 	"github.com/spiffe/spike/internal/net"
 )
+
+func newCheckInitStateRequest(
+	requestBody []byte, w http.ResponseWriter,
+) *reqres.CheckInitStateRequest {
+	var request reqres.CheckInitStateRequest
+	if err := net.HandleRequestError(
+		w, json.Unmarshal(requestBody, &request),
+	); err != nil {
+		log.Log().Error("newCheckInitStateRequest",
+			"msg", "Problem unmarshalling request",
+			"err", err.Error())
+
+		responseBody := net.MarshalBody(reqres.CheckInitStateResponse{
+			Err: reqres.ErrBadInput}, w)
+		if responseBody == nil {
+			return nil
+		}
+
+		net.Respond(http.StatusBadRequest, responseBody, w)
+		return nil
+	}
+	return &request
+}
 
 func routeInitCheck(w http.ResponseWriter, r *http.Request) {
 	log.Log().Info("routeInitCheck",
@@ -22,16 +44,13 @@ func routeInitCheck(w http.ResponseWriter, r *http.Request) {
 		"path", r.URL.Path,
 		"query", r.URL.RawQuery)
 
-	body := net.ReadRequestBody(r, w)
-	if body == nil {
+	validJwt := net.ValidateJwt(w, r, state.AdminToken())
+	if !validJwt {
 		return
 	}
 
-	var req reqres.CheckInitStateRequest
-	if err := net.HandleRequestError(w, json.Unmarshal(body, &req)); err != nil {
-		log.Log().Info("routeInitCheck",
-			"msg", "Problem unmarshalling request",
-			"err", err.Error())
+	responseBody := net.ReadRequestBody(r, w)
+	if responseBody == nil {
 		return
 	}
 
@@ -44,21 +63,18 @@ func routeInitCheck(w http.ResponseWriter, r *http.Request) {
 		res := reqres.CheckInitStateResponse{
 			State: data.AlreadyInitialized,
 		}
-		md, err := json.Marshal(res)
-		if err != nil {
-			res.Err = reqres.ErrServerFault
 
-			log.Log().Error("routeInitCheck",
-				"msg", "Problem generating response", "err", err.Error())
-			w.WriteHeader(http.StatusInternalServerError)
+		responseBody := net.MarshalBody(res, w)
+		if responseBody == nil {
+			return
 		}
 
-		w.WriteHeader(http.StatusOK)
-		_, err = io.WriteString(w, string(md))
-		if err != nil {
-			log.Log().Error("routeInitCheck",
-				"msg", "Problem writing response", "err", err.Error())
-		}
+		net.Respond(http.StatusOK, responseBody, w)
+
+		log.Log().Info("routeInitCheck",
+			"already_initialized", true,
+			"msg", "OK",
+		)
 
 		return
 	}
@@ -66,13 +82,13 @@ func routeInitCheck(w http.ResponseWriter, r *http.Request) {
 	res := reqres.CheckInitStateResponse{
 		State: data.NotInitialized,
 	}
-	md, err := json.Marshal(res)
 
-	w.WriteHeader(http.StatusOK)
-	_, err = io.WriteString(w, string(md))
-	if err != nil {
-		log.Log().Error("routeInitCheck",
-			"msg", "Problem writing response", "err", err.Error())
+	responseBody = net.MarshalBody(res, w)
+	if responseBody == nil {
+		return
 	}
 
+	net.Respond(http.StatusOK, responseBody, w)
+
+	log.Log().Info("routeInitCheck", "msg", "OK")
 }

@@ -6,7 +6,6 @@ package route
 
 import (
 	"encoding/json"
-	"io"
 	"net/http"
 
 	"github.com/spiffe/spike/app/nexus/internal/state"
@@ -15,41 +14,59 @@ import (
 	"github.com/spiffe/spike/internal/net"
 )
 
+func newSecretListRequest(
+	requestBody []byte, w http.ResponseWriter,
+) *reqres.SecretListRequest {
+	var request reqres.SecretListRequest
+	if err := net.HandleRequestError(
+		w, json.Unmarshal(requestBody, &request),
+	); err != nil {
+		log.Log().Error("newSecretListRequest",
+			"msg", "Problem unmarshalling request",
+			"err", err.Error())
+
+		responseBody := net.MarshalBody(reqres.SecretListResponse{
+			Err: reqres.ErrBadInput}, w)
+		if responseBody == nil {
+			return nil
+		}
+
+		net.Respond(http.StatusBadRequest, responseBody, w)
+		return nil
+	}
+	return &request
+}
+
 func routeListPaths(w http.ResponseWriter, r *http.Request) {
 	log.Log().Info("routeListPaths",
 		"method", r.Method,
 		"path", r.URL.Path,
 		"query", r.URL.RawQuery)
 
-	body := net.ReadRequestBody(r, w)
-	if body == nil {
+	validJwt := net.ValidateJwt(w, r, state.AdminToken())
+	if !validJwt {
 		return
 	}
 
-	var req reqres.SecretListRequest
-	if err := net.HandleRequestError(w, json.Unmarshal(body, &req)); err != nil {
-		log.Log().Error("routeListPaths",
-			"msg", "Problem unmarshalling request",
-			"err", err.Error())
+	requestBody := net.ReadRequestBody(r, w)
+	if requestBody == nil {
+		return
+	}
+
+	request := newSecretListRequest(requestBody, w)
+	if request == nil {
 		return
 	}
 
 	keys := state.ListKeys()
 
 	res := reqres.SecretListResponse{Keys: keys}
-	md, err := json.Marshal(res)
-	if err != nil {
-		log.Log().Error("routeListPaths",
-			"msg", "Problem generating response",
-			"err", err.Error())
-		w.WriteHeader(http.StatusInternalServerError)
+
+	responseBody := net.MarshalBody(res, w) // TODO: check all of these methods for nil check.
+	if responseBody == nil {
+		return
 	}
 
-	w.WriteHeader(http.StatusOK)
-	_, err = io.WriteString(w, string(md))
-	if err != nil {
-		log.Log().Error("routeListPaths",
-			"msg", "Problem writing response",
-			"err", err.Error())
-	}
+	net.Respond(http.StatusOK, responseBody, w)
+	log.Log().Info("routeListPaths", "msg", "OK")
 }

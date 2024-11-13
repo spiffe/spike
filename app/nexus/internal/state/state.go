@@ -6,7 +6,6 @@ package state
 
 import (
 	"errors"
-	"github.com/golang-jwt/jwt/v5"
 	"sync"
 	"time"
 
@@ -45,13 +44,6 @@ type SessionToken struct {
 	Signature string
 	IssuedAt  time.Time
 	ExpiresAt time.Time
-}
-
-// CustomClaims embeds RegisteredClaims to inherit standard JWT fields
-type CustomClaims struct {
-	AdminTokenID string `json:"adminTokenId"`
-	// Embed the standard claims
-	*jwt.RegisteredClaims
 }
 
 var (

@@ -6,7 +6,6 @@ package route
 
 import (
 	"encoding/json"
-	"io"
 	"net/http"
 
 	"github.com/spiffe/spike/app/keeper/internal/state"
@@ -15,68 +14,52 @@ import (
 	"github.com/spiffe/spike/internal/net"
 )
 
+func newRootKeyReadRequest(
+	requestBody []byte, w http.ResponseWriter,
+) *reqres.RootKeyReadRequest {
+	var request reqres.RootKeyReadRequest
+	if err := net.HandleRequestError(
+		w, json.Unmarshal(requestBody, &request),
+	); err != nil {
+		log.Log().Error("newRootKeyReadRequest",
+			"msg", "Problem unmarshalling request",
+			"err", err.Error())
+
+		responseBody := net.MarshalBody(reqres.RootKeyReadResponse{
+			Err: reqres.ErrBadInput}, w)
+		if responseBody == nil {
+			return nil
+		}
+
+		net.Respond(http.StatusBadRequest, responseBody, w)
+		return nil
+	}
+	return &request
+}
+
 func routeShow(w http.ResponseWriter, r *http.Request) {
 	log.Log().Info("routeShow",
 		"method", r.Method,
 		"path", r.URL.Path,
 		"query", r.URL.RawQuery)
 
-	body := net.ReadRequestBody(r, w)
-	if body == nil {
+	requestBody := net.ReadRequestBody(r, w)
+	if requestBody == nil {
 		return
 	}
 
-	var req reqres.RootKeyReadRequest
-	if err := net.HandleRequestError(w, json.Unmarshal(body, &req)); err != nil {
-		log.Log().Error("routeShow",
-			"msg", "Problem unmarshalling request",
-			"err", err.Error())
-
-		w.WriteHeader(http.StatusBadRequest)
-
-		res := reqres.RootKeyReadResponse{
-			Err: reqres.ErrBadInput,
-		}
-
-		body, err := json.Marshal(res)
-		if err != nil {
-			res.Err = reqres.ErrServerFault
-
-			log.Log().Error("routeShow",
-				"msg", "Problem generating response",
-				"err", err.Error())
-			w.WriteHeader(http.StatusInternalServerError)
-		}
-
-		_, err = io.WriteString(w, string(body))
-		if err != nil {
-			log.Log().Error("routeShow",
-				"msg", "Problem writing response",
-				"err", err.Error())
-		}
-
+	request := newRootKeyReadRequest(requestBody, w)
+	if request == nil {
 		return
 	}
 
 	rootKey := state.RootKey()
 
-	w.WriteHeader(http.StatusOK)
-	res := reqres.RootKeyReadResponse{RootKey: rootKey}
-	md, err := json.Marshal(res)
-	if err != nil {
-		res.Err = reqres.ErrServerFault
+	responseBody := net.MarshalBody(
+		reqres.RootKeyReadResponse{RootKey: rootKey}, w,
+	)
 
-		log.Log().Error("routeShow",
-			"msg", "Problem generating response",
-			"err", err.Error())
+	net.Respond(http.StatusOK, responseBody, w)
 
-		w.WriteHeader(http.StatusInternalServerError)
-	}
-
-	_, err = io.WriteString(w, string(md))
-	if err != nil {
-		log.Log().Error("routeShow",
-			"msg", "Problem writing response",
-			"err", err.Error())
-	}
+	log.Log().Info("routeShow", "msg", "OK")
 }

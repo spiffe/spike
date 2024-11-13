@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/spiffe/spike/internal/log"
+	"github.com/spiffe/spike/internal/net"
 )
 
 func logAndRoute(entry log.AuditEntry, h handler) handler {
@@ -36,6 +37,6 @@ func factory(p, a, m string) handler {
 	// Fallback route.
 	default:
 		entry.Action = "fallback"
-		return logAndRoute(entry, routeFallback)
+		return logAndRoute(entry, net.Fallback)
 	}
 }

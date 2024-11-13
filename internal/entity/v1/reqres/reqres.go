@@ -22,6 +22,7 @@ var ErrServerFault = ErrorCode("server_fault")
 var ErrUnauthorized = ErrorCode("unauthorized")
 var ErrLowEntropy = ErrorCode("low_entropy")
 var ErrAlreadyInitialized = ErrorCode("already_initialized")
+var ErrNotFound = ErrorCode("not_found")
 
 type FallbackResponse struct {
 	Err ErrorCode `json:"err,omitempty"`

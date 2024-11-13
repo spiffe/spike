@@ -6,22 +6,40 @@ package route
 
 import (
 	"crypto/hmac"
-	// "crypto/rand"
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
 	"golang.org/x/crypto/pbkdf2"
-	"io"
 	"net/http"
-	"time"
-
-	"github.com/golang-jwt/jwt/v5"
 
 	"github.com/spiffe/spike/app/nexus/internal/state"
 	"github.com/spiffe/spike/internal/entity/v1/reqres"
 	"github.com/spiffe/spike/internal/log"
 	"github.com/spiffe/spike/internal/net"
 )
+
+func newAdminLoginRequest(
+	requestBody []byte, w http.ResponseWriter,
+) *reqres.AdminLoginRequest {
+	var request reqres.AdminLoginRequest
+	if err := net.HandleRequestError(
+		w, json.Unmarshal(requestBody, &request),
+	); err != nil {
+		log.Log().Error("newAdminLoginRequest",
+			"msg", "Problem unmarshalling request",
+			"err", err.Error())
+
+		responseBody := net.MarshalBody(reqres.AdminLoginResponse{
+			Err: reqres.ErrBadInput}, w)
+		if responseBody == nil {
+			return nil
+		}
+
+		net.Respond(http.StatusBadRequest, responseBody, w)
+		return nil
+	}
+	return &request
+}
 
 func routeAdminLogin(w http.ResponseWriter, r *http.Request) {
 	log.Log().Info("routeAdminLogin",
@@ -30,18 +48,12 @@ func routeAdminLogin(w http.ResponseWriter, r *http.Request) {
 		"query", r.URL.RawQuery)
 
 	// TODO: signature should be `w, r` for consistency.
-	body := net.ReadRequestBody(r, w)
-	if body == nil {
+	requestBody := net.ReadRequestBody(r, w)
+	if requestBody == nil {
 		return
 	}
 
-	var request reqres.AdminLoginRequest
-	if err := net.HandleRequestError(w, json.Unmarshal(body, &request)); err != nil {
-		log.Log().Info("routeAdminLogin",
-			"msg", "Problem unmarshalling request",
-			"err", err.Error())
-		return
-	}
+	request := newAdminLoginRequest(requestBody, w)
 
 	password := request.Password
 
@@ -54,23 +66,17 @@ func routeAdminLogin(w http.ResponseWriter, r *http.Request) {
 		log.Log().Error("routeAdminLogin",
 			"msg", "Problem decoding salt",
 			"err", err.Error())
-		w.WriteHeader(http.StatusInternalServerError)
 
 		res := reqres.AdminLoginResponse{
 			Err: reqres.ErrServerFault,
 		}
-		body, err = json.Marshal(res)
-		if err != nil {
-			log.Log().Error("routeAdminLogin",
-				"msg", "Problem writing response", "err", err.Error())
-			w.WriteHeader(http.StatusInternalServerError)
+
+		body := net.MarshalBody(res, w)
+		if body == nil {
+			return
 		}
 
-		_, err = io.WriteString(w, "")
-		if err != nil {
-			log.Log().Error("routeAdminLogin",
-				"msg", "Problem writing response", "err", err.Error())
-		}
+		net.Respond(http.StatusInternalServerError, body, w)
 		return
 	}
 
@@ -86,112 +92,56 @@ func routeAdminLogin(w http.ResponseWriter, r *http.Request) {
 		log.Log().Error("routeAdminLogin",
 			"msg", "Problem decoding password hash",
 			"err", err.Error())
-		w.WriteHeader(http.StatusInternalServerError)
-		_, err = io.WriteString(w, "")
-		if err != nil {
-			log.Log().Error("routeAdminLogin",
-				"msg", "Problem writing response", "err", err.Error())
-		}
+
+		responseBody := net.MarshalBody(reqres.AdminLoginResponse{
+			Err: reqres.ErrServerFault}, w)
+
+		net.Respond(http.StatusInternalServerError, responseBody, w)
+		log.Log().Info("routeAdminLogin", "msg", "OK")
+
 		return
 	}
 
 	if !hmac.Equal(ph, b) {
-		log.Log().Info("routeAdminLogin",
-			"msg", "Invalid password")
-		w.WriteHeader(http.StatusUnauthorized)
-		_, err = io.WriteString(w, "")
-		if err != nil {
-			log.Log().Error("routeAdminLogin",
-				"msg", "Problem writing response", "err", err.Error())
-		}
+		log.Log().Info("routeAdminLogin", "msg", "Invalid password")
+
+		responseBody := net.MarshalBody(reqres.AdminLoginResponse{
+			Err: reqres.ErrUnauthorized}, w)
+
+		net.Respond(http.StatusUnauthorized, responseBody, w)
+
+		log.Log().Info("routeAdminLogin", "msg", "unauthorized")
+
 		return
 	}
-
-	// TODO: adminToken / not initialized checks some to these
-	// functions now. it's better to send an error message/code instead.
-	// SPIKE Pilot can parse that code and return a proper error message.
 
 	adminToken := state.AdminToken()
 	if adminToken == "" {
-		log.Log().Error("routeAdminLogin",
-			"msg", "Admin token not set")
-		w.WriteHeader(http.StatusInternalServerError)
-		_, err = io.WriteString(w, "")
-		if err != nil {
-			log.Log().Error("routeAdminLogin",
-				"msg", "Problem writing response", "err", err.Error())
-		}
+		log.Log().Error("routeAdminLogin", "msg", "Admin token not set")
+
+		responseBody := net.MarshalBody(reqres.AdminLoginResponse{
+			Err: reqres.ErrServerFault}, w)
+
+		net.Respond(http.StatusInternalServerError, responseBody, w)
+		log.Log().Info("routeAdminLogin", "msg", "unauthorized")
+
 		return
 	}
 
-	//const tokenLength = 32
-	//// Generate session token
-	//token := make([]byte, tokenLength)
-	//if _, err := rand.Read(token); err != nil {
-	//	log.Log().Error("routeAdminLogin",
-	//		"msg", "Failed to generate session token",
-	//		"err", err.Error())
-	//	w.WriteHeader(http.StatusInternalServerError)
-	//	_, err = io.WriteString(w, "")
-	//	if err != nil {
-	//		log.Log().Error("routeAdminLogin",
-	//			"msg", "Problem writing response", "err", err.Error())
-	//	}
-	//	return
-	//}
-	//
-	// Create JWT with claims
-	now := time.Now()
-	claims := state.CustomClaims{
-		RegisteredClaims: &jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(now.Add(24 * time.Hour)),
-			IssuedAt:  jwt.NewNumericDate(now),
-			NotBefore: jwt.NewNumericDate(now),
-			Issuer:    "nexus",
-			Subject:   "spike-admin",
-		},
-		AdminTokenID: "spike-admin-jwt",
-	}
-
-	// Create token with claims
-	tok := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-
-	// Sign the token with admin token
-	signedToken, err := tok.SignedString([]byte(adminToken))
-	if err != nil {
-		log.Log().Error("routeAdminLogin",
-			"msg", "Failed to sign token",
-			"err", err.Error())
-		w.WriteHeader(http.StatusInternalServerError)
-		_, err = io.WriteString(w, "")
-		if err != nil {
-			log.Log().Error("routeAdminLogin",
-				"msg", "Problem writing response", "err", err.Error())
-		}
+	signedToken := net.CreateJwt(adminToken, w)
+	if signedToken == "" {
 		return
 	}
 
 	res := reqres.AdminLoginResponse{
 		Token: signedToken,
 	}
-	body, err = json.Marshal(res)
-	if err != nil {
-		log.Log().Error("routeAdminLogin",
-			"msg", "Failed to marshal response",
-			"err", err.Error())
-		w.WriteHeader(http.StatusInternalServerError)
-		_, err = io.WriteString(w, "")
-		if err != nil {
-			log.Log().Error("routeAdminLogin",
-				"msg", "Problem writing response", "err", err.Error())
-		}
+
+	responseBody := net.MarshalBody(res, w)
+	if responseBody == nil {
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
-	_, err = w.Write(body)
-	if err != nil {
-		log.Log().Error("routeAdminLogin",
-			"msg", "Problem writing response", "err", err.Error())
-	}
+	net.Respond(http.StatusOK, responseBody, w)
+	log.Log().Info("routeAdminLogin", "msg", "authorized")
 }

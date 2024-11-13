@@ -6,7 +6,6 @@ package route
 
 import (
 	"encoding/json"
-	"io"
 	"net/http"
 
 	"github.com/spiffe/spike/app/keeper/internal/state"
@@ -15,98 +14,58 @@ import (
 	"github.com/spiffe/spike/internal/net"
 )
 
+func newRootKeyCacheRequest(
+	requestBody []byte, w http.ResponseWriter,
+) *reqres.RootKeyCacheRequest {
+	var request reqres.RootKeyCacheRequest
+	if err := net.HandleRequestError(
+		w, json.Unmarshal(requestBody, &request),
+	); err != nil {
+		log.Log().Error("newRootKeyCacheRequest",
+			"msg", "Problem unmarshalling request",
+			"err", err.Error())
+
+		responseBody := net.MarshalBody(reqres.RootKeyCacheResponse{
+			Err: reqres.ErrBadInput}, w)
+		if responseBody == nil {
+			return nil
+		}
+
+		net.Respond(http.StatusBadRequest, responseBody, w)
+		return nil
+	}
+	return &request
+}
+
 func routeKeep(w http.ResponseWriter, r *http.Request) {
 	log.Log().Info("routeKeep",
 		"method", r.Method,
 		"path", r.URL.Path,
 		"query", r.URL.RawQuery)
 
-	// Start with the default response.
-	res := reqres.RootKeyCacheResponse{}
-	statusCode := http.StatusOK
-
-	body := net.ReadRequestBody(r, w)
-	if body == nil {
+	requestBody := net.ReadRequestBody(r, w)
+	if requestBody == nil {
 		return
 	}
 
-	var req reqres.RootKeyCacheRequest
-	if err := net.HandleRequestError(w, json.Unmarshal(body, &req)); err != nil {
-		log.Log().Error("routeKeep",
-			"msg", "Problem unmarshalling request",
-			"err", err.Error())
-
-		res.Err = reqres.ErrBadInput
-		statusCode = http.StatusBadRequest
-
-		body, err := json.Marshal(res)
-		if err != nil {
-			log.Log().Error("routeKeep",
-				"msg", "Problem generating response",
-				"err", err.Error())
-
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusInternalServerError)
-			_, err = w.Write([]byte(`{"error":"internal server error"}`))
-			if err != nil {
-				log.Log().Error("routeKeep",
-					"msg", "Problem writing response",
-					"err", err.Error())
-				return
-			}
-			return
-		}
-
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(statusCode)
-
-		_, err = io.WriteString(w, string(body))
-		if err != nil {
-			log.Log().Error("routeKeep",
-				"msg", "Problem writing response",
-				"err", err.Error())
-		}
-
+	request := net.HandleRequest[
+		reqres.RootKeyCacheRequest, reqres.RootKeyCacheResponse](
+		requestBody, w,
+		reqres.RootKeyCacheResponse{Err: reqres.ErrBadInput},
+	)
+	if request == nil {
 		return
 	}
 
-	rootKey := req.RootKey
+	rootKey := request.RootKey
 	state.SetRootKey(rootKey)
 
-	// w.Header().Set("Content-Type", "application/json")
-	// w.WriteHeader(http.StatusOK)
-
-	statusCode = http.StatusOK
-	res.Err = ""
-
-	body, err := json.Marshal(res)
-	if err != nil {
-		log.Log().Error("routeKeep",
-			"msg", "Problem generating response",
-			"err", err.Error())
-
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusInternalServerError)
-		_, err = w.Write([]byte(`{"error":"internal server error"}`))
-		if err != nil {
-			log.Log().Error("routeKeep",
-				"msg", "Problem writing response",
-				"err", err.Error())
-			return
-		}
+	responseBody := net.MarshalBody(reqres.RootKeyCacheResponse{}, w)
+	if responseBody == nil {
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	statusCode = http.StatusOK
-	res.Err = ""
+	net.Respond(http.StatusOK, responseBody, w)
 
-	_, err = io.WriteString(w, string(body))
-	if err != nil {
-		log.Log().Error("routeKeep",
-			"msg", "Problem writing response:",
-			"err", err.Error())
-		return
-	}
 	log.Log().Info("routeKeep", "msg", "OK")
 }
