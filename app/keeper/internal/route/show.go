@@ -45,7 +45,9 @@ import (
 // Returns 200 OK on success with the root key, or 400 Bad Request if the
 // request body is malformed. Authentication is handled via SPIFFE rather
 // than JWT as this is an internal system endpoint.
-func routeShow(w http.ResponseWriter, r *http.Request, audit *log.AuditEntry) error {
+func routeShow(
+	w http.ResponseWriter, r *http.Request, audit *log.AuditEntry,
+) error {
 	log.Log().Info("routeShow", "method", r.Method, "path", r.URL.Path,
 		"query", r.URL.RawQuery)
 	audit.Action = "read"

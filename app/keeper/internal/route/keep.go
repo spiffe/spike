@@ -41,7 +41,9 @@ import (
 //
 // On success, returns an empty 200 OK response. Returns 400 Bad Request if the
 // request body is invalid or missing required fields.
-func routeKeep(w http.ResponseWriter, r *http.Request, audit *log.AuditEntry) error {
+func routeKeep(
+	w http.ResponseWriter, r *http.Request, audit *log.AuditEntry,
+) error {
 	log.Log().Info("routeKeep", "method", r.Method, "path", r.URL.Path,
 		"query", r.URL.RawQuery)
 	audit.Action = "create"

@@ -112,6 +112,7 @@ func HandleRequest[Req any, Res any](
 	errorResponse Res,
 ) *Req {
 	var request Req
+
 	if err := HandleRequestError(
 		w, json.Unmarshal(requestBody, &request),
 	); err != nil {
@@ -127,5 +128,6 @@ func HandleRequest[Req any, Res any](
 		Respond(http.StatusBadRequest, responseBody, w)
 		return nil
 	}
+
 	return &request
 }
