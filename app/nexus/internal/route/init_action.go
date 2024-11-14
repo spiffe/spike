@@ -19,6 +19,101 @@ import (
 	"github.com/spiffe/spike/internal/net"
 )
 
+func prepareRequestBody(
+	w http.ResponseWriter, r *http.Request,
+) ([]byte, error) {
+	requestBody := net.ReadRequestBody(r, w)
+	if requestBody == nil {
+		return []byte{}, errors.New("failed to read request body")
+	}
+
+	request := net.HandleRequest[
+		reqres.InitRequest, reqres.InitResponse](
+		requestBody, w,
+		reqres.InitResponse{Err: reqres.ErrBadInput},
+	)
+	if request == nil {
+		return []byte{}, errors.New("failed to parse request body")
+	}
+	return requestBody, nil
+}
+
+func prepareRequest(
+	requestBody []byte, w http.ResponseWriter,
+) (*reqres.InitRequest, error) {
+	request := net.HandleRequest[
+		reqres.InitRequest, reqres.InitResponse](
+		requestBody, w,
+		reqres.InitResponse{Err: reqres.ErrBadInput},
+	)
+	if request == nil {
+		return nil, errors.New("failed to parse request body")
+	}
+	return request, nil
+}
+
+func sanitizeRequest(
+	req *reqres.InitRequest, w http.ResponseWriter,
+) (*reqres.InitRequest, error) {
+	password := req.Password
+	if len(password) < 16 { // TODO: magic number
+		res := reqres.InitResponse{Err: reqres.ErrLowEntropy}
+
+		responseBody := net.MarshalBody(res, w)
+		if responseBody == nil {
+			return nil, errors.New("failed to marshal response body")
+		}
+
+		net.Respond(http.StatusBadRequest, responseBody, w)
+		log.Log().Info("routeInit", "msg", "exit: Password too short")
+		return nil, errors.New("password too short")
+	}
+
+	return req, nil
+}
+
+func checkAdminToken(w http.ResponseWriter) error {
+	adminToken := state.AdminToken()
+	if adminToken != "" {
+		log.Log().Info("routeInit", "msg", "Already initialized")
+
+		responseBody := net.MarshalBody(
+			reqres.InitResponse{Err: reqres.ErrAlreadyInitialized}, w,
+		)
+		if responseBody == nil {
+			return errors.New("failed to marshal response body")
+		}
+
+		net.Respond(http.StatusInternalServerError, responseBody, w)
+		log.Log().Info("routeInit", "msg", "exit: Already initialized")
+		return errors.New("already initialized")
+	}
+	return nil
+}
+
+func generateAdminToken(w http.ResponseWriter) ([]byte, error) {
+	// Generate adminToken (32 bytes)
+	adminTokenBytes := make([]byte, 32) // TODO: magic number.
+	if _, err := rand.Read(adminTokenBytes); err != nil {
+		log.Log().Error("routeInit",
+			"msg", "Failed to generate admin token", "err", err.Error())
+
+		responseBody := net.MarshalBody(reqres.InitResponse{
+			Err: reqres.ErrServerFault}, w,
+		)
+		if responseBody == nil {
+			return []byte{}, errors.New("failed to marshal response body")
+		}
+
+		net.Respond(http.StatusInternalServerError, responseBody, w)
+		log.Log().Info(
+			"routeInit", "msg", "exit: Failed to generate admin token",
+		)
+		return []byte{}, errors.New("failed to generate admin token")
+	}
+	return adminTokenBytes, nil
+}
+
 // routeInit handles the initial setup of the system, creating admin credentials
 // and tokens. This endpoint can only be called once - subsequent calls will fail.
 //
@@ -72,69 +167,34 @@ func routeInit(w http.ResponseWriter, r *http.Request, audit *log.AuditEntry) er
 	// anonymously by the first user (who will be the admin).
 	// If the system is already initialized, this process will err out anyway.
 
-	requestBody := net.ReadRequestBody(r, w)
-	if requestBody == nil {
-		return errors.New("failed to read request body")
+	requestBody, err := prepareRequestBody(w, r)
+	if err != nil {
+		return err
 	}
 
-	request := net.HandleRequest[
-		reqres.InitRequest, reqres.InitResponse](
-		requestBody, w,
-		reqres.InitResponse{Err: reqres.ErrBadInput},
-	)
-	if request == nil {
-		return errors.New("failed to parse request body")
+	request, err := prepareRequest(requestBody, w)
+	if err != nil {
+		return err
 	}
 
-	password := request.Password
-	if len(password) < 16 {
-		res := reqres.InitResponse{Err: reqres.ErrLowEntropy}
-
-		responseBody := net.MarshalBody(res, w)
-		if responseBody == nil {
-			return errors.New("failed to marshal response body")
-		}
-
-		net.Respond(http.StatusBadRequest, responseBody, w)
-		log.Log().Info("routeInit", "msg", "exit: Password too short")
-		return errors.New("password too short")
+	request, err = sanitizeRequest(request, w)
+	if err != nil {
+		return err
 	}
 
-	adminToken := state.AdminToken()
-	if adminToken != "" {
-		log.Log().Info("routeInit", "msg", "Already initialized")
-
-		responseBody := net.MarshalBody(
-			reqres.InitResponse{Err: reqres.ErrAlreadyInitialized}, w,
-		)
-		if responseBody == nil {
-			return errors.New("failed to marshal response body")
-		}
-
-		net.Respond(http.StatusInternalServerError, responseBody, w)
-		log.Log().Info("routeInit", "msg", "exit: Already initialized")
-		return errors.New("already initialized")
+	err = checkAdminToken(w)
+	if err != nil {
+		return err
 	}
 
 	log.Log().Info("routeInit", "msg", "No admin token. will create one")
 
-	// Generate adminToken (32 bytes)
-	adminTokenBytes := make([]byte, 32)
-	if _, err := rand.Read(adminTokenBytes); err != nil {
-		log.Log().Error("routeInit",
-			"msg", "Failed to generate admin token", "err", err.Error())
-
-		responseBody := net.MarshalBody(reqres.InitResponse{
-			Err: reqres.ErrServerFault}, w,
-		)
-		if responseBody == nil {
-			return errors.New("failed to marshal response body")
-		}
-
-		net.Respond(http.StatusInternalServerError, responseBody, w)
-		log.Log().Info("routeInit", "msg", "exit: Failed to generate admin token")
-		return errors.New("failed to generate admin token")
+	adminTokenBytes, err := generateAdminToken(w)
+	if err != nil {
+		return err
 	}
+
+	>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> I WAS LEFT HERE!!!!!
 
 	// Generate salt and hash password
 	salt := make([]byte, 16)

@@ -17,3 +17,11 @@ func TlsPort() string {
 
 	return ":8553"
 }
+
+func KeepApiRoot() string {
+	p := os.Getenv("SPIKE_KEEP_API_URL")
+	if p != "" {
+		return p
+	}
+	return "http://localhost:8443"
+}

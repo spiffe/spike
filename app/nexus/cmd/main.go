@@ -14,6 +14,7 @@ import (
 	"github.com/spiffe/spike/app/nexus/internal/poll"
 	"github.com/spiffe/spike/app/nexus/internal/state"
 	"github.com/spiffe/spike/app/nexus/internal/trust"
+	"github.com/spiffe/spike/internal/auth"
 	"github.com/spiffe/spike/internal/config"
 	"github.com/spiffe/spike/internal/log"
 	"github.com/spiffe/spike/internal/net"
@@ -57,7 +58,7 @@ func main() {
 
 	if err := net.Serve(
 		source, handle.InitializeRoutes,
-		config.CanTalkToNexus,
+		auth.CanTalkToNexus,
 		env.TlsPort(),
 	); err != nil {
 		log.FatalF("%s: Failed to serve: %s\n", appName, err.Error())
