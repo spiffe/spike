@@ -70,8 +70,8 @@ func ReadRequestBody(w http.ResponseWriter, r *http.Request) []byte {
 
 // HandleRequestError handles HTTP request errors by writing a 400 Bad Request
 // status to the response writer. If err is nil, it returns nil. Otherwise, it
-// writes the error status and returns a joined error containing both the original
-// error and any error encountered while writing the response.
+// writes the error status and returns a joined error containing both the
+// original error and any error encountered while writing the response.
 func HandleRequestError(w http.ResponseWriter, err error) error {
 	if err == nil {
 		return nil

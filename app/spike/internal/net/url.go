@@ -67,6 +67,6 @@ func UrlInitState() string {
 func UrlAdminLogin() string {
 	u, _ := url.JoinPath(env.NexusApiRoot(), "/v1/login")
 	params := url.Values{}
-	params.Add("action", "admin")
+	params.Add("action", "admin-login")
 	return u + "?" + params.Encode()
 }

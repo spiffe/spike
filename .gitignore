@@ -71,3 +71,7 @@ nexus-linux-arm64.sum.txt
 spike-darwin-arm64.sum.txt
 spike-linux-amd64.sum.txt
 spike-linux-arm64.sum.txt
+
+# logs
+*.log
+/ci-test

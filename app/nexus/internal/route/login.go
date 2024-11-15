@@ -85,7 +85,6 @@ func routeAdminLogin(
 		"query", r.URL.RawQuery)
 	audit.Action = "login"
 
-	// TODO: signature should be `w, r` for consistency.
 	requestBody := net.ReadRequestBody(w, r)
 	if requestBody == nil {
 		return errors.New("failed to read request body")

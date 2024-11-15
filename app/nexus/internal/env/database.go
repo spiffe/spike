@@ -71,8 +71,8 @@ func DatabaseMaxOpenConns() int {
 }
 
 // DatabaseMaxIdleConns returns the maximum number of idle database connections.
-// It can be configured using the SPIKE_NEXUS_DB_MAX_IDLE_CONNS environment variable.
-// The value must be a positive integer.
+// It can be configured using the SPIKE_NEXUS_DB_MAX_IDLE_CONNS environment
+// variable. The value must be a positive integer.
 //
 // If the environment variable is not set or contains an invalid value,
 // it defaults to 5 connections.
@@ -88,8 +88,9 @@ func DatabaseMaxIdleConns() int {
 	return 5
 }
 
-// DatabaseConnMaxLifetimeSec returns the maximum lifetime duration for a database connection.
-// It can be configured using the SPIKE_NEXUS_DB_CONN_MAX_LIFETIME environment variable.
+// DatabaseConnMaxLifetimeSec returns the maximum lifetime duration for a
+// database connection. It can be configured using the
+// SPIKE_NEXUS_DB_CONN_MAX_LIFETIME environment variable.
 // The value should be a valid Go duration string (e.g., "1h", "30m").
 //
 // If the environment variable is not set or contains an invalid duration,

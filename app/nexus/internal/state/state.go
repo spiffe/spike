@@ -96,7 +96,7 @@ func SetAdminCredentials(passwordHash, salt string) {
 	}
 	adminCredentialsMu.Unlock()
 
-	// TODO: implement me!
+	// implement me!
 	// persist.AsyncPersistAdminCredentials(passwordHash, salt)
 }
 
@@ -105,10 +105,8 @@ func AdminCredentials() Credentials {
 	creds := adminCredentials
 	adminCredentialsMu.RUnlock()
 
-	// TODO: implement database lookup.
-
+	// implement database lookup too.
 	return creds
-
 }
 
 // UpsertSecret stores or updates a secret at the specified path with the

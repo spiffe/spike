@@ -7,6 +7,7 @@ package net
 import (
 	"bytes"
 	"errors"
+	"github.com/spiffe/spike/internal/config"
 	"io"
 	"net/http"
 	"os"
@@ -71,9 +72,8 @@ func Post(client *http.Client, path string, mr []byte) ([]byte, error) {
 	// Set headers
 	req.Header.Set("Content-Type", "application/json")
 
-	// TODO: magic string.
 	// Try to read and set JWT if file exists
-	if jwt, err := os.ReadFile(".spike-admin-token"); err == nil {
+	if jwt, err := os.ReadFile(config.SpikePilotAdminTokenPath()); err == nil {
 		req.Header.Set("Authorization", "Bearer "+string(bytes.TrimSpace(jwt)))
 	}
 

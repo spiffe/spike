@@ -36,10 +36,7 @@ func main() {
 		log.Fatal(err)
 	}
 	defer func(child *expect.GExpect) {
-		err := child.Close()
-		if err != nil {
-			log.Fatal(err)
-		}
+		_ = child.Close()
 	}(child)
 
 	_, _, err = child.Expect(regexp.MustCompile("Enter admin password:"), timeout)
@@ -76,10 +73,7 @@ func main() {
 		log.Fatal(err)
 	}
 	defer func(child *expect.GExpect) {
-		err := child.Close()
-		if err != nil {
-			log.Fatal(err)
-		}
+		_ = child.Close()
 	}(child)
 
 	_, _, err = child.Expect(regexp.MustCompile("Enter admin password:"), timeout)
@@ -117,4 +111,9 @@ func main() {
 	}
 
 	_, _, err = child.Expect(regexp.MustCompile("password: SPIKERocks"), timeout)
+	if err != nil {
+		log.Fatal("Something went wrong!", err.Error())
+	}
+
+	log.Println("Everything is awesome!")
 }

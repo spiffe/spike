@@ -360,7 +360,7 @@ func (s *DataStore) LoadAdminToken(ctx context.Context) (string, error) {
 // It ensures the database is closed only once even if called multiple times.
 //
 // Returns any error encountered while closing the database connection.
-func (s *DataStore) Close(ctx context.Context) error {
+func (s *DataStore) Close(_ context.Context) error {
 	var err error
 	s.closeOnce.Do(func() {
 		err = s.db.Close()

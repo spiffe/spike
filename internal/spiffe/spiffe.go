@@ -38,12 +38,8 @@ func AppSpiffeSource(ctx context.Context) (
 ) {
 	socketPath := config.SpiffeEndpointSocket()
 
-	source, err := workloadapi.NewX509Source(
-		ctx,
-		workloadapi.WithClientOptions(
-			workloadapi.WithAddr(socketPath),
-		),
-	)
+	source, err := workloadapi.NewX509Source(ctx,
+		workloadapi.WithClientOptions(workloadapi.WithAddr(socketPath)))
 
 	if err != nil {
 		return nil, "", errors.Join(
@@ -79,8 +75,7 @@ func CloseSource(source *workloadapi.X509Source) {
 		return
 	}
 
-	err := source.Close()
-	if err != nil {
+	if err := source.Close(); err != nil {
 		log.Printf("Unable to close X509Source: %v", err)
 	}
 }
