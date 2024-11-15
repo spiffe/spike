@@ -13,6 +13,10 @@
 </purpose>
 <low-hanging-fruits>
 	<issue>
+		ADR: remove file as the database option
+		SQLite does not compete with client/server databases. SQLite competes with fopen().
+		So with SQLite, the database is just a file. We already have a db-backing store
+		We probabyl don't need a file backing store.
 	</issue>
 </low-hanging-fruits>
 <immediate-backlog>

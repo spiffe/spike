@@ -63,7 +63,7 @@ func UpdateCache(
 		)
 	}
 
-	_, err = net.Post(client, UrlKeepWrite(), md)
+	_, err = net.Post(client, UrlKeeperWrite(), md)
 	return err
 }
 
@@ -110,7 +110,7 @@ func FetchFromCache(source *workloadapi.X509Source) (string, error) {
 		)
 	}
 
-	data, err := net.Post(client, UrlKeepRead(), md)
+	data, err := net.Post(client, UrlKeeperRead(), md)
 	var res reqres.RootKeyReadResponse
 
 	if len(data) == 0 {

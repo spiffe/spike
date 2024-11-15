@@ -26,5 +26,5 @@ func KeepApiRoot() string {
 	if p != "" {
 		return p
 	}
-	return "http://localhost:8443"
+	return "https://localhost:8443"
 }

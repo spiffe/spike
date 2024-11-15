@@ -9,22 +9,24 @@ import (
 	"net/url"
 )
 
-// UrlKeepRead returns the full URL for the SPIKE Keeper API read endpoint.
+// UrlKeeperRead returns the full URL for the SPIKE Keeper API read endpoint.
 // The URL is constructed by joining the base Keep API root path with
 // "/v1/keep?action=read". Any errors from url joining are ignored.
 //
 // Returns:
 //   - string: The complete URL for the read endpoint
-func UrlKeepRead() string {
-	u, _ := url.JoinPath(env.KeepApiRoot(), "/v1/keep?action=read")
-	return u
+func UrlKeeperRead() string {
+	u, _ := url.JoinPath(env.KeepApiRoot(), "/v1/keep")
+	params := url.Values{}
+	params.Add("action", "read")
+	return u + "?" + params.Encode()
 }
 
-// UrlKeepWrite returns the hardcoded URL for the SPIKE Keeper API write endpoint.
+// UrlKeeperWrite returns the hardcoded URL for the SPIKE Keeper API write endpoint.
 //
 // Returns:
 //   - string: The complete URL for the write endpoint
-func UrlKeepWrite() string {
+func UrlKeeperWrite() string {
 	u, _ := url.JoinPath(env.KeepApiRoot(), "/v1/keep")
 	return u
 }

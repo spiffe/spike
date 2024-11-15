@@ -11,5 +11,5 @@ func NexusApiRoot() string {
 	if p != "" {
 		return p
 	}
-	return "http://localhost:8553"
+	return "https://localhost:8553"
 }

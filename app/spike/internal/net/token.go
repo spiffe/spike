@@ -7,6 +7,7 @@ package net
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	"github.com/spiffe/spike/internal/auth"
 	"github.com/spiffe/spike/internal/entity/data"
@@ -56,6 +57,8 @@ func CheckInitState(source *workloadapi.X509Source) (data.InitState, error) {
 	}
 
 	client, err := net.CreateMtlsClient(source, auth.CanTalkToPilot)
+
+	fmt.Println(">>>>>>>>>>>>>>>Posting to", UrlInitState())
 
 	body, err := net.Post(client, UrlInitState(), mr)
 	if errors.Is(err, net.ErrUnauthorized) {
