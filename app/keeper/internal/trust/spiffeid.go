@@ -5,13 +5,13 @@
 package trust
 
 import (
-	"github.com/spiffe/spike/internal/config"
+	"github.com/spiffe/spike/internal/auth"
 	"github.com/spiffe/spike/internal/log"
 )
 
 // Authenticate validates the SPIFFE ID.
 func Authenticate(spiffeid string) {
-	if !config.IsKeeper(spiffeid) {
+	if !auth.IsKeeper(spiffeid) {
 		log.FatalF("Authenticate: SPIFFE ID %s is not valid.\n", spiffeid)
 	}
 }

@@ -11,6 +11,18 @@ import (
 	"github.com/spiffe/spike/app/nexus/internal/state/store"
 )
 
+type DatabaseConfigKey string
+
+const (
+	KeyDataDir                DatabaseConfigKey = "data_dir"
+	KeyDatabaseFile           DatabaseConfigKey = "database_file"
+	KeyJournalMode            DatabaseConfigKey = "journal_mode"
+	KeyBusyTimeoutMs          DatabaseConfigKey = "busy_timeout_ms"
+	KeyMaxOpenConns           DatabaseConfigKey = "max_open_conns"
+	KeyMaxIdleConns           DatabaseConfigKey = "max_idle_conns"
+	KeyConnMaxLifetimeSeconds DatabaseConfigKey = "conn_max_lifetime_seconds"
+)
+
 // Backend defines the interface for secret storage and management backends
 type Backend interface {
 	// Initialize initializes the backend
@@ -35,7 +47,7 @@ type Config struct {
 	Location      string // Could be a file path, S3 bucket, etc.
 
 	// Backend-specific configuration
-	Options map[string]any
+	Options map[DatabaseConfigKey]any
 }
 
 // Factory creates a new backend instance

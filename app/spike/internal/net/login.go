@@ -7,8 +7,10 @@ package net
 import (
 	"encoding/json"
 	"errors"
+
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
-	"github.com/spiffe/spike/internal/config"
+
+	"github.com/spiffe/spike/internal/auth"
 	"github.com/spiffe/spike/internal/entity/v1/reqres"
 	"github.com/spiffe/spike/internal/net"
 )
@@ -25,9 +27,9 @@ func Login(source *workloadapi.X509Source, password string) (string, error) {
 		)
 	}
 
-	client, err := net.CreateMtlsClient(source, config.CanTalkToPilot)
+	client, err := net.CreateMtlsClient(source, auth.CanTalkToPilot)
 
-	body, err := net.Post(client, urlAdminLogin, mr)
+	body, err := net.Post(client, UrlAdminLogin(), mr)
 	if err != nil {
 		return "", errors.Join(
 			errors.New("login: I am having problem sending the request"), err)

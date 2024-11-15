@@ -40,6 +40,7 @@ func NewListCommand(source *workloadapi.X509Source) *cobra.Command {
 		Use:   "list",
 		Short: "List all secret paths",
 		Run: func(cmd *cobra.Command, args []string) {
+			// TODO: this check is repeated in every command, consider refactoring
 			adminToken, err := state.AdminToken()
 			if err != nil {
 				fmt.Println("Please login first with `spike login`.")

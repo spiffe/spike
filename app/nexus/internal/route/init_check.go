@@ -64,7 +64,7 @@ func routeInitCheck(
 	// anonymously by the first user (who will be the admin).
 	// If the system is already initialized, this process will err out anyway.
 
-	responseBody := net.ReadRequestBody(r, w)
+	responseBody := net.ReadRequestBody(w, r)
 	if responseBody == nil {
 		return errors.New("failed to read request body")
 	}

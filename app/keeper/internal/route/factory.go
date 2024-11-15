@@ -7,10 +7,13 @@ package route
 import (
 	"net/http"
 
+	"github.com/spiffe/spike/internal/log"
 	"github.com/spiffe/spike/internal/net"
 )
 
 func factory(p, a, m string) net.Handler {
+	log.Log().Info("route.factory", "path", p, "action", a, "method", m)
+
 	switch {
 	case m == http.MethodPost && a == "" && p == urlKeep:
 		return routeKeep

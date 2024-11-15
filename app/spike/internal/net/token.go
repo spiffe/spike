@@ -7,8 +7,9 @@ package net
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
-	"github.com/spiffe/spike/internal/config"
+	"github.com/spiffe/spike/internal/auth"
 	"github.com/spiffe/spike/internal/entity/data"
 	"github.com/spiffe/spike/internal/net"
 
@@ -28,9 +29,9 @@ func Init(source *workloadapi.X509Source, password string) error {
 		)
 	}
 
-	client, err := net.CreateMtlsClient(source, config.CanTalkToPilot)
+	client, err := net.CreateMtlsClient(source, auth.CanTalkToPilot)
 
-	body, err := net.Post(client, urlInit, mr)
+	body, err := net.Post(client, UrlInit(), mr)
 
 	var res reqres.InitResponse
 	err = json.Unmarshal(body, &res)
@@ -44,6 +45,7 @@ func Init(source *workloadapi.X509Source, password string) error {
 	return err
 }
 
+// CheckInitState sends a checkInitState request to SPIKE Nexus.
 func CheckInitState(source *workloadapi.X509Source) (data.InitState, error) {
 	r := reqres.CheckInitStateRequest{}
 	mr, err := json.Marshal(r)
@@ -54,16 +56,20 @@ func CheckInitState(source *workloadapi.X509Source) (data.InitState, error) {
 		)
 	}
 
-	client, err := net.CreateMtlsClient(source, config.CanTalkToPilot)
+	client, err := net.CreateMtlsClient(source, auth.CanTalkToPilot)
 
-	body, err := net.Post(client, urlInitState, mr)
+	fmt.Println(">>>>>>>>>>>>>>>Posting to", UrlInitState())
+
+	body, err := net.Post(client, UrlInitState(), mr)
 	if errors.Is(err, net.ErrUnauthorized) {
 		return data.NotInitialized, err
 	}
 
 	if err != nil {
 		return data.NotInitialized, errors.Join(
-			errors.New("checkInitState: I am having problem sending the request"), err)
+			errors.New(
+				"checkInitState: I am having problem sending the request",
+			), err)
 	}
 
 	var res reqres.CheckInitStateResponse

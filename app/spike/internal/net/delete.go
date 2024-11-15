@@ -11,7 +11,7 @@ import (
 
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 
-	"github.com/spiffe/spike/internal/config"
+	"github.com/spiffe/spike/internal/auth"
 	"github.com/spiffe/spike/internal/entity/v1/reqres"
 	"github.com/spiffe/spike/internal/net"
 )
@@ -45,12 +45,12 @@ func DeleteSecret(source *workloadapi.X509Source,
 		)
 	}
 
-	client, err := net.CreateMtlsClient(source, config.IsNexus)
+	client, err := net.CreateMtlsClient(source, auth.IsNexus)
 	if err != nil {
 		return err
 	}
 
-	_, err = net.Post(client, urlSecretDelete, mr)
+	_, err = net.Post(client, UrlSecretDelete(), mr)
 	if errors.Is(err, net.ErrUnauthorized) {
 		return errors.New(`unauthorized. Please login first with 'spike login'`)
 	}

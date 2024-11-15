@@ -10,7 +10,7 @@ import (
 	"github.com/go-jose/go-jose/v4/json"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 
-	"github.com/spiffe/spike/internal/config"
+	"github.com/spiffe/spike/internal/auth"
 	"github.com/spiffe/spike/internal/entity/v1/reqres"
 	"github.com/spiffe/spike/internal/net"
 )
@@ -42,26 +42,28 @@ import (
 //	if err != nil {
 //	    log.Printf("Failed to update cache: %v", err)
 //	}
-func UpdateCache(source *workloadapi.X509Source, rootKeyFromState string) error {
+func UpdateCache(
+	source *workloadapi.X509Source, rootKeyFromState string,
+) error {
 	if source == nil {
 		return errors.New("UpdateCache: got nil source")
 	}
 
-	client, err := net.CreateMtlsClient(source, config.CanTalkToNexus)
+	client, err := net.CreateMtlsClient(source, auth.CanTalkToNexus)
 	if err != nil {
 		return err
 	}
 
-	rr := reqres.RootKeyCacheRequest{
-		RootKey: rootKeyFromState,
-	}
-
-	md, err := json.Marshal(rr)
+	md, err := json.Marshal(
+		reqres.RootKeyCacheRequest{RootKey: rootKeyFromState},
+	)
 	if err != nil {
-		return errors.New("UpdateCache: failed to marshal request: " + err.Error())
+		return errors.New(
+			"UpdateCache: failed to marshal request: " + err.Error(),
+		)
 	}
 
-	_, err = net.Post(client, urlKeep, md)
+	_, err = net.Post(client, UrlKeeperWrite(), md)
 	return err
 }
 
@@ -95,20 +97,20 @@ func FetchFromCache(source *workloadapi.X509Source) (string, error) {
 		return "", errors.New("FetchFromCache: got nil source")
 	}
 
-	client, err := net.CreateMtlsClient(source, config.CanTalkToNexus)
+	client, err := net.CreateMtlsClient(source, auth.CanTalkToNexus)
 	// client, err := net.CreateMtlsClient(source, config.CanTalkToAnyone)
 	if err != nil {
 		return "", err
 	}
 
-	rr := reqres.RootKeyReadRequest{}
-
-	md, err := json.Marshal(rr)
+	md, err := json.Marshal(reqres.RootKeyReadRequest{})
 	if err != nil {
-		return "", errors.New("FetchFromCache: failed to marshal request: " + err.Error())
+		return "", errors.New(
+			"FetchFromCache: failed to marshal request: " + err.Error(),
+		)
 	}
 
-	data, err := net.Post(client, urlKeepRead, md)
+	data, err := net.Post(client, UrlKeeperRead(), md)
 	var res reqres.RootKeyReadResponse
 
 	if len(data) == 0 {
@@ -117,7 +119,9 @@ func FetchFromCache(source *workloadapi.X509Source) (string, error) {
 
 	err = json.Unmarshal(data, &res)
 	if err != nil {
-		return "", errors.New("FetchFromCache: failed to unmarshal response: " + err.Error())
+		return "", errors.New(
+			"FetchFromCache: failed to unmarshal response: " + err.Error(),
+		)
 	}
 
 	return res.RootKey, err

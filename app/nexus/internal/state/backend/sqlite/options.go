@@ -10,13 +10,15 @@ import (
 
 // Options defines SQLite-specific configuration options
 type Options struct {
-	// DataDir specifies the directory where the SQLite database file will be stored
+	// DataDir specifies the directory where the SQLite database file
+	// will be stored
 	DataDir string
 
 	// DatabaseFile specifies the name of the SQLite database file
 	DatabaseFile string
 
-	// JournalMode specifies the SQLite journal mode (DELETE, WAL, MEMORY, etc.)
+	// JournalMode specifies the SQLite journal mode
+	// (DELETE, WAL, MEMORY, etc.)
 	JournalMode string
 
 	// BusyTimeoutMs specifies the busy timeout in milliseconds
@@ -28,7 +30,8 @@ type Options struct {
 	// MaxIdleConns specifies the maximum number of idle connections
 	MaxIdleConns int
 
-	// ConnMaxLifetime specifies the maximum amount of time a connection may be reused
+	// ConnMaxLifetime specifies the maximum amount of time
+	// a connection may be reused
 	ConnMaxLifetime time.Duration
 }
 

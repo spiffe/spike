@@ -56,6 +56,7 @@ func Tick(
 			if key == "" {
 				continue
 			}
+
 			err := net.UpdateCache(source, key)
 			if err != nil {
 				log.Log().Error("tick",

@@ -5,8 +5,9 @@
 package store
 
 import (
-	"github.com/spiffe/spike/app/nexus/internal/env"
 	"time"
+
+	"github.com/spiffe/spike/app/nexus/internal/env"
 )
 
 // Put stores a new version of key-value pairs at the specified path in the store.
@@ -65,12 +66,13 @@ func (kv *KV) Put(path string, values map[string]string) {
 	// Cleanup old versions if exceeding MaxVersions
 	var deletedAny bool
 	for version := range secret.Versions {
-		if secret.Metadata.CurrentVersion-version >= secret.Metadata.MaxVersions {
+		if newVersion-version >= secret.Metadata.MaxVersions {
 			delete(secret.Versions, version)
 			deletedAny = true
 		}
 	}
 
+	// TODO: maybe do this in a separate goroutine?
 	// Update OldestVersion if we deleted anything
 	if deletedAny {
 		oldestVersion := secret.Metadata.CurrentVersion

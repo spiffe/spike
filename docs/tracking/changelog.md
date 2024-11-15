@@ -11,6 +11,7 @@
 * Enabled cross-compilation and SHA checksums.
 * Now admin users can use jwt authentication and short-lived session tokens.
 * Enhanced audit trails and error logging.
+* Created initial smoke/integration tests.
 
 ## [0.1.0] - 2024-11-06
 

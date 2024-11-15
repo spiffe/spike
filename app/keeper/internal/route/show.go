@@ -56,7 +56,7 @@ func routeShow(
 	// SPIKE Nexus through SPIFFE authentication. There is no human user
 	// involved in this request, so no JWT is needed.
 
-	requestBody := net.ReadRequestBody(r, w)
+	requestBody := net.ReadRequestBody(w, r)
 	if requestBody == nil {
 		return errors.New("failed to read request body")
 	}
@@ -70,11 +70,12 @@ func routeShow(
 		return errors.New("failed to parse request body")
 	}
 
-	rootKey := state.RootKey()
-
 	responseBody := net.MarshalBody(
-		reqres.RootKeyReadResponse{RootKey: rootKey}, w,
+		reqres.RootKeyReadResponse{RootKey: state.RootKey()}, w,
 	)
+	if responseBody == nil {
+		return errors.New("failed to marshal response body")
+	}
 
 	net.Respond(http.StatusOK, responseBody, w)
 	log.Log().Info("routeShow", "msg", "OK")

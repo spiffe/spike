@@ -20,12 +20,14 @@ func (kv *KV) Delete(path string, versions []int) {
 	}
 
 	now := time.Now()
+	cv := secret.Metadata.CurrentVersion
 
 	// If no versions specified, mark the latest version as deleted
 	if len(versions) == 0 {
-		if v, exists := secret.Versions[secret.Metadata.CurrentVersion]; exists {
+
+		if v, exists := secret.Versions[cv]; exists {
 			v.DeletedTime = &now // Mark as deleted.
-			secret.Versions[secret.Metadata.CurrentVersion] = v
+			secret.Versions[cv] = v
 		}
 
 		return
@@ -34,13 +36,13 @@ func (kv *KV) Delete(path string, versions []int) {
 	// Delete specific versions
 	for _, version := range versions {
 		if version == 0 {
-			v, exists := secret.Versions[secret.Metadata.CurrentVersion]
+			v, exists := secret.Versions[cv]
 			if !exists {
 				continue
 			}
 
 			v.DeletedTime = &now // Mark as deleted.
-			secret.Versions[secret.Metadata.CurrentVersion] = v
+			secret.Versions[cv] = v
 			continue
 		}
 

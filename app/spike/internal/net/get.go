@@ -7,10 +7,11 @@ package net
 import (
 	"encoding/json"
 	"errors"
+
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
-	"github.com/spiffe/spike/internal/config"
 
 	"github.com/spiffe/spike/app/spike/internal/entity/data"
+	"github.com/spiffe/spike/internal/auth"
 	"github.com/spiffe/spike/internal/entity/v1/reqres"
 	"github.com/spiffe/spike/internal/net"
 )
@@ -31,17 +32,19 @@ func GetSecret(source *workloadapi.X509Source,
 		)
 	}
 
-	client, err := net.CreateMtlsClient(source, config.IsNexus)
+	client, err := net.CreateMtlsClient(source, auth.IsNexus)
 	if err != nil {
 		return nil, err
 	}
 
-	body, err := net.Post(client, urlSecretGet, mr)
+	body, err := net.Post(client, UrlSecretGet(), mr)
 	if errors.Is(err, net.ErrNotFound) {
 		return nil, nil
 	}
 	if errors.Is(err, net.ErrUnauthorized) {
-		return nil, errors.New(`unauthorized. Please login first with 'spike login'`)
+		return nil, errors.New(
+			`unauthorized. Please login first with 'spike login'`,
+		)
 	}
 
 	var res reqres.SecretReadResponse

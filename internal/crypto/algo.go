@@ -9,8 +9,9 @@ import (
 	"errors"
 )
 
-// Aes256Seed generates a cryptographically secure random 256-bit key suitable for use
-// with AES-256 encryption. The key is returned as a hexadecimal-encoded string.
+// Aes256Seed generates a cryptographically secure random 256-bit key suitable
+// for use with AES-256 encryption. The key is returned as a hexadecimal-encoded
+// string.
 //
 // Returns:
 //   - string: A 64-character hexadecimal string representing the 256-bit key.
