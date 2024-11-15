@@ -7,10 +7,12 @@ package sqlite
 import (
 	"fmt"
 	"time"
+
+	"github.com/spiffe/spike/app/nexus/internal/state/backend"
 )
 
 // parseOptions parses and validates the provided backend options
-func parseOptions(opts map[DatabaseConfigKey]any) (*Options, error) {
+func parseOptions(opts map[backend.DatabaseConfigKey]any) (*Options, error) {
 	if opts == nil {
 		return DefaultOptions(), nil
 	}
@@ -18,25 +20,25 @@ func parseOptions(opts map[DatabaseConfigKey]any) (*Options, error) {
 	sqliteOpts := &Options{}
 
 	// Parse each field from the map
-	if dataDir, ok := opts[KeyDataDir].(string); ok {
+	if dataDir, ok := opts[backend.KeyDataDir].(string); ok {
 		sqliteOpts.DataDir = dataDir
 	}
-	if dbFile, ok := opts[KeyDatabaseFile].(string); ok {
+	if dbFile, ok := opts[backend.KeyDatabaseFile].(string); ok {
 		sqliteOpts.DatabaseFile = dbFile
 	}
-	if journalMode, ok := opts[KeyJournalMode].(string); ok {
+	if journalMode, ok := opts[backend.KeyJournalMode].(string); ok {
 		sqliteOpts.JournalMode = journalMode
 	}
-	if busyTimeout, ok := opts[KeyBusyTimeoutMs].(int); ok {
+	if busyTimeout, ok := opts[backend.KeyBusyTimeoutMs].(int); ok {
 		sqliteOpts.BusyTimeoutMs = busyTimeout
 	}
-	if maxOpen, ok := opts[KeyMaxOpenConns].(int); ok {
+	if maxOpen, ok := opts[backend.KeyMaxOpenConns].(int); ok {
 		sqliteOpts.MaxOpenConns = maxOpen
 	}
-	if maxIdle, ok := opts[KeyMaxIdleConns].(int); ok {
+	if maxIdle, ok := opts[backend.KeyMaxIdleConns].(int); ok {
 		sqliteOpts.MaxIdleConns = maxIdle
 	}
-	if lifetime, ok := opts[KeyConnMaxLifetimeSeconds].(time.Duration); ok {
+	if lifetime, ok := opts[backend.KeyConnMaxLifetimeSeconds].(time.Duration); ok {
 		sqliteOpts.ConnMaxLifetime = lifetime
 	}
 

@@ -137,15 +137,15 @@ func ReadSecret(path string, version int) *store.Secret {
 //   - Connection pool settings (max open, max idle, lifetime)
 //   - Busy timeout settings
 func InitializeSqliteBackend(rootKey string) backend.Backend {
-	opts := map[sqlite.DatabaseConfigKey]any{}
+	opts := map[backend.DatabaseConfigKey]any{}
 
-	opts[sqlite.KeyDataDir] = env.DatabaseDir()
-	opts[sqlite.KeyDatabaseFile] = "spike.db"
-	opts[sqlite.KeyJournalMode] = env.DatabaseJournalMode()
-	opts[sqlite.KeyBusyTimeoutMs] = env.DatabaseBusyTimeoutMs()
-	opts[sqlite.KeyMaxOpenConns] = env.DatabaseMaxOpenConns()
-	opts[sqlite.KeyMaxIdleConns] = env.DatabaseMaxIdleConns()
-	opts[sqlite.KeyConnMaxLifetimeSeconds] = env.DatabaseConnMaxLifetimeSec()
+	opts[backend.KeyDataDir] = env.DatabaseDir()
+	opts[backend.KeyDatabaseFile] = "spike.db"
+	opts[backend.KeyJournalMode] = env.DatabaseJournalMode()
+	opts[backend.KeyBusyTimeoutMs] = env.DatabaseBusyTimeoutMs()
+	opts[backend.KeyMaxOpenConns] = env.DatabaseMaxOpenConns()
+	opts[backend.KeyMaxIdleConns] = env.DatabaseMaxIdleConns()
+	opts[backend.KeyConnMaxLifetimeSeconds] = env.DatabaseConnMaxLifetimeSec()
 
 	// Create SQLite backend configuration
 	cfg := backend.Config{
