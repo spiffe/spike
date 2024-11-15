@@ -28,6 +28,7 @@ import (
 //   - []byte - The marshaled JSON bytes, or nil if marshaling failed
 func MarshalBody(res any, w http.ResponseWriter) []byte {
 	body, err := json.Marshal(res)
+
 	if err != nil {
 		log.Log().Error("marshalBody",
 			"msg", "Problem generating response",
@@ -35,6 +36,7 @@ func MarshalBody(res any, w http.ResponseWriter) []byte {
 
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusInternalServerError)
+
 		_, err = w.Write([]byte(`{"error":"internal server error"}`))
 		if err != nil {
 			log.Log().Error("marshalBody",
@@ -42,8 +44,10 @@ func MarshalBody(res any, w http.ResponseWriter) []byte {
 				"err", err.Error())
 			return nil
 		}
+
 		return nil
 	}
+
 	return body
 }
 

@@ -11,26 +11,25 @@ import (
 	"github.com/spiffe/spike/internal/net"
 )
 
-func factory(p, a, m string) net.Handler {
+func factory(p string, a net.SpikeNexusApiAction, m string) net.Handler {
 	log.Log().Info("route.factory", "path", p, "action", a, "method", m)
 
-	// TODO: actions are magic strings.
 	switch {
-	case m == http.MethodPost && a == "admin" && p == urlLogin:
+	case m == http.MethodPost && a == net.ActionNexusAdminLogin && p == urlLogin:
 		return routeAdminLogin
-	case m == http.MethodPost && a == "" && p == urlInit:
+	case m == http.MethodPost && a == net.ActionNexusDefault && p == urlInit:
 		return routeInit
-	case m == http.MethodPost && a == "check" && p == urlInit:
+	case m == http.MethodPost && a == net.ActionNexusCheck && p == urlInit:
 		return routeInitCheck
-	case m == http.MethodPost && a == "" && p == urlSecrets:
+	case m == http.MethodPost && a == net.ActionNexusDefault && p == urlSecrets:
 		return routePutSecret
-	case m == http.MethodPost && a == "get" && p == urlSecrets:
+	case m == http.MethodPost && a == net.ActionNexusGet && p == urlSecrets:
 		return routeGetSecret
-	case m == http.MethodPost && a == "delete" && p == urlSecrets:
+	case m == http.MethodPost && a == net.ActionNexusDelete && p == urlSecrets:
 		return routeDeleteSecret
-	case m == http.MethodPost && a == "undelete" && p == urlSecrets:
+	case m == http.MethodPost && a == net.ActionNexusUndelete && p == urlSecrets:
 		return routeUndeleteSecret
-	case m == http.MethodPost && a == "list" && p == urlSecrets:
+	case m == http.MethodPost && a == net.ActionNexusList && p == urlSecrets:
 		return routeListPaths
 	// Fallback route.
 	default:

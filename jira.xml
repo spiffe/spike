@@ -21,6 +21,66 @@
 </low-hanging-fruits>
 <immediate-backlog>
 	<issue>
+		// check and verify; when the list is empty it should not return an error.
+		responseBody := net.MarshalBody(reqres.SecretListResponse{Keys: keys}, w)
+		if responseBody == nil {
+		return errors.New("failed to marshal response body")
+		}
+
+
+	</issue>
+	<issue>
+		func AdminCredentials() Credentials {
+		adminCredentialsMu.RLock()
+		creds := adminCredentials
+		adminCredentialsMu.RUnlock()
+
+		// implement database lookup.
+
+		return creds
+
+		}
+	</issue>
+	<issue>
+		func SetAdminCredentials(passwordHash, salt string) {
+		adminCredentialsMu.Lock()
+		adminCredentials = Credentials{
+		PasswordHash: passwordHash,
+		Salt:         salt,
+		}
+		adminCredentialsMu.Unlock()
+
+		// implement me!
+		// persist.AsyncPersistAdminCredentials(passwordHash, salt)
+		}
+	</issue>
+	<issue>
+		func SetAdminCredentials(passwordHash, salt string) {
+		adminCredentialsMu.Lock()
+		adminCredentials = Credentials{
+		PasswordHash: passwordHash,
+		Salt:         salt,
+		}
+		adminCredentialsMu.Unlock()
+
+		// implement me!
+		// persist.AsyncPersistAdminCredentials(passwordHash, salt)
+		}
+	</issue>
+	<issue>
+		// TODO: maybe do this in a separate goroutine?
+		// Update OldestVersion if we deleted anything
+		if deletedAny {
+		oldestVersion := secret.Metadata.CurrentVersion
+		for version := range secret.Versions {
+		if version lt oldestVersion {
+		oldestVersion = version
+		}
+		}
+		secret.Metadata.OldestVersion = oldestVersion
+
+	</issue>
+	<issue>
 		new initialization flow with password request from the superadmin.
 	</issue>
 	<issue>
@@ -43,6 +103,20 @@
 	</issue>
 </immediate-backlog>
 <runner-up>
+	<issue>
+		Minimally Delightful Product Requirements:
+		- A containerized SPIKE deployment
+		- A Kubernetes SPIKE deployment
+		- Minimal policy enforcement
+		- Minimal integration tests
+		- A demo workload that uses SPIKE to test things out as a consumer.
+		- A golang SDK (we can start at github/zerotohero-dev/spike-sdk-go
+		  and them move it under spiffe once it matures)
+	</issue>
+	<issue>
+		v.1.0.0 Requirements:
+		- Having S3 as a backing store
+	</issue>
 	<issue>
 		Add recent recordings to the website.
 	</issue>

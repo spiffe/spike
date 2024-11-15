@@ -7,6 +7,7 @@ package route
 import (
 	"crypto/rand"
 	"errors"
+	"github.com/spiffe/spike/app/nexus/internal/config"
 	"github.com/spiffe/spike/app/nexus/internal/state"
 	"github.com/spiffe/spike/internal/entity/v1/reqres"
 	"github.com/spiffe/spike/internal/log"
@@ -35,7 +36,7 @@ func checkAdminToken(w http.ResponseWriter) error {
 
 func generateAdminToken(w http.ResponseWriter) ([]byte, error) {
 	// Generate adminToken (32 bytes)
-	adminTokenBytes := make([]byte, 32) // TODO: magic number.
+	adminTokenBytes := make([]byte, config.SpikeNexusAdminTokenBytes)
 	if _, err := rand.Read(adminTokenBytes); err != nil {
 		log.Log().Error("routeInit",
 			"msg", "Failed to generate admin token", "err", err.Error())

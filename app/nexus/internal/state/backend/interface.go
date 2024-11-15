@@ -6,8 +6,6 @@ package backend
 
 import (
 	"context"
-	"fmt"
-
 	"github.com/spiffe/spike/app/nexus/internal/state/store"
 )
 
@@ -55,17 +53,3 @@ type Factory func(cfg Config) (Backend, error)
 
 // registry of available backends
 var backends = make(map[string]Factory)
-
-// Register adds a new backend to the registry
-func Register(name string, factory Factory) {
-	backends[name] = factory
-}
-
-// New creates a new backend of the specified type
-func New(backendType string, cfg Config) (Backend, error) {
-	factory, exists := backends[backendType]
-	if !exists {
-		return nil, fmt.Errorf("unknown backend type: %s", backendType)
-	}
-	return factory(cfg)
-}

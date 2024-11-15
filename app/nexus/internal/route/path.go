@@ -79,7 +79,6 @@ func routeListPaths(
 
 	keys := state.ListKeys()
 
-	// TODO: check and verify; when the list is empty it should not return an error.
 	responseBody := net.MarshalBody(reqres.SecretListResponse{Keys: keys}, w)
 	if responseBody == nil {
 		return errors.New("failed to marshal response body")

@@ -6,6 +6,7 @@ package route
 
 import (
 	"errors"
+	"github.com/spiffe/spike/app/nexus/internal/config"
 	"github.com/spiffe/spike/internal/entity/v1/reqres"
 	"github.com/spiffe/spike/internal/log"
 	"github.com/spiffe/spike/internal/net"
@@ -40,7 +41,7 @@ func sanitizeInitRequest(
 	req *reqres.InitRequest, w http.ResponseWriter,
 ) (*reqres.InitRequest, error) {
 	password := req.Password
-	if len(password) < 16 { // TODO: magic number
+	if len(password) < config.SpikeNexusAdminPasswordMinLength {
 		res := reqres.InitResponse{Err: reqres.ErrLowEntropy}
 
 		responseBody := net.MarshalBody(res, w)

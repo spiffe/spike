@@ -72,8 +72,6 @@ func (kv *KV) Put(path string, values map[string]string) {
 		}
 	}
 
-	// TODO: maybe do this in a separate goroutine?
-	// Update OldestVersion if we deleted anything
 	if deletedAny {
 		oldestVersion := secret.Metadata.CurrentVersion
 		for version := range secret.Versions {

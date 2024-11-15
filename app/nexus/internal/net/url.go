@@ -22,7 +22,8 @@ func UrlKeeperRead() string {
 	return u + "?" + params.Encode()
 }
 
-// UrlKeeperWrite returns the hardcoded URL for the SPIKE Keeper API write endpoint.
+// UrlKeeperWrite returns the hardcoded URL for the SPIKE Keeper API write
+// endpoint.
 //
 // Returns:
 //   - string: The complete URL for the write endpoint

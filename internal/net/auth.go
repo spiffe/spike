@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/spiffe/spike/internal/config"
 	"github.com/spiffe/spike/internal/log"
 )
 
@@ -40,7 +41,10 @@ type CustomClaims struct {
 //   - Status: 401 Unauthorized
 //   - Content-Type: application/json
 //   - Body: {"status": "unauthorized"}
-func ValidateJwt(w http.ResponseWriter, r *http.Request, adminToken string) bool {
+func ValidateJwt(
+	w http.ResponseWriter, r *http.Request, adminToken string,
+) bool {
+
 	// Extract JWT from Authorization header
 	authHeader := r.Header.Get("Authorization")
 	if authHeader == "" || !strings.HasPrefix(authHeader, "Bearer ") {
@@ -107,12 +111,10 @@ func ValidateJwt(w http.ResponseWriter, r *http.Request, adminToken string) bool
 	}
 
 	// Validate custom claims
-	// TODO: there are magic strings here. Replace with consts.
 	claims, ok := token.Claims.(*CustomClaims)
-	if !ok || claims.Issuer != "spike-nexus" ||
-		claims.AdminTokenID != "spike-admin-jwt" {
-		log.Log().Info("routeGetSecret",
-			"msg", "Invalid token claims")
+	if !ok || claims.Issuer != config.NexusIssuer ||
+		claims.AdminTokenID != config.NexusAdminTokenId {
+		log.Log().Info("routeGetSecret", "msg", "Invalid token claims")
 
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusUnauthorized)
@@ -159,10 +161,10 @@ func CreateJwt(adminToken string, w http.ResponseWriter) string {
 			ExpiresAt: jwt.NewNumericDate(now.Add(24 * time.Hour)),
 			IssuedAt:  jwt.NewNumericDate(now),
 			NotBefore: jwt.NewNumericDate(now),
-			Issuer:    "spike-nexus", // TODO: to consts.
-			Subject:   "spike-admin", // TODO: to consts
+			Issuer:    config.NexusIssuer,
+			Subject:   config.NexusAdminSubject,
 		},
-		AdminTokenID: "spike-admin-jwt", // TODO: to consts
+		AdminTokenID: config.NexusAdminTokenId,
 	}
 
 	// Create token with claims

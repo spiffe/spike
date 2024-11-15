@@ -4,11 +4,37 @@
 
 package config
 
-import "os"
+import (
+	"os"
+	"path/filepath"
+)
 
 const NexusVersion = "0.1.0"
 const PilotVersion = "0.1.0"
 const KeeperVersion = "0.1.0"
+
+const NexusIssuer = "spike-nexus"
+const NexusAdminSubject = "spike-admin"
+const NexusAdminTokenId = "spike-admin-jwt"
+
+func SpikePilotAdminTokenPath() string {
+	// Get user's home directory
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		homeDir = "/tmp"
+	}
+
+	// Create path for .spike folder
+	spikeDir := filepath.Join(homeDir, ".spike")
+
+	// Create directory if it doesn't exist
+	err = os.MkdirAll(spikeDir, 0600)
+	if err != nil {
+		panic(err)
+	}
+
+	return filepath.Join(spikeDir, ".spike-admin.jwt")
+}
 
 // SpiffeEndpointSocket returns the UNIX domain socket address for the SPIFFE
 // Workload API endpoint.

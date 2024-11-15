@@ -11,13 +11,13 @@ import (
 	"github.com/spiffe/spike/internal/net"
 )
 
-func factory(p, a, m string) net.Handler {
+func factory(p string, a net.SpikeKeeperApiAction, m string) net.Handler {
 	log.Log().Info("route.factory", "path", p, "action", a, "method", m)
 
 	switch {
-	case m == http.MethodPost && a == "" && p == urlKeep:
+	case m == http.MethodPost && a == net.ActionKeeperDefault && p == urlKeep:
 		return routeKeep
-	case m == http.MethodPost && a == "read" && p == urlKeep:
+	case m == http.MethodPost && a == net.ActionKeeperRead && p == urlKeep:
 		return routeShow
 	// Fallback route.
 	default:
