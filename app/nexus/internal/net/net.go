@@ -42,7 +42,9 @@ import (
 //	if err != nil {
 //	    log.Printf("Failed to update cache: %v", err)
 //	}
-func UpdateCache(source *workloadapi.X509Source, rootKeyFromState string) error {
+func UpdateCache(
+	source *workloadapi.X509Source, rootKeyFromState string,
+) error {
 	if source == nil {
 		return errors.New("UpdateCache: got nil source")
 	}
@@ -52,11 +54,9 @@ func UpdateCache(source *workloadapi.X509Source, rootKeyFromState string) error 
 		return err
 	}
 
-	rr := reqres.RootKeyCacheRequest{
-		RootKey: rootKeyFromState,
-	}
-
-	md, err := json.Marshal(rr)
+	md, err := json.Marshal(
+		reqres.RootKeyCacheRequest{RootKey: rootKeyFromState},
+	)
 	if err != nil {
 		return errors.New(
 			"UpdateCache: failed to marshal request: " + err.Error(),
@@ -103,9 +103,7 @@ func FetchFromCache(source *workloadapi.X509Source) (string, error) {
 		return "", err
 	}
 
-	rr := reqres.RootKeyReadRequest{}
-
-	md, err := json.Marshal(rr)
+	md, err := json.Marshal(reqres.RootKeyReadRequest{})
 	if err != nil {
 		return "", errors.New(
 			"FetchFromCache: failed to marshal request: " + err.Error(),

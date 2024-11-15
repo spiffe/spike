@@ -33,7 +33,9 @@ func (s *NoopStore) LoadAdminToken(_ context.Context) (string, error) {
 
 // LoadSecret retrieves a secret from the store by its path.
 // This implementation always returns nil secret and nil error.
-func (s *NoopStore) LoadSecret(_ context.Context, _ string) (*store.Secret, error) {
+func (s *NoopStore) LoadSecret(
+	_ context.Context, _ string,
+) (*store.Secret, error) {
 	return nil, nil
 }
 
@@ -45,6 +47,8 @@ func (s *NoopStore) StoreAdminToken(_ context.Context, _ string) error {
 
 // StoreSecret saves a secret to the store at the specified path.
 // This implementation is a no-op and always returns nil.
-func (s *NoopStore) StoreSecret(_ context.Context, _ string, _ store.Secret) error {
+func (s *NoopStore) StoreSecret(
+	_ context.Context, _ string, _ store.Secret,
+) error {
 	return nil
 }

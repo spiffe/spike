@@ -22,15 +22,15 @@ func HandleRoute(h Handler) {
 			Path:      request.URL.Path,
 			Resource:  "",
 			SessionID: "",
-			State:     log.Created,
+			State:     log.AuditCreated,
 		}
 		log.Audit(entry)
 
 		err := h(writer, request, &entry)
 		if err == nil {
-			entry.State = log.Success
+			entry.State = log.AuditSuccess
 		} else {
-			entry.State = log.Errored
+			entry.State = log.AuditErrored
 			entry.Err = err.Error()
 		}
 

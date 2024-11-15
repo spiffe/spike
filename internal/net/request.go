@@ -34,9 +34,8 @@ func requestBody(r *http.Request) (bod []byte, err error) {
 // the body or if the body is nil, it writes a 400 Bad Request status to the
 // response writer and returns an empty byte slice. Any errors encountered are
 // logged.
-func ReadRequestBody(r *http.Request, w http.ResponseWriter) []byte {
+func ReadRequestBody(w http.ResponseWriter, r *http.Request) []byte {
 	body, err := requestBody(r)
-
 	if err != nil {
 		log.Log().Info("readRequestBody",
 			"msg", "Problem reading request body",
@@ -54,8 +53,7 @@ func ReadRequestBody(r *http.Request, w http.ResponseWriter) []byte {
 	}
 
 	if body == nil {
-		log.Log().Info("readRequestBody",
-			"msg", "No request body.")
+		log.Log().Info("readRequestBody", "msg", "No request body.")
 
 		w.WriteHeader(http.StatusBadRequest)
 		_, err := io.WriteString(w, "")

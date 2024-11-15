@@ -7,6 +7,7 @@ package backend
 import (
 	"context"
 	"fmt"
+	"github.com/spiffe/spike/app/nexus/internal/state/backend/sqlite"
 
 	"github.com/spiffe/spike/app/nexus/internal/state/store"
 )
@@ -35,7 +36,7 @@ type Config struct {
 	Location      string // Could be a file path, S3 bucket, etc.
 
 	// Backend-specific configuration
-	Options map[string]any
+	Options map[sqlite.DatabaseConfigKey]any
 }
 
 // Factory creates a new backend instance

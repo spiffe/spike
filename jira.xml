@@ -113,6 +113,9 @@
 </runner-up>
 <backlog>
 	<issue>
+		implement file backend type.
+	</issue>
+	<issue>
 		check what happens when token is invalid.
 	</issue>
 	<issue>
@@ -122,6 +125,31 @@
 		* super admin can create regular admins and other super admins.
 		* super admin can assign backup admins.
 		(see drafts.txt for more details)
+	</issue>
+	<issue>
+		By design, we regard memory as the source of truth.
+		This means that backing store might miss some secrets.
+		Find ways to reduce the likelihood of this happening.
+		1. Implement exponential retries.
+		2. Implement a health check to ensure backing store is up.
+		3. Create background jobs to sync the backing store.
+	</issue>
+	<issue>
+		certain sqlite persistence operations are not implemented yet.
+	</issue>
+	<issue>
+		these may come from the environment:
+
+		DataDir:         ".data",
+		DatabaseFile:    "spike.db",
+		JournalMode:     "WAL",
+		BusyTimeoutMs:   5000,
+		MaxOpenConns:    10,
+		MaxIdleConns:    5,
+		ConnMaxLifetime: time.Hour,
+	</issue>
+	<issue>
+		Test the db backing store.
 	</issue>
 	<issue>
 		UndeleteSecret (and maybe other methods too) should return an error:

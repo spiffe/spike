@@ -10,7 +10,7 @@ import (
 )
 
 // parseOptions parses and validates the provided backend options
-func parseOptions(opts map[string]any) (*Options, error) {
+func parseOptions(opts map[DatabaseConfigKey]any) (*Options, error) {
 	if opts == nil {
 		return DefaultOptions(), nil
 	}

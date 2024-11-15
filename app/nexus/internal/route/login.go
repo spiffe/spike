@@ -5,14 +5,13 @@
 package route
 
 import (
-	"crypto/hmac"
 	"crypto/sha256"
-	"encoding/hex"
 	"errors"
 	"net/http"
 
 	"golang.org/x/crypto/pbkdf2"
 
+	"github.com/spiffe/spike/app/nexus/internal/env"
 	"github.com/spiffe/spike/app/nexus/internal/state"
 	"github.com/spiffe/spike/internal/entity/v1/reqres"
 	"github.com/spiffe/spike/internal/log"
@@ -87,7 +86,7 @@ func routeAdminLogin(
 	audit.Action = "login"
 
 	// TODO: signature should be `w, r` for consistency.
-	requestBody := net.ReadRequestBody(r, w)
+	requestBody := net.ReadRequestBody(w, r)
 	if requestBody == nil {
 		return errors.New("failed to read request body")
 	}
@@ -106,78 +105,32 @@ func routeAdminLogin(
 	passwordHash := creds.PasswordHash
 	salt := creds.Salt
 
-	s, err := hex.DecodeString(salt)
+	s, err := decodeSalt(salt, w)
 	if err != nil {
-		log.Log().Error("routeAdminLogin",
-			"msg", "Problem decoding salt",
-			"err", err.Error())
-
-		body := net.MarshalBody(reqres.AdminLoginResponse{
-			Err: reqres.ErrServerFault,
-		}, w)
-		if body == nil {
-			return errors.New("failed to marshal response body")
-		}
-
-		net.Respond(http.StatusInternalServerError, body, w)
-		log.Log().Info("routeAdminLogin", "msg", "unauthorized")
-		return errors.New("failed to decode salt")
+		return err
 	}
 
-	// TODO: duplication.
-	// TODO: make this configurable.
-	iterationCount := 600_000 // Minimum OWASP recommendation for PBKDF2-SHA256
-	hashLength := 32          // 256 bits output
+	iterationCount := env.Pbkdf2IterationCount()
+	hashLength := env.ShaHashLength()
 
 	ph := pbkdf2.Key(
 		[]byte(password), s,
 		iterationCount, hashLength, sha256.New,
 	)
 
-	b, err := hex.DecodeString(passwordHash)
+	b, err := decodePasswordHash(passwordHash, w)
 	if err != nil {
-		log.Log().Error("routeAdminLogin",
-			"msg", "Problem decoding password hash",
-			"err", err.Error())
-
-		responseBody := net.MarshalBody(reqres.AdminLoginResponse{
-			Err: reqres.ErrServerFault}, w)
-		if responseBody == nil {
-			return errors.New("failed to marshal response body")
-		}
-
-		net.Respond(http.StatusInternalServerError, responseBody, w)
-		log.Log().Info("routeAdminLogin", "msg", "OK")
-		return errors.New("failed to decode password hash")
+		return err
 	}
 
-	if !hmac.Equal(ph, b) {
-		log.Log().Info("routeAdminLogin", "msg", "Invalid password")
-
-		responseBody := net.MarshalBody(reqres.AdminLoginResponse{
-			Err: reqres.ErrUnauthorized}, w)
-		if responseBody == nil {
-			return errors.New("failed to marshal response body")
-		}
-
-		net.Respond(http.StatusUnauthorized, responseBody, w)
-		log.Log().Info("routeAdminLogin", "msg", "unauthorized")
-		return errors.New("invalid password")
+	err = checkHmac(ph, b, w)
+	if err != nil {
+		return err
 	}
 
-	adminToken := state.AdminToken()
-	if adminToken == "" {
-		log.Log().Error("routeAdminLogin", "msg", "Admin token not set")
-
-		responseBody := net.MarshalBody(reqres.AdminLoginResponse{
-			Err: reqres.ErrServerFault}, w)
-		if responseBody == nil {
-			return errors.New("failed to marshal response body")
-		}
-
-		net.Respond(http.StatusInternalServerError, responseBody, w)
-		log.Log().Info("routeAdminLogin", "msg", "unauthorized")
-		return errors.New("admin token not set")
+	adminToken, err := fetchAdminToken(w)
+	if err != nil {
+		return err
 	}
 
 	signedToken := net.CreateJwt(adminToken, w)

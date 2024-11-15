@@ -4,10 +4,14 @@
 
 package sqlite
 
-const KeyDataDir = "data_dir"
-const KeyDatabaseFile = "database_file"
-const KeyJournalMode = "journal_mode"
-const KeyBusyTimeoutMs = "busy_timeout_ms"
-const KeyMaxOpenConns = "max_open_conns"
-const KeyMaxIdleConns = "max_idle_conns"
-const KeyConnMaxLifetimeSeconds = "conn_max_lifetime_seconds"
+type DatabaseConfigKey string
+
+const (
+	KeyDataDir                DatabaseConfigKey = "data_dir"
+	KeyDatabaseFile           DatabaseConfigKey = "database_file"
+	KeyJournalMode            DatabaseConfigKey = "journal_mode"
+	KeyBusyTimeoutMs          DatabaseConfigKey = "busy_timeout_ms"
+	KeyMaxOpenConns           DatabaseConfigKey = "max_open_conns"
+	KeyMaxIdleConns           DatabaseConfigKey = "max_idle_conns"
+	KeyConnMaxLifetimeSeconds DatabaseConfigKey = "conn_max_lifetime_seconds"
+)

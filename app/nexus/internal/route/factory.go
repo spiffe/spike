@@ -11,6 +11,7 @@ import (
 )
 
 func factory(p, a, m string) net.Handler {
+	// TODO: actions are magic strings.
 	switch {
 	case m == http.MethodPost && a == "admin" && p == urlLogin:
 		return routeAdminLogin

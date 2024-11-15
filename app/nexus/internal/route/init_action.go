@@ -5,114 +5,13 @@
 package route
 
 import (
-	"crypto/rand"
-	"crypto/sha256"
-	"encoding/hex"
 	"errors"
 	"net/http"
 
-	"golang.org/x/crypto/pbkdf2"
-
-	"github.com/spiffe/spike/app/nexus/internal/state"
 	"github.com/spiffe/spike/internal/entity/v1/reqres"
 	"github.com/spiffe/spike/internal/log"
 	"github.com/spiffe/spike/internal/net"
 )
-
-func prepareRequestBody(
-	w http.ResponseWriter, r *http.Request,
-) ([]byte, error) {
-	requestBody := net.ReadRequestBody(r, w)
-	if requestBody == nil {
-		return []byte{}, errors.New("failed to read request body")
-	}
-
-	request := net.HandleRequest[
-		reqres.InitRequest, reqres.InitResponse](
-		requestBody, w,
-		reqres.InitResponse{Err: reqres.ErrBadInput},
-	)
-	if request == nil {
-		return []byte{}, errors.New("failed to parse request body")
-	}
-	return requestBody, nil
-}
-
-func prepareRequest(
-	requestBody []byte, w http.ResponseWriter,
-) (*reqres.InitRequest, error) {
-	request := net.HandleRequest[
-		reqres.InitRequest, reqres.InitResponse](
-		requestBody, w,
-		reqres.InitResponse{Err: reqres.ErrBadInput},
-	)
-	if request == nil {
-		return nil, errors.New("failed to parse request body")
-	}
-	return request, nil
-}
-
-func sanitizeRequest(
-	req *reqres.InitRequest, w http.ResponseWriter,
-) (*reqres.InitRequest, error) {
-	password := req.Password
-	if len(password) < 16 { // TODO: magic number
-		res := reqres.InitResponse{Err: reqres.ErrLowEntropy}
-
-		responseBody := net.MarshalBody(res, w)
-		if responseBody == nil {
-			return nil, errors.New("failed to marshal response body")
-		}
-
-		net.Respond(http.StatusBadRequest, responseBody, w)
-		log.Log().Info("routeInit", "msg", "exit: Password too short")
-		return nil, errors.New("password too short")
-	}
-
-	return req, nil
-}
-
-func checkAdminToken(w http.ResponseWriter) error {
-	adminToken := state.AdminToken()
-	if adminToken != "" {
-		log.Log().Info("routeInit", "msg", "Already initialized")
-
-		responseBody := net.MarshalBody(
-			reqres.InitResponse{Err: reqres.ErrAlreadyInitialized}, w,
-		)
-		if responseBody == nil {
-			return errors.New("failed to marshal response body")
-		}
-
-		net.Respond(http.StatusInternalServerError, responseBody, w)
-		log.Log().Info("routeInit", "msg", "exit: Already initialized")
-		return errors.New("already initialized")
-	}
-	return nil
-}
-
-func generateAdminToken(w http.ResponseWriter) ([]byte, error) {
-	// Generate adminToken (32 bytes)
-	adminTokenBytes := make([]byte, 32) // TODO: magic number.
-	if _, err := rand.Read(adminTokenBytes); err != nil {
-		log.Log().Error("routeInit",
-			"msg", "Failed to generate admin token", "err", err.Error())
-
-		responseBody := net.MarshalBody(reqres.InitResponse{
-			Err: reqres.ErrServerFault}, w,
-		)
-		if responseBody == nil {
-			return []byte{}, errors.New("failed to marshal response body")
-		}
-
-		net.Respond(http.StatusInternalServerError, responseBody, w)
-		log.Log().Info(
-			"routeInit", "msg", "exit: Failed to generate admin token",
-		)
-		return []byte{}, errors.New("failed to generate admin token")
-	}
-	return adminTokenBytes, nil
-}
 
 // routeInit handles the initial setup of the system, creating admin credentials
 // and tokens. This endpoint can only be called once - subsequent calls will fail.
@@ -158,7 +57,9 @@ func generateAdminToken(w http.ResponseWriter) ([]byte, error) {
 // The function uses cryptographically secure random number generation for both
 // the admin token and salt. The admin token is prefixed with "spike." before storage.
 // All operations are logged using structured logging.
-func routeInit(w http.ResponseWriter, r *http.Request, audit *log.AuditEntry) error {
+func routeInit(
+	w http.ResponseWriter, r *http.Request, audit *log.AuditEntry,
+) error {
 	log.Log().Info("routeInit", "method", r.Method, "path", r.URL.Path,
 		"query", r.URL.RawQuery)
 	audit.Action = "create"
@@ -167,17 +68,17 @@ func routeInit(w http.ResponseWriter, r *http.Request, audit *log.AuditEntry) er
 	// anonymously by the first user (who will be the admin).
 	// If the system is already initialized, this process will err out anyway.
 
-	requestBody, err := prepareRequestBody(w, r)
+	requestBody, err := prepareInitRequestBody(w, r)
 	if err != nil {
 		return err
 	}
 
-	request, err := prepareRequest(requestBody, w)
+	request, err := prepareInitRequest(requestBody, w)
 	if err != nil {
 		return err
 	}
 
-	request, err = sanitizeRequest(request, w)
+	request, err = sanitizeInitRequest(request, w)
 	if err != nil {
 		return err
 	}
@@ -194,40 +95,13 @@ func routeInit(w http.ResponseWriter, r *http.Request, audit *log.AuditEntry) er
 		return err
 	}
 
-	>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> I WAS LEFT HERE!!!!!
-
 	// Generate salt and hash password
-	salt := make([]byte, 16)
-	if _, err := rand.Read(salt); err != nil {
-		log.Log().Error("routeInit", "msg", "Failed to generate salt",
-			"err", err.Error())
-
-		responseBody := net.MarshalBody(reqres.InitResponse{
-			Err: reqres.ErrServerFault}, w,
-		)
-		if responseBody == nil {
-			return errors.New("failed to marshal response body")
-		}
-
-		net.Respond(http.StatusInternalServerError, responseBody, w)
-		log.Log().Info("routeInit", "msg", "exit: Failed to generate salt")
-		return errors.New("failed to generate salt")
+	salt, err := generateSalt(w)
+	if err != nil {
+		return err
 	}
 
-	// TODO: make this configurable.
-	iterationCount := 600_000 // Minimum OWASP recommendation for PBKDF2-SHA256
-	hashLength := 32          // 256 bits output
-
-	passwordHash := pbkdf2.Key(
-		[]byte(password), salt,
-		iterationCount, hashLength, sha256.New,
-	)
-
-	state.SetAdminToken("spike." + string(adminTokenBytes))
-	state.SetAdminCredentials(
-		hex.EncodeToString(passwordHash),
-		hex.EncodeToString(salt),
-	)
+	updateStateForInit(request.Password, adminTokenBytes, salt)
 
 	responseBody := net.MarshalBody(reqres.InitResponse{}, w)
 	if responseBody == nil {

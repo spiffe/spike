@@ -41,7 +41,9 @@ import (
 //
 // The function logs its progress using structured logging. Unlike other routes,
 // this endpoint relies on SPIFFE authentication rather than JWT validation.
-func routeDeleteSecret(w http.ResponseWriter, r *http.Request, audit *log.AuditEntry) error {
+func routeDeleteSecret(
+	w http.ResponseWriter, r *http.Request, audit *log.AuditEntry,
+) error {
 	log.Log().Info("routeDeleteSecret", "method", r.Method, "path", r.URL.Path,
 		"query", r.URL.RawQuery)
 	audit.Action = "delete"
@@ -51,7 +53,7 @@ func routeDeleteSecret(w http.ResponseWriter, r *http.Request, audit *log.AuditE
 		return errors.New("invalid or missing JWT token")
 	}
 
-	requestBody := net.ReadRequestBody(r, w)
+	requestBody := net.ReadRequestBody(w, r)
 	if requestBody == nil {
 		return errors.New("failed to read request body")
 	}

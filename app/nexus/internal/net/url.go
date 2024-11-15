@@ -23,8 +23,8 @@ func UrlKeepRead() string {
 // UrlKeepWrite returns the hardcoded URL for the SPIKE Keeper API write endpoint.
 //
 // Returns:
-//   - string: The complete URL "https://localhost:8443/v1/keep" for
-//     the write endpoint
+//   - string: The complete URL for the write endpoint
 func UrlKeepWrite() string {
-	return "https://localhost:8443/v1/keep"
+	u, _ := url.JoinPath(env.KeepApiRoot(), "/v1/keep")
+	return u
 }

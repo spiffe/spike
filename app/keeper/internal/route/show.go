@@ -56,7 +56,7 @@ func routeShow(
 	// SPIKE Nexus through SPIFFE authentication. There is no human user
 	// involved in this request, so no JWT is needed.
 
-	requestBody := net.ReadRequestBody(r, w)
+	requestBody := net.ReadRequestBody(w, r)
 	if requestBody == nil {
 		return errors.New("failed to read request body")
 	}
