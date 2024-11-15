@@ -6,6 +6,7 @@ package route
 
 import (
 	"github.com/spiffe/spike/internal/log"
+	"github.com/spiffe/spike/internal/net"
 	"net/http"
 )
 
@@ -13,6 +14,8 @@ func Route(
 	w http.ResponseWriter, r *http.Request, audit *log.AuditEntry,
 ) error {
 	return factory(
-		r.URL.Path, r.URL.Query().Get("action"), r.Method,
+		r.URL.Path,
+		net.SpikeNexusApiAction(r.URL.Query().Get("action")),
+		r.Method,
 	)(w, r, audit)
 }

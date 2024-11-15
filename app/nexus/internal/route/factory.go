@@ -15,21 +15,21 @@ func factory(p string, a net.SpikeNexusApiAction, m string) net.Handler {
 	log.Log().Info("route.factory", "path", p, "action", a, "method", m)
 
 	switch {
-	case m == http.MethodPost && a == net.ActionAdminLogin && p == urlLogin:
+	case m == http.MethodPost && a == net.ActionNexusAdminLogin && p == urlLogin:
 		return routeAdminLogin
-	case m == http.MethodPost && a == net.ActionDefault && p == urlInit:
+	case m == http.MethodPost && a == net.ActionNexusDefault && p == urlInit:
 		return routeInit
-	case m == http.MethodPost && a == net.ActionCheck && p == urlInit:
+	case m == http.MethodPost && a == net.ActionNexusCheck && p == urlInit:
 		return routeInitCheck
-	case m == http.MethodPost && a == net.ActionDefault && p == urlSecrets:
+	case m == http.MethodPost && a == net.ActionNexusDefault && p == urlSecrets:
 		return routePutSecret
-	case m == http.MethodPost && a == net.ActionGet && p == urlSecrets:
+	case m == http.MethodPost && a == net.ActionNexusGet && p == urlSecrets:
 		return routeGetSecret
-	case m == http.MethodPost && a == net.ActionDelete && p == urlSecrets:
+	case m == http.MethodPost && a == net.ActionNexusDelete && p == urlSecrets:
 		return routeDeleteSecret
-	case m == http.MethodPost && a == net.ActionUndelete && p == urlSecrets:
+	case m == http.MethodPost && a == net.ActionNexusUndelete && p == urlSecrets:
 		return routeUndeleteSecret
-	case m == http.MethodPost && a == net.ActionList && p == urlSecrets:
+	case m == http.MethodPost && a == net.ActionNexusList && p == urlSecrets:
 		return routeListPaths
 	// Fallback route.
 	default:

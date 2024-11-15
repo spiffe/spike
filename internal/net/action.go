@@ -6,10 +6,15 @@ package net
 
 type SpikeNexusApiAction string
 
-const ActionAdminLogin SpikeNexusApiAction = "admin-login"
-const ActionCheck SpikeNexusApiAction = "check"
-const ActionGet SpikeNexusApiAction = "get"
-const ActionDelete SpikeNexusApiAction = "delete"
-const ActionUndelete SpikeNexusApiAction = "undelete"
-const ActionList SpikeNexusApiAction = "list"
-const ActionDefault SpikeNexusApiAction = ""
+const ActionNexusAdminLogin SpikeNexusApiAction = "admin-login"
+const ActionNexusCheck SpikeNexusApiAction = "check"
+const ActionNexusGet SpikeNexusApiAction = "get"
+const ActionNexusDelete SpikeNexusApiAction = "delete"
+const ActionNexusUndelete SpikeNexusApiAction = "undelete"
+const ActionNexusList SpikeNexusApiAction = "list"
+const ActionNexusDefault SpikeNexusApiAction = ""
+
+type SpikeKeeperApiAction string
+
+const ActionKeeperRead SpikeKeeperApiAction = "read"
+const ActionKeeperDefault SpikeKeeperApiAction = ""

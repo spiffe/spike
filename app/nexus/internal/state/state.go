@@ -51,8 +51,6 @@ var (
 	adminCredentialsMu sync.RWMutex
 )
 
-// var initOnce sync.Once
-
 // AdminToken returns the current admin token in a thread-safe manner.
 // The returned token is protected by a read lock to ensure concurrent
 // access safety.
