@@ -82,7 +82,9 @@ Examples:
 				}
 
 				if version < 0 {
-					fmt.Printf("Error: version numbers cannot be negative: %s\n", v)
+					fmt.Printf(
+						"Error: version numbers cannot be negative: %s\n", v,
+					)
 					return
 				}
 			}
