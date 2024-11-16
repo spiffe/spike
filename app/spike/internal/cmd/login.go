@@ -9,11 +9,33 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	"github.com/spiffe/spike/app/spike/internal/net"
+	"github.com/spiffe/spike/internal/config"
 	"golang.org/x/term"
 	"os"
 	"syscall"
 )
 
+// NewLoginCommand creates and returns a Cobra command that handles user
+// authentication with SPIKE Nexus. The command prompts for an admin password
+// and stores the resulting authentication token.
+//
+// The command performs the following steps:
+//  1. Prompts the user for an admin password via secure password input
+//  2. Attempts to authenticate with SPIKE Nexus using the provided X509Source
+//  3. On successful authentication, saves the JWT token to a local file
+//
+// Parameters:
+//   - source: An X509Source used for authenticating the connection to SPIKE Nexus
+//
+// The command supports the following flags:
+//   - --password: Optional flag to provide password
+//     (not recommended for security reasons)
+//
+// The token is saved to the path specified by config.SpikePilotAdminTokenFile()
+// with 0600 permissions.
+//
+// If any step fails (password input, authentication, or token storage), the command
+// prints an error message and returns without saving the token.
 func NewLoginCommand(source *workloadapi.X509Source) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "login",
@@ -36,9 +58,9 @@ func NewLoginCommand(source *workloadapi.X509Source) *cobra.Command {
 				return
 			}
 
-			// TODO: where the token is stored should be configurable.
-			// Save token to file:
-			err = os.WriteFile(".spike-admin-token", []byte(token), 0600)
+			err = os.WriteFile(
+				config.SpikePilotAdminTokenFile(), []byte(token), 0600,
+			)
 			if err != nil {
 				fmt.Println("Failed to save token to file:")
 				fmt.Println(err.Error())

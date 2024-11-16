@@ -12,7 +12,6 @@ import (
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 
 	"github.com/spiffe/spike/app/spike/internal/net"
-	"github.com/spiffe/spike/app/spike/internal/state"
 )
 
 // NewPutCommand creates and returns a new cobra.Command for storing secrets.
@@ -52,13 +51,8 @@ func NewPutCommand(source *workloadapi.X509Source) *cobra.Command {
 		Short: "Put secrets at the specified path",
 		Args:  cobra.MinimumNArgs(2),
 		Run: func(cmd *cobra.Command, args []string) {
-			adminToken, err := state.AdminToken()
-			if err != nil {
-				fmt.Println("Please login first with `spike login`.")
-				return
-			}
+			adminToken := adminToken()
 			if adminToken == "" {
-				fmt.Println("Please login first with `spike login`.")
 				return
 			}
 
@@ -79,7 +73,7 @@ func NewPutCommand(source *workloadapi.X509Source) *cobra.Command {
 				return
 			}
 
-			err = net.PutSecret(source, path, values)
+			err := net.PutSecret(source, path, values)
 			if err != nil {
 				fmt.Printf("Error: %v\n", err)
 				return

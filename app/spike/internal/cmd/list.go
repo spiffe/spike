@@ -12,6 +12,19 @@ import (
 	"github.com/spiffe/spike/app/spike/internal/state"
 )
 
+func adminToken() string {
+	adminToken, err := state.AdminToken()
+	if err != nil {
+		fmt.Println("Please login first with `spike login`.")
+		return ""
+	}
+	if adminToken == "" {
+		fmt.Println("Please login first with `spike login`.")
+		return ""
+	}
+	return adminToken
+}
+
 // NewListCommand creates and returns a new cobra.Command for listing all secret
 // paths. It configures a command that retrieves and displays all available
 // secret paths from the system.
@@ -40,14 +53,8 @@ func NewListCommand(source *workloadapi.X509Source) *cobra.Command {
 		Use:   "list",
 		Short: "List all secret paths",
 		Run: func(cmd *cobra.Command, args []string) {
-			// TODO: this check is repeated in every command, consider refactoring
-			adminToken, err := state.AdminToken()
-			if err != nil {
-				fmt.Println("Please login first with `spike login`.")
-				return
-			}
+			adminToken := adminToken()
 			if adminToken == "" {
-				fmt.Println("Please login first with `spike login`.")
 				return
 			}
 

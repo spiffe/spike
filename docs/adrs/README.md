@@ -13,3 +13,4 @@
 * [ADR-0011: PostgreSQL as SPIKE's Backing Store](adrs/adr-0011.md)
 * [ADR-0012: HTTP Methods for SPIKE API](adrs/adr-0012.md)
 * [ADR-0013: S3-Compatible Storage as SPIKE's Backing Store](adrs/adr-0013.md)
+* [ADR-0014: Maintaining SQLite as SPIKE's Primary Storage Backend](adrs/adr-0014.md)

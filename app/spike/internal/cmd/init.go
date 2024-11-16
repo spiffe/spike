@@ -31,7 +31,7 @@ import (
 //  2. If not initialized:
 //     - Generate a new admin token
 //     - Save the token using the provided X.509 source
-//     - Store the token in ./.spike-admin-token file
+//     - Store the token in SpikeAdminTokenFile()
 //
 // Error cases:
 //   - Already initialized: Notifies user and exits

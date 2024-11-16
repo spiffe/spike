@@ -7,7 +7,6 @@ package cmd
 import (
 	"fmt"
 	"github.com/spiffe/spike/app/spike/internal/net"
-	"github.com/spiffe/spike/app/spike/internal/state"
 	"strconv"
 	"strings"
 
@@ -61,19 +60,13 @@ Examples:
   spike undelete secret/ella -v 0,1,2  # Undeletes current version plus versions 1 and 2`,
 		Args: cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
-			adminToken, err := state.AdminToken()
-			if err != nil {
-				fmt.Println("Please login first with `spike login`.")
-				return
-			}
+			adminToken := adminToken()
 			if adminToken == "" {
-				fmt.Println("Please login first with `spike login`.")
 				return
 			}
 
 			path := args[0]
 			versions, _ := cmd.Flags().GetString("versions")
-
 			if versions == "" {
 				versions = "0"
 			}
@@ -94,7 +87,7 @@ Examples:
 				}
 			}
 
-			err = net.UndeleteSecret(source, path, versionList)
+			err := net.UndeleteSecret(source, path, versionList)
 			if err != nil {
 				fmt.Printf("Error: %v\n", err)
 				return

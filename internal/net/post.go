@@ -73,7 +73,7 @@ func Post(client *http.Client, path string, mr []byte) ([]byte, error) {
 	req.Header.Set("Content-Type", "application/json")
 
 	// Try to read and set JWT if file exists
-	if jwt, err := os.ReadFile(config.SpikePilotAdminTokenPath()); err == nil {
+	if jwt, err := os.ReadFile(config.SpikePilotAdminTokenFile()); err == nil {
 		req.Header.Set("Authorization", "Bearer "+string(bytes.TrimSpace(jwt)))
 	}
 

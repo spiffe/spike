@@ -13,7 +13,6 @@ import (
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 
 	"github.com/spiffe/spike/app/spike/internal/net"
-	"github.com/spiffe/spike/app/spike/internal/state"
 )
 
 // NewDeleteCommand creates and returns a new cobra.Command for deleting secrets.
@@ -59,13 +58,8 @@ Examples:
   spike delete secret/apocalyptica -v 0,1,2 # Deletes current version plus versions 1 and 2`,
 		Args: cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
-			adminToken, err := state.AdminToken()
-			if err != nil {
-				fmt.Println("Please login first with `spike login`.")
-				return
-			}
+			adminToken := adminToken()
 			if adminToken == "" {
-				fmt.Println("Please login first with `spike login`.")
 				return
 			}
 
@@ -94,7 +88,7 @@ Examples:
 				}
 			}
 
-			err = net.DeleteSecret(source, path, versionList)
+			err := net.DeleteSecret(source, path, versionList)
 			if err != nil {
 				fmt.Printf("Error: %v\n", err)
 				return

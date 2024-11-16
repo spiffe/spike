@@ -11,7 +11,6 @@ import (
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 
 	"github.com/spiffe/spike/app/spike/internal/net"
-	"github.com/spiffe/spike/app/spike/internal/state"
 )
 
 // NewGetCommand creates and returns a new cobra.Command for retrieving secrets.
@@ -46,13 +45,8 @@ func NewGetCommand(source *workloadapi.X509Source) *cobra.Command {
 		Short: "Get secrets from the specified path",
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
-			adminToken, err := state.AdminToken()
-			if err != nil {
-				fmt.Println("Please login first with `spike login`.")
-				return
-			}
+			adminToken := adminToken()
 			if adminToken == "" {
-				fmt.Println("Please login first with `spike login`.")
 				return
 			}
 
