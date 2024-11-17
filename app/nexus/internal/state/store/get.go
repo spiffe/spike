@@ -30,10 +30,10 @@ package store
 //
 //	// Get specific version
 //	historicalData, exists := kv.Get("secret/myapp", 2)
-func (kv *KV) Get(path string, version int) (map[string]string, bool) {
+func (kv *KV) Get(path string, version int) (map[string]string, error) {
 	secret, exists := kv.data[path]
 	if !exists {
-		return nil, false
+		return nil, ErrSecretNotFound
 	}
 
 	// #region debug
@@ -53,17 +53,17 @@ func (kv *KV) Get(path string, version int) (map[string]string, bool) {
 
 	v, exists := secret.Versions[version]
 	if !exists || v.DeletedTime != nil {
-		return nil, false
+		return nil, ErrSecretSoftDeleted
 	}
 
-	return v.Data, true
+	return v.Data, nil
 }
 
-func (kv *KV) GetRawSecret(path string) *Secret {
+func (kv *KV) GetRawSecret(path string) (*Secret, error) {
 	secret, exists := kv.data[path]
 	if !exists {
-		return nil
+		return nil, ErrSecretNotFound
 	}
 
-	return secret
+	return secret, nil
 }

@@ -37,11 +37,11 @@ var (
 // The function does not return any errors since it handles them internally
 // through logging. Cache failures are non-fatal as the KV store is considered
 // the authoritative data source.
-func AsyncPersistSecret(kv *store.KV, path string) {
+func AsyncPersistSecret(kv *store.KV, path string) error {
 	be := Backend()
 
 	// Get the full secret for caching
-	secret := kv.GetRawSecret(path)
+	secret, err := kv.GetRawSecret(path)
 	if secret != nil {
 		go func() {
 			if be == nil {
@@ -64,6 +64,7 @@ func AsyncPersistSecret(kv *store.KV, path string) {
 			}
 		}()
 	}
+	return err
 }
 
 // ReadSecret attempts to retrieve a secret from the backend cache at the

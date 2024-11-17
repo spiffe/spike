@@ -6,6 +6,7 @@ package route
 
 import (
 	"errors"
+	"github.com/spiffe/spike/app/nexus/internal/state/store"
 	"net/http"
 
 	"github.com/spiffe/spike/app/nexus/internal/state"
@@ -85,9 +86,13 @@ func routeGetSecret(
 	version := request.Version
 	path := request.Path
 
-	secret, exists := state.GetSecret(path, version)
-	if !exists {
-		log.Log().Info("routeGetSecret", "msg", "Secret not found")
+	secret, err := state.GetSecret(path, version)
+	if err != nil {
+		if errors.Is(err, store.ErrSecretNotFound) {
+			log.Log().Warn("routeGetSecret", "msg", err.Error())
+		} else if errors.Is(err, store.ErrSecretSoftDeleted) {
+			log.Log().Warn("routeGetSecret", "msg", err.Error())
+		}
 
 		res := reqres.SecretReadResponse{Err: reqres.ErrNotFound}
 		responseBody := net.MarshalBody(res, w)
@@ -96,8 +101,10 @@ func routeGetSecret(
 		}
 
 		net.Respond(http.StatusNotFound, responseBody, w)
-		log.Log().Info("routeGetSecret", "msg", "not found")
+		log.Log().Warn("routeGetSecret", "msg", "not found")
 		return nil
+	} else {
+		log.Log().Info("routeGetSecret", "msg", "Secret found")
 	}
 
 	res := reqres.SecretReadResponse{Data: secret}

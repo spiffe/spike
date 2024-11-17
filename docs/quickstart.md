@@ -40,6 +40,9 @@ not a production-ready setup. For production, you should follow the
 Let's first build SPIRE from the source:
 
 ```bash
+echo 'export WORKSPACE="$HOME/-CHANGE_TO_DEVELOPMENT_DIRECTION-"' >> ~/.profile
+source ~/.profile
+echo $WORKSPACE
 cd $WORKSPACE
 git clone https://github.com/spiffe/spire && cd spire
 make build
@@ -50,13 +53,13 @@ Add the SPIRE binaries to your PATH:
 ```bash
 # ~/.profile
 export PATH=$PATH:$WORKSPACE/spire/bin
+echo 'PATH=$PATH:$WORKSPACE/spire/bin' >> ~/.profile
 ```
 
 Verify installation:
 
 ```bash 
 source ~/.profile
-
 spire-server -h
 ```
 

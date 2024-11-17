@@ -13,10 +13,10 @@ import (
 // are provided, it marks each existing version in the list as deleted. The
 // deletion is performed by setting the DeletedTime to the current time. If the
 // path doesn't exist, the function returns without making any changes.
-func (kv *KV) Delete(path string, versions []int) {
+func (kv *KV) Delete(path string, versions []int) error {
 	secret, exists := kv.data[path]
 	if !exists {
-		return
+		return ErrSecretNotFound
 	}
 
 	now := time.Now()
@@ -29,8 +29,7 @@ func (kv *KV) Delete(path string, versions []int) {
 			v.DeletedTime = &now // Mark as deleted.
 			secret.Versions[cv] = v
 		}
-
-		return
+		return nil
 	}
 
 	// Delete specific versions
@@ -51,4 +50,5 @@ func (kv *KV) Delete(path string, versions []int) {
 			secret.Versions[version] = v
 		}
 	}
+	return nil
 }
