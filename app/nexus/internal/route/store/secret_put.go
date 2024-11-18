@@ -1,4 +1,4 @@
-package route
+package store
 
 //    \\ SPIKE: Secure your secrets with SPIFFE.
 //  \\\\\ Copyright 2024-present SPIKE contributors.
@@ -14,7 +14,7 @@ import (
 	"github.com/spiffe/spike/internal/net"
 )
 
-// routePutSecret handles HTTP requests to create or update secrets at a
+// RoutePutSecret handles HTTP requests to create or update secrets at a
 // specified path.
 //
 // This endpoint requires a valid admin JWT token for authentication. It accepts
@@ -43,12 +43,12 @@ import (
 //   - 401 Unauthorized: Invalid or missing JWT token
 //
 // The function logs its progress at various stages using structured logging.
-func routePutSecret(
+func RoutePutSecret(
 	w http.ResponseWriter, r *http.Request, audit *log.AuditEntry,
 ) error {
 	log.Log().Info("routeGetSecret", "method", r.Method, "path", r.URL.Path,
 		"query", r.URL.RawQuery)
-	audit.Action = "create"
+	audit.Action = log.AuditCreate
 
 	validJwt := net.ValidateJwt(w, r, state.AdminToken())
 	if !validJwt {

@@ -5,8 +5,10 @@
 package net
 
 import (
-	"github.com/spiffe/spike/app/nexus/internal/env"
 	"net/url"
+
+	"github.com/spiffe/spike/app/nexus/internal/env"
+	"github.com/spiffe/spike/internal/net"
 )
 
 // UrlKeeperRead returns the full URL for the SPIKE Keeper API read endpoint.
@@ -16,7 +18,7 @@ import (
 // Returns:
 //   - string: The complete URL for the read endpoint
 func UrlKeeperRead() string {
-	u, _ := url.JoinPath(env.KeepApiRoot(), "/v1/keep")
+	u, _ := url.JoinPath(env.KeepApiRoot(), string(net.SpikeKeeperUrlKeep))
 	params := url.Values{}
 	params.Add("action", "read")
 	return u + "?" + params.Encode()
@@ -28,6 +30,6 @@ func UrlKeeperRead() string {
 // Returns:
 //   - string: The complete URL for the write endpoint
 func UrlKeeperWrite() string {
-	u, _ := url.JoinPath(env.KeepApiRoot(), "/v1/keep")
+	u, _ := url.JoinPath(env.KeepApiRoot(), string(net.SpikeKeeperUrlKeep))
 	return u
 }

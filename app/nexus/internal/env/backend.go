@@ -24,7 +24,8 @@ const (
 )
 
 // BackendStoreType determines which storage backend type to use based on the
-// SPIKE_NEXUS_BACKEND_STORE environment variable. The value is case-insensitive.
+// SPIKE_NEXUS_BACKEND_STORE environment variable. The value is
+// case-insensitive.
 //
 // Valid values are:
 //   - "file": Uses file-based storage

@@ -2,7 +2,7 @@
 //  \\\\\ Copyright 2024-present SPIKE contributors.
 // \\\\\\\ SPDX-License-Identifier: Apache-2.0
 
-package route
+package store
 
 import (
 	"errors"
@@ -14,7 +14,7 @@ import (
 	"github.com/spiffe/spike/internal/net"
 )
 
-// routeKeep handles caching a root key received from SPIKE Nexus.
+// RouteKeep handles caching a root key received from SPIKE Nexus.
 //
 // This endpoint is authenticated via SPIFFE for machine-to-machine
 // communication between SPIKE Keeper and SPIKE Nexus, rather than using JWT
@@ -41,12 +41,12 @@ import (
 //
 // On success, returns an empty 200 OK response. Returns 400 Bad Request if the
 // request body is invalid or missing required fields.
-func routeKeep(
+func RouteKeep(
 	w http.ResponseWriter, r *http.Request, audit *log.AuditEntry,
 ) error {
 	log.Log().Info("routeKeep", "method", r.Method, "path", r.URL.Path,
 		"query", r.URL.RawQuery)
-	audit.Action = "create"
+	audit.Action = log.AuditCreate
 
 	// Note: no JWT validation is performed here because SPIKE Keeper trusts
 	// SPIKE Nexus through SPIFFE authentication. There is no human user

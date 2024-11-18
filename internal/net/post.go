@@ -7,11 +7,11 @@ package net
 import (
 	"bytes"
 	"errors"
-	"github.com/spiffe/spike/internal/config"
 	"io"
 	"net/http"
 	"os"
 
+	"github.com/spiffe/spike/internal/config"
 	"github.com/spiffe/spike/internal/log"
 )
 

@@ -2,7 +2,7 @@
 //  \\\\\ Copyright 2024-present SPIKE contributors.
 // \\\\\\\ SPDX-License-Identifier: Apache-2.0
 
-package route
+package auth
 
 import (
 	"errors"
@@ -13,8 +13,9 @@ import (
 	"github.com/spiffe/spike/internal/net"
 )
 
-// routeInit handles the initial setup of the system, creating admin credentials
-// and tokens. This endpoint can only be called once - subsequent calls will fail.
+// RouteInit handles the initial setup of the system, creating admin credentials
+// and tokens. This endpoint can only be called once - subsequent calls will
+// fail.
 //
 // The function performs system initialization by:
 //  1. Validating the provided admin password meets security requirements
@@ -51,18 +52,20 @@ import (
 //   - 401 Unauthorized: Invalid or missing JWT token
 //   - 400 Bad Request: Invalid request body
 //   - 400 Bad Request: Password too short (err: "low_entropy")
-//   - 500 Internal Server Error: System already initialized (err: "already_initialized")
-//   - 500 Internal Server Error: Failed to generate secure random values (err: "server_fault")
+//   - 500 Internal Server Error: System already initialized
+//     (err: "already_initialized")
+//   - 500 Internal Server Error: Failed to generate secure random values
+//     (err: "server_fault")
 //
 // The function uses cryptographically secure random number generation for both
-// the admin token and salt. The admin token is prefixed with "spike." before storage.
-// All operations are logged using structured logging.
-func routeInit(
+// the admin token and salt. The admin token is prefixed with "spike." before
+// storage. All operations are logged using structured logging.
+func RouteInit(
 	w http.ResponseWriter, r *http.Request, audit *log.AuditEntry,
 ) error {
 	log.Log().Info("routeInit", "method", r.Method, "path", r.URL.Path,
 		"query", r.URL.RawQuery)
-	audit.Action = "create"
+	audit.Action = log.AuditCreate
 
 	// No need to check for valid JWT here. System initialization is done
 	// anonymously by the first user (who will be the admin).

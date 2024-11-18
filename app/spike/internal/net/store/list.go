@@ -2,11 +2,12 @@
 //  \\\\\ Copyright 2024-present SPIKE contributors.
 // \\\\\\\ SPDX-License-Identifier: Apache-2.0
 
-package net
+package store
 
 import (
 	"encoding/json"
 	"errors"
+	net2 "github.com/spiffe/spike/app/spike/internal/net"
 
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 
@@ -31,7 +32,7 @@ func ListSecretKeys(source *workloadapi.X509Source) ([]string, error) {
 		return []string{}, err
 	}
 
-	body, err := net.Post(client, UrlSecretList(), mr)
+	body, err := net.Post(client, net2.UrlSecretList(), mr)
 	if errors.Is(err, net.ErrNotFound) {
 		return []string{}, nil
 	}

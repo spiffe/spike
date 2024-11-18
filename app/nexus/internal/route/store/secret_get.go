@@ -2,7 +2,7 @@
 //  \\\\\ Copyright 2024-present SPIKE contributors.
 // \\\\\\\ SPDX-License-Identifier: Apache-2.0
 
-package route
+package store
 
 import (
 	"errors"
@@ -14,7 +14,7 @@ import (
 	"github.com/spiffe/spike/internal/net"
 )
 
-// routeGetSecret handles requests to retrieve a secret at a specific path
+// RouteGetSecret handles requests to retrieve a secret at a specific path
 // and version.
 //
 // This endpoint requires a valid admin JWT token for authentication. The
@@ -56,12 +56,12 @@ import (
 //   - 404 Not Found: Secret doesn't exist at specified path/version
 //
 // All operations are logged using structured logging.
-func routeGetSecret(
+func RouteGetSecret(
 	w http.ResponseWriter, r *http.Request, audit *log.AuditEntry,
 ) error {
 	log.Log().Info("routeGetSecret", "method", r.Method, "path", r.URL.Path,
 		"query", r.URL.RawQuery)
-	audit.Action = "read"
+	audit.Action = log.AuditRead
 
 	validJwt := net.ValidateJwt(w, r, state.AdminToken())
 	if !validJwt {

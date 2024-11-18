@@ -1,8 +1,8 @@
 package net
 
 import (
-	"github.com/spiffe/spike/internal/crypto"
 	"github.com/spiffe/spike/internal/log"
+	"github.com/spiffe/spike/pkg/crypto"
 	"net/http"
 	"time"
 )
@@ -18,7 +18,7 @@ func HandleRoute(h Handler) {
 			TrailId:   crypto.Id(),
 			Timestamp: now,
 			UserId:    "",
-			Action:    "enter",
+			Action:    log.AuditEnter,
 			Path:      request.URL.Path,
 			Resource:  "",
 			SessionID: "",

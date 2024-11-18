@@ -12,9 +12,21 @@ import (
 
 type AuditState string
 
-var AuditCreated AuditState = "created"
-var AuditErrored AuditState = "error"
-var AuditSuccess AuditState = "success"
+const AuditCreated AuditState = "created"
+const AuditErrored AuditState = "error"
+const AuditSuccess AuditState = "success"
+
+type AuditAction string
+
+const AuditEnter AuditAction = "enter"
+const AuditCreate AuditAction = "create"
+const AuditList AuditAction = "list"
+const AuditInitCheck AuditAction = "init-check"
+const AuditLogin AuditAction = "login"
+const AuditDelete AuditAction = "delete"
+const AuditRead AuditAction = "read"
+const AuditUndelete AuditAction = "undelete"
+const AuditFallback AuditAction = "fallback"
 
 // AuditEntry represents a single audit log entry containing information about
 // user actions within the system.
@@ -29,7 +41,7 @@ type AuditEntry struct {
 	UserId string
 
 	// Action describes what operation was performed
-	Action string
+	Action AuditAction
 
 	// Path is the URL path of the request
 	Path string

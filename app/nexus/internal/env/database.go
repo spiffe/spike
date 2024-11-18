@@ -23,9 +23,11 @@ func DatabaseDir() string {
 }
 
 // DatabaseJournalMode returns the SQLite journal mode to use.
-// It can be configured using the SPIKE_NEXUS_DB_JOURNAL_MODE environment variable.
+// It can be configured using the SPIKE_NEXUS_DB_JOURNAL_MODE environment
+// variable.
 //
-// If the environment variable is not set, it defaults to "WAL" (Write-Ahead Logging).
+// If the environment variable is not set, it defaults to "WAL"
+// (Write-Ahead Logging).
 func DatabaseJournalMode() string {
 	s := os.Getenv("SPIKE_NEXUS_DB_JOURNAL_MODE")
 	if s != "" {
@@ -35,8 +37,8 @@ func DatabaseJournalMode() string {
 }
 
 // DatabaseBusyTimeoutMs returns the SQLite busy timeout in milliseconds.
-// It can be configured using the SPIKE_NEXUS_DB_BUSY_TIMEOUT_MS environment variable.
-// The value must be a positive integer.
+// It can be configured using the SPIKE_NEXUS_DB_BUSY_TIMEOUT_MS environment
+// variable. The value must be a positive integer.
 //
 // If the environment variable is not set or contains an invalid value,
 // it defaults to 5000 milliseconds (5 seconds).
@@ -53,8 +55,8 @@ func DatabaseBusyTimeoutMs() int {
 }
 
 // DatabaseMaxOpenConns returns the maximum number of open database connections.
-// It can be configured using the SPIKE_NEXUS_DB_MAX_OPEN_CONNS environment variable.
-// The value must be a positive integer.
+// It can be configured using the SPIKE_NEXUS_DB_MAX_OPEN_CONNS environment
+// variable. The value must be a positive integer.
 //
 // If the environment variable is not set or contains an invalid value,
 // it defaults to 10 connections.

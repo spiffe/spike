@@ -45,7 +45,9 @@ func SpikePilotAdminTokenFile() string {
 	spikeDir := filepath.Join(homeDir, ".spike")
 
 	// Create directory if it doesn't exist
-	err = os.MkdirAll(spikeDir, 0600)
+	// 0700 because we want to restrict access to the directory
+	// but allow the user to create JWTs in it.
+	err = os.MkdirAll(spikeDir, 0700)
 	if err != nil {
 		panic(err)
 	}

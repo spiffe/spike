@@ -11,7 +11,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 
-	"github.com/spiffe/spike/app/spike/internal/net"
+	"github.com/spiffe/spike/app/spike/internal/net/store"
 )
 
 // NewPutCommand creates and returns a new cobra.Command for storing secrets.
@@ -51,7 +51,7 @@ func NewPutCommand(source *workloadapi.X509Source) *cobra.Command {
 		Short: "Put secrets at the specified path",
 		Args:  cobra.MinimumNArgs(2),
 		Run: func(cmd *cobra.Command, args []string) {
-			adminToken := adminToken()
+			adminToken := adminToken(source)
 			if adminToken == "" {
 				return
 			}
@@ -73,7 +73,7 @@ func NewPutCommand(source *workloadapi.X509Source) *cobra.Command {
 				return
 			}
 
-			err := net.PutSecret(source, path, values)
+			err := store.PutSecret(source, path, values)
 			if err != nil {
 				fmt.Printf("Error: %v\n", err)
 				return

@@ -14,8 +14,8 @@ func Route(
 	w http.ResponseWriter, r *http.Request, audit *log.AuditEntry,
 ) error {
 	return factory(
-		r.URL.Path,
-		net.SpikeNexusApiAction(r.URL.Query().Get("action")),
+		net.ApiUrl(r.URL.Path),
+		net.SpikeNexusApiAction(r.URL.Query().Get(net.KeyApiAction)),
 		r.Method,
 	)(w, r, audit)
 }
