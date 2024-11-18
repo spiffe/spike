@@ -2,13 +2,14 @@
 //  \\\\\ Copyright 2024-present SPIKE contributors.
 // \\\\\\\ SPDX-License-Identifier: Apache-2.0
 
-package net
+package auth
 
 import (
 	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
+	net2 "github.com/spiffe/spike/app/spike/internal/net"
 	"github.com/spiffe/spike/internal/auth"
 	"github.com/spiffe/spike/internal/entity/data"
 	"github.com/spiffe/spike/internal/net"
@@ -31,7 +32,7 @@ func Init(source *workloadapi.X509Source, password string) error {
 
 	client, err := net.CreateMtlsClient(source, auth.CanTalkToPilot)
 
-	body, err := net.Post(client, UrlInit(), mr)
+	body, err := net.Post(client, net2.UrlInit(), mr)
 
 	var res reqres.InitResponse
 	err = json.Unmarshal(body, &res)
@@ -58,9 +59,9 @@ func CheckInitState(source *workloadapi.X509Source) (data.InitState, error) {
 
 	client, err := net.CreateMtlsClient(source, auth.CanTalkToPilot)
 
-	fmt.Println(">>>>>>>>>>>>>>>Posting to", UrlInitState())
+	fmt.Println(">>>>>>>>>>>>>>>Posting to", net2.UrlInitState())
 
-	body, err := net.Post(client, UrlInitState(), mr)
+	body, err := net.Post(client, net2.UrlInitState(), mr)
 	if errors.Is(err, net.ErrUnauthorized) {
 		return data.NotInitialized, err
 	}

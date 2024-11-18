@@ -6,18 +6,17 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/spiffe/spike/app/spike/internal/net/store"
 	"strconv"
 	"strings"
 
 	"github.com/spf13/cobra"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
-
-	"github.com/spiffe/spike/app/spike/internal/net"
 )
 
-// NewDeleteCommand creates and returns a new cobra.Command for deleting secrets.
-// It configures a command that allows users to delete one or more versions of
-// a secret at a specified path.
+// NewDeleteCommand creates and returns a new cobra.Command for deleting
+// secrets. It configures a command that allows users to delete one or more
+// versions of a secret at a specified path.
 //
 // Parameters:
 //   - source: X.509 source for workload API authentication
@@ -26,7 +25,8 @@ import (
 //   - path: Location of the secret to delete
 //
 // Flags:
-//   - --versions, -v (string): Comma-separated list of version numbers to delete
+//   - --versions, -v (string): Comma-separated list of version numbers to
+//     delete
 //   - "0" or empty: Deletes current version only (default)
 //   - "1,2,3": Deletes specific versions
 //
@@ -58,7 +58,7 @@ Examples:
   spike delete secret/apocalyptica -v 0,1,2 # Deletes current version plus versions 1 and 2`,
 		Args: cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
-			adminToken := adminToken()
+			adminToken := adminToken(source)
 			if adminToken == "" {
 				return
 			}
@@ -88,7 +88,7 @@ Examples:
 				}
 			}
 
-			err := net.DeleteSecret(source, path, versionList)
+			err := store.DeleteSecret(source, path, versionList)
 			if err != nil {
 				fmt.Printf("Error: %v\n", err)
 				return

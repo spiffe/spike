@@ -12,16 +12,94 @@
   be completed before adding more features.
 </purpose>
 <low-hanging-fruits>
-</low-hanging-fruits>
-<immediate-backlog>
 	<issue>
-		// check and verify; when the list is empty it should not return an error.
-		responseBody := net.MarshalBody(reqres.SecretListResponse{Keys: keys}, w)
-		if responseBody == nil {
-		return errors.New("failed to marshal response body")
+		mode for keeperless operation (fore development maybe).
+	</issue>
+	<issue>
+		The paths that we set in get put ...etc should look like a unix path.
+		it will require sanitization!
+		Check how other secrets stores manage those paths.
+	</issue>
+</low-hanging-fruits>
+<reserved>
+	<issue>
+		Create a demo app.
+	</issue>
+	<issue>
+		move the kv store to a `pkg` folder (after Sahin's PR merge).
+	</issue>
+	<issue>
+		workloads should be able to get/set/read secrets.
+		there should be path--workload mapping for that.
+		maybe use OPA.
+
+		1. create a sample binary that emulates a workload.
+		2. it will fetch its secrets from SPIKE Nexus.
+		3. it will update some secrets too.
+
+		Keep the policy management simple and/or delegate it to
+		a policy engine. Our goal is to keep SPIKE simple, and we
+		don't want create a policy engine.
+
+		This will also require a sample workload and an initial SDK.
+	</issue>
+	<issue>
+		make sure that everything sanitizable are properly sanitized.
+	</issue>
+	<issue>
+		- SPIKE Nexus Sanity Tests
+		- Ensure SPIKE Nexus caches the root key in memory.
+		- Ensure SPIKE Nexus reads from SPIKE keep if it does not have the root key.
+		- Ensure SPIKE Nexus saves the encrypted root key to the database.
+		- Ensure SPIKE Nexus caches the user's session key.
+		- Ensure SPIKE Nexus removes outdated session keys.
+		- Ensure SPIKE Nexus does not re-init (without manual intervention) after
+		  being initialized.
+		- Ensure SPIKE Nexus adheres to the bootstrapping sequence diagram.
+		- Ensure SPIKE Nexus backs up the admin token by encrypting it with the root
+		key and storing in the database.
+		- Ensure SPIKE Nexus stores the initialization tombstone in the database.
+	</issue>
+	<issue>
+		- SPIKE Pilot Sanity Tests
+		- Ensure SPIKE Pilot denies any operation if SPIKE Nexus is not initialized.
+		- Ensure SPIKE Pilot can warn if SPIKE Nexus is unreachable
+		- Ensure SPIKE Pilot does not indefinitely hang up if SPIRE is not there.
+		- Ensure SPIKE Pilot can get and set a secret.
+		- Ensure SPIKE Pilot can do a force reset.
+		- Ensure SPIKE Pilot can recover the root password.
+		- Ensure that after `spike init` you have a password-encrypted root key in the db.
+		- Ensure that you can recover the password-encrypted root key.
+	</issue>
+	<issue>
+		- SPIKE Keep Sanity Tests
+		- Ensure that the root key is stored in SPIKE Keep's memory.
+		- Ensure that SPIKE Keep can return the root key back to SPIKE Nexus.
+	</issue>
+	<issue>
+		Create secret metadata API.
+	</issue>
+	<issue>
+		* encrypt the root key with admin password and return it
+		as part of the init response.
+		* notify admin to save it to a secure place and delete it.
+		* tell the admin to save their password to a safe place too.
+	</issue>
+	<issue>
+		Demo: root key recovery.
+	</issue>
+	<issue>
+		func SetAdminCredentials(passwordHash, salt string) {
+		adminCredentialsMu.Lock()
+		adminCredentials = Credentials{
+		PasswordHash: passwordHash,
+		Salt:         salt,
 		}
+		adminCredentialsMu.Unlock()
 
-
+		// implement me!
+		// persist.AsyncPersistAdminCredentials(passwordHash, salt)
+		}
 	</issue>
 	<issue>
 		func AdminCredentials() Credentials {
@@ -36,69 +114,59 @@
 		}
 	</issue>
 	<issue>
-		rate limiting to api endpoints.
-		more string rate limiting for login attempts.
-		lockout after a certain number of failed login attempts.
-	</issue>
-	<issue>
-		func SetAdminCredentials(passwordHash, salt string) {
-		adminCredentialsMu.Lock()
-		adminCredentials = Credentials{
-		PasswordHash: passwordHash,
-		Salt:         salt,
-		}
-		adminCredentialsMu.Unlock()
-
-		// implement me!
-		// persist.AsyncPersistAdminCredentials(passwordHash, salt)
-		}
-	</issue>
-	<issue>
-		func SetAdminCredentials(passwordHash, salt string) {
-		adminCredentialsMu.Lock()
-		adminCredentials = Credentials{
-		PasswordHash: passwordHash,
-		Salt:         salt,
-		}
-		adminCredentialsMu.Unlock()
-
-		// implement me!
-		// persist.AsyncPersistAdminCredentials(passwordHash, salt)
-		}
-	</issue>
-	<issue>
-		// TODO: maybe do this in a separate goroutine?
-		// Update OldestVersion if we deleted anything
-		if deletedAny {
-		oldestVersion := secret.Metadata.CurrentVersion
-		for version := range secret.Versions {
-		if version lt oldestVersion {
-		oldestVersion = version
-		}
-		}
-		secret.Metadata.OldestVersion = oldestVersion
-
-	</issue>
-	<issue>
-		new initialization flow with password request from the superadmin.
-	</issue>
-	<issue>
-		mode for keeperless operation (fore development maybe).
-	</issue>
-	<issue>
 		If there is a backing store, load all secrets from the backing store
 		upon crash, which will also populate the key list.
+		after recovery, all secrets will be there and the system will be
+		operational.
+		after recovery admin will lose its session and will need to re-login.
 	</issue>
 	<issue>
-		cross compilation will need a dedicated user story:
-		can be done on an M3 mac; but will require some boilerplate.
-		# Linux ARM64
-		CGO_ENABLED=0 GOEXPERIMENT=boringcrypto go build -o keeper ./app/keeper/cmd/main.go
-		CGO_ENABLED=1 GOEXPERIMENT=boringcrypto go build -o nexus ./app/nexus/cmd/main.go
-		CGO_ENABLED=0 GOEXPERIMENT=boringcrypto go build -o spike ./app/spike/cmd/main.go
+		Test edge cases:
+		* call api method w/o token.
+		* call api method w/ invalid token.
+		* call api method w/o initializing the nexus.
+		* call init twice.
+		* call login with bad password.
+		^ all these cases should return meaningful errors and
+		the user should be informed of what went wrong.
 	</issue>
 	<issue>
-		Kubernetification
+		Try SPIKE on a Mac.
+	</issue>
+	<issue>
+		Try SPIKE on an x-86 Linux.
+	</issue>
+	<issue>
+		Secret metadata API.
+	</issue>
+	<issue>
+		these may come from the environment:
+
+		DataDir:         ".data",
+		DatabaseFile:    "spike.db",
+		JournalMode:     "WAL",
+		BusyTimeoutMs:   5000,
+		MaxOpenConns:    10,
+		MaxIdleConns:    5,
+		ConnMaxLifetime: time.Hour,
+	</issue>
+	<issue>
+		double-encryption of nexus-keeper comms (in case mTLS gets compromised, or
+		SPIRE is configured to use an upstream authority that is compromised, this
+		will provide end-to-end encryption and an additional layer of security over
+		the existing PKI)
+	</issue>
+</reserved>
+<immediate-backlog>
+	<issue>
+		Add recent recordings to the website.
+	</issue>
+	<issue>
+		// check and verify; when the list is empty it should not return an error.
+		responseBody := net.MarshalBody(reqres.SecretListResponse{Keys: keys}, w)
+		if responseBody == nil {
+		return errors.New("failed to marshal response body")
+		}
 	</issue>
 </immediate-backlog>
 <runner-up>
@@ -113,90 +181,40 @@
 		  and them move it under spiffe once it matures)
 	</issue>
 	<issue>
+		Maybe move the kv store, and the logger to a `pkg` folder instead of
+		`internal` because they are reusable as they are in isolation.
+	</issue>
+	<issue>
+		Kubernetification
+	</issue>
+	<issue>
 		v.1.0.0 Requirements:
 		- Having S3 as a backing store
 	</issue>
 	<issue>
-		Add recent recordings to the website.
+		Consider a health check / heartbeat between Nexus and Keeper.
+		This can be more frequent than the root key sync interval.
 	</issue>
 	<issue>
-		REST methods shall return meaningful errors.
+		Unit tests and coverage reports.
+		Create a solid integration test before.
 	</issue>
 	<issue>
-		* encrypt the root key with admin password and return it
-		as part of the init response.
-		* notify admin to save it to a secure place and delete it.
-		* tell the admin to save their password to a safe place too.
+		Test automation.
 	</issue>
 	<issue>
-		Initial super admin can create other admins.
-		So that, if an admin leaves, the super admin can delete them.
-		or if the password of an admin is compromised, the super admin can
-		reset it.
+		Assigning secrets to SPIFFE IDs or SPIFFE ID prefixes.
 	</issue>
 	<issue>
-		Test edge cases:
-			* call api method w/o token.
-			* call api method w/ invalid token.
-			* call api method w/o initializing the nexus.
-			* call init twice.
-			* call login with bad password.
-		^ all these cases should return meaningful errors and
-		the user should be informed of what went wrong.
-	</issue>
-	<issue>
-		Try SPIKE on a Mac.
-	</issue>
-	<issue>
-		Try SPIKE on an x-86 Linux.
-	</issue>
-	<issue>
-		Admin should be able to change their password.
-		(will require old password for security)
-	</issue>
-	<issue>
-	read the current code for cleanliness and clarity:
-		* there are TODO items.
-		* there are things that need to converted to config.
-	</issue>
-	<issue>
-		make sure that everything sanitizable are properly sanitized.
-	</issue>
-	<issue>
-		Algorithm change in `spike get` (instead of verifying the admin token,
-		use short-lived token you get from SPIKE Nexus)
-	</issue>
-	<issue>
-		`const urlSecretPut = "https://localhost:8553/v1/secrets"` ->
-		these should be configurable.
-	</issue>
-	<issue>
-		state.SetAdminToken(adminToken) // This is temporary, for demo. Update it based on new sequence diagrams.
-		adminToken := req.Data // admin token will be auto created, we just need a strong password, and sanitize that password
-	</issue>
-	<issue>
-		try SPIKE on a Mac.
-	</issue>
-	<issue>
-		Try SPIKE on an x-68 Linux.
-	</issue>
-	<issue>
-		encrypt root key with admin password
-		return part of the init response.
-	</issue>
-	<issue>
-		recover root key.
+		RW policies for workloads based on path and SPIFFE IDs.
+		(or maybe experiment with S3 policies before reinventing a policy engine)
 	</issue>
 </runner-up>
 <backlog>
 	<issue>
-		implement file backend type.
-	</issue>
-	<issue>
-		check what happens when token is invalid.
-	</issue>
-	<issue>
-		check what happens when token is expired.
+		rate limiting to api endpoints.
+		more string rate limiting for login attempts.
+		lockout after a certain number of failed login attempts.
 	</issue>
 	<issue>
 		* super admin can create regular admins and other super admins.
@@ -215,189 +233,33 @@
 		certain sqlite persistence operations are not implemented yet.
 	</issue>
 	<issue>
-		these may come from the environment:
-
-		DataDir:         ".data",
-		DatabaseFile:    "spike.db",
-		JournalMode:     "WAL",
-		BusyTimeoutMs:   5000,
-		MaxOpenConns:    10,
-		MaxIdleConns:    5,
-		ConnMaxLifetime: time.Hour,
-	</issue>
-	<issue>
 		Test the db backing store.
 	</issue>
-	<issue>
-		UndeleteSecret (and maybe other methods too) should return an error:
-		```
-		func UndeleteSecret(path string, versions []int) {
-		kvMu.Lock()
-		defer kvMu.Unlock()
-
-		err := kv.Undelete(path, versions)
-		if err != nil {
-		return
-		}
-		}
-		```
-	</issue>
-	<issue>
-		spike login being called before spike init should warn the user to
-		init first.
-	</issue>
-	<issue>
-		Create a demo app.
-	</issue>
-	<issue>
-		add missing entries to the audit log.
-	</issue>
-	<issue>
-		workloads should be able to get/set/read secrets.
-		there should be path--workload mapping for that.
-		maybe use OPA.
-
-		1. create a sample binary that emulates a workload.
-		2. it will fetch its secrets from SPIKE Nexus.
-		3. it will update some secrets too.
-
-		Keep the policy management simple and/or delegate it to
-		a policy engine. Our goal is to keep SPIKE simple, and we
-		don't want create a policy engine.
-	</issue>
-	<issue>
-		The paths that we set in get put etc should look like a unix path.
-		it will require sanitization!
-	</issue>
-	<issue>
-	Do some static analysis.
-	</issue>
-	<issue>
-	create community and contact pages.
-	</issue>
-	<issue>
-	Add correlation id to logs where there is context.
-	</issue>
-	<issue>
-	for a proper audit these paths should return an error and the auditor should
-	log unsuccessful cases
-		<!--
-		case m == http.MethodPost && a == "" && p == urlKeep:
-		return routeKeep
-		-->
-	</issue>
-	<issue>
-	Create secret metadata API.
-	</issue>
-	<issue>
-	Maybe move the kv store, and the logger to a `pkg` folder instead of
-	`internal` because they are reusable as they are in isolation.
-	</issue>
-	<issue>
-	Have a way to clean up outdated session tokens to avoid memory leaks.
-	</issue>
-	<issue>
-	Implement an S3 (or compatible) backing store.
-	</issue>
-	<issue>
-	Audit log needs more work
-
-	```
-	entry := log.AuditEntry{
-	Timestamp: now,
-	UserId:    "TBD",
-	Action:    "",
-	Resource:  p,
-	SessionID: "",
-	}
-	```
-	</issue>
-	<issue>
-		`routeFallback` is identical in both modules.
-	</issue>
 </backlog>
-<after-login-flow-fully-implemented>
-	<issue>
-		routeInit on nexus can benefit some splitting.
-	</issue>
-	<issue>
-		// Good first issue.
-		// spike init asks to save password on the machine.
-		// will save to ~/.spike/credentials.json
-		// configurable.
-		// if the file does not exist, it will ask for password.
-		// will also remind the risks of doing so.
-		// or maybe not worth it because people are lazy.
-	</issue>
-	<issue>
-	Secret metadata API.
-	</issue>
-	<issue>
-	- SPIKE Nexus Sanity Tests
-		- Ensure SPIKE Nexus caches the root key in memory.
-		- Ensure SPIKE Nexus reads from SPIKE keep if it does not have the root key.
-		- Ensure SPIKE Nexus saves the encrypted root key to the database.
-		- Ensure SPIKE Nexus caches the user's session key.
-		- Ensure SPIKE Nexus removes outdated session keys.
-		- Ensure SPIKE Nexus does not re-init (without manual intervention) after
-		being initialized.
-		- Ensure SPIKE Nexus adheres to the bootstrapping sequence diagram.
-		- Ensure SPIKE Nexus backs up the admin token by encrypting it with the root
-		key and storing in the database.
-		- Ensure SPIKE Nexus stores the initialization tombstone in the database.
-	</issue>
-	<issue>
-	- SPIKE Pilot Sanity Tests
-		- Ensure SPIKE Pilot denies any operation if SPIKE Nexus is not initialized.
-		- Ensure SPIKE Pilot can warn if SPIKE Nexus is unreachable
-		- Ensure SPIKE Pilot does not indefinitely hang up if SPIRE is not there.
-		- Ensure SPIKE Pilot can get and set a secret.
-		- Ensure SPIKE Pilot can do a force reset.
-		- Ensure SPIKE Pilot can recover the root password.
-		- Ensure that after `spike init` you have a password-encrypted root key in the db.
-		- Ensure that you can recover the password-encrypted root key.
-	</issue>
-	<issue>
-	- SPIKE Keep Sanity Tests
-		- Ensure that the root key is stored in SPIKE Keep's memory.
-		- Ensure that SPIKE Keep can return the root key back to SPIKE Nexus.
-	</issue>
-	<issue>
-	Consider a health check / heartbeat between Nexus and Keeper.
-	This can be more frequent than the root key sync interval.
-	</issue>
-	<issue>
-	Unit tests and coverage reports.
-	</issue>
-	<issue>
-	Integration tests.
-	</issue>
-	<issue>
-	Test automation.
-	</issue>
-	<issue>
-	Assigning secrets to SPIFFE IDs or SPIFFE ID prefixes.
-	</issue>
-	<issue>
-	RW policies for workloads baesd on path and SPIFFE IDs.
-	(or maybe experiment with S3 policies before reinventing a policy engine)
-	</issue>
-</after-login-flow-fully-implemented>
-<to-plan>
-	<issue>
-	S3 (or compatible) backing store
-	</issue>
-	<issue>
-	File-based backing store
-	</issue>
-	<issue>
-	In memory backing store
-	</issue>
-	<issue>
-	Kubernetes Deployment
-	</issue>
-</to-plan>
 <future>
+	<issue>
+		Do some static analysis.
+	</issue>
+	<to-plan>
+		<issue>
+			S3 (or compatible) backing store
+		</issue>
+		<issue>
+			File-based backing store
+		</issue>
+		<issue>
+			In memory backing store
+		</issue>
+		<issue>
+			Kubernetes Deployment
+		</issue>
+	</to-plan>
+	<issue>
+		Initial super admin can create other admins.
+		So that, if an admin leaves, the super admin can delete them.
+		or if the password of an admin is compromised, the super admin can
+		reset it.
+	</issue>
 	<issue>
 	- Security Measures (SPIKE Nexus)
 		- Encrypting the root key with admin password is good
@@ -423,12 +285,6 @@
 	<issue>
 	HSM integration (i.e. root key is managed/provided by an HSM, and the key
 	ever leaves the trust boundary of the HSM.
-	</issue>
-	<issue>
-	double-encryption of nexus-keeper comms (in case mTLS gets compromised, or
-	SPIRE is configured to use an upstream authority that is compromised, this
-	will provide end-to-end encryption and an additional layer of security over
-	the existing PKI)
 	</issue>
 	<issue>
 	Ability to rotate the root key (automatic via Nexus).

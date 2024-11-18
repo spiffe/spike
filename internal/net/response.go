@@ -76,8 +76,9 @@ func Respond(statusCode int, body []byte, w http.ResponseWriter) {
 // Fallback handles requests to undefined routes by returning a 400 Bad Request.
 //
 // This function serves as a catch-all handler for undefined routes, logging the
-// request details and returning a standardized error response. It uses MarshalBody
-// to generate the response and handles any errors during response writing.
+// request details and returning a standardized error response. It uses
+// MarshalBody to generate the response and handles any errors during response
+// writing.
 //
 // Parameters:
 //   - w: http.ResponseWriter - The response writer
@@ -87,12 +88,14 @@ func Respond(statusCode int, body []byte, w http.ResponseWriter) {
 //   - Status: 400 Bad Request
 //   - Content-Type: application/json
 //   - Body: JSON object with an error field
-func Fallback(w http.ResponseWriter, r *http.Request, audit *log.AuditEntry) error {
+func Fallback(
+	w http.ResponseWriter, r *http.Request, audit *log.AuditEntry,
+) error {
 	log.Log().Info("fallback",
 		"method", r.Method,
 		"path", r.URL.Path,
 		"query", r.URL.RawQuery)
-	audit.Action = "fallback"
+	audit.Action = log.AuditFallback
 
 	body := MarshalBody(reqres.FallbackResponse{Err: reqres.ErrBadInput}, w)
 	if body == nil {

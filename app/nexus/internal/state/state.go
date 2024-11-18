@@ -6,6 +6,7 @@ package state
 
 import (
 	"errors"
+	"github.com/spiffe/spike/pkg/crypto"
 	"sync"
 	"time"
 
@@ -14,7 +15,6 @@ import (
 	"github.com/spiffe/spike/app/nexus/internal/net"
 	"github.com/spiffe/spike/app/nexus/internal/state/persist"
 	"github.com/spiffe/spike/app/nexus/internal/state/store"
-	"github.com/spiffe/spike/internal/crypto"
 )
 
 var (
@@ -143,9 +143,9 @@ func DeleteSecret(path string, versions []int) {
 // a slice of version numbers to restore. The function acquires a lock on the
 // key-value store to ensure thread-safe operations during the undelete process.
 //
-// The function operates synchronously and will block until the undelete operation
-// is complete. If any specified version numbers don't exist or were not previously
-// deleted, those versions will be silently skipped.
+// The function operates synchronously and will block until the undelete
+// operation is complete. If any specified version numbers don't exist or were
+// not previously deleted, those versions will be silently skipped.
 //
 // Parameters:
 //   - path: The path to the secret to be restored

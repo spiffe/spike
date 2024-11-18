@@ -11,7 +11,9 @@ import (
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 )
 
-// Initialize sets up the CLI command structure with a workload API X.509 source.
+// Initialize sets up the CLI command structure with a workload API X.509
+// source.
+//
 // It creates and configures the following commands:
 //   - get: Retrieves secrets with optional version specification
 //   - delete: Removes specified versions of secrets

@@ -2,7 +2,7 @@
 //  \\\\\ Copyright 2024-present SPIKE contributors.
 // \\\\\\\ SPDX-License-Identifier: Apache-2.0
 
-package route
+package store
 
 import (
 	"errors"
@@ -14,12 +14,17 @@ import (
 	"github.com/spiffe/spike/internal/net"
 )
 
-// routeKeep handles HTTP requests to cache a root key from SPIKE Nexus.
+// RouteListPaths handles requests to retrieve all available secret paths.
 //
-// This endpoint is specifically designed for internal system communication
-// between SPIKE Keeper and SPIKE Nexus. Authentication is handled via SPIFFE
-// rather than JWT tokens, as this is a machine-to-machine interaction without
-// human user involvement.
+// This endpoint requires a valid admin JWT token for authentication.
+// The function returns a list of all paths where secrets are stored, regardless
+// of their version or deletion status.
+//
+// The function follows these steps:
+//  1. Validates the JWT token
+//  2. Validates the request body format
+//  3. Retrieves all secret paths from the state
+//  4. Returns the list of paths
 //
 // Parameters:
 //   - w: http.ResponseWriter to write the HTTP response
@@ -31,22 +36,27 @@ import (
 //
 // Request body format:
 //
+//	{} // Empty request body expected
+//
+// Response format on success (200 OK):
+//
 //	{
-//	    "rootKey": string   // Root key to be cached
+//	    "keys": []string   // Array of all secret paths
 //	}
 //
-// Responses:
-//   - 200 OK: Root key successfully cached
-//   - 400 Bad Request: Invalid request body or parameters
+// Error responses:
+//   - 401 Unauthorized: Invalid or missing JWT token
+//   - 400 Bad Request: Invalid request body format
 //
-// The function logs its progress using structured logging. Unlike other routes,
-// this endpoint relies on SPIFFE authentication rather than JWT validation.
-func routeDeleteSecret(
+// All operations are logged using structured logging. This endpoint only
+// returns the paths to secrets and not their contents; use RouteGetSecret to
+// retrieve actual secret values.
+func RouteListPaths(
 	w http.ResponseWriter, r *http.Request, audit *log.AuditEntry,
 ) error {
-	log.Log().Info("routeDeleteSecret", "method", r.Method, "path", r.URL.Path,
+	log.Log().Info("routeListPaths", "method", r.Method, "path", r.URL.Path,
 		"query", r.URL.RawQuery)
-	audit.Action = "delete"
+	audit.Action = log.AuditList
 
 	validJwt := net.ValidateJwt(w, r, state.AdminToken())
 	if !validJwt {
@@ -59,29 +69,22 @@ func routeDeleteSecret(
 	}
 
 	request := net.HandleRequest[
-		reqres.SecretDeleteRequest, reqres.SecretDeleteResponse](
+		reqres.SecretListRequest, reqres.SecretListResponse](
 		requestBody, w,
-		reqres.SecretDeleteResponse{Err: reqres.ErrBadInput},
+		reqres.SecretListResponse{Err: reqres.ErrBadInput},
 	)
 	if request == nil {
 		return errors.New("failed to parse request body")
 	}
 
-	path := request.Path
-	versions := request.Versions
-	if len(versions) == 0 {
-		versions = []int{}
-	}
+	keys := state.ListKeys()
 
-	state.DeleteSecret(path, versions)
-	log.Log().Info("routeDeleteSecret", "msg", "Secret deleted")
-
-	responseBody := net.MarshalBody(reqres.SecretDeleteResponse{}, w)
+	responseBody := net.MarshalBody(reqres.SecretListResponse{Keys: keys}, w)
 	if responseBody == nil {
 		return errors.New("failed to marshal response body")
 	}
 
 	net.Respond(http.StatusOK, responseBody, w)
-	log.Log().Info("routeDeleteSecret", "msg", "OK")
+	log.Log().Info("routeListPaths", "msg", "OK")
 	return nil
 }

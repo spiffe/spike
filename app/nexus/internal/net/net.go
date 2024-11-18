@@ -73,8 +73,8 @@ func UpdateCache(
 // response.
 //
 // Parameters:
-//   - source: A pointer to workloadapi.X509Source used for creating the mTLS client.
-//     Must not be nil.
+//   - source: A pointer to workloadapi.X509Source used for creating the mTLS
+//     client. Must not be nil.
 //
 // Returns:
 //   - string: The root key retrieved from the cache.

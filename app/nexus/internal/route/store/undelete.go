@@ -2,7 +2,7 @@
 //  \\\\\ Copyright 2024-present SPIKE contributors.
 // \\\\\\\ SPDX-License-Identifier: Apache-2.0
 
-package route
+package store
 
 import (
 	"errors"
@@ -14,7 +14,7 @@ import (
 	"github.com/spiffe/spike/internal/net"
 )
 
-// routeUndeleteSecret handles HTTP requests to restore previously deleted
+// RouteUndeleteSecret handles HTTP requests to restore previously deleted
 // secrets.
 //
 // This endpoint requires a valid admin JWT token for authentication. It accepts
@@ -46,12 +46,12 @@ import (
 //   - 401 Unauthorized: Invalid or missing JWT token
 //
 // The function logs its progress at various stages using structured logging.
-func routeUndeleteSecret(
+func RouteUndeleteSecret(
 	w http.ResponseWriter, r *http.Request, audit *log.AuditEntry,
 ) error {
 	log.Log().Info("routeUndeleteSecret",
 		"method", r.Method, "path", r.URL.Path, "query", r.URL.RawQuery)
-	audit.Action = "undelete"
+	audit.Action = log.AuditUndelete
 
 	validJwt := net.ValidateJwt(w, r, state.AdminToken())
 	if !validJwt {

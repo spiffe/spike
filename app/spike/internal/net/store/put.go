@@ -2,47 +2,33 @@
 //  \\\\\ Copyright 2024-present SPIKE contributors.
 // \\\\\\\ SPDX-License-Identifier: Apache-2.0
 
-package net
+package store
 
 import (
 	"encoding/json"
 	"errors"
-	"github.com/spiffe/spike/internal/auth"
-	"strconv"
+	net2 "github.com/spiffe/spike/app/spike/internal/net"
 
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 
+	"github.com/spiffe/spike/internal/auth"
 	"github.com/spiffe/spike/internal/entity/v1/reqres"
 	"github.com/spiffe/spike/internal/net"
 )
 
-// UndeleteSecret undeletes a secret from SPIKE Nexus.
-func UndeleteSecret(source *workloadapi.X509Source,
-	path string, versions []string) error {
-	var vv []int
-	if len(versions) == 0 {
-		vv = []int{}
-	}
+// PutSecret upserts a secret to SPIKE Nexus.
+func PutSecret(source *workloadapi.X509Source,
+	path string, values map[string]string) error {
 
-	for _, version := range versions {
-		v, e := strconv.Atoi(version)
-		if e != nil {
-			continue
-		}
-		vv = append(vv, v)
-	}
-
-	r := reqres.SecretUndeleteRequest{
-		Path:     path,
-		Versions: vv,
+	r := reqres.SecretPutRequest{
+		Path:   path,
+		Values: values,
 	}
 
 	mr, err := json.Marshal(r)
 	if err != nil {
 		return errors.Join(
-			errors.New(
-				"undeleteSecret: I am having problem generating the payload",
-			),
+			errors.New("putSecret: I am having problem generating the payload"),
 			err,
 		)
 	}
@@ -52,7 +38,7 @@ func UndeleteSecret(source *workloadapi.X509Source,
 		return err
 	}
 
-	_, err = net.Post(client, UrlSecretUndelete(), mr)
+	_, err = net.Post(client, net2.UrlSecretPut(), mr)
 	if errors.Is(err, net.ErrUnauthorized) {
 		return errors.New(`unauthorized. Please login first with 'spike login'`)
 	}

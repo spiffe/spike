@@ -7,30 +7,37 @@ package route
 import (
 	"net/http"
 
+	"github.com/spiffe/spike/app/nexus/internal/route/auth"
+	"github.com/spiffe/spike/app/nexus/internal/route/store"
 	"github.com/spiffe/spike/internal/log"
 	"github.com/spiffe/spike/internal/net"
 )
 
-func factory(p string, a net.SpikeNexusApiAction, m string) net.Handler {
+func factory(p net.ApiUrl, a net.SpikeNexusApiAction, m string) net.Handler {
 	log.Log().Info("route.factory", "path", p, "action", a, "method", m)
 
+	// We only accept POST requests.
+	if m != http.MethodPost {
+		return net.Fallback
+	}
+
 	switch {
-	case m == http.MethodPost && a == net.ActionNexusAdminLogin && p == urlLogin:
-		return routeAdminLogin
-	case m == http.MethodPost && a == net.ActionNexusDefault && p == urlInit:
-		return routeInit
-	case m == http.MethodPost && a == net.ActionNexusCheck && p == urlInit:
-		return routeInitCheck
-	case m == http.MethodPost && a == net.ActionNexusDefault && p == urlSecrets:
-		return routePutSecret
-	case m == http.MethodPost && a == net.ActionNexusGet && p == urlSecrets:
-		return routeGetSecret
-	case m == http.MethodPost && a == net.ActionNexusDelete && p == urlSecrets:
-		return routeDeleteSecret
-	case m == http.MethodPost && a == net.ActionNexusUndelete && p == urlSecrets:
-		return routeUndeleteSecret
-	case m == http.MethodPost && a == net.ActionNexusList && p == urlSecrets:
-		return routeListPaths
+	case a == net.ActionNexusAdminLogin && p == net.SpikeNexusUrlLogin:
+		return auth.RouteAdminLogin
+	case a == net.ActionNexusDefault && p == net.SpikeNexusUrlInit:
+		return auth.RouteInit
+	case a == net.ActionNexusCheck && p == net.SpikeNexusUrlInit:
+		return auth.RouteInitCheck
+	case a == net.ActionNexusDefault && p == net.SpikeNexusUrlSecrets:
+		return store.RoutePutSecret
+	case a == net.ActionNexusGet && p == net.SpikeNexusUrlSecrets:
+		return store.RouteGetSecret
+	case a == net.ActionNexusDelete && p == net.SpikeNexusUrlSecrets:
+		return store.RouteDeleteSecret
+	case a == net.ActionNexusUndelete && p == net.SpikeNexusUrlSecrets:
+		return store.RouteUndeleteSecret
+	case a == net.ActionNexusList && p == net.SpikeNexusUrlSecrets:
+		return store.RouteListPaths
 	// Fallback route.
 	default:
 		return net.Fallback

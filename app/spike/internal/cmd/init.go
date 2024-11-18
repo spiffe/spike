@@ -12,7 +12,7 @@ import (
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	"golang.org/x/term"
 
-	"github.com/spiffe/spike/app/spike/internal/net"
+	"github.com/spiffe/spike/app/spike/internal/net/auth"
 	"github.com/spiffe/spike/internal/entity/data"
 )
 
@@ -46,7 +46,7 @@ func NewInitCommand(source *workloadapi.X509Source) *cobra.Command {
 		Use:   "init",
 		Short: "Initialize spike configuration",
 		Run: func(cmd *cobra.Command, args []string) {
-			state, err := net.CheckInitState(source)
+			state, err := auth.CheckInitState(source)
 
 			if err != nil {
 				fmt.Println("Failed to check init state:")
@@ -99,7 +99,7 @@ func NewInitCommand(source *workloadapi.X509Source) *cobra.Command {
 
 			passwordStr := string(password)
 
-			err = net.Init(source, passwordStr)
+			err = auth.Init(source, passwordStr)
 			if err != nil {
 				fmt.Println("Failed to save admin token:")
 				fmt.Println(err.Error())

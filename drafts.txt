@@ -1,3 +1,76 @@
+POLICY API SPECIFICATION
+
+/v1/acl/policies:
+  post:
+    description: Create a new access policy
+    request:
+      body:
+        policy_name: string
+        spiffe_id_pattern: string  # Supports regex/prefix matching
+        path_pattern: string       # Supports glob patterns
+        permissions:
+          - read
+          - list
+        metadata:
+          created_by: string
+          created_at: timestamp
+    response:
+      policy_id: string
+      status: string
+
+  get:
+    description: List all policies
+    response:
+      policies:
+        - policy_id: string
+          policy_name: string
+          spiffe_id_pattern: string
+          path_pattern: string
+          permissions: [string]
+          metadata:
+            created_by: string
+            created_at: timestamp
+            last_modified: timestamp
+
+/v1/acl/policies/{policy_id}:
+  get:
+    description: Get specific policy details
+  delete:
+    description: Remove a policy
+  put:
+    description: Update a policy
+
+# Policy Evaluation API (for internal use)
+/v1/acl/check:
+  post:
+    description: Check if a SPIFFE ID has access to a path
+    request:
+      spiffe_id: string
+      path: string
+      action: string  # read/list
+    response:
+      allowed: boolean
+      matching_policies: [string]  # List of policy IDs that granted access
+
+# Example Policy Document
+example_policy:
+  policy_name: "web-servers-secrets"
+  spiffe_id_pattern: "spiffe://example.org/web-server/*"
+  path_pattern: "secrets/web/*"
+  permissions:
+    - read
+    - list
+  metadata:
+    created_by: "admin@example.org"
+    created_at: "2024-11-16T10:00:00Z"
+
+
+
+
+
+
+
+
 // HandleRequest is a generic request handler for unmarshalling JSON requests
 func HandleRequest[Req any, Res any](
     requestBody []byte,

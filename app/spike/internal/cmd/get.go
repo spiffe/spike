@@ -6,11 +6,10 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/spiffe/spike/app/spike/internal/net/store"
 
 	"github.com/spf13/cobra"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
-
-	"github.com/spiffe/spike/app/spike/internal/net"
 )
 
 // NewGetCommand creates and returns a new cobra.Command for retrieving secrets.
@@ -45,7 +44,7 @@ func NewGetCommand(source *workloadapi.X509Source) *cobra.Command {
 		Short: "Get secrets from the specified path",
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
-			adminToken := adminToken()
+			adminToken := adminToken(source)
 			if adminToken == "" {
 				return
 			}
@@ -53,7 +52,7 @@ func NewGetCommand(source *workloadapi.X509Source) *cobra.Command {
 			path := args[0]
 			version, _ := cmd.Flags().GetInt("version")
 
-			secret, err := net.GetSecret(source, path, version)
+			secret, err := store.GetSecret(source, path, version)
 			if err != nil {
 				fmt.Println("Error reading secret:", err.Error())
 				return
