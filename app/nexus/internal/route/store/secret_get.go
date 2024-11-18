@@ -85,9 +85,9 @@ func RouteGetSecret(
 	version := request.Version
 	path := request.Path
 
-	secret, err := state.GetSecret(path, version)
-	if err != nil {
-		log.Log().Info("routeGetSecret", "msg", err.Error())
+	secret, exists := state.GetSecret(path, version)
+	if !exists {
+		log.Log().Info("routeGetSecret", "msg", "Secret not found")
 
 		res := reqres.SecretReadResponse{Err: reqres.ErrNotFound}
 		responseBody := net.MarshalBody(res, w)

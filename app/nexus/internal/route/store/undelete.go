@@ -6,9 +6,9 @@ package store
 
 import (
 	"errors"
+	"github.com/spiffe/spike/app/nexus/internal/state/base"
 	"net/http"
 
-	"github.com/spiffe/spike/app/nexus/internal/state"
 	"github.com/spiffe/spike/internal/entity/v1/reqres"
 	"github.com/spiffe/spike/internal/log"
 	"github.com/spiffe/spike/internal/net"
@@ -53,7 +53,7 @@ func RouteUndeleteSecret(
 		"method", r.Method, "path", r.URL.Path, "query", r.URL.RawQuery)
 	audit.Action = log.AuditUndelete
 
-	validJwt := net.ValidateJwt(w, r, state.AdminToken())
+	validJwt := net.ValidateJwt(w, r, base.AdminToken())
 	if !validJwt {
 		return errors.New("invalid or missing JWT token")
 	}
@@ -78,7 +78,7 @@ func RouteUndeleteSecret(
 		versions = []int{}
 	}
 
-	state.UndeleteSecret(path, versions)
+	base.UndeleteSecret(path, versions)
 	log.Log().Info("routeUndeleteSecret", "msg", "Secret undeleted")
 
 	responseBody := net.MarshalBody(reqres.SecretUndeleteResponse{}, w)

@@ -74,6 +74,7 @@ func RouteDeleteSecret(
 	}
 
 	state.DeleteSecret(path, versions)
+	log.Log().Info("routeDeleteSecret", "msg", "Secret deleted")
 
 	responseBody := net.MarshalBody(reqres.SecretDeleteResponse{}, w)
 	if responseBody == nil {
