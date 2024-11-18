@@ -7,12 +7,12 @@ package main
 import (
 	"context"
 	"errors"
+	"github.com/spiffe/spike/app/nexus/internal/state/base"
 	"time"
 
 	"github.com/spiffe/spike/app/nexus/internal/env"
 	"github.com/spiffe/spike/app/nexus/internal/handle"
 	"github.com/spiffe/spike/app/nexus/internal/poll"
-	"github.com/spiffe/spike/app/nexus/internal/state"
 	"github.com/spiffe/spike/app/nexus/internal/trust"
 	"github.com/spiffe/spike/internal/auth"
 	"github.com/spiffe/spike/internal/config"
@@ -35,9 +35,9 @@ func main() {
 
 	trust.Authenticate(spiffeid)
 
-	err = state.Initialize(source)
+	err = base.Initialize(source)
 	if err != nil {
-		if errors.Is(err, state.ErrAlreadyInitialized) {
+		if errors.Is(err, base.ErrAlreadyInitialized) {
 			log.Log().Info(appName,
 				"msg",
 				"SPIKE Nexus already initialized. Not creating a new root key.")
@@ -47,7 +47,7 @@ func main() {
 	}
 
 	log.Log().Info(appName, "msg", "Initializing complete.",
-		"has_root_key", len(state.RootKey()) > 0)
+		"has_root_key", len(base.RootKey()) > 0)
 
 	ticker := time.NewTicker(env.PollInterval())
 	defer ticker.Stop()

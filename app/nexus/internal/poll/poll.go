@@ -6,12 +6,12 @@ package poll
 
 import (
 	"context"
+	"github.com/spiffe/spike/app/nexus/internal/state/base"
 	"time"
 
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 
 	"github.com/spiffe/spike/app/nexus/internal/net"
-	"github.com/spiffe/spike/app/nexus/internal/state"
 	"github.com/spiffe/spike/internal/log"
 )
 
@@ -52,7 +52,7 @@ func Tick(
 	for {
 		select {
 		case <-ticker.C:
-			key := state.RootKey()
+			key := base.RootKey()
 			if key == "" {
 				continue
 			}

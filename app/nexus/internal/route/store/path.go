@@ -6,9 +6,9 @@ package store
 
 import (
 	"errors"
+	"github.com/spiffe/spike/app/nexus/internal/state/base"
 	"net/http"
 
-	"github.com/spiffe/spike/app/nexus/internal/state"
 	"github.com/spiffe/spike/internal/entity/v1/reqres"
 	"github.com/spiffe/spike/internal/log"
 	"github.com/spiffe/spike/internal/net"
@@ -58,7 +58,7 @@ func RouteListPaths(
 		"query", r.URL.RawQuery)
 	audit.Action = log.AuditList
 
-	validJwt := net.ValidateJwt(w, r, state.AdminToken())
+	validJwt := net.ValidateJwt(w, r, base.AdminToken())
 	if !validJwt {
 		return errors.New("invalid or missing JWT token")
 	}
@@ -77,7 +77,7 @@ func RouteListPaths(
 		return errors.New("failed to parse request body")
 	}
 
-	keys := state.ListKeys()
+	keys := base.ListKeys()
 
 	responseBody := net.MarshalBody(reqres.SecretListResponse{Keys: keys}, w)
 	if responseBody == nil {

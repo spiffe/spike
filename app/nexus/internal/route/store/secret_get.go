@@ -6,9 +6,9 @@ package store
 
 import (
 	"errors"
+	"github.com/spiffe/spike/app/nexus/internal/state/base"
 	"net/http"
 
-	"github.com/spiffe/spike/app/nexus/internal/state"
 	"github.com/spiffe/spike/internal/entity/v1/reqres"
 	"github.com/spiffe/spike/internal/log"
 	"github.com/spiffe/spike/internal/net"
@@ -63,7 +63,7 @@ func RouteGetSecret(
 		"query", r.URL.RawQuery)
 	audit.Action = log.AuditRead
 
-	validJwt := net.ValidateJwt(w, r, state.AdminToken())
+	validJwt := net.ValidateJwt(w, r, base.AdminToken())
 	if !validJwt {
 		return errors.New("invalid or missing JWT token")
 	}
@@ -85,7 +85,7 @@ func RouteGetSecret(
 	version := request.Version
 	path := request.Path
 
-	secret, exists := state.GetSecret(path, version)
+	secret, exists := base.GetSecret(path, version)
 	if !exists {
 		log.Log().Info("routeGetSecret", "msg", "Secret not found")
 
