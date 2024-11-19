@@ -43,7 +43,9 @@ func Initialize(source *workloadapi.X509Source) error {
 		rootKey = existingRootKey
 		rootKeyMu.Unlock()
 
+		rootKeyMu.RLock()
 		persist.InitializeBackend(existingRootKey)
+		rootKeyMu.RUnlock()
 
 		return ErrAlreadyInitialized
 	}
@@ -57,7 +59,9 @@ func Initialize(source *workloadapi.X509Source) error {
 	rootKey = r
 	rootKeyMu.Unlock()
 
+	rootKeyMu.RLock()
 	persist.InitializeBackend(rootKey)
+	rootKeyMu.RUnlock()
 
 	return nil
 }

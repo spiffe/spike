@@ -4,9 +4,7 @@
 
 package base
 
-import (
-	"github.com/spiffe/spike/app/nexus/internal/state/persist"
-)
+import "github.com/spiffe/spike/app/nexus/internal/state/persist"
 
 // UpsertSecret stores or updates a secret at the specified path with the
 // provided values. It provides thread-safe access to the underlying key-value
@@ -102,6 +100,7 @@ func GetSecret(path string, version int) (map[string]string, error) {
 		kvMu.Lock()
 		kv.Put(path, cachedSecret.Versions[version].Data)
 		kvMu.Unlock()
+
 
 		return cachedSecret.Versions[version].Data, nil
 	}
