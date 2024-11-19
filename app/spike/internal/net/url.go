@@ -5,10 +5,10 @@
 package net
 
 import (
-	"github.com/spiffe/spike/internal/net"
 	"net/url"
 
 	"github.com/spiffe/spike/app/spike/internal/env"
+	"github.com/spiffe/spike/internal/net"
 )
 
 // UrlSecretGet returns the URL for getting a secret.

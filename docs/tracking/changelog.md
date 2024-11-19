@@ -12,6 +12,9 @@
 * Now admin users can use jwt authentication and short-lived session tokens.
 * Enhanced audit trails and error logging.
 * Created initial smoke/integration tests.
+* Stability improvements.
+* Implemented passwordless admin login flow 
+  (*the neat thing about passwords is: you don't need them*).
 
 ## [0.1.0] - 2024-11-06
 

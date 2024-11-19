@@ -8,13 +8,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
-	net2 "github.com/spiffe/spike/app/spike/internal/net"
+
+	api "github.com/spiffe/spike/app/spike/internal/net"
 	"github.com/spiffe/spike/internal/auth"
 	"github.com/spiffe/spike/internal/entity/data"
-	"github.com/spiffe/spike/internal/net"
-
 	"github.com/spiffe/spike/internal/entity/v1/reqres"
+	"github.com/spiffe/spike/internal/net"
 )
 
 // Init sends an init request to SPIKE Nexus.
@@ -32,7 +33,7 @@ func Init(source *workloadapi.X509Source, password string) error {
 
 	client, err := net.CreateMtlsClient(source, auth.CanTalkToPilot)
 
-	body, err := net.Post(client, net2.UrlInit(), mr)
+	body, err := net.Post(client, api.UrlInit(), mr)
 
 	var res reqres.InitResponse
 	err = json.Unmarshal(body, &res)
@@ -59,9 +60,9 @@ func CheckInitState(source *workloadapi.X509Source) (data.InitState, error) {
 
 	client, err := net.CreateMtlsClient(source, auth.CanTalkToPilot)
 
-	fmt.Println(">>>>>>>>>>>>>>>Posting to", net2.UrlInitState())
+	fmt.Println(">>>>>>>>>>>>>>>Posting to", api.UrlInitState())
 
-	body, err := net.Post(client, net2.UrlInitState(), mr)
+	body, err := net.Post(client, api.UrlInitState(), mr)
 	if errors.Is(err, net.ErrUnauthorized) {
 		return data.NotInitialized, err
 	}

@@ -25,4 +25,5 @@ fi
 
 # Running spire-agent as super user to read meta information of other users'
 # processes.
-sudo /home/volkan/Desktop/WORKSPACE/spire/bin/spire-agent run -config ./config/spire/agent/agent.conf -joinToken "$JOIN_TOKEN"
+# sudo /home/volkan/Desktop/WORKSPACE/spire/bin/spire-agent run -config ./config/spire/agent/agent.conf -joinToken "$JOIN_TOKEN"
+spire-agent run -config ./config/spire/agent/agent.conf -joinToken "$JOIN_TOKEN"
