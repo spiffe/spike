@@ -4,23 +4,26 @@
 
 package base
 
-import "github.com/spiffe/spike/app/nexus/internal/state/persist"
+import (
+	"github.com/spiffe/spike/app/nexus/internal/state/entity/data"
+	"github.com/spiffe/spike/app/nexus/internal/state/persist"
+)
 
 func SetAdminCredentials(passwordHash, salt string) {
 	adminCredentialsMu.Lock()
-	adminCredentials = Credentials{
+	adminCredentials = data.Credentials{
 		PasswordHash: passwordHash,
 		Salt:         salt,
 	}
 	adminCredentialsMu.Unlock()
 
-	persist.AsyncPersistAdminCredentials(Credentials{
+	persist.AsyncPersistAdminCredentials(data.Credentials{
 		PasswordHash: passwordHash,
 		Salt:         salt,
 	})
 }
 
-func AdminCredentials() Credentials {
+func AdminCredentials() data.Credentials {
 	adminCredentialsMu.RLock()
 	creds := adminCredentials
 	adminCredentialsMu.RUnlock()

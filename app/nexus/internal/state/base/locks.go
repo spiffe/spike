@@ -5,6 +5,7 @@
 package base
 
 import (
+	"github.com/spiffe/spike/app/nexus/internal/state/entity/data"
 	"github.com/spiffe/spike/app/nexus/internal/state/store"
 	"sync"
 )
@@ -19,6 +20,6 @@ var (
 	kv   = store.NewKV()
 	kvMu sync.RWMutex
 
-	adminCredentials   Credentials
+	adminCredentials   data.Credentials
 	adminCredentialsMu sync.RWMutex
 )

@@ -12,6 +12,7 @@ import (
 	"github.com/spiffe/spike/app/nexus/internal/state/backend"
 	"github.com/spiffe/spike/app/nexus/internal/state/backend/memory"
 	"github.com/spiffe/spike/app/nexus/internal/state/backend/sqlite"
+	"github.com/spiffe/spike/internal/config"
 	"github.com/spiffe/spike/internal/log"
 )
 
@@ -40,7 +41,7 @@ import (
 func InitializeSqliteBackend(rootKey string) backend.Backend {
 	opts := map[backend.DatabaseConfigKey]any{}
 
-	opts[backend.KeyDataDir] = env.DatabaseDir()
+	opts[backend.KeyDataDir] = config.SpikeNexusDataFolder()
 	opts[backend.KeyDatabaseFile] = "spike.db"
 	opts[backend.KeyJournalMode] = env.DatabaseJournalMode()
 	opts[backend.KeyBusyTimeoutMs] = env.DatabaseBusyTimeoutMs()

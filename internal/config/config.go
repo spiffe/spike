@@ -57,6 +57,26 @@ func SpikePilotAdminTokenFile() string {
 	return filepath.Join(spikeDir, ".spike-admin.jwt")
 }
 
+func SpikeNexusDataFolder() string {
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		homeDir = "/tmp"
+	}
+
+	spikeDir := filepath.Join(homeDir, ".spike")
+
+	// Create directory if it doesn't exist
+	// 0700 because we want to restrict access to the directory
+	// but allow the user to create db files in it.
+	err = os.MkdirAll(spikeDir+"/data", 0700)
+	if err != nil {
+		panic(err)
+	}
+
+	// The data dir is not configurable for security reasons.
+	return filepath.Join(spikeDir, "/data")
+}
+
 // SpiffeEndpointSocket returns the UNIX domain socket address for the SPIFFE
 // Workload API endpoint.
 //

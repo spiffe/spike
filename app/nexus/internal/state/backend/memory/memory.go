@@ -7,6 +7,7 @@ package memory
 import (
 	"context"
 
+	"github.com/spiffe/spike/app/nexus/internal/state/entity/data"
 	"github.com/spiffe/spike/app/nexus/internal/state/store"
 )
 
@@ -15,6 +16,14 @@ import (
 // where no actual storage is needed. NoopStore is also use when the
 // backing store is configured to be in-memory.
 type NoopStore struct {
+}
+
+func (s *NoopStore) StoreAdminCredentials(ctx context.Context, credentials data.Credentials) error {
+	return nil
+}
+
+func (s *NoopStore) LoadAdminCredentials(ctx context.Context) (data.Credentials, error) {
+	return data.Credentials{}, nil
 }
 
 // Close implements the closing operation for the store.
