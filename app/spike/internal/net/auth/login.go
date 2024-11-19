@@ -2,11 +2,12 @@
 //  \\\\\ Copyright 2024-present SPIKE contributors.
 // \\\\\\\ SPDX-License-Identifier: Apache-2.0
 
-package net
+package auth
 
 import (
 	"encoding/json"
 	"errors"
+	net2 "github.com/spiffe/spike/app/spike/internal/net"
 
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 
@@ -29,7 +30,7 @@ func Login(source *workloadapi.X509Source, password string) (string, error) {
 
 	client, err := net.CreateMtlsClient(source, auth.CanTalkToPilot)
 
-	body, err := net.Post(client, UrlAdminLogin(), mr)
+	body, err := net.Post(client, net2.UrlAdminLogin(), mr)
 	if err != nil {
 		return "", errors.Join(
 			errors.New("login: I am having problem sending the request"), err)

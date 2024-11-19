@@ -5,20 +5,26 @@
 package route
 
 import (
+	"github.com/spiffe/spike/app/keeper/internal/route/store"
 	"net/http"
 
 	"github.com/spiffe/spike/internal/log"
 	"github.com/spiffe/spike/internal/net"
 )
 
-func factory(p string, a net.SpikeKeeperApiAction, m string) net.Handler {
+func factory(p net.ApiUrl, a net.SpikeKeeperApiAction, m string) net.Handler {
 	log.Log().Info("route.factory", "path", p, "action", a, "method", m)
 
+	// We only accept POST requests.
+	if m != http.MethodPost {
+		return net.Fallback
+	}
+
 	switch {
-	case m == http.MethodPost && a == net.ActionKeeperDefault && p == urlKeep:
-		return routeKeep
-	case m == http.MethodPost && a == net.ActionKeeperRead && p == urlKeep:
-		return routeShow
+	case a == net.ActionKeeperDefault && p == net.SpikeKeeperUrlKeep:
+		return store.RouteKeep
+	case a == net.ActionKeeperRead && p == net.SpikeKeeperUrlKeep:
+		return store.RouteShow
 	// Fallback route.
 	default:
 		return net.Fallback

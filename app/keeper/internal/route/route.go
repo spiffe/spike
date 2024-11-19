@@ -22,6 +22,8 @@ func Route(
 	w http.ResponseWriter, r *http.Request, audit *log.AuditEntry,
 ) error {
 	return factory(
-		r.URL.Path, net.SpikeKeeperApiAction(r.URL.Query().Get("action")), r.Method,
+		net.ApiUrl(r.URL.Path),
+		net.SpikeKeeperApiAction(r.URL.Query().Get("action")),
+		r.Method,
 	)(w, r, audit)
 }

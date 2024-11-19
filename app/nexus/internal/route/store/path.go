@@ -2,7 +2,7 @@
 //  \\\\\ Copyright 2024-present SPIKE contributors.
 // \\\\\\\ SPDX-License-Identifier: Apache-2.0
 
-package route
+package store
 
 import (
 	"errors"
@@ -14,11 +14,11 @@ import (
 	"github.com/spiffe/spike/internal/net"
 )
 
-// routeListPaths handles requests to retrieve all available secret paths.
+// RouteListPaths handles requests to retrieve all available secret paths.
 //
-// This endpoint requires a valid admin JWT token for authentication. The function
-// returns a list of all paths where secrets are stored, regardless of their
-// version or deletion status.
+// This endpoint requires a valid admin JWT token for authentication.
+// The function returns a list of all paths where secrets are stored, regardless
+// of their version or deletion status.
 //
 // The function follows these steps:
 //  1. Validates the JWT token
@@ -48,15 +48,15 @@ import (
 //   - 401 Unauthorized: Invalid or missing JWT token
 //   - 400 Bad Request: Invalid request body format
 //
-// All operations are logged using structured logging. This endpoint only returns
-// the paths to secrets and not their contents; use routeGetSecret to retrieve
-// actual secret values.
-func routeListPaths(
+// All operations are logged using structured logging. This endpoint only
+// returns the paths to secrets and not their contents; use RouteGetSecret to
+// retrieve actual secret values.
+func RouteListPaths(
 	w http.ResponseWriter, r *http.Request, audit *log.AuditEntry,
 ) error {
 	log.Log().Info("routeListPaths", "method", r.Method, "path", r.URL.Path,
 		"query", r.URL.RawQuery)
-	audit.Action = "list"
+	audit.Action = log.AuditList
 
 	validJwt := net.ValidateJwt(w, r, state.AdminToken())
 	if !validJwt {

@@ -6,11 +6,12 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/spiffe/spike/app/spike/internal/net"
+	"github.com/spiffe/spike/app/spike/internal/net/store"
 	"strconv"
 	"strings"
 
 	"github.com/spf13/cobra"
+
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 )
 
@@ -25,7 +26,8 @@ import (
 //   - path: Location of the secret to restore
 //
 // Flags:
-//   - --versions, -v (string): Comma-separated list of version numbers to restore
+//   - --versions, -v (string): Comma-separated list of version numbers to
+//     restore
 //   - "0" or empty: Restores current version only (default)
 //   - "1,2,3": Restores specific versions
 //
@@ -60,7 +62,7 @@ Examples:
   spike undelete secret/ella -v 0,1,2  # Undeletes current version plus versions 1 and 2`,
 		Args: cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
-			adminToken := adminToken()
+			adminToken := adminToken(source)
 			if adminToken == "" {
 				return
 			}
@@ -89,7 +91,7 @@ Examples:
 				}
 			}
 
-			err := net.UndeleteSecret(source, path, versionList)
+			err := store.UndeleteSecret(source, path, versionList)
 			if err != nil {
 				fmt.Printf("Error: %v\n", err)
 				return

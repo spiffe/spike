@@ -2,7 +2,7 @@
 //  \\\\\ Copyright 2024-present SPIKE contributors.
 // \\\\\\\ SPDX-License-Identifier: Apache-2.0
 
-package route
+package auth
 
 import (
 	"crypto/sha256"
@@ -18,12 +18,13 @@ import (
 	"github.com/spiffe/spike/internal/net"
 )
 
-// routeAdminLogin handles HTTP requests for administrator authentication using PBKDF2-SHA256
-// password hashing. It validates the provided password against stored credentials and issues
-// a JWT token upon successful authentication.
+// RouteAdminLogin handles HTTP requests for administrator authentication
+// using PBKDF2-SHA256 password hashing. It validates the provided password
+// against stored credentials and issues a JWT token upon successful authentication.
 //
 // The function implements the following security measures:
-//   - PBKDF2-SHA256 password hashing with 600,000 iterations (OWASP recommended minimum)
+//   - PBKDF2-SHA256 password hashing with 600,000 iterations
+//     (OWASP recommended minimum)
 //   - Constant-time password comparison using crypto/hmac.Equal
 //   - Salted password hashing
 //   - JWT token-based authentication
@@ -78,12 +79,12 @@ import (
 //   - Uses PBKDF2-SHA256 with 600,000 iterations for password hashing
 //   - Output hash length is 32 bytes (256 bits)
 //   - Implements constant-time comparison to prevent timing attacks
-func routeAdminLogin(
+func RouteAdminLogin(
 	w http.ResponseWriter, r *http.Request, audit *log.AuditEntry,
 ) error {
 	log.Log().Info("routeAdminLogin", "method", r.Method, "path", r.URL.Path,
 		"query", r.URL.RawQuery)
-	audit.Action = "login"
+	audit.Action = log.AuditLogin
 
 	requestBody := net.ReadRequestBody(w, r)
 	if requestBody == nil {

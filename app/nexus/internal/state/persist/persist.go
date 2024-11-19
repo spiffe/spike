@@ -108,7 +108,8 @@ func ReadSecret(path string, version int) *store.Secret {
 			version = cachedSecret.Metadata.CurrentVersion
 		}
 
-		if sv, ok := cachedSecret.Versions[version]; ok && sv.DeletedTime == nil {
+		if sv, ok := cachedSecret.Versions[version]; ok &&
+			sv.DeletedTime == nil {
 			return cachedSecret
 		}
 	}

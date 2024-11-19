@@ -2,19 +2,29 @@
 //  \\\\\ Copyright 2024-present SPIKE contributors.
 // \\\\\\\ SPDX-License-Identifier: Apache-2.0
 
-package route
+package auth
 
 import (
 	"crypto/rand"
 	"errors"
+	"net/http"
+
 	"github.com/spiffe/spike/app/nexus/internal/config"
 	"github.com/spiffe/spike/app/nexus/internal/state"
 	"github.com/spiffe/spike/internal/entity/v1/reqres"
 	"github.com/spiffe/spike/internal/log"
 	"github.com/spiffe/spike/internal/net"
-	"net/http"
 )
 
+// checkAdminToken verifies if an admin token already exists in the system state.
+// If an admin token is present, it responds with an "already initialized" error
+// through the provided http.ResponseWriter and returns an error.
+//
+// The function handles the HTTP response writing internally, setting
+// appropriate status codes and error messages.
+//
+// Returns nil if no admin token exists, otherwise returns an error indicating
+// the system is already initialized.
 func checkAdminToken(w http.ResponseWriter) error {
 	adminToken := state.AdminToken()
 	if adminToken != "" {
@@ -34,6 +44,18 @@ func checkAdminToken(w http.ResponseWriter) error {
 	return nil
 }
 
+// generateAdminToken creates a new random admin token of length specified by
+// config.SpikeNexusAdminTokenBytes.
+//
+// It handles error responses through the provided http.ResponseWriter in case
+// of failures during token generation or response marshaling.
+//
+// Returns:
+//   - []byte: The generated admin token bytes
+//   - error: nil on success, otherwise an error describing what went wrong
+//
+// If token generation fails, it will set an appropriate HTTP error response
+// and return an empty byte slice along with an error.
 func generateAdminToken(w http.ResponseWriter) ([]byte, error) {
 	// Generate adminToken (32 bytes)
 	adminTokenBytes := make([]byte, config.SpikeNexusAdminTokenBytes)

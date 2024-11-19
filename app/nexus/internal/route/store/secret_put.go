@@ -1,12 +1,11 @@
+package store
+
 //    \\ SPIKE: Secure your secrets with SPIFFE.
 //  \\\\\ Copyright 2024-present SPIKE contributors.
 // \\\\\\\ SPDX-License-Identifier: Apache-2.0
 
-package route
-
 import (
 	"errors"
-	"github.com/spiffe/spike/app/nexus/internal/state/store"
 	"net/http"
 
 	"github.com/spiffe/spike/app/nexus/internal/state"
@@ -15,12 +14,13 @@ import (
 	"github.com/spiffe/spike/internal/net"
 )
 
-// routeKeep handles HTTP requests to cache a root key from SPIKE Nexus.
+// RoutePutSecret handles HTTP requests to create or update secrets at a
+// specified path.
 //
-// This endpoint is specifically designed for internal system communication
-// between SPIKE Keeper and SPIKE Nexus. Authentication is handled via SPIFFE
-// rather than JWT tokens, as this is a machine-to-machine interaction without
-// human user involvement.
+// This endpoint requires a valid admin JWT token for authentication. It accepts
+// a PUT request with a JSON body containing the secret path and values to store.
+// The function performs an upsert operation, creating a new secret if it
+// doesn't exist or updating an existing one.
 //
 // Parameters:
 //   - w: http.ResponseWriter to write the HTTP response
@@ -33,21 +33,22 @@ import (
 // Request body format:
 //
 //	{
-//	    "rootKey": string   // Root key to be cached
+//	    "path": string,           // Path where the secret should be stored
+//	    "values": map[string]any // Key-value pairs representing the secret data
 //	}
 //
 // Responses:
-//   - 200 OK: Root key successfully cached
+//   - 200 OK: Secret successfully created or updated
 //   - 400 Bad Request: Invalid request body or parameters
+//   - 401 Unauthorized: Invalid or missing JWT token
 //
-// The function logs its progress using structured logging. Unlike other routes,
-// this endpoint relies on SPIFFE authentication rather than JWT validation.
-func routeDeleteSecret(
+// The function logs its progress at various stages using structured logging.
+func RoutePutSecret(
 	w http.ResponseWriter, r *http.Request, audit *log.AuditEntry,
 ) error {
-	log.Log().Info("routeDeleteSecret", "method", r.Method, "path", r.URL.Path,
+	log.Log().Info("routeGetSecret", "method", r.Method, "path", r.URL.Path,
 		"query", r.URL.RawQuery)
-	audit.Action = "delete"
+	audit.Action = log.AuditCreate
 
 	validJwt := net.ValidateJwt(w, r, state.AdminToken())
 	if !validJwt {
@@ -60,33 +61,26 @@ func routeDeleteSecret(
 	}
 
 	request := net.HandleRequest[
-		reqres.SecretDeleteRequest, reqres.SecretDeleteResponse](
+		reqres.SecretPutRequest, reqres.SecretPutResponse](
 		requestBody, w,
-		reqres.SecretDeleteResponse{Err: reqres.ErrBadInput},
+		reqres.SecretPutResponse{Err: reqres.ErrBadInput},
 	)
 	if request == nil {
 		return errors.New("failed to parse request body")
 	}
 
+	values := request.Values
 	path := request.Path
-	versions := request.Versions
-	if len(versions) == 0 {
-		versions = []int{}
-	}
 
-	err := state.DeleteSecret(path, versions)
-	if errors.Is(err, store.ErrSecretNotFound) {
-		log.Log().Warn("routeDeleteSecret", "msg", err.Error())
-	} else {
-		log.Log().Info("routeDeleteSecret", "msg", "Secret deleted")
-	}
+	state.UpsertSecret(path, values)
+	log.Log().Info("routePutSecret", "msg", "Secret upserted")
 
-	responseBody := net.MarshalBody(reqres.SecretDeleteResponse{}, w)
+	responseBody := net.MarshalBody(reqres.SecretPutResponse{}, w)
 	if responseBody == nil {
 		return errors.New("failed to marshal response body")
 	}
 
 	net.Respond(http.StatusOK, responseBody, w)
-	log.Log().Info("routeDeleteSecret", "msg", "OK")
+	log.Log().Info("routePutSecret", "msg", "OK")
 	return nil
 }

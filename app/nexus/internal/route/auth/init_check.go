@@ -2,7 +2,7 @@
 //  \\\\\ Copyright 2024-present SPIKE contributors.
 // \\\\\\\ SPDX-License-Identifier: Apache-2.0
 
-package route
+package auth
 
 import (
 	"errors"
@@ -15,11 +15,11 @@ import (
 	"github.com/spiffe/spike/internal/net"
 )
 
-// routeInitCheck handles HTTP requests to check the initialization state of
+// RouteInitCheck handles HTTP requests to check the initialization state of
 // the system. It determines whether the system has been initialized by checking
-// for the presence of an admin token. This endpoint can be accessed anonymously,
-// as it is used during the initial system setup process by the first user who
-// will become the administrator.
+// for the presence of an admin token. This endpoint can be accessed
+// anonymously, as it is used during the initial system setup process by the
+// first user who will become the administrator.
 //
 // The function performs the following steps:
 //  1. Logs the incoming request details
@@ -53,12 +53,12 @@ import (
 //
 // Note: This endpoint intentionally skips JWT validation as it needs to be
 // accessible during initial system setup.
-func routeInitCheck(
+func RouteInitCheck(
 	w http.ResponseWriter, r *http.Request, audit *log.AuditEntry,
 ) error {
 	log.Log().Info("routeInitCheck", "method", r.Method, "path", r.URL.Path,
 		"query", r.URL.RawQuery)
-	audit.Action = "init-check"
+	audit.Action = log.AuditInitCheck
 
 	// No need to check for valid JWT here. System initialization is done
 	// anonymously by the first user (who will be the admin).
