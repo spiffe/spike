@@ -7,12 +7,12 @@ package auth
 import (
 	"crypto/sha256"
 	"errors"
-	"github.com/spiffe/spike/app/nexus/internal/state/base"
 	"net/http"
 
 	"golang.org/x/crypto/pbkdf2"
 
 	"github.com/spiffe/spike/app/nexus/internal/env"
+	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 	"github.com/spiffe/spike/internal/entity/v1/reqres"
 	"github.com/spiffe/spike/internal/log"
 	"github.com/spiffe/spike/internal/net"
@@ -101,7 +101,7 @@ func RouteAdminLogin(
 	}
 
 	password := request.Password
-	creds := base.AdminCredentials()
+	creds := state.AdminCredentials()
 	passwordHash := creds.PasswordHash
 	salt := creds.Salt
 

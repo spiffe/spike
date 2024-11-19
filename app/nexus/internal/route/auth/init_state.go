@@ -7,10 +7,11 @@ package auth
 import (
 	"crypto/sha256"
 	"encoding/hex"
-	"github.com/spiffe/spike/app/nexus/internal/state/base"
 
 	"github.com/spiffe/spike/app/nexus/internal/env"
 	"golang.org/x/crypto/pbkdf2"
+
+	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 )
 
 func updateStateForInit(password string, adminTokenBytes, salt []byte) {
@@ -21,8 +22,8 @@ func updateStateForInit(password string, adminTokenBytes, salt []byte) {
 		iterationCount, hashLength, sha256.New,
 	)
 
-	base.SetAdminToken("spike." + string(adminTokenBytes))
-	base.SetAdminCredentials(
+	state.SetAdminToken("spike." + string(adminTokenBytes))
+	state.SetAdminCredentials(
 		hex.EncodeToString(passwordHash),
 		hex.EncodeToString(salt),
 	)
