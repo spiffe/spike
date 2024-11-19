@@ -14,10 +14,11 @@ import (
 // It implements automatic versioning with a maximum of 3 versions per path.
 //
 // When storing values:
-// - If the path doesn't exist, it creates a new secret with initial metadata
-// - Each put operation creates a new version with an incremented version number
-// - Old versions are automatically pruned when exceeding MaxVersions (default: 3)
-// - Timestamps are updated for both creation and modification times
+//   - If the path doesn't exist, it creates a new secret with initial metadata
+//   - Each put operation creates a new version with an incremented version number
+//   - Old versions are automatically pruned when exceeding MaxVersions
+//     (default: 10)
+//   - Timestamps are updated for both creation and modification times
 //
 // Parameters:
 //   - path: The location where the secret will be stored
@@ -28,7 +29,7 @@ import (
 //   - UpdatedTime: When the most recent version was added
 //   - CurrentVersion: The latest version number
 //   - OldestVersion: The oldest available version number
-//   - MaxVersions: Maximum number of versions to keep (fixed at 3)
+//   - MaxVersions: Maximum number of versions to keep (fixed at 10)
 func (kv *KV) Put(path string, values map[string]string) {
 	rightNow := time.Now()
 

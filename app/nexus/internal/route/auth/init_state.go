@@ -9,8 +9,9 @@ import (
 	"encoding/hex"
 
 	"github.com/spiffe/spike/app/nexus/internal/env"
-	"github.com/spiffe/spike/app/nexus/internal/state"
 	"golang.org/x/crypto/pbkdf2"
+
+	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 )
 
 func updateStateForInit(password string, adminTokenBytes, salt []byte) {

@@ -10,18 +10,6 @@ import (
 	"time"
 )
 
-// DatabaseDir returns the directory path where database files should be stored.
-// It can be configured using the SPIKE_NEXUS_DB_DATA_DIR environment variable.
-//
-// If the environment variable is not set, it defaults to "./.data".
-func DatabaseDir() string {
-	s := os.Getenv("SPIKE_NEXUS_DB_DATA_DIR")
-	if s != "" {
-		return s
-	}
-	return "./.data"
-}
-
 // DatabaseJournalMode returns the SQLite journal mode to use.
 // It can be configured using the SPIKE_NEXUS_DB_JOURNAL_MODE environment
 // variable.

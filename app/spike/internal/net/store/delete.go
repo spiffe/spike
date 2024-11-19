@@ -41,7 +41,9 @@ func DeleteSecret(source *workloadapi.X509Source,
 	mr, err := json.Marshal(r)
 	if err != nil {
 		return errors.Join(
-			errors.New("deleteSecret: I am having problem generating the payload"),
+			errors.New(
+				"deleteSecret: I am having problem generating the payload",
+			),
 			err,
 		)
 	}
@@ -53,7 +55,9 @@ func DeleteSecret(source *workloadapi.X509Source,
 
 	_, err = net.Post(client, net2.UrlSecretDelete(), mr)
 	if errors.Is(err, net.ErrUnauthorized) {
-		return errors.New(`unauthorized. Please login first with 'spike login'`)
+		return errors.New(
+			`unauthorized. Please login first with 'spike login'`,
+		)
 	}
 
 	return err

@@ -6,6 +6,7 @@ package backend
 
 import (
 	"context"
+	"github.com/spiffe/spike/app/nexus/internal/state/entity/data"
 	"github.com/spiffe/spike/app/nexus/internal/state/store"
 )
 
@@ -36,6 +37,11 @@ type Backend interface {
 	StoreAdminToken(ctx context.Context, token string) error
 	// LoadAdminToken loads an admin token
 	LoadAdminToken(ctx context.Context) (string, error)
+
+	// StoreAdminCredentials stores admin credentials
+	StoreAdminCredentials(ctx context.Context, credentials data.Credentials) error
+	// LoadAdminCredentials loads admin credentials
+	LoadAdminCredentials(ctx context.Context) (data.Credentials, error)
 }
 
 // Config holds configuration for backend initialization

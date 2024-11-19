@@ -6,8 +6,9 @@ package store
 
 import "time"
 
-// Version represents a single version of a secret's data along with its metadata.
-// Each version maintains its own set of key-value pairs and tracking information.
+// Version represents a single version of a secret's data along with its
+// metadata. Each version maintains its own set of key-value pairs and tracking
+// information.
 type Version struct {
 	// Data contains the actual key-value pairs stored in this version
 	Data map[string]string
