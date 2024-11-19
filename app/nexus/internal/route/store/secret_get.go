@@ -6,6 +6,7 @@ package store
 
 import (
 	"errors"
+	"github.com/spiffe/spike/app/nexus/internal/state/store"
 	"net/http"
 
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
@@ -85,8 +86,10 @@ func RouteGetSecret(
 	version := request.Version
 	path := request.Path
 
-	secret, exists := state.GetSecret(path, version)
-	if !exists {
+	secret, err := state.GetSecret(path, version)
+	if err == nil {
+		log.Log().Info("routeGetSecret", "msg", "Secret found")
+	} else if errors.Is(err, store.ErrSecretNotFound) {
 		log.Log().Info("routeGetSecret", "msg", "Secret not found")
 
 		res := reqres.SecretReadResponse{Err: reqres.ErrNotFound}
@@ -98,6 +101,20 @@ func RouteGetSecret(
 		net.Respond(http.StatusNotFound, responseBody, w)
 		log.Log().Info("routeGetSecret", "msg", "not found")
 		return nil
+	} else {
+		log.Log().Info("routeGetSecret",
+			"msg", "Failed to retrieve secret", "err", err)
+
+		responseBody := net.MarshalBody(reqres.SecretReadResponse{
+			Err: "Internal server error"}, w,
+		)
+		if responseBody == nil {
+			return errors.New("failed to marshal response body")
+		}
+
+		net.Respond(http.StatusInternalServerError, responseBody, w)
+		log.Log().Info("routeGetSecret", "msg", "internal server error")
+		return err
 	}
 
 	res := reqres.SecretReadResponse{Data: secret}
