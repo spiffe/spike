@@ -8,8 +8,8 @@ import (
 	"context"
 
 	"github.com/spiffe/spike/app/nexus/internal/env"
-	"github.com/spiffe/spike/app/nexus/internal/state/store"
 	"github.com/spiffe/spike/internal/log"
+	"github.com/spiffe/spike/pkg/store"
 )
 
 // ReadSecret attempts to retrieve a secret from the backend cache at the

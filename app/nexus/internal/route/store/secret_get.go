@@ -6,13 +6,13 @@ package store
 
 import (
 	"errors"
-	"github.com/spiffe/spike/app/nexus/internal/state/store"
 	"net/http"
 
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 	"github.com/spiffe/spike/internal/entity/v1/reqres"
 	"github.com/spiffe/spike/internal/log"
 	"github.com/spiffe/spike/internal/net"
+	"github.com/spiffe/spike/pkg/store"
 )
 
 // RouteGetSecret handles requests to retrieve a secret at a specific path

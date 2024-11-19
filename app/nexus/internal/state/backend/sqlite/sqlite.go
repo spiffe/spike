@@ -21,7 +21,7 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 
 	"github.com/spiffe/spike/app/nexus/internal/state/backend"
-	"github.com/spiffe/spike/app/nexus/internal/state/store"
+	"github.com/spiffe/spike/pkg/store"
 )
 
 // Package provides an encrypted SQLite-based implementation of a data store

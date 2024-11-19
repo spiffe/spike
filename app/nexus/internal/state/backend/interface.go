@@ -6,8 +6,9 @@ package backend
 
 import (
 	"context"
+
 	"github.com/spiffe/spike/app/nexus/internal/state/entity/data"
-	"github.com/spiffe/spike/app/nexus/internal/state/store"
+	"github.com/spiffe/spike/pkg/store"
 )
 
 type DatabaseConfigKey string
