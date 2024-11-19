@@ -11,7 +11,7 @@ import (
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 
 	"github.com/spiffe/spike/app/nexus/internal/net"
-	"github.com/spiffe/spike/app/nexus/internal/state/base"
+	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 	"github.com/spiffe/spike/internal/log"
 )
 
@@ -52,7 +52,7 @@ func Tick(
 	for {
 		select {
 		case <-ticker.C:
-			key := base.RootKey()
+			key := state.RootKey()
 			if key == "" {
 				continue
 			}

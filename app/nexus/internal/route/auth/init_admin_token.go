@@ -10,7 +10,7 @@ import (
 	"net/http"
 
 	"github.com/spiffe/spike/app/nexus/internal/config"
-	"github.com/spiffe/spike/app/nexus/internal/state/base"
+	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 	"github.com/spiffe/spike/internal/entity/v1/reqres"
 	"github.com/spiffe/spike/internal/log"
 	"github.com/spiffe/spike/internal/net"
@@ -26,7 +26,7 @@ import (
 // Returns nil if no admin token exists, otherwise returns an error indicating
 // the system is already initialized.
 func checkAdminToken(w http.ResponseWriter) error {
-	adminToken := base.AdminToken()
+	adminToken := state.AdminToken()
 	if adminToken != "" {
 		log.Log().Info("routeInit", "msg", "Already initialized")
 

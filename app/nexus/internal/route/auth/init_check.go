@@ -8,7 +8,7 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/spiffe/spike/app/nexus/internal/state/base"
+	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 	"github.com/spiffe/spike/internal/entity/data"
 	"github.com/spiffe/spike/internal/entity/v1/reqres"
 	"github.com/spiffe/spike/internal/log"
@@ -69,7 +69,7 @@ func RouteInitCheck(
 		return errors.New("failed to read request body")
 	}
 
-	adminToken := base.AdminToken()
+	adminToken := state.AdminToken()
 	if adminToken != "" {
 		log.Log().Info("routeInitCheck", "msg", "Already initialized")
 
