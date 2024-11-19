@@ -23,6 +23,7 @@ func main() {
 	defer spiffe.CloseSource(source)
 
 	fmt.Println("Demo app initialized")
+
 	// We cannot have assumptions about how the app SPIFFE ID is formatted.
 	// We need to do some form of registration on SPIKE Nexus to validate the
 	// SPIFFE ID.

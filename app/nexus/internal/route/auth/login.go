@@ -20,7 +20,8 @@ import (
 
 // RouteAdminLogin handles HTTP requests for administrator authentication
 // using PBKDF2-SHA256 password hashing. It validates the provided password
-// against stored credentials and issues a JWT token upon successful authentication.
+// against stored credentials and issues a JWT token upon successful
+// authentication.
 //
 // The function implements the following security measures:
 //   - PBKDF2-SHA256 password hashing with 600,000 iterations

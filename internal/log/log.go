@@ -5,11 +5,12 @@
 package log
 
 import (
-	"github.com/spiffe/spike/internal/env"
 	"log"
 	"log/slog"
 	"os"
 	"sync"
+
+	"github.com/spiffe/spike/internal/env"
 )
 
 var logger *slog.Logger

@@ -15,7 +15,7 @@ import (
 func factory(p net.ApiUrl, a net.SpikeKeeperApiAction, m string) net.Handler {
 	log.Log().Info("route.factory", "path", p, "action", a, "method", m)
 
-	// We only accept POST requests.
+	// We only accept POST requests -- See ADR-0012.
 	if m != http.MethodPost {
 		return net.Fallback
 	}

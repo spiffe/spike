@@ -15,6 +15,7 @@ import (
 	"github.com/spiffe/spike/internal/net"
 )
 
+// TODO: this flow will change; add documentation once the flow finalizes.
 func Login(source *workloadapi.X509Source, password string) (string, error) {
 	r := reqres.AdminLoginRequest{
 		Password: password,

@@ -6,6 +6,7 @@ package env
 
 import "os"
 
+// NexusApiRoot returns the URL of the Nexus API.
 func NexusApiRoot() string {
 	p := os.Getenv("SPIKE_NEXUS_API_URL")
 	if p != "" {

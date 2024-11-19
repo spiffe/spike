@@ -57,5 +57,6 @@ func GetSecret(source *workloadapi.X509Source,
 		)
 	}
 
+	// TODO: this is from SecretReadResponse, so maybe its entitiy should be somewhere common too.
 	return &data.Secret{Data: res.Data}, nil
 }

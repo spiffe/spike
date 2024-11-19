@@ -78,8 +78,13 @@ func RouteUndeleteSecret(
 		versions = []int{}
 	}
 
-	state.UndeleteSecret(path, versions)
-	log.Log().Info("routeUndeleteSecret", "msg", "Secret undeleted")
+	err := state.UndeleteSecret(path, versions)
+	if err != nil {
+		log.Log().Info("routeUndeleteSecret",
+			"msg", "Failed to undelete secret", "err", err)
+	} else {
+		log.Log().Info("routeUndeleteSecret", "msg", "Secret undeleted")
+	}
 
 	responseBody := net.MarshalBody(reqres.SecretUndeleteResponse{}, w)
 	if responseBody == nil {

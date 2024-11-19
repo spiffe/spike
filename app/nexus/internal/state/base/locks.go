@@ -5,10 +5,11 @@
 package base
 
 import (
+	"sync"
+
 	"github.com/spiffe/spike/app/nexus/internal/env"
 	"github.com/spiffe/spike/app/nexus/internal/state/entity/data"
 	"github.com/spiffe/spike/pkg/store"
-	"sync"
 )
 
 var (
@@ -18,7 +19,9 @@ var (
 	adminToken   string
 	adminTokenMu sync.RWMutex
 
-	kv   = store.NewKV(store.KVConfig{MaxSecretVersions: env.MaxSecretVersions()})
+	kv = store.NewKV(store.KVConfig{
+		MaxSecretVersions: env.MaxSecretVersions(),
+	})
 	kvMu sync.RWMutex
 
 	adminCredentials   data.Credentials

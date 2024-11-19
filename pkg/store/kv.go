@@ -10,6 +10,7 @@ type KV struct {
 	data              map[string]*Secret
 }
 
+// KVConfig represents the configuration for a KV instance
 type KVConfig struct {
 	MaxSecretVersions int
 }

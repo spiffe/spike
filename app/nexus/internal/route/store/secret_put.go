@@ -18,8 +18,8 @@ import (
 // specified path.
 //
 // This endpoint requires a valid admin JWT token for authentication. It accepts
-// a PUT request with a JSON body containing the secret path and values to store.
-// The function performs an upsert operation, creating a new secret if it
+// a PUT request with a JSON body containing the secret path and values to
+// store. The function performs an upsert operation, creating a new secret if it
 // doesn't exist or updating an existing one.
 //
 // Parameters:
@@ -33,7 +33,7 @@ import (
 // Request body format:
 //
 //	{
-//	    "path": string,           // Path where the secret should be stored
+//	    "path": string,          // Path where the secret should be stored
 //	    "values": map[string]any // Key-value pairs representing the secret data
 //	}
 //

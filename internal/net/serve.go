@@ -56,6 +56,7 @@ func CreateMtlsServer(source *workloadapi.X509Source,
 	return server, nil
 }
 
+// TODO: document.
 func CreateMtlsClient(
 	source *workloadapi.X509Source,
 	predicate func(string) bool,

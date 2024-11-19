@@ -6,7 +6,6 @@ package store
 
 import (
 	"errors"
-	"github.com/spiffe/spike/app/nexus/internal/state/base"
 	"net/http"
 
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
@@ -15,33 +14,42 @@ import (
 	"github.com/spiffe/spike/internal/net"
 )
 
-// routeKeep handles HTTP requests to cache a root key from SPIKE Nexus.
+// RouteDeleteSecret handles HTTP DELETE requests for secret deletion
+// operations. It validates the JWT token, processes the deletion request,
+// and manages the secret deletion workflow.
 //
-// This endpoint is specifically designed for internal system communication
-// between SPIKE Keeper and SPIKE Nexus. Authentication is handled via SPIFFE
-// rather than JWT tokens, as this is a machine-to-machine interaction without
-// human user involvement.
+// The function expects a request body containing a path and optional version
+// numbers of the secrets to be deleted. If no versions are specified, an empty
+// slice is used.
 //
 // Parameters:
-//   - w: http.ResponseWriter to write the HTTP response
-//   - r: *http.Request containing the incoming HTTP request
-//   - audit: *log.AuditEntry for logging audit information
+//   - w: http.ResponseWriter for writing the HTTP response
+//   - r: *http.Request containing the incoming HTTP request details
+//   - audit: *log.AuditEntry for logging audit information about the deletion
+//     operation
 //
 // Returns:
-//   - error: if an error occurs during request processing.
+//   - error: Returns nil on successful execution, or an error describing what
+//     went wrong
 //
-// Request body format:
+// The function performs the following steps:
+//  1. Validates the JWT token against the admin token
+//  2. Reads and parses the request body
+//  3. Processes the secret deletion
+//  4. Returns a JSON response
+//
+// Example request body:
 //
 //	{
-//	    "rootKey": string   // Root key to be cached
+//	    "path": "secret/path",
+//	    "versions": [1, 2, 3]
 //	}
 //
-// Responses:
-//   - 200 OK: Root key successfully cached
-//   - 400 Bad Request: Invalid request body or parameters
-//
-// The function logs its progress using structured logging. Unlike other routes,
-// this endpoint relies on SPIFFE authentication rather than JWT validation.
+// Possible errors:
+//   - "invalid or missing JWT token": When JWT validation fails
+//   - "failed to read request body": When request body cannot be read
+//   - "failed to parse request body": When request body is invalid
+//   - "failed to marshal response body": When response cannot be serialized
 func RouteDeleteSecret(
 	w http.ResponseWriter, r *http.Request, audit *log.AuditEntry,
 ) error {
@@ -74,7 +82,7 @@ func RouteDeleteSecret(
 		versions = []int{}
 	}
 
-	err := base.DeleteSecret(path, versions)
+	err := state.DeleteSecret(path, versions)
 	if err != nil {
 		log.Log().Info(
 			"routeDeleteSecret", "msg",

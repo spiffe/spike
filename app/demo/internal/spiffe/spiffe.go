@@ -7,11 +7,10 @@ package spiffe
 import (
 	"context"
 	"errors"
+	"github.com/spiffe/spike/pkg/spiffe"
 	"log"
 
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
-
-	"github.com/spiffe/spike/app/demo/internal/config"
 )
 
 // AppSpiffeSource creates and initializes a SPIFFE X.509 Source for workload
@@ -31,7 +30,7 @@ import (
 func AppSpiffeSource(ctx context.Context) (
 	*workloadapi.X509Source, string, error,
 ) {
-	socketPath := config.SpiffeEndpointSocket()
+	socketPath := spiffe.EndpointSocket()
 
 	source, err := workloadapi.NewX509Source(ctx,
 		workloadapi.WithClientOptions(workloadapi.WithAddr(socketPath)))

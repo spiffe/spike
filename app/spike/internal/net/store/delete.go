@@ -17,6 +17,8 @@ import (
 	"github.com/spiffe/spike/internal/net"
 )
 
+// TODO: maybe more detailed godocs here.
+
 // DeleteSecret deletes a secret from SPIKE Nexus.
 func DeleteSecret(source *workloadapi.X509Source,
 	path string, versions []string) error {

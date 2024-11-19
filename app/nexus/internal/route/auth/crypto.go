@@ -28,20 +28,22 @@ import (
 // The function will return an "invalid password" error and respond with
 // HTTP 401 Unauthorized if the HMAC comparison fails.
 func checkHmac(ph, b []byte, w http.ResponseWriter) error {
-	if !hmac.Equal(ph, b) {
-		log.Log().Info("routeAdminLogin", "msg", "Invalid password")
-
-		responseBody := net.MarshalBody(reqres.AdminLoginResponse{
-			Err: reqres.ErrUnauthorized}, w)
-		if responseBody == nil {
-			return errors.New("failed to marshal response body")
-		}
-
-		net.Respond(http.StatusUnauthorized, responseBody, w)
-		log.Log().Info("routeAdminLogin", "msg", "unauthorized")
-		return errors.New("invalid password")
+	if hmac.Equal(ph, b) {
+		log.Log().Info("checkHmac", "msg", "Valid password")
+		return nil
 	}
-	return nil
+
+	log.Log().Info("checkHmac", "msg", "Invalid password")
+
+	responseBody := net.MarshalBody(reqres.AdminLoginResponse{
+		Err: reqres.ErrUnauthorized}, w)
+	if responseBody == nil {
+		return errors.New("failed to marshal response body")
+	}
+
+	net.Respond(http.StatusUnauthorized, responseBody, w)
+	log.Log().Info("routeAdminLogin", "msg", "unauthorized")
+	return errors.New("invalid password")
 }
 
 // decodePasswordHash decodes a hexadecimal password hash string into bytes.
@@ -63,7 +65,7 @@ func decodePasswordHash(
 ) ([]byte, error) {
 	b, err := hex.DecodeString(passwordHash)
 	if err != nil {
-		log.Log().Error("routeAdminLogin",
+		log.Log().Error("decodePasswordHash",
 			"msg", "Problem decoding password hash",
 			"err", err.Error())
 
@@ -74,7 +76,7 @@ func decodePasswordHash(
 		}
 
 		net.Respond(http.StatusInternalServerError, responseBody, w)
-		log.Log().Info("routeAdminLogin", "msg", "OK")
+		log.Log().Info("decodePasswordHash", "msg", "OK")
 		return []byte{}, errors.New("failed to decode password hash")
 	}
 	return b, nil
@@ -100,7 +102,7 @@ func decodePasswordHash(
 func decodeSalt(salt string, w http.ResponseWriter) ([]byte, error) {
 	s, err := hex.DecodeString(salt)
 	if err != nil {
-		log.Log().Error("routeAdminLogin",
+		log.Log().Error("decodeSalt",
 			"msg", "Problem decoding salt",
 			"err", err.Error())
 
@@ -112,7 +114,7 @@ func decodeSalt(salt string, w http.ResponseWriter) ([]byte, error) {
 		}
 
 		net.Respond(http.StatusInternalServerError, body, w)
-		log.Log().Info("routeAdminLogin", "msg", "unauthorized")
+		log.Log().Info("decodeSalt", "msg", "unauthorized")
 		return []byte{}, errors.New("failed to decode salt")
 	}
 	return s, nil

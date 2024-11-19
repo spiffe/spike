@@ -80,7 +80,8 @@ type AdminLoginResponse struct {
 	Err       ErrorCode `json:"err,omitempty"`
 }
 
-// SecretResponseMetadata is meta information about secrets for internal tracking.
+// SecretResponseMetadata is meta information about secrets for internal
+// tracking.
 type SecretResponseMetadata struct {
 	CreatedTime time.Time  `json:"created_time"`
 	Version     int        `json:"version"`
@@ -106,10 +107,15 @@ type SecretReadRequest struct {
 	Version int    `json:"version,omitempty"` // Optional specific version
 }
 
+// TODO: move as entity.data
+type Secret struct {
+	Data map[string]string `json:"data"`
+}
+
 // SecretReadResponse is for getting secrets
 type SecretReadResponse struct {
-	Data map[string]string `json:"data"`
-	Err  ErrorCode         `json:"err,omitempty"`
+	Secret
+	Err ErrorCode `json:"err,omitempty"`
 }
 
 // SecretDeleteRequest for soft-deleting secret versions

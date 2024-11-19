@@ -1,14 +1,17 @@
 package net
 
 import (
-	"github.com/spiffe/spike/internal/log"
-	"github.com/spiffe/spike/pkg/crypto"
 	"net/http"
 	"time"
+
+	"github.com/spiffe/spike/internal/log"
+	"github.com/spiffe/spike/pkg/crypto"
 )
 
+// TODO: document
 type Handler func(http.ResponseWriter, *http.Request, *log.AuditEntry) error
 
+// TODO: document
 func HandleRoute(h Handler) {
 	http.HandleFunc("/", func(
 		writer http.ResponseWriter, request *http.Request,

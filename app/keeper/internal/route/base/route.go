@@ -5,9 +5,10 @@
 package base
 
 import (
+	"net/http"
+
 	"github.com/spiffe/spike/internal/log"
 	"github.com/spiffe/spike/internal/net"
-	"net/http"
 )
 
 // Route handles all incoming HTTP requests by dynamically selecting and

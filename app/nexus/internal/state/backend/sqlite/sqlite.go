@@ -13,7 +13,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/spiffe/spike/app/nexus/internal/state/entity/data"
 	"path/filepath"
 	"sync"
 	"time"
@@ -21,6 +20,7 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 
 	"github.com/spiffe/spike/app/nexus/internal/state/backend"
+	"github.com/spiffe/spike/app/nexus/internal/state/entity/data"
 	"github.com/spiffe/spike/pkg/store"
 )
 
