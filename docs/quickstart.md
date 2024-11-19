@@ -40,7 +40,7 @@ not a production-ready setup. For production, you should follow the
 Let's first build SPIRE from the source:
 
 ```bash
-echo 'export WORKSPACE="$HOME/-CHANGE_TO_DEVELOPMENT_DIRECTION-"' >> ~/.profile
+echo 'export WORKSPACE="$HOME/-change_to_development_directory-"' >> ~/.profile
 source ~/.profile
 echo $WORKSPACE
 cd $WORKSPACE

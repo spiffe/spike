@@ -6,6 +6,7 @@ package state
 
 import (
 	"errors"
+	"github.com/spiffe/spike/internal/log"
 	"github.com/spiffe/spike/pkg/crypto"
 	"sync"
 	"time"
@@ -130,16 +131,18 @@ func UpsertSecret(path string, values map[string]string) {
 //   - path: The path to the secret to be deleted
 //   - versions: A slice of version numbers to delete. If empty, deletes the
 //     current version only. Version number 0 is the current version.
-func DeleteSecret(path string, versions []int) error {
+func DeleteSecret(path string, versions []int) {
 	kvMu.Lock()
+	err := kv.Delete(path, versions)
 	kvMu.Unlock()
 
-	err := kv.Delete(path, versions)
 	if err != nil {
-		return err
-	} // TODO ? THIS RETURN BREAKS THE CODE FLOW ASK IS IT CORRECT ?
+		log.Log().Info("deleteSecret", "msg", err.Error())
+	} else {
+		log.Log().Info("deleteSecret", "msg", "Secret deleted")
+	}
 
-	return persist.AsyncPersistSecret(kv, path)
+	persist.AsyncPersistSecret(kv, path)
 }
 
 // UndeleteSecret restores previously deleted versions of a secret at the

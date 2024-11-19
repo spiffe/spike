@@ -6,7 +6,6 @@ package store
 
 import (
 	"errors"
-	"github.com/spiffe/spike/app/nexus/internal/state/store"
 	"net/http"
 
 	"github.com/spiffe/spike/app/nexus/internal/state"
@@ -74,12 +73,7 @@ func RouteDeleteSecret(
 		versions = []int{}
 	}
 
-	err := state.DeleteSecret(path, versions)
-	if errors.Is(err, store.ErrSecretNotFound) {
-		log.Log().Warn("routeDeleteSecret", "msg", err.Error())
-	} else {
-		log.Log().Info("routeDeleteSecret", "msg", "Secret deleted")
-	}
+	state.DeleteSecret(path, versions)
 
 	responseBody := net.MarshalBody(reqres.SecretDeleteResponse{}, w)
 	if responseBody == nil {
