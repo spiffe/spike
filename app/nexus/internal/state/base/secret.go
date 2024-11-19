@@ -4,7 +4,9 @@
 
 package base
 
-import "github.com/spiffe/spike/app/nexus/internal/state/persist"
+import (
+	"github.com/spiffe/spike/app/nexus/internal/state/persist"
+)
 
 // UpsertSecret stores or updates a secret at the specified path with the
 // provided values. It provides thread-safe access to the underlying key-value
@@ -29,12 +31,17 @@ func UpsertSecret(path string, values map[string]string) {
 //   - path: The path to the secret to be deleted
 //   - versions: A slice of version numbers to delete. If empty, deletes the
 //     current version only. Version number 0 is the current version.
-func DeleteSecret(path string, versions []int) {
+func DeleteSecret(path string, versions []int) error {
 	kvMu.Lock()
-	kv.Delete(path, versions)
+	err := kv.Delete(path, versions)
 	kvMu.Unlock()
 
+	if err != nil {
+		return err
+	}
+
 	persist.AsyncPersistSecret(kv, path)
+	return nil
 }
 
 // UndeleteSecret restores previously deleted versions of a secret at the
@@ -54,16 +61,17 @@ func DeleteSecret(path string, versions []int) {
 //
 //	// Restore versions 1 and 3 of a secret
 //	UndeleteSecret("/app/secrets/api-key", []int{1, 3})
-func UndeleteSecret(path string, versions []int) {
+func UndeleteSecret(path string, versions []int) error {
 	kvMu.Lock()
 	err := kv.Undelete(path, versions)
 	kvMu.Unlock()
 
 	if err != nil {
-		return
+		return err
 	}
 
 	persist.AsyncPersistSecret(kv, path)
+	return nil
 }
 
 // GetSecret retrieves a secret from the specified path and version.
@@ -76,15 +84,15 @@ func UndeleteSecret(path string, versions []int) {
 // Returns:
 //   - map[string]string: The secret key-value pairs
 //   - bool: Whether the secret was found
-func GetSecret(path string, version int) (map[string]string, bool) {
+func GetSecret(path string, version int) (map[string]string, error) {
 	kvMu.RLock()
-	secret, exists := kv.Get(path, version)
+	secret, err := kv.Get(path, version)
 	kvMu.RUnlock()
 
-	if !exists {
+	if err != nil {
 		cachedSecret := persist.ReadSecret(path, version)
 		if cachedSecret == nil {
-			return nil, false
+			return nil, err
 		}
 
 		if version == 0 {
@@ -95,8 +103,8 @@ func GetSecret(path string, version int) (map[string]string, bool) {
 		kv.Put(path, cachedSecret.Versions[version].Data)
 		kvMu.Unlock()
 
-		return cachedSecret.Versions[version].Data, true
+		return cachedSecret.Versions[version].Data, nil
 	}
 
-	return secret, exists
+	return secret, nil
 }

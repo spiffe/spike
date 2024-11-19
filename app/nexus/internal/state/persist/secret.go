@@ -6,6 +6,7 @@ package persist
 
 import (
 	"context"
+
 	"github.com/spiffe/spike/app/nexus/internal/env"
 	"github.com/spiffe/spike/app/nexus/internal/state/store"
 	"github.com/spiffe/spike/internal/log"
@@ -80,7 +81,12 @@ func AsyncPersistSecret(kv *store.KV, path string) {
 	be := Backend()
 
 	// Get the full secret for caching
-	secret := kv.GetRawSecret(path)
+	secret, err := kv.GetRawSecret(path)
+
+	if err != nil {
+		log.Log().Info("asyncPersistSecret", "msg", err.Error())
+	}
+
 	if secret != nil {
 		go func() {
 			if be == nil {

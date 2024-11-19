@@ -44,6 +44,5 @@ func AdminCredentials() data.Credentials {
 		return *cachedCreds
 	}
 
-	// implement database lookup too.
 	return creds
 }

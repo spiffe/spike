@@ -6,12 +6,11 @@ package persist
 
 import (
 	"context"
-	"sync"
-
 	"github.com/spiffe/spike/app/nexus/internal/env"
 	"github.com/spiffe/spike/app/nexus/internal/state/backend/memory"
 	"github.com/spiffe/spike/app/nexus/internal/state/backend/sqlite"
 	"github.com/spiffe/spike/internal/log"
+	"sync"
 )
 
 var (
