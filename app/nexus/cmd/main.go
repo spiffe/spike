@@ -7,6 +7,7 @@ package main
 import (
 	"context"
 	"errors"
+	"github.com/spiffe/spike/pkg/spiffe"
 	"time"
 
 	"github.com/spiffe/spike/app/nexus/internal/env"
@@ -18,7 +19,6 @@ import (
 	"github.com/spiffe/spike/internal/config"
 	"github.com/spiffe/spike/internal/log"
 	"github.com/spiffe/spike/internal/net"
-	"github.com/spiffe/spike/internal/spiffe"
 )
 
 const appName = "SPIKE Nexus"

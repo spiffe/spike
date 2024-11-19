@@ -8,12 +8,14 @@ import (
 	"time"
 )
 
-// Put stores a new version of key-value pairs at the specified path in the store.
-// It implements automatic versioning with a maximum of 3 versions per path.
+// Put stores a new version of key-value pairs at the specified path in the
+// store. It implements automatic versioning with a maximum of 3 versions per
+// path.
 //
 // When storing values:
 //   - If the path doesn't exist, it creates a new secret with initial metadata
-//   - Each put operation creates a new version with an incremented version number
+//   - Each put operation creates a new version with an incremented version
+//     number
 //   - Old versions are automatically pruned when exceeding MaxVersions
 //     (default: 10)
 //   - Timestamps are updated for both creation and modification times
