@@ -6,8 +6,6 @@ package store
 
 import (
 	"time"
-
-	"github.com/spiffe/spike/app/nexus/internal/env"
 )
 
 // Put stores a new version of key-value pairs at the specified path in the store.
@@ -40,7 +38,7 @@ func (kv *KV) Put(path string, values map[string]string) {
 			Metadata: Metadata{
 				CreatedTime: rightNow,
 				UpdatedTime: rightNow,
-				MaxVersions: env.MaxSecretVersions(),
+				MaxVersions: kv.maxSecretVersions,
 				// Versions start at 1, so that passing 0 as version will
 				// default to the current version.
 				CurrentVersion: 1,

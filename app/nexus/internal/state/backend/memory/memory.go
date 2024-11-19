@@ -8,7 +8,7 @@ import (
 	"context"
 
 	"github.com/spiffe/spike/app/nexus/internal/state/entity/data"
-	"github.com/spiffe/spike/app/nexus/internal/state/store"
+	"github.com/spiffe/spike/pkg/store"
 )
 
 // NoopStore provides a no-op implementation of a storage backend.
@@ -18,11 +18,15 @@ import (
 type NoopStore struct {
 }
 
-func (s *NoopStore) StoreAdminCredentials(ctx context.Context, credentials data.Credentials) error {
+func (s *NoopStore) StoreAdminCredentials(
+	ctx context.Context, credentials data.Credentials,
+) error {
 	return nil
 }
 
-func (s *NoopStore) LoadAdminCredentials(ctx context.Context) (data.Credentials, error) {
+func (s *NoopStore) LoadAdminCredentials(
+	ctx context.Context,
+) (data.Credentials, error) {
 	return data.Credentials{}, nil
 }
 

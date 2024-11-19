@@ -6,12 +6,18 @@ package store
 
 // KV represents an in-memory key-value store with versioning
 type KV struct {
-	data map[string]*Secret
+	maxSecretVersions int
+	data              map[string]*Secret
+}
+
+type KVConfig struct {
+	MaxSecretVersions int
 }
 
 // NewKV creates a new KV instance
-func NewKV() *KV {
+func NewKV(config KVConfig) *KV {
 	return &KV{
-		data: make(map[string]*Secret),
+		maxSecretVersions: config.MaxSecretVersions,
+		data:              make(map[string]*Secret),
 	}
 }
