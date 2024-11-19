@@ -98,7 +98,6 @@ func FetchFromCache(source *workloadapi.X509Source) (string, error) {
 	}
 
 	client, err := net.CreateMtlsClient(source, auth.CanTalkToNexus)
-	// client, err := net.CreateMtlsClient(source, config.CanTalkToAnyone)
 	if err != nil {
 		return "", err
 	}

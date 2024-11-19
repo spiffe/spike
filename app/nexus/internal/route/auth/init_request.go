@@ -6,11 +6,12 @@ package auth
 
 import (
 	"errors"
+	"net/http"
+
 	"github.com/spiffe/spike/app/nexus/internal/config"
 	"github.com/spiffe/spike/internal/entity/v1/reqres"
 	"github.com/spiffe/spike/internal/log"
 	"github.com/spiffe/spike/internal/net"
-	"net/http"
 )
 
 func prepareInitRequestBody(

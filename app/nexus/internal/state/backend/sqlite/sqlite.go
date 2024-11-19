@@ -13,6 +13,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/spiffe/spike/app/nexus/internal/state/entity/data"
 	"path/filepath"
 	"sync"
 	"time"
@@ -354,6 +355,70 @@ func (s *DataStore) LoadAdminToken(ctx context.Context) (string, error) {
 	}
 
 	return string(decrypted), nil
+}
+
+func (s *DataStore) LoadAdminCredentials(ctx context.Context) (data.Credentials, error) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	const querySelectAdminCredentials = `
+	SELECT password_hash, salt 
+	FROM admin_credentials 
+	WHERE id = 1`
+
+	var creds data.Credentials
+	err := s.db.QueryRowContext(
+		ctx, querySelectAdminCredentials,
+	).Scan(&creds.PasswordHash, &creds.Salt)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return data.Credentials{}, nil
+		}
+		return data.Credentials{}, fmt.Errorf("failed to load admin credentials: %w", err)
+	}
+
+	return creds, nil
+}
+
+func (s *DataStore) StoreAdminCredentials(
+	ctx context.Context, credentials data.Credentials,
+) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	tx, err := s.db.BeginTx(ctx, &sql.TxOptions{Isolation: sql.LevelSerializable})
+	if err != nil {
+		return fmt.Errorf("failed to begin transaction: %w", err)
+	}
+
+	committed := false
+
+	defer func(tx *sql.Tx) {
+		if !committed {
+			err := tx.Rollback()
+			if err != nil {
+				fmt.Printf("failed to rollback transaction: %v\n", err)
+			}
+		}
+	}(tx)
+
+	// Since there's only one admin credentials record, we can use REPLACE INTO
+	// or you could use the queryUpsertAdminCredentials constant
+	_, err = tx.ExecContext(ctx, `
+		REPLACE INTO admin_credentials (id, password_hash, salt, created_at)
+		VALUES (1, ?, ?, CURRENT_TIMESTAMP)`,
+		credentials.PasswordHash, credentials.Salt)
+	if err != nil {
+		return fmt.Errorf("failed to store admin credentials: %w", err)
+	}
+
+	if err := tx.Commit(); err != nil {
+		return fmt.Errorf("failed to commit transaction: %w", err)
+	}
+
+	committed = true
+
+	return nil
 }
 
 // Close safely closes the database connection.

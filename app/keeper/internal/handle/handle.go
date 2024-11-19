@@ -5,7 +5,7 @@
 package handle
 
 import (
-	"github.com/spiffe/spike/app/keeper/internal/route"
+	"github.com/spiffe/spike/app/keeper/internal/route/base"
 	"github.com/spiffe/spike/internal/net"
 )
 
@@ -16,5 +16,5 @@ import (
 // This function should be called during application startup, before starting
 // the HTTP server.
 func InitializeRoutes() {
-	net.HandleRoute(route.Route)
+	net.HandleRoute(base.Route)
 }

@@ -23,6 +23,34 @@
 </low-hanging-fruits>
 <reserved>
 	<issue>
+		Demo about passwordless SPIKE usage.
+	</issue>
+	<issue>
+		* make asking for admin password during initialization optional.
+		(i.e. provide a recovery password: this password will be used
+		to recover the root key in case of a system crash)
+		* ^ this also means that we won't use JWT to authenticate the admin user.
+		--
+		`spike init` creates an admin token encrypted with the root key; so
+		we still need the explicit initialization step.
+		but we don't need password.
+		---
+		I think I have found the best of both worlds:
+
+		During initialization, I'll ask the admin user something like
+
+		[optional]: Provide root key recovery token (pick a strong unique passphrase, minimum 16 characters).
+		p: proceed s: skip
+
+		If pressed (s)
+
+		A pasword recovery token is a "last resort" -break-the-glass- system recovery token. If you don't use this, you will have to ensure that you have <implemented these other things so that you are not dead in the water>. See <this link> for details.
+		Enter: Confirm, Esc: provide password.
+
+		This way the user will have the freedom to chose a recovery password, or skip that option and rely on an alternate means to recover the root key.
+
+	</issue>
+	<issue>
 		Create a demo app.
 	</issue>
 	<issue>

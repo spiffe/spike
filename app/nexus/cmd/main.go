@@ -7,12 +7,12 @@ package main
 import (
 	"context"
 	"errors"
-	"github.com/spiffe/spike/app/nexus/internal/state/base"
 	"time"
 
 	"github.com/spiffe/spike/app/nexus/internal/env"
 	"github.com/spiffe/spike/app/nexus/internal/handle"
 	"github.com/spiffe/spike/app/nexus/internal/poll"
+	"github.com/spiffe/spike/app/nexus/internal/state/base"
 	"github.com/spiffe/spike/app/nexus/internal/trust"
 	"github.com/spiffe/spike/internal/auth"
 	"github.com/spiffe/spike/internal/config"

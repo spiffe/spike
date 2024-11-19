@@ -12,7 +12,8 @@ package store
 //   - If version is specified, returns that specific version if it exists
 //   - Returns nil and false if the path doesn't exist
 //   - Returns nil and false if the specified version doesn't exist
-//   - Returns nil and false if the version has been deleted (DeletedTime is set)
+//   - Returns nil and false if the version has been deleted
+//     (DeletedTime is set)
 //
 // Parameters:
 //   - path: The path to retrieve data from

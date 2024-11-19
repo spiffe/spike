@@ -22,7 +22,9 @@ func ListSecretKeys(source *workloadapi.X509Source) ([]string, error) {
 	mr, err := json.Marshal(r)
 	if err != nil {
 		return []string{}, errors.Join(
-			errors.New("listSecretKeys: I am having problem generating the payload"),
+			errors.New(
+				"listSecretKeys: I am having problem generating the payload",
+			),
 			err,
 		)
 	}
