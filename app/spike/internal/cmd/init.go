@@ -97,6 +97,18 @@ func NewInitCommand(source *workloadapi.X509Source) *cobra.Command {
 			//
 			//passwordStr := string(password)
 
+			// TODO:
+			// 1. get recovery token from response and save it.
+			// 2. make sure current user cannot use spike
+			// 3. make sure leonardo can use spike.
+			// 4. create a demo recording about it.
+			// 5. code cleanup.
+			// 6. make sure root key is encrypted with the token and backed up.
+			// 7. implement a /recover endpoint to recover the root key.
+			// 8. Let keeper and nexus crash; and use /recover to recover the root key
+			//    you'll need to enable sqlite too.
+			// 9. address TODO items in the source code.
+
 			err = auth.Init(source)
 			//err = auth.Init(source, passwordStr)
 			if err != nil {
