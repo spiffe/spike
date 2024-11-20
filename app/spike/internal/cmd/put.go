@@ -51,10 +51,10 @@ func NewPutCommand(source *workloadapi.X509Source) *cobra.Command {
 		Short: "Put secrets at the specified path",
 		Args:  cobra.MinimumNArgs(2),
 		Run: func(cmd *cobra.Command, args []string) {
-			adminToken := adminToken(source)
-			if adminToken == "" {
-				return
-			}
+			//adminToken := adminToken(source)
+			//if adminToken == "" {
+			//	return
+			//}
 
 			path := args[0]
 			kvPairs := args[1:]

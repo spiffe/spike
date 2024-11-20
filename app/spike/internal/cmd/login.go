@@ -4,17 +4,6 @@
 
 package cmd
 
-import (
-	"fmt"
-	"github.com/spf13/cobra"
-	"github.com/spiffe/go-spiffe/v2/workloadapi"
-	"github.com/spiffe/spike/app/spike/internal/net/auth"
-	"github.com/spiffe/spike/internal/config"
-	"golang.org/x/term"
-	"os"
-	"syscall"
-)
-
 // NewLoginCommand creates and returns a Cobra command that handles user
 // authentication with SPIKE Nexus. The command prompts for an admin password
 // and stores the resulting authentication token.
@@ -37,42 +26,42 @@ import (
 //
 // If any step fails (password input, authentication, or token storage),
 // the command prints an error message and returns without saving the token.
-func NewLoginCommand(source *workloadapi.X509Source) *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   "login",
-		Short: "Login to SPIKE Nexus",
-		Long:  `Login to SPIKE Nexus.`,
-		Run: func(cmd *cobra.Command, args []string) {
-			fmt.Print("Enter admin password: ")
-			password, err := term.ReadPassword(syscall.Stdin)
-			if err != nil {
-				fmt.Println("\nFailed to read password:")
-				fmt.Println(err.Error())
-				return
-			}
-			fmt.Println()
-
-			token, err := auth.Login(source, string(password))
-			if err != nil {
-				fmt.Println("Failed to login:")
-				fmt.Println(err.Error())
-				return
-			}
-
-			err = os.WriteFile(
-				config.SpikePilotAdminTokenFile(), []byte(token), 0600,
-			)
-			if err != nil {
-				fmt.Println("Failed to save token to file:")
-				fmt.Println(err.Error())
-				return
-			}
-
-			fmt.Println("Login successful.")
-		},
-	}
-
-	cmd.Flags().String("password", "", "Password to login to SPIKE Nexus")
-
-	return cmd
-}
+//func NewLoginCommand(source *workloadapi.X509Source) *cobra.Command {
+//	cmd := &cobra.Command{
+//		Use:   "login",
+//		Short: "Login to SPIKE Nexus",
+//		Long:  `Login to SPIKE Nexus.`,
+//		Run: func(cmd *cobra.Command, args []string) {
+//			fmt.Print("Enter admin password: ")
+//			password, err := term.ReadPassword(syscall.Stdin)
+//			if err != nil {
+//				fmt.Println("\nFailed to read password:")
+//				fmt.Println(err.Error())
+//				return
+//			}
+//			fmt.Println()
+//
+//			token, err := auth.Login(source, string(password))
+//			if err != nil {
+//				fmt.Println("Failed to login:")
+//				fmt.Println(err.Error())
+//				return
+//			}
+//
+//			err = os.WriteFile(
+//				config.SpikePilotAdminTokenFile(), []byte(token), 0600,
+//			)
+//			if err != nil {
+//				fmt.Println("Failed to save token to file:")
+//				fmt.Println(err.Error())
+//				return
+//			}
+//
+//			fmt.Println("Login successful.")
+//		},
+//	}
+//
+//	cmd.Flags().String("password", "", "Password to login to SPIKE Nexus")
+//
+//	return cmd
+//}

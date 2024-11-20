@@ -8,6 +8,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/spiffe/spike/internal/config"
+	"os"
 
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 
@@ -42,7 +44,21 @@ func Init(source *workloadapi.X509Source) error {
 		)
 	}
 
-	return err
+	if res.RecoveryToken == "" {
+		fmt.Println("Failed to get recovery token")
+		return errors.New("failed to get recovery token")
+	}
+
+	err = os.WriteFile(
+		config.SpikePilotRootKeyRecoveryFile(), []byte(res.RecoveryToken), 0600,
+	)
+	if err != nil {
+		fmt.Println("Failed to save token to file:")
+		fmt.Println(err.Error())
+		return errors.New("failed to save token to file")
+	}
+
+	return nil
 }
 
 // CheckInitState sends a checkInitState request to SPIKE Nexus.

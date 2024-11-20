@@ -44,10 +44,10 @@ func NewGetCommand(source *workloadapi.X509Source) *cobra.Command {
 		Short: "Get secrets from the specified path",
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
-			adminToken := adminToken(source)
-			if adminToken == "" {
-				return
-			}
+			//adminToken := adminToken(source)
+			//if adminToken == "" {
+			//	return
+			//}
 
 			path := args[0]
 			version, _ := cmd.Flags().GetInt("version")

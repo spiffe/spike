@@ -7,12 +7,9 @@ package net
 import (
 	"bytes"
 	"errors"
+	"github.com/spiffe/spike/internal/log"
 	"io"
 	"net/http"
-	"os"
-
-	"github.com/spiffe/spike/internal/config"
-	"github.com/spiffe/spike/internal/log"
 )
 
 var ErrNotFound = errors.New("not found")
@@ -72,10 +69,10 @@ func Post(client *http.Client, path string, mr []byte) ([]byte, error) {
 	// Set headers
 	req.Header.Set("Content-Type", "application/json")
 
-	// Try to read and set JWT if file exists
-	if jwt, err := os.ReadFile(config.SpikePilotAdminTokenFile()); err == nil {
-		req.Header.Set("Authorization", "Bearer "+string(bytes.TrimSpace(jwt)))
-	}
+	//// Try to read and set JWT if file exists
+	//if jwt, err := os.ReadFile(config.SpikePilotAdminTokenFile()); err == nil {
+	//	req.Header.Set("Authorization", "Bearer "+string(bytes.TrimSpace(jwt)))
+	//}
 
 	// Use the existing mTLS client to make the request
 	r, err := client.Do(req)

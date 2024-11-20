@@ -6,6 +6,7 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/spiffe/spike/internal/config"
 
 	"github.com/spf13/cobra"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
@@ -119,7 +120,15 @@ func NewInitCommand(source *workloadapi.X509Source) *cobra.Command {
 
 			fmt.Println("")
 			fmt.Println("    SPIKE system initialization completed.")
-			fmt.Println("    Use `spike login` to authenticate.")
+			fmt.Println("")
+			fmt.Println("    >>> Recovery token saved to:")
+			fmt.Printf("    >>> %s\n", config.SpikePilotRootKeyRecoveryFile())
+			fmt.Println("")
+			fmt.Println("    The recovery token is the only way to")
+			fmt.Println("    recover SPIKE after a total system crash.")
+			fmt.Println("    * Keep it SAFE and do not share it.")
+			fmt.Println("    * ENCRYPT it and store it in a SECURE location.")
+			fmt.Println("    * DO NOT KEEP IT ON THIS MACHINE.")
 			fmt.Println("")
 		},
 	}

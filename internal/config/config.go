@@ -34,28 +34,28 @@ const NexusAdminTokenId = "spike-admin-jwt"
 //
 // The function will panic if it fails to create the required directory
 // structure.
-func SpikePilotAdminTokenFile() string {
-	// Get user's home directory
-	homeDir, err := os.UserHomeDir()
-	if err != nil {
-		homeDir = "/tmp"
-	}
-
-	// Create path for .spike folder
-	spikeDir := filepath.Join(homeDir, ".spike")
-
-	// Create directory if it doesn't exist
-	// 0700 because we want to restrict access to the directory
-	// but allow the user to create JWTs in it.
-	err = os.MkdirAll(spikeDir, 0700)
-	if err != nil {
-		panic(err)
-	}
-
-	// The file path and file name are NOT configurable for security reasons.
-
-	return filepath.Join(spikeDir, ".spike-admin.jwt")
-}
+//func SpikePilotAdminTokenFile() string {
+//	// Get user's home directory
+//	homeDir, err := os.UserHomeDir()
+//	if err != nil {
+//		homeDir = "/tmp"
+//	}
+//
+//	// Create path for .spike folder
+//	spikeDir := filepath.Join(homeDir, ".spike")
+//
+//	// Create directory if it doesn't exist
+//	// 0700 because we want to restrict access to the directory
+//	// but allow the user to create JWTs in it.
+//	err = os.MkdirAll(spikeDir, 0700)
+//	if err != nil {
+//		panic(err)
+//	}
+//
+//	// The file path and file name are NOT configurable for security reasons.
+//
+//	return filepath.Join(spikeDir, ".spike-admin.jwt")
+//}
 
 func SpikeNexusDataFolder() string {
 	homeDir, err := os.UserHomeDir()
@@ -76,3 +76,39 @@ func SpikeNexusDataFolder() string {
 	// The data dir is not configurable for security reasons.
 	return filepath.Join(spikeDir, "/data")
 }
+
+func SpikePilotRecoveryFolder() string {
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		homeDir = "/tmp"
+	}
+
+	spikeDir := filepath.Join(homeDir, ".spike")
+
+	// Create directory if it doesn't exist
+	// 0700 because we want to restrict access to the directory
+	// but allow the user to create db files in it.
+	err = os.MkdirAll(spikeDir+"/recovery", 0700)
+	if err != nil {
+		panic(err)
+	}
+
+	// The data dir is not configurable for security reasons.
+	return filepath.Join(spikeDir, "/recovery")
+}
+
+func SpikePilotRootKeyRecoveryFile() string {
+	folder := SpikePilotRecoveryFolder()
+
+	// The file path and file name are NOT configurable for security reasons.
+	return filepath.Join(folder, ".root-key-recovery.spike")
+}
+
+//err = os.WriteFile(
+//config.SpikePilotAdminTokenFile(), []byte(token), 0600,
+//)
+//if err != nil {
+//fmt.Println("Failed to save token to file:")
+//fmt.Println(err.Error())
+//return
+//}

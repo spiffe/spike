@@ -58,10 +58,10 @@ Examples:
   spike delete secret/apocalyptica -v 0,1,2 # Deletes current version plus versions 1 and 2`,
 		Args: cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
-			adminToken := adminToken(source)
-			if adminToken == "" {
-				return
-			}
+			//adminToken := adminToken(source)
+			//if adminToken == "" {
+			//	return
+			//}
 
 			path := args[0]
 			versions, _ := cmd.Flags().GetString("versions")

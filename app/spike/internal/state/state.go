@@ -5,9 +5,6 @@
 package state
 
 import (
-	"errors"
-	"github.com/spiffe/spike/internal/config"
-	"os"
 	"sync"
 )
 
@@ -27,17 +24,17 @@ var tokenMutex sync.RWMutex
 //
 // The token file is expected to be in the current working directory with
 // the name SpikeAdminTokenFile().
-func AdminToken() (string, error) {
-	tokenMutex.RLock()
-	defer tokenMutex.RUnlock()
-
-	tokenBytes, err := os.ReadFile(config.SpikePilotAdminTokenFile())
-	if err != nil {
-		return "", errors.Join(
-			errors.New("failed to read token from file"),
-			err,
-		)
-	}
-
-	return string(tokenBytes), nil
-}
+//func AdminToken() (string, error) {
+//	tokenMutex.RLock()
+//	defer tokenMutex.RUnlock()
+//
+//	tokenBytes, err := os.ReadFile(config.SpikePilotAdminTokenFile())
+//	if err != nil {
+//		return "", errors.Join(
+//			errors.New("failed to read token from file"),
+//			err,
+//		)
+//	}
+//
+//	return string(tokenBytes), nil
+//}
