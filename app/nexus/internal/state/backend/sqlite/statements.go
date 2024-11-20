@@ -80,7 +80,7 @@ ON CONFLICT(id) DO UPDATE SET
 	updated_at = excluded.updated_at
 `
 
-const querySelectAdminToken = `
+const querySelectAdminSigningToken = `
 SELECT nonce, encrypted_token 
 FROM admin_token 
 WHERE id = 1

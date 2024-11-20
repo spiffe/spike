@@ -1,3 +1,173 @@
+
+
+
+
+
+
+package auth
+
+import (
+	"crypto/hmac"
+	"crypto/rand"
+	"encoding/hex"
+	"errors"
+	"net/http"
+
+	"github.com/spiffe/spike/internal/entity/v1/reqres"
+	"github.com/spiffe/spike/internal/log"
+	"github.com/spiffe/spike/internal/net"
+)
+
+// checkHmac verifies if the provided password hash matches the expected hash
+// using HMAC comparison. It handles unauthorized access attempts by responding
+// with appropriate HTTP status codes and error messages.
+//
+// Parameters:
+//   - ph: The provided password hash as a byte slice
+//   - b: The expected password hash to compare against
+//   - w: HTTP ResponseWriter for sending error responses
+//
+// Returns:
+//   - error: nil if the HMAC verification succeeds, or an error describing
+//     the failure
+//
+// The function will return an "invalid password" error and respond with
+// HTTP 401 Unauthorized if the HMAC comparison fails.
+func checkHmac(ph, b []byte, w http.ResponseWriter) error {
+	if hmac.Equal(ph, b) {
+		log.Log().Info("checkHmac", "msg", "Valid password")
+		return nil
+	}
+
+	log.Log().Info("checkHmac", "msg", "Invalid password")
+
+	responseBody := net.MarshalBody(reqres.AdminLoginResponse{
+		Err: reqres.ErrUnauthorized}, w)
+	if responseBody == nil {
+		return errors.New("failed to marshal response body")
+	}
+
+	net.Respond(http.StatusUnauthorized, responseBody, w)
+	log.Log().Info("routeAdminLogin", "msg", "unauthorized")
+	return errors.New("invalid password")
+}
+
+// decodePasswordHash decodes a hexadecimal password hash string into bytes.
+// It handles decoding errors by responding with appropriate HTTP status
+// codes and error messages.
+//
+// Parameters:
+//   - passwordHash: Hexadecimal string representation of the password hash
+//   - w: HTTP ResponseWriter for sending error responses
+//
+// Returns:
+//   - []byte: Decoded password hash bytes
+//   - error: nil if decoding succeeds, or an error describing the failure
+//
+// The function will respond with HTTP 500 Internal Server Error and return
+// an empty byte slice if the decoding fails or if response marshaling fails.
+func decodePasswordHash(
+	passwordHash string, w http.ResponseWriter,
+) ([]byte, error) {
+	b, err := hex.DecodeString(passwordHash)
+	if err != nil {
+		log.Log().Error("decodePasswordHash",
+			"msg", "Problem decoding password hash",
+			"err", err.Error())
+
+		responseBody := net.MarshalBody(reqres.AdminLoginResponse{
+			Err: reqres.ErrServerFault}, w)
+		if responseBody == nil {
+			return []byte{}, errors.New("failed to marshal response body")
+		}
+
+		net.Respond(http.StatusInternalServerError, responseBody, w)
+		log.Log().Info("decodePasswordHash", "msg", "OK")
+		return []byte{}, errors.New("failed to decode password hash")
+	}
+	return b, nil
+}
+
+// decodeSalt decodes a hexadecimal salt string into bytes.
+// It handles decoding errors by responding with appropriate HTTP status codes
+// and error messages.
+//
+// Parameters:
+//   - salt: Hexadecimal string representation of the salt
+//   - w: HTTP ResponseWriter for sending error responses
+//
+// Returns:
+//   - []byte: Decoded salt bytes
+//   - error: nil if decoding succeeds, or an error describing the failure
+//
+// The function will respond with HTTP 500 Internal Server Error and return an
+// empty byte slice if the decoding fails or if response marshaling fails.
+//
+// Note: The function logs unauthorized access attempts and server errors
+// using the application's logging system.
+func decodeSalt(salt string, w http.ResponseWriter) ([]byte, error) {
+	s, err := hex.DecodeString(salt)
+	if err != nil {
+		log.Log().Error("decodeSalt",
+			"msg", "Problem decoding salt",
+			"err", err.Error())
+
+		body := net.MarshalBody(reqres.AdminLoginResponse{
+			Err: reqres.ErrServerFault,
+		}, w)
+		if body == nil {
+			return []byte{}, errors.New("failed to marshal response body")
+		}
+
+		net.Respond(http.StatusInternalServerError, body, w)
+		log.Log().Info("decodeSalt", "msg", "unauthorized")
+		return []byte{}, errors.New("failed to decode salt")
+	}
+	return s, nil
+}
+
+
+
+
+
+
+// fetchAdminToken retrieves the administrator authentication token from the
+// application state.
+// If the token is not set, it handles the error by responding with an
+// appropriate HTTP status code and error message.
+//
+// Parameters:
+//   - w: HTTP ResponseWriter for sending error responses
+//
+// Returns:
+//   - string: The administrator token if successfully retrieved
+//   - error: nil if the token exists, or an error if the token is not set or
+//     response marshaling fails
+//
+// The function will respond with HTTP 500 Internal Server Error and return an
+// empty string if the admin token is not set in the application state.
+//
+// Note: The function logs server errors using the application's logging system.
+func fetchAdminToken(w http.ResponseWriter) (string, error) {
+	adminToken := state.AdminSigningToken()
+	if adminToken == "" {
+		log.Log().Error("routeAdminLogin", "msg", "Admin token not set")
+
+		responseBody := net.MarshalBody(reqres.AdminLoginResponse{
+			Err: reqres.ErrServerFault}, w)
+		if responseBody == nil {
+			return "", errors.New("failed to marshal response body")
+		}
+
+		net.Respond(http.StatusInternalServerError, responseBody, w)
+		log.Log().Info("routeAdminLogin", "msg", "unauthorized")
+		return "", errors.New("admin token not set")
+	}
+	return adminToken, nil
+}
+
+
+
 POLICY API SPECIFICATION
 
 /v1/acl/policies:

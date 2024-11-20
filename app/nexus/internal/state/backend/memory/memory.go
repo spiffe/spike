@@ -44,7 +44,7 @@ func (s *NoopStore) Initialize(_ context.Context) error {
 
 // LoadAdminToken retrieves the admin token from the store.
 // This implementation always returns an empty string and nil error.
-func (s *NoopStore) LoadAdminToken(_ context.Context) (string, error) {
+func (s *NoopStore) LoadAdminSigningToken(_ context.Context) (string, error) {
 	return "", nil
 }
 

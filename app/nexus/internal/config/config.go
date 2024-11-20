@@ -5,4 +5,3 @@
 package config
 
 const SpikeNexusAdminTokenBytes int = 32
-const SpikeNexusAdminPasswordMinLength int = 16

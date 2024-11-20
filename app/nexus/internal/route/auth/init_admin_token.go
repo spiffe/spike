@@ -16,7 +16,7 @@ import (
 	"github.com/spiffe/spike/internal/net"
 )
 
-// checkAdminToken verifies if an admin token already exists in the system state.
+// checkPreviousInitialization verifies if an admin token already exists in the system state.
 // If an admin token is present, it responds with an "already initialized" error
 // through the provided http.ResponseWriter and returns an error.
 //
@@ -25,9 +25,8 @@ import (
 //
 // Returns nil if no admin token exists, otherwise returns an error indicating
 // the system is already initialized.
-func checkAdminToken(w http.ResponseWriter) error {
-	adminToken := state.AdminSigningToken()
-	if adminToken != "" {
+func checkPreviousInitialization(w http.ResponseWriter) error {
+	if state.Initialized() {
 		log.Log().Info("routeInit", "msg", "Already initialized")
 
 		responseBody := net.MarshalBody(
@@ -44,7 +43,7 @@ func checkAdminToken(w http.ResponseWriter) error {
 	return nil
 }
 
-// generateAdminToken creates a new random admin token of length specified by
+// generateAdminSigningToken creates a new random admin token of length specified by
 // config.SpikeNexusAdminTokenBytes.
 //
 // It handles error responses through the provided http.ResponseWriter in case
@@ -56,7 +55,7 @@ func checkAdminToken(w http.ResponseWriter) error {
 //
 // If token generation fails, it will set an appropriate HTTP error response
 // and return an empty byte slice along with an error.
-func generateAdminToken(w http.ResponseWriter) ([]byte, error) {
+func generateAdminSigningToken(w http.ResponseWriter) ([]byte, error) {
 	// Generate adminToken (32 bytes)
 	adminTokenBytes := make([]byte, config.SpikeNexusAdminTokenBytes)
 	if _, err := rand.Read(adminTokenBytes); err != nil {

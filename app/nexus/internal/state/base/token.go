@@ -6,26 +6,31 @@ package base
 
 import "github.com/spiffe/spike/app/nexus/internal/state/persist"
 
-// AdminSigningToken returns the current admin token in a thread-safe manner.
-// The returned token is protected by a read lock to ensure concurrent
-// access safety.
-func AdminSigningToken() string {
-	adminTokenMu.RLock()
-	token := adminToken
-	adminTokenMu.RUnlock()
+func adminSigToken() string {
+	adminSigningTokenMu.RLock()
+	token := adminSigningToken
+	adminSigningTokenMu.RUnlock()
 
 	// If token isn't in memory, try loading from SQLite
 	if token == "" {
-		cachedToken := persist.ReadAdminToken()
+		cachedToken := persist.ReadAdminSigningToken()
 		if cachedToken != "" {
-			adminTokenMu.Lock()
-			adminToken = cachedToken
-			adminTokenMu.Unlock()
+			adminSigningTokenMu.Lock()
+			adminSigningToken = cachedToken
+			adminSigningTokenMu.Unlock()
 			return cachedToken
 		}
 	}
 
-	return adminToken
+	return adminSigningToken
+}
+
+func Initialized() bool {
+	// We don't use the admin signing token to sign anything,
+	// but its existence means the system is initialized.
+	// The only time this token is set is after the successful
+	// completion of the `spike init` command.
+	return adminSigToken() != ""
 }
 
 // SetAdminSigningToken updates the admin token with the provided value.
@@ -34,9 +39,9 @@ func AdminSigningToken() string {
 // Parameters:
 //   - token: The new admin token value to be set
 func SetAdminSigningToken(token string) {
-	adminTokenMu.Lock()
-	adminToken = token
-	adminTokenMu.Unlock()
+	adminSigningTokenMu.Lock()
+	adminSigningToken = token
+	adminSigningTokenMu.Unlock()
 
 	persist.AsyncPersistAdminToken(token)
 }

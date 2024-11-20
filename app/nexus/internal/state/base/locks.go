@@ -16,8 +16,8 @@ var (
 	rootKey   string
 	rootKeyMu sync.RWMutex
 
-	adminToken   string
-	adminTokenMu sync.RWMutex
+	adminSigningToken   string
+	adminSigningTokenMu sync.RWMutex
 
 	kv = store.NewKV(store.KVConfig{
 		MaxSecretVersions: env.MaxSecretVersions(),

@@ -37,7 +37,7 @@ type Backend interface {
 	// StoreAdminToken stores an admin token
 	StoreAdminToken(ctx context.Context, token string) error
 	// LoadAdminToken loads an admin token
-	LoadAdminToken(ctx context.Context) (string, error)
+	LoadAdminSigningToken(ctx context.Context) (string, error)
 
 	// StoreAdminRecoveryMetadata stores admin recovery metadata
 	StoreAdminRecoveryMetadata(ctx context.Context, metadata data.RecoveryMetadata) error

@@ -334,13 +334,13 @@ func (s *DataStore) StoreAdminToken(ctx context.Context, token string) error {
 // - (token, nil) with the decrypted token on success
 //
 // This method is thread-safe.
-func (s *DataStore) LoadAdminToken(ctx context.Context) (string, error) {
+func (s *DataStore) LoadAdminSigningToken(ctx context.Context) (string, error) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
 	var nonce, encrypted []byte
 	err := s.db.QueryRowContext(
-		ctx, querySelectAdminToken,
+		ctx, querySelectAdminSigningToken,
 	).Scan(&nonce, &encrypted)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
