@@ -14,7 +14,183 @@
    root key. -- this means even an admin cannot decrypt secrets without SPIKE.
 
 
+Either increase the number of keepers (i.e. 15 keepers, and 3 of those keepers can assemble a key, so its’ very unlikely for all of them to crash at the same time — I still feel 5 (or 7 for extra paranoid) is a good enough ballpark number)
+Ooor use a TPM and use its key derivation function to secure the share that the keepers keep.
 
+chat with Kevin
+@Kevin Fox
+ here’s my idea (jotted between meetings) about splitting root key and recovering it.
+At a high level, there are two modes of operation
+Keeper instances form a quorum and reconfigure the system when shit happens.
+When the quorum cannot be formed (i.e. >N keepers are down and nexus has crashed too) then we have a “break-the-glass” admin recovery token that can re-initialize the system.
+The details are roughly like this, but I guess I’ll have more clarity and see the gaps better when I actually start coding things:
+* Split the root key between 5 keeper instances.
+* Upon crash, nexus can talk to 3 of the keepers to recover the root key.
+* 5 and 3 are configurable.
+* If a keeper crashes, it will hint nexus to get it share asap (keeper sends
+ an /v1/hydrate request to nexus; and nexus will send the partial key that
+ keeper needs.
+ * If > 2 keepers crash AND nexus crashes too, then “womp womp”, too bad.
+  we’ll need admin’s recovery token as a “break the glass” approach to manually
+  recover the system.
+ * For security, admin’s recovery token will be split into 5 shards too.
+ * Only 3 of those shards will be sufficient to recover the root key.
+ * Root key ALWAYS stored in memory, we don’t give the root key to the admin;
+  the shamir-sharded tokens that admin has are used to decrypt and recover the
+  root key. -- this means even an admin cannot decrypt secrets without SPIKE.
+^
+How does it look?
+
+
+
+
+
+
+
+Kevin Fox
+  12:13 PM
+agree to the general idea. but maybe through basic config, end up being more flexable....
+
+
+
+
+
+12:13
+say user sets up 5 keeper instances.
+12:14
+in nexus, we have a config
+keepers:
+  - nodes: [n1, n2, n3, n4, n5]
+
+
+Volkan Ozcelik
+  12:14 PM
+(ah I see, something terraform…ey)
+
+
+Kevin Fox
+  12:15 PM
+nexus can reach out with its own spiffe id to each node in the list. it can call the assembly lib with whatever secrets it gets back, as it gets them back, and so long as it gets enough, "it just works"
+:+1:
+1
+
+12:15
+recovery could even be, users have a copy of some of the keeper's secrets. they rebuild a secret server and load that piece back in. nexus then can recover.
+12:15
+that api could also allow for backup configurations
+12:16
+keepers:
+  - nodes: [n1, n2, n3, n4, n5]
+  - nodes: [dr1, dr2]
+12:16
+if it cant assemble back from the first pool, it could try the next pool, which could be stood up only during disaster recovery.
+12:17
+(thinking out loud. not sure if its a good idea or not. but its rather simple in design, which is nice)
+12:17
+could even:
+keepers:
+  - nodes: [n1, n2, n3, n4, n5]
+  - nodes: [dr]
+If you want just one person to have the entire recovery secret
+
+
+Volkan Ozcelik
+  12:18 PM
+Need to think… but sounds good on paper.
+
+
+Kevin Fox
+  12:19 PM
+could even use that mechanism to go from a less secure, 3 node setup, migrate to a 5 node setup, and then remove the 3 node setup.
+
+
+Volkan Ozcelik
+  12:19 PM
+In your model, do keepers also create the secret, or is it another admin that initializes the keeper quorum and nexus just blindly fetches from keepers?
+New
+
+
+Kevin Fox
+  12:19 PM
+thinking maybe an admin runs a tool, that in memory generates the secret, takes in the same keeper list, and pushes just the bits to each keeper using the admins spiffe id. only the admin could write to the keepers.
+12:20
+nexus could read the bits and reassemble to memory and get that secret back. (edited)
+12:21
+same tool could pull the secret maybe, reassemble, spit in different shares, and push to a second pool of keepers, for migrating to more secure setups
+12:22
+or, maybe keepers can have multiple secrets with different pools of shares. may be easier, but more complicated. haven't though much about that.
+
+
+Volkan Ozcelik
+  12:22 PM
+That also means, as an admin, I can push the same sharded secret to a 5 node production keeper(set) and a 3 node dr keeper(set) that I only bring up if things go bad.
+ooor. I can have… I dunno 3 separate DR clusters that are totally disconnected from the network; all of them in separate avaiability zones; all of them reporting their health etc. so I am confident that there is at least one cluster that I can recover the secret from if I want to.
+:+1:
+1
+
+
+
+Kevin Fox
+  12:22 PM
+and can even shutdown the dr cluster once initialized and keep it safe until ready
+12:23
+that also provides a nice place for even more share security.
+12:23
+say you had tpm's in the keeper nodes.
+12:23
+the share it gets can be encrypted with the tpm, and then put on disk encrypted. keeper can unencrypt it back with the tpm on start.
+12:23
+share doenst hit disk unencrypted then. (edited)
+12:24
+all sorts of stuff can be done at the keeper level then I think.
+12:24
+could be a place for some fancy/interesting plugins. but, can be kept simple for now
+
+
+Volkan Ozcelik
+  12:25 PM
+yup. that would mean even if the keeper crashes, it can recover its state from TPM.
+And since we assume that stealing TPM requires physical access and lots of jail time we would be secure enough :slightly_smiling_face:
+
+---
+
+Normal Operation:
+1. Keeper cluster has 5 keepers, needs 3 for threshold
+2. Each keeper holds its shard in memory only
+
+Backup Setup:
+1. Person1 ---(public key1)---> Orchestrator
+2. Person2 ---(public key2)---> Orchestrator
+3. Person3 ---(public key3)---> Orchestrator
+4. Person4 ---(public key4)---> Orchestrator
+5. Person5 ---(public key5)---> Orchestrator
+
+Orchestrator:
+- Creates new 3-of-5 sharing of the keeper shards
+- Encrypts share1 with public key1
+- Encrypts share2 with public key2
+- ...and so on
+
+Recovery:
+1. At least 3 people decrypt their shares with private keys
+2. They use these to bootstrap a new keeper cluster
+
+
+=====
+
+Is it like
+Keepers have 3 shares.
+I get one share
+you get one share.
+We keep our shares secure.
+none of us alone can assemble a keeper cluster.
+But we two can join our forces and do an awesome DR at 3am in the morning if needed?
+
+
+----
+or if your not that paranoid, you can keep both shares on one thumbdrive, or 2 shares on two different thumbdrives in two different safes, and rebuild.
+----
+it gives a lot of options on just how secure you want to try and make things vs how painful it is to recover
 
 / Create a new group (using ed25519 as an example)
 	g := ed25519.NewGroup()
