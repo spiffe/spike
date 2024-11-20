@@ -1,3 +1,14 @@
+1. `spike init` verifies that there are 3 healthy keeper instances.
+   it creates a shard of 3 shamir secrets (2 of which will be enough to reassemble the root key)
+   send each share to each keeper.
+2. SPIKE nexus regularly polls all keepers and if it can assemble a secret all good.
+3. `spike init` will also save the 2 shards (out of 3) in `~/.spike/recovery/*`
+   The admin will be "highly encouraged" do delete those from the machine and
+   securely back up the keys and distribute them to separate people etc.
+[2 and 3 are configurable]
+
+
+-----
 * Split the root key between 5 keeper instances.
 * Upon crash, nexus can talk to 3 of the keepers to recover the root key.
 * 5 and 3 are configurable.
