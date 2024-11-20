@@ -7,6 +7,9 @@
    securely back up the keys and distribute them to separate people etc.
 [2 and 3 are configurable]
 
+What if a keeper instance crashes and goes back up?
+if there is an "initialized" Nexus; it can hint nexus to send its share again.
+
 ---
 though, if you just gave it the list of keepers, it would know how many to support then, and maybe just one flag for how many need to be online before recovery, and default to a reasonable subset?
 default= (n/2+1)?
