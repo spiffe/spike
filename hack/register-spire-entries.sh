@@ -51,20 +51,5 @@ spire-server entry create \
     -selector unix:path:"$NEXUS_PATH" \
     -selector unix:sha256:"$NEXUS_SHA"
 
-# Register SPIKE Pilot for the super user
-spire-server entry create \
-    -spiffeID spiffe://spike.ist/spike/pilot \
-    -parentID "spiffe://spike.ist/spire-agent" \
-    -selector unix:uid:"$(id -u)" \
-    -selector unix:path:"$PILOT_PATH" \
-    -selector unix:sha256:"$PILOT_SHA"
 
-# sudo cp "$PILOT_PATH" /usr/local/bin/spike
 
-## Allow Leonardo to use the binary
-#spire-server entry create \
-#    -spiffeID spiffe://spike.ist/spike/pilot \
-#    -parentID "spiffe://spike.ist/spire-agent" \
-#    -selector unix:uid:"$(id -u leonardo)"
-##    -selector unix:path:"/usr/local/bin/spike" \
-##    -selector unix:sha256:"$PILOT_SHA"

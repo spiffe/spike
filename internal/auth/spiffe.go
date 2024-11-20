@@ -23,5 +23,5 @@ func spikeNexusSpiffeId() string {
 }
 
 func spikePilotSpiffeId() string {
-	return "spiffe://" + trustRoot() + "/spike/pilot"
+	return "spiffe://" + trustRoot() + "/spike/pilot/role/superuser"
 }
