@@ -1,5 +1,81 @@
+* Split the root key between 5 keeper instances.
+* Upon crash, nexus can talk to 3 of the keepers to recover the root key.
+* 5 and 3 are configurable.
+* If a keeper crashes, it will hint nexus to get it share asap (keeper sends
+  an /v1/hydrate request to nexus; and nexus will send the partial key that
+  keeper needs.
+ * If > 2 keepers crash AND nexus crashes too, then "womp womp", too bad.
+   we'll need admin's recovery token as a "break the glass" approach to manually
+   recover the system.
+ * For security, admin's recovery token will be split into 5 shards too.
+ * Only 3 of those shards will be sufficient to recover the root key.
+ * Root key ALWAYS stored in memory, we don't give the root key to the admin;
+   the shamir-sharded tokens that admin has are used to decrypt and recover the
+   root key. -- this means even an admin cannot decrypt secrets without SPIKE.
 
 
+
+
+/ Create a new group (using ed25519 as an example)
+	g := ed25519.NewGroup()
+
+	// Create a secret value (for example purposes, we'll use a random scalar)
+	secret := g.RandomScalar(rand.Reader)
+
+	// Parameters for the secret sharing scheme:
+	// t = 2: need 3 shares to reconstruct (threshold + 1)
+	// n = 5: total number of shares to create
+	threshold := uint(2)
+	numShares := uint(5)
+
+	// Create a new secret sharing instance
+	ss := New(rand.Reader, threshold, secret)
+
+	// Generate n shares
+	shares := ss.Share(numShares)
+
+	// Optional: Create a commitment to verify shares later
+	commitment := ss.CommitSecret()
+
+	fmt.Printf("Created %d shares with threshold %d\n", numShares, threshold)
+	for i, share := range shares {
+		// Verify each share against the commitment
+		isValid := Verify(threshold, share, commitment)
+		fmt.Printf("Share %d: Valid=%v\n", i+1, isValid)
+	}
+
+	// Simulate recovering the secret with different subsets of shares
+
+	// Try with insufficient shares (should fail)
+	insufficientShares := shares[:2]
+	recoveredSecret, err := Recover(threshold, insufficientShares)
+	if err != nil {
+		fmt.Printf("Expected error with insufficient shares: %v\n", err)
+	}
+
+	// Try with sufficient shares (should succeed)
+	sufficientShares := shares[:3]
+	recoveredSecret, err = Recover(threshold, sufficientShares)
+	if err != nil {
+		log.Fatalf("Unexpected error: %v", err)
+	}
+
+	// Verify the recovered secret matches the original
+	if recoveredSecret.IsEqual(secret) {
+		fmt.Println("Successfully recovered the secret!")
+	} else {
+		fmt.Println("Error: Recovered secret does not match original!")
+	}
+
+	// You can also create shares with specific IDs
+	customID := g.NewScalar().SetUint64(42)
+	customShare := ss.ShareWithID(customID)
+	isValid := Verify(threshold, customShare, commitment)
+	fmt.Printf("Custom share with ID 42: Valid=%v\n", isValid)
+
+
+
+------
 
 
 
@@ -130,6 +206,9 @@ func decodeSalt(salt string, w http.ResponseWriter) ([]byte, error) {
 
 
 
+
+
+-----
 
 // fetchAdminToken retrieves the administrator authentication token from the
 // application state.
