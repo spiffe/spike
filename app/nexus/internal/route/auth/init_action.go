@@ -112,7 +112,9 @@ func RouteInit(
 		return err
 	}
 
-	responseBody := net.MarshalBody(reqres.InitResponse{}, w)
+	responseBody := net.MarshalBody(reqres.InitResponse{
+		RecoveryToken: recoveryToken,
+	}, w)
 	if responseBody == nil {
 		return errors.New("failed to marshal response body")
 	}
