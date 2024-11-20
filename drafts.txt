@@ -7,6 +7,14 @@
    securely back up the keys and distribute them to separate people etc.
 [2 and 3 are configurable]
 
+---
+though, if you just gave it the list of keepers, it would know how many to support then, and maybe just one flag for how many need to be online before recovery, and default to a reasonable subset?
+default= (n/2+1)?
+that would even let someone for dev purposes just give it 1
+not very secure, but easy to stand up
+
+---
+
 
 -----
 * Split the root key between 5 keeper instances.
