@@ -22,9 +22,17 @@ var ErrAlreadyInitialized = errors.New("already initialized")
 //
 // This function MUST be called ONCE during the application's startup.
 //
+// It is important to note that once the initialization is complete, the
+// application is **guaranteed** to have a root key available for use.
+//
 // Returns:
 //   - error: Any error encountered during initialization, nil on success
 func Initialize(source *workloadapi.X509Source) error {
+	// TODO: this logic is complicated, and can cause trouble in edge cases.
+	// 1. Use a tombstone to indicate initialization.
+	// 2. Use a keeper call too, to indicate initialization.
+	// 3. Check for both, and it they both fail, initialize.
+
 	existingRootKey := RootKey()
 	if existingRootKey == "" {
 		// Check if SPIKE Keeper has a cached root key first:

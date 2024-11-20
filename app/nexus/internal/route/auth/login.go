@@ -4,20 +4,6 @@
 
 package auth
 
-import (
-	"crypto/sha256"
-	"errors"
-	"net/http"
-
-	"golang.org/x/crypto/pbkdf2"
-
-	"github.com/spiffe/spike/app/nexus/internal/env"
-	state "github.com/spiffe/spike/app/nexus/internal/state/base"
-	"github.com/spiffe/spike/internal/entity/v1/reqres"
-	"github.com/spiffe/spike/internal/log"
-	"github.com/spiffe/spike/internal/net"
-)
-
 // RouteAdminLogin handles HTTP requests for administrator authentication
 // using PBKDF2-SHA256 password hashing. It validates the provided password
 // against stored credentials and issues a JWT token upon successful
@@ -32,7 +18,7 @@ import (
 //
 // Authentication Process:
 //  1. Reads and validates the request body containing the password
-//  2. Retrieves stored admin credentials (password hash and salt)
+//  2. Retrieves stored admin recovery metadata (token hash and salt)
 //  3. Decodes the stored salt and password hash from hex format
 //  4. Generates a new hash from the provided password using PBKDF2
 //  5. Performs constant-time comparison of password hashes
@@ -80,73 +66,73 @@ import (
 //   - Uses PBKDF2-SHA256 with 600,000 iterations for password hashing
 //   - Output hash length is 32 bytes (256 bits)
 //   - Implements constant-time comparison to prevent timing attacks
-func RouteAdminLogin(
-	w http.ResponseWriter, r *http.Request, audit *log.AuditEntry,
-) error {
-	log.Log().Info("routeAdminLogin", "method", r.Method, "path", r.URL.Path,
-		"query", r.URL.RawQuery)
-	audit.Action = log.AuditLogin
-
-	requestBody := net.ReadRequestBody(w, r)
-	if requestBody == nil {
-		return errors.New("failed to read request body")
-	}
-
-	request := net.HandleRequest[
-		reqres.AdminLoginRequest, reqres.AdminLoginResponse](
-		requestBody, w,
-		reqres.AdminLoginResponse{Err: reqres.ErrBadInput},
-	)
-	if request == nil {
-		return errors.New("failed to parse request body")
-	}
-
-	password := request.Password
-	creds := state.AdminCredentials()
-	passwordHash := creds.PasswordHash
-	salt := creds.Salt
-
-	s, err := decodeSalt(salt, w)
-	if err != nil {
-		return err
-	}
-
-	iterationCount := env.Pbkdf2IterationCount()
-	hashLength := env.ShaHashLength()
-
-	ph := pbkdf2.Key(
-		[]byte(password), s,
-		iterationCount, hashLength, sha256.New,
-	)
-
-	b, err := decodePasswordHash(passwordHash, w)
-	if err != nil {
-		return err
-	}
-
-	err = checkHmac(ph, b, w)
-	if err != nil {
-		return err
-	}
-
-	adminToken, err := fetchAdminToken(w)
-	if err != nil {
-		return err
-	}
-
-	signedToken := net.CreateJwt(adminToken, w)
-	if signedToken == "" {
-		return errors.New("failed to sign token")
-	}
-
-	responseBody := net.MarshalBody(reqres.AdminLoginResponse{
-		Token: signedToken,
-	}, w)
-	if responseBody == nil {
-		return errors.New("failed to marshal response body")
-	}
-
-	net.Respond(http.StatusOK, responseBody, w)
-	log.Log().Info("routeAdminLogin", "msg", "authorized")
-	return nil
-}
+//func RouteAdminLogin(
+//	w http.ResponseWriter, r *http.Request, audit *log.AuditEntry,
+//) error {
+//	log.Log().Info("routeAdminLogin", "method", r.Method, "path", r.URL.Path,
+//		"query", r.URL.RawQuery)
+//	audit.Action = log.AuditLogin
+//
+//	requestBody := net.ReadRequestBody(w, r)
+//	if requestBody == nil {
+//		return errors.New("failed to read request body")
+//	}
+//
+//	request := net.HandleRequest[
+//		reqres.AdminLoginRequest, reqres.AdminLoginResponse](
+//		requestBody, w,
+//		reqres.AdminLoginResponse{Err: reqres.ErrBadInput},
+//	)
+//	if request == nil {
+//		return errors.New("failed to parse request body")
+//	}
+//
+//	password := request.Password
+//	creds := state.AdminRecoveryMetadata()
+//	passwordHash := creds.RecoveryTokenHash
+//	salt := creds.Salt
+//
+//	s, err := decodeSalt(salt, w)
+//	if err != nil {
+//		return err
+//	}
+//
+//	iterationCount := env.Pbkdf2IterationCount()
+//	hashLength := env.ShaHashLength()
+//
+//	ph := pbkdf2.Key(
+//		[]byte(password), s,
+//		iterationCount, hashLength, sha256.New,
+//	)
+//
+//	b, err := decodePasswordHash(passwordHash, w)
+//	if err != nil {
+//		return err
+//	}
+//
+//	err = checkHmac(ph, b, w)
+//	if err != nil {
+//		return err
+//	}
+//
+//	adminToken, err := fetchAdminToken(w)
+//	if err != nil {
+//		return err
+//	}
+//	//
+//	//signedToken := net.CreateJwt(adminToken, w)
+//	//if signedToken == "" {
+//	//	return errors.New("failed to sign token")
+//	//}
+//	//
+//	responseBody := net.MarshalBody(reqres.AdminLoginResponse{
+//		Token: signedToken,
+//	}, w)
+//	if responseBody == nil {
+//		return errors.New("failed to marshal response body")
+//	}
+//
+//	net.Respond(http.StatusOK, responseBody, w)
+//	log.Log().Info("routeAdminLogin", "msg", "authorized")
+//	return nil
+//}

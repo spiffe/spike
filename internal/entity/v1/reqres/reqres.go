@@ -63,11 +63,12 @@ type CheckInitStateResponse struct {
 }
 
 type InitRequest struct {
-	Password string `json:"password"`
+	// Password string `json:"password"`
 }
 
 type InitResponse struct {
-	Err ErrorCode `json:"err,omitempty"`
+	RecoveryToken string    `json:"token"`
+	Err           ErrorCode `json:"err,omitempty"`
 }
 
 type AdminLoginRequest struct {
@@ -115,7 +116,8 @@ type Secret struct {
 // SecretReadResponse is for getting secrets
 type SecretReadResponse struct {
 	Secret
-	Err ErrorCode `json:"err,omitempty"`
+	Data map[string]string `json:"data"`
+	Err  ErrorCode         `json:"err,omitempty"`
 }
 
 // SecretDeleteRequest for soft-deleting secret versions

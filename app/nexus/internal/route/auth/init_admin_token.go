@@ -26,7 +26,7 @@ import (
 // Returns nil if no admin token exists, otherwise returns an error indicating
 // the system is already initialized.
 func checkAdminToken(w http.ResponseWriter) error {
-	adminToken := state.AdminToken()
+	adminToken := state.AdminSigningToken()
 	if adminToken != "" {
 		log.Log().Info("routeInit", "msg", "Already initialized")
 

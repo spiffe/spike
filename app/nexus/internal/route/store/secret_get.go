@@ -64,10 +64,10 @@ func RouteGetSecret(
 		"query", r.URL.RawQuery)
 	audit.Action = log.AuditRead
 
-	validJwt := net.ValidateJwt(w, r, state.AdminToken())
-	if !validJwt {
-		return errors.New("invalid or missing JWT token")
-	}
+	//validJwt := net.ValidateJwt(w, r, state.AdminSigningToken())
+	//if !validJwt {
+	//	return errors.New("invalid or missing JWT token")
+	//}
 
 	requestBody := net.ReadRequestBody(w, r)
 	if requestBody == nil {
@@ -117,7 +117,10 @@ func RouteGetSecret(
 		return err
 	}
 
+	//	res := reqres.SecretReadResponse{Data: secret}
+
 	res := reqres.SecretReadResponse{Data: secret}
+
 	responseBody := net.MarshalBody(res, w)
 	if responseBody == nil {
 		return errors.New("failed to marshal response body")

@@ -6,6 +6,8 @@ package auth
 
 import (
 	"errors"
+	"fmt"
+	"github.com/spiffe/spike/pkg/crypto"
 	"net/http"
 
 	"github.com/spiffe/spike/internal/entity/v1/reqres"
@@ -13,9 +15,8 @@ import (
 	"github.com/spiffe/spike/internal/net"
 )
 
-// RouteInit handles the initial setup of the system, creating admin credentials
-// and tokens. This endpoint can only be called once - subsequent calls will
-// fail.
+// RouteInit handles the initial setup of the system. This endpoint can only be
+// called once - subsequent calls will fail.
 //
 // The function performs system initialization by:
 //  1. Validating the provided admin password meets security requirements
@@ -76,15 +77,15 @@ func RouteInit(
 		return err
 	}
 
-	request, err := prepareInitRequest(requestBody, w)
+	_, err = prepareInitRequest(requestBody, w)
 	if err != nil {
 		return err
 	}
 
-	request, err = sanitizeInitRequest(request, w)
-	if err != nil {
-		return err
-	}
+	//request, err = sanitizeInitRequest(request, w)
+	//if err != nil {
+	//	return err
+	//}
 
 	err = checkAdminToken(w)
 	if err != nil {
@@ -104,12 +105,21 @@ func RouteInit(
 		return err
 	}
 
-	updateStateForInit(request.Password, adminTokenBytes, salt)
+	recoveryToken := crypto.Token()
+
+	err = updateStateForInit(recoveryToken, adminTokenBytes, salt)
+	if err != nil {
+		return err
+	}
 
 	responseBody := net.MarshalBody(reqres.InitResponse{}, w)
 	if responseBody == nil {
 		return errors.New("failed to marshal response body")
 	}
+
+	fmt.Println(">>>>>>")
+	fmt.Println("respond body for init", string(responseBody))
+	fmt.Println("<<<<<<")
 
 	net.Respond(http.StatusOK, responseBody, w)
 	log.Log().Info("routeInit", "msg", "OK")

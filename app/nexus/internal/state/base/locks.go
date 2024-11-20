@@ -24,6 +24,6 @@ var (
 	})
 	kvMu sync.RWMutex
 
-	adminCredentials   data.Credentials
-	adminCredentialsMu sync.RWMutex
+	adminRecoveryMetadata   data.RecoveryMetadata
+	adminRecoveryMetadataMu sync.RWMutex
 )

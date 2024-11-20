@@ -9,8 +9,8 @@ import (
 	"github.com/spiffe/spike/app/nexus/internal/state/persist"
 )
 
-// SetAdminCredentials updates the admin credentials with the provided password
-// hash and salt. This function is thread-safe and persists the credentials
+// SetAdminRecoveryMetadata updates the admin recovery metadata with the provided
+// token hash and salt. This function is thread-safe and persists the metadata
 // asynchronously.
 //
 // The function performs two operations:
@@ -22,23 +22,26 @@ import (
 //   - salt: The salt string used in password hashing
 //
 // The function uses a mutex to ensure thread-safe updates to the shared
-// adminCredentials variable. After updating the in-memory credentials, it
+// adminRecoveryMetadata variable. After updating the in-memory credentials, it
 // initiates an asynchronous operation to persist the credentials to storage.
-func SetAdminCredentials(passwordHash, salt string) {
-	adminCredentialsMu.Lock()
-	adminCredentials = data.Credentials{
-		PasswordHash: passwordHash,
-		Salt:         salt,
-	}
-	adminCredentialsMu.Unlock()
+func SetAdminRecoveryMetadata(recoveryTokenHash, encryptedRootKey, salt string) {
 
-	persist.AsyncPersistAdminCredentials(data.Credentials{
-		PasswordHash: passwordHash,
-		Salt:         salt,
+	adminRecoveryMetadataMu.Lock()
+	adminRecoveryMetadata = data.RecoveryMetadata{
+		RecoveryTokenHash: recoveryTokenHash,
+		EncryptedRootKey:  encryptedRootKey,
+		Salt:              salt,
+	}
+	adminRecoveryMetadataMu.Unlock()
+
+	persist.AsyncPersistAdminRecoveryMetadata(data.RecoveryMetadata{
+		RecoveryTokenHash: recoveryTokenHash,
+		EncryptedRootKey:  encryptedRootKey,
+		Salt:              salt,
 	})
 }
 
-// AdminCredentials retrieves the current admin credentials in a thread-safe
+// AdminRecoveryMetadata retrieves the current admin recovery metadata in a thread-safe
 // manner. If the in-memory credentials are empty, it attempts to load them from
 // persistent storage.
 //
@@ -49,32 +52,32 @@ func SetAdminCredentials(passwordHash, salt string) {
 //  3. If loaded from storage, updates in-memory credentials for future use
 //
 // Returns:
-//   - data.Credentials: Contains the password hash and salt. May be empty if no
+//   - data.RecoveryMetadata: Contains the password hash and salt. May be empty if no
 //     credentials exist in memory or persistent storage
 //
 // This function is thread-safe using read/write mutex protection for accessing
 // shared credential data. It implements a lazy-loading pattern, only reading
 // from persistent storage when necessary.
-func AdminCredentials() data.Credentials {
-	adminCredentialsMu.RLock()
-	creds := adminCredentials
-	adminCredentialsMu.RUnlock()
+func AdminRecoveryMetadata() data.RecoveryMetadata {
+	adminRecoveryMetadataMu.RLock()
+	metadata := adminRecoveryMetadata
+	adminRecoveryMetadataMu.RUnlock()
 
-	salt := creds.Salt
-	hash := creds.PasswordHash
+	salt := metadata.Salt
+	hash := metadata.RecoveryTokenHash
 
 	if salt == "" || hash == "" {
-		cachedCreds := persist.ReadAdminCredentials()
-		if cachedCreds == nil {
-			return creds
+		cachedMetadata := persist.ReadAdminRecoveryMetadata()
+		if cachedMetadata == nil {
+			return metadata
 		}
 
-		adminCredentialsMu.Lock()
-		adminCredentials = *cachedCreds
-		adminCredentialsMu.Unlock()
+		adminRecoveryMetadataMu.Lock()
+		adminRecoveryMetadata = *cachedMetadata
+		adminRecoveryMetadataMu.Unlock()
 
-		return *cachedCreds
+		return *cachedMetadata
 	}
 
-	return creds
+	return metadata
 }

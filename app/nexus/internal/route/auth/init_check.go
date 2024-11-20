@@ -69,7 +69,7 @@ func RouteInitCheck(
 		return errors.New("failed to read request body")
 	}
 
-	adminToken := state.AdminToken()
+	adminToken := state.AdminSigningToken()
 	if adminToken != "" {
 		log.Log().Info("routeInitCheck", "msg", "Already initialized")
 

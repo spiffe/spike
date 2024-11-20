@@ -49,6 +49,11 @@ func Tick(
 	source *workloadapi.X509Source,
 	ticker *time.Ticker,
 ) {
+	// TODO: call the function once before the ticker starts.
+	// Check root key every second until it's set and then call the
+	// function until it succeeds before starting the ticker.
+	// This way, the update of SPIKE Nexus will be as soon as it's possible.
+
 	for {
 		select {
 		case <-ticker.C:

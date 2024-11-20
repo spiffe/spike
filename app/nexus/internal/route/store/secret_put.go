@@ -50,10 +50,10 @@ func RoutePutSecret(
 		"query", r.URL.RawQuery)
 	audit.Action = log.AuditCreate
 
-	validJwt := net.ValidateJwt(w, r, state.AdminToken())
-	if !validJwt {
-		return errors.New("invalid or missing JWT token")
-	}
+	//validJwt := net.ValidateJwt(w, r, state.AdminSigningToken())
+	//if !validJwt {
+	//	return errors.New("invalid or missing JWT token")
+	//}
 
 	requestBody := net.ReadRequestBody(w, r)
 	if requestBody == nil {

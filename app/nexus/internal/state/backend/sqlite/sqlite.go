@@ -357,36 +357,38 @@ func (s *DataStore) LoadAdminToken(ctx context.Context) (string, error) {
 	return string(decrypted), nil
 }
 
-func (s *DataStore) LoadAdminCredentials(ctx context.Context) (data.Credentials, error) {
+func (s *DataStore) LoadAdminRecoveryMetadata(ctx context.Context) (data.RecoveryMetadata, error) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
 	const querySelectAdminCredentials = `
-	SELECT password_hash, salt 
-	FROM admin_credentials 
+	SELECT token_hash, encrypted_root_key, salt 
+	FROM admin_recovery_metadata
 	WHERE id = 1`
 
-	var creds data.Credentials
+	var creds data.RecoveryMetadata
 	err := s.db.QueryRowContext(
 		ctx, querySelectAdminCredentials,
-	).Scan(&creds.PasswordHash, &creds.Salt)
+	).Scan(&creds.RecoveryTokenHash, &creds.EncryptedRootKey, &creds.Salt)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return data.Credentials{}, nil
+			return data.RecoveryMetadata{}, nil
 		}
-		return data.Credentials{}, fmt.Errorf("failed to load admin credentials: %w", err)
+		return data.RecoveryMetadata{}, fmt.Errorf("failed to load admin recovery metadata: %w", err)
 	}
 
 	return creds, nil
 }
 
-func (s *DataStore) StoreAdminCredentials(
-	ctx context.Context, credentials data.Credentials,
+func (s *DataStore) StoreAdminRecoveryMetadata(
+	ctx context.Context, credentials data.RecoveryMetadata,
 ) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	tx, err := s.db.BeginTx(ctx, &sql.TxOptions{Isolation: sql.LevelSerializable})
+	tx, err := s.db.BeginTx(ctx,
+		&sql.TxOptions{Isolation: sql.LevelSerializable},
+	)
 	if err != nil {
 		return fmt.Errorf("failed to begin transaction: %w", err)
 	}
@@ -402,14 +404,14 @@ func (s *DataStore) StoreAdminCredentials(
 		}
 	}(tx)
 
-	// Since there's only one admin credentials record, we can use REPLACE INTO
+	// Since there's only one admin recovery metadata record, we can use REPLACE INTO
 	// or you could use the queryUpsertAdminCredentials constant
 	_, err = tx.ExecContext(ctx, `
-		REPLACE INTO admin_credentials (id, password_hash, salt, created_at)
-		VALUES (1, ?, ?, CURRENT_TIMESTAMP)`,
-		credentials.PasswordHash, credentials.Salt)
+		REPLACE INTO admin_recovery_metadata (id, token_hash, encrypted_root_key, salt, created_at)
+		VALUES (1, ?, ?, ?, CURRENT_TIMESTAMP)`,
+		credentials.RecoveryTokenHash, credentials.EncryptedRootKey, credentials.Salt)
 	if err != nil {
-		return fmt.Errorf("failed to store admin credentials: %w", err)
+		return fmt.Errorf("failed to store admin recovery metadata: %w", err)
 	}
 
 	if err := tx.Commit(); err != nil {

@@ -28,7 +28,7 @@ import (
 //
 // Note: The function logs server errors using the application's logging system.
 func fetchAdminToken(w http.ResponseWriter) (string, error) {
-	adminToken := state.AdminToken()
+	adminToken := state.AdminSigningToken()
 	if adminToken == "" {
 		log.Log().Error("routeAdminLogin", "msg", "Admin token not set")
 

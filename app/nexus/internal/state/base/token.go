@@ -6,10 +6,10 @@ package base
 
 import "github.com/spiffe/spike/app/nexus/internal/state/persist"
 
-// AdminToken returns the current admin token in a thread-safe manner.
+// AdminSigningToken returns the current admin token in a thread-safe manner.
 // The returned token is protected by a read lock to ensure concurrent
 // access safety.
-func AdminToken() string {
+func AdminSigningToken() string {
 	adminTokenMu.RLock()
 	token := adminToken
 	adminTokenMu.RUnlock()
@@ -28,12 +28,12 @@ func AdminToken() string {
 	return adminToken
 }
 
-// SetAdminToken updates the admin token with the provided value.
+// SetAdminSigningToken updates the admin token with the provided value.
 // It uses a mutex to ensure thread-safe write operations.
 //
 // Parameters:
 //   - token: The new admin token value to be set
-func SetAdminToken(token string) {
+func SetAdminSigningToken(token string) {
 	adminTokenMu.Lock()
 	adminToken = token
 	adminTokenMu.Unlock()

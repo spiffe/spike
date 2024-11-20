@@ -18,16 +18,16 @@ import (
 type NoopStore struct {
 }
 
-func (s *NoopStore) StoreAdminCredentials(
-	ctx context.Context, credentials data.Credentials,
+func (s *NoopStore) StoreAdminRecoveryMetadata(
+	ctx context.Context, credentials data.RecoveryMetadata,
 ) error {
 	return nil
 }
 
-func (s *NoopStore) LoadAdminCredentials(
+func (s *NoopStore) LoadAdminRecoveryMetadata(
 	ctx context.Context,
-) (data.Credentials, error) {
-	return data.Credentials{}, nil
+) (data.RecoveryMetadata, error) {
+	return data.RecoveryMetadata{}, nil
 }
 
 // Close implements the closing operation for the store.

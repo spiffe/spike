@@ -19,10 +19,8 @@ import (
 )
 
 // Init sends an init request to SPIKE Nexus.
-func Init(source *workloadapi.X509Source, password string) error {
-	r := reqres.InitRequest{
-		Password: password,
-	}
+func Init(source *workloadapi.X509Source) error {
+	r := reqres.InitRequest{}
 	mr, err := json.Marshal(r)
 	if err != nil {
 		return errors.Join(
