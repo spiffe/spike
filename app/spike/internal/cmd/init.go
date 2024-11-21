@@ -6,12 +6,12 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/spiffe/spike/internal/config"
 
 	"github.com/spf13/cobra"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 
 	"github.com/spiffe/spike/app/spike/internal/net/auth"
+	"github.com/spiffe/spike/internal/config"
 	"github.com/spiffe/spike/internal/entity/data"
 )
 

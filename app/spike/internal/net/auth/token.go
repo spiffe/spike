@@ -8,13 +8,13 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/spiffe/spike/internal/config"
 	"os"
 
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 
 	api "github.com/spiffe/spike/app/spike/internal/net"
 	"github.com/spiffe/spike/internal/auth"
+	"github.com/spiffe/spike/internal/config"
 	"github.com/spiffe/spike/internal/entity/data"
 	"github.com/spiffe/spike/internal/entity/v1/reqres"
 	"github.com/spiffe/spike/internal/net"

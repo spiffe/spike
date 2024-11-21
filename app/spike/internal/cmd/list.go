@@ -15,31 +15,6 @@ import (
 	"github.com/spiffe/spike/internal/entity/data"
 )
 
-//func adminToken(source *workloadapi.X509Source) string {
-//	s, err := auth.CheckInitState(source)
-//	if err != nil {
-//		fmt.Println("Failed to check init state:")
-//		fmt.Println(err.Error())
-//		return ""
-//	}
-//
-//	if s == data.NotInitialized {
-//		fmt.Println("Please initialize SPIKE with `spike init` first.")
-//		return ""
-//	}
-//
-//	adminToken, err := state.AdminToken()
-//	if err != nil {
-//		fmt.Println("Please login first with `spike login`.")
-//		return ""
-//	}
-//	if adminToken == "" {
-//		fmt.Println("Please login first with `spike login`.")
-//		return ""
-//	}
-//	return adminToken
-//}
-
 // NewListCommand creates and returns a new cobra.Command for listing all secret
 // paths. It configures a command that retrieves and displays all available
 // secret paths from the system.
