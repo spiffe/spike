@@ -73,9 +73,6 @@ func CheckInitState(source *workloadapi.X509Source) (data.InitState, error) {
 	}
 
 	client, err := net.CreateMtlsClient(source, auth.CanTalkToPilot)
-
-	fmt.Println(">>>>>>>>>>>>>>>Posting to", api.UrlInitState())
-
 	body, err := net.Post(client, api.UrlInitState(), mr)
 	if errors.Is(err, net.ErrUnauthorized) {
 		return data.NotInitialized, err

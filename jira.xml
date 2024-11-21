@@ -33,7 +33,43 @@
 		Think about DR scenarios.
 	</issue>
 	<issue>
-		Demo about passwordless SPIKE usage.
+		1. `spike init` initializes keeper(s). From that point on, SPIKE Nexus
+		   pulls the root key whenever it needs it.
+		2. nexus and keeper can use e2e encryption with one time key pairs
+		   to have forward secrecy and defend the transport in the VERY unlikely
+		   case of a SPIFFE mTLS breach.
+		3. ability for nexus to talk to multiple keepers
+		4. ability for a keeper to talk to nexus to recover its root key if it
+		   loses it.
+		5. abiliy for nexus to talk to and initialize multiple keepers.
+		   (phase 1: all keepers share the same key)
+		6. `spike init` saves its shards (2 out of 3 or smilar) to `~/.spike/recovery/*`
+			The admin will be "highly encouraged" to delete those from the machine and
+			securely back up the keys and distribute them to separate people etc
+			`spike init` will also save the primary key used in the shamir's secret sharing
+		    to `~/.spike/recovery/*` (this is not as sensitive as the root key, but still
+		    should be kept safe)
+		- it is important to note that, without the recovery material, your only opiton
+		  to restore the root key relies on the possibility that more than N keepers remain
+		  operational at all times. -- that's a good enough possibility anyway
+		  (say 5 keepers in 3 AZs, and you need only 2 to recover the root key; then it will
+		   be extremely unlikely for all of them to go down at the same time)
+		   so in an ideal scenario you save your recovery material in a secure encrypted enclave
+		   and never ever use it.
+		7. `spike recover` will reset a keeper cluster by using the recovery material.
+		    `spike recover` will also recover the root key.
+		    to use `spike recover` you will need a special SVID (even a super admin could not use it
+		    without prior authorization)
+		    the SVID who can execute `spike recover` will not be able to execute anything else.
+		8. At phase zero, `spike recover` will just save the root key to disk,
+		   also mentioning that it's not secure and the key will be stored safely
+		   and wiped from the disk.
+		9. maybe double encrypt keeper-nexus communication with one-time key pairs because
+		   the root key is very sensitive and we would want to make sure it's secure even
+		   if the SPIFFE mTLS is compromised.
+	</issue>
+	<issue>
+		Each keeper is backed by a TPM.
 	</issue>
 	<issue>
 		* make asking for admin password during initialization optional.
