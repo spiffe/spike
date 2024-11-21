@@ -18,16 +18,16 @@ import (
 type NoopStore struct {
 }
 
-func (s *NoopStore) StoreAdminCredentials(
-	ctx context.Context, credentials data.Credentials,
+func (s *NoopStore) StoreAdminRecoveryMetadata(
+	ctx context.Context, credentials data.RecoveryMetadata,
 ) error {
 	return nil
 }
 
-func (s *NoopStore) LoadAdminCredentials(
+func (s *NoopStore) LoadAdminRecoveryMetadata(
 	ctx context.Context,
-) (data.Credentials, error) {
-	return data.Credentials{}, nil
+) (data.RecoveryMetadata, error) {
+	return data.RecoveryMetadata{}, nil
 }
 
 // Close implements the closing operation for the store.
@@ -44,7 +44,7 @@ func (s *NoopStore) Initialize(_ context.Context) error {
 
 // LoadAdminToken retrieves the admin token from the store.
 // This implementation always returns an empty string and nil error.
-func (s *NoopStore) LoadAdminToken(_ context.Context) (string, error) {
+func (s *NoopStore) LoadAdminSigningToken(_ context.Context) (string, error) {
 	return "", nil
 }
 

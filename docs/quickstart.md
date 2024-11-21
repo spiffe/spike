@@ -5,8 +5,9 @@ source.
 
 ## Prerequisites
 
-This quickstart guide assumes you are using an [Ubuntu Linux][ubuntu] operating system.
-The steps may slightly differ if you are using a different operating system.
+This quickstart guide assumes you are using an [Ubuntu Linux][ubuntu] operating 
+system. The steps may slightly differ if you are using a different operating 
+system.
 
 [ubuntu]: https://ubuntu.com/
 
@@ -111,6 +112,12 @@ Once SPIRE Server is running, start the SPIRE Agent:
 
 ```bash
 ./hack/spire-agent-starter.sh
+```
+
+## Grant Access to the Current User
+
+```bash
+./hack/register-su.sh
 ```
 
 ## Start SPIKE Components

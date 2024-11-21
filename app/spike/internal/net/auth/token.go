@@ -8,21 +8,21 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"os"
 
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 
 	api "github.com/spiffe/spike/app/spike/internal/net"
 	"github.com/spiffe/spike/internal/auth"
+	"github.com/spiffe/spike/internal/config"
 	"github.com/spiffe/spike/internal/entity/data"
 	"github.com/spiffe/spike/internal/entity/v1/reqres"
 	"github.com/spiffe/spike/internal/net"
 )
 
 // Init sends an init request to SPIKE Nexus.
-func Init(source *workloadapi.X509Source, password string) error {
-	r := reqres.InitRequest{
-		Password: password,
-	}
+func Init(source *workloadapi.X509Source) error {
+	r := reqres.InitRequest{}
 	mr, err := json.Marshal(r)
 	if err != nil {
 		return errors.Join(
@@ -44,7 +44,21 @@ func Init(source *workloadapi.X509Source, password string) error {
 		)
 	}
 
-	return err
+	if res.RecoveryToken == "" {
+		fmt.Println("Failed to get recovery token")
+		return errors.New("failed to get recovery token")
+	}
+
+	err = os.WriteFile(
+		config.SpikePilotRootKeyRecoveryFile(), []byte(res.RecoveryToken), 0600,
+	)
+	if err != nil {
+		fmt.Println("Failed to save token to file:")
+		fmt.Println(err.Error())
+		return errors.New("failed to save token to file")
+	}
+
+	return nil
 }
 
 // CheckInitState sends a checkInitState request to SPIKE Nexus.

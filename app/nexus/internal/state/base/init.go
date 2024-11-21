@@ -6,6 +6,7 @@ package base
 
 import (
 	"errors"
+	"github.com/spiffe/spike/internal/log"
 
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 
@@ -16,15 +17,27 @@ import (
 
 var ErrAlreadyInitialized = errors.New("already initialized")
 
-// Initialize sets up the root key if it hasn't been initialized yet.
+// Bootstrap sets up the root key if it hasn't been initialized yet.
 // If a root key already exists, it returns immediately.
 // The root key is generated using AES-256 encryption.
 //
+// If SPIKE has a root key, it is considered "bootstrapped", and this function
+// will be a no-op. If SPIKE does not have a root key, it will generate one
+// using AES-256 encryption.
+//
 // This function MUST be called ONCE during the application's startup.
+//
+// Note that this initialization is different from the initialization flow
+// that is manually done by the admin through `spike init`.
+//
+// It is important to note that once the initialization is complete, the
+// application is **guaranteed** to have a root key available for use.
 //
 // Returns:
 //   - error: Any error encountered during initialization, nil on success
-func Initialize(source *workloadapi.X509Source) error {
+func Bootstrap(source *workloadapi.X509Source) error {
+	log.Log().Info("boostrap", "msg", "bootstrapping")
+
 	existingRootKey := RootKey()
 	if existingRootKey == "" {
 		// Check if SPIKE Keeper has a cached root key first:
@@ -39,6 +52,8 @@ func Initialize(source *workloadapi.X509Source) error {
 	}
 
 	if existingRootKey != "" {
+		log.Log().Warn("boostrap", "msg", "already initialized. exiting")
+
 		rootKeyMu.Lock()
 		rootKey = existingRootKey
 		rootKeyMu.Unlock()
@@ -49,6 +64,8 @@ func Initialize(source *workloadapi.X509Source) error {
 
 		return ErrAlreadyInitialized
 	}
+
+	log.Log().Info("boostrap", "msg", "first time initialization: generating new root key")
 
 	r, err := crypto.Aes256Seed()
 	if err != nil {

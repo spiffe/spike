@@ -12,16 +12,16 @@ import (
 	"github.com/spiffe/spike/internal/log"
 )
 
-// ReadAdminCredentials retrieves cached admin credentials from the backend
-// storage. It attempts to load the credentials using a context with timeout
-// specified by DatabaseOperationTimeout. If the backend is unavailable or
-// there's an error loading credentials, it returns nil and logs a warning,
-// treating memory as the source of truth.
+// ReadAdminRecoveryMetadata retrieves cached admin recovery metadata from
+// the backend storage. It attempts to load the credentials using a context
+// with timeout specified by DatabaseOperationTimeout. If the backend is
+// unavailable or there's an error loading credentials, it returns nil and
+// logs a warning, treating memory as the source of truth.
 //
 // Returns:
-//   - *data.Credentials: The cached admin credentials if successfully loaded,
-//     nil otherwise.
-func ReadAdminCredentials() *data.Credentials {
+//   - *data.RecoveryMetadata: The cached admin recovery metadata if
+//     successfully loaded, nil otherwise.
+func ReadAdminRecoveryMetadata() *data.RecoveryMetadata {
 	be := Backend()
 	if be == nil {
 		return nil
@@ -32,28 +32,29 @@ func ReadAdminCredentials() *data.Credentials {
 	)
 	defer cancel()
 
-	cachedCreds, err := be.LoadAdminCredentials(ctx)
+	cachedMetadata, err := be.LoadAdminRecoveryMetadata(ctx)
 	if err != nil {
 		// Log error but continue - memory is source of truth
-		log.Log().Warn("readAdminCredentials",
-			"msg", "Failed to load admin credentials from cache",
+		log.Log().Warn("readAdminRecoveryMetadata",
+			"msg", "Failed to load admin recovery metadata from cache",
 			"err", err.Error(),
 		)
 		return nil
 	}
 
-	return &cachedCreds
+	return &cachedMetadata
 }
 
-// AsyncPersistAdminCredentials asynchronously stores admin credentials in the
-// backend storage. It launches a goroutine to perform the storage operation
-// with a timeout specified by DatabaseOperationTimeout. If the backend is
-// unavailable or there's an error storing credentials, it logs a warning and
-// continues execution, as memory is considered the source of truth.
+// AsyncPersistAdminRecoveryMetadata asynchronously stores admin recovery
+// metadata in the backend storage. It launches a goroutine to perform the
+// storage operation with a timeout specified by DatabaseOperationTimeout.
+// If the backend is unavailable or there's an error storing credentials,
+// it logs a warning and continues execution, as memory is considered the
+// source of truth.
 //
 // Parameters:
-//   - credentials: data.Credentials to be stored in the backend
-func AsyncPersistAdminCredentials(credentials data.Credentials) {
+//   - credentials: data.RecoveryMetadata to be stored in the backend
+func AsyncPersistAdminRecoveryMetadata(credentials data.RecoveryMetadata) {
 	go func() {
 		be := Backend()
 		if be == nil {
@@ -66,10 +67,10 @@ func AsyncPersistAdminCredentials(credentials data.Credentials) {
 		)
 		defer cancel()
 
-		if err := be.StoreAdminCredentials(ctx, credentials); err != nil {
+		if err := be.StoreAdminRecoveryMetadata(ctx, credentials); err != nil {
 			// Log error but continue - memory is source of truth
-			log.Log().Warn("asyncPersistAdminCredentials",
-				"msg", "Failed to cache admin credentials",
+			log.Log().Warn("asyncPersistAdminRecoveryMetadata",
+				"msg", "Failed to cache admin recovery metadata",
 				"err", err.Error(),
 			)
 		}

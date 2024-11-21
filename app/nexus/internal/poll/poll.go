@@ -49,14 +49,24 @@ func Tick(
 	source *workloadapi.X509Source,
 	ticker *time.Ticker,
 ) {
+	// Wait for the root key to be initialized
+	key := ""
+	for {
+		key = state.RootKey()
+		if key == "" {
+			time.Sleep(time.Second)
+			continue
+		}
+		break
+	}
+
+	// Root key is set only once during initialization, and it is never reset
+	// to an empty string, so we can safely assume that if we have a root key
+	// here, it will not be empty.
+
 	for {
 		select {
 		case <-ticker.C:
-			key := state.RootKey()
-			if key == "" {
-				continue
-			}
-
 			err := net.UpdateCache(source, key)
 			if err != nil {
 				log.Log().Error("tick",

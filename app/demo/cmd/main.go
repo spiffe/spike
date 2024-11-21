@@ -8,7 +8,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/spiffe/spike/app/demo/internal/spiffe"
+	"github.com/spiffe/spike/pkg/spiffe"
 )
 
 func main() {

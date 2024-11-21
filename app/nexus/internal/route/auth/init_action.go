@@ -5,17 +5,51 @@
 package auth
 
 import (
+	"crypto/rand"
 	"errors"
 	"net/http"
 
 	"github.com/spiffe/spike/internal/entity/v1/reqres"
 	"github.com/spiffe/spike/internal/log"
 	"github.com/spiffe/spike/internal/net"
+	"github.com/spiffe/spike/pkg/crypto"
 )
 
-// RouteInit handles the initial setup of the system, creating admin credentials
-// and tokens. This endpoint can only be called once - subsequent calls will
-// fail.
+// generateSalt creates a new random 16-byte salt value using crypto/rand.
+//
+// It handles error responses through the provided http.ResponseWriter in case
+// of failures during salt generation or response marshaling.
+//
+// Returns:
+//   - []byte: The generated salt bytes
+//   - error: nil on success, otherwise an error describing what went wrong
+//
+// If salt generation fails, it will set an appropriate HTTP error response
+// with a 500 status code and return an empty byte slice along with an error.
+func generateSalt(w http.ResponseWriter) ([]byte, error) {
+	salt := make([]byte, 16)
+
+	if _, err := rand.Read(salt); err != nil {
+		log.Log().Error("routeInit", "msg", "Failed to generate salt",
+			"err", err.Error())
+
+		responseBody := net.MarshalBody(reqres.InitResponse{
+			Err: reqres.ErrServerFault}, w,
+		)
+		if responseBody == nil {
+			return []byte{}, errors.New("failed to marshal response body")
+		}
+
+		net.Respond(http.StatusInternalServerError, responseBody, w)
+		log.Log().Info("routeInit", "msg", "exit: Failed to generate salt")
+		return []byte{}, errors.New("failed to generate salt")
+	}
+
+	return salt, nil
+}
+
+// RouteInit handles the initial setup of the system. This endpoint can only be
+// called once - subsequent calls will fail.
 //
 // The function performs system initialization by:
 //  1. Validating the provided admin password meets security requirements
@@ -67,46 +101,56 @@ func RouteInit(
 		"query", r.URL.RawQuery)
 	audit.Action = log.AuditCreate
 
-	// No need to check for valid JWT here. System initialization is done
-	// anonymously by the first user (who will be the admin).
-	// If the system is already initialized, this process will err out anyway.
-
 	requestBody, err := prepareInitRequestBody(w, r)
 	if err != nil {
 		return err
 	}
 
-	request, err := prepareInitRequest(requestBody, w)
+	_, err = prepareInitRequest(requestBody, w)
 	if err != nil {
 		return err
 	}
 
-	request, err = sanitizeInitRequest(request, w)
+	err = checkPreviousInitialization(w)
 	if err != nil {
 		return err
 	}
 
-	err = checkAdminToken(w)
+	// The existence of an admin signing token also means the system is
+	// initialized.
+	log.Log().Info("routeInit", "msg", "No admin signing token. will create one")
+
+	adminSigningTokenBytes, err := generateAdminSigningToken(w)
 	if err != nil {
 		return err
 	}
 
-	log.Log().Info("routeInit", "msg", "No admin token. will create one")
-
-	adminTokenBytes, err := generateAdminToken(w)
-	if err != nil {
-		return err
-	}
-
-	// Generate salt and hash password
+	// Generate salt to hash the recovery token.
+	//
+	// The recovery token is a secure passphrase that we send to the admin user
+	// upon first time initialization. They can use this token to recover
+	// the root key in case the system crashes and there is an encrypted backup
+	// of the root key.
+	//
+	// Since it acts like a password, we salt and store its hash accordingly.
+	// When the admin provides the recovery token, we verify it by hashing it
+	// with the same salt and comparing it to the stored hash. If they match,
+	// we can decrypt the root key and re-key the system.
 	salt, err := generateSalt(w)
 	if err != nil {
 		return err
 	}
 
-	updateStateForInit(request.Password, adminTokenBytes, salt)
+	recoveryToken := crypto.Token()
 
-	responseBody := net.MarshalBody(reqres.InitResponse{}, w)
+	err = updateStateForInit(recoveryToken, adminSigningTokenBytes, salt)
+	if err != nil {
+		return err
+	}
+
+	responseBody := net.MarshalBody(reqres.InitResponse{
+		RecoveryToken: recoveryToken,
+	}, w)
 	if responseBody == nil {
 		return errors.New("failed to marshal response body")
 	}

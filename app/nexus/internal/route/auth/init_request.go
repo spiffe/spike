@@ -8,9 +8,7 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/spiffe/spike/app/nexus/internal/config"
 	"github.com/spiffe/spike/internal/entity/v1/reqres"
-	"github.com/spiffe/spike/internal/log"
 	"github.com/spiffe/spike/internal/net"
 )
 
@@ -36,24 +34,4 @@ func prepareInitRequest(
 		return nil, errors.New("failed to parse request body")
 	}
 	return request, nil
-}
-
-func sanitizeInitRequest(
-	req *reqres.InitRequest, w http.ResponseWriter,
-) (*reqres.InitRequest, error) {
-	password := req.Password
-	if len(password) < config.SpikeNexusAdminPasswordMinLength {
-		res := reqres.InitResponse{Err: reqres.ErrLowEntropy}
-
-		responseBody := net.MarshalBody(res, w)
-		if responseBody == nil {
-			return nil, errors.New("failed to marshal response body")
-		}
-
-		net.Respond(http.StatusBadRequest, responseBody, w)
-		log.Log().Info("routeInit", "msg", "exit: Password too short")
-		return nil, errors.New("password too short")
-	}
-
-	return req, nil
 }

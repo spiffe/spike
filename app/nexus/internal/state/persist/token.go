@@ -20,7 +20,7 @@ var (
 	backendMu     sync.RWMutex
 )
 
-// ReadAdminToken attempts to retrieve the admin token from the backend cache.
+// ReadAdminSigningToken attempts to retrieve the admin token from the backend cache.
 // It uses a 5-second timeout for the operation.
 //
 // Returns:
@@ -32,7 +32,7 @@ var (
 //
 // Errors during the load operation are logged but not returned, as the system
 // considers the in-memory state to be the source of truth.
-func ReadAdminToken() string {
+func ReadAdminSigningToken() string {
 	be := Backend()
 	if be == nil {
 		return ""
@@ -43,10 +43,10 @@ func ReadAdminToken() string {
 	)
 	defer cancel()
 
-	cachedToken, err := be.LoadAdminToken(ctx)
+	cachedToken, err := be.LoadAdminSigningToken(ctx)
 	if err != nil {
 		// Log error but continue - memory is source of truth
-		log.Log().Warn("readAdminToken",
+		log.Log().Warn("readAdminSigningToken",
 			"msg", "Failed to load admin token from cache",
 			"err", err.Error(),
 		)

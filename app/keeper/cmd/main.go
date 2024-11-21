@@ -7,15 +7,15 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/spiffe/spike/pkg/spiffe"
 
 	"github.com/spiffe/spike/app/keeper/internal/env"
-	"github.com/spiffe/spike/app/keeper/internal/handle"
+	"github.com/spiffe/spike/app/keeper/internal/route/handle"
 	"github.com/spiffe/spike/app/keeper/internal/trust"
 	"github.com/spiffe/spike/internal/auth"
 	"github.com/spiffe/spike/internal/config"
 	"github.com/spiffe/spike/internal/log"
 	"github.com/spiffe/spike/internal/net"
+	"github.com/spiffe/spike/pkg/spiffe"
 )
 
 const appName = "SPIKE Keeper"

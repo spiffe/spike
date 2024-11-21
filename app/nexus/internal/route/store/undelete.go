@@ -53,11 +53,6 @@ func RouteUndeleteSecret(
 		"method", r.Method, "path", r.URL.Path, "query", r.URL.RawQuery)
 	audit.Action = log.AuditUndelete
 
-	validJwt := net.ValidateJwt(w, r, state.AdminToken())
-	if !validJwt {
-		return errors.New("invalid or missing JWT token")
-	}
-
 	requestBody := net.ReadRequestBody(w, r)
 	if requestBody == nil {
 		return errors.New("failed to read request body")

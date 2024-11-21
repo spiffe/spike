@@ -6,12 +6,15 @@ package cmd
 
 import (
 	"fmt"
+
 	"strings"
 
 	"github.com/spf13/cobra"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 
+	"github.com/spiffe/spike/app/spike/internal/net/auth"
 	"github.com/spiffe/spike/app/spike/internal/net/store"
+	"github.com/spiffe/spike/internal/entity/data"
 )
 
 // NewPutCommand creates and returns a new cobra.Command for storing secrets.
@@ -51,8 +54,15 @@ func NewPutCommand(source *workloadapi.X509Source) *cobra.Command {
 		Short: "Put secrets at the specified path",
 		Args:  cobra.MinimumNArgs(2),
 		Run: func(cmd *cobra.Command, args []string) {
-			adminToken := adminToken(source)
-			if adminToken == "" {
+			state, err := auth.CheckInitState(source)
+			if err != nil {
+				fmt.Println("Failed to check init state:")
+				fmt.Println(err.Error())
+				return
+			}
+
+			if state == data.NotInitialized {
+				fmt.Println("Please initialize SPIKE first by running 'spike init'.")
 				return
 			}
 
@@ -73,7 +83,7 @@ func NewPutCommand(source *workloadapi.X509Source) *cobra.Command {
 				return
 			}
 
-			err := store.PutSecret(source, path, values)
+			err = store.PutSecret(source, path, values)
 			if err != nil {
 				fmt.Printf("Error: %v\n", err)
 				return

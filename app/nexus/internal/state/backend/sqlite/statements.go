@@ -12,9 +12,10 @@ CREATE TABLE IF NOT EXISTS admin_token (
 	updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE IF NOT EXISTS admin_credentials (
+CREATE TABLE IF NOT EXISTS admin_recovery_metadata (
     id INTEGER PRIMARY KEY CHECK (id = 1),
-    password_hash BLOB NOT NULL,
+	encrypted_root_key BLOB NOT NULL,
+    token_hash BLOB NOT NULL,
     salt BLOB NOT NULL,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
@@ -79,7 +80,7 @@ ON CONFLICT(id) DO UPDATE SET
 	updated_at = excluded.updated_at
 `
 
-const querySelectAdminToken = `
+const querySelectAdminSigningToken = `
 SELECT nonce, encrypted_token 
 FROM admin_token 
 WHERE id = 1

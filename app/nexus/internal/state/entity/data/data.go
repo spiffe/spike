@@ -6,10 +6,12 @@ package data
 
 import "time"
 
-// Credentials represents the stored credentials for a user.
-type Credentials struct {
-	PasswordHash string
-	Salt         string
+// RecoveryMetadata represents the stored "break-the-glass" recovery
+// metadata for an admin user.
+type RecoveryMetadata struct {
+	RecoveryTokenHash string
+	EncryptedRootKey  string
+	Salt              string
 }
 
 // TokenMetadata contains the metadata associated with a token.

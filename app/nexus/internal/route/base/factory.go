@@ -22,8 +22,8 @@ func factory(p net.ApiUrl, a net.SpikeNexusApiAction, m string) net.Handler {
 	}
 
 	switch {
-	case a == net.ActionNexusAdminLogin && p == net.SpikeNexusUrlLogin:
-		return auth.RouteAdminLogin
+	//case a == net.ActionNexusAdminLogin && p == net.SpikeNexusUrlLogin:
+	//	return auth.RouteAdminLogin
 	case a == net.ActionNexusDefault && p == net.SpikeNexusUrlInit:
 		return auth.RouteInit
 	case a == net.ActionNexusCheck && p == net.SpikeNexusUrlInit:
