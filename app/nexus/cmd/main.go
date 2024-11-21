@@ -7,11 +7,11 @@ package main
 import (
 	"context"
 	"errors"
-	"github.com/spiffe/spike/app/nexus/internal/route/handle"
 	"time"
 
 	"github.com/spiffe/spike/app/nexus/internal/env"
 	"github.com/spiffe/spike/app/nexus/internal/poll"
+	"github.com/spiffe/spike/app/nexus/internal/route/handle"
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 	"github.com/spiffe/spike/app/nexus/internal/trust"
 	"github.com/spiffe/spike/internal/auth"
@@ -35,7 +35,7 @@ func main() {
 
 	trust.Authenticate(spiffeid)
 
-	err = state.Initialize(source)
+	err = state.Bootstrap(source)
 	if err != nil {
 		if errors.Is(err, state.ErrAlreadyInitialized) {
 			log.Log().Info(appName,
