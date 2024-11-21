@@ -6,4 +6,4 @@
 
 # Disable Leonardo.
 spire-server entry delete \
-    -spiffeID spiffe://spike.ist/spike/pilot/role/superadmin
+    -entryID "fa648f59-ee7a-48f0-9f84-3f600eff1362"

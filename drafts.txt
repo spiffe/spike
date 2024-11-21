@@ -1,3 +1,13 @@
+demo:
+keep spire-server in a separate machine to show that an admin can add/remove
+access to SPIKE nexus, and an operator in another machine can access to the
+store if/when they have an SVID.
+
+bug:
+list, get, put etc work even when SPIKE is not initialized.
+(regression)
+
+
 1. `spike init` verifies that there are 3 healthy keeper instances.
    it creates a shard of 3 shamir secrets (2 of which will be enough to reassemble the root key)
    send each share to each keeper.
