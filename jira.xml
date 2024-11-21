@@ -13,6 +13,15 @@
 </purpose>
 <low-hanging-fruits>
 	<issue>
+		check the code one last time and cut a release.
+	</issue>
+	<issue>
+		Create new "good first issue"s.
+	</issue>
+	<issue>
+		remove spike mint from docs; we probably don't need it.
+	</issue>
+	<issue>
 		Keeper and Nexus do not print anything when they start; at least
 		printing some name/version etc. would be nice.
 	</issue>
@@ -27,10 +36,75 @@
 	<issue>
 		add the new videos to the site.
 	</issue>
+	<issue>
+		make sure that everything sanitizable are properly sanitized.
+	</issue>
+	<issue>
+		<good-first-issue />
+		Create secret metadata API.
+	</issue>
+
 </low-hanging-fruits>
 <reserved>
 	<issue>
+		One way token flow;
+		keeper provides the rootkey to nexus;
+		nexus init pushes root key to keeper.
+		that's it.
+	</issue>
+	<issue>
+		configure the current system to work with multiple keepers.
+		the demo setup should initialize 3 keepers by default.
+		the demo setup should use sqlite as the backing store by default.
+	</issue>
+	<issue>
+		multiple keeper clusters:
+
+		keepers:
+		- nodes: [n1, n2, n3, n4, n5]
+		- nodes: [dr1, dr2]
+
+		if it cant assemble back from the first pool, it could try the next
+		pool, which could be stood up only during disaster recovery.
+	</issue>
+	<issue>
+		a tool to read from one cluster of keepers to hydrate a different
+		cluster of keepers.
+	</issue>
+	<issue>
+		demo:
+		keep spire-server in a separate machine to show that an admin can add/remove
+		access to SPIKE nexus, and an operator in another machine can access to the
+		store if/when they have an SVID.
+	</issue>
+	<issue>
+		What if a keeper instance crashes and goes back up?
+		if there is an "initialized" Nexus; it can hint nexus to send its share again.
+	</issue>
+	<issue>
 		Think about DR scenarios.
+	</issue>
+	<issue>
+		use case: shamir
+
+		1. `spike init` verifies that there are 3 healthy keeper instances.
+		it creates a shard of 3 shamir secrets (2 of which will be enough to reassemble the root key)
+		send each share to each keeper.
+		2. SPIKE nexus regularly polls all keepers and if it can assemble a secret all good.
+		3. `spike init` will also save the 2 shards (out of 3) in `~/.spike/recovery/*`
+		The admin will be "highly encouraged" do delete those from the machine and
+		securely back up the keys and distribute them to separate people etc.
+		[2 and 3 are configurable]
+	</issue>
+	<issue>
+		have sqlite as the default backing store.
+		(until we implement the S3 backing store)
+	</issue>
+	<issue>
+		ability to do an `spike init --no-recovery` to skip dumping the
+		recovery material. If this option is used, the user will be warned
+		that they will not be able to recover the root key in case of a system
+		crash so they need to add more keepers to the cluster.
 	</issue>
 	<issue>
 		1. `spike init` initializes keeper(s). From that point on, SPIKE Nexus
@@ -68,44 +142,27 @@
 		   the root key is very sensitive and we would want to make sure it's secure even
 		   if the SPIFFE mTLS is compromised.
 	</issue>
+
 	<issue>
-		Each keeper is backed by a TPM.
-	</issue>
-	<issue>
-		* make asking for admin password during initialization optional.
-		(i.e. provide a recovery password: this password will be used
-		to recover the root key in case of a system crash)
-		* ^ this also means that we won't use JWT to authenticate the admin user.
-		--
-		`spike init` creates an admin token encrypted with the root key; so
-		we still need the explicit initialization step.
-		but we don't need password.
-		---
-		I think I have found the best of both worlds:
+		say user sets up 5 keeper instances.
+		in nexus, we have a config
+		keepers:
+		- nodes: [n1, n2, n3, n4, n5]
+		nexus can reach out with its own spiffe id to each node in the list. it can
+		call the assembly lib with whatever secrets it gets back, as it gets them back,
+		and so long as it gets enough, "it just works"
 
-		During initialization, I'll ask the admin user something like
-
-		[optional]: Provide root key recovery token (pick a strong unique passphrase, minimum 16 characters).
-		p: proceed s: skip
-
-		If pressed (s)
-
-		A pasword recovery token is a "last resort" -break-the-glass- system recovery token. If you don't use this, you will have to ensure that you have <implemented these other things so that you are not dead in the water>. See <this link> for details.
-		Enter: Confirm, Esc: provide password.
-
-		This way the user will have the freedom to chose a recovery password, or skip that option and rely on an alternate means to recover the root key.
-
+		recovery could even be, users have a copy of some of the keeper's secrets.
+		they rebuild a secret server and load that piece back in. nexus then can recover.
+		that api could also allow for backup configurations
 	</issue>
 	<issue>
 		Create a demo app.
 	</issue>
 	<issue>
-		move the kv store to a `pkg` folder (after Sahin's PR merge).
-	</issue>
-	<issue>
 		workloads should be able to get/set/read secrets.
 		there should be path--workload mapping for that.
-		maybe use OPA.
+		maybe use OPA. (don't use OPA (to adr) our needs are not that complicated)
 
 		1. create a sample binary that emulates a workload.
 		2. it will fetch its secrets from SPIKE Nexus.
@@ -117,9 +174,7 @@
 
 		This will also require a sample workload and an initial SDK.
 	</issue>
-	<issue>
-		make sure that everything sanitizable are properly sanitized.
-	</issue>
+
 	<issue>
 		- SPIKE Nexus Sanity Tests
 		- Ensure SPIKE Nexus caches the root key in memory.
@@ -146,13 +201,58 @@
 		- Ensure that you can recover the password-encrypted root key.
 	</issue>
 	<issue>
+		WAITINGFOR: shamir to be implemented
+
+		To documentation (Disaster Recovery)
+
+		Is it like
+		Keepers have 3 shares.
+		I get one share
+		you get one share.
+		We keep our shares secure.
+		none of us alone can assemble a keeper cluster.
+		But we two can join our forces and do an awesome DR at 3am in the morning if needed?
+
+		or if your not that paranoid, you can keep both shares on one thumbdrive, or 2
+		shares on two different thumbdrives in two different safes, and rebuild.
+
+		it gives a lot of options on just how secure you want to try and make things vs
+		how painful it is to recover
+	</issue>
+	<issue>
+		based on the following, maybe move SQLite "create table" ddls to a separate file.
+		Still a "tool" or a "job" can do that out-of-band.
+
+		ADR:
+
+		It's generally considered better security practice to create the schema out-of-band (separate from the application) for several reasons:
+
+		Principle of Least Privilege:
+
+		The application should only have the permissions it needs for runtime (INSERT, UPDATE, SELECT, etc.)
+		Schema modification rights (CREATE TABLE, ALTER TABLE, etc.) are not needed during normal operation
+		This limits potential damage if the application is compromised
+
+
+		Change Management:
+
+		Database schema changes can be managed through proper migration tools
+		Changes can be reviewed, versioned, and rolled back if needed
+		Prevents accidental schema modifications during application restarts
+
+
+		Environment Consistency:
+
+		Ensures all environments (dev, staging, prod) have identical schemas
+		Reduces risk of schema drift between environments
+		Makes it easier to track schema changes in version control
+	</issue>
+	<issue>
 		- SPIKE Keep Sanity Tests
 		- Ensure that the root key is stored in SPIKE Keep's memory.
 		- Ensure that SPIKE Keep can return the root key back to SPIKE Nexus.
 	</issue>
-	<issue>
-		Create secret metadata API.
-	</issue>
+
 	<issue>
 		* encrypt the root key with admin password and return it
 		as part of the init response.
@@ -311,6 +411,9 @@
 	</issue>
 </backlog>
 <future>
+	<issue>
+		Each keeper is backed by a TPM.
+	</issue>
 	<issue>
 		Do some static analysis.
 	</issue>
