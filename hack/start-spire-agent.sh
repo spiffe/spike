@@ -6,6 +6,11 @@
 
 TOKEN_FILE=".spire-agent-join-token"
 
+if [ -z $WORKSPACE ]; then
+    echo "Error: define WORKSPACE environment variable"
+    exit 1
+fi
+
 if [ ! -f $TOKEN_FILE ]; then
     echo "Error: token does not exist"
     exit 1
@@ -24,6 +29,8 @@ if [ -z "$JOIN_TOKEN" ]; then
 fi
 
 # Running spire-agent as super user to read meta information of other users'
-# processes.
-sudo /home/volkan/Desktop/WORKSPACE/spire/bin/spire-agent run -config ./config/spire/agent/agent.conf -joinToken "$JOIN_TOKEN"
-# spire-agent run -config ./config/spire/agent/agent.conf -joinToken "$JOIN_TOKEN"
+# processes. If you are using the current user to use SPIKE only, then you
+# can run this command without sudo.
+sudo $WORKSPACE/spire/bin/spire-agent run \
+  -config ./config/spire/agent/agent.conf \
+  -joinToken "$JOIN_TOKEN"

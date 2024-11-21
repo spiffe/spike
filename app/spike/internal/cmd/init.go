@@ -59,59 +59,7 @@ func NewInitCommand(source *workloadapi.X509Source) *cobra.Command {
 				return
 			}
 
-			//fmt.Println("SPIKE is not initialized.")
-			//fmt.Println("As the first user, you will be the admin.")
-			//fmt.Println("Choose a strong password:")
-			//fmt.Println("* The password should be at least 16 characters long.")
-			//fmt.Println("* Make sure the password is a mix of letters, numbers, and symbols.")
-			//fmt.Println("")
-
-			//fmt.Print("Enter admin password: ")
-			//password, err := term.ReadPassword(syscall.Stdin)
-			//if err != nil {
-			//	fmt.Println("\nFailed to read password:")
-			//	fmt.Println(err.Error())
-			//	return
-			//}
-			//fmt.Println()
-			//
-			//if len(password) < 16 {
-			//	fmt.Println("Password is too short.")
-			//	fmt.Println("Please try again.")
-			//	return
-			//}
-
-			//fmt.Print("Confirm admin password: ")
-			//confirm, err := term.ReadPassword(syscall.Stdin)
-			//if err != nil {
-			//	fmt.Println("\nFailed to read password:")
-			//	fmt.Println(err.Error())
-			//	return
-			//}
-			//fmt.Println()
-			//
-			//if string(password) != string(confirm) {
-			//	fmt.Println("Passwords do not match.")
-			//	fmt.Println("Please try again.")
-			//	return
-			//}
-			//
-			//passwordStr := string(password)
-
-			// TODO:
-			// 1. get recovery token from response and save it.
-			// 2. make sure current user cannot use spike
-			// 3. make sure leonardo can use spike.
-			// 4. create a demo recording about it.
-			// 5. code cleanup.
-			// 6. make sure root key is encrypted with the token and backed up.
-			// 7. implement a /recover endpoint to recover the root key.
-			// 8. Let keeper and nexus crash; and use /recover to recover the root key
-			//    you'll need to enable sqlite too.
-			// 9. address TODO items in the source code.
-
 			err = auth.Init(source)
-			//err = auth.Init(source, passwordStr)
 			if err != nil {
 				fmt.Println("Failed to save admin token:")
 				fmt.Println(err.Error())

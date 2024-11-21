@@ -13,6 +13,10 @@
 </purpose>
 <low-hanging-fruits>
 	<issue>
+		Keeper and Nexus do not print anything when they start; at least
+		printing some name/version etc. would be nice.
+	</issue>
+	<issue>
 		mode for keeperless operation (fore development maybe).
 	</issue>
 	<issue>
@@ -20,8 +24,14 @@
 		it will require sanitization!
 		Check how other secrets stores manage those paths.
 	</issue>
+	<issue>
+		add the new videos to the site.
+	</issue>
 </low-hanging-fruits>
 <reserved>
+	<issue>
+		Think about DR scenarios.
+	</issue>
 	<issue>
 		Demo about passwordless SPIKE usage.
 	</issue>
