@@ -7,6 +7,7 @@ package base
 import (
 	"net/http"
 
+	"github.com/spiffe/spike/app/keeper/internal/route/store"
 	"github.com/spiffe/spike/internal/log"
 	"github.com/spiffe/spike/internal/net"
 )
@@ -19,12 +20,19 @@ import (
 // Parameters:
 //   - w: The HTTP ResponseWriter to write the response to
 //   - r: The HTTP Request containing the client's request details
-func Route(
-	w http.ResponseWriter, r *http.Request, audit *log.AuditEntry,
-) error {
-	return factory(
+func Route(w http.ResponseWriter, r *http.Request, a *log.AuditEntry) error {
+	return net.RouteFactory[net.SpikeKeeperApiAction](
 		net.ApiUrl(r.URL.Path),
-		net.SpikeKeeperApiAction(r.URL.Query().Get("action")),
+		net.SpikeKeeperApiAction(r.URL.Query().Get(net.KeyApiAction)),
 		r.Method,
-	)(w, r, audit)
+		func(a net.SpikeKeeperApiAction, p net.ApiUrl) net.Handler {
+			switch {
+			case a == net.ActionKeeperDefault && p == net.SpikeKeeperUrlKeep:
+				return store.RouteKeep
+			case a == net.ActionKeeperRead && p == net.SpikeKeeperUrlKeep:
+				return store.RouteShow
+			default:
+				return net.Fallback
+			}
+		})(w, r, a)
 }

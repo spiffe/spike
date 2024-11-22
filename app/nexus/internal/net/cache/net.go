@@ -2,7 +2,7 @@
 //  \\\\\ Copyright 2024-present SPIKE contributors.
 // \\\\\\\ SPDX-License-Identifier: Apache-2.0
 
-package net
+package cache
 
 import (
 	"errors"
@@ -10,6 +10,7 @@ import (
 	"github.com/go-jose/go-jose/v4/json"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 
+	"github.com/spiffe/spike/app/nexus/internal/net/api"
 	"github.com/spiffe/spike/internal/auth"
 	"github.com/spiffe/spike/internal/entity/v1/reqres"
 	"github.com/spiffe/spike/internal/net"
@@ -63,7 +64,7 @@ func UpdateCache(
 		)
 	}
 
-	_, err = net.Post(client, UrlKeeperWrite(), md)
+	_, err = net.Post(client, api.UrlKeeperWrite(), md)
 	return err
 }
 
@@ -109,7 +110,7 @@ func FetchFromCache(source *workloadapi.X509Source) (string, error) {
 		)
 	}
 
-	data, err := net.Post(client, UrlKeeperRead(), md)
+	data, err := net.Post(client, api.UrlKeeperRead(), md)
 	var res reqres.RootKeyReadResponse
 
 	if len(data) == 0 {

@@ -7,16 +7,28 @@ package store
 import (
 	"encoding/json"
 	"errors"
-	net2 "github.com/spiffe/spike/app/spike/internal/net"
 
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 
+	"github.com/spiffe/spike/app/spike/internal/net/api"
 	"github.com/spiffe/spike/internal/auth"
 	"github.com/spiffe/spike/internal/entity/v1/reqres"
 	"github.com/spiffe/spike/internal/net"
 )
 
-// ListSecretKeys lists the keys of all secrets in SPIKE Nexus.
+// ListSecretKeys retrieves all secret keys using mTLS authentication.
+//
+// Parameters:
+//   - source: X509Source for mTLS client authentication
+//
+// Returns:
+//   - []string: Array of secret keys if found, empty array if none found
+//   - error: nil on success, unauthorized error if not logged in, or
+//     wrapped error on request/parsing failure
+//
+// Example:
+//
+//	keys, err := ListSecretKeys(x509Source)
 func ListSecretKeys(source *workloadapi.X509Source) ([]string, error) {
 	r := reqres.SecretListRequest{}
 	mr, err := json.Marshal(r)
@@ -34,7 +46,7 @@ func ListSecretKeys(source *workloadapi.X509Source) ([]string, error) {
 		return []string{}, err
 	}
 
-	body, err := net.Post(client, net2.UrlSecretList(), mr)
+	body, err := net.Post(client, api.UrlSecretList(), mr)
 	if errors.Is(err, net.ErrNotFound) {
 		return []string{}, nil
 	}

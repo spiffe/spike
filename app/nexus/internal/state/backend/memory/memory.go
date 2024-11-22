@@ -18,12 +18,17 @@ import (
 type NoopStore struct {
 }
 
+// StoreAdminRecoveryMetadata saves the admin recovery metadata to the store.
+// This implementation is a no-op and always returns nil.
 func (s *NoopStore) StoreAdminRecoveryMetadata(
 	ctx context.Context, credentials data.RecoveryMetadata,
 ) error {
 	return nil
 }
 
+// LoadAdminRecoveryMetadata retrieves the admin recovery metadata from the
+// store. This implementation always returns an empty RecoveryMetadata and
+// nil error.
 func (s *NoopStore) LoadAdminRecoveryMetadata(
 	ctx context.Context,
 ) (data.RecoveryMetadata, error) {

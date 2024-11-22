@@ -326,7 +326,7 @@ func (s *DataStore) StoreAdminToken(ctx context.Context, token string) error {
 	return nil
 }
 
-// LoadAdminToken retrieves and decrypts the stored admin token.
+// LoadAdminSigningToken retrieves and decrypts the stored admin token.
 //
 // Returns:
 // - ("", nil) if no token exists
@@ -357,6 +357,20 @@ func (s *DataStore) LoadAdminSigningToken(ctx context.Context) (string, error) {
 	return string(decrypted), nil
 }
 
+// LoadAdminRecoveryMetadata retrieves the admin recovery metadata from the
+// database. It returns an empty RecoveryMetadata struct if no record exists, or
+// an error if the query fails.
+//
+// The method is thread-safe and uses a read lock when accessing the database.
+// It queries the admin_recovery_metadata table for the single record with id=1,
+// containing the token hash, encrypted root key, and salt used for admin
+// recovery.
+//
+// Returns:
+//   - RecoveryMetadata: The retrieved credentials containing recovery token
+//     hash, encrypted root key, and salt
+//   - error: nil on success, sql.ErrNoRows if no record exists, or wrapped
+//     error on query failure
 func (s *DataStore) LoadAdminRecoveryMetadata(ctx context.Context) (data.RecoveryMetadata, error) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
@@ -380,6 +394,23 @@ func (s *DataStore) LoadAdminRecoveryMetadata(ctx context.Context) (data.Recover
 	return creds, nil
 }
 
+// StoreAdminRecoveryMetadata saves or updates the admin recovery metadata in
+// the database. The operation is performed atomically within a serializable
+// transaction.
+//
+// The method is thread-safe and uses a write lock when accessing the database.
+// It uses REPLACE INTO to ensure only one record exists in the
+// admin_recovery_metadata table with id=1. The record includes token hash,
+// encrypted root key, salt, and creation timestamp.
+//
+// Parameters:
+//   - ctx: Context for the database operation
+//   - credentials: RecoveryMetadata containing the token hash, encrypted root
+//     key, and salt to be stored
+//
+// Returns:
+//   - error: nil on success, or wrapped error describing the failure
+//     (transaction, query, or commit errors)
 func (s *DataStore) StoreAdminRecoveryMetadata(
 	ctx context.Context, credentials data.RecoveryMetadata,
 ) error {

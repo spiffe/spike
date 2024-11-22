@@ -203,8 +203,16 @@
 		how painful it is to recover
 	</issue>
 	<issue>
+		this is from SecretReadResponse, so maybe its entity should be somewhere common too.
+		return &data.Secret{Data: res.Data}, nil
+	</issue>
+	<issue>
 		based on the following, maybe move SQLite "create table" ddls to a separate file.
 		Still a "tool" or a "job" can do that out-of-band.
+
+		update: for SQLite it does not matter as SQLite does not have a concept
+		of RBAC; creating a db is equivalent to creating a file.
+		For other databases, it can be considered, so maybe write an ADR for that.
 
 		ADR:
 

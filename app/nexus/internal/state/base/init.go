@@ -6,12 +6,12 @@ package base
 
 import (
 	"errors"
-	"github.com/spiffe/spike/internal/log"
+	"github.com/spiffe/spike/app/nexus/internal/net/cache"
 
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 
-	"github.com/spiffe/spike/app/nexus/internal/net"
 	"github.com/spiffe/spike/app/nexus/internal/state/persist"
+	"github.com/spiffe/spike/internal/log"
 	"github.com/spiffe/spike/pkg/crypto"
 )
 
@@ -41,7 +41,7 @@ func Bootstrap(source *workloadapi.X509Source) error {
 	existingRootKey := RootKey()
 	if existingRootKey == "" {
 		// Check if SPIKE Keeper has a cached root key first:
-		key, err := net.FetchFromCache(source)
+		key, err := cache.FetchFromCache(source)
 		if err != nil {
 			return err
 		}
@@ -65,7 +65,9 @@ func Bootstrap(source *workloadapi.X509Source) error {
 		return ErrAlreadyInitialized
 	}
 
-	log.Log().Info("boostrap", "msg", "first time initialization: generating new root key")
+	log.Log().Info("boostrap",
+		"msg", "first time initialization: generating new root key",
+	)
 
 	r, err := crypto.Aes256Seed()
 	if err != nil {

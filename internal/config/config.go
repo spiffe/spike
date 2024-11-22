@@ -17,6 +17,8 @@ const NexusIssuer = "spike-nexus"
 const NexusAdminSubject = "spike-admin"
 const NexusAdminTokenId = "spike-admin-jwt"
 
+// SpikeNexusDataFolder returns the path to the directory where Nexus stores
+// its encrypted backup for its secrets and other data.
 func SpikeNexusDataFolder() string {
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
@@ -37,6 +39,8 @@ func SpikeNexusDataFolder() string {
 	return filepath.Join(spikeDir, "/data")
 }
 
+// SpikePilotRecoveryFolder returns the path to the directory where Pilot stores
+// recovery material for its root key.
 func SpikePilotRecoveryFolder() string {
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
@@ -57,6 +61,8 @@ func SpikePilotRecoveryFolder() string {
 	return filepath.Join(spikeDir, "/recovery")
 }
 
+// SpikePilotRootKeyRecoveryFile returns the path to the file where Pilot stores
+// the root key recovery file.
 func SpikePilotRootKeyRecoveryFile() string {
 	folder := SpikePilotRecoveryFolder()
 

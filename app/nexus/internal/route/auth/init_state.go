@@ -18,7 +18,9 @@ import (
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 )
 
-func updateStateForInit(recoveryToken string, adminTokenBytes, salt []byte) error {
+func updateStateForInit(
+	recoveryToken string, adminTokenBytes, salt []byte,
+) error {
 	iterationCount := env.Pbkdf2IterationCount()
 	hashLength := env.ShaHashLength()
 	recoveryTokenHash := pbkdf2.Key(

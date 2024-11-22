@@ -8,10 +8,23 @@ import (
 	"github.com/spiffe/spike/pkg/crypto"
 )
 
-// TODO: document
+// Handler is a function type that processes HTTP requests with audit
+// logging support.
 type Handler func(http.ResponseWriter, *http.Request, *log.AuditEntry) error
 
-// TODO: document
+// HandleRoute wraps an HTTP handler with audit logging functionality.
+// It creates and manages audit log entries for the request lifecycle,
+// including:
+// - Generating unique trail IDs
+// - Recording timestamps and durations
+// - Tracking request status (created, success, error)
+// - Capturing error information
+//
+// The wrapped handler is mounted at the root path ("/") and automatically
+// logs entry and exit audit events for all requests.
+//
+// Parameters:
+//   - h: Handler function to wrap with audit logging
 func HandleRoute(h Handler) {
 	http.HandleFunc("/", func(
 		writer http.ResponseWriter, request *http.Request,
