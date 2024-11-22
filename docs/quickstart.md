@@ -111,6 +111,14 @@ cd $WORKSPACE/spike
 Once SPIRE Server is running, start the SPIRE Agent:
 
 ```bash
+# The below script will ask for your password to give privileges to SPIRE Agent.
+#
+# This will allow SPIRE agent to introspect the system and get information
+# about the running processes (path information, user information, SHA256 of the
+# binary, etc.). This is part of the SPIRE Agent's workload attestation process.
+# Without this, SPIRE Agent will have limited access to the system and may not
+# be able to fully attest the workloads.
+
 ./hack/spire-agent-starter.sh
 ```
 
@@ -130,6 +138,9 @@ window.
 Start the workloads:
 
 ```bash
+# Optional: Increase the log level to debug:
+export SPIKE_SYSTEM_LOG_LEVEL=debug
+
 cd $WORKSPACE/spike
 ./nexus  # Nexus
 ./keeper # Keeper

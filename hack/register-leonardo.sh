@@ -7,7 +7,9 @@
 PILOT_PATH="$(pwd)/spike"
 PILOT_SHA=$(sha256sum "$PILOT_PATH" | cut -d' ' -f1)
 
+echo "Copying SPIKE pilot to /usr/local/bin/spike..."
 sudo cp "$PILOT_PATH" /usr/local/bin/spike
+echo "Copied SPIKE pilot to /usr/local/bin/spike."
 
 PILOT_PATH="$(pwd)/spike"
 PILOT_SHA=$(sha256sum "$PILOT_PATH" | cut -d' ' -f1)

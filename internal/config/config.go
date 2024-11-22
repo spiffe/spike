@@ -9,13 +9,9 @@ import (
 	"path/filepath"
 )
 
-const NexusVersion = "0.1.0"
-const PilotVersion = "0.1.0"
-const KeeperVersion = "0.1.0"
-
-const NexusIssuer = "spike-nexus"
-const NexusAdminSubject = "spike-admin"
-const NexusAdminTokenId = "spike-admin-jwt"
+const NexusVersion = "0.2.0"
+const PilotVersion = "0.2.0"
+const KeeperVersion = "0.2.0"
 
 // SpikeNexusDataFolder returns the path to the directory where Nexus stores
 // its encrypted backup for its secrets and other data.
