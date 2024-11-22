@@ -14,9 +14,6 @@
 
 <low-hanging-fruits>
 	<issue>
-		Create a demo app.
-	</issue>
-	<issue>
 		add the new videos to the site.
 	</issue>
 	<issue>
@@ -39,6 +36,10 @@
 	</issue>
 </low-hanging-fruits>
 <reserved>
+	<issue>
+		Create a demo app.
+	</issue>
+
 	<issue>
 		One way token flow;
 		keeper provides the rootkey to nexus;
