@@ -11,15 +11,16 @@
 - If there are half-complete features, missing tests, and the like, they should
   be completed before adding more features.
 </purpose>
+
 <low-hanging-fruits>
 	<issue>
+		Create a demo app.
+	</issue>
+	<issue>
+		add the new videos to the site.
+	</issue>
+	<issue>
 		check the code one last time and cut a release.
-	</issue>
-	<issue>
-		Create new "good first issue"s.
-	</issue>
-	<issue>
-		remove spike mint from docs; we probably don't need it.
 	</issue>
 	<issue>
 		Keeper and Nexus do not print anything when they start; at least
@@ -34,16 +35,8 @@
 		Check how other secrets stores manage those paths.
 	</issue>
 	<issue>
-		add the new videos to the site.
-	</issue>
-	<issue>
 		make sure that everything sanitizable are properly sanitized.
 	</issue>
-	<issue>
-		<good-first-issue />
-		Create secret metadata API.
-	</issue>
-
 </low-hanging-fruits>
 <reserved>
 	<issue>
@@ -101,12 +94,6 @@
 		(until we implement the S3 backing store)
 	</issue>
 	<issue>
-		ability to do an `spike init --no-recovery` to skip dumping the
-		recovery material. If this option is used, the user will be warned
-		that they will not be able to recover the root key in case of a system
-		crash so they need to add more keepers to the cluster.
-	</issue>
-	<issue>
 		1. `spike init` initializes keeper(s). From that point on, SPIKE Nexus
 		   pulls the root key whenever it needs it.
 		2. nexus and keeper can use e2e encryption with one time key pairs
@@ -142,7 +129,6 @@
 		   the root key is very sensitive and we would want to make sure it's secure even
 		   if the SPIFFE mTLS is compromised.
 	</issue>
-
 	<issue>
 		say user sets up 5 keeper instances.
 		in nexus, we have a config
@@ -155,9 +141,6 @@
 		recovery could even be, users have a copy of some of the keeper's secrets.
 		they rebuild a secret server and load that piece back in. nexus then can recover.
 		that api could also allow for backup configurations
-	</issue>
-	<issue>
-		Create a demo app.
 	</issue>
 	<issue>
 		workloads should be able to get/set/read secrets.
@@ -174,7 +157,6 @@
 
 		This will also require a sample workload and an initial SDK.
 	</issue>
-
 	<issue>
 		- SPIKE Nexus Sanity Tests
 		- Ensure SPIKE Nexus caches the root key in memory.
@@ -252,40 +234,8 @@
 		- Ensure that the root key is stored in SPIKE Keep's memory.
 		- Ensure that SPIKE Keep can return the root key back to SPIKE Nexus.
 	</issue>
-
-	<issue>
-		* encrypt the root key with admin password and return it
-		as part of the init response.
-		* notify admin to save it to a secure place and delete it.
-		* tell the admin to save their password to a safe place too.
-	</issue>
 	<issue>
 		Demo: root key recovery.
-	</issue>
-	<issue>
-		func SetAdminCredentials(passwordHash, salt string) {
-		adminCredentialsMu.Lock()
-		adminCredentials = Credentials{
-		PasswordHash: passwordHash,
-		Salt:         salt,
-		}
-		adminCredentialsMu.Unlock()
-
-		// implement me!
-		// persist.AsyncPersistAdminCredentials(passwordHash, salt)
-		}
-	</issue>
-	<issue>
-		func AdminCredentials() Credentials {
-		adminCredentialsMu.RLock()
-		creds := adminCredentials
-		adminCredentialsMu.RUnlock()
-
-		// implement database lookup.
-
-		return creds
-
-		}
 	</issue>
 	<issue>
 		If there is a backing store, load all secrets from the backing store
@@ -311,9 +261,6 @@
 		Try SPIKE on an x-86 Linux.
 	</issue>
 	<issue>
-		Secret metadata API.
-	</issue>
-	<issue>
 		these may come from the environment:
 
 		DataDir:         ".data",
@@ -335,13 +282,6 @@
 	<issue>
 		Add recent recordings to the website.
 	</issue>
-	<issue>
-		// check and verify; when the list is empty it should not return an error.
-		responseBody := net.MarshalBody(reqres.SecretListResponse{Keys: keys}, w)
-		if responseBody == nil {
-		return errors.New("failed to marshal response body")
-		}
-	</issue>
 </immediate-backlog>
 <runner-up>
 	<issue>
@@ -353,10 +293,6 @@
 		- A demo workload that uses SPIKE to test things out as a consumer.
 		- A golang SDK (we can start at github/zerotohero-dev/spike-sdk-go
 		  and them move it under spiffe once it matures)
-	</issue>
-	<issue>
-		Maybe move the kv store, and the logger to a `pkg` folder instead of
-		`internal` because they are reusable as they are in isolation.
 	</issue>
 	<issue>
 		Kubernetification
@@ -386,16 +322,6 @@
 </runner-up>
 <backlog>
 	<issue>
-		rate limiting to api endpoints.
-		more string rate limiting for login attempts.
-		lockout after a certain number of failed login attempts.
-	</issue>
-	<issue>
-		* super admin can create regular admins and other super admins.
-		* super admin can assign backup admins.
-		(see drafts.txt for more details)
-	</issue>
-	<issue>
 		By design, we regard memory as the source of truth.
 		This means that backing store might miss some secrets.
 		Find ways to reduce the likelihood of this happening.
@@ -404,13 +330,18 @@
 		3. Create background jobs to sync the backing store.
 	</issue>
 	<issue>
-		certain sqlite persistence operations are not implemented yet.
-	</issue>
-	<issue>
 		Test the db backing store.
 	</issue>
 </backlog>
 <future>
+	<issue>
+		rate limiting to api endpoints.
+	</issue>
+	<issue>
+		* super admin can create regular admins and other super admins.
+		* super admin can assign backup admins.
+		(see drafts.txt for more details)
+	</issue>
 	<issue>
 		Each keeper is backed by a TPM.
 	</issue>
