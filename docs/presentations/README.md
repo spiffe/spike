@@ -10,7 +10,12 @@ Presentations and demos about **SPIKE**.
   it's important.
 * [Unlocking SPIKE: A Seamless Token-Based Login Experience][spike-jwt]:<br>
   In this demo, we see **SPIKE**'s new JWT authentication flow.
+* [Goodbye Passwords: Secure Secrets Management with SPIFFE 
+  and SPIKE][spike-passwordless]<br>
+  In this demo, we allow a user to use `spike` just by checkin an SVID; we don't
+  any kind of passwords to identify the user, SPIFFE does it for us.
 
 [spike]: https://vimeo.com/v0lkan/spike
 [spike-intro]: https://vimeo.com/v0lkan/spike-rocks
 [spike-jwt]: https://vimeo.com/v0lkan/spike-jwt
+[spike-passwordless]: http://vimeo.com/v0lkan/passwordless-secrets
