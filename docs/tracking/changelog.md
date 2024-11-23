@@ -2,17 +2,26 @@
 
 ## Recent
 
+TBD
+
+## [0.2.0] - 2024-11-22
+
+### Added
+
 * Added configuration options for SPIKE Nexus and SPIKE Keeper.
-* Updated quickstart guide.
+* Documentation updates.
 * Max secret versions is now configurable.
 * Introduced standard and configurable logging.
-* Add community section and snapshots to the documentation.
-* Added sqlite3 as a database backend.
+* Added sqlite3 as a backing store.
 * Enabled cross-compilation and SHA checksums.
-* Now admin users can use jwt authentication and short-lived session tokens.
 * Enhanced audit trails and error logging.
 * Created initial smoke/integration tests.
 * Stability improvements.
+
+### Changed
+
+* Removed password authentication for admin users. Admin users' SVIDs 
+  are good enough to authenticate them.
 * Implemented passwordless admin login flow 
   (*the neat thing about passwords is: you don't need them*).
 

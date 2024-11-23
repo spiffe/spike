@@ -7,17 +7,33 @@ package store
 import (
 	"encoding/json"
 	"errors"
-	net2 "github.com/spiffe/spike/app/spike/internal/net"
-	"github.com/spiffe/spike/internal/auth"
+
 	"strconv"
 
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 
+	"github.com/spiffe/spike/app/spike/internal/net/api"
+	"github.com/spiffe/spike/internal/auth"
 	"github.com/spiffe/spike/internal/entity/v1/reqres"
 	"github.com/spiffe/spike/internal/net"
 )
 
-// UndeleteSecret undeletes a secret from SPIKE Nexus.
+// UndeleteSecret restores previously deleted versions of a secret at the
+// specified path using mTLS authentication.
+//
+// Parameters:
+//   - source: X509Source for mTLS client authentication
+//   - path: Path to the secret to restore
+//   - versions: String array of version numbers to restore. Empty array
+//     attempts no restoration
+//
+// Returns:
+//   - error: nil on success, unauthorized error if not logged in, or
+//     wrapped error on request/parsing failure
+//
+// Example:
+//
+//	err := UndeleteSecret(x509Source, "secret/path", []string{"1", "2"})
 func UndeleteSecret(source *workloadapi.X509Source,
 	path string, versions []string) error {
 	var vv []int
@@ -53,7 +69,7 @@ func UndeleteSecret(source *workloadapi.X509Source,
 		return err
 	}
 
-	_, err = net.Post(client, net2.UrlSecretUndelete(), mr)
+	_, err = net.Post(client, api.UrlSecretUndelete(), mr)
 	if errors.Is(err, net.ErrUnauthorized) {
 		return errors.New(`unauthorized. Please login first with 'spike login'`)
 	}

@@ -7,17 +7,32 @@ package store
 import (
 	"encoding/json"
 	"errors"
-	net2 "github.com/spiffe/spike/app/spike/internal/net"
 
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 
 	"github.com/spiffe/spike/app/spike/internal/entity/data"
+	"github.com/spiffe/spike/app/spike/internal/net/api"
 	"github.com/spiffe/spike/internal/auth"
 	"github.com/spiffe/spike/internal/entity/v1/reqres"
 	"github.com/spiffe/spike/internal/net"
 )
 
-// GetSecret retrieves a secret from SPIKE Nexus.
+// GetSecret retrieves a specific version of a secret at the given path using
+// mTLS authentication.
+//
+// Parameters:
+//   - source: X509Source for mTLS client authentication
+//   - path: Path to the secret to retrieve
+//   - version: Version number of the secret to retrieve
+//
+// Returns:
+//   - *Secret: Secret data if found, nil if secret not found
+//   - error: nil on success, unauthorized error if not logged in, or
+//     wrapped error on request/parsing failure
+//
+// Example:
+//
+//	secret, err := GetSecret(x509Source, "secret/path", 1)
 func GetSecret(source *workloadapi.X509Source,
 	path string, version int) (*data.Secret, error) {
 	r := reqres.SecretReadRequest{
@@ -38,7 +53,7 @@ func GetSecret(source *workloadapi.X509Source,
 		return nil, err
 	}
 
-	body, err := net.Post(client, net2.UrlSecretGet(), mr)
+	body, err := net.Post(client, api.UrlSecretGet(), mr)
 	if errors.Is(err, net.ErrNotFound) {
 		return nil, nil
 	}
@@ -57,6 +72,5 @@ func GetSecret(source *workloadapi.X509Source,
 		)
 	}
 
-	// TODO: this is from SecretReadResponse, so maybe its entitiy should be somewhere common too.
 	return &data.Secret{Data: res.Data}, nil
 }

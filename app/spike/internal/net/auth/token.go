@@ -12,7 +12,7 @@ import (
 
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 
-	api "github.com/spiffe/spike/app/spike/internal/net"
+	"github.com/spiffe/spike/app/spike/internal/net/api"
 	"github.com/spiffe/spike/internal/auth"
 	"github.com/spiffe/spike/internal/config"
 	"github.com/spiffe/spike/internal/entity/data"
@@ -67,7 +67,9 @@ func CheckInitState(source *workloadapi.X509Source) (data.InitState, error) {
 	mr, err := json.Marshal(r)
 	if err != nil {
 		return data.NotInitialized, errors.Join(
-			errors.New("checkInitState: I am having problem generating the payload"),
+			errors.New(
+				"checkInitState: I am having problem generating the payload",
+			),
 			err,
 		)
 	}

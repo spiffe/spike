@@ -21,6 +21,8 @@ import (
 const appName = "SPIKE Keeper"
 
 func main() {
+	log.Log().Info(appName, "msg", appName, "version", config.KeeperVersion)
+
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
@@ -33,9 +35,8 @@ func main() {
 	trust.Authenticate(spiffeid)
 
 	log.Log().Info(appName,
-		"msg", fmt.Sprintf("Starting service: %s v%s",
+		"msg", fmt.Sprintf("Started service: %s v%s",
 			appName, config.KeeperVersion))
-
 	if err := net.Serve(
 		source, handle.InitializeRoutes,
 		auth.CanTalkToKeeper,

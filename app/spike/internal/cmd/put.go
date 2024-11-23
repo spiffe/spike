@@ -6,7 +6,6 @@ package cmd
 
 import (
 	"fmt"
-
 	"strings"
 
 	"github.com/spf13/cobra"

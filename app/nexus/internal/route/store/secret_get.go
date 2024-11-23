@@ -112,11 +112,7 @@ func RouteGetSecret(
 		return err
 	}
 
-	//	res := reqres.SecretReadResponse{Data: secret}
-
-	res := reqres.SecretReadResponse{Data: secret}
-
-	responseBody := net.MarshalBody(res, w)
+	responseBody := net.MarshalBody(reqres.SecretReadResponse{Data: secret}, w)
 	if responseBody == nil {
 		return errors.New("failed to marshal response body")
 	}

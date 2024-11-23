@@ -7,6 +7,7 @@ package main
 import (
 	"context"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/spiffe/spike/app/nexus/internal/env"
@@ -24,6 +25,8 @@ import (
 const appName = "SPIKE Nexus"
 
 func main() {
+	log.Log().Info(appName, "msg", appName, "version", config.NexusVersion)
+
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
@@ -53,9 +56,9 @@ func main() {
 	defer ticker.Stop()
 	go poll.Tick(ctx, source, ticker)
 
-	log.Log().Info(appName, "msg",
-		"Starting service.", "version", config.NexusVersion)
-
+	log.Log().Info(appName,
+		"msg", fmt.Sprintf("Started service: %s v%s",
+			appName, config.NexusVersion))
 	if err := net.Serve(
 		source, handle.InitializeRoutes,
 		auth.CanTalkToNexus,

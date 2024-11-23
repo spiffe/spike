@@ -5,8 +5,9 @@
 package reqres
 
 import (
-	"github.com/spiffe/spike/internal/entity/data"
 	"time"
+
+	"github.com/spiffe/spike/internal/entity/data"
 )
 
 // RootKeyCacheRequest is to cache the generated root key in SPIKE Keep.
@@ -24,6 +25,7 @@ var ErrLowEntropy = ErrorCode("low_entropy")
 var ErrAlreadyInitialized = ErrorCode("already_initialized")
 var ErrNotFound = ErrorCode("not_found")
 
+// FallbackResponse is a generic response for any error.
 type FallbackResponse struct {
 	Err ErrorCode `json:"err,omitempty"`
 }
@@ -54,31 +56,25 @@ type AdminTokenWriteResponse struct {
 	Err ErrorCode `json:"err,omitempty"`
 }
 
+// CheckInitStateRequest is to check if the SPIKE Keep is initialized.
 type CheckInitStateRequest struct {
 }
 
+// CheckInitStateResponse is to check if the SPIKE Keep is initialized.
 type CheckInitStateResponse struct {
 	State data.InitState `json:"state"`
 	Err   ErrorCode      `json:"err,omitempty"`
 }
 
+// InitRequest is to initialize SPIKE as a superuser.
 type InitRequest struct {
 	// Password string `json:"password"`
 }
 
+// InitResponse is to initialize SPIKE as a superuser.
 type InitResponse struct {
 	RecoveryToken string    `json:"token"`
 	Err           ErrorCode `json:"err,omitempty"`
-}
-
-type AdminLoginRequest struct {
-	Password string `json:"password"`
-}
-
-type AdminLoginResponse struct {
-	Token     string    `json:"token"`
-	Signature string    `json:"signature"`
-	Err       ErrorCode `json:"err,omitempty"`
 }
 
 // SecretResponseMetadata is meta information about secrets for internal

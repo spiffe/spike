@@ -5,6 +5,7 @@
 package log
 
 import (
+	"fmt"
 	"log"
 	"log/slog"
 	"os"
@@ -31,6 +32,8 @@ func Log() *slog.Logger {
 	opts := &slog.HandlerOptions{
 		Level: env.LogLevel(),
 	}
+
+	fmt.Println("loglevel: ", opts.Level)
 
 	handler := slog.NewJSONHandler(os.Stdout, opts)
 

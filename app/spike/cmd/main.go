@@ -6,11 +6,11 @@ package main
 
 import (
 	"context"
-	"github.com/spiffe/spike/pkg/spiffe"
 
 	"github.com/spiffe/spike/app/spike/internal/cmd"
 	"github.com/spiffe/spike/app/spike/internal/trust"
 	"github.com/spiffe/spike/internal/log"
+	"github.com/spiffe/spike/pkg/spiffe"
 )
 
 func main() {

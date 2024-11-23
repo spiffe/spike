@@ -7,9 +7,10 @@ package net
 import (
 	"bytes"
 	"errors"
-	"github.com/spiffe/spike/internal/log"
 	"io"
 	"net/http"
+
+	"github.com/spiffe/spike/internal/log"
 )
 
 var ErrNotFound = errors.New("not found")
