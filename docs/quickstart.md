@@ -9,6 +9,8 @@ This quickstart guide assumes you are using an [Ubuntu Linux][ubuntu] operating
 system. The steps may slightly differ if you are using a different operating 
 system.
 
+// Also go installed? Would be nice to have at least since the project is in go.
+
 [ubuntu]: https://ubuntu.com/
 
 Here's the OS details that we are testing this guide on:
@@ -24,6 +26,7 @@ In addition, you will need the usual suspects:
 
 * [`git`](https://git-scm.com/)
 * [`make`](https://www.gnu.org/software/make/)
+* [`go`](https://go.dev/) (*the most recent version would do*)
 * [`node`](https://nodejs.org) (*at least [GitHub Copilot][copilot] requires it on Linux*)
 * [`build-essential`](https://packages.ubuntu.com/hirsute/build-essential)
   (*i.e., `sudo apt install build-essential`*)
@@ -41,13 +44,13 @@ not a production-ready setup. For production, you should follow the
 Let's first build SPIRE from the source:
 
 ```bash
-echo 'export WORKSPACE="$HOME/-change_to_development_directory-"' >> ~/.profile
+echo 'export WORKSPACE="$HOME/-change_to_dev_dir-"' >> ~/.profile
 source ~/.profile
 echo $WORKSPACE
 cd $WORKSPACE
 git clone https://github.com/spiffe/spire && cd spire
 make build
-````
+```
 
 Add the SPIRE binaries to your PATH:
 
@@ -104,6 +107,20 @@ cd $WORKSPACE/spike
 ```bash
 cd $WORKSPACE/spike
 ./hack/spire-server-starter.sh
+```
+
+## Configure Local DNS
+
+The default agent configuration file uses `spire.spike.ist` as the SPIRE Server
+DNS name. To resolve this name to the loopback address, add the following entry
+to your `/etc/hosts` file:
+
+```bash
+# /etc/hosts
+
+# If SPIRE Server is running on a different IP, replace
+# this with the correct IP address.
+127.0.0.1 spire.spike.ist
 ```
 
 ## Initialize SPIRE Agent
