@@ -102,13 +102,6 @@ cd $WORKSPACE/spike
 #   spike*
 ```
 
-## Initialize SPIRE Server
-
-```bash
-cd $WORKSPACE/spike
-./hack/spire-server-starter.sh
-```
-
 ## Configure Local DNS
 
 The default agent configuration file uses `spire.spike.ist` as the SPIRE Server
@@ -123,20 +116,25 @@ to your `/etc/hosts` file:
 127.0.0.1 spire.spike.ist
 ```
 
-## Initialize SPIRE Agent
-
-Once SPIRE Server is running, start the SPIRE Agent:
+## Start SPIRE Server
 
 ```bash
-# The below script will ask for your password to give privileges to SPIRE Agent.
-#
-# This will allow SPIRE agent to introspect the system and get information
-# about the running processes (path information, user information, SHA256 of the
-# binary, etc.). This is part of the SPIRE Agent's workload attestation process.
-# Without this, SPIRE Agent will have limited access to the system and may not
-# be able to fully attest the workloads.
+cd $WORKSPACE/spike
+./hack/spire-server-start.sh
+```
 
-./hack/spire-agent-starter.sh
+## Creating Registration Entries
+
+```bash
+cd $WORKSPACE/spike
+./hack/spire-server-hydrate.sh
+```
+
+## Start SPIRE Agent
+
+```bash
+cd $WORKSPACE/spike
+./hack/spire-agent-start.sh
 ```
 
 ## Grant Access to the Current User
