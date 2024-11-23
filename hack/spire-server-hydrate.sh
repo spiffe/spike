@@ -13,7 +13,7 @@ if [ -f .spike-agent-join-token ]; then
 fi
 
 ./hack/build-spike.sh
-./hack/clear-data.sh
 ./hack/generate-agent-token.sh
 ./hack/register-spire-entries.sh
-./hack/start-spire-server.sh
+
+echo "Everything is awesome!"
