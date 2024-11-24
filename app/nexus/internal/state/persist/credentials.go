@@ -10,6 +10,7 @@ import (
 	"github.com/spiffe/spike/app/nexus/internal/env"
 	"github.com/spiffe/spike/app/nexus/internal/state/entity/data"
 	"github.com/spiffe/spike/internal/log"
+	"github.com/spiffe/spike/internal/retry"
 )
 
 // ReadAdminRecoveryMetadata retrieves cached admin recovery metadata from
@@ -27,22 +28,27 @@ func ReadAdminRecoveryMetadata() *data.RecoveryMetadata {
 		return nil
 	}
 
+	retrier := retry.NewExponentialRetrier()
+	typedRetrier := retry.NewTypedRetrier[data.RecoveryMetadata](retrier)
+
 	ctx, cancel := context.WithTimeout(
 		context.Background(), env.DatabaseOperationTimeout(),
 	)
 	defer cancel()
 
-	cachedMetadata, err := be.LoadAdminRecoveryMetadata(ctx)
+	metadata, err := typedRetrier.RetryWithBackoff(ctx, func() (data.RecoveryMetadata, error) {
+		return be.LoadAdminRecoveryMetadata(ctx)
+	})
+
 	if err != nil {
-		// Log error but continue - memory is source of truth
 		log.Log().Warn("readAdminRecoveryMetadata",
-			"msg", "Failed to load admin recovery metadata from cache",
+			"msg", "Failed to load admin recovery metadata after retries",
 			"err", err.Error(),
 		)
 		return nil
 	}
 
-	return &cachedMetadata
+	return &metadata
 }
 
 // AsyncPersistAdminRecoveryMetadata asynchronously stores admin recovery
@@ -61,16 +67,20 @@ func AsyncPersistAdminRecoveryMetadata(credentials data.RecoveryMetadata) {
 			return // No cache available
 		}
 
+		retrier := retry.NewExponentialRetrier()
+
 		ctx, cancel := context.WithTimeout(
-			context.Background(),
-			env.DatabaseOperationTimeout(),
+			context.Background(), env.DatabaseOperationTimeout(),
 		)
 		defer cancel()
 
-		if err := be.StoreAdminRecoveryMetadata(ctx, credentials); err != nil {
-			// Log error but continue - memory is source of truth
+		err := retrier.RetryWithBackoff(ctx, func() error {
+			return be.StoreAdminRecoveryMetadata(ctx, credentials)
+		})
+
+		if err != nil {
 			log.Log().Warn("asyncPersistAdminRecoveryMetadata",
-				"msg", "Failed to cache admin recovery metadata",
+				"msg", "Failed to cache admin recovery metadata after retries",
 				"err", err.Error(),
 			)
 		}

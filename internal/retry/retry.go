@@ -6,11 +6,16 @@ package retry
 
 import (
 	"context"
-	"log"
 	"time"
+
+	"github.com/spiffe/spike/internal/log"
 
 	"github.com/cenkalti/backoff/v4"
 )
+
+const defaultInitialInterval = 500 * time.Millisecond
+const defaultMaxInterval = 3 * time.Second
+const defaultMaxElapsedTime = 30 * time.Second
 
 // Retrier handles retry operations with backoff
 type Retrier interface {
@@ -47,12 +52,54 @@ type ExponentialRetrier struct {
 	newBackOff func() backoff.BackOff
 }
 
-// NewExponentialRetrier creates a new ExponentialRetrier with default settings
-func NewExponentialRetrier() *ExponentialRetrier {
+// ExponentialRetrierOption is a function type for configuring ExponentialRetrier
+type ExponentialRetrierOption func(*backoff.ExponentialBackOff)
+
+// NewExponentialRetrier creates a new ExponentialRetrier with configurable settings
+func NewExponentialRetrier(opts ...ExponentialRetrierOption) *ExponentialRetrier {
+	if len(opts) == 0 {
+		opts = []ExponentialRetrierOption{
+			WithInitialInterval(defaultInitialInterval),
+			WithMaxInterval(defaultMaxInterval),
+			WithMaxElapsedTime(defaultMaxElapsedTime),
+		}
+	}
 	return &ExponentialRetrier{
 		newBackOff: func() backoff.BackOff {
-			return backoff.NewExponentialBackOff()
+			b := backoff.NewExponentialBackOff()
+			for _, opt := range opts {
+				opt(b)
+			}
+			return b
 		},
+	}
+}
+
+// WithInitialInterval sets the initial interval between retries
+func WithInitialInterval(d time.Duration) ExponentialRetrierOption {
+	return func(b *backoff.ExponentialBackOff) {
+		b.InitialInterval = d
+	}
+}
+
+// WithMaxInterval sets the maximum interval between retries
+func WithMaxInterval(d time.Duration) ExponentialRetrierOption {
+	return func(b *backoff.ExponentialBackOff) {
+		b.MaxInterval = d
+	}
+}
+
+// WithMaxElapsedTime sets the maximum total time for retries
+func WithMaxElapsedTime(d time.Duration) ExponentialRetrierOption {
+	return func(b *backoff.ExponentialBackOff) {
+		b.MaxElapsedTime = d
+	}
+}
+
+// WithMultiplier sets the multiplier for increasing intervals
+func WithMultiplier(m float64) ExponentialRetrierOption {
+	return func(b *backoff.ExponentialBackOff) {
+		b.Multiplier = m
 	}
 }
 
@@ -69,7 +116,7 @@ func (r *ExponentialRetrier) RetryWithBackoff(
 		func(err error, duration time.Duration) {
 			totalDuration += duration
 			// log the error, duration and total duration
-			log.Printf("Retrying operation after error: %v, duration: %v, total duration: %v", err, duration, totalDuration)
+			log.Log().Debug("Retrying operation after error", "error", err.Error(), "duration", duration, "total duration", totalDuration.String())
 		},
 	)
 }

@@ -9,6 +9,7 @@ import (
 
 	"github.com/spiffe/spike/app/nexus/internal/env"
 	"github.com/spiffe/spike/internal/log"
+	"github.com/spiffe/spike/internal/retry"
 	"github.com/spiffe/spike/pkg/store"
 )
 
@@ -35,15 +36,21 @@ func ReadSecret(path string, version int) *store.Secret {
 		return nil
 	}
 
+	retrier := retry.NewExponentialRetrier()
+	typedRetrier := retry.NewTypedRetrier[*store.Secret](retrier)
+
 	ctx, cancel := context.WithTimeout(
 		context.Background(), env.DatabaseOperationTimeout(),
 	)
 	defer cancel()
 
-	cachedSecret, err := be.LoadSecret(ctx, path)
+	cachedSecret, err := typedRetrier.RetryWithBackoff(ctx, func() (*store.Secret, error) {
+		return be.LoadSecret(ctx, path)
+	})
+
 	if err != nil {
 		log.Log().Warn("readSecret",
-			"msg", "Failed to load secret from cache",
+			"msg", "Failed to load secret from cache after retries",
 			"path", path,
 			"err", err.Error(),
 		)

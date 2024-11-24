@@ -12,6 +12,7 @@ import (
 	"github.com/spiffe/spike/app/nexus/internal/state/backend/memory"
 	"github.com/spiffe/spike/app/nexus/internal/state/backend/sqlite"
 	"github.com/spiffe/spike/internal/log"
+	"github.com/spiffe/spike/internal/retry"
 )
 
 var (
@@ -38,12 +39,18 @@ func ReadAdminSigningToken() string {
 		return ""
 	}
 
+	retrier := retry.NewExponentialRetrier()
+	typedRetrier := retry.NewTypedRetrier[string](retrier)
+
 	ctx, cancel := context.WithTimeout(
 		context.Background(), env.DatabaseOperationTimeout(),
 	)
 	defer cancel()
 
-	cachedToken, err := be.LoadAdminSigningToken(ctx)
+	cachedToken, err := typedRetrier.RetryWithBackoff(ctx, func() (string, error) {
+		return be.LoadAdminSigningToken(ctx)
+	})
+
 	if err != nil {
 		// Log error but continue - memory is source of truth
 		log.Log().Warn("readAdminSigningToken",
@@ -74,16 +81,21 @@ func AsyncPersistAdminToken(token string) {
 			return // No cache available
 		}
 
+		retrier := retry.NewExponentialRetrier()
+
 		ctx, cancel := context.WithTimeout(
 			context.Background(),
 			env.DatabaseOperationTimeout(),
 		)
 		defer cancel()
 
-		if err := be.StoreAdminToken(ctx, token); err != nil {
-			// Log error but continue - memory is source of truth
+		err := retrier.RetryWithBackoff(ctx, func() error {
+			return be.StoreAdminToken(ctx, token)
+		})
+
+		if err != nil {
 			log.Log().Warn("asyncPersistAdminToken",
-				"msg", "Failed to cache admin token",
+				"msg", "Failed to cache admin token after retries",
 				"err", err.Error(),
 			)
 		}
