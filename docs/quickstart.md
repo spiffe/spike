@@ -118,12 +118,16 @@ to your `/etc/hosts` file:
 
 ## Start SPIRE Server
 
+Start the SPIRE Server:
+
 ```bash
 cd $WORKSPACE/spike
 ./hack/spire-server-start.sh
 ```
 
 ## Creating Registration Entries
+
+The following script will create registration entries for the SPIKE components:
 
 ```bash
 cd $WORKSPACE/spike
@@ -132,15 +136,11 @@ cd $WORKSPACE/spike
 
 ## Start SPIRE Agent
 
+Start the SPIRE Agent:
+
 ```bash
 cd $WORKSPACE/spike
 ./hack/spire-agent-start.sh
-```
-
-## Grant Access to the Current User
-
-```bash
-./hack/register-su.sh
 ```
 
 ## Start SPIKE Components

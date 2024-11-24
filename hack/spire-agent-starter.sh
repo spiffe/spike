@@ -4,5 +4,5 @@
 #  \\\\\ Copyright 2024-present SPIKE contributors.
 # \\\\\\\ SPDX-License-Identifier: Apache-2.0
 
-./hack/start-spire-agent.sh
+./hack/spire-agent-start.sh
 

@@ -70,11 +70,6 @@ func Post(client *http.Client, path string, mr []byte) ([]byte, error) {
 	// Set headers
 	req.Header.Set("Content-Type", "application/json")
 
-	//// Try to read and set JWT if file exists
-	//if jwt, err := os.ReadFile(config.SpikePilotAdminTokenFile()); err == nil {
-	//	req.Header.Set("Authorization", "Bearer "+string(bytes.TrimSpace(jwt)))
-	//}
-
 	// Use the existing mTLS client to make the request
 	r, err := client.Do(req)
 	if err != nil {

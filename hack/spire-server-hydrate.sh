@@ -15,5 +15,6 @@ fi
 ./hack/build-spike.sh
 ./hack/generate-agent-token.sh
 ./hack/register-spire-entries.sh
+./hack/register-su.sh
 
 echo "Everything is awesome!"

@@ -14,17 +14,10 @@
 
 <low-hanging-fruits>
 	<issue>
+		create a makefile.
+	</issue>
+	<issue>
 		add the new videos to the site.
-	</issue>
-	<issue>
-		check the code one last time and cut a release.
-	</issue>
-	<issue>
-		Keeper and Nexus do not print anything when they start; at least
-		printing some name/version etc. would be nice.
-	</issue>
-	<issue>
-		mode for keeperless operation (fore development maybe).
 	</issue>
 	<issue>
 		The paths that we set in get put ...etc should look like a unix path.
@@ -38,15 +31,20 @@
 <reserved>
 	<issue>
 		Create a demo app.
+		- initially, demo will be registered as a superuser.
+		- it will use in-tree go code to read all secrets (almost a replica of pilot)
+		- then we'll migrate that go code to an SDK.
 	</issue>
-
+	<issue>
+		maybe create an interface for kv, so we can have thread-safe variants too.
+	</issue>
 	<issue>
 		One way token flow;
 		keeper provides the rootkey to nexus;
 		nexus init pushes root key to keeper.
 		that's it.
 	</issue>
-	<issue>
+	<issue >
 		configure the current system to work with multiple keepers.
 		the demo setup should initialize 3 keepers by default.
 		the demo setup should use sqlite as the backing store by default.
@@ -204,7 +202,7 @@
 	</issue>
 	<issue>
 		this is from SecretReadResponse, so maybe its entity should be somewhere common too.
-		return &data.Secret{Data: res.Data}, nil
+		return &amp;data.Secret{Data: res.Data}, nil
 	</issue>
 	<issue>
 		based on the following, maybe move SQLite "create table" ddls to a separate file.
@@ -343,6 +341,17 @@
 	</issue>
 </backlog>
 <future>
+	<issue>
+		SPIKE Dev Mode:
+
+		* Single binary
+		* `keeper` functionality runs in memory
+		* `nexus` uses an in-memory store, and its functionality is in the single binary too.
+		* only networking is between the binary and SPIRE Agent.
+		* For development only.
+
+		The design should be maintainable with code reuse and should not turn into maintaining two separate projects.
+	</issue>
 	<issue>
 		rate limiting to api endpoints.
 	</issue>
