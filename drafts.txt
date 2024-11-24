@@ -4,6 +4,283 @@
 
 --------------------------------------------------------------------------------
 
+// File: server/types.go
+package server
+
+import (
+    "time"
+)
+
+type Policy struct {
+    ID              string    `json:"id"`
+    Name            string    `json:"name"`
+    SpiffeIDPattern string    `json:"spiffe_id_pattern"`
+    PathPattern     string    `json:"path_pattern"`
+    Permissions     []string  `json:"permissions"`
+    CreatedAt       time.Time `json:"created_at"`
+    CreatedBy       string    `json:"created_by"`
+}
+
+type CreatePolicyRequest struct {
+    Name            string   `json:"name"`
+    SpiffeIDPattern string   `json:"spiffe_id_pattern"`
+    PathPattern     string   `json:"path_pattern"`
+    Permissions     []string `json:"permissions"`
+}
+
+type CheckAccessRequest struct {
+    SpiffeID string `json:"spiffe_id"`
+    Path     string `json:"path"`
+    Action   string `json:"action"`
+}
+
+type CheckAccessResponse struct {
+    Allowed          bool     `json:"allowed"`
+    MatchingPolicies []string `json:"matching_policies"`
+}
+
+// File: server/acl_service.go
+package server
+
+import (
+    "context"
+    "encoding/json"
+    "fmt"
+    "net/http"
+    "path"
+    "regexp"
+    "sync"
+
+    "github.com/google/uuid"
+    "github.com/gorilla/mux"
+)
+
+type ACLService struct {
+    policies sync.Map
+}
+
+func NewACLService() *ACLService {
+    return &ACLService{}
+}
+
+func (s *ACLService) RegisterRoutes(r *mux.Router) {
+    r.HandleFunc("/v1/store/acl/policies", s.CreatePolicy).Methods("POST")
+    r.HandleFunc("/v1/store/acl/policies", s.ListPolicies).Methods("GET")
+    r.HandleFunc("/v1/store/acl/policies/{id}", s.GetPolicy).Methods("GET")
+    r.HandleFunc("/v1/store/acl/policies/{id}", s.DeletePolicy).Methods("DELETE")
+    r.HandleFunc("/v1/store/acl/check", s.CheckAccess).Methods("POST")
+}
+
+func (s *ACLService) CreatePolicy(w http.ResponseWriter, r *http.Request) {
+    var req CreatePolicyRequest
+    if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+        http.Error(w, err.Error(), http.StatusBadRequest)
+        return
+    }
+
+    // Validate policy
+    if _, err := regexp.Compile(req.SpiffeIDPattern); err != nil {
+        http.Error(w, "invalid spiffe_id_pattern", http.StatusBadRequest)
+        return
+    }
+
+    policy := &Policy{
+        ID:              uuid.New().String(),
+        Name:            req.Name,
+        SpiffeIDPattern: req.SpiffeIDPattern,
+        PathPattern:     req.PathPattern,
+        Permissions:     req.Permissions,
+        CreatedAt:       time.Now(),
+        CreatedBy:       r.Header.Get("X-User-ID"), // Assuming auth middleware sets this
+    }
+
+    s.policies.Store(policy.ID, policy)
+
+    w.WriteHeader(http.StatusCreated)
+    json.NewEncoder(w).Encode(policy)
+}
+
+func (s *ACLService) CheckAccess(w http.ResponseWriter, r *http.Request) {
+    var req CheckAccessRequest
+    if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+        http.Error(w, err.Error(), http.StatusBadRequest)
+        return
+    }
+
+    matchingPolicies := []string{}
+    allowed := false
+
+    s.policies.Range(func(key, value interface{}) bool {
+        policy := value.(*Policy)
+
+        // Check if SPIFFE ID matches pattern
+        matched, err := regexp.MatchString(policy.SpiffeIDPattern, req.SpiffeID)
+        if err != nil || !matched {
+            return true // continue iteration
+        }
+
+        // Check if path matches pattern
+        if matched, _ := path.Match(policy.PathPattern, req.Path); !matched {
+            return true
+        }
+
+        // Check if action is allowed
+        for _, perm := range policy.Permissions {
+            if perm == req.Action {
+                matchingPolicies = append(matchingPolicies, policy.ID)
+                allowed = true
+                break
+            }
+        }
+
+        return true
+    })
+
+    json.NewEncoder(w).Encode(CheckAccessResponse{
+        Allowed:          allowed,
+        MatchingPolicies: matchingPolicies,
+    })
+}
+
+// Other handlers (ListPolicies, GetPolicy, DeletePolicy) omitted for brevity
+
+--------------------------------------------------------------------------------
+
+// File: client/acl_client.go
+package client
+
+import (
+    "bytes"
+    "context"
+    "encoding/json"
+    "fmt"
+    "net/http"
+    "time"
+)
+
+type ACLClient struct {
+    baseURL    string
+    httpClient *http.Client
+}
+
+func NewACLClient(baseURL string) *ACLClient {
+    return &ACLClient{
+        baseURL: baseURL,
+        httpClient: &http.Client{
+            Timeout: 30 * time.Second,
+        },
+    }
+}
+
+func (c *ACLClient) CreatePolicy(ctx context.Context, req CreatePolicyRequest) (*Policy, error) {
+    body, err := json.Marshal(req)
+    if err != nil {
+        return nil, fmt.Errorf("marshaling request: %w", err)
+    }
+
+    httpReq, err := http.NewRequestWithContext(
+        ctx,
+        "POST",
+        fmt.Sprintf("%s/v1/store/acl/policies", c.baseURL),
+        bytes.NewReader(body),
+    )
+    if err != nil {
+        return nil, fmt.Errorf("creating request: %w", err)
+    }
+
+    httpResp, err := c.httpClient.Do(httpReq)
+    if err != nil {
+        return nil, fmt.Errorf("sending request: %w", err)
+    }
+    defer httpResp.Body.Close()
+
+    if httpResp.StatusCode != http.StatusCreated {
+        return nil, fmt.Errorf("unexpected status: %d", httpResp.StatusCode)
+    }
+
+    var policy Policy
+    if err := json.NewDecoder(httpResp.Body).Decode(&policy); err != nil {
+        return nil, fmt.Errorf("decoding response: %w", err)
+    }
+
+    return &policy, nil
+}
+
+func (c *ACLClient) CheckAccess(ctx context.Context, spiffeID, path, action string) (*CheckAccessResponse, error) {
+    req := CheckAccessRequest{
+        SpiffeID: spiffeID,
+        Path:     path,
+        Action:   action,
+    }
+
+    body, err := json.Marshal(req)
+    if err != nil {
+        return nil, fmt.Errorf("marshaling request: %w", err)
+    }
+
+    httpReq, err := http.NewRequestWithContext(
+        ctx,
+        "POST",
+        fmt.Sprintf("%s/v1/store/acl/check", c.baseURL),
+        bytes.NewReader(body),
+    )
+    if err != nil {
+        return nil, fmt.Errorf("creating request: %w", err)
+    }
+
+    httpResp, err := c.httpClient.Do(httpReq)
+    if err != nil {
+        return nil, fmt.Errorf("sending request: %w", err)
+    }
+    defer httpResp.Body.Close()
+
+    if httpResp.StatusCode != http.StatusOK {
+        return nil, fmt.Errorf("unexpected status: %d", httpResp.StatusCode)
+    }
+
+    var resp CheckAccessResponse
+    if err := json.NewDecoder(httpResp.Body).Decode(&resp); err != nil {
+        return nil, fmt.Errorf("decoding response: %w", err)
+    }
+
+    return &resp, nil
+}
+
+// Example usage:
+func Example() {
+    client := NewACLClient("http://localhost:8080")
+    ctx := context.Background()
+
+    // Create a policy
+    policy, err := client.CreatePolicy(ctx, CreatePolicyRequest{
+        Name:            "web-servers",
+        SpiffeIDPattern: "spiffe://example.org/web-server/.*",
+        PathPattern:     "secrets/web/*",
+        Permissions:     []string{"read", "list"},
+    })
+    if err != nil {
+        panic(err)
+    }
+
+    // Check access
+    resp, err := client.CheckAccess(ctx,
+        "spiffe://example.org/web-server/001",
+        "secrets/web/config",
+        "read",
+    )
+    if err != nil {
+        panic(err)
+    }
+
+    fmt.Printf("Access allowed: %v\n", resp.Allowed)
+    fmt.Printf("Matching policies: %v\n", resp.MatchingPolicies)
+}
+
+
+
+
+--------------------------------------------------------------------------------
+
 ## DRAFTS
 
 This is a random place to dump anything that can be improved, re-used, re-enabled.
@@ -14,68 +291,7 @@ Think of this as the River of Styx; where things go to be reborn.
 SHAMIR
 
 // Create a new group (using ed25519 as an example)
-g := ed25519.NewGroup()
-
-// Create a secret value (for example purposes, we'll use a random scalar)
-secret := g.RandomScalar(rand.Reader)
-
-// Parameters for the secret sharing scheme:
-// t = 2: need 3 shares to reconstruct (threshold + 1)
-// n = 5: total number of shares to create
-threshold := uint(2)
-numShares := uint(5)
-
-// Create a new secret sharing instance
-ss := New(rand.Reader, threshold, secret)
-
-// Generate n shares
-shares := ss.Share(numShares)
-
-// Optional: Create a commitment to verify shares later
-commitment := ss.CommitSecret()
-
-fmt.Printf("Created %d shares with threshold %d\n", numShares, threshold)
-for i, share := range shares {
-// Verify each share against the commitment
-isValid := Verify(threshold, share, commitment)
-fmt.Printf("Share %d: Valid=%v\n", i+1, isValid)
-}
-
-// Simulate recovering the secret with different subsets of shares
-
-// Try with insufficient shares (should fail)
-insufficientShares := shares[:2]
-recoveredSecret, err := Recover(threshold, insufficientShares)
-if err != nil {
-fmt.Printf("Expected error with insufficient shares: %v\n", err)
-}
-
-// Try with sufficient shares (should succeed)
-sufficientShares := shares[:3]
-recoveredSecret, err = Recover(threshold, sufficientShares)
-if err != nil {
-log.Fatalf("Unexpected error: %v", err)
-}
-
-// Verify the recovered secret matches the original
-if recoveredSecret.IsEqual(secret) {
-fmt.Println("Successfully recovered the secret!")
-} else {
-fmt.Println("Error: Recovered secret does not match original!")
-}
-
-// You can also create shares with specific IDs
-customID := g.NewScalar().SetUint64(42)
-customShare := ss.ShareWithID(customID)
-isValid := Verify(threshold, customShare, commitment)
-fmt.Printf("Custom share with ID 42: Valid=%v\n", isValid)
-
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
-POLICY API SPECIFICATION
-
-/v1/acl/policies:
+g := ed25519.NewGroup(acl/policies:
   post:
     description: Create a new access policy
     request:
