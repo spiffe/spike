@@ -2,7 +2,7 @@
 //  \\\\\ Copyright 2024-present SPIKE contributors.
 // \\\\\\\ SPDX-License-Identifier: Apache-2.0
 
-package cmd
+package system
 
 import (
 	"fmt"
@@ -15,8 +15,8 @@ import (
 	"github.com/spiffe/spike/internal/entity/data"
 )
 
-// NewInitCommand creates and returns a new cobra.Command for initializing the
-// SPIKE system. It configures a command that handles first-time setup by
+// NewSystemInitCommand creates and returns a new cobra.Command for initializing
+// the SPIKE system. It configures a command that handles first-time setup by
 // generating and storing authentication credentials.
 //
 // Parameters:
@@ -40,7 +40,7 @@ import (
 //   - Replace admin token storage with temporary token exchange
 //   - Integrate with 'pilot login' flow
 //   - Include database configuration
-func NewInitCommand(source *workloadapi.X509Source) *cobra.Command {
+func NewSystemInitCommand(source *workloadapi.X509Source) *cobra.Command {
 	var initCmd = &cobra.Command{
 		Use:   "init",
 		Short: "Initialize spike configuration",

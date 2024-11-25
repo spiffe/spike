@@ -2,7 +2,7 @@
 //  \\\\\ Copyright 2024-present SPIKE contributors.
 // \\\\\\\ SPDX-License-Identifier: Apache-2.0
 
-package cmd
+package secret
 
 import (
 	"fmt"
@@ -15,7 +15,7 @@ import (
 	"github.com/spiffe/spike/internal/entity/data"
 )
 
-// NewGetCommand creates and returns a new cobra.Command for retrieving secrets.
+// NewSecretGetCommand creates and returns a new cobra.Command for retrieving secrets.
 // It configures a command that fetches and displays secret data from a
 // specified path.
 //
@@ -41,7 +41,7 @@ import (
 //   - SPIKE not initialized: Prompts user to run 'spike init'
 //   - Secret not found: Displays appropriate message
 //   - Read errors: Displays error message
-func NewGetCommand(source *workloadapi.X509Source) *cobra.Command {
+func NewSecretGetCommand(source *workloadapi.X509Source) *cobra.Command {
 	var getCmd = &cobra.Command{
 		Use:   "get <path>",
 		Short: "Get secrets from the specified path",
@@ -79,6 +79,8 @@ func NewGetCommand(source *workloadapi.X509Source) *cobra.Command {
 			}
 		},
 	}
+
+	getCmd.Flags().IntP("version", "v", 0, "Specific version to retrieve")
 
 	return getCmd
 }

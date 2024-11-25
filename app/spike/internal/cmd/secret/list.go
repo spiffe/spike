@@ -2,7 +2,7 @@
 //  \\\\\ Copyright 2024-present SPIKE contributors.
 // \\\\\\\ SPDX-License-Identifier: Apache-2.0
 
-package cmd
+package secret
 
 import (
 	"fmt"
@@ -15,9 +15,9 @@ import (
 	"github.com/spiffe/spike/internal/entity/data"
 )
 
-// NewListCommand creates and returns a new cobra.Command for listing all secret
-// paths. It configures a command that retrieves and displays all available
-// secret paths from the system.
+// NewSecretListCommand creates and returns a new cobra.Command for listing all
+// secret paths. It configures a command that retrieves and displays all
+// available secret paths from the system.
 //
 // Parameters:
 //   - source: X.509 source for workload API authentication
@@ -38,7 +38,7 @@ import (
 //	- secret/path3
 //
 // Note: Requires an initialized SPIKE system and valid authentication
-func NewListCommand(source *workloadapi.X509Source) *cobra.Command {
+func NewSecretListCommand(source *workloadapi.X509Source) *cobra.Command {
 	var listCmd = &cobra.Command{
 		Use:   "list",
 		Short: "List all secret paths",

@@ -2,7 +2,7 @@
 //  \\\\\ Copyright 2024-present SPIKE contributors.
 // \\\\\\\ SPDX-License-Identifier: Apache-2.0
 
-package cmd
+package secret
 
 import (
 	"fmt"
@@ -16,7 +16,7 @@ import (
 	"github.com/spiffe/spike/internal/entity/data"
 )
 
-// NewPutCommand creates and returns a new cobra.Command for storing secrets.
+// NewSecretPutCommand creates and returns a new cobra.Command for storing secrets.
 // It configures a command that stores key-value pairs as a secret at a
 // specified path.
 //
@@ -47,7 +47,7 @@ import (
 //
 // Note: Current admin token verification will be replaced with
 // temporary token authentication in future versions
-func NewPutCommand(source *workloadapi.X509Source) *cobra.Command {
+func NewSecretPutCommand(source *workloadapi.X509Source) *cobra.Command {
 	var putCmd = &cobra.Command{
 		Use:   "put <path> <key=value>...",
 		Short: "Put secrets at the specified path",

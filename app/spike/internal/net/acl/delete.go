@@ -4,13 +4,8 @@
 
 package acl
 
-import (
-	"github.com/spiffe/spike/internal/log"
-	"net/http"
-)
+import "github.com/spiffe/go-spiffe/v2/workloadapi"
 
-func RouteListPolicies(
-	w http.ResponseWriter, r *http.Request, audit *log.AuditEntry,
-) error {
+func DeletePolicy(source *workloadapi.X509Source, id string) error {
 	return nil
 }

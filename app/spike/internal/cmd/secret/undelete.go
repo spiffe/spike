@@ -2,7 +2,7 @@
 //  \\\\\ Copyright 2024-present SPIKE contributors.
 // \\\\\\\ SPDX-License-Identifier: Apache-2.0
 
-package cmd
+package secret
 
 import (
 	"fmt"
@@ -10,14 +10,14 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
-
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
+
 	"github.com/spiffe/spike/app/spike/internal/net/auth"
 	"github.com/spiffe/spike/app/spike/internal/net/store"
 	"github.com/spiffe/spike/internal/entity/data"
 )
 
-// NewUndeleteCommand creates and returns a new cobra.Command for restoring
+// NewSecretUndeleteCommand creates and returns a new cobra.Command for restoring
 // deleted secrets. It configures a command that allows users to restore one or
 // more previously deleted versions of a secret at a specified path.
 //
@@ -49,7 +49,7 @@ import (
 //
 // Note: Command currently provides feedback about intended operations
 // but actual restoration functionality is pending implementation
-func NewUndeleteCommand(source *workloadapi.X509Source) *cobra.Command {
+func NewSecretUndeleteCommand(source *workloadapi.X509Source) *cobra.Command {
 	var undeleteCmd = &cobra.Command{
 		Use:   "undelete <path>",
 		Short: "Undelete secrets at the specified path",
@@ -109,6 +109,9 @@ Examples:
 			fmt.Println("OK")
 		},
 	}
+
+	undeleteCmd.Flags().StringP("versions", "v", "0",
+		"Comma-separated list of versions to undelete")
 
 	return undeleteCmd
 }

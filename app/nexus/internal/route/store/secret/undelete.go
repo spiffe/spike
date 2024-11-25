@@ -1,8 +1,8 @@
-package store
-
 //    \\ SPIKE: Secure your secrets with SPIFFE.
 //  \\\\\ Copyright 2024-present SPIKE contributors.
 // \\\\\\\ SPDX-License-Identifier: Apache-2.0
+
+package secret
 
 import (
 	"errors"
@@ -14,13 +14,16 @@ import (
 	"github.com/spiffe/spike/internal/net"
 )
 
-// RoutePutSecret handles HTTP requests to create or update secrets at a
-// specified path.
+// RouteUndeleteSecret handles HTTP requests to restore previously deleted
+// secrets.
 //
 // This endpoint requires a valid admin JWT token for authentication. It accepts
-// a PUT request with a JSON body containing the secret path and values to
-// store. The function performs an upsert operation, creating a new secret if it
-// doesn't exist or updating an existing one.
+// a POST request with a JSON body containing a path to the secret and
+// optionally specific versions to undelete. If no versions are specified,
+// an empty version list is used.
+//
+// The function validates the JWT, reads and unmarshals the request body,
+// processes the undelete operation, and returns a 200 OK response upon success.
 //
 // Parameters:
 //   - w: http.ResponseWriter to write the HTTP response
@@ -33,49 +36,57 @@ import (
 // Request body format:
 //
 //	{
-//	    "path": string,          // Path where the secret should be stored
-//	    "values": map[string]any // Key-value pairs representing the secret data
+//	    "path": string,    // Path to the secret to undelete
+//	    "versions": []int  // Optional list of specific versions to undelete
 //	}
 //
 // Responses:
-//   - 200 OK: Secret successfully created or updated
+//   - 200 OK: Secret successfully undeleted
 //   - 400 Bad Request: Invalid request body or parameters
 //   - 401 Unauthorized: Invalid or missing JWT token
 //
 // The function logs its progress at various stages using structured logging.
-func RoutePutSecret(
+func RouteUndeleteSecret(
 	w http.ResponseWriter, r *http.Request, audit *log.AuditEntry,
 ) error {
-	log.Log().Info("routeGetSecret", "method", r.Method, "path", r.URL.Path,
-		"query", r.URL.RawQuery)
-	audit.Action = log.AuditCreate
+	log.Log().Info("routeUndeleteSecret",
+		"method", r.Method, "path", r.URL.Path, "query", r.URL.RawQuery)
+	audit.Action = log.AuditUndelete
 
 	requestBody := net.ReadRequestBody(w, r)
 	if requestBody == nil {
 		return errors.New("failed to read request body")
 	}
 
-	request := net.HandleRequest[
-		reqres.SecretPutRequest, reqres.SecretPutResponse](
+	req := net.HandleRequest[
+		reqres.SecretUndeleteRequest, reqres.SecretUndeleteResponse](
 		requestBody, w,
-		reqres.SecretPutResponse{Err: reqres.ErrBadInput},
+		reqres.SecretUndeleteResponse{Err: reqres.ErrBadInput},
 	)
-	if request == nil {
+	if req == nil {
 		return errors.New("failed to parse request body")
 	}
 
-	values := request.Values
-	path := request.Path
+	path := req.Path
+	versions := req.Versions
+	if len(versions) == 0 {
+		versions = []int{}
+	}
 
-	state.UpsertSecret(path, values)
-	log.Log().Info("routePutSecret", "msg", "Secret upserted")
+	err := state.UndeleteSecret(path, versions)
+	if err != nil {
+		log.Log().Info("routeUndeleteSecret",
+			"msg", "Failed to undelete secret", "err", err)
+	} else {
+		log.Log().Info("routeUndeleteSecret", "msg", "Secret undeleted")
+	}
 
-	responseBody := net.MarshalBody(reqres.SecretPutResponse{}, w)
+	responseBody := net.MarshalBody(reqres.SecretUndeleteResponse{}, w)
 	if responseBody == nil {
 		return errors.New("failed to marshal response body")
 	}
 
 	net.Respond(http.StatusOK, responseBody, w)
-	log.Log().Info("routePutSecret", "msg", "OK")
+	log.Log().Info("routeUndeleteSecret", "msg", "OK")
 	return nil
 }

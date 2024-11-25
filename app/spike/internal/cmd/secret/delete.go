@@ -2,7 +2,7 @@
 //  \\\\\ Copyright 2024-present SPIKE contributors.
 // \\\\\\\ SPDX-License-Identifier: Apache-2.0
 
-package cmd
+package secret
 
 import (
 	"fmt"
@@ -17,7 +17,7 @@ import (
 	"github.com/spiffe/spike/internal/entity/data"
 )
 
-// NewDeleteCommand creates and returns a new cobra.Command for deleting
+// NewSecretDeleteCommand creates and returns a new cobra.Command for deleting
 // secrets. It configures a command that allows users to delete one or more
 // versions of a secret at a specified path.
 //
@@ -46,7 +46,7 @@ import (
 //   - Exactly one path argument is provided
 //   - Version numbers are valid non-negative integers
 //   - Version strings are properly formatted
-func NewDeleteCommand(source *workloadapi.X509Source) *cobra.Command {
+func NewSecretDeleteCommand(source *workloadapi.X509Source) *cobra.Command {
 	var deleteCmd = &cobra.Command{
 		Use:   "delete <path>",
 		Short: "Delete secrets at the specified path",
@@ -107,6 +107,9 @@ Examples:
 			fmt.Println("OK")
 		},
 	}
+
+	deleteCmd.Flags().StringP("versions", "v", "0",
+		"Comma-separated list of versions to delete")
 
 	return deleteCmd
 }

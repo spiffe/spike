@@ -4,13 +4,10 @@
 
 package acl
 
-import (
-	"github.com/spiffe/spike/internal/log"
-	"net/http"
-)
+import "github.com/spiffe/go-spiffe/v2/workloadapi"
 
-func RouteGetPolicy(
-	w http.ResponseWriter, r *http.Request, audit *log.AuditEntry,
+func CreatePolicy(source *workloadapi.X509Source,
+	name string, pattern string, pattern2 string, permissions []string,
 ) error {
 	return nil
 }

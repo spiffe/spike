@@ -6,6 +6,9 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/spiffe/spike/app/spike/internal/cmd/policy"
+	"github.com/spiffe/spike/app/spike/internal/cmd/secret"
+	"github.com/spiffe/spike/app/spike/internal/cmd/system"
 	"os"
 
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
@@ -35,31 +38,16 @@ import (
 //	source := workloadapi.NewX509Source(...)
 //	Initialize(source)
 func Initialize(source *workloadapi.X509Source) {
-	getCmd := NewGetCommand(source)
-	getCmd.Flags().IntP("version", "v", 0, "Specific version to retrieve")
-	rootCmd.AddCommand(getCmd)
-
-	deleteCmd := NewDeleteCommand(source)
-	deleteCmd.Flags().StringP("versions", "v", "0",
-		"Comma-separated list of versions to delete")
-	rootCmd.AddCommand(deleteCmd)
-
-	undeleteCmd := NewUndeleteCommand(source)
-	undeleteCmd.Flags().StringP("versions", "v", "0",
-		"Comma-separated list of versions to undelete")
-	rootCmd.AddCommand(undeleteCmd)
-
-	initCmd := NewInitCommand(source)
-	rootCmd.AddCommand(initCmd)
-
-	//loginCmd := NewLoginCommand(source)
-	//rootCmd.AddCommand(loginCmd)
-
-	putCmd := NewPutCommand(source)
-	rootCmd.AddCommand(putCmd)
-
-	listCmd := NewListCommand(source)
-	rootCmd.AddCommand(listCmd)
+	rootCmd.AddCommand(system.NewSystemInitCommand(source))
+	rootCmd.AddCommand(secret.NewSecretGetCommand(source))
+	rootCmd.AddCommand(secret.NewSecretDeleteCommand(source))
+	rootCmd.AddCommand(secret.NewSecretUndeleteCommand(source))
+	rootCmd.AddCommand(secret.NewSecretPutCommand(source))
+	rootCmd.AddCommand(secret.NewSecretListCommand(source))
+	rootCmd.AddCommand(policy.NewPolicyCreateCommand(source))
+	rootCmd.AddCommand(policy.NewPolicyDeleteCommand(source))
+	rootCmd.AddCommand(policy.NewPolicyGetCommand(source))
+	rootCmd.AddCommand(policy.NewPolicyListCommand(source))
 }
 
 // Execute runs the root command and handles any errors that occur.
