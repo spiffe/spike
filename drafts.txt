@@ -11,33 +11,11 @@ import (
     "time"
 )
 
-type Policy struct {
-    ID              string    `json:"id"`
-    Name            string    `json:"name"`
-    SpiffeIDPattern string    `json:"spiffe_id_pattern"`
-    PathPattern     string    `json:"path_pattern"`
-    Permissions     []string  `json:"permissions"`
-    CreatedAt       time.Time `json:"created_at"`
-    CreatedBy       string    `json:"created_by"`
-}
 
-type CreatePolicyRequest struct {
-    Name            string   `json:"name"`
-    SpiffeIDPattern string   `json:"spiffe_id_pattern"`
-    PathPattern     string   `json:"path_pattern"`
-    Permissions     []string `json:"permissions"`
-}
 
-type CheckAccessRequest struct {
-    SpiffeID string `json:"spiffe_id"`
-    Path     string `json:"path"`
-    Action   string `json:"action"`
-}
 
-type CheckAccessResponse struct {
-    Allowed          bool     `json:"allowed"`
-    MatchingPolicies []string `json:"matching_policies"`
-}
+
+
 
 // File: server/acl_service.go
 package server
@@ -79,7 +57,7 @@ func (s *ACLService) CreatePolicy(w http.ResponseWriter, r *http.Request) {
     }
 
     // Validate policy
-    if _, err := regexp.Compile(req.SpiffeIDPattern); err != nil {
+    if _, err := regexp.Compile(req.SpiffeIdPattern); err != nil {
         http.Error(w, "invalid spiffe_id_pattern", http.StatusBadRequest)
         return
     }
@@ -87,7 +65,7 @@ func (s *ACLService) CreatePolicy(w http.ResponseWriter, r *http.Request) {
     policy := &Policy{
         ID:              uuid.New().String(),
         Name:            req.Name,
-        SpiffeIDPattern: req.SpiffeIDPattern,
+        SpiffeIdPattern: req.SpiffeIdPattern,
         PathPattern:     req.PathPattern,
         Permissions:     req.Permissions,
         CreatedAt:       time.Now(),
@@ -114,7 +92,7 @@ func (s *ACLService) CheckAccess(w http.ResponseWriter, r *http.Request) {
         policy := value.(*Policy)
 
         // Check if SPIFFE ID matches pattern
-        matched, err := regexp.MatchString(policy.SpiffeIDPattern, req.SpiffeID)
+        matched, err := regexp.MatchString(policy.SpiffeIdPattern, req.SpiffeID)
         if err != nil || !matched {
             return true // continue iteration
         }
@@ -254,7 +232,7 @@ func Example() {
     // Create a policy
     policy, err := client.CreatePolicy(ctx, CreatePolicyRequest{
         Name:            "web-servers",
-        SpiffeIDPattern: "spiffe://example.org/web-server/.*",
+        SpiffeIdPattern: "spiffe://example.org/web-server/.*",
         PathPattern:     "secrets/web/*",
         Permissions:     []string{"read", "list"},
     })

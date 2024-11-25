@@ -15,15 +15,23 @@ import (
 var (
 	rootKey   string
 	rootKeyMu sync.RWMutex
+)
 
+var (
 	adminSigningToken   string
 	adminSigningTokenMu sync.RWMutex
+)
 
+var (
 	kv = store.NewKV(store.KVConfig{
 		MaxSecretVersions: env.MaxSecretVersions(),
 	})
 	kvMu sync.RWMutex
+)
 
+var policies sync.Map
+
+var (
 	adminRecoveryMetadata   data.RecoveryMetadata
 	adminRecoveryMetadataMu sync.RWMutex
 )
