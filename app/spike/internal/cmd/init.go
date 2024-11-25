@@ -13,7 +13,7 @@ import (
 	"github.com/spiffe/spike/app/spike/internal/net/auth"
 	"github.com/spiffe/spike/internal/config"
 	"github.com/spiffe/spike/internal/entity/data"
-	"github.com/spiffe/spike/internal/retry"
+	"github.com/spiffe/spike/pkg/retry"
 )
 
 // NewInitCommand creates and returns a new cobra.Command for initializing the

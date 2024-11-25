@@ -10,7 +10,7 @@ import (
 	"github.com/spiffe/spike/app/nexus/internal/env"
 	"github.com/spiffe/spike/app/nexus/internal/state/entity/data"
 	"github.com/spiffe/spike/internal/log"
-	"github.com/spiffe/spike/internal/retry"
+	"github.com/spiffe/spike/pkg/retry"
 )
 
 // ReadAdminRecoveryMetadata retrieves cached admin recovery metadata from
