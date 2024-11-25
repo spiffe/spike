@@ -7,6 +7,7 @@ package base
 import (
 	"net/http"
 
+	"github.com/spiffe/spike/app/nexus/internal/route/acl"
 	"github.com/spiffe/spike/app/nexus/internal/route/auth"
 	"github.com/spiffe/spike/app/nexus/internal/route/store"
 	"github.com/spiffe/spike/internal/log"
@@ -44,6 +45,14 @@ func Route(
 				return store.RouteUndeleteSecret
 			case a == net.ActionNexusList && p == net.SpikeNexusUrlSecrets:
 				return store.RouteListPaths
+			case a == net.ActionNexusDefault && p == net.SpikeNexusUrlPolicy:
+				return acl.RoutePutPolicy
+			case a == net.ActionNexusGet && p == net.SpikeNexusUrlPolicy:
+				return acl.RouteGetPolicy
+			case a == net.ActionNexusDelete && p == net.SpikeNexusUrlPolicy:
+				return acl.RouteDeletePolicy
+			case a == net.ActionNexusList && p == net.SpikeNexusUrlPolicy:
+				return acl.RouteListPolicies
 			default:
 				return net.Fallback
 			}

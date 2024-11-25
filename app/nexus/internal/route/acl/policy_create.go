@@ -3,3 +3,14 @@
 // \\\\\\\ SPDX-License-Identifier: Apache-2.0
 
 package acl
+
+import (
+	"github.com/spiffe/spike/internal/log"
+	"net/http"
+)
+
+func RoutePutPolicy(
+	w http.ResponseWriter, r *http.Request, audit *log.AuditEntry,
+) error {
+	return nil
+}

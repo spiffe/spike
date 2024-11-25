@@ -14,6 +14,8 @@ const SpikeNexusUrlSecrets ApiUrl = "/v1/store/secrets"
 const SpikeNexusUrlLogin ApiUrl = "/v1/auth/login"
 const SpikeNexusUrlInit ApiUrl = "/v1/auth/init"
 
+const SpikeNexusUrlPolicy ApiUrl = "/v1/acl/policy"
+
 const SpikeKeeperUrlKeep ApiUrl = "/v1/store/keep"
 
 const ActionNexusAdminLogin SpikeNexusApiAction = "admin-login"
