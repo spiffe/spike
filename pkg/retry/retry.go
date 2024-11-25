@@ -84,6 +84,25 @@ func NewExponentialRetrier(opts ...RetrierOption) *ExponentialRetrier {
 	return r
 }
 
+// RetryWithBackoff implements the Retrier interface
+func (r *ExponentialRetrier) RetryWithBackoff(
+	ctx context.Context,
+	operation func() error,
+) error {
+	b := r.newBackOff()
+	totalDuration := time.Duration(0)
+	return backoff.RetryNotify(
+		operation,
+		backoff.WithContext(b, ctx),
+		func(err error, duration time.Duration) {
+			totalDuration += duration
+			if r.notify != nil {
+				r.notify(err, duration, totalDuration)
+			}
+		},
+	)
+}
+
 // WithBackOffOptions configures the backoff settings
 func WithBackOffOptions(opts ...BackOffOption) RetrierOption {
 	return func(r *ExponentialRetrier) {
@@ -127,23 +146,4 @@ func WithNotify(fn NotifyFn) RetrierOption {
 	return func(r *ExponentialRetrier) {
 		r.notify = fn
 	}
-}
-
-// RetryWithBackoff implements the Retrier interface
-func (r *ExponentialRetrier) RetryWithBackoff(
-	ctx context.Context,
-	operation func() error,
-) error {
-	b := r.newBackOff()
-	totalDuration := time.Duration(0)
-	return backoff.RetryNotify(
-		operation,
-		backoff.WithContext(b, ctx),
-		func(err error, duration time.Duration) {
-			totalDuration += duration
-			if r.notify != nil {
-				r.notify(err, duration, totalDuration)
-			}
-		},
-	)
 }
