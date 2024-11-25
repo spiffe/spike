@@ -1,14 +1,9 @@
-//    \\ SPIKE: Secure your secrets with SPIFFE.
-//  \\\\\ Copyright 2024-present SPIKE contributors.
-// \\\\\\\ SPDX-License-Identifier: Apache-2.0
-
 package api
 
 import (
-	"net/url"
-
 	"github.com/spiffe/spike/app/spike/internal/env"
 	"github.com/spiffe/spike/internal/net"
+	"net/url"
 )
 
 // UrlSecretGet returns the URL for getting a secret.
@@ -61,37 +56,5 @@ func UrlSecretList() string {
 	)
 	params := url.Values{}
 	params.Add(net.KeyApiAction, string(net.ActionNexusList))
-	return u + "?" + params.Encode()
-}
-
-// UrlInit returns the URL for initializing SPIKE Nexus.
-func UrlInit() string {
-	u, _ := url.JoinPath(
-		env.NexusApiRoot(),
-		string(net.SpikeNexusUrlInit),
-	)
-	return u
-}
-
-// UrlInitState returns the URL for checking the initialization state of
-// SPIKE Nexus.
-func UrlInitState() string {
-	u, _ := url.JoinPath(
-		env.NexusApiRoot(),
-		string(net.SpikeNexusUrlInit),
-	)
-	params := url.Values{}
-	params.Add(net.KeyApiAction, string(net.ActionNexusCheck))
-	return u + "?" + params.Encode()
-}
-
-// UrlAdminLogin returns the URL for logging in as an admin.
-func UrlAdminLogin() string {
-	u, _ := url.JoinPath(
-		env.NexusApiRoot(),
-		string(net.SpikeNexusUrlLogin),
-	)
-	params := url.Values{}
-	params.Add(net.KeyApiAction, string(net.ActionNexusAdminLogin))
 	return u + "?" + params.Encode()
 }

@@ -53,9 +53,5 @@ func PutSecret(source *workloadapi.X509Source,
 	}
 
 	_, err = net.Post(client, api.UrlSecretPut(), mr)
-	if errors.Is(err, net.ErrUnauthorized) {
-		return errors.New(`unauthorized. Please login first with 'spike login'`)
-	}
-
 	return err
 }

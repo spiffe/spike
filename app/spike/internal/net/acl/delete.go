@@ -4,8 +4,34 @@
 
 package acl
 
-import "github.com/spiffe/go-spiffe/v2/workloadapi"
+import (
+	"encoding/json"
+	"errors"
+	"github.com/spiffe/go-spiffe/v2/workloadapi"
+	"github.com/spiffe/spike/app/spike/internal/net/api"
+	"github.com/spiffe/spike/internal/auth"
+	"github.com/spiffe/spike/internal/entity/v1/reqres"
+	"github.com/spiffe/spike/internal/net"
+)
 
 func DeletePolicy(source *workloadapi.X509Source, id string) error {
-	return nil
+	r := reqres.PolicyDeleteRequest{
+		Id: id,
+	}
+
+	mr, err := json.Marshal(r)
+	if err != nil {
+		return errors.Join(
+			errors.New("deletePolicy: I am having problem generating the payload"),
+			err,
+		)
+	}
+
+	client, err := net.CreateMtlsClient(source, auth.IsNexus)
+	if err != nil {
+		return err
+	}
+
+	_, err = net.Post(client, api.UrlPolicyDelete(), mr)
+	return err
 }
