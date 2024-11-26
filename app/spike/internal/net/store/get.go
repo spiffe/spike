@@ -54,13 +54,11 @@ func GetSecret(source *workloadapi.X509Source,
 	}
 
 	body, err := net.Post(client, api.UrlSecretGet(), mr)
-	if errors.Is(err, net.ErrNotFound) {
-		return nil, nil
-	}
-	if errors.Is(err, net.ErrUnauthorized) {
-		return nil, errors.New(
-			`unauthorized. Please login first with 'spike login'`,
-		)
+	if err != nil {
+		if errors.Is(err, net.ErrNotFound) {
+			return nil, nil
+		}
+		return nil, err
 	}
 
 	var res reqres.SecretReadResponse
@@ -70,6 +68,9 @@ func GetSecret(source *workloadapi.X509Source,
 			errors.New("getSecret: Problem parsing response body"),
 			err,
 		)
+	}
+	if res.Err != "" {
+		return nil, errors.New(string(res.Err))
 	}
 
 	return &data.Secret{Data: res.Data}, nil

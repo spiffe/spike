@@ -20,13 +20,13 @@ import (
 	"github.com/spiffe/spike/internal/net"
 )
 
-// Init sends an init request to SPIKE Nexus.
+// Init sends an initialization request to SPIKE Nexus.
 func Init(source *workloadapi.X509Source) error {
 	r := reqres.InitRequest{}
 	mr, err := json.Marshal(r)
 	if err != nil {
 		return errors.Join(
-			errors.New("init: I am having problem generating the payload"),
+			errors.New("initialization: I am having problem generating the payload"),
 			err,
 		)
 	}
@@ -39,7 +39,7 @@ func Init(source *workloadapi.X509Source) error {
 	err = json.Unmarshal(body, &res)
 	if err != nil {
 		return errors.Join(
-			errors.New("init: Problem parsing response body"),
+			errors.New("initialization: Problem parsing response body"),
 			err,
 		)
 	}
@@ -76,9 +76,6 @@ func CheckInitState(source *workloadapi.X509Source) (data.InitState, error) {
 
 	client, err := net.CreateMtlsClient(source, auth.CanTalkToPilot)
 	body, err := net.Post(client, api.UrlInitState(), mr)
-	if errors.Is(err, net.ErrUnauthorized) {
-		return data.NotInitialized, err
-	}
 
 	if err != nil {
 		return data.NotInitialized, errors.Join(

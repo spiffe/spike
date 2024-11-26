@@ -21,7 +21,7 @@ type AuditAction string
 const AuditEnter AuditAction = "enter"
 const AuditCreate AuditAction = "create"
 const AuditList AuditAction = "list"
-const AuditInitCheck AuditAction = "init-check"
+const AuditInitCheck AuditAction = "initialization-check"
 const AuditLogin AuditAction = "login"
 const AuditDelete AuditAction = "delete"
 const AuditRead AuditAction = "read"

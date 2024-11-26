@@ -31,7 +31,7 @@ func main() {
 
 	// Initialize SPIKE.
 
-	child, _, err := expect.Spawn(spike+" init", -1)
+	child, _, err := expect.Spawn(spike+" initialization", -1)
 	if err != nil {
 		log.Fatal(err)
 	}

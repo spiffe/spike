@@ -69,10 +69,22 @@ func UndeleteSecret(source *workloadapi.X509Source,
 		return err
 	}
 
-	_, err = net.Post(client, api.UrlSecretUndelete(), mr)
-	if errors.Is(err, net.ErrUnauthorized) {
-		return errors.New(`unauthorized. Please login first with 'spike login'`)
+	body, err := net.Post(client, api.UrlSecretUndelete(), mr)
+	if err != nil {
+		return nil
 	}
 
-	return err
+	res := reqres.SecretUndeleteResponse{}
+	err = json.Unmarshal(body, &res)
+	if err != nil {
+		return errors.Join(
+			errors.New("undeleteSecret: Problem parsing response body"),
+			err,
+		)
+	}
+	if res.Err != "" {
+		return errors.New(string(res.Err))
+	}
+
+	return nil
 }
