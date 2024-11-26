@@ -6,6 +6,8 @@ package secret
 
 import (
 	"errors"
+	"github.com/spiffe/spike/internal/entity/data"
+	"github.com/spiffe/spike/pkg/spiffe"
 	"net/http"
 
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
@@ -80,6 +82,27 @@ func RouteGetSecret(
 
 	version := request.Version
 	path := request.Path
+
+	spiffeId, err := spiffe.IdFromRequest(r)
+	if err != nil {
+		responseBody := net.MarshalBody(reqres.SecretReadResponse{
+			Err: reqres.ErrUnauthorized,
+		}, w)
+		net.Respond(http.StatusUnauthorized, responseBody, w)
+		return err
+	}
+	allowed := state.CheckAccess(
+		spiffeId.String(),
+		path,
+		[]data.PolicyPermission{data.PermissionRead},
+	)
+	if !allowed {
+		responseBody := net.MarshalBody(reqres.SecretReadResponse{
+			Err: reqres.ErrUnauthorized,
+		}, w)
+		net.Respond(http.StatusUnauthorized, responseBody, w)
+		return errors.New("unauthorized")
+	}
 
 	secret, err := state.GetSecret(path, version)
 	if err == nil {

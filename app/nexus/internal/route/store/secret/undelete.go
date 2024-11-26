@@ -6,6 +6,8 @@ package secret
 
 import (
 	"errors"
+	"github.com/spiffe/spike/internal/entity/data"
+	"github.com/spiffe/spike/pkg/spiffe"
 	"net/http"
 
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
@@ -73,7 +75,28 @@ func RouteUndeleteSecret(
 		versions = []int{}
 	}
 
-	err := state.UndeleteSecret(path, versions)
+	spiffeid, err := spiffe.IdFromRequest(r)
+	if err != nil {
+		responseBody := net.MarshalBody(reqres.SecretUndeleteResponse{
+			Err: reqres.ErrUnauthorized,
+		}, w)
+		net.Respond(http.StatusUnauthorized, responseBody, w)
+		return errors.New("invalid or missing JWT token")
+	}
+	allowed := state.CheckAccess(
+		spiffeid.String(),
+		path,
+		[]data.PolicyPermission{data.PermissionWrite},
+	)
+	if !allowed {
+		responseBody := net.MarshalBody(reqres.SecretUndeleteResponse{
+			Err: reqres.ErrUnauthorized,
+		}, w)
+		net.Respond(http.StatusUnauthorized, responseBody, w)
+		return errors.New("unauthorized")
+	}
+
+	err = state.UndeleteSecret(path, versions)
 	if err != nil {
 		log.Log().Info("routeUndeleteSecret",
 			"msg", "Failed to undelete secret", "err", err)

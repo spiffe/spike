@@ -6,6 +6,7 @@ package initialization
 
 import (
 	"errors"
+	"github.com/spiffe/spike/pkg/spiffe"
 	"net/http"
 
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
@@ -63,6 +64,27 @@ func RouteInitCheck(
 	// No need to check for valid JWT here. System initialization is done
 	// anonymously by the first user (who will be the admin).
 	// If the system is already initialized, this process will err out anyway.
+
+	spiffeid, err := spiffe.IdFromRequest(r)
+	if err != nil {
+		responseBody := net.MarshalBody(reqres.CheckInitStateResponse{
+			Err: reqres.ErrUnauthorized,
+		}, w)
+		net.Respond(http.StatusUnauthorized, responseBody, w)
+		return err
+	}
+
+	allowed := state.CheckAccess(
+		spiffeid.String(), "*",
+		[]data.PolicyPermission{data.PermissionSuper},
+	)
+	if !allowed {
+		responseBody := net.MarshalBody(reqres.CheckInitStateResponse{
+			Err: reqres.ErrUnauthorized,
+		}, w)
+		net.Respond(http.StatusUnauthorized, responseBody, w)
+		return errors.New("unauthorized")
+	}
 
 	responseBody := net.ReadRequestBody(w, r)
 	if responseBody == nil {

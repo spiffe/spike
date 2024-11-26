@@ -21,12 +21,18 @@ type Secret struct {
 type PolicyPermission string
 
 // PermissionRead gives permission to read secrets.
-// This includes listing secrets.
+// This DOES NOT include listing secrets.
 const PermissionRead PolicyPermission = "read"
 
 // PermissionWrite gives permission to write (including
 // create, update and delete) secrets.
 const PermissionWrite PolicyPermission = "write"
+
+const PermissionList PolicyPermission = "list"
+
+// PermissionSuper gives superuser permissions.
+// The user is the alpha and the omega.
+const PermissionSuper PolicyPermission = "super"
 
 type Policy struct {
 	Id              string             `json:"id"`

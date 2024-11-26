@@ -21,33 +21,60 @@ var (
 	ErrInvalidPolicy  = errors.New("invalid policy")
 )
 
-func CheckAccess(spiffeId string, path string) bool {
+func contains(permissions []data.PolicyPermission, permission data.PolicyPermission) bool {
+	for _, p := range permissions {
+		if p == permission {
+			return true
+		}
+	}
+	return false
+}
+
+func hasAllPermissions(haves []data.PolicyPermission, wants []data.PolicyPermission) bool {
+	for _, want := range wants {
+		if !contains(haves, want) {
+			return false
+		}
+	}
+	return true
+}
+
+func CheckAccess(spiffeId string, path string, wants []data.PolicyPermission) bool {
 	if auth.IsPilot(spiffeId) {
 		return true
 	}
 
 	policies := ListPolicies()
 	for _, policy := range policies {
+		// Check wildcard pattern first
 		if policy.SpiffeIdPattern == "*" && policy.PathPattern == "*" {
+			if hasAllPermissions(policy.Permissions, wants) {
+				return true
+			}
+			continue
+		}
+
+		// Check specific patterns using pre-compiled regexes
+
+		if policy.SpiffeIdPattern != "*" {
+			if !policy.IdRegex.MatchString(spiffeId) {
+				continue
+			}
+		}
+
+		if policy.PathPattern != "*" {
+			if !policy.PathRegex.MatchString(path) {
+				continue
+			}
+		}
+
+		if contains(policy.Permissions, data.PermissionSuper) {
 			return true
 		}
 
-		idMatched, err := regexp.MatchString(policy.SpiffeIdPattern, spiffeId)
-		if err != nil {
-			continue
+		if hasAllPermissions(policy.Permissions, wants) {
+			return true
 		}
-		if !idMatched {
-			continue
-		}
-		pathMatched, err := regexp.MatchString(policy.PathPattern, path)
-		if err != nil {
-			continue
-		}
-		if !pathMatched {
-			continue
-		}
-
-		return true
 	}
 
 	return false

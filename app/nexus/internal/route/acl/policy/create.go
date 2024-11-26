@@ -6,6 +6,7 @@ package policy
 
 import (
 	"errors"
+	"github.com/spiffe/spike/pkg/spiffe"
 	"net/http"
 	"time"
 
@@ -84,6 +85,28 @@ func RoutePutPolicy(
 	spiffeIdPattern := request.SpiffeIdPattern
 	pathPattern := request.PathPattern
 	permissions := request.Permissions
+
+	spiffeid, err := spiffe.IdFromRequest(r)
+	if err != nil {
+		responseBody := net.MarshalBody(reqres.PolicyCreateResponse{
+			Err: reqres.ErrUnauthorized,
+		}, w)
+		net.Respond(http.StatusUnauthorized, responseBody, w)
+		return err
+	}
+	// TODO: This is a superuser function and it should be treated differently.
+	// maybe a "SUPER" role or something.
+	allowed := state.CheckAccess(
+		spiffeid.String(), "*",
+		[]data.PolicyPermission{data.PermissionSuper},
+	)
+	if !allowed {
+		responseBody := net.MarshalBody(reqres.PolicyCreateResponse{
+			Err: reqres.ErrUnauthorized,
+		}, w)
+		net.Respond(http.StatusUnauthorized, responseBody, w)
+		return errors.New("unauthorized")
+	}
 
 	policy, err := state.CreatePolicy(data.Policy{
 		Id:              "",

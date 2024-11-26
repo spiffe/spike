@@ -6,6 +6,8 @@ package secret
 
 import (
 	"errors"
+	"github.com/spiffe/spike/internal/entity/data"
+	"github.com/spiffe/spike/pkg/spiffe"
 	"net/http"
 
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
@@ -77,7 +79,28 @@ func RouteDeleteSecret(
 		versions = []int{}
 	}
 
-	err := state.DeleteSecret(path, versions)
+	spiffeId, err := spiffe.IdFromRequest(r)
+	if err != nil {
+		responseBody := net.MarshalBody(reqres.SecretDeleteResponse{
+			Err: reqres.ErrUnauthorized,
+		}, w)
+		net.Respond(http.StatusUnauthorized, responseBody, w)
+		return err
+	}
+	allowed := state.CheckAccess(
+		spiffeId.String(),
+		path,
+		[]data.PolicyPermission{data.PermissionWrite},
+	)
+	if !allowed {
+		responseBody := net.MarshalBody(reqres.SecretDeleteResponse{
+			Err: reqres.ErrUnauthorized,
+		}, w)
+		net.Respond(http.StatusUnauthorized, responseBody, w)
+		return errors.New("unauthorized")
+	}
+
+	err = state.DeleteSecret(path, versions)
 	if err != nil {
 		log.Log().Info(
 			"routeDeleteSecret", "msg",

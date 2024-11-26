@@ -6,6 +6,8 @@ package policy
 
 import (
 	"errors"
+	"github.com/spiffe/spike/internal/entity/data"
+	"github.com/spiffe/spike/pkg/spiffe"
 	"net/http"
 
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
@@ -79,6 +81,27 @@ func RouteListPolicies(
 	)
 	if request == nil {
 		return errors.New("failed to parse request body")
+	}
+
+	spiffeid, err := spiffe.IdFromRequest(r)
+	if err != nil {
+		responseBody := net.MarshalBody(reqres.PolicyListResponse{
+			Err: reqres.ErrUnauthorized,
+		}, w)
+		net.Respond(http.StatusUnauthorized, responseBody, w)
+		return err
+	}
+	allowed := state.CheckAccess(
+		spiffeid.String(),
+		"*",
+		[]data.PolicyPermission{data.PermissionSuper},
+	)
+	if !allowed {
+		responseBody := net.MarshalBody(reqres.PolicyListResponse{
+			Err: reqres.ErrUnauthorized,
+		}, w)
+		net.Respond(http.StatusUnauthorized, responseBody, w)
+		return errors.New("unauthorized")
 	}
 
 	policies := state.ListPolicies()
