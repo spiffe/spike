@@ -31,6 +31,9 @@
 	<issue>
 		make sure that everything sanitizable are properly sanitized.
 	</issue>
+	<issue>
+		read policies from a yaml or a json file and create them.
+	</issue>
 </low-hanging-fruits>
 <reserved>
 	<issue>
