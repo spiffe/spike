@@ -6,8 +6,6 @@ package reqres
 
 import (
 	"time"
-
-	"github.com/spiffe/spike/internal/entity/data"
 )
 
 // SecretResponseMetadata is meta information about secrets for internal
@@ -33,15 +31,17 @@ type SecretPutResponse struct {
 
 // SecretReadRequest is for getting secrets
 type SecretReadRequest struct {
-	Path    string `json:"path"`
-	Version int    `json:"version,omitempty"` // Optional specific version
+	Path     string `json:"path"`
+	Version  int    `json:"version,omitempty"`  // Optional specific version
+	Metadata bool   `json:"metadata,omitempty"` // Optional specific version
 }
 
 // SecretReadResponse is for getting secrets
 type SecretReadResponse struct {
-	data.Secret
-	Data map[string]string `json:"data"`
-	Err  ErrorCode         `json:"err,omitempty"`
+	Data     map[string]string                `json:"data"`
+	Versions map[int]RawSecretVersionResponse `json:"versions,omitempty"`
+	Metadata RawSecretMetadataResponse        `json:"metadata,omitempty"`
+	Err      ErrorCode                        `json:"err,omitempty"`
 }
 
 // SecretDeleteRequest for soft-deleting secret versions
@@ -76,4 +76,24 @@ type SecretListRequest struct {
 type SecretListResponse struct {
 	Keys []string  `json:"keys"`
 	Err  ErrorCode `json:"err,omitempty"`
+}
+
+type RawSecretResponse struct {
+	Versions map[int]RawSecretVersionResponse `json:"versions,omitempty"`
+	Metadata RawSecretMetadataResponse        `json:"metadata,omitempty"`
+}
+
+type RawSecretVersionResponse struct {
+	Data        map[string]string `json:"data"`
+	CreatedTime time.Time         `json:"createdTime"`
+	Version     int               `json:"version"`
+	DeletedTime *time.Time        `json:"deletedTime"`
+}
+
+type RawSecretMetadataResponse struct {
+	CurrentVersion int       `json:"currentVersion"`
+	OldestVersion  int       `json:"oldestVersion"`
+	CreatedTime    time.Time `json:"createdTime"`
+	UpdatedTime    time.Time `json:"updatedTime"`
+	MaxVersions    int       `json:"maxVersions"`
 }

@@ -32,8 +32,8 @@ import (
 //
 // Example Usage:
 //
-//	spike put secret/myapp username=admin password=secret
-//	spike put secret/config host=localhost port=8080
+//	spike secret put secret/myapp username=admin password=secret
+//	spike secret put secret/config host=localhost port=8080
 //
 // The command will:
 //  1. Verify SPIKE initialization status via admin token

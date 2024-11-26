@@ -244,16 +244,16 @@ Let test **SPIKE** by creating a secret
 spike init
 
 # Register a secret:
-spike put /secrets/db-secret username=postgres password=postgres
+spike secret put /secrets/db-secret username=postgres password=postgres
 
-spike get /secrets/db-secret 
+spike secret get /secrets/db-secret 
 # Wil return:
 # username=postgres 
 # password=postgres
 
-spike delete /secrets/db-secret # Deleting the current secret
+spike secret delete /secrets/db-secret # Deleting the current secret
 
-spike get /secrets/db-secret 
+spike secret get /secrets/db-secret 
 # WIll be empty.
 ```
 

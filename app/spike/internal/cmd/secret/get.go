@@ -6,6 +6,9 @@ package secret
 
 import (
 	"fmt"
+	"github.com/spiffe/spike/internal/entity/v1/reqres"
+	"strings"
+	"time"
 
 	"github.com/spf13/cobra"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
@@ -61,8 +64,9 @@ func newSecretGetCommand(source *workloadapi.X509Source) *cobra.Command {
 
 			path := args[0]
 			version, _ := cmd.Flags().GetInt("version")
+			metadata, _ := cmd.Flags().GetBool("metadata")
 
-			secret, err := store.GetSecret(source, path, version)
+			secret, err := store.GetSecret(source, path, version, metadata)
 			if err != nil {
 				fmt.Println("Error reading secret:", err.Error())
 				return
@@ -73,14 +77,66 @@ func newSecretGetCommand(source *workloadapi.X509Source) *cobra.Command {
 				return
 			}
 
-			data := secret.Data
-			for k, v := range data {
-				fmt.Printf("%s: %s\n", k, v)
-			}
+			printSecretResponse(secret)
 		},
 	}
 
 	getCmd.Flags().IntP("version", "v", 0, "Specific version to retrieve")
+	getCmd.Flags().BoolP("metadata", "m", false, "Show metadata instead of secret values")
+	getCmd.Flags().Bool("versions", false, "List all versions of the secret")
 
 	return getCmd
+}
+
+func printSecretResponse(response *reqres.SecretReadResponse) {
+	printSeparator := func() {
+		fmt.Println(strings.Repeat("-", 50))
+	}
+
+	formatTime := func(t time.Time) string {
+		return t.Format("2006-01-02 15:04:05 MST")
+	}
+
+	if len(response.Data) > 0 {
+		fmt.Println("Current Secret Data:")
+		printSeparator()
+		for k, v := range response.Data {
+			fmt.Printf("%-20s: %s\n", k, v)
+		}
+		printSeparator()
+	}
+
+	if response.Metadata != (reqres.RawSecretMetadataResponse{}) {
+		fmt.Println("\nMetadata:")
+		printSeparator()
+		fmt.Printf("Current Version    : %d\n", response.Metadata.CurrentVersion)
+		fmt.Printf("Oldest Version     : %d\n", response.Metadata.OldestVersion)
+		fmt.Printf("Created Time       : %s\n", formatTime(response.Metadata.CreatedTime))
+		fmt.Printf("Last Updated       : %s\n", formatTime(response.Metadata.UpdatedTime))
+		fmt.Printf("Max Versions       : %d\n", response.Metadata.MaxVersions)
+		printSeparator()
+	}
+
+	if len(response.Versions) > 0 {
+		fmt.Println("\nSecret Versions:")
+		printSeparator()
+
+		for version, versionData := range response.Versions {
+			fmt.Printf("Version %d:\n", version)
+			fmt.Printf("  Created: %s\n", formatTime(versionData.CreatedTime))
+			if versionData.DeletedTime != nil {
+				fmt.Printf("  Deleted: %s\n", formatTime(*versionData.DeletedTime))
+			}
+			fmt.Println("  Data:")
+			for k, v := range versionData.Data {
+				fmt.Printf("    %-18s: %s\n", k, v)
+			}
+			printSeparator()
+		}
+	}
+
+	if response.Err != "" {
+		fmt.Printf("\nError: %s\n", response.Err)
+		printSeparator()
+	}
 }
