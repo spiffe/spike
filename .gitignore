@@ -53,6 +53,8 @@ go.work.sum
 .idea
 .code
 .history
+*.DS_Store
+*.iml
 
 # App-specific:
 .spike-token
