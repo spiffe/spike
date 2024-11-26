@@ -22,7 +22,7 @@ import (
 //   - get: Retrieves secrets with optional version specification
 //   - delete: Removes specified versions of secrets
 //   - undelete: Restores specified versions of secrets
-//   - init: Initializes the secret management system
+//   - initialization: Initializes the secret management system
 //   - put: Stores new secrets
 //   - list: Displays available secrets
 //

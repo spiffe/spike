@@ -23,7 +23,7 @@ import (
 //   - source: X.509 source for workload API authentication
 //
 // Returns:
-//   - *cobra.Command: Configured init command
+//   - *cobra.Command: Configured initialization command
 //
 // The command will:
 //  1. Check if SPIKE is already initialized
@@ -42,13 +42,13 @@ import (
 //   - Include database configuration
 func NewSystemInitCommand(source *workloadapi.X509Source) *cobra.Command {
 	var initCmd = &cobra.Command{
-		Use:   "init",
+		Use:   "initialization",
 		Short: "Initialize spike configuration",
 		Run: func(cmd *cobra.Command, args []string) {
 			state, err := auth.CheckInitState(source)
 
 			if err != nil {
-				fmt.Println("Failed to check init state:")
+				fmt.Println("Failed to check initialization state:")
 				fmt.Println(err.Error())
 				return
 			}

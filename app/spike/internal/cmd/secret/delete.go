@@ -63,13 +63,13 @@ Examples:
 		Run: func(cmd *cobra.Command, args []string) {
 			state, err := auth.CheckInitState(source)
 			if err != nil {
-				fmt.Println("Failed to check init state:")
+				fmt.Println("Failed to check initialization state:")
 				fmt.Println(err.Error())
 				return
 			}
 
 			if state == data.NotInitialized {
-				fmt.Println("Please initialize SPIKE first by running 'spike init'.")
+				fmt.Println("Please initialize SPIKE first by running 'spike initialization'.")
 				return
 			}
 

@@ -2,7 +2,7 @@
 //  \\\\\ Copyright 2024-present SPIKE contributors.
 // \\\\\\\ SPDX-License-Identifier: Apache-2.0
 
-package init
+package initialization
 
 import (
 	"crypto/aes"
@@ -30,7 +30,7 @@ func updateStateForInit(
 
 	// As soon as SPIKE Nexus starts, it is guaranteed to have a root key in
 	// memory. We don't need to fetch it from SPIKE Keeper. The only place
-	// the root key is fetched from SPIKE Keeper is in the SPIKE Nexus init
+	// the root key is fetched from SPIKE Keeper is in the SPIKE Nexus initialization
 	// flow.
 	rootKey := state.RootKey()
 

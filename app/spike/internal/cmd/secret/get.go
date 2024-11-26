@@ -38,7 +38,7 @@ import (
 //  3. Display all key-value pairs in the secret's data field
 //
 // Error cases:
-//   - SPIKE not initialized: Prompts user to run 'spike init'
+//   - SPIKE not initialized: Prompts user to run 'spike initialization'
 //   - Secret not found: Displays appropriate message
 //   - Read errors: Displays error message
 func NewSecretGetCommand(source *workloadapi.X509Source) *cobra.Command {
@@ -49,13 +49,13 @@ func NewSecretGetCommand(source *workloadapi.X509Source) *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			state, err := auth.CheckInitState(source)
 			if err != nil {
-				fmt.Println("Failed to check init state:")
+				fmt.Println("Failed to check initialization state:")
 				fmt.Println(err.Error())
 				return
 			}
 
 			if state == data.NotInitialized {
-				fmt.Println("Please initialize SPIKE first by running 'spike init'.")
+				fmt.Println("Please initialize SPIKE first by running 'spike initialization'.")
 				return
 			}
 

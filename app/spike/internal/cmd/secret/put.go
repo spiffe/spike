@@ -41,7 +41,7 @@ import (
 //  3. Store the collected key-value pairs at the specified path
 //
 // Error cases:
-//   - SPIKE not initialized: Prompts user to run 'spike init'
+//   - SPIKE not initialized: Prompts user to run 'spike initialization'
 //   - Invalid key-value format: Reports the malformed pair
 //   - Network/storage errors: Displays error message
 //
@@ -55,13 +55,13 @@ func NewSecretPutCommand(source *workloadapi.X509Source) *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			state, err := auth.CheckInitState(source)
 			if err != nil {
-				fmt.Println("Failed to check init state:")
+				fmt.Println("Failed to check initialization state:")
 				fmt.Println(err.Error())
 				return
 			}
 
 			if state == data.NotInitialized {
-				fmt.Println("Please initialize SPIKE first by running 'spike init'.")
+				fmt.Println("Please initialize SPIKE first by running 'spike initialization'.")
 				return
 			}
 

@@ -182,7 +182,7 @@ spike
 # >> Secure your secrets with SPIFFE: https://spike.ist/ #
 # Usage: spike <command> [args...]
 # Commands:
-#   init
+#   initialization
 #   put <path> <key=value>...
 #   get <path> [-version=<n>]
 #   delete <path> [-versions=<n1,n2,...>]

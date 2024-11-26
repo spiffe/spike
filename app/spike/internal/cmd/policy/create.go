@@ -51,7 +51,7 @@ import (
 //
 // Error conditions:
 //   - Missing required flags
-//   - System not initialized (requires running 'spike init' first)
+//   - System not initialized (requires running 'spike initialization' first)
 //   - Invalid SPIFFE ID pattern
 //   - Policy creation failure
 func NewPolicyCreateCommand(source *workloadapi.X509Source) *cobra.Command {
@@ -72,12 +72,12 @@ func NewPolicyCreateCommand(source *workloadapi.X509Source) *cobra.Command {
 
 			state, err := auth.CheckInitState(source)
 			if err != nil {
-				fmt.Println("Failed to check init state:", err)
+				fmt.Println("Failed to check initialization state:", err)
 				return
 			}
 
 			if state == data.NotInitialized {
-				fmt.Println("Please initialize first by running 'spike init'.")
+				fmt.Println("Please initialize first by running 'spike initialization'.")
 				return
 			}
 

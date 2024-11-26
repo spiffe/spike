@@ -12,7 +12,7 @@ type ApiUrl string
 
 const SpikeNexusUrlSecrets ApiUrl = "/v1/store/secrets"
 const SpikeNexusUrlLogin ApiUrl = "/v1/auth/login"
-const SpikeNexusUrlInit ApiUrl = "/v1/auth/init"
+const SpikeNexusUrlInit ApiUrl = "/v1/auth/initialization"
 
 const SpikeNexusUrlPolicy ApiUrl = "/v1/acl/policy"
 

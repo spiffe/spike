@@ -29,7 +29,7 @@ func Initialized() bool {
 	// We don't use the admin signing token to sign anything,
 	// but its existence means the system is initialized.
 	// The only time this token is set is after the successful
-	// completion of the `spike init` command.
+	// completion of the `spike initialization` command.
 	return adminSigToken() != ""
 }
 
