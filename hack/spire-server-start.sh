@@ -6,4 +6,6 @@
 
 ./hack/clear-data.sh
 
+./hack/build-spike.sh
+
 spire-server run -config ./config/spire/server/server.conf

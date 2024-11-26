@@ -47,12 +47,11 @@ func ListSecretKeys(source *workloadapi.X509Source) ([]string, error) {
 	}
 
 	body, err := net.Post(client, api.UrlSecretList(), mr)
-	if errors.Is(err, net.ErrNotFound) {
-		return []string{}, nil
-	}
-	if errors.Is(err, net.ErrUnauthorized) {
-		return []string{},
-			errors.New(`unauthorized. Please login first with 'spike login'`)
+	if err != nil {
+		if errors.Is(err, net.ErrNotFound) {
+			return []string{}, nil
+		}
+		return []string{}, err
 	}
 
 	var res reqres.SecretListResponse
@@ -62,6 +61,9 @@ func ListSecretKeys(source *workloadapi.X509Source) ([]string, error) {
 			errors.New("getSecret: Problem parsing response body"),
 			err,
 		)
+	}
+	if res.Err != "" {
+		return []string{}, errors.New(string(res.Err))
 	}
 
 	return res.Keys, nil

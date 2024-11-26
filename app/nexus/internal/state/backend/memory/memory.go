@@ -21,7 +21,7 @@ type NoopStore struct {
 // StoreAdminRecoveryMetadata saves the admin recovery metadata to the store.
 // This implementation is a no-op and always returns nil.
 func (s *NoopStore) StoreAdminRecoveryMetadata(
-	ctx context.Context, credentials data.RecoveryMetadata,
+	_ context.Context, _ data.RecoveryMetadata,
 ) error {
 	return nil
 }
@@ -30,7 +30,7 @@ func (s *NoopStore) StoreAdminRecoveryMetadata(
 // store. This implementation always returns an empty RecoveryMetadata and
 // nil error.
 func (s *NoopStore) LoadAdminRecoveryMetadata(
-	ctx context.Context,
+	_ context.Context,
 ) (data.RecoveryMetadata, error) {
 	return data.RecoveryMetadata{}, nil
 }
@@ -47,7 +47,7 @@ func (s *NoopStore) Initialize(_ context.Context) error {
 	return nil
 }
 
-// LoadAdminToken retrieves the admin token from the store.
+// LoadAdminSigningToken retrieves the admin token from the store.
 // This implementation always returns an empty string and nil error.
 func (s *NoopStore) LoadAdminSigningToken(_ context.Context) (string, error) {
 	return "", nil

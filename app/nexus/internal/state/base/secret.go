@@ -87,23 +87,22 @@ func GetSecret(path string, version int) (map[string]string, error) {
 	secret, err := kv.Get(path, version)
 	kvMu.RUnlock()
 
-	if err != nil {
-		cachedSecret := persist.ReadSecret(path, version)
-		if cachedSecret == nil {
-			return nil, err
-		}
-
-		if version == 0 {
-			version = cachedSecret.Metadata.CurrentVersion
-		}
-
-		kvMu.Lock()
-		kv.Put(path, cachedSecret.Versions[version].Data)
-		kvMu.Unlock()
-
-
-		return cachedSecret.Versions[version].Data, nil
+	if err == nil {
+		return secret, nil
 	}
 
-	return secret, nil
+	cachedSecret := persist.ReadSecret(path, version)
+	if cachedSecret == nil {
+		return nil, err
+	}
+
+	if version == 0 {
+		version = cachedSecret.Metadata.CurrentVersion
+	}
+
+	kvMu.Lock()
+	kv.Put(path, cachedSecret.Versions[version].Data)
+	kvMu.Unlock()
+
+	return cachedSecret.Versions[version].Data, nil
 }

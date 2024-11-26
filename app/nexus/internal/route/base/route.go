@@ -7,8 +7,9 @@ package base
 import (
 	"net/http"
 
-	"github.com/spiffe/spike/app/nexus/internal/route/auth"
-	"github.com/spiffe/spike/app/nexus/internal/route/store"
+	"github.com/spiffe/spike/app/nexus/internal/route/acl/policy"
+	"github.com/spiffe/spike/app/nexus/internal/route/auth/initialization"
+	"github.com/spiffe/spike/app/nexus/internal/route/store/secret"
 	"github.com/spiffe/spike/internal/log"
 	"github.com/spiffe/spike/internal/net"
 )
@@ -31,19 +32,27 @@ func Route(
 		func(a net.SpikeNexusApiAction, p net.ApiUrl) net.Handler {
 			switch {
 			case a == net.ActionNexusDefault && p == net.SpikeNexusUrlInit:
-				return auth.RouteInit
+				return initialization.RouteInit
 			case a == net.ActionNexusCheck && p == net.SpikeNexusUrlInit:
-				return auth.RouteInitCheck
+				return initialization.RouteInitCheck
 			case a == net.ActionNexusDefault && p == net.SpikeNexusUrlSecrets:
-				return store.RoutePutSecret
+				return secret.RoutePutSecret
 			case a == net.ActionNexusGet && p == net.SpikeNexusUrlSecrets:
-				return store.RouteGetSecret
+				return secret.RouteGetSecret
 			case a == net.ActionNexusDelete && p == net.SpikeNexusUrlSecrets:
-				return store.RouteDeleteSecret
+				return secret.RouteDeleteSecret
 			case a == net.ActionNexusUndelete && p == net.SpikeNexusUrlSecrets:
-				return store.RouteUndeleteSecret
+				return secret.RouteUndeleteSecret
 			case a == net.ActionNexusList && p == net.SpikeNexusUrlSecrets:
-				return store.RouteListPaths
+				return secret.RouteListPaths
+			case a == net.ActionNexusDefault && p == net.SpikeNexusUrlPolicy:
+				return policy.RoutePutPolicy
+			case a == net.ActionNexusGet && p == net.SpikeNexusUrlPolicy:
+				return policy.RouteGetPolicy
+			case a == net.ActionNexusDelete && p == net.SpikeNexusUrlPolicy:
+				return policy.RouteDeletePolicy
+			case a == net.ActionNexusList && p == net.SpikeNexusUrlPolicy:
+				return policy.RouteListPolicies
 			default:
 				return net.Fallback
 			}

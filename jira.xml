@@ -14,6 +14,10 @@
 
 <low-hanging-fruits>
 	<issue>
+		revisit the "we'll use sqlite for backend" ADR: There are nuances to
+		consider, especially wrt scalability.
+	</issue>
+	<issue>
 		create a makefile.
 	</issue>
 	<issue>
