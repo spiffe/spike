@@ -20,8 +20,8 @@ var (
 	backendMu     sync.RWMutex
 )
 
-// ReadAdminSigningToken attempts to retrieve the admin token from the backend cache.
-// It uses a 5-second timeout for the operation.
+// ReadAdminSigningToken attempts to retrieve the admin token from the backend
+// cache. It uses a 5-second timeout for the operation.
 //
 // Returns:
 //   - The cached admin token as a string if successful

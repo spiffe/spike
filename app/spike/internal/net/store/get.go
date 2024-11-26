@@ -54,12 +54,13 @@ func GetSecret(source *workloadapi.X509Source,
 	}
 
 	body, err := net.Post(client, api.UrlSecretGet(), mr)
-	if errors.Is(err, net.ErrNotFound) {
-		return nil, nil
+	if err != nil {
+		if errors.Is(err, net.ErrNotFound) {
+			return nil, nil
+		}
+		return nil, err
 	}
 
-	// TODO: what if response has an error; check for all other methods too.
-	// if res.err != nil {
 	var res reqres.SecretReadResponse
 	err = json.Unmarshal(body, &res)
 	if err != nil {
@@ -67,6 +68,9 @@ func GetSecret(source *workloadapi.X509Source,
 			errors.New("getSecret: Problem parsing response body"),
 			err,
 		)
+	}
+	if res.Err != "" {
+		return nil, errors.New(string(res.Err))
 	}
 
 	return &data.Secret{Data: res.Data}, nil

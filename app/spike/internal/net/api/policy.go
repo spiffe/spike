@@ -1,11 +1,13 @@
 package api
 
 import (
+	"net/url"
+
 	"github.com/spiffe/spike/app/spike/internal/env"
 	"github.com/spiffe/spike/internal/net"
-	"net/url"
 )
 
+// UrlPolicyCreate returns the URL for creating a policy.
 func UrlPolicyCreate() string {
 	u, _ := url.JoinPath(
 		env.NexusApiRoot(),
@@ -14,6 +16,7 @@ func UrlPolicyCreate() string {
 	return u
 }
 
+// UrlPolicyList returns the URL for listing policies.
 func UrlPolicyList() string {
 	u, _ := url.JoinPath(
 		env.NexusApiRoot(),
@@ -24,6 +27,7 @@ func UrlPolicyList() string {
 	return u + "?" + params.Encode()
 }
 
+// UrlPolicyDelete returns the URL for deleting a policy.
 func UrlPolicyDelete() string {
 	u, _ := url.JoinPath(
 		env.NexusApiRoot(),
@@ -34,6 +38,7 @@ func UrlPolicyDelete() string {
 	return u + "?" + params.Encode()
 }
 
+// UrlPolicyGet returns the URL for getting a policy.
 func UrlPolicyGet() string {
 	u, _ := url.JoinPath(
 		env.NexusApiRoot(),

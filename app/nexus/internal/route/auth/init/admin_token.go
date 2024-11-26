@@ -2,7 +2,7 @@
 //  \\\\\ Copyright 2024-present SPIKE contributors.
 // \\\\\\\ SPDX-License-Identifier: Apache-2.0
 
-package auth
+package init
 
 import (
 	"crypto/rand"
@@ -16,9 +16,10 @@ import (
 	"github.com/spiffe/spike/internal/net"
 )
 
-// checkPreviousInitialization verifies if an admin token already exists in the system state.
-// If an admin token is present, it responds with an "already initialized" error
-// through the provided http.ResponseWriter and returns an error.
+// checkPreviousInitialization verifies if an admin token already exists in the
+// system state. If an admin token is present, it responds with an
+// "already initialized" error through the provided http.ResponseWriter and
+// returns an error.
 //
 // The function handles the HTTP response writing internally, setting
 // appropriate status codes and error messages.

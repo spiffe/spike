@@ -7,7 +7,9 @@ package acl
 import (
 	"encoding/json"
 	"errors"
+
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
+
 	"github.com/spiffe/spike/app/spike/internal/net/api"
 	"github.com/spiffe/spike/internal/auth"
 	"github.com/spiffe/spike/internal/entity/data"
@@ -16,7 +18,8 @@ import (
 )
 
 func CreatePolicy(source *workloadapi.X509Source,
-	name string, spiffeIdPattern string, pathPattern string, permissions []data.PolicyPermission,
+	name string, spiffeIdPattern string, pathPattern string,
+	permissions []data.PolicyPermission,
 ) error {
 	r := reqres.PolicyCreateRequest{
 		Name:            name,
@@ -38,6 +41,22 @@ func CreatePolicy(source *workloadapi.X509Source,
 		return err
 	}
 
-	_, err = net.Post(client, api.UrlPolicyCreate(), mr)
-	return err
+	body, err := net.Post(client, api.UrlPolicyCreate(), mr)
+	if err != nil {
+		return err
+	}
+
+	res := reqres.PolicyCreateResponse{}
+	err = json.Unmarshal(body, &res)
+	if err != nil {
+		return errors.Join(
+			errors.New("createPolicy: Problem parsing response body"),
+			err,
+		)
+	}
+	if res.Err != "" {
+		return errors.New(string(res.Err))
+	}
+
+	return nil
 }

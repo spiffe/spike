@@ -16,6 +16,44 @@ import (
 	"github.com/spiffe/spike/internal/entity/data"
 )
 
+// NewPolicyCreateCommand creates a new Cobra command for policy creation.
+// It allows users to create new policies via the command line by specifying
+// the policy name, SPIFFE ID pattern, path pattern, and permissions.
+//
+// The command requires an X509Source for SPIFFE authentication and validates
+// that the system is initialized before creating a policy.
+//
+// Parameters:
+//   - source: SPIFFE X.509 SVID source for authentication
+//
+// Returns:
+//   - *cobra.Command: Configured Cobra command for policy creation
+//
+// Command flags:
+//   - --name: Name of the policy (required)
+//   - --spiffeid: SPIFFE ID pattern for workload matching (required)
+//   - --path: Path pattern for access control (required)
+//   - --permissions: Comma-separated list of permissions (required)
+//
+// Example usage:
+//
+//	spike policy create \
+//	    --name "web-service-policy" \
+//	    --spiffeid "spiffe://example.org/web-service/*" \
+//	    --path "/api/v1/*" \
+//	    --permissions "read,write"
+//
+// The command will:
+//  1. Validate that all required flags are provided
+//  2. Check if the system is initialized
+//  3. Convert the comma-separated permissions into policy permissions
+//  4. Create the policy using the provided parameters
+//
+// Error conditions:
+//   - Missing required flags
+//   - System not initialized (requires running 'spike init' first)
+//   - Invalid SPIFFE ID pattern
+//   - Policy creation failure
 func NewPolicyCreateCommand(source *workloadapi.X509Source) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "policy create",
@@ -44,7 +82,14 @@ func NewPolicyCreateCommand(source *workloadapi.X509Source) *cobra.Command {
 			}
 
 			permissions := strings.Split(permsStr, ",")
-			err = acl.CreatePolicy(source, name, spiffeIDPattern, pathPattern, permissions)
+			perms := make([]data.PolicyPermission, 0, len(permissions))
+			for _, perm := range permissions {
+				perms = append(perms, data.PolicyPermission(perm))
+			}
+
+			err = acl.CreatePolicy(
+				source, name, spiffeIDPattern, pathPattern, perms,
+			)
 			if err != nil {
 				fmt.Printf("Error: %v\n", err)
 				return

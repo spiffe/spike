@@ -6,10 +6,10 @@ package base
 
 import (
 	"errors"
-	"github.com/spiffe/spike/app/nexus/internal/net/cache"
 
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 
+	"github.com/spiffe/spike/app/nexus/internal/net/cache"
 	"github.com/spiffe/spike/app/nexus/internal/state/persist"
 	"github.com/spiffe/spike/internal/log"
 	"github.com/spiffe/spike/pkg/crypto"

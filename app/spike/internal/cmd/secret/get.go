@@ -15,8 +15,8 @@ import (
 	"github.com/spiffe/spike/internal/entity/data"
 )
 
-// NewSecretGetCommand creates and returns a new cobra.Command for retrieving secrets.
-// It configures a command that fetches and displays secret data from a
+// NewSecretGetCommand creates and returns a new cobra.Command for retrieving
+// secrets. It configures a command that fetches and displays secret data from a
 // specified path.
 //
 // Parameters:

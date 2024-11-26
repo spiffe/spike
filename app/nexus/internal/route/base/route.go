@@ -6,10 +6,10 @@ package base
 
 import (
 	"github.com/spiffe/spike/app/nexus/internal/route/acl/policy"
+	"github.com/spiffe/spike/app/nexus/internal/route/auth/init"
 	"github.com/spiffe/spike/app/nexus/internal/route/store/secret"
 	"net/http"
 
-	"github.com/spiffe/spike/app/nexus/internal/route/auth"
 	"github.com/spiffe/spike/internal/log"
 	"github.com/spiffe/spike/internal/net"
 )
@@ -32,9 +32,9 @@ func Route(
 		func(a net.SpikeNexusApiAction, p net.ApiUrl) net.Handler {
 			switch {
 			case a == net.ActionNexusDefault && p == net.SpikeNexusUrlInit:
-				return auth.RouteInit
+				return init.RouteInit
 			case a == net.ActionNexusCheck && p == net.SpikeNexusUrlInit:
-				return auth.RouteInitCheck
+				return init.RouteInitCheck
 			case a == net.ActionNexusDefault && p == net.SpikeNexusUrlSecrets:
 				return secret.RoutePutSecret
 			case a == net.ActionNexusGet && p == net.SpikeNexusUrlSecrets:

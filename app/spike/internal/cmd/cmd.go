@@ -6,12 +6,13 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/spiffe/spike/app/spike/internal/cmd/policy"
-	"github.com/spiffe/spike/app/spike/internal/cmd/secret"
-	"github.com/spiffe/spike/app/spike/internal/cmd/system"
 	"os"
 
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
+
+	"github.com/spiffe/spike/app/spike/internal/cmd/policy"
+	"github.com/spiffe/spike/app/spike/internal/cmd/secret"
+	"github.com/spiffe/spike/app/spike/internal/cmd/system"
 )
 
 // Initialize sets up the CLI command structure with a workload API X.509

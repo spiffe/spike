@@ -16,6 +16,47 @@ import (
 	"github.com/spiffe/spike/internal/net"
 )
 
+// RoutePutPolicy handles HTTP PUT requests for creating new policies.
+// It processes the request body to create a policy with the specified name,
+// SPIFFE ID pattern, path pattern, and permissions.
+//
+// The function expects a JSON request body containing:
+//   - Name: policy name
+//   - SpiffeIdPattern: SPIFFE ID matching pattern
+//   - PathPattern: path matching pattern
+//   - Permissions: set of allowed permissions
+//
+// On success, it returns a JSON response with the created policy's ID.
+// On failure, it returns an appropriate error response with status code.
+//
+// Parameters:
+//   - w: HTTP response writer for sending the response
+//   - r: HTTP request containing the policy creation data
+//   - audit: Audit entry for logging the policy creation action
+//
+// Returns:
+//   - error: nil on successful policy creation, error otherwise
+//
+// Example request body:
+//
+//	{
+//	    "name": "example-policy",
+//	    "spiffe_id_pattern": "spiffe://example.org/*/service",
+//	    "path_pattern": "/api/*",
+//	    "permissions": ["read", "write"]
+//	}
+//
+// Example success response:
+//
+//	{
+//	    "id": "policy-123"
+//	}
+//
+// Example error response:
+//
+//	{
+//	    "err": "Internal server error"
+//	}
 func RoutePutPolicy(
 	w http.ResponseWriter, r *http.Request, audit *log.AuditEntry,
 ) error {

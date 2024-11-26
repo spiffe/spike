@@ -32,6 +32,22 @@ func DeletePolicy(source *workloadapi.X509Source, id string) error {
 		return err
 	}
 
-	_, err = net.Post(client, api.UrlPolicyDelete(), mr)
-	return err
+	body, err := net.Post(client, api.UrlPolicyDelete(), mr)
+	if err != nil {
+		return err
+	}
+
+	res := reqres.PolicyDeleteResponse{}
+	err = json.Unmarshal(body, &res)
+	if err != nil {
+		return errors.Join(
+			errors.New("deletePolicy: Problem parsing response body"),
+			err,
+		)
+	}
+	if res.Err != "" {
+		return errors.New(string(res.Err))
+	}
+
+	return nil
 }

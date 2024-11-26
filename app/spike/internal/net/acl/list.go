@@ -31,8 +31,11 @@ func ListPolicies(source *workloadapi.X509Source) (*[]data.Policy, error) {
 	}
 
 	body, err := net.Post(client, api.UrlPolicyList(), mr)
-	if errors.Is(err, net.ErrNotFound) {
-		return nil, nil
+	if err != nil {
+		if errors.Is(err, net.ErrNotFound) {
+			return nil, nil
+		}
+		return nil, err
 	}
 
 	var res reqres.PolicyListResponse
@@ -42,6 +45,9 @@ func ListPolicies(source *workloadapi.X509Source) (*[]data.Policy, error) {
 			errors.New("getPolicy: Problem parsing response body"),
 			err,
 		)
+	}
+	if res.Err != "" {
+		return nil, errors.New(string(res.Err))
 	}
 
 	return &res.Policies, nil

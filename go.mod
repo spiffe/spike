@@ -4,13 +4,12 @@ go 1.23.2
 
 require (
 	github.com/go-jose/go-jose/v4 v4.0.4
-	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/google/goexpect v0.0.0-20210430020637-ab937bf7fd6f
+	github.com/google/uuid v1.6.0
 	github.com/mattn/go-sqlite3 v1.14.24
 	github.com/spf13/cobra v1.8.1
 	github.com/spiffe/go-spiffe/v2 v2.4.0
 	golang.org/x/crypto v0.26.0
-	golang.org/x/term v0.23.0
 )
 
 require (
