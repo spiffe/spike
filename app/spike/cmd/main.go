@@ -7,6 +7,7 @@ package main
 import (
 	"context"
 
+	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 	"github.com/spiffe/spike/app/spike/internal/cmd"
 	"github.com/spiffe/spike/app/spike/internal/trust"
 	"github.com/spiffe/spike/internal/log"

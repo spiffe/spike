@@ -6,6 +6,7 @@ package secret
 
 import (
 	"errors"
+	"github.com/spiffe/spike/pkg/spiffe"
 	"net/http"
 
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
@@ -66,6 +67,23 @@ func RoutePutSecret(
 
 	values := request.Values
 	path := request.Path
+
+	spiffeId, err := spiffe.IdFromRequest(r)
+	if err != nil {
+		responseBody := net.MarshalBody(reqres.SecretPutResponse{
+			Err: reqres.ErrUnauthorized,
+		}, w)
+		net.Respond(http.StatusUnauthorized, responseBody, w)
+		return err
+	}
+	allowed := state.CheckAccess(spiffeId.String(), path)
+	if !allowed {
+		responseBody := net.MarshalBody(reqres.SecretPutResponse{
+			Err: reqres.ErrUnauthorized,
+		}, w)
+		net.Respond(http.StatusUnauthorized, responseBody, w)
+		return errors.New("unauthorized")
+	}
 
 	state.UpsertSecret(path, values)
 	log.Log().Info("routePutSecret", "msg", "Secret upserted")

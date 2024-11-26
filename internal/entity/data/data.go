@@ -4,7 +4,10 @@
 
 package data
 
-import "time"
+import (
+	"regexp"
+	"time"
+)
 
 type InitState string
 
@@ -33,4 +36,8 @@ type Policy struct {
 	Permissions     []PolicyPermission `json:"permissions"`
 	CreatedAt       time.Time          `json:"created_at"`
 	CreatedBy       string             `json:"created_by"`
+
+	// Unexported fields won't be serialized to JSON
+	IdRegex   *regexp.Regexp `json:"-"`
+	PathRegex *regexp.Regexp `json:"-"`
 }

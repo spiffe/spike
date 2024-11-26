@@ -6,6 +6,9 @@ package base
 
 import (
 	"errors"
+	"fmt"
+	"github.com/spiffe/spike/internal/auth"
+	"regexp"
 	"time"
 
 	"github.com/google/uuid"
@@ -18,10 +21,59 @@ var (
 	ErrInvalidPolicy  = errors.New("invalid policy")
 )
 
+func CheckAccess(spiffeId string, path string) bool {
+	if auth.IsPilot(spiffeId) {
+		return true
+	}
+
+	policies := ListPolicies()
+	for _, policy := range policies {
+		if policy.SpiffeIdPattern == "*" && policy.PathPattern == "*" {
+			return true
+		}
+
+		idMatched, err := regexp.MatchString(policy.SpiffeIdPattern, spiffeId)
+		if err != nil {
+			continue
+		}
+		if !idMatched {
+			continue
+		}
+		pathMatched, err := regexp.MatchString(policy.PathPattern, path)
+		if err != nil {
+			continue
+		}
+		if !pathMatched {
+			continue
+		}
+
+		return true
+	}
+
+	return false
+}
+
 // CreatePolicy creates a new policy with an auto-generated ID.
 func CreatePolicy(policy data.Policy) (data.Policy, error) {
 	if policy.Name == "" {
 		return data.Policy{}, ErrInvalidPolicy
+	}
+
+	// Compile and validate patterns
+	if policy.SpiffeIdPattern != "*" {
+		idRegex, err := regexp.Compile(policy.SpiffeIdPattern)
+		if err != nil {
+			return data.Policy{}, fmt.Errorf("%s: %v", "invalid spiffeid pattern", err)
+		}
+		policy.IdRegex = idRegex
+	}
+
+	if policy.PathPattern != "*" {
+		pathRegex, err := regexp.Compile(policy.PathPattern)
+		if err != nil {
+			return data.Policy{}, fmt.Errorf("%s: %v", "invalid path pattern", err)
+		}
+		policy.PathRegex = pathRegex
 	}
 
 	// Generate ID and set creation time
