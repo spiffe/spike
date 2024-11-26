@@ -6,18 +6,16 @@ package policy
 
 import (
 	"errors"
-	"github.com/spiffe/spike/internal/entity"
-	"github.com/spiffe/spike/internal/entity/data"
-	"github.com/spiffe/spike/pkg/spiffe"
 	"net/http"
 
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
+	"github.com/spiffe/spike/internal/entity"
+	"github.com/spiffe/spike/internal/entity/data"
 	"github.com/spiffe/spike/internal/entity/v1/reqres"
 	"github.com/spiffe/spike/internal/log"
 	"github.com/spiffe/spike/internal/net"
+	"github.com/spiffe/spike/pkg/spiffe"
 )
-
-// TODO: the request and response can be generic and part of Route's signature.
 
 // RouteGetPolicy handles HTTP requests to retrieve a specific policy by its ID.
 // It processes the request body to fetch detailed information about a single

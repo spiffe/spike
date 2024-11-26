@@ -78,7 +78,17 @@ func Audit(entry AuditEntry) {
 	log.Println(string(body))
 }
 
-func AuditRequest(fName string, r *http.Request, audit *AuditEntry, action AuditAction) {
+// AuditRequest logs the details of an HTTP request and updates the audit entry
+// with the specified action. It captures the HTTP method, path, and query
+// parameters of the request for audit logging purposes.
+//
+// Parameters:
+//   - fName: The name of the function or component making the request
+//   - r: The HTTP request being audited
+//   - audit: A pointer to the AuditEntry to be updated
+//   - action: The AuditAction to be recorded in the audit entry
+func AuditRequest(fName string,
+	r *http.Request, audit *AuditEntry, action AuditAction) {
 	Log().Info(fName, "method", r.Method, "path", r.URL.Path,
 		"query", r.URL.RawQuery)
 	audit.Action = action

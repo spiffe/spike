@@ -6,6 +6,7 @@ package base
 
 import (
 	"errors"
+
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 
 	"github.com/spiffe/spike/app/nexus/internal/net/cache"

@@ -7,11 +7,12 @@ package base
 import (
 	"errors"
 	"fmt"
-	"github.com/spiffe/spike/internal/auth"
 	"regexp"
 	"time"
 
 	"github.com/google/uuid"
+
+	"github.com/spiffe/spike/internal/auth"
 	"github.com/spiffe/spike/internal/entity/data"
 )
 

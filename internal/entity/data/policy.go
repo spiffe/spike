@@ -9,15 +9,6 @@ import (
 	"time"
 )
 
-type InitState string
-
-const AlreadyInitialized InitState = "AlreadyInitialized"
-const NotInitialized InitState = "NotInitialized"
-
-type Secret struct {
-	Data map[string]string `json:"data"`
-}
-
 type PolicyPermission string
 
 // PermissionRead gives permission to read secrets.

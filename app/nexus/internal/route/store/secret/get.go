@@ -6,15 +6,15 @@ package secret
 
 import (
 	"errors"
-	"github.com/spiffe/spike/internal/entity"
-	"github.com/spiffe/spike/internal/entity/data"
-	"github.com/spiffe/spike/pkg/spiffe"
 	"net/http"
 
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
+	"github.com/spiffe/spike/internal/entity"
+	"github.com/spiffe/spike/internal/entity/data"
 	"github.com/spiffe/spike/internal/entity/v1/reqres"
 	"github.com/spiffe/spike/internal/log"
 	"github.com/spiffe/spike/internal/net"
+	"github.com/spiffe/spike/pkg/spiffe"
 	"github.com/spiffe/spike/pkg/store"
 )
 
@@ -120,8 +120,7 @@ func RouteGetSecret(
 		log.Log().Info("routeGetSecret", "msg", "not found")
 		return nil
 	} else {
-		log.Log().Info("routeGetSecret",
-			"msg", "Failed to retrieve secret", "err", err)
+		log.Log().Info(fName, "msg", "Failed to retrieve secret", "err", err)
 
 		responseBody := net.MarshalBody(reqres.SecretReadResponse{
 			Err: reqres.ErrInternal}, w,
@@ -131,7 +130,7 @@ func RouteGetSecret(
 		}
 
 		net.Respond(http.StatusInternalServerError, responseBody, w)
-		log.Log().Info("routeGetSecret", "msg", reqres.ErrInternal)
+		log.Log().Info(fName, "msg", reqres.ErrInternal)
 		return err
 	}
 
