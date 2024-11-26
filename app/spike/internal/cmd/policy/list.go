@@ -75,7 +75,7 @@ import (
 // Note: If no policies exist, an empty array ([]) will be displayed.
 func NewPolicyListCommand(source *workloadapi.X509Source) *cobra.Command {
 	return &cobra.Command{
-		Use:   "list",
+		Use:   "policy list",
 		Short: "List all policies",
 		Args:  cobra.NoArgs,
 		Run: func(cmd *cobra.Command, args []string) {

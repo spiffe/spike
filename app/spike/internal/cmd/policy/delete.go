@@ -55,7 +55,7 @@ import (
 // from the system.
 func NewPolicyDeleteCommand(source *workloadapi.X509Source) *cobra.Command {
 	return &cobra.Command{
-		Use:   "delete <policy-id>",
+		Use:   "policy delete <policy-id>",
 		Short: "Delete a policy",
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {

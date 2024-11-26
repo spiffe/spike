@@ -69,7 +69,7 @@ import (
 //   - JSON formatting failure
 func NewPolicyGetCommand(source *workloadapi.X509Source) *cobra.Command {
 	return &cobra.Command{
-		Use:   "get <policy-id>",
+		Use:   "policy get <policy-id>",
 		Short: "Get policy details",
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {

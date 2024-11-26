@@ -43,7 +43,7 @@ import (
 //   - Read errors: Displays error message
 func NewSecretGetCommand(source *workloadapi.X509Source) *cobra.Command {
 	var getCmd = &cobra.Command{
-		Use:   "get <path>",
+		Use:   "secret get <path>",
 		Short: "Get secrets from the specified path",
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {

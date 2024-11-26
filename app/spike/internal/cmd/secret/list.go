@@ -40,7 +40,7 @@ import (
 // Note: Requires an initialized SPIKE system and valid authentication
 func NewSecretListCommand(source *workloadapi.X509Source) *cobra.Command {
 	var listCmd = &cobra.Command{
-		Use:   "list",
+		Use:   "secret list",
 		Short: "List all secret paths",
 		Run: func(cmd *cobra.Command, args []string) {
 			state, err := auth.CheckInitState(source)

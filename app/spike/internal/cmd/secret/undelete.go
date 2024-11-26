@@ -51,7 +51,7 @@ import (
 // but actual restoration functionality is pending implementation
 func NewSecretUndeleteCommand(source *workloadapi.X509Source) *cobra.Command {
 	var undeleteCmd = &cobra.Command{
-		Use:   "undelete <path>",
+		Use:   "secret undelete <path>",
 		Short: "Undelete secrets at the specified path",
 		Long: `Undelete secrets at the specified path. 
 Specify versions using -v or --versions flag with comma-separated values.

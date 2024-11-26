@@ -48,7 +48,7 @@ import (
 //   - Version strings are properly formatted
 func NewSecretDeleteCommand(source *workloadapi.X509Source) *cobra.Command {
 	var deleteCmd = &cobra.Command{
-		Use:   "delete <path>",
+		Use:   "secret delete <path>",
 		Short: "Delete secrets at the specified path",
 		Long: `Delete secrets at the specified path. 
 Specify versions using -v or --versions flag with comma-separated values.

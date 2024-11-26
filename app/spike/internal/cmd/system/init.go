@@ -42,7 +42,7 @@ import (
 //   - Include database configuration
 func NewSystemInitCommand(source *workloadapi.X509Source) *cobra.Command {
 	var initCmd = &cobra.Command{
-		Use:   "initialization",
+		Use:   "init",
 		Short: "Initialize spike configuration",
 		Run: func(cmd *cobra.Command, args []string) {
 			state, err := auth.CheckInitState(source)

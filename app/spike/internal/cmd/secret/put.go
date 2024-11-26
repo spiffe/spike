@@ -49,7 +49,7 @@ import (
 // temporary token authentication in future versions
 func NewSecretPutCommand(source *workloadapi.X509Source) *cobra.Command {
 	var putCmd = &cobra.Command{
-		Use:   "put <path> <key=value>...",
+		Use:   "secret put <path> <key=value>...",
 		Short: "Put secrets at the specified path",
 		Args:  cobra.MinimumNArgs(2),
 		Run: func(cmd *cobra.Command, args []string) {
