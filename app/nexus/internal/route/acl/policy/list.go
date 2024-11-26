@@ -5,13 +5,15 @@
 package policy
 
 import (
-	"errors"
 	"net/http"
 
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
+	"github.com/spiffe/spike/internal/entity"
+	"github.com/spiffe/spike/internal/entity/data"
 	"github.com/spiffe/spike/internal/entity/v1/reqres"
 	"github.com/spiffe/spike/internal/log"
 	"github.com/spiffe/spike/internal/net"
+	"github.com/spiffe/spike/pkg/spiffe"
 )
 
 // RouteListPolicies handles HTTP requests to retrieve all existing policies.
@@ -63,13 +65,12 @@ import (
 func RouteListPolicies(
 	w http.ResponseWriter, r *http.Request, audit *log.AuditEntry,
 ) error {
-	log.Log().Info("routeListPolicies", "method", r.Method, "path", r.URL.Path,
-		"query", r.URL.RawQuery)
-	audit.Action = log.AuditList
+	fName := "routeListPolicies"
+	log.AuditRequest(fName, r, audit, log.AuditList)
 
 	requestBody := net.ReadRequestBody(w, r)
 	if requestBody == nil {
-		return errors.New("failed to read request body")
+		return entity.ErrReadFailure
 	}
 
 	request := net.HandleRequest[
@@ -78,7 +79,27 @@ func RouteListPolicies(
 		reqres.PolicyListResponse{Err: reqres.ErrBadInput},
 	)
 	if request == nil {
-		return errors.New("failed to parse request body")
+		return entity.ErrParseFailure
+	}
+
+	spiffeid, err := spiffe.IdFromRequest(r)
+	if err != nil {
+		responseBody := net.MarshalBody(reqres.PolicyListResponse{
+			Err: reqres.ErrUnauthorized,
+		}, w)
+		net.Respond(http.StatusUnauthorized, responseBody, w)
+		return err
+	}
+	allowed := state.CheckAccess(
+		spiffeid.String(), "*",
+		[]data.PolicyPermission{data.PermissionSuper},
+	)
+	if !allowed {
+		responseBody := net.MarshalBody(reqres.PolicyListResponse{
+			Err: reqres.ErrUnauthorized,
+		}, w)
+		net.Respond(http.StatusUnauthorized, responseBody, w)
+		return entity.ErrUnauthorized
 	}
 
 	policies := state.ListPolicies()
@@ -87,10 +108,10 @@ func RouteListPolicies(
 		Policies: policies,
 	}, w)
 	if responseBody == nil {
-		return errors.New("failed to marshal response body")
+		return entity.ErrMarshalFailure
 	}
 
 	net.Respond(http.StatusOK, responseBody, w)
-	log.Log().Info("routeListPolicies", "msg", "success")
+	log.Log().Info(fName, "msg", reqres.ErrSuccess)
 	return nil
 }

@@ -5,13 +5,15 @@
 package secret
 
 import (
-	"errors"
 	"net/http"
 
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
+	"github.com/spiffe/spike/internal/entity"
+	"github.com/spiffe/spike/internal/entity/data"
 	"github.com/spiffe/spike/internal/entity/v1/reqres"
 	"github.com/spiffe/spike/internal/log"
 	"github.com/spiffe/spike/internal/net"
+	"github.com/spiffe/spike/pkg/spiffe"
 )
 
 // RouteUndeleteSecret handles HTTP requests to restore previously deleted
@@ -49,13 +51,12 @@ import (
 func RouteUndeleteSecret(
 	w http.ResponseWriter, r *http.Request, audit *log.AuditEntry,
 ) error {
-	log.Log().Info("routeUndeleteSecret",
-		"method", r.Method, "path", r.URL.Path, "query", r.URL.RawQuery)
-	audit.Action = log.AuditUndelete
+	const fName = "routeUndeleteSecret"
+	log.AuditRequest(fName, r, audit, log.AuditUndelete)
 
 	requestBody := net.ReadRequestBody(w, r)
 	if requestBody == nil {
-		return errors.New("failed to read request body")
+		return entity.ErrReadFailure
 	}
 
 	req := net.HandleRequest[
@@ -64,7 +65,7 @@ func RouteUndeleteSecret(
 		reqres.SecretUndeleteResponse{Err: reqres.ErrBadInput},
 	)
 	if req == nil {
-		return errors.New("failed to parse request body")
+		return entity.ErrParseFailure
 	}
 
 	path := req.Path
@@ -73,20 +74,40 @@ func RouteUndeleteSecret(
 		versions = []int{}
 	}
 
-	err := state.UndeleteSecret(path, versions)
+	spiffeid, err := spiffe.IdFromRequest(r)
 	if err != nil {
-		log.Log().Info("routeUndeleteSecret",
-			"msg", "Failed to undelete secret", "err", err)
+		responseBody := net.MarshalBody(reqres.SecretUndeleteResponse{
+			Err: reqres.ErrUnauthorized,
+		}, w)
+		net.Respond(http.StatusUnauthorized, responseBody, w)
+		return entity.ErrUnauthorized
+	}
+	allowed := state.CheckAccess(
+		spiffeid.String(),
+		path,
+		[]data.PolicyPermission{data.PermissionWrite},
+	)
+	if !allowed {
+		responseBody := net.MarshalBody(reqres.SecretUndeleteResponse{
+			Err: reqres.ErrUnauthorized,
+		}, w)
+		net.Respond(http.StatusUnauthorized, responseBody, w)
+		return entity.ErrUnauthorized
+	}
+
+	err = state.UndeleteSecret(path, versions)
+	if err != nil {
+		log.Log().Info(fName, "msg", "Failed to undelete secret", "err", err)
 	} else {
-		log.Log().Info("routeUndeleteSecret", "msg", "Secret undeleted")
+		log.Log().Info(fName, "msg", "Secret undeleted")
 	}
 
 	responseBody := net.MarshalBody(reqres.SecretUndeleteResponse{}, w)
 	if responseBody == nil {
-		return errors.New("failed to marshal response body")
+		return entity.ErrMarshalFailure
 	}
 
 	net.Respond(http.StatusOK, responseBody, w)
-	log.Log().Info("routeUndeleteSecret", "msg", "OK")
+	log.Log().Info(fName, "msg", reqres.ErrSuccess)
 	return nil
 }

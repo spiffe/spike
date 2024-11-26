@@ -8,8 +8,11 @@ import (
 	"context"
 	"errors"
 	"log"
+	"net/http"
 	"os"
 
+	"github.com/spiffe/go-spiffe/v2/spiffeid"
+	"github.com/spiffe/go-spiffe/v2/svid/x509svid"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 )
 
@@ -90,6 +93,47 @@ func AppSpiffeSource(ctx context.Context) (
 	}
 
 	return source, svid.ID.String(), nil
+}
+
+// IdFromRequest extracts the SPIFFE ID from the TLS peer certificate of
+// an HTTP request.
+// It checks if the incoming request has a valid TLS connection and at least one
+// peer certificate.
+// The first certificate in the chain is used to extract the SPIFFE ID.
+//
+// Params:
+//
+//	r *http.Request - The HTTP request from which the SPIFFE ID is to be
+//	extracted.
+//
+// Returns:
+//
+//	 *spiffeid.ID - The SPIFFE ID extracted from the first peer certificate,
+//	 or nil if extraction fails.
+//	 error - An error object indicating the failure reason. Possible errors
+//	include the absence of peer certificates or a failure in extracting the
+//	SPIFFE ID from the certificate.
+//
+// Note:
+//
+//	This function assumes that the request is already over a secured TLS
+//	connection and will fail if the TLS connection state is not available or
+//	the peer certificates are missing.
+func IdFromRequest(r *http.Request) (*spiffeid.ID, error) {
+	tlsConnectionState := r.TLS
+	if len(tlsConnectionState.PeerCertificates) == 0 {
+		return nil, errors.New("no peer certs")
+	}
+
+	id, err := x509svid.IDFromCert(tlsConnectionState.PeerCertificates[0])
+	if err != nil {
+		return nil, errors.Join(
+			err,
+			errors.New("problem extracting svid"),
+		)
+	}
+
+	return &id, nil
 }
 
 // CloseSource safely closes an X509Source.

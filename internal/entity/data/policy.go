@@ -4,26 +4,26 @@
 
 package data
 
-import "time"
-
-type InitState string
-
-const AlreadyInitialized InitState = "AlreadyInitialized"
-const NotInitialized InitState = "NotInitialized"
-
-type Secret struct {
-	Data map[string]string `json:"data"`
-}
+import (
+	"regexp"
+	"time"
+)
 
 type PolicyPermission string
 
 // PermissionRead gives permission to read secrets.
-// This includes listing secrets.
+// This DOES NOT include listing secrets.
 const PermissionRead PolicyPermission = "read"
 
 // PermissionWrite gives permission to write (including
 // create, update and delete) secrets.
 const PermissionWrite PolicyPermission = "write"
+
+const PermissionList PolicyPermission = "list"
+
+// PermissionSuper gives superuser permissions.
+// The user is the alpha and the omega.
+const PermissionSuper PolicyPermission = "super"
 
 type Policy struct {
 	Id              string             `json:"id"`
@@ -33,4 +33,8 @@ type Policy struct {
 	Permissions     []PolicyPermission `json:"permissions"`
 	CreatedAt       time.Time          `json:"created_at"`
 	CreatedBy       string             `json:"created_by"`
+
+	// Unexported fields won't be serialized to JSON
+	IdRegex   *regexp.Regexp `json:"-"`
+	PathRegex *regexp.Regexp `json:"-"`
 }

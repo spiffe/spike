@@ -30,4 +30,9 @@ func main() {
 	fmt.Println("SPIFFE ID:", spiffeid)
 
 	fmt.Println("Demo app authenticated")
+
+	// TODO: assign this demo workload a unique SPIFFEID.
+	// Then assign a "read" permission on a path.
+	// let it read a secret on that path and succeed.
+	// let it read a secret on another path and fail.
 }

@@ -6,9 +6,13 @@ package base
 
 import (
 	"errors"
+	"fmt"
+	"regexp"
 	"time"
 
 	"github.com/google/uuid"
+
+	"github.com/spiffe/spike/internal/auth"
 	"github.com/spiffe/spike/internal/entity/data"
 )
 
@@ -18,10 +22,86 @@ var (
 	ErrInvalidPolicy  = errors.New("invalid policy")
 )
 
+func contains(permissions []data.PolicyPermission, permission data.PolicyPermission) bool {
+	for _, p := range permissions {
+		if p == permission {
+			return true
+		}
+	}
+	return false
+}
+
+func hasAllPermissions(haves []data.PolicyPermission, wants []data.PolicyPermission) bool {
+	for _, want := range wants {
+		if !contains(haves, want) {
+			return false
+		}
+	}
+	return true
+}
+
+func CheckAccess(spiffeId string, path string, wants []data.PolicyPermission) bool {
+	if auth.IsPilot(spiffeId) {
+		return true
+	}
+
+	policies := ListPolicies()
+	for _, policy := range policies {
+		// Check wildcard pattern first
+		if policy.SpiffeIdPattern == "*" && policy.PathPattern == "*" {
+			if hasAllPermissions(policy.Permissions, wants) {
+				return true
+			}
+			continue
+		}
+
+		// Check specific patterns using pre-compiled regexes
+
+		if policy.SpiffeIdPattern != "*" {
+			if !policy.IdRegex.MatchString(spiffeId) {
+				continue
+			}
+		}
+
+		if policy.PathPattern != "*" {
+			if !policy.PathRegex.MatchString(path) {
+				continue
+			}
+		}
+
+		if contains(policy.Permissions, data.PermissionSuper) {
+			return true
+		}
+
+		if hasAllPermissions(policy.Permissions, wants) {
+			return true
+		}
+	}
+
+	return false
+}
+
 // CreatePolicy creates a new policy with an auto-generated ID.
 func CreatePolicy(policy data.Policy) (data.Policy, error) {
 	if policy.Name == "" {
 		return data.Policy{}, ErrInvalidPolicy
+	}
+
+	// Compile and validate patterns
+	if policy.SpiffeIdPattern != "*" {
+		idRegex, err := regexp.Compile(policy.SpiffeIdPattern)
+		if err != nil {
+			return data.Policy{}, fmt.Errorf("%s: %v", "invalid spiffeid pattern", err)
+		}
+		policy.IdRegex = idRegex
+	}
+
+	if policy.PathPattern != "*" {
+		pathRegex, err := regexp.Compile(policy.PathPattern)
+		if err != nil {
+			return data.Policy{}, fmt.Errorf("%s: %v", "invalid path pattern", err)
+		}
+		policy.PathRegex = pathRegex
 	}
 
 	// Generate ID and set creation time

@@ -5,10 +5,10 @@
 package store
 
 import (
-	"errors"
 	"net/http"
 
 	"github.com/spiffe/spike/app/keeper/internal/state"
+	"github.com/spiffe/spike/internal/entity"
 	"github.com/spiffe/spike/internal/entity/v1/reqres"
 	"github.com/spiffe/spike/internal/log"
 	"github.com/spiffe/spike/internal/net"
@@ -44,13 +44,12 @@ import (
 func RouteKeep(
 	w http.ResponseWriter, r *http.Request, audit *log.AuditEntry,
 ) error {
-	log.Log().Info("routeKeep", "method", r.Method, "path", r.URL.Path,
-		"query", r.URL.RawQuery)
-	audit.Action = log.AuditCreate
+	const fName = "routeKeep"
+	log.AuditRequest(fName, r, audit, log.AuditCreate)
 
 	requestBody := net.ReadRequestBody(w, r)
 	if requestBody == nil {
-		return errors.New("failed to read request body")
+		return entity.ErrReadFailure
 	}
 
 	request := net.HandleRequest[
@@ -59,22 +58,22 @@ func RouteKeep(
 		reqres.RootKeyCacheResponse{Err: reqres.ErrBadInput},
 	)
 	if request == nil {
-		return errors.New("failed to parse request body")
+		return entity.ErrParseFailure
 	}
 
 	rootKey := request.RootKey
 	if rootKey == "" {
-		return errors.New("root key is required")
+		return entity.ErrMissingRootKey
 	}
 
 	state.SetRootKey(rootKey)
 
 	responseBody := net.MarshalBody(reqres.RootKeyCacheResponse{}, w)
 	if responseBody == nil {
-		return errors.New("failed to marshal response body")
+		return entity.ErrMarshalFailure
 	}
 
 	net.Respond(http.StatusOK, responseBody, w)
-	log.Log().Info("routeKeep", "msg", "OK")
+	log.Log().Info(fName, "msg", reqres.ErrSuccess)
 	return nil
 }

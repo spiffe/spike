@@ -5,14 +5,15 @@
 package initialization
 
 import (
-	"errors"
 	"net/http"
 
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
+	"github.com/spiffe/spike/internal/entity"
 	"github.com/spiffe/spike/internal/entity/data"
 	"github.com/spiffe/spike/internal/entity/v1/reqres"
 	"github.com/spiffe/spike/internal/log"
 	"github.com/spiffe/spike/internal/net"
+	"github.com/spiffe/spike/pkg/spiffe"
 )
 
 // RouteInitCheck handles HTTP requests to check the initialization state of
@@ -56,45 +57,61 @@ import (
 func RouteInitCheck(
 	w http.ResponseWriter, r *http.Request, audit *log.AuditEntry,
 ) error {
-	log.Log().Info("routeInitCheck", "method", r.Method, "path", r.URL.Path,
-		"query", r.URL.RawQuery)
-	audit.Action = log.AuditInitCheck
+	const fName = "routeInitCheck"
+	log.AuditRequest(fName, r, audit, log.AuditInitCheck)
 
-	// No need to check for valid JWT here. System initialization is done
-	// anonymously by the first user (who will be the admin).
-	// If the system is already initialized, this process will err out anyway.
+	spiffeid, err := spiffe.IdFromRequest(r)
+	if err != nil {
+		responseBody := net.MarshalBody(reqres.CheckInitStateResponse{
+			Err: reqres.ErrUnauthorized,
+		}, w)
+		net.Respond(http.StatusUnauthorized, responseBody, w)
+		return err
+	}
+
+	allowed := state.CheckAccess(
+		spiffeid.String(), "*",
+		[]data.PolicyPermission{data.PermissionSuper},
+	)
+	if !allowed {
+		responseBody := net.MarshalBody(reqres.CheckInitStateResponse{
+			Err: reqres.ErrUnauthorized,
+		}, w)
+		net.Respond(http.StatusUnauthorized, responseBody, w)
+		return entity.ErrUnauthorized
+	}
 
 	responseBody := net.ReadRequestBody(w, r)
 	if responseBody == nil {
-		return errors.New("failed to read request body")
+		return entity.ErrReadFailure
 	}
 
 	if state.Initialized() {
-		log.Log().Info("routeInitCheck", "msg", "Already initialized")
+		log.Log().Info(fName, "msg", "Already initialized")
 
 		responseBody := net.MarshalBody(reqres.CheckInitStateResponse{
 			State: data.AlreadyInitialized}, w,
 		)
 		if responseBody == nil {
-			return errors.New("failed to marshal response body")
+			return entity.ErrMarshalFailure
 		}
 
 		net.Respond(http.StatusOK, responseBody, w)
-		log.Log().Info("routeInitCheck",
+		log.Log().Info(fName,
 			"already_initialized", true,
-			"msg", "OK",
+			"msg", reqres.ErrSuccess,
 		)
-		return errors.New("already initialized")
+		return entity.ErrAlreadyInitialized
 	}
 
 	responseBody = net.MarshalBody(reqres.CheckInitStateResponse{
 		State: data.NotInitialized,
 	}, w)
 	if responseBody == nil {
-		return errors.New("failed to marshal response body")
+		return entity.ErrMarshalFailure
 	}
 
 	net.Respond(http.StatusOK, responseBody, w)
-	log.Log().Info("routeInitCheck", "msg", "OK")
+	log.Log().Info("routeInitCheck", "msg", reqres.ErrSuccess)
 	return nil
 }

@@ -14,14 +14,14 @@ func trustRoot() string {
 	return tr
 }
 
-func spikeKeeperSpiffeId() string {
+func SpikeKeeperSpiffeId() string {
 	return "spiffe://" + trustRoot() + "/spike/keeper"
 }
 
-func spikeNexusSpiffeId() string {
+func SpikeNexusSpiffeId() string {
 	return "spiffe://" + trustRoot() + "/spike/nexus"
 }
 
-func spikePilotSpiffeId() string {
+func SpikePilotSpiffeId() string {
 	return "spiffe://" + trustRoot() + "/spike/pilot/role/superuser"
 }
