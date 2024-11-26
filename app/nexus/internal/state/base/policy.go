@@ -6,9 +6,10 @@ package base
 
 import (
 	"errors"
+	"time"
+
 	"github.com/google/uuid"
 	"github.com/spiffe/spike/internal/entity/data"
-	"time"
 )
 
 var (

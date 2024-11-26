@@ -15,7 +15,7 @@ import (
 	"github.com/spiffe/spike/internal/entity/data"
 )
 
-// NewSecretGetCommand creates and returns a new cobra.Command for retrieving
+// newSecretGetCommand creates and returns a new cobra.Command for retrieving
 // secrets. It configures a command that fetches and displays secret data from a
 // specified path.
 //
@@ -38,12 +38,12 @@ import (
 //  3. Display all key-value pairs in the secret's data field
 //
 // Error cases:
-//   - SPIKE not initialized: Prompts user to run 'spike initialization'
+//   - SPIKE not initialized: Prompts user to run 'spike init'
 //   - Secret not found: Displays appropriate message
 //   - Read errors: Displays error message
-func NewSecretGetCommand(source *workloadapi.X509Source) *cobra.Command {
+func newSecretGetCommand(source *workloadapi.X509Source) *cobra.Command {
 	var getCmd = &cobra.Command{
-		Use:   "secret get <path>",
+		Use:   "get <path>",
 		Short: "Get secrets from the specified path",
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
@@ -55,7 +55,7 @@ func NewSecretGetCommand(source *workloadapi.X509Source) *cobra.Command {
 			}
 
 			if state == data.NotInitialized {
-				fmt.Println("Please initialize SPIKE first by running 'spike initialization'.")
+				fmt.Println("Please initialize SPIKE first by running 'spike init'.")
 				return
 			}
 

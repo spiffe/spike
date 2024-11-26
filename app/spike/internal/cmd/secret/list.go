@@ -15,7 +15,7 @@ import (
 	"github.com/spiffe/spike/internal/entity/data"
 )
 
-// NewSecretListCommand creates and returns a new cobra.Command for listing all
+// newSecretListCommand creates and returns a new cobra.Command for listing all
 // secret paths. It configures a command that retrieves and displays all
 // available secret paths from the system.
 //
@@ -38,9 +38,9 @@ import (
 //	- secret/path3
 //
 // Note: Requires an initialized SPIKE system and valid authentication
-func NewSecretListCommand(source *workloadapi.X509Source) *cobra.Command {
+func newSecretListCommand(source *workloadapi.X509Source) *cobra.Command {
 	var listCmd = &cobra.Command{
-		Use:   "secret list",
+		Use:   "list",
 		Short: "List all secret paths",
 		Run: func(cmd *cobra.Command, args []string) {
 			state, err := auth.CheckInitState(source)
@@ -51,7 +51,7 @@ func NewSecretListCommand(source *workloadapi.X509Source) *cobra.Command {
 			}
 
 			if state == data.NotInitialized {
-				fmt.Println("Please initialize SPIKE first by running 'spike initialization'.")
+				fmt.Println("Please initialize SPIKE first by running 'spike init'.")
 				return
 			}
 

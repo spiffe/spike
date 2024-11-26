@@ -16,7 +16,7 @@ import (
 	"github.com/spiffe/spike/internal/entity/data"
 )
 
-// NewPolicyListCommand creates a new Cobra command for listing all policies.
+// newPolicyListCommand creates a new Cobra command for listing all policies.
 // It retrieves and displays all existing policies in the system as formatted
 // JSON output.
 //
@@ -67,15 +67,15 @@ import (
 //  4. Display the formatted output
 //
 // Error conditions:
-//   - System not initialized (requires running 'spike initialization' first)
+//   - System not initialized (requires running 'spike init' first)
 //   - Insufficient permissions
 //   - Policy retrieval failure
 //   - JSON formatting failure
 //
 // Note: If no policies exist, an empty array ([]) will be displayed.
-func NewPolicyListCommand(source *workloadapi.X509Source) *cobra.Command {
+func newPolicyListCommand(source *workloadapi.X509Source) *cobra.Command {
 	return &cobra.Command{
-		Use:   "policy list",
+		Use:   "list",
 		Short: "List all policies",
 		Args:  cobra.NoArgs,
 		Run: func(cmd *cobra.Command, args []string) {
@@ -86,7 +86,7 @@ func NewPolicyListCommand(source *workloadapi.X509Source) *cobra.Command {
 			}
 
 			if state == data.NotInitialized {
-				fmt.Println("Please initialize first by running 'spike initialization'.")
+				fmt.Println("Please initialize first by running 'spike init'.")
 				return
 			}
 

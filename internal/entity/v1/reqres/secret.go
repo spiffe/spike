@@ -5,8 +5,9 @@
 package reqres
 
 import (
-	"github.com/spiffe/spike/internal/entity/data"
 	"time"
+
+	"github.com/spiffe/spike/internal/entity/data"
 )
 
 // SecretResponseMetadata is meta information about secrets for internal

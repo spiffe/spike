@@ -17,7 +17,7 @@ import (
 	"github.com/spiffe/spike/internal/entity/data"
 )
 
-// NewSecretUndeleteCommand creates and returns a new cobra.Command for restoring
+// newSecretUndeleteCommand creates and returns a new cobra.Command for restoring
 // deleted secrets. It configures a command that allows users to restore one or
 // more previously deleted versions of a secret at a specified path.
 //
@@ -49,9 +49,9 @@ import (
 //
 // Note: Command currently provides feedback about intended operations
 // but actual restoration functionality is pending implementation
-func NewSecretUndeleteCommand(source *workloadapi.X509Source) *cobra.Command {
+func newSecretUndeleteCommand(source *workloadapi.X509Source) *cobra.Command {
 	var undeleteCmd = &cobra.Command{
-		Use:   "secret undelete <path>",
+		Use:   "undelete <path>",
 		Short: "Undelete secrets at the specified path",
 		Long: `Undelete secrets at the specified path. 
 Specify versions using -v or --versions flag with comma-separated values.
@@ -72,7 +72,7 @@ Examples:
 			}
 
 			if state == data.NotInitialized {
-				fmt.Println("Please initialize SPIKE first by running 'spike initialization'.")
+				fmt.Println("Please initialize SPIKE first by running 'spike init'.")
 				return
 			}
 

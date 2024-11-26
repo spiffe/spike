@@ -16,7 +16,7 @@ import (
 	"github.com/spiffe/spike/internal/entity/data"
 )
 
-// NewSecretPutCommand creates and returns a new cobra.Command for storing secrets.
+// newSecretPutCommand creates and returns a new cobra.Command for storing secrets.
 // It configures a command that stores key-value pairs as a secret at a
 // specified path.
 //
@@ -41,15 +41,15 @@ import (
 //  3. Store the collected key-value pairs at the specified path
 //
 // Error cases:
-//   - SPIKE not initialized: Prompts user to run 'spike initialization'
+//   - SPIKE not initialized: Prompts user to run 'spike init'
 //   - Invalid key-value format: Reports the malformed pair
 //   - Network/storage errors: Displays error message
 //
 // Note: Current admin token verification will be replaced with
 // temporary token authentication in future versions
-func NewSecretPutCommand(source *workloadapi.X509Source) *cobra.Command {
+func newSecretPutCommand(source *workloadapi.X509Source) *cobra.Command {
 	var putCmd = &cobra.Command{
-		Use:   "secret put <path> <key=value>...",
+		Use:   "put <path> <key=value>...",
 		Short: "Put secrets at the specified path",
 		Args:  cobra.MinimumNArgs(2),
 		Run: func(cmd *cobra.Command, args []string) {
@@ -61,7 +61,7 @@ func NewSecretPutCommand(source *workloadapi.X509Source) *cobra.Command {
 			}
 
 			if state == data.NotInitialized {
-				fmt.Println("Please initialize SPIKE first by running 'spike initialization'.")
+				fmt.Println("Please initialize SPIKE first by running 'spike init'.")
 				return
 			}
 

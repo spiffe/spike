@@ -1,9 +1,10 @@
 package api
 
 import (
+	"net/url"
+
 	"github.com/spiffe/spike/app/spike/internal/env"
 	"github.com/spiffe/spike/internal/net"
-	"net/url"
 )
 
 // UrlInit returns the URL for initializing SPIKE Nexus.

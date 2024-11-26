@@ -116,6 +116,51 @@ to your `/etc/hosts` file:
 127.0.0.1 spire.spike.ist
 ```
 
+## SPIKE Starter Script
+
+There is a starter script that combines and automates some of the steps in the
+following sections. It configures and runs SPIRE Server, SPIRE Agent, 
+SPIKE Nexus, and SPIKE Keeper.
+
+You can run this to start all the required components:
+
+```bash
+# Start everything.
+./hack/start.sh
+```
+
+And then, on a separate terminal, you can run `spike`:
+
+```bash
+# Make sure you have the `spike` binary in your PATH.
+spike
+
+# Sample Output:
+# SPIKE
+# >> Secure your secrets with SPIFFE: https://spike.ist/ #
+#
+# Usage:
+#  spike [command]
+#
+# Available Commands:
+#  completion  Generate the autocompletion script
+#  help        Help about any command
+#  init        Initialize spike configuration
+#  policy      Manage policies
+#  secret      Manage secrets
+#
+# Flags:
+#   -h, --help   help for spike
+#
+# Use "spike [command] --help" for more information about a command.
+```
+
+Although the `./hack/start.sh` script is convenient, it might be useful
+to run the components individually to understand the process better and
+debug any issues that might arise.
+
+The following sections will guide you through the individual steps.
+
 ## Start SPIRE Server
 
 Start the SPIRE Server:

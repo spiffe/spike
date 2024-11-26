@@ -28,7 +28,7 @@ var ErrAlreadyInitialized = errors.New("already initialized")
 // This function MUST be called ONCE during the application's startup.
 //
 // Note that this initialization is different from the initialization flow
-// that is manually done by the admin through `spike initialization`.
+// that is manually done by the admin through `spike init`.
 //
 // It is important to note that once the initialization is complete, the
 // application is **guaranteed** to have a root key available for use.

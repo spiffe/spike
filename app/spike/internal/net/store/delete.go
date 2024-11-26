@@ -10,6 +10,7 @@ import (
 	"strconv"
 
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
+
 	"github.com/spiffe/spike/app/spike/internal/net/api"
 	"github.com/spiffe/spike/internal/auth"
 	"github.com/spiffe/spike/internal/entity/v1/reqres"

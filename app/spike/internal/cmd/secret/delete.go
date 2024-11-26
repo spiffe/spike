@@ -17,7 +17,7 @@ import (
 	"github.com/spiffe/spike/internal/entity/data"
 )
 
-// NewSecretDeleteCommand creates and returns a new cobra.Command for deleting
+// newSecretDeleteCommand creates and returns a new cobra.Command for deleting
 // secrets. It configures a command that allows users to delete one or more
 // versions of a secret at a specified path.
 //
@@ -46,9 +46,9 @@ import (
 //   - Exactly one path argument is provided
 //   - Version numbers are valid non-negative integers
 //   - Version strings are properly formatted
-func NewSecretDeleteCommand(source *workloadapi.X509Source) *cobra.Command {
+func newSecretDeleteCommand(source *workloadapi.X509Source) *cobra.Command {
 	var deleteCmd = &cobra.Command{
-		Use:   "secret delete <path>",
+		Use:   "delete <path>",
 		Short: "Delete secrets at the specified path",
 		Long: `Delete secrets at the specified path. 
 Specify versions using -v or --versions flag with comma-separated values.
@@ -69,7 +69,7 @@ Examples:
 			}
 
 			if state == data.NotInitialized {
-				fmt.Println("Please initialize SPIKE first by running 'spike initialization'.")
+				fmt.Println("Please initialize SPIKE first by running 'spike init'.")
 				return
 			}
 

@@ -16,7 +16,7 @@ import (
 	"github.com/spiffe/spike/internal/entity/data"
 )
 
-// NewPolicyGetCommand creates a new Cobra command for retrieving policy
+// newPolicyGetCommand creates a new Cobra command for retrieving policy
 // details. It fetches and displays the complete information about a specific
 // policy in a formatted JSON output.
 //
@@ -63,13 +63,13 @@ import (
 //
 // Error conditions:
 //   - Missing policy ID argument
-//   - System not initialized (requires running 'spike initialization' first)
+//   - System not initialized (requires running 'spike init' first)
 //   - Policy not found
 //   - Insufficient permissions
 //   - JSON formatting failure
-func NewPolicyGetCommand(source *workloadapi.X509Source) *cobra.Command {
+func newPolicyGetCommand(source *workloadapi.X509Source) *cobra.Command {
 	return &cobra.Command{
-		Use:   "policy get <policy-id>",
+		Use:   "get <policy-id>",
 		Short: "Get policy details",
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
@@ -80,7 +80,7 @@ func NewPolicyGetCommand(source *workloadapi.X509Source) *cobra.Command {
 			}
 
 			if state == data.NotInitialized {
-				fmt.Println("Please initialize first by running 'spike initialization'.")
+				fmt.Println("Please initialize first by running 'spike init'.")
 				return
 			}
 

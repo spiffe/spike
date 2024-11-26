@@ -3,6 +3,9 @@
 ## Recent
 
 * Enabled policy-based access control.
+* BREAKING: changed the CLI usage. Instead of `spike get`, for example, we
+  now use `spike secret get`. The reason for this change is that we introduced
+  a `policy` command (i.e. `spike policy get`).
 
 ## [0.2.0] - 2024-11-22
 

@@ -16,7 +16,7 @@ import (
 	"github.com/spiffe/spike/internal/entity/data"
 )
 
-// NewPolicyCreateCommand creates a new Cobra command for policy creation.
+// newPolicyCreateCommand creates a new Cobra command for policy creation.
 // It allows users to create new policies via the command line by specifying
 // the policy name, SPIFFE ID pattern, path pattern, and permissions.
 //
@@ -51,12 +51,12 @@ import (
 //
 // Error conditions:
 //   - Missing required flags
-//   - System not initialized (requires running 'spike initialization' first)
+//   - System not initialized (requires running 'spike init' first)
 //   - Invalid SPIFFE ID pattern
 //   - Policy creation failure
-func NewPolicyCreateCommand(source *workloadapi.X509Source) *cobra.Command {
+func newPolicyCreateCommand(source *workloadapi.X509Source) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "policy create",
+		Use:   "create",
 		Short: "Create a new policy",
 		Run: func(cmd *cobra.Command, args []string) {
 			name, _ := cmd.Flags().GetString("name")
@@ -77,7 +77,7 @@ func NewPolicyCreateCommand(source *workloadapi.X509Source) *cobra.Command {
 			}
 
 			if state == data.NotInitialized {
-				fmt.Println("Please initialize first by running 'spike initialization'.")
+				fmt.Println("Please initialize first by running 'spike init'.")
 				return
 			}
 

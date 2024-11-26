@@ -15,7 +15,7 @@ import (
 	"github.com/spiffe/spike/internal/entity/data"
 )
 
-// NewPolicyDeleteCommand creates a new Cobra command for policy deletion.
+// newPolicyDeleteCommand creates a new Cobra command for policy deletion.
 // It allows users to delete existing policies by providing the policy ID
 // as a command line argument.
 //
@@ -46,16 +46,16 @@ import (
 //
 // Error conditions:
 //   - Missing policy ID argument
-//   - System not initialized (requires running 'spike initialization' first)
+//   - System not initialized (requires running 'spike init' first)
 //   - Policy not found
 //   - Insufficient permissions
 //   - Policy deletion failure
 //
 // Note: This operation cannot be undone. The policy will be permanently removed
 // from the system.
-func NewPolicyDeleteCommand(source *workloadapi.X509Source) *cobra.Command {
+func newPolicyDeleteCommand(source *workloadapi.X509Source) *cobra.Command {
 	return &cobra.Command{
-		Use:   "policy delete <policy-id>",
+		Use:   "delete <policy-id>",
 		Short: "Delete a policy",
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
@@ -66,7 +66,7 @@ func NewPolicyDeleteCommand(source *workloadapi.X509Source) *cobra.Command {
 			}
 
 			if state == data.NotInitialized {
-				fmt.Println("Please initialize first by running 'spike initialization'.")
+				fmt.Println("Please initialize first by running 'spike init'.")
 				return
 			}
 

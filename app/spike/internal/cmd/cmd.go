@@ -39,16 +39,9 @@ import (
 //	source := workloadapi.NewX509Source(...)
 //	Initialize(source)
 func Initialize(source *workloadapi.X509Source) {
+	rootCmd.AddCommand(policy.NewPolicyCommand(source))
+	rootCmd.AddCommand(secret.NewSecretCommand(source))
 	rootCmd.AddCommand(system.NewSystemInitCommand(source))
-	rootCmd.AddCommand(secret.NewSecretGetCommand(source))
-	rootCmd.AddCommand(secret.NewSecretDeleteCommand(source))
-	rootCmd.AddCommand(secret.NewSecretUndeleteCommand(source))
-	rootCmd.AddCommand(secret.NewSecretPutCommand(source))
-	rootCmd.AddCommand(secret.NewSecretListCommand(source))
-	rootCmd.AddCommand(policy.NewPolicyCreateCommand(source))
-	rootCmd.AddCommand(policy.NewPolicyDeleteCommand(source))
-	rootCmd.AddCommand(policy.NewPolicyGetCommand(source))
-	rootCmd.AddCommand(policy.NewPolicyListCommand(source))
 }
 
 // Execute runs the root command and handles any errors that occur.
