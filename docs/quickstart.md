@@ -201,7 +201,7 @@ spike init
 # Register a secret:
 spike put /secrets/db-secret username=postgres password=postgres
 
-spike get /secrets/db/secret 
+spike get /secrets/db-secret 
 # Wil return:
 # username=postgres 
 # password=postgres
