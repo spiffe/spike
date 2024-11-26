@@ -5,8 +5,7 @@
 package policy
 
 import (
-	"errors"
-	"github.com/spiffe/spike/pkg/spiffe"
+	"github.com/spiffe/spike/internal/entity"
 	"net/http"
 	"time"
 
@@ -15,6 +14,7 @@ import (
 	"github.com/spiffe/spike/internal/entity/v1/reqres"
 	"github.com/spiffe/spike/internal/log"
 	"github.com/spiffe/spike/internal/net"
+	"github.com/spiffe/spike/pkg/spiffe"
 )
 
 // RoutePutPolicy handles HTTP PUT requests for creating new policies.
@@ -61,13 +61,12 @@ import (
 func RoutePutPolicy(
 	w http.ResponseWriter, r *http.Request, audit *log.AuditEntry,
 ) error {
-	log.Log().Info("routePutPolicy", "method", r.Method, "path", r.URL.Path,
-		"query", r.URL.RawQuery)
-	audit.Action = log.AuditCreate
+	const fName = "routePutPolicy"
+	log.AuditRequest(fName, r, audit, log.AuditCreate)
 
 	requestBody := net.ReadRequestBody(w, r)
 	if requestBody == nil {
-		return errors.New("failed to read request body")
+		return entity.ErrParseFailure
 	}
 
 	request := net.HandleRequest[
@@ -76,7 +75,7 @@ func RoutePutPolicy(
 		reqres.PolicyCreateResponse{Err: reqres.ErrBadInput},
 	)
 	if request == nil {
-		return errors.New("failed to parse request body")
+		return entity.ErrReadFailure
 	}
 
 	// TODO: sanitize
@@ -94,8 +93,7 @@ func RoutePutPolicy(
 		net.Respond(http.StatusUnauthorized, responseBody, w)
 		return err
 	}
-	// TODO: This is a superuser function and it should be treated differently.
-	// maybe a "SUPER" role or something.
+
 	allowed := state.CheckAccess(
 		spiffeid.String(), "*",
 		[]data.PolicyPermission{data.PermissionSuper},
@@ -105,7 +103,7 @@ func RoutePutPolicy(
 			Err: reqres.ErrUnauthorized,
 		}, w)
 		net.Respond(http.StatusUnauthorized, responseBody, w)
-		return errors.New("unauthorized")
+		return entity.ErrUnauthorized
 	}
 
 	policy, err := state.CreatePolicy(data.Policy{
@@ -118,15 +116,14 @@ func RoutePutPolicy(
 		CreatedBy:       "",
 	})
 	if err != nil {
-		log.Log().Info("routePutPolicy",
-			"msg", "Failed to create policy", "err", err)
+		log.Log().Info(fName, "msg", "Failed to create policy", "err", err)
 
 		responseBody := net.MarshalBody(reqres.PolicyCreateResponse{
-			Err: "Internal server error",
+			Err: reqres.ErrInternal,
 		}, w)
 
 		net.Respond(http.StatusInternalServerError, responseBody, w)
-		log.Log().Error("routePutPolicy", "msg", "internal server error")
+		log.Log().Error(fName, "msg", reqres.ErrInternal)
 
 		return err
 	}
@@ -136,7 +133,7 @@ func RoutePutPolicy(
 	}, w)
 
 	net.Respond(http.StatusOK, responseBody, w)
-	log.Log().Info("routePutPolicy", "msg", "OK")
+	log.Log().Info(fName, "msg", reqres.ErrSuccess)
 
 	return nil
 }

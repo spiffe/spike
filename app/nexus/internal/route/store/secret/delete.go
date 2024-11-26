@@ -5,7 +5,7 @@
 package secret
 
 import (
-	"errors"
+	"github.com/spiffe/spike/internal/entity"
 	"github.com/spiffe/spike/internal/entity/data"
 	"github.com/spiffe/spike/pkg/spiffe"
 	"net/http"
@@ -55,13 +55,12 @@ import (
 func RouteDeleteSecret(
 	w http.ResponseWriter, r *http.Request, audit *log.AuditEntry,
 ) error {
-	log.Log().Info("routeDeleteSecret", "method", r.Method, "path", r.URL.Path,
-		"query", r.URL.RawQuery)
-	audit.Action = log.AuditDelete
+	const fName = "routeDeleteSecret"
+	log.AuditRequest(fName, r, audit, log.AuditDelete)
 
 	requestBody := net.ReadRequestBody(w, r)
 	if requestBody == nil {
-		return errors.New("failed to read request body")
+		return entity.ErrReadFailure
 	}
 
 	request := net.HandleRequest[
@@ -70,7 +69,7 @@ func RouteDeleteSecret(
 		reqres.SecretDeleteResponse{Err: reqres.ErrBadInput},
 	)
 	if request == nil {
-		return errors.New("failed to parse request body")
+		return entity.ErrParseFailure
 	}
 
 	path := request.Path
@@ -97,25 +96,22 @@ func RouteDeleteSecret(
 			Err: reqres.ErrUnauthorized,
 		}, w)
 		net.Respond(http.StatusUnauthorized, responseBody, w)
-		return errors.New("unauthorized")
+		return entity.ErrUnauthorized
 	}
 
 	err = state.DeleteSecret(path, versions)
 	if err != nil {
-		log.Log().Info(
-			"routeDeleteSecret", "msg",
-			"Failed to delete secret", "err", err,
-		)
+		log.Log().Info(fName, "msg", "Failed to delete secret", "err", err)
 	} else {
-		log.Log().Info("routeDeleteSecret", "msg", "Secret deleted")
+		log.Log().Info(fName, "msg", "Secret deleted")
 	}
 
 	responseBody := net.MarshalBody(reqres.SecretDeleteResponse{}, w)
 	if responseBody == nil {
-		return errors.New("failed to marshal response body")
+		return entity.ErrMarshalFailure
 	}
 
 	net.Respond(http.StatusOK, responseBody, w)
-	log.Log().Info("routeDeleteSecret", "msg", "OK")
+	log.Log().Info(fName, "msg", reqres.ErrSuccess)
 	return nil
 }

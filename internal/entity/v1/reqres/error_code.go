@@ -9,6 +9,8 @@ type ErrorCode string
 var ErrBadInput = ErrorCode("bad_request")
 var ErrServerFault = ErrorCode("server_fault")
 var ErrUnauthorized = ErrorCode("unauthorized")
+var ErrInternal = ErrorCode("internal_error")
 var ErrLowEntropy = ErrorCode("low_entropy")
 var ErrAlreadyInitialized = ErrorCode("already_initialized")
 var ErrNotFound = ErrorCode("not_found")
+var ErrSuccess = ErrorCode("success")

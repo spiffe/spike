@@ -5,7 +5,7 @@
 package secret
 
 import (
-	"errors"
+	"github.com/spiffe/spike/internal/entity"
 	"github.com/spiffe/spike/internal/entity/data"
 	"github.com/spiffe/spike/pkg/spiffe"
 	"net/http"
@@ -56,13 +56,12 @@ import (
 func RouteListPaths(
 	w http.ResponseWriter, r *http.Request, audit *log.AuditEntry,
 ) error {
-	log.Log().Info("routeListPaths", "method", r.Method, "path", r.URL.Path,
-		"query", r.URL.RawQuery)
-	audit.Action = log.AuditList
+	const fName = "routeListPaths"
+	log.AuditRequest(fName, r, audit, log.AuditList)
 
 	requestBody := net.ReadRequestBody(w, r)
 	if requestBody == nil {
-		return errors.New("failed to read request body")
+		return entity.ErrReadFailure
 	}
 
 	request := net.HandleRequest[
@@ -71,7 +70,7 @@ func RouteListPaths(
 		reqres.SecretListResponse{Err: reqres.ErrBadInput},
 	)
 	if request == nil {
-		return errors.New("failed to parse request body")
+		return entity.ErrParseFailure
 	}
 
 	keys := state.ListKeys()
@@ -93,15 +92,15 @@ func RouteListPaths(
 			Err: reqres.ErrUnauthorized,
 		}, w)
 		net.Respond(http.StatusUnauthorized, responseBody, w)
-		return errors.New("unauthorized")
+		return entity.ErrUnauthorized
 	}
 
 	responseBody := net.MarshalBody(reqres.SecretListResponse{Keys: keys}, w)
 	if responseBody == nil {
-		return errors.New("failed to marshal response body")
+		return entity.ErrMarshalFailure
 	}
 
 	net.Respond(http.StatusOK, responseBody, w)
-	log.Log().Info("routeListPaths", "msg", "OK")
+	log.Log().Info(fName, "msg", reqres.ErrSuccess)
 	return nil
 }

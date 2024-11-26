@@ -5,7 +5,7 @@
 package initialization
 
 import (
-	"errors"
+	"github.com/spiffe/spike/internal/entity"
 	"github.com/spiffe/spike/pkg/spiffe"
 	"net/http"
 
@@ -57,13 +57,8 @@ import (
 func RouteInitCheck(
 	w http.ResponseWriter, r *http.Request, audit *log.AuditEntry,
 ) error {
-	log.Log().Info("routeInitCheck", "method", r.Method, "path", r.URL.Path,
-		"query", r.URL.RawQuery)
-	audit.Action = log.AuditInitCheck
-
-	// No need to check for valid JWT here. System initialization is done
-	// anonymously by the first user (who will be the admin).
-	// If the system is already initialized, this process will err out anyway.
+	const fName = "routeInitCheck"
+	log.AuditRequest(fName, r, audit, log.AuditInitCheck)
 
 	spiffeid, err := spiffe.IdFromRequest(r)
 	if err != nil {
@@ -83,40 +78,40 @@ func RouteInitCheck(
 			Err: reqres.ErrUnauthorized,
 		}, w)
 		net.Respond(http.StatusUnauthorized, responseBody, w)
-		return errors.New("unauthorized")
+		return entity.ErrUnauthorized
 	}
 
 	responseBody := net.ReadRequestBody(w, r)
 	if responseBody == nil {
-		return errors.New("failed to read request body")
+		return entity.ErrReadFailure
 	}
 
 	if state.Initialized() {
-		log.Log().Info("routeInitCheck", "msg", "Already initialized")
+		log.Log().Info(fName, "msg", "Already initialized")
 
 		responseBody := net.MarshalBody(reqres.CheckInitStateResponse{
 			State: data.AlreadyInitialized}, w,
 		)
 		if responseBody == nil {
-			return errors.New("failed to marshal response body")
+			return entity.ErrMarshalFailure
 		}
 
 		net.Respond(http.StatusOK, responseBody, w)
-		log.Log().Info("routeInitCheck",
+		log.Log().Info(fName,
 			"already_initialized", true,
-			"msg", "OK",
+			"msg", reqres.ErrSuccess,
 		)
-		return errors.New("already initialized")
+		return entity.ErrAlreadyInitialized
 	}
 
 	responseBody = net.MarshalBody(reqres.CheckInitStateResponse{
 		State: data.NotInitialized,
 	}, w)
 	if responseBody == nil {
-		return errors.New("failed to marshal response body")
+		return entity.ErrMarshalFailure
 	}
 
 	net.Respond(http.StatusOK, responseBody, w)
-	log.Log().Info("routeInitCheck", "msg", "OK")
+	log.Log().Info("routeInitCheck", "msg", reqres.ErrSuccess)
 	return nil
 }

@@ -7,6 +7,7 @@ package log
 import (
 	"encoding/json"
 	"log"
+	"net/http"
 	"time"
 )
 
@@ -75,4 +76,10 @@ func Audit(entry AuditEntry) {
 	}
 
 	log.Println(string(body))
+}
+
+func AuditRequest(fName string, r *http.Request, audit *AuditEntry, action AuditAction) {
+	Log().Info(fName, "method", r.Method, "path", r.URL.Path,
+		"query", r.URL.RawQuery)
+	audit.Action = action
 }

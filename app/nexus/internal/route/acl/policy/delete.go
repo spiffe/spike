@@ -5,7 +5,7 @@
 package policy
 
 import (
-	"errors"
+	"github.com/spiffe/spike/internal/entity"
 	"github.com/spiffe/spike/internal/entity/data"
 	"github.com/spiffe/spike/pkg/spiffe"
 	"net/http"
@@ -57,13 +57,12 @@ import (
 func RouteDeletePolicy(
 	w http.ResponseWriter, r *http.Request, audit *log.AuditEntry,
 ) error {
-	log.Log().Info("routeDeletePolicy", "method", r.Method, "path", r.URL.Path,
-		"query", r.URL.RawQuery)
-	audit.Action = log.AuditDelete
+	const fName = "routeDeletePolicy"
+	log.AuditRequest(fName, r, audit, log.AuditDelete)
 
 	requestBody := net.ReadRequestBody(w, r)
 	if requestBody == nil {
-		return errors.New("failed to read request body")
+		return entity.ErrReadFailure
 	}
 
 	request := net.HandleRequest[
@@ -72,7 +71,7 @@ func RouteDeletePolicy(
 		reqres.PolicyDeleteResponse{Err: reqres.ErrBadInput},
 	)
 	if request == nil {
-		return errors.New("failed to parse request body")
+		return entity.ErrParseFailure
 	}
 
 	policyId := request.Id
@@ -94,32 +93,31 @@ func RouteDeletePolicy(
 			Err: reqres.ErrUnauthorized,
 		}, w)
 		net.Respond(http.StatusUnauthorized, responseBody, w)
-		return errors.New("unauthorized")
+		return entity.ErrUnauthorized
 	}
 
 	err = state.DeletePolicy(policyId)
 	if err != nil {
-		log.Log().Info("routeDeletePolicy",
-			"msg", "Failed to delete policy", "err", err)
+		log.Log().Info(fName, "msg", "Failed to delete policy", "err", err)
 
 		responseBody := net.MarshalBody(reqres.PolicyDeleteResponse{
-			Err: "Internal server error",
+			Err: reqres.ErrInternal,
 		}, w)
 		if responseBody == nil {
-			return errors.New("failed to marshal response body")
+			return entity.ErrMarshalFailure
 		}
 
 		net.Respond(http.StatusInternalServerError, responseBody, w)
-		log.Log().Info("routeDeletePolicy", "msg", "internal server error")
+		log.Log().Info(fName, "msg", reqres.ErrInternal)
 		return err
 	}
 
 	responseBody := net.MarshalBody(reqres.PolicyDeleteResponse{}, w)
 	if responseBody == nil {
-		return errors.New("failed to marshal response body")
+		return entity.ErrMarshalFailure
 	}
 
 	net.Respond(http.StatusOK, responseBody, w)
-	log.Log().Info("routeDeletePolicy", "msg", "OK")
+	log.Log().Info(fName, "msg", reqres.ErrSuccess)
 	return nil
 }
