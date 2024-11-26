@@ -13,6 +13,8 @@ import (
 	"github.com/spiffe/spike/pkg/store"
 )
 
+// TODO: we'll need persistence for policies too.
+
 // ReadSecret attempts to retrieve a secret from the backend cache at the
 // specified path and version. If no specific version is provided (version = 0),
 // it uses the secret's current version.

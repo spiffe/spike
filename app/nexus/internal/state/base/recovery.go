@@ -9,9 +9,9 @@ import (
 	"github.com/spiffe/spike/app/nexus/internal/state/persist"
 )
 
-// SetAdminRecoveryMetadata updates the admin recovery metadata with the provided
-// token hash and salt. This function is thread-safe and persists the metadata
-// asynchronously.
+// SetAdminRecoveryMetadata updates the admin recovery metadata with the
+// provided token hash and salt. This function is thread-safe and persists the
+// metadata asynchronously.
 //
 // The function performs two operations:
 //  1. Updates the in-memory credentials protected by a mutex
@@ -25,7 +25,6 @@ import (
 // adminRecoveryMetadata variable. After updating the in-memory credentials, it
 // initiates an asynchronous operation to persist the credentials to storage.
 func SetAdminRecoveryMetadata(recoveryTokenHash, encryptedRootKey, salt string) {
-
 	adminRecoveryMetadataMu.Lock()
 	adminRecoveryMetadata = data.RecoveryMetadata{
 		RecoveryTokenHash: recoveryTokenHash,
@@ -41,9 +40,9 @@ func SetAdminRecoveryMetadata(recoveryTokenHash, encryptedRootKey, salt string) 
 	})
 }
 
-// AdminRecoveryMetadata retrieves the current admin recovery metadata in a thread-safe
-// manner. If the in-memory credentials are empty, it attempts to load them from
-// persistent storage.
+// AdminRecoveryMetadata retrieves the current admin recovery metadata in a
+// thread-safe manner. If the in-memory credentials are empty, it attempts to
+// load them from persistent storage.
 //
 // The function follows this logic:
 //  1. Attempts to read in-memory credentials with read lock
@@ -52,8 +51,8 @@ func SetAdminRecoveryMetadata(recoveryTokenHash, encryptedRootKey, salt string) 
 //  3. If loaded from storage, updates in-memory credentials for future use
 //
 // Returns:
-//   - data.RecoveryMetadata: Contains the password hash and salt. May be empty if no
-//     credentials exist in memory or persistent storage
+//   - data.RecoveryMetadata: Contains the password hash and salt. May be empty
+//     if no credentials exist in memory or persistent storage
 //
 // This function is thread-safe using read/write mutex protection for accessing
 // shared credential data. It implements a lazy-loading pattern, only reading

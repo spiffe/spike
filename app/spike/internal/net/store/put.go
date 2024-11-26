@@ -52,10 +52,22 @@ func PutSecret(source *workloadapi.X509Source,
 		return err
 	}
 
-	_, err = net.Post(client, api.UrlSecretPut(), mr)
-	if errors.Is(err, net.ErrUnauthorized) {
-		return errors.New(`unauthorized. Please login first with 'spike login'`)
+	body, err := net.Post(client, api.UrlSecretPut(), mr)
+	if err != nil {
+		return err
 	}
 
-	return err
+	res := reqres.SecretPutResponse{}
+	err = json.Unmarshal(body, &res)
+	if err != nil {
+		return errors.Join(
+			errors.New("putSecret: Problem parsing response body"),
+			err,
+		)
+	}
+	if res.Err != "" {
+		return errors.New(string(res.Err))
+	}
+
+	return nil
 }
