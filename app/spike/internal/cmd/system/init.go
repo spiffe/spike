@@ -13,6 +13,7 @@ import (
 	"github.com/spiffe/spike/app/spike/internal/net/auth"
 	"github.com/spiffe/spike/internal/config"
 	"github.com/spiffe/spike/internal/entity/data"
+	"github.com/spiffe/spike/pkg/retry"
 )
 
 // NewSystemInitCommand creates and returns a new cobra.Command for initializing
@@ -45,7 +46,13 @@ func NewSystemInitCommand(source *workloadapi.X509Source) *cobra.Command {
 		Use:   "init",
 		Short: "Initialize spike configuration",
 		Run: func(cmd *cobra.Command, args []string) {
-			state, err := auth.CheckInitState(source)
+			retrier := retry.NewExponentialRetrier()
+			typedRetrier := retry.NewTypedRetrier[data.InitState](retrier)
+
+			ctx := cmd.Context()
+			state, err := typedRetrier.RetryWithBackoff(ctx, func() (data.InitState, error) {
+				return auth.CheckInitState(source)
+			})
 
 			if err != nil {
 				fmt.Println("Failed to check initialization state:")
@@ -59,7 +66,10 @@ func NewSystemInitCommand(source *workloadapi.X509Source) *cobra.Command {
 				return
 			}
 
-			err = auth.Init(source)
+			err = retrier.RetryWithBackoff(ctx, func() error {
+				return auth.Init(source)
+			})
+
 			if err != nil {
 				fmt.Println("Failed to save admin token:")
 				fmt.Println(err.Error())
