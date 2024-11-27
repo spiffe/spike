@@ -11,6 +11,7 @@ const KeyApiAction = "action"
 type ApiUrl string
 
 const SpikeNexusUrlSecrets ApiUrl = "/v1/store/secrets"
+const SpikeNexusUrlSecretsMetadata ApiUrl = "/v1/store/secrets/metadata"
 const SpikeNexusUrlLogin ApiUrl = "/v1/auth/login"
 const SpikeNexusUrlInit ApiUrl = "/v1/auth/initialization"
 
