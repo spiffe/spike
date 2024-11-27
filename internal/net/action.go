@@ -7,8 +7,6 @@ package net
 type SpikeNexusApiAction string
 
 const KeyApiAction = "action"
-const SpikeNexusUrlSecretsMetadata ApiUrl = "/v1/store/secrets/metadata"
-
 const ActionNexusCheck SpikeNexusApiAction = "check"
 const ActionNexusGet SpikeNexusApiAction = "get"
 const ActionNexusDelete SpikeNexusApiAction = "delete"
