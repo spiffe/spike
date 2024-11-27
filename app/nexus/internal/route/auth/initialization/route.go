@@ -7,10 +7,11 @@ package initialization
 import (
 	"net/http"
 
+	"github.com/spiffe/spike-sdk-go/api/entity/data"
+	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
+	"github.com/spiffe/spike-sdk-go/api/errors"
+
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
-	"github.com/spiffe/spike/internal/entity"
-	"github.com/spiffe/spike/internal/entity/data"
-	"github.com/spiffe/spike/internal/entity/v1/reqres"
 	"github.com/spiffe/spike/internal/log"
 	"github.com/spiffe/spike/internal/net"
 	"github.com/spiffe/spike/pkg/spiffe"
@@ -63,7 +64,7 @@ func RouteInitCheck(
 	spiffeid, err := spiffe.IdFromRequest(r)
 	if err != nil {
 		responseBody := net.MarshalBody(reqres.CheckInitStateResponse{
-			Err: reqres.ErrUnauthorized,
+			Err: data.ErrUnauthorized,
 		}, w)
 		net.Respond(http.StatusUnauthorized, responseBody, w)
 		return err
@@ -75,15 +76,15 @@ func RouteInitCheck(
 	)
 	if !allowed {
 		responseBody := net.MarshalBody(reqres.CheckInitStateResponse{
-			Err: reqres.ErrUnauthorized,
+			Err: data.ErrUnauthorized,
 		}, w)
 		net.Respond(http.StatusUnauthorized, responseBody, w)
-		return entity.ErrUnauthorized
+		return errors.ErrUnauthorized
 	}
 
 	responseBody := net.ReadRequestBody(w, r)
 	if responseBody == nil {
-		return entity.ErrReadFailure
+		return errors.ErrReadFailure
 	}
 
 	if state.Initialized() {
@@ -93,25 +94,25 @@ func RouteInitCheck(
 			State: data.AlreadyInitialized}, w,
 		)
 		if responseBody == nil {
-			return entity.ErrMarshalFailure
+			return errors.ErrMarshalFailure
 		}
 
 		net.Respond(http.StatusOK, responseBody, w)
 		log.Log().Info(fName,
 			"already_initialized", true,
-			"msg", reqres.ErrSuccess,
+			"msg", data.ErrSuccess,
 		)
-		return entity.ErrAlreadyInitialized
+		return errors.ErrAlreadyInitialized
 	}
 
 	responseBody = net.MarshalBody(reqres.CheckInitStateResponse{
 		State: data.NotInitialized,
 	}, w)
 	if responseBody == nil {
-		return entity.ErrMarshalFailure
+		return errors.ErrMarshalFailure
 	}
 
 	net.Respond(http.StatusOK, responseBody, w)
-	log.Log().Info("routeInitCheck", "msg", reqres.ErrSuccess)
+	log.Log().Info("routeInitCheck", "msg", data.ErrSuccess)
 	return nil
 }

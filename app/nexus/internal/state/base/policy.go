@@ -11,9 +11,9 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/spiffe/spike-sdk-go/api/entity/data"
 
 	"github.com/spiffe/spike/internal/auth"
-	"github.com/spiffe/spike/internal/entity/data"
 )
 
 var (
@@ -22,7 +22,8 @@ var (
 	ErrInvalidPolicy  = errors.New("invalid policy")
 )
 
-func contains(permissions []data.PolicyPermission, permission data.PolicyPermission) bool {
+func contains(permissions []data.PolicyPermission,
+	permission data.PolicyPermission) bool {
 	for _, p := range permissions {
 		if p == permission {
 			return true
@@ -31,7 +32,10 @@ func contains(permissions []data.PolicyPermission, permission data.PolicyPermiss
 	return false
 }
 
-func hasAllPermissions(haves []data.PolicyPermission, wants []data.PolicyPermission) bool {
+func hasAllPermissions(
+	haves []data.PolicyPermission,
+	wants []data.PolicyPermission,
+) bool {
 	for _, want := range wants {
 		if !contains(haves, want) {
 			return false
@@ -40,7 +44,9 @@ func hasAllPermissions(haves []data.PolicyPermission, wants []data.PolicyPermiss
 	return true
 }
 
-func CheckAccess(spiffeId string, path string, wants []data.PolicyPermission) bool {
+func CheckAccess(
+	spiffeId string, path string, wants []data.PolicyPermission,
+) bool {
 	if auth.IsPilot(spiffeId) {
 		return true
 	}
@@ -154,6 +160,8 @@ func DeletePolicy(id string) error {
 	policies.Delete(id)
 	return nil
 }
+
+// TODO: longer documentation.
 
 // ListPolicies returns all policies as a slice.
 func ListPolicies() []data.Policy {

@@ -8,10 +8,11 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/spiffe/spike-sdk-go/api/entity/data"
+	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
+	apiErr "github.com/spiffe/spike-sdk-go/api/errors"
+
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
-	"github.com/spiffe/spike/internal/entity"
-	"github.com/spiffe/spike/internal/entity/data"
-	"github.com/spiffe/spike/internal/entity/v1/reqres"
 	"github.com/spiffe/spike/internal/log"
 	"github.com/spiffe/spike/internal/net"
 	"github.com/spiffe/spike/pkg/spiffe"
@@ -88,16 +89,16 @@ func RouteGetPolicy(
 
 	requestBody := net.ReadRequestBody(w, r)
 	if requestBody == nil {
-		return entity.ErrReadFailure
+		return apiErr.ErrReadFailure
 	}
 
 	request := net.HandleRequest[
 		reqres.PolicyReadRequest, reqres.PolicyReadResponse](
 		requestBody, w,
-		reqres.PolicyReadResponse{Err: reqres.ErrBadInput},
+		reqres.PolicyReadResponse{Err: data.ErrBadInput},
 	)
 	if request == nil {
-		return entity.ErrParseFailure
+		return apiErr.ErrParseFailure
 	}
 
 	policyId := request.Id
@@ -105,7 +106,7 @@ func RouteGetPolicy(
 	spiffeId, err := spiffe.IdFromRequest(r)
 	if err != nil {
 		responseBody := net.MarshalBody(reqres.PolicyReadResponse{
-			Err: reqres.ErrUnauthorized,
+			Err: data.ErrUnauthorized,
 		}, w)
 		net.Respond(http.StatusUnauthorized, responseBody, w)
 		return err
@@ -117,10 +118,10 @@ func RouteGetPolicy(
 	)
 	if !allowed {
 		responseBody := net.MarshalBody(reqres.PolicyReadResponse{
-			Err: reqres.ErrUnauthorized,
+			Err: data.ErrUnauthorized,
 		}, w)
 		net.Respond(http.StatusUnauthorized, responseBody, w)
-		return entity.ErrUnauthorized
+		return apiErr.ErrUnauthorized
 	}
 
 	policy, err := state.GetPolicy(policyId)
@@ -129,10 +130,10 @@ func RouteGetPolicy(
 	} else if errors.Is(err, state.ErrPolicyNotFound) {
 		log.Log().Info(fName, "msg", "Policy not found")
 
-		res := reqres.PolicyReadResponse{Err: reqres.ErrNotFound}
+		res := reqres.PolicyReadResponse{Err: data.ErrNotFound}
 		responseBody := net.MarshalBody(res, w)
 		if responseBody == nil {
-			return entity.ErrMarshalFailure
+			return apiErr.ErrMarshalFailure
 		}
 
 		net.Respond(http.StatusNotFound, responseBody, w)
@@ -143,14 +144,14 @@ func RouteGetPolicy(
 		log.Log().Info(fName, "msg", "Failed to retrieve policy", "err", err)
 
 		responseBody := net.MarshalBody(reqres.PolicyReadResponse{
-			Err: reqres.ErrInternal}, w,
+			Err: data.ErrInternal}, w,
 		)
 		if responseBody == nil {
-			return entity.ErrMarshalFailure
+			return apiErr.ErrMarshalFailure
 		}
 
 		net.Respond(http.StatusInternalServerError, responseBody, w)
-		log.Log().Info(fName, "msg", reqres.ErrInternal)
+		log.Log().Info(fName, "msg", data.ErrInternal)
 		return err
 	}
 
@@ -158,11 +159,11 @@ func RouteGetPolicy(
 		reqres.PolicyReadResponse{Policy: policy}, w,
 	)
 	if responseBody == nil {
-		return entity.ErrMarshalFailure
+		return apiErr.ErrMarshalFailure
 	}
 
 	net.Respond(http.StatusOK, responseBody, w)
-	log.Log().Info(fName, "msg", reqres.ErrSuccess)
+	log.Log().Info(fName, "msg", data.ErrSuccess)
 
 	return nil
 }

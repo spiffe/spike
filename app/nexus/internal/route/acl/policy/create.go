@@ -5,13 +5,14 @@
 package policy
 
 import (
+	"github.com/spiffe/spike-sdk-go/api/errors"
 	"net/http"
 	"time"
 
+	"github.com/spiffe/spike-sdk-go/api/entity/data"
+	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
+
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
-	"github.com/spiffe/spike/internal/entity"
-	"github.com/spiffe/spike/internal/entity/data"
-	"github.com/spiffe/spike/internal/entity/v1/reqres"
 	"github.com/spiffe/spike/internal/log"
 	"github.com/spiffe/spike/internal/net"
 	"github.com/spiffe/spike/pkg/spiffe"
@@ -66,16 +67,16 @@ func RoutePutPolicy(
 
 	requestBody := net.ReadRequestBody(w, r)
 	if requestBody == nil {
-		return entity.ErrParseFailure
+		return errors.ErrParseFailure
 	}
 
 	request := net.HandleRequest[
 		reqres.PolicyCreateRequest, reqres.PolicyCreateResponse](
 		requestBody, w,
-		reqres.PolicyCreateResponse{Err: reqres.ErrBadInput},
+		reqres.PolicyCreateResponse{Err: data.ErrBadInput},
 	)
 	if request == nil {
-		return entity.ErrReadFailure
+		return errors.ErrReadFailure
 	}
 
 	// TODO: sanitize
@@ -88,7 +89,7 @@ func RoutePutPolicy(
 	spiffeid, err := spiffe.IdFromRequest(r)
 	if err != nil {
 		responseBody := net.MarshalBody(reqres.PolicyCreateResponse{
-			Err: reqres.ErrUnauthorized,
+			Err: data.ErrUnauthorized,
 		}, w)
 		net.Respond(http.StatusUnauthorized, responseBody, w)
 		return err
@@ -100,10 +101,10 @@ func RoutePutPolicy(
 	)
 	if !allowed {
 		responseBody := net.MarshalBody(reqres.PolicyCreateResponse{
-			Err: reqres.ErrUnauthorized,
+			Err: data.ErrUnauthorized,
 		}, w)
 		net.Respond(http.StatusUnauthorized, responseBody, w)
-		return entity.ErrUnauthorized
+		return errors.ErrUnauthorized
 	}
 
 	policy, err := state.CreatePolicy(data.Policy{
@@ -119,11 +120,11 @@ func RoutePutPolicy(
 		log.Log().Info(fName, "msg", "Failed to create policy", "err", err)
 
 		responseBody := net.MarshalBody(reqres.PolicyCreateResponse{
-			Err: reqres.ErrInternal,
+			Err: data.ErrInternal,
 		}, w)
 
 		net.Respond(http.StatusInternalServerError, responseBody, w)
-		log.Log().Error(fName, "msg", reqres.ErrInternal)
+		log.Log().Error(fName, "msg", data.ErrInternal)
 
 		return err
 	}
@@ -133,7 +134,7 @@ func RoutePutPolicy(
 	}, w)
 
 	net.Respond(http.StatusOK, responseBody, w)
-	log.Log().Info(fName, "msg", reqres.ErrSuccess)
+	log.Log().Info(fName, "msg", data.ErrSuccess)
 
 	return nil
 }

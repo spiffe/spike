@@ -6,12 +6,13 @@ package system
 
 import (
 	"fmt"
+	"github.com/spiffe/spike/pkg/retry"
 
 	"github.com/spf13/cobra"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	spike "github.com/spiffe/spike-sdk-go/api"
 	"github.com/spiffe/spike-sdk-go/api/entity"
-  
+
 	"github.com/spiffe/spike/internal/config"
 )
 
@@ -46,12 +47,13 @@ func NewSystemInitCommand(source *workloadapi.X509Source) *cobra.Command {
 		Short: "Initialize spike configuration",
 		Run: func(cmd *cobra.Command, args []string) {
 			retrier := retry.NewExponentialRetrier()
-			typedRetrier := retry.NewTypedRetrier[data.InitState](retrier)
+			typedRetrier := retry.NewTypedRetrier[entity.InitState](retrier)
 
 			ctx := cmd.Context()
-			state, err := typedRetrier.RetryWithBackoff(ctx, func() (data.InitState, error) {
-				return spike.CheckInitState(source)
-			})
+			state, err := typedRetrier.RetryWithBackoff(ctx,
+				func() (entity.InitState, error) {
+					return spike.CheckInitState(source)
+				})
 
 			if err != nil {
 				fmt.Println("Failed to check initialization state:")
