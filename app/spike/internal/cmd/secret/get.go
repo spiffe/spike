@@ -9,10 +9,8 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
-
-	"github.com/spiffe/spike/app/spike/internal/net/auth"
-	"github.com/spiffe/spike/app/spike/internal/net/store"
-	"github.com/spiffe/spike/internal/entity/data"
+	spike "github.com/spiffe/spike-sdk-go/api"
+	"github.com/spiffe/spike-sdk-go/api/entity"
 )
 
 // newSecretGetCommand creates and returns a new cobra.Command for retrieving
@@ -47,14 +45,14 @@ func newSecretGetCommand(source *workloadapi.X509Source) *cobra.Command {
 		Short: "Get secrets from the specified path",
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
-			state, err := auth.CheckInitState(source)
+			state, err := spike.CheckInitState(source)
 			if err != nil {
 				fmt.Println("Failed to check initialization state:")
 				fmt.Println(err.Error())
 				return
 			}
 
-			if state == data.NotInitialized {
+			if state == entity.NotInitialized {
 				fmt.Println("Please initialize SPIKE first by running 'spike init'.")
 				return
 			}
@@ -62,7 +60,7 @@ func newSecretGetCommand(source *workloadapi.X509Source) *cobra.Command {
 			path := args[0]
 			version, _ := cmd.Flags().GetInt("version")
 
-			secret, err := store.GetSecret(source, path, version)
+			secret, err := spike.GetSecret(source, path, version)
 			if err != nil {
 				fmt.Println("Error reading secret:", err.Error())
 				return

@@ -1,6 +1,6 @@
 module github.com/spiffe/spike
 
-go 1.23.2
+go 1.23.3
 
 require (
 	github.com/cenkalti/backoff/v4 v4.3.0
@@ -12,6 +12,7 @@ require (
 	github.com/spiffe/go-spiffe/v2 v2.4.0
 	github.com/stretchr/testify v1.9.0
 	golang.org/x/crypto v0.26.0
+	github.com/spiffe/spike-sdk-go v0.1.4
 )
 
 require (

@@ -10,10 +10,8 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
-
-	"github.com/spiffe/spike/app/spike/internal/net/acl"
-	"github.com/spiffe/spike/app/spike/internal/net/auth"
-	"github.com/spiffe/spike/internal/entity/data"
+	spike "github.com/spiffe/spike-sdk-go/api"
+	"github.com/spiffe/spike-sdk-go/api/entity"
 )
 
 // newPolicyGetCommand creates a new Cobra command for retrieving policy
@@ -73,19 +71,19 @@ func newPolicyGetCommand(source *workloadapi.X509Source) *cobra.Command {
 		Short: "Get policy details",
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
-			state, err := auth.CheckInitState(source)
+			state, err := spike.CheckInitState(source)
 			if err != nil {
 				fmt.Println("Failed to check initialization state:", err)
 				return
 			}
 
-			if state == data.NotInitialized {
+			if state == entity.NotInitialized {
 				fmt.Println("Please initialize first by running 'spike init'.")
 				return
 			}
 
 			policyID := args[0]
-			policy, err := acl.GetPolicy(source, policyID)
+			policy, err := spike.GetPolicy(source, policyID)
 			if err != nil {
 				fmt.Printf("Error: %v\n", err)
 				return
