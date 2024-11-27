@@ -73,8 +73,8 @@ func newSecretGetCommand(source *workloadapi.X509Source) *cobra.Command {
 				return
 			}
 
-			data := secret.Data
-			for k, v := range data {
+			d := secret.Data
+			for k, v := range d {
 				fmt.Printf("%s: %s\n", k, v)
 			}
 		},

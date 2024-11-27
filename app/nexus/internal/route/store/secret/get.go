@@ -91,11 +91,13 @@ func RouteGetSecret(
 		net.Respond(http.StatusUnauthorized, responseBody, w)
 		return err
 	}
+
 	allowed := state.CheckAccess(
 		spiffeId.String(),
 		path,
 		[]data.PolicyPermission{data.PermissionRead},
 	)
+
 	if !allowed {
 		responseBody := net.MarshalBody(reqres.SecretReadResponse{
 			Err: reqres.ErrUnauthorized,
