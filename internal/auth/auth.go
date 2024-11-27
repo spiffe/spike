@@ -87,8 +87,11 @@ func CanTalkToAnyone(_ string) bool {
 //
 // Returns:
 //   - bool: true if the SPIFFE ID matches the Keeper SPIFFE ID, false otherwise
-func CanTalkToNexus(spiffeid string) bool {
-	return spiffeid == SpikeKeeperSpiffeId() || spiffeid == SpikePilotSpiffeId()
+func CanTalkToNexus(_ string) bool {
+	// TODO: we don't need this predicate anymore since we are doing policy management.
+
+	return true
+	// return spiffeid == SpikeKeeperSpiffeId() || spiffeid == SpikePilotSpiffeId()
 }
 
 // CanTalkToKeeper checks if the provided SPIFFE ID matches the SPIKE Nexus

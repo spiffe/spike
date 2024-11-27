@@ -8,6 +8,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/spiffe/spike/app/demo/store"
 	"github.com/spiffe/spike/pkg/spiffe"
 )
 
@@ -29,10 +30,24 @@ func main() {
 	// SPIFFE ID.
 	fmt.Println("SPIFFE ID:", spiffeid)
 
-	fmt.Println("Demo app authenticated")
+	path := "/tenants/demo/db/creds"
+	version := 0
 
-	// TODO: assign this demo workload a unique SPIFFEID.
-	// Then assign a "read" permission on a path.
-	// let it read a secret on that path and succeed.
-	// let it read a secret on another path and fail.
+	secret, err := store.GetSecret(source, path, version)
+	if err != nil {
+		fmt.Println("Error reading secret:", err.Error())
+		return
+	}
+
+	if secret == nil {
+		fmt.Println("Secret not found.")
+		return
+	}
+
+	fmt.Println("Secret found:")
+
+	data := secret.Data
+	for k, v := range data {
+		fmt.Printf("%s: %s\n", k, v)
+	}
 }

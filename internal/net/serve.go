@@ -44,7 +44,7 @@ func CreateMtlsServer(source *workloadapi.X509Source,
 		}
 
 		return fmt.Errorf(
-			"TLS Config: untrusted spiffe id: '%s'", id.String(),
+			"authorizer: TLS Config: untrusted spiffe id: '%s'", id.String(),
 		)
 	})
 

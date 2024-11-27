@@ -4,6 +4,8 @@
 #  \\\\\ Copyright 2024-present SPIKE contributors.
 # \\\\\\\ SPDX-License-Identifier: Apache-2.0
 
+# TODO: redirect the output of background processes to files.
+
 # Trap script exit and cleanup background processes
 cleanup() {
     echo "Cleaning up background processes..."

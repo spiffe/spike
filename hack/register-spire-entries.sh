@@ -13,27 +13,8 @@ NEXUS_SHA=$(sha256sum "$NEXUS_PATH" | cut -d' ' -f1)
 PILOT_PATH="$(pwd)/spike"
 PILOT_SHA=$(sha256sum "$PILOT_PATH" | cut -d' ' -f1)
 
-# ## A note for Mac OS users ##
-#
-# The SPIRE Unix Workload Attestor plugin generates selectors based on 
-# Unix-specific attributes of workloads. 
-#
-# On Darwin (macOS), the following selectors are supported:
-# * unix:uid: The user ID of the workload (e.g., unix:uid:1000).
-# * unix:user: The username of the workload (e.g., unix:user:nginx).
-# * unix:gid: The group ID of the workload (e.g., unix:gid:1000).
-# * unix:group: The group name of the workload (e.g., unix:group:www-data).
-#
-# However, the following selectors are not supported on Darwin:
-# * unix:supplementary_gid: The supplementary group ID of the workload.
-# * unix:supplementary_group: The supplementary group name of the workload.
-#
-# ^ These selectors are currently only supported on Linux systems.
-#
-# Additionally, if the plugin is configured with discover_workload_path = true, 
-# it can provide these selectors:
-# * unix:path: The path to the workload binary (e.g., unix:path:/usr/bin/nginx).
-# * unix:sha256: The SHA256 digest of the workload binary (e.g., unix:sha256:3a6...).
+DEMO_PATH="$(pwd)/demo"
+DEMO_SHA=$(sha256sum "$DEMO_PATH" | cut -d' ' -f1)
 
 # Register SPIKE Keeper
 spire-server entry create \
@@ -51,5 +32,24 @@ spire-server entry create \
     -selector unix:path:"$NEXUS_PATH" \
     -selector unix:sha256:"$NEXUS_SHA"
 
+# Register Demo Workload
+spire-server entry create \
+    -spiffeID spiffe://spike.ist/workload/demo \
+    -parentID "spiffe://spike.ist/spire-agent" \
+    -selector unix:uid:"$(id -u)" \
+    -selector unix:path:"$DEMO_PATH" \
+    -selector unix:sha256:"$DEMO_SHA"
 
+# DEBU[0140] PID attested to have selectors
+# pid=10440 selectors="[type:\"unix\"  value:\"uid:1001\" type:\"unix\"  value:\"user:volkan\" type:\"unix\"
+# value:\"gid:1001\" type:\"unix\"  value:\"group:volkan\" type:\"unix\"
+# value:\"supplementary_gid:4\" type:\"unix\"  value:\"supplementary_group:adm\" type:\"unix\"
+# value:\"supplementary_gid:24\" type:\"unix\"  value:\"supplementary_group:cdrom\" type:\"unix\"
+# value:\"supplementary_gid:27\" type:\"unix\"  value:\"supplementary_group:sudo\" type:\"unix\"
+# value:\"supplementary_gid:30\" type:\"unix\"  value:\"supplementary_group:dip\" type:\"unix\"
+# value:\"supplementary_gid:46\" type:\"unix\"  value:\"supplementary_group:plugdev\" type:\"unix\"
+# value:\"supplementary_gid:100\" type:\"unix\"  value:\"supplementary_group:users\" type:\"unix\"
+# value:\"supplementary_gid:121\" type:\"unix\"  value:\"supplementary_group:lpadmin\" type:\"unix\"
+# value:\"supplementary_gid:1001\" type:\"unix\"  value:\"supplementary_group:volkan\" type:\"unix\"
+# value:\"path:/home/volkan/Desktop/WORKSPACE/spike/demo\" type:\"unix\"  value:\"sha256:111501b4abf0f8996621f64631548386f086f96a800fef995864f63fa9fd0362\"]" subsystem_name=workload_attestor
 
