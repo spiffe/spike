@@ -8,7 +8,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/spiffe/spike/app/demo/spike"
+	spike "github.com/spiffe/spike-sdk-go/api"
+
 	"github.com/spiffe/spike/pkg/spiffe"
 )
 

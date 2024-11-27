@@ -1,6 +1,6 @@
 module github.com/spiffe/spike
 
-go 1.23.2
+go 1.23.3
 
 require (
 	github.com/go-jose/go-jose/v4 v4.0.4
@@ -10,6 +10,7 @@ require (
 	github.com/spf13/cobra v1.8.1
 	github.com/spiffe/go-spiffe/v2 v2.4.0
 	golang.org/x/crypto v0.26.0
+	github.com/spiffe/spike-sdk-go v0.1.4
 )
 
 require (

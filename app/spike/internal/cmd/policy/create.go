@@ -6,14 +6,13 @@ package policy
 
 import (
 	"fmt"
+	"github.com/spiffe/spike-sdk-go/api/entity"
 	"strings"
 
 	"github.com/spf13/cobra"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 
-	"github.com/spiffe/spike/app/spike/internal/net/acl"
-	"github.com/spiffe/spike/app/spike/internal/net/auth"
-	"github.com/spiffe/spike/internal/entity/data"
+	spike "github.com/spiffe/spike-sdk-go/api"
 )
 
 // newPolicyCreateCommand creates a new Cobra command for policy creation.
@@ -60,35 +59,35 @@ func newPolicyCreateCommand(source *workloadapi.X509Source) *cobra.Command {
 		Short: "Create a new policy",
 		Run: func(cmd *cobra.Command, args []string) {
 			name, _ := cmd.Flags().GetString("name")
-			spiffeIDPattern, _ := cmd.Flags().GetString("spiffeid")
+			spiffeIddPattern, _ := cmd.Flags().GetString("spiffeid")
 			pathPattern, _ := cmd.Flags().GetString("path")
 			permsStr, _ := cmd.Flags().GetString("permissions")
 
-			if name == "" || spiffeIDPattern == "" ||
+			if name == "" || spiffeIddPattern == "" ||
 				pathPattern == "" || permsStr == "" {
 				fmt.Println("Error: all flags are required")
 				return
 			}
 
-			state, err := auth.CheckInitState(source)
+			state, err := spike.CheckInitState(source)
 			if err != nil {
 				fmt.Println("Failed to check initialization state:", err)
 				return
 			}
 
-			if state == data.NotInitialized {
+			if state == entity.NotInitialized {
 				fmt.Println("Please initialize first by running 'spike init'.")
 				return
 			}
 
 			permissions := strings.Split(permsStr, ",")
-			perms := make([]data.PolicyPermission, 0, len(permissions))
+			perms := make([]entity.PolicyPermission, 0, len(permissions))
 			for _, perm := range permissions {
-				perms = append(perms, data.PolicyPermission(perm))
+				perms = append(perms, entity.PolicyPermission(perm))
 			}
 
-			err = acl.CreatePolicy(
-				source, name, spiffeIDPattern, pathPattern, perms,
+			err = spike.CreatePolicy(
+				source, name, spiffeIddPattern, pathPattern, perms,
 			)
 			if err != nil {
 				fmt.Printf("Error: %v\n", err)

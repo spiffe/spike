@@ -11,10 +11,8 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
-
-	"github.com/spiffe/spike/app/spike/internal/net/auth"
-	"github.com/spiffe/spike/app/spike/internal/net/store"
-	"github.com/spiffe/spike/internal/entity/data"
+	spike "github.com/spiffe/spike-sdk-go/api"
+	"github.com/spiffe/spike-sdk-go/api/entity"
 )
 
 // newSecretDeleteCommand creates and returns a new cobra.Command for deleting
@@ -61,14 +59,14 @@ Examples:
   spike delete secret/apocalyptica -v 0,1,2 # Deletes current version plus versions 1 and 2`,
 		Args: cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
-			state, err := auth.CheckInitState(source)
+			state, err := spike.CheckInitState(source)
 			if err != nil {
 				fmt.Println("Failed to check initialization state:")
 				fmt.Println(err.Error())
 				return
 			}
 
-			if state == data.NotInitialized {
+			if state == entity.NotInitialized {
 				fmt.Println("Please initialize SPIKE first by running 'spike init'.")
 				return
 			}
@@ -98,7 +96,7 @@ Examples:
 				}
 			}
 
-			err = store.DeleteSecret(source, path, versionList)
+			err = spike.DeleteSecret(source, path, versionList)
 			if err != nil {
 				fmt.Printf("Error: %v\n", err)
 				return
