@@ -10,12 +10,6 @@ KEEPER_SHA=$(sha256sum "$KEEPER_PATH" | cut -d' ' -f1)
 NEXUS_PATH="$(pwd)/nexus"
 NEXUS_SHA=$(sha256sum "$NEXUS_PATH" | cut -d' ' -f1)
 
-PILOT_PATH="$(pwd)/spike"
-PILOT_SHA=$(sha256sum "$PILOT_PATH" | cut -d' ' -f1)
-
-DEMO_PATH="$(pwd)/demo"
-DEMO_SHA=$(sha256sum "$DEMO_PATH" | cut -d' ' -f1)
-
 # Register SPIKE Keeper
 spire-server entry create \
     -spiffeID spiffe://spike.ist/spike/keeper \
@@ -32,13 +26,7 @@ spire-server entry create \
     -selector unix:path:"$NEXUS_PATH" \
     -selector unix:sha256:"$NEXUS_SHA"
 
-# Register Demo Workload
-spire-server entry create \
-    -spiffeID spiffe://spike.ist/workload/demo \
-    -parentID "spiffe://spike.ist/spire-agent" \
-    -selector unix:uid:"$(id -u)" \
-    -selector unix:path:"$DEMO_PATH" \
-    -selector unix:sha256:"$DEMO_SHA"
+
 
 # DEBU[0140] PID attested to have selectors
 # pid=10440 selectors="[type:\"unix\"  value:\"uid:1001\" type:\"unix\"  value:\"user:volkan\" type:\"unix\"
