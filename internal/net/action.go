@@ -7,19 +7,8 @@ package net
 type SpikeNexusApiAction string
 
 const KeyApiAction = "action"
-
-type ApiUrl string
-
-const SpikeNexusUrlSecrets ApiUrl = "/v1/store/secrets"
 const SpikeNexusUrlSecretsMetadata ApiUrl = "/v1/store/secrets/metadata"
-const SpikeNexusUrlLogin ApiUrl = "/v1/auth/login"
-const SpikeNexusUrlInit ApiUrl = "/v1/auth/initialization"
 
-const SpikeNexusUrlPolicy ApiUrl = "/v1/acl/policy"
-
-const SpikeKeeperUrlKeep ApiUrl = "/v1/store/keep"
-
-const ActionNexusAdminLogin SpikeNexusApiAction = "admin-login"
 const ActionNexusCheck SpikeNexusApiAction = "check"
 const ActionNexusGet SpikeNexusApiAction = "get"
 const ActionNexusDelete SpikeNexusApiAction = "delete"

@@ -1,17 +1,19 @@
-package secret
-
 //    \\ SPIKE: Secure your secrets with SPIFFE.
 //  \\\\\ Copyright 2024-present SPIKE contributors.
 // \\\\\\\ SPDX-License-Identifier: Apache-2.0
 
+package secret
+
 import (
-	"errors"
 	"net/http"
 
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
+	"github.com/spiffe/spike/internal/entity"
+	"github.com/spiffe/spike/internal/entity/data"
 	"github.com/spiffe/spike/internal/entity/v1/reqres"
 	"github.com/spiffe/spike/internal/log"
 	"github.com/spiffe/spike/internal/net"
+	"github.com/spiffe/spike/pkg/spiffe"
 )
 
 // RoutePutSecret handles HTTP requests to create or update secrets at a
@@ -46,13 +48,12 @@ import (
 func RoutePutSecret(
 	w http.ResponseWriter, r *http.Request, audit *log.AuditEntry,
 ) error {
-	log.Log().Info("routeGetSecret", "method", r.Method, "path", r.URL.Path,
-		"query", r.URL.RawQuery)
-	audit.Action = log.AuditCreate
+	const fName = "routePutSecret"
+	log.AuditRequest(fName, r, audit, log.AuditCreate)
 
 	requestBody := net.ReadRequestBody(w, r)
 	if requestBody == nil {
-		return errors.New("failed to read request body")
+		return entity.ErrReadFailure
 	}
 
 	request := net.HandleRequest[
@@ -61,21 +62,44 @@ func RoutePutSecret(
 		reqres.SecretPutResponse{Err: reqres.ErrBadInput},
 	)
 	if request == nil {
-		return errors.New("failed to parse request body")
+		return entity.ErrParseFailure
 	}
 
 	values := request.Values
 	path := request.Path
 
+	// TODO: we'll likely repeat this in a lot of places, and it can be made
+	// a reusable function; maybe using generics too.
+	spiffeId, err := spiffe.IdFromRequest(r)
+	if err != nil {
+		responseBody := net.MarshalBody(reqres.SecretPutResponse{
+			Err: reqres.ErrUnauthorized,
+		}, w)
+		net.Respond(http.StatusUnauthorized, responseBody, w)
+		return err
+	}
+	allowed := state.CheckAccess(
+		spiffeId.String(),
+		path,
+		[]data.PolicyPermission{data.PermissionWrite},
+	)
+	if !allowed {
+		responseBody := net.MarshalBody(reqres.SecretPutResponse{
+			Err: reqres.ErrUnauthorized,
+		}, w)
+		net.Respond(http.StatusUnauthorized, responseBody, w)
+		return entity.ErrUnauthorized
+	}
+
 	state.UpsertSecret(path, values)
-	log.Log().Info("routePutSecret", "msg", "Secret upserted")
+	log.Log().Info(fName, "msg", "Secret upserted")
 
 	responseBody := net.MarshalBody(reqres.SecretPutResponse{}, w)
 	if responseBody == nil {
-		return errors.New("failed to marshal response body")
+		return entity.ErrMarshalFailure
 	}
 
 	net.Respond(http.StatusOK, responseBody, w)
-	log.Log().Info("routePutSecret", "msg", "OK")
+	log.Log().Info(fName, "msg", reqres.ErrSuccess)
 	return nil
 }

@@ -8,6 +8,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/spiffe/spike/app/demo/spike"
 	"github.com/spiffe/spike/pkg/spiffe"
 )
 
@@ -23,11 +24,26 @@ func main() {
 	defer spiffe.CloseSource(source)
 
 	fmt.Println("Demo app initialized")
-
-	// We cannot have assumptions about how the app SPIFFE ID is formatted.
-	// We need to do some form of registration on SPIKE Nexus to validate the
-	// SPIFFE ID.
 	fmt.Println("SPIFFE ID:", spiffeid)
 
-	fmt.Println("Demo app authenticated")
+	path := "/tenants/demo/db/creds"
+	version := 0
+
+	secret, err := spike.GetSecret(source, path, version)
+	if err != nil {
+		fmt.Println("Error reading secret:", err.Error())
+		return
+	}
+
+	if secret == nil {
+		fmt.Println("Secret not found.")
+		return
+	}
+
+	fmt.Println("Secret found:")
+
+	data := secret.Data
+	for k, v := range data {
+		fmt.Printf("%s: %s\n", k, v)
+	}
 }

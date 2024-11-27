@@ -6,9 +6,11 @@ package reqres
 
 type ErrorCode string
 
-var ErrBadInput = ErrorCode("bad_request")
-var ErrServerFault = ErrorCode("server_fault")
-var ErrUnauthorized = ErrorCode("unauthorized")
-var ErrLowEntropy = ErrorCode("low_entropy")
-var ErrAlreadyInitialized = ErrorCode("already_initialized")
-var ErrNotFound = ErrorCode("not_found")
+const ErrBadInput = ErrorCode("bad_request")
+const ErrServerFault = ErrorCode("server_fault")
+const ErrUnauthorized = ErrorCode("unauthorized")
+const ErrInternal = ErrorCode("internal_error")
+const ErrLowEntropy = ErrorCode("low_entropy")
+const ErrAlreadyInitialized = ErrorCode("already_initialized")
+const ErrNotFound = ErrorCode("not_found")
+const ErrSuccess = ErrorCode("success")
