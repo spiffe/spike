@@ -4,6 +4,6 @@
 #  \\\\\ Copyright 2024-present SPIKE contributors.
 # \\\\\\\ SPDX-License-Identifier: Apache-2.
 
-spike put /tenants/demo/db/creds \
+./spike secret put /tenants/demo/db/creds \
   username=admin \
   password=SPIKERocks
