@@ -40,7 +40,6 @@ func BackendStoreType() StoreType {
 	switch strings.ToLower(st) {
 	case string(S3):
 		panic("SPIKE_NEXUS_BACKEND_STORE=s3 is not implemented yet")
-		return S3
 	case string(Sqlite):
 		return Sqlite
 	case string(Memory):
