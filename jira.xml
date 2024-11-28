@@ -37,6 +37,9 @@
 </low-hanging-fruits>
 <reserved>
 	<issue>
+		add necessary documents and also CODEOWNER team access to SDK REPO.
+	</issue>
+	<issue>
 		What's needed for v1.0.0:
 
 		- Run SPIKE in Kubernetes too.
