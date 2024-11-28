@@ -11,7 +11,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	spike "github.com/spiffe/spike-sdk-go/api"
-	"github.com/spiffe/spike-sdk-go/api/entity"
+	"github.com/spiffe/spike-sdk-go/api/entity/data"
 )
 
 // newPolicyGetCommand creates a new Cobra command for retrieving policy
@@ -77,7 +77,7 @@ func newPolicyGetCommand(source *workloadapi.X509Source) *cobra.Command {
 				return
 			}
 
-			if state == entity.NotInitialized {
+			if state == data.NotInitialized {
 				fmt.Println("Please initialize first by running 'spike init'.")
 				return
 			}

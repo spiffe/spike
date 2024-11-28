@@ -8,7 +8,9 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/spiffe/spike/internal/entity/v1/reqres"
+	"github.com/spiffe/spike-sdk-go/api/entity/data"
+	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
+
 	"github.com/spiffe/spike/internal/net"
 )
 
@@ -28,7 +30,7 @@ func prepareInitRequest(
 	request := net.HandleRequest[
 		reqres.InitRequest, reqres.InitResponse](
 		requestBody, w,
-		reqres.InitResponse{Err: reqres.ErrBadInput},
+		reqres.InitResponse{Err: data.ErrBadInput},
 	)
 	if request == nil {
 		return nil, errors.New("failed to parse request body")

@@ -9,10 +9,10 @@ import (
 
 	"github.com/go-jose/go-jose/v4/json"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
+	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 
 	"github.com/spiffe/spike/app/nexus/internal/net/api"
 	"github.com/spiffe/spike/internal/auth"
-	"github.com/spiffe/spike/internal/entity/v1/reqres"
 	"github.com/spiffe/spike/internal/net"
 )
 

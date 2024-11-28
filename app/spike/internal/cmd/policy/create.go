@@ -6,13 +6,12 @@ package policy
 
 import (
 	"fmt"
-	"github.com/spiffe/spike-sdk-go/api/entity"
 	"strings"
 
 	"github.com/spf13/cobra"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
-
 	spike "github.com/spiffe/spike-sdk-go/api"
+	"github.com/spiffe/spike-sdk-go/api/entity/data"
 )
 
 // newPolicyCreateCommand creates a new Cobra command for policy creation.
@@ -75,15 +74,15 @@ func newPolicyCreateCommand(source *workloadapi.X509Source) *cobra.Command {
 				return
 			}
 
-			if state == entity.NotInitialized {
+			if state == data.NotInitialized {
 				fmt.Println("Please initialize first by running 'spike init'.")
 				return
 			}
 
 			permissions := strings.Split(permsStr, ",")
-			perms := make([]entity.PolicyPermission, 0, len(permissions))
+			perms := make([]data.PolicyPermission, 0, len(permissions))
 			for _, perm := range permissions {
-				perms = append(perms, entity.PolicyPermission(perm))
+				perms = append(perms, data.PolicyPermission(perm))
 			}
 
 			err = spike.CreatePolicy(

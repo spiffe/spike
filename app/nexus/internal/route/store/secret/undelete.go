@@ -7,10 +7,11 @@ package secret
 import (
 	"net/http"
 
+	"github.com/spiffe/spike-sdk-go/api/entity/data"
+	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
+	"github.com/spiffe/spike-sdk-go/api/errors"
+
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
-	"github.com/spiffe/spike/internal/entity"
-	"github.com/spiffe/spike/internal/entity/data"
-	"github.com/spiffe/spike/internal/entity/v1/reqres"
 	"github.com/spiffe/spike/internal/log"
 	"github.com/spiffe/spike/internal/net"
 	"github.com/spiffe/spike/pkg/spiffe"
@@ -56,16 +57,16 @@ func RouteUndeleteSecret(
 
 	requestBody := net.ReadRequestBody(w, r)
 	if requestBody == nil {
-		return entity.ErrReadFailure
+		return errors.ErrReadFailure
 	}
 
 	req := net.HandleRequest[
 		reqres.SecretUndeleteRequest, reqres.SecretUndeleteResponse](
 		requestBody, w,
-		reqres.SecretUndeleteResponse{Err: reqres.ErrBadInput},
+		reqres.SecretUndeleteResponse{Err: data.ErrBadInput},
 	)
 	if req == nil {
-		return entity.ErrParseFailure
+		return errors.ErrParseFailure
 	}
 
 	path := req.Path
@@ -77,10 +78,10 @@ func RouteUndeleteSecret(
 	spiffeid, err := spiffe.IdFromRequest(r)
 	if err != nil {
 		responseBody := net.MarshalBody(reqres.SecretUndeleteResponse{
-			Err: reqres.ErrUnauthorized,
+			Err: data.ErrUnauthorized,
 		}, w)
 		net.Respond(http.StatusUnauthorized, responseBody, w)
-		return entity.ErrUnauthorized
+		return errors.ErrUnauthorized
 	}
 	allowed := state.CheckAccess(
 		spiffeid.String(),
@@ -89,10 +90,10 @@ func RouteUndeleteSecret(
 	)
 	if !allowed {
 		responseBody := net.MarshalBody(reqres.SecretUndeleteResponse{
-			Err: reqres.ErrUnauthorized,
+			Err: data.ErrUnauthorized,
 		}, w)
 		net.Respond(http.StatusUnauthorized, responseBody, w)
-		return entity.ErrUnauthorized
+		return errors.ErrUnauthorized
 	}
 
 	err = state.UndeleteSecret(path, versions)
@@ -104,10 +105,10 @@ func RouteUndeleteSecret(
 
 	responseBody := net.MarshalBody(reqres.SecretUndeleteResponse{}, w)
 	if responseBody == nil {
-		return entity.ErrMarshalFailure
+		return errors.ErrMarshalFailure
 	}
 
 	net.Respond(http.StatusOK, responseBody, w)
-	log.Log().Info(fName, "msg", reqres.ErrSuccess)
+	log.Log().Info(fName, "msg", data.ErrSuccess)
 	return nil
 }

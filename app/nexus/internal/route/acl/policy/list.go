@@ -7,10 +7,11 @@ package policy
 import (
 	"net/http"
 
+	"github.com/spiffe/spike-sdk-go/api/entity/data"
+	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
+	"github.com/spiffe/spike-sdk-go/api/errors"
+
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
-	"github.com/spiffe/spike/internal/entity"
-	"github.com/spiffe/spike/internal/entity/data"
-	"github.com/spiffe/spike/internal/entity/v1/reqres"
 	"github.com/spiffe/spike/internal/log"
 	"github.com/spiffe/spike/internal/net"
 	"github.com/spiffe/spike/pkg/spiffe"
@@ -70,22 +71,22 @@ func RouteListPolicies(
 
 	requestBody := net.ReadRequestBody(w, r)
 	if requestBody == nil {
-		return entity.ErrReadFailure
+		return errors.ErrReadFailure
 	}
 
 	request := net.HandleRequest[
 		reqres.PolicyListRequest, reqres.PolicyListResponse](
 		requestBody, w,
-		reqres.PolicyListResponse{Err: reqres.ErrBadInput},
+		reqres.PolicyListResponse{Err: data.ErrBadInput},
 	)
 	if request == nil {
-		return entity.ErrParseFailure
+		return errors.ErrParseFailure
 	}
 
 	spiffeid, err := spiffe.IdFromRequest(r)
 	if err != nil {
 		responseBody := net.MarshalBody(reqres.PolicyListResponse{
-			Err: reqres.ErrUnauthorized,
+			Err: data.ErrUnauthorized,
 		}, w)
 		net.Respond(http.StatusUnauthorized, responseBody, w)
 		return err
@@ -96,10 +97,10 @@ func RouteListPolicies(
 	)
 	if !allowed {
 		responseBody := net.MarshalBody(reqres.PolicyListResponse{
-			Err: reqres.ErrUnauthorized,
+			Err: data.ErrUnauthorized,
 		}, w)
 		net.Respond(http.StatusUnauthorized, responseBody, w)
-		return entity.ErrUnauthorized
+		return errors.ErrUnauthorized
 	}
 
 	policies := state.ListPolicies()
@@ -108,10 +109,10 @@ func RouteListPolicies(
 		Policies: policies,
 	}, w)
 	if responseBody == nil {
-		return entity.ErrMarshalFailure
+		return errors.ErrMarshalFailure
 	}
 
 	net.Respond(http.StatusOK, responseBody, w)
-	log.Log().Info(fName, "msg", reqres.ErrSuccess)
+	log.Log().Info(fName, "msg", data.ErrSuccess)
 	return nil
 }

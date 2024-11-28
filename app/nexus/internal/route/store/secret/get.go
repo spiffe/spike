@@ -8,10 +8,11 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/spiffe/spike-sdk-go/api/entity/data"
+	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
+	apiErr "github.com/spiffe/spike-sdk-go/api/errors"
+
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
-	"github.com/spiffe/spike/internal/entity"
-	"github.com/spiffe/spike/internal/entity/data"
-	"github.com/spiffe/spike/internal/entity/v1/reqres"
 	"github.com/spiffe/spike/internal/log"
 	"github.com/spiffe/spike/internal/net"
 	"github.com/spiffe/spike/pkg/spiffe"
@@ -68,16 +69,16 @@ func RouteGetSecret(
 
 	requestBody := net.ReadRequestBody(w, r)
 	if requestBody == nil {
-		return entity.ErrReadFailure
+		return apiErr.ErrReadFailure
 	}
 
 	request := net.HandleRequest[
 		reqres.SecretReadRequest, reqres.SecretReadResponse](
 		requestBody, w,
-		reqres.SecretReadResponse{Err: reqres.ErrBadInput},
+		reqres.SecretReadResponse{Err: data.ErrBadInput},
 	)
 	if request == nil {
-		return entity.ErrParseFailure
+		return apiErr.ErrParseFailure
 	}
 
 	version := request.Version
@@ -86,7 +87,7 @@ func RouteGetSecret(
 	spiffeId, err := spiffe.IdFromRequest(r)
 	if err != nil {
 		responseBody := net.MarshalBody(reqres.SecretReadResponse{
-			Err: reqres.ErrUnauthorized,
+			Err: data.ErrUnauthorized,
 		}, w)
 		net.Respond(http.StatusUnauthorized, responseBody, w)
 		return err
@@ -100,10 +101,10 @@ func RouteGetSecret(
 
 	if !allowed {
 		responseBody := net.MarshalBody(reqres.SecretReadResponse{
-			Err: reqres.ErrUnauthorized,
+			Err: data.ErrUnauthorized,
 		}, w)
 		net.Respond(http.StatusUnauthorized, responseBody, w)
-		return entity.ErrUnauthorized
+		return apiErr.ErrUnauthorized
 	}
 
 	secret, err := state.GetSecret(path, version)
@@ -112,10 +113,10 @@ func RouteGetSecret(
 	} else if errors.Is(err, store.ErrSecretNotFound) {
 		log.Log().Info(fName, "msg", "Secret not found")
 
-		res := reqres.SecretReadResponse{Err: reqres.ErrNotFound}
+		res := reqres.SecretReadResponse{Err: data.ErrNotFound}
 		responseBody := net.MarshalBody(res, w)
 		if responseBody == nil {
-			return entity.ErrMarshalFailure
+			return apiErr.ErrMarshalFailure
 		}
 
 		net.Respond(http.StatusNotFound, responseBody, w)
@@ -125,23 +126,23 @@ func RouteGetSecret(
 		log.Log().Info(fName, "msg", "Failed to retrieve secret", "err", err)
 
 		responseBody := net.MarshalBody(reqres.SecretReadResponse{
-			Err: reqres.ErrInternal}, w,
+			Err: data.ErrInternal}, w,
 		)
 		if responseBody == nil {
-			return entity.ErrMarshalFailure
+			return apiErr.ErrMarshalFailure
 		}
 
 		net.Respond(http.StatusInternalServerError, responseBody, w)
-		log.Log().Info(fName, "msg", reqres.ErrInternal)
+		log.Log().Info(fName, "msg", data.ErrInternal)
 		return err
 	}
 
 	responseBody := net.MarshalBody(reqres.SecretReadResponse{Data: secret}, w)
 	if responseBody == nil {
-		return entity.ErrMarshalFailure
+		return apiErr.ErrMarshalFailure
 	}
 
 	net.Respond(http.StatusOK, responseBody, w)
-	log.Log().Info("routeGetSecret", "msg", reqres.ErrSuccess)
+	log.Log().Info("routeGetSecret", "msg", data.ErrSuccess)
 	return nil
 }

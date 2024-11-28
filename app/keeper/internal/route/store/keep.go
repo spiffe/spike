@@ -7,9 +7,11 @@ package store
 import (
 	"net/http"
 
+	"github.com/spiffe/spike-sdk-go/api/entity/data"
+	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
+	"github.com/spiffe/spike-sdk-go/api/errors"
+
 	"github.com/spiffe/spike/app/keeper/internal/state"
-	"github.com/spiffe/spike/internal/entity"
-	"github.com/spiffe/spike/internal/entity/v1/reqres"
 	"github.com/spiffe/spike/internal/log"
 	"github.com/spiffe/spike/internal/net"
 )
@@ -49,31 +51,31 @@ func RouteKeep(
 
 	requestBody := net.ReadRequestBody(w, r)
 	if requestBody == nil {
-		return entity.ErrReadFailure
+		return errors.ErrReadFailure
 	}
 
 	request := net.HandleRequest[
 		reqres.RootKeyCacheRequest, reqres.RootKeyCacheResponse](
 		requestBody, w,
-		reqres.RootKeyCacheResponse{Err: reqres.ErrBadInput},
+		reqres.RootKeyCacheResponse{Err: data.ErrBadInput},
 	)
 	if request == nil {
-		return entity.ErrParseFailure
+		return errors.ErrParseFailure
 	}
 
 	rootKey := request.RootKey
 	if rootKey == "" {
-		return entity.ErrMissingRootKey
+		return errors.ErrMissingRootKey
 	}
 
 	state.SetRootKey(rootKey)
 
 	responseBody := net.MarshalBody(reqres.RootKeyCacheResponse{}, w)
 	if responseBody == nil {
-		return entity.ErrMarshalFailure
+		return errors.ErrMarshalFailure
 	}
 
 	net.Respond(http.StatusOK, responseBody, w)
-	log.Log().Info(fName, "msg", reqres.ErrSuccess)
+	log.Log().Info(fName, "msg", data.ErrSuccess)
 	return nil
 }
