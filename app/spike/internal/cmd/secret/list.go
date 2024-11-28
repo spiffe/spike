@@ -10,7 +10,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	spike "github.com/spiffe/spike-sdk-go/api"
-	"github.com/spiffe/spike-sdk-go/api/entity"
+	"github.com/spiffe/spike-sdk-go/api/entity/data"
 )
 
 // newSecretListCommand creates and returns a new cobra.Command for listing all
@@ -49,7 +49,7 @@ func newSecretListCommand(source *workloadapi.X509Source) *cobra.Command {
 			}
 
 			// Maybe have this as an SDK method instead of exposing the entities.
-			if state == entity.NotInitialized {
+			if state == data.NotInitialized {
 				fmt.Println("Please initialize SPIKE first by running 'spike init'.")
 				return
 			}

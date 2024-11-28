@@ -7,10 +7,11 @@ package secret
 import (
 	"net/http"
 
+	"github.com/spiffe/spike-sdk-go/api/entity/data"
+	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
+	"github.com/spiffe/spike-sdk-go/api/errors"
+
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
-	"github.com/spiffe/spike/internal/entity"
-	"github.com/spiffe/spike/internal/entity/data"
-	"github.com/spiffe/spike/internal/entity/v1/reqres"
 	"github.com/spiffe/spike/internal/log"
 	"github.com/spiffe/spike/internal/net"
 	"github.com/spiffe/spike/pkg/spiffe"
@@ -53,16 +54,16 @@ func RoutePutSecret(
 
 	requestBody := net.ReadRequestBody(w, r)
 	if requestBody == nil {
-		return entity.ErrReadFailure
+		return errors.ErrReadFailure
 	}
 
 	request := net.HandleRequest[
 		reqres.SecretPutRequest, reqres.SecretPutResponse](
 		requestBody, w,
-		reqres.SecretPutResponse{Err: reqres.ErrBadInput},
+		reqres.SecretPutResponse{Err: data.ErrBadInput},
 	)
 	if request == nil {
-		return entity.ErrParseFailure
+		return errors.ErrParseFailure
 	}
 
 	values := request.Values
@@ -73,7 +74,7 @@ func RoutePutSecret(
 	spiffeId, err := spiffe.IdFromRequest(r)
 	if err != nil {
 		responseBody := net.MarshalBody(reqres.SecretPutResponse{
-			Err: reqres.ErrUnauthorized,
+			Err: data.ErrUnauthorized,
 		}, w)
 		net.Respond(http.StatusUnauthorized, responseBody, w)
 		return err
@@ -85,10 +86,10 @@ func RoutePutSecret(
 	)
 	if !allowed {
 		responseBody := net.MarshalBody(reqres.SecretPutResponse{
-			Err: reqres.ErrUnauthorized,
+			Err: data.ErrUnauthorized,
 		}, w)
 		net.Respond(http.StatusUnauthorized, responseBody, w)
-		return entity.ErrUnauthorized
+		return errors.ErrUnauthorized
 	}
 
 	state.UpsertSecret(path, values)
@@ -96,10 +97,10 @@ func RoutePutSecret(
 
 	responseBody := net.MarshalBody(reqres.SecretPutResponse{}, w)
 	if responseBody == nil {
-		return entity.ErrMarshalFailure
+		return errors.ErrMarshalFailure
 	}
 
 	net.Respond(http.StatusOK, responseBody, w)
-	log.Log().Info(fName, "msg", reqres.ErrSuccess)
+	log.Log().Info(fName, "msg", data.ErrSuccess)
 	return nil
 }

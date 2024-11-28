@@ -6,14 +6,14 @@ package system
 
 import (
 	"fmt"
-	"github.com/spiffe/spike/pkg/retry"
 
 	"github.com/spf13/cobra"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	spike "github.com/spiffe/spike-sdk-go/api"
-	"github.com/spiffe/spike-sdk-go/api/entity"
+	"github.com/spiffe/spike-sdk-go/api/entity/data"
 
 	"github.com/spiffe/spike/internal/config"
+	"github.com/spiffe/spike/pkg/retry"
 )
 
 // NewSystemInitCommand creates and returns a new cobra.Command for initializing
@@ -47,11 +47,11 @@ func NewSystemInitCommand(source *workloadapi.X509Source) *cobra.Command {
 		Short: "Initialize spike configuration",
 		Run: func(cmd *cobra.Command, args []string) {
 			retrier := retry.NewExponentialRetrier()
-			typedRetrier := retry.NewTypedRetrier[entity.InitState](retrier)
+			typedRetrier := retry.NewTypedRetrier[data.InitState](retrier)
 
 			ctx := cmd.Context()
 			state, err := typedRetrier.RetryWithBackoff(ctx,
-				func() (entity.InitState, error) {
+				func() (data.InitState, error) {
 					return spike.CheckInitState(source)
 				})
 
@@ -61,7 +61,7 @@ func NewSystemInitCommand(source *workloadapi.X509Source) *cobra.Command {
 				return
 			}
 
-			if state == entity.AlreadyInitialized {
+			if state == data.AlreadyInitialized {
 				fmt.Println("SPIKE is already initialized.")
 				fmt.Println("Nothing to do.")
 				return

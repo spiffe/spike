@@ -12,7 +12,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	spike "github.com/spiffe/spike-sdk-go/api"
-	"github.com/spiffe/spike-sdk-go/api/entity"
+	"github.com/spiffe/spike-sdk-go/api/entity/data"
 )
 
 // newSecretUndeleteCommand creates and returns a new cobra.Command for restoring
@@ -69,7 +69,7 @@ Examples:
 				return
 			}
 
-			if state == entity.NotInitialized {
+			if state == data.NotInitialized {
 				fmt.Println("Please initialize SPIKE first by running 'spike init'.")
 				return
 			}

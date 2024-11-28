@@ -6,11 +6,11 @@ package policy
 
 import (
 	"fmt"
-	"github.com/spiffe/spike-sdk-go/api/entity"
 
 	"github.com/spf13/cobra"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	spike "github.com/spiffe/spike-sdk-go/api"
+	"github.com/spiffe/spike-sdk-go/api/entity/data"
 )
 
 // newPolicyDeleteCommand creates a new Cobra command for policy deletion.
@@ -63,7 +63,7 @@ func newPolicyDeleteCommand(source *workloadapi.X509Source) *cobra.Command {
 				return
 			}
 
-			if state == entity.NotInitialized {
+			if state == data.NotInitialized {
 				fmt.Println("Please initialize first by running 'spike init'.")
 				return
 			}

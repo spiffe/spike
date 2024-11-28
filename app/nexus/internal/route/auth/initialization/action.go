@@ -9,7 +9,9 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/spiffe/spike/internal/entity/v1/reqres"
+	"github.com/spiffe/spike-sdk-go/api/entity/data"
+	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
+
 	"github.com/spiffe/spike/internal/log"
 	"github.com/spiffe/spike/internal/net"
 	"github.com/spiffe/spike/pkg/crypto"
@@ -34,7 +36,7 @@ func generateSalt(w http.ResponseWriter) ([]byte, error) {
 			"err", err.Error())
 
 		responseBody := net.MarshalBody(reqres.InitResponse{
-			Err: reqres.ErrServerFault}, w,
+			Err: data.ErrServerFault}, w,
 		)
 		if responseBody == nil {
 			return []byte{}, errors.New("failed to marshal response body")
