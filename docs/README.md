@@ -23,6 +23,6 @@ as its identity control plane.
 
 ----
 
-[spiffe]: https://spiffe.org/ "Turtle Power"
+[spiffe]: https://spiffe.io/ "Turtle Power"
 [architecture]: architecture/README.md "SPIKE Architecture"
 [quickstart]: quickstart.md "SPIKE Quickstart"
