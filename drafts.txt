@@ -4,6 +4,97 @@
 
 --------------------------------------------------------------------------------
 
+
+login <token>
+login -method=userpass username=myuser password=mypass
+login -method=github token=<github-token>
+login -method=aws role=myrole
+
+put secret/myapp/config username=dbuser password=dbpass
+put secret/myapp/config @config.json
+put -custom-metadata=owner=ops -custom-metadata=env=prod secret/myapp/config username=dbuser
+put -version=2 secret/myapp/config username=newuser
+
+get secret/myapp/config
+get -version=1 secret/myapp/config
+get -field=username secret/myapp/config
+get -format=json secret/myapp/config
+metadata get secret/myapp/config
+
+delete secret/myapp/config
+delete -versions=1,2 secret/myapp/config
+destroy -versions=1 secret/myapp/config
+
+metadata delete secret/myapp/config
+```
+
+ist secret/
+list -format=json secret/
+
+patch secret/myapp/config password=newpass
+patch secret/myapp/config @patch.json
+
+policy write mypolicy policy.yaml
+
+policy read mypolicy
+policy list
+
+policy delete mypolicy
+
+token create -policy=mypolicy
+token create -ttl=1h
+token renew <token>
+token lookup <token>
+token revoke <token>
+
+```bash
+enable userpass
+enable -path=users-temp userpass
+auth disable userpass
+```
+
+```bash
+operator seal
+operator unseal <key>
+operator seal -status
+```
+
+
+```bash
+audit enable file file_path=/var/log/vault/audit.log
+audit list
+
+# Disable audit device
+audit disable file/
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+--------------------------------------------------------------------------------
 // File: server/types.go
 package server
 
