@@ -11,10 +11,8 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
-
-	"github.com/spiffe/spike/app/spike/internal/net/auth"
-	"github.com/spiffe/spike/app/spike/internal/net/store"
-	"github.com/spiffe/spike/internal/entity/data"
+	spike "github.com/spiffe/spike-sdk-go/api"
+	"github.com/spiffe/spike-sdk-go/api/entity/data"
 )
 
 // newSecretUndeleteCommand creates and returns a new cobra.Command for restoring
@@ -64,7 +62,7 @@ Examples:
   spike secret undelete secret/ella -v 0,1,2  # Undeletes current version plus versions 1 and 2`,
 		Args: cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
-			state, err := auth.CheckInitState(source)
+			state, err := spike.CheckInitState(source)
 			if err != nil {
 				fmt.Println("Failed to check initialization state:")
 				fmt.Println(err.Error())
@@ -100,7 +98,7 @@ Examples:
 				}
 			}
 
-			err = store.UndeleteSecret(source, path, versionList)
+			err = spike.UndeleteSecret(source, path, versionList)
 			if err != nil {
 				fmt.Printf("Error: %v\n", err)
 				return

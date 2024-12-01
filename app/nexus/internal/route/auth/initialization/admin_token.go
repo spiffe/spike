@@ -9,9 +9,11 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/spiffe/spike-sdk-go/api/entity/data"
+	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
+
 	"github.com/spiffe/spike/app/nexus/internal/config"
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
-	"github.com/spiffe/spike/internal/entity/v1/reqres"
 	"github.com/spiffe/spike/internal/log"
 	"github.com/spiffe/spike/internal/net"
 )
@@ -31,7 +33,7 @@ func checkPreviousInitialization(w http.ResponseWriter) error {
 		log.Log().Info("routeInit", "msg", "Already initialized")
 
 		responseBody := net.MarshalBody(
-			reqres.InitResponse{Err: reqres.ErrAlreadyInitialized}, w,
+			reqres.InitResponse{Err: data.ErrAlreadyInitialized}, w,
 		)
 		if responseBody == nil {
 			return errors.New("failed to marshal response body")
@@ -64,7 +66,7 @@ func generateAdminSigningToken(w http.ResponseWriter) ([]byte, error) {
 			"msg", "Failed to generate admin token", "err", err.Error())
 
 		responseBody := net.MarshalBody(reqres.InitResponse{
-			Err: reqres.ErrServerFault}, w,
+			Err: data.ErrServerFault}, w,
 		)
 		if responseBody == nil {
 			return []byte{}, errors.New("failed to marshal response body")

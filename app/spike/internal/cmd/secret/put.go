@@ -10,10 +10,8 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
-
-	"github.com/spiffe/spike/app/spike/internal/net/auth"
-	"github.com/spiffe/spike/app/spike/internal/net/store"
-	"github.com/spiffe/spike/internal/entity/data"
+	spike "github.com/spiffe/spike-sdk-go/api"
+	"github.com/spiffe/spike-sdk-go/api/entity/data"
 )
 
 // newSecretPutCommand creates and returns a new cobra.Command for storing secrets.
@@ -53,7 +51,7 @@ func newSecretPutCommand(source *workloadapi.X509Source) *cobra.Command {
 		Short: "Put secrets at the specified path",
 		Args:  cobra.MinimumNArgs(2),
 		Run: func(cmd *cobra.Command, args []string) {
-			state, err := auth.CheckInitState(source)
+			state, err := spike.CheckInitState(source)
 			if err != nil {
 				fmt.Println("Failed to check initialization state:")
 				fmt.Println(err.Error())
@@ -82,7 +80,7 @@ func newSecretPutCommand(source *workloadapi.X509Source) *cobra.Command {
 				return
 			}
 
-			err = store.PutSecret(source, path, values)
+			err = spike.PutSecret(source, path, values)
 			if err != nil {
 				fmt.Printf("Error: %v\n", err)
 				return

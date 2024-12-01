@@ -6,13 +6,10 @@ package secret
 
 import (
 	"fmt"
-
 	"github.com/spf13/cobra"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
-
-	"github.com/spiffe/spike/app/spike/internal/net/auth"
-	"github.com/spiffe/spike/app/spike/internal/net/store"
-	"github.com/spiffe/spike/internal/entity/data"
+	spike "github.com/spiffe/spike-sdk-go/api"
+	"github.com/spiffe/spike-sdk-go/api/entity/data"
 )
 
 // newSecretListCommand creates and returns a new cobra.Command for listing all
@@ -43,19 +40,20 @@ func newSecretListCommand(source *workloadapi.X509Source) *cobra.Command {
 		Use:   "list",
 		Short: "List all secret paths",
 		Run: func(cmd *cobra.Command, args []string) {
-			state, err := auth.CheckInitState(source)
+			state, err := spike.CheckInitState(source)
 			if err != nil {
 				fmt.Println("Failed to check initialization state:")
 				fmt.Println(err.Error())
 				return
 			}
 
+			// Maybe have this as an SDK method instead of exposing the entities.
 			if state == data.NotInitialized {
 				fmt.Println("Please initialize SPIKE first by running 'spike init'.")
 				return
 			}
 
-			keys, err := store.ListSecretKeys(source)
+			keys, err := spike.ListSecretKeys(source)
 			if err != nil {
 				fmt.Println("Error listing secret keys:", err)
 				return

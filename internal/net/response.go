@@ -9,7 +9,9 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/spiffe/spike/internal/entity/v1/reqres"
+	"github.com/spiffe/spike-sdk-go/api/entity/data"
+	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
+
 	"github.com/spiffe/spike/internal/log"
 )
 
@@ -97,7 +99,7 @@ func Fallback(
 		"query", r.URL.RawQuery)
 	audit.Action = log.AuditFallback
 
-	body := MarshalBody(reqres.FallbackResponse{Err: reqres.ErrBadInput}, w)
+	body := MarshalBody(reqres.FallbackResponse{Err: data.ErrBadInput}, w)
 	if body == nil {
 		return errors.New("failed to marshal response body")
 	}

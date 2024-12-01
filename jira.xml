@@ -37,10 +37,59 @@
 </low-hanging-fruits>
 <reserved>
 	<issue>
-		Create a demo app.
-		- initially, demo will be registered as a superuser.
-		- it will use in-tree go code to read all secrets (almost a replica of pilot)
-		- then we'll migrate that go code to an SDK.
+		add necessary documents and also CODEOWNER team access to SDK REPO.
+	</issue>
+	<issue>
+		What's needed for v1.0.0:
+
+		- Run SPIKE in Kubernetes too.
+		- Postgres support as a backing store.
+		- (IDEA) Make the backing store as the source of truth. It simplifies the
+		  architecture. Plus, it is more secure since plaintext secrets are not
+		  stored (even in memory) longer than they are needed.
+		  (BUT) This means Nexus will not work if the backing store is down.
+		  (ALSO) in-memory is faster.
+		  (MAYBE) have several modes of operation where the backing store is the
+		  source of truth, and the in-memory store is a cache or the in-memory store
+		  is the source of truth and the backing store is a cache.
+		  (BECAUSE) high-performance could be the differentiating factor for SPIKE.
+		- Ability to channel audit logs to a log aggregator.
+		- OIDC integration: Ability to connect to an identity provider.
+		- ESO (External Secrets Operator) integration
+		- Postgres support.
+		- And ADMIN UI (linked to OIDC probably)
+		- (Maybe) Ability to use the RESTful API without needing an SDK.
+		  That could be hard though since we rely on SPIFFE authentication and
+		  SPIFFE workload API to gather certs: We can use a tool to automate that
+		  part. But i'ts not that hard either if I know where my certs are:
+		  `curl --cert /path/to/svid_cert.pem --key /path/to/svid_key.pem https://mtls.example.com/resource`
+
+
+		(ALSO)
+		Using a Database as a Source of Truth is a good idea because:
+		* Security and Persistence: As a secrets store, the primary concerns are
+		  security and data integrity. Using an encrypted database as the source
+		  of truth ensures that secrets are securely stored and persist across
+		  system restarts or crashes.
+		* Scalability: Databases can handle growth more effectively, allowing
+		  the system to accommodate increasing amounts of secrets without a
+		  significant redesign.
+		* Simplicity and Maintainability: A single source of truth simplifies
+		  the architecture, making the system easier to develop, maintain, and
+		  secure.
+		* Performance Mitigation: While direct database access is slower than
+		  in-memory access, we can implement caching strategies (e.g., using
+		  in-memory read-through caches) to mitigate latency without
+		  compromising on security and persistence.
+
+
+	</issue>
+	<issue>
+		since OPA knows REST, can we expose a policy evaluation endpoint to
+		help OPA augment/extend SPIKE policy decisions?
+	</issue>
+	<issue>
+		make the demo app use SPIKE SDK; and create a recording about that too.
 	</issue>
 	<issue>
 		maybe create an interface for kv, so we can have thread-safe variants too.
