@@ -4,7 +4,10 @@
 
 package base
 
-import "github.com/spiffe/spike/app/nexus/internal/state/persist"
+import (
+	"github.com/spiffe/spike/app/nexus/internal/state/persist"
+	"github.com/spiffe/spike/pkg/store"
+)
 
 // UpsertSecret stores or updates a secret at the specified path with the
 // provided values. It provides thread-safe access to the underlying key-value
@@ -105,4 +108,39 @@ func GetSecret(path string, version int) (map[string]string, error) {
 	kvMu.Unlock()
 
 	return cachedSecret.Versions[version].Data, nil
+}
+
+// GetRawSecret retrieves a secret with metadata from the specified path and version.
+// It provides thread-safe read access to the secret store.
+//
+// Parameters:
+//   - path: The location of the secret to retrieve
+//   - version: The specific version of the secret to fetch
+//
+// Returns:
+//   - *store.Secret: The secret type
+//   - bool: Whether the secret was found
+func GetRawSecret(path string, version int) (*store.Secret, error) {
+	kvMu.RLock()
+	secret, err := kv.GetRawSecret(path)
+	kvMu.RUnlock()
+
+	if err == nil {
+		return secret, nil
+	}
+
+	cachedSecret := persist.ReadSecret(path, version)
+	if cachedSecret == nil {
+		return nil, err
+	}
+
+	if version == 0 {
+		version = cachedSecret.Metadata.CurrentVersion
+	}
+
+	kvMu.Lock()
+	kv.Put(path, cachedSecret.Versions[version].Data)
+	kvMu.Unlock()
+
+	return cachedSecret, nil
 }

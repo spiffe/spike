@@ -53,6 +53,8 @@ func Route(
 				return policy.RouteDeletePolicy
 			case a == net.ActionNexusList && p == net.SpikeNexusUrlPolicy:
 				return policy.RouteListPolicies
+			case a == net.ActionNexusGet && p == net.SpikeNexusUrlSecretsMetadata:
+				return secret.RouteGetSecretMetadata
 			default:
 				return net.Fallback
 			}

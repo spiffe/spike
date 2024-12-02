@@ -7,7 +7,6 @@ package net
 type SpikeNexusApiAction string
 
 const KeyApiAction = "action"
-
 const ActionNexusCheck SpikeNexusApiAction = "check"
 const ActionNexusGet SpikeNexusApiAction = "get"
 const ActionNexusDelete SpikeNexusApiAction = "delete"

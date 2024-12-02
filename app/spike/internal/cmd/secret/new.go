@@ -17,6 +17,7 @@ func NewSecretCommand(source *workloadapi.X509Source) *cobra.Command {
 	cmd.AddCommand(newSecretUndeleteCommand(source))
 	cmd.AddCommand(newSecretListCommand(source))
 	cmd.AddCommand(newSecretGetCommand(source))
+	cmd.AddCommand(newSecretMetadataGetCommand(source))
 	cmd.AddCommand(newSecretPutCommand(source))
 
 	return cmd
