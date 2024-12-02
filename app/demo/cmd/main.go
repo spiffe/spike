@@ -9,23 +9,32 @@ import (
 	"fmt"
 
 	spike "github.com/spiffe/spike-sdk-go/api"
-
-	"github.com/spiffe/spike/pkg/spiffe"
+	"github.com/spiffe/spike-sdk-go/spiffe"
 )
 
 func main() {
+	// Create a context.
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	source, spiffeid, err := spiffe.AppSpiffeSource(ctx)
+	// Initialize the SPIFFE endpoint socket.
+	defaultEndpointSocket := spiffe.EndpointSocket()
+
+	// Initialize the SPIFFE source.
+	source, spiffeid, err := spiffe.Source(ctx, defaultEndpointSocket)
 	if err != nil {
 		fmt.Println(err.Error())
 		return
 	}
+
+	// Close the SPIFFE source when done.
 	defer spiffe.CloseSource(source)
 
-	fmt.Println("Demo app initialized")
 	fmt.Println("SPIFFE ID:", spiffeid)
+
+	//
+	// Retrieve a secret using SPIKE SDK.
+	//
 
 	path := "/tenants/demo/db/creds"
 	version := 0

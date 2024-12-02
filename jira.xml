@@ -21,6 +21,9 @@
 		create a makefile.
 	</issue>
 	<issue>
+		Address `TODO:` items in SDK code and SPIKE code.
+	</issue>
+	<issue>
 		add the new videos to the site.
 	</issue>
 	<issue>
@@ -37,7 +40,8 @@
 </low-hanging-fruits>
 <reserved>
 	<issue>
-		add necessary documents and also CODEOWNER team access to SDK REPO.
+		* demo about SDK
+		* demo about metadata api.
 	</issue>
 	<issue>
 		What's needed for v1.0.0:
