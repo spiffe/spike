@@ -67,6 +67,8 @@ github.com/spiffe/spike-sdk-go v0.1.12 h1:5fS31yLdIMEtaTk0fpy/8msVFeS/vZTkQaPKyG
 github.com/spiffe/spike-sdk-go v0.1.12/go.mod h1:WIserWbShAkDVoj+GYdcXKFmKp2IBIsZHKKDcStHrHw=
 github.com/spiffe/spike-sdk-go v0.1.13 h1:vQIguhkmztUSM55/xYxXPed5laoF1Q4sazA1GRg66pw=
 github.com/spiffe/spike-sdk-go v0.1.13/go.mod h1:WIserWbShAkDVoj+GYdcXKFmKp2IBIsZHKKDcStHrHw=
+github.com/spiffe/spike-sdk-go v0.1.14 h1:RUFDlNTuXdDMBWP0g+yDgjM6O45e3qRfWu1PUU96zLg=
+github.com/spiffe/spike-sdk-go v0.1.14/go.mod h1:WIserWbShAkDVoj+GYdcXKFmKp2IBIsZHKKDcStHrHw=
 github.com/stretchr/testify v1.9.0 h1:HtqpIVDClZ4nwg75+f6Lvsy/wHu+3BoSGCbBAcpTsTg=
 github.com/stretchr/testify v1.9.0/go.mod h1:r2ic/lqez/lEtzL7wO/rwa5dbSLXVDPFyf8C91i36aY=
 github.com/zeebo/errs v1.3.0 h1:hmiaKqgYZzcVgRL1Vkc1Mn2914BbzB0IBxs+ebeutGs=

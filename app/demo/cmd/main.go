@@ -15,7 +15,6 @@ func main() {
 	defer api.Close()  // Close the connection when done
 
 	path := "/tenants/demo/db/creds"
-	version := 0
 
 	// Create a Secret
 	err := api.PutSecret(path, map[string]string{
@@ -27,12 +26,8 @@ func main() {
 		return
 	}
 
-	// TODO: maybe GetSecret should not have a `version` parameter
-	// and an override should be used instead for versioned secret gets.
-	// as in api.GetSecretVersioned(path, version)
-
 	// Read the Secret
-	secret, err := api.GetSecret(path, version)
+	secret, err := api.GetSecret(path)
 	if err != nil {
 		fmt.Println("Error reading secret:", err.Error())
 		return
