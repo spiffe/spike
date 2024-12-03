@@ -8,6 +8,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/spiffe/spike-sdk-go/spiffe"
+
 	"github.com/spiffe/spike/app/keeper/internal/env"
 	"github.com/spiffe/spike/app/keeper/internal/route/handle"
 	"github.com/spiffe/spike/app/keeper/internal/trust"
@@ -15,7 +17,6 @@ import (
 	"github.com/spiffe/spike/internal/config"
 	"github.com/spiffe/spike/internal/log"
 	"github.com/spiffe/spike/internal/net"
-	"github.com/spiffe/spike/pkg/spiffe"
 )
 
 const appName = "SPIKE Keeper"
@@ -26,7 +27,7 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	source, spiffeid, err := spiffe.AppSpiffeSource(ctx)
+	source, spiffeid, err := spiffe.Source(ctx, spiffe.EndpointSocket())
 	if err != nil {
 		log.FatalLn(err.Error())
 	}

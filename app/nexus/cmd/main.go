@@ -10,6 +10,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/spiffe/spike-sdk-go/spiffe"
+
 	"github.com/spiffe/spike/app/nexus/internal/env"
 	"github.com/spiffe/spike/app/nexus/internal/poll"
 	"github.com/spiffe/spike/app/nexus/internal/route/handle"
@@ -19,7 +21,6 @@ import (
 	"github.com/spiffe/spike/internal/config"
 	"github.com/spiffe/spike/internal/log"
 	"github.com/spiffe/spike/internal/net"
-	"github.com/spiffe/spike/pkg/spiffe"
 )
 
 const appName = "SPIKE Nexus"
@@ -30,7 +31,7 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	source, spiffeid, err := spiffe.AppSpiffeSource(ctx)
+	source, spiffeid, err := spiffe.Source(ctx, spiffe.EndpointSocket())
 	if err != nil {
 		log.Fatal(err.Error())
 	}

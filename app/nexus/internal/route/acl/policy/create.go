@@ -5,17 +5,17 @@
 package policy
 
 import (
-	"github.com/spiffe/spike-sdk-go/api/errors"
 	"net/http"
 	"time"
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
+	"github.com/spiffe/spike-sdk-go/api/errors"
+	"github.com/spiffe/spike-sdk-go/spiffe"
 
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 	"github.com/spiffe/spike/internal/log"
 	"github.com/spiffe/spike/internal/net"
-	"github.com/spiffe/spike/pkg/spiffe"
 )
 
 // RoutePutPolicy handles HTTP PUT requests for creating new policies.

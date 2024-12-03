@@ -13,9 +13,9 @@ import (
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 )
 
-// newSecretGetCommand creates and returns a new cobra.Command for retrieving
-// secrets. It configures a command that fetches and displays secret data from a
-// specified path.
+// newSecretMetadataGetCommand creates and returns a new cobra.Command for
+// retrieving secrets. It configures a command that fetches and displays secret
+// data from a specified path.
 //
 // Parameters:
 //   - source: X.509 source for workload API authentication
@@ -32,17 +32,24 @@ import (
 //
 // The command will:
 //  1. Verify SPIKE initialization status via admin token
-//  2. Retrieve the secret from the specified path and version
-//  3. Display all key-value pairs in the secret's data field
+//  2. Retrieve the secret metadata from the specified path and version
+//  3. Display all metadata fields and secret versions
 //
 // Error cases:
 //   - SPIKE not initialized: Prompts user to run 'spike init'
 //   - Secret not found: Displays appropriate message
 //   - Read errors: Displays error message
-func newSecretGetCommand(source *workloadapi.X509Source) *cobra.Command {
+func newSecretMetadataGetCommand(
+	source *workloadapi.X509Source,
+) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "metadata",
+		Short: "Manage secret metadata",
+	}
+
 	var getCmd = &cobra.Command{
 		Use:   "get <path>",
-		Short: "Get secrets from the specified path",
+		Short: "Gets secret metadata from the specified path",
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			state, err := spike.CheckInitState(source)
@@ -53,14 +60,16 @@ func newSecretGetCommand(source *workloadapi.X509Source) *cobra.Command {
 			}
 
 			if state == data.NotInitialized {
-				fmt.Println("Please initialize SPIKE first by running 'spike init'.")
+				fmt.Println(
+					"Please initialize SPIKE first by running 'spike init'.",
+				)
 				return
 			}
 
 			path := args[0]
 			version, _ := cmd.Flags().GetInt("version")
 
-			secret, err := spike.GetSecret(source, path, version)
+			secret, err := spike.GetSecretMetadata(source, path, version)
 			if err != nil {
 				fmt.Println("Error reading secret:", err.Error())
 				return
@@ -71,14 +80,13 @@ func newSecretGetCommand(source *workloadapi.X509Source) *cobra.Command {
 				return
 			}
 
-			d := secret.Data
-			for k, v := range d {
-				fmt.Printf("%s: %s\n", k, v)
-			}
+			printSecretResponse(secret)
 		},
 	}
 
 	getCmd.Flags().IntP("version", "v", 0, "Specific version to retrieve")
 
-	return getCmd
+	cmd.AddCommand(getCmd)
+
+	return cmd
 }

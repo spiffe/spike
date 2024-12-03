@@ -7,17 +7,18 @@ package main
 import (
 	"context"
 
+	"github.com/spiffe/spike-sdk-go/spiffe"
+
 	"github.com/spiffe/spike/app/spike/internal/cmd"
 	"github.com/spiffe/spike/app/spike/internal/trust"
 	"github.com/spiffe/spike/internal/log"
-	"github.com/spiffe/spike/pkg/spiffe"
 )
 
 func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	source, spiffeid, err := spiffe.AppSpiffeSource(ctx)
+	source, spiffeid, err := spiffe.Source(ctx, spiffe.EndpointSocket())
 	if err != nil {
 		log.Fatal(err.Error())
 	}
