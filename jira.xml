@@ -44,6 +44,9 @@
 		* demo about metadata api.
 	</issue>
 	<issue>
+		Maybe have `source` as part of the spike constructor.
+	</issue>
+	<issue>
 		What's needed for v1.0.0:
 
 		- Run SPIKE in Kubernetes too.

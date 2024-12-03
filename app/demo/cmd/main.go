@@ -5,41 +5,34 @@
 package main
 
 import (
-	"context"
 	"fmt"
 
 	spike "github.com/spiffe/spike-sdk-go/api"
-	"github.com/spiffe/spike-sdk-go/spiffe"
 )
 
 func main() {
-	// Create a context.
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	// Initialize the SPIFFE endpoint socket.
-	defaultEndpointSocket := spiffe.EndpointSocket()
-
-	// Initialize the SPIFFE source.
-	source, spiffeid, err := spiffe.Source(ctx, defaultEndpointSocket)
-	if err != nil {
-		fmt.Println(err.Error())
-		return
-	}
-
-	// Close the SPIFFE source when done.
-	defer spiffe.CloseSource(source)
-
-	fmt.Println("SPIFFE ID:", spiffeid)
-
-	//
-	// Retrieve a secret using SPIKE SDK.
-	//
+	api := spike.New() // Use the default Workload API Socket
+	defer api.Close()  // Close the connection when done
 
 	path := "/tenants/demo/db/creds"
 	version := 0
 
-	secret, err := spike.GetSecret(source, path, version)
+	// Create a Secret
+	err := api.PutSecret(path, map[string]string{
+		"username": "SPIKE",
+		"password": "SPIKE_Rocks",
+	})
+	if err != nil {
+		fmt.Println("Error writing secret:", err.Error())
+		return
+	}
+
+	// TODO: maybe GetSecret should not have a `version` parameter
+	// and an override should be used instead for versioned secret gets.
+	// as in api.GetSecretVersioned(path, version)
+
+	// Read the Secret
+	secret, err := api.GetSecret(path, version)
 	if err != nil {
 		fmt.Println("Error reading secret:", err.Error())
 		return

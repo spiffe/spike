@@ -97,7 +97,18 @@ Examples:
 				}
 			}
 
-			err = spike.DeleteSecret(source, path, versionList)
+			var vv []int
+			for _, v := range versionList {
+				iv, err := strconv.Atoi(v)
+				if err == nil {
+					vv = append(vv, iv)
+				}
+			}
+			if vv == nil {
+				vv = []int{}
+			}
+
+			err = spike.DeleteSecret(source, path, vv)
 			if err != nil {
 				fmt.Printf("Error: %v\n", err)
 				return

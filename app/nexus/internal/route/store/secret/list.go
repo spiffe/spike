@@ -5,6 +5,7 @@
 package secret
 
 import (
+	"github.com/spiffe/spike-sdk-go/spiffe"
 	"net/http"
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
@@ -14,7 +15,6 @@ import (
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 	"github.com/spiffe/spike/internal/log"
 	"github.com/spiffe/spike/internal/net"
-	"github.com/spiffe/spike/pkg/spiffe"
 )
 
 // RouteListPaths handles requests to retrieve all available secret paths.
