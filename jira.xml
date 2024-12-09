@@ -44,6 +44,27 @@
 		* demo about metadata api.
 	</issue>
 	<issue>
+		Multiple Keeper instances will be required for fan-in fan-out of the shards.
+	</issue>
+	<remark>
+		Near the Christmas break I (Volkan) will have some free time;
+		I may add more features if I'm in a festive mood :).
+	</remark>
+	<issue>
+		Optionally not create tables and other ddl during backing store creation
+
+		admin should have the option to back up the root key.
+		SPIKE should save the backup in encrypted form, it should require a
+		password from the admin for that.
+
+		maybe create a password manager tool as an example use case
+
+		SHARE:
+		https://workloadidentity.news/i/152133112/spike-a-rather-spiffy-spiffe-secrets-store
+		^
+		SPIKE is featured in “What’s new In Workload Identity”.
+	</issue>
+	<issue>
 		Maybe have `source` as part of the spike constructor.
 	</issue>
 	<issue>
