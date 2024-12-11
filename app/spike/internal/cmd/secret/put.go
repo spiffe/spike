@@ -51,7 +51,9 @@ func newSecretPutCommand(source *workloadapi.X509Source) *cobra.Command {
 		Short: "Put secrets at the specified path",
 		Args:  cobra.MinimumNArgs(2),
 		Run: func(cmd *cobra.Command, args []string) {
-			state, err := spike.CheckInitState(source)
+			api := spike.NewWithSource(source)
+
+			state, err := api.CheckInitState()
 			if err != nil {
 				fmt.Println("Failed to check initialization state:")
 				fmt.Println(err.Error())
@@ -80,7 +82,7 @@ func newSecretPutCommand(source *workloadapi.X509Source) *cobra.Command {
 				return
 			}
 
-			err = spike.PutSecret(source, path, values)
+			err = api.PutSecret(path, values)
 			if err != nil {
 				fmt.Printf("Error: %v\n", err)
 				return

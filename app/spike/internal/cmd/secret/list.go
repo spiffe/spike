@@ -41,7 +41,9 @@ func newSecretListCommand(source *workloadapi.X509Source) *cobra.Command {
 		Use:   "list",
 		Short: "List all secret paths",
 		Run: func(cmd *cobra.Command, args []string) {
-			state, err := spike.CheckInitState(source)
+			api := spike.NewWithSource(source)
+
+			state, err := api.CheckInitState()
 			if err != nil {
 				fmt.Println("Failed to check initialization state:")
 				fmt.Println(err.Error())
@@ -54,7 +56,7 @@ func newSecretListCommand(source *workloadapi.X509Source) *cobra.Command {
 				return
 			}
 
-			keys, err := spike.ListSecretKeys(source)
+			keys, err := api.ListSecretKeys()
 			if err != nil {
 				fmt.Println("Error listing secret keys:", err)
 				return

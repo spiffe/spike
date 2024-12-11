@@ -45,7 +45,9 @@ func newSecretGetCommand(source *workloadapi.X509Source) *cobra.Command {
 		Short: "Get secrets from the specified path",
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
-			state, err := spike.CheckInitState(source)
+			api := spike.NewWithSource(source)
+
+			state, err := api.CheckInitState()
 			if err != nil {
 				fmt.Println("Failed to check initialization state:")
 				fmt.Println(err.Error())
@@ -60,7 +62,7 @@ func newSecretGetCommand(source *workloadapi.X509Source) *cobra.Command {
 			path := args[0]
 			version, _ := cmd.Flags().GetInt("version")
 
-			secret, err := spike.GetSecret(source, path, version)
+			secret, err := api.GetSecretVersioned(path, version)
 			if err != nil {
 				fmt.Println("Error reading secret:", err.Error())
 				return

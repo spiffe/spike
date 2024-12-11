@@ -71,7 +71,9 @@ func newPolicyGetCommand(source *workloadapi.X509Source) *cobra.Command {
 		Short: "Get policy details",
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
-			state, err := spike.CheckInitState(source)
+			api := spike.NewWithSource(source)
+
+			state, err := api.CheckInitState()
 			if err != nil {
 				fmt.Println("Failed to check initialization state:", err)
 				return
@@ -83,7 +85,7 @@ func newPolicyGetCommand(source *workloadapi.X509Source) *cobra.Command {
 			}
 
 			policyID := args[0]
-			policy, err := spike.GetPolicy(source, policyID)
+			policy, err := api.GetPolicy(policyID)
 			if err != nil {
 				fmt.Printf("Error: %v\n", err)
 				return

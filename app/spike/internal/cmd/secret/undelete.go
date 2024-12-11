@@ -62,7 +62,9 @@ Examples:
   spike secret undelete secret/ella -v 0,1,2  # Undeletes current version plus versions 1 and 2`,
 		Args: cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
-			state, err := spike.CheckInitState(source)
+			api := spike.NewWithSource(source)
+
+			state, err := api.CheckInitState()
 			if err != nil {
 				fmt.Println("Failed to check initialization state:")
 				fmt.Println(err.Error())
@@ -109,7 +111,7 @@ Examples:
 				vv = []int{}
 			}
 
-			err = spike.UndeleteSecret(source, path, vv)
+			err = api.UndeleteSecret(path, vv)
 			if err != nil {
 				fmt.Printf("Error: %v\n", err)
 				return

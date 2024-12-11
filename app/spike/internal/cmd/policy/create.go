@@ -68,7 +68,9 @@ func newPolicyCreateCommand(source *workloadapi.X509Source) *cobra.Command {
 				return
 			}
 
-			state, err := spike.CheckInitState(source)
+			api := spike.NewWithSource(source)
+
+			state, err := api.CheckInitState()
 			if err != nil {
 				fmt.Println("Failed to check initialization state:", err)
 				return
@@ -85,9 +87,7 @@ func newPolicyCreateCommand(source *workloadapi.X509Source) *cobra.Command {
 				perms = append(perms, data.PolicyPermission(perm))
 			}
 
-			err = spike.CreatePolicy(
-				source, name, spiffeIddPattern, pathPattern, perms,
-			)
+			err = api.CreatePolicy(name, spiffeIddPattern, pathPattern, perms)
 			if err != nil {
 				fmt.Printf("Error: %v\n", err)
 				return

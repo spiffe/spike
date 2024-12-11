@@ -49,10 +49,12 @@ func NewSystemInitCommand(source *workloadapi.X509Source) *cobra.Command {
 			retrier := retry.NewExponentialRetrier()
 			typedRetrier := retry.NewTypedRetrier[data.InitState](retrier)
 
+			api := spike.NewWithSource(source)
+
 			ctx := cmd.Context()
 			state, err := typedRetrier.RetryWithBackoff(ctx,
 				func() (data.InitState, error) {
-					return spike.CheckInitState(source)
+					return api.CheckInitState()
 				})
 
 			if err != nil {
@@ -68,7 +70,7 @@ func NewSystemInitCommand(source *workloadapi.X509Source) *cobra.Command {
 			}
 
 			err = retrier.RetryWithBackoff(ctx, func() error {
-				return spike.Init(source)
+				return api.Init()
 			})
 
 			if err != nil {

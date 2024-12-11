@@ -57,7 +57,9 @@ func newPolicyDeleteCommand(source *workloadapi.X509Source) *cobra.Command {
 		Short: "Delete a policy",
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
-			state, err := spike.CheckInitState(source)
+			api := spike.NewWithSource(source)
+
+			state, err := api.CheckInitState()
 			if err != nil {
 				fmt.Println("Failed to check initialization state:", err)
 				return
@@ -69,7 +71,7 @@ func newPolicyDeleteCommand(source *workloadapi.X509Source) *cobra.Command {
 			}
 
 			policyID := args[0]
-			err = spike.DeletePolicy(source, policyID)
+			err = api.DeletePolicy(policyID)
 			if err != nil {
 				fmt.Printf("Error: %v\n", err)
 				return
