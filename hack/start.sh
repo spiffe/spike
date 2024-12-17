@@ -18,8 +18,10 @@ cleanup() {
 trap cleanup EXIT SIGINT SIGTERM
 
 # Start SPIRE server in background and save its PID
-./hack/spire-server-start.sh &
-SPIRE_PID=$!
+./hack/spire-server-start.sh > spire-server-out.log 2>&1 spire-server-err.log &
+SPIRE_SERVER_PID=$!
+
+echo "SPIRE_SERVER_PID: $SPIRE_SERVER_PID"
 
 # Wait for SPIRE server to initialize
 echo "Waiting for SPIRE server to start..."
@@ -35,24 +37,38 @@ echo "Registering SPIRE entries..."
 echo "Registering SU..."
 ./hack/register-su.sh
 
+echo ""
 echo "Waiting before starting SPIRE Agent"
 sleep 5
 # Start SPIRE agent in background and save its PID
 echo "Starting SPIRE agent..."
-./hack/spire-agent-start.sh &
+./hack/spire-agent-start.sh > spire-agent-out.log 2> spire-agent-err.log &
 SPIRE_AGENT_PID=$!
 
+echo "SPIRE_AGENT_PID: $SPIRE_AGENT_PID"
+
+echo ""
 echo "Waiting before keeper"
 sleep 5
-./keeper &
+./keeper > keeper-out.log 2> keeper-err.log &
 KEEPER_PID=$!
 
+echo "KEEPER_PID: $KEEPER_PID"
+
+echo ""
 echo "Waiting before nexus"
 sleep 5
-./nexus &
+./nexus > nexus-out.log 2> nexus-err.log &
 NEXUS_PID=$!
 
-# Wait for any remaining processes
-wait $SPIRE_PID $SPIRE_AGENT_PID $KEEPER_PID $NEXUS_PID
+echo "NEXUS_PID: $NEXUS_PID"
 
-echo "Everything is awesome!"
+# Wait for any remaining processes
+
+echo ""
+echo ""
+echo "Everything is set up. Will wait for all processes to finish."
+echo "Press Ctrl+C to exit and cleanup all background processes."
+echo ""
+echo ""
+wait $SPIRE_SERVER_PID $SPIRE_AGENT_PID $KEEPER_PID $NEXUS_PID
