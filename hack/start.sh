@@ -2,7 +2,17 @@
 
 #    \\ SPIKE: Secure your secrets with SPIFFE.
 #  \\\\\ Copyright 2024-present SPIKE contributors.
-# \\\\\\\ SPDX-License-Identifier: Apache-2.0
+# \\\\\\\ SPDX-License-Identifier: Apache-2.0A
+
+# TODO: Document what this script does:
+# - Builds binaries (demo, keeper, nexus)
+# - Starts SPIRE server
+# - Generates agent token
+# - Registers SPIRE entries
+# - Starts SPIRE agent
+# - Starts keeper
+# - Starts nexus
+
 
 # TODO: redirect the output of background processes to files.
 
@@ -36,7 +46,6 @@ echo "Registering SPIRE entries..."
 
 echo "Registering SU..."
 ./hack/register-su.sh
-
 
 # First, authenticate sudo and keep the session alive
 echo "Please enter sudo password if prompted..."
