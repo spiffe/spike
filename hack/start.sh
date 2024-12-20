@@ -37,6 +37,11 @@ echo "Registering SPIRE entries..."
 echo "Registering SU..."
 ./hack/register-su.sh
 
+
+# First, authenticate sudo and keep the session alive
+echo "Please enter sudo password if prompted..."
+sudo -v
+
 echo ""
 echo "Waiting before starting SPIRE Agent"
 sleep 5

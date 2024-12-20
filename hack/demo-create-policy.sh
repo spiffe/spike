@@ -8,3 +8,13 @@
   --path="/tenants/demo/db/*" \
   --spiffeid="^spiffe://spike.ist/workload/*" \
   --permissions="read"
+
+./spike policy create --name=workload-can-write \
+  --path="/tenants/demo/db/*" \
+  --spiffeid="^spiffe://spike.ist/workload/*" \
+  --permissions="write"
+
+#./spike policy create --name=workload-can-rw \
+#  --path="/tenants/demo/db/*" \
+#  --spiffeid="^spiffe://spike.ist/workload/*" \
+#  --permissions="read,write"

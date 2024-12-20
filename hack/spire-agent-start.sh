@@ -6,7 +6,7 @@
 
 TOKEN_FILE=".spire-agent-join-token"
 
-if [ -z $WORKSPACE ]; then
+if [ -z "$WORKSPACE" ]; then
     echo "Error: define WORKSPACE environment variable"
     exit 1
 fi
@@ -31,6 +31,6 @@ fi
 # Running spire-agent as super user to read meta information of other users'
 # processes. If you are using the current user to use SPIKE only, then you
 # can run this command without sudo.
-sudo $WORKSPACE/spire/bin/spire-agent run \
+sudo "$WORKSPACE"/spire/bin/spire-agent run \
   -config ./config/spire/agent/agent.conf \
   -joinToken "$JOIN_TOKEN"
