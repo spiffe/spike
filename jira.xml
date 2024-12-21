@@ -423,6 +423,9 @@
 	<issue>
 		Test the db backing store.
 	</issue>
+	<issue>
+		Ability to add custom metadata to secrets.
+	</issue>
 </backlog>
 <future>
 	<issue>
