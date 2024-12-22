@@ -161,6 +161,17 @@ debug any issues that might arise.
 
 The following sections will guide you through the individual steps.
 
+> **CLI Reference**
+> 
+> Since the **SPIKE CLI** is a work in progress an highly in flux, the best
+> way to get the most up-to-date information is to run `spike --help` or
+> `spike [command] --help` to learn about the available commands and flags.
+> 
+> In addition, you can [check out the demo recordings][demo] to see the CLI in
+> action.
+
+[demo]: https://spike.ist/#/presentations/README
+
 ## Start SPIRE Server
 
 Start the SPIRE Server:
