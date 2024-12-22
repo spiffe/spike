@@ -14,8 +14,18 @@ Presentations and demos about **SPIKE**.
   and SPIKE][spike-passwordless]<br>
   In this demo, we allow a user to use `spike` just by checkin an SVID; we don't
   any kind of passwords to identify the user, SPIFFE does it for us.
+* [Unveiling SPIKE's New Audit Trail Capabilities: Zero-Trust Meets 
+  Accountability][spike-audits]
+* [Introducing Policy-Based Access Control in SPIKE][spike-policy]
+* [Policy to the Rescue: Secure Secret Access and Metadata with 
+  SPIKE][spike-metadata]
+* [Using Policies to Read and Write Secrets using SPIKE][spike-policies]
 
 [spike]: https://vimeo.com/v0lkan/spike
 [spike-intro]: https://vimeo.com/v0lkan/spike-rocks
 [spike-jwt]: https://vimeo.com/v0lkan/spike-jwt
 [spike-passwordless]: http://vimeo.com/v0lkan/passwordless-secrets
+[spike-audits]: https://vimeo.com/v0lkan/spike-audits
+[spike-policy]: https://vimeo.com/v0lkan/spike-policy
+[spike-metadata]: https://vimeo.com/v0lkan/spike-metadata
+[spike-policies]: https://vimeo.com/v0lkan/spike-policies
