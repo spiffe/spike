@@ -15,11 +15,21 @@ Presentations and demos about **SPIKE**.
   In this demo, we allow a user to use `spike` just by checkin an SVID; we don't
   any kind of passwords to identify the user, SPIFFE does it for us.
 * [Unveiling SPIKE's New Audit Trail Capabilities: Zero-Trust Meets 
-  Accountability][spike-audits]
-* [Introducing Policy-Based Access Control in SPIKE][spike-policy]
+  Accountability][spike-audits]<br>
+  This demo explain the new auditing capabilities of **SPIKE** that we will 
+  continue developing. This is the initial incarnation of the feature and
+  more will come.
+* [Introducing Policy-Based Access Control in SPIKE][spike-policy]<br>
+  This demo introduces the new policy-based access control feature of **SPIKE**.
+  This is the initial incarnation of the fetaure. We will create more demos
+  as we enhance the featuure.
 * [Policy to the Rescue: Secure Secret Access and Metadata with 
-  SPIKE][spike-metadata]
-* [Using Policies to Read and Write Secrets using SPIKE][spike-policies]
+  SPIKE][spike-metadata]<br>
+  This demo introduces the new **SPIKE** metadata API. We also use the **SPIKE**
+  Go SDK to consume secrets.
+* [Using Policies to Read and Write Secrets using SPIKE][spike-policies]<br>
+  This demo introduces the new **Makefile**-based development workflow the
+  enhanced starter script, policy-based access control, and metadata support.
 
 [spike]: https://vimeo.com/v0lkan/spike
 [spike-intro]: https://vimeo.com/v0lkan/spike-rocks
