@@ -62,7 +62,7 @@ func newSecretGetCommand(source *workloadapi.X509Source) *cobra.Command {
 			path := args[0]
 			version, _ := cmd.Flags().GetInt("version")
 
-			secret, err := api.GetSecretVersioned(path, version)
+			secret, err := api.GetSecretVersion(path, version)
 			if err != nil {
 				fmt.Println("Error reading secret:", err.Error())
 				return

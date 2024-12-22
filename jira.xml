@@ -46,10 +46,53 @@
 	<issue>
 		Multiple Keeper instances will be required for fan-in fan-out of the shards.
 	</issue>
-	<remark>
-		Near the Christmas break I (Volkan) will have some free time;
-		I may add more features if I'm in a festive mood :).
-	</remark>
+	<issue>
+		the current docs are good and all but they are not good for seo; we might
+		want to convert to something like zola later down the line
+	</issue>
+	<issue>
+		- TODO we need use cases in the website
+		- Policy-based access control for workloads
+		- Secret CRUD operations
+		- etc
+	</issue>
+	<issue>
+		Fleet management:
+		- There is a management plane cluster
+		- There is a control plane cluster
+		- There are workload clusters connected to the control plane
+		- All of those are their own trust domains.
+		- There is MP-CP connectivity
+		- There is CP-WL connectivity
+		- MP has a central secrets store
+		- WL and CP need secrets
+		- Securely dispatch them without "ever" using Kubernetes secrets.
+		- Have an alternative that uses ESO and a restricted secrets namespace that no one other than SPIKE components
+		  can see into.
+	</issue>
+	<issue>
+		To docs:
+		how do we manage the root key.
+		i.e., it never leaves the memory and we keep it alive via replication.
+	</issue>
+	<issue>
+		API for SPIKE nexus to save its shard encrypted with a passphrase for emergency backup
+		This will be optional; and admin will be advised to save it securely outside the machine.
+	</issue>
+	<issue>
+		maybe inspire admin UI from keybase
+		https://keybase.io/v0lk4n/devices
+		for that, we need an admin ui first :)
+		for that we need keycloak to experiment with first.
+	</issue>
+	<issue>
+		maybe a default auditor SPIFFEID that can only read stuff (for Pilot; not work named
+		admins; named admins will use the policy system instead)
+	</issue>
+	<issue>
+		If SPIKE is not initialized; `spike` or `spike --help` should display
+		a reminder to initialize SPIKE first and exit.
+	</issue>
 	<issue>
 		Optionally not create tables and other ddl during backing store creation
 
