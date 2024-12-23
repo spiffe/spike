@@ -5,555 +5,573 @@
 # \\\\\\\ SPDX-License-Identifier: Apache-2.0
 -->
 <stuff>
-	<purpose>
-		<target>Our goal is to have a minimally delightful product.</target>
-		<target>Strive not to add features just for the sake of adding features.</target>
-		<target>Half-assed features shall be completed before adding more features.</target>
-	</purpose>
+  <purpose>
+    <target>Our goal is to have a minimally delightful product.</target>
+    <target>Strive not to add features just for the sake of adding features.
+    </target>
+    <target>Half-assed features shall be completed before adding more
+      features.
+    </target>
+  </purpose>
 
-	<low-hanging-fruits>
-		<issue>
-			revisit the "we'll use sqlite for backend" ADR: There are nuances to
-			consider, especially wrt scalability.
-		</issue>
-		<issue>
-			create a makefile.
-		</issue>
-		<issue>
-			Address `TODO:` items in SDK code and SPIKE code.
-		</issue>
-		<issue>
-			add the new videos to the site.
-		</issue>
-		<issue>
-			The paths that we set in get put ...etc should look like a unix path.
-			it will require sanitization!
-			Check how other secrets stores manage those paths.
-		</issue>
-		<issue>
-			make sure that everything sanitizable are properly sanitized.
-		</issue>
-		<issue>
-			read policies from a yaml or a json file and create them.
-		</issue>
-	</low-hanging-fruits>
-<reserved>
+  <low-hanging-fruits>
+    <issue>
+      these may come from the environment:
 
-	<issue>
-		Multiple Keeper instances will be required for fan-in fan-out of the shards.
-	</issue>
-	<issue>
-		the current docs are good and all but they are not good for seo; we might
-		want to convert to something like zola later down the line
-	</issue>
-	<issue>
-		A `stats` endpoint to show the overall
-		system utilization
-		(how many secrets; how much memory, etc)
-	</issue>
-	<issue>
-		- TODO we need use cases in the website
-		- Policy-based access control for workloads
-		- Secret CRUD operations
-		- etc
-	</issue>
-	<issue>
-		Fleet management:
-		- There is a management plane cluster
-		- There is a control plane cluster
-		- There are workload clusters connected to the control plane
-		- All of those are their own trust domains.
-		- There is MP-CP connectivity
-		- There is CP-WL connectivity
-		- MP has a central secrets store
-		- WL and CP need secrets
-		- Securely dispatch them without "ever" using Kubernetes secrets.
-		- Have an alternative that uses ESO and a restricted secrets namespace that no one other than SPIKE components
-		  can see into.
-	</issue>
-	<issue>
-		To docs:
-		how do we manage the root key.
-		i.e., it never leaves the memory and we keep it alive via replication.
-	</issue>
-	<issue>
-		API for SPIKE nexus to save its shard encrypted with a passphrase for emergency backup
-		This will be optional; and admin will be advised to save it securely outside the machine.
-	</issue>
-	<issue>
-		maybe inspire admin UI from keybase
-		https://keybase.io/v0lk4n/devices
-		for that, we need an admin ui first :)
-		for that we need keycloak to experiment with first.
-	</issue>
-	<issue>
-		maybe a default auditor SPIFFEID that can only read stuff (for Pilot; not work named
-		admins; named admins will use the policy system instead)
-	</issue>
-	<issue>
-		If SPIKE is not initialized; `spike` or `spike --help` should display
-		a reminder to initialize SPIKE first and exit.
-	</issue>
-	<issue>
-		Optionally not create tables and other ddl during backing store creation
+      DataDir: ".data",
+      DatabaseFile: "spike.db",
+      JournalMode: "WAL",
+      BusyTimeoutMs: 5000,
+      MaxOpenConns: 10,
+      MaxIdleConns: 5,
+      ConnMaxLifetime: time.Hour,
+    </issue>
 
-		admin should have the option to back up the root key.
-		SPIKE should save the backup in encrypted form, it should require a
-		password from the admin for that.
+    <issue>
+      this is from SecretReadResponse, so maybe its entity should be somewhere
+      common too.
+      return &amp;data.Secret{Data: res.Data}, nil
+    </issue>
+    <issue>
+      Address `TODO:` items in SDK code and SPIKE code.
+    </issue>
+    <issue>
+      Multiple Keeper instances will be required for fan-in fan-out of the
+      shards.
 
-		maybe create a password manager tool as an example use case
+      configure the current system to work with multiple keepers.
+      the demo setup should initialize 3 keepers by default.
+      the demo setup should use sqlite as the backing store by default.
+    </issue>
+    <issue>
+      Install Keycloak locally and experiment with it.
+      This is required for "named admin" feature.
+    </issue>
+    <issue>
+      One way token flow;
+      keeper provides the rootkey to nexus;
+      nexus init pushes root key to keeper.
+      that's it.
+    </issue>
+    <issue>
+      If SPIKE is not initialized; `spike` or `spike --help` should display
+      a reminder to initialize SPIKE first and exit.
+    </issue>
+    <issue>
+      The paths that we set in get put ...etc should look like a unix path.
+      it will require sanitization!
+      Check how other secrets stores manage those paths.
+    </issue>
+    <issue>
+      make sure that everything sanitizable are properly sanitized.
+    </issue>
+    <issue>
+      read policies from a yaml or a json file and create them.
+    </issue>
+    <issue>
+      have sqlite as the default backing store.
+      (until we implement the S3 backing store)
+    </issue>
+  </low-hanging-fruits>
+  <reserved>
+    <issue waitingFor="shamir-to-be-implemented-first">
+      use case: shamir
+      1. `spike init` verifies that there are 3 healthy keeper instances.
+      it creates a shard of 3 shamir secrets (2 of which will be enough to
+      reassemble the root key) send each share to each keeper.
+      2. SPIKE nexus regularly polls all keepers and if it can assemble a secret
+      all good.
+      3. `spike init` will also save the 2 shards (out of 3) in
+      `~/.spike/recovery/*`
+      The admin will be "highly encouraged" do delete those from the machine and
+      securely back up the keys and distribute them to separate people etc.
+      [2 and 3 are configurable]
+    </issue>
+    <issue waitingFor="shamir-to-be-implemented">
+      <workflow>
+        1. `spike init` initializes keeper(s). From that point on, SPIKE Nexus
+        pulls the root key whenever it needs it.
+        2. nexus and keeper can use e2e encryption with one time key pairs
+        to have forward secrecy and defend the transport in the VERY unlikely
+        case of a SPIFFE mTLS breach.
+        3. ability for nexus to talk to multiple keepers
+        4. ability for a keeper to talk to nexus to recover its root key if it
+        loses it.
+        5. abiliy for nexus to talk to and initialize multiple keepers.
+        (phase 1: all keepers share the same key)
+        6. `spike init` saves its shards (2 out of 3 or smilar) to
+        `~/.spike/recovery/*`
+        The admin will be "highly encouraged" to delete those from the machine
+        and
+        securely back up the keys and distribute them to separate people etc
+        `spike init` will also save the primary key used in the shamir's secret
+        sharing
+        to `~/.spike/recovery/*` (this is not as sensitive as the root key, but
+        still
+        should be kept safe)
+        - it is important to note that, without the recovery material, your only
+        opiton
+        to restore the root key relies on the possibility that more than N
+        keepers remain
+        operational at all times. -- that's a good enough possibility anyway
+        (say 5 keepers in 3 AZs, and you need only 2 to recover the root key;
+        then it will
+        be extremely unlikely for all of them to go down at the same time)
+        so in an ideal scenario you save your recovery material in a secure
+        encrypted enclave
+        and never ever use it.
+        7. `spike recover` will reset a keeper cluster by using the recovery
+        material.
+        `spike recover` will also recover the root key.
+        to use `spike recover` you will need a special SVID (even a super admin
+        could not use it
+        without prior authorization)
+        the SVID who can execute `spike recover` will not be able to execute
+        anything else.
+        8. At phase zero, `spike recover` will just save the root key to disk,
+        also mentioning that it's not secure and the key will be stored safely
+        and wiped from the disk.
+        9. maybe double encrypt keeper-nexus communication with one-time key
+        pairs because
+        the root key is very sensitive and we would want to make sure it's
+        secure even
+        if the SPIFFE mTLS is compromised.
+      </workflow>
+      <details>
+        say user sets up 5 keeper instances.
+        in nexus, we have a config
+        keepers:
+        - nodes: [n1, n2, n3, n4, n5]
+        nexus can reach out with its own spiffe id to each node in the list. it
+        can
+        call the assembly lib with whatever secrets it gets back, as it gets
+        them back,
+        and so long as it gets enough, "it just works"
 
-		SHARE:
-		https://workloadidentity.news/i/152133112/spike-a-rather-spiffy-spiffe-secrets-store
-		^
-		SPIKE is featured in “What’s new In Workload Identity”.
-	</issue>
-	<issue>
-		Maybe have `source` as part of the spike constructor.
-	</issue>
-	<issue>
-		What's needed for v1.0.0:
+        recovery could even be, users have a copy of some of the keeper's
+        secrets.
+        they rebuild a secret server and load that piece back in. nexus then can
+        recover.
+        that api could also allow for backup configurations
+      </details>
+      <docs>
+        WAITINGFOR: shamir to be implemented
 
-		- Run SPIKE in Kubernetes too.
-		- Postgres support as a backing store.
-		- (IDEA) Make the backing store as the source of truth. It simplifies the
-		  architecture. Plus, it is more secure since plaintext secrets are not
-		  stored (even in memory) longer than they are needed.
-		  (BUT) This means Nexus will not work if the backing store is down.
-		  (ALSO) in-memory is faster.
-		  (MAYBE) have several modes of operation where the backing store is the
-		  source of truth, and the in-memory store is a cache or the in-memory store
-		  is the source of truth and the backing store is a cache.
-		  (BECAUSE) high-performance could be the differentiating factor for SPIKE.
-		- Ability to channel audit logs to a log aggregator.
-		- OIDC integration: Ability to connect to an identity provider.
-		- ESO (External Secrets Operator) integration
-		- Postgres support.
-		- And ADMIN UI (linked to OIDC probably)
-		- (Maybe) Ability to use the RESTful API without needing an SDK.
-		  That could be hard though since we rely on SPIFFE authentication and
-		  SPIFFE workload API to gather certs: We can use a tool to automate that
-		  part. But i'ts not that hard either if I know where my certs are:
-		  `curl --cert /path/to/svid_cert.pem --key /path/to/svid_key.pem https://mtls.example.com/resource`
+        To documentation (Disaster Recovery)
 
+        Is it like
+        Keepers have 3 shares.
+        I get one share
+        you get one share.
+        We keep our shares secure.
+        none of us alone can assemble a keeper cluster.
+        But we two can join our forces and do an awesome DR at 3am in the
+        morning if needed?
 
-		(ALSO)
-		Using a Database as a Source of Truth is a good idea because:
-		* Security and Persistence: As a secrets store, the primary concerns are
-		  security and data integrity. Using an encrypted database as the source
-		  of truth ensures that secrets are securely stored and persist across
-		  system restarts or crashes.
-		* Scalability: Databases can handle growth more effectively, allowing
-		  the system to accommodate increasing amounts of secrets without a
-		  significant redesign.
-		* Simplicity and Maintainability: A single source of truth simplifies
-		  the architecture, making the system easier to develop, maintain, and
-		  secure.
-		* Performance Mitigation: While direct database access is slower than
-		  in-memory access, we can implement caching strategies (e.g., using
-		  in-memory read-through caches) to mitigate latency without
-		  compromising on security and persistence.
+        or if your not that paranoid, you can keep both shares on one
+        thumbdrive, or 2
+        shares on two different thumbdrives in two different safes, and rebuild.
 
+        it gives a lot of options on just how secure you want to try and make
+        things vs
+        how painful it is to recover
+      </docs>
+    </issue>
+  </reserved>
+  <immediate-backlog>
+  </immediate-backlog>
+  <runner-up>
+    <issue>
+      double-encryption of nexus-keeper comms (in case mTLS gets compromised, or
+      SPIRE is configured to use an upstream authority that is compromised, this
+      will provide end-to-end encryption and an additional layer of security
+      over
+      the existing PKI)
+    </issue>
+    <issue>
+      Minimally Delightful Product Requirements:
+      - A containerized SPIKE deployment
+      - A Kubernetes SPIKE deployment
+      - Minimal policy enforcement
+      - Minimal integration tests
+      - A demo workload that uses SPIKE to test things out as a consumer.
+      - A golang SDK (we can start at github/zerotohero-dev/spike-sdk-go
+      and them move it under spiffe once it matures)
+    </issue>
+    <issue>
+      Kubernetification
+    </issue>
+    <issue>
+      v.1.0.0 Requirements:
+      - Having S3 as a backing store
+    </issue>
+    <issue>
+      Consider a health check / heartbeat between Nexus and Keeper.
+      This can be more frequent than the root key sync interval.
+    </issue>
+    <issue>
+      Unit tests and coverage reports.
+      Create a solid integration test before.
+    </issue>
+    <issue>
+      Test automation.
+    </issue>
+    <issue>
+      Assigning secrets to SPIFFE IDs or SPIFFE ID prefixes.
+    </issue>
+  </runner-up>
+  <backlog>
+    <issue kind="v1.0-requirement">
+      - Run SPIKE in Kubernetes too.
+    </issue>
 
-	</issue>
-	<issue>
-		since OPA knows REST, can we expose a policy evaluation endpoint to
-		help OPA augment/extend SPIKE policy decisions?
-	</issue>
-	<issue>
-		make the demo app use SPIKE SDK; and create a recording about that too.
-	</issue>
-	<issue>
-		maybe create an interface for kv, so we can have thread-safe variants too.
-	</issue>
-	<issue>
-		One way token flow;
-		keeper provides the rootkey to nexus;
-		nexus init pushes root key to keeper.
-		that's it.
-	</issue>
-	<issue >
-		configure the current system to work with multiple keepers.
-		the demo setup should initialize 3 keepers by default.
-		the demo setup should use sqlite as the backing store by default.
-	</issue>
-	<issue>
-		multiple keeper clusters:
+    <issue kind="v1.0-requirement">
+      - Postgres support as a backing store.
+    </issue>
 
-		keepers:
-		- nodes: [n1, n2, n3, n4, n5]
-		- nodes: [dr1, dr2]
+    <issue kind="v1.0-requirement">
+      - Ability to channel audit logs to a log aggregator.
+    </issue>
 
-		if it cant assemble back from the first pool, it could try the next
-		pool, which could be stood up only during disaster recovery.
-	</issue>
-	<issue>
-		a tool to read from one cluster of keepers to hydrate a different
-		cluster of keepers.
-	</issue>
-	<issue>
-		demo:
-		keep spire-server in a separate machine to show that an admin can add/remove
-		access to SPIKE nexus, and an operator in another machine can access to the
-		store if/when they have an SVID.
-	</issue>
-	<issue>
-		What if a keeper instance crashes and goes back up?
-		if there is an "initialized" Nexus; it can hint nexus to send its share again.
-	</issue>
-	<issue>
-		Think about DR scenarios.
-	</issue>
-	<issue>
-		use case: shamir
+    <issue kind="v1.0-requirement">
+      - OIDC integration: Ability to connect to an identity provider.
+    </issue>
 
-		1. `spike init` verifies that there are 3 healthy keeper instances.
-		it creates a shard of 3 shamir secrets (2 of which will be enough to reassemble the root key)
-		send each share to each keeper.
-		2. SPIKE nexus regularly polls all keepers and if it can assemble a secret all good.
-		3. `spike init` will also save the 2 shards (out of 3) in `~/.spike/recovery/*`
-		The admin will be "highly encouraged" do delete those from the machine and
-		securely back up the keys and distribute them to separate people etc.
-		[2 and 3 are configurable]
-	</issue>
-	<issue>
-		have sqlite as the default backing store.
-		(until we implement the S3 backing store)
-	</issue>
-	<issue>
-		1. `spike init` initializes keeper(s). From that point on, SPIKE Nexus
-		   pulls the root key whenever it needs it.
-		2. nexus and keeper can use e2e encryption with one time key pairs
-		   to have forward secrecy and defend the transport in the VERY unlikely
-		   case of a SPIFFE mTLS breach.
-		3. ability for nexus to talk to multiple keepers
-		4. ability for a keeper to talk to nexus to recover its root key if it
-		   loses it.
-		5. abiliy for nexus to talk to and initialize multiple keepers.
-		   (phase 1: all keepers share the same key)
-		6. `spike init` saves its shards (2 out of 3 or smilar) to `~/.spike/recovery/*`
-			The admin will be "highly encouraged" to delete those from the machine and
-			securely back up the keys and distribute them to separate people etc
-			`spike init` will also save the primary key used in the shamir's secret sharing
-		    to `~/.spike/recovery/*` (this is not as sensitive as the root key, but still
-		    should be kept safe)
-		- it is important to note that, without the recovery material, your only opiton
-		  to restore the root key relies on the possibility that more than N keepers remain
-		  operational at all times. -- that's a good enough possibility anyway
-		  (say 5 keepers in 3 AZs, and you need only 2 to recover the root key; then it will
-		   be extremely unlikely for all of them to go down at the same time)
-		   so in an ideal scenario you save your recovery material in a secure encrypted enclave
-		   and never ever use it.
-		7. `spike recover` will reset a keeper cluster by using the recovery material.
-		    `spike recover` will also recover the root key.
-		    to use `spike recover` you will need a special SVID (even a super admin could not use it
-		    without prior authorization)
-		    the SVID who can execute `spike recover` will not be able to execute anything else.
-		8. At phase zero, `spike recover` will just save the root key to disk,
-		   also mentioning that it's not secure and the key will be stored safely
-		   and wiped from the disk.
-		9. maybe double encrypt keeper-nexus communication with one-time key pairs because
-		   the root key is very sensitive and we would want to make sure it's secure even
-		   if the SPIFFE mTLS is compromised.
-	</issue>
-	<issue>
-		say user sets up 5 keeper instances.
-		in nexus, we have a config
-		keepers:
-		- nodes: [n1, n2, n3, n4, n5]
-		nexus can reach out with its own spiffe id to each node in the list. it can
-		call the assembly lib with whatever secrets it gets back, as it gets them back,
-		and so long as it gets enough, "it just works"
+    <issue kind="v1.0-requirement">
+      - ESO (External Secrets Operator) integration
+    </issue>
 
-		recovery could even be, users have a copy of some of the keeper's secrets.
-		they rebuild a secret server and load that piece back in. nexus then can recover.
-		that api could also allow for backup configurations
-	</issue>
-	<issue>
-		workloads should be able to get/set/read secrets.
-		there should be path--workload mapping for that.
-		maybe use OPA. (don't use OPA (to adr) our needs are not that complicated)
+    <issue kind="v1.0-requirement">
+      - An ADMIN UI (linked to OIDC probably)
+    </issue>
 
-		1. create a sample binary that emulates a workload.
-		2. it will fetch its secrets from SPIKE Nexus.
-		3. it will update some secrets too.
-
-		Keep the policy management simple and/or delegate it to
-		a policy engine. Our goal is to keep SPIKE simple, and we
-		don't want create a policy engine.
-
-		This will also require a sample workload and an initial SDK.
-	</issue>
-	<issue>
-		- SPIKE Nexus Sanity Tests
-		- Ensure SPIKE Nexus caches the root key in memory.
-		- Ensure SPIKE Nexus reads from SPIKE keep if it does not have the root key.
-		- Ensure SPIKE Nexus saves the encrypted root key to the database.
-		- Ensure SPIKE Nexus caches the user's session key.
-		- Ensure SPIKE Nexus removes outdated session keys.
-		- Ensure SPIKE Nexus does not re-init (without manual intervention) after
-		  being initialized.
-		- Ensure SPIKE Nexus adheres to the bootstrapping sequence diagram.
-		- Ensure SPIKE Nexus backs up the admin token by encrypting it with the root
-		key and storing in the database.
-		- Ensure SPIKE Nexus stores the initialization tombstone in the database.
-	</issue>
-	<issue>
-		- SPIKE Pilot Sanity Tests
-		- Ensure SPIKE Pilot denies any operation if SPIKE Nexus is not initialized.
-		- Ensure SPIKE Pilot can warn if SPIKE Nexus is unreachable
-		- Ensure SPIKE Pilot does not indefinitely hang up if SPIRE is not there.
-		- Ensure SPIKE Pilot can get and set a secret.
-		- Ensure SPIKE Pilot can do a force reset.
-		- Ensure SPIKE Pilot can recover the root password.
-		- Ensure that after `spike init` you have a password-encrypted root key in the db.
-		- Ensure that you can recover the password-encrypted root key.
-	</issue>
-	<issue>
-		WAITINGFOR: shamir to be implemented
-
-		To documentation (Disaster Recovery)
-
-		Is it like
-		Keepers have 3 shares.
-		I get one share
-		you get one share.
-		We keep our shares secure.
-		none of us alone can assemble a keeper cluster.
-		But we two can join our forces and do an awesome DR at 3am in the morning if needed?
-
-		or if your not that paranoid, you can keep both shares on one thumbdrive, or 2
-		shares on two different thumbdrives in two different safes, and rebuild.
-
-		it gives a lot of options on just how secure you want to try and make things vs
-		how painful it is to recover
-	</issue>
-	<issue>
-		this is from SecretReadResponse, so maybe its entity should be somewhere common too.
-		return &amp;data.Secret{Data: res.Data}, nil
-	</issue>
-	<issue>
-		based on the following, maybe move SQLite "create table" ddls to a separate file.
-		Still a "tool" or a "job" can do that out-of-band.
-
-		update: for SQLite it does not matter as SQLite does not have a concept
-		of RBAC; creating a db is equivalent to creating a file.
-		For other databases, it can be considered, so maybe write an ADR for that.
-
-		ADR:
-
-		It's generally considered better security practice to create the schema out-of-band (separate from the application) for several reasons:
-
-		Principle of Least Privilege:
-
-		The application should only have the permissions it needs for runtime (INSERT, UPDATE, SELECT, etc.)
-		Schema modification rights (CREATE TABLE, ALTER TABLE, etc.) are not needed during normal operation
-		This limits potential damage if the application is compromised
+    <issue kind="v1.0-requirement">
+      - Ability to use the RESTful API without needing an SDK.
+      That could be hard though since we rely on SPIFFE authentication and
+      SPIFFE workload API to gather certs: We can use a tool to automate that
+      part. But it's not that hard either if I know where my certs are:
+      `curl --cert /path/to/svid_cert.pem --key /path/to/svid_key.pem
+      https://mtls.example.com/resource`
+    </issue>
 
 
-		Change Management:
+    <issue>
+      By design, we regard memory as the source of truth.
+      This means that backing store might miss some secrets.
+      Find ways to reduce the likelihood of this happening.
+      1. Implement exponential retries.
+      2. Implement a health check to ensure backing store is up.
+      3. Create background jobs to sync the backing store.
+    </issue>
+    <issue>
+      Test the db backing store.
+    </issue>
+    <issue>
+      Ability to add custom metadata to secrets.
+    </issue>
+    <issue>
+      We need use cases in the website
+      - Policy-based access control for workloads
+      - Secret CRUD operations
+      - etc
+    </issue>
+    <issue>
+      Fleet management:
+      - There is a management plane cluster
+      - There is a control plane cluster
+      - There are workload clusters connected to the control plane
+      - All of those are their own trust domains.
+      - There is MP-CP connectivity
+      - There is CP-WL connectivity
+      - MP has a central secrets store
+      - WL and CP need secrets
+      - Securely dispatch them without "ever" using Kubernetes secrets.
+      - Have an alternative that uses ESO and a restricted secrets namespace
+      that no one other than SPIKE components can see into.
+    </issue>
+    <issue>
+      To docs:
+      how do we manage the root key.
+      i.e., it never leaves the memory and we keep it alive via replication.
+    </issue>
+    <issue>
+      API for SPIKE nexus to save its shard encrypted with a passphrase for
+      emergency backup
+      This will be optional; and admin will be advised to save it securely
+      outside the machine.
+      (requires the shamir secret sharing to be implemented)
+    </issue>
+    <issue>
+      Postgresql support for backing store.
+    </issue>
+    <issue>
+      maybe a default auditor SPIFFEID that can only read stuff (for Pilot;
+      not for named admins; named admins will use the policy system instead)
+    </issue>
+    <issue>
+      Optionally not create tables and other ddl during backing store creation
+    </issue>
+    <issue>
+      What if a keeper instance crashes and goes back up?
+      if there is an "initialized" Nexus; it can hint nexus to send its share
+      again.
+    </issue>
 
-		Database schema changes can be managed through proper migration tools
-		Changes can be reviewed, versioned, and rolled back if needed
-		Prevents accidental schema modifications during application restarts
+    <issue>
+      Think about DR scenarios.
+    </issue>
+    <issue>
+      SPIKE Pilot to ingest a policy YAML file(s) to create policies.
+      (similar to kubectl)
+    </issue>
+    <issue>
+      - SPIKE Keep Sanity Tests
+      - Ensure that the root key is stored in SPIKE Keep's memory.
+      - Ensure that SPIKE Keep can return the root key back to SPIKE Nexus.
+    </issue>
+    <issue>
+      Demo: root key recovery.
+    </issue>
+
+    <issue>
+      If there is a backing store, load all secrets from the backing store
+      upon crash, which will also populate the key list.
+      after recovery, all secrets will be there and the system will be
+      operational.
+      after recovery admin will lose its session and will need to re-login.
+    </issue>
+    <issue>
+      Test edge cases:
+      * call api method w/o token.
+      * call api method w/ invalid token.
+      * call api method w/o initializing the nexus.
+      * call init twice.
+      * call login with bad password.
+      ^ all these cases should return meaningful errors and
+      the user should be informed of what went wrong.
+    </issue>
+    <issue>
+      Try SPIKE on a Mac.
+    </issue>
+    <issue>
+      Try SPIKE on an x-86 Linux.
+    </issue>
+
+    <issue>
+      based on the following, maybe move SQLite "create table" ddls to a
+      separate file.
+      Still a "tool" or a "job" can do that out-of-band.
+
+      update: for SQLite it does not matter as SQLite does not have a concept
+      of RBAC; creating a db is equivalent to creating a file.
+      For other databases, it can be considered, so maybe write an ADR for that.
+
+      ADR:
+
+      It's generally considered better security practice to create the schema
+      out-of-band (separate from the application) for several reasons:
+
+      Principle of Least Privilege:
+
+      The application should only have the permissions it needs for runtime
+      (INSERT, UPDATE, SELECT, etc.)
+      Schema modification rights (CREATE TABLE, ALTER TABLE, etc.) are not
+      needed during normal operation
+      This limits potential damage if the application is compromised
 
 
-		Environment Consistency:
+      Change Management:
 
-		Ensures all environments (dev, staging, prod) have identical schemas
-		Reduces risk of schema drift between environments
-		Makes it easier to track schema changes in version control
-	</issue>
-	<issue>
-		- SPIKE Keep Sanity Tests
-		- Ensure that the root key is stored in SPIKE Keep's memory.
-		- Ensure that SPIKE Keep can return the root key back to SPIKE Nexus.
-	</issue>
-	<issue>
-		Demo: root key recovery.
-	</issue>
-	<issue>
-		If there is a backing store, load all secrets from the backing store
-		upon crash, which will also populate the key list.
-		after recovery, all secrets will be there and the system will be
-		operational.
-		after recovery admin will lose its session and will need to re-login.
-	</issue>
-	<issue>
-		Test edge cases:
-		* call api method w/o token.
-		* call api method w/ invalid token.
-		* call api method w/o initializing the nexus.
-		* call init twice.
-		* call login with bad password.
-		^ all these cases should return meaningful errors and
-		the user should be informed of what went wrong.
-	</issue>
-	<issue>
-		Try SPIKE on a Mac.
-	</issue>
-	<issue>
-		Try SPIKE on an x-86 Linux.
-	</issue>
-	<issue>
-		these may come from the environment:
+      Database schema changes can be managed through proper migration tools
+      Changes can be reviewed, versioned, and rolled back if needed
+      Prevents accidental schema modifications during application restarts
 
-		DataDir:         ".data",
-		DatabaseFile:    "spike.db",
-		JournalMode:     "WAL",
-		BusyTimeoutMs:   5000,
-		MaxOpenConns:    10,
-		MaxIdleConns:    5,
-		ConnMaxLifetime: time.Hour,
-	</issue>
-	<issue>
-		double-encryption of nexus-keeper comms (in case mTLS gets compromised, or
-		SPIRE is configured to use an upstream authority that is compromised, this
-		will provide end-to-end encryption and an additional layer of security over
-		the existing PKI)
-	</issue>
-</reserved>
-<immediate-backlog>
-	<issue>
-		Add recent recordings to the website.
-	</issue>
-</immediate-backlog>
-<runner-up>
-	<issue>
-		Minimally Delightful Product Requirements:
-		- A containerized SPIKE deployment
-		- A Kubernetes SPIKE deployment
-		- Minimal policy enforcement
-		- Minimal integration tests
-		- A demo workload that uses SPIKE to test things out as a consumer.
-		- A golang SDK (we can start at github/zerotohero-dev/spike-sdk-go
-		  and them move it under spiffe once it matures)
-	</issue>
-	<issue>
-		Kubernetification
-	</issue>
-	<issue>
-		v.1.0.0 Requirements:
-		- Having S3 as a backing store
-	</issue>
-	<issue>
-		Consider a health check / heartbeat between Nexus and Keeper.
-		This can be more frequent than the root key sync interval.
-	</issue>
-	<issue>
-		Unit tests and coverage reports.
-		Create a solid integration test before.
-	</issue>
-	<issue>
-		Test automation.
-	</issue>
-	<issue>
-		Assigning secrets to SPIFFE IDs or SPIFFE ID prefixes.
-	</issue>
-	<issue>
-		RW policies for workloads based on path and SPIFFE IDs.
-		(or maybe experiment with S3 policies before reinventing a policy engine)
-	</issue>
-</runner-up>
-<backlog>
-	<issue>
-		By design, we regard memory as the source of truth.
-		This means that backing store might miss some secrets.
-		Find ways to reduce the likelihood of this happening.
-		1. Implement exponential retries.
-		2. Implement a health check to ensure backing store is up.
-		3. Create background jobs to sync the backing store.
-	</issue>
-	<issue>
-		Test the db backing store.
-	</issue>
-	<issue>
-		Ability to add custom metadata to secrets.
-	</issue>
-</backlog>
-<future>
-	<issue>
-		SPIKE Dev Mode:
 
-		* Single binary
-		* `keeper` functionality runs in memory
-		* `nexus` uses an in-memory store, and its functionality is in the single binary too.
-		* only networking is between the binary and SPIRE Agent.
-		* For development only.
+      Environment Consistency:
 
-		The design should be maintainable with code reuse and should not turn into maintaining two separate projects.
-	</issue>
-	<issue>
-		rate limiting to api endpoints.
-	</issue>
-	<issue>
-		* super admin can create regular admins and other super admins.
-		* super admin can assign backup admins.
-		(see drafts.txt for more details)
-	</issue>
-	<issue>
-		Each keeper is backed by a TPM.
-	</issue>
-	<issue>
-		Do some static analysis.
-	</issue>
-	<to-plan>
-		<issue>
-			S3 (or compatible) backing store
-		</issue>
-		<issue>
-			File-based backing store
-		</issue>
-		<issue>
-			In memory backing store
-		</issue>
-		<issue>
-			Kubernetes Deployment
-		</issue>
-	</to-plan>
-	<issue>
-		Initial super admin can create other admins.
-		So that, if an admin leaves, the super admin can delete them.
-		or if the password of an admin is compromised, the super admin can
-		reset it.
-	</issue>
-	<issue>
-	- Security Measures (SPIKE Nexus)
-		- Encrypting the root key with admin password is good
-		Consider adding salt to the password encryption
-		- Maybe add a key rotation mechanism for the future
-	</issue>
-	<issue>
-	- Error Handling
-		- Good use of exponential retries
-		- Consider adding specific error types/codes for different failure scenarios
-		- Might want to add cleanup steps for partial initialization failures
-	</issue>
-	<issue>
-	Ability to stream logs and audit trails outside of std out.
-	</issue>
-	<issue>
-	Audit logs should write to a separate location.
-	</issue>
-	<issue>
-	Create a dedicated OIDC resource server (that acts like Pilot but exposes a
-	restful API for things like CI/CD integration.
-	</issue>
-	<issue>
-	HSM integration (i.e. root key is managed/provided by an HSM, and the key
-	ever leaves the trust boundary of the HSM.
-	</issue>
-	<issue>
-	Ability to rotate the root key (automatic via Nexus).
-	</issue>
-	<issue>
-	Ability to rotate the admin token (manual).
-	</issue>
-	<issue>
-	Admin tokens can expire.
-	</issue>
-	<issue>
-	Encourage to create users instead of relying on the system user.
-	</issue>
-</future>
+      Ensures all environments (dev, staging, prod) have identical schemas
+      Reduces risk of schema drift between environments
+      Makes it easier to track schema changes in version control
+    </issue>
+
+
+    <qa>
+      <issue>
+        - SPIKE Nexus Sanity Tests
+        - Ensure SPIKE Nexus caches the root key in memory.
+        - Ensure SPIKE Nexus reads from SPIKE keep if it does not have the root
+        key.
+        - Ensure SPIKE Nexus saves the encrypted root key to the database.
+        - Ensure SPIKE Nexus caches the user's session key.
+        - Ensure SPIKE Nexus removes outdated session keys.
+        - Ensure SPIKE Nexus does not re-init (without manual intervention)
+        after
+        being initialized.
+        - Ensure SPIKE Nexus adheres to the bootstrapping sequence diagram.
+        - Ensure SPIKE Nexus backs up the admin token by encrypting it with the
+        root
+        key and storing in the database.
+        - Ensure SPIKE Nexus stores the initialization tombstone in the
+        database.
+      </issue>
+      <issue>
+        - SPIKE Pilot Sanity Tests
+        - Ensure SPIKE Pilot denies any operation if SPIKE Nexus is not
+        initialized.
+        - Ensure SPIKE Pilot can warn if SPIKE Nexus is unreachable
+        - Ensure SPIKE Pilot does not indefinitely hang up if SPIRE is not
+        there.
+        - Ensure SPIKE Pilot can get and set a secret.
+        - Ensure SPIKE Pilot can do a force reset.
+        - Ensure SPIKE Pilot can recover the root password.
+        - Ensure that after `spike init` you have a password-encrypted root key
+        in the db.
+        - Ensure that you can recover the password-encrypted root key.
+      </issue>
+    </qa>
+  </backlog>
+  <future>
+    <issue>
+      multiple keeper clusters:
+
+      keepers:
+      - nodes: [n1, n2, n3, n4, n5]
+      - nodes: [dr1, dr2]
+
+      if it cant assemble back from the first pool, it could try the next
+      pool, which could be stood up only during disaster recovery.
+    </issue>
+    <issue>
+      a tool to read from one cluster of keepers to hydrate a different
+      cluster of keepers.
+    </issue>
+
+    <issue>
+      since OPA knows REST, can we expose a policy evaluation endpoint to
+      help OPA augment/extend SPIKE policy decisions?
+    </issue>
+    <issue>
+      maybe create an interface for kv, so we can have thread-safe variants too.
+    </issue>
+
+    <issue>
+      maybe create a password manager tool as an example use case
+    </issue>
+
+    <issue>
+      A `stats` endpoint to show the overall
+      system utilization
+      (how many secrets; how much memory, etc)
+    </issue>
+    <issue>
+      maybe inspire admin UI from keybase
+      https://keybase.io/v0lk4n/devices
+      for that, we need an admin ui first :)
+      for that we need keycloak to experiment with first.
+    </issue>
+
+    <issue>
+      the current docs are good and all but they are not good for seo; we might
+      want to convert to something like zola later down the line
+    </issue>
+
+    <issues>
+      wrt ADR-0014:
+      Maybe we should use something S3-compatible as primary storage
+      instead of sqlite.
+      But that can wait until we implement other features.
+
+      Besides, Postgres support will be something that some of the stakeholders
+      want to see too.
+    </issues>
+
+
+    <issue>
+      SPIKE Dev Mode:
+
+      * Single binary
+      * `keeper` functionality runs in memory
+      * `nexus` uses an in-memory store, and its functionality is in the single
+      binary too.
+      * only networking is between the binary and SPIRE Agent.
+      * For development only.
+
+      The design should be maintainable with code reuse and should not turn into
+      maintaining two separate projects.
+    </issue>
+    <issue>
+      rate limiting to api endpoints.
+    </issue>
+    <issue>
+      * super admin can create regular admins and other super admins.
+      * super admin can assign backup admins.
+      (see drafts.txt for more details)
+    </issue>
+    <issue>
+      Each keeper is backed by a TPM.
+    </issue>
+    <issue>
+      Do some static analysis.
+    </issue>
+    <to-plan>
+      <issue>
+        S3 (or compatible) backing store
+      </issue>
+      <issue>
+        File-based backing store
+      </issue>
+      <issue>
+        In memory backing store
+      </issue>
+      <issue>
+        Kubernetes Deployment
+      </issue>
+    </to-plan>
+    <issue>
+      Initial super admin can create other admins.
+      So that, if an admin leaves, the super admin can delete them.
+      or if the password of an admin is compromised, the super admin can
+      reset it.
+    </issue>
+    <issue>
+      - Security Measures (SPIKE Nexus)
+      - Encrypting the root key with admin password is good
+      Consider adding salt to the password encryption
+      - Maybe add a key rotation mechanism for the future
+    </issue>
+    <issue>
+      - Error Handling
+      - Good use of exponential retries
+      - Consider adding specific error types/codes for different failure
+      scenarios
+      - Might want to add cleanup steps for partial initialization failures
+    </issue>
+    <issue>
+      Ability to stream logs and audit trails outside of std out.
+    </issue>
+    <issue>
+      Audit logs should write to a separate location.
+    </issue>
+    <issue>
+      Create a dedicated OIDC resource server (that acts like Pilot but exposes
+      a
+      restful API for things like CI/CD integration.
+    </issue>
+    <issue>
+      HSM integration (i.e. root key is managed/provided by an HSM, and the key
+      ever leaves the trust boundary of the HSM.
+    </issue>
+    <issue>
+      Ability to rotate the root key (automatic via Nexus).
+    </issue>
+    <issue>
+      Ability to rotate the admin token (manual).
+    </issue>
+    <issue>
+      Admin tokens can expire.
+    </issue>
+    <issue>
+      Encourage to create users instead of relying on the system user.
+    </issue>
+  </future>
 </stuff>
