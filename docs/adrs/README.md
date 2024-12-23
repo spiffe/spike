@@ -15,4 +15,4 @@
 * [ADR-0013: S3-Compatible Storage as SPIKE's Backing Store](adrs/adr-0013.md)
 * [ADR-0014: Maintaining SQLite as SPIKE's Primary Storage Backend](adrs/adr-0014.md)
 * [ADR-0015: Use Singular Form for File and Package Naming](adrs/adr-0015.md)
-
+* [ADR-0016: Memory-First Secrets Store](adrs/adr-0016.md)

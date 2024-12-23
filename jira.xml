@@ -5,50 +5,51 @@
 # \\\\\\\ SPDX-License-Identifier: Apache-2.0
 -->
 <stuff>
-<purpose>
-- Our goal is to have a minimally delightful product.
-- Strive not to add features just for the sake of adding features.
-- If there are half-complete features, missing tests, and the like, they should
-  be completed before adding more features.
-</purpose>
+	<purpose>
+		<target>Our goal is to have a minimally delightful product.</target>
+		<target>Strive not to add features just for the sake of adding features.</target>
+		<target>Half-assed features shall be completed before adding more features.</target>
+	</purpose>
 
-<low-hanging-fruits>
-	<issue>
-		revisit the "we'll use sqlite for backend" ADR: There are nuances to
-		consider, especially wrt scalability.
-	</issue>
-	<issue>
-		create a makefile.
-	</issue>
-	<issue>
-		Address `TODO:` items in SDK code and SPIKE code.
-	</issue>
-	<issue>
-		add the new videos to the site.
-	</issue>
-	<issue>
-		The paths that we set in get put ...etc should look like a unix path.
-		it will require sanitization!
-		Check how other secrets stores manage those paths.
-	</issue>
-	<issue>
-		make sure that everything sanitizable are properly sanitized.
-	</issue>
-	<issue>
-		read policies from a yaml or a json file and create them.
-	</issue>
-</low-hanging-fruits>
+	<low-hanging-fruits>
+		<issue>
+			revisit the "we'll use sqlite for backend" ADR: There are nuances to
+			consider, especially wrt scalability.
+		</issue>
+		<issue>
+			create a makefile.
+		</issue>
+		<issue>
+			Address `TODO:` items in SDK code and SPIKE code.
+		</issue>
+		<issue>
+			add the new videos to the site.
+		</issue>
+		<issue>
+			The paths that we set in get put ...etc should look like a unix path.
+			it will require sanitization!
+			Check how other secrets stores manage those paths.
+		</issue>
+		<issue>
+			make sure that everything sanitizable are properly sanitized.
+		</issue>
+		<issue>
+			read policies from a yaml or a json file and create them.
+		</issue>
+	</low-hanging-fruits>
 <reserved>
-	<issue>
-		* demo about SDK
-		* demo about metadata api.
-	</issue>
+
 	<issue>
 		Multiple Keeper instances will be required for fan-in fan-out of the shards.
 	</issue>
 	<issue>
 		the current docs are good and all but they are not good for seo; we might
 		want to convert to something like zola later down the line
+	</issue>
+	<issue>
+		A `stats` endpoint to show the overall
+		system utilization
+		(how many secrets; how much memory, etc)
 	</issue>
 	<issue>
 		- TODO we need use cases in the website
