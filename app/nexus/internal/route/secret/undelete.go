@@ -5,6 +5,7 @@
 package secret
 
 import (
+	"github.com/spiffe/spike-sdk-go/validation"
 	"net/http"
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
@@ -75,6 +76,15 @@ func RouteUndeleteSecret(
 		versions = []int{}
 	}
 
+	err := validation.ValidatePath(path)
+	if err != nil {
+		responseBody := net.MarshalBody(reqres.SecretUndeleteResponse{
+			Err: data.ErrBadInput,
+		}, w)
+		net.Respond(http.StatusBadRequest, responseBody, w)
+		return err
+	}
+
 	spiffeid, err := spiffe.IdFromRequest(r)
 	if err != nil {
 		responseBody := net.MarshalBody(reqres.SecretUndeleteResponse{
@@ -83,6 +93,16 @@ func RouteUndeleteSecret(
 		net.Respond(http.StatusUnauthorized, responseBody, w)
 		return errors.ErrUnauthorized
 	}
+
+	err = validation.ValidateSpiffeId(spiffeid.String())
+	if err != nil {
+		responseBody := net.MarshalBody(reqres.SecretUndeleteResponse{
+			Err: data.ErrUnauthorized,
+		}, w)
+		net.Respond(http.StatusUnauthorized, responseBody, w)
+		return errors.ErrUnauthorized
+	}
+
 	allowed := state.CheckAccess(
 		spiffeid.String(),
 		path,

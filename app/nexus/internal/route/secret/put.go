@@ -5,6 +5,7 @@
 package secret
 
 import (
+	"github.com/spiffe/spike-sdk-go/validation"
 	"net/http"
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
@@ -69,6 +70,26 @@ func RoutePutSecret(
 	values := request.Values
 	path := request.Path
 
+	err := validation.ValidatePath(path)
+	if err != nil {
+		responseBody := net.MarshalBody(reqres.SecretPutResponse{
+			Err: data.ErrBadInput,
+		}, w)
+		net.Respond(http.StatusBadRequest, responseBody, w)
+		return err
+	}
+
+	for k := range values {
+		err := validation.ValidateName(k)
+		if err != nil {
+			responseBody := net.MarshalBody(reqres.SecretPutResponse{
+				Err: data.ErrBadInput,
+			}, w)
+			net.Respond(http.StatusUnauthorized, responseBody, w)
+			return err
+		}
+	}
+
 	// TODO: we'll likely repeat this in a lot of places, and it can be made
 	// a reusable function; maybe using generics too.
 	spiffeId, err := spiffe.IdFromRequest(r)
@@ -79,6 +100,15 @@ func RoutePutSecret(
 		net.Respond(http.StatusUnauthorized, responseBody, w)
 		return err
 	}
+	err = validation.ValidateSpiffeId(spiffeId.String())
+	if err != nil {
+		responseBody := net.MarshalBody(reqres.SecretPutResponse{
+			Err: data.ErrUnauthorized,
+		}, w)
+		net.Respond(http.StatusUnauthorized, responseBody, w)
+		return errors.ErrUnauthorized
+	}
+
 	allowed := state.CheckAccess(
 		spiffeId.String(),
 		path,

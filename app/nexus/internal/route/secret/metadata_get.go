@@ -10,7 +10,6 @@ import (
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
-
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 	"github.com/spiffe/spike/internal/log"
 	"github.com/spiffe/spike/internal/net"
@@ -46,7 +45,7 @@ import (
 //
 // Response format on success (200 OK):
 //
-// "versions": {                           // map[int]SecretMetadataVersionResponse
+// "versions": {                          // map[int]SecretMetadataVersionResponse
 //
 //	"version": {                          // SecretMetadataVersionResponse object
 //	  "createdTime": "",                  // time.Time
@@ -85,12 +84,17 @@ func RouteGetSecretMetadata(
 	}
 
 	request := net.HandleRequest[
-		reqres.SecretReadRequest, reqres.SecretReadResponse](
+		reqres.SecretMetadataRequest, reqres.SecretMetadataResponse](
 		requestBody, w,
-		reqres.SecretReadResponse{Err: data.ErrBadInput},
+		reqres.SecretMetadataResponse{Err: data.ErrBadInput},
 	)
 	if request == nil {
 		return errors.New("failed to parse request body")
+	}
+
+	err := guardGetSecretMetadataRequest(*request, w, r)
+	if err != nil {
+		return err
 	}
 
 	path := request.Path
