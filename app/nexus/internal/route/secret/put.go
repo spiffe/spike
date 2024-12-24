@@ -5,14 +5,11 @@
 package secret
 
 import (
-	"github.com/spiffe/spike-sdk-go/validation"
 	"net/http"
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	"github.com/spiffe/spike-sdk-go/api/errors"
-	"github.com/spiffe/spike-sdk-go/spiffe"
-
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 	"github.com/spiffe/spike/internal/log"
 	"github.com/spiffe/spike/internal/net"
@@ -67,60 +64,13 @@ func RoutePutSecret(
 		return errors.ErrParseFailure
 	}
 
+	err := guardPutSecretMetadataRequest(*request, w, r)
+	if err != nil {
+		return err
+	}
+
 	values := request.Values
 	path := request.Path
-
-	err := validation.ValidatePath(path)
-	if err != nil {
-		responseBody := net.MarshalBody(reqres.SecretPutResponse{
-			Err: data.ErrBadInput,
-		}, w)
-		net.Respond(http.StatusBadRequest, responseBody, w)
-		return err
-	}
-
-	for k := range values {
-		err := validation.ValidateName(k)
-		if err != nil {
-			responseBody := net.MarshalBody(reqres.SecretPutResponse{
-				Err: data.ErrBadInput,
-			}, w)
-			net.Respond(http.StatusUnauthorized, responseBody, w)
-			return err
-		}
-	}
-
-	// TODO: we'll likely repeat this in a lot of places, and it can be made
-	// a reusable function; maybe using generics too.
-	spiffeId, err := spiffe.IdFromRequest(r)
-	if err != nil {
-		responseBody := net.MarshalBody(reqres.SecretPutResponse{
-			Err: data.ErrUnauthorized,
-		}, w)
-		net.Respond(http.StatusUnauthorized, responseBody, w)
-		return err
-	}
-	err = validation.ValidateSpiffeId(spiffeId.String())
-	if err != nil {
-		responseBody := net.MarshalBody(reqres.SecretPutResponse{
-			Err: data.ErrUnauthorized,
-		}, w)
-		net.Respond(http.StatusUnauthorized, responseBody, w)
-		return errors.ErrUnauthorized
-	}
-
-	allowed := state.CheckAccess(
-		spiffeId.String(),
-		path,
-		[]data.PolicyPermission{data.PermissionWrite},
-	)
-	if !allowed {
-		responseBody := net.MarshalBody(reqres.SecretPutResponse{
-			Err: data.ErrUnauthorized,
-		}, w)
-		net.Respond(http.StatusUnauthorized, responseBody, w)
-		return errors.ErrUnauthorized
-	}
 
 	state.UpsertSecret(path, values)
 	log.Log().Info(fName, "msg", "Secret upserted")
