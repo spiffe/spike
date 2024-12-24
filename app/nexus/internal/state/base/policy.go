@@ -44,6 +44,29 @@ func hasAllPermissions(
 	return true
 }
 
+// CheckAccess determines if a given SPIFFE ID has the required permissions for
+// a specific path. It first checks if the ID belongs to SPIKE Pilot (which has
+// unrestricted access), then evaluates against all defined policies. Policies
+// are checked in order, with wildcard patterns evaluated first, followed by
+// specific pattern matching using regular expressions.
+//
+// Parameters:
+//   - spiffeId: The SPIFFE ID of the requestor
+//   - path: The resource path being accessed
+//   - wants: Slice of permissions being requested
+//
+// Returns:
+//   - bool: true if access is granted, false otherwise
+//
+// The function grants access if any of these conditions are met:
+//  1. The requestor is a pilot
+//  2. A matching policy has the super permission
+//  3. A matching policy contains all requested permissions
+//
+// A policy matches when:
+//  1. It has wildcard patterns ("*") for both SPIFFE ID and path, or
+//  2. Its SPIFFE ID pattern matches the requestor's ID and its path pattern
+//     matches the requested path
 func CheckAccess(
 	spiffeId string, path string, wants []data.PolicyPermission,
 ) bool {
@@ -87,7 +110,25 @@ func CheckAccess(
 	return false
 }
 
-// CreatePolicy creates a new policy with an auto-generated ID.
+// CreatePolicy creates a new policy in the system after validating and
+// preparing it. The function compiles regex patterns, generates a UUID, and
+// sets creation timestamp before storing the policy.
+//
+// Parameters:
+//   - policy: The policy to create. Must have a non-empty Name field.
+//     SpiffeIdPattern and PathPattern can be "*" for wildcard matching,
+//     or valid regular expressions.
+//
+// Returns:
+//   - data.Policy: The created policy, including generated ID and timestamps
+//   - error: ErrInvalidPolicy if policy name is empty, or regex compilation
+//     errors for invalid patterns
+//
+// The function performs the following modifications to the input policy:
+//   - Compiles and stores regex patterns for non-wildcard SpiffeIdPattern
+//     and PathPattern
+//   - Generates and sets a new UUID as the policy ID
+//   - Sets CreatedAt to current time if not already set
 func CreatePolicy(policy data.Policy) (data.Policy, error) {
 	if policy.Name == "" {
 		return data.Policy{}, ErrInvalidPolicy
@@ -120,8 +161,14 @@ func CreatePolicy(policy data.Policy) (data.Policy, error) {
 	return policy, nil
 }
 
-// GetPolicy retrieves a policy by ID. Returns ErrPolicyNotFound if the policy
-// doesn't exist.
+// GetPolicy retrieves a policy by its ID from the policy store.
+//
+// Parameters:
+//   - id: The unique identifier of the policy to retrieve
+//
+// Returns:
+//   - data.Policy: The retrieved policy if found
+//   - error: ErrPolicyNotFound if no policy exists with the given ID.
 func GetPolicy(id string) (data.Policy, error) {
 	if value, exists := policies.Load(id); exists {
 		return value.(data.Policy), nil
@@ -129,8 +176,22 @@ func GetPolicy(id string) (data.Policy, error) {
 	return data.Policy{}, ErrPolicyNotFound
 }
 
-// UpdatePolicy updates an existing policy. Returns ErrPolicyNotFound if
-// the policy doesn't exist.
+// UpdatePolicy updates an existing policy while preserving certain original
+// fields. The function ensures the policy exists and maintains creation
+// metadata during the update.
+//
+// Parameters:
+//   - policy: The policy to update. Must have both Id and Name fields set.
+//
+// Returns:
+//   - error: One of the following:
+//   - ErrInvalidPolicy if Id or Name is empty
+//   - ErrPolicyNotFound if no policy exists with the given Id
+//   - nil on successful update
+//
+// The function preserves the following fields from the original policy:
+//   - CreatedAt timestamp
+//   - CreatedBy identifier
 func UpdatePolicy(policy data.Policy) error {
 	if policy.Id == "" || policy.Name == "" {
 		return ErrInvalidPolicy
@@ -150,8 +211,14 @@ func UpdatePolicy(policy data.Policy) error {
 	return nil
 }
 
-// DeletePolicy removes a policy by ID. Returns ErrPolicyNotFound if the policy
-// doesn't exist.
+// DeletePolicy removes a policy from the system by its ID.
+//
+// Parameters:
+//   - id: The unique identifier of the policy to delete
+//
+// Returns:
+//   - error: ErrPolicyNotFound if no policy exists with the given ID,
+//     nil if the deletion was successful
 func DeletePolicy(id string) error {
 	if _, exists := policies.Load(id); !exists {
 		return ErrPolicyNotFound
@@ -161,9 +228,13 @@ func DeletePolicy(id string) error {
 	return nil
 }
 
-// TODO: longer documentation.
-
-// ListPolicies returns all policies as a slice.
+// ListPolicies retrieves all policies from the policy store.
+// It iterates through the concurrent map of policies and returns them as a slice.
+//
+// Returns:
+//   - []data.Policy: A slice containing all existing policies. Returns an empty
+//     slice if no policies exist. The order of policies in the returned slice
+//     is non-deterministic due to the concurrent nature of the underlying store.
 func ListPolicies() []data.Policy {
 	var result []data.Policy
 
@@ -175,7 +246,18 @@ func ListPolicies() []data.Policy {
 	return result
 }
 
-// ListPoliciesByPath returns all policies that match a given path pattern.
+// ListPoliciesByPath returns all policies that match a specific path pattern.
+// It filters the policy store and returns only policies where PathPattern
+// exactly matches the provided pattern string.
+//
+// Parameters:
+//   - pathPattern: The exact path pattern to match against policies
+//
+// Returns:
+//   - []data.Policy: A slice of policies with matching PathPattern. Returns an
+//     empty slice if no policies match. The order of policies in the returned
+//     slice is non-deterministic due to the concurrent nature of the underlying
+//     store.
 func ListPoliciesByPath(pathPattern string) []data.Policy {
 	var result []data.Policy
 
@@ -190,7 +272,18 @@ func ListPoliciesByPath(pathPattern string) []data.Policy {
 	return result
 }
 
-// ListPoliciesBySpiffeId returns all policies that match a given SPIFFE ID pattern.
+// ListPoliciesBySpiffeId returns all policies that match a specific SPIFFE ID
+// pattern. It filters the policy store and returns only policies where
+// SpiffeIdPattern exactly matches the provided pattern string.
+//
+// Parameters:
+//   - spiffeIdPattern: The exact SPIFFE ID pattern to match against policies
+//
+// Returns:
+//   - []data.Policy: A slice of policies with matching SpiffeIdPattern. Returns
+//     an empty slice if no policies match. The order of policies in the returned
+//     slice is non-deterministic due to the concurrent nature of the underlying
+//     store.
 func ListPoliciesBySpiffeId(spiffeIdPattern string) []data.Policy {
 	var result []data.Policy
 

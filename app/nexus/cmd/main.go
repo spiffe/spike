@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/spiffe/spike-sdk-go/net"
 	"github.com/spiffe/spike-sdk-go/spiffe"
 
 	"github.com/spiffe/spike/app/nexus/internal/env"
@@ -17,10 +18,8 @@ import (
 	"github.com/spiffe/spike/app/nexus/internal/route/handle"
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 	"github.com/spiffe/spike/app/nexus/internal/trust"
-	"github.com/spiffe/spike/internal/auth"
 	"github.com/spiffe/spike/internal/config"
 	"github.com/spiffe/spike/internal/log"
-	"github.com/spiffe/spike/internal/net"
 )
 
 const appName = "SPIKE Nexus"
@@ -60,9 +59,9 @@ func main() {
 	log.Log().Info(appName,
 		"msg", fmt.Sprintf("Started service: %s v%s",
 			appName, config.NexusVersion))
+
 	if err := net.Serve(
 		source, handle.InitializeRoutes,
-		auth.CanTalkToNexus,
 		env.TlsPort(),
 	); err != nil {
 		log.FatalF("%s: Failed to serve: %s\n", appName, err.Error())

@@ -68,7 +68,6 @@ Examples:
 				return
 			}
 
-			// TODO: this better be a method.
 			if state == data.NotInitialized {
 				fmt.Println("Please initialize SPIKE first by running 'spike init'.")
 				return
