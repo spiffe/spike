@@ -5,13 +5,11 @@
 package secret
 
 import (
-	"github.com/spiffe/spike-sdk-go/spiffe"
 	"net/http"
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	"github.com/spiffe/spike-sdk-go/api/errors"
-
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 	"github.com/spiffe/spike/internal/log"
 	"github.com/spiffe/spike/internal/net"
@@ -74,28 +72,12 @@ func RouteListPaths(
 		return errors.ErrParseFailure
 	}
 
-	keys := state.ListKeys()
-
-	spiffeId, err := spiffe.IdFromRequest(r)
+	err := guardListSecretRequest(*request, w, r)
 	if err != nil {
-		responseBody := net.MarshalBody(reqres.SecretListResponse{
-			Err: data.ErrUnauthorized,
-		}, w)
-		net.Respond(http.StatusUnauthorized, responseBody, w)
 		return err
 	}
-	allowed := state.CheckAccess(
-		spiffeId.String(), "*",
-		[]data.PolicyPermission{data.PermissionList},
-	)
-	if !allowed {
-		responseBody := net.MarshalBody(reqres.SecretListResponse{
-			Err: data.ErrUnauthorized,
-		}, w)
-		net.Respond(http.StatusUnauthorized, responseBody, w)
-		return errors.ErrUnauthorized
-	}
 
+	keys := state.ListKeys()
 	responseBody := net.MarshalBody(reqres.SecretListResponse{Keys: keys}, w)
 	if responseBody == nil {
 		return errors.ErrMarshalFailure

@@ -80,19 +80,30 @@ sleep 5
 run_background "./hack/spire-agent-start.sh"
 
 echo ""
-echo "Waiting before keeper"
+echo "Waiting before SPIKE Keeper..."
 sleep 5
 run_background "./keeper"
 
 echo ""
-echo "Waiting before nexus"
+echo "Waiting before SPIKE Nexus..."
 sleep 5
 run_background "./nexus"
 
 echo ""
 echo ""
-echo "Everything is set up. Will wait for all processes to finish."
-echo "Press Ctrl+C to exit and cleanup all background processes."
+echo "<<"
+echo ">"
+echo "> Everything is set up."
+echo "> You can now experiment with SPIKE."
+echo ">"
+echo "<<"
+echo "> >> To begin, run './spike init' on a separate terminal window."
+echo "<<"
+echo ">"
+echo "> When you are done with your experiments, you can press 'Ctrl+C'"
+echo "> on this terminal to exit and cleanup all background processes."
+echo ">"
+echo "<<"
 echo ""
 echo ""
 

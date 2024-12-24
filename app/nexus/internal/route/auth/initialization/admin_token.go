@@ -66,7 +66,7 @@ func generateAdminSigningToken(w http.ResponseWriter) ([]byte, error) {
 			"msg", "Failed to generate admin token", "err", err.Error())
 
 		responseBody := net.MarshalBody(reqres.InitResponse{
-			Err: data.ErrServerFault}, w,
+			Err: data.ErrInternal}, w,
 		)
 		if responseBody == nil {
 			return []byte{}, errors.New("failed to marshal response body")

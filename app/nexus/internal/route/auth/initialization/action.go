@@ -36,7 +36,7 @@ func generateSalt(w http.ResponseWriter) ([]byte, error) {
 			"err", err.Error())
 
 		responseBody := net.MarshalBody(reqres.InitResponse{
-			Err: data.ErrServerFault}, w,
+			Err: data.ErrInternal}, w,
 		)
 		if responseBody == nil {
 			return []byte{}, errors.New("failed to marshal response body")

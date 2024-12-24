@@ -11,7 +11,6 @@ import (
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	"github.com/spiffe/spike-sdk-go/api/errors"
-	"github.com/spiffe/spike-sdk-go/spiffe"
 
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 	"github.com/spiffe/spike/internal/log"
@@ -79,33 +78,15 @@ func RoutePutPolicy(
 		return errors.ErrReadFailure
 	}
 
-	// TODO: sanitize
+	err := guardPutPolicyRequest(*request, w, r)
+	if err != nil {
+		return err
+	}
 
 	name := request.Name
 	spiffeIdPattern := request.SpiffeIdPattern
 	pathPattern := request.PathPattern
 	permissions := request.Permissions
-
-	spiffeid, err := spiffe.IdFromRequest(r)
-	if err != nil {
-		responseBody := net.MarshalBody(reqres.PolicyCreateResponse{
-			Err: data.ErrUnauthorized,
-		}, w)
-		net.Respond(http.StatusUnauthorized, responseBody, w)
-		return err
-	}
-
-	allowed := state.CheckAccess(
-		spiffeid.String(), "*",
-		[]data.PolicyPermission{data.PermissionSuper},
-	)
-	if !allowed {
-		responseBody := net.MarshalBody(reqres.PolicyCreateResponse{
-			Err: data.ErrUnauthorized,
-		}, w)
-		net.Respond(http.StatusUnauthorized, responseBody, w)
-		return errors.ErrUnauthorized
-	}
 
 	policy, err := state.CreatePolicy(data.Policy{
 		Id:              "",

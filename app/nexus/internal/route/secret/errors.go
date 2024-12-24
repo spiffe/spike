@@ -16,6 +16,8 @@ import (
 	"github.com/spiffe/spike/pkg/store"
 )
 
+// TODO: split this for get secret and get secret meta
+// better to have two functions.
 func handleGetSecretError(err error, w http.ResponseWriter) error {
 	// TODO: maybe reuse this in getSecret too -- currently only getsecretmeta uses it.
 

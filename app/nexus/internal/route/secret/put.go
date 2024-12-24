@@ -10,8 +10,6 @@ import (
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	"github.com/spiffe/spike-sdk-go/api/errors"
-	"github.com/spiffe/spike-sdk-go/spiffe"
-
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 	"github.com/spiffe/spike/internal/log"
 	"github.com/spiffe/spike/internal/net"
@@ -66,31 +64,13 @@ func RoutePutSecret(
 		return errors.ErrParseFailure
 	}
 
-	values := request.Values
-	path := request.Path
-
-	// TODO: we'll likely repeat this in a lot of places, and it can be made
-	// a reusable function; maybe using generics too.
-	spiffeId, err := spiffe.IdFromRequest(r)
+	err := guardPutSecretMetadataRequest(*request, w, r)
 	if err != nil {
-		responseBody := net.MarshalBody(reqres.SecretPutResponse{
-			Err: data.ErrUnauthorized,
-		}, w)
-		net.Respond(http.StatusUnauthorized, responseBody, w)
 		return err
 	}
-	allowed := state.CheckAccess(
-		spiffeId.String(),
-		path,
-		[]data.PolicyPermission{data.PermissionWrite},
-	)
-	if !allowed {
-		responseBody := net.MarshalBody(reqres.SecretPutResponse{
-			Err: data.ErrUnauthorized,
-		}, w)
-		net.Respond(http.StatusUnauthorized, responseBody, w)
-		return errors.ErrUnauthorized
-	}
+
+	values := request.Values
+	path := request.Path
 
 	state.UpsertSecret(path, values)
 	log.Log().Info(fName, "msg", "Secret upserted")
