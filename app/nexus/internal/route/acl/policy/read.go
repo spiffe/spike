@@ -11,6 +11,7 @@ import (
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	apiErr "github.com/spiffe/spike-sdk-go/api/errors"
+
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 	"github.com/spiffe/spike/internal/log"
 	"github.com/spiffe/spike/internal/net"
@@ -122,7 +123,8 @@ func RouteGetPolicy(
 		log.Log().Info(fName, "msg", "not found")
 		return nil
 	} else {
-		// TODO: these can be Err constants too (similar to ErrInternal)
+		// I should not be here, normally.
+
 		log.Log().Info(fName, "msg", "Failed to retrieve policy", "err", err)
 
 		responseBody := net.MarshalBody(reqres.PolicyReadResponse{

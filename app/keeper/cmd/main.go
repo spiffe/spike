@@ -8,6 +8,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/spiffe/spike-sdk-go/net"
 	"github.com/spiffe/spike-sdk-go/spiffe"
 
 	"github.com/spiffe/spike/app/keeper/internal/env"
@@ -16,7 +17,6 @@ import (
 	"github.com/spiffe/spike/internal/auth"
 	"github.com/spiffe/spike/internal/config"
 	"github.com/spiffe/spike/internal/log"
-	"github.com/spiffe/spike/internal/net"
 )
 
 const appName = "SPIKE Keeper"
@@ -38,7 +38,7 @@ func main() {
 	log.Log().Info(appName,
 		"msg", fmt.Sprintf("Started service: %s v%s",
 			appName, config.KeeperVersion))
-	if err := net.Serve(
+	if err := net.ServeWithPredicate(
 		source, handle.InitializeRoutes,
 		auth.CanTalkToKeeper,
 		env.TlsPort(),

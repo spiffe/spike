@@ -10,6 +10,7 @@ import (
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
+
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 	"github.com/spiffe/spike/internal/log"
 	"github.com/spiffe/spike/internal/net"
@@ -102,7 +103,7 @@ func RouteGetSecretMetadata(
 
 	rawSecret, err := state.GetRawSecret(path, version)
 	if err != nil {
-		return handleGetSecretError(err, w)
+		return handleGetSecretMetadataError(err, w)
 	}
 
 	response := toSecretMetadataResponse(rawSecret)

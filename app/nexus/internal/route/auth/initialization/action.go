@@ -99,6 +99,14 @@ func generateSalt(w http.ResponseWriter) ([]byte, error) {
 func RouteInit(
 	w http.ResponseWriter, r *http.Request, audit *log.AuditEntry,
 ) error {
+	// This flow will change after implementing Shamir Secrets Sharing
+	// `init` will ensure there are enough keepers connected, and then
+	// initialize the keeper instances.
+	//
+	// We will NOT need the encrypted root key; instead, an admin user will
+	// fetch enough shards to back up. Admin will need to provide some sort
+	// of key or password to get the data in encrypted form.
+
 	log.Log().Info("routeInit", "method", r.Method, "path", r.URL.Path,
 		"query", r.URL.RawQuery)
 	audit.Action = log.AuditCreate

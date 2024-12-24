@@ -30,8 +30,8 @@ func updateStateForInit(
 
 	// As soon as SPIKE Nexus starts, it is guaranteed to have a root key in
 	// memory. We don't need to fetch it from SPIKE Keeper. The only place
-	// the root key is fetched from SPIKE Keeper is in the SPIKE Nexus initialization
-	// flow.
+	// the root key is fetched from SPIKE Keeper is in the SPIKE Nexus
+	// initialization flow.
 	rootKey := state.RootKey()
 
 	// Generate a 32-byte encryption key from the recovery token
@@ -61,7 +61,6 @@ func updateStateForInit(
 	// Encrypt root key
 	encryptedRootKey := gcm.Seal(nonce, nonce, []byte(rootKey), nil)
 
-	// TODO: we need a way to recover the metadata too :)
 	state.SetAdminSigningToken("spike." + string(adminTokenBytes))
 	state.SetAdminRecoveryMetadata(
 		hex.EncodeToString(recoveryTokenHash),

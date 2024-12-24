@@ -67,17 +67,21 @@ else
     exit 1
 fi
 
-# First, authenticate sudo and keep the session alive
-echo "Please enter sudo password if prompted..."
-# TODO: optionally disable this part and also make the `sudo` on spire-agent-start
-# optional and dependent on a environment variable.
-sudo -v
+if [ "$1" == "--use-sudo" ]; then
+  echo "Please enter sudo password if prompted..."
+  sudo -v
+fi
 
 echo ""
 echo "Waiting before starting SPIRE Agent"
 sleep 5
+
 # Start SPIRE agent in background and save its PID
-run_background "./hack/spire-agent-start.sh"
+if [ "$1" == "--use-sudo" ]; then
+  run_background "./hack/spire-agent-start.sh" --use-sudo
+else
+  run_background "./hack/spire-agent-start.sh"
+fi
 
 echo ""
 echo "Waiting before SPIKE Keeper..."

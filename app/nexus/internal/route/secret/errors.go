@@ -6,6 +6,7 @@ package secret
 
 import (
 	"errors"
+	apiErr "github.com/spiffe/spike-sdk-go/api/errors"
 	"net/http"
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
@@ -16,17 +17,44 @@ import (
 	"github.com/spiffe/spike/pkg/store"
 )
 
-// TODO: split this for get secret and get secret meta
-// better to have two functions.
 func handleGetSecretError(err error, w http.ResponseWriter) error {
-	// TODO: maybe reuse this in getSecret too -- currently only getsecretmeta uses it.
-
 	fName := "handleGetSecretError"
 
 	if errors.Is(err, store.ErrSecretNotFound) {
 		log.Log().Info(fName, "msg", "Secret not found")
 
 		res := reqres.SecretReadResponse{Err: data.ErrNotFound}
+		responseBody := net.MarshalBody(res, w)
+		if responseBody == nil {
+			return apiErr.ErrMarshalFailure
+		}
+
+		net.Respond(http.StatusNotFound, responseBody, w)
+		log.Log().Info("routeGetSecret", "msg", "not found")
+		return nil
+	}
+
+	log.Log().Info(fName, "msg", "Failed to retrieve secret", "err", err)
+
+	responseBody := net.MarshalBody(reqres.SecretReadResponse{
+		Err: data.ErrInternal}, w,
+	)
+	if responseBody == nil {
+		return apiErr.ErrMarshalFailure
+	}
+
+	net.Respond(http.StatusInternalServerError, responseBody, w)
+	log.Log().Info(fName, "msg", data.ErrInternal)
+	return err
+}
+
+func handleGetSecretMetadataError(err error, w http.ResponseWriter) error {
+	fName := "handleGetSecretMetadataError"
+
+	if errors.Is(err, store.ErrSecretNotFound) {
+		log.Log().Info(fName, "msg", "Secret not found")
+
+		res := reqres.SecretMetadataResponse{Err: data.ErrNotFound}
 		responseBody := net.MarshalBody(res, w)
 		if responseBody == nil {
 			return errors.New("failed to marshal response body")
@@ -38,7 +66,7 @@ func handleGetSecretError(err error, w http.ResponseWriter) error {
 
 	log.Log().Info(fName, "msg",
 		"Failed to retrieve secret", "err", err)
-	responseBody := net.MarshalBody(reqres.SecretReadResponse{
+	responseBody := net.MarshalBody(reqres.SecretMetadataResponse{
 		Err: "Internal server error"}, w,
 	)
 	if responseBody == nil {

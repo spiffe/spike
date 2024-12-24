@@ -10,10 +10,10 @@ import (
 	"github.com/go-jose/go-jose/v4/json"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
+	"github.com/spiffe/spike-sdk-go/net"
 
 	"github.com/spiffe/spike/app/nexus/internal/net/api"
 	"github.com/spiffe/spike/internal/auth"
-	"github.com/spiffe/spike/internal/net"
 )
 
 // UpdateCache sends a cache update request to SPIKE Keep using mutual
@@ -50,7 +50,9 @@ func UpdateCache(
 		return errors.New("UpdateCache: got nil source")
 	}
 
-	client, err := net.CreateMtlsClient(source, auth.CanTalkToNexus)
+	client, err := net.CreateMtlsClientWithPredicate(
+		source, auth.IsKeeper,
+	)
 	if err != nil {
 		return err
 	}
@@ -65,6 +67,7 @@ func UpdateCache(
 	}
 
 	_, err = net.Post(client, api.UrlKeeperWrite(), md)
+
 	return err
 }
 
@@ -98,7 +101,9 @@ func FetchFromCache(source *workloadapi.X509Source) (string, error) {
 		return "", errors.New("FetchFromCache: got nil source")
 	}
 
-	client, err := net.CreateMtlsClient(source, auth.CanTalkToNexus)
+	client, err := net.CreateMtlsClientWithPredicate(
+		source, auth.IsKeeper,
+	)
 	if err != nil {
 		return "", err
 	}

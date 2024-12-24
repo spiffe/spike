@@ -26,7 +26,12 @@
       MaxIdleConns: 5,
       ConnMaxLifetime: time.Hour,
     </issue>
+    <issue>
+      volkan@spike:~/Desktop/WORKSPACE/spike$ spike secret get /db
+      Error reading secret: post: Problem connecting to peer
 
+      ^ I get an error instead of a "secret not found" message.
+    </issue>
     <issue>
       this is from SecretReadResponse, so maybe its entity should be somewhere
       common too.
@@ -176,6 +181,18 @@
         things vs
         how painful it is to recover
       </docs>
+    </issue>
+    <issue waitingFor="shamir-to-be-implemented">
+      func RouteInit(
+      w http.ResponseWriter, r *http.Request, audit *log.AuditEntry,
+      ) error {
+      // This flow will change after implementing Shamir Secrets Sharing
+      // `init` will ensure there are enough keepers connected, and then
+      // initialize the keeper instances.
+      //
+      // We will NOT need the encrypted root key; instead, an admin user will
+      // fetch enough shards to back up. Admin will need to provide some sort
+      // of key or password to get the data in encrypted form.
     </issue>
   </reserved>
   <immediate-backlog>
