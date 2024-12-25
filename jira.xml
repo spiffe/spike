@@ -13,33 +13,130 @@
       features.
     </target>
   </purpose>
+  <next>
+    <issue>
+      Deploy Keycloak and make sure you can initialize it.
+    </issue>
+    <issue>
+      <task>The system should work with three keepers by default.</task>
+      <task>
+        NEW INIT WORKFLOW
 
+        Each keeper starts in NOT_READY state and:
+        - Has a unique ID
+        - Knows about all other keepers (for mTLS)
+        - Has configuration for total keepers and threshold
+
+        Key generation protocol:
+        - Each keeper generates its own random contribution
+        - They share their contribution with all other keepers
+        - Each keeper collects all contributions
+
+        Once all contributions are received, each keeper:
+        - XORs all contributions to create the final root key
+        - Uses Shamir's Secret Sharing to split it
+        - Keeps its own shard
+        - Transitions to READY state
+        - Securely erases all contributions and the computed root key
+
+        KEEPER CRASH RECOVERY
+        - Keeper requests root key from Nexus via mTLS
+        - Recomputes all shards using same configuration
+        - Keeps its shard, wipes everything else
+        - Returns to READY state
+
+        The state transitions are:
+        NOT_READY -> CONTRIBUTING -> READY
+
+        Key security properties:
+
+        No single keeper ever has the complete root key
+        The final key is as random as any individual keeper's contribution
+        Each keeper independently computes the same shards
+        After initialization, only the shards remain in memory
+
+        FOR SIMPLICITY WE'll HARD CODE 3 keepers and 2 min shards;
+        we will make it configurable later.
+
+        --
+
+        The above flow means we won't need `spike init` command anymore.
+
+        Nexus' states will automatically transition:
+
+        Initial State: PENDING
+        - Nexus starts up
+        - Begins collecting shards from keepers
+        - Cannot serve requests yet
+
+        Shard Collection:
+        - Keepers provide their shards via mTLS
+        - Nexus stores shards temporarily
+        - After each shard addition, checks if threshold is met
+        - If keeper is unreachable, we'll try the next one.
+        - If after one loop still not enough shards, we backoff and retry.
+        - If reconstruction from the shards fail; we backoff and retry.
+
+        Transition to READY:
+        Once threshold shards are collected
+        - Reconstructs root key using Shamir's combine
+        - Clears individual shards from memory
+        - Can now serve API requests
+
+        SUPERADMIN BREAK-THE-GLASS EMERGENCY BACKUP
+        Security features:
+        - Requires super admin SVID for authorization
+        - Encrypts backup with AES-GCM using the provided passphrase
+        - Creates an audit log entry of backup creation
+        - Generates unique backup IDs for tracking
+        Emergency backup flow:
+        - Creates two shards (requires both for reconstruction)
+        - Encrypts them in a JSON structure with metadata
+        - Super admin gets an encrypted blob
+
+        SUPERADMIN EMERGENCY RECOVERY
+        - In Pilot CLI
+        - Super admin provides the passphrase
+        - Super admin provides encrypted shard #1
+        - Super admin provided encrypted shard #1
+      </task>
+      <task>Nexus will be NOT_READY until it collects enough shards to create the root key</task>
+      <task>
+        Nexus will have a background process to reconstruct the root key in memory.
+
+        Until the root key is constructed; any call other than `spike init` will
+        result in "please initialize spike first" warning.
+
+
+        After init workflow is done Nexus, will set a special
+        tombstone secret to indicate that it is initialized.
+        The former initialization logic will be discarded.
+          Nexus Status:
+            pending: If it cannot connect to keepers.
+            message: "make sure keepers are up and nexus it configured to talk to them"
+
+            uninitialized: all keepers connected so far returns an empty shard
+            message: "please `spike init` to initialize spike"
+
+            initializing: at least one keeper returns a shard, but not enough to create root key
+            message: "system initializing, please wait"
+
+            initialized: root key fully constructed; no need to use keepers for now
+            message: "OK"
+
+            ---
+        Case: Nexus crashes
+
+
+        uninitialized/null | initializing | ready |
+
+      </task>
+    </issue>
+  </next>
   <low-hanging-fruits>
-    <issue>
-      these may come from the environment:
 
-      DataDir: ".data",
-      DatabaseFile: "spike.db",
-      JournalMode: "WAL",
-      BusyTimeoutMs: 5000,
-      MaxOpenConns: 10,
-      MaxIdleConns: 5,
-      ConnMaxLifetime: time.Hour,
-    </issue>
-    <issue>
-      volkan@spike:~/Desktop/WORKSPACE/spike$ spike secret get /db
-      Error reading secret: post: Problem connecting to peer
 
-      ^ I get an error instead of a "secret not found" message.
-    </issue>
-    <issue>
-      this is from SecretReadResponse, so maybe its entity should be somewhere
-      common too.
-      return &amp;data.Secret{Data: res.Data}, nil
-    </issue>
-    <issue>
-      Address `TODO:` items in SDK code and SPIKE code.
-    </issue>
+
     <issue>
       Multiple Keeper instances will be required for fan-in fan-out of the
       shards.
@@ -81,6 +178,33 @@
       Fix commented out tests.
     </issue>
   </low-hanging-fruits>
+  <later>
+    <issue>
+      set sqlilite on by default and make sure everything works.
+    </issue>
+    <issue>
+      volkan@spike:~/Desktop/WORKSPACE/spike$ spike secret get /db
+      Error reading secret: post: Problem connecting to peer
+
+      ^ I get an error instead of a "secret not found" message.
+    </issue>
+    <issue>
+      this is from SecretReadResponse, so maybe its entity should be somewhere
+      common too.
+      return &amp;data.Secret{Data: res.Data}, nil
+    </issue>
+    <issue>
+      these may come from the environment:
+
+      DataDir: ".data",
+      DatabaseFile: "spike.db",
+      JournalMode: "WAL",
+      BusyTimeoutMs: 5000,
+      MaxOpenConns: 10,
+      MaxIdleConns: 5,
+      ConnMaxLifetime: time.Hour,
+    </issue>
+  </later>
   <reserved>
     <issue waitingFor="shamir-to-be-implemented-first">
       use case: shamir
@@ -460,6 +584,9 @@
         - Ensure that you can recover the password-encrypted root key.
       </issue>
     </qa>
+
+
+
   </backlog>
   <future>
     <issue>
