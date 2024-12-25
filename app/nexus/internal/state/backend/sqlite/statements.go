@@ -12,6 +12,14 @@ CREATE TABLE IF NOT EXISTS admin_token (
 	updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE IF NOT EXISTS policies (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    spiffe_id_pattern TEXT NOT NULL,
+    path_pattern TEXT NOT NULL,
+    created_time DATETIME NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS admin_recovery_metadata (
     id INTEGER PRIMARY KEY CHECK (id = 1),
 	encrypted_root_key BLOB NOT NULL,
@@ -84,4 +92,24 @@ const querySelectAdminSigningToken = `
 SELECT nonce, encrypted_token 
 FROM admin_token 
 WHERE id = 1
+`
+
+const queryUpsertPolicy = `
+INSERT INTO policies (id, name, spiffe_id_pattern, path_pattern, created_time)
+VALUES (?, ?, ?, ?, ?)
+ON CONFLICT(id) DO UPDATE SET
+    name = excluded.name,
+    spiffe_id_pattern = excluded.spiffe_id_pattern,
+    path_pattern = excluded.path_pattern
+`
+
+const queryDeletePolicy = `
+DELETE FROM policies 
+WHERE id = ?
+`
+
+const queryLoadPolicy = `
+SELECT name, spiffe_id_pattern, path_pattern, created_time 
+FROM policies 
+WHERE id = ?
 `

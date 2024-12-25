@@ -77,6 +77,9 @@
       have sqlite as the default backing store.
       (until we implement the S3 backing store)
     </issue>
+    <issue>
+      Fix commented out tests.
+    </issue>
   </low-hanging-fruits>
   <reserved>
     <issue waitingFor="shamir-to-be-implemented-first">
@@ -271,7 +274,18 @@
       https://mtls.example.com/resource`
     </issue>
 
+    <issue kind="v1.0-requirement">
+      > 80% unit test coverage
+    </issue>
 
+    <issue kind="v1.0-requirement">
+      Fuzzing for the user-facing API
+    </issue>
+
+    <isssue kind="v1.0-requirement">
+      100% Integration test (all features will have automated integration tests
+      in all possible environments)
+    </isssue>
     <issue>
       By design, we regard memory as the source of truth.
       This means that backing store might miss some secrets.

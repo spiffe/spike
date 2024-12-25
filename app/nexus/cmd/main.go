@@ -38,7 +38,9 @@ func main() {
 
 	trust.Authenticate(spiffeid)
 
+	// This also attaches to the existing backing store if any.
 	err = state.Bootstrap(source)
+
 	if err != nil {
 		if errors.Is(err, state.ErrAlreadyInitialized) {
 			log.Log().Info(appName,
