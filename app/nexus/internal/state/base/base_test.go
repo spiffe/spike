@@ -1,7 +1,5 @@
 package base
 
-// TODO: fixme.
-
 //import (
 //	"github.com/spiffe/spike/app/nexus/internal/state/store"
 //	"testing"

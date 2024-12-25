@@ -13,7 +13,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	data2 "github.com/spiffe/spike-sdk-go/api/entity/data"
 	"path/filepath"
+	"regexp"
 	"sync"
 	"time"
 
@@ -372,6 +374,8 @@ func (s *DataStore) LoadAdminSigningToken(ctx context.Context) (string, error) {
 //   - error: nil on success, sql.ErrNoRows if no record exists, or wrapped
 //     error on query failure
 func (s *DataStore) LoadAdminRecoveryMetadata(ctx context.Context) (data.RecoveryMetadata, error) {
+	// TODO: data namespace should come from SDK.
+
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
@@ -464,4 +468,114 @@ func (s *DataStore) Close(_ context.Context) error {
 		err = s.db.Close()
 	})
 	return err
+}
+
+func (s *DataStore) StorePolicy(ctx context.Context, policy data2.Policy) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	tx, err := s.db.BeginTx(ctx, &sql.TxOptions{Isolation: sql.LevelSerializable})
+	if err != nil {
+		return fmt.Errorf("failed to begin transaction: %w", err)
+	}
+
+	committed := false
+	defer func(tx *sql.Tx) {
+		if !committed {
+			err := tx.Rollback()
+			if err != nil {
+				fmt.Printf("failed to rollback transaction: %v\n", err)
+			}
+		}
+	}(tx)
+
+	_, err = tx.ExecContext(ctx, queryUpsertPolicy,
+		policy.Id,
+		policy.Name,
+		policy.SpiffeIdPattern,
+		policy.PathPattern,
+		policy.CreatedAt,
+	)
+	if err != nil {
+		return fmt.Errorf("failed to store policy: %w", err)
+	}
+
+	if err := tx.Commit(); err != nil {
+		return fmt.Errorf("failed to commit transaction: %w", err)
+	}
+
+	committed = true
+	return nil
+}
+
+func (s *DataStore) DeletePolicy(ctx context.Context, id string) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	tx, err := s.db.BeginTx(ctx, &sql.TxOptions{Isolation: sql.LevelSerializable})
+	if err != nil {
+		return fmt.Errorf("failed to begin transaction: %w", err)
+	}
+
+	committed := false
+	defer func(tx *sql.Tx) {
+		if !committed {
+			err := tx.Rollback()
+			if err != nil {
+				fmt.Printf("failed to rollback transaction: %v\n", err)
+			}
+		}
+	}(tx)
+
+	_, err = tx.ExecContext(ctx, queryDeletePolicy, id)
+	if err != nil {
+		return fmt.Errorf("failed to delete policy: %w", err)
+	}
+
+	if err := tx.Commit(); err != nil {
+		return fmt.Errorf("failed to commit transaction: %w", err)
+	}
+
+	committed = true
+	return nil
+}
+
+func (s *DataStore) LoadPolicy(ctx context.Context, id string) (*data2.Policy, error) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	var policy data2.Policy
+	policy.Id = id // Set the ID since we queried with it
+
+	err := s.db.QueryRowContext(ctx, queryLoadPolicy, id).Scan(
+		&policy.Name,
+		&policy.SpiffeIdPattern,
+		&policy.PathPattern,
+		&policy.CreatedAt,
+	)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, nil
+		}
+		return nil, fmt.Errorf("failed to load policy: %w", err)
+	}
+
+	// Compile the patterns just like in CreatePolicy
+	if policy.SpiffeIdPattern != "*" {
+		idRegex, err := regexp.Compile(policy.SpiffeIdPattern)
+		if err != nil {
+			return nil, fmt.Errorf("invalid spiffeid pattern: %w", err)
+		}
+		policy.IdRegex = idRegex
+	}
+
+	if policy.PathPattern != "*" {
+		pathRegex, err := regexp.Compile(policy.PathPattern)
+		if err != nil {
+			return nil, fmt.Errorf("invalid path pattern: %w", err)
+		}
+		policy.PathRegex = pathRegex
+	}
+
+	return &policy, nil
 }

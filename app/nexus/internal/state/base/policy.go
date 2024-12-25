@@ -7,6 +7,7 @@ package base
 import (
 	"errors"
 	"fmt"
+	"github.com/spiffe/spike/app/nexus/internal/state/persist"
 	"regexp"
 	"time"
 
@@ -158,6 +159,10 @@ func CreatePolicy(policy data.Policy) (data.Policy, error) {
 	}
 
 	policies.Store(policy.Id, policy)
+
+	// Async cache the policy
+	persist.AsyncPersistPolicy(policy)
+
 	return policy, nil
 }
 
@@ -173,42 +178,16 @@ func GetPolicy(id string) (data.Policy, error) {
 	if value, exists := policies.Load(id); exists {
 		return value.(data.Policy), nil
 	}
-	return data.Policy{}, ErrPolicyNotFound
-}
 
-// UpdatePolicy updates an existing policy while preserving certain original
-// fields. The function ensures the policy exists and maintains creation
-// metadata during the update.
-//
-// Parameters:
-//   - policy: The policy to update. Must have both Id and Name fields set.
-//
-// Returns:
-//   - error: One of the following:
-//   - ErrInvalidPolicy if Id or Name is empty
-//   - ErrPolicyNotFound if no policy exists with the given Id
-//   - nil on successful update
-//
-// The function preserves the following fields from the original policy:
-//   - CreatedAt timestamp
-//   - CreatedBy identifier
-func UpdatePolicy(policy data.Policy) error {
-	if policy.Id == "" || policy.Name == "" {
-		return ErrInvalidPolicy
+	// Try loading from cache
+	cachedPolicy := persist.ReadPolicy(id)
+	if cachedPolicy == nil {
+		return data.Policy{}, ErrPolicyNotFound
 	}
 
-	// Check if policy exists
-	if _, exists := policies.Load(policy.Id); !exists {
-		return ErrPolicyNotFound
-	}
-
-	// Preserve original creation timestamp and creator
-	original, _ := GetPolicy(policy.Id)
-	policy.CreatedAt = original.CreatedAt
-	policy.CreatedBy = original.CreatedBy
-
-	policies.Store(policy.Id, policy)
-	return nil
+	// Store in memory for future use
+	policies.Store(id, *cachedPolicy)
+	return *cachedPolicy, nil
 }
 
 // DeletePolicy removes a policy from the system by its ID.
@@ -225,6 +204,10 @@ func DeletePolicy(id string) error {
 	}
 
 	policies.Delete(id)
+
+	// Async delete from cache
+	persist.AsyncDeletePolicy(id)
+
 	return nil
 }
 
