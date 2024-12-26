@@ -6,8 +6,12 @@ package poll
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
+	"github.com/spiffe/spike-sdk-go/net"
 	"github.com/spiffe/spike/app/nexus/internal/env"
+	"github.com/spiffe/spike/internal/auth"
 	"net/url"
 	"time"
 
@@ -82,6 +86,38 @@ func Tick(
 
 				fmt.Println("will try to read from: ", u)
 
+				if source == nil {
+					panic("source is nil")
+				}
+
+				client, err := net.CreateMtlsClientWithPredicate(
+					source, auth.IsKeeper,
+				)
+				if err != nil {
+					fmt.Println(err.Error())
+					continue
+				}
+
+				md, err := json.Marshal(
+					reqres.ShardRequest{},
+				)
+				if err != nil {
+					panic(err)
+				}
+
+				data, err := net.Post(client, u, md)
+				var res reqres.ShardResponse
+
+				if len(data) == 0 {
+					fmt.Println("no data")
+				}
+
+				err = json.Unmarshal(data, &res)
+				if err != nil {
+					fmt.Println("failed to unmarshal")
+				}
+
+				fmt.Println(">>>>>> Incoming Shard:", res.Shard)
 			}
 
 			fmt.Println("---------------------------------------")
