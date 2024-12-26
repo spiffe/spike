@@ -9,6 +9,8 @@ import "sync"
 var rootKey string
 var rootKeyMutex sync.RWMutex
 
+var Shards sync.Map
+
 // RootKey returns the current root key value in a thread-safe manner.
 // It uses a read lock to ensure concurrent read access is safe while
 // preventing writes during the read operation.

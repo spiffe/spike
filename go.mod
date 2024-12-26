@@ -10,13 +10,15 @@ require (
 	github.com/mattn/go-sqlite3 v1.14.24
 	github.com/spf13/cobra v1.8.1
 	github.com/spiffe/go-spiffe/v2 v2.4.0
-	github.com/spiffe/spike-sdk-go v0.1.28
+	github.com/spiffe/spike-sdk-go v0.1.29
 	github.com/stretchr/testify v1.9.0
 	golang.org/x/crypto v0.26.0
 )
 
 require (
 	github.com/Microsoft/go-winio v0.6.2 // indirect
+	github.com/bwesterb/go-ristretto v1.2.3 // indirect
+	github.com/cloudflare/circl v1.5.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/google/goterm v0.0.0-20190703233501-fc88cf888a3f // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect

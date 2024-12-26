@@ -11,4 +11,9 @@ const SpikeNexusUrlSecretsMetadata ApiUrl = "/v1/store/secrets/metadata"
 const SpikeNexusUrlLogin ApiUrl = "/v1/auth/login"
 const SpikeNexusUrlInit ApiUrl = "/v1/auth/initialization"
 const SpikeNexusUrlPolicy ApiUrl = "/v1/acl/policy"
+
 const SpikeKeeperUrlKeep ApiUrl = "/v1/store/keep"
+
+const SpikeKeeperUrlContribute ApiUrl = "/v1/store/contribute"
+const SpikeKeeperUrlContributions ApiUrl = "/v1/store/contributions"
+const SpikeKeeperUrlStatus ApiUrl = "/v1/store/status"

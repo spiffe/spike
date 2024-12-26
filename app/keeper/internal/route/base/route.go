@@ -31,6 +31,12 @@ func Route(w http.ResponseWriter, r *http.Request, a *log.AuditEntry) error {
 				return store.RouteKeep
 			case a == net.ActionKeeperRead && p == net.SpikeKeeperUrlKeep:
 				return store.RouteShow
+			case a == net.ActionKeeperDefault && p == net.SpikeKeeperUrlContribute:
+				return store.RouteContribute
+			case a == net.ActionKeeperDefault && p == net.SpikeKeeperUrlContributions:
+				return store.RouteContributions
+			case a == net.ActionKeeperDefault && p == net.SpikeKeeperUrlStatus:
+				return store.RouteStatus
 			default:
 				return net.Fallback
 			}

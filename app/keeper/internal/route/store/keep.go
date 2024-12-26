@@ -5,6 +5,7 @@
 package store
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
@@ -46,13 +47,21 @@ import (
 func RouteKeep(
 	w http.ResponseWriter, r *http.Request, audit *log.AuditEntry,
 ) error {
+	fmt.Println(">>>>>>>>>>>>>>>>>> routeKeep 001")
+
 	const fName = "routeKeep"
 	log.AuditRequest(fName, r, audit, log.AuditCreate)
 
+	fmt.Println(">>>>>>>>>>>>>>>>>> routeKeep 002")
+
 	requestBody := net.ReadRequestBody(w, r)
 	if requestBody == nil {
+		fmt.Println(">>>>>>>>>>>>>>>>>> routeKeep 003")
+
 		return errors.ErrReadFailure
 	}
+
+	fmt.Println(">>>>>>>>>>>>>>>>>> routeKeep 004")
 
 	request := net.HandleRequest[
 		reqres.RootKeyCacheRequest, reqres.RootKeyCacheResponse](
