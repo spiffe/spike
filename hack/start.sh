@@ -91,7 +91,7 @@ fi
 echo ""
 echo "Waiting before SPIKE Nexus..."
 sleep 5
-run_background "./nexus"
+run_background "./hack/start-nexus.sh"
 
 echo ""
 echo ""

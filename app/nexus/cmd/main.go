@@ -54,6 +54,12 @@ func main() {
 	log.Log().Info(appName, "msg", "Initializing complete.",
 		"has_root_key", len(state.RootKey()) > 0)
 
+	fmt.Println(">>>>>>>>>>>>>>>>>>>>>> WILL TICK")
+	fmt.Println(">>>>>>>>>>>>>>>>>>>>>> WILL TICK")
+	fmt.Println(">>>>>>>>>>>>>>>>>>>>>> WILL TICK")
+	fmt.Println(">>>>>>>>>>>>>>>>>>>>>> WILL TICK")
+	fmt.Println(">>>>>>>>>>>>>>>>>>>>>> WILL TICK")
+
 	ticker := time.NewTicker(env.PollInterval())
 	defer ticker.Stop()
 	go poll.Tick(ctx, source, ticker)

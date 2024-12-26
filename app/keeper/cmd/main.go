@@ -24,6 +24,7 @@ import (
 	"github.com/spiffe/spike/internal/auth"
 	"github.com/spiffe/spike/internal/config"
 	"github.com/spiffe/spike/internal/log"
+	"github.com/spiffe/spike/pkg/crypto"
 	"net/url"
 	"os"
 	"sort"
@@ -211,8 +212,10 @@ func contribute(source *workloadapi.X509Source) {
 			panic(err)
 		}
 
-		contribution := make([]byte, 32)
-		if _, err := rand.Read(contribution); err != nil {
+		// TODO: maybe an override that returns a byte array instead.
+		contribution, _ := crypto.Aes256Seed()
+
+		if _, err := rand.Read([]byte(contribution)); err != nil {
 			panic(err)
 		}
 
@@ -221,7 +224,7 @@ func contribute(source *workloadapi.X509Source) {
 		md, err := json.Marshal(
 			reqres.ShardContributionRequest{
 				KeeperId: myId,
-				Shard:    base64.StdEncoding.EncodeToString(contribution),
+				Shard:    base64.StdEncoding.EncodeToString([]byte(contribution)),
 				Version:  0,
 			},
 		)

@@ -6,12 +6,13 @@ package poll
 
 import (
 	"context"
+	"fmt"
+	"github.com/spiffe/spike/app/nexus/internal/env"
+	"net/url"
 	"time"
 
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 
-	"github.com/spiffe/spike/app/nexus/internal/net/cache"
-	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 	"github.com/spiffe/spike/internal/log"
 )
 
@@ -49,16 +50,16 @@ func Tick(
 	source *workloadapi.X509Source,
 	ticker *time.Ticker,
 ) {
-	// Wait for the root key to be initialized
-	key := ""
-	for {
-		key = state.RootKey()
-		if key == "" {
-			time.Sleep(time.Second)
-			continue
-		}
-		break
-	}
+	//// Wait for the root key to be initialized
+	//key := ""
+	//for {
+	//	key = state.RootKey()
+	//	if key == "" {
+	//		time.Sleep(time.Second)
+	//		continue
+	//	}
+	//	break
+	//}
 
 	// Root key is set only once during initialization, and it is never reset
 	// to an empty string, so we can safely assume that if we have a root key
@@ -67,15 +68,33 @@ func Tick(
 	for {
 		select {
 		case <-ticker.C:
-			err := cache.UpdateCache(source, key)
-			if err != nil {
-				log.Log().Error("tick",
-					"msg", "Failed to update the cache",
-					"hint", "Make sure SPIKE Keeper is up and running",
-					"err", err.Error())
+			// TODO:
+			// 1. talk to all keeper endpoints.
+			// 2. get at least two shards
+			// 3. recompute root key
+			// 4. keep root key in cache for 15 mins (configurable)
+			// 5. if root key not there, try asking keepers until you get the key.
 
-				continue
+			keepers := env.Keepers()
+
+			for _, keeper := range keepers {
+				u, _ := url.JoinPath(keeper, "/v1/store/shard")
+
+				fmt.Println("will try to read from: ", u)
+
 			}
+
+			fmt.Println("---------------------------------------")
+
+			//err := cache.UpdateCache(source, key)
+			//if err != nil {
+			//	log.Log().Error("tick",
+			//		"msg", "Failed to update the cache",
+			//		"hint", "Make sure SPIKE Keeper is up and running",
+			//		"err", err.Error())
+			//
+			//	continue
+			//}
 
 			log.Log().Info("tick", "msg", "Successfully updated the cache")
 		case <-ctx.Done():

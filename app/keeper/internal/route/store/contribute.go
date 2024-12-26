@@ -41,6 +41,10 @@ func RouteContribute(
 	shard := request.Shard
 	id := request.KeeperId
 
+	// TODO: maybe sanitize these.
+	// keeper id should be an integer
+	// shard should have a certain size, etc.
+
 	// Decode shard content from Base64 encoding.
 	decodedShard, err := base64.StdEncoding.DecodeString(shard)
 	if err != nil {
@@ -53,6 +57,11 @@ func RouteContribute(
 	state.Shards.Store(id, decodedShard)
 
 	log.Log().Info(fName, "msg", "Shard stored", "id", id)
+
+	responseBody := net.MarshalBody(reqres.ShardContributionResponse{}, w)
+
+	net.Respond(http.StatusOK, responseBody, w)
+	log.Log().Info(fName, "msg", data.ErrSuccess)
 
 	return nil
 }
