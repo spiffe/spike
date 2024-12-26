@@ -26,6 +26,7 @@ import (
 	"github.com/spiffe/spike/internal/log"
 	"net/url"
 	"os"
+	"sort"
 	"time"
 )
 
@@ -128,16 +129,48 @@ func waitForShards() {
 				fmt.Printf("Share %d: %x\n", i+1, shareData)
 			}
 
-			// Reconstruct using 2 shares
-			reconstructed, err := secretsharing.Recover(t, shares[:2])
-			if err != nil {
-				panic("Failed to reconstruct: " + err.Error())
+			// Sort the keys of env.Peers() alphabetically
+			peers := env.Peers()
+			peerKeys := make([]string, 0, len(peers))
+			for id := range peers {
+				peerKeys = append(peerKeys, id)
+			}
+			sort.Strings(peerKeys)
+
+			myId := env.KeeperId()
+
+			// Find the index of the current Keeper's ID
+			var myShard []byte
+			for index, id := range peerKeys {
+				if id == myId {
+					// Save the shard corresponding to this Keeper
+					if val, ok := state.Shards.Load(myId); ok {
+						myShard = val.([]byte)
+						fmt.Printf("Saved shard for Keeper ID %s at index %d\n", myId, index)
+
+						state.SetShard(myShard)
+						state.EraseShards()
+
+						break
+					}
+				}
 			}
 
-			fmt.Printf("\nReconstruction successful: %v\n", secret.IsEqual(reconstructed))
-			fmt.Println("Original key:    :", finalKey)
-			binaryKey, _ := reconstructed.MarshalBinary()
-			fmt.Println("Reconstructed key:", binaryKey)
+			// Ensure myShard is stored correctly in the state namespace
+			if myShard == nil {
+				panic(fmt.Sprintf("Shard for Keeper ID %s could not be found", myId))
+			}
+
+			//// Reconstruct using 2 shares
+			//reconstructed, err := secretsharing.Recover(t, shares[:2])
+			//if err != nil {
+			//	panic("Failed to reconstruct: " + err.Error())
+			//}
+			//
+			//fmt.Printf("\nReconstruction successful: %v\n", secret.IsEqual(reconstructed))
+			//fmt.Println("Original key:    :", finalKey)
+			//binaryKey, _ := reconstructed.MarshalBinary()
+			//fmt.Println("Reconstructed key:", binaryKey)
 
 			break
 		}

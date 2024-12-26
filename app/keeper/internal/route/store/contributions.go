@@ -9,7 +9,7 @@ import (
 	"net/http"
 )
 
-func RouteContributions(
+func RouteShard(
 	w http.ResponseWriter, r *http.Request, audit *log.AuditEntry,
 ) error {
 	return nil

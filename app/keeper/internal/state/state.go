@@ -11,6 +11,28 @@ var rootKeyMutex sync.RWMutex
 
 var Shards sync.Map
 
+var shard []byte
+var shardMutex sync.RWMutex
+
+func SetShard(s []byte) {
+	shardMutex.Lock()
+	defer shardMutex.Unlock()
+	shard = s
+}
+
+func Shard() []byte {
+	shardMutex.RLock()
+	defer shardMutex.RUnlock()
+	return shard
+}
+
+func EraseShards() {
+	Shards.Range(func(key, value interface{}) bool {
+		Shards.Delete(key)
+		return true
+	})
+}
+
 // RootKey returns the current root key value in a thread-safe manner.
 // It uses a read lock to ensure concurrent read access is safe while
 // preventing writes during the read operation.

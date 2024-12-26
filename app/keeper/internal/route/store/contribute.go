@@ -6,7 +6,6 @@ package store
 
 import (
 	"encoding/base64"
-	"fmt"
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	"github.com/spiffe/spike-sdk-go/api/errors"
@@ -53,11 +52,7 @@ func RouteContribute(
 	// Store decoded shard in the map.
 	state.Shards.Store(id, decodedShard)
 
-	fmt.Println("")
-	fmt.Println("RECEIVED: >>>>>> shard:", shard, " id:", id, "")
-	fmt.Println("RECEIVED: >>>>>> shard:", shard, " id:", id, "")
-	fmt.Println("RECEIVED: >>>>>> shard:", shard, " id:", id, "")
-	fmt.Println("")
+	log.Log().Info(fName, "msg", "Shard stored", "id", id)
 
 	return nil
 }
