@@ -11,7 +11,7 @@ require (
 	github.com/mattn/go-sqlite3 v1.14.24
 	github.com/spf13/cobra v1.8.1
 	github.com/spiffe/go-spiffe/v2 v2.4.0
-	github.com/spiffe/spike-sdk-go v0.1.30
+	github.com/spiffe/spike-sdk-go v0.1.34
 	github.com/stretchr/testify v1.9.0
 	golang.org/x/crypto v0.26.0
 )

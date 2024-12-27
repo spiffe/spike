@@ -15,7 +15,13 @@
   </purpose>
   <next>
     <issue>
+      Check the entire codebase.
+    </issue>
+    <issue>
       Deploy Keycloak and make sure you can initialize it.
+    </issue>
+    <issue>
+      Create a video about this new shamir secret sharing workflow.
     </issue>
     <issue>
       <task>The system should work with three keepers by default.</task>

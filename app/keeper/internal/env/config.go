@@ -1,3 +1,7 @@
+//    \\ SPIKE: Secure your secrets with SPIFFE.
+//  \\\\\ Copyright 2024-present SPIKE contributors.
+// \\\\\\\ SPDX-License-Identifier: Apache-2.0
+
 package env
 
 import (
@@ -10,6 +14,23 @@ func KeeperId() string {
 
 	if p == "" {
 		panic("SPIKE_KEEPER_ID has to be configured in the environment")
+	}
+
+	return p
+}
+
+// KeeperRandomSeed retrieves the "SPIKE_KEEPER_RANDOM_SEED" env variable.
+// If the variable is not set, it will panic with an error message.
+//
+// Make sure that this value is unique and shared by all SPIKE Keeper instances.
+// Here is a cryptographically secure way to generate such a seed:
+//
+//	head -c 32 /dev/urandom | xxd -p
+func KeeperRandomSeed() string {
+	p := os.Getenv("SPIKE_KEEPER_RANDOM_SEED")
+
+	if p == "" {
+		panic("SPIKE_KEEPER_RANDOM_SEED has to be configured in the environment")
 	}
 
 	return p

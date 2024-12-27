@@ -12,7 +12,6 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	spike "github.com/spiffe/spike-sdk-go/api"
-	"github.com/spiffe/spike-sdk-go/api/entity/data"
 )
 
 // newSecretDeleteCommand creates and returns a new cobra.Command for deleting
@@ -61,17 +60,7 @@ Examples:
 		Run: func(cmd *cobra.Command, args []string) {
 			api := spike.NewWithSource(source)
 
-			state, err := api.CheckInitState()
-			if err != nil {
-				fmt.Println("Failed to check initialization state:")
-				fmt.Println(err.Error())
-				return
-			}
-
-			if state == data.NotInitialized {
-				fmt.Println("Please initialize SPIKE first by running 'spike init'.")
-				return
-			}
+			// TODO: sanitize args.
 
 			path := args[0]
 			versions, _ := cmd.Flags().GetString("versions")
@@ -109,7 +98,7 @@ Examples:
 				vv = []int{}
 			}
 
-			err = api.DeleteSecretVersions(path, vv)
+			err := api.DeleteSecretVersions(path, vv)
 			if err != nil {
 				fmt.Printf("Error: %v\n", err)
 				return
