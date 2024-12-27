@@ -6,6 +6,7 @@ package persist
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/spiffe/spike/app/nexus/internal/env"
@@ -105,6 +106,10 @@ func InitializeSqliteBackend(rootKey string) backend.Backend {
 func InitializeBackend(rootKey string) backend.Backend {
 	backendMu.Lock()
 	defer backendMu.Unlock()
+
+	fmt.Println("Initializing backend")
+	fmt.Println(env.BackendStoreType())
+	fmt.Println("root key: " + rootKey)
 
 	storeType := env.BackendStoreType()
 

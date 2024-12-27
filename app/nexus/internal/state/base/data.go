@@ -13,11 +13,6 @@ import (
 )
 
 var (
-	rootKey   string
-	rootKeyMu sync.RWMutex
-)
-
-var (
 	adminSigningToken   string
 	adminSigningTokenMu sync.RWMutex
 )

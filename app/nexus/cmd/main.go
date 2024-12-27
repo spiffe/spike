@@ -6,17 +6,15 @@ package main
 
 import (
 	"context"
-	"errors"
 	"fmt"
+	"github.com/spiffe/spike-sdk-go/net"
+	"github.com/spiffe/spike/app/nexus/internal/route/handle"
 	"time"
 
-	"github.com/spiffe/spike-sdk-go/net"
 	"github.com/spiffe/spike-sdk-go/spiffe"
 
 	"github.com/spiffe/spike/app/nexus/internal/env"
 	"github.com/spiffe/spike/app/nexus/internal/poll"
-	"github.com/spiffe/spike/app/nexus/internal/route/handle"
-	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 	"github.com/spiffe/spike/app/nexus/internal/trust"
 	"github.com/spiffe/spike/internal/config"
 	"github.com/spiffe/spike/internal/log"
@@ -38,31 +36,16 @@ func main() {
 
 	trust.Authenticate(spiffeid)
 
-	// This also attaches to the existing backing store if any.
-	err = state.Bootstrap(source)
-
-	if err != nil {
-		if errors.Is(err, state.ErrAlreadyInitialized) {
-			log.Log().Info(appName,
-				"msg",
-				"SPIKE Nexus already initialized. Not creating a new root key.")
-		} else {
-			log.FatalF("Unable to initialize SPIKE Nexus state: " + err.Error())
-		}
-	}
-
-	log.Log().Info(appName, "msg", "Initializing complete.",
-		"has_root_key", len(state.RootKey()) > 0)
-
-	fmt.Println(">>>>>>>>>>>>>>>>>>>>>> WILL TICK")
-	fmt.Println(">>>>>>>>>>>>>>>>>>>>>> WILL TICK")
-	fmt.Println(">>>>>>>>>>>>>>>>>>>>>> WILL TICK")
-	fmt.Println(">>>>>>>>>>>>>>>>>>>>>> WILL TICK")
-	fmt.Println(">>>>>>>>>>>>>>>>>>>>>> WILL TICK")
+	// TODO: log what's happening at critical points.
 
 	ticker := time.NewTicker(env.PollInterval())
 	defer ticker.Stop()
-	go poll.Tick(ctx, source, ticker)
+
+	// Waits until SPIKE Nexus fetches adequate trust material from
+	// SPIKE Keepers to compute a root key for the backing store.
+	poll.Tick(ctx, source, ticker)
+	// TODO: Later: for in-memory backing store, we can bypass this poll and
+	// initialize the backing store with some dummy 32byte random data.
 
 	log.Log().Info(appName,
 		"msg", fmt.Sprintf("Started service: %s v%s",

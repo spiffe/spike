@@ -7,7 +7,6 @@ package initialization
 import (
 	"crypto/aes"
 	"crypto/cipher"
-	"crypto/rand"
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
@@ -15,61 +14,60 @@ import (
 	"golang.org/x/crypto/pbkdf2"
 
 	"github.com/spiffe/spike/app/nexus/internal/env"
-	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 )
 
-func updateStateForInit(
-	recoveryToken string, adminTokenBytes, salt []byte,
-) error {
-	iterationCount := env.Pbkdf2IterationCount()
-	hashLength := env.ShaHashLength()
-	recoveryTokenHash := pbkdf2.Key(
-		[]byte(recoveryToken), salt,
-		iterationCount, hashLength, sha256.New,
-	)
-
-	// As soon as SPIKE Nexus starts, it is guaranteed to have a root key in
-	// memory. We don't need to fetch it from SPIKE Keeper. The only place
-	// the root key is fetched from SPIKE Keeper is in the SPIKE Nexus
-	// initialization flow.
-	rootKey := state.RootKey()
-
-	// Generate a 32-byte encryption key from the recovery token
-	encryptionKey := pbkdf2.Key(
-		[]byte(recoveryToken), salt,
-		iterationCount, 32, sha256.New, // AES-256 requires 32-byte key
-	)
-
-	// Create new AES cipher
-	block, err := aes.NewCipher(encryptionKey)
-	if err != nil {
-		return fmt.Errorf("failed to create AES cipher: %v", err)
-	}
-
-	// Create GCM mode
-	gcm, err := cipher.NewGCM(block)
-	if err != nil {
-		return fmt.Errorf("failed to create GCM: %v", err)
-	}
-
-	// Generate nonce
-	nonce := make([]byte, gcm.NonceSize())
-	if _, err := rand.Read(nonce); err != nil {
-		return fmt.Errorf("failed to generate nonce: %v", err)
-	}
-
-	// Encrypt root key
-	encryptedRootKey := gcm.Seal(nonce, nonce, []byte(rootKey), nil)
-
-	state.SetAdminSigningToken("spike." + string(adminTokenBytes))
-	state.SetAdminRecoveryMetadata(
-		hex.EncodeToString(recoveryTokenHash),
-		hex.EncodeToString(encryptedRootKey),
-		hex.EncodeToString(salt),
-	)
-
-	return nil
-}
+//func updateStateForInit(
+//	recoveryToken string, adminTokenBytes, salt []byte,
+//) error {
+//	iterationCount := env.Pbkdf2IterationCount()
+//	hashLength := env.ShaHashLength()
+//	recoveryTokenHash := pbkdf2.Key(
+//		[]byte(recoveryToken), salt,
+//		iterationCount, hashLength, sha256.New,
+//	)
+//
+//	// As soon as SPIKE Nexus starts, it is guaranteed to have a root key in
+//	// memory. We don't need to fetch it from SPIKE Keeper. The only place
+//	// the root key is fetched from SPIKE Keeper is in the SPIKE Nexus
+//	// initialization flow.
+//	rootKey := state.RootKey()
+//
+//	// Generate a 32-byte encryption key from the recovery token
+//	encryptionKey := pbkdf2.Key(
+//		[]byte(recoveryToken), salt,
+//		iterationCount, 32, sha256.New, // AES-256 requires 32-byte key
+//	)
+//
+//	// Create new AES cipher
+//	block, err := aes.NewCipher(encryptionKey)
+//	if err != nil {
+//		return fmt.Errorf("failed to create AES cipher: %v", err)
+//	}
+//
+//	// Create GCM mode
+//	gcm, err := cipher.NewGCM(block)
+//	if err != nil {
+//		return fmt.Errorf("failed to create GCM: %v", err)
+//	}
+//
+//	// Generate nonce
+//	nonce := make([]byte, gcm.NonceSize())
+//	if _, err := rand.Read(nonce); err != nil {
+//		return fmt.Errorf("failed to generate nonce: %v", err)
+//	}
+//
+//	// Encrypt root key
+//	encryptedRootKey := gcm.Seal(nonce, nonce, []byte(rootKey), nil)
+//
+//	state.SetAdminSigningToken("spike." + string(adminTokenBytes))
+//	state.SetAdminRecoveryMetadata(
+//		hex.EncodeToString(recoveryTokenHash),
+//		hex.EncodeToString(encryptedRootKey),
+//		hex.EncodeToString(salt),
+//	)
+//
+//	return nil
+//}
 
 // For completeness, here's the decryption function that would be used to recover the root key
 func decryptRootKey(encryptedRootKeyHex, recoveryToken string, salt []byte) ([]byte, error) {

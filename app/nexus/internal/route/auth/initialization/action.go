@@ -14,7 +14,6 @@ import (
 
 	"github.com/spiffe/spike/internal/log"
 	"github.com/spiffe/spike/internal/net"
-	"github.com/spiffe/spike/pkg/crypto"
 )
 
 // generateSalt creates a new random 16-byte salt value using crypto/rand.
@@ -99,73 +98,77 @@ func generateSalt(w http.ResponseWriter) ([]byte, error) {
 func RouteInit(
 	w http.ResponseWriter, r *http.Request, audit *log.AuditEntry,
 ) error {
-	// This flow will change after implementing Shamir Secrets Sharing
-	// `init` will ensure there are enough keepers connected, and then
-	// initialize the keeper instances.
-	//
-	// We will NOT need the encrypted root key; instead, an admin user will
-	// fetch enough shards to back up. Admin will need to provide some sort
-	// of key or password to get the data in encrypted form.
+	// TODO: we don't need init anymore.
 
-	log.Log().Info("routeInit", "method", r.Method, "path", r.URL.Path,
-		"query", r.URL.RawQuery)
-	audit.Action = log.AuditCreate
-
-	requestBody, err := prepareInitRequestBody(w, r)
-	if err != nil {
-		return err
-	}
-
-	_, err = prepareInitRequest(requestBody, w)
-	if err != nil {
-		return err
-	}
-
-	err = checkPreviousInitialization(w)
-	if err != nil {
-		return err
-	}
-
-	// The existence of an admin signing token also means the system is
-	// initialized.
-	log.Log().Info("routeInit", "msg", "No admin signing token. will create one")
-
-	adminSigningTokenBytes, err := generateAdminSigningToken(w)
-	if err != nil {
-		return err
-	}
-
-	// Generate salt to hash the recovery token.
-	//
-	// The recovery token is a secure passphrase that we send to the admin user
-	// upon first time initialization. They can use this token to recover
-	// the root key in case the system crashes and there is an encrypted backup
-	// of the root key.
-	//
-	// Since it acts like a password, we salt and store its hash accordingly.
-	// When the admin provides the recovery token, we verify it by hashing it
-	// with the same salt and comparing it to the stored hash. If they match,
-	// we can decrypt the root key and re-key the system.
-	salt, err := generateSalt(w)
-	if err != nil {
-		return err
-	}
-
-	recoveryToken := crypto.Token()
-
-	err = updateStateForInit(recoveryToken, adminSigningTokenBytes, salt)
-	if err != nil {
-		return err
-	}
-
-	responseBody := net.MarshalBody(reqres.InitResponse{
-		RecoveryToken: recoveryToken,
-	}, w)
-	if responseBody == nil {
-		return errors.New("failed to marshal response body")
-	}
-
-	net.Respond(http.StatusOK, responseBody, w)
-	log.Log().Info("routeInit", "msg", "OK")
 	return nil
+
+	//// This flow will change after implementing Shamir Secrets Sharing
+	//// `init` will ensure there are enough keepers connected, and then
+	//// initialize the keeper instances.
+	////
+	//// We will NOT need the encrypted root key; instead, an admin user will
+	//// fetch enough shards to back up. Admin will need to provide some sort
+	//// of key or password to get the data in encrypted form.
+	//
+	//log.Log().Info("routeInit", "method", r.Method, "path", r.URL.Path,
+	//	"query", r.URL.RawQuery)
+	//audit.Action = log.AuditCreate
+	//
+	//requestBody, err := prepareInitRequestBody(w, r)
+	//if err != nil {
+	//	return err
+	//}
+	//
+	//_, err = prepareInitRequest(requestBody, w)
+	//if err != nil {
+	//	return err
+	//}
+	//
+	//err = checkPreviousInitialization(w)
+	//if err != nil {
+	//	return err
+	//}
+	//
+	//// The existence of an admin signing token also means the system is
+	//// initialized.
+	//log.Log().Info("routeInit", "msg", "No admin signing token. will create one")
+	//
+	//adminSigningTokenBytes, err := generateAdminSigningToken(w)
+	//if err != nil {
+	//	return err
+	//}
+	//
+	//// Generate salt to hash the recovery token.
+	////
+	//// The recovery token is a secure passphrase that we send to the admin user
+	//// upon first time initialization. They can use this token to recover
+	//// the root key in case the system crashes and there is an encrypted backup
+	//// of the root key.
+	////
+	//// Since it acts like a password, we salt and store its hash accordingly.
+	//// When the admin provides the recovery token, we verify it by hashing it
+	//// with the same salt and comparing it to the stored hash. If they match,
+	//// we can decrypt the root key and re-key the system.
+	//salt, err := generateSalt(w)
+	//if err != nil {
+	//	return err
+	//}
+	//
+	//recoveryToken := crypto.Token()
+	//
+	//err = updateStateForInit(recoveryToken, adminSigningTokenBytes, salt)
+	//if err != nil {
+	//	return err
+	//}
+	//
+	//responseBody := net.MarshalBody(reqres.InitResponse{
+	//	RecoveryToken: recoveryToken,
+	//}, w)
+	//if responseBody == nil {
+	//	return errors.New("failed to marshal response body")
+	//}
+	//
+	//net.Respond(http.StatusOK, responseBody, w)
+	//log.Log().Info("routeInit", "msg", "OK")
+	//return nil
 }
