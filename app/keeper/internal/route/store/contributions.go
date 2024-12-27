@@ -6,13 +6,15 @@ package store
 
 import (
 	"encoding/base64"
+	"net/http"
+
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	"github.com/spiffe/spike-sdk-go/api/errors"
+
 	"github.com/spiffe/spike/app/keeper/internal/state"
 	"github.com/spiffe/spike/internal/log"
 	"github.com/spiffe/spike/internal/net"
-	"net/http"
 )
 
 func RouteShard(
