@@ -7,15 +7,17 @@ package net
 import (
 	"encoding/base64"
 	"encoding/json"
+	"net/url"
+	"time"
+
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	"github.com/spiffe/spike-sdk-go/net"
+
 	"github.com/spiffe/spike/app/keeper/internal/env"
 	"github.com/spiffe/spike/app/keeper/internal/state"
 	"github.com/spiffe/spike/internal/auth"
 	"github.com/spiffe/spike/internal/log"
-	"net/url"
-	"time"
 )
 
 func Contribute(source *workloadapi.X509Source) {
@@ -27,12 +29,13 @@ func Contribute(source *workloadapi.X509Source) {
 			continue
 		}
 
-		// TODO: error handling.
-		contributeUrl, _ := url.JoinPath(peer, "v1/store/contribute")
+		contributeUrl, err := url.JoinPath(peer, "v1/store/contribute")
+		if err != nil {
+			log.FatalLn("Failed to join path: " + err.Error())
+		}
 
-		// TODO: log.Fatalf instead of panicking.
 		if source == nil {
-			panic("contribute: No source")
+			log.FatalLn("contribute: source is nil")
 		}
 
 		client, err := net.CreateMtlsClientWithPredicate(
@@ -56,13 +59,9 @@ func Contribute(source *workloadapi.X509Source) {
 			reqres.ShardContributionRequest{
 				KeeperId: myId,
 				Shard:    base64.StdEncoding.EncodeToString(contribution),
-				// TODO: version is not needed in the new algorithm.
-				Version: 0,
 			},
 		)
 
-		// TODO: this is temporary; we need a more robust handling.
-		// maybe re-use our exponential backoff library.
 		_, err = net.Post(client, contributeUrl, md)
 		for err != nil {
 			time.Sleep(5 * time.Second)

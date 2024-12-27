@@ -37,22 +37,30 @@ func main() {
 
 	trust.Authenticate(spiffeid)
 
-	// TODO: log.Fatalf instead of panicking.
-
-	// 1. Load State
 	keeperState := state.ReadAppState()
+
 	if keeperState == state.AppStateError {
-		panic("Error reading state file")
+		log.FatalLn(
+			"SPIKE Keeper is in ERROR state. Manual intervention required.",
+		)
 	}
+
 	if keeperState == state.AppStateNotReady {
-		log.Log().Info(appName, "msg", "Not ready. Will send shards")
+		log.Log().Info(appName,
+			"msg", "SPIKE Keeper is not ready. Will send shards")
 
 		go api.Contribute(source)
 		go state.WaitForShards()
 	}
-	if keeperState == state.AppStateReady {
+
+	if keeperState == state.AppStateReady ||
+		keeperState == state.AppStateRecovering {
 		// TODO: implement this case
-		// Keeper should query its peers to recompute its shard.
+		// 1. Transition to a RECOVERING state, if not done already
+		// 2. Contact peers to recompute shard.
+		// 3. Try forever.
+		// 4. If something is irrevocably irrecoverable transition to ERROR state.
+		// 5. When everything is back to normal, transition to READY state.
 		panic("I started, but I don't know what to do.")
 	}
 

@@ -7,7 +7,7 @@ package net
 type SpikeNexusApiAction string
 
 const KeyApiAction = "action"
-const ActionNexusCheck SpikeNexusApiAction = "check"
+
 const ActionNexusGet SpikeNexusApiAction = "get"
 const ActionNexusDelete SpikeNexusApiAction = "delete"
 const ActionNexusUndelete SpikeNexusApiAction = "undelete"
@@ -16,5 +16,4 @@ const ActionNexusDefault SpikeNexusApiAction = ""
 
 type SpikeKeeperApiAction string
 
-const ActionKeeperRead SpikeKeeperApiAction = "read"
 const ActionKeeperDefault SpikeKeeperApiAction = ""
