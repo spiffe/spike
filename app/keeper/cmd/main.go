@@ -6,7 +6,6 @@ package main
 
 import (
 	"context"
-	"crypto/rand"
 	"crypto/sha256"
 	"encoding/base64"
 	"encoding/json"
@@ -87,6 +86,18 @@ func waitForShards() {
 
 		fmt.Printf("Waiting for shards... Current count: %d\n", shardCount)
 
+		if shardCount >= 3 {
+			fmt.Println("Required number of shards received")
+
+			state.Shards.Range(func(key, value any) bool {
+				shard := value.([]byte)
+				fmt.Printf("Key: %s Shard: %s\n", key, shard)
+				return true
+			})
+
+			// return
+		}
+
 		// Break the loop if we have at least 3 shards
 		if shardCount >= 3 {
 			fmt.Println("Required number of shards received. Proceeding...")
@@ -94,6 +105,9 @@ func waitForShards() {
 			finalKey := make([]byte, 32)
 			state.Shards.Range(func(key, value any) bool {
 				shard := value.([]byte)
+
+				fmt.Printf("Key: %s Shard: %s\n", key, shard)
+
 				for i := 0; i < 32; i++ {
 					finalKey[i] ^= shard[i]
 				}
@@ -119,15 +133,62 @@ func waitForShards() {
 			// You could use any other seed value for consistency
 			deterministicRand := newDeterministicReader([]byte("42"))
 
+			fmt.Println("Final key: >>>>>>", finalKey)
+
 			// Create shares
 			ss := secretsharing.New(deterministicRand, t, secret)
 			shares := ss.Share(n)
+
+			clonedShares := make([]secretsharing.Share, 0)
 
 			// Print shares
 			fmt.Println("Created shares:")
 			for i, share := range shares {
 				shareData, _ := share.Value.MarshalBinary()
 				fmt.Printf("Share %d: %x\n", i+1, shareData)
+				fmt.Println("Share ID: ", share.ID)
+
+				encodedShareData := base64.StdEncoding.EncodeToString(shareData)
+				fmt.Printf("Base64 Encoded Share %d: %s\n", i+1, encodedShareData)
+
+				decodedShareData, err := base64.StdEncoding.DecodeString(encodedShareData)
+				if err != nil {
+					panic("Failed to decode share data: " + err.Error())
+				}
+				fmt.Printf("Decoded Share %d: %x\n", i+1, decodedShareData)
+
+				shareId, _ := share.ID.MarshalBinary()
+
+				encodedShareID := base64.StdEncoding.EncodeToString(shareId)
+				fmt.Printf("Base64 Encoded Share ID %d: %s\n", i+1, encodedShareID)
+
+				decodedShareID, err := base64.StdEncoding.DecodeString(encodedShareID)
+				if err != nil {
+					panic("Failed to decode share ID: " + err.Error())
+				}
+				fmt.Printf("Decoded Share ID %d: %x\n", i+1, decodedShareID)
+
+				clonedShare := secretsharing.Share{
+					ID:    g.NewScalar(),
+					Value: g.NewScalar(),
+				}
+
+				err = clonedShare.ID.UnmarshalBinary(decodedShareID)
+				if err != nil {
+					panic("Failed to unmarshal share ID: " + err.Error())
+				}
+
+				err = clonedShare.Value.UnmarshalBinary(decodedShareData)
+				if err != nil {
+					panic("Failed to unmarshal share: " + err.Error())
+				}
+
+				clonedShares = append(clonedShares, clonedShare)
+
+				//e := share.Value.UnmarshalBinary(shareData)
+				//if e != nil {
+				//	panic("Failed to unmarshal share: " + e.Error())
+				//}
 			}
 
 			// Sort the keys of env.Peers() alphabetically
@@ -149,8 +210,11 @@ func waitForShards() {
 						myShard = val.([]byte)
 						fmt.Printf("Saved shard for Keeper ID %s at index %d\n", myId, index)
 
-						state.SetShard(myShard)
-						state.EraseShards()
+						shareVal, _ := shares[index].Value.MarshalBinary()
+
+						// TODO: maybe it should be share data instead of shard.
+						state.SetShard(shareVal)
+						// state.EraseShards()
 
 						break
 					}
@@ -162,8 +226,63 @@ func waitForShards() {
 				panic(fmt.Sprintf("Shard for Keeper ID %s could not be found", myId))
 			}
 
+			//firstShard, _ := state.Shards.Load("1")
+			//secondShard, _ := state.Shards.Load("2")
+			//
+			//firstId := g.NewScalar()
+			//firstId.SetUint64(1)
+			//firstValue := g.NewScalar()
+			//e := firstValue.UnmarshalBinary(firstShard.([]byte))
+			//if e != nil {
+			//	panic("Failed to unmarshal share: " + e.Error())
+			//}
+			//firstShare := secretsharing.Share{
+			//	ID:    firstId,
+			//	Value: firstValue,
+			//}
+			//
+			//secondId := g.NewScalar()
+			//secondId.SetUint64(2)
+			//secondValue := g.NewScalar()
+			//_ = secondValue.UnmarshalBinary(secondShard.([]byte))
+			//secondShare := secretsharing.Share{
+			//	ID:    secondId,
+			//	Value: secondValue,
+			//}
+			//
+			//newShares := make([]secretsharing.Share, 0)
+			//newShares = append(newShares, firstShare)
+			//newShares = append(newShares, secondShare)
+
+			fmt.Println("using shares:")
+
+			// Reconstruct using 2 shares
+			reconstructed, err := secretsharing.Recover(t, shares[:2])
+			if err != nil {
+				panic("Failed to reconstruct: " + err.Error())
+			}
+			fmt.Printf("\nReconstruction successful: %v\n", secret.IsEqual(reconstructed))
+			fmt.Println("Original key:    :", finalKey)
+			binaryKey, _ := reconstructed.MarshalBinary()
+			fmt.Println("Reconstructed key:", binaryKey)
+
+			fmt.Println("using cloned shares:")
+
+			// Reconstruct using 2 cloned shares
+			reconstructed, err = secretsharing.Recover(t, clonedShares[:2])
+			if err != nil {
+				panic("Failed to reconstruct using cloned shares: " + err.Error())
+			}
+			fmt.Printf("\nReconstruction successful with cloned shares: %v\n", secret.IsEqual(reconstructed))
+			fmt.Println("Original key:	:", finalKey)
+			binaryKey, _ = reconstructed.MarshalBinary()
+			fmt.Println("Reconstructed key using cloned shares:", binaryKey)
+
+			//
+			//fmt.Println("using other shares:")
+			//
 			//// Reconstruct using 2 shares
-			//reconstructed, err := secretsharing.Recover(t, shares[:2])
+			//reconstructed, err = secretsharing.Recover(t, newShares)
 			//if err != nil {
 			//	panic("Failed to reconstruct: " + err.Error())
 			//}
@@ -181,6 +300,21 @@ func waitForShards() {
 		// Sleep for a bit before checking again
 		time.Sleep(2 * time.Second)
 	}
+}
+
+var myContribution []byte
+
+func randomContribution() []byte {
+	// TODO: check if I need locking.
+
+	if len(myContribution) == 0 {
+		mySeed, _ := crypto.Aes256Seed()
+		myContribution = []byte(mySeed)
+
+		return myContribution
+	}
+
+	return myContribution
 }
 
 func contribute(source *workloadapi.X509Source) {
@@ -213,13 +347,21 @@ func contribute(source *workloadapi.X509Source) {
 		}
 
 		// TODO: maybe an override that returns a byte array instead.
-		contribution, _ := crypto.Aes256Seed()
+		contribution := randomContribution()
 
-		if _, err := rand.Read([]byte(contribution)); err != nil {
-			panic(err)
-		}
+		//if _, err := rand.Read([]byte(contribution)); err != nil {
+		//	panic(err)
+		//}
 
-		state.Shards.Store(myId, contribution)
+		state.Shards.Store(myId, []byte(contribution))
+
+		fmt.Println("---------------------")
+		fmt.Println("Sending contribution")
+		fmt.Println("contribution:", contribution)
+		fmt.Println("contribution:", base64.StdEncoding.EncodeToString([]byte(contribution)))
+		fmt.Println("keeper id", myId)
+		fmt.Println("peer id", id)
+		fmt.Println("---------------------")
 
 		md, err := json.Marshal(
 			reqres.ShardContributionRequest{

@@ -56,7 +56,7 @@ func RouteContribute(
 	// Store decoded shard in the map.
 	state.Shards.Store(id, decodedShard)
 
-	log.Log().Info(fName, "msg", "Shard stored", "id", id)
+	log.Log().Info(fName, "msg", "Shard stored", "id", id, "shard", decodedShard)
 
 	responseBody := net.MarshalBody(reqres.ShardContributionResponse{}, w)
 

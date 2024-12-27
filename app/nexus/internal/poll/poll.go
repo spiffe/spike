@@ -6,8 +6,11 @@ package poll
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"github.com/cloudflare/circl/group"
+	"github.com/cloudflare/circl/secretsharing"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	"github.com/spiffe/spike-sdk-go/net"
 	"github.com/spiffe/spike/app/nexus/internal/env"
@@ -19,6 +22,41 @@ import (
 
 	"github.com/spiffe/spike/internal/log"
 )
+
+//func BytesToShares(shards [][]byte) ([]secretsharing.Share, error) {
+//	if len(shards) == 0 {
+//		return nil, fmt.Errorf("no shards provided")
+//	}
+//
+//	shares := make([]secretsharing.Share, len(shards))
+//	g := group.P256
+//
+//	for i, shardBytes := range shards {
+//		// Decode base64
+//		//decodedBytes, err := base64.StdEncoding.DecodeString(string(shardBytes))
+//		decodedBytes := shardBytes
+//		// if err != nil {
+//		//	return nil, fmt.Errorf("failed to decode base64 for shard %d: %v", i, err)
+//		//}
+//
+//		// Create ID (starting from 1)
+//		id := g.NewScalar()
+//		id.SetUint64(uint64(i + 1))
+//
+//		// Create Value and unmarshal directly from decoded bytes
+//		value := g.NewScalar()
+//		if err := value.UnmarshalBinary(decodedBytes); err != nil {
+//			return nil, fmt.Errorf("failed to unmarshal shard %d: %v", i, err)
+//		}
+//
+//		shares[i] = secretsharing.Share{
+//			ID:    id,
+//			Value: value,
+//		}
+//	}
+//
+//	return shares, nil
+//}
 
 // Tick continuously updates SPIKE Keeper, sending the root key to be backed up
 // in memory.
@@ -81,6 +119,9 @@ func Tick(
 
 			keepers := env.Keepers()
 
+			shardsNeeded := 2
+			var shardsCollected [][]byte
+
 			for _, keeper := range keepers {
 				u, _ := url.JoinPath(keeper, "/v1/store/shard")
 
@@ -118,6 +159,79 @@ func Tick(
 				}
 
 				fmt.Println(">>>>>> Incoming Shard:", res.Shard)
+
+				if len(shardsCollected) < shardsNeeded {
+					decodedShard, err := base64.StdEncoding.DecodeString(res.Shard)
+					if err != nil {
+						fmt.Println("failed to decode shard:", err)
+						continue
+					}
+					shardsCollected = append(shardsCollected, decodedShard)
+				}
+
+				if len(shardsCollected) >= shardsNeeded {
+					log.Log().Info("tick", "msg", "Collected required shards", "shards_collected", len(shardsCollected))
+
+					g := group.P256
+
+					firstShard := shardsCollected[0]
+					firstShare := secretsharing.Share{
+						ID:    g.NewScalar(),
+						Value: g.NewScalar(),
+					}
+					firstShare.ID.SetUint64(1)
+					err := firstShare.Value.UnmarshalBinary(firstShard)
+					if err != nil {
+						panic(err)
+					}
+
+					secondShard := shardsCollected[1]
+					secondShare := secretsharing.Share{
+						ID:    g.NewScalar(),
+						Value: g.NewScalar(),
+					}
+					secondShare.ID.SetUint64(2)
+					err = secondShare.Value.UnmarshalBinary(secondShard)
+					if err != nil {
+						panic(err)
+					}
+
+					var shares []secretsharing.Share
+					shares = append(shares, firstShare)
+					shares = append(shares, secondShare)
+
+					reconstructed, err := secretsharing.Recover(1, shares)
+					if err != nil {
+						panic(err)
+					}
+
+					binaryRec, _ := reconstructed.MarshalBinary()
+
+					fmt.Println("reconstructed", reconstructed)
+					fmt.Println("reconstructed", binaryRec)
+
+					//// shardsCollected is a slice of slice of bytes.
+					//shares, err := BytesToShares(shardsCollected)
+					//if err != nil {
+					//	log.Log().Error("tick",
+					//		"msg", "Failed to convert shards to shares",
+					//		"hint", "Make sure SPIKE Keeper is up and running",
+					//		"err", err.Error())
+					//}
+					//
+					//reconstructed, err := secretsharing.Recover(1, shares)
+					//
+					//if err != nil {
+					//	log.Log().Error("tick",
+					//		"msg", "Failed to reconstruct root key",
+					//		"hint", "Make sure SPIKE Keeper is up and running",
+					//	)
+					//}
+
+					fmt.Println("reconstructed:>>>>>>", reconstructed)
+
+				}
+
 			}
 
 			fmt.Println("---------------------------------------")
