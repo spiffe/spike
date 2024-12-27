@@ -12,7 +12,9 @@ import (
 	"github.com/spiffe/spike-sdk-go/spiffe"
 
 	"github.com/spiffe/spike/app/keeper/internal/env"
+	api "github.com/spiffe/spike/app/keeper/internal/net"
 	"github.com/spiffe/spike/app/keeper/internal/route/handle"
+	"github.com/spiffe/spike/app/keeper/internal/state"
 	"github.com/spiffe/spike/app/keeper/internal/trust"
 	"github.com/spiffe/spike/internal/auth"
 	"github.com/spiffe/spike/internal/config"
@@ -35,9 +37,35 @@ func main() {
 
 	trust.Authenticate(spiffeid)
 
-	log.Log().Info(appName,
-		"msg", fmt.Sprintf("Started service: %s v%s",
-			appName, config.KeeperVersion))
+	keeperState := state.ReadAppState()
+
+	if keeperState == state.AppStateError {
+		log.FatalLn(
+			"SPIKE Keeper is in ERROR state. Manual intervention required.",
+		)
+	}
+
+	if keeperState == state.AppStateNotReady {
+		log.Log().Info(appName,
+			"msg", "SPIKE Keeper is not ready. Will send shards")
+
+		go api.Contribute(source)
+		go state.WaitForShards()
+	}
+
+	if keeperState == state.AppStateReady ||
+		keeperState == state.AppStateRecovering {
+		// TODO: implement this case
+		// 1. Transition to a RECOVERING state, if not done already
+		// 2. Contact peers to recompute shard.
+		// 3. Try forever.
+		// 4. If something is irrevocably irrecoverable transition to ERROR state.
+		// 5. When everything is back to normal, transition to READY state.
+		panic("I started, but I don't know what to do.")
+	}
+
+	log.Log().Info(appName, "msg", fmt.Sprintf("Started service: %s v%s",
+		appName, config.KeeperVersion))
 	if err := net.ServeWithPredicate(
 		source, handle.InitializeRoutes,
 		auth.CanTalkToKeeper,

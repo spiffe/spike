@@ -83,15 +83,16 @@ else
   run_background "./hack/spire-agent-start.sh"
 fi
 
-echo ""
-echo "Waiting before SPIKE Keeper..."
-sleep 5
-run_background "./keeper"
-
+# TODO: run each keeper here in background too.
+#echo ""
+#echo "Waiting before SPIKE Keeper..."
+#sleep 5
+#run_background "./hack/start-keepers.sh"
+#
 echo ""
 echo "Waiting before SPIKE Nexus..."
 sleep 5
-run_background "./nexus"
+run_background "./hack/start-nexus.sh"
 
 echo ""
 echo ""

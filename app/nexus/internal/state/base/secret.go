@@ -86,6 +86,9 @@ func UndeleteSecret(path string, versions []int) error {
 //   - map[string]string: The secret key-value pairs
 //   - bool: Whether the secret was found
 func GetSecret(path string, version int) (map[string]string, error) {
+	// TODO: If SQLLite backend and db not initialized; reject for all similar methods.
+	// TODO: the db backend needs cleanup since we are not using some of the keys and tokens anymore.
+
 	kvMu.RLock()
 	secret, err := kv.Get(path, version)
 	kvMu.RUnlock()

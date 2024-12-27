@@ -10,7 +10,6 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	spike "github.com/spiffe/spike-sdk-go/api"
-	"github.com/spiffe/spike-sdk-go/api/entity/data"
 )
 
 // newPolicyDeleteCommand creates a new Cobra command for policy deletion.
@@ -59,19 +58,10 @@ func newPolicyDeleteCommand(source *workloadapi.X509Source) *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			api := spike.NewWithSource(source)
 
-			state, err := api.CheckInitState()
-			if err != nil {
-				fmt.Println("Failed to check initialization state:", err)
-				return
-			}
-
-			if state == data.NotInitialized {
-				fmt.Println("Please initialize first by running 'spike init'.")
-				return
-			}
+			// TODO: sanitize policy id.
 
 			policyID := args[0]
-			err = api.DeletePolicy(policyID)
+			err := api.DeletePolicy(policyID)
 			if err != nil {
 				fmt.Printf("Error: %v\n", err)
 				return

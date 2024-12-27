@@ -106,6 +106,11 @@ func InitializeBackend(rootKey string) backend.Backend {
 	backendMu.Lock()
 	defer backendMu.Unlock()
 
+	log.Log().Info(
+		"initializeBackend",
+		"msg", "Initializing backend", "storeType", env.BackendStoreType(),
+	)
+
 	storeType := env.BackendStoreType()
 
 	switch storeType {

@@ -15,7 +15,42 @@
   </purpose>
   <next>
     <issue>
+      create a blog post and a video about SSS.
+    </issue>
+    <issue>
+      // TODO: this is temporary; we need a more robust handling.
+      // maybe re-use our exponential backoff library.
+      _, err = net.Post(client, contributeUrl, md)
+      for err != nil {
+      time.Sleep(5 * time.Second)
+      _, err = net.Post(client, contributeUrl, md)
+      if err != nil {
+      log.Log().Info("contribute",
+      "msg", "Error sending contribution. Will retry",
+      "err", err,
+      )
+      time.Sleep(5 * time.Second)
+      }
+      }
+    </issue>
+    <issue>
+      md, err := json.Marshal(
+      reqres.ShardContributionRequest{
+      KeeperId: myId,
+      Shard:    base64.StdEncoding.EncodeToString(contribution),
+      // TODO: version is not needed in the new algorithm.
+      Version: 0,
+      },
+      )
+    </issue>
+    <issue>
+      Check the entire codebase.
+    </issue>
+    <issue>
       Deploy Keycloak and make sure you can initialize it.
+    </issue>
+    <issue>
+      Create a video about this new shamir secret sharing workflow.
     </issue>
     <issue>
       <task>The system should work with three keepers by default.</task>

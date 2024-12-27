@@ -70,24 +70,15 @@ func newPolicyCreateCommand(source *workloadapi.X509Source) *cobra.Command {
 
 			api := spike.NewWithSource(source)
 
-			state, err := api.CheckInitState()
-			if err != nil {
-				fmt.Println("Failed to check initialization state:", err)
-				return
-			}
-
-			if state == data.NotInitialized {
-				fmt.Println("Please initialize first by running 'spike init'.")
-				return
-			}
-
 			permissions := strings.Split(permsStr, ",")
 			perms := make([]data.PolicyPermission, 0, len(permissions))
 			for _, perm := range permissions {
 				perms = append(perms, data.PolicyPermission(perm))
 			}
 
-			err = api.CreatePolicy(name, spiffeIddPattern, pathPattern, perms)
+			// TODO: sanitize perms.
+
+			err := api.CreatePolicy(name, spiffeIddPattern, pathPattern, perms)
 			if err != nil {
 				fmt.Printf("Error: %v\n", err)
 				return

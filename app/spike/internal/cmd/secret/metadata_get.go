@@ -10,7 +10,6 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	spike "github.com/spiffe/spike-sdk-go/api"
-	"github.com/spiffe/spike-sdk-go/api/entity/data"
 )
 
 // newSecretMetadataGetCommand creates and returns a new cobra.Command for
@@ -54,19 +53,7 @@ func newSecretMetadataGetCommand(
 		Run: func(cmd *cobra.Command, args []string) {
 			api := spike.NewWithSource(source)
 
-			state, err := api.CheckInitState()
-			if err != nil {
-				fmt.Println("Failed to check initialization state:")
-				fmt.Println(err.Error())
-				return
-			}
-
-			if state == data.NotInitialized {
-				fmt.Println(
-					"Please initialize SPIKE first by running 'spike init'.",
-				)
-				return
-			}
+			// TODO: sanitize args.
 
 			path := args[0]
 			version, _ := cmd.Flags().GetInt("version")

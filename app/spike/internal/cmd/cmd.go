@@ -12,7 +12,6 @@ import (
 
 	"github.com/spiffe/spike/app/spike/internal/cmd/policy"
 	"github.com/spiffe/spike/app/spike/internal/cmd/secret"
-	"github.com/spiffe/spike/app/spike/internal/cmd/system"
 )
 
 // Initialize sets up the CLI command structure with a workload API X.509
@@ -41,7 +40,6 @@ import (
 func Initialize(source *workloadapi.X509Source) {
 	rootCmd.AddCommand(policy.NewPolicyCommand(source))
 	rootCmd.AddCommand(secret.NewSecretCommand(source))
-	rootCmd.AddCommand(system.NewSystemInitCommand(source))
 }
 
 // Execute runs the root command and handles any errors that occur.

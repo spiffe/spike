@@ -4,28 +4,43 @@
 
 package state
 
-import "sync"
+import (
+	"os"
+	"strings"
 
-var rootKey string
-var rootKeyMutex sync.RWMutex
+	"github.com/spiffe/spike/app/keeper/internal/env"
+)
 
-// RootKey returns the current root key value in a thread-safe manner.
-// It uses a read lock to ensure concurrent read access is safe while
-// preventing writes during the read operation.
-func RootKey() string {
-	rootKeyMutex.RLock()
-	defer rootKeyMutex.RUnlock()
-	return rootKey
-}
+type AppState string
 
-// SetRootKey updates the root key value in a thread-safe manner.
-// It acquires a write lock to ensure exclusive access during the update,
-// preventing any concurrent reads or writes to the root key.
+const AppStateNotReady AppState = "NOT_READY"
+const AppStateReady AppState = "READY"
+const AppStateRecovering AppState = "RECOVERING"
+const AppStateError AppState = "ERROR"
+
+// ReadAppState retrieves and parses the application state from the state file.
+// The state file path is determined by env.StateFileName().
 //
-// Parameters:
-//   - key: The new value to set as the root key
-func SetRootKey(key string) {
-	rootKeyMutex.Lock()
-	defer rootKeyMutex.Unlock()
-	rootKey = key
+// The function will return:
+//   - AppStateNotReady if the state file doesn't exist or is empty
+//   - AppStateError if there was an error reading the file
+//   - The trimmed content of the file cast to AppState otherwise
+//
+// The state data is expected to be a single string value that can be cast
+// directly to the AppState type after whitespace trimming.
+//
+// Returns:
+//   - AppState: The current application state
+func ReadAppState() AppState {
+	data, err := os.ReadFile(env.StateFileName())
+	if os.IsNotExist(err) {
+		return AppStateNotReady
+	}
+	if err != nil {
+		return AppStateError
+	}
+	if len(strings.TrimSpace(string(data))) == 0 {
+		return AppStateNotReady
+	}
+	return AppState(strings.TrimSpace(string(data)))
 }
