@@ -115,6 +115,7 @@ func InitializeBackend(rootKey string) backend.Backend {
 
 	switch storeType {
 	case env.Memory:
+		// TODO: maybe initializememorybackingstore() too.
 		return &memory.NoopStore{}
 	case env.Sqlite:
 		return InitializeSqliteBackend(rootKey)

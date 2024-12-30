@@ -91,6 +91,8 @@ func computeShares(finalKey []byte) (group.Scalar, []secretsharing.Share) {
 		log.FatalLn("computeShares: Failed to unmarshal key: %v" + err.Error())
 	}
 
+	// TODO: give the end user to seed their own key if they want to via an environment variable.
+
 	// Create deterministic random source using the key itself as seed
 	// You could use any other seed value for consistency
 	deterministicRand := crypto.NewDeterministicReader(finalKey)

@@ -137,6 +137,154 @@
       </task>
       <task>Nexus will be NOT_READY until it collects enough shards to create the root key</task>
       <task>
+        low prio:
+        enable double-encryption when transferring shards between keepers and
+        also between nexus and the keeper.
+        this will be an additional security measure if the outer mTLS is
+        compromised; but if mTLS is compromised, then SPIFFE is compromised
+        then the entire identity control plane is compromised, so we'll have
+        bigger problems.
+
+      </task>
+      <task>
+        A secure eras function for key operations
+
+        func secureErase(data []byte) {
+        for i := range data {
+        data[i] = 0
+        }
+        }
+      </task>
+      <task>
+        SPIKE KEEPER DR NOTES
+        Scenario: Both keepers and Nexus crashed
+        Action: best way to recover
+
+        1. If nexus crashes; it can fetch its shards during bootstrap.
+        2. If &lt; 2 keepers crash, the keeper can query its peers to reconstruct
+        its shard.
+        3. Doomsday: Everything crashed all at once--see below:
+
+        This needs to be done before doomsday happens:
+        Build Two Distinct Recovery Binaries
+        recover1 and recover2, each compiled separately.
+        Each binary is associated with a unique SPIFFE ID (e.g., spiffe://mydomain/admin1 and spiffe://mydomain/admin2).
+        Enforce SHA-Based Attestation
+        Use SPIRE (or a similar SPIFFE implementation) with a “workload attestor” that:
+        Verifies the file path and/or SHA-256 hash of each binary.
+        Issues an SVID only if the binary matches the known-trusted hash.
+        This ensures any tampered binary cannot receive a valid SVID and thus cannot authenticate to Keepers or Nexus.
+        Configure Two Non-Root OS Accounts
+        On the host machine(s) where these binaries will run:
+        admin1 user account is authorized to execute recover1
+        admin2 user account is authorized to execute recover2
+        Deny both accounts any privileged or sudo access to ensure they can’t attach debuggers or read each other’s processes.
+        Threshold Cryptography (Optional, but Recommended)
+        Split the root key into (at least) 2-of-2 or 2-of-3 shards stored in separate Keepers.
+        Each Keeper requires a valid SVID corresponding to recover1 or recover2 before releasing its shard.
+        Superadmin Role for DR Endpoint
+        If using the approach where Nexus has a special recovery endpoint (/api/v1/recover):
+        Superadmin sets an environment variable like __SPIKE_NEXUS_DANGEROUSLY_ENABLE_RECOVERY_ENDPOINT__="yes" and restarts Nexus.
+        The recovery endpoint opens for a short time window (e.g., 15 minutes).
+        Nexus automatically seals the endpoint once two shards arrive or time expires.
+        Only superadmin can enable or disable this endpoint.
+        Recover1 and Recover2 Execution
+        Admin1 logs into the host as admin1 and runs ./recover1.
+        recover1 attests via SPIRE, proving it’s the correct untampered binary.
+        It receives its short-lived cert (SVID).
+        It contacts Keeper A (or whichever Keeper enforces “admin1’s shard”) over mTLS, requests the shard.
+        It then forwards (proxies) the shard directly to Nexus’s /api/v1/recover endpoint (if that’s your chosen design) without printing to screen.
+        Admin2 does the same process with ./recover2 (and possibly Keeper B), sending its shard to Nexus.
+        Shard Reconstruction in Nexus
+        Once Nexus sees two shards, it rebuilds the root key in memory.
+        If the DR scenario is complete, Nexus automatically seals the endpoint or the superadmin restarts Nexus without the environment variable, removing the DR capability until next time.
+        Logs and Auditing
+        Each Keeper logs which SPIFFE ID requested a shard and when.
+        Nexus logs the time-limited endpoint usage.
+        OS logs track which user executed recover1 and recover2.
+        Threat Analysis
+
+        Below are the most pertinent threats and how your design addresses them.
+        Tampering with the Recover Binaries
+        Threat: An attacker replaces or modifies recover1 or recover2 to exfiltrate shards.
+        Mitigation: SHA-based attestation prevents the tampered binary from receiving a valid SVID, so Keepers won’t release shards.
+        Residual Risk: If an attacker can also compromise your SPIRE agent or attestation pipeline, they might forge attestation. This requires deeper OS or supply chain compromise.
+        Single Admin or Rogue Insider
+        Threat: One admin obtains all shards.
+        Mitigation: The threshold approach requires two binaries run by two different OS users. A single admin cannot run both binaries unless they break into the other’s account.
+        Residual Risk: Collusion between Admin1 and Admin2, or compromised credentials for both accounts.
+        Memory Snooping or Debugging
+        Threat: An admin tries to attach a debugger or scan memory to extract a shard in plaintext.
+        Mitigation: Non-root accounts typically cannot debug processes owned by another user. Also, the ephemeral shard is never printed or written to disk.
+        Residual Risk: If an attacker escalates to root or uses a kernel exploit, they could read process memory. This is a broader OS-level compromise scenario.
+        Network Eavesdropping
+        Threat: An attacker captures traffic between the Keeper and Nexus to steal shards.
+        Mitigation: mTLS ensures all traffic is encrypted, with certificate pinning (SPIFFE). An attacker cannot decrypt the channel without compromising an endpoint.
+        Residual Risk: Endpoint compromise can still reveal plaintext (in memory), but purely passive network sniffing is defeated.
+        OS or Kernel-Level Exploits
+        Threat: A sophisticated attacker escalates privileges or patches the kernel to intercept memory buffers.
+        Mitigation: Regular OS patching, secure boot, minimal privileges, and auditing. In high-security environments, hardware enclaves (SGX/SEV/TPM) could further reduce the risk.
+        Residual Risk: A zero-day or advanced persistent threat can bypass typical OS protections.
+        DR Endpoint Abuse
+        Threat: Malicious user repeatedly enables the /api/v1/recover to gain key shards.
+        Mitigation: Only superadmin can enable it, and it’s time-limited. All usage is audited.
+        Residual Risk: A compromised superadmin or an attacker who obtains superadmin privileges can enable it at will.
+        Collusion & Insider Risk
+        Threat: Admin1, Admin2, and/or superadmin collude to steal the root key for malicious purposes.
+        Mitigation: Multi-man or threshold cryptography is designed to reduce single-person risk. However, it does not solve a scenario where all relevant parties collude. Additional external controls or background checks might be needed in extremely sensitive contexts.
+        Conclusion of the Threat Analysis
+        Overall Security Posture: Very strong for standard enterprise or production-level needs, as you’ve implemented:
+        Separate non-root accounts
+        SHA-based binary attestation
+        mTLS with SPIFFE IDs
+        Threshold cryptography requiring two distinct shards
+        Time-limited DR endpoint behind a superadmin role
+        Remaining Weak Points:
+        Full OS-level compromise can still subvert in-memory secrets.
+        Collusion or social engineering might bypass the two-admin requirement.
+        Advanced nation-state or zero-day kernel attacks are always a possibility in extreme threat models.
+        In typical practice, these protections raise the bar so high that an attacker would likely look for easier vectors (e.g., phishing credentials for multiple admins, or attacking other infrastructure) rather than trying to break your robust DR design.
+
+        ----
+
+        Keeper Distribution
+        Suppose you have 100 Keepers: K1, K2, K3, …, K100.
+        “recover1” is coded to fetch shards from the odd-numbered Keepers (K1, K3, K5, …, K99).
+        “recover2” is coded to fetch shards from the even-numbered Keepers (K2, K4, K6, …, K100).
+        Threshold Example
+        Let’s you need
+        t=10 total shards out of the 100 to reconstruct the key.
+        “recover1” can fetch 5 shards from any 5 of the odd-numbered Keepers.
+        “recover2” can fetch the remaining 5 shards from 5 even-numbered Keepers.
+        Each binary alone only gathers half the threshold. Neither can unilaterally reconstruct the key.
+        Non-Root + SHA-Based Attestation
+        The same security controls apply: each binary has its own SPIFFE ID, code hash attestation, and runs under a different non-root user.
+        Even though each binary interacts with multiple Keepers, the principle remains that a single compromised user or binary cannot gather enough shards.
+        3. Ensuring You Don’t Overfetch Shards
+
+        Fetch Exactly the Required Number
+        If your threshold is 10, “recover1” only fetches 5 shards, “recover2” only fetches 5 shards.
+        You don’t want “recover1” to be able to request 10 shards from all 50 odd Keepers. That would defeat the threshold separation.
+        How to Enforce
+        Each Keeper can have a policy: “This Keeper will only release a shard to recover1 if it sees that recover1 has not yet fetched more than 5 shards total.” Or more simply, you trust that “recover1” stops after 5.
+        Alternatively, you can design a server-side policy or some orchestration logic that only issues 5 valid partial shares to “recover1,” even if it tries to talk to more Keepers.
+
+
+      </task>
+      <task>
+        TODO:
+        Add more robust error handling specific to CIRCL's error types?
+        Add validation for the key size that aligns with CIRCL's requirements?
+        Update the emergency backup code to use CIRCL as well?
+
+        TODO: talk
+        talk about managing state (transitiong keer to other states)
+        disaster recovery: keeper crashes
+        disaster recovery: nexus crashes
+        VO
+
+      </task>
+      <task>
         Nexus will have a background process to reconstruct the root key in memory.
 
         Until the root key is constructed; any call other than `spike init` will

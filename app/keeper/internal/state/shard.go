@@ -41,6 +41,7 @@ func WaitForShards() {
 		}
 
 		if shardCount > 3 {
+			// TODO: add an audit log, because this is a security incident likely.
 			log.FatalLn("waitForShards: Too many shards received")
 		}
 

@@ -142,9 +142,11 @@ func Tick(
 						log.FatalLn("Failed to recover: " + err.Error())
 					}
 
+					// TODO: check for errors.
 					binaryRec, _ := reconstructed.MarshalBinary()
 
 					// TODO: check size 32bytes.
+
 					encoded := hex.EncodeToString(binaryRec)
 					state.Initialize(encoded)
 

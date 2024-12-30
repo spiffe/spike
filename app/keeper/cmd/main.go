@@ -50,6 +50,7 @@ func main() {
 			"msg", "SPIKE Keeper is not ready. Will send shards")
 
 		go api.Contribute(source)
+
 		go state.WaitForShards()
 	}
 
