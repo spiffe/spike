@@ -18,6 +18,16 @@
       create a blog post and a video about SSS.
     </issue>
     <issue>
+      for nexus and keeper
+
+      1. **Secure Memory Management**
+
+      - Implement immediate memory zeroization after key usage
+      - Use secure memory clearing functions (e.g., explicit_bzero())
+      - Minimize root key existence time in memory
+      - Implement memory access restrictions
+    </issue>
+    <issue>
       // TODO: this is temporary; we need a more robust handling.
       // maybe re-use our exponential backoff library.
       _, err = net.Post(client, contributeUrl, md)
