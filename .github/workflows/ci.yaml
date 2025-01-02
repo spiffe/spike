@@ -41,5 +41,23 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version-file: 'go.mod'
-      - name: Run Tests
+      - name: Unit Tests
         run: go test -v -race -shuffle=on -coverprofile=coverage.txt ./...
+  go-vet:
+    name: Go - Vet
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+      checks: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: 'go.mod'
+      - name: Go Vet
+        run: go vet ./...
