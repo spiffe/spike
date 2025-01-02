@@ -17,7 +17,7 @@ build:
 	./hack/build-spike.sh
 
 # Registry an entry to the SPIRE server for the demo app.
-demo-registry-entry:
+demo-register-entry:
 	./examples/consume-secrets/demo-register-entry.sh
 
 # Create necessary access policies for the demo app.
