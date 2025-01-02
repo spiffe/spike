@@ -13,6 +13,7 @@
   * [Documentation Snapshots](tracking/snapshots.md)
 * Operations
   * [Cross-Platform Build](operations/build.md)
+  * [SPIKE Production Setup Guide](operations/production-setup.md)
 * [Architecture](architecture/README.md)
   * [System Overview](architecture/system-overview.md)
   * [Security Model](architecture/security-model.md)
