@@ -42,7 +42,7 @@ jobs:
         with:
           go-version-file: 'go.mod'
       - name: Unit Tests
-        run: go test -v -race -shuffle=on -coverprofile=coverage.txt ./...
+        run: go test -race -shuffle=on -coverprofile=coverage.txt ./...
   go-vet:
     name: Go - Vet
     runs-on: ubuntu-latest
