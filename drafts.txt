@@ -4,6 +4,18 @@
 
 --------------------------------------------------------------------------------
 
+Idea: Inverting the root key flow
+Current consensus: It's better to harden SPIKE Keepers instead
+
+Details:
+
+Inverting the key generation flow in SPIKE—having the Nexus generate the root
+key, compute the shares, distribute them to the Keepers, initialize the database
+backend, and then discard the root key—alters the threat model and introduces
+new benefits and liabilities.
+
+
+--------------------------------------------------------------------------------
 
 login <token>
 login -method=userpass username=myuser password=mypass

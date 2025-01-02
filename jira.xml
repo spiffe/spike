@@ -613,6 +613,13 @@
 
       </task>
     </issue>
+    <issue>
+      Consider further securing SPIKE Nexus and SPIKE keepers (optionally)
+      with
+      1. using TPMs to store material to generate root key shards.
+      2. material to verify identity of keepers and nexus in tpms.
+      3.
+    </issue>
   </next>
   <low-hanging-fruits>
     <issue>
