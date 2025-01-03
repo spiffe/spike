@@ -6,6 +6,7 @@ package cache
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/go-jose/go-jose/v4/json"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
@@ -116,6 +117,11 @@ func FetchFromCache(source *workloadapi.X509Source) (string, error) {
 	}
 
 	data, err := net.Post(client, api.UrlKeeperRead(), md)
+	if err != nil {
+		return "", fmt.Errorf(
+			"FetchFromCache: failed to post request: %w", err,
+		)
+	}
 	var res reqres.RootKeyReadResponse
 
 	if len(data) == 0 {

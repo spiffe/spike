@@ -27,3 +27,7 @@ demo-create-policy:
 # Put a sample secret to SPIKE Nexus for the demo app.
 demo-put-secret:
 	./examples/consume-secrets/demo-put-secret.sh
+
+.PHONY: lint-go
+lint-go:
+	./hack/lint-go.sh
