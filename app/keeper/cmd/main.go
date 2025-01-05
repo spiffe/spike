@@ -12,7 +12,6 @@ import (
 	"github.com/spiffe/spike-sdk-go/spiffe"
 
 	"github.com/spiffe/spike/app/keeper/internal/env"
-	api "github.com/spiffe/spike/app/keeper/internal/net"
 	"github.com/spiffe/spike/app/keeper/internal/route/handle"
 	"github.com/spiffe/spike/app/keeper/internal/state"
 	"github.com/spiffe/spike/app/keeper/internal/trust"
@@ -49,9 +48,8 @@ func main() {
 		log.Log().Info(appName,
 			"msg", "SPIKE Keeper is not ready. Will send shards")
 
-		go api.Contribute(source)
-
-		go state.WaitForShards()
+		// go api.Contribute(source)
+		// go state.WaitForShards()
 	}
 
 	if keeperState == state.AppStateReady ||

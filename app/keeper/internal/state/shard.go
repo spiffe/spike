@@ -5,11 +5,8 @@
 package state
 
 import (
-	"sync"
-	"time"
-
-	"github.com/spiffe/spike/internal/log"
 	"github.com/spiffe/spike/pkg/crypto"
+	"sync"
 )
 
 // WaitForShards blocks until exactly 3 shards are collected in the global
@@ -23,36 +20,36 @@ import (
 //
 // Panics:
 //   - If more than 3 shards are received
-func WaitForShards() {
-	for {
-		shardCount := 0
-		Shards.Range(func(key, value any) bool {
-			shardCount++
-			return true
-		})
-
-		log.Log().Info(
-			"waitForShards", "msg", "Current shard count", "count", shardCount,
-		)
-
-		if shardCount < 3 {
-			time.Sleep(2 * time.Second)
-			continue
-		}
-
-		if shardCount > 3 {
-			// TODO: add an audit log, because this is a security incident likely.
-			log.FatalLn("waitForShards: Too many shards received")
-		}
-
-		finalKey := computeFinalKey()
-		secret, shares := computeShares(finalKey)
-		setInternalShard(shares)
-		sanityCheck(secret, shares)
-
-		break
-	}
-}
+//func WaitForShards() {
+//	for {
+//		shardCount := 0
+//		Shards.Range(func(key, value any) bool {
+//			shardCount++
+//			return true
+//		})
+//
+//		log.Log().Info(
+//			"waitForShards", "msg", "Current shard count", "count", shardCount,
+//		)
+//
+//		if shardCount < 3 {
+//			time.Sleep(2 * time.Second)
+//			continue
+//		}
+//
+//		if shardCount > 3 {
+//			// TODO: add an audit log, because this is a security incident likely.
+//			log.FatalLn("waitForShards: Too many shards received")
+//		}
+//
+//		finalKey := computeFinalKey()
+//		secret, shares := computeShares(finalKey)
+//		setInternalShard(shares)
+//		sanityCheck(secret, shares)
+//
+//		break
+//	}
+//}
 
 var myContribution []byte
 var myContributionLock sync.Mutex

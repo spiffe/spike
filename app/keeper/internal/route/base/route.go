@@ -27,10 +27,13 @@ func Route(w http.ResponseWriter, r *http.Request, a *log.AuditEntry) error {
 		r.Method,
 		func(a net.SpikeKeeperApiAction, p net.ApiUrl) net.Handler {
 			switch {
+			// Get contribution from SPIKE Nexus
 			case a == net.ActionKeeperDefault && p == net.SpikeKeeperUrlContribute:
 				return store.RouteContribute
+			// Provide your shard to SPIKE Nexus
 			case a == net.ActionKeeperDefault && p == net.SpikeKeeperUrlShard:
 				return store.RouteShard
+			// TODO: remove this route.
 			case a == net.ActionKeeperDefault && p == net.SpikeKeeperUrlStatus:
 				return store.RouteStatus
 			default:
