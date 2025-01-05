@@ -18,6 +18,10 @@
       Invert shard generation flow.
     </issue>
     <issue>
+      dr: keeper crash
+      waiting-for: shard generation inversion.
+    </issue>
+    <issue>
       Check the entire codebase and implement the `TODO:` items.
     </issue>
     <issue>
@@ -28,6 +32,10 @@
     </issue>
     <issue>
       Create a video about this new shamir secret sharing workflow.
+    </issue>
+    <issue>
+      DR: devise a DR scenario when a keeper crashes.
+      (depends on the new inverted sharding workflow)
     </issue>
 
     <issue>
@@ -78,6 +86,20 @@
     </issue>
   </low-hanging-fruits>
   <later>
+    <issue>
+      consider using NATS for cross trust boundary (or nor) secret federation
+    </issue>
+    <issue>
+      wrt: secure erasing shards and the root key >>
+      It would be interesting to try and chat with some of the folks under the cncf
+      (That's a good idea indeed; I'm noting it down.)
+    </issue>
+    <issue>
+      over the break, I dusted off https://github.com/spiffe/helm-charts-hardened/pull/166 and started playing with the new k8s built in cel based mutation functionality.
+      the k8s cel support is a little rough, but I was able to do a whole lot in it, and think I can probably get it to work for everything. once 1.33 hits, I think it will be even easier.
+      I mention this, as I think spike may want similar functionality?
+      csi driver, specify secrets to fetch to volume automatically, keep it up to date, and maybe poke the process once refreshed
+    </issue>
     <issue>
       set sqlilite on by default and make sure everything works.
     </issue>
