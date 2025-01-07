@@ -41,7 +41,7 @@ func RouteShard(
 
 	myShard := state.Shard()
 
-	if myShard == nil || len(myShard) == 0 {
+	if len(myShard) == 0 {
 		log.Log().Error(fName, "msg", "No shard found")
 		http.Error(w, "No shard found", http.StatusNotFound)
 		return errors.ErrNotFound

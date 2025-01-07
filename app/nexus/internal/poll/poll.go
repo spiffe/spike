@@ -10,6 +10,9 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
+	"net/url"
+	"time"
+
 	"github.com/cloudflare/circl/group"
 	"github.com/cloudflare/circl/secretsharing"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
@@ -17,8 +20,6 @@ import (
 	"github.com/spiffe/spike/app/nexus/internal/env"
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 	"github.com/spiffe/spike/internal/auth"
-	"net/url"
-	"time"
 
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 
@@ -68,6 +69,11 @@ func Tick(
 				}
 
 				data, err := net.Post(client, u, md)
+				if err != nil {
+					log.Log().Info("tick", "msg",
+						"Failed to post request", "err", err)
+					continue
+				}
 				var res reqres.ShardResponse
 
 				if len(data) == 0 {

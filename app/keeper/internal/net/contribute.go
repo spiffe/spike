@@ -61,6 +61,11 @@ func Contribute(source *workloadapi.X509Source) {
 				Shard:    base64.StdEncoding.EncodeToString(contribution),
 			},
 		)
+		if err != nil {
+			log.FatalLn(
+				"Failed to marshal shard contribution request: " + err.Error(),
+			)
+		}
 
 		_, err = net.Post(client, contributeUrl, md)
 		for err != nil {
