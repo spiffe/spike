@@ -47,6 +47,28 @@
   </next>
   <low-hanging-fruits>
     <issue>
+      something similar for SPIKE too:
+      Dev mode
+      The Helm chart may run a OpenBao server in development. This installs a
+      single OpenBao server with a memory storage backend.
+
+      For dev mode:
+      - no keepers
+      - no backing store (everything is in memory)
+    </issue>
+    <issue>
+      Consider using google kms, azure keyvault, and other providers
+      (including an external SPIKE deployment) for root key recovery.
+      question to consider is whether it's really needed
+      second question to consider is what to link kms to (keepers or nexus?)
+        keepers would be better because we'll back up the shards only then.
+      or google kms can be used as an alternative to keepers
+      (i.e., store encrypted dek, with the encrypted root key on nexus;
+      only kms can decrypt it -- but, to me, it does not provide any
+      additional advantage since if you are on the machine, you can talk to
+      google kms anyway)
+    </issue>
+    <issue>
       enable SQLlite by default
       and test it (ie. crash nexus and ensure both secrets and policies can be recovered)
     </issue>
@@ -86,6 +108,14 @@
     </issue>
   </low-hanging-fruits>
   <later>
+    <issue>
+      ability to lock nexus programmatically.
+      when locked, nexus will deny almost all operations
+      locking is done by executing nexus binary with a certain command line flag.
+      (i.e. there is no API access, you'll need to physically exec the ./nexus
+      binary -- regular svid verifications are still required)
+      only a superadmin can lock or unlock nexus.
+    </issue>
     <issue>
       consider using NATS for cross trust boundary (or nor) secret federation
     </issue>

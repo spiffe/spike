@@ -4,6 +4,85 @@
 
 --------------------------------------------------------------------------------
 
+From chat logs:
+
+> In a pinch, a spire-agent with unix attestor can identify individual users.
+> This may just be enough for admin identification for initial
+> bootstrapping/recovery purposes.
+
+That's a good idea. The admin user should already have an SVID for
+"their" user anyway.
+
+For example the following entry identifies the user:
+
+```text
+# [exhibit 1:]
+
+# Register SPIKE Pilot
+spire-server entry create \
+    -spiffeID spiffe://spike.ist/spike/pilot \
+    -parentID "spiffe://spike.ist/spire-agent" \
+    -selector unix:uid:"$(id -u)" \
+    -selector unix:path:"$PILOT_PATH" \
+    -selector unix:sha256:"$PILOT_SHA"
+```
+
+So the fact that the user can use the SPIKE Pilot (the `spike` binary)
+indeed means that they are authenticated. They don't need a password to further
+authenticate themselves. (reasoning: they cannot be that user unless they
+log in to the unix box -- the trust boundary is the box itself)
+
+
+> named admins. so, for most things you know who is doing what.
+> JWT will handle this well, using something like Keycloak,
+> Entra, github, gitlab, facebook, etc, etc.
+
+^ that needs to be a user story on its own. We can start experimenting with
+keycloak and see how it goes from there. An OIDC is an OIDC is an
+OIDC anyway -- how different can they be :)
+
+> traditional admin, needed when things go horribly wrong to
+> reenable named admins. I'm thinking, SPIRE issued jwt/svid for
+> a certain uid, on a certain machine
+
+I think `[exhibit 1:]` is good enough to secure the traditional admin.
+
+We can have a SPIFFE ID like `spiffe://spike.ist/spike/pilot/role/superuser`.
+It does not even have to be a JWT SVID. Someone who can talk to SPIKE can
+assign/unassign it.
+
+So. If hell broke lose, I'll assign myself a superadmin SVID;
+fix stuff, and then unregister that SVID.
+
+For named admins, we'd need OIDC, which can wait for a while.
+For now, one superadmin is good enough.
+
+> A token isn't useful without someone vetting it....
+
+Yes, and I agree that it's not worth introducing to complexity, unless either of us
+want to found a TPM/human-id startup (which is not a bad idea ideed :))
+
+> Thats the problem with passwords. Your trusting a human, with limited memory,
+> with a string a machine cares about and hope it stays secure. Thats proven hard.
+
+LOL, but agreed.
+
+--
+
+So in short, the above approach I think...
+
+1. will eliminate need for password.
+2. will push identifying the superadmin to their unix credentials
+   (one who owns the box owns spike, provided someone who owns spire
+    let them own spike -- I like the multi-level access approach.
+    So if I have login access to the box, but not to SPIRE, then the SPIRE admin can
+    remove my access if I turn out to be a bad superadmin :) -- but in reality
+    I will be the alpha and the omega (both SPIRE admin and also linux user))
+3. root key backup and rotation is figureoutable and FFS.
+4. named admins are figureoutable and FFS.
+
+--------------------------------------------------------------------------------
+
 Idea: Inverting the root key flow
 Current consensus: It's better to harden SPIKE Keepers instead
 
