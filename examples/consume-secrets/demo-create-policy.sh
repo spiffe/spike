@@ -6,12 +6,12 @@
 
 ./spike policy create --name=workload-can-read \
   --path="/tenants/demo/db/*" \
-  --spiffeid="^spiffe://spike.ist/workload/*" \
+  --spiffeid="^spiffe://spike\\.ist/workload/*" \
   --permissions="read"
 
 ./spike policy create --name=workload-can-write \
   --path="/tenants/demo/db/*" \
-  --spiffeid="^spiffe://spike.ist/workload/*" \
+  --spiffeid="^spiffe://spike\\.ist/workload/*" \
   --permissions="write"
 
 #./spike policy create --name=workload-can-rw \

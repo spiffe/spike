@@ -314,6 +314,221 @@
     <issue>
       Assigning secrets to SPIFFE IDs or SPIFFE ID prefixes.
     </issue>
+    <issue>
+      SPIKE CSI Driver
+
+      the CSI Secrets Store driver enables users to create
+      `SecretProviderClass` objects. These objects define which secret provider
+      to use and what secrets to retrieve. When pods requesting CSI volumes are
+      made, the CSI Secrets Store driver sends the request to the OpenBao CSI
+      provider if the provider is `vault`. The CSI provider then uses the
+      specified `SecretProviderClass` and the pod’s service account to retrieve
+      the secrets from OpenBao and mount them into the pod’s CSI volume. Note
+      that the secret is retrieved from SPIKE Nexus and populated to the CSI
+      secrets store volume during the `ContainerCreation` phase. Therefore, pods
+      are blocked from starting until the secrets are read from SPIKE and
+      written to the volume.
+    </issue>
+    <issue>
+      shall we implement rate limiting; or should that be out of scope
+      (i.e. to be implemented by the user.
+    </issue>
+    <issue>
+      to docs: the backing store is considered untrusted and it stores
+      encrypted information
+      todo: if it's "really" untrusted then maybe it's better to encrypt everything
+      (including metadata) -- check how other secrets managers does this.
+    </issue>
+    <issue>
+      more fine grained policy management
+
+      1. an explicit deny will override allows
+      2. have allowed/disallowed/required parameters
+      3. etc.
+
+      # This section grants all access on "secret/*". further restrictions can be
+      # applied to this broad policy, as shown below.
+      path "secret/*" {
+      capabilities = ["create", "read", "update", "patch", "delete", "list", "scan"]
+      }
+
+      # Even though we allowed secret/*, this line explicitly denies
+      # secret/super-secret. this takes precedence.
+      path "secret/super-secret" {
+      capabilities = ["deny"]
+      }
+
+      # Policies can also specify allowed, disallowed, and required parameters. here
+      # the key "secret/restricted" can only contain "foo" (any value) and "bar" (one
+      # of "zip" or "zap").
+      path "secret/restricted" {
+      capabilities = ["create"]
+      allowed_parameters = {
+      "foo" = []
+      "bar" = ["zip", "zap"]
+      }
+
+      but also, instead of going deep down into the policy rabbit hole, maybe
+      it's better to rely on well-established policy engines like OPA.
+
+      A rego-based evaluation will give allow/deny decisions, which SPIKE Nexus
+      can  then honor.
+
+      Think about pros/cons of each approach. -- SPIKE can have a good-enough
+      default policy engine, and for more sophisticated functionality we can
+      leverage OPA.
+    </issue>
+    <issue>
+      If nexus has not started SPIKE Pilot should give a more informative
+      error message (i.e. Nexus is not ready, or not initialized, or
+      unreachable, please check yadda yadda yadda)
+    </issue>
+    <issue>
+      key rotation
+
+      NIST rotation guidance
+
+      Periodic rotation of the encryption keys is recommended, even in the
+      absence of compromise. Due to the nature of the AES-256-GCM encryption
+      used, keys should be rotated before approximately 232
+      encryptions have been performed, following the guidelines of NIST
+      publication 800-38D.
+
+      SPIKE will automatically rotate the backend encryption key prior to reaching
+      232 encryption operations by default.
+
+      also support manual key rotation
+    </issue>
+    <issue>
+      Do an internal security analysis / threat model for spike.
+    </issue>
+    <issue>
+      TODO in-memory "dev mode" for SPIKE #spike (i.e. in memory mode will not be default)
+      nexus --dev or something similar (maybe an env var)
+    </issue>
+    <issue>
+      Use SPIKE in lieu of encryption as a service (similar to transit secrets)
+    </issue>
+    <issue>
+      dynamic secrets
+    </issue>
+    <issue>
+      document how to do checksum verification to ensure that the binaries
+      you download is authentic.
+    </issue>
+    <issue>
+      docs:
+      Since the storage backend resides outside the barrier, it’s considered
+      untrusted so SPIKE will encrypt the data before it sends them to the
+      storage backend. This mechanism ensures that if a malicious attacker
+      attempts to gain access to the storage backend, the data cannot be
+      compromised since it remains encrypted, until OpenBao decrypts the data.
+      The storage backend provides a durable data persistent layer where data
+      is secured and available across server restarts.
+    </issue>
+    <issue>
+      use case:
+      one time access to an extremely limited subset of secrets
+      (maybe using a one time, or time-bound token)
+      but also consider if SPIKE needs tokens at all; I think we can piggyback
+      most of the authentication to SPIFFE and/or JWT -- having to convert
+      various kinds of tokens into internal secrets store tokens is not that much needed.
+    </issue>
+    <issue>
+      - TODO Telemetry
+      - core system metrics
+      - audit log metrics
+      - authentication metrics
+      - database metrics
+      - policy metrics
+      - secrets metrics
+    </issue>
+    <issue>
+      "token" secret type
+      - will be secure random
+      - will have expiration
+    </issue>
+    <issue>
+      spike dev mode
+    </issue>
+    <issue>
+      document limits and maximums of SPIKE (such as key length, path lenght, policy size etc)
+    </issue>
+    <issue>
+      double encryption when passing secrets around
+      (can be optional for client-nexus interaction; and can be mandatory for
+      tools that transcend trust boundaries (as in a relay / message queue that
+      may be used for secrets federation)
+    </issue>
+    <issue>
+      active/standby HA mode
+    </issue>
+    <issue>
+      document the built-in spiife ids used by the system.
+    </issue>
+    <issue>
+      pattern-based random secret generation
+    </issue>
+    <issue>
+      admin ui
+    </issue>
+    <issue>
+      guidelines about how to backup and restore
+    </issue>
+    <issue>
+      - AWS KMS support for keepers
+      - Azure keyvault support for keepers
+      - GCP kms support for keepers
+      - HSM support for keepers
+      - OCI kms support for keepers
+      - keepers storing their shards in a separate SPIKE deployment
+        (i.e. SPIKE using another SPIKE to restore root token)
+    </issue>
+    <issue>
+      postgresql backend
+    </issue>
+    <issue>
+      audit targets:
+        - file
+        - syslog
+        - socket
+      (if audit targets are enabled then command will not execute unless an
+      audit trail is started)
+    </issue>
+    <issue>
+      OIDC authentication for named admins.
+    </issue>
+    <issue>
+      SPIKE Dynamic secret sidecar injector
+    </issue>
+    <issue>
+      To docs: Why not kubernetes?
+      ps: also inspire a bit from VSecM docs too.
+
+      - Kubernetes is not a secrets management solution. It does have native
+      support for secrets, but that is quite different from a dedicated
+      secrets management solution. Kubernetes secrets are scoped to the cluster
+      only, and many applications will have some services running outside
+      Kubernetes or in other Kubernetes clusters. Having these applications
+      use Kubernetes secrets from outside a Kubernetes environment will be
+      cumbersome and introduce authentication and authorization challenges.
+      Therefore, considering the secret scope as part of the design process
+      is critical.
+      - Kubernetes secrets are static in nature. You can define secrets by using
+      kubectl or the Kubernetes API, but once they are defined, they are stored
+      in etcd and presented to pods only during pod creation. Defining secrets
+      in this manner may create scenarios where secrets get stale, outdated,
+      or expired, requiring additional workflows to update and rotate the
+      secrets, and then re-deploy the application to use the new version, which
+      can add complexity and become quite time-consuming. Ensure consideration
+      is given to all requirements for secret freshness, updates, and rotation
+      as part of your design process.
+      - The secret access management security model is tied to the Kubernetes
+      RBAC model. This model can be challenging for users who are not familiar
+      with Kubernetes. Adopting a platform-agnostic security governance model
+      can enable you to adapt workflows for applications regardless of how and
+      where they are running.
+    </issue>
   </runner-up>
   <backlog>
     <issue kind="v1.0-requirement">

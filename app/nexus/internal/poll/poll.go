@@ -8,7 +8,9 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/base64"
+	"encoding/hex"
 	"encoding/json"
+	"fmt"
 	"github.com/cloudflare/circl/group"
 	"github.com/cloudflare/circl/secretsharing"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
@@ -39,6 +41,9 @@ func sanityCheck(secret group.Scalar, shares []secretsharing.Share) {
 }
 
 func computeShares(finalKey []byte) (group.Scalar, []secretsharing.Share) {
+	fmt.Println("in compute shares")
+	fmt.Println("final key is: ", finalKey, "len: ", len(finalKey))
+
 	// Initialize parameters
 	g := group.P256
 	// TODO: these will be configurable
@@ -98,36 +103,46 @@ func Tick(
 
 	// Talk to all SPIKE Keeper endpoints and send their shards and get
 	// acknowledgement that they received the shard.
+
+	if source == nil {
+		// If source is nil, nobody is going to recreate the source,
+		// it's better to log and crash.
+		log.FatalLn("Tick: source is nil. this should not happen.")
+	}
+
+	// Create the root key and create shards out of the root key.
+	// TODO: Securely erase intermediate material
+
+	rootKey, err := crypto.Aes256Seed()
+	if err != nil {
+		log.FatalLn("Tick: failed to create root key: " + err.Error())
+	}
+
+	decodedRootKey, err := hex.DecodeString(rootKey)
+	if err != nil {
+		log.FatalLn("Tick: failed to decode root key: " + err.Error())
+	}
+
+	rootSecret, rootShares := computeShares(decodedRootKey)
+	sanityCheck(rootSecret, rootShares)
+
+	// TODO: implement this logic:
+	// If already initialized, and no root key, ask keepers and assemble the root key.
+	// already initialized -> use a flag in the file system
+	// root key check -> if dbBackend is not nil, then it has a root key.
+	// The flow below assumes that the keeper is not initialized, and it's day zero.
+
+	// Initialize the backend store before sending shards to the keepers.
+	// Keepers is our backup system, and they are not critical for system
+	// operations. Initializing early allows SPIKE Nexus to serve before
+	// keepers are hydrated.
+	state.Initialize(rootKey)
+
+	fmt.Println("initialized the backing store with the root key")
+
+	successCount := 0
+
 	for {
-		if source == nil {
-			// If source is nil, nobody is going to recreate the source,
-			// it's better to log and crash.
-			log.FatalLn("Tick: source is nil. this should not happen.")
-		}
-
-		// Create the root key and create shards out of the root key.
-		// TODO: Securely erase intermediate material
-
-		rootKey, err := crypto.Aes256Seed()
-		if err != nil {
-			log.FatalLn("Tick: failed to create root key: " + err.Error())
-		}
-
-		rootSecret, rootShares := computeShares([]byte(rootKey))
-		sanityCheck(rootSecret, rootShares)
-
-		// TODO: implement this logic:
-		// If already initialized, and no root key, ask keepers and assemble the root key.
-		// already initialized -> use a flag in the file system
-		// root key check -> if dbBackend is not nil, then it has a root key.
-		// The flow below assumes that the keeper is not initialized, and it's day zero.
-
-		// Initialize the backend store before sending shards to the keepers.
-		// Keepers is our backup system, and they are not critical for system
-		// operations. Initializing early allows SPIKE Nexus to serve before
-		// keepers are hydrated.
-		state.Initialize(rootKey)
-
 		select {
 		case <-ticker.C:
 			keepers := env.Keepers()
@@ -136,6 +151,9 @@ func Tick(
 				log.FatalLn("Tick: not enough keepers")
 			}
 
+			// TODO: exit loop if all keepers initialized.
+
+			// Ensure to get a success response from ALL keepers in one go.
 			for keeperId, keeperApiRoot := range keepers {
 				u, err := url.JoinPath(
 					keeperApiRoot,
@@ -174,8 +192,17 @@ func Tick(
 					Shard:    base64.StdEncoding.EncodeToString(contribution),
 				}
 				md, err := json.Marshal(scr)
+				if err != nil {
+					log.Log().Warn("tick", "msg", "Failed to marshal request",
+						"err", err, "keeper_id", keeperId)
+					continue
+				}
 
 				data, err := net.Post(client, u, md)
+				if err != nil {
+					log.Log().Warn("tick", "msg", "Failed to post",
+						"err", err, "keeper_id", keeperId)
+				}
 				var res reqres.ShardContributionResponse
 
 				if len(data) == 0 {
@@ -183,11 +210,22 @@ func Tick(
 					continue
 				}
 
+				fmt.Println("data is: ", string(data))
+
 				err = json.Unmarshal(data, &res)
 				if err != nil {
 					log.Log().Info("tick", "msg",
 						"Failed to unmarshal response", "err", err)
 					continue
+				}
+
+				successCount++
+
+				fmt.Println("success count is: ", successCount)
+
+				if successCount == len(keepers) {
+					fmt.Println("all keepers initialized")
+					return
 				}
 			}
 		case <-ctx.Done():
@@ -197,124 +235,3 @@ func Tick(
 		time.Sleep(5 * time.Second)
 	}
 }
-
-//
-//select {
-//case <-ticker.C:
-//	keepers := env.Keepers()
-//
-//	shardsNeeded := 2
-//	var shardsCollected [][]byte
-//
-//	for _, keeperApiRoot := range keepers {
-//		u, _ := url.JoinPath(keeperApiRoot, "/v1/store/shard")
-//
-//		client, err := net.CreateMtlsClientWithPredicate(
-//			source, auth.IsKeeper,
-//		)
-//		if err != nil {
-//			log.Log().Info("tick", "msg",
-//				"Failed to create mTLS client", "err", err)
-//			continue
-//		}
-//
-//		md, err := json.Marshal(reqres.ShardRequest{})
-//		if err != nil {
-//			log.Log().Info("tick", "msg",
-//				"Failed to marshal request", "err", err)
-//			continue
-//		}
-//
-//		data, err := net.Post(client, u, md)
-//		var res reqres.ShardResponse
-//
-//		if len(data) == 0 {
-//			log.Log().Info("tick", "msg", "No data")
-//			continue
-//		}
-//
-//		err = json.Unmarshal(data, &res)
-//		if err != nil {
-//			log.Log().Info("tick", "msg",
-//				"Failed to unmarshal response", "err", err)
-//			continue
-//		}
-//
-//		if len(shardsCollected) < shardsNeeded {
-//			decodedShard, err := base64.StdEncoding.DecodeString(res.Shard)
-//			if err != nil {
-//				log.Log().Info("tick", "msg", "Failed to decode shard")
-//				continue
-//			}
-//
-//			// Check if the shard already exists in shardsCollected
-//			shardExists := false
-//			for _, existingShard := range shardsCollected {
-//				if bytes.Equal(existingShard, decodedShard) {
-//					shardExists = true
-//					break
-//				}
-//			}
-//			if shardExists {
-//				continue
-//			}
-//
-//			shardsCollected = append(shardsCollected, decodedShard)
-//		}
-//
-//		if len(shardsCollected) >= shardsNeeded {
-//			log.Log().Info("tick",
-//				"msg", "Collected required shards",
-//				"shards_collected", len(shardsCollected))
-//
-//			g := group.P256
-//
-//			firstShard := shardsCollected[0]
-//			firstShare := secretsharing.Share{
-//				ID:    g.NewScalar(),
-//				Value: g.NewScalar(),
-//			}
-//			firstShare.ID.SetUint64(1)
-//			err := firstShare.Value.UnmarshalBinary(firstShard)
-//			if err != nil {
-//				log.FatalLn("Failed to unmarshal share: " + err.Error())
-//			}
-//
-//			secondShard := shardsCollected[1] secondShare := secretsharing.Share{
-//				ID:    g.NewScalar(),
-//				Value: g.NewScalar(),
-//			}
-//			secondShare.ID.SetUint64(2)
-//			err = secondShare.Value.UnmarshalBinary(secondShard)
-//			if err != nil {
-//				log.FatalLn("Failed to unmarshal share: " + err.Error())
-//			}
-//
-//			var shares []secretsharing.Share
-//			shares = append(shares, firstShare)
-//			shares = append(shares, secondShare)
-//
-//			reconstructed, err := secretsharing.Recover(1, shares)
-//			if err != nil {
-//				log.FatalLn("Failed to recover: " + err.Error())
-//			}
-//
-//			// TODO: check for errors.
-//			binaryRec, _ := reconstructed.MarshalBinary()
-//
-//			// TODO: check size 32bytes.
-//
-//			encoded := hex.EncodeToString(binaryRec)
-//			state.Initialize(encoded)
-//
-//			log.Log().Info("tick", "msg", "Initialized backing store")
-//			return
-//		}
-//
-//		log.Log().Info("tick",
-//			"msg", "Failed to collect shards... will retry",
-//		)
-//	case <-ctx.Done():
-//		return
-//	}
-//}
