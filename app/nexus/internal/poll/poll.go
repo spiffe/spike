@@ -60,6 +60,8 @@ func computeShares(finalKey []byte) (group.Scalar, []secretsharing.Share) {
 	// TODO: use deterministic random that uses the root key as the seed
 	// otherwise every keeper crash will create a different shard and the
 	// system will not be able to recover the root key.
+	// or it will have to re-seed all SPIKE Keeper instances (which will be
+	// extra work)
 	ss := secretsharing.New(rand.Reader, t, secret)
 	return secret, ss.Share(n)
 }
