@@ -145,6 +145,9 @@ func Tick(
 
 	fmt.Println("initialized the backing store with the root key")
 
+	// TODO: this will not work as polling the same keeper thrice will make
+	// success count == 3; -- iterate over successful keeper ids and keep
+	// a map of successful keepers. don't be a lazy ass.
 	successCount := 0
 
 	for {
