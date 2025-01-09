@@ -57,6 +57,9 @@ func computeShares(finalKey []byte) (group.Scalar, []secretsharing.Share) {
 	}
 
 	// Create shares
+	// TODO: use deterministic random that uses the root key as the seed
+	// otherwise every keeper crash will create a different shard and the
+	// system will not be able to recover the root key.
 	ss := secretsharing.New(rand.Reader, t, secret)
 	return secret, ss.Share(n)
 }
