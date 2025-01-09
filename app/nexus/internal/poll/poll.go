@@ -98,6 +98,22 @@ func Tick(
 	source *workloadapi.X509Source,
 	ticker *time.Ticker,
 ) {
+	// TODO: immediate fix list based on the mini demo:
+	// 1. The regex for spiffe id matcher does not have charaters like backslash
+	//    Since we are matching a regular expression, we can expect it to escape
+	//    things at least; so it's better to add .?*+{}()[]\ to the allowed
+	//    characters. We don't want to unnecessarily restrict users from
+	//    how they create their spiffe id matchers.
+	//
+	// 2. The counter does not work as expected. For example, if there is a
+	//    a single keeper live, it will increment until 3 (instead of
+	//    remainig at 1.
+	//
+	// 3. spike policy list gives `null` for no policies instead of a message
+	//    also the response is json rather than a more human readable output.
+	//    also `createdBy` is emppy.
+	//    we can create "good first issue"s for these.
+
 	// TODO: Plan for inverting keeper flow
 	// 1. disable all keeper shard creation
 	// 2. move shard creation here
