@@ -18,6 +18,30 @@
       Invert shard generation flow.
     </issue>
     <issue>
+      1. Nexus maintaining its initialization state
+      (i.e. if it successfully initialized the keepers it should recompute the
+      root key from the keepers instead of auto-generating itself.
+      for that; it will set a tombstone indicating it has initialized the keepers
+      the tombstone will be in SQLite; since shards do not make sense in in-memory
+      backing store)
+
+      2. Keepers advertising their status to Nexus regularly
+      IF Nexus has initialized keepers already Nexus will recompute and
+      provide the shard to the keeper.
+      (Nexus will keep the root key in its memory. The threat model of SPIKE
+      does not protect Nexus against memory-based attacks and it's up to the
+      user to harden and ensure that nexus runs with non-root privileges
+      (this threat model is the same for Vault and other secret stores too))
+
+      3. Nexus crashes; it figures out it already initialized keepers; asks for
+      shards and rekeys itself.
+
+      4. Nexus crashes; but quorum of keepers that they know their shards cannot
+      be reached.
+      Nexus transitions to "locked" state and a manual unlock will be required
+      (this will be a separate user story)
+    </issue>
+    <issue>
       dr: keeper crash
       waiting-for: shard generation inversion.
     </issue>
