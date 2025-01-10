@@ -18,6 +18,55 @@
       Invert shard generation flow.
     </issue>
     <issue>
+      implement keeper crash recovery:
+      i.e. ask shards from nexus
+    </issue>
+    <issue>
+      implement nexus crash recovery
+      i.e. ask shards from keepers
+    </issue>
+    <issue>
+      implement doomsday recovery
+      i.e. operator saves shards in a secure enclave.
+    </issue>
+    <issue>
+      admin should not be able to create two policies with the same name.
+    </issue>
+    <issue>
+      exponentially back off here
+
+      log.Log().Info("tick", "msg", "Waiting for keepers to initialize")
+      time.Sleep(5 * time.Second)
+    </issue>
+    <issue>
+      Store root key in Nexus' memory (will be required for recovery later)
+      We can also keep shards in nexus' memory for convenience too
+      (reasoning: if we are keeping the root key, securely erasing shards
+       do not increase the security posture that much)
+    </issue>
+    <issue>
+      consider db backend as untrusted
+      i.e. encrypt everything you store there; including policies.
+      (that might already be the case actually) -- if so, document it
+      in the website.
+    </issue>
+    <issue>
+      // TODO: this check will change once we make #keepers configurable.
+      if len(keepers) &lt; 3 {
+      log.FatalLn("Tick: not enough keepers")
+      }
+    </issue>
+    <issue>
+      For in-memory store, bypass initialization, shard creation etc.
+    </issue>
+    <issue>
+      SPIKE defaults to sqlite backing store
+    </issue>
+    <issue>
+      nexus tracks its keeper-initialization state.
+      (time shards created, number of shards etc)
+    </issue>
+    <issue>
       1. Nexus maintaining its initialization state
       (i.e. if it successfully initialized the keepers it should recompute the
       root key from the keepers instead of auto-generating itself.
@@ -40,6 +89,20 @@
       be reached.
       Nexus transitions to "locked" state and a manual unlock will be required
       (this will be a separate user story)
+    </issue>
+    <issue>
+      // 3. spike policy list gives `null` for no policies instead of a message
+      //    also the response is json rather than a more human readable output.
+      //    also `createdBy` is emppy.
+      //    we can create "good first issue"s for these.
+    </issue>
+    <issue>
+      func computeShares(finalKey []byte) (group.Scalar, []secretsharing.Share) {
+      // Initialize parameters
+      g := group.P256
+      // TODO: these will be configurable
+      t := uint(1) // Need t+1 shares to reconstruct
+      n := uint(3) // Total number of shares
     </issue>
     <issue>
       dr: keeper crash
