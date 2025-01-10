@@ -73,6 +73,12 @@
       (time shards created, number of shards etc)
     </issue>
     <issue>
+      switch default backing store to SQLite
+
+      "in memory" mode could be enabled with a `--dev` flag,
+      or an environment variable.
+    </issue>
+    <issue>
       1. Nexus maintaining its initialization state
       (i.e. if it successfully initialized the keepers it should recompute the
       root key from the keepers instead of auto-generating itself.

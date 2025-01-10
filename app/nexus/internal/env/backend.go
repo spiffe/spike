@@ -45,6 +45,6 @@ func BackendStoreType() StoreType {
 	case string(Memory):
 		return Memory
 	default:
-		return Memory
+		return Sqlite
 	}
 }
