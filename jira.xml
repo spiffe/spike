@@ -20,7 +20,49 @@
       keepers are just dummy stateless keepers.
     </issue>
     <issue>
+      this is for policy creation:
+
+      allowed := state.CheckAccess(
+      spiffeid.String(), "*",
+      []data.PolicyPermission{data.PermissionSuper},
+      )
+
+      instead of a wildcard, maybe have a predefined path
+      for access check like "/spike/system/acl"
+
+      also disallow people creating secrets etc under
+      /spike/system
+    </issue>
+    <issue>
       Invert shard generation flow.
+    </issue>
+    <issue>
+      validations:
+
+      along with the error code, also return some explanatory message
+
+      instead of this for example
+
+      err = validation.ValidateSpiffeIdPattern(spiffeIdPattern)
+      if err != nil {
+      responseBody := net.MarshalBody(reqres.PolicyCreateResponse{
+      Err: data.ErrBadInput,
+      }, w)
+      net.Respond(http.StatusBadRequest, responseBody, w)
+      return err
+      }
+
+      do this
+
+      err = validation.ValidateSpiffeIdPattern(spiffeIdPattern)
+      if err != nil {
+      responseBody := net.MarshalBody(reqres.PolicyCreateResponse{
+      Err: data.ErrBadInput,
+      Reason: "Invalid spiffe id pattern. Matcher should be a regex that can match a spiffe id"
+      }, w)
+      net.Respond(http.StatusBadRequest, responseBody, w)
+      return err
+      }
     </issue>
     <issue>
       implement keeper crash recovery:

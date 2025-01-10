@@ -5,7 +5,6 @@
 package policy
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
@@ -21,8 +20,6 @@ import (
 func guardPutPolicyRequest(
 	request reqres.PolicyCreateRequest, w http.ResponseWriter, r *http.Request,
 ) error {
-	fmt.Println("in guard put policy request")
-
 	name := request.Name
 	spiffeIdPattern := request.SpiffeIdPattern
 	pathPattern := request.PathPattern
@@ -30,8 +27,6 @@ func guardPutPolicyRequest(
 
 	spiffeid, err := spiffe.IdFromRequest(r)
 	if err != nil {
-		fmt.Println("exit 001")
-
 		responseBody := net.MarshalBody(reqres.PolicyCreateResponse{
 			Err: data.ErrUnauthorized,
 		}, w)
@@ -40,8 +35,6 @@ func guardPutPolicyRequest(
 	}
 	err = validation.ValidateSpiffeId(spiffeid.String())
 	if err != nil {
-		fmt.Println("exit 002")
-
 		responseBody := net.MarshalBody(reqres.PolicyCreateResponse{
 			Err: data.ErrUnauthorized,
 		}, w)
@@ -62,8 +55,6 @@ func guardPutPolicyRequest(
 
 	err = validation.ValidateName(name)
 	if err != nil {
-		fmt.Println("exit 003")
-
 		responseBody := net.MarshalBody(reqres.PolicyCreateResponse{
 			Err: data.ErrBadInput,
 		}, w)
@@ -73,8 +64,6 @@ func guardPutPolicyRequest(
 
 	err = validation.ValidateSpiffeIdPattern(spiffeIdPattern)
 	if err != nil {
-		fmt.Println("exit 004", spiffeIdPattern)
-
 		responseBody := net.MarshalBody(reqres.PolicyCreateResponse{
 			Err: data.ErrBadInput,
 		}, w)
@@ -84,8 +73,6 @@ func guardPutPolicyRequest(
 
 	err = validation.ValidatePathPattern(pathPattern)
 	if err != nil {
-		fmt.Println("exit 005")
-
 		responseBody :=
 			net.MarshalBody(reqres.PolicyCreateResponse{
 				Err: data.ErrBadInput,
@@ -96,8 +83,6 @@ func guardPutPolicyRequest(
 
 	err = validation.ValidatePermissions(permissions)
 	if err != nil {
-		fmt.Println("exit 006")
-
 		responseBody := net.MarshalBody(reqres.PolicyCreateResponse{
 			Err: data.ErrBadInput,
 		}, w)
@@ -105,6 +90,5 @@ func guardPutPolicyRequest(
 		return err
 	}
 
-	fmt.Println("exit 007")
 	return nil
 }
