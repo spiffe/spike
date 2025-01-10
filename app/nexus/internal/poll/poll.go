@@ -99,11 +99,6 @@ func Tick(
 	ticker *time.Ticker,
 ) {
 	// TODO: immediate fix list based on the mini demo:
-	// 1. The regex for spiffe id matcher does not have charaters like backslash
-	//    Since we are matching a regular expression, we can expect it to escape
-	//    things at least; so it's better to add .?*+{}()[]\ to the allowed
-	//    characters. We don't want to unnecessarily restrict users from
-	//    how they create their spiffe id matchers.
 	//
 	// 2. The counter does not work as expected. For example, if there is a
 	//    a single keeper live, it will increment until 3 (instead of
@@ -161,10 +156,7 @@ func Tick(
 
 	fmt.Println("initialized the backing store with the root key")
 
-	// TODO: this will not work as polling the same keeper thrice will make
-	// success count == 3; -- iterate over successful keeper ids and keep
-	// a map of successful keepers. don't be a lazy ass.
-	successCount := 0
+	successfulKeepers := make(map[string]bool)
 
 	for {
 		select {
@@ -243,19 +235,22 @@ func Tick(
 					continue
 				}
 
-				successCount++
+				successfulKeepers[keeperId] = true
+				log.Log().Info("tick", "msg", "Success", "keeper_id", keeperId)
 
-				fmt.Println("success count is: ", successCount)
-
-				if successCount == len(keepers) {
-					fmt.Println("all keepers initialized")
+				if len(successfulKeepers) == 3 {
+					log.Log().Info("tick", "msg", "All keepers initialized")
 					return
 				}
 			}
 		case <-ctx.Done():
+			log.Log().Info("tick", "msg", "Context done")
 			return
 		}
 
+		log.Log().Info("tick", "msg", "Waiting for keepers to initialize")
 		time.Sleep(5 * time.Second)
 	}
 }
+
+// TODO: disallow policy creation with the same name.
