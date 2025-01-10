@@ -219,6 +219,7 @@ func Tick(
 					log.Log().Warn("tick", "msg", "Failed to post",
 						"err", err, "keeper_id", keeperId)
 				}
+
 				var res reqres.ShardContributionResponse
 
 				if len(data) == 0 {
