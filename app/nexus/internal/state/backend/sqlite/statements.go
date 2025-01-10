@@ -5,6 +5,14 @@
 package sqlite
 
 const queryInitialize = `
+CREATE TABLE IF NOT EXISTS key_recovery (
+    id INTEGER PRIMARY KEY CHECK (id = 1),
+    nonce BLOB NOT NULL,
+    encrypted_data BLOB NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
 CREATE TABLE IF NOT EXISTS admin_token (
 	id INTEGER PRIMARY KEY CHECK (id = 1),
 	nonce BLOB NOT NULL,

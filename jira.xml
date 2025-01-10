@@ -66,6 +66,13 @@
       For in-memory store, bypass initialization, shard creation etc.
     </issue>
     <issue>
+      remove symbols when packaging binaries for release.
+    </issue>
+    <issue>
+      we don't use admin token and admin recovery metadata anymore.
+      clean them up from the db and also code.
+    </issue>
+    <issue>
       SPIKE defaults to sqlite backing store
     </issue>
     <issue>

@@ -22,7 +22,6 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 
 	"github.com/spiffe/spike/app/nexus/internal/state/backend"
-	"github.com/spiffe/spike/app/nexus/internal/state/entity/data"
 	"github.com/spiffe/spike/pkg/store"
 )
 
@@ -159,6 +158,10 @@ func (s *DataStore) Initialize(ctx context.Context) error {
 func (s *DataStore) StoreSecret(
 	ctx context.Context, path string, secret store.Secret,
 ) error {
+	fmt.Println(">>>>>>> in store secrets")
+	fmt.Println("s nil?", s == nil)
+	fmt.Println(s)
+
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -301,161 +304,6 @@ func (s *DataStore) LoadSecret(
 	}
 
 	return &secret, nil
-}
-
-// StoreAdminToken encrypts and stores an admin token in the database.
-// The token is encrypted using AES-GCM before storage.
-//
-// Returns an error if:
-// - Encryption fails
-// - Database operation fails
-//
-// This method is thread-safe.
-func (s *DataStore) StoreAdminToken(ctx context.Context, token string) error {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-
-	encrypted, nonce, err := s.encrypt([]byte(token))
-	if err != nil {
-		return fmt.Errorf("failed to encrypt admin token: %w", err)
-	}
-
-	_, err = s.db.ExecContext(ctx, queryInsertAdminToken, nonce, encrypted)
-	if err != nil {
-		return fmt.Errorf("failed to store admin token: %w", err)
-	}
-
-	return nil
-}
-
-// LoadAdminSigningToken retrieves and decrypts the stored admin token.
-//
-// Returns:
-// - ("", nil) if no token exists
-// - ("", error) if loading or decryption fails
-// - (token, nil) with the decrypted token on success
-//
-// This method is thread-safe.
-func (s *DataStore) LoadAdminSigningToken(ctx context.Context) (string, error) {
-	s.mu.RLock()
-	defer s.mu.RUnlock()
-
-	var nonce, encrypted []byte
-	err := s.db.QueryRowContext(
-		ctx, querySelectAdminSigningToken,
-	).Scan(&nonce, &encrypted)
-	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return "", nil
-		}
-		return "", fmt.Errorf("failed to load admin token: %w", err)
-	}
-
-	decrypted, err := s.decrypt(encrypted, nonce)
-	if err != nil {
-		return "", fmt.Errorf("failed to decrypt admin token: %w", err)
-	}
-
-	return string(decrypted), nil
-}
-
-// LoadAdminRecoveryMetadata retrieves the admin recovery metadata from the
-// database. It returns an empty RecoveryMetadata struct if no record exists, or
-// an error if the query fails.
-//
-// The method is thread-safe and uses a read lock when accessing the database.
-// It queries the admin_recovery_metadata table for the single record with id=1,
-// containing the token hash, encrypted root key, and salt used for admin
-// recovery.
-//
-// Returns:
-//   - RecoveryMetadata: The retrieved credentials containing recovery token
-//     hash, encrypted root key, and salt
-//   - error: nil on success, sql.ErrNoRows if no record exists, or wrapped
-//     error on query failure
-func (s *DataStore) LoadAdminRecoveryMetadata(ctx context.Context) (data.RecoveryMetadata, error) {
-	// TODO: data namespace should come from SDK.
-
-	s.mu.RLock()
-	defer s.mu.RUnlock()
-
-	const querySelectAdminCredentials = `
-	SELECT token_hash, encrypted_root_key, salt 
-	FROM admin_recovery_metadata
-	WHERE id = 1`
-
-	var creds data.RecoveryMetadata
-	err := s.db.QueryRowContext(
-		ctx, querySelectAdminCredentials,
-	).Scan(&creds.RecoveryTokenHash, &creds.EncryptedRootKey, &creds.Salt)
-	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return data.RecoveryMetadata{}, nil
-		}
-		return data.RecoveryMetadata{}, fmt.Errorf("failed to load admin recovery metadata: %w", err)
-	}
-
-	return creds, nil
-}
-
-// StoreAdminRecoveryMetadata saves or updates the admin recovery metadata in
-// the database. The operation is performed atomically within a serializable
-// transaction.
-//
-// The method is thread-safe and uses a write lock when accessing the database.
-// It uses REPLACE INTO to ensure only one record exists in the
-// admin_recovery_metadata table with id=1. The record includes token hash,
-// encrypted root key, salt, and creation timestamp.
-//
-// Parameters:
-//   - ctx: Context for the database operation
-//   - credentials: RecoveryMetadata containing the token hash, encrypted root
-//     key, and salt to be stored
-//
-// Returns:
-//   - error: nil on success, or wrapped error describing the failure
-//     (transaction, query, or commit errors)
-func (s *DataStore) StoreAdminRecoveryMetadata(
-	ctx context.Context, credentials data.RecoveryMetadata,
-) error {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-
-	tx, err := s.db.BeginTx(ctx,
-		&sql.TxOptions{Isolation: sql.LevelSerializable},
-	)
-	if err != nil {
-		return fmt.Errorf("failed to begin transaction: %w", err)
-	}
-
-	committed := false
-
-	defer func(tx *sql.Tx) {
-		if !committed {
-			err := tx.Rollback()
-			if err != nil {
-				fmt.Printf("failed to rollback transaction: %v\n", err)
-			}
-		}
-	}(tx)
-
-	// Since there's only one admin recovery metadata record, we can use REPLACE INTO
-	// or you could use the queryUpsertAdminCredentials constant
-	_, err = tx.ExecContext(ctx, `
-		REPLACE INTO admin_recovery_metadata (id, token_hash, encrypted_root_key, salt, created_at)
-		VALUES (1, ?, ?, ?, CURRENT_TIMESTAMP)`,
-		credentials.RecoveryTokenHash, credentials.EncryptedRootKey, credentials.Salt)
-	if err != nil {
-		return fmt.Errorf("failed to store admin recovery metadata: %w", err)
-	}
-
-	if err := tx.Commit(); err != nil {
-		return fmt.Errorf("failed to commit transaction: %w", err)
-	}
-
-	committed = true
-
-	return nil
 }
 
 // Close safely closes the database connection.

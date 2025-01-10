@@ -8,9 +8,9 @@ import (
 	"github.com/spiffe/spike/app/nexus/internal/state/persist"
 )
 
+// Initialize initializes the backend storage with the provided root path.
 func Initialize(r string) {
-	// No need for a lock; this method is called only once during initial
-	// bootstrapping.
-
+	// No need for a lock:
+	// This method is called only once during initial bootstrapping.
 	persist.InitializeBackend(r)
 }

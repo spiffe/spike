@@ -8,7 +8,6 @@ import (
 	"context"
 	data2 "github.com/spiffe/spike-sdk-go/api/entity/data"
 
-	"github.com/spiffe/spike/app/nexus/internal/state/entity/data"
 	"github.com/spiffe/spike/pkg/store"
 )
 
@@ -17,23 +16,6 @@ import (
 // where no actual storage is needed. NoopStore is also use when the
 // backing store is configured to be in-memory.
 type NoopStore struct {
-}
-
-// StoreAdminRecoveryMetadata saves the admin recovery metadata to the store.
-// This implementation is a no-op and always returns nil.
-func (s *NoopStore) StoreAdminRecoveryMetadata(
-	_ context.Context, _ data.RecoveryMetadata,
-) error {
-	return nil
-}
-
-// LoadAdminRecoveryMetadata retrieves the admin recovery metadata from the
-// store. This implementation always returns an empty RecoveryMetadata and
-// nil error.
-func (s *NoopStore) LoadAdminRecoveryMetadata(
-	_ context.Context,
-) (data.RecoveryMetadata, error) {
-	return data.RecoveryMetadata{}, nil
 }
 
 // Close implements the closing operation for the store.
@@ -48,24 +30,12 @@ func (s *NoopStore) Initialize(_ context.Context) error {
 	return nil
 }
 
-// LoadAdminSigningToken retrieves the admin token from the store.
-// This implementation always returns an empty string and nil error.
-func (s *NoopStore) LoadAdminSigningToken(_ context.Context) (string, error) {
-	return "", nil
-}
-
 // LoadSecret retrieves a secret from the store by its path.
 // This implementation always returns nil secret and nil error.
 func (s *NoopStore) LoadSecret(
 	_ context.Context, _ string,
 ) (*store.Secret, error) {
 	return nil, nil
-}
-
-// StoreAdminToken saves an admin token to the store.
-// This implementation is a no-op and always returns nil.
-func (s *NoopStore) StoreAdminToken(_ context.Context, _ string) error {
-	return nil
 }
 
 // StoreSecret saves a secret to the store at the specified path.

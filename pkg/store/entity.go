@@ -54,3 +54,27 @@ type Secret struct {
 	// Metadata contains control information about this secret
 	Metadata Metadata
 }
+
+// KeyRecoveryData represents the complete set of recovery information
+// for the root key and its Shamir shards.
+type KeyRecoveryData struct {
+	// RootKey contains the root encryption key
+	RootKey []byte
+
+	// MinShards is the minimum number of shards needed to reconstruct the
+	// root key
+	MinShards int
+
+	// TotalShards is the total number of shards that were created
+	TotalShards int
+
+	// Shards contains all the Shamir shards of the root key.
+	// The slice index (0-based) corresponds to the shard index
+	Shards [][]byte
+
+	// CreatedTime is when this recovery data was first created
+	CreatedTime time.Time
+
+	// UpdatedTime is when this recovery data was last modified
+	UpdatedTime time.Time
+}

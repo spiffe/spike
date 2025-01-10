@@ -5,7 +5,6 @@
 package persist
 
 import (
-	"github.com/spiffe/spike/app/nexus/internal/env"
 	"github.com/spiffe/spike/app/nexus/internal/state/backend"
 )
 
@@ -28,14 +27,5 @@ import (
 func Backend() backend.Backend {
 	backendMu.RLock()
 	defer backendMu.RUnlock()
-
-	storeType := env.BackendStoreType()
-	switch storeType {
-	case env.Memory:
-		return memoryBackend
-	case env.Sqlite:
-		return sqliteBackend
-	default:
-		return memoryBackend
-	}
+	return be
 }
