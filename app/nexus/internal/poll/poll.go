@@ -76,8 +76,9 @@ func Tick(
 
 				if err != nil {
 					log.Log().Warn(
-						"tick", "msg",
-						"Failed to join path", keeperApiRoot,
+						"tick",
+						"msg", "Failed to join path",
+						"url", keeperApiRoot,
 					)
 					continue
 				}
