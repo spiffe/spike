@@ -15,6 +15,11 @@
   </purpose>
   <next>
     <issue>
+      we don't need state.ReadAppState()
+      and other state enums for keepers anymore
+      keepers are just dummy stateless keepers.
+    </issue>
+    <issue>
       Invert shard generation flow.
     </issue>
     <issue>
