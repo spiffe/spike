@@ -33,9 +33,6 @@ func Route(w http.ResponseWriter, r *http.Request, a *log.AuditEntry) error {
 			// Provide your shard to SPIKE Nexus
 			case a == net.ActionKeeperDefault && p == net.SpikeKeeperUrlShard:
 				return store.RouteShard
-			// TODO: remove this route.
-			case a == net.ActionKeeperDefault && p == net.SpikeKeeperUrlStatus:
-				return store.RouteStatus
 			default:
 				return net.Fallback
 			}
