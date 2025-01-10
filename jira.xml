@@ -37,6 +37,30 @@
       Invert shard generation flow.
     </issue>
     <issue>
+      control these with flags.
+      i.e. the starter script can optionally NOT automatically
+      start nexus or keepers.
+
+      #echo ""
+      #echo "Waiting before SPIKE Keeper 1..."
+      #sleep 5
+      #run_background "./hack/start-keeper-1.sh"
+      #echo ""
+      #echo "Waiting before SPIKE Keeper 2..."
+      #sleep 5
+      #run_background "./hack/start-keeper-2.sh"
+      #echo ""
+      #echo "Waiting before SPIKE Keeper 3..."
+      #sleep 5
+      #run_background "./hack/start-keeper-3.sh"
+
+      #echo ""
+      #echo "Waiting before SPIKE Nexus..."
+      #sleep 5
+      #run_background "./hack/start-nexus.sh"
+
+    </issue>
+    <issue>
       validations:
 
       along with the error code, also return some explanatory message
