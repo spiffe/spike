@@ -15,7 +15,173 @@
   </purpose>
   <next>
     <issue>
+      we don't need state.ReadAppState()
+      and other state enums for keepers anymore
+      keepers are just dummy stateless keepers.
+    </issue>
+    <issue>
+      this is for policy creation:
+
+      allowed := state.CheckAccess(
+      spiffeid.String(), "*",
+      []data.PolicyPermission{data.PermissionSuper},
+      )
+
+      instead of a wildcard, maybe have a predefined path
+      for access check like "/spike/system/acl"
+
+      also disallow people creating secrets etc under
+      /spike/system
+    </issue>
+    <issue>
       Invert shard generation flow.
+    </issue>
+    <issue>
+      control these with flags.
+      i.e. the starter script can optionally NOT automatically
+      start nexus or keepers.
+
+      #echo ""
+      #echo "Waiting before SPIKE Keeper 1..."
+      #sleep 5
+      #run_background "./hack/start-keeper-1.sh"
+      #echo ""
+      #echo "Waiting before SPIKE Keeper 2..."
+      #sleep 5
+      #run_background "./hack/start-keeper-2.sh"
+      #echo ""
+      #echo "Waiting before SPIKE Keeper 3..."
+      #sleep 5
+      #run_background "./hack/start-keeper-3.sh"
+
+      #echo ""
+      #echo "Waiting before SPIKE Nexus..."
+      #sleep 5
+      #run_background "./hack/start-nexus.sh"
+
+    </issue>
+    <issue>
+      validations:
+
+      along with the error code, also return some explanatory message
+
+      instead of this for example
+
+      err = validation.ValidateSpiffeIdPattern(spiffeIdPattern)
+      if err != nil {
+      responseBody := net.MarshalBody(reqres.PolicyCreateResponse{
+      Err: data.ErrBadInput,
+      }, w)
+      net.Respond(http.StatusBadRequest, responseBody, w)
+      return err
+      }
+
+      do this
+
+      err = validation.ValidateSpiffeIdPattern(spiffeIdPattern)
+      if err != nil {
+      responseBody := net.MarshalBody(reqres.PolicyCreateResponse{
+      Err: data.ErrBadInput,
+      Reason: "Invalid spiffe id pattern. Matcher should be a regex that can match a spiffe id"
+      }, w)
+      net.Respond(http.StatusBadRequest, responseBody, w)
+      return err
+      }
+    </issue>
+    <issue>
+      implement keeper crash recovery:
+      i.e. ask shards from nexus
+    </issue>
+    <issue>
+      implement nexus crash recovery
+      i.e. ask shards from keepers
+    </issue>
+    <issue>
+      keeper does not need to store multiple shards;
+      each keeper should keep its own shard.
+
+      // Store decoded shard in the map.
+      state.Shards.Store(id, decodedShard)
+      log.Log().Info(fName, "msg", "Shard stored", "id", id)
+    </issue>
+    <issue>
+      implement doomsday recovery
+      i.e. operator saves shards in a secure enclave.
+    </issue>
+    <issue>
+      admin should not be able to create two policies with the same name.
+    </issue>
+    <issue>
+      exponentially back off here
+
+      log.Log().Info("tick", "msg", "Waiting for keepers to initialize")
+      time.Sleep(5 * time.Second)
+    </issue>
+    <issue>
+      Store root key in Nexus' memory (will be required for recovery later)
+      We can also keep shards in nexus' memory for convenience too
+      (reasoning: if we are keeping the root key, securely erasing shards
+       do not increase the security posture that much)
+    </issue>
+    <issue>
+      consider db backend as untrusted
+      i.e. encrypt everything you store there; including policies.
+      (that might already be the case actually) -- if so, document it
+      in the website.
+    </issue>
+    <issue>
+      // TODO: this check will change once we make #keepers configurable.
+      if len(keepers) &lt; 3 {
+      log.FatalLn("Tick: not enough keepers")
+      }
+    </issue>
+    <issue>
+      For in-memory store, bypass initialization, shard creation etc.
+    </issue>
+    <issue>
+      SPIKE defaults to sqlite backing store
+    </issue>
+    <issue>
+      nexus tracks its keeper-initialization state.
+      (time shards created, number of shards etc)
+    </issue>
+    <issue>
+      1. Nexus maintaining its initialization state
+      (i.e. if it successfully initialized the keepers it should recompute the
+      root key from the keepers instead of auto-generating itself.
+      for that; it will set a tombstone indicating it has initialized the keepers
+      the tombstone will be in SQLite; since shards do not make sense in in-memory
+      backing store)
+
+      2. Keepers advertising their status to Nexus regularly
+      IF Nexus has initialized keepers already Nexus will recompute and
+      provide the shard to the keeper.
+      (Nexus will keep the root key in its memory. The threat model of SPIKE
+      does not protect Nexus against memory-based attacks and it's up to the
+      user to harden and ensure that nexus runs with non-root privileges
+      (this threat model is the same for Vault and other secret stores too))
+
+      3. Nexus crashes; it figures out it already initialized keepers; asks for
+      shards and rekeys itself.
+
+      4. Nexus crashes; but quorum of keepers that they know their shards cannot
+      be reached.
+      Nexus transitions to "locked" state and a manual unlock will be required
+      (this will be a separate user story)
+    </issue>
+    <issue>
+      // 3. spike policy list gives `null` for no policies instead of a message
+      //    also the response is json rather than a more human readable output.
+      //    also `createdBy` is emppy.
+      //    we can create "good first issue"s for these.
+    </issue>
+    <issue>
+      func computeShares(finalKey []byte) (group.Scalar, []secretsharing.Share) {
+      // Initialize parameters
+      g := group.P256
+      // TODO: these will be configurable
+      t := uint(1) // Need t+1 shares to reconstruct
+      n := uint(3) // Total number of shares
     </issue>
     <issue>
       dr: keeper crash
@@ -46,6 +212,28 @@
      </issue>
   </next>
   <low-hanging-fruits>
+    <issue>
+      something similar for SPIKE too:
+      Dev mode
+      The Helm chart may run a OpenBao server in development. This installs a
+      single OpenBao server with a memory storage backend.
+
+      For dev mode:
+      - no keepers
+      - no backing store (everything is in memory)
+    </issue>
+    <issue>
+      Consider using google kms, azure keyvault, and other providers
+      (including an external SPIKE deployment) for root key recovery.
+      question to consider is whether it's really needed
+      second question to consider is what to link kms to (keepers or nexus?)
+        keepers would be better because we'll back up the shards only then.
+      or google kms can be used as an alternative to keepers
+      (i.e., store encrypted dek, with the encrypted root key on nexus;
+      only kms can decrypt it -- but, to me, it does not provide any
+      additional advantage since if you are on the machine, you can talk to
+      google kms anyway)
+    </issue>
     <issue>
       enable SQLlite by default
       and test it (ie. crash nexus and ensure both secrets and policies can be recovered)
@@ -86,6 +274,14 @@
     </issue>
   </low-hanging-fruits>
   <later>
+    <issue>
+      ability to lock nexus programmatically.
+      when locked, nexus will deny almost all operations
+      locking is done by executing nexus binary with a certain command line flag.
+      (i.e. there is no API access, you'll need to physically exec the ./nexus
+      binary -- regular svid verifications are still required)
+      only a superadmin can lock or unlock nexus.
+    </issue>
     <issue>
       consider using NATS for cross trust boundary (or nor) secret federation
     </issue>
@@ -283,6 +479,221 @@
     </issue>
     <issue>
       Assigning secrets to SPIFFE IDs or SPIFFE ID prefixes.
+    </issue>
+    <issue>
+      SPIKE CSI Driver
+
+      the CSI Secrets Store driver enables users to create
+      `SecretProviderClass` objects. These objects define which secret provider
+      to use and what secrets to retrieve. When pods requesting CSI volumes are
+      made, the CSI Secrets Store driver sends the request to the OpenBao CSI
+      provider if the provider is `vault`. The CSI provider then uses the
+      specified `SecretProviderClass` and the pod’s service account to retrieve
+      the secrets from OpenBao and mount them into the pod’s CSI volume. Note
+      that the secret is retrieved from SPIKE Nexus and populated to the CSI
+      secrets store volume during the `ContainerCreation` phase. Therefore, pods
+      are blocked from starting until the secrets are read from SPIKE and
+      written to the volume.
+    </issue>
+    <issue>
+      shall we implement rate limiting; or should that be out of scope
+      (i.e. to be implemented by the user.
+    </issue>
+    <issue>
+      to docs: the backing store is considered untrusted and it stores
+      encrypted information
+      todo: if it's "really" untrusted then maybe it's better to encrypt everything
+      (including metadata) -- check how other secrets managers does this.
+    </issue>
+    <issue>
+      more fine grained policy management
+
+      1. an explicit deny will override allows
+      2. have allowed/disallowed/required parameters
+      3. etc.
+
+      # This section grants all access on "secret/*". further restrictions can be
+      # applied to this broad policy, as shown below.
+      path "secret/*" {
+      capabilities = ["create", "read", "update", "patch", "delete", "list", "scan"]
+      }
+
+      # Even though we allowed secret/*, this line explicitly denies
+      # secret/super-secret. this takes precedence.
+      path "secret/super-secret" {
+      capabilities = ["deny"]
+      }
+
+      # Policies can also specify allowed, disallowed, and required parameters. here
+      # the key "secret/restricted" can only contain "foo" (any value) and "bar" (one
+      # of "zip" or "zap").
+      path "secret/restricted" {
+      capabilities = ["create"]
+      allowed_parameters = {
+      "foo" = []
+      "bar" = ["zip", "zap"]
+      }
+
+      but also, instead of going deep down into the policy rabbit hole, maybe
+      it's better to rely on well-established policy engines like OPA.
+
+      A rego-based evaluation will give allow/deny decisions, which SPIKE Nexus
+      can  then honor.
+
+      Think about pros/cons of each approach. -- SPIKE can have a good-enough
+      default policy engine, and for more sophisticated functionality we can
+      leverage OPA.
+    </issue>
+    <issue>
+      If nexus has not started SPIKE Pilot should give a more informative
+      error message (i.e. Nexus is not ready, or not initialized, or
+      unreachable, please check yadda yadda yadda)
+    </issue>
+    <issue>
+      key rotation
+
+      NIST rotation guidance
+
+      Periodic rotation of the encryption keys is recommended, even in the
+      absence of compromise. Due to the nature of the AES-256-GCM encryption
+      used, keys should be rotated before approximately 232
+      encryptions have been performed, following the guidelines of NIST
+      publication 800-38D.
+
+      SPIKE will automatically rotate the backend encryption key prior to reaching
+      232 encryption operations by default.
+
+      also support manual key rotation
+    </issue>
+    <issue>
+      Do an internal security analysis / threat model for spike.
+    </issue>
+    <issue>
+      TODO in-memory "dev mode" for SPIKE #spike (i.e. in memory mode will not be default)
+      nexus --dev or something similar (maybe an env var)
+    </issue>
+    <issue>
+      Use SPIKE in lieu of encryption as a service (similar to transit secrets)
+    </issue>
+    <issue>
+      dynamic secrets
+    </issue>
+    <issue>
+      document how to do checksum verification to ensure that the binaries
+      you download is authentic.
+    </issue>
+    <issue>
+      docs:
+      Since the storage backend resides outside the barrier, it’s considered
+      untrusted so SPIKE will encrypt the data before it sends them to the
+      storage backend. This mechanism ensures that if a malicious attacker
+      attempts to gain access to the storage backend, the data cannot be
+      compromised since it remains encrypted, until OpenBao decrypts the data.
+      The storage backend provides a durable data persistent layer where data
+      is secured and available across server restarts.
+    </issue>
+    <issue>
+      use case:
+      one time access to an extremely limited subset of secrets
+      (maybe using a one time, or time-bound token)
+      but also consider if SPIKE needs tokens at all; I think we can piggyback
+      most of the authentication to SPIFFE and/or JWT -- having to convert
+      various kinds of tokens into internal secrets store tokens is not that much needed.
+    </issue>
+    <issue>
+      - TODO Telemetry
+      - core system metrics
+      - audit log metrics
+      - authentication metrics
+      - database metrics
+      - policy metrics
+      - secrets metrics
+    </issue>
+    <issue>
+      "token" secret type
+      - will be secure random
+      - will have expiration
+    </issue>
+    <issue>
+      spike dev mode
+    </issue>
+    <issue>
+      document limits and maximums of SPIKE (such as key length, path lenght, policy size etc)
+    </issue>
+    <issue>
+      double encryption when passing secrets around
+      (can be optional for client-nexus interaction; and can be mandatory for
+      tools that transcend trust boundaries (as in a relay / message queue that
+      may be used for secrets federation)
+    </issue>
+    <issue>
+      active/standby HA mode
+    </issue>
+    <issue>
+      document the built-in spiife ids used by the system.
+    </issue>
+    <issue>
+      pattern-based random secret generation
+    </issue>
+    <issue>
+      admin ui
+    </issue>
+    <issue>
+      guidelines about how to backup and restore
+    </issue>
+    <issue>
+      - AWS KMS support for keepers
+      - Azure keyvault support for keepers
+      - GCP kms support for keepers
+      - HSM support for keepers
+      - OCI kms support for keepers
+      - keepers storing their shards in a separate SPIKE deployment
+        (i.e. SPIKE using another SPIKE to restore root token)
+    </issue>
+    <issue>
+      postgresql backend
+    </issue>
+    <issue>
+      audit targets:
+        - file
+        - syslog
+        - socket
+      (if audit targets are enabled then command will not execute unless an
+      audit trail is started)
+    </issue>
+    <issue>
+      OIDC authentication for named admins.
+    </issue>
+    <issue>
+      SPIKE Dynamic secret sidecar injector
+    </issue>
+    <issue>
+      To docs: Why not kubernetes?
+      ps: also inspire a bit from VSecM docs too.
+
+      - Kubernetes is not a secrets management solution. It does have native
+      support for secrets, but that is quite different from a dedicated
+      secrets management solution. Kubernetes secrets are scoped to the cluster
+      only, and many applications will have some services running outside
+      Kubernetes or in other Kubernetes clusters. Having these applications
+      use Kubernetes secrets from outside a Kubernetes environment will be
+      cumbersome and introduce authentication and authorization challenges.
+      Therefore, considering the secret scope as part of the design process
+      is critical.
+      - Kubernetes secrets are static in nature. You can define secrets by using
+      kubectl or the Kubernetes API, but once they are defined, they are stored
+      in etcd and presented to pods only during pod creation. Defining secrets
+      in this manner may create scenarios where secrets get stale, outdated,
+      or expired, requiring additional workflows to update and rotate the
+      secrets, and then re-deploy the application to use the new version, which
+      can add complexity and become quite time-consuming. Ensure consideration
+      is given to all requirements for secret freshness, updates, and rotation
+      as part of your design process.
+      - The secret access management security model is tied to the Kubernetes
+      RBAC model. This model can be challenging for users who are not familiar
+      with Kubernetes. Adopting a platform-agnostic security governance model
+      can enable you to adapt workflows for applications regardless of how and
+      where they are running.
     </issue>
   </runner-up>
   <backlog>
