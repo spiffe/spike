@@ -6,12 +6,13 @@ package persist
 
 import (
 	"context"
+	"github.com/spiffe/spike/app/nexus/internal/state/backend/sqlite"
 	"time"
 
 	"github.com/spiffe/spike/app/nexus/internal/env"
 	"github.com/spiffe/spike/app/nexus/internal/state/backend"
 	"github.com/spiffe/spike/app/nexus/internal/state/backend/memory"
-	"github.com/spiffe/spike/app/nexus/internal/state/backend/sqlite"
+	// "github.com/spiffe/spike/app/nexus/internal/state/backend/sqlite"
 	"github.com/spiffe/spike/internal/config"
 	"github.com/spiffe/spike/internal/log"
 )

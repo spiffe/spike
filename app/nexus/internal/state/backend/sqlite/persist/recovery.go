@@ -10,7 +10,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/spiffe/spike/app/nexus/internal/state/persist"
 
 	"github.com/spiffe/spike/app/nexus/internal/state/backend/sqlite/ddl"
 

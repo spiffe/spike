@@ -8,6 +8,7 @@ import (
 	"context"
 	"github.com/spiffe/spike/app/nexus/internal/env"
 	"github.com/spiffe/spike/internal/log"
+	"github.com/spiffe/spike/pkg/retry"
 	"github.com/spiffe/spike/pkg/store"
 )
 
@@ -29,4 +30,33 @@ func AsyncPersistRecoveryInfo(meta store.KeyRecoveryData) {
 	}()
 }
 
-// TODO: create func ReadRecoveryInfo
+func ReadRecoveryInfo() *store.KeyRecoveryData {
+	be := Backend()
+	if be == nil {
+		return nil
+	}
+
+	retrier := retry.NewExponentialRetrier()
+	typedRetrier := retry.NewTypedRetrier[*store.KeyRecoveryData](retrier)
+
+	ctx, cancel := context.WithTimeout(
+		context.Background(), env.DatabaseOperationTimeout(),
+	)
+	defer cancel()
+
+	cachedRecoveryInfo, err := typedRetrier.RetryWithBackoff(ctx, func() (*store.KeyRecoveryData, error) {
+		return be.LoadKeyRecoveryInfo(ctx)
+	})
+	if err != nil {
+		log.Log().Warn("readRecoveryInfo",
+			"msg", "Failed to load recovery info from cache after retries",
+			"err", err.Error())
+		return nil
+	}
+
+	if cachedRecoveryInfo != nil {
+		return cachedRecoveryInfo
+	}
+
+	return nil
+}

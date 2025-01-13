@@ -9,6 +9,7 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
+	"github.com/spiffe/spike/app/nexus/internal/state/persist"
 	"net/url"
 	"time"
 
@@ -36,6 +37,35 @@ func Tick(
 		// If source is nil, nobody is going to recreate the source,
 		// it's better to log and crash.
 		log.FatalLn("Tick: source is nil. this should not happen.")
+	}
+
+	// TODO: keep a flag under ~/.spike/.nexus.bootstrap.tombstone
+	// If the file exists; then it means that Nexus has successfully
+	// bootstrapped.
+	// (if the tombstone file is not there, then it means that Nexus has not
+	// initialized the backing store.
+
+	// If bootstrapped successfully and there is no backend;
+	// then Nexus has not initialized yet. Try getting starting
+	// material from the keepers.
+	// If you fail to get that info; transition to error
+	// state and wait for manual human intervention.
+
+	// If not bootstrapped, then compute shards and bootstrap.
+
+	//be := persist.Backend()
+	//if be == nil {
+	//	log.Log().Info("tick", "msg", "Backend not found")
+	//	// TODO: check shards from keepers. If all keepers respond
+	//	// with no shards, then keepers have not been initialized.
+	//	//
+	//}
+
+	recoveryInfo := persist.ReadRecoveryInfo()
+	if recoveryInfo != nil {
+		// If SPIKE Nexus
+		log.Log().Info("tick", "msg", "Recovery info found")
+		return
 	}
 
 	// Create the root key and create shards out of the root key.

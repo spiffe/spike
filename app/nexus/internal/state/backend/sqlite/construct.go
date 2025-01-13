@@ -9,6 +9,7 @@ import (
 	"crypto/cipher"
 	"encoding/hex"
 	"fmt"
+
 	"github.com/spiffe/spike/app/nexus/internal/state/backend/sqlite/persist"
 
 	"github.com/spiffe/spike/app/nexus/internal/state/backend"
