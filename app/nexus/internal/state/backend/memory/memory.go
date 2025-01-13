@@ -6,7 +6,8 @@ package memory
 
 import (
 	"context"
-	data2 "github.com/spiffe/spike-sdk-go/api/entity/data"
+
+	"github.com/spiffe/spike-sdk-go/api/entity/data"
 
 	"github.com/spiffe/spike/pkg/store"
 )
@@ -48,18 +49,36 @@ func (s *NoopStore) StoreSecret(
 
 // StorePolicy stores a policy in the no-op store.
 // This implementation is a no-op and always returns nil.
-func (s *NoopStore) StorePolicy(ctx context.Context, policy data2.Policy) error {
+func (s *NoopStore) StorePolicy(_ context.Context, _ data.Policy) error {
 	return nil
 }
 
 // LoadPolicy retrieves a policy from the store by its ID.
 // This implementation always returns nil and nil error.
-func (s *NoopStore) LoadPolicy(ctx context.Context, id string) (*data2.Policy, error) {
+func (s *NoopStore) LoadPolicy(
+	_ context.Context, _ string,
+) (*data.Policy, error) {
 	return nil, nil
 }
 
 // DeletePolicy removes a policy from the no-op store by its ID.
 // This implementation is a no-op and always returns nil.
-func (s *NoopStore) DeletePolicy(ctx context.Context, id string) error {
+func (s *NoopStore) DeletePolicy(_ context.Context, _ string) error {
 	return nil
+}
+
+// StoreKeyRecoveryInfo saves key recovery information to the no-op store.
+// This implementation is a no-op and always returns nil.
+func (s *NoopStore) StoreKeyRecoveryInfo(
+	_ context.Context, _ store.KeyRecoveryData,
+) error {
+	return nil
+}
+
+// LoadKeyRecoveryInfo retrieves key recovery data from the no-op store.
+// This implementation always returns nil for both data and error.
+func (s *NoopStore) LoadKeyRecoveryInfo(
+	_ context.Context,
+) (meta *store.KeyRecoveryData, err error) {
+	return nil, nil
 }

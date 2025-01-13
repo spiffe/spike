@@ -50,14 +50,16 @@ type Backend interface {
 	// Returns an error, if the operation fails.
 	DeletePolicy(ctx context.Context, id string) error
 
-	// StoreKeyRecovery stores the encrypted key recovery data blob.
-	// The data includes the root key and its Shamir shards.
-	StoreKeyRecovery(ctx context.Context, meta store.KeyRecoveryData) error
+	// TODO: implement StoreKeyRecoveryInfo and LoadKeyRecoveryInfo
 
-	// LoadKeyRecovery retrieves the encrypted key recovery data blob.
+	// StoreKeyRecoveryInfo stores the encrypted key recovery data blob.
+	// The data includes the root key and its Shamir shards.
+	StoreKeyRecoveryInfo(ctx context.Context, meta store.KeyRecoveryData) error
+
+	// LoadKeyRecoveryInfo retrieves the encrypted key recovery data blob.
 	// Returns the nonce and encrypted data containing the root key and its
 	// Shamir shards.
-	LoadKeyRecovery(ctx context.Context) (meta store.KeyRecoveryData, err error)
+	LoadKeyRecoveryInfo(ctx context.Context) (meta *store.KeyRecoveryData, err error)
 }
 
 // Config holds configuration for backend initialization

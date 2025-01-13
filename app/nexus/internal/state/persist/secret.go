@@ -44,6 +44,12 @@ func ReadSecret(path string, version int) *store.Secret {
 	)
 	defer cancel()
 
+	// TODO: RetryWithBackoff retries indefinitely; we might want to limit the total duration
+	// of db retry attempts based on sane default and configurable from environment variables.
+
+	// TODO: check all database operations (secrets, policies, metadata) and
+	// ensure that they are retried with exponential backooff.
+
 	cachedSecret, err := typedRetrier.RetryWithBackoff(ctx, func() (*store.Secret, error) {
 		return be.LoadSecret(ctx, path)
 	})
@@ -106,14 +112,41 @@ func AsyncPersistSecret(kv *store.KV, path string) {
 			)
 			defer cancel()
 
+			// TODO: Yes memory is the source of truth; but at least
+			// attempt some exponential retries before giving up.
 			if err := be.StoreSecret(ctx, path, *secret); err != nil {
-				// Log error but continue - memory is source of truth
+				// Log error but continue - memory is the source of truth
 				log.Log().Warn("asyncPersistSecret",
 					"msg", "Failed to cache secret",
 					"path", path,
 					"err", err.Error(),
 				)
 			}
+
+			// TODO: we don't have any retry for policies or for recovery info.
+			// they are equally important.
+
+			// TODO: these async operations can cause race conditions
+			//
+			// 1. process a writes secret
+			// 2. process b marks secret as deleted
+			// 3. in memory we write then delete
+			// 4. but to the backing store it goes as delete then write.
+			// 5. memory: secret deleted; backing store: secret exists.
+			//
+			// to solve it; have a queue of operations (as a go channel)
+			// and do not consume the next operation until the current
+			// one is complete.
+			//
+			// have one channel for each resource:
+			// - secrets
+			// - policies
+			// - key recovery info.
+			//
+			// Or as an alternative; make these async operations sync
+			// and wait for them to complete before reporting success.
+			// this will make the architecture way simpler without needing
+			// to rely on channels.
 		}()
 	}
 }
