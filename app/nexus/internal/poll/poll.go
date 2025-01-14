@@ -9,8 +9,6 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
-	"github.com/spiffe/spike/app/nexus/internal/state/persist"
-	"github.com/spiffe/spike/internal/config"
 	"net/url"
 	"os"
 	"path"
@@ -22,7 +20,9 @@ import (
 
 	"github.com/spiffe/spike/app/nexus/internal/env"
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
+	"github.com/spiffe/spike/app/nexus/internal/state/persist"
 	"github.com/spiffe/spike/internal/auth"
+	"github.com/spiffe/spike/internal/config"
 	"github.com/spiffe/spike/internal/log"
 	"github.com/spiffe/spike/internal/net"
 	"github.com/spiffe/spike/pkg/crypto"
@@ -62,14 +62,6 @@ func Tick(
 
 	log.Log().Info("tick", "msg",
 		"Tombstone file does not exist. Bootstrapping SPIKE Nexus...")
-
-	//be := persist.Backend()
-	//if be == nil {
-	//	log.Log().Info("tick", "msg", "Backend not found")
-	//	// TODO: check shards from keepers. If all keepers respond
-	//	// with no shards, then keepers have not been initialized.
-	//	//
-	//}
 
 	recoveryInfo := persist.ReadRecoveryInfo()
 	if recoveryInfo != nil {
