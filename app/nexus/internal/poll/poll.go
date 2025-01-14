@@ -42,11 +42,19 @@ func Tick(
 		log.FatalLn("Tick: source is nil. this should not happen.")
 	}
 
+	// The tombstone file is a fast path to validate SPIKE Nexus bootstrap
+	// completion. However, it's not the ultimate criterion. If we cannot
+	// find a tombstone file, then we'll query existing keeper instances
+	// for shard information until we either get a shard, or a 404 (shard
+	// does not exist) response from at least one SPIKE Keeper. -- Getting
+	// at least one shard would still mean that SPIKE Nexus has successfully
+	// bootstrapped.
 	tombstone := path.Join(config.SpikeNexusDataFolder(), "bootstrap.tombstone")
 
 	_, err := os.Stat(tombstone)
 
-	if err == nil {
+	nexusAlreadyBootstrapped := err == nil
+	if nexusAlreadyBootstrapped {
 		log.Log().Info("tick",
 			"msg", "Tombstone file exists, SPIKE Nexus is bootstrapped",
 		)
@@ -59,9 +67,25 @@ func Tick(
 		return
 	}
 
-	if !os.IsNotExist(err) {
+	bootstrapStatusCheckFailed := !os.IsNotExist(err)
+	if bootstrapStatusCheckFailed {
 		log.FatalLn("Tick: failed to check tombstone file: " + err.Error())
+
+		// Tombstone check failed; try getting the bootstrap status from
+		// SPIKE Keepers. If at least one SPIKE Keeper provides a shard,
+		// then Nexus has bootstrapped, and we can try recovering the root
+		// key.
+		//
+		// If, otherwise, >1 SPIKE Keepers returns a HTTP 404 (Shard does not
+		// exist) response; then it means the SPIKE Nexus is in an irrecoverable
+		// state. If so, print a message to the log; and stop this ticker.
+
+		// TODO: implement the above logic.
+
+		return
 	}
+
+	// Below: SPIKE Nexus is assumed to not have bootstrapped.
 
 	log.Log().Info("tick", "msg",
 		"Tombstone file does not exist. Bootstrapping SPIKE Nexus...")
