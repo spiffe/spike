@@ -10,7 +10,10 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"github.com/spiffe/spike/app/nexus/internal/state/persist"
+	"github.com/spiffe/spike/internal/config"
 	"net/url"
+	"os"
+	"path"
 	"time"
 
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
@@ -39,19 +42,26 @@ func Tick(
 		log.FatalLn("Tick: source is nil. this should not happen.")
 	}
 
-	// TODO: keep a flag under ~/.spike/.nexus.bootstrap.tombstone
-	// If the file exists; then it means that Nexus has successfully
-	// bootstrapped.
-	// (if the tombstone file is not there, then it means that Nexus has not
-	// initialized the backing store.
+	tombstone := path.Join(config.SpikeNexusDataFolder(), "bootstrap.tombstone")
 
-	// If bootstrapped successfully and there is no backend;
-	// then Nexus has not initialized yet. Try getting starting
-	// material from the keepers.
-	// If you fail to get that info; transition to error
-	// state and wait for manual human intervention.
+	_, err := os.Stat(tombstone)
 
-	// If not bootstrapped, then compute shards and bootstrap.
+	if err == nil {
+		log.Log().Info("tick",
+			"msg", "Tombstone file exists, SPIKE Nexus is bootstrapped",
+		)
+
+		panic("Implement me: Recover root key from SPIKE Keepers.")
+
+		return
+	}
+
+	if !os.IsNotExist(err) {
+		log.FatalLn("Tick: failed to check tombstone file: " + err.Error())
+	}
+
+	log.Log().Info("tick", "msg",
+		"Tombstone file does not exist. Bootstrapping SPIKE Nexus...")
 
 	//be := persist.Backend()
 	//if be == nil {
@@ -171,6 +181,15 @@ func Tick(
 
 				if len(successfulKeepers) == 3 {
 					log.Log().Info("tick", "msg", "All keepers initialized")
+
+					// Create the tombstone file to mark SPIKE Nexus as bootstrapped.
+					err = os.WriteFile(tombstone, []byte("spike.nexus.bootstrapped=true"), 0644)
+					if err != nil {
+						log.FatalLn("Tick: failed to create tombstone file: " + err.Error())
+					}
+
+					log.Log().Info("tick", "msg", "Tombstone file created successfully")
+
 					return
 				}
 			}
