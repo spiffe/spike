@@ -5,34 +5,14 @@
 package poll
 
 import (
-	"context"
-	"encoding/base64"
-	"encoding/hex"
-	"encoding/json"
-	"net/url"
-	"os"
-	"path"
-	"time"
-
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
-	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
-	network "github.com/spiffe/spike-sdk-go/net"
-
-	"github.com/spiffe/spike/app/nexus/internal/env"
-	state "github.com/spiffe/spike/app/nexus/internal/state/base"
-	"github.com/spiffe/spike/app/nexus/internal/state/persist"
-	"github.com/spiffe/spike/internal/auth"
 	"github.com/spiffe/spike/internal/config"
 	"github.com/spiffe/spike/internal/log"
-	"github.com/spiffe/spike/internal/net"
-	"github.com/spiffe/spike/pkg/crypto"
+	"os"
+	"path"
 )
 
-func Tick(
-	ctx context.Context,
-	source *workloadapi.X509Source,
-	ticker *time.Ticker,
-) {
+func Tick(source *workloadapi.X509Source) {
 	// Talk to all SPIKE Keeper endpoints and send their shards and get
 	// acknowledgement that they received the shard.
 
@@ -44,11 +24,13 @@ func Tick(
 
 	// The tombstone file is a fast path to validate SPIKE Nexus bootstrap
 	// completion. However, it's not the ultimate criterion. If we cannot
-	// find a tombstone file, then we'll query existing keeper instances
-	// for shard information until we either get a shard, or a 404 (shard
-	// does not exist) response from at least one SPIKE Keeper. -- Getting
-	// at least one shard would still mean that SPIKE Nexus has successfully
-	// bootstrapped.
+	// find a tombstone file, then we'll query existing SPIKE Keeper instances
+	// for shard information until we get enough shards to reconstruct
+	// the root key.
+	//
+	// If the keepers have crashed too, then a human operator will have to
+	// manually update the Keeper instances using the "break-the-glass"
+	// emergency recovery procedure as outlined in https://spike.ist/
 	tombstone := path.Join(config.SpikeNexusDataFolder(), "bootstrap.tombstone")
 
 	_, err := os.Stat(tombstone)
@@ -59,165 +41,32 @@ func Tick(
 			"msg", "Tombstone file exists, SPIKE Nexus is bootstrapped",
 		)
 
-		panic("Implement me: Recover root key from SPIKE Keepers.")
-		// TODO: iterate through keepers until you get two shards;
-		// once you get two shards, reassemble the root key; recompute
-		// shards, and initialize.
-
-		return
+		recoverUsingKeeperShards(source)
 	}
+
+	// TODO: if you stop nexus, delete the tombstone file, and restart nexus,
+	// it will reset its root key and update the keepers to store the new
+	// root key. This is not an attack vector, because an adversary who can
+	// delete the tombstone file, can also delete the backing store. In either
+	// case, for production systems, the backing store needs to be backed up
+	// and the root key needs to be backed up in a secure place too.
+	// ^ add these to the documentation.
 
 	bootstrapStatusCheckFailed := !os.IsNotExist(err)
 	if bootstrapStatusCheckFailed {
-		log.FatalLn("Tick: failed to check tombstone file: " + err.Error())
+		log.Log().Warn("tick", "msg", "Failed to check tombstone file. Will try keeper recovery", "err", err)
 
-		// Tombstone check failed; try getting the bootstrap status from
-		// SPIKE Keepers. If at least one SPIKE Keeper provides a shard,
-		// then Nexus has bootstrapped, and we can try recovering the root
-		// key.
-		//
-		// If, otherwise, >1 SPIKE Keepers returns a HTTP 404 (Shard does not
-		// exist) response; then it means the SPIKE Nexus is in an irrecoverable
-		// state. If so, print a message to the log; and stop this ticker.
-
-		// TODO: implement the above logic.
-
+		recoverUsingKeeperShards(source)
 		return
 	}
 
-	// Below: SPIKE Nexus is assumed to not have bootstrapped.
+	// TODO: if at least one Keeper returns a shard, then the system is
+	// bootstrapped; do not proceed with a re-bootstrap as it will cause
+	// data loss. Instead stay in  `recoverUsingKeeperShards` loop.
+	// add it here as an additional check.
 
-	log.Log().Info("tick", "msg",
-		"Tombstone file does not exist. Bootstrapping SPIKE Nexus...")
+	// Below, SPIKE Nexus is assumed to not have bootstrapped.
+	// Let's bootstrap it.
 
-	recoveryInfo := persist.ReadRecoveryInfo()
-	if recoveryInfo != nil {
-		// If SPIKE Nexus
-		log.Log().Info("tick", "msg", "Recovery info found")
-		return
-	}
-
-	// Create the root key and create shards out of the root key.
-	rootKey, err := crypto.Aes256Seed()
-	if err != nil {
-		log.FatalLn("Tick: failed to create root key: " + err.Error())
-	}
-	decodedRootKey, err := hex.DecodeString(rootKey)
-	if err != nil {
-		log.FatalLn("Tick: failed to decode root key: " + err.Error())
-	}
-	rootSecret, rootShares := computeShares(decodedRootKey)
-	sanityCheck(rootSecret, rootShares)
-
-	// Initialize the backend store before sending shards to the keepers.
-	// Keepers is our backup system, and they are not critical for system
-	// operations. Initializing early allows SPIKE Nexus to serve before
-	// keepers are hydrated.
-	state.Initialize(rootKey)
-	log.Log().Info("tick", "msg", "Initialized the backing store")
-
-	successfulKeepers := make(map[string]bool)
-
-	for {
-		select {
-		case <-ticker.C:
-			keepers := env.Keepers()
-			if len(keepers) < 3 {
-				log.FatalLn("Tick: not enough keepers")
-			}
-
-			// Ensure to get a success response from ALL keepers eventually.
-			for keeperId, keeperApiRoot := range keepers {
-				u, err := url.JoinPath(
-					keeperApiRoot,
-					string(net.SpikeKeeperUrlContribute),
-				)
-
-				if err != nil {
-					log.Log().Warn(
-						"tick",
-						"msg", "Failed to join path",
-						"url", keeperApiRoot,
-					)
-					continue
-				}
-
-				client, err := network.CreateMtlsClientWithPredicate(
-					source, auth.IsKeeper,
-				)
-
-				if err != nil {
-					log.Log().Warn("tick",
-						"msg", "Failed to create mTLS client",
-						"err", err)
-					continue
-				}
-
-				share := findShare(keeperId, keepers, rootShares)
-
-				contribution, err := share.Value.MarshalBinary()
-				if err != nil {
-					log.Log().Warn("tick",
-						"msg", "Failed to marshal share",
-						"err", err, "keeper_id", keeperId)
-					continue
-				}
-
-				scr := reqres.ShardContributionRequest{
-					KeeperId: keeperId,
-					Shard:    base64.StdEncoding.EncodeToString(contribution),
-				}
-				md, err := json.Marshal(scr)
-				if err != nil {
-					log.Log().Warn("tick",
-						"msg", "Failed to marshal request",
-						"err", err, "keeper_id", keeperId)
-					continue
-				}
-
-				data, err := net.Post(client, u, md)
-				if err != nil {
-					log.Log().Warn("tick", "msg",
-						"Failed to post",
-						"err", err, "keeper_id", keeperId)
-				}
-
-				if len(data) == 0 {
-					log.Log().Info("tick", "msg", "No data")
-					continue
-				}
-
-				var res reqres.ShardContributionResponse
-				err = json.Unmarshal(data, &res)
-				if err != nil {
-					log.Log().Info("tick", "msg",
-						"Failed to unmarshal response", "err", err)
-					continue
-				}
-
-				successfulKeepers[keeperId] = true
-				log.Log().Info("tick", "msg", "Success", "keeper_id", keeperId)
-
-				if len(successfulKeepers) == 3 {
-					log.Log().Info("tick", "msg", "All keepers initialized")
-
-					// Create the tombstone file to mark SPIKE Nexus as bootstrapped.
-					err = os.WriteFile(tombstone, []byte("spike.nexus.bootstrapped=true"), 0644)
-					if err != nil {
-						log.FatalLn("Tick: failed to create tombstone file: " + err.Error())
-					}
-
-					log.Log().Info("tick", "msg", "Tombstone file created successfully")
-
-					return
-				}
-			}
-		case <-ctx.Done():
-			log.Log().Info("tick", "msg", "Context done")
-			return
-		}
-
-		log.Log().Info("tick", "msg", "Waiting for keepers to initialize")
-		time.Sleep(5 * time.Second)
-	}
+	bootstrapBackingStore(source)
 }

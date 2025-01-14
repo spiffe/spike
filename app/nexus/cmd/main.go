@@ -43,7 +43,7 @@ func main() {
 
 	// Waits until SPIKE Nexus fetches adequate trust material from
 	// SPIKE Keepers to compute a root key for the backing store.
-	poll.Tick(ctx, source, ticker)
+	poll.Tick(source)
 	// TODO: Later: for in-memory backing store, we can bypass this poll and
 	// initialize the backing store with some dummy 32byte random data.
 
