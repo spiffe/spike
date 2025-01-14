@@ -52,6 +52,9 @@ func Tick(
 		)
 
 		panic("Implement me: Recover root key from SPIKE Keepers.")
+		// TODO: iterate through keepers until you get two shards;
+		// once you get two shards, reassemble the root key; recompute
+		// shards, and initialize.
 
 		return
 	}
