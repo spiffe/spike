@@ -24,165 +24,189 @@ import (
 	"time"
 )
 
+func shardUrl(keeperApiRoot string) string {
+	u, err := url.JoinPath(keeperApiRoot, string(net.SpikeKeeperUrlShard))
+	if err != nil {
+		log.Log().Warn(
+			"tick", "msg", "Failed to join path", "url", keeperApiRoot,
+		)
+		return ""
+	}
+	return u
+}
+
+func shardResponse(source *workloadapi.X509Source, u string, keeperId string) []byte {
+	shardRequest := reqres.ShardRequest{}
+	md, err := json.Marshal(shardRequest)
+	if err != nil {
+		log.Log().Warn("tick",
+			"msg", "Failed to marshal request",
+			"err", err, "keeper_id", keeperId)
+		return []byte{}
+	}
+
+	client, err := network.CreateMtlsClientWithPredicate(
+		source, auth.IsKeeper,
+	)
+
+	if err != nil {
+		log.Log().Warn("tick",
+			"msg", "Failed to create mTLS client",
+			"err", err)
+		return []byte{}
+	}
+
+	data, err := net.Post(client, u, md)
+	if err != nil {
+		log.Log().Warn("tick", "msg",
+			"Failed to post",
+			"err", err, "keeper_id", keeperId)
+	}
+
+	if len(data) == 0 {
+		log.Log().Info("tick", "msg", "No data")
+		return []byte{}
+	}
+
+	return data
+}
+
+func unmarshalShardResponse(data []byte) *reqres.ShardResponse {
+	var res reqres.ShardResponse
+	err := json.Unmarshal(data, &res)
+	if err != nil {
+		log.Log().Info("tick", "msg",
+			"Failed to unmarshal response", "err", err)
+		return nil
+	}
+	return &res
+}
+
+func rawShards(successfulKeeperShards map[string]string) [][]byte {
+	ss := make([][]byte, 0)
+
+	for keeperId, shard := range successfulKeeperShards {
+		decodedShard, err := base64.StdEncoding.DecodeString(shard)
+		if err != nil {
+			log.Log().Warn("tick",
+				"msg", "Failed to decode shard from base64",
+				"err", err, "keeper_id", keeperId)
+			return [][]byte{{}}
+		}
+		ss = append(ss, decodedShard)
+	}
+
+	return ss
+}
+
+func recoverRootKey(ss [][]byte) []byte {
+	g := group.P256
+	firstShard := ss[0]
+	secondShard := ss[1]
+	firstShare := secretsharing.Share{
+		ID:    g.NewScalar(),
+		Value: g.NewScalar(),
+	}
+	firstShare.ID.SetUint64(1)
+	err := firstShare.Value.UnmarshalBinary(firstShard)
+	if err != nil {
+		log.FatalLn("Failed to unmarshal share: " + err.Error())
+	}
+	secondShare := secretsharing.Share{
+		ID:    g.NewScalar(),
+		Value: g.NewScalar(),
+	}
+	secondShare.ID.SetUint64(2)
+	err = secondShare.Value.UnmarshalBinary(secondShard)
+	if err != nil {
+		log.FatalLn("Failed to unmarshal share: " + err.Error())
+	}
+
+	var shares []secretsharing.Share
+	shares = append(shares, firstShare)
+	shares = append(shares, secondShare)
+
+	reconstructed, err := secretsharing.Recover(1, shares)
+	if err != nil {
+		log.FatalLn("Failed to recover: " + err.Error())
+	}
+
+	// TODO: check for errors.
+
+	if reconstructed == nil {
+		log.FatalLn("Failed to reconstruct the root key")
+		return []byte{}
+	}
+
+	binaryRec, err := reconstructed.MarshalBinary()
+	if err != nil {
+		log.FatalLn("Failed to marshal: " + err.Error())
+		return []byte{}
+	}
+
+	// TODO: check size 32bytes.
+
+	return binaryRec
+}
+
+func iterateKeepersToRecover(
+	source *workloadapi.X509Source,
+	successfulKeeperShards map[string]string,
+) {
+	for keeperId, keeperApiRoot := range env.Keepers() {
+		log.Log().Info("keeper", "id", keeperId, "url", keeperApiRoot)
+
+		u := shardUrl(keeperApiRoot)
+		if u == "" {
+			continue
+		}
+
+		data := shardResponse(source, u, keeperId)
+		if len(data) == 0 {
+			continue
+		}
+
+		res := unmarshalShardResponse(data)
+		if res == nil {
+			continue
+		}
+
+		shard := res.Shard
+		if len(shard) == 0 {
+			log.Log().Info("tick", "msg", "No shard")
+			continue
+		}
+
+		successfulKeeperShards[keeperId] = shard
+		if len(successfulKeeperShards) != 2 {
+			continue
+		}
+
+		// TODO: combine shards to create a root key.
+
+		ss := rawShards(successfulKeeperShards)
+		if len(ss) != 2 {
+			continue
+		}
+
+		binaryRec := recoverRootKey(ss)
+		encoded := hex.EncodeToString(binaryRec)
+		state.Initialize(encoded)
+
+		// System initialized: Exit infinite loop.
+		return
+	}
+}
+
+// recoverUsingKeeperShards iterates through keepers until you get two shards.
+//
+// Any 400 and 5xx response that a SPIKE Keeper gives is likely temporary.
+// We should keep trying until we get a 200 or 404 response.
 func recoverUsingKeeperShards(source *workloadapi.X509Source) {
 	successfulKeeperShards := make(map[string]string)
 
-	// Iterate through keepers until you get two shards.
-	//
-	// Any 400 and 5xx response that a SPIKE Keeper gives is likely
-	// temporary. We should keep trying until we get a 200 or 404
-	// response.
 	for {
-		for keeperId, keeperApiRoot := range env.Keepers() {
-			log.Log().Info("keeper",
-				"id", keeperId,
-				"url", keeperApiRoot,
-			)
-
-			u, err := url.JoinPath(
-				keeperApiRoot,
-				string(net.SpikeKeeperUrlShard),
-			)
-
-			if err != nil {
-				log.Log().Warn(
-					"tick",
-					"msg", "Failed to join path",
-					"url", keeperApiRoot,
-				)
-				continue
-			}
-
-			shardRequest := reqres.ShardRequest{}
-			md, err := json.Marshal(shardRequest)
-			if err != nil {
-				log.Log().Warn("tick",
-					"msg", "Failed to marshal request",
-					"err", err, "keeper_id", keeperId)
-				continue
-			}
-
-			client, err := network.CreateMtlsClientWithPredicate(
-				source, auth.IsKeeper,
-			)
-
-			if err != nil {
-				log.Log().Warn("tick",
-					"msg", "Failed to create mTLS client",
-					"err", err)
-				continue
-			}
-
-			data, err := net.Post(client, u, md)
-			if err != nil {
-				log.Log().Warn("tick", "msg",
-					"Failed to post",
-					"err", err, "keeper_id", keeperId)
-			}
-
-			if len(data) == 0 {
-				log.Log().Info("tick", "msg", "No data")
-				continue
-			}
-
-			var res reqres.ShardResponse
-			err = json.Unmarshal(data, &res)
-			if err != nil {
-				log.Log().Info("tick", "msg",
-					"Failed to unmarshal response", "err", err)
-				continue
-			}
-
-			shard := res.Shard
-
-			if len(shard) == 0 {
-				log.Log().Info("tick", "msg", "No shard")
-				continue
-			}
-
-			successfulKeeperShards[keeperId] = shard
-			shrds := make([][]byte, 0)
-
-			if len(successfulKeeperShards) == 2 {
-				// TODO: combine shards to create a root key.
-
-				fmt.Println("---------------------------------------------")
-				// Print the contents of each shard
-				for keeperId, shard := range successfulKeeperShards {
-					log.Log().Info("shard",
-						"keeper_id", keeperId,
-						"contents", shard,
-					)
-
-					decodedShard, err := base64.StdEncoding.DecodeString(shard)
-					if err != nil {
-						log.Log().Warn("tick",
-							"msg", "Failed to decode shard from base64",
-							"err", err, "keeper_id", keeperId)
-						continue
-					}
-					shrds = append(shrds, decodedShard)
-
-				}
-				fmt.Println("---------------------------------------------")
-
-				decodedShard, err := base64.StdEncoding.DecodeString(shard)
-				if err != nil {
-					log.Log().Warn("tick",
-						"msg", "Failed to decode shard from base64",
-						"err", err, "keeper_id", keeperId)
-					continue
-				}
-
-				fmt.Println("decodedShard", decodedShard)
-
-				fmt.Println("my job is done here.")
-				g := group.P256
-				firstShard := shrds[0]
-				secondShard := shrds[1]
-				firstShare := secretsharing.Share{
-					ID:    g.NewScalar(),
-					Value: g.NewScalar(),
-				}
-				firstShare.ID.SetUint64(1)
-				err = firstShare.Value.UnmarshalBinary(firstShard)
-				if err != nil {
-					log.FatalLn("Failed to unmarshal share: " + err.Error())
-				}
-				secondShare := secretsharing.Share{
-					ID:    g.NewScalar(),
-					Value: g.NewScalar(),
-				}
-				secondShare.ID.SetUint64(2)
-				err = secondShare.Value.UnmarshalBinary(secondShard)
-				if err != nil {
-					log.FatalLn("Failed to unmarshal share: " + err.Error())
-				}
-
-				var shares []secretsharing.Share
-				shares = append(shares, firstShare)
-				shares = append(shares, secondShare)
-
-				reconstructed, err := secretsharing.Recover(1, shares)
-				if err != nil {
-					log.FatalLn("Failed to recover: " + err.Error())
-				}
-
-				// TODO: check for errors.
-				binaryRec, _ := reconstructed.MarshalBinary()
-
-				// TODO: check size 32bytes.
-
-				encoded := hex.EncodeToString(binaryRec)
-				state.Initialize(encoded)
-
-				// TODO: verify that the root key is identical.
-				fmt.Println("initialized state with root key ", encoded)
-
-				return
-			}
-		}
-
+		iterateKeepersToRecover(source, successfulKeeperShards)
 		log.Log().Info("tick", "msg", "Waiting for keepers to respond")
 		time.Sleep(5 * time.Second)
 	}
