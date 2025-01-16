@@ -373,83 +373,80 @@ func sendShards(source *workloadapi.X509Source) {
 	ticker := time.NewTicker(13 * time.Second) // TODO: default to 5mins instead.
 	defer ticker.Stop()
 
-	for {
-		select {
-		case <-ticker.C:
-			log.Log().Info("sendShards", "msg", "Sending shards to keepers")
+	for range ticker.C {
+		log.Log().Info("sendShards", "msg", "Sending shards to keepers")
 
-			keepers := env.Keepers()
-			if len(keepers) < 3 {
-				log.FatalLn("sendShards: not enough keepers")
+		keepers := env.Keepers()
+		if len(keepers) < 3 {
+			log.FatalLn("sendShards: not enough keepers")
+		}
+
+		for keeperId, keeperApiRoot := range keepers {
+			u, err := url.JoinPath(
+				keeperApiRoot, string(net.SpikeKeeperUrlContribute),
+			)
+
+			if err != nil {
+				log.Log().Warn(
+					"sendShards", "msg", "Failed to join path", "url", keeperApiRoot,
+				)
+				continue
 			}
 
-			for keeperId, keeperApiRoot := range keepers {
-				u, err := url.JoinPath(
-					keeperApiRoot, string(net.SpikeKeeperUrlContribute),
-				)
+			client, err := network.CreateMtlsClientWithPredicate(
+				source, auth.IsKeeper,
+			)
 
-				if err != nil {
-					log.Log().Warn(
-						"sendShards", "msg", "Failed to join path", "url", keeperApiRoot,
-					)
-					continue
-				}
+			if err != nil {
+				log.Log().Warn("sendShards",
+					"msg", "Failed to create mTLS client",
+					"err", err)
+				continue
+			}
 
-				client, err := network.CreateMtlsClientWithPredicate(
-					source, auth.IsKeeper,
-				)
+			// TODO: only root key is enough for recovery info; we
+			// can always compute shares. remove other data from the struct.
+			// recoveryInfo := persist.ReadRecoveryInfo()
 
-				if err != nil {
-					log.Log().Warn("sendShards",
-						"msg", "Failed to create mTLS client",
-						"err", err)
-					continue
-				}
-
-				// TODO: only root key is enough for recovery info; we
-				// can always compute shares. remove other data from the struct.
-				// recoveryInfo := persist.ReadRecoveryInfo()
-
-				rootKeyMu.RLock()
-				if rootKey == nil {
-					log.Log().Info("sendShards", "msg", "rootKey is nil; moving on...")
-					rootKeyMu.RUnlock()
-					continue
-				}
-
-				rootSecret, rootShares := computeShares(rootKey)
+			rootKeyMu.RLock()
+			if rootKey == nil {
+				log.Log().Info("sendShards", "msg", "rootKey is nil; moving on...")
 				rootKeyMu.RUnlock()
+				continue
+			}
 
-				sanityCheck(rootSecret, rootShares)
+			rootSecret, rootShares := computeShares(rootKey)
+			rootKeyMu.RUnlock()
 
-				share := findShare(keeperId, keepers, rootShares)
+			sanityCheck(rootSecret, rootShares)
 
-				contribution, err := share.Value.MarshalBinary()
-				if err != nil {
-					log.Log().Warn("sendShards",
-						"msg", "Failed to marshal share",
-						"err", err, "keeper_id", keeperId)
-					continue
-				}
+			share := findShare(keeperId, keepers, rootShares)
 
-				scr := reqres.ShardContributionRequest{
-					KeeperId: keeperId,
-					Shard:    base64.StdEncoding.EncodeToString(contribution),
-				}
-				md, err := json.Marshal(scr)
-				if err != nil {
-					log.Log().Warn("sendShards",
-						"msg", "Failed to marshal request",
-						"err", err, "keeper_id", keeperId)
-					continue
-				}
+			contribution, err := share.Value.MarshalBinary()
+			if err != nil {
+				log.Log().Warn("sendShards",
+					"msg", "Failed to marshal share",
+					"err", err, "keeper_id", keeperId)
+				continue
+			}
 
-				_, err = net.Post(client, u, md)
-				if err != nil {
-					log.Log().Warn("sendShards", "msg",
-						"Failed to post",
-						"err", err, "keeper_id", keeperId)
-				}
+			scr := reqres.ShardContributionRequest{
+				KeeperId: keeperId,
+				Shard:    base64.StdEncoding.EncodeToString(contribution),
+			}
+			md, err := json.Marshal(scr)
+			if err != nil {
+				log.Log().Warn("sendShards",
+					"msg", "Failed to marshal request",
+					"err", err, "keeper_id", keeperId)
+				continue
+			}
+
+			_, err = net.Post(client, u, md)
+			if err != nil {
+				log.Log().Warn("sendShards", "msg",
+					"Failed to post",
+					"err", err, "keeper_id", keeperId)
 			}
 		}
 	}
