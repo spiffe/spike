@@ -97,6 +97,9 @@ func DatabaseConnMaxLifetimeSec() time.Duration {
 	return time.Hour
 }
 
+// TODO: ensure that all os.Getenv'ed env vars are documented in the readme.
+// also ensure that there are no unnecesasry/unused env vars.
+
 // DatabaseOperationTimeout returns the duration to use for database operations.
 // It can be configured using the SPIKE_NEXUS_DB_OPERATION_TIMEOUT environment
 // variable. The value should be a valid Go duration string (e.g., "10s", "1m").

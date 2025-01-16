@@ -2,7 +2,7 @@
 //  \\\\\ Copyright 2024-present SPIKE contributors.
 // \\\\\\\ SPDX-License-Identifier: Apache-2.0
 
-package sqlite
+package persist
 
 import (
 	"fmt"
@@ -11,8 +11,8 @@ import (
 	"github.com/spiffe/spike/app/nexus/internal/state/backend"
 )
 
-// parseOptions parses and validates the provided backend options
-func parseOptions(opts map[backend.DatabaseConfigKey]any) (*Options, error) {
+// ParseOptions parses and validates the provided backend options
+func ParseOptions(opts map[backend.DatabaseConfigKey]any) (*Options, error) {
 	if opts == nil {
 		return DefaultOptions(), nil
 	}

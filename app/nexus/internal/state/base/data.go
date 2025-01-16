@@ -8,14 +8,15 @@ import (
 	"sync"
 
 	"github.com/spiffe/spike/app/nexus/internal/env"
-	"github.com/spiffe/spike/app/nexus/internal/state/entity/data"
 	"github.com/spiffe/spike/pkg/store"
 )
 
-var (
-	adminSigningToken   string
-	adminSigningTokenMu sync.RWMutex
-)
+//var (
+//	adminSigningToken   string
+//	adminSigningTokenMu sync.RWMutex
+//)
+
+// TODO: these tokens and recovery meta data are not used anymore.
 
 var (
 	kv = store.NewKV(store.KVConfig{
@@ -26,7 +27,7 @@ var (
 
 var policies sync.Map
 
-var (
-	adminRecoveryMetadata   data.RecoveryMetadata
-	adminRecoveryMetadataMu sync.RWMutex
-)
+//var (
+//	adminRecoveryMetadata   data.RecoveryMetadata
+//	adminRecoveryMetadataMu sync.RWMutex
+//)

@@ -13,6 +13,8 @@ import (
 
 type AppState string
 
+// TODO: these states have changed and maybe not even used anymore,
+// update the code accordingly.
 const AppStateNotReady AppState = "NOT_READY"
 const AppStateReady AppState = "READY"
 const AppStateRecovering AppState = "RECOVERING"

@@ -17,18 +17,24 @@ const (
 	S3 StoreType = "s3"
 
 	// Sqlite indicates a SQLite database storage backend
+	// This is the default backing store. SPIKE_NEXUS_BACKEND_STORE environment
+	// variable can override it.
 	Sqlite StoreType = "sqlite"
 
 	// Memory indicates an in-memory storage backend
 	Memory StoreType = "memory"
 )
 
+// TODO: add to docs, backing stores are considered untrusted as per the
+// security model of SPIKE; so even if you store it on a public place, you
+// don't lose much; but still, it's important to limit access to them.
+
 // BackendStoreType determines which storage backend type to use based on the
 // SPIKE_NEXUS_BACKEND_STORE environment variable. The value is
 // case-insensitive.
 //
 // Valid values are:
-//   - "file": Uses file-based storage
+//   - "s3": Uses an AWS S3-compatible medium as a backing store.
 //   - "sqlite": Uses SQLite database storage
 //   - "memory": Uses in-memory storage
 //
@@ -45,6 +51,6 @@ func BackendStoreType() StoreType {
 	case string(Memory):
 		return Memory
 	default:
-		return Memory
+		return Sqlite
 	}
 }

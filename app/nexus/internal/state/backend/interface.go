@@ -6,9 +6,9 @@ package backend
 
 import (
 	"context"
-	data2 "github.com/spiffe/spike-sdk-go/api/entity/data"
 
-	"github.com/spiffe/spike/app/nexus/internal/state/entity/data"
+	"github.com/spiffe/spike-sdk-go/api/entity/data"
+
 	"github.com/spiffe/spike/pkg/store"
 )
 
@@ -35,30 +35,31 @@ type Backend interface {
 	StoreSecret(ctx context.Context, path string, secret store.Secret) error
 	// LoadSecret loads a secret from the specified path
 	LoadSecret(ctx context.Context, path string) (*store.Secret, error)
-	// StoreAdminToken stores an admin token
-	StoreAdminToken(ctx context.Context, token string) error
-
-	// LoadAdminSigningToken loads an admin token
-	LoadAdminSigningToken(ctx context.Context) (string, error)
-
-	// StoreAdminRecoveryMetadata stores admin recovery metadata
-	StoreAdminRecoveryMetadata(ctx context.Context, metadata data.RecoveryMetadata) error
-	// LoadAdminRecoveryMetadata loads admin recovery metadata
-	LoadAdminRecoveryMetadata(ctx context.Context) (data.RecoveryMetadata, error)
 
 	// StorePolicy stores a policy object in the backend storage.
-	StorePolicy(ctx context.Context, policy data2.Policy) error
+	StorePolicy(ctx context.Context, policy data.Policy) error
 
 	// LoadPolicy retrieves a policy by its ID from the backend storage.
 	// It returns the policy object and an error, if any.
-	LoadPolicy(ctx context.Context, id string) (*data2.Policy, error)
+	LoadPolicy(ctx context.Context, id string) (*data.Policy, error)
 
-	// DeletePolicy removes a policy object identified by the given ID from
+	// DeletePolicy removes a policy object identified by the given Id from
 	// storage.
 	// ctx is the context for managing cancellations and timeouts.
 	// id is the identifier of the policy to delete.
 	// Returns an error, if the operation fails.
 	DeletePolicy(ctx context.Context, id string) error
+
+	// TODO: implement StoreKeyRecoveryInfo and LoadKeyRecoveryInfo
+
+	// StoreKeyRecoveryInfo stores the encrypted key recovery data blob.
+	// The data includes the root key and its Shamir shards.
+	StoreKeyRecoveryInfo(ctx context.Context, meta store.KeyRecoveryData) error
+
+	// LoadKeyRecoveryInfo retrieves the encrypted key recovery data blob.
+	// Returns the nonce and encrypted data containing the root key and its
+	// Shamir shards.
+	LoadKeyRecoveryInfo(ctx context.Context) (meta *store.KeyRecoveryData, err error)
 }
 
 // Config holds configuration for backend initialization

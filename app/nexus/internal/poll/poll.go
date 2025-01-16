@@ -5,30 +5,14 @@
 package poll
 
 import (
-	"context"
-	"encoding/base64"
-	"encoding/hex"
-	"encoding/json"
-	"net/url"
-	"time"
-
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
-	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
-	network "github.com/spiffe/spike-sdk-go/net"
-
-	"github.com/spiffe/spike/app/nexus/internal/env"
-	state "github.com/spiffe/spike/app/nexus/internal/state/base"
-	"github.com/spiffe/spike/internal/auth"
+	"github.com/spiffe/spike/internal/config"
 	"github.com/spiffe/spike/internal/log"
-	"github.com/spiffe/spike/internal/net"
-	"github.com/spiffe/spike/pkg/crypto"
+	"os"
+	"path"
 )
 
-func Tick(
-	ctx context.Context,
-	source *workloadapi.X509Source,
-	ticker *time.Ticker,
-) {
+func Tick(source *workloadapi.X509Source) {
 	// Talk to all SPIKE Keeper endpoints and send their shards and get
 	// acknowledgement that they received the shard.
 
@@ -38,118 +22,66 @@ func Tick(
 		log.FatalLn("Tick: source is nil. this should not happen.")
 	}
 
-	// Create the root key and create shards out of the root key.
-	rootKey, err := crypto.Aes256Seed()
-	if err != nil {
-		log.FatalLn("Tick: failed to create root key: " + err.Error())
+	// The tombstone file is a fast path to validate SPIKE Nexus bootstrap
+	// completion. However, it's not the ultimate criterion. If we cannot
+	// find a tombstone file, then we'll query existing SPIKE Keeper instances
+	// for shard information until we get enough shards to reconstruct
+	// the root key.
+	//
+	// If the keepers have crashed too, then a human operator will have to
+	// manually update the Keeper instances using the "break-the-glass"
+	// emergency recovery procedure as outlined in https://spike.ist/
+	tombstone := path.Join(config.SpikeNexusDataFolder(), "bootstrap.tombstone")
+
+	// TODO: name should be a const spike.nexus.boostrap.tombstone.
+
+	_, err := os.Stat(tombstone)
+
+	nexusAlreadyBootstrapped := err == nil
+	if nexusAlreadyBootstrapped {
+		log.Log().Info("tick",
+			"msg", "Tombstone file exists, SPIKE Nexus is bootstrapped",
+		)
+
+		recoverUsingKeeperShards(source)
+		return
 	}
-	decodedRootKey, err := hex.DecodeString(rootKey)
-	if err != nil {
-		log.FatalLn("Tick: failed to decode root key: " + err.Error())
+
+	// TODO: if you stop nexus, delete the tombstone file, and restart nexus,
+	// (and no keeper returns a shard and returns 404)
+	// it will reset its root key and update the keepers to store the new
+	// root key. This is not an attack vector, because an adversary who can
+	// delete the tombstone file, can also delete the backing store.
+	/// Plus no sensitive data is exposed; it's just all data is inaccessible
+	//  now because the root key is lost for good. In either
+	// case, for production systems, the backing store needs to be backed up
+	// and the root key needs to be backed up in a secure place too.
+	// ^ add these to the documentation.
+
+	bootstrapStatusCheckFailed := !os.IsNotExist(err)
+	if bootstrapStatusCheckFailed {
+		log.Log().Warn("tick",
+			"msg", "Failed to check tombstone file. Will try keeper recovery",
+			"err", err,
+		)
+
+		recoverUsingKeeperShards(source)
+		return
 	}
-	rootSecret, rootShares := computeShares(decodedRootKey)
-	sanityCheck(rootSecret, rootShares)
 
-	// Initialize the backend store before sending shards to the keepers.
-	// Keepers is our backup system, and they are not critical for system
-	// operations. Initializing early allows SPIKE Nexus to serve before
-	// keepers are hydrated.
-	state.Initialize(rootKey)
-	log.Log().Info("tick", "msg", "Initialized the backing store")
+	// TODO: if at least one Keeper returns a shard, then the system is
+	// bootstrapped; do not proceed with a re-bootstrap as it will cause
+	// data loss. Instead stay in  `recoverUsingKeeperShards` loop.
+	// add it here as an additional check.
 
-	successfulKeepers := make(map[string]bool)
+	// Below, SPIKE Nexus is assumed to not have bootstrapped.
+	// Let's bootstrap it.
 
-	for {
-		select {
-		case <-ticker.C:
-			keepers := env.Keepers()
-			if len(keepers) < 3 {
-				log.FatalLn("Tick: not enough keepers")
-			}
+	// Sync. Wait for this before starting the services.
+	bootstrapBackingStore(source)
 
-			// Ensure to get a success response from ALL keepers eventually.
-			for keeperId, keeperApiRoot := range keepers {
-				u, err := url.JoinPath(
-					keeperApiRoot,
-					string(net.SpikeKeeperUrlContribute),
-				)
-
-				if err != nil {
-					log.Log().Warn(
-						"tick",
-						"msg", "Failed to join path",
-						"url", keeperApiRoot,
-					)
-					continue
-				}
-
-				client, err := network.CreateMtlsClientWithPredicate(
-					source, auth.IsKeeper,
-				)
-
-				if err != nil {
-					log.Log().Warn("tick",
-						"msg", "Failed to create mTLS client",
-						"err", err)
-					continue
-				}
-
-				share := findShare(keeperId, keepers, rootShares)
-
-				contribution, err := share.Value.MarshalBinary()
-				if err != nil {
-					log.Log().Warn("tick",
-						"msg", "Failed to marshal share",
-						"err", err, "keeper_id", keeperId)
-					continue
-				}
-
-				scr := reqres.ShardContributionRequest{
-					KeeperId: keeperId,
-					Shard:    base64.StdEncoding.EncodeToString(contribution),
-				}
-				md, err := json.Marshal(scr)
-				if err != nil {
-					log.Log().Warn("tick",
-						"msg", "Failed to marshal request",
-						"err", err, "keeper_id", keeperId)
-					continue
-				}
-
-				data, err := net.Post(client, u, md)
-				if err != nil {
-					log.Log().Warn("tick", "msg",
-						"Failed to post",
-						"err", err, "keeper_id", keeperId)
-				}
-
-				if len(data) == 0 {
-					log.Log().Info("tick", "msg", "No data")
-					continue
-				}
-
-				var res reqres.ShardContributionResponse
-				err = json.Unmarshal(data, &res)
-				if err != nil {
-					log.Log().Info("tick", "msg",
-						"Failed to unmarshal response", "err", err)
-					continue
-				}
-
-				successfulKeepers[keeperId] = true
-				log.Log().Info("tick", "msg", "Success", "keeper_id", keeperId)
-
-				if len(successfulKeepers) == 3 {
-					log.Log().Info("tick", "msg", "All keepers initialized")
-					return
-				}
-			}
-		case <-ctx.Done():
-			log.Log().Info("tick", "msg", "Context done")
-			return
-		}
-
-		log.Log().Info("tick", "msg", "Waiting for keepers to initialize")
-		time.Sleep(5 * time.Second)
-	}
+	// Async. Poll in the background to periodically sync shards.
+	// TODO: move this out of the function probably, since we'd need it at
+	// every success end of the fork.
+	go sendShards(source)
 }

@@ -46,3 +46,5 @@ func Id() string {
 	}
 	return id
 }
+
+// TODO: maybe move these to spike-sdk-go

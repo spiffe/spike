@@ -10,3 +10,6 @@ cd ./.data || exit
 
 # shellcheck disable=SC2035
 rm -rf *
+
+mkdir -p "$HOME"/.spike/data
+rm -rf "$HOME"/.spike/data/bootstrap.tombstone

@@ -6,9 +6,11 @@
 
 # see: https://spike.ist/#/configuration
 
+# source this file in your ~/.profile for your convenience.
+
 export SPIKE_NEXUS_POLL_INTERVAL="30s"
 export SPIKE_NEXUS_MAX_SECRET_VERSIONS="10"
-export SPIKE_NEXUS_BACKEND_STORE="memory"
+export SPIKE_NEXUS_BACKEND_STORE="sqlite"
 export SPIKE_NEXUS_DB_OPERATION_TIMEOUT="5s"
 export SPIKE_NEXUS_TLS_PORT=":8553"
 export SPIKE_NEXUS_SHA_HASH_LENGTH="32"

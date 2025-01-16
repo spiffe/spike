@@ -2,9 +2,17 @@
 //  \\\\\ Copyright 2024-present SPIKE contributors.
 // \\\\\\\ SPDX-License-Identifier: Apache-2.0
 
-package sqlite
+package ddl
 
-const queryInitialize = `
+const QueryInitialize = `
+CREATE TABLE IF NOT EXISTS key_recovery (
+    id INTEGER PRIMARY KEY CHECK (id = 1),
+    nonce BLOB NOT NULL,
+    encrypted_data BLOB NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
 CREATE TABLE IF NOT EXISTS admin_token (
 	id INTEGER PRIMARY KEY CHECK (id = 1),
 	nonce BLOB NOT NULL,
@@ -49,7 +57,7 @@ CREATE INDEX IF NOT EXISTS idx_secrets_path ON secrets(path);
 CREATE INDEX IF NOT EXISTS idx_secrets_created_time ON secrets(created_time);
 `
 
-const queryUpdateSecretMetadata = `
+const QueryUpdateSecretMetadata = `
 INSERT INTO secret_metadata (path, current_version, created_time, updated_time)
 VALUES (?, ?, ?, ?)
 ON CONFLICT(path) DO UPDATE SET
@@ -57,7 +65,7 @@ ON CONFLICT(path) DO UPDATE SET
 	updated_time = excluded.updated_time
 `
 
-const queryUpsertSecret = `
+const QueryUpsertSecret = `
 INSERT INTO secrets (path, version, nonce, encrypted_data, created_time, deleted_time)
 VALUES (?, ?, ?, ?, ?, ?)
 ON CONFLICT(path, version) DO UPDATE SET
@@ -66,20 +74,20 @@ ON CONFLICT(path, version) DO UPDATE SET
 	deleted_time = excluded.deleted_time
 `
 
-const querySecretMetadata = `
+const QuerySecretMetadata = `
 SELECT current_version, created_time, updated_time 
 FROM secret_metadata 
 WHERE path = ?
 `
 
-const querySecretVersions = `
+const QuerySecretVersions = `
 SELECT version, nonce, encrypted_data, created_time, deleted_time 
 FROM secrets 
 WHERE path = ?
 ORDER BY version
 `
 
-const queryInsertAdminToken = `
+const QueryInsertAdminToken = `
 INSERT INTO admin_token (id, nonce, encrypted_token, updated_at)
 VALUES (1, ?, ?, CURRENT_TIMESTAMP)
 ON CONFLICT(id) DO UPDATE SET
@@ -88,13 +96,13 @@ ON CONFLICT(id) DO UPDATE SET
 	updated_at = excluded.updated_at
 `
 
-const querySelectAdminSigningToken = `
+const QuerySelectAdminSigningToken = `
 SELECT nonce, encrypted_token 
 FROM admin_token 
 WHERE id = 1
 `
 
-const queryUpsertPolicy = `
+const QueryUpsertPolicy = `
 INSERT INTO policies (id, name, spiffe_id_pattern, path_pattern, created_time)
 VALUES (?, ?, ?, ?, ?)
 ON CONFLICT(id) DO UPDATE SET
@@ -103,13 +111,28 @@ ON CONFLICT(id) DO UPDATE SET
     path_pattern = excluded.path_pattern
 `
 
-const queryDeletePolicy = `
+const QueryDeletePolicy = `
 DELETE FROM policies 
 WHERE id = ?
 `
 
-const queryLoadPolicy = `
+const QueryLoadPolicy = `
 SELECT name, spiffe_id_pattern, path_pattern, created_time 
 FROM policies 
 WHERE id = ?
+`
+
+const QueryUpsertKeyRecoveryInfo = `
+INSERT INTO key_recovery (id, nonce, encrypted_data, created_at, updated_at)
+VALUES (1, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+ON CONFLICT(id) DO UPDATE SET
+	nonce = excluded.nonce,
+	encrypted_data = excluded.encrypted_data,
+	updated_at = excluded.updated_at
+`
+
+const QueryLoadKeyRecoveryInfo = `
+SELECT nonce, encrypted_data 
+FROM key_recovery 
+WHERE id = 1
 `

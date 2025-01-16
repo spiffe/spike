@@ -10,6 +10,7 @@ import (
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	"github.com/spiffe/spike-sdk-go/api/errors"
+
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 	"github.com/spiffe/spike/internal/log"
 	"github.com/spiffe/spike/internal/net"
@@ -49,6 +50,8 @@ func RoutePutSecret(
 ) error {
 	const fName = "routePutSecret"
 	log.AuditRequest(fName, r, audit, log.AuditCreate)
+
+	// TODO: possibly SPIKE backups need to be audit logged too?
 
 	requestBody := net.ReadRequestBody(w, r)
 	if requestBody == nil {

@@ -16,6 +16,8 @@ import (
 var ErrNotFound = errors.New("not found")
 var ErrUnauthorized = errors.New("unauthorized")
 
+// TODO: use these errors from the data package of spike-sdk-go instead.
+
 func body(r *http.Response) (bod []byte, err error) {
 	body, err := io.ReadAll(r.Body)
 	if err != nil {

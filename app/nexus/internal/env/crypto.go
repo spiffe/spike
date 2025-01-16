@@ -25,6 +25,8 @@ func Pbkdf2IterationCount() int {
 		return c
 	}
 
+	// TODO: not used.
+
 	// Minimum OWASP recommendation for PBKDF2-SHA256
 	return 600000
 }
@@ -38,6 +40,8 @@ func Pbkdf2IterationCount() int {
 //   - int: The SHA hash length in bytes, default 32 (256 bits)
 func ShaHashLength() int {
 	p := os.Getenv("SPIKE_NEXUS_SHA_HASH_LENGTH")
+
+	// TODO: should be used.
 
 	c, err := strconv.Atoi(p)
 	if err == nil && c > 0 {

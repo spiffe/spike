@@ -9,6 +9,8 @@ import (
 	"path/filepath"
 )
 
+// TODO: document that these need to be updated during a release cut.
+
 const NexusVersion = "0.2.0"
 const PilotVersion = "0.2.0"
 const KeeperVersion = "0.2.0"
@@ -21,7 +23,7 @@ func SpikeNexusDataFolder() string {
 		homeDir = "/tmp"
 	}
 
-	spikeDir := filepath.Join(homeDir, ".spike")
+	spikeDir := filepath.Join(homeDir, ".spike") // TODO: const.
 
 	// Create directory if it doesn't exist
 	// 0700 because we want to restrict access to the directory
@@ -65,3 +67,5 @@ func SpikePilotRootKeyRecoveryFile() string {
 	// The file path and file name are NOT configurable for security reasons.
 	return filepath.Join(folder, ".root-key-recovery.spike")
 }
+
+// TODO: these recovery files are gone now.

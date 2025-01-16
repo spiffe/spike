@@ -147,3 +147,5 @@ func WithNotify(fn NotifyFn) RetrierOption {
 		r.notify = fn
 	}
 }
+
+// TODO: maybe move this to spike-sdk-go too.

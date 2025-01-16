@@ -8,8 +8,6 @@ import (
 	"sync"
 )
 
-var Shards sync.Map
-
 var shard []byte
 var shardMutex sync.RWMutex
 

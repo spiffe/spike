@@ -2,8 +2,12 @@
 //  \\\\\ Copyright 2024-present SPIKE contributors.
 // \\\\\\\ SPDX-License-Identifier: Apache-2.0
 
-package config
+package persist
 
-// TODO: this is not used, but it likely needs to be.
-// maybe use env.ShaHashLenght() instead.
-const SpikeNexusRootKeyBytes int = 32
+import (
+	"sync"
+)
+
+var (
+	backendMu sync.RWMutex // TODO: check where we use this.
+)

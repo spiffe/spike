@@ -14,5 +14,8 @@ func RouteStatus(w http.ResponseWriter, r *http.Request, audit *log.AuditEntry) 
 	// TODO: implement me.
 	// TODO: maybe nexus would want to call me before querying for shards.
 
+	// TODO: both keeper and nexus (and pilot possibly) would need a /ready
+	// and /health endpoint (for later k8s integration)
+
 	return nil
 }

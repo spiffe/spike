@@ -23,6 +23,9 @@
       i.e. ask shards from keepers
     </issue>
     <issue>
+      ADR: keep line length at 80 chars; calculate tabs as 2chars when doing so.
+    </issue>
+    <issue>
       keeper does not need to store multiple shards;
       each keeper should keep its own shard.
 
@@ -66,11 +69,24 @@
       For in-memory store, bypass initialization, shard creation etc.
     </issue>
     <issue>
+      remove symbols when packaging binaries for release.
+    </issue>
+    <issue>
+      we don't use admin token and admin recovery metadata anymore.
+      clean them up from the db and also code.
+    </issue>
+    <issue>
       SPIKE defaults to sqlite backing store
     </issue>
     <issue>
       nexus tracks its keeper-initialization state.
       (time shards created, number of shards etc)
+    </issue>
+    <issue>
+      switch default backing store to SQLite
+
+      "in memory" mode could be enabled with a `--dev` flag,
+      or an environment variable.
     </issue>
     <issue>
       1. Nexus maintaining its initialization state
