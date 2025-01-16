@@ -28,7 +28,7 @@ make start
 # > You can now experiment with SPIKE.
 # >
 # <<
-# > >> To begin, run './spike init' on a separate terminal window.
+# > >> To begin, run './spike' on a separate terminal window.
 # <<
 # >
 # > When you are done with your experiments, you can press 'Ctrl+C'

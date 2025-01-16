@@ -55,6 +55,8 @@ type Secret struct {
 	Metadata Metadata
 }
 
+// TODO: we don't need keyrecoverydata anymore.
+
 // KeyRecoveryData represents the complete set of recovery information
 // for the root key and its Shamir shards.
 type KeyRecoveryData struct {
