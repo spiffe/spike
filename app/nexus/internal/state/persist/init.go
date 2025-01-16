@@ -82,6 +82,7 @@ func InitializeSqliteBackend(rootKey string) backend.Backend {
 	return dbBackend
 }
 
+// TODO: nil check wherever Backend() is called.
 var be backend.Backend
 
 // InitializeBackend creates and returns a backend storage implementation based

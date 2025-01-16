@@ -27,6 +27,8 @@ import (
 func (s *DataStore) StoreKeyRecoveryInfo(
 	ctx context.Context, data store.KeyRecoveryData,
 ) error {
+	fmt.Println("datastore.StoreKeyRecoveryInfo")
+
 	s.mu.Lock()
 	defer s.mu.Unlock()
 

@@ -6,6 +6,7 @@ package memory
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 
@@ -72,6 +73,7 @@ func (s *NoopStore) DeletePolicy(_ context.Context, _ string) error {
 func (s *NoopStore) StoreKeyRecoveryInfo(
 	_ context.Context, _ store.KeyRecoveryData,
 ) error {
+	fmt.Println("NOOOOOOOP STORE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
 	return nil
 }
 

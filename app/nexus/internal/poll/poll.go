@@ -42,12 +42,16 @@ func Tick(source *workloadapi.X509Source) {
 		)
 
 		recoverUsingKeeperShards(source)
+		return
 	}
 
 	// TODO: if you stop nexus, delete the tombstone file, and restart nexus,
+	// (and no keeper returns a shard and returns 404)
 	// it will reset its root key and update the keepers to store the new
 	// root key. This is not an attack vector, because an adversary who can
-	// delete the tombstone file, can also delete the backing store. In either
+	// delete the tombstone file, can also delete the backing store.
+	/// Plus no sensitive data is exposed; it's just all data is inaccessible
+	//  now because the root key is lost for good. In either
 	// case, for production systems, the backing store needs to be backed up
 	// and the root key needs to be backed up in a secure place too.
 	// ^ add these to the documentation.
@@ -69,4 +73,6 @@ func Tick(source *workloadapi.X509Source) {
 	// Let's bootstrap it.
 
 	bootstrapBackingStore(source)
+
+	go sendShards(source)
 }
