@@ -7,14 +7,14 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/spiffe/spike-sdk-go/net"
-	"github.com/spiffe/spike/app/nexus/internal/route/handle"
 	"time"
 
+	"github.com/spiffe/spike-sdk-go/net"
 	"github.com/spiffe/spike-sdk-go/spiffe"
 
 	"github.com/spiffe/spike/app/nexus/internal/env"
 	"github.com/spiffe/spike/app/nexus/internal/poll"
+	"github.com/spiffe/spike/app/nexus/internal/route/handle"
 	"github.com/spiffe/spike/app/nexus/internal/trust"
 	"github.com/spiffe/spike/internal/config"
 	"github.com/spiffe/spike/internal/log"
@@ -36,13 +36,14 @@ func main() {
 
 	trust.Authenticate(spiffeid)
 
-	// TODO: log what's happening at critical points.
-
 	ticker := time.NewTicker(env.PollInterval())
 	defer ticker.Stop()
 
 	// Waits until SPIKE Nexus fetches adequate trust material from
 	// SPIKE Keepers to compute a root key for the backing store.
+
+	// TODO: since this is not polling anymore, `Tick` is not the right name
+	// for it.
 	poll.Tick(source)
 	// TODO: Later: for in-memory backing store, we can bypass this poll and
 	// initialize the backing store with some dummy 32byte random data.

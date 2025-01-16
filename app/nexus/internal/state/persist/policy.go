@@ -6,11 +6,16 @@ package persist
 
 import (
 	"context"
+
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
+
 	"github.com/spiffe/spike/app/nexus/internal/env"
 	"github.com/spiffe/spike/internal/log"
 	"github.com/spiffe/spike/pkg/retry"
 )
+
+// TODO: document public methods including this.
+// But before that make all asnyc persist methods sync.
 
 func AsyncPersistPolicy(policy data.Policy) {
 	be := Backend()

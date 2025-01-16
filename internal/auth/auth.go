@@ -88,6 +88,10 @@ func CanTalkToAnyone(_ string) bool {
 func CanTalkToKeeper(spiffeid string) bool {
 	// Keepers can talk to each other.
 	// Nexus can talk to keeper.
+
+	// TODO: this has changed: Keepers shall not talk to other keepers;
+	// they are isolated state bags.
+
 	return spiffeid == SpikeNexusSpiffeId() || spiffeid == SpikeKeeperSpiffeId()
 }
 

@@ -33,6 +33,8 @@ func Tick(source *workloadapi.X509Source) {
 	// emergency recovery procedure as outlined in https://spike.ist/
 	tombstone := path.Join(config.SpikeNexusDataFolder(), "bootstrap.tombstone")
 
+	// TODO: name should be a const spike.nexus.boostrap.tombstone.
+
 	_, err := os.Stat(tombstone)
 
 	nexusAlreadyBootstrapped := err == nil
@@ -58,7 +60,10 @@ func Tick(source *workloadapi.X509Source) {
 
 	bootstrapStatusCheckFailed := !os.IsNotExist(err)
 	if bootstrapStatusCheckFailed {
-		log.Log().Warn("tick", "msg", "Failed to check tombstone file. Will try keeper recovery", "err", err)
+		log.Log().Warn("tick",
+			"msg", "Failed to check tombstone file. Will try keeper recovery",
+			"err", err,
+		)
 
 		recoverUsingKeeperShards(source)
 		return
@@ -72,7 +77,11 @@ func Tick(source *workloadapi.X509Source) {
 	// Below, SPIKE Nexus is assumed to not have bootstrapped.
 	// Let's bootstrap it.
 
+	// Sync. Wait for this before starting the services.
 	bootstrapBackingStore(source)
 
+	// Async. Poll in the background to periodically sync shards.
+	// TODO: move this out of the function probably, since we'd need it at
+	// every success end of the fork.
 	go sendShards(source)
 }

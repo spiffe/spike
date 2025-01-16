@@ -24,8 +24,8 @@ import (
 // The function expects a JSON request body containing:
 //   - Id: unique identifier of the policy to retrieve
 //
-// On success, it returns the complete policy object. If the policy is not found,
-// it returns a not found error. For other errors, it returns an internal
+// On success, it returns the complete policy object. If the policy is not
+// found it returns a not found error. For other errors, it returns an internal
 // server error.
 //
 // Parameters:

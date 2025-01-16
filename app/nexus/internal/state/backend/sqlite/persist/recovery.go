@@ -31,8 +31,6 @@ func (s *DataStore) StoreKeyRecoveryInfo(
 	// encrypted with the root key anyway. If you encrypt root key with itself,
 	// if you lose rootkey, you cannot get it back.
 
-	fmt.Println("datastore.StoreKeyRecoveryInfo")
-
 	s.mu.Lock()
 	defer s.mu.Unlock()
 

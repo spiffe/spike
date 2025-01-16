@@ -4,4 +4,6 @@
 
 package config
 
-const SpikeNexusAdminTokenBytes int = 32
+// TODO: this is not used, but it likely needs to be.
+// maybe use env.ShaHashLenght() instead.
+const SpikeNexusRootKeyBytes int = 32

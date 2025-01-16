@@ -14,6 +14,7 @@ import (
 // If the environment variable is not set or contains an invalid duration,
 // it returns the default interval of 5 minutes.
 func PollInterval() time.Duration {
+	// TODO: why commented out, and is this even being used?
 	//p := os.Getenv("SPIKE_NEXUS_POLL_INTERVAL")
 	//if p != "" {
 	//	d, err := time.ParseDuration(p)

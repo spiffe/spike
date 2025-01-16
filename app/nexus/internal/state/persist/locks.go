@@ -9,5 +9,5 @@ import (
 )
 
 var (
-	backendMu sync.RWMutex
+	backendMu sync.RWMutex // TODO: check where we use this.
 )

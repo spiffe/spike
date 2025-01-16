@@ -54,3 +54,5 @@ func NewDeterministicReader(seed []byte) *DeterministicReader {
 		pos:  0,
 	}
 }
+
+// TODO: maybe move this reader to spike-sdk-go

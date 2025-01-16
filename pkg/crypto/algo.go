@@ -23,7 +23,9 @@ import (
 // can be decoded back to bytes using hex.DecodeString when needed for encryption.
 func Aes256Seed() (string, error) {
 	// Generate a 256-bit key
-	key := make([]byte, 32)
+	key := make([]byte, 32) // 32 shall come from either an env var, or a constant.
+
+	// TODO: maybe move this to spike-sdk-go as it is a useful function.
 
 	_, err := reader(key)
 	if err != nil {

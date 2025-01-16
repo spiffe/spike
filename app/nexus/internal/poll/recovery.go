@@ -4,12 +4,18 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
-	"fmt"
+	"net/url"
+	"os"
+	"path"
+	"sync"
+	"time"
+
 	"github.com/cloudflare/circl/group"
 	"github.com/cloudflare/circl/secretsharing"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	network "github.com/spiffe/spike-sdk-go/net"
+
 	"github.com/spiffe/spike/app/nexus/internal/env"
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 	"github.com/spiffe/spike/internal/auth"
@@ -17,15 +23,14 @@ import (
 	"github.com/spiffe/spike/internal/log"
 	"github.com/spiffe/spike/internal/net"
 	"github.com/spiffe/spike/pkg/crypto"
-	"net/url"
-	"os"
-	"path"
-	"sync"
-	"time"
 )
 
 var rootKey []byte
 var rootKeyMu sync.RWMutex
+
+// TODO: storing the root key should likely go to some state module.
+
+// TODO: this file alone is mayhem and needs some organization / splitting up.
 
 func shardUrl(keeperApiRoot string) string {
 	u, err := url.JoinPath(keeperApiRoot, string(net.SpikeKeeperUrlShard))
@@ -136,6 +141,8 @@ func recoverRootKey(ss [][]byte) []byte {
 		log.FatalLn("Failed to recover: " + err.Error())
 	}
 
+	// TODO: this has assumption that there are 2 shards. it should not be.
+
 	// TODO: check for errors.
 
 	if reconstructed == nil {
@@ -187,8 +194,6 @@ func iterateKeepersToRecover(
 			continue
 		}
 
-		// TODO: combine shards to create a root key.
-
 		ss := rawShards(successfulKeeperShards)
 		if len(ss) != 2 {
 			continue
@@ -201,7 +206,6 @@ func iterateKeepersToRecover(
 		// TODO: all async persist operations will be sync.
 		// also create an ADR for that.
 
-		fmt.Println(">>>>>>>>>>>>>>>> RECOVERY 0001")
 		rootKeyMu.Lock()
 		rootKey = binaryRec
 		rootKeyMu.Unlock()
@@ -230,11 +234,6 @@ func recoverUsingKeeperShards(source *workloadapi.X509Source) {
 	}
 }
 
-//func recoveryInfoExists() bool {
-//	recoveryInfo := persist.ReadRecoveryInfo()
-//	return recoveryInfo != nil
-//}
-
 // TODO: name misleadiong; we dont' persist.
 func mustPersistRecoveryInfo(rk string) []secretsharing.Share {
 	decodedRootKey, err := hex.DecodeString(rk)
@@ -244,29 +243,13 @@ func mustPersistRecoveryInfo(rk string) []secretsharing.Share {
 	rootSecret, rootShares := computeShares(decodedRootKey)
 	sanityCheck(rootSecret, rootShares)
 
-	//share1, err := rootShares[0].Value.MarshalBinary()
-	//if err != nil {
-	//	log.FatalLn("Tick: failed to marshal share: " + err.Error())
-	//}
-	//share2, err := rootShares[1].Value.MarshalBinary()
-	//if err != nil {
-	//	log.FatalLn("Tick: failed to marshal share: " + err.Error())
-	//}
-
 	// Save recovery information.
-	fmt.Println(">>>>>>>>>>>>>>>> RECOVERY 0002")
 	rootKeyMu.Lock()
 	rootKey = decodedRootKey
 	rootKeyMu.Unlock()
 
+	// TODO: we don't need these methods anymore
 	//persist.AsyncPersistRecoveryInfo(store.KeyRecoveryData{
-	//	RootKey:     decodedRootKey,
-	//	MinShards:   2,
-	//	TotalShards: 3,
-	//	Shards:      [][]byte{share1, share2},
-	//	CreatedTime: time.Time{},
-	//	UpdatedTime: time.Time{},
-	//})
 
 	return rootShares
 }
@@ -275,11 +258,7 @@ func shardContributionResponse(
 	keeperId string, keepers map[string]string, u string,
 	rootShares []secretsharing.Share, source *workloadapi.X509Source,
 ) []byte {
-	fmt.Println("shardContributionResponse: before creating mTLS client")
-	client, err := network.CreateMtlsClientWithPredicate(
-		source, auth.IsKeeper,
-	)
-	fmt.Println("shardContributionResponse: after creating mTLS client")
+	client, err := network.CreateMtlsClientWithPredicate(source, auth.IsKeeper)
 
 	if err != nil {
 		log.Log().Warn("tick",
@@ -310,8 +289,6 @@ func shardContributionResponse(
 		return []byte{}
 	}
 
-	fmt.Println("shardContributionResponse: before post")
-
 	data, err := net.Post(client, u, md)
 	if err != nil {
 		log.Log().Warn("tick", "msg",
@@ -319,14 +296,11 @@ func shardContributionResponse(
 			"err", err, "keeper_id", keeperId)
 	}
 
-	fmt.Println("shardContributionResponse: after post 001")
-
 	if len(data) == 0 {
 		log.Log().Info("tick", "msg", "No data")
 		return []byte{}
 	}
 
-	fmt.Println("shardContributionResponse: after post 002")
 	return data
 }
 
@@ -334,13 +308,8 @@ func iterateKeepersToBootstrap(
 	keepers map[string]string, rootShares []secretsharing.Share,
 	successfulKeepers map[string]bool, source *workloadapi.X509Source,
 ) bool {
-	fmt.Println(">>>> in iterateKeepersToBootstrap")
-
 	for keeperId, keeperApiRoot := range keepers {
-		fmt.Println(">>>> in for: keeperId", keeperId)
-
 		u, err := url.JoinPath(keeperApiRoot, string(net.SpikeKeeperUrlContribute))
-
 		if err != nil {
 			log.Log().Warn(
 				"tick", "msg", "Failed to join path", "url", keeperApiRoot,
@@ -352,21 +321,16 @@ func iterateKeepersToBootstrap(
 			keeperId, keepers, u, rootShares, source,
 		)
 		if len(data) == 0 {
-			fmt.Println(">>>> in if: len(data) == 0")
+			log.Log().Info("tick", "msg", "No data; moving on...")
 			continue
 		}
-
-		fmt.Println(">>>> in if: len(data) > 0")
 
 		var res reqres.ShardContributionResponse
 		err = json.Unmarshal(data, &res)
 		if err != nil {
-			log.Log().Info("tick", "msg",
-				"Failed to unmarshal response", "err", err)
+			log.Log().Info("tick", "msg", "Failed to unmarshal response", "err", err)
 			continue
 		}
-
-		fmt.Println(">>>> in if: unmarshal success")
 
 		successfulKeepers[keeperId] = true
 		log.Log().Info("tick", "msg", "Success", "keeper_id", keeperId)
@@ -406,7 +370,7 @@ func iterateKeepersToBootstrap(
 func sendShards(source *workloadapi.X509Source) {
 	log.Log().Info("sendShards", "msg", "Will send shards to keepers")
 	// TODO: this should be configurable.
-	ticker := time.NewTicker(13 * time.Second)
+	ticker := time.NewTicker(13 * time.Second) // TODO: default to 5mins instead.
 	defer ticker.Stop()
 
 	for {
@@ -448,7 +412,7 @@ func sendShards(source *workloadapi.X509Source) {
 
 				rootKeyMu.RLock()
 				if rootKey == nil {
-					fmt.Println("sendShards: recoveryInfo is nil; moving on...")
+					log.Log().Info("sendShards", "msg", "rootKey is nil; moving on...")
 					rootKeyMu.RUnlock()
 					continue
 				}

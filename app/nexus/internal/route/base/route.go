@@ -5,10 +5,10 @@
 package base
 
 import (
-	"github.com/spiffe/spike/app/nexus/internal/route/secret"
 	"net/http"
 
 	"github.com/spiffe/spike/app/nexus/internal/route/acl/policy"
+	"github.com/spiffe/spike/app/nexus/internal/route/secret"
 	"github.com/spiffe/spike/internal/log"
 	"github.com/spiffe/spike/internal/net"
 )

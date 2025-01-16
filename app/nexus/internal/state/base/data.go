@@ -17,6 +17,8 @@ var (
 	adminSigningTokenMu sync.RWMutex
 )
 
+// TODO: these tokens and recovery meta data are not used anymore.
+
 var (
 	kv = store.NewKV(store.KVConfig{
 		MaxSecretVersions: env.MaxSecretVersions(),

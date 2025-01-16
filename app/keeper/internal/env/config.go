@@ -25,6 +25,9 @@ import (
 func KeeperId() string {
 	p := os.Getenv("SPIKE_KEEPER_ID")
 
+	// TODO: we don't need keeper ids anymore, since keepers are just
+	// data holders now, and they don't have to know about their ids.
+
 	if p == "" {
 		panic("SPIKE_KEEPER_ID has to be configured in the environment")
 	}
@@ -38,7 +41,8 @@ func KeeperId() string {
 //
 // The SPIKE_KEEPER_PEERS value must be a JSON string containing a map where:
 //   - Keys are keeper ID strings
-//   - Values are the corresponding keeper's full URL including protocol and port
+//   - Values are the corresponding keeper's full URL including protocol and
+//     port
 //
 // Example JSON format:
 //
@@ -60,6 +64,9 @@ func Peers() map[string]string {
 	// '"{"1":"https://localhost:8443",
 	//    "2":"https://localhost:8543"
 	//    "3":"https://localhost:8643"}
+
+	// TODO: a keeper does not have to know about is peer(s) anymore
+	// they are just individual (dumb) data holders.
 
 	p := os.Getenv("SPIKE_KEEPER_PEERS")
 
@@ -90,5 +97,7 @@ func Peers() map[string]string {
 // Note: This function depends on KeeperId() and will panic under the same
 // conditions as KeeperId().
 func StateFileName() string {
+	// TODO: a peeker doe snot have to maintain its state anymore.
+
 	return "keeper-" + KeeperId() + ".state"
 }

@@ -51,6 +51,8 @@ func UpdateCache(
 		return errors.New("UpdateCache: got nil source")
 	}
 
+	// TODO: looks like this is not used?
+
 	client, err := net.CreateMtlsClientWithPredicate(
 		source, auth.IsKeeper,
 	)
@@ -101,6 +103,8 @@ func FetchFromCache(source *workloadapi.X509Source) (string, error) {
 	if source == nil {
 		return "", errors.New("FetchFromCache: got nil source")
 	}
+
+	// TODO: not being used too?
 
 	client, err := net.CreateMtlsClientWithPredicate(
 		source, auth.IsKeeper,

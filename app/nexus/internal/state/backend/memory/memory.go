@@ -6,6 +6,7 @@ package memory
 
 import (
 	"context"
+
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 
 	"github.com/spiffe/spike/pkg/store"
@@ -65,6 +66,10 @@ func (s *NoopStore) LoadPolicy(
 func (s *NoopStore) DeletePolicy(_ context.Context, _ string) error {
 	return nil
 }
+
+// TODO: store likely does not need key recovery info as we keep the root
+// key in memory; and without the root key, the recovery info is irrecoverable
+// anyway. So it's more of a chicken-egg situation.
 
 // StoreKeyRecoveryInfo saves key recovery information to the no-op store.
 // This implementation is a no-op and always returns nil.

@@ -19,7 +19,7 @@ import (
 
 var (
 	ErrPolicyNotFound = errors.New("policy not found")
-	ErrPolicyExists   = errors.New("policy already exists")
+	ErrPolicyExists   = errors.New("policy already exists") // TODO: why is this not used?
 	ErrInvalidPolicy  = errors.New("invalid policy")
 )
 
