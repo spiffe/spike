@@ -27,6 +27,10 @@ import (
 func (s *DataStore) StoreKeyRecoveryInfo(
 	ctx context.Context, data store.KeyRecoveryData,
 ) error {
+	// TODO: we don't need key recovery info in the database because it will be
+	// encrypted with the root key anyway. If you encrypt root key with itself,
+	// if you lose rootkey, you cannot get it back.
+
 	fmt.Println("datastore.StoreKeyRecoveryInfo")
 
 	s.mu.Lock()

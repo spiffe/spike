@@ -4,72 +4,63 @@
 
 package persist
 
-import (
-	"context"
-	"fmt"
-	"github.com/spiffe/spike/app/nexus/internal/env"
-	"github.com/spiffe/spike/internal/log"
-	"github.com/spiffe/spike/pkg/retry"
-	"github.com/spiffe/spike/pkg/store"
-)
+//func AsyncPersistRecoveryInfo(meta store.KeyRecoveryData) {
+//	be := Backend()
+//
+//	// TODO: if be == nil, then retry later.
+//
+//	go func() {
+//		ctx, cancel := context.WithTimeout(
+//			context.Background(),
+//			env.DatabaseOperationTimeout(),
+//		)
+//		defer cancel()
+//
+//		fmt.Println("<<<<< BEFORE STORING RECOVERY INFO >>>>>")
+//
+//		if err := be.StoreKeyRecoveryInfo(ctx, meta); err != nil {
+//			log.Log().Warn("asyncPersistRecoveryInfo",
+//				"msg", "Failed to cache recovery info",
+//				"err", err.Error())
+//		}
+//
+//		fmt.Println("<<<<< AFTER STORING RECOVERY INFO >>>>>")
+//	}()
+//}
 
-func AsyncPersistRecoveryInfo(meta store.KeyRecoveryData) {
-	be := Backend()
-
-	// TODO: if be == nil, then retry later.
-
-	go func() {
-		ctx, cancel := context.WithTimeout(
-			context.Background(),
-			env.DatabaseOperationTimeout(),
-		)
-		defer cancel()
-
-		fmt.Println("<<<<< BEFORE STORING RECOVERY INFO >>>>>")
-
-		if err := be.StoreKeyRecoveryInfo(ctx, meta); err != nil {
-			log.Log().Warn("asyncPersistRecoveryInfo",
-				"msg", "Failed to cache recovery info",
-				"err", err.Error())
-		}
-
-		fmt.Println("<<<<< AFTER STORING RECOVERY INFO >>>>>")
-	}()
-}
-
-func ReadRecoveryInfo() *store.KeyRecoveryData {
-	be := Backend()
-	if be == nil {
-		fmt.Println("backend is nil; returning nil")
-		return nil
-	}
-
-	fmt.Println("backend is not nil; returning recovery info")
-
-	retrier := retry.NewExponentialRetrier()
-	typedRetrier := retry.NewTypedRetrier[*store.KeyRecoveryData](retrier)
-
-	ctx, cancel := context.WithTimeout(
-		context.Background(), env.DatabaseOperationTimeout(),
-	)
-	defer cancel()
-
-	cachedRecoveryInfo, err := typedRetrier.RetryWithBackoff(ctx, func() (*store.KeyRecoveryData, error) {
-		return be.LoadKeyRecoveryInfo(ctx)
-	})
-	if err != nil {
-		log.Log().Warn("readRecoveryInfo",
-			"msg", "Failed to load recovery info from cache after retries",
-			"err", err.Error())
-		return nil
-	}
-
-	if cachedRecoveryInfo != nil {
-		fmt.Println("<<<<< RETURNING RECOVERY INFO >>>>>")
-		fmt.Println(cachedRecoveryInfo.RootKey)
-		return cachedRecoveryInfo
-	}
-
-	fmt.Println("<<<<< RETURNING NIL RECOVERY INFO >>>>>")
-	return nil
-}
+//func ReadRecoveryInfo() *store.KeyRecoveryData {
+//	be := Backend()
+//	if be == nil {
+//		fmt.Println("backend is nil; returning nil")
+//		return nil
+//	}
+//
+//	fmt.Println("backend is not nil; returning recovery info")
+//
+//	retrier := retry.NewExponentialRetrier()
+//	typedRetrier := retry.NewTypedRetrier[*store.KeyRecoveryData](retrier)
+//
+//	ctx, cancel := context.WithTimeout(
+//		context.Background(), env.DatabaseOperationTimeout(),
+//	)
+//	defer cancel()
+//
+//	cachedRecoveryInfo, err := typedRetrier.RetryWithBackoff(ctx, func() (*store.KeyRecoveryData, error) {
+//		return be.LoadKeyRecoveryInfo(ctx)
+//	})
+//	if err != nil {
+//		log.Log().Warn("readRecoveryInfo",
+//			"msg", "Failed to load recovery info from cache after retries",
+//			"err", err.Error())
+//		return nil
+//	}
+//
+//	if cachedRecoveryInfo != nil {
+//		fmt.Println("<<<<< RETURNING RECOVERY INFO >>>>>")
+//		fmt.Println(cachedRecoveryInfo.RootKey)
+//		return cachedRecoveryInfo
+//	}
+//
+//	fmt.Println("<<<<< RETURNING NIL RECOVERY INFO >>>>>")
+//	return nil
+//}

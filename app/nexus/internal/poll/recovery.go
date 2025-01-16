@@ -12,18 +12,20 @@ import (
 	network "github.com/spiffe/spike-sdk-go/net"
 	"github.com/spiffe/spike/app/nexus/internal/env"
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
-	"github.com/spiffe/spike/app/nexus/internal/state/persist"
 	"github.com/spiffe/spike/internal/auth"
 	"github.com/spiffe/spike/internal/config"
 	"github.com/spiffe/spike/internal/log"
 	"github.com/spiffe/spike/internal/net"
 	"github.com/spiffe/spike/pkg/crypto"
-	"github.com/spiffe/spike/pkg/store"
 	"net/url"
 	"os"
 	"path"
+	"sync"
 	"time"
 )
+
+var rootKey []byte
+var rootKeyMu sync.RWMutex
 
 func shardUrl(keeperApiRoot string) string {
 	u, err := url.JoinPath(keeperApiRoot, string(net.SpikeKeeperUrlShard))
@@ -200,14 +202,9 @@ func iterateKeepersToRecover(
 		// also create an ADR for that.
 
 		fmt.Println(">>>>>>>>>>>>>>>> RECOVERY 0001")
-		persist.AsyncPersistRecoveryInfo(store.KeyRecoveryData{
-			RootKey:     binaryRec,
-			MinShards:   2,
-			TotalShards: 3,
-			Shards:      [][]byte{ss[0], ss[1]},
-			CreatedTime: time.Time{},
-			UpdatedTime: time.Time{},
-		})
+		rootKeyMu.Lock()
+		rootKey = binaryRec
+		rootKeyMu.Unlock()
 
 		// System initialized: Exit infinite loop.
 		return true
@@ -233,38 +230,43 @@ func recoverUsingKeeperShards(source *workloadapi.X509Source) {
 	}
 }
 
-func recoveryInfoExists() bool {
-	recoveryInfo := persist.ReadRecoveryInfo()
-	return recoveryInfo != nil
-}
+//func recoveryInfoExists() bool {
+//	recoveryInfo := persist.ReadRecoveryInfo()
+//	return recoveryInfo != nil
+//}
 
-func mustPersistRecoveryInfo(rootKey string) []secretsharing.Share {
-	decodedRootKey, err := hex.DecodeString(rootKey)
+// TODO: name misleadiong; we dont' persist.
+func mustPersistRecoveryInfo(rk string) []secretsharing.Share {
+	decodedRootKey, err := hex.DecodeString(rk)
 	if err != nil {
 		log.FatalLn("Tick: failed to decode root key: " + err.Error())
 	}
 	rootSecret, rootShares := computeShares(decodedRootKey)
 	sanityCheck(rootSecret, rootShares)
 
-	share1, err := rootShares[0].Value.MarshalBinary()
-	if err != nil {
-		log.FatalLn("Tick: failed to marshal share: " + err.Error())
-	}
-	share2, err := rootShares[1].Value.MarshalBinary()
-	if err != nil {
-		log.FatalLn("Tick: failed to marshal share: " + err.Error())
-	}
+	//share1, err := rootShares[0].Value.MarshalBinary()
+	//if err != nil {
+	//	log.FatalLn("Tick: failed to marshal share: " + err.Error())
+	//}
+	//share2, err := rootShares[1].Value.MarshalBinary()
+	//if err != nil {
+	//	log.FatalLn("Tick: failed to marshal share: " + err.Error())
+	//}
 
 	// Save recovery information.
 	fmt.Println(">>>>>>>>>>>>>>>> RECOVERY 0002")
-	persist.AsyncPersistRecoveryInfo(store.KeyRecoveryData{
-		RootKey:     decodedRootKey,
-		MinShards:   2,
-		TotalShards: 3,
-		Shards:      [][]byte{share1, share2},
-		CreatedTime: time.Time{},
-		UpdatedTime: time.Time{},
-	})
+	rootKeyMu.Lock()
+	rootKey = decodedRootKey
+	rootKeyMu.Unlock()
+
+	//persist.AsyncPersistRecoveryInfo(store.KeyRecoveryData{
+	//	RootKey:     decodedRootKey,
+	//	MinShards:   2,
+	//	TotalShards: 3,
+	//	Shards:      [][]byte{share1, share2},
+	//	CreatedTime: time.Time{},
+	//	UpdatedTime: time.Time{},
+	//})
 
 	return rootShares
 }
@@ -442,14 +444,18 @@ func sendShards(source *workloadapi.X509Source) {
 
 				// TODO: only root key is enough for recovery info; we
 				// can always compute shares. remove other data from the struct.
-				recoveryInfo := persist.ReadRecoveryInfo()
+				// recoveryInfo := persist.ReadRecoveryInfo()
 
-				if recoveryInfo == nil {
+				rootKeyMu.RLock()
+				if rootKey == nil {
 					fmt.Println("sendShards: recoveryInfo is nil; moving on...")
+					rootKeyMu.RUnlock()
 					continue
 				}
 
-				rootSecret, rootShares := computeShares(recoveryInfo.RootKey)
+				rootSecret, rootShares := computeShares(rootKey)
+				rootKeyMu.RUnlock()
+
 				sanityCheck(rootSecret, rootShares)
 
 				share := findShare(keeperId, keepers, rootShares)
@@ -489,15 +495,19 @@ func bootstrapBackingStore(source *workloadapi.X509Source) {
 	log.Log().Info("tick", "msg",
 		"Tombstone file does not exist. Bootstrapping SPIKE Nexus...")
 
-	if recoveryInfoExists() {
+	rootKeyMu.RLock()
+
+	if rootKey != nil {
 		log.Log().Info("tick", "msg",
 			"Recovery info found. Backing store already bootstrapped.",
 		)
+		rootKeyMu.RUnlock()
 		return
 	}
+	rootKeyMu.RUnlock()
 
 	// Create the root key and create shards out of the root key.
-	rootKey, err := crypto.Aes256Seed()
+	rk, err := crypto.Aes256Seed()
 	if err != nil {
 		log.FatalLn("Tick: failed to create root key: " + err.Error())
 	}
@@ -506,10 +516,10 @@ func bootstrapBackingStore(source *workloadapi.X509Source) {
 	// SPIKE Keepers are our backup system, and they are not critical for system
 	// operations. Initializing early allows SPIKE Nexus to serve before
 	// keepers are hydrated.
-	state.Initialize(rootKey)
+	state.Initialize(rk)
 	log.Log().Info("tick", "msg", "Initialized the backing store")
 	// Compute Shamir shares out of the root key.
-	rootShares := mustPersistRecoveryInfo(rootKey)
+	rootShares := mustPersistRecoveryInfo(rk)
 
 	successfulKeepers := make(map[string]bool)
 	keepers := env.Keepers()
