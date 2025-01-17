@@ -366,7 +366,7 @@ func iterateKeepersToBootstrap(
 	return false
 }
 
-func SendShardsPeriodically(source *workloadapi.X509Source) {
+func sendShardsPeriodically(source *workloadapi.X509Source) {
 	log.Log().Info("sendShards", "msg", "Will send shards to keepers")
 	// TODO: this should be configurable.
 	ticker := time.NewTicker(13 * time.Second) // TODO: default to 5mins instead.

@@ -16,7 +16,7 @@ import (
 
 const tombstoneFile = "spike.nexus.bootstrap.tombstone"
 
-func Bootstrap(source *workloadapi.X509Source) {
+func bootstrap(source *workloadapi.X509Source) {
 	const fName = "bootstrap"
 
 	if source == nil {
