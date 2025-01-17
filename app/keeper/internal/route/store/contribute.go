@@ -39,10 +39,6 @@ func RouteContribute(
 	shard := request.Shard
 	id := request.KeeperId
 
-	// TODO: maybe sanitize these.
-	// keeper id should be an integer
-	// shard should have a certain size, etc.
-
 	// Decode shard content from Base64 encoding.
 	decodedShard, err := base64.StdEncoding.DecodeString(shard)
 	if err != nil {
@@ -51,8 +47,6 @@ func RouteContribute(
 		return errors.ErrParseFailure
 	}
 
-	// Store decoded shard in the map.
-	//state.Shards.Store(id, decodedShard) // TODO: we don't need this map.
 	state.SetShard(decodedShard)
 	log.Log().Info(fName, "msg", "Shard stored", "id", id)
 

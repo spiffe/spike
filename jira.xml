@@ -18,6 +18,51 @@
       Cut a new SPIKE SDK Release
     </issue>
     <issue>
+      godoc undocumented public functions
+    </issue>
+    <issue>
+      Convert ALL asnyc perist operation to sync operations
+      and also create an ADR about it.
+    </issue>
+    <issue>
+      better isolate these as a function
+
+      rootKeyMu.Lock()
+      rootKey = binaryRec
+      rootKeyMu.Unlock()
+    </issue>
+    <issue>
+      // TODO: if at least one Keeper returns a shard, then the system is
+      // bootstrapped; do not proceed with a re-bootstrap as it will cause
+      // data loss. Instead stay in  `recoverUsingKeeperShards` loop.
+      // add it here as an additional check.
+
+      // Below, SPIKE Nexus is assumed to not have bootstrapped.
+      // Let's bootstrap it.
+
+      // Sync. Wait for this before starting the services.
+      bootstrapBackingStoreWithNewRootKey(source)
+      }
+
+    </issue>
+    <issue>
+      // If the keepers have crashed too, then a human operator will have to
+      // manually update the Keeper instances using the "break-the-glass"
+      // emergency recovery procedure as outlined in https://spike.ist/
+    </issue>
+    <issue>
+      // TODO: if you stop nexus, delete the tombstone file, and restart nexus,
+      // (and no keeper returns a shard and returns 404)
+      // it will reset its root key and update the keepers to store the new
+      // root key. This is not an attack vector, because an adversary who can
+      // delete the tombstone file, can also delete the backing store.
+      /// Plus no sensitive data is exposed; it's just all data is inaccessible
+      //  now because the root key is lost for good. In either
+      // case, for production systems, the backing store needs to be backed up
+      // and the root key needs to be backed up in a secure place too.
+      // ^ add these to the documentation.
+    </issue>
+    <issue>
       add to changelog:
       https://github.com/spiffe/spike/security/dependabot/1
       https://github.com/spiffe/spike/security/dependabot/2
@@ -29,13 +74,92 @@
       https://us06web.zoom.us/j/84996375494?pwd=rmXv0fV2Ej0KVLkJosQlleYaIMrnub.1
       Meeting ID: 849 9637 5494
       Passcode: 965019
+    </issue>
+    <issue>
+      sanitize keeper id and shard
 
+      request := net.HandleRequest[
+      reqres.ShardContributionRequest, reqres.ShardContributionResponse](
+      requestBody, w,
+      reqres.ShardContributionResponse{Err: data.ErrBadInput},
+      )
+      if request == nil {
+      return errors.ErrParseFailure
+      }
+
+      shard := request.Shard
+      id := request.KeeperId
 
     </issue>
   </immediate>
   <next>
     <issue>
+      all components shall have
+      liveness and readiness endpoints
+      (or maybe we can design it once we k8s...ify things.
+    </issue>
+    <issue>
       if db is in memory it should not do all the fancy bootstrapping initialization as it won't need to talk to keepers.
+
+    </issue>
+    <issue>
+      ensure that in-memory store
+      still functions as it did before.
+      try it without launching keepers.
+    </issue>
+    <issue>
+      in development mode, nexus shall act as a single binary:
+      - you can create secrets and policies via `nexus create policy` etc
+
+      that can be done by sharing
+      "github.com/spiffe/spike/app/spike/internal/cmd"
+      between nexus and pilot
+
+      this can even be an optional flag on nexus
+      (i.e. SPIKE_NEXUS_ENABLE_PILOT_CLI)
+      running ./nexus will start a server
+      but running nexus with args will register secrets and policies.
+    </issue>
+    <issue>
+      validate spiffe id and other parameters
+      for this and also other keeper endpoints
+
+      func RouteShard(
+      w http.ResponseWriter, r *http.Request, audit *log.AuditEntry,
+      ) error {
+      const fName = "routeContribute"
+      log.AuditRequest(fName, r, audit, log.AuditCreate)
+
+      requestBody := net.ReadRequestBody(w, r)
+      if requestBody == nil {
+      return errors.ErrReadFailure
+      }
+
+      here is an example that does that:
+      func RoutePutPolicy(
+      w http.ResponseWriter, r *http.Request, audit *log.AuditEntry,
+      ) error {
+      const fName = "routePutPolicy"
+      log.AuditRequest(fName, r, audit, log.AuditCreate)
+
+      requestBody := net.ReadRequestBody(w, r)
+      if requestBody == nil {
+      return errors.ErrParseFailure
+      }
+
+      request := net.HandleRequest[
+      reqres.PolicyCreateRequest, reqres.PolicyCreateResponse](
+      requestBody, w,
+      reqres.PolicyCreateResponse{Err: data.ErrBadInput},
+      )
+      if request == nil {
+      return errors.ErrReadFailure
+      }
+
+      err := guardPutPolicyRequest(*request, w, r)
+      if err != nil {
+      return err
+      }
 
     </issue>
     <issue>

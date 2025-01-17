@@ -1,4 +1,4 @@
-package poll
+package initialization
 
 import (
 	"encoding/base64"
@@ -161,7 +161,7 @@ func recoverRootKey(ss [][]byte) []byte {
 	return binaryRec
 }
 
-func iterateKeepersToRecover(
+func iterateKeepersAndTryRecovery(
 	source *workloadapi.X509Source,
 	successfulKeeperShards map[string]string,
 ) bool {
@@ -203,9 +203,6 @@ func iterateKeepersToRecover(
 		encoded := hex.EncodeToString(binaryRec)
 		state.Initialize(encoded)
 
-		// TODO: all async persist operations will be sync.
-		// also create an ADR for that.
-
 		rootKeyMu.Lock()
 		rootKey = binaryRec
 		rootKeyMu.Unlock()
@@ -217,16 +214,18 @@ func iterateKeepersToRecover(
 	return false
 }
 
-// recoverUsingKeeperShards iterates through keepers until you get two shards.
+// recoverBackingStoreUsingKeeperShards iterates through keepers until you get two shards.
 //
 // Any 400 and 5xx response that a SPIKE Keeper gives is likely temporary.
 // We should keep trying until we get a 200 or 404 response.
-func recoverUsingKeeperShards(source *workloadapi.X509Source) {
+func recoverBackingStoreUsingKeeperShards(source *workloadapi.X509Source) {
 	successfulKeeperShards := make(map[string]string)
 
 	for {
-		exit := iterateKeepersToRecover(source, successfulKeeperShards)
-		if exit {
+		recoverySuccessful := iterateKeepersAndTryRecovery(
+			source, successfulKeeperShards,
+		)
+		if recoverySuccessful {
 			return
 		}
 		log.Log().Info("tick", "msg", "Waiting for keepers to respond")
@@ -238,7 +237,7 @@ func recoverUsingKeeperShards(source *workloadapi.X509Source) {
 func mustPersistRecoveryInfo(rk string) []secretsharing.Share {
 	decodedRootKey, err := hex.DecodeString(rk)
 	if err != nil {
-		log.FatalLn("Tick: failed to decode root key: " + err.Error())
+		log.FatalLn("Bootstrap: failed to decode root key: " + err.Error())
 	}
 	rootSecret, rootShares := computeShares(decodedRootKey)
 	sanityCheck(rootSecret, rootShares)
@@ -339,7 +338,7 @@ func iterateKeepersToBootstrap(
 			log.Log().Info("tick", "msg", "All keepers initialized")
 
 			tombstone := path.Join(
-				config.SpikeNexusDataFolder(), "bootstrap.tombstone",
+				config.SpikeNexusDataFolder(), tombstoneFile,
 			)
 
 			// Create the tombstone file to mark SPIKE Nexus as bootstrapped.
@@ -355,7 +354,7 @@ func iterateKeepersToBootstrap(
 				// able to write to the data volume (where the tombstone file would be)
 				// can be a precursor of other problems that can affect the reliability
 				// of the backing store.
-				log.FatalLn("Tick: failed to create tombstone file: " + err.Error())
+				log.FatalLn("Bootstrap: failed to create tombstone file: " + err.Error())
 			}
 
 			log.Log().Info("tick", "msg", "Tombstone file created successfully")
@@ -367,7 +366,7 @@ func iterateKeepersToBootstrap(
 	return false
 }
 
-func sendShards(source *workloadapi.X509Source) {
+func SendShardsPeriodically(source *workloadapi.X509Source) {
 	log.Log().Info("sendShards", "msg", "Will send shards to keepers")
 	// TODO: this should be configurable.
 	ticker := time.NewTicker(13 * time.Second) // TODO: default to 5mins instead.
@@ -452,7 +451,7 @@ func sendShards(source *workloadapi.X509Source) {
 	}
 }
 
-func bootstrapBackingStore(source *workloadapi.X509Source) {
+func bootstrapBackingStoreWithNewRootKey(source *workloadapi.X509Source) {
 	log.Log().Info("tick", "msg",
 		"Tombstone file does not exist. Bootstrapping SPIKE Nexus...")
 
@@ -470,7 +469,7 @@ func bootstrapBackingStore(source *workloadapi.X509Source) {
 	// Create the root key and create shards out of the root key.
 	rk, err := crypto.Aes256Seed()
 	if err != nil {
-		log.FatalLn("Tick: failed to create root key: " + err.Error())
+		log.FatalLn("Bootstrap: failed to create root key: " + err.Error())
 	}
 
 	// Initialize the backend store before sending shards to the keepers.
@@ -485,7 +484,7 @@ func bootstrapBackingStore(source *workloadapi.X509Source) {
 	successfulKeepers := make(map[string]bool)
 	keepers := env.Keepers()
 	if len(keepers) < 3 {
-		log.FatalLn("Tick: not enough keepers")
+		log.FatalLn("Bootstrap: not enough keepers")
 	}
 
 	for {

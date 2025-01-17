@@ -106,10 +106,10 @@
 //				log.FatalLn("Failed to recover: " + err.Error())
 //			}
 //
-//			// TODO: check for errors.
+//			// O: check for errors.
 //			binaryRec, _ := reconstructed.MarshalBinary()
 //
-//			// TODO: check size 32bytes.
+//			// ODO: check size 32bytes.
 //
 //			encoded := hex.EncodeToString(binaryRec)
 //			state.Initialize(encoded)

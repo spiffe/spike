@@ -7,13 +7,13 @@ package main
 import (
 	"context"
 	"fmt"
-	"time"
-
 	"github.com/spiffe/spike-sdk-go/net"
 	"github.com/spiffe/spike-sdk-go/spiffe"
+	state "github.com/spiffe/spike/app/nexus/internal/state/base"
+	"github.com/spiffe/spike/pkg/crypto"
 
 	"github.com/spiffe/spike/app/nexus/internal/env"
-	"github.com/spiffe/spike/app/nexus/internal/poll"
+	"github.com/spiffe/spike/app/nexus/internal/initialization"
 	"github.com/spiffe/spike/app/nexus/internal/route/handle"
 	"github.com/spiffe/spike/app/nexus/internal/trust"
 	"github.com/spiffe/spike/internal/config"
@@ -36,17 +36,22 @@ func main() {
 
 	trust.Authenticate(spiffeid)
 
-	ticker := time.NewTicker(env.PollInterval())
-	defer ticker.Stop()
+	requireBootstrapping := env.BackendStoreType() == env.Sqlite
+	if requireBootstrapping {
+		initialization.Bootstrap(source)
 
-	// Waits until SPIKE Nexus fetches adequate trust material from
-	// SPIKE Keepers to compute a root key for the backing store.
-
-	// TODO: since this is not polling anymore, `Tick` is not the right name
-	// for it.
-	poll.Tick(source)
-	// TODO: Later: for in-memory backing store, we can bypass this poll and
-	// initialize the backing store with some dummy 32byte random data.
+		// If bootstrapping is successful, start a background process to
+		// periodically sync shards.
+		go initialization.SendShardsPeriodically(source)
+	} else {
+		// For "in-memory" backing stores, we don't need bootstrapping.
+		// Initialize the store with a random seed instead.
+		seed, err := crypto.Aes256Seed()
+		if err != nil {
+			log.Fatal(err.Error())
+		}
+		state.Initialize(seed)
+	}
 
 	log.Log().Info(appName,
 		"msg", fmt.Sprintf("Started service: %s v%s",
