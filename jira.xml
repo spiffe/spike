@@ -13,10 +13,46 @@
       features.
     </target>
   </purpose>
+  <immediate>
+    <issue>
+      Cut a new SPIKE SDK Release
+    </issue>
+    <issue>
+      add to changelog:
+      https://github.com/spiffe/spike/security/dependabot/1
+      https://github.com/spiffe/spike/security/dependabot/2
+    </issue>
+    <issue>
+      add this to website too:
+
+      SPIKE Contributor Sync — Last Friday of Every Month at 8:15am (Pacific time)
+      https://us06web.zoom.us/j/84996375494?pwd=rmXv0fV2Ej0KVLkJosQlleYaIMrnub.1
+      Meeting ID: 849 9637 5494
+      Passcode: 965019
+
+
+    </issue>
+  </immediate>
   <next>
+    <issue>
+      if db is in memory it should not do all the fancy bootstrapping initialization as it won't need to talk to keepers.
+
+    </issue>
     <issue>
       implement keeper crash recovery:
       i.e. ask shards from nexus
+    </issue>
+    <issue>
+      documentation:
+      explain which log levels mean what, and how to enable
+      log verbosity for development.
+      as in:
+      setting SPIKE_SYSTEM_LOG_LEVEL=debug will show all logs.
+    </issue>
+    <issue>
+      along with regular shard sharing; SPIKE nexus shall send shard to a keeper if the keeper notifies nexus
+      as in:
+      > Hey Nexus, I'm alive and I don't have a shard; give me my shard.
     </issue>
     <issue>
       implement nexus crash recovery
@@ -288,6 +324,12 @@
     <issue>
       have sqlite as the default backing store.
       (until we implement the S3 backing store)
+    </issue>
+    <issue>
+      GitHub has now arm64 runners. we can use it for cross-compilation/automation.
+      https://github.blog/changelog/2025-01-16-linux-arm64-hosted-runners-now-available-for-free-in-public-repositories-public-preview/
+      Here's an example:
+      https://github.com/kfox1111/cid2pid/blob/main/.github/workflows/release.yaml
     </issue>
   </low-hanging-fruits>
   <later>
