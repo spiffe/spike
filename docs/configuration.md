@@ -19,7 +19,6 @@ configure the SPIKE components:
 | SPIKE Nexus  | `SPIKE_NEXUS_DB_MAX_OPEN_CONNS`      | The maximum number of open connections to the database.                     | `10`          |
 | SPIKE Nexus  | `SPIKE_NEXUS_DB_MAX_IDLE_CONNS`      | The maximum number of idle connections to the database.                     | `5`           |
 | SPIKE Nexus  | `SPIKE_NEXUS_DB_CONN_MAX_LIFETIME`   | The maximum lifetime of a database connection.                              | `"1h"`        |
-| SPIKE Nexus  | `SPIKE_NEXUS_SHA_HASH_LENGTH`        | The length of the SHA hash for secrets.                                     | `32`          |
 | SPIKE Nexus  | `SPIKE_NEXUS_PBKDF2_ITERATION_COUNT` | The number of iterations for the PBKDF2 key derivation function.            | `600000`      |
 | All          | `SPIKE_SYSTEM_LOG_LEVEL`             | The log level for all SPIKE components (DEBUG, INFO, WARN, ERROR).          | `"DEBUG"`     |
 

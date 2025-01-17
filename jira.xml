@@ -46,6 +46,15 @@
 
     </issue>
     <issue>
+      // ensure that all os.Getenv'ed env vars are documented in the readme.
+      // also ensure that there are no unnecesasry/unused env vars.
+    </issue>
+    <issue>
+      add to docs, backing stores are considered untrusted as per the
+      // security model of SPIKE; so even if you store it on a public place, you
+      // don't lose much; but still, it's important to limit access to them.
+    </issue>
+    <issue>
       // If the keepers have crashed too, then a human operator will have to
       // manually update the Keeper instances using the "break-the-glass"
       // emergency recovery procedure as outlined in https://spike.ist/
