@@ -8,6 +8,7 @@ import (
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 
 	"github.com/spiffe/spike/app/nexus/internal/env"
+	"github.com/spiffe/spike/app/nexus/internal/initialization/recovery"
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 	"github.com/spiffe/spike/internal/log"
 	"github.com/spiffe/spike/pkg/crypto"
@@ -20,7 +21,7 @@ func Initialize(source *workloadapi.X509Source) {
 
 		// If bootstrapping is successful, start a background process to
 		// periodically sync shards.
-		go sendShardsPeriodically(source)
+		go recovery.SendShardsPeriodically(source)
 
 		return
 	}

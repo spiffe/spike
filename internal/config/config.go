@@ -15,6 +15,8 @@ const NexusVersion = "0.2.0"
 const PilotVersion = "0.2.0"
 const KeeperVersion = "0.2.0"
 
+const SpikeNexusTombstoneFile = "spike.nexus.bootstrap.tombstone"
+
 // SpikeNexusDataFolder returns the path to the directory where Nexus stores
 // its encrypted backup for its secrets and other data.
 func SpikeNexusDataFolder() string {

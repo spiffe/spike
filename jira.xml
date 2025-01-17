@@ -46,8 +46,20 @@
 
     </issue>
     <issue>
+      access to root key should be thru a function instead
+
+      var rootKey []byte
+      var rootKeyMu sync.RWMutex
+    </issue>
+    <issue>
+      2 out of 3 -> should be configurable.
+    </issue>
+    <issue>
       // ensure that all os.Getenv'ed env vars are documented in the readme.
       // also ensure that there are no unnecesasry/unused env vars.
+    </issue>
+    <issue>
+      check fName usage everywhere.
     </issue>
     <issue>
       add to docs, backing stores are considered untrusted as per the

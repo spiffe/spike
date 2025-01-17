@@ -10,11 +10,10 @@ import (
 
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 
+	"github.com/spiffe/spike/app/nexus/internal/initialization/recovery"
 	"github.com/spiffe/spike/internal/config"
 	"github.com/spiffe/spike/internal/log"
 )
-
-const tombstoneFile = "spike.nexus.bootstrap.tombstone"
 
 func bootstrap(source *workloadapi.X509Source) {
 	const fName = "bootstrap"
@@ -31,7 +30,9 @@ func bootstrap(source *workloadapi.X509Source) {
 	// for shard information until we get enough shards to reconstruct
 	// the root key. If that,too fails, then a human operator will need to
 	// manually re-key SPIKE Nexus.
-	tombstone := path.Join(config.SpikeNexusDataFolder(), tombstoneFile)
+	tombstone := path.Join(
+		config.SpikeNexusDataFolder(), config.SpikeNexusTombstoneFile,
+	)
 
 	_, err := os.Stat(tombstone)
 
@@ -41,7 +42,7 @@ func bootstrap(source *workloadapi.X509Source) {
 			"msg", "Tombstone file exists, SPIKE Nexus is bootstrapped",
 		)
 
-		recoverBackingStoreUsingKeeperShards(source)
+		recovery.RecoverBackingStoreUsingKeeperShards(source)
 		return
 	}
 
@@ -54,11 +55,11 @@ func bootstrap(source *workloadapi.X509Source) {
 			"err", err,
 		)
 
-		recoverBackingStoreUsingKeeperShards(source)
+		recovery.RecoverBackingStoreUsingKeeperShards(source)
 		return
 	}
 
 	// If the flow reaches here, we assume SPIKE Nexus has not bootstrapped
 	// and it's day zero. Let's bootstrap SPIKE Nexus with a fresh root key:
-	bootstrapBackingStoreWithNewRootKey(source)
+	recovery.BootstrapBackingStoreWithNewRootKey(source)
 }

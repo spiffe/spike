@@ -7,12 +7,12 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/spiffe/spike/app/nexus/internal/initialization"
 
 	"github.com/spiffe/spike-sdk-go/net"
 	"github.com/spiffe/spike-sdk-go/spiffe"
 
 	"github.com/spiffe/spike/app/nexus/internal/env"
+	"github.com/spiffe/spike/app/nexus/internal/initialization"
 	"github.com/spiffe/spike/app/nexus/internal/route/handle"
 	"github.com/spiffe/spike/app/nexus/internal/trust"
 	"github.com/spiffe/spike/internal/config"
