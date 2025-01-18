@@ -13,24 +13,6 @@ import (
 	"github.com/spiffe/spike/internal/log"
 )
 
-func requestBody(r *http.Request) (bod []byte, err error) {
-	body, err := io.ReadAll(r.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	defer func(b io.ReadCloser) {
-		if b == nil {
-			return
-		}
-		err = errors.Join(err, b.Close())
-	}(r.Body)
-
-	return body, err
-}
-
-// TODO: move this above function to a different file.
-
 // ReadRequestBody reads the entire request body from an HTTP request.
 // It returns the body as a byte slice if successful. If there is an error
 // reading the body or if the body is nil, it writes a 400 Bad Request status

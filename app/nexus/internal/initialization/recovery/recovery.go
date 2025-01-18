@@ -63,17 +63,19 @@ func RecoverBackingStoreUsingKeeperShards(source *workloadapi.X509Source) {
 // Parameters:
 //   - source: An X509Source used for creating mTLS connections to keepers
 func SendShardsPeriodically(source *workloadapi.X509Source) {
-	log.Log().Info("sendShards", "msg", "Will send shards to keepers")
-	// TODO: this should be configurable.
-	ticker := time.NewTicker(13 * time.Second) // TODO: default to 5mins instead.
+	const fName = "SendShardsPeriodically"
+
+	log.Log().Info(fName, "msg", "Will send shards to keepers")
+
+	ticker := time.NewTicker(5 * time.Minute)
 	defer ticker.Stop()
 
 	for range ticker.C {
-		log.Log().Info("sendShards", "msg", "Sending shards to keepers")
+		log.Log().Info(fName, "msg", "Sending shards to keepers")
 
 		keepers := env.Keepers()
 		if len(keepers) < 3 {
-			log.FatalLn("sendShards: not enough keepers")
+			log.FatalLn(fName + ": not enough keepers")
 		}
 
 		for keeperId, keeperApiRoot := range keepers {
@@ -83,7 +85,7 @@ func SendShardsPeriodically(source *workloadapi.X509Source) {
 
 			if err != nil {
 				log.Log().Warn(
-					"sendShards", "msg", "Failed to join path", "url", keeperApiRoot,
+					fName, "msg", "Failed to join path", "url", keeperApiRoot,
 				)
 				continue
 			}
@@ -93,7 +95,7 @@ func SendShardsPeriodically(source *workloadapi.X509Source) {
 			)
 
 			if err != nil {
-				log.Log().Warn("sendShards",
+				log.Log().Warn(fName,
 					"msg", "Failed to create mTLS client",
 					"err", err)
 				continue
@@ -101,7 +103,7 @@ func SendShardsPeriodically(source *workloadapi.X509Source) {
 
 			rootKeyMu.RLock()
 			if rootKey == nil {
-				log.Log().Info("sendShards", "msg", "rootKey is nil; moving on...")
+				log.Log().Info(fName, "msg", "rootKey is nil; moving on...")
 				rootKeyMu.RUnlock()
 				continue
 			}
@@ -115,7 +117,7 @@ func SendShardsPeriodically(source *workloadapi.X509Source) {
 
 			contribution, err := share.Value.MarshalBinary()
 			if err != nil {
-				log.Log().Warn("sendShards",
+				log.Log().Warn(fName,
 					"msg", "Failed to marshal share",
 					"err", err, "keeper_id", keeperId)
 				continue
@@ -127,7 +129,7 @@ func SendShardsPeriodically(source *workloadapi.X509Source) {
 			}
 			md, err := json.Marshal(scr)
 			if err != nil {
-				log.Log().Warn("sendShards",
+				log.Log().Warn(fName,
 					"msg", "Failed to marshal request",
 					"err", err, "keeper_id", keeperId)
 				continue
@@ -135,7 +137,7 @@ func SendShardsPeriodically(source *workloadapi.X509Source) {
 
 			_, err = net.Post(client, u, md)
 			if err != nil {
-				log.Log().Warn("sendShards", "msg",
+				log.Log().Warn(fName, "msg",
 					"Failed to post",
 					"err", err, "keeper_id", keeperId)
 			}

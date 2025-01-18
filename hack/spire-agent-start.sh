@@ -32,10 +32,6 @@ if [ -z "$JOIN_TOKEN" ]; then
     exit 1
 fi
 
-# TODO: we should not need workspace; it's better to check for spire-server and spire-agent binaries in $PATH instead of mandating a WORKSPACE variable.
-
-# TODO: ensure that spire.spike.ist resolves before starting these scripts.
-
 # Running spire-agent as super user to read meta information of other users'
 # processes. If you are using the current user to use SPIKE only, then you
 # can run this command without sudo.

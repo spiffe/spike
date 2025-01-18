@@ -46,8 +46,6 @@ func newSecretGetCommand(source *workloadapi.X509Source) *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			api := spike.NewWithSource(source)
 
-			// TODO: sanitize args.
-
 			path := args[0]
 			version, _ := cmd.Flags().GetInt("version")
 

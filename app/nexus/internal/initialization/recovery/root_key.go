@@ -30,9 +30,6 @@ func mustUpdateRecoveryInfo(rk string) []secretsharing.Share {
 	rootKey = decodedRootKey
 	rootKeyMu.Unlock()
 
-	// TODO: we don't need these methods anymore
-	//persist.AsyncPersistRecoveryInfo(store.KeyRecoveryData{
-
 	return rootShares
 }
 
@@ -68,10 +65,6 @@ func recoverRootKey(ss [][]byte) []byte {
 		log.FatalLn("Failed to recover: " + err.Error())
 	}
 
-	// TODO: this has assumption that there are 2 shards. it should not be.
-
-	// TODO: check for errors.
-
 	if reconstructed == nil {
 		log.FatalLn("Failed to reconstruct the root key")
 		return []byte{}
@@ -82,8 +75,6 @@ func recoverRootKey(ss [][]byte) []byte {
 		log.FatalLn("Failed to marshal: " + err.Error())
 		return []byte{}
 	}
-
-	// TODO: check size 32bytes.
 
 	return binaryRec
 }

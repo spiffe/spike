@@ -7,7 +7,7 @@ package auth
 import "os"
 
 func trustRoot() string {
-	tr := os.Getenv("SPIKE_TRUST_ROOT") // TODO: this should be documented and should come from the common env module.
+	tr := os.Getenv("SPIKE_TRUST_ROOT")
 	if tr == "" {
 		return "spike.ist"
 	}

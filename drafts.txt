@@ -3,7 +3,255 @@
 // \\\\\\\ SPDX-License-Identifier: Apache-2.0
 
 
+------
+
+CREATE TABLE IF NOT EXISTS admin_token (
+	id INTEGER PRIMARY KEY CHECK (id = 1),
+	nonce BLOB NOT NULL,
+	encrypted_token BLOB NOT NULL,
+	updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS key_recovery (
+    id INTEGER PRIMARY KEY CHECK (id = 1),
+    nonce BLOB NOT NULL,
+    encrypted_data BLOB NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS admin_recovery_metadata (
+    id INTEGER PRIMARY KEY CHECK (id = 1),
+	encrypted_root_key BLOB NOT NULL,
+    token_hash BLOB NOT NULL,
+    salt BLOB NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+const QueryUpsertKeyRecoveryInfo = `
+INSERT INTO key_recovery (id, nonce, encrypted_data, created_at, updated_at)
+VALUES (1, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+ON CONFLICT(id) DO UPDATE SET
+	nonce = excluded.nonce,
+	encrypted_data = excluded.encrypted_data,
+	updated_at = excluded.updated_at
+`
+
+const QueryLoadKeyRecoveryInfo = `
+SELECT nonce, encrypted_data
+FROM key_recovery
+WHERE id = 1
+
+
+const QueryInsertAdminToken = `
+INSERT INTO admin_token (id, nonce, encrypted_token, updated_at)
+VALUES (1, ?, ?, CURRENT_TIMESTAMP)
+ON CONFLICT(id) DO UPDATE SET
+	nonce = excluded.nonce,
+	encrypted_token = excluded.encrypted_token,
+	updated_at = excluded.updated_at
+`
+
+const QuerySelectAdminSigningToken = `
+SELECT nonce, encrypted_token
+FROM admin_token
+WHERE id = 1
+`
+
+------
+
+// SpikePilotRecoveryFolder returns the path to the directory where Pilot stores
+// recovery material for its root key.
+func SpikePilotRecoveryFolder() string {
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		homeDir = "/tmp"
+	}
+
+	spikeDir := filepath.Join(homeDir, ".spike")
+
+	// Create directory if it doesn't exist
+	// 0700 because we want to restrict access to the directory
+	// but allow the user to create db files in it.
+	err = os.MkdirAll(spikeDir+"/recovery", 0700)
+	if err != nil {
+		panic(err)
+	}
+
+	// The data dir is not configurable for security reasons.
+	return filepath.Join(spikeDir, "/recovery")
+}
+
+// SpikePilotRootKeyRecoveryFile returns the path to the file where Pilot stores
+// the root key recovery file.
+func SpikePilotRootKeyRecoveryFile() string {
+	folder := SpikePilotRecoveryFolder()
+
+	// The file path and file name are NOT configurable for security reasons.
+	return filepath.Join(folder, ".root-key-recovery.spike")
+}
+
+
+
 --------------------------------------------------------------------------------
+// StoreKeyRecoveryInfo stores encrypted key recovery information in the
+// database. It marshals the provided KeyRecoveryData to JSON, encrypts it, and
+// stores it along with the encryption nonce. The data is stored with a fixed
+// Id as defined in the database schema.
+//
+// The method is thread-safe, using a mutex to prevent concurrent access.
+//
+// Returns an error if marshaling, encryption, or database operations fail.
+func (s *DataStore) StoreKeyRecoveryInfo(
+	ctx context.Context, data store.KeyRecoveryData,
+) error {
+	// encrypted with the root key anyway. If you encrypt root key with itself,
+	// if you lose rootkey, you cannot get it back.
+
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	// Marshal the data to JSON
+	jsonData, err := json.Marshal(data)
+	if err != nil {
+		return fmt.Errorf("failed to marshal key recovery data: %w", err)
+	}
+
+	// Encrypt the JSON data
+	encrypted, nonce, err := s.encrypt(jsonData)
+	if err != nil {
+		return fmt.Errorf("failed to encrypt key recovery data: %w", err)
+	}
+
+	// Store in database with id=1 (as per DDL)
+	_, err = s.db.ExecContext(ctx, ddl.QueryUpsertKeyRecoveryInfo,
+		nonce, encrypted)
+	if err != nil {
+		return fmt.Errorf("failed to store key recovery data: %w", err)
+	}
+
+	return nil
+}
+
+// LoadKeyRecoveryInfo retrieves and decrypts key recovery information from the
+// database. If no recovery information exists, it returns (nil, nil).
+//
+// The method is thread-safe, using a read lock to allow concurrent reads.
+//
+// Returns:
+//   - The decrypted KeyRecoveryData if found and successfully decrypted
+//   - nil, nil if no recovery data exists
+//   - An error if database operations, decryption, or JSON unmarshaling fail
+func (s *DataStore) LoadKeyRecoveryInfo(
+	ctx context.Context,
+) (*store.KeyRecoveryData, error) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	var (
+		nonce         []byte
+		encryptedData []byte
+	)
+
+	err := s.db.QueryRowContext(
+		ctx,
+		ddl.QueryLoadKeyRecoveryInfo,
+	).Scan(&nonce, &encryptedData)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, nil
+		}
+		return nil, fmt.Errorf("failed to load key recovery data: %w", err)
+	}
+
+	// Decrypt the data
+	decrypted, err := s.decrypt(encryptedData, nonce)
+	if err != nil {
+		return nil, fmt.Errorf("failed to decrypt key recovery data: %w", err)
+	}
+
+	// Unmarshal into KeyRecoveryData struct
+	var data store.KeyRecoveryData
+	if err := json.Unmarshal(decrypted, &data); err != nil {
+		return nil, fmt.Errorf(
+			"failed to unmarshal key recovery data: %w", err,
+		)
+	}
+
+	return &data, nil
+}
+func UpdateCache(
+	source *workloadapi.X509Source, rootKeyFromState string,
+) error {
+	if source == nil {
+		return errors.New("UpdateCache: got nil source")
+	}
+
+
+	client, err := net.CreateMtlsClientWithPredicate(
+		source, auth.IsKeeper,
+	)
+	if err != nil {
+		return err
+	}
+
+	md, err := json.Marshal(
+		reqres.RootKeyCacheRequest{RootKey: rootKeyFromState},
+	)
+	if err != nil {
+		return errors.New(
+			"UpdateCache: failed to marshal request: " + err.Error(),
+		)
+	}
+
+	_, err = net.Post(client, api.UrlKeeperWrite(), md)
+
+	return err
+}
+
+func FetchFromCache(source *workloadapi.X509Source) (string, error) {
+	if source == nil {
+		return "", errors.New("FetchFromCache: got nil source")
+	}
+
+
+	client, err := net.CreateMtlsClientWithPredicate(
+		source, auth.IsKeeper,
+	)
+	if err != nil {
+		return "", err
+	}
+
+	md, err := json.Marshal(reqres.RootKeyReadRequest{})
+	if err != nil {
+		return "", errors.New(
+			"FetchFromCache: failed to marshal request: " + err.Error(),
+		)
+	}
+
+	data, err := net.Post(client, api.UrlKeeperRead(), md)
+	if err != nil {
+		return "", fmt.Errorf(
+			"FetchFromCache: failed to post request: %w", err,
+		)
+	}
+	var res reqres.RootKeyReadResponse
+
+	if len(data) == 0 {
+		return "", nil
+	}
+
+	err = json.Unmarshal(data, &res)
+	if err != nil {
+		return "", errors.New(
+			"FetchFromCache: failed to unmarshal response: " + err.Error(),
+		)
+	}
+
+	return res.RootKey, err
+}
+
+
+---------------------------------------------------
 
 //
 //select {

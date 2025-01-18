@@ -11,13 +11,6 @@ import (
 	"github.com/spiffe/spike/pkg/store"
 )
 
-//var (
-//	adminSigningToken   string
-//	adminSigningTokenMu sync.RWMutex
-//)
-
-// TODO: these tokens and recovery meta data are not used anymore.
-
 var (
 	kv = store.NewKV(store.KVConfig{
 		MaxSecretVersions: env.MaxSecretVersions(),
@@ -26,8 +19,3 @@ var (
 )
 
 var policies sync.Map
-
-//var (
-//	adminRecoveryMetadata   data.RecoveryMetadata
-//	adminRecoveryMetadataMu sync.RWMutex
-//)

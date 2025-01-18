@@ -44,12 +44,6 @@ func ReadSecret(path string, version int) *store.Secret {
 	)
 	defer cancel()
 
-	// TODO: RetryWithBackoff retries indefinitely; we might want to limit the total duration
-	// of db retry attempts based on sane default and configurable from environment variables.
-
-	// TODO: check all database operations (secrets, policies, metadata) and
-	// ensure that they are retried with exponential backooff.
-
 	cachedSecret, err := typedRetrier.RetryWithBackoff(ctx, func() (*store.Secret, error) {
 		return be.LoadSecret(ctx, path)
 	})
@@ -77,7 +71,7 @@ func ReadSecret(path string, version int) *store.Secret {
 	return nil
 }
 
-// AsyncPersistSecret asynchronously stores a secret from the KV store to the
+// StoreSecret stores a secret from the KV store to the
 // backend cache. It retrieves the secret from the provided path and attempts to
 // cache it in a background goroutine. If the backend is not available or if the
 // store operation fails, it will only log a warning since the KV store remains
@@ -90,63 +84,36 @@ func ReadSecret(path string, version int) *store.Secret {
 // The function does not return any errors since it handles them internally
 // through logging. Cache failures are non-fatal as the KV store is considered
 // the authoritative data source.
-func AsyncPersistSecret(kv *store.KV, path string) {
+func StoreSecret(kv *store.KV, path string) {
+	const fName = "storeSecret"
 	be := Backend()
+
+	if be == nil {
+		return
+	}
 
 	// Get the full secret for caching
 	secret, err := kv.GetRawSecret(path)
-
 	if err != nil {
-		log.Log().Info("asyncPersistSecret", "msg", err.Error())
+		log.Log().Info(fName, "msg", err.Error())
 	}
 
-	if secret != nil {
-		go func() {
-			if be == nil {
-				return // No cache available
-			}
+	if secret == nil {
+		return
+	}
 
-			ctx, cancel := context.WithTimeout(
-				context.Background(),
-				env.DatabaseOperationTimeout(),
-			)
-			defer cancel()
+	ctx, cancel := context.WithTimeout(
+		context.Background(),
+		env.DatabaseOperationTimeout(),
+	)
+	defer cancel()
 
-			// TODO: Yes memory is the source of truth; but at least
-			// attempt some exponential retries before giving up.
-			if err := be.StoreSecret(ctx, path, *secret); err != nil {
-				// Log error but continue - memory is the source of truth
-				log.Log().Warn("asyncPersistSecret",
-					"msg", "Failed to cache secret",
-					"path", path,
-					"err", err.Error(),
-				)
-			}
-
-			// TODO: we don't have any retry for policies or for recovery info.
-			// they are equally important.
-
-			// TODO: these async operations can cause race conditions
-			//
-			// 1. process a writes secret
-			// 2. process b marks secret as deleted
-			// 3. in memory we write then delete
-			// 4. but to the backing store it goes as delete then write.
-			// 5. memory: secret deleted; backing store: secret exists.
-			//
-			// to solve it; have a queue of operations (as a go channel)
-			// and do not consume the next operation until the current
-			// one is complete.
-			//
-			// have one channel for each resource:
-			// - secrets
-			// - policies
-			// - key recovery info.
-			//
-			// Or as an alternative; make these async operations sync
-			// and wait for them to complete before reporting success.
-			// this will make the architecture way simpler without needing
-			// to rely on channels.
-		}()
+	if err := be.StoreSecret(ctx, path, *secret); err != nil {
+		// Log error but continue - memory is the source of truth
+		log.Log().Warn(fName,
+			"msg", "Failed to cache secret",
+			"path", path,
+			"err", err.Error(),
+		)
 	}
 }

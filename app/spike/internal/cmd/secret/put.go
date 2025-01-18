@@ -52,8 +52,6 @@ func newSecretPutCommand(source *workloadapi.X509Source) *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			api := spike.NewWithSource(source)
 
-			// TODO: sanitize args.
-
 			path := args[0]
 			kvPairs := args[1:]
 			values := make(map[string]string)

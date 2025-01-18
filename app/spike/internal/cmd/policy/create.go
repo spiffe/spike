@@ -76,8 +76,6 @@ func newPolicyCreateCommand(source *workloadapi.X509Source) *cobra.Command {
 				perms = append(perms, data.PolicyPermission(perm))
 			}
 
-			// TODO: sanitize perms.
-
 			err := api.CreatePolicy(name, spiffeIddPattern, pathPattern, perms)
 			if err != nil {
 				fmt.Printf("Error: %v\n", err)

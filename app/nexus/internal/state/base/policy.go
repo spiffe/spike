@@ -19,7 +19,7 @@ import (
 
 var (
 	ErrPolicyNotFound = errors.New("policy not found")
-	ErrPolicyExists   = errors.New("policy already exists") // TODO: why is this not used?
+	ErrPolicyExists   = errors.New("policy already exists")
 	ErrInvalidPolicy  = errors.New("invalid policy")
 )
 
@@ -159,9 +159,7 @@ func CreatePolicy(policy data.Policy) (data.Policy, error) {
 	}
 
 	policies.Store(policy.Id, policy)
-
-	// Async cache the policy
-	persist.AsyncPersistPolicy(policy)
+	persist.StorePolicy(policy)
 
 	return policy, nil
 }
@@ -204,9 +202,7 @@ func DeletePolicy(id string) error {
 	}
 
 	policies.Delete(id)
-
-	// Async delete from cache
-	persist.AsyncDeletePolicy(id)
+	persist.DeletePolicy(id)
 
 	return nil
 }

@@ -449,6 +449,51 @@
       This is required for "named admin" feature.
     </issue>
     <issue>
+      this should be configurable:
+      ticker := time.NewTicker(5 * time.Minute)
+    </issue>
+    <issue>
+      write an adr about why those asnyc are snyc from now on:
+
+      // TOD we don't have any retry for policies or for recovery info.
+      // they are equally important.
+
+      // TO: these xsync operations can cause race conditions
+      //
+      // 1. process a writes secret
+      // 2. process b marks secret as deleted
+      // 3. in memory we write then delete
+      // 4. but to the backing store it goes as delete then write.
+      // 5. memory: secret deleted; backing store: secret exists.
+      //
+      // to solve it; have a queue of operations (as a go channel)
+      // and do not consume the next operation until the current
+      // one is complete.
+      //
+      // have one channel for each resource:
+      // - secrets
+      // - policies
+      // - key recovery info.
+      //
+      // Or as an alternative; make these xsync operations sync
+      // and wait for them to complete before reporting success.
+      // this will make the architecture way simpler without needing
+      // to rely on channels.
+    </issue>
+    <issue>
+      This reconstruction assumes there are two shards
+      it should not have that assumption
+
+      var shares []secretsharing.Share
+      shares = append(shares, firstShare)
+      shares = append(shares, secondShare)
+
+      reconstructed, err := secretsharing.Recover(1, shares)
+      if err != nil {
+      log.FatalLn("Failed to recover: " + err.Error())
+      }
+    </issue>
+    <issue>
       One way token flow;
       keeper provides the rootkey to nexus;
       nexus init pushes root key to keeper.
@@ -457,6 +502,92 @@
     <issue>
       If SPIKE is not initialized; `spike` or `spike --help` should display
       a reminder to initialize SPIKE first and exit.
+    </issue>
+    <issue>
+      ensure 32bytes
+
+      binaryRec, err := reconstructed.MarshalBinary()
+      if err != nil {
+      log.FatalLn("Failed to marshal: " + err.Error())
+      return []byte{}
+      }
+
+      // TOD check size 32bytes.
+    </issue>
+    <issue>
+      add docs to all packages (or most of them at least, where it makes sense)
+      like, add a docs.go with package description.
+    </issue>
+    <issue>
+      func sanityCheck(secret group.Scalar, shares []shamir.Share) {
+      t := uint(1) // Need t+1 shares to reconstruct
+      // TOxDO: 1 and 3 shall come from configs.
+      // TOxDO: keeper count shall be validated against 3
+
+      reconstructed, err := shamir.Recover(t, shares[:2])
+      if err != nil {
+      log.FatalLn("sanityCheck: Failed to recover: " + err.Error())
+      }
+      if !secret.IsEqual(reconstructed) {
+      log.FatalLn("sanityCheck: Recovered secret does not match original")
+      }
+      }
+    </issue>
+    <issue>
+      simulate a nexus crash and see if you can still list keys.
+
+      func ListKeys() []string {
+      kvMu.Lock()
+      defer kvMu.Unlock()
+      return kv.List()
+      }
+    </issue>
+    <issue>
+      ErrPolicyExists   = errors.New("policy already exists")
+      ^ this error is never used; check why.
+    </issue>
+    <issue>
+      For all policy, secret, metadata, etc metods (such as func GetSecret(path string, version int) (map[string]string, error) {
+      )... if Nexus is configured to use sqlite db and the db is not initialized exit with a warning instead of storing things
+      to the memory.
+    </issue>
+    <issue>
+      switch storeType {
+      case env.Memory:
+      // TODxO: maybe initializememorybackingstore() too.
+      be =memory.NoopStore{}
+      case env.Sqlite:
+      be = InitializeSqliteBackend(rootKey)
+      default:
+      be =memory.NoopStore{}
+      }
+    </issue>
+    <issue>
+      // TO: document public methods including this.
+      // But before that make all asnyc persist methods sync.
+    </issue>
+    <issue>
+      move this to sdk and use it in the code too.
+
+      type retryHandler[T any] func() (T, error)
+
+      func doRetry[T any](ctx context.Context, handler retryHandler[T]) (T, error) {
+      return retry.NewTypedRetrier[T](
+      retry.NewExponentialRetrier(),
+      ).RetryWithBackoff(ctx, handler)
+      }
+    </issue>
+    <issue>
+      // TDO: RetryWithBackoff retries indefinitely; we might want to limit the total duration
+      // of db retry attempts based on sane default and configurable from environment variables.
+    </issue>
+    <issue>
+      // TDO: check all database operations (secrets, policies, metadata) and
+      // ensure that they are retried with exponential backooff.
+    </issue>
+    <issue>
+      nil check wherever Backend() is called.
+      var be backend.Backend
     </issue>
     <issue>
       The paths that we set in get put ...etc should look like a unix path.
@@ -478,6 +609,104 @@
     </issue>
   </low-hanging-fruits>
   <later>
+    <issue>
+      // TDO: Yes memory is the source of truth; but at least
+      // attempt some exponential retries before giving up.
+      if err := be.StoreSecret(ctx, path, *secret); err != nil {
+      // Log error but continue - memory is the source of truth
+      log.Log().Warn(fName,
+      "msg", "Failed to cache secret",
+      "path", path,
+      "err", err.Error(),
+      )
+      }
+    </issue>
+    <issue>
+      sanitize perms
+
+      err := api.CreatePolicy(name, spiffeIddPattern, pathPattern, perms)
+      if err != nil {
+      fmt.Printf("Error: %v\n", err)
+      return
+      }
+    </issue>
+    <issue>
+      return cobra.Command{
+      Use:   "delete policy-id",
+      Short: "Delete a policy",
+      Args:  cobra.ExactArgs(1),
+      Run: func(cmd *cobra.Command, args []string) {
+      api := spike.NewWithSource(source)
+
+      // TOD: sanitize policy id.
+      // also validate other command line arguments too if it makes sense.
+      // better to stop bad data at the client (but still not trust the
+      // client fully)
+
+      Go through all cobra commands and validate/sanitize what needs to be.
+    </issue>
+    <issue>
+      func trustRoot() string {
+      tr := os.Getenv("SPIKE_TRUST_ROOT") // TODfO: this should be documented and should come from the common env module.
+      if tr == "" {
+      return "spike.ist"
+      }
+      return tr
+      }
+    </issue>
+    <issue>
+      spikeDir := filepath.Join(homeDir, ".spike") // TDO: const.
+    </issue>
+    <issue>
+      var ErrNotFound = errors.New("not found")
+      var ErrUnauthorized = errors.New("unauthorized")
+
+      // TO: use these errors from the data package of spike-sdk-go instead.
+
+      func body(r *http.Response) (bod []byte, err error) {
+      body, err := io.ReadAll(r.Body)
+      if err != nil {
+      return nil, err
+      }
+
+      return body, err
+      }
+    </issue>
+    <issue>
+
+      // TO/DO: document that these need to be updated during a release cut.
+
+      const NexusVersion = "0.2.0"
+      const PilotVersion = "0.2.0"
+      const KeeperVersion = "0.2.0"
+
+      const SpikeNexusTombstoneFile = "spike.nexus.bootstrap.tombstone"
+
+      // SpikeNexusDataFolder returns the path to the directory where Nexus stores
+      // its encrypted backup for its secrets and other data.
+      func SpikeNexusDataFolder() string {
+      homeDir, err := os.UserHomeDir()
+
+    </issue>
+    <issue>
+      # TOO: we should not need workspace; it's better to check for spire-server and spire-agent binaries in $PATH instead of mandating a WORKSPACE variable.
+
+      # TOO: ensure that spire.spike.ist resolves before starting these scripts.
+
+      # Running spire-agent as super user to read meta information of other users'
+      # processes. If you are using the current user to use SPIKE only, then you
+      # can run this command without sudo.
+      if [ "$1" == "--use-sudo" ]; then
+      sudo "$WORKSPACE"/spire/bin/spire-agent run \
+      -config ./config/spire/agent/agent.conf \
+      -joinToken "$JOIN_TOKEN"
+      else
+      "$WORKSPACE"/spire/bin/spire-agent run \
+      -config ./config/spire/agent/agent.conf \
+      -joinToken "$JOIN_TOKEN"
+      fi
+
+    </issue>
     <issue>
       ability to lock nexus programmatically.
       when locked, nexus will deny almost all operations

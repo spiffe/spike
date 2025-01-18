@@ -58,8 +58,6 @@ func newPolicyDeleteCommand(source *workloadapi.X509Source) *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			api := spike.NewWithSource(source)
 
-			// TODO: sanitize policy id.
-
 			policyID := args[0]
 			err := api.DeletePolicy(policyID)
 			if err != nil {
