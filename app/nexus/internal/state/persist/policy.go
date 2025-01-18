@@ -14,82 +14,93 @@ import (
 	"github.com/spiffe/spike/pkg/retry"
 )
 
-// TODO: document public methods including this.
-// But before that make all asnyc persist methods sync.
+type retryHandler[T any] func() (T, error)
 
-func AsyncPersistPolicy(policy data.Policy) {
+func doRetry[T any](ctx context.Context, handler retryHandler[T]) (T, error) {
+	return retry.NewTypedRetrier[T](
+		retry.NewExponentialRetrier(),
+	).RetryWithBackoff(ctx, handler)
+}
+
+func StorePolicy(policy data.Policy) {
+	const fName = "storePolicy"
+
 	be := Backend()
+	if be == nil {
+		return // No cache available
+	}
 
-	if policy.Id != "" {
-		go func() {
-			if be == nil {
-				return // No cache available
-			}
+	if policy.Id == "" {
+		return
+	}
 
-			ctx, cancel := context.WithTimeout(
-				context.Background(),
-				env.DatabaseOperationTimeout(),
-			)
-			defer cancel()
+	ctx, cancel := context.WithTimeout(
+		context.Background(),
+		env.DatabaseOperationTimeout(),
+	)
+	defer cancel()
 
-			if err := be.StorePolicy(ctx, policy); err != nil {
-				// Log error but continue - memory is source of truth
-				log.Log().Warn("asyncPersistPolicy",
-					"msg", "Failed to cache policy",
-					"id", policy.Id,
-					"err", err.Error(),
-				)
-			}
-		}()
+	if err := be.StorePolicy(ctx, policy); err != nil {
+		// Log error but continue - memory is source of truth
+		log.Log().Warn(fName,
+			"msg", "Failed to cache policy",
+			"id", policy.Id,
+			"err", err.Error(),
+		)
 	}
 }
 
-func AsyncDeletePolicy(id string) {
+func DeletePolicy(id string) {
+	const fName = "deletePolicy"
+
 	be := Backend()
+	if be == nil {
+		return
+	}
 
-	if id != "" {
-		go func() {
-			if be == nil {
-				return // No cache available
-			}
+	if id == "" {
+		return
+	}
 
-			ctx, cancel := context.WithTimeout(
-				context.Background(),
-				env.DatabaseOperationTimeout(),
-			)
-			defer cancel()
+	ctx, cancel := context.WithTimeout(
+		context.Background(),
+		env.DatabaseOperationTimeout(),
+	)
+	defer cancel()
 
-			if err := be.DeletePolicy(ctx, id); err != nil {
-				// Log error but continue - memory is source of truth
-				log.Log().Warn("asyncDeletePolicy",
-					"msg", "Failed to delete policy from cache",
-					"id", id,
-					"err", err.Error(),
-				)
-			}
-		}()
+	if err := be.DeletePolicy(ctx, id); err != nil {
+		// Log error but continue - memory is source of truth
+		log.Log().Warn(fName,
+			"msg", "Failed to delete policy from cache",
+			"id", id,
+			"err", err.Error(),
+		)
 	}
 }
 
 func ReadPolicy(id string) *data.Policy {
+	const fName = "readPolicy"
+
 	be := Backend()
 	if be == nil {
 		return nil
 	}
 
-	retrier := retry.NewExponentialRetrier()
-	typedRetrier := retry.NewTypedRetrier[*data.Policy](retrier)
+	if id == "" {
+		return nil
+	}
 
 	ctx, cancel := context.WithTimeout(
 		context.Background(), env.DatabaseOperationTimeout(),
 	)
 	defer cancel()
 
-	cachedPolicy, err := typedRetrier.RetryWithBackoff(ctx, func() (*data.Policy, error) {
+	cachedPolicy, err := doRetry(ctx, func() (*data.Policy, error) {
 		return be.LoadPolicy(ctx, id)
 	})
+
 	if err != nil {
-		log.Log().Warn("readPolicy",
+		log.Log().Warn(fName,
 			"msg", "Failed to load policy from cache after retries",
 			"id", id,
 			"err", err.Error(),

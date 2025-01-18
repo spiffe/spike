@@ -28,9 +28,6 @@ func RouteShard(
 		return errors.ErrReadFailure
 	}
 
-	// TODO: access control; only nexus can request shard, not keeper, not
-	// anyone else.
-
 	request := net.HandleRequest[
 		reqres.ShardRequest, reqres.ShardResponse](
 		requestBody, w,

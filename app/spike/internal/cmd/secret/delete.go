@@ -60,8 +60,6 @@ Examples:
 		Run: func(cmd *cobra.Command, args []string) {
 			api := spike.NewWithSource(source)
 
-			// TODO: sanitize args.
-
 			path := args[0]
 			versions, _ := cmd.Flags().GetString("versions")
 

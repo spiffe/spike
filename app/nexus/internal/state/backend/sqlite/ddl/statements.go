@@ -5,35 +5,12 @@
 package ddl
 
 const QueryInitialize = `
-CREATE TABLE IF NOT EXISTS key_recovery (
-    id INTEGER PRIMARY KEY CHECK (id = 1),
-    nonce BLOB NOT NULL,
-    encrypted_data BLOB NOT NULL,
-    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE TABLE IF NOT EXISTS admin_token (
-	id INTEGER PRIMARY KEY CHECK (id = 1),
-	nonce BLOB NOT NULL,
-	encrypted_token BLOB NOT NULL,
-	updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
-
 CREATE TABLE IF NOT EXISTS policies (
     id TEXT PRIMARY KEY,
     name TEXT NOT NULL,
     spiffe_id_pattern TEXT NOT NULL,
     path_pattern TEXT NOT NULL,
     created_time DATETIME NOT NULL
-);
-
-CREATE TABLE IF NOT EXISTS admin_recovery_metadata (
-    id INTEGER PRIMARY KEY CHECK (id = 1),
-	encrypted_root_key BLOB NOT NULL,
-    token_hash BLOB NOT NULL,
-    salt BLOB NOT NULL,
-    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS secrets (
@@ -87,21 +64,6 @@ WHERE path = ?
 ORDER BY version
 `
 
-const QueryInsertAdminToken = `
-INSERT INTO admin_token (id, nonce, encrypted_token, updated_at)
-VALUES (1, ?, ?, CURRENT_TIMESTAMP)
-ON CONFLICT(id) DO UPDATE SET
-	nonce = excluded.nonce,
-	encrypted_token = excluded.encrypted_token,
-	updated_at = excluded.updated_at
-`
-
-const QuerySelectAdminSigningToken = `
-SELECT nonce, encrypted_token 
-FROM admin_token 
-WHERE id = 1
-`
-
 const QueryUpsertPolicy = `
 INSERT INTO policies (id, name, spiffe_id_pattern, path_pattern, created_time)
 VALUES (?, ?, ?, ?, ?)
@@ -120,19 +82,4 @@ const QueryLoadPolicy = `
 SELECT name, spiffe_id_pattern, path_pattern, created_time 
 FROM policies 
 WHERE id = ?
-`
-
-const QueryUpsertKeyRecoveryInfo = `
-INSERT INTO key_recovery (id, nonce, encrypted_data, created_at, updated_at)
-VALUES (1, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-ON CONFLICT(id) DO UPDATE SET
-	nonce = excluded.nonce,
-	encrypted_data = excluded.encrypted_data,
-	updated_at = excluded.updated_at
-`
-
-const QueryLoadKeyRecoveryInfo = `
-SELECT nonce, encrypted_data 
-FROM key_recovery 
-WHERE id = 1
 `

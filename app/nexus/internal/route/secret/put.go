@@ -51,8 +51,6 @@ func RoutePutSecret(
 	const fName = "routePutSecret"
 	log.AuditRequest(fName, r, audit, log.AuditCreate)
 
-	// TODO: possibly SPIKE backups need to be audit logged too?
-
 	requestBody := net.ReadRequestBody(w, r)
 	if requestBody == nil {
 		return errors.ErrReadFailure

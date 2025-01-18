@@ -25,10 +25,6 @@ const (
 	Memory StoreType = "memory"
 )
 
-// TODO: add to docs, backing stores are considered untrusted as per the
-// security model of SPIKE; so even if you store it on a public place, you
-// don't lose much; but still, it's important to limit access to them.
-
 // BackendStoreType determines which storage backend type to use based on the
 // SPIKE_NEXUS_BACKEND_STORE environment variable. The value is
 // case-insensitive.

@@ -9,6 +9,8 @@ import (
 	"errors"
 )
 
+const aes256KeySize = 32
+
 // Aes256Seed generates a cryptographically secure random 256-bit key suitable
 // for use with AES-256 encryption. The key is returned as a hexadecimal-encoded
 // string.
@@ -23,7 +25,7 @@ import (
 // can be decoded back to bytes using hex.DecodeString when needed for encryption.
 func Aes256Seed() (string, error) {
 	// Generate a 256-bit key
-	key := make([]byte, 32) // 32 shall come from either an env var, or a constant.
+	key := make([]byte, aes256KeySize)
 
 	// TODO: maybe move this to spike-sdk-go as it is a useful function.
 

@@ -2,7 +2,7 @@
 //  \\\\\ Copyright 2024-present SPIKE contributors.
 // \\\\\\\ SPDX-License-Identifier: Apache-2.0
 
-package poll
+package recovery
 
 import (
 	"sort"
@@ -16,8 +16,6 @@ import (
 
 func sanityCheck(secret group.Scalar, shares []shamir.Share) {
 	t := uint(1) // Need t+1 shares to reconstruct
-	// TODO: 1 and 3 shall come from configs.
-	// TODO: keeper count shall be validated against 3
 
 	reconstructed, err := shamir.Recover(t, shares[:2])
 	if err != nil {

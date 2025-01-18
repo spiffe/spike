@@ -76,23 +76,13 @@ func CanTalkToAnyone(_ string) bool {
 // This is used as a validator in SPIKE Keeper, because currently only SPIKE
 // Nexus can talk to SPIKE Keeper.
 //
-// The function compares the input SPIFFE ID against the configured Spike Keeper
-// SPIFFE ID from the environment. This is typically used for validating whether
-// a given identity represents the Keeper service.
-//
 // Parameters:
 //   - spiffeid: The SPIFFE ID string to check
 //
 // Returns:
-//   - bool: true if the SPIFFE ID matches the Keeper SPIFFE ID, false otherwise
+//   - bool: true if the SPIFFE ID matches SPIKE Nexus' SPIFFE ID, false otherwise
 func CanTalkToKeeper(spiffeid string) bool {
-	// Keepers can talk to each other.
-	// Nexus can talk to keeper.
-
-	// TODO: this has changed: Keepers shall not talk to other keepers;
-	// they are isolated state bags.
-
-	return spiffeid == SpikeNexusSpiffeId() || spiffeid == SpikeKeeperSpiffeId()
+	return spiffeid == SpikeNexusSpiffeId()
 }
 
 // CanTalkToPilot checks if the provided SPIFFE ID matches the SPIKE Nexus

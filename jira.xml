@@ -13,10 +13,191 @@
       features.
     </target>
   </purpose>
+  <immediate>
+    <issue>
+      Cut a new SPIKE SDK Release
+    </issue>
+    <issue>
+      godoc undocumented public functions
+    </issue>
+    <issue>
+      Convert ALL asnyc perist operation to sync operations
+      and also create an ADR about it.
+    </issue>
+    <issue>
+      better isolate these as a function
+
+      rootKeyMu.Lock()
+      rootKey = binaryRec
+      rootKeyMu.Unlock()
+    </issue>
+    <issue>
+      // TODO: if at least one Keeper returns a shard, then the system is
+      // bootstrapped; do not proceed with a re-bootstrap as it will cause
+      // data loss. Instead stay in  `recoverUsingKeeperShards` loop.
+      // add it here as an additional check.
+
+      // Below, SPIKE Nexus is assumed to not have bootstrapped.
+      // Let's bootstrap it.
+
+      // Sync. Wait for this before starting the services.
+      bootstrapBackingStoreWithNewRootKey(source)
+      }
+
+    </issue>
+    <issue>
+      access to root key should be thru a function instead
+
+      var rootKey []byte
+      var rootKeyMu sync.RWMutex
+    </issue>
+    <issue>
+      2 out of 3 -> should be configurable.
+    </issue>
+    <issue>
+      // ensure that all os.Getenv'ed env vars are documented in the readme.
+      // also ensure that there are no unnecesasry/unused env vars.
+    </issue>
+    <issue>
+      check fName usage everywhere.
+    </issue>
+    <issue>
+      add to docs, backing stores are considered untrusted as per the
+      // security model of SPIKE; so even if you store it on a public place, you
+      // don't lose much; but still, it's important to limit access to them.
+    </issue>
+    <issue>
+      // If the keepers have crashed too, then a human operator will have to
+      // manually update the Keeper instances using the "break-the-glass"
+      // emergency recovery procedure as outlined in https://spike.ist/
+    </issue>
+    <issue>
+      // TODO: if you stop nexus, delete the tombstone file, and restart nexus,
+      // (and no keeper returns a shard and returns 404)
+      // it will reset its root key and update the keepers to store the new
+      // root key. This is not an attack vector, because an adversary who can
+      // delete the tombstone file, can also delete the backing store.
+      /// Plus no sensitive data is exposed; it's just all data is inaccessible
+      //  now because the root key is lost for good. In either
+      // case, for production systems, the backing store needs to be backed up
+      // and the root key needs to be backed up in a secure place too.
+      // ^ add these to the documentation.
+    </issue>
+    <issue>
+      add to changelog:
+      https://github.com/spiffe/spike/security/dependabot/1
+      https://github.com/spiffe/spike/security/dependabot/2
+    </issue>
+    <issue>
+      add this to website too:
+
+      SPIKE Contributor Sync — Last Friday of Every Month at 8:15am (Pacific time)
+      https://us06web.zoom.us/j/84996375494?pwd=rmXv0fV2Ej0KVLkJosQlleYaIMrnub.1
+      Meeting ID: 849 9637 5494
+      Passcode: 965019
+    </issue>
+    <issue>
+      sanitize keeper id and shard
+
+      request := net.HandleRequest[
+      reqres.ShardContributionRequest, reqres.ShardContributionResponse](
+      requestBody, w,
+      reqres.ShardContributionResponse{Err: data.ErrBadInput},
+      )
+      if request == nil {
+      return errors.ErrParseFailure
+      }
+
+      shard := request.Shard
+      id := request.KeeperId
+
+    </issue>
+  </immediate>
   <next>
+    <issue>
+      all components shall have
+      liveness and readiness endpoints
+      (or maybe we can design it once we k8s...ify things.
+    </issue>
+    <issue>
+      if db is in memory it should not do all the fancy bootstrapping initialization as it won't need to talk to keepers.
+
+    </issue>
+    <issue>
+      ensure that in-memory store
+      still functions as it did before.
+      try it without launching keepers.
+    </issue>
+    <issue>
+      in development mode, nexus shall act as a single binary:
+      - you can create secrets and policies via `nexus create policy` etc
+
+      that can be done by sharing
+      "github.com/spiffe/spike/app/spike/internal/cmd"
+      between nexus and pilot
+
+      this can even be an optional flag on nexus
+      (i.e. SPIKE_NEXUS_ENABLE_PILOT_CLI)
+      running ./nexus will start a server
+      but running nexus with args will register secrets and policies.
+    </issue>
+    <issue>
+      validate spiffe id and other parameters
+      for this and also other keeper endpoints
+
+      func RouteShard(
+      w http.ResponseWriter, r *http.Request, audit *log.AuditEntry,
+      ) error {
+      const fName = "routeContribute"
+      log.AuditRequest(fName, r, audit, log.AuditCreate)
+
+      requestBody := net.ReadRequestBody(w, r)
+      if requestBody == nil {
+      return errors.ErrReadFailure
+      }
+
+      here is an example that does that:
+      func RoutePutPolicy(
+      w http.ResponseWriter, r *http.Request, audit *log.AuditEntry,
+      ) error {
+      const fName = "routePutPolicy"
+      log.AuditRequest(fName, r, audit, log.AuditCreate)
+
+      requestBody := net.ReadRequestBody(w, r)
+      if requestBody == nil {
+      return errors.ErrParseFailure
+      }
+
+      request := net.HandleRequest[
+      reqres.PolicyCreateRequest, reqres.PolicyCreateResponse](
+      requestBody, w,
+      reqres.PolicyCreateResponse{Err: data.ErrBadInput},
+      )
+      if request == nil {
+      return errors.ErrReadFailure
+      }
+
+      err := guardPutPolicyRequest(*request, w, r)
+      if err != nil {
+      return err
+      }
+
+    </issue>
     <issue>
       implement keeper crash recovery:
       i.e. ask shards from nexus
+    </issue>
+    <issue>
+      documentation:
+      explain which log levels mean what, and how to enable
+      log verbosity for development.
+      as in:
+      setting SPIKE_SYSTEM_LOG_LEVEL=debug will show all logs.
+    </issue>
+    <issue>
+      along with regular shard sharing; SPIKE nexus shall send shard to a keeper if the keeper notifies nexus
+      as in:
+      > Hey Nexus, I'm alive and I don't have a shard; give me my shard.
     </issue>
     <issue>
       implement nexus crash recovery
@@ -268,6 +449,51 @@
       This is required for "named admin" feature.
     </issue>
     <issue>
+      this should be configurable:
+      ticker := time.NewTicker(5 * time.Minute)
+    </issue>
+    <issue>
+      write an adr about why those asnyc are snyc from now on:
+
+      // TOD we don't have any retry for policies or for recovery info.
+      // they are equally important.
+
+      // TO: these xsync operations can cause race conditions
+      //
+      // 1. process a writes secret
+      // 2. process b marks secret as deleted
+      // 3. in memory we write then delete
+      // 4. but to the backing store it goes as delete then write.
+      // 5. memory: secret deleted; backing store: secret exists.
+      //
+      // to solve it; have a queue of operations (as a go channel)
+      // and do not consume the next operation until the current
+      // one is complete.
+      //
+      // have one channel for each resource:
+      // - secrets
+      // - policies
+      // - key recovery info.
+      //
+      // Or as an alternative; make these xsync operations sync
+      // and wait for them to complete before reporting success.
+      // this will make the architecture way simpler without needing
+      // to rely on channels.
+    </issue>
+    <issue>
+      This reconstruction assumes there are two shards
+      it should not have that assumption
+
+      var shares []secretsharing.Share
+      shares = append(shares, firstShare)
+      shares = append(shares, secondShare)
+
+      reconstructed, err := secretsharing.Recover(1, shares)
+      if err != nil {
+      log.FatalLn("Failed to recover: " + err.Error())
+      }
+    </issue>
+    <issue>
       One way token flow;
       keeper provides the rootkey to nexus;
       nexus init pushes root key to keeper.
@@ -276,6 +502,92 @@
     <issue>
       If SPIKE is not initialized; `spike` or `spike --help` should display
       a reminder to initialize SPIKE first and exit.
+    </issue>
+    <issue>
+      ensure 32bytes
+
+      binaryRec, err := reconstructed.MarshalBinary()
+      if err != nil {
+      log.FatalLn("Failed to marshal: " + err.Error())
+      return []byte{}
+      }
+
+      // TOD check size 32bytes.
+    </issue>
+    <issue>
+      add docs to all packages (or most of them at least, where it makes sense)
+      like, add a docs.go with package description.
+    </issue>
+    <issue>
+      func sanityCheck(secret group.Scalar, shares []shamir.Share) {
+      t := uint(1) // Need t+1 shares to reconstruct
+      // TOxDO: 1 and 3 shall come from configs.
+      // TOxDO: keeper count shall be validated against 3
+
+      reconstructed, err := shamir.Recover(t, shares[:2])
+      if err != nil {
+      log.FatalLn("sanityCheck: Failed to recover: " + err.Error())
+      }
+      if !secret.IsEqual(reconstructed) {
+      log.FatalLn("sanityCheck: Recovered secret does not match original")
+      }
+      }
+    </issue>
+    <issue>
+      simulate a nexus crash and see if you can still list keys.
+
+      func ListKeys() []string {
+      kvMu.Lock()
+      defer kvMu.Unlock()
+      return kv.List()
+      }
+    </issue>
+    <issue>
+      ErrPolicyExists   = errors.New("policy already exists")
+      ^ this error is never used; check why.
+    </issue>
+    <issue>
+      For all policy, secret, metadata, etc metods (such as func GetSecret(path string, version int) (map[string]string, error) {
+      )... if Nexus is configured to use sqlite db and the db is not initialized exit with a warning instead of storing things
+      to the memory.
+    </issue>
+    <issue>
+      switch storeType {
+      case env.Memory:
+      // TODxO: maybe initializememorybackingstore() too.
+      be =memory.NoopStore{}
+      case env.Sqlite:
+      be = InitializeSqliteBackend(rootKey)
+      default:
+      be =memory.NoopStore{}
+      }
+    </issue>
+    <issue>
+      // TO: document public methods including this.
+      // But before that make all asnyc persist methods sync.
+    </issue>
+    <issue>
+      move this to sdk and use it in the code too.
+
+      type retryHandler[T any] func() (T, error)
+
+      func doRetry[T any](ctx context.Context, handler retryHandler[T]) (T, error) {
+      return retry.NewTypedRetrier[T](
+      retry.NewExponentialRetrier(),
+      ).RetryWithBackoff(ctx, handler)
+      }
+    </issue>
+    <issue>
+      // TDO: RetryWithBackoff retries indefinitely; we might want to limit the total duration
+      // of db retry attempts based on sane default and configurable from environment variables.
+    </issue>
+    <issue>
+      // TDO: check all database operations (secrets, policies, metadata) and
+      // ensure that they are retried with exponential backooff.
+    </issue>
+    <issue>
+      nil check wherever Backend() is called.
+      var be backend.Backend
     </issue>
     <issue>
       The paths that we set in get put ...etc should look like a unix path.
@@ -289,8 +601,112 @@
       have sqlite as the default backing store.
       (until we implement the S3 backing store)
     </issue>
+    <issue>
+      GitHub has now arm64 runners. we can use it for cross-compilation/automation.
+      https://github.blog/changelog/2025-01-16-linux-arm64-hosted-runners-now-available-for-free-in-public-repositories-public-preview/
+      Here's an example:
+      https://github.com/kfox1111/cid2pid/blob/main/.github/workflows/release.yaml
+    </issue>
   </low-hanging-fruits>
   <later>
+    <issue>
+      // TDO: Yes memory is the source of truth; but at least
+      // attempt some exponential retries before giving up.
+      if err := be.StoreSecret(ctx, path, *secret); err != nil {
+      // Log error but continue - memory is the source of truth
+      log.Log().Warn(fName,
+      "msg", "Failed to cache secret",
+      "path", path,
+      "err", err.Error(),
+      )
+      }
+    </issue>
+    <issue>
+      sanitize perms
+
+      err := api.CreatePolicy(name, spiffeIddPattern, pathPattern, perms)
+      if err != nil {
+      fmt.Printf("Error: %v\n", err)
+      return
+      }
+    </issue>
+    <issue>
+      return cobra.Command{
+      Use:   "delete policy-id",
+      Short: "Delete a policy",
+      Args:  cobra.ExactArgs(1),
+      Run: func(cmd *cobra.Command, args []string) {
+      api := spike.NewWithSource(source)
+
+      // TOD: sanitize policy id.
+      // also validate other command line arguments too if it makes sense.
+      // better to stop bad data at the client (but still not trust the
+      // client fully)
+
+      Go through all cobra commands and validate/sanitize what needs to be.
+    </issue>
+    <issue>
+      func trustRoot() string {
+      tr := os.Getenv("SPIKE_TRUST_ROOT") // TODfO: this should be documented and should come from the common env module.
+      if tr == "" {
+      return "spike.ist"
+      }
+      return tr
+      }
+    </issue>
+    <issue>
+      spikeDir := filepath.Join(homeDir, ".spike") // TDO: const.
+    </issue>
+    <issue>
+      var ErrNotFound = errors.New("not found")
+      var ErrUnauthorized = errors.New("unauthorized")
+
+      // TO: use these errors from the data package of spike-sdk-go instead.
+
+      func body(r *http.Response) (bod []byte, err error) {
+      body, err := io.ReadAll(r.Body)
+      if err != nil {
+      return nil, err
+      }
+
+      return body, err
+      }
+    </issue>
+    <issue>
+
+      // TO/DO: document that these need to be updated during a release cut.
+
+      const NexusVersion = "0.2.0"
+      const PilotVersion = "0.2.0"
+      const KeeperVersion = "0.2.0"
+
+      const SpikeNexusTombstoneFile = "spike.nexus.bootstrap.tombstone"
+
+      // SpikeNexusDataFolder returns the path to the directory where Nexus stores
+      // its encrypted backup for its secrets and other data.
+      func SpikeNexusDataFolder() string {
+      homeDir, err := os.UserHomeDir()
+
+    </issue>
+    <issue>
+      # TOO: we should not need workspace; it's better to check for spire-server and spire-agent binaries in $PATH instead of mandating a WORKSPACE variable.
+
+      # TOO: ensure that spire.spike.ist resolves before starting these scripts.
+
+      # Running spire-agent as super user to read meta information of other users'
+      # processes. If you are using the current user to use SPIKE only, then you
+      # can run this command without sudo.
+      if [ "$1" == "--use-sudo" ]; then
+      sudo "$WORKSPACE"/spire/bin/spire-agent run \
+      -config ./config/spire/agent/agent.conf \
+      -joinToken "$JOIN_TOKEN"
+      else
+      "$WORKSPACE"/spire/bin/spire-agent run \
+      -config ./config/spire/agent/agent.conf \
+      -joinToken "$JOIN_TOKEN"
+      fi
+
+    </issue>
     <issue>
       ability to lock nexus programmatically.
       when locked, nexus will deny almost all operations

@@ -82,7 +82,6 @@ func InitializeSqliteBackend(rootKey string) backend.Backend {
 	return dbBackend
 }
 
-// TODO: nil check wherever Backend() is called.
 var be backend.Backend
 
 // InitializeBackend creates and returns a backend storage implementation based
@@ -105,23 +104,19 @@ var be backend.Backend
 //
 // The function is safe for concurrent access as it uses a mutex to protect the
 // initialization process.
-func InitializeBackend(rootKey string) backend.Backend {
-	log.Log().Warn("initializeBackend",
+func InitializeBackend(rootKey string) {
+	const fName = "initializeBackend"
+
+	log.Log().Info(fName,
 		"msg", "Initializing backend", "storeType", env.BackendStoreType())
 
 	backendMu.Lock()
 	defer backendMu.Unlock()
 
-	log.Log().Info(
-		"initializeBackend",
-		"msg", "Initializing backend", "storeType", env.BackendStoreType(),
-	)
-
 	storeType := env.BackendStoreType()
 
 	switch storeType {
 	case env.Memory:
-		// TODO: maybe initializememorybackingstore() too.
 		be = &memory.NoopStore{}
 	case env.Sqlite:
 		be = InitializeSqliteBackend(rootKey)
@@ -129,9 +124,5 @@ func InitializeBackend(rootKey string) backend.Backend {
 		be = &memory.NoopStore{}
 	}
 
-	log.Log().Info("initializeBackend",
-		"msg", "Backend initialized", "storeType", storeType)
-
-	// TODO: maybe not return backend; the consumer need not know about it.
-	return be
+	log.Log().Info(fName, "msg", "Backend initialized", "storeType", storeType)
 }

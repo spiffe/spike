@@ -12,4 +12,4 @@ cd ./.data || exit
 rm -rf *
 
 mkdir -p "$HOME"/.spike/data
-rm -rf "$HOME"/.spike/data/bootstrap.tombstone
+rm -rf "$HOME"/.spike/data/spike.nexus.bootstrap.tombstone

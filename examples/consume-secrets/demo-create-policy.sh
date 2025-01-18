@@ -9,8 +9,6 @@
   --spiffeid="^spiffe://spike\\.ist/workload/*" \
   --permissions="read"
 
-# TODO: it should be spike\\.ist for proper escaping
-
 ./spike policy create --name=workload-can-write \
   --path="/tenants/demo/db/*" \
   --spiffeid="^spiffe://spike\\.ist/workload/*" \

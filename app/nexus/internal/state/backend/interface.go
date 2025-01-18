@@ -49,17 +49,6 @@ type Backend interface {
 	// id is the identifier of the policy to delete.
 	// Returns an error, if the operation fails.
 	DeletePolicy(ctx context.Context, id string) error
-
-	// TODO: implement StoreKeyRecoveryInfo and LoadKeyRecoveryInfo
-
-	// StoreKeyRecoveryInfo stores the encrypted key recovery data blob.
-	// The data includes the root key and its Shamir shards.
-	StoreKeyRecoveryInfo(ctx context.Context, meta store.KeyRecoveryData) error
-
-	// LoadKeyRecoveryInfo retrieves the encrypted key recovery data blob.
-	// Returns the nonce and encrypted data containing the root key and its
-	// Shamir shards.
-	LoadKeyRecoveryInfo(ctx context.Context) (meta *store.KeyRecoveryData, err error)
 }
 
 // Config holds configuration for backend initialization

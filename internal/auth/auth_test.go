@@ -212,7 +212,8 @@ func TestCanTalkToKeeper(t *testing.T) {
 			name:       "default keeper spiffe id",
 			beforeTest: nil,
 			spiffeid:   "spiffe://spike.ist/spike/keeper",
-			want:       true,
+			// Keepers cannot talk to keepers.
+			want: false,
 		},
 		{
 			name: "custom nexus spiffe id",
@@ -232,7 +233,8 @@ func TestCanTalkToKeeper(t *testing.T) {
 				}
 			},
 			spiffeid: "spiffe://corp.com/spike/keeper",
-			want:     true,
+			// Keepers cannot talk to keepers; only Nexus can talk to Keepers.
+			want: false,
 		},
 		{
 			name:       "pilot spiffe id",
