@@ -7,9 +7,10 @@ package persist
 import (
 	"context"
 
+	"github.com/spiffe/spike-sdk-go/retry"
+
 	"github.com/spiffe/spike/app/nexus/internal/env"
 	"github.com/spiffe/spike/internal/log"
-	"github.com/spiffe/spike/pkg/retry"
 	"github.com/spiffe/spike/pkg/store"
 )
 

@@ -658,6 +658,19 @@
       spikeDir := filepath.Join(homeDir, ".spike") // TDO: const.
     </issue>
     <issue>
+      test that the timeout results in an error.
+
+      ctx, cancel := context.WithTimeout(
+      context.Background(), env.DatabaseOperationTimeout(),
+      )
+      defer cancel()
+
+      cachedPolicy, err := retry.Do(ctx, func() (*data.Policy, error) {
+      return be.LoadPolicy(ctx, id)
+      })
+
+    </issue>
+    <issue>
       var ErrNotFound = errors.New("not found")
       var ErrUnauthorized = errors.New("unauthorized")
 

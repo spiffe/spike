@@ -9,9 +9,9 @@ import (
 
 	"github.com/cloudflare/circl/group"
 	shamir "github.com/cloudflare/circl/secretsharing"
+	"github.com/spiffe/spike-sdk-go/crypto"
 
 	"github.com/spiffe/spike/internal/log"
-	"github.com/spiffe/spike/pkg/crypto"
 )
 
 func sanityCheck(secret group.Scalar, shares []shamir.Share) {

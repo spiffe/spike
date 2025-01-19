@@ -4,8 +4,9 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/spiffe/spike-sdk-go/crypto"
+
 	"github.com/spiffe/spike/internal/log"
-	"github.com/spiffe/spike/pkg/crypto"
 )
 
 // Handler is a function type that processes HTTP requests with audit
