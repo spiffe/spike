@@ -44,5 +44,3 @@ func KeepAlive() {
 
 	log.Printf("\nReceived %v signal, shutting down gracefully...\n", sig)
 }
-
-// TODO: maybe move to spike-sdk-go.

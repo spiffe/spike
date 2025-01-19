@@ -7,11 +7,12 @@ package initialization
 import (
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 
+	"github.com/spiffe/spike-sdk-go/crypto"
+
 	"github.com/spiffe/spike/app/nexus/internal/env"
 	"github.com/spiffe/spike/app/nexus/internal/initialization/recovery"
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 	"github.com/spiffe/spike/internal/log"
-	"github.com/spiffe/spike/pkg/crypto"
 )
 
 func Initialize(source *workloadapi.X509Source) {

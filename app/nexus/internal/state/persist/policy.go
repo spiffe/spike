@@ -8,19 +8,11 @@ import (
 	"context"
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
+	"github.com/spiffe/spike-sdk-go/retry"
 
 	"github.com/spiffe/spike/app/nexus/internal/env"
 	"github.com/spiffe/spike/internal/log"
-	"github.com/spiffe/spike/pkg/retry"
 )
-
-type retryHandler[T any] func() (T, error)
-
-func doRetry[T any](ctx context.Context, handler retryHandler[T]) (T, error) {
-	return retry.NewTypedRetrier[T](
-		retry.NewExponentialRetrier(),
-	).RetryWithBackoff(ctx, handler)
-}
 
 func StorePolicy(policy data.Policy) {
 	const fName = "storePolicy"
@@ -95,7 +87,7 @@ func ReadPolicy(id string) *data.Policy {
 	)
 	defer cancel()
 
-	cachedPolicy, err := doRetry(ctx, func() (*data.Policy, error) {
+	cachedPolicy, err := retry.Do(ctx, func() (*data.Policy, error) {
 		return be.LoadPolicy(ctx, id)
 	})
 
