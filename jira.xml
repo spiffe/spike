@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <!--
 #    \\ SPIKE: Secure your secrets with SPIFFE.
-#  \\\\\ Copyright 2024-present SPIKE contributors.
+#  \\\\\ Copyright 2024-present SPIKE contributors.1
 # \\\\\\\ SPDX-License-Identifier: Apache-2.0
 -->
 <stuff>
@@ -14,6 +14,20 @@
     </target>
   </purpose>
   <immediate>
+    <issue>
+      Cut a new release once all DR scenarios have been implemented.
+
+      The only remaining DR use case is the "doomsday" scenario right now.
+    </issue>
+    <issue>
+      SPIKE automatic rotation of encrption key.
+
+      the shards will create a root key and the root key will encrypt the encryption key.
+
+      so SPIKE can rotate the encryption key in the background and encrypt it with the new root key
+
+      this way, we won't have to rotate the shards to rotate the encryption key.
+    </issue>
     <issue>
       Cut a new SPIKE SDK Release
     </issue>
