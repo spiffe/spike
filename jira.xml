@@ -7,11 +7,8 @@
 <stuff>
   <purpose>
     <target>Our goal is to have a minimally delightful product.</target>
-    <target>Strive not to add features just for the sake of adding features.
-    </target>
-    <target>Half-assed features shall be completed before adding more
-      features.
-    </target>
+    <target>Strive not to add features just for the sake of adding features.</target>
+    <target>Half-assed features shall be completed before adding more features.</target>
   </purpose>
   <immediate>
     <issue>
