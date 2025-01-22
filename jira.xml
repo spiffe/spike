@@ -12,28 +12,26 @@
   </purpose>
   <immediate>
     <issue>
-      Cut a new release once all DR scenarios have been implemented.
-
-      The only remaining DR use case is the "doomsday" scenario right now.
+      add to changelog:
+      https://github.com/spiffe/spike/security/dependabot/1
+      https://github.com/spiffe/spike/security/dependabot/2
+      also cut a release.
     </issue>
     <issue>
-      SPIKE automatic rotation of encrption key.
+      add this to website too:
 
-      the shards will create a root key and the root key will encrypt the encryption key.
-
-      so SPIKE can rotate the encryption key in the background and encrypt it with the new root key
-
-      this way, we won't have to rotate the shards to rotate the encryption key.
-    </issue>
-    <issue>
-      Cut a new SPIKE SDK Release
-    </issue>
-    <issue>
-      godoc undocumented public functions
+      SPIKE Contributor Sync — Last Friday of Every Month at 8:15am (Pacific time)
+      https://us06web.zoom.us/j/84996375494?pwd=rmXv0fV2Ej0KVLkJosQlleYaIMrnub.1
+      Meeting ID: 849 9637 5494
+      Passcode: 965019
     </issue>
     <issue>
       Convert ALL asnyc perist operation to sync operations
       and also create an ADR about it.
+      ^ The ADR is not done yet. Create it too. Why we had those, why whe changed it, etc.
+    </issue>
+    <issue>
+      godoc undocumented public functions
     </issue>
     <issue>
       better isolate these as a function
@@ -57,15 +55,6 @@
 
     </issue>
     <issue>
-      access to root key should be thru a function instead
-
-      var rootKey []byte
-      var rootKeyMu sync.RWMutex
-    </issue>
-    <issue>
-      2 out of 3 -> should be configurable.
-    </issue>
-    <issue>
       // ensure that all os.Getenv'ed env vars are documented in the readme.
       // also ensure that there are no unnecesasry/unused env vars.
     </issue>
@@ -77,11 +66,7 @@
       // security model of SPIKE; so even if you store it on a public place, you
       // don't lose much; but still, it's important to limit access to them.
     </issue>
-    <issue>
-      // If the keepers have crashed too, then a human operator will have to
-      // manually update the Keeper instances using the "break-the-glass"
-      // emergency recovery procedure as outlined in https://spike.ist/
-    </issue>
+
     <issue>
       // TODO: if you stop nexus, delete the tombstone file, and restart nexus,
       // (and no keeper returns a shard and returns 404)
@@ -95,17 +80,7 @@
       // ^ add these to the documentation.
     </issue>
     <issue>
-      add to changelog:
-      https://github.com/spiffe/spike/security/dependabot/1
-      https://github.com/spiffe/spike/security/dependabot/2
-    </issue>
-    <issue>
-      add this to website too:
-
-      SPIKE Contributor Sync — Last Friday of Every Month at 8:15am (Pacific time)
-      https://us06web.zoom.us/j/84996375494?pwd=rmXv0fV2Ej0KVLkJosQlleYaIMrnub.1
-      Meeting ID: 849 9637 5494
-      Passcode: 965019
+      if db is in memory it should not do all the fancy bootstrapping initialization as it won't need to talk to keepers.
     </issue>
     <issue>
       sanitize keeper id and shard
@@ -123,35 +98,12 @@
       id := request.KeeperId
 
     </issue>
-  </immediate>
-  <next>
-    <issue>
-      all components shall have
-      liveness and readiness endpoints
-      (or maybe we can design it once we k8s...ify things.
-    </issue>
-    <issue>
-      if db is in memory it should not do all the fancy bootstrapping initialization as it won't need to talk to keepers.
-
-    </issue>
     <issue>
       ensure that in-memory store
       still functions as it did before.
       try it without launching keepers.
     </issue>
-    <issue>
-      in development mode, nexus shall act as a single binary:
-      - you can create secrets and policies via `nexus create policy` etc
 
-      that can be done by sharing
-      "github.com/spiffe/spike/app/spike/internal/cmd"
-      between nexus and pilot
-
-      this can even be an optional flag on nexus
-      (i.e. SPIKE_NEXUS_ENABLE_PILOT_CLI)
-      running ./nexus will start a server
-      but running nexus with args will register secrets and policies.
-    </issue>
     <issue>
       validate spiffe id and other parameters
       for this and also other keeper endpoints
@@ -195,8 +147,7 @@
 
     </issue>
     <issue>
-      implement keeper crash recovery:
-      i.e. ask shards from nexus
+      verify nexus crash recovery (i.e. it asks shards from keepers)
     </issue>
     <issue>
       documentation:
@@ -206,25 +157,20 @@
       setting SPIKE_SYSTEM_LOG_LEVEL=debug will show all logs.
     </issue>
     <issue>
-      along with regular shard sharing; SPIKE nexus shall send shard to a keeper if the keeper notifies nexus
-      as in:
-      > Hey Nexus, I'm alive and I don't have a shard; give me my shard.
+      For in-memory store, bypass initialization, shard creation etc.
     </issue>
-    <issue>
-      implement nexus crash recovery
-      i.e. ask shards from keepers
+    <issue waitingFor="doomsday-dr-implementation">
+      Cut a new release once all DR scenarios have been implemented.
+      The only remaining DR use case is the "doomsday" scenario right now.
     </issue>
-    <issue>
-      ADR: keep line length at 80 chars; calculate tabs as 2chars when doing so.
+    <issue waitingFor="doomsday-dr-implementation">
+      // If the keepers have crashed too, then a human operator will have to
+      // manually update the Keeper instances using the "break-the-glass"
+      // emergency recovery procedure as outlined in https://spike.ist/
+      ^ we don't have that procedure yet; create an issue for it.
     </issue>
-    <issue>
-      keeper does not need to store multiple shards;
-      each keeper should keep its own shard.
-
-      // Store decoded shard in the map.
-      state.Shards.Store(id, decodedShard)
-      log.Log().Info(fName, "msg", "Shard stored", "id", id)
-    </issue>
+  </immediate>
+  <next>
     <issue>
       implement doomsday recovery
       i.e. operator saves shards in a secure enclave.
@@ -240,12 +186,6 @@
       time.Sleep(5 * time.Second)
     </issue>
     <issue>
-      Store root key in Nexus' memory (will be required for recovery later)
-      We can also keep shards in nexus' memory for convenience too
-      (reasoning: if we are keeping the root key, securely erasing shards
-       do not increase the security posture that much)
-    </issue>
-    <issue>
       consider db backend as untrusted
       i.e. encrypt everything you store there; including policies.
       (that might already be the case actually) -- if so, document it
@@ -257,9 +197,7 @@
       log.FatalLn("Tick: not enough keepers")
       }
     </issue>
-    <issue>
-      For in-memory store, bypass initialization, shard creation etc.
-    </issue>
+
     <issue>
       remove symbols when packaging binaries for release.
     </issue>
@@ -1154,6 +1092,46 @@
     </issue>
   </runner-up>
   <backlog>
+    <issue>
+      2 out of 3 -> should be configurable.
+    </issue>
+    <issue>
+      implement keeper crash recovery:
+      i.e. ask shards from nexus
+      (right now, nexus pushes shards, but a proactive request is better
+      along with the existing push)
+
+      along with regular shard sharing; SPIKE nexus shall send shard to a keeper if the keeper notifies nexus
+      as in:
+      > Hey Nexus, I'm alive and I don't have a shard; give me my shard.
+    </issue>
+    <issue>
+      SPIKE automatic rotation of encryption key.
+      the shards will create a root key and the root key will encrypt the encryption key.
+      so SPIKE can rotate the encryption key in the background and encrypt it with the new root key.
+      this way, we won't have to rotate the shards to rotate the encryption key.
+    </issue>
+    <issue>
+      in development mode, nexus shall act as a single binary:
+      - you can create secrets and policies via `nexus create policy` etc
+
+      that can be done by sharing
+      "github.com/spiffe/spike/app/spike/internal/cmd"
+      between nexus and pilot
+
+      this can even be an optional flag on nexus
+      (i.e. SPIKE_NEXUS_ENABLE_PILOT_CLI)
+      running ./nexus will start a server
+      but running nexus with args will register secrets and policies.
+    </issue>
+
+
+
+    <issue>
+      all components shall have
+      liveness and readiness endpoints
+      (or maybe we can design it once we k8s...ify things.
+    </issue>
     <issue kind="v1.0-requirement">
       - Run SPIKE in Kubernetes too.
     </issue>
@@ -1378,6 +1356,11 @@
 
   </backlog>
   <future>
+    <issue>
+      An external secrets store (such as Hashi Vault) can use SPIKE Nexus to
+      auto-unseal itself.
+    </issue>
+
     <issue>
       multiple keeper clusters:
 
