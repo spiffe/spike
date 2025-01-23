@@ -12,10 +12,8 @@
   </purpose>
   <immediate>
     <issue>
-      add to changelog:
-      https://github.com/spiffe/spike/security/dependabot/1
-      https://github.com/spiffe/spike/security/dependabot/2
-      also cut a release.
+      * Change the version number in the cod and update release artifacts.
+      * Also, release artifacts shall have the version number in their file names.
     </issue>
     <issue>
       add this to website too:
