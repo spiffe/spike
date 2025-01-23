@@ -2,10 +2,42 @@
 
 ## Recent
 
+TBD.
+
+## [0.2.1] - 2026-01-23
+
+### Added
+
 * Enabled policy-based access control.
-* BREAKING: changed the CLI usage. Instead of `spike get`, for example, we
+* The root key that SPIKE Nexus generates is now split into several Shamir 
+  shards and distribute to SPIKE Keepers.
+* New additions and improvements to SPIKE Go SDK.
+* Various minor bugfixes.
+* Code cleanup.
+* Implemented several recovery scenarios.
+* SPIKE now has static analysis, CI integration, linting, and automated tests.
+* Documentation updates. Documentation is still lagging behind, but we are 
+  updating and improving it along the way.
+* Created a makefile to group related scripts into make targets.
+* Made the start script more robust.
+* Ensured that the policies and the demo app work as expected.
+* Implemented a Secret Metadata API.
+* Implemented exponential retries across several API-consuming methods.
+
+
+### Changed
+
+* **BREAKING**: changed the CLI usage. Instead of `spike get`, for example, we
   now use `spike secret get`. The reason for this change is that we introduced
   a `policy` command (i.e. `spike policy get`).
+
+### Security
+
+* [Fixed `CVE-2024-45337`: Misuse of ServerConfig.PublicKeyCallback may cause 
+  authorization bypass in golang.org/x/crypto](https://github.com/spiffe/spike/security/dependabot/1)
+* [Fixed `CVE-2024-45338`: Non-linear parsing of case-insensitive content in 
+  `golang.org/x/net/htm`](https://github.com/spiffe/spike/security/dependabot/2)
+
 
 ## [0.2.0] - 2024-11-22
 
