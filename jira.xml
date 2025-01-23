@@ -1094,6 +1094,44 @@
       2 out of 3 -> should be configurable.
     </issue>
     <issue>
+      Consider using OSS Security Scorecard:
+      https://github.com/vmware-tanzu/secrets-manager/security/code-scanning/tools/Scorecard/status
+    </issue>
+    <issue>
+      score is 0: project is not fuzzed:
+      Warn: no OSSFuzz integration found: Follow the steps in https://github.com/google/oss-fuzz to integrate fuzzing for your project.
+      Over time, try to add fuzzing for more functionalities of your project. (High effort)
+      Warn: no OneFuzz integration found: Follow the steps in https://github.com/microsoft/onefuzz to start fuzzing for your project.
+      Over time, try to add fuzzing for more functionalities of your project. (High effort)
+      Warn: no GoBuiltInFuzzer integration found: Follow the steps in https://go.dev/doc/fuzz/ to enable fuzzing on your project.
+      Over time, try to add fuzzing for more functionalities of your project. (Medium effort)
+      Warn: no PythonAtherisFuzzer integration found: Follow the steps in https://github.com/google/atheris to enable fuzzing on your project.
+      Over time, try to add fuzzing for more functionalities of your project. (Medium effort)
+      Warn: no CLibFuzzer integration found: Follow the steps in https://llvm.org/docs/LibFuzzer.html to enable fuzzing on your project.
+      Over time, try to add fuzzing for more functionalities of your project. (Medium effort)
+      Warn: no CppLibFuzzer integration found: Follow the steps in https://llvm.org/docs/LibFuzzer.html to enable fuzzing on your project.
+      Over time, try to add fuzzing for more functionalities of your project. (Medium effort)
+      Warn: no SwiftLibFuzzer integration found: Follow the steps in https://google.github.io/oss-fuzz/getting-started/new-project-guide/swift-lang/ to enable fuzzing on your project.
+      Over time, try to add fuzzing for more functionalities of your project. (Medium effort)
+      Warn: no RustCargoFuzzer integration found: Follow the steps in https://rust-fuzz.github.io/book/cargo-fuzz.html to enable fuzzing on your project.
+      Over time, try to add fuzzing for more functionalities of your project. (Medium effort)
+      Warn: no JavaJazzerFuzzer integration found: Follow the steps in https://github.com/CodeIntelligenceTesting/jazzer to enable fuzzing on your project.
+      Over time, try to add fuzzing for more functionalities of your project. (Medium effort)
+      Warn: no ClusterFuzzLite integration found: Follow the steps in https://github.com/google/clusterfuzzlite to integrate fuzzing as part of CI.
+      Over time, try to add fuzzing for more functionalities of your project. (High effort)
+      Warn: no HaskellPropertyBasedTesting integration found: Use one of the following frameworks to fuzz your project:
+      QuickCheck: https://hackage.haskell.org/package/QuickCheck
+      hedgehog: https://hedgehog.qa/
+      validity: https://github.com/NorfairKing/validity
+      smallcheck: https://hackage.haskell.org/package/smallcheck
+      hspec: https://hspec.github.io/
+      tasty: https://hackage.haskell.org/package/tasty (High effort)
+      Warn: no TypeScriptPropertyBasedTesting integration found: Use fast-check: https://github.com/dubzzz/fast-check (High effort)
+      Warn: no JavaScriptPropertyBasedTesting integration found: Use fast-check: https://github.com/dubzzz/fast-check (High effort)
+      Click Remediation section below to solve this issue
+
+    </issue>
+    <issue>
       implement keeper crash recovery:
       i.e. ask shards from nexus
       (right now, nexus pushes shards, but a proactive request is better
