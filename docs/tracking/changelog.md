@@ -36,7 +36,7 @@ TBD.
 * [Fixed `CVE-2024-45337`: Misuse of ServerConfig.PublicKeyCallback may cause 
   authorization bypass in golang.org/x/crypto](https://github.com/spiffe/spike/security/dependabot/1)
 * [Fixed `CVE-2024-45338`: Non-linear parsing of case-insensitive content in 
-  `golang.org/x/net/htm`](https://github.com/spiffe/spike/security/dependabot/1)
+  `golang.org/x/net/htm`](https://github.com/spiffe/spike/security/dependabot/2)
 
 
 ## [0.2.0] - 2024-11-22
