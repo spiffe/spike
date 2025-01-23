@@ -2,7 +2,7 @@
 
 ## Recent
 
-
+TBD.
 
 ## [0.2.1] - 2025-01-27
 
@@ -18,10 +18,10 @@
 * SPIKE now has static analysis, CI integration, linting, and automated tests.
 * Documentation updates. Documentation is still lagging behind, but we are 
   updating and improving it along the way.
-* Created a makefile to group related scripts into make targets
-* Made the start script more robust
-* Ensured that the policies and the demo app work as expected
-* Implemented a Secret Metadata API
+* Created a makefile to group related scripts into make targets.
+* Made the start script more robust.
+* Ensured that the policies and the demo app work as expected.
+* Implemented a Secret Metadata API.
 * Implemented exponential retries across several API-consuming methods.
 
 
