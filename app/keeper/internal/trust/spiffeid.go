@@ -2,6 +2,9 @@
 //  \\\\\ Copyright 2024-present SPIKE contributors.
 // \\\\\\\ SPDX-License-Identifier: Apache-2.0
 
+// Package trust provides mechanisms for verifying and validating trust among
+// entities using SPIFFE. It includes functionalities such as authenticating
+// SPIFFE IDs to ensure secure communication and interaction.
 package trust
 
 import (

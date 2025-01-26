@@ -16,6 +16,18 @@ import (
 	"github.com/spiffe/spike/app/nexus/internal/state/backend/sqlite/ddl"
 )
 
+// DeletePolicy removes a policy from the database by its ID.
+//
+// Uses serializable transaction isolation to ensure consistency.
+// Automatically rolls back on error.
+//
+// Parameters:
+//   - ctx: Context for the database operation
+//   - id: Unique identifier of the policy to delete
+//
+// Returns error if:
+//   - Transaction operations fail
+//   - Policy deletion fails
 func (s *DataStore) DeletePolicy(ctx context.Context, id string) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -48,6 +60,19 @@ func (s *DataStore) DeletePolicy(ctx context.Context, id string) error {
 	return nil
 }
 
+// StorePolicy saves or updates a policy in the database.
+//
+// Uses serializable transaction isolation to ensure consistency.
+// Automatically rolls back on error.
+//
+// Parameters:
+//   - ctx: Context for the database operation
+//   - policy: Policy data to store, containing ID, name, patterns, and creation
+//     time
+//
+// Returns error if:
+//   - Transaction operations fail
+//   - Policy storage fails
 func (s *DataStore) StorePolicy(ctx context.Context, policy data.Policy) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -86,7 +111,21 @@ func (s *DataStore) StorePolicy(ctx context.Context, policy data.Policy) error {
 	return nil
 }
 
-func (s *DataStore) LoadPolicy(ctx context.Context, id string) (*data.Policy, error) {
+// LoadPolicy retrieves a policy from the database and compiles its patterns.
+//
+// The function loads policy data and compiles regex patterns for SPIFFE ID
+// and path matching if they aren't wildcards (*).
+//
+// Parameters:
+//   - ctx: Context for the database operation
+//   - id: Unique identifier of the policy to load
+//
+// Returns:
+//   - *data.Policy: Loaded policy with compiled patterns, nil if not found
+//   - error: Database errors or pattern compilation errors
+func (s *DataStore) LoadPolicy(
+	ctx context.Context, id string,
+) (*data.Policy, error) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 

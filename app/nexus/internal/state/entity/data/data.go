@@ -2,6 +2,10 @@
 //  \\\\\ Copyright 2024-present SPIKE contributors.
 // \\\\\\\ SPDX-License-Identifier: Apache-2.0
 
+// Package data provides structures and utilities for handling various types of
+// metadata and session tokens involved in the authentication process.
+// This includes recovery metadata, token metadata, and session tokens
+// to ensure security and manage access control within the system.
 package data
 
 import "time"

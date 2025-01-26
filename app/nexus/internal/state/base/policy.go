@@ -23,28 +23,6 @@ var (
 	ErrInvalidPolicy  = errors.New("invalid policy")
 )
 
-func contains(permissions []data.PolicyPermission,
-	permission data.PolicyPermission) bool {
-	for _, p := range permissions {
-		if p == permission {
-			return true
-		}
-	}
-	return false
-}
-
-func hasAllPermissions(
-	haves []data.PolicyPermission,
-	wants []data.PolicyPermission,
-) bool {
-	for _, want := range wants {
-		if !contains(haves, want) {
-			return false
-		}
-	}
-	return true
-}
-
 // CheckAccess determines if a given SPIFFE ID has the required permissions for
 // a specific path. It first checks if the ID belongs to SPIKE Pilot (which has
 // unrestricted access), then evaluates against all defined policies. Policies

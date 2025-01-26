@@ -20,10 +20,12 @@ import (
 )
 
 func shardUrl(keeperApiRoot string) string {
+	const fName = "shardUrl"
+
 	u, err := url.JoinPath(keeperApiRoot, string(net.SpikeKeeperUrlShard))
 	if err != nil {
 		log.Log().Warn(
-			"tick", "msg", "Failed to join path", "url", keeperApiRoot,
+			fName, "msg", "Failed to join path", "url", keeperApiRoot,
 		)
 		return ""
 	}
@@ -33,10 +35,12 @@ func shardUrl(keeperApiRoot string) string {
 func shardResponse(
 	source *workloadapi.X509Source, u string, keeperId string,
 ) []byte {
+	const fName = "shardResponse"
+
 	shardRequest := reqres.ShardRequest{}
 	md, err := json.Marshal(shardRequest)
 	if err != nil {
-		log.Log().Warn("tick",
+		log.Log().Warn(fName,
 			"msg", "Failed to marshal request",
 			"err", err, "keeper_id", keeperId)
 		return []byte{}
@@ -47,7 +51,7 @@ func shardResponse(
 	)
 
 	if err != nil {
-		log.Log().Warn("tick",
+		log.Log().Warn(fName,
 			"msg", "Failed to create mTLS client",
 			"err", err)
 		return []byte{}
@@ -55,13 +59,13 @@ func shardResponse(
 
 	data, err := net.Post(client, u, md)
 	if err != nil {
-		log.Log().Warn("tick", "msg",
-			"Failed to post",
+		log.Log().Warn(fName,
+			"msg", "Failed to post",
 			"err", err, "keeper_id", keeperId)
 	}
 
 	if len(data) == 0 {
-		log.Log().Info("tick", "msg", "No data")
+		log.Log().Info(fName, "msg", "No data")
 		return []byte{}
 	}
 
@@ -69,10 +73,12 @@ func shardResponse(
 }
 
 func unmarshalShardResponse(data []byte) *reqres.ShardResponse {
+	const fName = "unmarshalShardResponse"
+
 	var res reqres.ShardResponse
 	err := json.Unmarshal(data, &res)
 	if err != nil {
-		log.Log().Info("tick", "msg",
+		log.Log().Info(fName, "msg",
 			"Failed to unmarshal response", "err", err)
 		return nil
 	}
@@ -80,12 +86,14 @@ func unmarshalShardResponse(data []byte) *reqres.ShardResponse {
 }
 
 func rawShards(successfulKeeperShards map[string]string) [][]byte {
+	const fName = "rawShards"
+
 	ss := make([][]byte, 0)
 
 	for keeperId, shard := range successfulKeeperShards {
 		decodedShard, err := base64.StdEncoding.DecodeString(shard)
 		if err != nil {
-			log.Log().Warn("tick",
+			log.Log().Warn(fName,
 				"msg", "Failed to decode shard from base64",
 				"err", err, "keeper_id", keeperId)
 			return [][]byte{{}}
@@ -100,10 +108,12 @@ func shardContributionResponse(
 	keeperId string, keepers map[string]string, u string,
 	rootShares []secretsharing.Share, source *workloadapi.X509Source,
 ) []byte {
+	const fName = "shardContributionResponse"
+
 	client, err := network.CreateMtlsClientWithPredicate(source, auth.IsKeeper)
 
 	if err != nil {
-		log.Log().Warn("tick",
+		log.Log().Warn(fName,
 			"msg", "Failed to create mTLS client",
 			"err", err)
 		return []byte{}
@@ -113,7 +123,7 @@ func shardContributionResponse(
 
 	contribution, err := share.Value.MarshalBinary()
 	if err != nil {
-		log.Log().Warn("tick",
+		log.Log().Warn(fName,
 			"msg", "Failed to marshal share",
 			"err", err, "keeper_id", keeperId)
 		return []byte{}
@@ -125,7 +135,7 @@ func shardContributionResponse(
 	}
 	md, err := json.Marshal(scr)
 	if err != nil {
-		log.Log().Warn("tick",
+		log.Log().Warn(fName,
 			"msg", "Failed to marshal request",
 			"err", err, "keeper_id", keeperId)
 		return []byte{}
@@ -133,13 +143,13 @@ func shardContributionResponse(
 
 	data, err := net.Post(client, u, md)
 	if err != nil {
-		log.Log().Warn("tick", "msg",
+		log.Log().Warn(fName, "msg",
 			"Failed to post",
 			"err", err, "keeper_id", keeperId)
 	}
 
 	if len(data) == 0 {
-		log.Log().Info("tick", "msg", "No data")
+		log.Log().Info(fName, "msg", "No data")
 		return []byte{}
 	}
 

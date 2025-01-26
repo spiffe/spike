@@ -2,10 +2,15 @@
 //  \\\\\ Copyright 2024-present SPIKE contributors.
 // \\\\\\\ SPDX-License-Identifier: Apache-2.0
 
+// Package handle provides the implementation for registering and managing
+// HTTP route handlers for the application. This package is responsible for
+// setting up the route configuration during the application's initialization
+// phase.
 package handle
 
 import (
 	state "github.com/spiffe/spike/app/keeper/internal/route/base"
+
 	"github.com/spiffe/spike/internal/net"
 )
 

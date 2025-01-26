@@ -36,6 +36,8 @@ import (
 // Parameters:
 //   - source: An X509Source used for authenticating with keeper nodes
 func RecoverBackingStoreUsingKeeperShards(source *workloadapi.X509Source) {
+	const fName = "RecoverBackingStoreUsingKeeperShards"
+
 	successfulKeeperShards := make(map[string]string)
 
 	for {
@@ -45,7 +47,7 @@ func RecoverBackingStoreUsingKeeperShards(source *workloadapi.X509Source) {
 		if recoverySuccessful {
 			return
 		}
-		log.Log().Info("tick", "msg", "Waiting for keepers to respond")
+		log.Log().Info(fName, "msg", "Waiting for keepers to respond")
 		time.Sleep(5 * time.Second)
 	}
 }
@@ -101,15 +103,13 @@ func SendShardsPeriodically(source *workloadapi.X509Source) {
 				continue
 			}
 
-			rootKeyMu.RLock()
-			if rootKey == nil {
+			rk := getRootKey()
+			if rk == nil {
 				log.Log().Info(fName, "msg", "rootKey is nil; moving on...")
-				rootKeyMu.RUnlock()
 				continue
 			}
 
-			rootSecret, rootShares := computeShares(rootKey)
-			rootKeyMu.RUnlock()
+			rootSecret, rootShares := computeShares(rk)
 
 			sanityCheck(rootSecret, rootShares)
 
@@ -162,19 +162,18 @@ func SendShardsPeriodically(source *workloadapi.X509Source) {
 //   - Root key creation fails
 //   - Fewer than 3 keepers are configured
 func BootstrapBackingStoreWithNewRootKey(source *workloadapi.X509Source) {
-	log.Log().Info("tick", "msg",
+	const fName = "BootstrapBackingStoreWithNewRootKey"
+
+	log.Log().Info(fName, "msg",
 		"Tombstone file does not exist. Bootstrapping SPIKE Nexus...")
 
-	rootKeyMu.RLock()
-
-	if rootKey != nil {
-		log.Log().Info("tick", "msg",
+	k := getRootKey()
+	if k != nil {
+		log.Log().Info(fName, "msg",
 			"Recovery info found. Backing store already bootstrapped.",
 		)
-		rootKeyMu.RUnlock()
 		return
 	}
-	rootKeyMu.RUnlock()
 
 	// Create the root key and create shards out of the root key.
 	rk, err := crypto.Aes256Seed()
@@ -187,7 +186,7 @@ func BootstrapBackingStoreWithNewRootKey(source *workloadapi.X509Source) {
 	// operations. Initializing early allows SPIKE Nexus to serve before
 	// keepers are hydrated.
 	state.Initialize(rk)
-	log.Log().Info("tick", "msg", "Initialized the backing store")
+	log.Log().Info(fName, "msg", "Initialized the backing store")
 
 	// Compute Shamir shares out of the root key.
 	rootShares := mustUpdateRecoveryInfo(rk)
@@ -195,7 +194,7 @@ func BootstrapBackingStoreWithNewRootKey(source *workloadapi.X509Source) {
 	successfulKeepers := make(map[string]bool)
 	keepers := env.Keepers()
 	if len(keepers) < 3 {
-		log.FatalLn("Bootstrap: not enough keepers")
+		log.FatalLn(fName + ": not enough keepers")
 	}
 
 	for {
@@ -207,7 +206,7 @@ func BootstrapBackingStoreWithNewRootKey(source *workloadapi.X509Source) {
 			return
 		}
 
-		log.Log().Info("tick", "msg", "Waiting for keepers to initialize")
+		log.Log().Info(fName, "msg", "Waiting for keepers to initialize")
 		time.Sleep(5 * time.Second)
 	}
 }

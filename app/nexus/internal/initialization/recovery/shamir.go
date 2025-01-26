@@ -15,18 +15,22 @@ import (
 )
 
 func sanityCheck(secret group.Scalar, shares []shamir.Share) {
+	const fName = "sanityCheck"
+
 	t := uint(1) // Need t+1 shares to reconstruct
 
 	reconstructed, err := shamir.Recover(t, shares[:2])
 	if err != nil {
-		log.FatalLn("sanityCheck: Failed to recover: " + err.Error())
+		log.FatalLn(fName + ": Failed to recover: " + err.Error())
 	}
 	if !secret.IsEqual(reconstructed) {
-		log.FatalLn("sanityCheck: Recovered secret does not match original")
+		log.FatalLn(fName + ": Recovered secret does not match original")
 	}
 }
 
 func computeShares(finalKey []byte) (group.Scalar, []shamir.Share) {
+	const fName = "computeShares"
+
 	// Initialize parameters
 	g := group.P256
 	t := uint(1) // Need t+1 shares to reconstruct
@@ -35,7 +39,7 @@ func computeShares(finalKey []byte) (group.Scalar, []shamir.Share) {
 	// Create secret from your 32 byte key
 	secret := g.NewScalar()
 	if err := secret.UnmarshalBinary(finalKey); err != nil {
-		log.FatalLn("computeShares: Failed to unmarshal key: %v" + err.Error())
+		log.FatalLn(fName + ": Failed to unmarshal key: %v" + err.Error())
 	}
 
 	// To compute identical shares, we need an identical seed for the random

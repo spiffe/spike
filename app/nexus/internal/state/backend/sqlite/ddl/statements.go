@@ -4,6 +4,10 @@
 
 package ddl
 
+// QueryInitialize defines the SQL schema for initializing the database.
+// It includes table creation and index definitions for policies, secrets,
+// and secret metadata. These tables handle secret storage, metadata, and
+// policy management with relevant constraints and indices.
 const QueryInitialize = `
 CREATE TABLE IF NOT EXISTS policies (
     id TEXT PRIMARY KEY,
@@ -34,6 +38,9 @@ CREATE INDEX IF NOT EXISTS idx_secrets_path ON secrets(path);
 CREATE INDEX IF NOT EXISTS idx_secrets_created_time ON secrets(created_time);
 `
 
+// QueryUpdateSecretMetadata is a SQL query for inserting or updating secret
+// metadata. It updates the current version and updated time on conflict with
+// the existing path.
 const QueryUpdateSecretMetadata = `
 INSERT INTO secret_metadata (path, current_version, created_time, updated_time)
 VALUES (?, ?, ?, ?)
@@ -42,6 +49,7 @@ ON CONFLICT(path) DO UPDATE SET
 	updated_time = excluded.updated_time
 `
 
+// QueryUpsertSecret is a SQL query for inserting or updating secrets records.
 const QueryUpsertSecret = `
 INSERT INTO secrets (path, version, nonce, encrypted_data, created_time, deleted_time)
 VALUES (?, ?, ?, ?, ?, ?)
@@ -51,12 +59,14 @@ ON CONFLICT(path, version) DO UPDATE SET
 	deleted_time = excluded.deleted_time
 `
 
+// QuerySecretMetadata is a SQL query to fetch metadata of a secret by its path.
 const QuerySecretMetadata = `
 SELECT current_version, created_time, updated_time 
 FROM secret_metadata 
 WHERE path = ?
 `
 
+// QuerySecretVersions retrieves all versions of a secret from the database.
 const QuerySecretVersions = `
 SELECT version, nonce, encrypted_data, created_time, deleted_time 
 FROM secrets 
@@ -64,6 +74,7 @@ WHERE path = ?
 ORDER BY version
 `
 
+// QueryUpsertPolicy defines an SQL query to insert or update a policy record.
 const QueryUpsertPolicy = `
 INSERT INTO policies (id, name, spiffe_id_pattern, path_pattern, created_time)
 VALUES (?, ?, ?, ?, ?)
@@ -73,11 +84,13 @@ ON CONFLICT(id) DO UPDATE SET
     path_pattern = excluded.path_pattern
 `
 
+// QueryDeletePolicy defines the SQL statement to delete a policy by its ID.
 const QueryDeletePolicy = `
 DELETE FROM policies 
 WHERE id = ?
 `
 
+// QueryLoadPolicy is a SQL query to select policy details by ID.
 const QueryLoadPolicy = `
 SELECT name, spiffe_id_pattern, path_pattern, created_time 
 FROM policies 
