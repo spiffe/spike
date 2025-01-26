@@ -2,6 +2,9 @@
 //  \\\\\ Copyright 2024-present SPIKE contributors.
 // \\\\\\\ SPDX-License-Identifier: Apache-2.0
 
+// Package config provides configuration-related functionalities
+// for the SPIKE system, including version constants and directory
+// management for storing encrypted backups and secrets securely.
 package config
 
 import (
@@ -9,9 +12,9 @@ import (
 	"path/filepath"
 )
 
-const NexusVersion = "0.2.0"
-const PilotVersion = "0.2.0"
-const KeeperVersion = "0.2.0"
+const NexusVersion = "0.2.1"
+const PilotVersion = "0.2.1"
+const KeeperVersion = "0.2.1"
 
 const SpikeNexusTombstoneFile = "spike.nexus.bootstrap.tombstone"
 

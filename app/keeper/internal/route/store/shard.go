@@ -17,10 +17,33 @@ import (
 	"github.com/spiffe/spike/internal/net"
 )
 
+// RouteShard handles HTTP requests to retrieve the stored shard from the
+// system. It retrieves the shard from the system state, encodes it in Base64,
+// and returns it to the requester.
+//
+// Parameters:
+//   - w: http.ResponseWriter to write the HTTP response
+//   - r: *http.Request containing the incoming HTTP request
+//   - audit: *log.AuditEntry for tracking the request for auditing purposes
+//
+// Returns:
+//   - error: nil if successful, otherwise one of:
+//   - errors.ErrReadFailure if request body cannot be read
+//   - errors.ErrParseFailure if request parsing fails
+//   - errors.ErrNotFound if no shard is stored in the system
+//
+// Response body:
+//
+//	{
+//	  "shard": "base64EncodedString"
+//	}
+//
+// The function returns a 200 OK status with the encoded shard on success,
+// or a 404 Not Found status if no shard exists in the system.
 func RouteShard(
 	w http.ResponseWriter, r *http.Request, audit *log.AuditEntry,
 ) error {
-	const fName = "routeContribute"
+	const fName = "routeShard"
 	log.AuditRequest(fName, r, audit, log.AuditCreate)
 
 	requestBody := net.ReadRequestBody(w, r)

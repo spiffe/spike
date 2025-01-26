@@ -15,6 +15,19 @@ import (
 	"github.com/spiffe/spike/internal/log"
 )
 
+// Initialize sets up the system state based on the backend store type.
+// For SQLite backends, it performs bootstrapping and starts periodic shard
+// synchronization.  For in-memory stores, it initializes with a random seed.
+//
+// Parameters:
+//   - source: *workloadapi.X509Source for SPIFFE workload API authentication
+//
+// The function will:
+//   - Bootstrap from SQLite if using SQLite backend
+//   - Start periodic shard syncing for SQLite backend
+//   - Initialize with random seed for in-memory backend
+//
+// Panics if random seed generation fails for in-memory stores.
 func Initialize(source *workloadapi.X509Source) {
 	requireBootstrapping := env.BackendStoreType() == env.Sqlite
 	if requireBootstrapping {

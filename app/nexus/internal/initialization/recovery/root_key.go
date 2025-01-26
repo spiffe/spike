@@ -17,10 +17,24 @@ import (
 var rootKey []byte
 var rootKeyMu sync.RWMutex
 
+func getRootKey() []byte {
+	rootKeyMu.RLock()
+	defer rootKeyMu.RUnlock()
+	return rootKey
+}
+
+func setRootKey(rk []byte) {
+	rootKeyMu.Lock()
+	defer rootKeyMu.Unlock()
+	rootKey = rk
+}
+
 func mustUpdateRecoveryInfo(rk string) []secretsharing.Share {
+	const fName = "mustUpdateRecoveryInfo"
+
 	decodedRootKey, err := hex.DecodeString(rk)
 	if err != nil {
-		log.FatalLn("Bootstrap: failed to decode root key: " + err.Error())
+		log.FatalLn(fName + ": failed to decode root key: " + err.Error())
 	}
 	rootSecret, rootShares := computeShares(decodedRootKey)
 	sanityCheck(rootSecret, rootShares)
@@ -34,6 +48,8 @@ func mustUpdateRecoveryInfo(rk string) []secretsharing.Share {
 }
 
 func recoverRootKey(ss [][]byte) []byte {
+	const fName = "recoverRootKey"
+
 	g := group.P256
 	firstShard := ss[0]
 	secondShard := ss[1]
@@ -44,7 +60,7 @@ func recoverRootKey(ss [][]byte) []byte {
 	firstShare.ID.SetUint64(1)
 	err := firstShare.Value.UnmarshalBinary(firstShard)
 	if err != nil {
-		log.FatalLn("Failed to unmarshal share: " + err.Error())
+		log.FatalLn(fName + ": Failed to unmarshal share: " + err.Error())
 	}
 	secondShare := secretsharing.Share{
 		ID:    g.NewScalar(),
@@ -53,7 +69,7 @@ func recoverRootKey(ss [][]byte) []byte {
 	secondShare.ID.SetUint64(2)
 	err = secondShare.Value.UnmarshalBinary(secondShard)
 	if err != nil {
-		log.FatalLn("Failed to unmarshal share: " + err.Error())
+		log.FatalLn(fName + ": Failed to unmarshal share: " + err.Error())
 	}
 
 	var shares []secretsharing.Share
@@ -62,17 +78,17 @@ func recoverRootKey(ss [][]byte) []byte {
 
 	reconstructed, err := secretsharing.Recover(1, shares)
 	if err != nil {
-		log.FatalLn("Failed to recover: " + err.Error())
+		log.FatalLn(fName + ": Failed to recover: " + err.Error())
 	}
 
 	if reconstructed == nil {
-		log.FatalLn("Failed to reconstruct the root key")
+		log.FatalLn(fName + ": Failed to reconstruct the root key")
 		return []byte{}
 	}
 
 	binaryRec, err := reconstructed.MarshalBinary()
 	if err != nil {
-		log.FatalLn("Failed to marshal: " + err.Error())
+		log.FatalLn(fName + ": Failed to marshal: " + err.Error())
 		return []byte{}
 	}
 

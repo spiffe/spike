@@ -26,11 +26,13 @@ func iterateKeepersToBootstrap(
 	keepers map[string]string, rootShares []secretsharing.Share,
 	successfulKeepers map[string]bool, source *workloadapi.X509Source,
 ) bool {
+	const fName = "iterateKeepersToBootstrap"
+
 	for keeperId, keeperApiRoot := range keepers {
 		u, err := url.JoinPath(keeperApiRoot, string(net.SpikeKeeperUrlContribute))
 		if err != nil {
 			log.Log().Warn(
-				"tick", "msg", "Failed to join path", "url", keeperApiRoot,
+				fName, "msg", "Failed to join path", "url", keeperApiRoot,
 			)
 			continue
 		}
@@ -39,22 +41,22 @@ func iterateKeepersToBootstrap(
 			keeperId, keepers, u, rootShares, source,
 		)
 		if len(data) == 0 {
-			log.Log().Info("tick", "msg", "No data; moving on...")
+			log.Log().Info(fName, "msg", "No data; moving on...")
 			continue
 		}
 
 		var res reqres.ShardContributionResponse
 		err = json.Unmarshal(data, &res)
 		if err != nil {
-			log.Log().Info("tick", "msg", "Failed to unmarshal response", "err", err)
+			log.Log().Info(fName, "msg", "Failed to unmarshal response", "err", err)
 			continue
 		}
 
 		successfulKeepers[keeperId] = true
-		log.Log().Info("tick", "msg", "Success", "keeper_id", keeperId)
+		log.Log().Info(fName, "msg", "Success", "keeper_id", keeperId)
 
 		if len(successfulKeepers) == 3 {
-			log.Log().Info("tick", "msg", "All keepers initialized")
+			log.Log().Info(fName, "msg", "All keepers initialized")
 
 			tombstone := path.Join(
 				config.SpikeNexusDataFolder(), config.SpikeNexusTombstoneFile,
@@ -73,10 +75,10 @@ func iterateKeepersToBootstrap(
 				// able to write to the data volume (where the tombstone file would be)
 				// can be a precursor of other problems that can affect the reliability
 				// of the backing store.
-				log.FatalLn("Bootstrap: failed to create tombstone file: " + err.Error())
+				log.FatalLn(fName + ": failed to create tombstone file: " + err.Error())
 			}
 
-			log.Log().Info("tick", "msg", "Tombstone file created successfully")
+			log.Log().Info(fName, "msg", "Tombstone file created successfully")
 
 			return true
 		}
@@ -129,9 +131,7 @@ func iterateKeepersAndTryRecovery(
 		encoded := hex.EncodeToString(binaryRec)
 		state.Initialize(encoded)
 
-		rootKeyMu.Lock()
-		rootKey = binaryRec
-		rootKeyMu.Unlock()
+		setRootKey(binaryRec)
 
 		// System initialized: Exit infinite loop.
 		return true

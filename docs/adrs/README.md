@@ -16,3 +16,4 @@
 * [ADR-0014: Maintaining SQLite as SPIKE's Primary Storage Backend](adrs/adr-0014.md)
 * [ADR-0015: Use Singular Form for File and Package Naming](adrs/adr-0015.md)
 * [ADR-0016: Memory-First Secrets Store](adrs/adr-0016.md)
+* [ADR-0017: Synchronous Persistence for SPIKE Secrets Store](adrs/adr-0017.md)

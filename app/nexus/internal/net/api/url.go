@@ -2,6 +2,11 @@
 //  \\\\\ Copyright 2024-present SPIKE contributors.
 // \\\\\\\ SPDX-License-Identifier: Apache-2.0
 
+// Package api provides utility functions for constructing SPIKE Keeper API
+// URLs. The package contains methods that return complete URLs for different
+// SPIKE Keeper API operations such as reading and writing. These utilities aim
+// to simplify the process of interacting with SPIKE Keeper services by handling
+// URL construction, including query parameters and path joining.
 package api
 
 import (

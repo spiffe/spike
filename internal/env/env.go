@@ -2,6 +2,12 @@
 //  \\\\\ Copyright 2024-present SPIKE contributors.
 // \\\\\\\ SPDX-License-Identifier: Apache-2.0
 
+// Package env provides utilities for managing environment variables
+// and configurations specific to the SPIKE system.
+//
+// This package includes functionality to retrieve and interpret
+// environment variable settings such as logging levels for the
+// SPIKE components.
 package env
 
 import (

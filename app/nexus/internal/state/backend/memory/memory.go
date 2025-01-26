@@ -2,6 +2,15 @@
 //  \\\\\ Copyright 2024-present SPIKE contributors.
 // \\\\\\\ SPDX-License-Identifier: Apache-2.0
 
+// Package memory implements an in-memory storage backend for managing
+// secrets and policies in the SPIKE system. This package includes a
+// no-op implementation, `NoopStore`, which acts as a placeholder or
+// testing tool for scenarios where persistent storage isn't required.
+//
+// The `NoopStore` provides implementations for interfaces related to
+// storing and retrieving secrets and policies but does not perform
+// any actual storage operations. All methods in `NoopStore` are no-ops and
+// always return `nil` or equivalent default values.
 package memory
 
 import (

@@ -14,6 +14,16 @@ import (
 	"github.com/spiffe/spike/internal/log"
 )
 
+// StorePolicy caches a policy in the backend store.
+// Memory remains the source of truth - failures are logged but don't affect
+// operation.
+//
+// Parameters:
+//   - policy: Policy data to cache
+//
+// Skips operation if:
+//   - Backend is unavailable
+//   - Policy ID is empty
 func StorePolicy(policy data.Policy) {
 	const fName = "storePolicy"
 
@@ -42,6 +52,16 @@ func StorePolicy(policy data.Policy) {
 	}
 }
 
+// DeletePolicy removes a policy from the cache.
+// Memory remains the source of truth - failures are logged but don't affect
+// operation.
+//
+// Parameters:
+//   - id: Policy ID to remove from cache
+//
+// Skips operation if:
+//   - Backend is unavailable
+//   - ID is empty
 func DeletePolicy(id string) {
 	const fName = "deletePolicy"
 
@@ -70,6 +90,16 @@ func DeletePolicy(id string) {
 	}
 }
 
+// ReadPolicy retrieves a policy from the cache with retries.
+//
+// Parameters:
+//   - id: Policy ID to retrieve
+//
+// Returns:
+//   - *data.Policy: Retrieved policy, nil if not found or on error
+//
+// Uses timeout from env.DatabaseOperationTimeout().
+// Logs warnings on failure but continues operation.
 func ReadPolicy(id string) *data.Policy {
 	const fName = "readPolicy"
 
