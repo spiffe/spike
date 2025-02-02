@@ -4,6 +4,7 @@
 community of developers, security professionals who are 
 passionate about keeping secrets secret.
 
+<!--
 ## SPIKE Contributor Sync
 
 **When?** The **last Friday** of every month.  
@@ -18,6 +19,7 @@ Everyone is welcome to join the **SPIKE** Contributor Sync:
 * **Zoom Meeting Link:** [Join Here](https://us06web.zoom.us/j/84996375494?pwd=rmXv0fV2Ej0KVLkJosQlleYaIMrnub.1)
 * **Meeting ID:** `849 9637 5494`
 * **Passcode:** `965019`
+-->
 
 ## Empower Our Journey ✊
 
