@@ -11,6 +11,12 @@
     <target>Half-assed features shall be completed before adding more features.</target>
   </purpose>
   <immediate>
+    <issue kind="bug">
+      Creating policies causes problem again.
+      just follow the sample scripts to create a policy for the demo workload.
+      expectation: demo workload should rw the secret it controls.
+      reality: it cannot.
+    </issue>
     <issue>
       implement doomsday dr; do a minor release bump; cut a release.
     </issue>
@@ -90,6 +96,26 @@
       (time shards created, number of shards etc)
     </issue>
     <issue>
+      Consider using zola for documentation.
+
+      It will give more flexibility and the generated website will be more
+      responsive too (as it won't need to be dynamically parsed by a loader
+      javascript)
+    </issue>
+    <issue>
+      Periodic rotation of the encryption keys is recommended, even in the
+      absence of compromise. Due to the nature of the AES-256-GCM encryption
+      used, keys should be rotated before approximately 232 encryptions have
+      been performed, following the guidelines of NIST publication 800-38D.
+
+      This can be achieved by having a separate encryption key protected by
+      the root key and rotating the encryption key, and maybe maintaining a
+      keyring. This way, we won't have to rotate shards to rotate the encryption
+      key and won't need to change the shards -- this will also allow the
+      encryption key to be rotated behind-the-scenes automatically as per
+      NIST guidance.
+    </issue>
+    <issue>
       switch default backing store to SQLite
 
       "in memory" mode could be enabled with a `--dev` flag,
@@ -153,7 +179,20 @@
       DR: devise a DR scenario when a keeper crashes.
       (depends on the new inverted sharding workflow)
     </issue>
+    <issue>
+      add documentation for policies to the website.
+    </issue>
+    <issue>
+      attribute-based policy control
 
+      path "secret/restricted" {
+      capabilities = ["create"]
+      allowed_parameters = {
+      "foo" = []
+      "bar" = ["zip", "zap"]
+      }
+      }
+    </issue>
     <issue>
       <task>
         Outline a disaster recovery scenario when both nexus and keepers are all down.
