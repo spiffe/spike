@@ -11,12 +11,6 @@
     <target>Half-assed features shall be completed before adding more features.</target>
   </purpose>
   <immediate>
-    <issue kind="bug">
-      Creating policies causes problem again.
-      just follow the sample scripts to create a policy for the demo workload.
-      expectation: demo workload should rw the secret it controls.
-      reality: it cannot.
-    </issue>
     <issue>
       implement doomsday dr; do a minor release bump; cut a release.
     </issue>

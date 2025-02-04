@@ -19,3 +19,5 @@ export SPIKE_NEXUS_PBKDF2_ITERATION_COUNT="600000"
 export SPIKE_KEEPER_TLS_PORT=":8443"
 
 export SPIKE_SYSTEM_LOG_LEVEL="debug"
+
+export SPIKE_KEEPER_PEERS='{"1":"https://localhost:8443","2":"https://localhost:8543","3":"https://localhost:8643"}'

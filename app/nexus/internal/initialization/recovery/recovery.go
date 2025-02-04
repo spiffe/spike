@@ -38,6 +38,8 @@ import (
 func RecoverBackingStoreUsingKeeperShards(source *workloadapi.X509Source) {
 	const fName = "RecoverBackingStoreUsingKeeperShards"
 
+	log.Log().Info(fName, "msg", "Recovering backing store using keeper shards")
+
 	successfulKeeperShards := make(map[string]string)
 
 	for {
@@ -45,9 +47,16 @@ func RecoverBackingStoreUsingKeeperShards(source *workloadapi.X509Source) {
 			source, successfulKeeperShards,
 		)
 		if recoverySuccessful {
+			log.Log().Info(fName, "msg", "Recovery successful")
 			return
 		}
+
+		log.Log().Warn(fName, "msg", "Recovery unsuccessful. Will retry.")
+		log.Log().Warn(fName, "msg", "Successful keepers: ", successfulKeeperShards)
+		log.Log().Warn(fName, "msg", "You may need to manually bootstrap.")
+
 		log.Log().Info(fName, "msg", "Waiting for keepers to respond")
+
 		time.Sleep(5 * time.Second)
 	}
 }
