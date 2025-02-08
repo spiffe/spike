@@ -12,17 +12,28 @@ import (
 	"github.com/spiffe/spike/internal/log"
 	"github.com/spiffe/spike/internal/net"
 	"net/http"
+	"sync"
 )
+
+var shards []string
+var shardsMutex sync.RWMutex
 
 func RouteRestore(
 	w http.ResponseWriter, r *http.Request, audit *log.AuditEntry,
 ) error {
-	const fName = "routeRecover"
+	const fName = "routeRestore"
+
+	log.AuditRequest(fName, r, audit, log.AuditCreate)
 
 	requestBody := net.ReadRequestBody(w, r)
 	if requestBody == nil {
 		return errors.ErrReadFailure
 	}
+
+	// TODO: RecoverResponse should contain # of saved shards
+	// and whether recovery was successful.
+	// if recovery is not successful it shall reset all shards.
+	//
 
 	request := net.HandleRequest[
 		reqres.RestoreRequest, reqres.RestoreResponse](
@@ -33,29 +44,28 @@ func RouteRestore(
 		return errors.ErrParseFailure
 	}
 
-	// TODO: guardRestoreRequest
+	shard := request.Shard
 
-	shards := recovery.PilotRecoveryShards()
+	// TODO: use a set instead so that you cannot save the same shard twice.
 
-	// TODO: 2 is a magic number; this should be configurable.
+	shardsMutex.Lock()
+	shards = append(shards, shard)
+	shardsMutex.Unlock()
 
-	if len(shards) < 2 {
-		return errors.ErrNotFound
+	if len(shards) == 2 {
+		recovery.RestoreBackingStoreUsingPilotShards(shards)
 	}
 
-	payload := shards[:2]
-
-	// TODO: enhancement idea:
-	// wait for an acknowledgement from SPIKE Pilot
-	// if you get it, either update the database or set up
-	// a tombstone indicating that we won't send shards anymore.
-	// this way nexus will send the recovery shards only once
-	// regardless of who asks them. that's similar to Hashi Vault
-	// displaying recovery keys only once during bootstrap.
-
 	responseBody := net.MarshalBody(reqres.RestoreResponse{
-		Shards: payload,
+		RestorationStatus: data.RestorationStatus{
+			ShardsCollected: len(shards),
+			ShardsRemaining: 2 - len(shards),
+			Restored:        len(shards) == 2,
+		},
 	}, w)
+	if responseBody == nil {
+		return errors.ErrMarshalFailure
+	}
 
 	net.Respond(http.StatusOK, responseBody, w)
 	log.Log().Info(fName, "msg", data.ErrSuccess)

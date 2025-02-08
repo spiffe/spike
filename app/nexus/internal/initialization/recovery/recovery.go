@@ -63,7 +63,7 @@ func RecoverBackingStoreUsingKeeperShards(source *workloadapi.X509Source) {
 	}
 }
 
-func RecoverBackingStoreUsingPilotShards(shards []string) {
+func RestoreBackingStoreUsingPilotShards(shards []string) {
 	fmt.Println(">>>> RECOVERING USING PILOT SHARDS")
 	// TODO: 2 is magic number.
 

@@ -14,7 +14,7 @@ ENTRY_ID=$(spire-server entry show -spiffeID \
 # Maybe it's a recover role, that we forgot to reset:
 if [ -z "$ENTRY_ID" ]; then
   ENTRY_ID=$(spire-server entry show -spiffeID \
-    spiffe://spike.ist/pilot/role/recover \
+    spiffe://spike.ist/spike/pilot/role/recover \
     | grep "Entry ID" | awk -F: '{print $2}' | xargs)
 fi
 

@@ -6,6 +6,7 @@ package operator
 
 import (
 	"fmt"
+	spike "github.com/spiffe/spike-sdk-go/api"
 	"os"
 	"syscall"
 
@@ -36,6 +37,7 @@ func newOperatorRestoreCommand(
 
 			trust.AuthenticateRestore(spiffeId)
 
+			fmt.Println("(your input will be hidden as you paste/type it)")
 			fmt.Print("Enter recovery shard: ")
 			shard, err := term.ReadPassword(syscall.Stdin)
 			if err != nil {
@@ -48,6 +50,23 @@ func newOperatorRestoreCommand(
 			fmt.Println()
 
 			fmt.Println("Shard is:" + string(shard))
+
+			api := spike.NewWithSource(source)
+
+			status, err := api.Restore(string(shard))
+
+			if err != nil {
+				log.FatalLn(err.Error())
+			}
+
+			if status == nil {
+				fmt.Println("no status")
+			}
+
+			fmt.Println("restored?", status.Restored)
+			fmt.Println("shards collected", status.ShardsCollected)
+			fmt.Println("shards neeeded", status.ShardsRemaining)
+			fmt.Println("--------")
 		},
 	}
 
