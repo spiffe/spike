@@ -6,17 +6,21 @@ import (
 )
 
 // NewPolicyCommand creates a new Cobra command for managing policies.
-func NewPolicyCommand(source *workloadapi.X509Source) *cobra.Command {
+func NewPolicyCommand(
+	source *workloadapi.X509Source, spiffeId string,
+) *cobra.Command {
+	// trust.Authenticate(spiffeId)
+
 	cmd := &cobra.Command{
 		Use:   "policy",
 		Short: "Manage policies",
 	}
 
 	// Add subcommands to the policy command
-	cmd.AddCommand(newPolicyDeleteCommand(source))
-	cmd.AddCommand(newPolicyCreateCommand(source))
-	cmd.AddCommand(newPolicyListCommand(source))
-	cmd.AddCommand(newPolicyGetCommand(source))
+	cmd.AddCommand(newPolicyDeleteCommand(source, spiffeId))
+	cmd.AddCommand(newPolicyCreateCommand(source, spiffeId))
+	cmd.AddCommand(newPolicyListCommand(source, spiffeId))
+	cmd.AddCommand(newPolicyGetCommand(source, spiffeId))
 
 	return cmd
 }

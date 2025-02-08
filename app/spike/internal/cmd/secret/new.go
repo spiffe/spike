@@ -6,19 +6,23 @@ import (
 )
 
 // NewSecretCommand creates a new Cobra command for managing secrets.
-func NewSecretCommand(source *workloadapi.X509Source) *cobra.Command {
+func NewSecretCommand(
+	source *workloadapi.X509Source, spiffeId string,
+) *cobra.Command {
+	// trust.Authenticate(spiffeId)
+
 	cmd := &cobra.Command{
 		Use:   "secret",
 		Short: "Manage secrets",
 	}
 
 	// Add subcommands to the policy command
-	cmd.AddCommand(newSecretDeleteCommand(source))
-	cmd.AddCommand(newSecretUndeleteCommand(source))
-	cmd.AddCommand(newSecretListCommand(source))
-	cmd.AddCommand(newSecretGetCommand(source))
-	cmd.AddCommand(newSecretMetadataGetCommand(source))
-	cmd.AddCommand(newSecretPutCommand(source))
+	cmd.AddCommand(newSecretDeleteCommand(source, spiffeId))
+	cmd.AddCommand(newSecretUndeleteCommand(source, spiffeId))
+	cmd.AddCommand(newSecretListCommand(source, spiffeId))
+	cmd.AddCommand(newSecretGetCommand(source, spiffeId))
+	cmd.AddCommand(newSecretMetadataGetCommand(source, spiffeId))
+	cmd.AddCommand(newSecretPutCommand(source, spiffeId))
 
 	return cmd
 }

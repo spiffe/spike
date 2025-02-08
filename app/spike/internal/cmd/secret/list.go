@@ -9,7 +9,9 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
+
 	spike "github.com/spiffe/spike-sdk-go/api"
+	"github.com/spiffe/spike/app/spike/internal/trust"
 )
 
 // newSecretListCommand creates and returns a new cobra.Command for listing all
@@ -35,11 +37,15 @@ import (
 //	- secret/path3
 //
 // Note: Requires an initialized SPIKE system and valid authentication
-func newSecretListCommand(source *workloadapi.X509Source) *cobra.Command {
+func newSecretListCommand(
+	source *workloadapi.X509Source, spiffeId string,
+) *cobra.Command {
 	var listCmd = &cobra.Command{
 		Use:   "list",
 		Short: "List all secret paths",
 		Run: func(cmd *cobra.Command, args []string) {
+			trust.Authenticate(spiffeId)
+
 			api := spike.NewWithSource(source)
 
 			keys, err := api.ListSecretKeys()

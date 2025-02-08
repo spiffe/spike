@@ -11,6 +11,7 @@ require (
 	github.com/spiffe/go-spiffe/v2 v2.4.0
 	github.com/spiffe/spike-sdk-go v0.2.2
 	github.com/stretchr/testify v1.9.0
+	golang.org/x/term v0.27.0
 )
 
 require (

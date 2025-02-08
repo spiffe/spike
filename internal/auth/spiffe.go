@@ -22,3 +22,11 @@ func SpikeNexusSpiffeId() string {
 func SpikePilotSpiffeId() string {
 	return "spiffe://" + trustRoot() + "/spike/pilot/role/superuser"
 }
+
+func SpikePilotRecoverSpiffeId() string {
+	return "spiffe://" + trustRoot() + "/spike/pilot/role/recover"
+}
+
+func SpikePilotRestoreSpiffeId() string {
+	return "spiffe://" + trustRoot() + "/spike/pilot/role/restore"
+}

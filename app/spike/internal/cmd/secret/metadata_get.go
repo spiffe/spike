@@ -9,7 +9,9 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
+
 	spike "github.com/spiffe/spike-sdk-go/api"
+	"github.com/spiffe/spike/app/spike/internal/trust"
 )
 
 // newSecretMetadataGetCommand creates and returns a new cobra.Command for
@@ -39,7 +41,7 @@ import (
 //   - Secret not found: Displays appropriate message
 //   - Read errors: Displays error message
 func newSecretMetadataGetCommand(
-	source *workloadapi.X509Source,
+	source *workloadapi.X509Source, spiffeId string,
 ) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "metadata",
@@ -51,6 +53,8 @@ func newSecretMetadataGetCommand(
 		Short: "Gets secret metadata from the specified path",
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
+			trust.Authenticate(spiffeId)
+
 			api := spike.NewWithSource(source)
 
 			path := args[0]

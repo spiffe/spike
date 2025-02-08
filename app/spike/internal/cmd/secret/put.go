@@ -10,7 +10,9 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
+
 	spike "github.com/spiffe/spike-sdk-go/api"
+	"github.com/spiffe/spike/app/spike/internal/trust"
 )
 
 // newSecretPutCommand creates and returns a new cobra.Command for storing secrets.
@@ -44,12 +46,16 @@ import (
 //
 // Note: Current admin token verification will be replaced with
 // temporary token authentication in future versions
-func newSecretPutCommand(source *workloadapi.X509Source) *cobra.Command {
+func newSecretPutCommand(
+	source *workloadapi.X509Source, spiffeId string,
+) *cobra.Command {
 	var putCmd = &cobra.Command{
 		Use:   "put <path> <key=value>...",
 		Short: "Put secrets at the specified path",
 		Args:  cobra.MinimumNArgs(2),
 		Run: func(cmd *cobra.Command, args []string) {
+			trust.Authenticate(spiffeId)
+
 			api := spike.NewWithSource(source)
 
 			path := args[0]

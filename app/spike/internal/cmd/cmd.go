@@ -38,10 +38,10 @@ import (
 //
 //	source := workloadapi.NewX509Source(...)
 //	Initialize(source)
-func Initialize(source *workloadapi.X509Source) {
-	rootCmd.AddCommand(policy.NewPolicyCommand(source))
-	rootCmd.AddCommand(secret.NewSecretCommand(source))
-	rootCmd.AddCommand(operator.NewOperatorCommand(source))
+func Initialize(source *workloadapi.X509Source, spiffeId string) {
+	rootCmd.AddCommand(policy.NewPolicyCommand(source, spiffeId))
+	rootCmd.AddCommand(secret.NewSecretCommand(source, spiffeId))
+	rootCmd.AddCommand(operator.NewOperatorCommand(source, spiffeId))
 }
 
 // Execute runs the root command and handles any errors that occur.

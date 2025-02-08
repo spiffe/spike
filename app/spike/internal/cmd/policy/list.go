@@ -10,7 +10,9 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
+
 	spike "github.com/spiffe/spike-sdk-go/api"
+	"github.com/spiffe/spike/app/spike/internal/trust"
 )
 
 // newPolicyListCommand creates a new Cobra command for listing all policies.
@@ -70,12 +72,16 @@ import (
 //   - JSON formatting failure
 //
 // Note: If no policies exist, an empty array ([]) will be displayed.
-func newPolicyListCommand(source *workloadapi.X509Source) *cobra.Command {
+func newPolicyListCommand(
+	source *workloadapi.X509Source, spiffeId string,
+) *cobra.Command {
 	return &cobra.Command{
 		Use:   "list",
 		Short: "List all policies",
 		Args:  cobra.NoArgs,
 		Run: func(cmd *cobra.Command, args []string) {
+			trust.Authenticate(spiffeId)
+
 			api := spike.NewWithSource(source)
 
 			policies, err := api.ListPolicies()

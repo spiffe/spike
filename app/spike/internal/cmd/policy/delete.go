@@ -10,6 +10,8 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	spike "github.com/spiffe/spike-sdk-go/api"
+
+	"github.com/spiffe/spike/app/spike/internal/trust"
 )
 
 // newPolicyDeleteCommand creates a new Cobra command for policy deletion.
@@ -50,12 +52,16 @@ import (
 //
 // Note: This operation cannot be undone. The policy will be permanently removed
 // from the system.
-func newPolicyDeleteCommand(source *workloadapi.X509Source) *cobra.Command {
+func newPolicyDeleteCommand(
+	source *workloadapi.X509Source, spiffeId string,
+) *cobra.Command {
 	return &cobra.Command{
 		Use:   "delete <policy-id>",
 		Short: "Delete a policy",
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
+			trust.Authenticate(spiffeId)
+
 			api := spike.NewWithSource(source)
 
 			policyID := args[0]
