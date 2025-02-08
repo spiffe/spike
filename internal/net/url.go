@@ -10,6 +10,9 @@ const SpikeNexusUrlSecrets ApiUrl = "/v1/store/secrets"
 const SpikeNexusUrlSecretsMetadata ApiUrl = "/v1/store/secrets/metadata"
 const SpikeNexusUrlPolicy ApiUrl = "/v1/acl/policy"
 
+const SpikeNexusUrlOperatorRestore = "/v1/operator/restore"
+const SpikeNexusUrlOperatorRecover = "/v1/operator/recover"
+
 const SpikeKeeperUrlKeep ApiUrl = "/v1/store/keep"
 
 const SpikeKeeperUrlContribute ApiUrl = "/v1/store/contribute"

@@ -24,7 +24,7 @@ func NewOperatorCommand(
 ) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "operator",
-		Short: "Manage SPIKE admin operations",
+		Short: "Manage admin operations",
 	}
 
 	cmd.AddCommand(newOperatorRecoverCommand(source, spiffeId))

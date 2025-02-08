@@ -2,7 +2,9 @@ package recovery
 
 import (
 	"encoding/base64"
+	"encoding/hex"
 	"encoding/json"
+	"fmt"
 	"net/url"
 	"time"
 
@@ -59,6 +61,26 @@ func RecoverBackingStoreUsingKeeperShards(source *workloadapi.X509Source) {
 
 		time.Sleep(5 * time.Second)
 	}
+}
+
+func RecoverBackingStoreUsingPilotShards(shards []string) {
+	fmt.Println(">>>> RECOVERING USING PILOT SHARDS")
+	// TODO: 2 is magic number.
+
+	firstShard := shards[0]
+	firstShardDecoded, _ := base64.StdEncoding.DecodeString(firstShard)
+	secondShard := shards[1]
+	secondShardDecoded, _ := base64.StdEncoding.DecodeString(secondShard)
+
+	ss := [][]byte{firstShardDecoded, secondShardDecoded}
+	binaryRec := RecoverRootKey(ss)
+	encoded := hex.EncodeToString(binaryRec)
+	state.Initialize(encoded)
+	SetRootKey(binaryRec)
+
+	fmt.Println(">>>> RECOVERED USING PILOT SHARDS")
+
+	// TODO: system should have been initialized. Verify it.
 }
 
 // SendShardsPeriodically distributes key shards to configured keeper nodes at
@@ -152,6 +174,28 @@ func SendShardsPeriodically(source *workloadapi.X509Source) {
 			}
 		}
 	}
+}
+
+func PilotRecoveryShards() []string {
+	rk := getRootKey()
+	if rk == nil {
+		return []string{}
+	}
+
+	rootSecret, rootShares := computeShares(rk)
+
+	sanityCheck(rootSecret, rootShares)
+
+	result := make([]string, 0, len(rootShares))
+	for _, share := range rootShares {
+		contribution, err := share.Value.MarshalBinary()
+		if err != nil {
+			continue
+		}
+		shard := base64.StdEncoding.EncodeToString(contribution)
+		result = append(result, shard)
+	}
+	return result
 }
 
 // BootstrapBackingStoreWithNewRootKey initializes the backing store with a new

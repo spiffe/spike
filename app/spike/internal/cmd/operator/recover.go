@@ -20,7 +20,7 @@ func newOperatorRecoverCommand(
 ) *cobra.Command {
 	var recoverCmd = &cobra.Command{
 		Use:   "recover",
-		Short: "Recover SPIKE Nexus",
+		Short: "Recover SPIKE Nexus (do this while SPIKE Nexus is healthy)",
 		Run: func(cmd *cobra.Command, args []string) {
 			if !auth.IsPilotRecover(spiffeId) {
 				fmt.Println("")
@@ -32,7 +32,10 @@ func newOperatorRecoverCommand(
 			}
 
 			trust.AuthenticateRecover(spiffeId)
+			fmt.Println("TODO:// WILL MAKE API REQUEST.")
 			fmt.Println("Will save recovery shards.")
+
+			// TODO: make an API request to SPIKE Nexus to get 2 shards.
 		},
 	}
 

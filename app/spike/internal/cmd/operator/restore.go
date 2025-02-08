@@ -23,7 +23,7 @@ func newOperatorRestoreCommand(
 ) *cobra.Command {
 	var restoreCmd = &cobra.Command{
 		Use:   "restore",
-		Short: "Restore SPIKE Nexus",
+		Short: "Restore SPIKE Nexus (do this if SPIKE Nexus cannot auto-recover)",
 		Run: func(cmd *cobra.Command, args []string) {
 			if !auth.IsPilotRestore(spiffeId) {
 				fmt.Println("")

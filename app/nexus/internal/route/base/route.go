@@ -11,6 +11,7 @@
 package base
 
 import (
+	"github.com/spiffe/spike/app/nexus/internal/route/operator"
 	"net/http"
 
 	"github.com/spiffe/spike/app/nexus/internal/route/acl/policy"
@@ -56,6 +57,10 @@ func Route(
 				return policy.RouteListPolicies
 			case a == net.ActionNexusGet && p == net.SpikeNexusUrlSecretsMetadata:
 				return secret.RouteGetSecretMetadata
+			case a == net.ActionNexusDefault && p == net.SpikeNexusUrlOperatorRestore:
+				return operator.RouteRestore
+			case a == net.ActionNexusDefault && p == net.SpikeNexusUrlOperatorRecover:
+				return operator.RouteRecover
 			default:
 				return net.Fallback
 			}

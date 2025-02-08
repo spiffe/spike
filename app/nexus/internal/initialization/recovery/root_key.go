@@ -14,6 +14,9 @@ import (
 	"github.com/spiffe/spike/internal/log"
 )
 
+// TODO: maybe move rootKey to state (since it's part of
+// app state.
+
 var rootKey []byte
 var rootKeyMu sync.RWMutex
 
@@ -23,7 +26,7 @@ func getRootKey() []byte {
 	return rootKey
 }
 
-func setRootKey(rk []byte) {
+func SetRootKey(rk []byte) {
 	rootKeyMu.Lock()
 	defer rootKeyMu.Unlock()
 	rootKey = rk
@@ -47,8 +50,8 @@ func mustUpdateRecoveryInfo(rk string) []secretsharing.Share {
 	return rootShares
 }
 
-func recoverRootKey(ss [][]byte) []byte {
-	const fName = "recoverRootKey"
+func RecoverRootKey(ss [][]byte) []byte {
+	const fName = "RecoverRootKey"
 
 	g := group.P256
 	firstShard := ss[0]
