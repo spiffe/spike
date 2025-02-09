@@ -30,6 +30,49 @@
   </immediate>
   <next>
     <issue>
+      document the doomsday recovery procedure.
+
+      // 1. Superadmin runs `spike recover` on SPIKE Pilot.
+      // 2. System tells the superadmin to assume a role by running a script on the
+      //    SPIRE Server.
+      //    "spiffe://" + trustRoot() + "/spike/pilot/role/recover"
+      //    the CLI can even print out the command to run.
+      //    this SVID can only do the recovery function, cannot use any other API.
+      // 3. Superadmin runs the command on the SPIRE Server assuming the role.
+      // 4. Superadmin runs `spike recover` on SPIKE Pilot again.
+      // 5. Two shards are saved on the file system and instructions printed on how
+      //    to use them, wipe them out cleanly etc.
+      // 6. Superadmin saves these files securely, in an encrypted medium.
+      // 8. Now we are ready for doomsday.
+      // -------------------------------
+      // 1. Assume running SPIKE Nexus with fully hydrated SPIKE Keepers.
+      // 2. Stop SPIKE Nexus.
+      // 3. Restart all SPIKE Keepers.
+      // 4. Stop SPIKE Nexus.
+      // 5. ASSERT that SPIKE Nexus falls into the RecoverBackingStoreUsingKeeperShards loop.
+      //    (i.e. recovery mode)
+      //
+      // 6. Super adming runs `spike restore` and guided to change the SVID again.
+      // 7. Superadmin runs a script to change Pilot SVID to
+      //    "spiffe://" + trustRoot() + "/spike/pilot/role/restore"
+      //    this SVID can only do restore functionality.
+      //    these SVIDs will also be good for auditing purposes.
+      // 8. Superadmin runs `spike restore` on SPIKE Pilot again.
+      // 9. Superadmin inputs one shard.
+      // 10. Superadmin inputs the second shard.
+      // 11. The system is restored.
+      // 12. ASSERT that we are out of the RecoverBackingStoreUsingKeeperShards loop.
+      // 13. CLI also notifies admin to change the SVID back to the superuser svid.
+      // 14. Everyone is happy.
+      // ------
+      // What we need on the CLI:
+      // `spike recover` and `spike restore`
+      // What we need on the Nexus API:
+      // /recover and /restore
+
+    </issue>
+
+    <issue>
       admin should not be able to create two policies with the same name.
       good first issue: https://github.com/spiffe/spike/issues/79
     </issue>
