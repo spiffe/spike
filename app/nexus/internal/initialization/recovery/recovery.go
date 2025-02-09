@@ -83,6 +83,8 @@ func RestoreBackingStoreUsingPilotShards(shards []string) {
 	// TODO: system should have been initialized. Verify it.
 
 	// TODO: don't wait for bg process and send shards immediately.
+
+	// TODO: create a demo of this doomsday recovery feature too.
 }
 
 // SendShardsPeriodically distributes key shards to configured keeper nodes at
