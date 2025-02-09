@@ -7,13 +7,13 @@ package base
 import (
 	"errors"
 	"fmt"
-	"github.com/spiffe/spike/app/nexus/internal/state/persist"
 	"regexp"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 
+	"github.com/spiffe/spike/app/nexus/internal/state/persist"
 	"github.com/spiffe/spike/internal/auth"
 )
 

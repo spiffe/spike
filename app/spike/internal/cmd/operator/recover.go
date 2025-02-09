@@ -6,13 +6,13 @@ package operator
 
 import (
 	"fmt"
-	spike "github.com/spiffe/spike-sdk-go/api"
 	"os"
 	"path/filepath"
 	"strings"
 
 	"github.com/spf13/cobra"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
+	spike "github.com/spiffe/spike-sdk-go/api"
 
 	"github.com/spiffe/spike/app/spike/internal/trust"
 	"github.com/spiffe/spike/internal/auth"
@@ -121,9 +121,16 @@ func newOperatorRecoverCommand(
 				fmt.Println("  If you lose these shards, you will not be able to recover")
 				fmt.Println("  SPIKE Nexus in the unlikely event of a total system crash.")
 				fmt.Println("")
-			} else {
-				fmt.Println("No shards found")
+
+				return
 			}
+
+			fmt.Println("")
+			fmt.Println("  No shards found.")
+			fmt.Println("  Cannot save recovery shards.")
+			fmt.Println("  Please wait and try again later.")
+			fmt.Println("  If the problem persists, check SPIKE logs.")
+			fmt.Println("")
 		},
 	}
 

@@ -131,7 +131,7 @@ func iterateKeepersAndTryRecovery(
 		encoded := hex.EncodeToString(binaryRec)
 		state.Initialize(encoded)
 
-		SetRootKey(binaryRec)
+		state.SetRootKey(binaryRec)
 
 		// System initialized: Exit infinite loop.
 		return true

@@ -5,14 +5,16 @@
 package operator
 
 import (
+	"net/http"
+	"sync"
+
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	"github.com/spiffe/spike-sdk-go/api/errors"
+
 	"github.com/spiffe/spike/app/nexus/internal/initialization/recovery"
 	"github.com/spiffe/spike/internal/log"
 	"github.com/spiffe/spike/internal/net"
-	"net/http"
-	"sync"
 )
 
 var shards []string
@@ -30,11 +32,6 @@ func RouteRestore(
 		return errors.ErrReadFailure
 	}
 
-	// TODO: RecoverResponse should contain # of saved shards
-	// and whether recovery was successful.
-	// if recovery is not successful it shall reset all shards.
-	//
-
 	request := net.HandleRequest[
 		reqres.RestoreRequest, reqres.RestoreResponse](
 		requestBody, w,
@@ -47,6 +44,8 @@ func RouteRestore(
 	shard := request.Shard
 
 	// TODO: use a set instead so that you cannot save the same shard twice.
+
+	// TODO: the `restore` command should also print the shards remaining etc.
 
 	shardsMutex.Lock()
 	shards = append(shards, shard)

@@ -6,7 +6,6 @@ package initialization
 
 import (
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
-
 	"github.com/spiffe/spike-sdk-go/crypto"
 
 	"github.com/spiffe/spike/app/nexus/internal/env"

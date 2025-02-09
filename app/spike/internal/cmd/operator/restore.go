@@ -6,12 +6,12 @@ package operator
 
 import (
 	"fmt"
-	spike "github.com/spiffe/spike-sdk-go/api"
 	"os"
 	"syscall"
 
 	"github.com/spf13/cobra"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
+	spike "github.com/spiffe/spike-sdk-go/api"
 	"golang.org/x/term"
 
 	"github.com/spiffe/spike/app/spike/internal/trust"
@@ -47,9 +47,6 @@ func newOperatorRestoreCommand(
 				}
 				os.Exit(1)
 			}
-			fmt.Println()
-
-			fmt.Println("Shard is:" + string(shard))
 
 			api := spike.NewWithSource(source)
 
@@ -60,19 +57,20 @@ func newOperatorRestoreCommand(
 			}
 
 			if status == nil {
-				fmt.Println("no status")
+				log.FatalLn("no status")
 			}
-
-			fmt.Println("restored?", status.Restored)
-			fmt.Println("shards collected", status.ShardsCollected)
-			fmt.Println("shards neeeded", status.ShardsRemaining)
-			fmt.Println("--------")
 
 			if status.Restored {
 				fmt.Println("")
 				fmt.Println("  SPIKE is now restored and ready to use.")
 				fmt.Println("  Please run `./hack/spire-server-entry-su-register.sh`")
 				fmt.Println("  with necessary privileges to start using SPIKE as a superuser.")
+				fmt.Println("")
+			} else {
+				fmt.Println("")
+				fmt.Println(" Shards collected: ", status.ShardsCollected)
+				fmt.Println(" Shards remaining: ", status.ShardsRemaining)
+				fmt.Println(" Please run `spike restore` again to provide the remaining shards.")
 				fmt.Println("")
 			}
 		},

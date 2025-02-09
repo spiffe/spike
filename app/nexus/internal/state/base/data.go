@@ -19,3 +19,20 @@ var (
 )
 
 var policies sync.Map
+
+var (
+	rootKey   []byte
+	rootKeyMu sync.RWMutex
+)
+
+func RootKey() []byte {
+	rootKeyMu.RLock()
+	defer rootKeyMu.RUnlock()
+	return rootKey
+}
+
+func SetRootKey(rk []byte) {
+	rootKeyMu.Lock()
+	defer rootKeyMu.Unlock()
+	rootKey = rk
+}

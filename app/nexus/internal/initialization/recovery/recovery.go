@@ -76,7 +76,7 @@ func RestoreBackingStoreUsingPilotShards(shards []string) {
 	binaryRec := RecoverRootKey(ss)
 	encoded := hex.EncodeToString(binaryRec)
 	state.Initialize(encoded)
-	SetRootKey(binaryRec)
+	state.SetRootKey(binaryRec)
 
 	fmt.Println(">>>> RECOVERED USING PILOT SHARDS")
 
@@ -114,7 +114,7 @@ func SendShardsPeriodically(source *workloadapi.X509Source) {
 		// the rest return error responses.
 
 		// if no root key skip.
-		rk := getRootKey()
+		rk := state.RootKey()
 		if rk == nil {
 			log.Log().Info(fName, "msg", "rootKey is nil; moving on...")
 			continue
@@ -148,7 +148,7 @@ func SendShardsPeriodically(source *workloadapi.X509Source) {
 				continue
 			}
 
-			rk := getRootKey()
+			rk := state.RootKey()
 			if rk == nil {
 				log.Log().Info(fName, "msg", "rootKey is nil; moving on...")
 				continue
@@ -191,7 +191,7 @@ func SendShardsPeriodically(source *workloadapi.X509Source) {
 }
 
 func PilotRecoveryShards() []string {
-	rk := getRootKey()
+	rk := state.RootKey()
 	if rk == nil {
 		return []string{}
 	}
@@ -234,7 +234,7 @@ func BootstrapBackingStoreWithNewRootKey(source *workloadapi.X509Source) {
 	log.Log().Info(fName, "msg",
 		"Tombstone file does not exist. Bootstrapping SPIKE Nexus...")
 
-	k := getRootKey()
+	k := state.RootKey()
 	if k != nil {
 		log.Log().Info(fName, "msg",
 			"Recovery info found. Backing store already bootstrapped.",

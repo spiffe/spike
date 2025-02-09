@@ -6,31 +6,13 @@ package recovery
 
 import (
 	"encoding/hex"
-	"sync"
 
 	"github.com/cloudflare/circl/group"
 	"github.com/cloudflare/circl/secretsharing"
 
+	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 	"github.com/spiffe/spike/internal/log"
 )
-
-// TODO: maybe move rootKey to state (since it's part of
-// app state.
-
-var rootKey []byte
-var rootKeyMu sync.RWMutex
-
-func getRootKey() []byte {
-	rootKeyMu.RLock()
-	defer rootKeyMu.RUnlock()
-	return rootKey
-}
-
-func SetRootKey(rk []byte) {
-	rootKeyMu.Lock()
-	defer rootKeyMu.Unlock()
-	rootKey = rk
-}
 
 func mustUpdateRecoveryInfo(rk string) []secretsharing.Share {
 	const fName = "mustUpdateRecoveryInfo"
@@ -43,9 +25,7 @@ func mustUpdateRecoveryInfo(rk string) []secretsharing.Share {
 	sanityCheck(rootSecret, rootShares)
 
 	// Save recovery information.
-	rootKeyMu.Lock()
-	rootKey = decodedRootKey
-	rootKeyMu.Unlock()
+	state.SetRootKey(decodedRootKey)
 
 	return rootShares
 }

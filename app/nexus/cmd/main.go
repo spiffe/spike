@@ -22,6 +22,9 @@ import (
 const appName = "SPIKE Nexus"
 
 // TODO:
+// Document this recovery flow in the website.
+//
+// TODO: create a demo video recording.
 //
 // 1. Superadmin runs `spike recover` on SPIKE Pilot.
 // 2. System tells the superadmin to assume a role by running a script on the

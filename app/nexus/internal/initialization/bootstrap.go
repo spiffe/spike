@@ -24,11 +24,11 @@ func bootstrap(source *workloadapi.X509Source) {
 		log.FatalLn(fName + ": source is nil. this should not happen.")
 	}
 
-	// The tombstone file is a fast path to validate SPIKE Nexus bootstrap
+	// The tombstone file is a fast heuristic to validate SPIKE Nexus bootstrap
 	// completion. However, it's not the ultimate criterion. If we cannot
 	// find a tombstone file, then we'll query existing SPIKE Keeper instances
 	// for shard information until we get enough shards to reconstruct
-	// the root key. If that,too fails, then a human operator will need to
+	// the root key. If that, too, fails, then a human operator will need to
 	// manually re-key SPIKE Nexus.
 	tombstone := path.Join(
 		config.SpikeNexusDataFolder(), config.SpikeNexusTombstoneFile,
