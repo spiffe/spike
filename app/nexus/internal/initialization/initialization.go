@@ -31,8 +31,10 @@ import (
 func Initialize(source *workloadapi.X509Source) {
 	requireBootstrapping := env.BackendStoreType() == env.Sqlite
 	if requireBootstrapping {
-		bootstrap(source)
+		// Try bootstrapping in a loop.
+		go bootstrap(source)
 
+		// Lazy evaluation in a loop:
 		// If bootstrapping is successful, start a background process to
 		// periodically sync shards.
 		go recovery.SendShardsPeriodically(source)

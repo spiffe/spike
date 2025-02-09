@@ -67,8 +67,20 @@ func newOperatorRestoreCommand(
 			fmt.Println("shards collected", status.ShardsCollected)
 			fmt.Println("shards neeeded", status.ShardsRemaining)
 			fmt.Println("--------")
+
+			if status.Restored {
+				fmt.Println("")
+				fmt.Println("  SPIKE is now restored and ready to use.")
+				fmt.Println("  Please run `./hack/spire-server-entry-su-register.sh`")
+				fmt.Println("  with necessary privileges to start using SPIKE as a superuser.")
+				fmt.Println("")
+			}
 		},
 	}
+
+	// TODO: a more user-friendly error message:
+	// spike (feature/doomsday)$ spike secret list
+	// 2025/02/08 15:22:53 Authenticate: SPIFFE ID spiffe://spike.ist/spike/pilot/role/restore is not valid.
 
 	return restoreCmd
 }

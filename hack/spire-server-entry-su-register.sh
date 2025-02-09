@@ -19,7 +19,7 @@ if [[ -n $ENTRY_ID ]]; then
 fi
 
 ENTRY_ID=$(spire-server entry show -spiffeID \
-  spiffe://spike.ist/pilot/role/restore \
+  spiffe://spike.ist/spike/pilot/role/restore \
   | grep "Entry ID" | awk -F: '{print $2}' | xargs)
 if [[ -n $ENTRY_ID ]]; then
   echo "Updating existing entry with ID $ENTRY_ID to superuser SPIFFE ID."
@@ -37,7 +37,7 @@ fi
 # TODO: don't forget to document these special SPIFFEIDs.
 
 ENTRY_ID=$(spire-server entry show -spiffeID \
-  spiffe://spike.ist/pilot/role/recover \
+  spiffe://spike.ist/spike/pilot/role/recover \
   | grep "Entry ID" | awk -F: '{print $2}' | xargs)
 if [[ -n $ENTRY_ID ]]; then
   echo "Updating existing entry with ID $ENTRY_ID to superuser SPIFFE ID."
@@ -59,3 +59,10 @@ spire-server entry create \
     -selector unix:uid:"$(id -u)" \
     -selector unix:path:"$PILOT_PATH" \
     -selector unix:sha256:"$PILOT_SHA"
+
+
+# TODO:
+#{"time":"2025-02-08T15:36:23.839639418-08:00","level":"WARN","msg":"RecoverBackingStoreUsingKeeperShards","msg":"Recovery unsuccessful. Will retry."}
+#{"time":"2025-02-08T15:36:23.839643001-08:00","level":"WARN","msg":"RecoverBackingStoreUsingKeeperShards","msg":"Successful keepers: ","!BADKEY":{}}
+#{"time":"2025-02-08T15:36:23.839687751-08:00","level":"WARN","msg":"RecoverBackingStoreUsingKeeperShards","msg":"You may need to manually bootstrap."}
+#{"time":"2025-02-08T15:36:23.839693709-08:00","level":"INFO","msg":"RecoverBackingStoreUsingKeeperShards","msg":"Waiting for keepers to respond"}

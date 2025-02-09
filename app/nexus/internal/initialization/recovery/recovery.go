@@ -54,7 +54,7 @@ func RecoverBackingStoreUsingKeeperShards(source *workloadapi.X509Source) {
 		}
 
 		log.Log().Warn(fName, "msg", "Recovery unsuccessful. Will retry.")
-		log.Log().Warn(fName, "msg", "Successful keepers: ", successfulKeeperShards)
+		log.Log().Warn(fName, "msg", "Successful keepers: "+string(rune(len(successfulKeeperShards))))
 		log.Log().Warn(fName, "msg", "You may need to manually bootstrap.")
 
 		log.Log().Info(fName, "msg", "Waiting for keepers to respond")
@@ -81,6 +81,8 @@ func RestoreBackingStoreUsingPilotShards(shards []string) {
 	fmt.Println(">>>> RECOVERED USING PILOT SHARDS")
 
 	// TODO: system should have been initialized. Verify it.
+
+	// TODO: don't wait for bg process and send shards immediately.
 }
 
 // SendShardsPeriodically distributes key shards to configured keeper nodes at
@@ -105,6 +107,16 @@ func SendShardsPeriodically(source *workloadapi.X509Source) {
 
 	for range ticker.C {
 		log.Log().Info(fName, "msg", "Sending shards to keepers")
+
+		// TODO: if there is no root key then only recovery APIs should function
+		// the rest return error responses.
+
+		// if no root key skip.
+		rk := getRootKey()
+		if rk == nil {
+			log.Log().Info(fName, "msg", "rootKey is nil; moving on...")
+			continue
+		}
 
 		keepers := env.Keepers()
 		if len(keepers) < 3 {

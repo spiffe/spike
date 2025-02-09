@@ -20,6 +20,9 @@
 # The script also sets up a trap to ensure that all background processes are
 # terminated when the script exits.
 
+# TODO: this script should delete the tombstone files too.
+# TODO: let the SPIFFE ID registration script wait for 10 seconds before exit.
+
 source ./hack/lib/bg.sh
 
 if ./hack/clear-data.sh; then
