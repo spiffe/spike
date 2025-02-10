@@ -64,9 +64,6 @@ func RecoverBackingStoreUsingKeeperShards(source *workloadapi.X509Source) {
 }
 
 func RestoreBackingStoreUsingPilotShards(shards []string) {
-	fmt.Println(">>>> RECOVERING USING PILOT SHARDS")
-	// TODO: 2 is magic number.
-
 	firstShard := shards[0]
 	firstShardDecoded, _ := base64.StdEncoding.DecodeString(firstShard)
 	secondShard := shards[1]
@@ -79,8 +76,6 @@ func RestoreBackingStoreUsingPilotShards(shards []string) {
 	state.SetRootKey(binaryRec)
 
 	fmt.Println(">>>> RECOVERED USING PILOT SHARDS")
-
-	// TODO: system should have been initialized. Verify it.
 
 	// TODO: don't wait for bg process and send shards immediately.
 

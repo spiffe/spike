@@ -71,7 +71,14 @@
       // /recover and /restore
 
     </issue>
-
+    <issue>
+      // -> 2 is a magic number; need to manipulate shards dynamically.
+      func RestoreBackingStoreUsingPilotShards(shards []string) {
+        firstShard := shards[0]
+        firstShardDecoded, _ := base64.StdEncoding.DecodeString(firstShard)
+        secondShard := shards[1]
+        secondShardDecoded, _ := base64.StdEncoding.DecodeString(secondShard)
+    </issue>
     <issue>
       admin should not be able to create two policies with the same name.
       good first issue: https://github.com/spiffe/spike/issues/79
