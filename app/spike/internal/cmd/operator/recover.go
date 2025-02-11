@@ -61,7 +61,7 @@ func newOperatorRecoverCommand(
 
 				recoverDir := fmt.Sprintf("%s/.spike/recover", homeDir)
 				if err != nil {
-					homeDir = "/tmp"
+					recoverDir = "/tmp"
 				}
 
 				// Ensure the recover directory exists
