@@ -42,6 +42,44 @@
   </watch>
   <next>
     <issue>
+      godoc me:
+
+      func NotReady(
+      w http.ResponseWriter, r *http.Request, audit *log.AuditEntry,
+      ) error {
+    </issue>
+    <issue>
+      hack/env.sh missing EOL.
+      spire-entry-recover-revert.sh missing EOL.
+    </issue>
+    <issue>
+      commented out code
+
+      func NewPolicyCommand(
+      source *workloadapi.X509Source, spiffeId string,
+      ) *cobra.Command {
+      // trust.Authenticate(spiffeId)
+
+      same:
+
+      func NewSecretCommand(
+	source *workloadapi.X509Source, spiffeId string,
+) *cobra.Command {
+	// trust.Authenticate(spiffeId)
+    </issue>
+    <issue>
+      func newOperatorRecoverCommand(
+      source *workloadapi.X509Source, spiffeId string,
+      ) *cobra.Command {
+
+      This one and newOperatorRestoreCommand require some cleanup.
+
+    </issue>
+    <issue>
+      document me:
+      func PilotRecoveryShards() []string {
+    </issue>
+    <issue>
       Add a guardRecoverRequest() inside this function:
 
       func RouteRecover(
