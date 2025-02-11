@@ -1,4 +1,4 @@
-![SPIKE](docs/assets/spike-banner-lg.png)
+![SPIKE](docs-src/themes/zola_easydocs_theme/static/assets/spike-banner-lg.png)
 
 This repository follows the [SPIFFE Code of Conduct][coc].
 

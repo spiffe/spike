@@ -1,15 +1,28 @@
-## Quickstart
++++
+title = "Quickstart"
+weight = 2
+sort_by = "weight"
++++
 
-In this guide, you will learn how to build, deploy, and test **SPIKE** from the 
+Pssst... [**⭐️ star SPIKE on GitHub ⭐️**][github] and help spread the word
+about this amazing technology.
+
+[github]: https://github.com/spiffe/spike
+
+---
+
+[![SPIKE](/assets/spike-banner-lg.png)](/)
+
+# SPIKE Quickstart Guide
+
+In this guide, you will learn how to build, deploy, and test **SPIKE** from the
 source.
 
 ## Prerequisites
 
-This quickstart guide assumes you are using an [Ubuntu Linux][ubuntu] operating 
-system. The steps may slightly differ if you are using a different operating 
+This quickstart guide assumes you are using an [Ubuntu Linux][ubuntu] operating
+system. The steps may slightly differ if you are using a different operating
 system.
-
-// Also go installed? Would be nice to have at least since the project is in go.
 
 [ubuntu]: https://ubuntu.com/
 
@@ -36,7 +49,7 @@ In addition, you will need the usual suspects:
 ## Building SPIRE
 
 To get started let's create a development version of SPIRE. Note that this is
-not a production-ready setup. For production, you should follow the 
+not a production-ready setup. For production, you should follow the
 [official SPIRE documentation][spire-prod].
 
 [spire-prod]: https://spiffe.io/docs/latest/deploying/configuring/
@@ -90,7 +103,7 @@ Available commands are:
 
 ## Building SPIKE
 
-Next, build **SPIKE binaries:
+Next, build **SPIKE** binaries:
 
 ```bash
 cd $WORKSPACE/spike
@@ -119,7 +132,7 @@ to your `/etc/hosts` file:
 ## SPIKE Starter Script
 
 There is a starter script that combines and automates some of the steps in the
-following sections. It configures and runs SPIRE Server, SPIRE Agent, 
+following sections. It configures and runs SPIRE Server, SPIRE Agent,
 SPIKE Nexus, and SPIKE Keeper.
 
 You can run this to start all the required components:
@@ -162,11 +175,11 @@ debug any issues that might arise.
 The following sections will guide you through the individual steps.
 
 > **CLI Reference**
-> 
+>
 > Since the **SPIKE CLI** is a work in progress an highly in flux, the best
 > way to get the most up-to-date information is to run `spike --help` or
 > `spike [command] --help` to learn about the available commands and flags.
-> 
+>
 > In addition, you can [check out the demo recordings][demo] to see the CLI in
 > action.
 
@@ -203,7 +216,7 @@ cd $WORKSPACE/spike
 
 Then start **SPIKE** components:
 
-Make sure you started the following binaries each run on a specific terminal 
+Make sure you started the following binaries each run on a specific terminal
 window.
 
 Start the workloads:

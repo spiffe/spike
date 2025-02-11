@@ -1,8 +1,3 @@
-* Getting Started
-  * [Welcome](README.md)
-  * [Alpha Release Notice](notice.md)
-  * [Quickstart](quickstart.md)
-  * [Configuration](configuration.md)
 * Community
   * [SPIKE Community](community/hello.md)
   * [Contact Us](community/contact.md)

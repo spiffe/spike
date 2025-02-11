@@ -1,8 +1,23 @@
-## Configuring SPIKE
++++
+title = "Configuring SPIKE"
+weight = 3
+sort_by = "weight"
++++
 
-You can use environment variables to configure the **SPIKE** components. 
+Pssst... [**⭐️ star SPIKE on GitHub ⭐️**][github] and help spread the word
+about this amazing technology.
 
-The following table lists the environment variables that you can use to 
+[github]: https://github.com/spiffe/spike
+
+---
+
+[![SPIKE](/assets/spike-banner-lg.png)](/)
+
+# Configuring SPIKE
+
+You can use environment variables to configure the **SPIKE** components.
+
+The following table lists the environment variables that you can use to
 configure the SPIKE components:
 
 | Component    | Environment Variable                 | Description                                                                 | Default Value |
