@@ -37,25 +37,13 @@ func RouteRecover(
 		return errors.ErrParseFailure
 	}
 
-	// TODO: guardRecverRequest
-
 	shards := recovery.PilotRecoveryShards()
-
-	// TODO: 2 is a magic number; this should be configurable.
 
 	if len(shards) < 2 {
 		return errors.ErrNotFound
 	}
 
 	payload := shards[:2]
-
-	// TODO: enhancement idea:
-	// wait for an acknowledgement from SPIKE Pilot
-	// if you get it, either update the database or set up
-	// a tombstone indicating that we won't send shards anymore.
-	// this way nexus will send the recovery shards only once
-	// regardless of who asks them. that's similar to Hashi Vault
-	// displaying recovery keys only once during bootstrap.
 
 	responseBody := net.MarshalBody(reqres.RecoverResponse{
 		Shards: payload,

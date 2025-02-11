@@ -43,10 +43,6 @@ func RouteRestore(
 
 	shard := request.Shard
 
-	// TODO: use a set instead so that you cannot save the same shard twice.
-
-	// TODO: the `restore` command should also print the shards remaining etc.
-
 	shardsMutex.Lock()
 	shards = append(shards, shard)
 	shardsMutex.Unlock()

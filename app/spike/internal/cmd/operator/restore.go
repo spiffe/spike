@@ -76,9 +76,5 @@ func newOperatorRestoreCommand(
 		},
 	}
 
-	// TODO: a more user-friendly error message:
-	// spike (feature/doomsday)$ spike secret list
-	// 2025/02/08 15:22:53 Authenticate: SPIFFE ID spiffe://spike.ist/spike/pilot/role/restore is not valid.
-
 	return restoreCmd
 }

@@ -126,7 +126,6 @@ func NotReady(
 		"query", r.URL.RawQuery)
 	audit.Action = log.AuditBlocked
 
-	// TODO: create something like ErrNotReady.
 	body := MarshalBody(reqres.FallbackResponse{Err: data.ErrLowEntropy}, w)
 	if body == nil {
 		return errors.New("failed to marshal response body")

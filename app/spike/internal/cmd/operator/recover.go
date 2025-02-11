@@ -59,7 +59,6 @@ func newOperatorRecoverCommand(
 					log.FatalLn(err.Error())
 				}
 
-				// TODO: map this to a SpikePilotRecoveryFolder() method.
 				recoverDir := fmt.Sprintf("%s/.spike/recover", homeDir)
 				if err != nil {
 					homeDir = "/tmp"

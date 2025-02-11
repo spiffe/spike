@@ -34,8 +34,6 @@ if [[ -n $ENTRY_ID ]]; then
   exit 0
 fi
 
-# TODO: don't forget to document these special SPIFFEIDs.
-
 ENTRY_ID=$(spire-server entry show -spiffeID \
   spiffe://spike.ist/spike/pilot/role/recover \
   | grep "Entry ID" | awk -F: '{print $2}' | xargs)

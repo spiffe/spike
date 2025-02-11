@@ -4,7 +4,6 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
-	"fmt"
 	"net/url"
 	"time"
 
@@ -54,7 +53,9 @@ func RecoverBackingStoreUsingKeeperShards(source *workloadapi.X509Source) {
 		}
 
 		log.Log().Warn(fName, "msg", "Recovery unsuccessful. Will retry.")
-		log.Log().Warn(fName, "msg", "Successful keepers: "+string(rune(len(successfulKeeperShards))))
+		log.Log().Warn(fName, "msg",
+			"Successful keepers: "+string(rune(len(successfulKeeperShards))),
+		)
 		log.Log().Warn(fName, "msg", "You may need to manually bootstrap.")
 
 		log.Log().Info(fName, "msg", "Waiting for keepers to respond")
@@ -74,12 +75,6 @@ func RestoreBackingStoreUsingPilotShards(shards []string) {
 	encoded := hex.EncodeToString(binaryRec)
 	state.Initialize(encoded)
 	state.SetRootKey(binaryRec)
-
-	fmt.Println(">>>> RECOVERED USING PILOT SHARDS")
-
-	// TODO: don't wait for bg process and send shards immediately.
-
-	// TODO: create a demo of this doomsday recovery feature too.
 }
 
 // SendShardsPeriodically distributes key shards to configured keeper nodes at
@@ -104,9 +99,6 @@ func SendShardsPeriodically(source *workloadapi.X509Source) {
 
 	for range ticker.C {
 		log.Log().Info(fName, "msg", "Sending shards to keepers")
-
-		// TODO: if there is no root key then only recovery APIs should function
-		// the rest return error responses.
 
 		// if no root key skip.
 		rk := state.RootKey()

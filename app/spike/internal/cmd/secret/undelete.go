@@ -65,7 +65,6 @@ Examples:
   spike secret undelete secret/ella -v 0,1,2  # Undeletes current version plus versions 1 and 2`,
 		Args: cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
-			// TODO: we can pass this as a predicate to newSecretUndeleteCommand, as a HOF.
 			trust.Authenticate(spiffeId)
 
 			api := spike.NewWithSource(source)
