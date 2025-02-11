@@ -11,7 +11,9 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
+
 	spike "github.com/spiffe/spike-sdk-go/api"
+	"github.com/spiffe/spike/app/spike/internal/trust"
 )
 
 // newSecretDeleteCommand creates and returns a new cobra.Command for deleting
@@ -43,7 +45,9 @@ import (
 //   - Exactly one path argument is provided
 //   - Version numbers are valid non-negative integers
 //   - Version strings are properly formatted
-func newSecretDeleteCommand(source *workloadapi.X509Source) *cobra.Command {
+func newSecretDeleteCommand(
+	source *workloadapi.X509Source, spiffeId string,
+) *cobra.Command {
 	var deleteCmd = &cobra.Command{
 		Use:   "delete <path>",
 		Short: "Delete secrets at the specified path",
@@ -58,6 +62,8 @@ Examples:
   spike secret delete secret/apocalyptica -v 0,1,2 # Deletes current version plus versions 1 and 2`,
 		Args: cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
+			trust.Authenticate(spiffeId)
+
 			api := spike.NewWithSource(source)
 
 			path := args[0]

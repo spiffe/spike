@@ -116,3 +116,30 @@ func Fallback(
 
 	return nil
 }
+
+func NotReady(
+	w http.ResponseWriter, r *http.Request, audit *log.AuditEntry,
+) error {
+	log.Log().Info("not-ready",
+		"method", r.Method,
+		"path", r.URL.Path,
+		"query", r.URL.RawQuery)
+	audit.Action = log.AuditBlocked
+
+	body := MarshalBody(reqres.FallbackResponse{Err: data.ErrLowEntropy}, w)
+	if body == nil {
+		return errors.New("failed to marshal response body")
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusBadRequest)
+
+	if _, err := w.Write(body); err != nil {
+		log.Log().Error("routeNotReady",
+			"msg", "Problem writing response",
+			"err", err.Error())
+		return err
+	}
+
+	return nil
+}

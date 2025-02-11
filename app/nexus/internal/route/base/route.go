@@ -3,7 +3,7 @@
 // \\\\\\\ SPDX-License-Identifier: Apache-2.0
 
 // Package base contains the fundamental building blocks and core functions
-// for handling HTTP requests in the Spike Nexus application. It provides
+// for handling HTTP requests in the SPIKE Nexus application. It provides
 // the routing logic to map API actions and URL paths to their respective
 // handlers while ensuring seamless request processing and response generation.
 // This package serves as a central point for managing incoming API calls
@@ -14,7 +14,9 @@ import (
 	"net/http"
 
 	"github.com/spiffe/spike/app/nexus/internal/route/acl/policy"
+	"github.com/spiffe/spike/app/nexus/internal/route/operator"
 	"github.com/spiffe/spike/app/nexus/internal/route/secret"
+	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 	"github.com/spiffe/spike/internal/log"
 	"github.com/spiffe/spike/internal/net"
 )
@@ -35,6 +37,15 @@ func Route(
 		net.SpikeNexusApiAction(r.URL.Query().Get(net.KeyApiAction)),
 		r.Method,
 		func(a net.SpikeNexusApiAction, p net.ApiUrl) net.Handler {
+			rk := state.RootKey()
+
+			emptyRootKey := len(rk) == 0
+			emergencyAction := p == net.SpikeNexusUrlOperatorRecover ||
+				p == net.SpikeNexusUrlOperatorRestore
+			if emptyRootKey && !emergencyAction {
+				return net.NotReady
+			}
+
 			switch {
 			case a == net.ActionNexusDefault && p == net.SpikeNexusUrlSecrets:
 				return secret.RoutePutSecret
@@ -56,6 +67,10 @@ func Route(
 				return policy.RouteListPolicies
 			case a == net.ActionNexusGet && p == net.SpikeNexusUrlSecretsMetadata:
 				return secret.RouteGetSecretMetadata
+			case a == net.ActionNexusDefault && p == net.SpikeNexusUrlOperatorRestore:
+				return operator.RouteRestore
+			case a == net.ActionNexusDefault && p == net.SpikeNexusUrlOperatorRecover:
+				return operator.RouteRecover
 			default:
 				return net.Fallback
 			}

@@ -11,7 +11,9 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
+
 	spike "github.com/spiffe/spike-sdk-go/api"
+	"github.com/spiffe/spike/app/spike/internal/trust"
 )
 
 // newSecretUndeleteCommand creates and returns a new cobra.Command for restoring
@@ -46,7 +48,9 @@ import (
 //
 // Note: Command currently provides feedback about intended operations
 // but actual restoration functionality is pending implementation
-func newSecretUndeleteCommand(source *workloadapi.X509Source) *cobra.Command {
+func newSecretUndeleteCommand(
+	source *workloadapi.X509Source, spiffeId string,
+) *cobra.Command {
 	var undeleteCmd = &cobra.Command{
 		Use:   "undelete <path>",
 		Short: "Undelete secrets at the specified path",
@@ -61,6 +65,8 @@ Examples:
   spike secret undelete secret/ella -v 0,1,2  # Undeletes current version plus versions 1 and 2`,
 		Args: cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
+			trust.Authenticate(spiffeId)
+
 			api := spike.NewWithSource(source)
 
 			path := args[0]

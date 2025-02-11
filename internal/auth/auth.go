@@ -27,6 +27,54 @@ func IsPilot(spiffeid string) bool {
 	return spiffeid == SpikePilotSpiffeId()
 }
 
+// IsPilotRecover checks if a given SPIFFE ID matches the SPIKE Pilot's
+// recovery SPIFFE ID.
+//
+// This function verifies if the provided SPIFFE ID corresponds to a SPIKE Pilot
+// instance with recovery capabilities by comparing it against the expected
+// recovery SPIFFE ID returned by SpikePilotRecoverSpiffeId().
+//
+// Parameters:
+//   - spiffeId: The SPIFFE ID string to check
+//
+// Returns:
+//   - bool: true if the provided SPIFFE ID matches the pilot's recovery ID,
+//     false otherwise
+//
+// Example usage:
+//
+//	id := "spiffe://example.org/spike/pilot/recover"
+//	if IsPilotRecover(id) {
+//	    // Handle recovery-specific logic
+//	}
+func IsPilotRecover(spiffeId string) bool {
+	return spiffeId == SpikePilotRecoverSpiffeId()
+}
+
+// IsPilotRestore checks if a given SPIFFE ID matches the SPIKE Pilot's restore
+// SPIFFE ID.
+//
+// This function verifies if the provided SPIFFE ID corresponds to a pilot
+// instance with restore capabilities by comparing it against the expected
+// restore SPIFFE ID returned by SpikePilotRestoreSpiffeId().
+//
+// Parameters:
+//   - spiffeId: The SPIFFE ID string to check
+//
+// Returns:
+//   - bool: true if the provided SPIFFE ID matches the pilot's restore ID,
+//     false otherwise
+//
+// Example usage:
+//
+//	id := "spiffe://example.org/spike/pilot/restore"
+//	if IsPilotRestore(id) {
+//	    // Handle restore-specific logic
+//	}
+func IsPilotRestore(spiffeId string) bool {
+	return spiffeId == SpikePilotRestoreSpiffeId()
+}
+
 // IsKeeper checks if a given SPIFFE ID matches the SPIKE Keeper's SPIFFE ID.
 //
 // This function is used for identity verification to determine if the provided
@@ -80,7 +128,8 @@ func CanTalkToAnyone(_ string) bool {
 //   - spiffeid: The SPIFFE ID string to check
 //
 // Returns:
-//   - bool: true if the SPIFFE ID matches SPIKE Nexus' SPIFFE ID, false otherwise
+//   - bool: true if the SPIFFE ID matches SPIKE Nexus' SPIFFE ID,
+//     false otherwise
 func CanTalkToKeeper(spiffeid string) bool {
 	return spiffeid == SpikeNexusSpiffeId()
 }

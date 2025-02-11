@@ -26,6 +26,7 @@ const AuditDelete AuditAction = "delete"
 const AuditRead AuditAction = "read"
 const AuditUndelete AuditAction = "undelete"
 const AuditFallback AuditAction = "fallback"
+const AuditBlocked AuditAction = "blocked"
 
 // AuditEntry represents a single audit log entry containing information about
 // user actions within the system.

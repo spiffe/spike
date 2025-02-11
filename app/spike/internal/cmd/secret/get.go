@@ -9,7 +9,9 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
+
 	spike "github.com/spiffe/spike-sdk-go/api"
+	"github.com/spiffe/spike/app/spike/internal/trust"
 )
 
 // newSecretGetCommand creates and returns a new cobra.Command for retrieving
@@ -38,12 +40,16 @@ import (
 //   - SPIKE not initialized: Prompts user to run 'spike init'
 //   - Secret not found: Displays appropriate message
 //   - Read errors: Displays error message
-func newSecretGetCommand(source *workloadapi.X509Source) *cobra.Command {
+func newSecretGetCommand(
+	source *workloadapi.X509Source, spiffeId string,
+) *cobra.Command {
 	var getCmd = &cobra.Command{
 		Use:   "get <path>",
 		Short: "Get secrets from the specified path",
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
+			trust.Authenticate(spiffeId)
+
 			api := spike.NewWithSource(source)
 
 			path := args[0]

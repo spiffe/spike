@@ -12,6 +12,8 @@ import (
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	spike "github.com/spiffe/spike-sdk-go/api"
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
+
+	"github.com/spiffe/spike/app/spike/internal/trust"
 )
 
 // newPolicyCreateCommand creates a new Cobra command for policy creation.
@@ -52,11 +54,15 @@ import (
 //   - System not initialized (requires running 'spike init' first)
 //   - Invalid SPIFFE ID pattern
 //   - Policy creation failure
-func newPolicyCreateCommand(source *workloadapi.X509Source) *cobra.Command {
+func newPolicyCreateCommand(
+	source *workloadapi.X509Source, spiffeId string,
+) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "create",
 		Short: "Create a new policy",
 		Run: func(cmd *cobra.Command, args []string) {
+			trust.Authenticate(spiffeId)
+
 			name, _ := cmd.Flags().GetString("name")
 			spiffeIddPattern, _ := cmd.Flags().GetString("spiffeid")
 			pathPattern, _ := cmd.Flags().GetString("path")

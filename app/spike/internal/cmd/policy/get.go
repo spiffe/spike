@@ -11,6 +11,8 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	spike "github.com/spiffe/spike-sdk-go/api"
+
+	"github.com/spiffe/spike/app/spike/internal/trust"
 )
 
 // newPolicyGetCommand creates a new Cobra command for retrieving policy
@@ -64,16 +66,20 @@ import (
 //   - Policy not found
 //   - Insufficient permissions
 //   - JSON formatting failure
-func newPolicyGetCommand(source *workloadapi.X509Source) *cobra.Command {
+func newPolicyGetCommand(
+	source *workloadapi.X509Source, spiffeId string,
+) *cobra.Command {
 	return &cobra.Command{
 		Use:   "get <policy-id>",
 		Short: "Get policy details",
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
+			trust.Authenticate(spiffeId)
+
 			api := spike.NewWithSource(source)
 
-			policyID := args[0]
-			policy, err := api.GetPolicy(policyID)
+			policyId := args[0]
+			policy, err := api.GetPolicy(policyId)
 			if err != nil {
 				fmt.Printf("Error: %v\n", err)
 				return

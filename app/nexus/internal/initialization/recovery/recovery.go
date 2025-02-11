@@ -2,6 +2,7 @@ package recovery
 
 import (
 	"encoding/base64"
+	"encoding/hex"
 	"encoding/json"
 	"net/url"
 	"time"
@@ -38,6 +39,8 @@ import (
 func RecoverBackingStoreUsingKeeperShards(source *workloadapi.X509Source) {
 	const fName = "RecoverBackingStoreUsingKeeperShards"
 
+	log.Log().Info(fName, "msg", "Recovering backing store using keeper shards")
+
 	successfulKeeperShards := make(map[string]string)
 
 	for {
@@ -45,11 +48,33 @@ func RecoverBackingStoreUsingKeeperShards(source *workloadapi.X509Source) {
 			source, successfulKeeperShards,
 		)
 		if recoverySuccessful {
+			log.Log().Info(fName, "msg", "Recovery successful")
 			return
 		}
+
+		log.Log().Warn(fName, "msg", "Recovery unsuccessful. Will retry.")
+		log.Log().Warn(fName, "msg",
+			"Successful keepers: "+string(rune(len(successfulKeeperShards))),
+		)
+		log.Log().Warn(fName, "msg", "You may need to manually bootstrap.")
+
 		log.Log().Info(fName, "msg", "Waiting for keepers to respond")
+
 		time.Sleep(5 * time.Second)
 	}
+}
+
+func RestoreBackingStoreUsingPilotShards(shards []string) {
+	firstShard := shards[0]
+	firstShardDecoded, _ := base64.StdEncoding.DecodeString(firstShard)
+	secondShard := shards[1]
+	secondShardDecoded, _ := base64.StdEncoding.DecodeString(secondShard)
+
+	ss := [][]byte{firstShardDecoded, secondShardDecoded}
+	binaryRec := RecoverRootKey(ss)
+	encoded := hex.EncodeToString(binaryRec)
+	state.Initialize(encoded)
+	state.SetRootKey(binaryRec)
 }
 
 // SendShardsPeriodically distributes key shards to configured keeper nodes at
@@ -74,6 +99,13 @@ func SendShardsPeriodically(source *workloadapi.X509Source) {
 
 	for range ticker.C {
 		log.Log().Info(fName, "msg", "Sending shards to keepers")
+
+		// if no root key skip.
+		rk := state.RootKey()
+		if rk == nil {
+			log.Log().Info(fName, "msg", "rootKey is nil; moving on...")
+			continue
+		}
 
 		keepers := env.Keepers()
 		if len(keepers) < 3 {
@@ -103,7 +135,7 @@ func SendShardsPeriodically(source *workloadapi.X509Source) {
 				continue
 			}
 
-			rk := getRootKey()
+			rk := state.RootKey()
 			if rk == nil {
 				log.Log().Info(fName, "msg", "rootKey is nil; moving on...")
 				continue
@@ -145,6 +177,28 @@ func SendShardsPeriodically(source *workloadapi.X509Source) {
 	}
 }
 
+func PilotRecoveryShards() []string {
+	rk := state.RootKey()
+	if rk == nil {
+		return []string{}
+	}
+
+	rootSecret, rootShares := computeShares(rk)
+
+	sanityCheck(rootSecret, rootShares)
+
+	result := make([]string, 0, len(rootShares))
+	for _, share := range rootShares {
+		contribution, err := share.Value.MarshalBinary()
+		if err != nil {
+			continue
+		}
+		shard := base64.StdEncoding.EncodeToString(contribution)
+		result = append(result, shard)
+	}
+	return result
+}
+
 // BootstrapBackingStoreWithNewRootKey initializes the backing store with a new
 // root key if it hasn't been bootstrapped already. It generates a new AES-256
 // root key, initializes the state with this key, and distributes key shards
@@ -167,7 +221,7 @@ func BootstrapBackingStoreWithNewRootKey(source *workloadapi.X509Source) {
 	log.Log().Info(fName, "msg",
 		"Tombstone file does not exist. Bootstrapping SPIKE Nexus...")
 
-	k := getRootKey()
+	k := state.RootKey()
 	if k != nil {
 		log.Log().Info(fName, "msg",
 			"Recovery info found. Backing store already bootstrapped.",
