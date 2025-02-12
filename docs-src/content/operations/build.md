@@ -1,11 +1,14 @@
 +++
-title = "Operations"
-weight = 4
+title = "SPIKE Cross-Platform Build"
+weight = 1
 sort_by = "weight"
 +++
 
 {{ star() }}
 
-# Operations
+a
+sd
+
+----
 
 {{ toc_operations() }}

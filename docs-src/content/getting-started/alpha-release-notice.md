@@ -1,17 +1,10 @@
 +++
 title = "Alpha Release Notice"
-weight = 1
+weight = 2
 sort_by = "weight"
 +++
 
-Pssst... [**⭐️ star SPIKE on GitHub ⭐️**][github] and help spread the word
-about this amazing technology.
-
-[github]: https://github.com/spiffe/spike
-
----
-
-[![SPIKE](/assets/spike-banner-lg.png)](/)
+{{ star() }}
 
 # 🚨 Alpha Release Notice 🚨
 
@@ -34,3 +27,7 @@ Please 🐻 with us for now, and send your feedback to
 
 We will let you know through various channels when the project reaches adequate
 maturity for public adoption.
+
+----
+
+{{ toc_getting_started() }}

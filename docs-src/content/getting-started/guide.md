@@ -1,17 +1,10 @@
 +++
 title = "Quickstart"
-weight = 2
+weight = 1
 sort_by = "weight"
 +++
 
-Pssst... [**⭐️ star SPIKE on GitHub ⭐️**][github] and help spread the word
-about this amazing technology.
-
-[github]: https://github.com/spiffe/spike
-
----
-
-[![SPIKE](/assets/spike-banner-lg.png)](/)
+{{ star() }}
 
 # SPIKE Quickstart Guide
 
@@ -284,3 +277,7 @@ spike secret get /secrets/db-secret
 That's about it.
 
 Enjoy.
+
+----
+
+{{ toc_getting_started() }}

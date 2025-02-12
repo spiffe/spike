@@ -4,9 +4,23 @@ weight = 1
 sort_by = "weight"
 +++
 
-[![SPIKE](/assets/spike-banner.png)](/)
+{{ star() }}
 
 # SPIKE System Overview
+
+This document provides an overview of the **SPIKE** system, a 
+[**SPIFFE**][spiffe]-native Secrets Management solution. It is designed to ensure 
+secure storage, recovery, and management of sensitive information with a focus 
+on simplicity, reliability, and scalability for production environments.
+
+The document describes the components that make up the **SPIKE** system, their
+roles, and how they interact to provide a robust, high-availability
+architecture. It also highlights the security principles and operational
+efficiencies implemented within the system. Additionally, the document outlines
+planned visual aids and diagrams to further explain system workflows, such as
+shard management and recovery processes.
+
+[spiffe]: https://spiffe.io/ "SPIFFE"
 
 ## SPIKE Components
 
@@ -74,4 +88,18 @@ TODO: link to SPIKE production hardening guide for details.
 ```txt
 TODO: link SPIKE production hardening guide and also explain how these can
 be done in the SPIKE production hardening guide.
+
+TODO: add key value store data diagram.
+
+TODO: add bootstrapping flow sequen diagram
+
+TOOD: add nexus shard sharign sequence diagram
+
+TODO: add doomsday recovery sequence diagram.
+
+TODO: add a sqlite database entity diagram.
 ```
+
+----
+
+{{ toc_architecture() }}

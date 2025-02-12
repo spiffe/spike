@@ -1,11 +1,13 @@
 +++
-title = "Community"
+title = "Contact Us"
 weight = 2
 sort_by = "weight"
 +++
 
 {{ star() }}
 
-## Community
+contact us.
+
+----
 
 {{ toc_community() }}

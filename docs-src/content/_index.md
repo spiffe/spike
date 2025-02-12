@@ -3,18 +3,15 @@ title = "index"
 insert_anchor_links = "right"
 +++
 
-Pssst... [**⭐️ star SPIKE on GitHub ⭐️**][github] and help spread the word 
-about this amazing technology.
-
----
-
-[![SPIKE](/assets/spike-banner-lg.png)](/)
+{{ star(large=true) }}
 
 > "It is really cool to see a new secret store built on top of SPIFFE
 > in a native way. This is a great way to show how a common production
 > identity framework can make other things much simpler and automated."
 >
 > --- **Joe Beda**, creator of SPIFFE, co-creator of Kubernetes.
+
+----
 
 ## Secure Production Identity for Key Encryption (SPIKE)
 
@@ -26,7 +23,7 @@ as its identity control plane.
 
 ## Getting Started
 
-Here are a few pointers to learn more about **SPIKE**.
+Here are a few pointers to learn more about **SPIKE**:
 
 * [**See the Architectural Design Document**][architecture] to learn more
   about **SPIKE**,

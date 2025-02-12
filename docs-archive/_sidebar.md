@@ -17,8 +17,6 @@
   * [Architectural Decision Records](adrs/README.md)
   * [Flowcharts and Diagrams](architecture/charts/README.md)
     * [Key-Value Store](architecture/charts/key-value-store.md)
-    * [SPIKE Login](architecture/charts/login.md)
-    * [SPIKE Initialization](architecture/charts/initialization.md)
     * [SPIKE Nexus Admin Init Flow](architecture/charts/user-init-flow.md)
     * [SPIKE Nexus Admin Token Verification](architecture/charts/admin-token-verification.md)
     * [SPIKE Nexus Root Key Provisioning](architecture/charts/day-zero.md)

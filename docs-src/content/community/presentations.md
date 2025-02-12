@@ -1,11 +1,13 @@
 +++
-title = "Community"
-weight = 2
+title = "Presentations and Demos"
+weight = 3
 sort_by = "weight"
 +++
 
 {{ star() }}
 
-## Community
+presos.
+
+----
 
 {{ toc_community() }}

@@ -17,5 +17,7 @@ highlight_theme = "base16-ocean-dark"
 
 smart_punctuation = true
 
-[extra]
 # Put all your custom variables here
+[extra]
+release = "https://api.github.com/repos/spiffe/spike/releases/latest"
+favicon = "/assets/spike-favicon-16x16.png"
