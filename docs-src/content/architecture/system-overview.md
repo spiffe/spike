@@ -8,23 +8,18 @@ sort_by = "weight"
 
 # SPIKE System Overview
 
-This document provides an overview of the **SPIKE** system, a 
-[**SPIFFE**][spiffe]-native Secrets Management solution. It is designed to ensure 
-secure storage, recovery, and management of sensitive information with a focus 
-on simplicity, reliability, and scalability for production environments.
-
-The document describes the components that make up the **SPIKE** system, their
-roles, and how they interact to provide a robust, high-availability
-architecture. It also highlights the security principles and operational
-efficiencies implemented within the system. Additionally, the document outlines
-planned visual aids and diagrams to further explain system workflows, such as
-shard management and recovery processes.
+This document provides an overview of **SPIKE**, a [**SPIFFE**][spiffe]-native 
+Secrets Management solution. It is designed to ensure secure storage, recovery, 
+and management of sensitive data with a focus on simplicity, reliability, 
+and scalability for production environments.
 
 [spiffe]: https://spiffe.io/ "SPIFFE"
 
 ## SPIKE Components
 
-**SPIKE** has the following system components:
+SPIKE (*Secure Production Identity for Key Encryption*) is a secrets management
+system build on top of a SPIFFE identity control plane, consisting of three
+components:
 
 * **SPIKE Nexus** (`./nexus`): The secrets store
 * **SPIKE Pilot** (`./spike`): The CLI

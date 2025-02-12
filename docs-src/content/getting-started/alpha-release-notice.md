@@ -8,11 +8,11 @@ sort_by = "weight"
 
 # 🚨 Alpha Release Notice 🚨
 
-* **Project Status**: **Alpha**
-
 This project is currently in the Alpha stage. It's functional and available for
 experimentation, but it's **NOT** yet ready for production use: You may
 encounter bugs, incomplete features, or breaking changes as the project evolves.
+
+## **Project Status**: **Alpha**
 
 Use this project at your own risk if you're experimenting or contributing to its
 development. For production-level stability, please wait for a more stable

@@ -1,5 +1,7 @@
 ## SPIKE Security Model
 
+// TODO: read this and ensure its still consistent.
+
 Here is a brief introduction to **SPIKE** security model.
 
 ### Authentication and Communication

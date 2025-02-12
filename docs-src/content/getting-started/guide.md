@@ -11,6 +11,18 @@ sort_by = "weight"
 In this guide, you will learn how to build, deploy, and test **SPIKE** from the
 source.
 
+This guide assumes basic familiarity with terminal commands and the ability to
+install and execute the required software. It is recommended to have
+administrative privileges on your system, as some steps might require them. 
+
+The tools and resources mentioned in this guide are essential for building and
+working with **SPIKE** effectively.
+
+Make sure to follow each step carefully to ensure a smooth experience. In case
+you encounter issues, please discuss them on the [SPIFFE community Slack][slack].
+
+[slack]: https://slack.spiffe.io/ "SPIFFE Slack"
+
 ## Prerequisites
 
 This quickstart guide assumes you are using an [Ubuntu Linux][ubuntu] operating
@@ -38,6 +50,65 @@ In addition, you will need the usual suspects:
   (*i.e., `sudo apt install build-essential`*)
 
 [copilot]: https://copilot.github.com/ "GitHub Copilot"
+
+## Go Environment Setup
+
+Here's part of the `go env` setting we use for this guide. Yours might slightly 
+vary depending on your development configuration.
+
+The environment setup shown below is mostly what Go uses by default, yet, we 
+provide them just-in-case to eliminate any environment-related setup issues you 
+might face.
+
+```bash
+go env
+# GO111MODULE='on'
+# GOCACHE='/home/spike/.cache/go-build'
+# GOENV='/home/spike/.config/go/env'
+# GOMODCACHE='/home/spike/packages/go/pkg/mod'
+# GONOPROXY=''
+# GONOSUMDB=''
+# GOOS='linux'
+# GOPATH='/home/spike/packages/go'
+# GOPRIVATE=''
+# GOPROXY='https://proxy.golang.org,direct'
+# GOROOT='/usr/local/go'
+# GOSUMDB='sum.golang.org'
+# GOTOOLCHAIN='auto'
+# GOMOD='/home/spike/Desktop/WORKSPACE/spike/go.mod'
+# GOWORK=''
+```
+
+If needed, you can also use Go's built-in tooling to view and modify your Go 
+environment  settings.
+
+Use the `go env` command to inspect or set specific environment variables.
+
+For example:
+
+```bash
+# View the current list of environment variables
+go env
+
+# Set a specific environment variable like GOPATH
+go env -w GOPATH=$HOME/my-gopath
+
+# Set multiple variables, e.g., GOROOT and GO111MODULE
+go env -w GOROOT=/usr/local/go GO111MODULE=on
+
+# Verify the changes were made
+go env GOPATH
+go env GOROOT
+go env GO111MODULE
+```
+
+These changes made using the `go env -w` command are persistent and stored in
+Go configuration files. You can view these changes in the file located at
+`$(go env GOENV)`. To reset a variable to its default value, use:
+
+```bash
+go env -u GOPATH
+```
 
 ## Building SPIRE
 
