@@ -300,7 +300,7 @@ The following script will create registration entries for the SPIKE components:
 
 ```bash
 cd $WORKSPACE/spike
-./hack/spire-server-entry-register-spike.sh
+./hack/spire-server-entry-spike-register.sh
 ```
 
 ## Start SPIRE Agent

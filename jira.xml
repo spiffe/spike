@@ -15,6 +15,9 @@
       implement doomsday dr; do a minor release bump; cut a release.
     </issue>
     <next>
+        <issue kind="bug">
+            demo-create-policy.sh still does not work. regex problem.
+        </issue>
       <issue kind="bug">
           If the secret is deleted it gives a peer connection error, instead of "not found"
 
@@ -298,11 +301,43 @@
       MaxIdleConns: 5,
       ConnMaxLifetime: time.Hour,
     </issue>
+      <issue>
+          * Implement strict API access controls:
+          * Use mTLS for all API connections
+          * Enforce SPIFFE-based authentication
+          * Implement rate limiting to prevent brute force attacks
+          * Configure request validation:
+          * Validate all input parameters
+          * Implement request size limits
+          * Set appropriate timeout values
+          * Audit API usage:
+          * Log all API requests
+          * Monitor for suspicious patterns
+          * Regular review of API access logs
+          ----
+          * Enable comprehensive auditing:
+          * Log all secret access attempts
+          * Track configuration changes
+          * Monitor system events
+          * Implement compliance controls:
+          * Regular compliance checks
+          * Documentation of security controls
+          * Periodic security assessments
+          ---
+          * Tune for security and performance:
+          * Optimize TLS session handling
+          * Configure appropriate connection pools
+          * Set proper cache sizes
+          * Monitor performance metrics:
+          * Track response times
+          * Monitor error rates
+          * Alert on performance degradation
+      </issue>
     <issue>
       spike operator reset:
         deletes and recreates the ~/.spike folder
         restarts the initialization flow to rekey keepers.
-    <issue>
+
       volkan@spike:~/Desktop/WORKSPACE/spike$ spike secret get /db
       Error reading secret: post: Problem connecting to peer
 
