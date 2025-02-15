@@ -1,4 +1,8 @@
 +++
+# //    \\ SPIKE: Secure your secrets with SPIFFE.
+# //  \\\\\ Copyright 2024-present SPIKE contributors.
+# // \\\\\\\ SPDX-License-Identifier: Apache-2.
+
 title = "Contact Us"
 weight = 2
 sort_by = "weight"
@@ -34,10 +38,12 @@ You can also reach out to us on via email, sending an email to
 
 Additionally, you can [create a **GitHub**
 issue](https://github.com/spiffe/spike/issues/new); however, we recommend
-using the [SPIFFE **Slack**](https://slack.spiffe.io), or
-[sending an email to the team](mailto:team@spike.ist) to initiate a discussion
-before creating an issue.
+using the [SPIFFE **Slack**](https://slack.spiffe.io).
 
 ----
 
 {{ toc_community() }}
+
+----
+
+{{ toc_top() }}

@@ -1,4 +1,8 @@
 +++
+# //    \\ SPIKE: Secure your secrets with SPIFFE.
+# //  \\\\\ Copyright 2024-present SPIKE contributors.
+# // \\\\\\\ SPDX-License-Identifier: Apache-2.
+
 title = "Presentations and Demos"
 weight = 3
 sort_by = "weight"
@@ -52,3 +56,7 @@ capabilities and showcase its innovative features.
 ----
 
 {{ toc_community() }}
+
+----
+
+{{ toc_top() }}

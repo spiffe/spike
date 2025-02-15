@@ -1,3 +1,9 @@
+{#
+# \\
+# \\\\ SPIKE: Secure your secrets with SPIFFE.
+# \\\\\\
+#}
+
 {% if large %}
 [![SPIKE](/assets/spike-banner-lg.png)](/)
 {% else %}

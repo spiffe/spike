@@ -1,0 +1,303 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://spike.ist/main.css">
+    <link rel="icon" href="https://spike.ist/assets/spike-favicon-16x16.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+    <title>  | ADR-0010: Session Token Storage Strategy for SPIKE Nexus </title>
+</head>
+<body>
+
+<script>
+        fetch('https://api.github.com/repos/spiffe/spike/releases/latest')
+            .then((response) => {
+                return response.json();
+            })
+            .then((data) => {
+                let release_name = data.name;
+                let html_url = data.html_url;
+                release.innerHTML = `<a href='${html_url}'>${release_name}</a>`;
+            });
+    </script>
+<main>
+    
+    <nav>
+            <h1><a href="https:&#x2F;&#x2F;spike.ist&#x2F;"></a></h1>
+            <div id="release"></div>
+            <a href="javascript:void(0);" onclick="burger()" id="mobile" class="ms-Icon--GlobalNavButton"></a>
+            <div id="trees">
+                <input class="tree-toggle" type="checkbox" id="getting-started"
+                           />
+                    <label class="tree-toggle-label"
+                           for="getting-started">Getting Started</label>
+
+                    <ul class="subtree">
+                        <li >
+                                <a href="https://spike.ist/getting-started/guide/">Quickstart</a>
+                            </li>
+
+                            <li >
+                                <a href="https://spike.ist/getting-started/alpha-release-notice/">Alpha Release Notice</a>
+                            </li>
+
+                            <li >
+                                <a href="https://spike.ist/getting-started/configuration/">Configuring SPIKE</a>
+                            </li>
+
+                            </ul>
+                <input class="tree-toggle" type="checkbox" id="community"
+                           />
+                    <label class="tree-toggle-label"
+                           for="community">Community</label>
+
+                    <ul class="subtree">
+                        <li >
+                                <a href="https://spike.ist/community/hello/">Hello Universe</a>
+                            </li>
+
+                            <li >
+                                <a href="https://spike.ist/community/contact/">Contact Us</a>
+                            </li>
+
+                            <li >
+                                <a href="https://spike.ist/community/presentations/">Presentations and Demos</a>
+                            </li>
+
+                            </ul>
+                <input class="tree-toggle" type="checkbox" id="spike-architecture"
+                           checked/>
+                    <label class="tree-toggle-label"
+                           for="spike-architecture">SPIKE Architecture</label>
+
+                    <ul class="subtree">
+                        <li >
+                                <a href="https://spike.ist/architecture/system-overview/">System Overview</a>
+                            </li>
+
+                            <li >
+                                <a href="https://spike.ist/architecture/security-model/">SPIKE Security Model</a>
+                            </li>
+
+                            <li >
+                                <a href="https://spike.ist/architecture/architectural-decision-records/">ADRs</a>
+                            </li>
+
+                            </ul>
+                <input class="tree-toggle" type="checkbox" id="tracking"
+                           />
+                    <label class="tree-toggle-label"
+                           for="tracking">Tracking</label>
+
+                    <ul class="subtree">
+                        <li >
+                                <a href="https://spike.ist/tracking/changelog/">Changelog</a>
+                            </li>
+
+                            <li >
+                                <a href="https://spike.ist/tracking/snapshots/">Documentation Snapshots</a>
+                            </li>
+
+                            </ul>
+                <input class="tree-toggle" type="checkbox" id="operations"
+                           />
+                    <label class="tree-toggle-label"
+                           for="operations">Operations</label>
+
+                    <ul class="subtree">
+                        <li >
+                                <a href="https://spike.ist/operations/build/">SPIKE Cross-Platform Build</a>
+                            </li>
+
+                            <li >
+                                <a href="https://spike.ist/operations/production/">SPIKE Production Setup</a>
+                            </li>
+
+                            <li >
+                                <a href="https://spike.ist/operations/recovery/">SPIKE Recovery Procedures</a>
+                            </li>
+
+                            <li >
+                                <a href="https://spike.ist/operations/release/">SPIKE Relase Management</a>
+                            </li>
+
+                            </ul>
+                </div>
+        </nav>
+    <article>
+
+
+
+        <div id="on_right">
+                <span id="search-ico" class="ms-Icon--Search"></span>
+            </div>
+            <div class="search-container">
+                <input id="search" type="search" placeholder="Search as you type...">
+                <div class="search-results">
+                    <div class="search-results__header"></div>
+                    <ul class="search-results__items"></ul>
+                </div>
+            </div>
+        <p style="background:#ffffff;text-align:center;padding:1em;
+max-width: 800px;margin: 0 auto;
+border-radius: 6px;margin-bottom: -0.5em;
+padding-bottom: 1.5em;
+box-shadow: rgba(0, 0, 0, 0.2) 0px 18px 50px -10px;
+">
+            Pssst... <a href="https://github.com/spiffe/spike"
+        style="border-bottom: 2px solid #07bdd9"
+        ><strong>⭐️
+            Star SPIKE on GitHub ⭐️</strong></a>.<br>
+            Spread the word about this amazing technology 🐢⚡️.
+        </p>
+
+
+        <div id="wrap">
+             
+        <p><a href="/docs-src/public" title="Back to home"><img src="/docs/assetsssets/spike-banner.png"
+                                                                style="float:left;margin: 0 1em 0 1em;" alt="SPIKE Logo" /></a></p>
+<h1 id="adr-0010-session-token-storage-strategy-for-spike-nexus">ADR-0010: Session Token Storage Strategy for SPIKE Nexus</h1>
+<br style="clear:both" />
+<ul>
+<li>Status: accepted</li>
+<li>Date: 2024-11-03</li>
+<li>Tags: Security, Sessions, Memory Management, Scalability</li>
+</ul>
+<h2 id="context">Context</h2>
+<p><strong>SPIKE Nexus</strong> requires storage of session tokens for admin authentication.
+We need to evaluate the option of storing these tokens in-memory (<em>as opposed
+to storing them in a database</em>).</p>
+<p>Key considerations:</p>
+<ul>
+<li><strong>SPIKE Nexus</strong> is primarily used by administrators, not end-users</li>
+<li>Session persistence across server restarts is not a critical requirement</li>
+<li>Security is a primary concern for the SPIKE ecosystem</li>
+<li>User scale is limited (admin-focused tool)</li>
+<li>Memory consumption for session tokens is minimal</li>
+</ul>
+<h2 id="decision">Decision</h2>
+<p>We will implement in-memory storage for session tokens in <strong>SPIKE Nexus</strong>
+instead of storing them in the database.</p>
+<h2 id="rationale">Rationale</h2>
+<h3 id="why-in-memory-storage">Why In-Memory Storage:</h3>
+<h4 id="enhanced-security"><strong>Enhanced Security</strong></h4>
+<ul>
+<li>Eliminates risks associated with persistent storage</li>
+<li>Reduces attack surface by removing database attack vectors</li>
+<li>Automatic token invalidation on server restart provides security benefit</li>
+<li>Aligns with SPIKE’s security-first approach</li>
+</ul>
+<h4 id="performance"><strong>Performance</strong></h4>
+<ul>
+<li>Faster token validation due to in-memory access</li>
+<li>Eliminates encryption/decryption overhead</li>
+<li>Reduces database load</li>
+</ul>
+<h4 id="simplicity"><strong>Simplicity</strong></h4>
+<ul>
+<li>Simpler implementation and maintenance</li>
+<li>No need for token cleanup mechanisms</li>
+<li>Reduces complexity in encryption management</li>
+</ul>
+<h4 id="scale-considerations"><strong>Scale Considerations</strong></h4>
+<ul>
+<li>Limited admin users means memory impact is negligible</li>
+<li>Session tokens are small in size</li>
+<li>Vertical scaling is sufficient for admin-focused tool</li>
+</ul>
+<h3 id="why-not-database-storage">Why Not Database Storage</h3>
+<ol>
+<li>Session persistence across restarts is not a requirement</li>
+<li>Additional security exposure through database is unnecessary</li>
+<li>Encryption/decryption overhead is not justified</li>
+<li>Database cleanup complexity can be avoided</li>
+</ol>
+<h2 id="consequences">Consequences</h2>
+<h3 id="positive">Positive:</h3>
+<ol>
+<li>Improved security posture</li>
+<li>Simplified implementation</li>
+<li>Better performance</li>
+<li>Reduced maintenance overhead</li>
+</ol>
+<h3 id="negative">Negative:</h3>
+<ol>
+<li>Sessions will be lost on server restart/crash</li>
+<li>No persistent audit trail of sessions</li>
+<li>Potential minor increase in memory usage</li>
+<li>May complicate future horizontal scaling if needed</li>
+</ol>
+<h3 id="mitigations">Mitigations:</h3>
+<ol>
+<li>Clear documentation that sessions require re-authentication after server restart</li>
+<li>Implement proper logging for security events to compensate for lack of session history</li>
+<li>Monitor memory usage in production</li>
+<li>Consider distributed caching solutions if horizontal scaling becomes necessary</li>
+</ol>
+<h2 id="implementation-notes">Implementation Notes</h2>
+<ol>
+<li>Use thread-safe in-memory data structure for token storage</li>
+<li>Implement session timeout mechanism</li>
+<li>Add monitoring for memory usage</li>
+<li>Include proper logging for security-relevant events</li>
+</ol>
+<hr />
+<ul>
+<li><a href="https://spike.ist/architecture/adrs/adr-0017/">ADR-0017: Synchronous Persistence for SPIKE Secrets Store</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0016/">ADR-0016: Memory-First Secrets Store</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0015/">ADR-0015: Use Singular Form for File and Package Naming</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0014/">ADR-0014: Maintaining SQLite as SPIKE’s Primary Storage Backend</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0013/">ADR-0013: S3-Compatible Storage as SPIKE’s Backing Store</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0012/">ADR-0012: HTTP Methods for SPIKE API</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0011/">ADR-0011: PostgreSQL as SPIKE’s Backing Store</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0010/">ADR-0010: Session Token Storage Strategy for SPIKE Nexus</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0009/">ADR-0009: Multi-Administrator Support System</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0008/">ADR-0008: Administrative Access Control System</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0007/">ADR-0007: Root Key Lifecycle and Management Strategy</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0006/">ADR-0006: Trust Boundary Definition and Security Assumptions</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0005/">ADR-0005: Use SPIFFE mTLS for Inter-Component Authentication and Communication</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0004/">ADR-0004: SPIKE Keeper Minimalist Design Approach</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0003/">ADR-0003: Root Key Management and Storage Strategy</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0002/">ADR-0002: Use Docsify for Documentation System</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0001/">ADR-0001: Display Secrets in Plain Text in SPIKE Pilot Admin CLI</a></li>
+</ul>
+<hr />
+<ul>
+<li><a href="https://spike.ist/architecture/system-overview/"><strong>SPIKE</strong> System Overview</a></li>
+<li><a href="https://spike.ist/architecture/security-model/"><strong>SPIKE</strong> Security Model</a></li>
+<li><a href="https://spike.ist/architecture/architectural-decision-records/"><strong>SPIKE</strong> Architectural Decision Records</a></li>
+</ul>
+
+    
+
+        </div>
+        <footer style="padding:1em;padding-top:1em;padding-bottom:1em;
+font-size: 14px;
+margin-top: 2em;
+max-width: 550px;
+margin: 2em auto;
+" id="footer">
+
+            Copyright © 2024-present <strong>SPIKE Contributors</strong>.<br>
+            <strong>SPIKE</strong>'s code
+            is distributed under <a class="text-blue-600 underline" href="https://www.mozilla.org/en-US/MPL/2.0/">Mozilla Public License (v2.0)</a>.
+            <br>
+            The documentation on this website
+            is distributed under <a class="text-blue-600 underline" href="https://creativecommons.org/licenses/by/4.0/">CC-BY-4.0</a>.
+            <br><br>
+            We <strong>do not</strong> collect your data.
+            This site <strong>does not</strong> use any tracking cookies or scripts.
+        </footer>
+
+
+
+    </article>
+
+</main>
+
+
+    <script type="text/javascript" src="https://spike.ist/elasticlunr.min.js" defer></script>
+    <script type="text/javascript" src="https://spike.ist/search_index.en.js" defer></script>
+<script type="text/javascript" src="https://spike.ist/js.js" defer></script>
+</body>
+</html>

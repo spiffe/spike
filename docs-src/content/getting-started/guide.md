@@ -1,4 +1,8 @@
 +++
+# //    \\ SPIKE: Secure your secrets with SPIFFE.
+# //  \\\\\ Copyright 2024-present SPIKE contributors.
+# // \\\\\\\ SPDX-License-Identifier: Apache-2.
+
 title = "Quickstart"
 weight = 1
 sort_by = "weight"
@@ -9,17 +13,14 @@ sort_by = "weight"
 # SPIKE Quickstart Guide
 
 In this guide, you will learn how to build, deploy, and test **SPIKE** from the
-source.
-
-This guide assumes basic familiarity with terminal commands and the ability to
-install and execute the required software. It is recommended to have
+source. This guide assumes basic familiarity with terminal commands and the 
+ability to install and execute the required software. It is recommended to have
 administrative privileges on your system, as some steps might require them. 
 
 The tools and resources mentioned in this guide are essential for building and
-working with **SPIKE** effectively.
-
-Make sure to follow each step carefully to ensure a smooth experience. In case
-you encounter issues, please discuss them on the [SPIFFE community Slack][slack].
+working with **SPIKE** effectively. Make sure to follow each step carefully to 
+ensure a smooth experience. In case you encounter issues, please discuss 
+them on the [SPIFFE community Slack][slack].
 
 [slack]: https://slack.spiffe.io/ "SPIFFE Slack"
 
@@ -29,7 +30,13 @@ This quickstart guide assumes you are using an [Ubuntu Linux][ubuntu] operating
 system. The steps may slightly differ if you are using a different operating
 system.
 
+**SPIKE** can run anywhere [SPIFFE][spiffe] can be deployed. For consistency, 
+the tutorials and guides in **SPIKE** documentation use [**Ubuntu**][ubuntu] as 
+the base operating system. Though, if you encounter issues with your OS, feel
+free to discuss them on the [SPIFFE community Slack][slack].
+
 [ubuntu]: https://ubuntu.com/
+[spiffe]: https://spiffe.io/
 
 Here's the OS details that we are testing this guide on:
 
@@ -79,10 +86,9 @@ go env
 # GOWORK=''
 ```
 
-If needed, you can also use Go's built-in tooling to view and modify your Go 
-environment  settings.
-
-Use the `go env` command to inspect or set specific environment variables.
+If need, you can also use Go's built-in tooling to view and modify your Go 
+environment settings. Use the `go env` command to inspect or set specific 
+environment variables.
 
 For example:
 
@@ -112,13 +118,14 @@ go env -u GOPATH
 
 ## Building SPIRE
 
-To get started let's create a development version of SPIRE. Note that this is
-not a production-ready setup. For production, you should follow the
-[official SPIRE documentation][spire-prod].
+To get started let's create a development version of [**SPIRE**][spire]. 
+Note that this is not a production-ready setup. For production, you should 
+follow the [official SPIRE documentation][spire-prod].
 
-[spire-prod]: https://spiffe.io/docs/latest/deploying/configuring/
+[spire]: https://spiffe.io/docs/latest/spire-about/ "SPIRE"
+[spire-prod]: https://spiffe.io/docs/latest/deploying/configuring/ "SPIRE Production Configuration"
 
-Let's first build SPIRE from the source:
+Let's first build **SPIRE** from the source:
 
 ```bash
 echo 'export WORKSPACE="$HOME/-change_to_dev_dir-"' >> ~/.profile
@@ -129,7 +136,9 @@ git clone https://github.com/spiffe/spire && cd spire
 make build
 ```
 
-Add the SPIRE binaries to your PATH:
+## Adding SPIRE Binaries to `$PATH`
+
+Add the **SPIRE** binaries to your `$PATH`:
 
 ```bash
 # ~/.profile
@@ -137,7 +146,32 @@ export PATH=$PATH:$WORKSPACE/spire/bin
 echo 'PATH=$PATH:$WORKSPACE/spire/bin' >> ~/.profile
 ```
 
-Verify installation:
+## Adding SPIKE Binaries to `$PATH`
+
+Additionally, you can source the following file to define additional
+**SPIKE**-related environment variables for your convenience. This is not
+required because if you don't define them, **SPIKE** will assume sensible
+defaults. 
+
+Sourcing `./hack/env.sh` allows you to override the default **SPIKE**
+environment settings. This can be particularly useful for development
+purposes to test custom setups or alternative paths.
+
+Having all overrides in a single place is also handy as it doubles
+as documentation to help understand the development environment.
+
+```bash
+# ~/.profile
+
+# ...
+
+# SPIKE Environment configuration                                                
+source $WORKSPACE/spike/hack/env.sh 
+```
+
+## Verifying SPIRE Installation
+
+Verify SPIRE installation as follows:
 
 ```bash 
 source ~/.profile
@@ -154,14 +188,14 @@ Available commands are:
     bundle               
     entry                
     federation           
-    healthcheck          Determines server health status
+    healthcheck          Health status 
     jwt                  
     localauthority       
     logger               
     run                  Runs the server
     token                
     upstreamauthority    
-    validate             Validates a SPIRE server configuration file
+    validate             Validates config 
     x509  
 ```
 
@@ -171,7 +205,7 @@ Next, build **SPIKE** binaries:
 
 ```bash
 cd $WORKSPACE/spike
-./hack/build-spike.sh
+make build
 
 # Created files:
 #   keeper*
@@ -181,9 +215,11 @@ cd $WORKSPACE/spike
 
 ## Configure Local DNS
 
-The default agent configuration file uses `spire.spike.ist` as the SPIRE Server
-DNS name. To resolve this name to the loopback address, add the following entry
-to your `/etc/hosts` file:
+[The default agent configuration file][agent-config] uses 
+`spire.spike.ist` as the SPIRE Server DNS name. To resolve this name to the 
+loopback address, add the following entry to your `/etc/hosts` file:
+
+[agent-config]: https://github.com/spiffe/spike/blob/main/config/spire/agent/agent.conf#L4
 
 ```bash
 # /etc/hosts
@@ -193,7 +229,7 @@ to your `/etc/hosts` file:
 127.0.0.1 spire.spike.ist
 ```
 
-## SPIKE Starter Script
+## Starting SPIKE
 
 There is a starter script that combines and automates some of the steps in the
 following sections. It configures and runs SPIRE Server, SPIRE Agent,
@@ -203,7 +239,7 @@ You can run this to start all the required components:
 
 ```bash
 # Start everything.
-./hack/start.sh
+make start
 ```
 
 And then, on a separate terminal, you can run `spike`:
@@ -212,27 +248,27 @@ And then, on a separate terminal, you can run `spike`:
 # Make sure you have the `spike` binary in your PATH.
 spike
 
-# Sample Output:
-# SPIKE
+# Sample Output: 
+# SPIKE v$version
 # >> Secure your secrets with SPIFFE: https://spike.ist/ #
 #
 # Usage:
 #  spike [command]
 #
 # Available Commands:
-#  completion  Generate the autocompletion script
-#  help        Help about any command
-#  init        Initialize spike configuration
-#  policy      Manage policies
-#  secret      Manage secrets
+#   completion  Generate the autocompletion script
+#   help        Help about any command
+#   operator    Manage admin operations
+#   policy      Manage policies
+#   secret      Manage secrets
 #
 # Flags:
-#   -h, --help   help for spike
-#
-# Use "spike [command] --help" for more information about a command.
+#  -h, --help   help for spike
+# 
+# Use "spike [command] --help" for help.
 ```
 
-Although the `./hack/start.sh` script is convenient, it might be useful
+Although the `make start` script is convenient, it might be useful
 to run the components individually to understand the process better and
 debug any issues that might arise.
 
@@ -240,14 +276,14 @@ The following sections will guide you through the individual steps.
 
 > **CLI Reference**
 >
-> Since the **SPIKE CLI** is a work in progress an highly in flux, the best
+> Since the **SPIKE CLI** is a work in progress and highly in flux, the best
 > way to get the most up-to-date information is to run `spike --help` or
 > `spike [command] --help` to learn about the available commands and flags.
 >
 > In addition, you can [check out the demo recordings][demo] to see the CLI in
 > action.
 
-[demo]: https://spike.ist/#/presentations/README
+[demo]: @/community/presentations.md
 
 ## Start SPIRE Server
 
@@ -264,7 +300,7 @@ The following script will create registration entries for the SPIKE components:
 
 ```bash
 cd $WORKSPACE/spike
-./hack/spire-server-hydrate.sh
+./hack/spire-server-entry-register-spike.sh
 ```
 
 ## Start SPIRE Agent
@@ -290,8 +326,14 @@ Start the workloads:
 export SPIKE_SYSTEM_LOG_LEVEL=debug
 
 cd $WORKSPACE/spike
-./nexus  # Nexus
-./keeper # Keeper
+
+# Start SPIKE Nexus in one terminal.
+./hack/start-nexus.sh
+
+# Start SPIKE Keepers in separate terminals.
+./hack/start-keeper-1.sh
+./hack/start-keeper-2.sh
+./hack/start-keeper-3.sh
 ```
 
 ## Using SPIKE Pilot
@@ -302,48 +344,63 @@ Define an alias to **SPIKE** Pilot:
 # ~/.bashrc
 
 # path to the SPIKE Pilot binary (`spike`)
-alias spike=$USER/WORKSPACE/spike/spike
+alias spike=$WORKSPACE/spike/spike
 ```
 
 Run **SPIKE** Pilot and explore the CLI:
 
 ```bash
 spike
-
-# Sample Output:
-# SPIKE v0.1.0
-# >> Secure your secrets with SPIFFE: https://spike.ist/ #
-# Usage: spike <command> [args...]
-# Commands:
-#   initialization
-#   put <path> <key=value>...
-#   get <path> [-version=<n>]
-#   delete <path> [-versions=<n1,n2,...>]
-#   undelete <path> [-versions=<n1,n2,...>]
-#   list
 ```
 
 ## Testing Out SPIKE
 
-Let test **SPIKE** by creating a secret
+Let test **SPIKE** by creating a secret:
 
-```text
-# you need to initialize the SPIKE Pilot before you can use it:
-spike init
+```bash
+spike secret put /tenants/acme/credentials/db \
+  username=root pass=SPIKERocks
 
-# Register a secret:
-spike secret put /secrets/db-secret username=postgres password=postgres
-
-spike secret get /secrets/db-secret 
-# Wil return:
-# username=postgres 
-# password=postgres
-
-spike secret delete /secrets/db-secret # Deleting the current secret
-
-spike secret get /secrets/db-secret 
-# WIll be empty.
+# Output:
+# OK
 ```
+
+Then let's read the secret:
+
+```bash
+spike (feature/zola)$ spike secret get /tenants/acme/credentials/db
+pass: SPIKERocks
+username: root
+
+```
+
+Now, let's read the secret back:
+
+```bash
+spike secret get /tenants/acme/credentials/db
+
+# Output:
+# pass: SPIKERocks
+# username: root
+```
+
+Let's delete the secret now:
+
+```bash
+spike secret delete /tenants/acme/credentials/db
+
+# Output:
+# OK
+```
+
+If you try to read the secret again, you won't be able to get it.
+
+Feel free to experiment with other **SPIKE** commands in your sandbox
+environment to explore its capabilities and better understand how it works. This
+is a great way to familiarize yourself with its features and test various
+scenarios safely.
+
+## Have Fun
 
 That's about it.
 
@@ -352,3 +409,7 @@ Enjoy.
 ----
 
 {{ toc_getting_started() }}
+
+----
+
+{{ toc_top() }}

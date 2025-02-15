@@ -1,0 +1,574 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://spike.ist/main.css">
+    <link rel="icon" href="https://spike.ist/assets/spike-favicon-16x16.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+    <title>  | SPIKE Production Setup </title>
+</head>
+<body>
+
+<script>
+        fetch('https://api.github.com/repos/spiffe/spike/releases/latest')
+            .then((response) => {
+                return response.json();
+            })
+            .then((data) => {
+                let release_name = data.name;
+                let html_url = data.html_url;
+                release.innerHTML = `<a href='${html_url}'>${release_name}</a>`;
+            });
+    </script>
+<main>
+    
+    <nav>
+            <h1><a href="https:&#x2F;&#x2F;spike.ist&#x2F;"></a></h1>
+            <div id="release"></div>
+            <a href="javascript:void(0);" onclick="burger()" id="mobile" class="ms-Icon--GlobalNavButton"></a>
+            <div id="trees">
+                <input class="tree-toggle" type="checkbox" id="getting-started"
+                           />
+                    <label class="tree-toggle-label"
+                           for="getting-started">Getting Started</label>
+
+                    <ul class="subtree">
+                        <li >
+                                <a href="https://spike.ist/getting-started/guide/">Quickstart</a>
+                            </li>
+
+                            <li >
+                                <a href="https://spike.ist/getting-started/alpha-release-notice/">Alpha Release Notice</a>
+                            </li>
+
+                            <li >
+                                <a href="https://spike.ist/getting-started/configuration/">Configuring SPIKE</a>
+                            </li>
+
+                            </ul>
+                <input class="tree-toggle" type="checkbox" id="community"
+                           />
+                    <label class="tree-toggle-label"
+                           for="community">Community</label>
+
+                    <ul class="subtree">
+                        <li >
+                                <a href="https://spike.ist/community/hello/">Hello Universe</a>
+                            </li>
+
+                            <li >
+                                <a href="https://spike.ist/community/contact/">Contact Us</a>
+                            </li>
+
+                            <li >
+                                <a href="https://spike.ist/community/presentations/">Presentations and Demos</a>
+                            </li>
+
+                            </ul>
+                <input class="tree-toggle" type="checkbox" id="spike-architecture"
+                           />
+                    <label class="tree-toggle-label"
+                           for="spike-architecture">SPIKE Architecture</label>
+
+                    <ul class="subtree">
+                        <li >
+                                <a href="https://spike.ist/architecture/system-overview/">System Overview</a>
+                            </li>
+
+                            <li >
+                                <a href="https://spike.ist/architecture/security-model/">SPIKE Security Model</a>
+                            </li>
+
+                            <li >
+                                <a href="https://spike.ist/architecture/architectural-decision-records/">ADRs</a>
+                            </li>
+
+                            </ul>
+                <input class="tree-toggle" type="checkbox" id="tracking"
+                           />
+                    <label class="tree-toggle-label"
+                           for="tracking">Tracking</label>
+
+                    <ul class="subtree">
+                        <li >
+                                <a href="https://spike.ist/tracking/changelog/">Changelog</a>
+                            </li>
+
+                            <li >
+                                <a href="https://spike.ist/tracking/snapshots/">Documentation Snapshots</a>
+                            </li>
+
+                            </ul>
+                <input class="tree-toggle" type="checkbox" id="operations"
+                           checked/>
+                    <label class="tree-toggle-label"
+                           for="operations">Operations</label>
+
+                    <ul class="subtree">
+                        <li >
+                                <a href="https://spike.ist/operations/build/">SPIKE Cross-Platform Build</a>
+                            </li>
+
+                            <li class="active">
+                                <a href="https://spike.ist/operations/production/">SPIKE Production Setup</a>
+                            </li>
+
+                            
+                                    
+                                    
+                                        <ul id="toc">
+                                            <li><a href="
+                                                        https://spike.ist/operations/production/#production-setup-guide">Production Setup Guide</a>
+                                                    </li>
+                                            <li><a href="
+                                                        https://spike.ist/operations/production/#hardening-spire">Hardening SPIRE</a>
+                                                    <ul>
+                                                            <li>
+                                                                    <a href="https://spike.ist/operations/production/#secure-spire-server-and-agent-communication">Secure SPIRE Server and Agent Communication</a>
+                                                                </li>
+                                                            <li>
+                                                                    <a href="https://spike.ist/operations/production/#set-up-attestation-policies">Set Up Attestation Policies</a>
+                                                                </li>
+                                                            <li>
+                                                                    <a href="https://spike.ist/operations/production/#limit-permissions">Limit Permissions</a>
+                                                                </li>
+                                                            <li>
+                                                                    <a href="https://spike.ist/operations/production/#secure-spire-database">Secure SPIRE Database</a>
+                                                                </li>
+                                                            <li>
+                                                                    <a href="https://spike.ist/operations/production/#configure-registration-entries">Configure Registration Entries</a>
+                                                                </li>
+                                                            <li>
+                                                                    <a href="https://spike.ist/operations/production/#harden-spire-deployment-on-kubernetes">Harden SPIRE Deployment on Kubernetes</a>
+                                                                </li>
+                                                            <li>
+                                                                    <a href="https://spike.ist/operations/production/#regularly-rotate-certificates">Regularly Rotate Certificates</a>
+                                                                </li>
+                                                            <li>
+                                                                    <a href="https://spike.ist/operations/production/#enable-logging-and-monitoring">Enable Logging and Monitoring</a>
+                                                                </li>
+                                                            <li>
+                                                                    <a href="https://spike.ist/operations/production/#perform-regular-audits">Perform Regular Audits</a>
+                                                                </li>
+                                                            <li>
+                                                                    <a href="https://spike.ist/operations/production/#update-spire-regularly">Update SPIRE Regularly</a>
+                                                                </li>
+                                                            <li>
+                                                                    <a href="https://spike.ist/operations/production/#isolate-spire-server">Isolate SPIRE Server</a>
+                                                                </li>
+                                                            </ul>
+                                                    </li>
+                                            <li><a href="
+                                                        https://spike.ist/operations/production/#spike-general-hardening-guidelines">SPIKE General Hardening Guidelines</a>
+                                                    <ul>
+                                                            <li>
+                                                                    <a href="https://spike.ist/operations/production/#user-privileges">User Privileges</a>
+                                                                </li>
+                                                            <li>
+                                                                    <a href="https://spike.ist/operations/production/#security-modules">Security Modules</a>
+                                                                </li>
+                                                            <li>
+                                                                    <a href="https://spike.ist/operations/production/#network-security">Network Security</a>
+                                                                </li>
+                                                            <li>
+                                                                    <a href="https://spike.ist/operations/production/#logging-and-monitoring">Logging and Monitoring</a>
+                                                                </li>
+                                                            <li>
+                                                                    <a href="https://spike.ist/operations/production/#security-auditing">Security Auditing</a>
+                                                                </li>
+                                                            <li>
+                                                                    <a href="https://spike.ist/operations/production/#binary-integrity">Binary Integrity</a>
+                                                                </li>
+                                                            <li>
+                                                                    <a href="https://spike.ist/operations/production/#defense-in-depth">Defense in Depth</a>
+                                                                </li>
+                                                            </ul>
+                                                    </li>
+                                            <li><a href="
+                                                        https://spike.ist/operations/production/#how-th-root-key-is-protected-in-spike">How th Root Key Is Protected in SPIKE</a>
+                                                    </li>
+                                            <li><a href="
+                                                        https://spike.ist/operations/production/#hardening-spike-keeper-for-production">Hardening SPIKE Keeper for Production</a>
+                                                    </li>
+                                            <li><a href="
+                                                        https://spike.ist/operations/production/#hardening-spike-nexus-for-production">Hardening SPIKE Nexus for Production</a>
+                                                    </li>
+                                            <li><a href="
+                                                        https://spike.ist/operations/production/#conclusion">Conclusion</a>
+                                                    </li>
+                                            </ul>
+                                    <li >
+                                <a href="https://spike.ist/operations/recovery/">SPIKE Recovery Procedures</a>
+                            </li>
+
+                            <li >
+                                <a href="https://spike.ist/operations/release/">SPIKE Relase Management</a>
+                            </li>
+
+                            </ul>
+                </div>
+        </nav>
+    <article>
+
+
+
+        <div id="on_right">
+                <span id="search-ico" class="ms-Icon--Search"></span>
+            </div>
+            <div class="search-container">
+                <input id="search" type="search" placeholder="Search as you type...">
+                <div class="search-results">
+                    <div class="search-results__header"></div>
+                    <ul class="search-results__items"></ul>
+                </div>
+            </div>
+        <p style="background:#ffffff;text-align:center;padding:1em;
+max-width: 800px;margin: 0 auto;
+border-radius: 6px;margin-bottom: -0.5em;
+padding-bottom: 1.5em;
+box-shadow: rgba(0, 0, 0, 0.2) 0px 18px 50px -10px;
+">
+            Pssst... <a href="https://github.com/spiffe/spike"
+        style="border-bottom: 2px solid #07bdd9"
+        ><strong>⭐️
+            Star SPIKE on GitHub ⭐️</strong></a>.<br>
+            Spread the word about this amazing technology 🐢⚡️.
+        </p>
+
+
+        <div id="wrap">
+             
+        <p><a href="/docs-src/public" title="Back to home"><img src="/docs/assetsssets/spike-banner.png"
+                                                                style="float:left;margin: 0 1em 0 1em;" alt="SPIKE Logo" /></a></p>
+<h2 id="production-setup-guide">Production Setup Guide</h2>
+<blockquote>
+<p><strong>WORK IN PROGRESS</strong></p>
+<p>Note that this is a work in progress.</p>
+<p>We will add more SPIKE production deployment best practices
+in time.</p>
+<p>Also, based on the <code>TODO: //</code> remarks in the text, expect things to change
+<strong>a lot</strong>.</p>
+<p>We will remove this notice once the document stabilizes.</p>
+</blockquote>
+<p>This guide involves configuring the necessary environment, deploying the
+application with optimized settings, and ensuring scalability, reliability, and
+security for a seamless production experience.</p>
+<p>// TODO: re-edit this document after #74 is done, as the security posture will
+// change significantly:
+// https://github.com/spiffe/spike/issues/74</p>
+<p>// TODO: some of these are generic recommendations and some of them are more
+// SPIKE-specific; organize them into a coherent document before final publishing.</p>
+<p>// TODO: once completed let Claude, ChatGPT, and Perplexity review this entire shebang</p>
+<h2 id="hardening-spire">Hardening SPIRE</h2>
+<p><strong>SPIKE</strong> leverages <strong>SPIFFE</strong> and <strong>SPIRE</strong> as its identity control plane to
+manage cryptographic workload identities securely and efficiently. <strong>SPIRE</strong>
+is an implementation of the <strong>SPIFFE</strong> specification, providing a robust
+framework for workload attestation and cryptographic identity issuance within
+distributed systems.</p>
+<p>Configuring <strong>SPIRE</strong> for production is critical to ensure the security and
+reliability of <strong>SPIKE</strong>. An improperly configured SPIRE deployment can leave
+gaps in the identity management process, potentially exposing sensitive
+cryptographic operations to unauthorized access.</p>
+<p>// TODO: add spike-specific recommendations.</p>
+<p>// TODO: link to the official docs.</p>
+<p>// TODO: carry over some SPIRE best practices from VSecM docs too.</p>
+<p>Here are some key steps to harden <strong>SPIRE</strong> for production:</p>
+<h3 id="secure-spire-server-and-agent-communication">Secure SPIRE Server and Agent Communication</h3>
+<ul>
+<li>Use <strong>mutual TLS (mTLS)</strong> for all communication between SPIRE Server, SPIRE
+Agents, and workloads.</li>
+<li>Configure <strong>SPIRE</strong> Server and Agents to only accept connections from trusted
+sources.</li>
+</ul>
+<h3 id="set-up-attestation-policies">Set Up Attestation Policies</h3>
+<ul>
+<li>Define strict attestation policies to ensure that only trusted workloads are
+issued SPIFFE IDs. // TODO: explain what that means in the context of SPIKE.</li>
+<li>Utilize the <strong>node attestation plugins</strong> (e.g., AWS IID, Kubernetes) to verify
+the identity of nodes running SPIRE Agents.</li>
+</ul>
+<h3 id="limit-permissions">Limit Permissions</h3>
+<ul>
+<li>Run SPIRE Server and Agents with the minimum required permissions.</li>
+<li>Use dedicated <strong>non-root</strong> users for running SPIRE processes.</li>
+</ul>
+<h3 id="secure-spire-database">Secure SPIRE Database</h3>
+<p>If the SPIRE Server is configured to use an external database for
+persistence, ensure that the database is:</p>
+<ul>
+<li>Encrypted at rest and in transit.</li>
+<li>Restricted to access only from SPIRE Server.</li>
+</ul>
+<h3 id="configure-registration-entries">Configure Registration Entries</h3>
+<ul>
+<li>Create granular SPIFFE ID <strong>registration entries</strong> for specific workloads.</li>
+<li>Avoid using wildcard matching in selectors to reduce the risk of impersonation
+attacks.</li>
+</ul>
+<p>// TODO: give examples in the context of SPIKE.</p>
+<h3 id="harden-spire-deployment-on-kubernetes">Harden SPIRE Deployment on Kubernetes</h3>
+<p>If you have deployed <strong>SPIRE</strong> on Kubernetes:</p>
+<ul>
+<li>Use Kubernetes <strong>Pod Security Policies</strong>, Network Policies, and RBAC to
+restrict SPIRE Server and Agent access.</li>
+<li>Limit SPIRE components to trusted namespaces and nodes.</li>
+</ul>
+<h3 id="regularly-rotate-certificates">Regularly Rotate Certificates</h3>
+<ul>
+<li>Configure SPIRE to rotate workload certificates and keys frequently.</li>
+<li>Automate the process to ensure timely certificate renewal without manual
+intervention.</li>
+</ul>
+<h3 id="enable-logging-and-monitoring">Enable Logging and Monitoring</h3>
+<ul>
+<li>Configure logging for SPIRE Server and Agents to capture suspicious
+activity.</li>
+<li>Monitor logs for failed authentication attempts, unauthorized access, or
+other anomalies.</li>
+</ul>
+<h3 id="perform-regular-audits">Perform Regular Audits</h3>
+<ul>
+<li>Conduct regular security audits and penetration tests on the SPIRE deployment.</li>
+<li>Review registration entries and attestation policies to ensure they align
+with security best practices.</li>
+</ul>
+<h3 id="update-spire-regularly">Update SPIRE Regularly</h3>
+<ul>
+<li>Keep SPIRE updated to the latest stable version to benefit from security
+patches and new features.</li>
+</ul>
+<p>By carefully configuring and hardening <strong>SPIRE</strong>, you ensure that
+<strong>SPIKE</strong>’s <strong>SPIFFE-based identity control plane</strong> is robust, reliable, and
+secured against potential threats, forming the foundation for <strong>SPIKE’s</strong> secure
+operations in production environments.</p>
+<h3 id="isolate-spire-server">Isolate SPIRE Server</h3>
+<p>You are encouraged to isolate the <strong>SPIRE Server</strong> from other SPIKE components.</p>
+<p>By doing this, a separate administrator can access the <strong>SPIRE Server</strong> and
+create <strong>SPIKE registration entries</strong>, whereas other <strong>SPIKE</strong> users, including
+the <strong>SPIKE Pilot superadmin</strong>, will not have the ability to create SPIRE Server
+registration entries.</p>
+<p>This approach aligns with <strong>zero-trust</strong>best practices by enforcing separation
+of privileges and reducing the risk of privilege misuse or escalation.</p>
+<p>For <strong>bare-metal</strong> or <strong>VM deployments</strong>, it is recommended to run the
+<strong>SPIRE Server</strong> on its own dedicated machine, separate from <strong>SPIKE Keeper</strong>
+and <strong>SPIKE Nexus</strong> machines. This ensures that any compromise of those
+machines does not directly impact the <strong>SPIRE Server</strong>.</p>
+<p>For <strong>Kubernetes deployments</strong>, it is a good practice to run the <strong>SPIRE
+Server</strong> outside the Kubernetes cluster on an ultra-hardened system. This
+protects the <strong>SPIRE Server</strong> from potential security breaches or privilege
+escalations within the Kubernetes cluster.</p>
+<h2 id="spike-general-hardening-guidelines">SPIKE General Hardening Guidelines</h2>
+<p>The guidelines covered in this section apply too all <strong>SPIKE</strong> components
+including <strong>SPIKE Nexus</strong>, <strong>SPIKE Keeper</strong>, and <strong>SPIKE Pilot</strong>.</p>
+<h3 id="user-privileges">User Privileges</h3>
+<ul>
+<li>For <strong>bare-metal</strong> deployments:
+<ul>
+<li>Run <strong>SPIKE Nexus</strong> and <strong>SPIKE Keeper</strong> processes as <strong>non-root</strong> users.</li>
+<li>Configure them to have minimal permissions.</li>
+<li>Keep OS and security packages up-to-date.</li>
+</ul>
+</li>
+<li>For <strong>Kubernetes</strong> deployments:
+<ul>
+<li>Disable privilege escalation for containers by setting
+<code>allowPrivilegeEscalation: false</code> in your PodSecurity configuration.</li>
+<li>Use Kubernetes <strong>Pod Security Admission</strong> or equivalent policies to enforce
+security constraints.</li>
+<li>Limit the use of privileged containers (<code>privileged: false</code>) wherever
+feasible.</li>
+<li>Configure strict NetworkPolicies to restrict communication between Pods.</li>
+<li>Always use read-only root filesystems for the containers
+(<code>readOnlyRootFilesystem: true</code>).</li>
+<li>Specify <strong>non-root</strong> <code>runAsUser</code> and <code>runAsGroup</code> in the container’s security
+context.</li>
+</ul>
+</li>
+<li>For <strong>Docker</strong> deployments:
+<ul>
+<li>Prevent containers from running in privileged mode using the
+<code>--privileged=false</code> option.</li>
+<li>Use <code>--read-only</code> to enforce read-only filesystem access for the container.</li>
+<li>Limit container capabilities by setting the <code>--cap-drop</code> option to drop all
+unnecessary capabilities.</li>
+<li>Avoid mapping the Docker socket into containers for security-sensitive
+workloads.</li>
+<li>Implement user namespaces with <code>--userns-remap</code> to isolate containers from
+the host’s root user.</li>
+</ul>
+</li>
+</ul>
+<h3 id="security-modules">Security Modules</h3>
+<ul>
+<li>For Linux bare-metal <strong>SPIKE</strong> installations, consider enabling and
+configuring <strong>AppArmor</strong> and <strong>SELinux</strong>.</li>
+<li>Set up mandatory access control.</li>
+<li>Enforce strict process isolation.</li>
+</ul>
+<h3 id="network-security">Network Security</h3>
+<ul>
+<li>Restrict network access to essential ports/protocols.</li>
+<li>Implement network segmentation.</li>
+<li>Configure strict firewall rules.</li>
+<li>Conduct regular network security audits.</li>
+</ul>
+<h3 id="logging-and-monitoring">Logging and Monitoring</h3>
+<ul>
+<li>Set up comprehensive process logging</li>
+<li>Monitor for unauthorized access attempts</li>
+<li>Implement real-time alerting</li>
+<li>Regular log analysis and review</li>
+</ul>
+<h3 id="security-auditing">Security Auditing</h3>
+<ul>
+<li>Regular system configuration audits</li>
+<li>Security control effectiveness reviews</li>
+<li>Periodic penetration testing</li>
+<li>Configuration compliance checks</li>
+</ul>
+<h3 id="binary-integrity">Binary Integrity</h3>
+<p>Official <strong>SPIKE</strong> binaries are published with SHA-256 checksums. Make sure
+you implement SHA hash verification when using <strong>SPIKE</strong> distributions to
+ensure that you are using original, tested, validated, and approved binaries.</p>
+<p>In addition, it’s useful to have regular binary integrity checks too, to ensure
+that binaries are not replaced with malicious code.</p>
+<p>One more thing you are encouraged to do is to include <strong>SPIKE Nexus</strong>,
+<strong>SPIKE Keeper</strong>, and <strong>SPIKE Pilot</strong>’s binary SHA hashes while registering
+them to <strong>SPIRE Server</strong>. Here’s an example:</p>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># Register SPIKE Keeper
+</span><span style="color:#bf616a;">spire-server</span><span> entry create \
+</span><span style="color:#bf616a;">    -spiffeID</span><span> spiffe://spike.ist/spike/keeper \
+</span><span style="color:#bf616a;">    -parentID </span><span>&quot;</span><span style="color:#a3be8c;">spiffe://spike.ist/spire-agent</span><span>&quot; \
+</span><span style="color:#bf616a;">    -selector</span><span> unix:uid:&quot;$</span><span style="color:#bf616a;">KEEPER_UID</span><span>&quot; \
+</span><span style="color:#bf616a;">    -selector</span><span> unix:path:&quot;$</span><span style="color:#bf616a;">KEEPER_PATH</span><span>&quot; \
+</span><span style="color:#bf616a;">    -selector</span><span> unix:sha256:&quot;$</span><span style="color:#bf616a;">KEEPER_SHA</span><span>&quot;
+</span></code></pre>
+<p>This way, if the binary changes, <strong>SPIRE Server</strong> will not assign it an SVID,
+and the rest of the system will not trust it and stop communicating with it,
+effectively securing the <strong>SPIKE</strong> components by totally isolating and
+keeping out the untrusted binary.</p>
+<h3 id="defense-in-depth">Defense in Depth</h3>
+<ul>
+<li>Implement multiple layers of security controls.</li>
+<li>Have regular security control reviews.</li>
+<li>Have a comprehensive security documentation.</li>
+</ul>
+<h2 id="how-th-root-key-is-protected-in-spike">How th Root Key Is Protected in SPIKE</h2>
+<p>In SPIKE, the root key is essential for encrypting secrets within the central
+store, SPIKE Nexus. To prevent any single entity from having full access to this
+key, SPIKE uses Shamir’s Secret Sharing to divide the root key into multiple
+shares. These shares are distributed among SPIKE Keepers, ensuring that the root
+key can only be reconstructed when a sufficient number of shares are combined.</p>
+<p>This approach enhances security by requiring collaboration among multiple
+trusted components to access the root key.</p>
+<p>Shamir’s Secret Sharing (SSS): SSS is a cryptographic method that divides a
+secret into parts, distributing them among participants. The secret can only be
+reconstructed when a minimum number of parts (the threshold) are combined. This
+ensures that partial knowledge of the secret does not compromise its security.</p>
+<h2 id="hardening-spike-keeper-for-production">Hardening SPIKE Keeper for Production</h2>
+<p><strong>SPIKE Keeper</strong>s play a critical role in managing sensitive cryptographic
+material, specifically handling <strong>shards</strong> that are use to generate the
+<strong>root key</strong> that <strong>SPIKE Nexus</strong> uses to encrypt its backing store.</p>
+<p><strong>SPIKE Keeper</strong>s only temporarily generate the root key during their
+bootstrapping process, and securely erase it from the memory as soon as it
+is no longer needed. Therefore, the possible window of attack for obtaining
+the root key is extremely slim.</p>
+<p>Attaching to the memory of a running process is generally restricted due
+to security measures in Linux systems. By default, the Linux kernel’s Yama
+security module enforces a policy that prevents non-root users from attaching
+debuggers to processes they do not own. This is controlled by the
+<code>/proc/sys/kernel/yama/ptrace_scope</code> setting. Which means, for any
+root-key extraction scenario, the attacker will also need to find a way to
+elevate privileges.</p>
+<p>Although the window of attack is extremely slim, even if an attacker finds a
+chance to attack through that window, it is still very hard to obtain the root
+key even during this short period. An attacker would need to
+monster-in-the-middle (MITM) the mTLS connection or have root privileges
+to peek into <strong>SPIKE Keeper</strong>’s memory space. Such an attack vector is extremely
+unlikely when <strong>SPIKE Keeper</strong> machines are properly secured—with root access
+disabled, privilege escalation prevented, and SSH access restricted to a
+trusted set of IPs and users.</p>
+<p>In addition it’s worth noting that the attacker cannot use their own counterfeit
+SPIKE Keeper binary because SPIFFE Attestation will reject it. So a successful
+attack that changes the SPIKE Keeper’s binary will also require the attacker
+to hack SPIRE Server, which raises the barrier even higher.</p>
+<p>By default, <strong>SPIKE Keeper</strong>s are protected by multiple layers of security:</p>
+<ol>
+<li><strong>mTLS API Protection</strong>: All <strong>SPIKE Keeper</strong> APIs are protected by mutual
+TLS (mTLS), preventing direct access to the shards through the API interface.</li>
+<li><strong>SPIFFE Attestation</strong>: <strong>SPIKE Keeper</strong>s implement <strong>SPIFFE attestation</strong>
+which verifies the authenticity of <strong>SPIKE Keeper</strong> binaries by validating
+attributes like the SHA hash, unix user id, and path. This prevents attackers
+from running malicious keeper processes, as they would fail the attestation
+check.</li>
+<li><strong>Memory Access Restrictions</strong>: The only theoretical way to access the root
+key is through direct memory access, which is heavily restricted by OS-level
+security controls when properly configured.</li>
+</ol>
+<p>Although these protections are in place, they need to be properly configured to
+take effect. For example, a misconfigured <strong>SPIRE Server</strong> registration entry or
+using a user with elevated privileges to run the <strong>SPIKE Keeper</strong> binaries may
+result in a security breach (see the “<em>hardening SPIRE for production</em>” section
+before for details)</p>
+<h2 id="hardening-spike-nexus-for-production">Hardening SPIKE Nexus for Production</h2>
+<p>TBD</p>
+<h2 id="conclusion">Conclusion</h2>
+<p>Although <strong>SPIKE</strong> is designed security best-practices in mind, a multi-layer
+approach focusing on system, process, and network security is important when
+configuring <strong>SPIKE</strong> for production.</p>
+<p>The combination of <strong>mTLS API protection</strong>, <strong>SPIFFE attestation</strong>, and proper
+<strong>system-level security controls</strong> will provide robust protection against
+unauthorized access to sensitive cryptographic material.</p>
+<p>Remember that <strong>security is an ongoing process</strong>, and every system’s security
+posture and requirements is different. Thus, these measures outlined in this
+guide shall be taken as starting recommendations and adjusted to meet your
+organization’s security requirements.</p>
+<hr />
+<ul>
+<li><a href="https://spike.ist/operations/build/">SPIKE Cross-Platform Build</a></li>
+<li><a href="https://spike.ist/operations/production/">SPIKE Production Setup</a></li>
+<li><a href="https://spike.ist/operations/recovery/">SPIKE Recovery Procedures</a></li>
+<li><a href="https://spike.ist/operations/release/">SPIKE Release Management</a></li>
+</ul>
+<hr />
+<ul>
+<li><a href="https://spike.ist/getting-started/">Getting Started</a></li>
+<li><a href="https://spike.ist/community/">Community</a></li>
+<li><a href="https://spike.ist/architecture/">SPIKE Architecture</a></li>
+<li><a href="https://spike.ist/operations/">Operations</a></li>
+<li><a href="https://spike.ist/tracking/">Tracking</a></li>
+</ul>
+
+    
+
+        </div>
+        <footer style="padding:1em;padding-top:1em;padding-bottom:1em;
+font-size: 14px;
+margin-top: 2em;
+max-width: 550px;
+margin: 2em auto;
+" id="footer">
+
+            Copyright © 2024-present <strong>SPIKE Contributors</strong>.<br>
+            <strong>SPIKE</strong>'s code
+            is distributed under <a class="text-blue-600 underline" href="https://www.mozilla.org/en-US/MPL/2.0/">Mozilla Public License (v2.0)</a>.
+            <br>
+            The documentation on this website
+            is distributed under <a class="text-blue-600 underline" href="https://creativecommons.org/licenses/by/4.0/">CC-BY-4.0</a>.
+            <br><br>
+            We <strong>do not</strong> collect your data.
+            This site <strong>does not</strong> use any tracking cookies or scripts.
+        </footer>
+
+
+
+    </article>
+
+</main>
+
+
+    <script type="text/javascript" src="https://spike.ist/elasticlunr.min.js" defer></script>
+    <script type="text/javascript" src="https://spike.ist/search_index.en.js" defer></script>
+<script type="text/javascript" src="https://spike.ist/js.js" defer></script>
+</body>
+</html>

@@ -1,4 +1,8 @@
 +++
+# //    \\ SPIKE: Secure your secrets with SPIFFE.
+# //  \\\\\ Copyright 2024-present SPIKE contributors.
+# // \\\\\\\ SPDX-License-Identifier: Apache-2.
+
 title = "Alpha Release Notice"
 weight = 2
 sort_by = "weight"
@@ -31,3 +35,7 @@ maturity for public adoption.
 ----
 
 {{ toc_getting_started() }}
+
+----
+
+{{ toc_top() }}

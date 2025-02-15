@@ -1,4 +1,8 @@
 +++
+# //    \\ SPIKE: Secure your secrets with SPIFFE.
+# //  \\\\\ Copyright 2024-present SPIKE contributors.
+# // \\\\\\\ SPDX-License-Identifier: Apache-2.
+
 title = "Hello Universe"
 weight = 1
 sort_by = "weight"
@@ -8,8 +12,9 @@ sort_by = "weight"
 
 # Community
 
-👋 Welcome to the **SPIKE** community! We are excited to have you here. We are a
-community of developers, security professionals, researchers, and 
+👋 Welcome to the **SPIKE** community! We are excited to have you here. 
+
+We are a community of developers, security professionals, researchers, and 
 zero-trust security enthusiasts who are passionate about keeping secrets secret.
 
 <!--
@@ -53,3 +58,7 @@ Thanks so much for your interest: It means a lot 🙏
 ----
 
 {{ toc_community() }}
+
+----
+
+{{ toc_top() }}

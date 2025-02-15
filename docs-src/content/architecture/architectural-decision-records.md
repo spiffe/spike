@@ -1,5 +1,9 @@
 +++
-title = "Architectural Decision Records"
+# //    \\ SPIKE: Secure your secrets with SPIFFE.
+# //  \\\\\ Copyright 2024-present SPIKE contributors.
+# // \\\\\\\ SPDX-License-Identifier: Apache-2.
+
+title = "ADRs"
 weight = 7
 sort_by = "weight"
 +++
@@ -8,26 +12,24 @@ sort_by = "weight"
 
 <br style="clear:both;">
 
-## SPIKE Architectural Decision Records (*ADRs*)
+# SPIKE Architectural Decision Records (*ADRs*)
 
-* [ADR-0017: Synchronous Persistence for SPIKE Secrets Store](adrs/adr-0017.md)
-* [ADR-0016: Memory-First Secrets Store](adrs/adr-0016.md)
-* [ADR-0015: Use Singular Form for File and Package Naming](adrs/adr-0015.md)
-* [ADR-0014: Maintaining SQLite as SPIKE's Primary Storage Backend](adrs/adr-0014.md)
-* [ADR-0013: S3-Compatible Storage as SPIKE's Backing Store](adrs/adr-0013.md)
-* [ADR-0012: HTTP Methods for SPIKE API](adrs/adr-0012.md)
-* [ADR-0011: PostgreSQL as SPIKE's Backing Store](adrs/adr-0011.md)
-* [ADR-0010: Session Token Storage Strategy for SPIKE Nexus](adrs/adr-0010.md)
-* [ADR-0009: Multi-Administrator Support System](adrs/adr-0009.md)
-* [ADR-0008: Administrative Access Control System](adrs/adr-0008.md)
-* [ADR-0007: Root Key Lifecycle and Management Strategy](adrs/adr-0007.md)
-* [ADR-0006: Trust Boundary Definition and Security Assumptions](adrs/adr-0006.md)
-* [ADR-0005: Use SPIFFE mTLS for Inter-Component Authentication and Communication](adrs/adr-0005.md)
-* [ADR-0004: SPIKE Keeper Minimalist Design Approach](adrs/adr-0004.md)
-* [ADR-0003: Root Key Management and Storage Strategy](adrs/adr-0003.md)
-* [ADR-0002: Use Docsify for Documentation System](adrs/adr-0002.md)
-* [ADR-0001: Display Secrets in Plain Text in SPIKE Pilot Admin CLI](adrs/adr-0001.md)
+This section serves as an archive of significant architectural decisions made
+during the design and development of **SPIKE**. Each **ADR* documents the 
+reasoning behind a specific choice, along with the associated alternatives 
+and their trade-offs. By maintaining this record, we provide transparency, 
+traceability, and clarity for current and future maintainers of the **SPIKE** 
+project.
+
+Below, you will find the list of ADRs organized for easy access. Click on each
+entry to read more details.
+
+{{ toc_adrs() }}
 
 ----
 
 {{ toc_architecture() }}
+
+----
+
+{{ toc_top() }}

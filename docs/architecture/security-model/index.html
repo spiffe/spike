@@ -1,0 +1,363 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://spike.ist/main.css">
+    <link rel="icon" href="https://spike.ist/assets/spike-favicon-16x16.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+    <title>  | SPIKE Security Model </title>
+</head>
+<body>
+
+<script>
+        fetch('https://api.github.com/repos/spiffe/spike/releases/latest')
+            .then((response) => {
+                return response.json();
+            })
+            .then((data) => {
+                let release_name = data.name;
+                let html_url = data.html_url;
+                release.innerHTML = `<a href='${html_url}'>${release_name}</a>`;
+            });
+    </script>
+<main>
+    
+    <nav>
+            <h1><a href="https:&#x2F;&#x2F;spike.ist&#x2F;"></a></h1>
+            <div id="release"></div>
+            <a href="javascript:void(0);" onclick="burger()" id="mobile" class="ms-Icon--GlobalNavButton"></a>
+            <div id="trees">
+                <input class="tree-toggle" type="checkbox" id="getting-started"
+                           />
+                    <label class="tree-toggle-label"
+                           for="getting-started">Getting Started</label>
+
+                    <ul class="subtree">
+                        <li >
+                                <a href="https://spike.ist/getting-started/guide/">Quickstart</a>
+                            </li>
+
+                            <li >
+                                <a href="https://spike.ist/getting-started/alpha-release-notice/">Alpha Release Notice</a>
+                            </li>
+
+                            <li >
+                                <a href="https://spike.ist/getting-started/configuration/">Configuring SPIKE</a>
+                            </li>
+
+                            </ul>
+                <input class="tree-toggle" type="checkbox" id="community"
+                           />
+                    <label class="tree-toggle-label"
+                           for="community">Community</label>
+
+                    <ul class="subtree">
+                        <li >
+                                <a href="https://spike.ist/community/hello/">Hello Universe</a>
+                            </li>
+
+                            <li >
+                                <a href="https://spike.ist/community/contact/">Contact Us</a>
+                            </li>
+
+                            <li >
+                                <a href="https://spike.ist/community/presentations/">Presentations and Demos</a>
+                            </li>
+
+                            </ul>
+                <input class="tree-toggle" type="checkbox" id="spike-architecture"
+                           checked/>
+                    <label class="tree-toggle-label"
+                           for="spike-architecture">SPIKE Architecture</label>
+
+                    <ul class="subtree">
+                        <li >
+                                <a href="https://spike.ist/architecture/system-overview/">System Overview</a>
+                            </li>
+
+                            <li class="active">
+                                <a href="https://spike.ist/architecture/security-model/">SPIKE Security Model</a>
+                            </li>
+
+                            
+                                    
+                                    
+                                        <ul id="toc">
+                                            <li><a href="
+                                                        https://spike.ist/architecture/security-model/#spike-security-model">SPIKE Security Model</a>
+                                                    <ul>
+                                                            <li>
+                                                                    <a href="https://spike.ist/architecture/security-model/#authentication-and-communication">Authentication and Communication</a>
+                                                                </li>
+                                                            <li>
+                                                                    <a href="https://spike.ist/architecture/security-model/#trust-boundaries">Trust Boundaries</a>
+                                                                </li>
+                                                            <li>
+                                                                    <a href="https://spike.ist/architecture/security-model/#threat-model-exceptions">Threat Model Exceptions</a>
+                                                                </li>
+                                                            <li>
+                                                                    <a href="https://spike.ist/architecture/security-model/#key-management">Key Management</a>
+                                                                </li>
+                                                            <li>
+                                                                    <a href="https://spike.ist/architecture/security-model/#workload-access">Workload Access</a>
+                                                                </li>
+                                                            <li>
+                                                                    <a href="https://spike.ist/architecture/security-model/#administrative-access">Administrative Access</a>
+                                                                </li>
+                                                            <li>
+                                                                    <a href="https://spike.ist/architecture/security-model/#multi-admin-support">Multi-Admin Support</a>
+                                                                </li>
+                                                            </ul>
+                                                    </li>
+                                            </ul>
+                                    <li >
+                                <a href="https://spike.ist/architecture/architectural-decision-records/">ADRs</a>
+                            </li>
+
+                            </ul>
+                <input class="tree-toggle" type="checkbox" id="tracking"
+                           />
+                    <label class="tree-toggle-label"
+                           for="tracking">Tracking</label>
+
+                    <ul class="subtree">
+                        <li >
+                                <a href="https://spike.ist/tracking/changelog/">Changelog</a>
+                            </li>
+
+                            <li >
+                                <a href="https://spike.ist/tracking/snapshots/">Documentation Snapshots</a>
+                            </li>
+
+                            </ul>
+                <input class="tree-toggle" type="checkbox" id="operations"
+                           />
+                    <label class="tree-toggle-label"
+                           for="operations">Operations</label>
+
+                    <ul class="subtree">
+                        <li >
+                                <a href="https://spike.ist/operations/build/">SPIKE Cross-Platform Build</a>
+                            </li>
+
+                            <li >
+                                <a href="https://spike.ist/operations/production/">SPIKE Production Setup</a>
+                            </li>
+
+                            <li >
+                                <a href="https://spike.ist/operations/recovery/">SPIKE Recovery Procedures</a>
+                            </li>
+
+                            <li >
+                                <a href="https://spike.ist/operations/release/">SPIKE Relase Management</a>
+                            </li>
+
+                            </ul>
+                </div>
+        </nav>
+    <article>
+
+
+
+        <div id="on_right">
+                <span id="search-ico" class="ms-Icon--Search"></span>
+            </div>
+            <div class="search-container">
+                <input id="search" type="search" placeholder="Search as you type...">
+                <div class="search-results">
+                    <div class="search-results__header"></div>
+                    <ul class="search-results__items"></ul>
+                </div>
+            </div>
+        <p style="background:#ffffff;text-align:center;padding:1em;
+max-width: 800px;margin: 0 auto;
+border-radius: 6px;margin-bottom: -0.5em;
+padding-bottom: 1.5em;
+box-shadow: rgba(0, 0, 0, 0.2) 0px 18px 50px -10px;
+">
+            Pssst... <a href="https://github.com/spiffe/spike"
+        style="border-bottom: 2px solid #07bdd9"
+        ><strong>⭐️
+            Star SPIKE on GitHub ⭐️</strong></a>.<br>
+            Spread the word about this amazing technology 🐢⚡️.
+        </p>
+
+
+        <div id="wrap">
+             
+        <p><a href="/docs-src/public" title="Back to home"><img src="/docs/assetsssets/spike-banner.png"
+                                                                style="float:left;margin: 0 1em 0 1em;" alt="SPIKE Logo" /></a></p>
+<h1 id="spike-security-model">SPIKE Security Model</h1>
+<p>Here is a brief introduction to <strong>SPIKE</strong> security model.</p>
+<h2 id="authentication-and-communication">Authentication and Communication</h2>
+<ul>
+<li>All inter-component communication is secured through <a href="https://spiffe.io/"><strong>SPIFFE</strong> mTLS</a>.</li>
+<li>Components identify each other using their <strong>SVID</strong>s.</li>
+<li>Network-level security is provided by <strong>SPIFFE</strong> mTLS.</li>
+</ul>
+<h2 id="trust-boundaries">Trust Boundaries</h2>
+<p><strong>The primary trust boundary is at the machine level</strong>. Once the machine is
+compromised, hardening <strong>SPIKE</strong> components will provide diminishing returns.
+In that regard, both physical, and OS-level security are important.</p>
+<p>For example, when the machine is compromised, an attacker with sufficient
+privileges can observe and control the memory of <strong>SPIKE Nexus</strong>, or
+<strong>SPIKE Keeper</strong>; they can inject their counterfeit workloads; they can modify
+<strong>SPIRE</strong> and create their own registration entries</p>
+<p>It’s also worth noticing that, since <strong>SPIKE Keeper</strong> backs ups the <strong>root key</strong>
+in memory, if <strong>SPIKE Keeper</strong> is compromised, the machine can be considered
+compromised.</p>
+<p>For containerized deployments, both <strong>SPIKE Nexus</strong> and <strong>SPIKE Keeper</strong>
+shall be hardened.</p>
+<h2 id="threat-model-exceptions">Threat Model Exceptions</h2>
+<p>The following are not considered part of <strong>SPIKE</strong>’s threat model:</p>
+<ul>
+<li>Protecting against the control of the storage backend: Any storage backend
+is considered untrustworthy by <strong>SPIKE</strong>, so any data saved in the storage
+backend is encrypted at rest, and only <strong>SPIKE Nexus</strong> can decrypt it.
+An attacker can perform arbitrary operations against the storage backend,
+It is not <strong>SPIKE</strong>’s responsibility to protect the storage backend itself;
+<strong>SPIKE</strong> only ensures that an attacker accessing the storage backend cannot
+reveal the data stored there.</li>
+<li>Protecting against memory analysis of running system components: If an
+attacker can inspect the memory state of any component, then they already have
+root access on the machine (<em>which is our primary trust boundary</em>). If this
+happens, then the confidentiality of the data may be compromised. Preventing
+privilege escalation is a common system security best practice, and it is out
+of scope for <strong>SPIKE</strong> to enforce such measures. System administrators
+must ensure adequate precautions are taken to prevent running <strong>SPIKE</strong>
+components with elevated privileges.</li>
+<li>Protecting against malicious code execution on the underlying host system.
+This is again the system administrator’s responsibility. <strong>SPIKE</strong> cannot
+protect against malicious code execution as that ability likely requires
+administrative privileges, which should be avoided for <strong>SPIKE</strong> components
+in the first place to prevent privilege escalation.</li>
+<li>Protecting against the underlying system’s flaws. The systems shall be
+up-to-date with respect to dependencies, properly secured, monitored, and
+hardened.</li>
+<li>Protecting against ill intent of <strong>SPIKE</strong> super admins: <strong>SPIKE</strong> assumes
+trust for super administrators. Any malicious actions performed by super
+admins, such as abusing their elevated privileges, are considered out of
+scope for <strong>SPIKE</strong>’s threat model. It is the organization’s responsibility
+to enforce proper checks, balances, and monitoring mechanisms for super
+admin activities.</li>
+<li>Protecting against <strong>SPIKE</strong> administrators supplying vulnerable or malicious
+configuration data. This includes both intentional or unintentional
+misconfiguration—an administrator is supposed to know what they are doing.
+Any data provided as configuration values to <strong>SPIKE</strong> should be
+validated. Misconfiguration of <strong>SPIKE</strong>, or <strong>SPIFFE</strong> can result in the
+compromise of the confidentiality or the integrity of the data stored.</li>
+</ul>
+<h2 id="key-management">Key Management</h2>
+<ul>
+<li>The system assumes a long-lived, well-guarded, initial <strong>root key</strong>.
+<ul>
+<li>The root key will be periodically rotated, but still, it will be
+<strong>long-lived</strong>.</li>
+</ul>
+</li>
+<li>The <strong>root key</strong> is automatically generated by <strong>SPIKE Nexus</strong>, and it’s
+<strong>never</strong> stored on disk in plain text (<em>i.e., it always lives in memory</em>)</li>
+<li>An administrator with adequate privileges can use <code>spike recover</code> to save
+<a href="https://en.wikipedia.org/wiki/Shamir%27s_secret_sharing" title="Shamir&#39;s Secret Sharing">Shamir Shards</a> in an encrypted medium out-of-band for future
+break-the-glass disaster recovery.</li>
+<li>Root key rotation will also re-encrypt the secrets.</li>
+</ul>
+<h2 id="workload-access">Workload Access</h2>
+<p>Workloads can securely access their secrets and perform lifecycle operations
+(<em>e.g., create, delete, and modify secrets</em>) based on access policies defined
+by an administrator (<em>using the <code>spike policy</code> command</em>). These policies
+specify what a workload is allowed to do with the secrets managed by
+<strong>SPIKE Nexus</strong>.</p>
+<ul>
+<li><strong>Default Deny:</strong> By default, access to <strong>SPIKE Nexus</strong> is prohibited. Only
+super administrators have full access by default.</li>
+<li><strong>Policy Enforcement:</strong> Workloads require a valid, explicitly defined policy
+to perform any lifecycle operation on paths that contain secrets.</li>
+<li><strong>Controlled Operations:</strong> Operations such as creating, deleting, or modifying
+secrets are strictly governed by the access policies.</li>
+<li><strong>Access Scoping:</strong> Policies can define the scope and level of access (<em>e.g.,
+read-only or full access</em>) on specific secret paths for each workload.</li>
+</ul>
+<p>This ensures that workloads only access or modify the secrets they are
+explicitly permitted to, in accordance with their predefined policies.</p>
+<h2 id="administrative-access">Administrative Access</h2>
+<ul>
+<li>Administrative access is granted using special SPIFFE IDs:
+<ul>
+<li><code>spiffe://$trustRoot/spike/pilot/role/superuser</code>: Super Admin. Can do
+everything but recovery or restore operations.</li>
+<li><code>spiffe://$trustRoot/spike/pilot/role/recover</code>: Recovery user. Can <strong>only</strong>
+recover the root key shards to the local file system.</li>
+<li><code>spiffe://$trustRoot/spike/pilot/role/restore</code>: Restore user. Can <strong>only</strong>
+restore the root key by providing one shard at a time.</li>
+</ul>
+</li>
+</ul>
+<p>This gives us the flexibility to have separate users own distinct operational
+responsibilities. For example, an specific operator may only restore the system
+upon an unexpected crash, but they may not have the right to define access
+policies for secrets.</p>
+<p>This separation also provides better auditability.</p>
+<ul>
+<li>Once the system is initialized, accidental re-initialization is prevented.
+<ul>
+<li>For emergencies the admin user can use an out-of-band script to
+“<em>factory-reset</em>” <strong>SPIKE</strong>.</li>
+</ul>
+</li>
+</ul>
+<h2 id="multi-admin-support">Multi-Admin Support</h2>
+<p>Other than the three predefined roles (<em>superuser, recover, restore</em>), named
+admin access to the system would only be possible using an external identity
+manager such as an OIDC provider.</p>
+<p><strong>SPIKE</strong> focuses on secure and efficient secret storage. It delegates access
+and identity management to established standards like OIDC, keeping
+authentication concerns out of scope.</p>
+<hr />
+<ul>
+<li><a href="https://spike.ist/architecture/system-overview/"><strong>SPIKE</strong> System Overview</a></li>
+<li><a href="https://spike.ist/architecture/security-model/"><strong>SPIKE</strong> Security Model</a></li>
+<li><a href="https://spike.ist/architecture/architectural-decision-records/"><strong>SPIKE</strong> Architectural Decision Records</a></li>
+</ul>
+<hr />
+<ul>
+<li><a href="https://spike.ist/getting-started/">Getting Started</a></li>
+<li><a href="https://spike.ist/community/">Community</a></li>
+<li><a href="https://spike.ist/architecture/">SPIKE Architecture</a></li>
+<li><a href="https://spike.ist/operations/">Operations</a></li>
+<li><a href="https://spike.ist/tracking/">Tracking</a></li>
+</ul>
+
+    
+
+        </div>
+        <footer style="padding:1em;padding-top:1em;padding-bottom:1em;
+font-size: 14px;
+margin-top: 2em;
+max-width: 550px;
+margin: 2em auto;
+" id="footer">
+
+            Copyright © 2024-present <strong>SPIKE Contributors</strong>.<br>
+            <strong>SPIKE</strong>'s code
+            is distributed under <a class="text-blue-600 underline" href="https://www.mozilla.org/en-US/MPL/2.0/">Mozilla Public License (v2.0)</a>.
+            <br>
+            The documentation on this website
+            is distributed under <a class="text-blue-600 underline" href="https://creativecommons.org/licenses/by/4.0/">CC-BY-4.0</a>.
+            <br><br>
+            We <strong>do not</strong> collect your data.
+            This site <strong>does not</strong> use any tracking cookies or scripts.
+        </footer>
+
+
+
+    </article>
+
+</main>
+
+
+    <script type="text/javascript" src="https://spike.ist/elasticlunr.min.js" defer></script>
+    <script type="text/javascript" src="https://spike.ist/search_index.en.js" defer></script>
+<script type="text/javascript" src="https://spike.ist/js.js" defer></script>
+</body>
+</html>

@@ -1,3 +1,9 @@
+{#
+# \\
+# \\\\ SPIKE: Secure your secrets with SPIFFE.
+# \\\\\\
+#}
+
 * [SPIKE Cross-Platform Build](@/operations/build.md)
 * [SPIKE Production Setup](@/operations/production.md)
 * [SPIKE Recovery Procedures](@/operations/recovery.md)

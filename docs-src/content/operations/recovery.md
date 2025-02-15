@@ -1,4 +1,8 @@
 +++
+# //    \\ SPIKE: Secure your secrets with SPIFFE.
+# //  \\\\\ Copyright 2024-present SPIKE contributors.
+# // \\\\\\\ SPDX-License-Identifier: Apache-2.
+
 title = "SPIKE Recovery Procedures"
 weight = 3
 sort_by = "weight"
@@ -67,3 +71,7 @@ TODO: SPIKE can autorecover if setup properly but sometimes you'll need doomsday
 ----
 
 {{ toc_operations() }}
+
+----
+
+{{ toc_top() }}
