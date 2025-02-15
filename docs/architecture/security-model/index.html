@@ -220,12 +220,33 @@ It is not <strong>SPIKE</strong>’s responsibility to protect the storage backe
 reveal the data stored there.</li>
 <li>Protecting against memory analysis of running system components: If an
 attacker can inspect the memory state of any component, then they already have
-root access on the machine (<em>which is our primary trust boundary</em>). If this
+direct access to the machine (<em>which is our primary trust boundary</em>). If this
 happens, then the confidentiality of the data may be compromised. Preventing
-privilege escalation is a common system security best practice, and it is out
-of scope for <strong>SPIKE</strong> to enforce such measures. System administrators
-must ensure adequate precautions are taken to prevent running <strong>SPIKE</strong>
-components with elevated privileges.</li>
+memory analysis is a common system security best practice, and it is out
+of scope for <strong>SPIKE</strong> to enforce such measures.
+<ul>
+<li>System administrators should implement the following security measures to
+prevent memory analysis:
+<ul>
+<li>Set <code>/proc/sys/kernel/yama/ptrace_scope</code> to <code>2</code> or <code>3</code>:
+<ul>
+<li>Value <code>2</code> restricts <code>ptrace</code> to <code>root-only</code> access</li>
+<li>Value <code>3</code> disables <code>ptrace</code> completely, offering maximum security</li>
+</ul>
+</li>
+<li>Make this setting permanent by adding <code>kernel.yama.ptrace_scope = 2</code> to
+<code>/etc/sysctl.d/10-ptrace.conf</code></li>
+<li>Consider using <strong>SELinux</strong> or <strong>AppArmor</strong> profiles to further restrict
+process debugging capabilities</li>
+<li>If running in a container, ensure the container runtime is configured to
+disable ptrace capabilities (<em>e.g.,
+using <code>--security-opt=no-new-privileges</code> in Docker</em>)</li>
+<li>Regular audit of processes with <code>CAP_SYS_PTRACE</code> capability, as this can
+bypass ptrace restrictions</li>
+</ul>
+</li>
+</ul>
+</li>
 <li>Protecting against malicious code execution on the underlying host system.
 This is again the system administrator’s responsibility. <strong>SPIKE</strong> cannot
 protect against malicious code execution as that ability likely requires

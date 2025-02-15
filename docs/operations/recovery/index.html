@@ -128,13 +128,10 @@
                                                                     <a href="https://spike.ist/operations/recovery/#spike-nexus-crash-recovery">SPIKE Nexus Crash Recovery</a>
                                                                 </li>
                                                             <li>
+                                                                    <a href="https://spike.ist/operations/recovery/#spike-keeper-crash-recovery">SPIKE Keeper Crash Recovery</a>
+                                                                </li>
+                                                            <li>
                                                                     <a href="https://spike.ist/operations/recovery/#complete-system-recovery">Complete System Recovery</a>
-                                                                </li>
-                                                            <li>
-                                                                    <a href="https://spike.ist/operations/recovery/#system-reset">System Reset</a>
-                                                                </li>
-                                                            <li>
-                                                                    <a href="https://spike.ist/operations/recovery/#data-consistency">Data Consistency</a>
                                                                 </li>
                                                             </ul>
                                                     </li>
@@ -179,18 +176,72 @@ box-shadow: rgba(0, 0, 0, 0.2) 0px 18px 50px -10px;
         <p><a href="/" title="Back to home"><img src="/assets/spike-banner.png" 
 style="float:left;margin: 0 1em 0 1em;" alt="SPIKE Logo" /></a></p>
 <h1 id="spike-recovery-procedures">SPIKE Recovery Procedures</h1>
-<p>TODO: SPIKE can autorecover if setup properly but sometimes you’ll need doomsday recovery.</p>
-<p>// TODO: this needs update.</p>
-<h3 id="spike-nexus-crash-recovery">SPIKE Nexus Crash Recovery</h3>
+<p>SPIKE ensures that your secrets are secure and resilient, aiming for seamless
+operations even in the most challenging situations. This document outlines the
+steps required for recovering SPIKE in various scenarios, ensuring
+you have the right guidance to handle any eventuality.</p>
+<h2 id="spike-nexus-crash-recovery">SPIKE Nexus Crash Recovery</h2>
+<p><strong>SPIKE</strong> is designed to automatically recover <strong>SPIKE Nexus</strong> from crashes.
+Here is how this happens:</p>
 <ol>
 <li><strong>SPIKE Nexus</strong> crashes.</li>
 <li>New <strong>SPIKE Nexus</strong> instance starts.</li>
-<li><strong>SPIKE Nexus</strong> authenticates to <strong>SPIKE Keeper</strong> using <a href="https://spiffe.io/"><strong>SPIFFE</strong>
-mTLS</a>.</li>
-<li><strong>SPIKE Keeper</strong> provides the root key over <strong>mTLS</strong>.</li>
-<li><strong>SPIKE Nexus</strong> resumes normal operation.</li>
+<li><strong>SPIKE Nexus</strong> ask for shards from <strong>SPIKE Keeper</strong>s.</li>
+<li>Once <strong>SPIKE Nexus</strong> gathers adequate shards, it recreates its <strong>root key</strong>
+and resumes normal operations.</li>
 </ol>
-<h3 id="complete-system-recovery">Complete System Recovery</h3>
+<h2 id="spike-keeper-crash-recovery">SPIKE Keeper Crash Recovery</h2>
+<p><strong>SPIKE Keeper</strong> recovery is automatic, and does not require any manual
+intervention.</p>
+<p><strong>SPIKE Nexus</strong> regularly sends the shard that a <strong>SPIKE Keeper</strong> has to store.
+So, if a <strong>SPIKE Keeper</strong> instance crashes, it will eventually receive its
+shard.</p>
+<h2 id="complete-system-recovery">Complete System Recovery</h2>
+<p>In the unlikely case that both <strong>SPIKE Nexus</strong> and all <strong>SPIKE Keeper</strong>
+instances crash all together, the system may transition to a state where
+it cannot automatically recover.</p>
+<p>In that case manual intervention will be necessary.</p>
+<p>Here are the steps to take for this scenario:</p>
+<ol>
+<li>Before complete system failure:</li>
+</ol>
+<ul>
+<li>Change the <strong>SPIFFE ID</strong> of <strong>SPIKE Pilot</strong> to recovery mode by
+executing <code>./hack/spire-server-entry-recover-register.sh</code></li>
+<li>Run <code>spike recover</code></li>
+<li>Save the files generated in <code>~/.spike/recover</code> folder to a safe,
+encrypted, and password-protected medium.</li>
+<li>Securely erase the ~/.spike/recover` folder.</li>
+<li>Change the <strong>SPIFFE ID</strong> of <strong>SPIKE Pilot</strong> back using
+<code>./hack/spire-server-entry-su-register.sh</code> or delete the registration
+entry entirely for extra security.</li>
+<li>You can create the entry back using
+<code>./hack/spire-server-entry-su-register.sh</code> when you need to use
+<strong>SPIKE Pilot</strong>.</li>
+</ul>
+<ol start="2">
+<li>During complete system failure:</li>
+</ol>
+<ul>
+<li>Change the <strong>SPIFFE ID</strong> of <strong>SPIKE Pilot</strong> to restore mode:
+<code>./hack/spire-server-entry-restore-register.sh</code></li>
+<li>Execute <code>spike restore</code> and enter the shards you created in the
+previous step one by one. Each <code>spike restore</code> call accepts a
+single shard.</li>
+<li>When you provide enough shards, the system will restore itself:
+<strong>SPIKE Nexus</strong> will restore its root key, and it will also hydrate
+its peer <strong>SPIKE Keeper</strong> instances to protect itself against future
+crashes.</li>
+<li>Change the <strong>SPIFFE ID</strong> of <strong>SPIKE Pilot</strong> back using
+<code>./hack/spire-server-entry-su-register.sh</code> or delete the registration
+entry entirely for extra security.
+<ul>
+<li>You can create the entry back using
+<code>./hack/spire-server-entry-su-register.sh</code> when you need to use
+<strong>SPIKE Pilot</strong>.</li>
+</ul>
+</li>
+</ul>
 <ol>
 <li>Both <strong>SPIKE Nexus</strong>, <strong>SPIKE Keeper</strong> are unavailable, or the system is
 in on other irrecoverable state.</li>
@@ -201,32 +252,31 @@ the memory of <strong>SPIKE Nexus</strong>.</li>
 <li><strong>SPIKE Nexus</strong> syncs the <strong>root key</strong> with <strong>SPIKE Keeper</strong>.</li>
 <li>The system resumes normal operation.</li>
 </ol>
-<h3 id="system-reset">System Reset</h3>
+<h3 id="total-system-reset">Total System Reset</h3>
+<p>This procedure is for resetting <strong>SPIKE</strong> to its factory defaults.</p>
+<p>The situation:</p>
 <ul>
 <li>Both <strong>SPIKE Nexus</strong> and all <strong>SPIKE Keeper</strong> instances have crashed, there
 is no way to fetch the root key from <strong>SPIKE Keeper</strong>(s).</li>
-<li>Admin has lost access to their password.</li>
-<li>There is no backup administrator that could have avoided the “bus factor”.</li>
-<li>No one is using a password management software so that this would have been
-a non-issue from day zero.</li>
+<li>The system administrator has not used <code>spike recover</code> to create recovery
+shards, or they have lost access to the recovery shards.</li>
 <li>Everyone have learned their lessons, and now it’s time to reset the system
-and conduct an extensive “what went wrong / what should have been done” analysis.</li>
-<li>An administrator with adequate privileges manually runs a reset shell script.</li>
-<li><strong>SPIKE</strong> is reset to its factory defaults.</li>
-<li>A new admin user initializes <strong>SPIKE</strong> with a new secure password.</li>
-<li>All former secrets are lost.</li>
-<li>All former policies and configuration is lost.</li>
-<li>This is a complete system reset.</li>
+and conduct an extensive “what went wrong / what should have been done”
+analysis.</li>
 </ul>
-<h2 id="data-consistency">Data Consistency</h2>
+<p>How to proceed:</p>
 <ul>
-<li>If the root key changes during recovery, the old encrypted data becomes
-invalid.</li>
-<li>The root key is backed up in the backing store (<em>Postgres</em>); however
-securely backing up the backing store is also crucial.</li>
-<li>The root key cannot be recovered without the admin password. Therefore
-securely backing up the admin password in a out-of-band password manager
-is also crucial.</li>
+<li>Delete <code>~/.spike</code> folder, which will also delete all the persisted secrets
+in the SQLite backing store.</li>
+<li>Delete <strong>SPIRE Server</strong> registration entries.</li>
+<li>Redeploy <strong>SPIKE</strong> using your preferred method.
+<ul>
+<li>You can check out <code>./hack/start.sh</code> to see a sample startup/deployment
+script.</li>
+</ul>
+</li>
+<li>This is a complete system reset; you’ll lose all data and all former
+configuration, including secret access policies.</li>
 </ul>
 <hr />
 <ul>
