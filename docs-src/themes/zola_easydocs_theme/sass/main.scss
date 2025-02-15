@@ -2,10 +2,10 @@
 
 article #wrap {
     margin: 0 auto;
-    background: #efefef;
+    background: #f9f9f9;
     padding: 1em;
     border: 1px #cccccc solid;
-    max-width: 960px;
+    max-width: 860px;
     box-shadow: rgba(50, 50, 93, 0.25) 0px 13px 27px -5px, rgba(0, 0, 0, 0.3) 0px 8px 16px -8px;
     }
 
@@ -22,6 +22,25 @@ body {
   line-height: $line-height;
   background:$background;
   color:$color;
+}
+
+code {
+   background: yellow;
+   padding: 1px;
+   margin: 2px 5px 2px 5px;
+   display: inline-block;
+   border-radius: 1px;
+   background: #fff1ca;
+   box-shadow: rgba(0, 0, 0, 0.24) 0px 1px 4px;
+}
+
+/* for: /getting-started/configuration/ */
+tr:first-child td,
+tr:first-child th {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 150px;
 }
 
 @keyframes fade-in {
@@ -307,6 +326,9 @@ article {
   display: none;
 }
 
+h2:first-of-type {
+  clear: both;
+}
 
 @media screen and (max-width: 1023px) {
 
@@ -326,6 +348,8 @@ article {
     margin:0 $baseline;
     z-index:1;
   }
+
+
 
   #mobile {
     font-family: 'FabricMDL2Icons';
@@ -351,11 +375,23 @@ article {
   }
 }
 
+
+
+hr {
+    border: 1px #ffffff solid;
+box-shadow: #07bdd9 5px 5px;
+margin-bottom: 2em;
+margin-left: 1em;
+margin-right: 1em;
+margin-top: 2em;
+}
+
 blockquote {
   border-left: $quote-border;
   margin: 0;
   background-color: $quote-bg;
-  padding: 0 20px;
+  padding: 10px 20px;
+  box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
 }
 
 @import "fabric-icons-inline";

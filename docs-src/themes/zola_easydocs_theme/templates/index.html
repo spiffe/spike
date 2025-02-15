@@ -132,6 +132,8 @@
 
     <article>
 
+
+
         {% if config.build_search_index -%}
             <div id="on_right">
                 <span id="search-ico" class="ms-Icon--Search"></span>
@@ -144,18 +146,52 @@
                 </div>
             </div>
         {% endif -%}
+        <p style="background:#ffffff;text-align:center;padding:1em;
+max-width: 800px;margin: 0 auto;
+border-radius: 6px;margin-bottom: -0.5em;
+padding-bottom: 1.5em;
+box-shadow: rgba(0, 0, 0, 0.2) 0px 18px 50px -10px;
+">
+            Pssst... <a href="https://github.com/spiffe/spike"
+        style="border-bottom: 2px solid #07bdd9"
+        ><strong>⭐️
+            Star SPIKE on GitHub ⭐️</strong></a>.<br>
+            Spread the word about this amazing technology 🐢⚡️.
+        </p>
+
 
         <div id="wrap">
-            {% block content -%}
+             {% block content -%}
                 {%- if section.word_count -%}
                     {{ section.content |safe }}
                 {%- else -%}
                     {%- include "sec_toc_2_level.html" -%}
                 {% endif -%}
             {% endblock content %}
+
         </div>
+        <footer style="padding:1em;padding-top:1em;padding-bottom:1em;
+font-size: 14px;
+margin-top: 2em;
+max-width: 550px;
+margin: 2em auto;
+" id="footer">
+
+            Copyright © 2024-present <strong>SPIKE Contributors</strong>.<br>
+            <strong>SPIKE</strong>'s code
+            is distributed under <a class="text-blue-600 underline" href="https://www.mozilla.org/en-US/MPL/2.0/">Mozilla Public License (v2.0)</a>.
+            <br>
+            The documentation on this website
+            is distributed under <a class="text-blue-600 underline" href="https://creativecommons.org/licenses/by/4.0/">CC-BY-4.0</a>.
+            <br><br>
+            We <strong>do not</strong> collect your data.
+            This site <strong>does not</strong> use any tracking cookies or scripts.
+        </footer>
+
+
 
     </article>
+
 </main>
 
 {% if config.build_search_index %}
@@ -164,6 +200,5 @@
 {% endif -%}
 
     <script type="text/javascript" src="{{ get_url(path="js.js") | safe }}" defer></script>
-
 </body>
 </html>
