@@ -42,7 +42,7 @@ shall be hardened.
 
 ## Threat Model Exceptions
 
-The following are not considered part of **SPIKE**'s threat model:
+The following are **not** considered part of **SPIKE**'s threat model:
 
 * Protecting against the control of the storage backend: Any storage backend
   is considered untrustworthy by **SPIKE**, so any data saved in the storage
