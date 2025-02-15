@@ -1,0 +1,416 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://spike.ist/main.css">
+    <link rel="icon" href="https://spike.ist/assets/spike-favicon-16x16.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+    <title>  | ADR-0008: Administrative Access Control Systemy </title>
+</head>
+<body>
+
+<script>
+        fetch('https://api.github.com/repos/spiffe/spike/releases/latest')
+            .then((response) => {
+                return response.json();
+            })
+            .then((data) => {
+                let release_name = data.name;
+                let html_url = data.html_url;
+                release.innerHTML = `<a href='${html_url}'>${release_name}</a>`;
+            });
+    </script>
+<main>
+    
+    <nav>
+            <h1><a href="https:&#x2F;&#x2F;spike.ist&#x2F;"></a></h1>
+            <div id="release"></div>
+            <a href="javascript:void(0);" onclick="burger()" id="mobile" class="ms-Icon--GlobalNavButton"></a>
+            <div id="trees">
+                <input class="tree-toggle" type="checkbox" id="getting-started"
+                           />
+                    <label class="tree-toggle-label"
+                           for="getting-started">Getting Started</label>
+
+                    <ul class="subtree">
+                        <li >
+                                <a href="https://spike.ist/getting-started/guide/">Quickstart</a>
+                            </li>
+
+                            <li >
+                                <a href="https://spike.ist/getting-started/alpha-release-notice/">Alpha Release Notice</a>
+                            </li>
+
+                            <li >
+                                <a href="https://spike.ist/getting-started/configuration/">Configuring SPIKE</a>
+                            </li>
+
+                            </ul>
+                <input class="tree-toggle" type="checkbox" id="community"
+                           />
+                    <label class="tree-toggle-label"
+                           for="community">Community</label>
+
+                    <ul class="subtree">
+                        <li >
+                                <a href="https://spike.ist/community/hello/">Hello Universe</a>
+                            </li>
+
+                            <li >
+                                <a href="https://spike.ist/community/contact/">Contact Us</a>
+                            </li>
+
+                            <li >
+                                <a href="https://spike.ist/community/presentations/">Presentations and Demos</a>
+                            </li>
+
+                            </ul>
+                <input class="tree-toggle" type="checkbox" id="spike-architecture"
+                           checked/>
+                    <label class="tree-toggle-label"
+                           for="spike-architecture">SPIKE Architecture</label>
+
+                    <ul class="subtree">
+                        <li >
+                                <a href="https://spike.ist/architecture/system-overview/">System Overview</a>
+                            </li>
+
+                            <li >
+                                <a href="https://spike.ist/architecture/security-model/">SPIKE Security Model</a>
+                            </li>
+
+                            <li >
+                                <a href="https://spike.ist/architecture/architectural-decision-records/">ADRs</a>
+                            </li>
+
+                            </ul>
+                <input class="tree-toggle" type="checkbox" id="tracking"
+                           />
+                    <label class="tree-toggle-label"
+                           for="tracking">Tracking</label>
+
+                    <ul class="subtree">
+                        <li >
+                                <a href="https://spike.ist/tracking/changelog/">Changelog</a>
+                            </li>
+
+                            <li >
+                                <a href="https://spike.ist/tracking/snapshots/">Documentation Snapshots</a>
+                            </li>
+
+                            </ul>
+                <input class="tree-toggle" type="checkbox" id="operations"
+                           />
+                    <label class="tree-toggle-label"
+                           for="operations">Operations</label>
+
+                    <ul class="subtree">
+                        <li >
+                                <a href="https://spike.ist/operations/build/">SPIKE Cross-Platform Build</a>
+                            </li>
+
+                            <li >
+                                <a href="https://spike.ist/operations/production/">SPIKE Production Setup</a>
+                            </li>
+
+                            <li >
+                                <a href="https://spike.ist/operations/recovery/">SPIKE Recovery Procedures</a>
+                            </li>
+
+                            <li >
+                                <a href="https://spike.ist/operations/release/">SPIKE Relase Management</a>
+                            </li>
+
+                            </ul>
+                </div>
+        </nav>
+    <article>
+
+
+
+        <div id="on_right">
+                <span id="search-ico" class="ms-Icon--Search"></span>
+            </div>
+            <div class="search-container">
+                <input id="search" type="search" placeholder="Search as you type...">
+                <div class="search-results">
+                    <div class="search-results__header"></div>
+                    <ul class="search-results__items"></ul>
+                </div>
+            </div>
+        <p style="background:#ffffff;text-align:center;padding:1em;
+max-width: 800px;margin: 0 auto;
+border-radius: 6px;margin-bottom: -0.5em;
+padding-bottom: 1.5em;
+box-shadow: rgba(0, 0, 0, 0.2) 0px 18px 50px -10px;
+">
+            Pssst... <a href="https://github.com/spiffe/spike"
+        style="border-bottom: 2px solid #07bdd9"
+        ><strong>⭐️
+            Star SPIKE on GitHub ⭐️</strong></a>.<br>
+            Spread the word about this amazing technology 🐢⚡️.
+        </p>
+
+
+        <div id="wrap">
+             
+        <p><a href="/docs-src/public" title="Back to home"><img src="/docs/assetsssets/spike-banner.png"
+                                                                style="float:left;margin: 0 1em 0 1em;" alt="SPIKE Logo" /></a></p>
+<h1 id="adr-0008-administrative-access-control-system">ADR-0008: Administrative Access Control System</h1>
+<br style="clear:both" />
+<ul>
+<li>Status: accepted</li>
+<li>Date: 2024-11-03</li>
+<li>Tags: Security, Administration, Disaster Recovery</li>
+</ul>
+<h2 id="context">Context</h2>
+<p>*e need a secure and auditable system for administrative access that:</p>
+<ul>
+<li>Manages initial system provisioning</li>
+<li>Controls ongoing administrative access</li>
+<li>Prevents accidental system re-initialization</li>
+<li>Provides emergency recovery options</li>
+</ul>
+<ul>
+<li>Ensures accountability of administrative actions</li>
+</ul>
+<h2 id="decision">Decision</h2>
+<p>We will implement a multi-layered administrative access system:</p>
+<h3 id="initial-provisioning">Initial Provisioning</h3>
+<ul>
+<li>Require admin password specification</li>
+<li>Generate admin token in SPIKE Nexus</li>
+<li>Single initialization opportunity</li>
+</ul>
+<h3 id="ongoing-access">Ongoing Access:</h3>
+<ul>
+<li>Token-based authentication via <code>spike login</code></li>
+<li>Temporary access tokens</li>
+<li>Password-to-token exchange mechanism</li>
+</ul>
+<h3 id="system-protection">System Protection:</h3>
+<ul>
+<li>Prevention of accidental re-initialization</li>
+<li>Out-of-band factory reset capability</li>
+<li>Strict initialization state management</li>
+</ul>
+<h2 id="consequences">Consequences</h2>
+<h3 id="positive">Positive</h3>
+<ul>
+<li>Clear audit trail of administrative actions</li>
+<li>Prevention of accidental system resets</li>
+<li>Temporary token model reduces risk of token compromise</li>
+<li>Password-based authentication with token exchange provides dual security</li>
+<li>Emergency recovery option available</li>
+<li>Clear separation between normal operation and emergency procedures</li>
+</ul>
+<h3 id="negative">Negative</h3>
+<ul>
+<li>Need to manage admin password securely</li>
+<li>Additional complexity in access management</li>
+<li>Potential for system lockout if password is lost</li>
+<li>Need to secure factory reset capability</li>
+<li>Additional operational overhead for token management</li>
+</ul>
+<h2 id="implementation-requirements">Implementation Requirements</h2>
+<h3 id="initial-provisioning-1">Initial Provisioning</h3>
+<h4 id="password-requirements">Password Requirements</h4>
+<ul>
+<li>Strong password policies</li>
+<li>Secure password transmission</li>
+<li>Initial token generation rules</li>
+</ul>
+<h4 id="initialization-protection">Initialization Protection</h4>
+<ul>
+<li>State tracking mechanism</li>
+<li>Initialization lock</li>
+<li>State persistence</li>
+</ul>
+<h3 id="authentication-flow">Authentication Flow</h3>
+<h4 id="login-process">Login Process</h4>
+<ul>
+<li><code>spike login</code> command implementation</li>
+<li>Password validation</li>
+<li>Token generation and exchange</li>
+<li>Token lifetime management</li>
+</ul>
+<h4 id="token-management">Token Management:</h4>
+<ul>
+<li>Token expiration rules</li>
+<li>Token revocation capabilities</li>
+<li>Token usage tracking</li>
+</ul>
+<h3 id="factory-reset">Factory Reset</h3>
+<h4 id="out-of-band-script">Out-of-band Script:</h4>
+<ul>
+<li>Secure script storage</li>
+<li>Access controls</li>
+<li>Execution logging</li>
+<li>State verification</li>
+</ul>
+<h4 id="reset-protection">Reset Protection:</h4>
+<ul>
+<li>Confirmation requirements</li>
+<li>Audit logging</li>
+<li>State validation</li>
+</ul>
+<h2 id="security-measures">Security Measures</h2>
+<h3 id="access-control">Access Control</h3>
+<h4 id="password-protection">Password Protection:</h4>
+<ul>
+<li>Secure storage</li>
+<li>Hash algorithms</li>
+<li>Salt management</li>
+<li>Update procedures</li>
+</ul>
+<h4 id="token-security">Token Security:</h4>
+<ul>
+<li>Cryptographic strength</li>
+<li>Expiration handling</li>
+<li>Revocation mechanisms</li>
+<li>Usage limitations</li>
+</ul>
+<h3 id="audit-requirements">Audit Requirements</h3>
+<h4 id="logging">Logging:</h4>
+<ul>
+<li>Login attempts</li>
+<li>Token generations</li>
+<li>Administrative actions</li>
+<li>Reset attempts</li>
+</ul>
+<h4 id="audit-trail">Audit Trail</h4>
+<ul>
+<li>Timestamp recording</li>
+<li>Action attribution</li>
+<li>Success/failure status</li>
+<li>IP address tracking</li>
+</ul>
+<h2 id="emergency-procedures">Emergency Procedures</h2>
+<h3 id="system-reset">System Reset</h3>
+<h4 id="prerequisites">Prerequisites</h4>
+<ul>
+<li>Access to reset script</li>
+<li>Authentication requirements</li>
+<li>Backup verification</li>
+<li>Impact assessment</li>
+</ul>
+<h4 id="execution-process">Execution Process:</h4>
+<ul>
+<li>Safety checks</li>
+<li>Backup procedures</li>
+<li>Reset execution</li>
+<li>System verification</li>
+</ul>
+<h3 id="recovery-procedures">Recovery Procedures</h3>
+<h4 id="access-recovery">Access Recovery:</h4>
+<ul>
+<li>Password reset process</li>
+<li>Token regeneration</li>
+<li>System state verification</li>
+<li>Access restoration</li>
+</ul>
+<h2 id="monitoring-and-alerts">Monitoring and Alerts</h2>
+<h4 id="security-events">Security Events</h4>
+<ul>
+<li>Failed login attempts</li>
+<li>Token misuse</li>
+<li>Initialization attempts</li>
+<li>Reset attempts</li>
+</ul>
+<h4 id="system-state">System State</h4>
+<ul>
+<li>Initialization status</li>
+<li>Token validity</li>
+<li>System integrity</li>
+<li>Access patterns</li>
+</ul>
+<h2 id="implementation-guidelines">Implementation Guidelines</h2>
+<h3 id="command-line-interface">Command Line Interface</h3>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">spike</span><span> login</span><span style="color:#bf616a;"> --password </span><span style="color:#b48ead;">[</span><span>password</span><span style="color:#b48ead;">]  </span><span style="color:#65737e;"># Exchange password for temporary token
+</span><span style="color:#bf616a;">spike</span><span> reset</span><span style="color:#bf616a;"> --force              
+</span><span style="color:#65737e;"># Execute factory reset (requires additional safeguards)
+</span><span style="color:#65737e;"># for example it will print a script but not execute it.
+</span></code></pre>
+<h3 id="state-management">State Management</h3>
+<ul>
+<li>Use atomic operations for state changes</li>
+<li>Implement state persistence</li>
+<li>Include state verification</li>
+<li>Maintain state history</li>
+</ul>
+<h2 id="references">References</h2>
+<ul>
+<li><a href="https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html">OWASP Authentication Guidelines</a></li>
+<li><a href="https://pages.nist.gov/800-63-3/">NIST Digital Identity Guidelines</a></li>
+</ul>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>Regular testing of reset procedures required</li>
+<li>Document all emergency procedures</li>
+<li>Train administrators on proper usage</li>
+<li>Regular audit of access patterns</li>
+<li>Review and update procedures periodically</li>
+</ul>
+<h2 id="warning">Warning</h2>
+<p>The factory reset capability should be strictly controlled and documented.
+Accidental execution could result in complete system reset and data loss.</p>
+<hr />
+<ul>
+<li><a href="https://spike.ist/architecture/adrs/adr-0017/">ADR-0017: Synchronous Persistence for SPIKE Secrets Store</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0016/">ADR-0016: Memory-First Secrets Store</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0015/">ADR-0015: Use Singular Form for File and Package Naming</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0014/">ADR-0014: Maintaining SQLite as SPIKE’s Primary Storage Backend</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0013/">ADR-0013: S3-Compatible Storage as SPIKE’s Backing Store</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0012/">ADR-0012: HTTP Methods for SPIKE API</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0011/">ADR-0011: PostgreSQL as SPIKE’s Backing Store</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0010/">ADR-0010: Session Token Storage Strategy for SPIKE Nexus</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0009/">ADR-0009: Multi-Administrator Support System</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0008/">ADR-0008: Administrative Access Control System</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0007/">ADR-0007: Root Key Lifecycle and Management Strategy</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0006/">ADR-0006: Trust Boundary Definition and Security Assumptions</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0005/">ADR-0005: Use SPIFFE mTLS for Inter-Component Authentication and Communication</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0004/">ADR-0004: SPIKE Keeper Minimalist Design Approach</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0003/">ADR-0003: Root Key Management and Storage Strategy</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0002/">ADR-0002: Use Docsify for Documentation System</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0001/">ADR-0001: Display Secrets in Plain Text in SPIKE Pilot Admin CLI</a></li>
+</ul>
+<hr />
+<ul>
+<li><a href="https://spike.ist/architecture/system-overview/"><strong>SPIKE</strong> System Overview</a></li>
+<li><a href="https://spike.ist/architecture/security-model/"><strong>SPIKE</strong> Security Model</a></li>
+<li><a href="https://spike.ist/architecture/architectural-decision-records/"><strong>SPIKE</strong> Architectural Decision Records</a></li>
+</ul>
+
+    
+
+        </div>
+        <footer style="padding:1em;padding-top:1em;padding-bottom:1em;
+font-size: 14px;
+margin-top: 2em;
+max-width: 550px;
+margin: 2em auto;
+" id="footer">
+
+            Copyright © 2024-present <strong>SPIKE Contributors</strong>.<br>
+            <strong>SPIKE</strong>'s code
+            is distributed under <a class="text-blue-600 underline" href="https://www.mozilla.org/en-US/MPL/2.0/">Mozilla Public License (v2.0)</a>.
+            <br>
+            The documentation on this website
+            is distributed under <a class="text-blue-600 underline" href="https://creativecommons.org/licenses/by/4.0/">CC-BY-4.0</a>.
+            <br><br>
+            We <strong>do not</strong> collect your data.
+            This site <strong>does not</strong> use any tracking cookies or scripts.
+        </footer>
+
+
+
+    </article>
+
+</main>
+
+
+    <script type="text/javascript" src="https://spike.ist/elasticlunr.min.js" defer></script>
+    <script type="text/javascript" src="https://spike.ist/search_index.en.js" defer></script>
+<script type="text/javascript" src="https://spike.ist/js.js" defer></script>
+</body>
+</html>

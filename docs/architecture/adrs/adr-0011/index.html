@@ -1,0 +1,347 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://spike.ist/main.css">
+    <link rel="icon" href="https://spike.ist/assets/spike-favicon-16x16.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+    <title>  | ADR-0011: PostgreSQL as SPIKE&#x27;s Backing Store </title>
+</head>
+<body>
+
+<script>
+        fetch('https://api.github.com/repos/spiffe/spike/releases/latest')
+            .then((response) => {
+                return response.json();
+            })
+            .then((data) => {
+                let release_name = data.name;
+                let html_url = data.html_url;
+                release.innerHTML = `<a href='${html_url}'>${release_name}</a>`;
+            });
+    </script>
+<main>
+    
+    <nav>
+            <h1><a href="https:&#x2F;&#x2F;spike.ist&#x2F;"></a></h1>
+            <div id="release"></div>
+            <a href="javascript:void(0);" onclick="burger()" id="mobile" class="ms-Icon--GlobalNavButton"></a>
+            <div id="trees">
+                <input class="tree-toggle" type="checkbox" id="getting-started"
+                           />
+                    <label class="tree-toggle-label"
+                           for="getting-started">Getting Started</label>
+
+                    <ul class="subtree">
+                        <li >
+                                <a href="https://spike.ist/getting-started/guide/">Quickstart</a>
+                            </li>
+
+                            <li >
+                                <a href="https://spike.ist/getting-started/alpha-release-notice/">Alpha Release Notice</a>
+                            </li>
+
+                            <li >
+                                <a href="https://spike.ist/getting-started/configuration/">Configuring SPIKE</a>
+                            </li>
+
+                            </ul>
+                <input class="tree-toggle" type="checkbox" id="community"
+                           />
+                    <label class="tree-toggle-label"
+                           for="community">Community</label>
+
+                    <ul class="subtree">
+                        <li >
+                                <a href="https://spike.ist/community/hello/">Hello Universe</a>
+                            </li>
+
+                            <li >
+                                <a href="https://spike.ist/community/contact/">Contact Us</a>
+                            </li>
+
+                            <li >
+                                <a href="https://spike.ist/community/presentations/">Presentations and Demos</a>
+                            </li>
+
+                            </ul>
+                <input class="tree-toggle" type="checkbox" id="spike-architecture"
+                           checked/>
+                    <label class="tree-toggle-label"
+                           for="spike-architecture">SPIKE Architecture</label>
+
+                    <ul class="subtree">
+                        <li >
+                                <a href="https://spike.ist/architecture/system-overview/">System Overview</a>
+                            </li>
+
+                            <li >
+                                <a href="https://spike.ist/architecture/security-model/">SPIKE Security Model</a>
+                            </li>
+
+                            <li >
+                                <a href="https://spike.ist/architecture/architectural-decision-records/">ADRs</a>
+                            </li>
+
+                            </ul>
+                <input class="tree-toggle" type="checkbox" id="tracking"
+                           />
+                    <label class="tree-toggle-label"
+                           for="tracking">Tracking</label>
+
+                    <ul class="subtree">
+                        <li >
+                                <a href="https://spike.ist/tracking/changelog/">Changelog</a>
+                            </li>
+
+                            <li >
+                                <a href="https://spike.ist/tracking/snapshots/">Documentation Snapshots</a>
+                            </li>
+
+                            </ul>
+                <input class="tree-toggle" type="checkbox" id="operations"
+                           />
+                    <label class="tree-toggle-label"
+                           for="operations">Operations</label>
+
+                    <ul class="subtree">
+                        <li >
+                                <a href="https://spike.ist/operations/build/">SPIKE Cross-Platform Build</a>
+                            </li>
+
+                            <li >
+                                <a href="https://spike.ist/operations/production/">SPIKE Production Setup</a>
+                            </li>
+
+                            <li >
+                                <a href="https://spike.ist/operations/recovery/">SPIKE Recovery Procedures</a>
+                            </li>
+
+                            <li >
+                                <a href="https://spike.ist/operations/release/">SPIKE Relase Management</a>
+                            </li>
+
+                            </ul>
+                </div>
+        </nav>
+    <article>
+
+
+
+        <div id="on_right">
+                <span id="search-ico" class="ms-Icon--Search"></span>
+            </div>
+            <div class="search-container">
+                <input id="search" type="search" placeholder="Search as you type...">
+                <div class="search-results">
+                    <div class="search-results__header"></div>
+                    <ul class="search-results__items"></ul>
+                </div>
+            </div>
+        <p style="background:#ffffff;text-align:center;padding:1em;
+max-width: 800px;margin: 0 auto;
+border-radius: 6px;margin-bottom: -0.5em;
+padding-bottom: 1.5em;
+box-shadow: rgba(0, 0, 0, 0.2) 0px 18px 50px -10px;
+">
+            Pssst... <a href="https://github.com/spiffe/spike"
+        style="border-bottom: 2px solid #07bdd9"
+        ><strong>⭐️
+            Star SPIKE on GitHub ⭐️</strong></a>.<br>
+            Spread the word about this amazing technology 🐢⚡️.
+        </p>
+
+
+        <div id="wrap">
+             
+        <p><a href="/docs-src/public" title="Back to home"><img src="/docs/assetsssets/spike-banner.png"
+                                                                style="float:left;margin: 0 1em 0 1em;" alt="SPIKE Logo" /></a></p>
+<h1 id="adr-0011-postgresql-as-spike-s-backing-store">ADR-0011: PostgreSQL as SPIKE’s Backing Store</h1>
+<br style="clear:both" />
+<ul>
+<li>Status:
+<ul>
+<li>Superseded by <a href="https://spike.ist/architecture/adrs/adr-0011/adrs/adr-0013.md">ADR-0013: S3-Compatible Storage as SPIKE’s Backing Store</a></li>
+</ul>
+</li>
+<li>Date: 2024-11-07</li>
+<li>History:
+<ul>
+<li>2024-11-04: Accepted</li>
+<li>2024-11-07: Superseded by ADR-0013</li>
+</ul>
+</li>
+<li>Tags: Database, Persistence, Storage, Backup</li>
+</ul>
+<h2 id="context">Context</h2>
+<p><strong>SPIKE</strong> needs a reliable, secure, and performant backing store to maintain
+various types of encrypted data including:</p>
+<ul>
+<li>Root keys (<em>encrypted with admin password</em>)</li>
+<li>Admin tokens (<em>encrypted with root key</em>)</li>
+<li>Secrets (<em>encrypted with root key</em>)</li>
+</ul>
+<p>The system requires:</p>
+<ol>
+<li>Strong data consistency and ACID transactions</li>
+<li>Support for binary data storage (for encrypted keys and secrets)</li>
+<li>Advanced data types and indexing capabilities</li>
+<li>Robust access control and security features</li>
+<li>Audit logging capabilities</li>
+<li>Schema management and version control</li>
+</ol>
+<h2 id="decision">Decision</h2>
+<p>We will use <a href="https://www.postgresql.org/">PostgreSQL</a> as the exclusive backing store for <strong>SPIKE</strong>,
+with <strong>SPIKE Nexus</strong> being the <strong>only</strong> client with direct database access.</p>
+<h3 id="rationale">Rationale</h3>
+<h4 id="security-features"><strong>Security Features</strong></h4>
+<ul>
+<li>Native support for encryption at rest</li>
+<li>Fine-grained access control</li>
+<li>SSL support for encrypted connections</li>
+<li>Built-in audit logging capabilities</li>
+</ul>
+<h4 id="data-integrity"><strong>Data Integrity</strong>:</h4>
+<ul>
+<li>ACID compliance</li>
+<li>Strong consistency model</li>
+<li>Native support for UUID, JSONB, and bytea types</li>
+<li>Constraints and triggers for data validation</li>
+</ul>
+<h4 id="performance"><strong>Performance</strong>:</h4>
+<ul>
+<li>Efficient indexing for binary and text data</li>
+<li>Good performance with both read and write operations</li>
+<li>Mature query optimizer</li>
+<li>Support for concurrent access</li>
+</ul>
+<h4 id="operational-benefits"><strong>Operational Benefits</strong>:</h4>
+<ul>
+<li>Wide industry adoption</li>
+<li>Extensive tooling ecosystem</li>
+<li>Strong community support</li>
+<li>Well-documented backup and recovery procedures</li>
+<li>Free and open-source</li>
+</ul>
+<h2 id="consequences">Consequences</h2>
+<h3 id="positive">Positive</h3>
+<ol>
+<li>Simplified architecture with a single source of truth</li>
+<li>Reliable data persistence and consistency</li>
+<li>Built-in support for all required data types</li>
+<li>Easy integration with existing backup and monitoring tools</li>
+<li>No additional licensing costs</li>
+</ol>
+<h3 id="negative">Negative</h3>
+<ol>
+<li>Limited to PostgreSQL-specific features</li>
+<li>Team needs to maintain PostgreSQL expertise</li>
+<li>Single database deployment could be a bottleneck</li>
+<li>Migration complexity if database change is needed in future</li>
+</ol>
+<h3 id="mitigations">Mitigations</h3>
+<ol>
+<li>Use database-agnostic SQL where possible</li>
+<li>Implement connection pooling</li>
+<li>Plan for regular maintenance windows</li>
+<li>Document all PostgreSQL-specific features used</li>
+</ol>
+<h2 id="implementation-notes">Implementation Notes</h2>
+<ul>
+<li><strong>SPIKE Nexus</strong> can use prepared statements to prevent SQL injection</li>
+<li>All sensitive data will be encrypted before storage</li>
+<li>Regular backups will be configured</li>
+<li>Monitor database performance metrics</li>
+<li>Implement connection pooling for scalability</li>
+</ul>
+<h2 id="consequences-1">Consequences</h2>
+<h3 id="positive-1">Positive</h3>
+<ol>
+<li>Simplified architecture with a single source of truth</li>
+<li>Reliable data persistence and consistency</li>
+<li>Built-in support for all required data types</li>
+<li>Easy integration with existing backup and monitoring tools</li>
+<li>No additional licensing costs</li>
+</ol>
+<h3 id="negative-1">Negative</h3>
+<ol>
+<li>Limited to PostgreSQL-specific features</li>
+<li>Team needs to maintain PostgreSQL expertise</li>
+<li>Single database deployment could be a bottleneck</li>
+<li>Migration complexity if database change is needed in future</li>
+</ol>
+<h3 id="mitigations-1">Mitigations</h3>
+<ol>
+<li>Use database-agnostic SQL where possible</li>
+<li>Implement connection pooling</li>
+<li>Plan for regular maintenance windows</li>
+<li>Document all PostgreSQL-specific features used</li>
+</ol>
+<h2 id="implementation-notes-1">Implementation Notes</h2>
+<ul>
+<li>SPIKE Nexus will use prepared statements to prevent SQL injection</li>
+<li>All sensitive data will be encrypted before storage</li>
+<li>Regular backups will be configured</li>
+<li>Monitor database performance metrics</li>
+<li>Implement connection pooling for scalability</li>
+</ul>
+<hr />
+<ul>
+<li><a href="https://spike.ist/architecture/adrs/adr-0017/">ADR-0017: Synchronous Persistence for SPIKE Secrets Store</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0016/">ADR-0016: Memory-First Secrets Store</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0015/">ADR-0015: Use Singular Form for File and Package Naming</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0014/">ADR-0014: Maintaining SQLite as SPIKE’s Primary Storage Backend</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0013/">ADR-0013: S3-Compatible Storage as SPIKE’s Backing Store</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0012/">ADR-0012: HTTP Methods for SPIKE API</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0011/">ADR-0011: PostgreSQL as SPIKE’s Backing Store</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0010/">ADR-0010: Session Token Storage Strategy for SPIKE Nexus</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0009/">ADR-0009: Multi-Administrator Support System</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0008/">ADR-0008: Administrative Access Control System</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0007/">ADR-0007: Root Key Lifecycle and Management Strategy</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0006/">ADR-0006: Trust Boundary Definition and Security Assumptions</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0005/">ADR-0005: Use SPIFFE mTLS for Inter-Component Authentication and Communication</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0004/">ADR-0004: SPIKE Keeper Minimalist Design Approach</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0003/">ADR-0003: Root Key Management and Storage Strategy</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0002/">ADR-0002: Use Docsify for Documentation System</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0001/">ADR-0001: Display Secrets in Plain Text in SPIKE Pilot Admin CLI</a></li>
+</ul>
+<hr />
+<ul>
+<li><a href="https://spike.ist/architecture/system-overview/"><strong>SPIKE</strong> System Overview</a></li>
+<li><a href="https://spike.ist/architecture/security-model/"><strong>SPIKE</strong> Security Model</a></li>
+<li><a href="https://spike.ist/architecture/architectural-decision-records/"><strong>SPIKE</strong> Architectural Decision Records</a></li>
+</ul>
+
+    
+
+        </div>
+        <footer style="padding:1em;padding-top:1em;padding-bottom:1em;
+font-size: 14px;
+margin-top: 2em;
+max-width: 550px;
+margin: 2em auto;
+" id="footer">
+
+            Copyright © 2024-present <strong>SPIKE Contributors</strong>.<br>
+            <strong>SPIKE</strong>'s code
+            is distributed under <a class="text-blue-600 underline" href="https://www.mozilla.org/en-US/MPL/2.0/">Mozilla Public License (v2.0)</a>.
+            <br>
+            The documentation on this website
+            is distributed under <a class="text-blue-600 underline" href="https://creativecommons.org/licenses/by/4.0/">CC-BY-4.0</a>.
+            <br><br>
+            We <strong>do not</strong> collect your data.
+            This site <strong>does not</strong> use any tracking cookies or scripts.
+        </footer>
+
+
+
+    </article>
+
+</main>
+
+
+    <script type="text/javascript" src="https://spike.ist/elasticlunr.min.js" defer></script>
+    <script type="text/javascript" src="https://spike.ist/search_index.en.js" defer></script>
+<script type="text/javascript" src="https://spike.ist/js.js" defer></script>
+</body>
+</html>

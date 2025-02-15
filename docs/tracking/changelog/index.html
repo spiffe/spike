@@ -1,0 +1,296 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://spike.ist/main.css">
+    <link rel="icon" href="https://spike.ist/assets/spike-favicon-16x16.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+    <title>  | Changelog </title>
+</head>
+<body>
+
+<script>
+        fetch('https://api.github.com/repos/spiffe/spike/releases/latest')
+            .then((response) => {
+                return response.json();
+            })
+            .then((data) => {
+                let release_name = data.name;
+                let html_url = data.html_url;
+                release.innerHTML = `<a href='${html_url}'>${release_name}</a>`;
+            });
+    </script>
+<main>
+    
+    <nav>
+            <h1><a href="https:&#x2F;&#x2F;spike.ist&#x2F;"></a></h1>
+            <div id="release"></div>
+            <a href="javascript:void(0);" onclick="burger()" id="mobile" class="ms-Icon--GlobalNavButton"></a>
+            <div id="trees">
+                <input class="tree-toggle" type="checkbox" id="getting-started"
+                           />
+                    <label class="tree-toggle-label"
+                           for="getting-started">Getting Started</label>
+
+                    <ul class="subtree">
+                        <li >
+                                <a href="https://spike.ist/getting-started/guide/">Quickstart</a>
+                            </li>
+
+                            <li >
+                                <a href="https://spike.ist/getting-started/alpha-release-notice/">Alpha Release Notice</a>
+                            </li>
+
+                            <li >
+                                <a href="https://spike.ist/getting-started/configuration/">Configuring SPIKE</a>
+                            </li>
+
+                            </ul>
+                <input class="tree-toggle" type="checkbox" id="community"
+                           />
+                    <label class="tree-toggle-label"
+                           for="community">Community</label>
+
+                    <ul class="subtree">
+                        <li >
+                                <a href="https://spike.ist/community/hello/">Hello Universe</a>
+                            </li>
+
+                            <li >
+                                <a href="https://spike.ist/community/contact/">Contact Us</a>
+                            </li>
+
+                            <li >
+                                <a href="https://spike.ist/community/presentations/">Presentations and Demos</a>
+                            </li>
+
+                            </ul>
+                <input class="tree-toggle" type="checkbox" id="spike-architecture"
+                           />
+                    <label class="tree-toggle-label"
+                           for="spike-architecture">SPIKE Architecture</label>
+
+                    <ul class="subtree">
+                        <li >
+                                <a href="https://spike.ist/architecture/system-overview/">System Overview</a>
+                            </li>
+
+                            <li >
+                                <a href="https://spike.ist/architecture/security-model/">SPIKE Security Model</a>
+                            </li>
+
+                            <li >
+                                <a href="https://spike.ist/architecture/architectural-decision-records/">ADRs</a>
+                            </li>
+
+                            </ul>
+                <input class="tree-toggle" type="checkbox" id="tracking"
+                           checked/>
+                    <label class="tree-toggle-label"
+                           for="tracking">Tracking</label>
+
+                    <ul class="subtree">
+                        <li class="active">
+                                <a href="https://spike.ist/tracking/changelog/">Changelog</a>
+                            </li>
+
+                            
+                                    
+                                    
+                                        <ul id="toc">
+                                            <li><a href="
+                                                        https://spike.ist/tracking/changelog/#spike-changelog">SPIKE Changelog</a>
+                                                    <ul>
+                                                            <li>
+                                                                    <a href="https://spike.ist/tracking/changelog/#recent">Recent</a>
+                                                                </li>
+                                                            <li>
+                                                                    <a href="https://spike.ist/tracking/changelog/#0-2-1-2026-01-23">[0.2.1] - 2026-01-23</a>
+                                                                </li>
+                                                            <li>
+                                                                    <a href="https://spike.ist/tracking/changelog/#0-2-0-2024-11-22">[0.2.0] - 2024-11-22</a>
+                                                                </li>
+                                                            <li>
+                                                                    <a href="https://spike.ist/tracking/changelog/#0-1-0-2024-11-06">[0.1.0] - 2024-11-06</a>
+                                                                </li>
+                                                            </ul>
+                                                    </li>
+                                            </ul>
+                                    <li >
+                                <a href="https://spike.ist/tracking/snapshots/">Documentation Snapshots</a>
+                            </li>
+
+                            </ul>
+                <input class="tree-toggle" type="checkbox" id="operations"
+                           />
+                    <label class="tree-toggle-label"
+                           for="operations">Operations</label>
+
+                    <ul class="subtree">
+                        <li >
+                                <a href="https://spike.ist/operations/build/">SPIKE Cross-Platform Build</a>
+                            </li>
+
+                            <li >
+                                <a href="https://spike.ist/operations/production/">SPIKE Production Setup</a>
+                            </li>
+
+                            <li >
+                                <a href="https://spike.ist/operations/recovery/">SPIKE Recovery Procedures</a>
+                            </li>
+
+                            <li >
+                                <a href="https://spike.ist/operations/release/">SPIKE Relase Management</a>
+                            </li>
+
+                            </ul>
+                </div>
+        </nav>
+    <article>
+
+
+
+        <div id="on_right">
+                <span id="search-ico" class="ms-Icon--Search"></span>
+            </div>
+            <div class="search-container">
+                <input id="search" type="search" placeholder="Search as you type...">
+                <div class="search-results">
+                    <div class="search-results__header"></div>
+                    <ul class="search-results__items"></ul>
+                </div>
+            </div>
+        <p style="background:#ffffff;text-align:center;padding:1em;
+max-width: 800px;margin: 0 auto;
+border-radius: 6px;margin-bottom: -0.5em;
+padding-bottom: 1.5em;
+box-shadow: rgba(0, 0, 0, 0.2) 0px 18px 50px -10px;
+">
+            Pssst... <a href="https://github.com/spiffe/spike"
+        style="border-bottom: 2px solid #07bdd9"
+        ><strong>⭐️
+            Star SPIKE on GitHub ⭐️</strong></a>.<br>
+            Spread the word about this amazing technology 🐢⚡️.
+        </p>
+
+
+        <div id="wrap">
+             
+        <p><a href="/docs-src/public" title="Back to home"><img src="/docs/assetsssets/spike-banner.png"
+                                                                style="float:left;margin: 0 1em 0 1em;" alt="SPIKE Logo" /></a></p>
+<h1 id="spike-changelog">SPIKE Changelog</h1>
+<h2 id="recent">Recent</h2>
+<p>TBD.</p>
+<h2 id="0-2-1-2026-01-23">[0.2.1] - 2026-01-23</h2>
+<h3 id="added">Added</h3>
+<ul>
+<li>Enabled policy-based access control.</li>
+<li>The root key that SPIKE Nexus generates is now split into several Shamir
+shards and distribute to SPIKE Keepers.</li>
+<li>New additions and improvements to SPIKE Go SDK.</li>
+<li>Various minor bugfixes.</li>
+<li>Code cleanup.</li>
+<li>Implemented several recovery scenarios.</li>
+<li>SPIKE now has static analysis, CI integration, linting, and automated tests.</li>
+<li>Documentation updates. Documentation is still lagging behind, but we are
+updating and improving it along the way.</li>
+<li>Created a makefile to group related scripts into make targets.</li>
+<li>Made the start script more robust.</li>
+<li>Ensured that the policies and the demo app work as expected.</li>
+<li>Implemented a Secret Metadata API.</li>
+<li>Implemented exponential retries across several API-consuming methods.</li>
+</ul>
+<h3 id="changed">Changed</h3>
+<ul>
+<li><strong>BREAKING</strong>: changed the CLI usage. Instead of <code>spike get</code>, for example, we
+now use <code>spike secret get</code>. The reason for this change is that we introduced
+a <code>policy</code> command (i.e. <code>spike policy get</code>).</li>
+</ul>
+<h3 id="security">Security</h3>
+<ul>
+<li><a href="https://github.com/spiffe/spike/security/dependabot/1">Fixed <code>CVE-2024-45337</code>: Misuse of ServerConfig.PublicKeyCallback may cause
+authorization bypass in golang.org/x/crypto</a></li>
+<li><a href="https://github.com/spiffe/spike/security/dependabot/2">Fixed <code>CVE-2024-45338</code>: Non-linear parsing of case-insensitive content in
+<code>golang.org/x/net/htm</code></a></li>
+</ul>
+<h2 id="0-2-0-2024-11-22">[0.2.0] - 2024-11-22</h2>
+<h3 id="added-1">Added</h3>
+<ul>
+<li>Added configuration options for SPIKE Nexus and SPIKE Keeper.</li>
+<li>Documentation updates.</li>
+<li>Max secret versions is now configurable.</li>
+<li>Introduced standard and configurable logging.</li>
+<li>Added sqlite3 as a backing store.</li>
+<li>Enabled cross-compilation and SHA checksums.</li>
+<li>Enhanced audit trails and error logging.</li>
+<li>Created initial smoke/integration tests.</li>
+<li>Stability improvements.</li>
+</ul>
+<h3 id="changed-1">Changed</h3>
+<ul>
+<li>Removed password authentication for admin users. Admin users’ SVIDs
+are good enough to authenticate them.</li>
+<li>Implemented passwordless admin login flow
+(<em>the neat thing about passwords is: you don’t need them</em>).</li>
+</ul>
+<h2 id="0-1-0-2024-11-06">[0.1.0] - 2024-11-06</h2>
+<h3 id="added-2">Added</h3>
+<ul>
+<li>Implemented <code>put</code>, <code>read</code>, <code>delete</code>, <code>undelete</code>, and <code>list</code> functionalities.</li>
+<li>Created initial documentation, README, and related files.</li>
+<li>Compiled binaries targeting various platforms (x86, arm64, darwin, linux).</li>
+<li>SPIKE is demoable, however we need to update certain login and initialization
+flows.</li>
+<li>In memory secrets storage only (<em>using database as a backing store is coming up
+next</em>)</li>
+<li>Created a <code>jira.txt</code> to track things (<em>to avoid polluting GitHub issues
+unnecessarily</em>)</li>
+<li>This is an amazing start; more will come. Turtle power 🐢⚡️.</li>
+</ul>
+<hr />
+<ul>
+<li><a href="https://spike.ist/tracking/changelog/">Changelog</a></li>
+<li><a href="https://spike.ist/tracking/snapshots/">Documentation Snapshots</a></li>
+</ul>
+<hr />
+<ul>
+<li><a href="https://spike.ist/getting-started/">Getting Started</a></li>
+<li><a href="https://spike.ist/community/">Community</a></li>
+<li><a href="https://spike.ist/architecture/">SPIKE Architecture</a></li>
+<li><a href="https://spike.ist/operations/">Operations</a></li>
+<li><a href="https://spike.ist/tracking/">Tracking</a></li>
+</ul>
+
+    
+
+        </div>
+        <footer style="padding:1em;padding-top:1em;padding-bottom:1em;
+font-size: 14px;
+margin-top: 2em;
+max-width: 550px;
+margin: 2em auto;
+" id="footer">
+
+            Copyright © 2024-present <strong>SPIKE Contributors</strong>.<br>
+            <strong>SPIKE</strong>'s code
+            is distributed under <a class="text-blue-600 underline" href="https://www.mozilla.org/en-US/MPL/2.0/">Mozilla Public License (v2.0)</a>.
+            <br>
+            The documentation on this website
+            is distributed under <a class="text-blue-600 underline" href="https://creativecommons.org/licenses/by/4.0/">CC-BY-4.0</a>.
+            <br><br>
+            We <strong>do not</strong> collect your data.
+            This site <strong>does not</strong> use any tracking cookies or scripts.
+        </footer>
+
+
+
+    </article>
+
+</main>
+
+
+    <script type="text/javascript" src="https://spike.ist/elasticlunr.min.js" defer></script>
+    <script type="text/javascript" src="https://spike.ist/search_index.en.js" defer></script>
+<script type="text/javascript" src="https://spike.ist/js.js" defer></script>
+</body>
+</html>

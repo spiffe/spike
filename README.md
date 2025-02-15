@@ -1,4 +1,4 @@
-![SPIKE](docs/assets/spike-banner-lg.png)
+![SPIKE](assets/spike-banner-lg.png)
 
 ## Secure Production Identity for Key Encryption (SPIKE)
 

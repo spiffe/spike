@@ -15,6 +15,79 @@
       implement doomsday dr; do a minor release bump; cut a release.
     </issue>
     <next>
+      <issue kind="bug">
+          If the secret is deleted it gives a peer connection error, instead of "not found"
+
+          spike (feature/zola)$ spike secret put /tenants/acme/credentials/db username=root pass=SPIKERocks
+          OK
+          spike (feature/zola)$ spike secret get /tenants/acme/credentials/db
+          pass: SPIKERocks
+          username: root
+          spike (feature/zola)$ spike secret delete /tenants/acme/credentials/db
+          OK
+          spike (feature/zola)$ spike secret get /tenants/acme/credentials/db
+          Error reading secret: post: Problem connecting to peer
+      </issue>
+      <issue>
+          SPIKE recovery prodecured document needs update.
+      </issue>
+      <issue>
+          SPIKE production setup guide is VERY messy.
+          clean it up and finalize.
+          The platform is stable enough, and we now can have a proper guide.
+      </issue>
+      <issue>
+          about ADR-0013:
+          // TOOD: I think ADR0014 supersedes this anyway.
+          // TDO: supersede this ADR; we need something plugin-based
+      </issue>
+      <issue>
+          wrt adr0014
+          : a new ADR referencing this; have plugin-based db integration.
+      </issue>
+        <issue>
+            update the release management document.
+        </issue>
+      <issue>
+          create an ADR for the following:
+
+          ## Administrative Access
+
+          * Administrative access is granted using special SPIFFE IDs:
+          * `spiffe://$trustRoot/spike/pilot/role/superuser`: Super Admin. Can do
+          everything but recovery or restore operations.
+          * `spiffe://$trustRoot/spike/pilot/role/recover`: Recovery user. Can **only**
+          recover the root key shards to the local file system.
+          * `spiffe://$trustRoot/spike/pilot/role/restore`: Restore user. Can **only**
+          restore the root key by providing one shard at a time.
+
+          This gives us the flexibility to have separate users own distinct operational
+          responsibilities. For example, an specific operator may only restore the system
+          upon an unexpected crash, but they may not have the right to define access
+          policies for secrets.
+
+          This separation also provides better auditability.
+
+          * Once the system is initialized, accidental re-initialization is prevented.
+          * For emergencies the admin user can use an out-of-band script to
+          "*factory-reset*" **SPIKE**.
+
+          ## Multi-Admin Support
+
+          Other than the three predefined roles (*superuser, recover, restore*), named
+          admin access to the system would only be possible using an external identity
+          manager such as an OIDC provider.
+
+          **SPIKE** focuses on secure and efficient secret storage. It delegates access
+          and identity management to established standards like OIDC, keeping
+          authentication concerns out of scope.
+      </issue>
+      <issue>
+          add key value store data diagram to the docs.
+      </issue>
+      <issue>
+          add sqlite database entity diagram to the docs.
+      </issue>
       <issue waitingFor="doomsday-dr-implementation">
         Cut a new release once all DR scenarios have been implemented.
         The only remaining DR use case is the "doomsday" scenario right now.

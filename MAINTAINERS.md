@@ -1,3 +1,3 @@
-![SPIKE](docs/assets/spike-banner-lg.png)
+![SPIKE](assets/spike-banner-lg.png)
 
 See [`CODEOWNERS`](CODEOWNERS).

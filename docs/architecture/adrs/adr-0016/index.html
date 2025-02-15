@@ -1,0 +1,348 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://spike.ist/main.css">
+    <link rel="icon" href="https://spike.ist/assets/spike-favicon-16x16.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+    <title>  | ADR-0016: ADR-0015: Memory-First Secrets Store </title>
+</head>
+<body>
+
+<script>
+        fetch('https://api.github.com/repos/spiffe/spike/releases/latest')
+            .then((response) => {
+                return response.json();
+            })
+            .then((data) => {
+                let release_name = data.name;
+                let html_url = data.html_url;
+                release.innerHTML = `<a href='${html_url}'>${release_name}</a>`;
+            });
+    </script>
+<main>
+    
+    <nav>
+            <h1><a href="https:&#x2F;&#x2F;spike.ist&#x2F;"></a></h1>
+            <div id="release"></div>
+            <a href="javascript:void(0);" onclick="burger()" id="mobile" class="ms-Icon--GlobalNavButton"></a>
+            <div id="trees">
+                <input class="tree-toggle" type="checkbox" id="getting-started"
+                           />
+                    <label class="tree-toggle-label"
+                           for="getting-started">Getting Started</label>
+
+                    <ul class="subtree">
+                        <li >
+                                <a href="https://spike.ist/getting-started/guide/">Quickstart</a>
+                            </li>
+
+                            <li >
+                                <a href="https://spike.ist/getting-started/alpha-release-notice/">Alpha Release Notice</a>
+                            </li>
+
+                            <li >
+                                <a href="https://spike.ist/getting-started/configuration/">Configuring SPIKE</a>
+                            </li>
+
+                            </ul>
+                <input class="tree-toggle" type="checkbox" id="community"
+                           />
+                    <label class="tree-toggle-label"
+                           for="community">Community</label>
+
+                    <ul class="subtree">
+                        <li >
+                                <a href="https://spike.ist/community/hello/">Hello Universe</a>
+                            </li>
+
+                            <li >
+                                <a href="https://spike.ist/community/contact/">Contact Us</a>
+                            </li>
+
+                            <li >
+                                <a href="https://spike.ist/community/presentations/">Presentations and Demos</a>
+                            </li>
+
+                            </ul>
+                <input class="tree-toggle" type="checkbox" id="spike-architecture"
+                           checked/>
+                    <label class="tree-toggle-label"
+                           for="spike-architecture">SPIKE Architecture</label>
+
+                    <ul class="subtree">
+                        <li >
+                                <a href="https://spike.ist/architecture/system-overview/">System Overview</a>
+                            </li>
+
+                            <li >
+                                <a href="https://spike.ist/architecture/security-model/">SPIKE Security Model</a>
+                            </li>
+
+                            <li >
+                                <a href="https://spike.ist/architecture/architectural-decision-records/">ADRs</a>
+                            </li>
+
+                            </ul>
+                <input class="tree-toggle" type="checkbox" id="tracking"
+                           />
+                    <label class="tree-toggle-label"
+                           for="tracking">Tracking</label>
+
+                    <ul class="subtree">
+                        <li >
+                                <a href="https://spike.ist/tracking/changelog/">Changelog</a>
+                            </li>
+
+                            <li >
+                                <a href="https://spike.ist/tracking/snapshots/">Documentation Snapshots</a>
+                            </li>
+
+                            </ul>
+                <input class="tree-toggle" type="checkbox" id="operations"
+                           />
+                    <label class="tree-toggle-label"
+                           for="operations">Operations</label>
+
+                    <ul class="subtree">
+                        <li >
+                                <a href="https://spike.ist/operations/build/">SPIKE Cross-Platform Build</a>
+                            </li>
+
+                            <li >
+                                <a href="https://spike.ist/operations/production/">SPIKE Production Setup</a>
+                            </li>
+
+                            <li >
+                                <a href="https://spike.ist/operations/recovery/">SPIKE Recovery Procedures</a>
+                            </li>
+
+                            <li >
+                                <a href="https://spike.ist/operations/release/">SPIKE Relase Management</a>
+                            </li>
+
+                            </ul>
+                </div>
+        </nav>
+    <article>
+
+
+
+        <div id="on_right">
+                <span id="search-ico" class="ms-Icon--Search"></span>
+            </div>
+            <div class="search-container">
+                <input id="search" type="search" placeholder="Search as you type...">
+                <div class="search-results">
+                    <div class="search-results__header"></div>
+                    <ul class="search-results__items"></ul>
+                </div>
+            </div>
+        <p style="background:#ffffff;text-align:center;padding:1em;
+max-width: 800px;margin: 0 auto;
+border-radius: 6px;margin-bottom: -0.5em;
+padding-bottom: 1.5em;
+box-shadow: rgba(0, 0, 0, 0.2) 0px 18px 50px -10px;
+">
+            Pssst... <a href="https://github.com/spiffe/spike"
+        style="border-bottom: 2px solid #07bdd9"
+        ><strong>⭐️
+            Star SPIKE on GitHub ⭐️</strong></a>.<br>
+            Spread the word about this amazing technology 🐢⚡️.
+        </p>
+
+
+        <div id="wrap">
+             
+        <p><a href="/docs-src/public" title="Back to home"><img src="/docs/assetsssets/spike-banner.png"
+                                                                style="float:left;margin: 0 1em 0 1em;" alt="SPIKE Logo" /></a></p>
+<h1 id="adr-0016-memory-first-secrets-store">ADR-0016: Memory-First Secrets Store</h1>
+<br style="clear:both" />
+<ul>
+<li>Status: accepted</li>
+<li>Date: 2024-12-22</li>
+<li>Tags: Security, Operations, Storage, Performance, Scalability</li>
+</ul>
+<h2 id="context">Context</h2>
+<p><strong>SPIKE</strong> keeps secrets in the memory of <strong>SPIKE Nexus</strong> by design. The secrets
+are encrypted and backed up to a secondary backup storage; however, the primary
+source of truth is the in-memory store.</p>
+<p>This is an efficient mechanism to store application secrets (<em>e.g.,
+API keys, certificates, even relatively beefy Kubeconfig files</em>).</p>
+<p>However, we need to maintain certain requirements for <strong>SPIKE</strong> to be a
+production-grade secure, reliable, and robust secrets store:</p>
+<p>Our requirements include:</p>
+<ul>
+<li><strong>High-Performance Access</strong>: Secrets should be rapidly retrievable with
+minimal latency.</li>
+<li><strong>Robust Backup and Recovery</strong>: The system should persist data safely and
+recover quickly from crashes.</li>
+<li><strong>Security</strong>: Restrict access to secrets via path-based policies and protect
+data at rest via encryption.</li>
+<li><strong>Auditability</strong>: Record all read/write operations for compliance and
+monitoring.</li>
+<li><strong>Scalability</strong>: The system should handle up to hundreds of thousands of
+secrets.</li>
+<li><strong>High Availability</strong>: Provide read replicas for scaling reads and failover
+strategies.</li>
+</ul>
+<p>We considered <strong>disk-only</strong>, <strong>disk-first</strong>, <strong>cloud-storage-only</strong>
+(like <em>AWS S3</em>) and <strong>cloud-storage-first</strong> solutions and decided a memory-first
+secrets store with a reliable back-up mechanism is the best fit for <strong>SPIKE</strong>.</p>
+<h2 id="decision">Decision</h2>
+<p><strong>SPIKE</strong> will be an in-memory secrets store with the following characteristics:</p>
+<ul>
+<li><strong>In-Memory Data</strong>: The primary data store resides in RAM, offering
+<strong>near-instant reads and writes</strong>.</li>
+<li><strong>Periodic Backup</strong>: An encrypted backing store (SQLite, Postgres DB, or an
+S3-compatible interface) will serve as a backup. The system uses exponential
+retries to ensure data persistence.</li>
+<li><strong>Hardened Container</strong>: The service is recommended to run in a hardened
+container or sandbox with minimal OS surface area, reducing the likelihood of
+root compromise.</li>
+<li><strong>Path-Based Access Controls</strong>: Secrets are organized hierarchically
+(<em>for, e.g., <code>/secrets/acme/*</code></em>). Only specific roles/tokens can access their
+respective paths.</li>
+<li><strong>Replication</strong>: A primary read-write store with read-only replicas. These
+replicas can be promoted or re-hydrated if the primary fails.</li>
+<li><strong>Auditing</strong>: All secret operations (<em>reads, writes, deletes</em>) are logged to
+an audit trail for compliance and investigation.</li>
+</ul>
+<h2 id="rationale">Rationale</h2>
+<ul>
+<li><strong>Performance</strong>: In-memory data reduces latency compared to purely
+disk-backed solutions.</li>
+<li><strong>Backup Safety</strong>: The secondary backup (<em>encrypted at rest</em>) mitigates memory
+volatility by allowing the system to recover from unexpected crashes or
+restarts.</li>
+<li><strong>Security</strong>:
+<ul>
+<li><strong>Hardened Container</strong>: Minimizes OS-level attack surface.</li>
+<li><strong>Encryption at Rest</strong>: Protects offline backups if the disk is compromised.</li>
+<li><strong>Path-Based Policies</strong>: Enforces the principle of least privilege.</li>
+<li><strong>Auditing</strong>: Aids in compliance and detection of unauthorized access.</li>
+<li><strong>Scalability</strong>: Storing thousands or even hundreds of thousands of secrets
+in memory is feasible with proper resource planning.</li>
+</ul>
+</li>
+</ul>
+<h2 id="consequences">Consequences</h2>
+<h3 id="positive-outcomes">Positive Outcomes</h3>
+<ul>
+<li><strong>Performance Gain</strong>: Ultra-fast secrets retrieval for latency-sensitive
+applications.</li>
+<li><strong>Backup Resilience</strong>: Encrypted disk backups reduce permanent data loss
+if the container restarts.</li>
+<li><strong>Fine-Grained Control</strong>*: Path-based policies and an internal auditing
+mechanism meet security and compliance needs.</li>
+</ul>
+<h2 id="trade-offs-and-risks">Trade-Offs and Risks</h2>
+<p>In contrast to our decision, here are some benefits of using a database (<em>or a
+remote object storage</em>) as the single source of truth:</p>
+<ul>
+<li><em>Security and Persistence</em>: Using an encrypted database as the source of truth
+ensures that secrets are securely stored and persist across system restarts
+or crashes. Though with frequent forced writes, the risk of data loss is
+minimized and can further be mitigated by using mechanisms like message queues.</li>
+<li><em>Scalability</em>: Databases can handle growth more effectively, allowing
+the system to accommodate increasing amounts of secrets without a significant
+redesign. Again, this is a non-issue because if you have to store millions of
+secrets, then you need to review your architecture anyway. In an ideal world,
+the only secret an app needs are PKI certificates (like SVIDs) as they can
+uniquely identify the app.</li>
+<li><em>Simplicity</em>: A single source of truth simplifies the architecture, making
+the system easier to develop, and maintain. To counter this, SPIKE Nexus’
+current architecture is simple enough to maintain and develop. We have
+abstracted exponential backoff and retry mechanisms to the storage layer, and
+once we have adequate abstractions, the maintainability of the system will
+be equivalent to a database-as-the-single-source-of-truth system. Besides,
+at the cost of simplicity, we lose performance and will have to implement
+additional caching mechanisms to mitigate latency, which will add complexity
+and result in an equally complex system. There is no free lunch.</li>
+</ul>
+<p>Here are some other liabilities of a memory-first secrets store:</p>
+<ul>
+<li><strong>Crash Consistency</strong>: Potential for a small window of data loss if the system
+crashes just before backup.
+<ul>
+<li><strong>Mitigation</strong>: frequent or near-synchronous write-through.</li>
+</ul>
+</li>
+<li><strong>Failover Complexity</strong>: Replication and promotion logic must be robustly
+implemented to handle node failures seamlessly.</li>
+<li><strong>Memory as an Additional Attack Surface</strong>:
+<ul>
+<li>While ephemeral in-memory storage can mitigate certain disk-theft scenarios,
+memory itself can be inspected if an attacker gains OS-level access.</li>
+<li>That’s why hardening the container and ensuring proper access controls are
+crucial. <strong>SPIKE</strong> assume the machine as the trusted boundary. So, if the
+machine is compromised, the secrets are considered compromised as well.</li>
+</ul>
+</li>
+</ul>
+<h2 id="references">References</h2>
+<ul>
+<li><a href="https://kubernetes.io/docs/concepts/configuration/secret/">Kubernetes Secrets Management Best Practices</a></li>
+<li><a href="https://learn.hashicorp.com/tutorials/vault/ha-with-consul">HashiCorp Vault High-Availability Reference</a></li>
+<li><a href="https://www.sqlite.org/see/doc/trunk/www/index.wiki">SQLite Encryption Extension Documentation</a></li>
+</ul>
+<hr />
+<ul>
+<li><a href="https://spike.ist/architecture/adrs/adr-0017/">ADR-0017: Synchronous Persistence for SPIKE Secrets Store</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0016/">ADR-0016: Memory-First Secrets Store</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0015/">ADR-0015: Use Singular Form for File and Package Naming</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0014/">ADR-0014: Maintaining SQLite as SPIKE’s Primary Storage Backend</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0013/">ADR-0013: S3-Compatible Storage as SPIKE’s Backing Store</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0012/">ADR-0012: HTTP Methods for SPIKE API</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0011/">ADR-0011: PostgreSQL as SPIKE’s Backing Store</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0010/">ADR-0010: Session Token Storage Strategy for SPIKE Nexus</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0009/">ADR-0009: Multi-Administrator Support System</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0008/">ADR-0008: Administrative Access Control System</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0007/">ADR-0007: Root Key Lifecycle and Management Strategy</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0006/">ADR-0006: Trust Boundary Definition and Security Assumptions</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0005/">ADR-0005: Use SPIFFE mTLS for Inter-Component Authentication and Communication</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0004/">ADR-0004: SPIKE Keeper Minimalist Design Approach</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0003/">ADR-0003: Root Key Management and Storage Strategy</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0002/">ADR-0002: Use Docsify for Documentation System</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0001/">ADR-0001: Display Secrets in Plain Text in SPIKE Pilot Admin CLI</a></li>
+</ul>
+<hr />
+<ul>
+<li><a href="https://spike.ist/architecture/system-overview/"><strong>SPIKE</strong> System Overview</a></li>
+<li><a href="https://spike.ist/architecture/security-model/"><strong>SPIKE</strong> Security Model</a></li>
+<li><a href="https://spike.ist/architecture/architectural-decision-records/"><strong>SPIKE</strong> Architectural Decision Records</a></li>
+</ul>
+
+    
+
+        </div>
+        <footer style="padding:1em;padding-top:1em;padding-bottom:1em;
+font-size: 14px;
+margin-top: 2em;
+max-width: 550px;
+margin: 2em auto;
+" id="footer">
+
+            Copyright © 2024-present <strong>SPIKE Contributors</strong>.<br>
+            <strong>SPIKE</strong>'s code
+            is distributed under <a class="text-blue-600 underline" href="https://www.mozilla.org/en-US/MPL/2.0/">Mozilla Public License (v2.0)</a>.
+            <br>
+            The documentation on this website
+            is distributed under <a class="text-blue-600 underline" href="https://creativecommons.org/licenses/by/4.0/">CC-BY-4.0</a>.
+            <br><br>
+            We <strong>do not</strong> collect your data.
+            This site <strong>does not</strong> use any tracking cookies or scripts.
+        </footer>
+
+
+
+    </article>
+
+</main>
+
+
+    <script type="text/javascript" src="https://spike.ist/elasticlunr.min.js" defer></script>
+    <script type="text/javascript" src="https://spike.ist/search_index.en.js" defer></script>
+<script type="text/javascript" src="https://spike.ist/js.js" defer></script>
+</body>
+</html>

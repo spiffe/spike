@@ -1,4 +1,4 @@
-![SPIKE](docs/assets/spike-banner-lg.png)
+![SPIKE](assets/spike-banner-lg.png)
 
 ## Contributing to SPIKE
 
