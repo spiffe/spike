@@ -192,6 +192,26 @@
                                                     </li>
                                             <li><a href="
                                                         https://spike.ist/operations/production/#hardening-spike-nexus-for-production">Hardening SPIKE Nexus for Production</a>
+                                                    <ul>
+                                                            <li>
+                                                                    <a href="https://spike.ist/operations/production/#memory-protection">Memory Protection</a>
+                                                                </li>
+                                                            <li>
+                                                                    <a href="https://spike.ist/operations/production/#backing-store-security">Backing Store Security</a>
+                                                                </li>
+                                                            <li>
+                                                                    <a href="https://spike.ist/operations/production/#resource-management">Resource Management</a>
+                                                                </li>
+                                                            <li>
+                                                                    <a href="https://spike.ist/operations/production/#access-control">Access Control</a>
+                                                                </li>
+                                                            <li>
+                                                                    <a href="https://spike.ist/operations/production/#disaster-recovery">Disaster Recovery</a>
+                                                                </li>
+                                                            <li>
+                                                                    <a href="https://spike.ist/operations/production/#container-specific-hardening">Container-Specific Hardening</a>
+                                                                </li>
+                                                            </ul>
                                                     </li>
                                             <li><a href="
                                                         https://spike.ist/operations/production/#conclusion">Conclusion</a>
@@ -241,24 +261,9 @@ box-shadow: rgba(0, 0, 0, 0.2) 0px 18px 50px -10px;
         <p><a href="/" title="Back to home"><img src="/assets/spike-banner.png" 
 style="float:left;margin: 0 1em 0 1em;" alt="SPIKE Logo" /></a></p>
 <h2 id="production-setup-guide">Production Setup Guide</h2>
-<blockquote>
-<p><strong>WORK IN PROGRESS</strong></p>
-<p>Note that this is a work in progress.</p>
-<p>We will add more SPIKE production deployment best practices
-in time.</p>
-<p>Also, based on the <code>TODO: //</code> remarks in the text, expect things to change
-<strong>a lot</strong>.</p>
-<p>We will remove this notice once the document stabilizes.</p>
-</blockquote>
 <p>This guide involves configuring the necessary environment, deploying the
 application with optimized settings, and ensuring scalability, reliability, and
 security for a seamless production experience.</p>
-<p>// TODO: re-edit this document after #74 is done, as the security posture will
-// change significantly:
-// https://github.com/spiffe/spike/issues/74</p>
-<p>// TODO: some of these are generic recommendations and some of them are more
-// SPIKE-specific; organize them into a coherent document before final publishing.</p>
-<p>// TODO: once completed let Claude, ChatGPT, and Perplexity review this entire shebang</p>
 <h2 id="hardening-spire">Hardening SPIRE</h2>
 <p><strong>SPIKE</strong> leverages <strong>SPIFFE</strong> and <strong>SPIRE</strong> as its identity control plane to
 manage cryptographic workload identities securely and efficiently. <strong>SPIRE</strong>
@@ -269,9 +274,6 @@ distributed systems.</p>
 reliability of <strong>SPIKE</strong>. An improperly configured SPIRE deployment can leave
 gaps in the identity management process, potentially exposing sensitive
 cryptographic operations to unauthorized access.</p>
-<p>// TODO: add spike-specific recommendations.</p>
-<p>// TODO: link to the official docs.</p>
-<p>// TODO: carry over some SPIRE best practices from VSecM docs too.</p>
 <p>Here are some key steps to harden <strong>SPIRE</strong> for production:</p>
 <h3 id="secure-spire-server-and-agent-communication">Secure SPIRE Server and Agent Communication</h3>
 <ul>
@@ -305,7 +307,13 @@ persistence, ensure that the database is:</p>
 <li>Avoid using wildcard matching in selectors to reduce the risk of impersonation
 attacks.</li>
 </ul>
-<p>// TODO: give examples in the context of SPIKE.</p>
+<p>You can find sample scripts that creates registration entries under the
+<a href="https://github.com/spiffe/spike/tree/main/hack"><code>./hack</code></a> folder:</p>
+<ul>
+<li><code>./hack/spire-server-entry-recover-register.sh</code></li>
+<li><code>./hack/spire-server-entry-spike-register.sh</code></li>
+<li><code>./hack/spire-server-entry-restore-register.sh</code></li>
+</ul>
 <h3 id="harden-spire-deployment-on-kubernetes">Harden SPIRE Deployment on Kubernetes</h3>
 <p>If you have deployed <strong>SPIRE</strong> on Kubernetes:</p>
 <ul>
@@ -380,8 +388,8 @@ feasible.</li>
 <li>Configure strict NetworkPolicies to restrict communication between Pods.</li>
 <li>Always use read-only root filesystems for the containers
 (<code>readOnlyRootFilesystem: true</code>).</li>
-<li>Specify <strong>non-root</strong> <code>runAsUser</code> and <code>runAsGroup</code> in the container’s security
-context.</li>
+<li>Specify <strong>non-root</strong> <code>runAsUser</code> and <code>runAsGroup</code> in the container’s
+security context.</li>
 </ul>
 </li>
 <li>For <strong>Docker</strong> deployments:
@@ -454,46 +462,47 @@ keeping out the untrusted binary.</p>
 <li>Have a comprehensive security documentation.</li>
 </ul>
 <h2 id="how-th-root-key-is-protected-in-spike">How th Root Key Is Protected in SPIKE</h2>
-<p>In SPIKE, the root key is essential for encrypting secrets within the central
-store, SPIKE Nexus. To prevent any single entity from having full access to this
-key, SPIKE uses Shamir’s Secret Sharing to divide the root key into multiple
-shares. These shares are distributed among SPIKE Keepers, ensuring that the root
-key can only be reconstructed when a sufficient number of shares are combined.</p>
+<p>In <strong>SPIKE</strong>, the <strong>root key</strong> is essential for encrypting secrets within the
+central store, <strong>SPIKE Nexus</strong>. To prevent any single entity from having full
+access to this key, SPIKE uses <a href="https://en.wikipedia.org/wiki/Shamir%27s_secret_sharing" title="Shamir&#39;s Secret Sharing">Shamir’s Secret Sharing</a> to divide the
+root key into multiple shares. These shares are distributed among
+<strong>SPIKE Keeper</strong>s, ensuring that the root key can only be reconstructed when a
+sufficient number of shares are combined.</p>
 <p>This approach enhances security by requiring collaboration among multiple
 trusted components to access the root key.</p>
-<p>Shamir’s Secret Sharing (SSS): SSS is a cryptographic method that divides a
+<p><a href="https://en.wikipedia.org/wiki/Shamir%27s_secret_sharing" title="Shamir&#39;s Secret Sharing">Shamir’s Secret Sharing (SSS)</a> is a cryptographic method that divides a
 secret into parts, distributing them among participants. The secret can only be
-reconstructed when a minimum number of parts (the threshold) are combined. This
-ensures that partial knowledge of the secret does not compromise its security.</p>
+reconstructed when a minimum number of parts (the <strong>threshold</strong>) are combined.
+This ensures that partial knowledge of the secret does not compromise its
+security.</p>
 <h2 id="hardening-spike-keeper-for-production">Hardening SPIKE Keeper for Production</h2>
 <p><strong>SPIKE Keeper</strong>s play a critical role in managing sensitive cryptographic
 material, specifically handling <strong>shards</strong> that are use to generate the
 <strong>root key</strong> that <strong>SPIKE Nexus</strong> uses to encrypt its backing store.</p>
-<p><strong>SPIKE Keeper</strong>s only temporarily generate the root key during their
-bootstrapping process, and securely erase it from the memory as soon as it
-is no longer needed. Therefore, the possible window of attack for obtaining
-the root key is extremely slim.</p>
-<p>Attaching to the memory of a running process is generally restricted due
-to security measures in Linux systems. By default, the Linux kernel’s Yama
-security module enforces a policy that prevents non-root users from attaching
-debuggers to processes they do not own. This is controlled by the
-<code>/proc/sys/kernel/yama/ptrace_scope</code> setting. Which means, for any
-root-key extraction scenario, the attacker will also need to find a way to
-elevate privileges.</p>
-<p>Although the window of attack is extremely slim, even if an attacker finds a
-chance to attack through that window, it is still very hard to obtain the root
-key even during this short period. An attacker would need to
-monster-in-the-middle (MITM) the mTLS connection or have root privileges
-to peek into <strong>SPIKE Keeper</strong>’s memory space. Such an attack vector is extremely
-unlikely when <strong>SPIKE Keeper</strong> machines are properly secured—with root access
-disabled, privilege escalation prevented, and SSH access restricted to a
-trusted set of IPs and users.</p>
-<p>In addition it’s worth noting that the attacker cannot use their own counterfeit
-SPIKE Keeper binary because SPIFFE Attestation will reject it. So a successful
-attack that changes the SPIKE Keeper’s binary will also require the attacker
-to hack SPIRE Server, which raises the barrier even higher.</p>
+<p>As described in the <a href="https://spike.ist/architecture/security-model/" title="SPIKE security model"><strong>SPIKE Security Model</strong></a>, protecting your system
+against memory analysis is important, not only for <strong>SPIKE</strong>, but for any
+application you may be running n your system.</p>
+<p>System administrators should implement the following security measures to
+prevent memory analysis:</p>
+<ul>
+<li>Set <code>/proc/sys/kernel/yama/ptrace_scope</code> to <code>2</code> or <code>3</code>:
+<ul>
+<li>Value <code>2</code> restricts <code>ptrace</code> to <code>root-only</code> access</li>
+<li>Value <code>3</code> disables <code>ptrace</code> completely, offering maximum security</li>
+</ul>
+</li>
+<li>Make this setting permanent by adding <code>kernel.yama.ptrace_scope = 2</code> to
+<code>/etc/sysctl.d/10-ptrace.conf</code></li>
+<li>Consider using <strong>SELinux</strong> or <strong>AppArmor</strong> profiles to further restrict
+process debugging capabilities</li>
+<li>If running in a container, ensure the container runtime is configured to
+disable ptrace capabilities (<em>e.g.,
+using <code>--security-opt=no-new-privileges</code> in Docker</em>)</li>
+<li>Regular audit of processes with <code>CAP_SYS_PTRACE</code> capability, as this can
+bypass ptrace restrictions</li>
+</ul>
 <p>By default, <strong>SPIKE Keeper</strong>s are protected by multiple layers of security:</p>
-<ol>
+<ul>
 <li><strong>mTLS API Protection</strong>: All <strong>SPIKE Keeper</strong> APIs are protected by mutual
 TLS (mTLS), preventing direct access to the shards through the API interface.</li>
 <li><strong>SPIFFE Attestation</strong>: <strong>SPIKE Keeper</strong>s implement <strong>SPIFFE attestation</strong>
@@ -501,17 +510,125 @@ which verifies the authenticity of <strong>SPIKE Keeper</strong> binaries by val
 attributes like the SHA hash, unix user id, and path. This prevents attackers
 from running malicious keeper processes, as they would fail the attestation
 check.</li>
-<li><strong>Memory Access Restrictions</strong>: The only theoretical way to access the root
-key is through direct memory access, which is heavily restricted by OS-level
-security controls when properly configured.</li>
-</ol>
+</ul>
 <p>Although these protections are in place, they need to be properly configured to
 take effect. For example, a misconfigured <strong>SPIRE Server</strong> registration entry or
 using a user with elevated privileges to run the <strong>SPIKE Keeper</strong> binaries may
 result in a security breach (see the “<em>hardening SPIRE for production</em>” section
 before for details)</p>
 <h2 id="hardening-spike-nexus-for-production">Hardening SPIKE Nexus for Production</h2>
-<p>TBD</p>
+<p><strong>SPIKE Nexus</strong> serves as the central secrets store, maintaining sensitive data
+in memory and using encrypted storage for persistence. Due to its critical role
+in managing secrets, special attention must be paid to its security
+configuration.</p>
+<h3 id="memory-protection">Memory Protection</h3>
+<ul>
+<li>The <code>ptrace</code> and <code>yama</code> recommendations for <strong>SPIKE Keeper</strong>s covered in
+the previous section also applies to <strong>SPIKE Nexus</strong>. Protect <strong>SPIKE
+Nexus</strong>’s memory against external analysis.</li>
+<li>Configure memory restrictions to prevent swapping:
+<ul>
+<li>Set <code>vm.swappiness=0</code> in sysctl configuration</li>
+<li>Use <code>mlock</code> to lock memory pages and prevent them from being swapped</li>
+<li>If using systemd, set <code>LimitMEMLOCK=infinity</code> in the service file</li>
+</ul>
+</li>
+<li>Enable Address Space Layout Randomization (ASLR):
+<ul>
+<li>Ensure <code>/proc/sys/kernel/randomize_va_space</code> is set to 2</li>
+</ul>
+</li>
+<li>Implement memory scrubbing:
+<ul>
+<li>Configure automatic memory wiping for deallocated memory</li>
+<li>Use secure memory allocation practices for sensitive data</li>
+</ul>
+</li>
+</ul>
+<h3 id="backing-store-security">Backing Store Security</h3>
+<ul>
+<li>Configure secure backup procedures:
+<ul>
+<li>Encrypt all backups</li>
+<li>Implement strict access controls on backup storage</li>
+<li>Regular backup integrity verification</li>
+</ul>
+</li>
+<li>Monitor backing store access:
+<ul>
+<li>Log all access attempts</li>
+<li>Implement alerting for unusual access patterns</li>
+<li>Regular audit of access logs</li>
+</ul>
+</li>
+</ul>
+<h3 id="resource-management">Resource Management</h3>
+<ul>
+<li>Set appropriate resource limits:
+<ul>
+<li>Configure memory limits based on expected load</li>
+<li>Set CPU quotas to prevent resource exhaustion</li>
+<li>Implement disk I/O limits</li>
+</ul>
+</li>
+<li>Monitor resource usage:
+<ul>
+<li>Track memory utilization</li>
+<li>Monitor CPU usage</li>
+<li>Alert on resource threshold violations</li>
+</ul>
+</li>
+</ul>
+<h3 id="access-control">Access Control</h3>
+<ul>
+<li>Implement least privilege access:
+<ul>
+<li>Create dedicated service accounts</li>
+<li>Restrict file system permissions</li>
+<li>Use <strong>SELinux</strong> or <strong>AppArmor</strong> profiles</li>
+</ul>
+</li>
+</ul>
+<h3 id="disaster-recovery">Disaster Recovery</h3>
+<ul>
+<li>Document recovery procedures:
+<ul>
+<li>Clear steps for various failure scenarios</li>
+<li>Regular testing of recovery procedures</li>
+<li>Maintain updated recovery documentation</li>
+</ul>
+</li>
+<li>Configure backup systems:
+<ul>
+<li>Regular backup testing</li>
+<li>Secure offsite storage</li>
+<li>Automated recovery validation</li>
+</ul>
+</li>
+</ul>
+<h3 id="container-specific-hardening">Container-Specific Hardening</h3>
+<p>When deploying SPIKE Nexus in containers:</p>
+<ul>
+<li>Use minimal base images:
+<ul>
+<li>Build from scratch or distroless images
+<ul>
+<li>Regular security updates</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Configure container security:
+<ul>
+<li>Enable <code>seccomp</code> profiles</li>
+<li>Set appropriate <code>ulimit</code>s</li>
+<li>Implement container isolation</li>
+</ul>
+</li>
+</ul>
+<p>Remember to regularly review and update these security measures based on new
+threats and security best practices. Security configuration should be treated
+as a continuous process rather than a one-time setup.</p>
 <h2 id="conclusion">Conclusion</h2>
 <p>Although <strong>SPIKE</strong> is designed security best-practices in mind, a multi-layer
 approach focusing on system, process, and network security is important when

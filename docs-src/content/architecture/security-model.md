@@ -53,12 +53,24 @@ The following are not considered part of **SPIKE**'s threat model:
   reveal the data stored there.
 * Protecting against memory analysis of running system components: If an 
   attacker can inspect the memory state of any component, then they already have
-  root access on the machine (*which is our primary trust boundary*). If this
+  direct access to the machine (*which is our primary trust boundary*). If this
   happens, then the confidentiality of the data may be compromised. Preventing 
-  privilege escalation is a common system security best practice, and it is out 
-  of scope for **SPIKE** to enforce such measures. System administrators
-  must ensure adequate precautions are taken to prevent running **SPIKE**
-  components with elevated privileges.
+  memory analysis is a common system security best practice, and it is out 
+  of scope for **SPIKE** to enforce such measures.
+    * System administrators should implement the following security measures to 
+      prevent memory analysis:
+      * Set `/proc/sys/kernel/yama/ptrace_scope` to `2` or `3`:
+        * Value `2` restricts `ptrace` to `root-only` access
+        * Value `3` disables `ptrace` completely, offering maximum security
+      * Make this setting permanent by adding `kernel.yama.ptrace_scope = 2` to
+        `/etc/sysctl.d/10-ptrace.conf`
+      * Consider using **SELinux** or **AppArmor** profiles to further restrict 
+        process debugging capabilities
+      * If running in a container, ensure the container runtime is configured to
+        disable ptrace capabilities (*e.g., 
+        using `--security-opt=no-new-privileges` in Docker*)
+      * Regular audit of processes with `CAP_SYS_PTRACE` capability, as this can
+        bypass ptrace restrictions
 * Protecting against malicious code execution on the underlying host system.
   This is again the system administrator's responsibility. **SPIKE** cannot 
   protect against malicious code execution as that ability likely requires 

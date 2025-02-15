@@ -14,7 +14,12 @@ sort_by = "weight"
 
 ## Recent
 
-TBD.
+* SPIKE Website has undergone a major overhaul.
+* Documentation updates, especially around security and disaster recovery.
+* Documentation is now consistent with the code: Removed outdated sections,
+  introduced new modules, explained current workflows and state transitions.
+* Documentation: SPIKE Production Hardening Guide is complete and ready for
+  consumption (*it was in draft mode before*).
 
 ## [0.2.1] - 2026-01-23
 

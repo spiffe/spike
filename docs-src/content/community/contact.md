@@ -38,7 +38,8 @@ You can also reach out to us on via email, sending an email to
 
 Additionally, you can [create a **GitHub**
 issue](https://github.com/spiffe/spike/issues/new); however, we recommend
-using the [SPIFFE **Slack**](https://slack.spiffe.io).
+using the [**SPIFFE** Slack Workspace](https://slack.spiffe.io) to initiate
+a discussion first, before creating an issue.
 
 ----
 

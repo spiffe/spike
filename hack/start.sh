@@ -52,7 +52,7 @@ else
 fi
 
 echo "Registering SPIRE entries..."
-if ./hack/spire-server-entry-register-spike.sh; then
+if ./hack/spire-server-entry-spike-register.sh; then
     echo "SPIRE entries registered successfully"
 else
     echo "Failed to register SPIRE entries"

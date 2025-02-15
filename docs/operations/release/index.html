@@ -129,16 +129,10 @@
                                                         https://spike.ist/operations/release/#spike-release-management">SPIKE Release Management</a>
                                                     <ul>
                                                             <li>
+                                                                    <a href="https://spike.ist/operations/release/#before-every-release">Before Every Release</a>
+                                                                </li>
+                                                            <li>
                                                                     <a href="https://spike.ist/operations/release/#spike-smoke-tests">SPIKE Smoke Tests</a>
-                                                                </li>
-                                                            <li>
-                                                                    <a href="https://spike.ist/operations/release/#start-the-test-environment">Start the Test Environment</a>
-                                                                </li>
-                                                            <li>
-                                                                    <a href="https://spike.ist/operations/release/#create-a-secret">Create a Secret</a>
-                                                                </li>
-                                                            <li>
-                                                                    <a href="https://spike.ist/operations/release/#create-a-policy">Create a Policy</a>
                                                                 </li>
                                                             </ul>
                                                     </li>
@@ -179,16 +173,49 @@ box-shadow: rgba(0, 0, 0, 0.2) 0px 18px 50px -10px;
         <p><a href="/" title="Back to home"><img src="/assets/spike-banner.png" 
 style="float:left;margin: 0 1em 0 1em;" alt="SPIKE Logo" /></a></p>
 <h1 id="spike-release-management">SPIKE Release Management</h1>
-<p>// TODO: update this document</p>
-<p>note: this is for contributors etc. only.</p>
-<p>before release</p>
+<p>This document provides an overview of how the cut a <strong>SPIKE</strong> release, including
+testing guidelines and instructions.</p>
+<blockquote>
+<p><strong>We Use Humans as Pushbuttons</strong></p>
+<p>At the moment, we don’t have a CI pipeline in place for the release
+process. Most of the operations mentioned here are manual. However, we are
+actively working on improving and automating the release process. This
+document will be updated as we introduce more automation into the pipeline.</p>
+</blockquote>
+<p>Below, you will find detailed instructions and examples to guide contributors
+through the release and testing process.</p>
+<p>This document is targeted for <strong>core contributors</strong> who are responsible for
+managing the release cuts of <strong>SPIKE</strong>. It provides detailed instructions to
+ensure a smooth and reliable release process.</p>
+<h2 id="before-every-release">Before Every Release</h2>
+<p>Before every release:</p>
 <ol>
-<li>run unit tests</li>
-<li>run the following smoke test.</li>
+<li>Run the unit tests</li>
+<li>Run the following smoke test documented in the next section.</li>
+<li>If everything passes, update <code>NexusVersion</code>, <code>PilotVersion</code>
+and <code>KeeperVersion</code> in <code>$WORKSPACE/spike/internal/config/config.go</code></li>
+<li>Update any necessary documentation.</li>
+<li>Update the changelog.</li>
 <li>also update documentation snapshots page</li>
-<li>also update changelog</li>
-<li>etc.</li>
+<li>also update the changelog.</li>
 </ol>
+<p>Release process:</p>
+<ul>
+<li>Publish documentation by running <code>zola build</code> in <code>./docs-src</code> and then
+copying the generated html in <code>./docs-src/public</code> into <code>/.docs</code>.</li>
+<li>Merge all the changes to the <code>main</code> branch.</li>
+<li>Tag a version and convert that version to a *<em>release</em> on <strong>GitHub</strong>.
+<ul>
+<li>Make sure you GPG sign your tag.</li>
+</ul>
+</li>
+<li>Copy the current version’s changelog over to the release notes on <strong>GitHub</strong>.</li>
+<li>On a Mac machine <a href="https://spike.ist/operations/build/" title="SPIKE Cross-Platform Build">follow cross-platform buils instructions</a>
+to generate binaries.</li>
+<li>Add binaries to the release as assets.</li>
+<li>Announce the release in relevant channels.</li>
+<li>You are all set.</li>
+</ul>
 <h2 id="spike-smoke-tests">SPIKE Smoke Tests</h2>
 <blockquote>
 <p><strong>How About Automation</strong>?</p>
@@ -202,7 +229,7 @@ working <strong>SPIKE</strong> and <strong>SPIKE</strong> environment to execute
 replacement for a full integration test. We may add more steps, but we’ll
 keep it lightweight. — Passing the smoke test means that the core components
 and the features of the system are reliably functional.</p>
-<h2 id="start-the-test-environment">Start the Test Environment</h2>
+<h3 id="start-the-test-environment">Start the Test Environment</h3>
 <pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">make</span><span> start
 </span><span>
 </span><span style="color:#65737e;"># enter user password if prompted
@@ -222,7 +249,7 @@ and the features of the system are reliably functional.</p>
 </span><span style="color:#65737e;"># &gt;
 </span><span style="color:#65737e;"># &lt;&lt;
 </span></code></pre>
-<h2 id="create-a-secret">Create a Secret</h2>
+<h3 id="create-a-secret">Create a Secret</h3>
 <pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">spike</span><span> secret put /acme/db user=spike pass=SPIKERocks
 </span><span style="color:#65737e;"># Output:
 </span><span style="color:#65737e;"># OK
@@ -233,12 +260,43 @@ and the features of the system are reliably functional.</p>
 </span><span style="color:#65737e;"># pass: SPIKERocks
 </span><span style="color:#65737e;"># user: spike
 </span></code></pre>
-<h2 id="create-a-policy">Create a Policy</h2>
+<h3 id="create-a-policy">Create a Policy</h3>
 <pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">spike</span><span> policy create</span><span style="color:#bf616a;"> --name</span><span>=workload-can-read \
 </span><span style="color:#bf616a;">  --path</span><span>=&quot;</span><span style="color:#a3be8c;">/tenants/demo/db/*</span><span>&quot; \
 </span><span style="color:#bf616a;">  --spiffeid</span><span>=&quot;</span><span style="color:#a3be8c;">^spiffe://spike.ist/workload/*</span><span>&quot; \
 </span><span style="color:#bf616a;">  --permissions</span><span>=&quot;</span><span style="color:#a3be8c;">read</span><span>&quot;
 </span></code></pre>
+<h3 id="verify-the-policy-creation">Verify the Policy Creation</h3>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">spike</span><span> policy list
+</span><span>
+</span><span style="color:#65737e;"># Sample output:
+</span><span style="color:#65737e;"># [
+</span><span style="color:#65737e;">#  {
+</span><span style="color:#65737e;">#    &quot;id&quot;: &quot;872478b1-cef6-45c1-8417-1de82995aaa4&quot;,
+</span><span style="color:#65737e;">#    &quot;name&quot;: &quot;workload-can-read&quot;,
+</span><span style="color:#65737e;">#    &quot;spiffeIdPattern&quot;: &quot;^spiffe://spike.ist/workload/*&quot;,
+</span><span style="color:#65737e;">#    &quot;pathPattern&quot;: &quot;/tenants/demo/db/*&quot;,
+</span><span style="color:#65737e;">#    &quot;permissions&quot;: [
+</span><span style="color:#65737e;">#      &quot;read&quot;
+</span><span style="color:#65737e;">#    ],
+</span><span style="color:#65737e;">#    &quot;createdAt&quot;: &quot;2025-02-15T07:43:47.306286591-08:00&quot;,
+</span><span style="color:#65737e;">#    &quot;createdBy&quot;: &quot;&quot;
+</span><span style="color:#65737e;">#  }
+</span><span style="color:#65737e;"># ]
+</span></code></pre>
+<h3 id="test-the-demo-workload">Test the Demo Workload</h3>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">./examples/consume-secrets/demo-create-policy.sh
+</span><span style="color:#bf616a;">./examples/consume-secrets/demo-register-entry.sh
+</span><span>
+</span><span style="color:#bf616a;">./demo
+</span><span>
+</span><span style="color:#65737e;"># Output
+</span><span style="color:#65737e;"># Secret found:
+</span><span style="color:#65737e;"># password: SPIKE_Rocks
+</span><span style="color:#65737e;"># username: SPIKE
+</span></code></pre>
+<p>If everything went well so far, we can assume that the current <strong>SPIKE</strong> release
+is in a good enough shape.</p>
 <hr />
 <ul>
 <li><a href="https://spike.ist/operations/build/">SPIKE Cross-Platform Build</a></li>
