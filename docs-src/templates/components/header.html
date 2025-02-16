@@ -1,6 +1,6 @@
 <div class="header">
   <div class="header-content">
-    <input type="text" placeholder="Search..." />
+    {% include "components/search.html" %}
     <button id="theme-toggle" aria-label="Toggle theme">
       <i class="bx bx-sun light-icon"></i>
       <i class="bx bx-moon dark-icon"></i>
@@ -28,28 +28,6 @@
     display: flex;
     align-items: center;
     gap: 1rem;
-  }
-
-  .header input {
-    flex: 1;
-    padding: 0.5rem 1rem;
-    border: 1px solid var(--border-color);
-    border-radius: 4px;
-    background-color: var(--bg-interactive);
-    color: var(--text-primary);
-    font-size: 0.875rem;
-    transition: all 0.2s ease;
-  }
-
-  .header input:focus {
-    outline: none;
-    border-color: var(--spike-blue);
-    background-color: var(--bg-primary);
-    box-shadow: 0 0 0 2px rgba(var(--spike-blue-rgb), 0.2);
-  }
-
-  .header input::placeholder {
-    color: var(--text-muted);
   }
 
   #theme-toggle {

@@ -1,0 +1,26 @@
+<script></script>
+
+<input class="search-input" type="text" placeholder="Search..." />
+<style>
+  .search-input {
+    flex: 1;
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background-color: var(--bg-interactive);
+    color: var(--text-primary);
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+  }
+
+  .search-input:focus {
+    outline: none;
+    border-color: var(--spike-blue);
+    background-color: var(--bg-primary);
+    box-shadow: 0 0 0 2px rgba(var(--spike-blue-rgb), 0.2);
+  }
+
+  .search-input::placeholder {
+    color: var(--text-muted);
+  }
+</style>
