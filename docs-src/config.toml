@@ -1,6 +1,6 @@
 # The URL the site will be built for
 base_url = "https://spike.ist/"
-title = "Docs"
+title = "SPIKE"
 
 
 # Whether to automatically compile all Sass files in the sass directory
@@ -20,6 +20,7 @@ smart_punctuation = true
 # Put all your custom variables here
 [extra]
 release = "https://api.github.com/repos/spiffe/spike/releases/latest"
+releases = "https://api.github.com/repos/spiffe/spike/releases"
 favicon = "/assets/spike-favicon-16x16.png"
 
 

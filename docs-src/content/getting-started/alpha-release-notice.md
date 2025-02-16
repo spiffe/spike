@@ -8,7 +8,7 @@ weight = 2
 sort_by = "weight"
 +++
 
-{{ star() }}
+
 
 # 🚨 Alpha Release Notice 🚨
 

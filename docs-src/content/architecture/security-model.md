@@ -8,7 +8,6 @@ weight = 2
 sort_by = "weight"
 +++
 
-{{ star() }}
 
 # SPIKE Security Model
 

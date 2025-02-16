@@ -3,31 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <link rel="stylesheet" href="{{ get_url(path="main.css") | safe }}">
-    {% if config.extra.favicon -%}
-        {% set _favicon = config.extra.favicon -%}
-        {% if (_favicon is starting_with("http")) == false -%}
-            {% set _favicon = get_url(path=config.extra.favicon) -%}
-        {% endif -%}
-        <link rel="icon" href="{{ _favicon | safe }}">
-    {% endif -%}
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link rel="icon" href="{{ get_url(path=config.extra.favicon) | safe }}">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
     <title>{% block title %}{{ config.title }}{% endblock title %}</title>
 </head>
 <body>
 
-{% if config.extra.release -%}
-    <script>
-        fetch('{{ config.extra.release | safe }}')
-            .then((response) => {
-                return response.json();
-            })
-            .then((data) => {
-                let release_name = data.name;
-                let html_url = data.html_url;
-                release.innerHTML = `<a href='${html_url}'>${release_name}</a>`;
-            });
-    </script>
-{% endif -%}
 <main>
     {# Create variable to allow appending index.html at end of links if set in config #}
     {% if not config.extra.easydocs_uglyurls or config.mode == "serve" or config.mode == "Serve" -%}
@@ -36,161 +18,33 @@
         {% set _ugly_url = "index.html" -%}
     {% endif -%}
 
-    {%- block nav -%}
-        <nav>
-            {% if config.extra.logo -%}
-                {% set _logo = config.extra.logo -%}
-                {% if (_logo is starting_with("http")) == false -%}
-                    {% set _logo = get_url(path=config.extra.logo) -%}
-                {% endif -%}
-                {% if current_path == "/" and not config.extra.easydocs_logo_always_clickable -%}
-                    <img src="{{ _logo | safe }}" alt="logo"/>
-                {% else -%}
-                    <a href="{{ config.base_url }}{{ _ugly_url }}">
-                        <img src="{{ _logo | safe }}" alt="logo"/>
-                    </a>
-                {% endif -%}
+    {% include "components/nav.html" %}
 
-            {% else -%}
-                <h1><a href="{{ config.base_url }}{{ _ugly_url }}">{{ config.title }}</a></h1>
-            {% endif -%}
+    <div class="content">
+        {% include "components/header.html" %}
 
-            {% if config.extra.release -%}
-                <div id="release"></div>
-            {% endif -%}
-
-            <a href="javascript:void(0);" onclick="burger()" id="mobile" class="ms-Icon--GlobalNavButton"></a>
-            <div id="trees">
-                {% set section_ = get_section(path="_index.md") -%}
-                {% for p in section_.subsections -%}
-                    {% set subsection = get_section(path=p) -%}
-
-
-                    <input class="tree-toggle" type="checkbox" id="{{ subsection.title | slugify }}"
-                           {% if current_path is starting_with(subsection.path) %}checked{% endif %}/>
-                    <label class="tree-toggle-label"
-                           for="{{ subsection.title | slugify }}">{{ subsection.title }}</label>
-
-                    <ul class="subtree">
-                        {% for page in subsection.pages -%}
-                            <li {% if current_path == page.path %}class="active"{% endif %}>
-                                <a href="{{ page.permalink | safe }}{{ _ugly_url }}">{{ page.title }}</a>
-                            </li>
-
-                            {% if page.toc -%}
-
-                                {% if current_path == page.path -%}
-
-                                    {# Count number of headers on page #}
-                                    {% set_global header_count = 0 -%}
-                                    {% for h2 in page.toc -%}
-                                        {% set_global header_count = header_count + 1 -%}
-                                        {% for h3 in h2.children -%}
-                                            {% set_global header_count = header_count + 1 -%}
-                                            {% for h4 in h3.children -%}
-                                                {% set_global header_count = header_count + 1 -%}
-                                            {% endfor -%}
-                                        {% endfor -%}
-                                    {% endfor -%}
-
-                                    {# Output headers if above threshold #}
-                                    {% if not config.extra.easydocs_heading_threshold -%}
-                                        {# Undefined or 0 unable to find a way to differentiate between 0 and undefined.
-                                            1 is already including any headings so 0 is not needed #}
-                                        {% set _threshold = 5 -%}
-                                    {% else %}
-                                        {% set _threshold = config.extra.easydocs_heading_threshold -%}
-                                    {% endif -%}
-
-                                    {% if header_count >= _threshold -%}
-                                        <ul id="toc">
-                                            {% for h2 in page.toc -%}
-                                                <li><a href="
-                                                        {{ h2.permalink | safe }}">{{ h2.title }}</a>
-                                                    {% if h2.children -%}
-                                                        <ul>
-                                                            {% for h3 in h2.children -%}
-                                                                <li>
-                                                                    <a href="{{ h3.permalink | safe }}">{{ h3.title }}</a>
-                                                                </li>
-                                                            {% endfor -%}
-                                                        </ul>
-                                                    {% endif -%}
-                                                </li>
-                                            {% endfor -%}
-                                        </ul>
-                                    {% endif -%}
-
-                                {% endif -%}
-                            {% endif -%}
-                        {% endfor -%}
-                    </ul>
-                {% endfor -%}
-            </div>
-        </nav>
-    {% endblock nav -%}
-
-    <article>
-
-
-
-        {% if config.build_search_index -%}
-            <div id="on_right">
-                <span id="search-ico" class="ms-Icon--Search"></span>
-            </div>
-            <div class="search-container">
-                <input id="search" type="search" placeholder="Search as you type...">
-                <div class="search-results">
-                    <div class="search-results__header"></div>
-                    <ul class="search-results__items"></ul>
-                </div>
-            </div>
-        {% endif -%}
-        <p style="background:#ffffff;text-align:center;padding:1em;
-max-width: 800px;margin: 0 auto;
-border-radius: 6px;margin-bottom: -0.5em;
-padding-bottom: 1.5em;
-box-shadow: rgba(0, 0, 0, 0.2) 0px 18px 50px -10px;
-">
-            Pssst... <a href="https://github.com/spiffe/spike"
-        style="border-bottom: 2px solid #07bdd9"
-        ><strong>⭐️
-            Star SPIKE on GitHub ⭐️</strong></a>.<br>
-            Spread the word about this amazing technology 🐢⚡️.
-        </p>
-
-
-        <div id="wrap">
-             {% block content -%}
+        <article>
+            {% block content -%}
                 {%- if section.word_count -%}
                     {{ section.content |safe }}
                 {%- else -%}
                     {%- include "sec_toc_2_level.html" -%}
                 {% endif -%}
             {% endblock content %}
+        </article>
 
-        </div>
-        <footer style="padding:1em;padding-top:1em;padding-bottom:1em;
-font-size: 14px;
-margin-top: 2em;
-max-width: 550px;
-margin: 2em auto;
-" id="footer">
-
+        <footer id="footer">
             Copyright © 2024-present <strong>SPIKE Contributors</strong>.<br>
             <strong>SPIKE</strong>'s code
-            is distributed under <a class="text-blue-600 underline" href="https://www.mozilla.org/en-US/MPL/2.0/">Mozilla Public License (v2.0)</a>.
+            is distributed under <a href="https://www.mozilla.org/en-US/MPL/2.0/">Mozilla Public License (v2.0)</a>.
             <br>
             The documentation on this website
-            is distributed under <a class="text-blue-600 underline" href="https://creativecommons.org/licenses/by/4.0/">CC-BY-4.0</a>.
+            is distributed under <a href="https://creativecommons.org/licenses/by/4.0/">CC-BY-4.0</a>.
             <br><br>
             We <strong>do not</strong> collect your data.
             This site <strong>does not</strong> use any tracking cookies or scripts.
         </footer>
-
-
-
-    </article>
+    </div>
 
 </main>
 
@@ -202,3 +56,181 @@ margin: 2em auto;
     <script type="text/javascript" src="{{ get_url(path="js.js") | safe }}" defer></script>
 </body>
 </html>
+<style>
+body {
+    margin: 0;
+    overflow: hidden;
+    font-family: var(--font-family);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+main {
+    width: 100vw;
+    display: flex;
+    flex-direction: row;
+    overflow: hidden;
+}
+
+#footer {
+    text-align: center;
+    padding: 2rem;
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    border-top: 1px solid var(--border-color);
+    margin-top: 2rem;
+}
+
+.content {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    height: 100vh;
+    overflow-y: auto;
+    position: relative;
+    background-color: var(--bg-primary);
+    line-height: 1.6;
+    border-left: 1px solid var(--border-color);
+}
+
+/* Adjust article container for scrolling */
+article {
+    flex: 1;
+    padding: 2rem;
+    max-width: 800px;
+    margin: 0 auto;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+article h1 {
+    font-size: 2.5rem;
+    margin-bottom: 1.5rem;
+    color: var(--text-primary);
+}
+
+article h2 {
+    font-size: 1.875rem;
+    margin-top: 2.5rem;
+    margin-bottom: 1rem;
+    color: var(--text-primary);
+}
+
+article h3 {
+    font-size: 1.5rem;
+    margin-top: 2rem;
+    margin-bottom: 0.75rem;
+    color: var(--text-primary);
+}
+
+article p {
+    margin-bottom: 1.25rem;
+    color: var(--text-secondary);
+}
+
+article ul, article ol {
+    margin-bottom: 1.25rem;
+    padding-left: 1.5rem;
+    color: var(--text-secondary);
+}
+
+article li {
+    margin-bottom: 0.5rem;
+}
+
+article code {
+    background-color: var(--code-bg);
+    padding: 0.2em 0.4em;
+    border-radius: 3px;
+    font-size: 0.875em;
+    font-family: 'IBM Plex Mono', monospace;
+    color: var(--code-color);
+}
+
+article pre {
+    background-color: var(--pre-bg);
+    color: var(--pre-color);
+    padding: 1rem;
+    border-radius: 6px;
+    overflow-x: auto;
+    margin: 1.5rem 0;
+}
+
+article pre code {
+    background-color: transparent;
+    color: inherit;
+    padding: 0;
+    font-size: 0.875rem;
+}
+
+article blockquote {
+    border-left: 4px solid var(--spike-blue);
+    padding-left: 1rem;
+    margin: 1.5rem 0;
+    color: var(--blockquote-color);
+    font-style: italic;
+}
+
+article table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.5rem 0;
+}
+
+article th, article td {
+    padding: 0.75rem;
+    border: 1px solid var(--border-color);
+    text-align: left;
+}
+
+article th {
+    background-color: var(--bg-secondary);
+    font-weight: 600;
+}
+
+article img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 6px;
+    margin: 1.5rem 0;
+}
+
+article a {
+    color: var(--spike-blue);
+    text-decoration: none;
+    transition: color 0.2s ease;
+    font-weight: 500;
+}
+
+article a:hover {
+    color: var(--spike-dark-blue);
+    text-decoration: underline;
+}
+
+/* Add a max-width container for better readability */
+article {
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+}
+/* Dark mode specific adjustments */
+@media (prefers-color-scheme: dark) {
+    article img {
+        opacity: 0.8;
+        transition: opacity 0.2s ease;
+    }
+    
+    article img:hover {
+        opacity: 1;
+    }
+    
+    article a {
+        color: var(--spike-blue);
+    }
+    
+    article a:hover {
+        color: var(--spike-green);
+    }
+}
+
+</style>

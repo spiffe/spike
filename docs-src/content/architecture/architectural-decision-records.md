@@ -8,7 +8,6 @@ weight = 7
 sort_by = "weight"
 +++
 
-{{ star() }}
 
 <br style="clear:both;">
 

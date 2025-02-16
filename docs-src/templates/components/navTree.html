@@ -1,0 +1,162 @@
+<div id="trees">
+    {% set section_ = get_section(path="_index.md") -%}
+    {% for p in section_.subsections -%}
+        {% set subsection = get_section(path=p) -%}
+
+
+        <input class="tree-toggle" type="checkbox" id="{{ subsection.title | slugify }}"
+               {% if current_path is starting_with(subsection.path) %}checked{% endif %}/>
+        <label class="tree-toggle-label "
+               for="{{ subsection.title | slugify }}">{{ subsection.title }}</label>
+
+        <ul class="subtree">
+            {% for page in subsection.pages -%}
+                <li {% if current_path == page.path %}class="active"{% endif %}>
+                    <a href="{{ page.permalink | safe }}{{ _ugly_url }}">{{ page.title }}</a>
+                </li>
+
+                {% if page.toc -%}
+
+                    {% if current_path == page.path -%}
+
+                        {# Count number of headers on page #}
+                        {% set_global header_count = 0 -%}
+                        {% for h2 in page.toc -%}
+                            {% set_global header_count = header_count + 1 -%}
+                            {% for h3 in h2.children -%}
+                                {% set_global header_count = header_count + 1 -%}
+                                {% for h4 in h3.children -%}
+                                    {% set_global header_count = header_count + 1 -%}
+                                {% endfor -%}
+                            {% endfor -%}
+                        {% endfor -%}
+
+                        {# Output headers if above threshold #}
+                        {% if not config.extra.easydocs_heading_threshold -%}
+                            {# Undefined or 0 unable to find a way to differentiate between 0 and undefined.
+                                1 is already including any headings so 0 is not needed #}
+                            {% set _threshold = 5 -%}
+                        {% else %}
+                            {% set _threshold = config.extra.easydocs_heading_threshold -%}
+                        {% endif -%}
+
+                        {% if header_count >= _threshold -%}
+                            <ul id="toc">
+                                {% for h2 in page.toc -%}
+                                    <li><a href="
+                                            {{ h2.permalink | safe }}">{{ h2.title }}</a>
+                                        {% if h2.children -%}
+                                            <ul>
+                                                {% for h3 in h2.children -%}
+                                                    <li>
+                                                        <a href="{{ h3.permalink | safe }}">{{ h3.title }}</a>
+                                                    </li>
+                                                {% endfor -%}
+                                            </ul>
+                                        {% endif -%}
+                                    </li>
+                                {% endfor -%}
+                            </ul>
+                        {% endif -%}
+
+                    {% endif -%}
+                {% endif -%}
+            {% endfor -%}
+        </ul>
+    {% endfor -%}
+</div>
+<style>
+    /* Navigation tree structure */
+    #trees {
+        padding: 0 1rem;
+    }
+
+    .tree-toggle {
+        display: none;
+    }
+
+    .tree-toggle:checked + .tree-toggle-label + .subtree {
+        display: block;
+    }
+
+    .tree-toggle-label {
+        display: block;
+        padding: 0.75rem 1rem;
+        margin: 0.25rem 0;
+        border-radius: 6px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .tree-toggle-label:hover {
+        background-color: rgba(0, 0, 0, 0.05);
+    }
+
+    .tree-toggle-label::before {
+        content: '▸';
+        display: inline-block;
+        margin-right: 0.5rem;
+        transition: transform 0.2s ease;
+    }
+
+    .tree-toggle:checked + .tree-toggle-label::before {
+        transform: rotate(90deg);
+    }
+
+    .subtree {
+        display: none;
+        margin: 0;
+        padding: 0 0 0 1rem;
+        list-style: none;
+    }
+
+    .subtree li {
+        margin: 0.25rem 0;
+    }
+
+    .subtree li a {
+        display: block;
+        padding: 0.5rem 1rem;
+        text-decoration: none;
+        border-radius: 4px;
+        font-size: 0.9375rem;
+        transition: all 0.2s ease;
+    }
+
+    .subtree li a:hover {
+        background-color: rgba(0, 0, 0, 0.05);
+    }
+
+    .subtree li.active a {
+        font-weight: 600;
+        background-color: rgba(0, 0, 0, 0.05);
+    }
+
+    /* Table of contents styling */
+    #toc {
+        margin: 0.5rem 0 0.5rem 1.5rem;
+        padding: 0;
+        list-style: none;
+        font-size: 0.875rem;
+    }
+
+    #toc li {
+        margin: 0.25rem 0;
+    }
+
+    #toc li a {
+        padding: 0.375rem 0.75rem;
+        opacity: 0.8;
+    }
+
+    #toc li a:hover {
+        opacity: 1;
+    }
+
+    #toc ul {
+        margin: 0.25rem 0 0.25rem 1rem;
+        padding: 0;
+        list-style: none;
+    }
+</style>
