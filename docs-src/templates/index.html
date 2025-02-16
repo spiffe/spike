@@ -58,15 +58,21 @@
 </html>
 <style>
 body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     margin: 0;
     overflow: hidden;
     font-family: var(--font-family);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
 }
 
 main {
     width: 100vw;
+    max-width: 1920px;
     display: flex;
     flex-direction: row;
     overflow: hidden;
