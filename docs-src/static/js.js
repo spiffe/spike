@@ -124,40 +124,30 @@ function makeTeaser(body, terms) {
 }
 
 function formatSearchResultItem(item, terms) {
-  var li = document.createElement("li");
-  li.classList.add("search-results__item");
-  li.innerHTML = `<a href="${item.ref}">${item.doc.title}</a>`;
-  li.innerHTML += `<div class="search-results__teaser">${makeTeaser(
-    item.doc.body,
-    terms
-  )}</div>`;
-  return li;
-}
+  var link = document.createElement("a");
+  link.classList.add("search-results__item");
+  link.href = item.ref;
 
-// Go from the book view to the search view
-function toggleSearchMode() {
-  var $wrapContent = document.querySelector("#wrap");
-  var $searchIcon = document.querySelector("#search-ico");
-  var $searchContainer = document.querySelector(".search-container");
-  if ($searchContainer.classList.contains("search-container--is-visible")) {
-    $searchContainer.classList.remove("search-container--is-visible");
-    $wrapContent.style.display = "";
-    $searchIcon.className = "bx bx-search";
-  } else {
-    $searchContainer.classList.add("search-container--is-visible");
-    $wrapContent.style.display = "none";
-    $searchIcon.className = "bx bx-x";
-    document.getElementById("search").focus();
-  }
+  var title = document.createElement("div");
+  title.classList.add("search-results__title");
+  title.textContent = item.doc.title;
+
+  var preview = document.createElement("div");
+  preview.classList.add("search-results__preview");
+  preview.innerHTML = makeTeaser(item.doc.body, terms);
+
+  link.appendChild(title);
+  link.appendChild(preview);
+
+  return link;
 }
 
 function initSearch() {
-  var $searchInput = document.getElementById("search");
+  var $searchInput = document.querySelector(".search-input");
+
   if (!$searchInput) {
     return;
   }
-  var $searchIcon = document.querySelector("#search-ico");
-  $searchIcon.addEventListener("click", toggleSearchMode);
 
   var $searchResults = document.querySelector(".search-results");
   var $searchResultsHeader = document.querySelector(".search-results__header");
@@ -190,6 +180,7 @@ function initSearch() {
       var results = index.search(term, options).filter(function (r) {
         return r.doc.body !== "";
       });
+      console.log(results);
       if (results.length === 0) {
         $searchResultsHeader.innerText = `Nothing like «${term}»`;
         return;

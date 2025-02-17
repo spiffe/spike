@@ -1,9 +1,42 @@
-<script></script>
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const searchInput = document.querySelector(".search-input");
+    const overlay = document.querySelector(".overlay");
+    const searchResults = document.querySelector(".search-results");
+    const searchContainer = document.querySelector(".search-container");
 
+    function closeSearch() {
+      overlay.style.display = "none";
+      searchResults.style.display = "none";
+      searchInput.blur();
+    }
+
+    function openSearch() {
+      overlay.style.display = "block";
+      searchResults.style.display = "block";
+    }
+
+    searchInput.addEventListener("focus", openSearch);
+    overlay.addEventListener("click", closeSearch);
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        closeSearch();
+      }
+    });
+  });
+</script>
+<div class="overlay"></div>
 <input class="search-input" type="text" placeholder="Search..." />
+<div class="search-results">
+  <div class="search-results__header">
+    <span class="search-results__count">Waiting for input...</span>
+  </div>
+  <div class="search-results__items"></div>
+</div>
+
 <style>
   .search-input {
-    flex: 1;
+    width: 100%;
     padding: 0.5rem 1rem;
     border: 1px solid var(--border-color);
     border-radius: 4px;
@@ -11,6 +44,7 @@
     color: var(--text-primary);
     font-size: 0.875rem;
     transition: all 0.2s ease;
+    z-index: 101;
   }
 
   .search-input:focus {
@@ -22,5 +56,88 @@
 
   .search-input::placeholder {
     color: var(--text-muted);
+  }
+
+  .overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 100;
+  }
+
+  .search-results {
+    display: none;
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 100%;
+    max-width: 700px;
+    margin: 0.5rem auto;
+    background: var(--bg-primary);
+    border-radius: 8px;
+    box-shadow: 0px 4px 8px 3px rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--border-color);
+    z-index: 102;
+  }
+
+  .search-results__header {
+    padding: 0.75rem 1rem;
+    color: var(--text-muted);
+    font-size: 0.875rem;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .search-results__items {
+    max-height: 60vh;
+    overflow-y: auto;
+  }
+
+  .search-results__item {
+    display: block;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--border-color);
+    transition: background-color 0.2s ease;
+  }
+
+  .search-results__item:hover {
+    background-color: var(--bg-interactive);
+  }
+
+  .search-results__title {
+    color: var(--spike-blue);
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+  }
+
+  .search-results__preview {
+    color: var(--text-secondary);
+    font-size: 0.8125rem;
+    line-height: 1.4;
+  }
+
+  .search-results__preview b {
+    color: var(--spike-dark-green);
+    font-weight: 600;
+  }
+
+  .search-results__items::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  .search-results__items::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 4px;
+  }
+
+  /* Empty state */
+  .search-results__empty {
+    padding: 2rem 1rem;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.875rem;
   }
 </style>
