@@ -4,13 +4,8 @@
         .then(data => {
             const release = document.getElementById('release');
             const icon = '<i class="bx bx-package"></i>';
-            if (data.name) {
-                release.href = data.html_url;
-                release.innerHTML = icon + ' ' + data.name;
-            } else {
-                release.href = '{{ config.extra.releases | safe }}';
-                release.innerHTML = icon + '  Releases';
-            }
+            release.href = data.name ? data.html_url : '{{ config.extra.releases | safe }}';
+            release.innerHTML = icon + (data.name ? ' ' + data.name : ' Releases');
         });
 </script>
 <div id="banner">
