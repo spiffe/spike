@@ -14,10 +14,8 @@
       rel="noopener"
       class="github-star"
     >
-      <div class="star-content">
-        <i class="bx bx-star star-icon"></i>
-        <span>Star us!</span>
-      </div>
+      <i class="bx bx-star"></i>
+      <span>Star us!</span>
     </a>
     <button id="theme-toggle" aria-label="Toggle theme">
       <i class="bx bx-sun light-icon"></i>
@@ -105,49 +103,49 @@
     display: none;
   }
 
-  /* GitHub Star Button Styles */
+  /* GitHub Star Button */
   .github-star {
     display: flex;
     align-items: center;
-    padding: 0.5rem 1rem;
-    background-color: var(--bg-interactive);
-    border-radius: 20px;
-    color: var(--text-primary);
-    text-decoration: none;
-    transition: all 0.3s ease;
-    margin-left: auto;
-  }
-
-  .github-star:hover {
-    transform: scale(1.05);
-    background-color: var(--bg-secondary);
-  }
-
-  .star-content {
-    display: flex;
-    align-items: center;
     gap: 0.5rem;
-  }
-
-  .star-content span {
+    padding: 0.5rem 1rem;
+    color: white;
+    text-decoration: none;
+    background: linear-gradient(
+      135deg,
+      var(--spike-blue),
+      var(--spike-dark-green)
+    );
+    border-radius: 20px;
+    transition: all 0.2s ease;
+    font-size: 0.875rem;
     white-space: nowrap;
   }
 
-  .star-icon {
-    font-size: 1.2rem;
-    animation: starPulse 2s infinite;
+  .github-star:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(var(--spike-blue-rgb), 0.3);
   }
 
-  @keyframes starPulse {
-    0% {
+  .github-star i {
+    font-size: 1.1rem;
+    animation: starBounce 2s infinite;
+    color: #ffd700;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+  }
+
+  @keyframes starBounce {
+    0%,
+    100% {
       transform: scale(1);
     }
     50% {
       transform: scale(1.2);
     }
-    100% {
-      transform: scale(1);
-    }
+  }
+
+  .github-star span {
+    white-space: nowrap;
   }
 
   @media (max-width: 768px) {
