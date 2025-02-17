@@ -10,11 +10,10 @@ import (
 	"io"
 	"net/http"
 
+	apiErr "github.com/spiffe/spike-sdk-go/api/errors"
+
 	"github.com/spiffe/spike/internal/log"
 )
-
-var ErrNotFound = errors.New("not found")
-var ErrUnauthorized = errors.New("unauthorized")
 
 func body(r *http.Response) (bod []byte, err error) {
 	body, err := io.ReadAll(r.Body)
@@ -74,27 +73,27 @@ func Post(client *http.Client, path string, mr []byte) ([]byte, error) {
 	r, err := client.Do(req)
 	if err != nil {
 		return []byte{}, errors.Join(
-			errors.New("post: Problem connecting to peer"),
+			apiErr.ErrPeerConnection,
 			err,
 		)
 	}
 
 	if r.StatusCode != http.StatusOK {
 		if r.StatusCode == http.StatusNotFound {
-			return []byte{}, ErrNotFound
+			return []byte{}, apiErr.ErrNotFound
 		}
 
 		if r.StatusCode == http.StatusUnauthorized {
-			return []byte{}, ErrUnauthorized
+			return []byte{}, apiErr.ErrUnauthorized
 		}
 
-		return []byte{}, errors.New("post: Problem connecting to peer")
+		return []byte{}, apiErr.ErrPeerConnection
 	}
 
 	b, err := body(r)
 	if err != nil {
 		return []byte{}, errors.Join(
-			errors.New("post: Problem reading response body"),
+			apiErr.ErrReadingResponseBody,
 			err,
 		)
 	}

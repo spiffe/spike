@@ -67,16 +67,6 @@
         // TOD check size 32bytes.
       </issue>
       <issue>
-        func trustRoot() string {
-        tr := os.Getenv("SPIKE_TRUST_ROOT") // TODfO: this should be
-        documented and should come from the common env module.
-        if tr == "" {
-        return "spike.ist"
-        }
-        return tr
-        }
-      </issue>
-      <issue>
         var ErrNotFound = errors.New("not found")
         var ErrUnauthorized = errors.New("unauthorized")
 
