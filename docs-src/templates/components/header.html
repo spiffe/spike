@@ -8,6 +8,17 @@
       <i class="bx bx-menu"></i>
     </button>
     {% include "components/search.html" %}
+    <a
+      href="https://github.com/spiffe/spike"
+      target="_blank"
+      rel="noopener"
+      class="github-star"
+    >
+      <div class="star-content">
+        <i class="bx bx-star star-icon"></i>
+        <span>Star us!</span>
+      </div>
+    </a>
     <button id="theme-toggle" aria-label="Toggle theme">
       <i class="bx bx-sun light-icon"></i>
       <i class="bx bx-moon dark-icon"></i>
@@ -92,6 +103,61 @@
   [data-theme="dark"] .light-icon,
   :root:not([data-theme="dark"]) .dark-icon {
     display: none;
+  }
+
+  /* GitHub Star Button Styles */
+  .github-star {
+    display: flex;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    background-color: var(--bg-interactive);
+    border-radius: 20px;
+    color: var(--text-primary);
+    text-decoration: none;
+    transition: all 0.3s ease;
+    margin-left: auto;
+  }
+
+  .github-star:hover {
+    transform: scale(1.05);
+    background-color: var(--bg-secondary);
+  }
+
+  .star-content {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .star-content span {
+    white-space: nowrap;
+  }
+
+  .star-icon {
+    font-size: 1.2rem;
+    animation: starPulse 2s infinite;
+  }
+
+  @keyframes starPulse {
+    0% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.2);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+
+  @media (max-width: 768px) {
+    .github-star span {
+      display: none;
+    }
+
+    .github-star {
+      padding: 0.5rem;
+    }
   }
 </style>
 
