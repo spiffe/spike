@@ -288,3 +288,38 @@ function toggleTheme() {
   const themeIcon = document.querySelector("#theme-toggle");
   themeIcon.className = isDark ? "bx bx-moon" : "bx bx-sun";
 }
+
+// Mobile Navigation
+document.addEventListener("DOMContentLoaded", function () {
+  const mobileNavToggle = document.getElementById("mobile-nav-toggle");
+  const nav = document.querySelector("nav");
+
+  if (mobileNavToggle && nav) {
+    mobileNavToggle.addEventListener("click", function () {
+      nav.classList.toggle("active");
+      document.body.style.overflow = nav.classList.contains("active")
+        ? "hidden"
+        : "";
+    });
+
+    // Close navigation when clicking outside
+    document.addEventListener("click", function (e) {
+      if (
+        nav.classList.contains("active") &&
+        !nav.contains(e.target) &&
+        e.target !== mobileNavToggle
+      ) {
+        nav.classList.remove("active");
+        document.body.style.overflow = "";
+      }
+    });
+
+    // Handle escape key
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape" && nav.classList.contains("active")) {
+        nav.classList.remove("active");
+        document.body.style.overflow = "";
+      }
+    });
+  }
+});

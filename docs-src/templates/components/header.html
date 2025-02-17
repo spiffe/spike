@@ -1,5 +1,12 @@
 <div class="header">
   <div class="header-content">
+    <button
+      id="mobile-nav-toggle"
+      aria-label="Toggle navigation"
+      class="mobile-only"
+    >
+      <i class="bx bx-menu"></i>
+    </button>
     {% include "components/search.html" %}
     <button id="theme-toggle" aria-label="Toggle theme">
       <i class="bx bx-sun light-icon"></i>
@@ -17,6 +24,7 @@
     border-bottom: 1px solid var(--border-color);
     box-shadow: 0 4px 6px -1px var(--shadow-color),
       0 2px 4px -1px var(--shadow-color);
+    z-index: 101;
   }
 
   .header-content {
@@ -25,6 +33,37 @@
     display: flex;
     align-items: center;
     gap: 1rem;
+  }
+
+  #mobile-nav-toggle {
+    display: none;
+    background: none;
+    border: none;
+    padding: 0.5rem;
+    cursor: pointer;
+    color: var(--text-primary);
+    font-size: 1.5rem;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+  }
+
+  #mobile-nav-toggle i {
+    pointer-events: none;
+    display: block;
+  }
+
+  #mobile-nav-toggle:hover {
+    background-color: var(--bg-interactive);
+  }
+
+  @media (max-width: 1300px) {
+    #mobile-nav-toggle {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+    }
   }
 
   #theme-toggle {
