@@ -1,7 +1,6 @@
 /* Adjust article container for scrolling */
 article {
   flex: 1;
-  padding: 2rem;
   max-width: 800px;
   margin: 0 auto;
   width: 100%;
@@ -78,14 +77,16 @@ article blockquote {
 }
 
 article table {
-  width: 100%;
   border-collapse: collapse;
-  margin: 1.5rem 0;
+  display: block;
+  overflow-x: auto;
+  width: 100%;
+  font-size: 0.9rem; /* Slightly smaller font size on mobile */
 }
 
 article th,
 article td {
-  padding: 0.75rem;
+  padding: 0.2rem;
   border: 1px solid var(--border-color);
   text-align: left;
 }
@@ -114,12 +115,6 @@ article a:hover {
   text-decoration: underline;
 }
 
-/* Add a max-width container for better readability */
-article {
-  max-width: 800px;
-  margin-left: auto;
-  margin-right: auto;
-}
 /* Dark mode specific adjustments */
 @media (prefers-color-scheme: dark) {
   article img {
