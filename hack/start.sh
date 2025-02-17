@@ -20,6 +20,34 @@
 # The script also sets up a trap to ensure that all background processes are
 # terminated when the script exits.
 
+# Domain to check
+SPIRE_SERVER_DOMAIN="spire.spike.ist"
+
+check_domain() {
+    # Try to resolve the domain and ensure we get an answer
+    DNS_ANSWER=$(dig +noall +answer "$SPIRE_SERVER_DOMAIN" | grep -v "^;")
+    if [ -z "$DNS_ANSWER" ]; then
+        echo "Error: No valid DNS answer for $SPIRE_SERVER_DOMAIN"
+        return 1
+    fi
+
+    # Print the resolved address(es)
+    echo "DNS resolution for $DOMAIN:"
+    echo "$DNS_ANSWER"
+
+    return 0
+}
+
+# Check domain before proceeding
+if ! check_domain; then
+    echo "Domain check failed. Exiting..."
+    exit 1
+fi
+
+# Your existing script continues here
+echo "Domain check passed. Continuing with the script..."
+
+
 source ./hack/lib/bg.sh
 
 if ./hack/clear-data.sh; then

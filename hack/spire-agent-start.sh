@@ -6,12 +6,15 @@
 
 TOKEN_FILE=".spire-agent-join-token"
 
-if [ -z "$WORKSPACE" ]; then
-    echo "Error: define WORKSPACE environment variable"
-    echo "WORKSPACE is where your SPIKE repository is in."
-    echo "For example, if SPIKE is in '/home/jane/WORKSPACE/spike',"
-    echo "then WORKSPACE should point to '/home/jane/WORKSPACE'"
-    echo "(without the trailing slash (/))"
+if ! command -v spire-server &>/dev/null; then
+    echo "Error: spire-server binary not found in PATH"
+    echo "Please install SPIRE to your system."
+    exit 1
+fi
+
+if ! command -v spire-agent &>/dev/null; then
+    echo "Error: spire-agent binary not found in PATH"
+    echo "Please install SPIRE to your system."
     exit 1
 fi
 
