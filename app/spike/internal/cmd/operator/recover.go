@@ -6,6 +6,7 @@ package operator
 
 import (
 	"fmt"
+	"github.com/spiffe/spike/internal/config"
 	"os"
 	"path/filepath"
 	"strings"
@@ -29,7 +30,8 @@ func newOperatorRecoverCommand(
 			if !auth.IsPilotRecover(spiffeId) {
 				fmt.Println("")
 				fmt.Println("  You need to have a `recover` role to use this command.")
-				fmt.Println("  Please run `./hack/spire-server-entry-recover-register.sh`")
+				fmt.Println(
+					"  Please run `./hack/spire-server-entry-recover-register.sh`")
 				fmt.Println("  with necessary privileges to assign this role.")
 				fmt.Println("")
 				log.FatalLn("Aborting.")
@@ -52,34 +54,18 @@ func newOperatorRecoverCommand(
 				fmt.Println((*shards)[0])
 				fmt.Println((*shards)[1])
 
-				// Ensure the output directory exists
-				homeDir, err := os.UserHomeDir()
-				if err != nil {
-					fmt.Println("Unable to determine system Home directory:", err)
-					log.FatalLn(err.Error())
-				}
+				recoverDir := config.SpikePilotRecoveryFolder()
 
-				recoverDir := fmt.Sprintf("%s/.spike/recover", homeDir)
-				if err != nil {
-					recoverDir = "/tmp"
-				}
-
-				// Ensure the recover directory exists
-				if _, err := os.Stat(recoverDir); os.IsNotExist(err) {
-					err := os.MkdirAll(recoverDir, 0755)
-					if err != nil {
-						fmt.Printf("Failed to create recover directory %s: %s\n", recoverDir, err.Error())
-						log.FatalLn(err.Error())
-					} else {
-						fmt.Printf("Created recover directory: %s\n", recoverDir)
-					}
-				}
-
-				// Ensure the recover directory is clean by deleting any existing recovery files
+				// Ensure the recover directory is clean by
+				// deleting any existing recovery files.
+				// We are NOT warning the user about this operation because
+				// the admin ought to have securely backed up the shards and
+				// deleted them from the recover directory anyway.
 				if _, err := os.Stat(recoverDir); err == nil {
 					files, err := os.ReadDir(recoverDir)
 					if err != nil {
-						fmt.Printf("Failed to read recover directory %s: %s\n", recoverDir, err.Error())
+						fmt.Printf("Failed to read recover directory %s: %s\n",
+							recoverDir, err.Error())
 						log.FatalLn(err.Error())
 					}
 
@@ -89,9 +75,8 @@ func newOperatorRecoverCommand(
 							filePath := filepath.Join(recoverDir, file.Name())
 							err := os.Remove(filePath)
 							if err != nil {
-								fmt.Printf("Failed to delete old recovery file %s: %s\n", filePath, err.Error())
-							} else {
-								fmt.Printf("Deleted old recovery file: %s\n", filePath)
+								fmt.Printf("Failed to delete old recovery file %s: %s\n",
+									filePath, err.Error())
 							}
 						}
 					}
@@ -103,22 +88,23 @@ func newOperatorRecoverCommand(
 					err := os.WriteFile(filePath, []byte(shard), 0644)
 					if err != nil {
 						fmt.Printf("Failed to save shard %d: %s\n", i+1, err.Error())
-					} else {
-						fmt.Printf("Shard %d saved to %s\n", i+1, filePath)
 					}
 				}
 
 				fmt.Println("")
-				fmt.Println("  SPIKE Recovery shards saved to ~/.spike/recover/")
+				fmt.Println("  SPIKE Recovery shards saved to the recovery directory:" +
+					recoverDir)
 				fmt.Println("")
 				fmt.Println("  Please make sure that:")
 				fmt.Println("    1. You encrypt these shards and keep them safe.")
 				fmt.Println("    2. Securely erase the shards from the")
-				fmt.Println("       ~/.spike/recover/ directory after you encrypt them")
+				fmt.Println("       recovery directory after you encrypt them")
 				fmt.Println("       and save them to a safe location.")
 				fmt.Println("")
-				fmt.Println("  If you lose these shards, you will not be able to recover")
-				fmt.Println("  SPIKE Nexus in the unlikely event of a total system crash.")
+				fmt.Println(
+					"  If you lose these shards, you will not be able to recover")
+				fmt.Println(
+					"  SPIKE Nexus in the unlikely event of a total system crash.")
 				fmt.Println("")
 
 				return
@@ -127,7 +113,7 @@ func newOperatorRecoverCommand(
 			fmt.Println("")
 			fmt.Println("  No shards found.")
 			fmt.Println("  Cannot save recovery shards.")
-			fmt.Println("  Please wait and try again later.")
+			fmt.Println("  Please try again later.")
 			fmt.Println("  If the problem persists, check SPIKE logs.")
 			fmt.Println("")
 		},

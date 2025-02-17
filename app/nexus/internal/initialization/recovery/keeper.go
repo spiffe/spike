@@ -14,12 +14,12 @@ import (
 	"github.com/cloudflare/circl/secretsharing"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
+	apiUrl "github.com/spiffe/spike-sdk-go/api/url"
 
 	"github.com/spiffe/spike/app/nexus/internal/env"
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 	"github.com/spiffe/spike/internal/config"
 	"github.com/spiffe/spike/internal/log"
-	"github.com/spiffe/spike/internal/net"
 )
 
 func iterateKeepersToBootstrap(
@@ -29,7 +29,7 @@ func iterateKeepersToBootstrap(
 	const fName = "iterateKeepersToBootstrap"
 
 	for keeperId, keeperApiRoot := range keepers {
-		u, err := url.JoinPath(keeperApiRoot, string(net.SpikeKeeperUrlContribute))
+		u, err := url.JoinPath(keeperApiRoot, string(apiUrl.SpikeKeeperUrlContribute))
 		if err != nil {
 			log.Log().Warn(
 				fName, "msg", "Failed to join path", "url", keeperApiRoot,

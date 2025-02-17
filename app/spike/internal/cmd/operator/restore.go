@@ -28,8 +28,10 @@ func newOperatorRestoreCommand(
 		Run: func(cmd *cobra.Command, args []string) {
 			if !auth.IsPilotRestore(spiffeId) {
 				fmt.Println("")
-				fmt.Println("  You need to have a `restore` role to use this command.")
-				fmt.Println("  Please run `./hack/spire-server-entry-restore-register.sh`")
+				fmt.Println(
+					"  You need to have a `restore` role to use this command.")
+				fmt.Println(
+					"  Please run `./hack/spire-server-entry-restore-register.sh`")
 				fmt.Println("  with necessary privileges to assign this role.")
 				fmt.Println("")
 				log.FatalLn("Aborting.")
@@ -57,20 +59,23 @@ func newOperatorRestoreCommand(
 			}
 
 			if status == nil {
-				log.FatalLn("no status")
+				log.FatalLn("Didn't get any status while trying to restore SPIKE.")
 			}
 
 			if status.Restored {
 				fmt.Println("")
 				fmt.Println("  SPIKE is now restored and ready to use.")
-				fmt.Println("  Please run `./hack/spire-server-entry-su-register.sh`")
-				fmt.Println("  with necessary privileges to start using SPIKE as a superuser.")
+				fmt.Println(
+					"  Please run `./hack/spire-server-entry-su-register.sh`")
+				fmt.Println(
+					"  with necessary privileges to start using SPIKE as a superuser.")
 				fmt.Println("")
 			} else {
 				fmt.Println("")
 				fmt.Println(" Shards collected: ", status.ShardsCollected)
 				fmt.Println(" Shards remaining: ", status.ShardsRemaining)
-				fmt.Println(" Please run `spike restore` again to provide the remaining shards.")
+				fmt.Println(
+					" Please run `spike restore` again to provide the remaining shards.")
 				fmt.Println("")
 			}
 		},

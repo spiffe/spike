@@ -7,6 +7,8 @@ package net
 import (
 	"net/http"
 
+	"github.com/spiffe/spike-sdk-go/api/url"
+
 	"github.com/spiffe/spike/internal/log"
 )
 
@@ -26,8 +28,8 @@ import (
 //
 // Returns:
 //   - Handler: Route handler function or Fallback for non-POST methods
-func RouteFactory[ApiAction any](p ApiUrl, a ApiAction, m string,
-	switchyard func(a ApiAction, p ApiUrl) Handler) Handler {
+func RouteFactory[ApiAction any](p url.ApiUrl, a ApiAction, m string,
+	switchyard func(a ApiAction, p url.ApiUrl) Handler) Handler {
 	log.Log().Info("route.factory", "path", p, "action", a, "method", m)
 
 	// We only accept POST requests -- See ADR-0012.

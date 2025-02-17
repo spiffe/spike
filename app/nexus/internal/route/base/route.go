@@ -13,6 +13,8 @@ package base
 import (
 	"net/http"
 
+	"github.com/spiffe/spike-sdk-go/api/url"
+
 	"github.com/spiffe/spike/app/nexus/internal/route/acl/policy"
 	"github.com/spiffe/spike/app/nexus/internal/route/operator"
 	"github.com/spiffe/spike/app/nexus/internal/route/secret"
@@ -32,44 +34,44 @@ import (
 func Route(
 	w http.ResponseWriter, r *http.Request, a *log.AuditEntry,
 ) error {
-	return net.RouteFactory[net.SpikeNexusApiAction](
-		net.ApiUrl(r.URL.Path),
-		net.SpikeNexusApiAction(r.URL.Query().Get(net.KeyApiAction)),
+	return net.RouteFactory[url.ApiAction](
+		url.ApiUrl(r.URL.Path),
+		url.ApiAction(r.URL.Query().Get(url.KeyApiAction)),
 		r.Method,
-		func(a net.SpikeNexusApiAction, p net.ApiUrl) net.Handler {
+		func(a url.ApiAction, p url.ApiUrl) net.Handler {
 			rk := state.RootKey()
 
 			emptyRootKey := len(rk) == 0
-			emergencyAction := p == net.SpikeNexusUrlOperatorRecover ||
-				p == net.SpikeNexusUrlOperatorRestore
+			emergencyAction := p == url.SpikeNexusUrlOperatorRecover ||
+				p == url.SpikeNexusUrlOperatorRestore
 			if emptyRootKey && !emergencyAction {
 				return net.NotReady
 			}
 
 			switch {
-			case a == net.ActionNexusDefault && p == net.SpikeNexusUrlSecrets:
+			case a == url.ActionDefault && p == url.SpikeNexusUrlSecrets:
 				return secret.RoutePutSecret
-			case a == net.ActionNexusGet && p == net.SpikeNexusUrlSecrets:
+			case a == url.ActionGet && p == url.SpikeNexusUrlSecrets:
 				return secret.RouteGetSecret
-			case a == net.ActionNexusDelete && p == net.SpikeNexusUrlSecrets:
+			case a == url.ActionDelete && p == url.SpikeNexusUrlSecrets:
 				return secret.RouteDeleteSecret
-			case a == net.ActionNexusUndelete && p == net.SpikeNexusUrlSecrets:
+			case a == url.ActionUndelete && p == url.SpikeNexusUrlSecrets:
 				return secret.RouteUndeleteSecret
-			case a == net.ActionNexusList && p == net.SpikeNexusUrlSecrets:
+			case a == url.ActionList && p == url.SpikeNexusUrlSecrets:
 				return secret.RouteListPaths
-			case a == net.ActionNexusDefault && p == net.SpikeNexusUrlPolicy:
+			case a == url.ActionDefault && p == url.SpikeNexusUrlPolicy:
 				return policy.RoutePutPolicy
-			case a == net.ActionNexusGet && p == net.SpikeNexusUrlPolicy:
+			case a == url.ActionGet && p == url.SpikeNexusUrlPolicy:
 				return policy.RouteGetPolicy
-			case a == net.ActionNexusDelete && p == net.SpikeNexusUrlPolicy:
+			case a == url.ActionDelete && p == url.SpikeNexusUrlPolicy:
 				return policy.RouteDeletePolicy
-			case a == net.ActionNexusList && p == net.SpikeNexusUrlPolicy:
+			case a == url.ActionList && p == url.SpikeNexusUrlPolicy:
 				return policy.RouteListPolicies
-			case a == net.ActionNexusGet && p == net.SpikeNexusUrlSecretsMetadata:
+			case a == url.ActionGet && p == url.SpikeNexusUrlSecretsMetadata:
 				return secret.RouteGetSecretMetadata
-			case a == net.ActionNexusDefault && p == net.SpikeNexusUrlOperatorRestore:
+			case a == url.ActionDefault && p == url.SpikeNexusUrlOperatorRestore:
 				return operator.RouteRestore
-			case a == net.ActionNexusDefault && p == net.SpikeNexusUrlOperatorRecover:
+			case a == url.ActionDefault && p == url.SpikeNexusUrlOperatorRecover:
 				return operator.RouteRecover
 			default:
 				return net.Fallback

@@ -166,7 +166,7 @@ configure the SPIKE components:</p>
 <table><thead><tr><th>Component</th><th>Environment Variable</th><th>Description</th><th>Default Value</th></tr></thead><tbody>
 <tr><td>SPIKE Keeper</td><td><code>SPIKE_KEEPER_TLS_PORT</code></td><td>The TLS port the current SPIKE Keeper instance listens on.</td><td><code>":8443"</code></td></tr>
 <tr><td>SPIKE Keeper</td><td><code>SPIKE_KEEPER_API_URL</code></td><td>The API URL of the current SPIKE Keeper instance.</td><td>`“https://localhost:8443”</td></tr>
-<tr><td>SPIKE Nexus</td><td><code>SPIKE_KEEPER_PEERS</code></td><td>A mapping that contains <code>[{id:keeperurl}]</code> collection for all SPIKE Keepers that SPIKE Nexus knows about.</td><td>“” (check <code>./hack/start.sh</code> for usage examples.</td></tr>
+<tr><td>SPIKE Nexus</td><td><code>SPIKE_NEXUS_KEEPER_PEERS</code></td><td>A mapping that contains <code>[{id:keeperurl}]</code> collection for all SPIKE Keepers that SPIKE Nexus knows about.</td><td>“” (check <code>./hack/start.sh</code> for usage examples.</td></tr>
 <tr><td>SPIKE Nexus</td><td><code>SPIKE_NEXUS_POLL_INTERVAL</code></td><td>The interval SPIKE Nexus syncs up its state with SPIKE Keeper.</td><td><code>"5m"</code></td></tr>
 <tr><td>SPIKE Nexus</td><td><code>SPIKE_NEXUS_TLS_PORT</code></td><td>The TLS port SPIKE Nexus listens on.</td><td><code>":8553"</code></td></tr>
 <tr><td>SPIKE Nexus</td><td><code>SPIKE_NEXUS_MAX_SECRET_VERSIONS</code></td><td>The maximum number of versions of a secret that SPIKE Nexus stores.</td><td><code>10</code></td></tr>

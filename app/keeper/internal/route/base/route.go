@@ -12,6 +12,8 @@ package base
 import (
 	"net/http"
 
+	"github.com/spiffe/spike-sdk-go/api/url"
+
 	"github.com/spiffe/spike/app/keeper/internal/route/store"
 	"github.com/spiffe/spike/internal/log"
 	"github.com/spiffe/spike/internal/net"
@@ -26,17 +28,17 @@ import (
 //   - w: The HTTP ResponseWriter to write the response to
 //   - r: The HTTP Request containing the client's request details
 func Route(w http.ResponseWriter, r *http.Request, a *log.AuditEntry) error {
-	return net.RouteFactory[net.SpikeKeeperApiAction](
-		net.ApiUrl(r.URL.Path),
-		net.SpikeKeeperApiAction(r.URL.Query().Get(net.KeyApiAction)),
+	return net.RouteFactory[url.ApiAction](
+		url.ApiUrl(r.URL.Path),
+		url.ApiAction(r.URL.Query().Get(url.KeyApiAction)),
 		r.Method,
-		func(a net.SpikeKeeperApiAction, p net.ApiUrl) net.Handler {
+		func(a url.ApiAction, p url.ApiUrl) net.Handler {
 			switch {
 			// Get contribution from SPIKE Nexus
-			case a == net.ActionKeeperDefault && p == net.SpikeKeeperUrlContribute:
+			case a == url.ActionDefault && p == url.SpikeKeeperUrlContribute:
 				return store.RouteContribute
 			// Provide your shard to SPIKE Nexus
-			case a == net.ActionKeeperDefault && p == net.SpikeKeeperUrlShard:
+			case a == url.ActionDefault && p == url.SpikeKeeperUrlShard:
 				return store.RouteShard
 			default:
 				return net.Fallback

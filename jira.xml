@@ -17,63 +17,11 @@
   <immediate>
     <fix-before-release-cut>
       <issue>
-        godoc me:
-        func NotReady(
-        w http.ResponseWriter, r *http.Request, audit *log.AuditEntry,
-        ) error {
-      </issue>
-      <issue>
-        hack/env.sh missing EOL.
-        spire-entry-recover-revert.sh missing EOL.
-      </issue>
-      <issue>
-        commented out code
-
-        func NewPolicyCommand(
-        source *workloadapi.X509Source, spiffeId string,
-        ) *cobra.Command {
-        // trust.Authenticate(spiffeId)
-
-        same:
-
-        func NewSecretCommand(
-        source *workloadapi.X509Source, spiffeId string,
-        ) *cobra.Command {
-        // trust.Authenticate(spiffeId)
-      </issue>
-      <issue>
-        func newOperatorRecoverCommand(
-        source *workloadapi.X509Source, spiffeId string,
-        ) *cobra.Command {
-
-        This one and newOperatorRestoreCommand require some cleanup.
-      </issue>
-      <issue>
-        document me:
-        func PilotRecoveryShards() []string {
-      </issue>
-      <issue>
         Add a guardRecoverRequest() inside this function:
 
         func RouteRecover(
         w http.ResponseWriter, r *http.Request, audit *log.AuditEntry,
         ) error {
-      </issue>
-      <issue>
-        func NotReady(
-
-        // : create something like ErrNotReady.
-        body := MarshalBody(reqres.FallbackResponse{Err:
-        data.ErrLowEntropy}, w)
-        if body == nil {
-        return errors.New("failed to marshal response body")
-      </issue>
-      <issue>
-        start.sh should delete tombstone files too.
-      </issue>
-      <issue>
-        spiffe id registration scripts should wait 10 secs before exit
-        for spire stuff to propagate.
       </issue>
       <issue>
         // a more user-friendly error message:
@@ -100,23 +48,6 @@
         const NexusVersion = "0.2.1"
         const PilotVersion = "0.2.1"
         const KeeperVersion = "0.2.1"
-      </issue>
-      <issue>
-        Maybe move these to SDK since any change in these urls
-        will impact its consumers too.
-        (plus, SDK already has these constants internally;
-        one changing while the other remaining unchanged will
-        cause issues)
-
-        const SpikeNexusUrlSecrets ApiUrl = "/v1/store/secrets"
-        const SpikeNexusUrlSecretsMetadata ApiUrl =
-        "/v1/store/secrets/metadata"
-        const SpikeNexusUrlPolicy ApiUrl = "/v1/acl/policy"
-
-        const SpikeKeeperUrlKeep ApiUrl = "/v1/store/keep"
-
-        const SpikeKeeperUrlContribute ApiUrl = "/v1/store/contribute"
-        const SpikeKeeperUrlShard ApiUrl = "/v1/store/shard"
       </issue>
       <issue>
         // Don't wait for the background process and send shards immediately

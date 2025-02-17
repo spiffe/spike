@@ -5,3 +5,4 @@
 # \\\\\\\ SPDX-License-Identifier: Apache-2.0
 
 spire-server entry show
+echo "Everything is awesome!"

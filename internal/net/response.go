@@ -117,6 +117,25 @@ func Fallback(
 	return nil
 }
 
+// NotReady handles requests when the system has not initialized its backing
+// store with a root key by returning a 400 Bad Request.
+//
+// This function uses MarshalBody to generate the response and handles any
+// errors during response writing.
+//
+// Parameters:
+//   - w: http.ResponseWriter - The response writer
+//   - r: *http.Request - The incoming request
+//   - audit: *log.AuditEntry - The audit log entry for this request
+//
+// The response always includes:
+//   - Status: 400 Bad Request
+//   - Content-Type: application/json
+//   - Body: JSON object with an error field containing ErrLowEntropy
+//
+// Returns:
+//   - error: Returns nil on success, or an error if response marshaling or
+//     writing fails
 func NotReady(
 	w http.ResponseWriter, r *http.Request, audit *log.AuditEntry,
 ) error {
@@ -126,7 +145,7 @@ func NotReady(
 		"query", r.URL.RawQuery)
 	audit.Action = log.AuditBlocked
 
-	body := MarshalBody(reqres.FallbackResponse{Err: data.ErrLowEntropy}, w)
+	body := MarshalBody(reqres.FallbackResponse{Err: data.ErrNotReady}, w)
 	if body == nil {
 		return errors.New("failed to marshal response body")
 	}

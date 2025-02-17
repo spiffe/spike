@@ -9,6 +9,7 @@ import (
 
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
+	apiUrl "github.com/spiffe/spike-sdk-go/api/url"
 	"github.com/spiffe/spike-sdk-go/crypto"
 	network "github.com/spiffe/spike-sdk-go/net"
 
@@ -114,7 +115,7 @@ func SendShardsPeriodically(source *workloadapi.X509Source) {
 
 		for keeperId, keeperApiRoot := range keepers {
 			u, err := url.JoinPath(
-				keeperApiRoot, string(net.SpikeKeeperUrlContribute),
+				keeperApiRoot, string(apiUrl.SpikeKeeperUrlContribute),
 			)
 
 			if err != nil {
@@ -177,6 +178,30 @@ func SendShardsPeriodically(source *workloadapi.X509Source) {
 	}
 }
 
+// PilotRecoveryShards generates a set of recovery shards from the root key
+// using Shamir's Secret Sharing scheme. These shards can be used to reconstruct
+// the root key in a recovery scenario.
+//
+// The function first retrieves the root key from the system state. If no root
+// key exists, it returns an empty slice. Otherwise, it splits the root key into
+// shares using a secret sharing scheme, performs validation checks, and
+// converts the shares into base64-encoded strings.
+//
+// Each shard in the returned slice represents a portion of the secret needed to
+// reconstruct the root key. The shares are generated in a way that requires a
+// specific threshold of shards to be combined to recover the original secret.
+//
+// Returns:
+//   - []string: A slice of base64-encoded recovery shards. Returns empty slice
+//     if the root key is not available or if share generation fails.
+//
+// Example:
+//
+//	shards := PilotRecoveryShards()
+//	for _, shard := range shards {
+//	    // Store each shard securely
+//	    storeShard(shard)
+//	}
 func PilotRecoveryShards() []string {
 	rk := state.RootKey()
 	if rk == nil {

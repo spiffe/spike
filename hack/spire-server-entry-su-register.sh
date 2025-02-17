@@ -57,3 +57,7 @@ spire-server entry create \
     -selector unix:uid:"$(id -u)" \
     -selector unix:path:"$PILOT_PATH" \
     -selector unix:sha256:"$PILOT_SHA"
+
+# Wait for the entry to be updated
+sleep 5
+echo "Everything is awesome!"
