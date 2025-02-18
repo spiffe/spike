@@ -8,7 +8,7 @@ weight = 3
 sort_by = "weight"
 +++
 
-{{ star() }}
+
 
 
 # SPIKE Recovery Procedures

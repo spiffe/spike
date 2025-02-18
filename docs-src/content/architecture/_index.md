@@ -8,7 +8,6 @@ weight = 3
 sort_by = "weight"
 +++
 
-{{ star() }}
 
 **SPIKE** (*Secure Production Identity for Key Encryption*) is a secure, 
 lightweight, performant **Secrets Manager** that uses [**SPIFFE**][spiffe] 

@@ -8,7 +8,7 @@ weight = 4
 sort_by = "weight"
 +++
 
-{{ star() }}
+
 
 Here you can find the changelog, documentation snapshots, and all the essential
 updates to stay informed.
