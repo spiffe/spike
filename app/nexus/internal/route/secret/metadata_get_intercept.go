@@ -9,7 +9,7 @@ import (
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
-	sdkErr "github.com/spiffe/spike-sdk-go/api/errors"
+	apiErr "github.com/spiffe/spike-sdk-go/api/errors"
 	"github.com/spiffe/spike-sdk-go/spiffe"
 	"github.com/spiffe/spike-sdk-go/validation"
 
@@ -28,14 +28,16 @@ func guardGetSecretMetadataRequest(
 			Err: data.ErrUnauthorized,
 		}, w)
 		net.Respond(http.StatusUnauthorized, responseBody, w)
-		return err
+		return apiErr.ErrUnauthorized
 	}
+
 	err = validation.ValidateSpiffeId(spiffeid.String())
 	if err != nil {
 		responseBody := net.MarshalBody(reqres.SecretMetadataResponse{
 			Err: data.ErrUnauthorized,
 		}, w)
 		net.Respond(http.StatusUnauthorized, responseBody, w)
+		return apiErr.ErrUnauthorized
 	}
 
 	err = validation.ValidatePath(path)
@@ -44,7 +46,7 @@ func guardGetSecretMetadataRequest(
 			Err: data.ErrBadInput,
 		}, w)
 		net.Respond(http.StatusBadRequest, responseBody, w)
-		return err
+		return apiErr.ErrInvalidInput
 	}
 
 	allowed := state.CheckAccess(
@@ -56,7 +58,7 @@ func guardGetSecretMetadataRequest(
 			Err: data.ErrUnauthorized,
 		}, w)
 		net.Respond(http.StatusUnauthorized, responseBody, w)
-		return sdkErr.ErrUnauthorized
+		return apiErr.ErrUnauthorized
 	}
 
 	return nil

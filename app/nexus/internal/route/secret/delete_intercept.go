@@ -9,7 +9,7 @@ import (
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
-	"github.com/spiffe/spike-sdk-go/api/errors"
+	apiErr "github.com/spiffe/spike-sdk-go/api/errors"
 	"github.com/spiffe/spike-sdk-go/spiffe"
 	"github.com/spiffe/spike-sdk-go/validation"
 
@@ -28,14 +28,16 @@ func guardDeleteSecretRequest(
 			Err: data.ErrUnauthorized,
 		}, w)
 		net.Respond(http.StatusUnauthorized, responseBody, w)
-		return err
+		return apiErr.ErrUnauthorized
 	}
+
 	err = validation.ValidateSpiffeId(spiffeid.String())
 	if err != nil {
 		responseBody := net.MarshalBody(reqres.SecretDeleteResponse{
 			Err: data.ErrUnauthorized,
 		}, w)
 		net.Respond(http.StatusUnauthorized, responseBody, w)
+		return apiErr.ErrUnauthorized
 	}
 
 	err = validation.ValidatePath(path)
@@ -44,7 +46,7 @@ func guardDeleteSecretRequest(
 			Err: data.ErrBadInput,
 		}, w)
 		net.Respond(http.StatusBadRequest, responseBody, w)
-		return err
+		return apiErr.ErrInvalidInput
 	}
 
 	allowed := state.CheckAccess(
@@ -57,7 +59,7 @@ func guardDeleteSecretRequest(
 			Err: data.ErrUnauthorized,
 		}, w)
 		net.Respond(http.StatusUnauthorized, responseBody, w)
-		return errors.ErrUnauthorized
+		return apiErr.ErrUnauthorized
 	}
 
 	return nil

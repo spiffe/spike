@@ -41,6 +41,11 @@ func RouteRestore(
 		return errors.ErrParseFailure
 	}
 
+	err := guardRestoreRequest(*request, w, r)
+	if err != nil {
+		return err
+	}
+
 	shard := request.Shard
 
 	shardsMutex.Lock()

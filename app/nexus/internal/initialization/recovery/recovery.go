@@ -65,6 +65,29 @@ func RecoverBackingStoreUsingKeeperShards(source *workloadapi.X509Source) {
 	}
 }
 
+// RestoreBackingStoreUsingPilotShards reconstructs and initializes the root key
+// from two pilot shards. It takes base64-encoded shards, decodes them, and
+// uses them to recover the root key. The recovered key is then used to
+// initialize the state and set as the root key.
+//
+// Parameters:
+//   - shards: A slice of strings containing exactly two base64-encoded shards.
+//     The function assumes the slice has at least two elements and does not
+//     perform bounds checking.
+//
+// Notes:
+//   - This function does not handle decode errors from
+//     base64.StdEncoding.DecodeString
+//   - The first two shards in the slice are used; any additional shards are
+//     ignored
+//   - The recovered key is hex-encoded before state initialization
+//
+// Areas of improvement:
+//   - Proper error handling should be implemented for production use
+//   - The function assumes the state package is properly imported and
+//     configured
+//   - The shard count shall be congruent with system settings
+//     (i.e. the threshold value that will come from a dynamic configuration)
 func RestoreBackingStoreUsingPilotShards(shards []string) {
 	firstShard := shards[0]
 	firstShardDecoded, _ := base64.StdEncoding.DecodeString(firstShard)

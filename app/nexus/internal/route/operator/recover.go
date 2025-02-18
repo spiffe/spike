@@ -20,7 +20,6 @@ func RouteRecover(
 	w http.ResponseWriter, r *http.Request, audit *log.AuditEntry,
 ) error {
 	const fName = "routeRecover"
-
 	log.AuditRequest(fName, r, audit, log.AuditCreate)
 
 	requestBody := net.ReadRequestBody(w, r)
@@ -35,6 +34,11 @@ func RouteRecover(
 	)
 	if request == nil {
 		return errors.ErrParseFailure
+	}
+
+	err := guardRecoverRequest(*request, w, r)
+	if err != nil {
+		return err
 	}
 
 	shards := recovery.PilotRecoveryShards()

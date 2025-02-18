@@ -17,13 +17,6 @@
   <immediate>
     <fix-before-release-cut>
       <issue>
-        Add a guardRecoverRequest() inside this function:
-
-        func RouteRecover(
-        w http.ResponseWriter, r *http.Request, audit *log.AuditEntry,
-        ) error {
-      </issue>
-      <issue>
         // a more user-friendly error message:
         // spike (feature/doomsday)$ spike secret list
         // 2025/02/08 15:22:53 Authenticate: SPIFFE ID

@@ -28,14 +28,16 @@ func guardReadPolicyRequest(
 			Err: data.ErrUnauthorized,
 		}, w)
 		net.Respond(http.StatusUnauthorized, responseBody, w)
-		return err
+		return apiErr.ErrUnauthorized
 	}
+
 	err = validation.ValidateSpiffeId(spiffeid.String())
 	if err != nil {
 		responseBody := net.MarshalBody(reqres.PolicyReadResponse{
 			Err: data.ErrUnauthorized,
 		}, w)
 		net.Respond(http.StatusUnauthorized, responseBody, w)
+		return apiErr.ErrUnauthorized
 	}
 
 	err = validation.ValidatePolicyId(policyId)
@@ -46,6 +48,7 @@ func guardReadPolicyRequest(
 		if responseBody == nil {
 			return apiErr.ErrMarshalFailure
 		}
+		return apiErr.ErrInvalidInput
 	}
 
 	allowed := state.CheckAccess(
