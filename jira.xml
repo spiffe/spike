@@ -17,12 +17,6 @@
   <immediate>
     <fix-before-release-cut>
       <issue>
-        // a more user-friendly error message:
-        // spike (feature/doomsday)$ spike secret list
-        // 2025/02/08 15:22:53 Authenticate: SPIFFE ID
-        spiffe://spike.ist/spike/pilot/role/restore is not valid.
-      </issue>
-      <issue>
         // map this to a SpikePilotRecoveryFolder() method.
         recoverDir := fmt.Sprintf("%s/.spike/recover", homeDir)
         if err != nil {

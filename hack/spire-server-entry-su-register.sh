@@ -59,5 +59,6 @@ spire-server entry create \
     -selector unix:sha256:"$PILOT_SHA"
 
 # Wait for the entry to be updated
+echo "Waiting for entries to be updated..."
 sleep 5
 echo "Everything is awesome!"
