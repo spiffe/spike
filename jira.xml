@@ -17,17 +17,6 @@
   <immediate>
     <fix-before-release-cut>
       <issue>
-        ensure 32bytes
-
-        binaryRec, err := reconstructed.MarshalBinary()
-        if err != nil {
-        log.FatalLn("Failed to marshal: " + err.Error())
-        return []byte{}
-        }
-
-        // TOD check size 32bytes.
-      </issue>
-      <issue>
         this is from SecretReadResponse, so maybe its entity should be
         somewhere
         common too.
