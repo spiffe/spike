@@ -17,32 +17,6 @@
   <immediate>
     <fix-before-release-cut>
       <issue>
-        // map this to a SpikePilotRecoveryFolder() method.
-        recoverDir := fmt.Sprintf("%s/.spike/recover", homeDir)
-        if err != nil {
-        homeDir = "/tmp"
-        }
-      </issue>
-      <issue>
-        RouteRestore is error prone
-
-        1. sending the same shard twice will think it has two shards
-        (better to use a form of set instead)
-      </issue>
-      <issue>
-        the build script should update these too if there is a version cut.
-
-        const NexusVersion = "0.2.1"
-        const PilotVersion = "0.2.1"
-        const KeeperVersion = "0.2.1"
-      </issue>
-      <issue>
-        // Don't wait for the background process and send shards immediately
-        func RestoreBackingStoreUsingPilotShards(shards []string) {
-        firstShard := shards[0]
-        }
-      </issue>
-      <issue>
         ensure 32bytes
 
         binaryRec, err := reconstructed.MarshalBinary()
@@ -275,7 +249,10 @@
       ErrPolicyExists = errors.New("policy already exists")
       ^ this error is never used; check why.
     </issue>
-
+    <issue>
+      we need a "reset" command for the restore operation in case
+      we pushed an incorrect set of shards.
+    </issue>
     <issue>
       better play with OIDC and keycloak sometime.
     </issue>

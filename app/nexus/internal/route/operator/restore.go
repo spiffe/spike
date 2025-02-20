@@ -5,6 +5,7 @@
 package operator
 
 import (
+	"encoding/base64"
 	"net/http"
 	"sync"
 
@@ -17,8 +18,39 @@ import (
 	"github.com/spiffe/spike/internal/net"
 )
 
-var shards []string
-var shardsMutex sync.RWMutex
+const (
+	expectedShardCount = 2
+	decodedShardSize   = 32 // bytes
+)
+
+var (
+	shards      []string
+	shardsMutex sync.RWMutex
+)
+
+// validateShard checks if the shard is valid and not duplicate
+func validateShard(shard string) error {
+	// Check if shard is already stored
+	shardsMutex.RLock()
+	for _, existingShard := range shards {
+		if existingShard == shard {
+			shardsMutex.RUnlock()
+			return errors.ErrInvalidInput
+		}
+	}
+	shardsMutex.RUnlock()
+
+	// Validate shard length
+	decodedShard, err := base64.StdEncoding.DecodeString(shard)
+	if err != nil {
+		return errors.ErrInvalidInput
+	}
+	if len(decodedShard) != decodedShardSize {
+		return errors.ErrInvalidInput
+	}
+
+	return nil
+}
 
 func RouteRestore(
 	w http.ResponseWriter, r *http.Request, audit *log.AuditEntry,
@@ -46,21 +78,60 @@ func RouteRestore(
 		return err
 	}
 
-	shard := request.Shard
+	// Check if we already have enough shards
+	shardsMutex.RLock()
+	currentShardCount := len(shards)
+	shardsMutex.RUnlock()
 
+	if currentShardCount >= expectedShardCount {
+		responseBody := net.MarshalBody(reqres.RestoreResponse{
+			RestorationStatus: data.RestorationStatus{
+				ShardsCollected: currentShardCount,
+				ShardsRemaining: 0,
+				Restored:        true,
+			},
+			Err: data.ErrBadInput,
+		}, w)
+		if responseBody == nil {
+			return errors.ErrMarshalFailure
+		}
+		net.Respond(http.StatusBadRequest, responseBody, w)
+		return nil
+	}
+
+	// Validate the new shard
+	if err := validateShard(request.Shard); err != nil {
+		responseBody := net.MarshalBody(reqres.RestoreResponse{
+			RestorationStatus: data.RestorationStatus{
+				ShardsCollected: currentShardCount,
+				ShardsRemaining: expectedShardCount - currentShardCount,
+				Restored:        false,
+			},
+			Err: data.ErrBadInput,
+		}, w)
+		if responseBody == nil {
+			return errors.ErrMarshalFailure
+		}
+		net.Respond(http.StatusBadRequest, responseBody, w)
+		return nil
+	}
+
+	// Add the new shard
 	shardsMutex.Lock()
-	shards = append(shards, shard)
+	shards = append(shards, request.Shard)
+	currentShardCount = len(shards)
 	shardsMutex.Unlock()
 
-	if len(shards) == 2 {
+	// Trigger restoration if we have collected all shards
+	if currentShardCount == expectedShardCount {
 		recovery.RestoreBackingStoreUsingPilotShards(shards)
 	}
 
 	responseBody := net.MarshalBody(reqres.RestoreResponse{
 		RestorationStatus: data.RestorationStatus{
-			ShardsCollected: len(shards),
-			ShardsRemaining: 2 - len(shards),
-			Restored:        len(shards) == 2,
+			ShardsCollected: currentShardCount,
+			ShardsRemaining: expectedShardCount - currentShardCount,
+			Restored:        currentShardCount == expectedShardCount,
 		},
 	}, w)
 	if responseBody == nil {
