@@ -1,9 +1,11 @@
 package recovery
 
 import (
+	"context"
 	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"net/url"
 	"time"
 
@@ -12,12 +14,17 @@ import (
 	apiUrl "github.com/spiffe/spike-sdk-go/api/url"
 	"github.com/spiffe/spike-sdk-go/crypto"
 	network "github.com/spiffe/spike-sdk-go/net"
+	"github.com/spiffe/spike-sdk-go/retry"
 
 	"github.com/spiffe/spike/app/nexus/internal/env"
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 	"github.com/spiffe/spike/internal/auth"
 	"github.com/spiffe/spike/internal/log"
 	"github.com/spiffe/spike/internal/net"
+)
+
+var (
+	ErrRecoveryRetry = errors.New("recovery failed; retrying")
 )
 
 // RecoverBackingStoreUsingKeeperShards iterates through keepers until
@@ -32,8 +39,10 @@ import (
 // until recovery is successful.
 //
 // The function maintains a map of successfully recovered shards from each
-// keeper to avoid duplicate processing. It waits for 5 seconds between retry
-// attempts if recovery is unsuccessful.
+// keeper to avoid duplicate processing. On failure, it retries with an
+// exponentional backoff with a max retry delay of 5 seconds.
+// The retry timeout is loaded from `env.RecoveryOperationTimeout` and
+// defaults to 0 (unlimited; no timeout).
 //
 // Parameters:
 //   - source: An X509Source used for authenticating with keeper nodes
@@ -44,13 +53,25 @@ func RecoverBackingStoreUsingKeeperShards(source *workloadapi.X509Source) {
 
 	successfulKeeperShards := make(map[string]string)
 
-	for {
+	ctx, cancel := context.WithCancel(
+		context.Background(),
+	)
+	defer cancel()
+
+	retrier := retry.NewExponentialRetrier(
+		retry.WithBackOffOptions(
+			retry.WithMaxInterval(5),
+			retry.WithMaxElapsedTime(env.RecoveryOperationTimeout()),
+		),
+	)
+
+	if err := retrier.RetryWithBackoff(ctx, func() error {
 		recoverySuccessful := iterateKeepersAndTryRecovery(
 			source, successfulKeeperShards,
 		)
 		if recoverySuccessful {
 			log.Log().Info(fName, "msg", "Recovery successful")
-			return
+			return nil
 		}
 
 		log.Log().Warn(fName, "msg", "Recovery unsuccessful. Will retry.")
@@ -58,10 +79,10 @@ func RecoverBackingStoreUsingKeeperShards(source *workloadapi.X509Source) {
 			"Successful keepers: "+string(rune(len(successfulKeeperShards))),
 		)
 		log.Log().Warn(fName, "msg", "You may need to manually bootstrap.")
-
 		log.Log().Info(fName, "msg", "Waiting for keepers to respond")
-
-		time.Sleep(5 * time.Second)
+		return ErrRecoveryRetry
+	}); err != nil {
+		log.Fatal("Recovery failed; timed out")
 	}
 }
 

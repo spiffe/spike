@@ -8,7 +8,7 @@ weight = 2
 sort_by = "weight"
 +++
 
-{{ star() }}
+
 
 Share your knowledge and engage in meaningful discussions. Below, you will find 
 helpful resources and links to foster collaboration and learning within the 

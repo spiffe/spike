@@ -81,3 +81,4 @@ spike-linux-arm64.sum.txt
 /ci-test
 /identifier.sqlite
 /demo
+/docs-src/public

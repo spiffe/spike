@@ -8,7 +8,6 @@ weight = 1
 sort_by = "weight"
 +++
 
-{{ star() }}
 
 # SPIKE System Overview
 
