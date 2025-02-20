@@ -33,7 +33,6 @@ configure the SPIKE components:
 | SPIKE Nexus  | `SPIKE_NEXUS_DB_CONN_MAX_LIFETIME`   | The maximum lifetime of a database connection.                                                            | `"1h"`                                          |
 | SPIKE Nexus  | `SPIKE_NEXUS_PBKDF2_ITERATION_COUNT` | The number of iterations for the PBKDF2 key derivation function.                                          | `600000`                                        |
 | All          | `SPIKE_SYSTEM_LOG_LEVEL`             | The log level for all SPIKE components (DEBUG, INFO, WARN, ERROR).                                        | `"DEBUG"`                                       |
-| All          | `SPIKE_TRUST_ROOT`                   | The trust root that SPIKE components use in their SVIDs and SPIFFE IDs.                                   | `"spike.ist"`                                   |
 
 We'll add more configuration options in the future. Stay tuned.
 

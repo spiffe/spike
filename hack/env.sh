@@ -20,17 +20,10 @@ export SPIKE_NEXUS_DB_BUSY_TIMEOUT_MS="1000"
 export SPIKE_NEXUS_DB_MAX_OPEN_CONNS="10"
 export SPIKE_NEXUS_DB_MAX_IDLE_CONNS="5"
 export SPIKE_NEXUS_DB_CONN_MAX_LIFETIME="1h"
+export SPIKE_NEXUS_RECOVERY_TIMEOUT="0"
 
 export SPIKE_NEXUS_KEEPER_PEERS='{"1":"https://localhost:8443","2":"https://localhost:8543","3":"https://localhost:8643"}'
 
 export SPIKE_KEEPER_TLS_PORT=":8443"
 
 export SPIKE_SYSTEM_LOG_LEVEL="debug"
-export SPIKE_TRUST_ROOT="spike.ist"
-
-
-
-
-
-
-
