@@ -34,6 +34,7 @@ configure the SPIKE components:
 | SPIKE Nexus  | `SPIKE_NEXUS_DB_MAX_IDLE_CONNS`      | The maximum number of idle connections to the database.                                                   | `5`                                             |
 | SPIKE Nexus  | `SPIKE_NEXUS_DB_CONN_MAX_LIFETIME`   | The maximum lifetime of a database connection.                                                            | `"1h"`                                          |
 | SPIKE Nexus  | `SPIKE_NEXUS_PBKDF2_ITERATION_COUNT` | The number of iterations for the PBKDF2 key derivation function.                                          | `600000`                                        |
+| SPIKE Nexus  | `SPIKE_NEXUS_RECOVERY_TIMEOUT`       | The timeout for attempting recovery from SPIKE Keepers. 0 = unlimited                                     | `0`                                             |
 | All          | `SPIKE_SYSTEM_LOG_LEVEL`             | The log level for all SPIKE components (DEBUG, INFO, WARN, ERROR).                                        | `"DEBUG"`                                       |
 | All          | `SPIKE_TRUST_ROOT`                   | The trust root that SPIKE components use in their SVIDs and SPIFFE IDs.                                   | `"spike.ist"`                                   |
 
