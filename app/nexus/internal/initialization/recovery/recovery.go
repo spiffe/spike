@@ -6,14 +6,17 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/url"
 	"time"
 
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
+	apiUrl "github.com/spiffe/spike-sdk-go/api/url"
 	"github.com/spiffe/spike-sdk-go/crypto"
 	network "github.com/spiffe/spike-sdk-go/net"
 	"github.com/spiffe/spike-sdk-go/retry"
+	"github.com/spiffe/spike-sdk-go/spiffe"
 
 	"github.com/spiffe/spike/app/nexus/internal/env"
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
@@ -25,6 +28,75 @@ import (
 var (
 	ErrRecoveryRetry = errors.New("recovery failed; retrying")
 )
+
+func sendShardsToKeepers(
+	source *workloadapi.X509Source, keepers map[string]string,
+) {
+	const fName = "sendShardsToKeepers"
+
+	for keeperId, keeperApiRoot := range keepers {
+		u, err := url.JoinPath(
+			keeperApiRoot, string(apiUrl.SpikeKeeperUrlContribute),
+		)
+
+		if err != nil {
+			log.Log().Warn(
+				fName, "msg", "Failed to join path", "url", keeperApiRoot,
+			)
+			continue
+		}
+
+		client, err := network.CreateMtlsClientWithPredicate(
+			source, auth.IsKeeper,
+		)
+
+		if err != nil {
+			log.Log().Warn(fName,
+				"msg", "Failed to create mTLS client",
+				"err", err)
+			continue
+		}
+
+		rk := state.RootKey()
+		if rk == nil {
+			log.Log().Info(fName, "msg", "rootKey is nil; moving on...")
+			continue
+		}
+
+		rootSecret, rootShares := computeShares(rk)
+
+		sanityCheck(rootSecret, rootShares)
+
+		share := findShare(keeperId, keepers, rootShares)
+
+		contribution, err := share.Value.MarshalBinary()
+		if err != nil {
+			log.Log().Warn(fName,
+				"msg", "Failed to marshal share",
+				"err", err, "keeper_id", keeperId)
+			continue
+		}
+
+		scr := reqres.ShardContributionRequest{
+			KeeperId: keeperId,
+			Shard:    base64.StdEncoding.EncodeToString(contribution),
+		}
+		md, err := json.Marshal(scr)
+		if err != nil {
+			log.Log().Warn(fName,
+				"msg", "Failed to marshal request",
+				"err", err, "keeper_id", keeperId)
+			continue
+		}
+
+		_, err = net.Post(client, u, md)
+		if err != nil {
+			log.Log().Warn(fName, "msg",
+				"Failed to post",
+				"err", err, "keeper_id", keeperId)
+		}
+	}
+}
 
 // RecoverBackingStoreUsingKeeperShards iterates through keepers until
 // you get two shards.
@@ -39,7 +111,7 @@ var (
 //
 // The function maintains a map of successfully recovered shards from each
 // keeper to avoid duplicate processing. On failure, it retries with an
-// exponentional backoff with a max retry delay of 5 seconds.
+// exponential backoff with a max retry delay of 5 seconds.
 // The retry timeout is loaded from `env.RecoveryOperationTimeout` and
 // defaults to 0 (unlimited; no timeout).
 //
@@ -59,12 +131,14 @@ func RecoverBackingStoreUsingKeeperShards(source *workloadapi.X509Source) {
 
 	retrier := retry.NewExponentialRetrier(
 		retry.WithBackOffOptions(
-			retry.WithMaxInterval(5),
+			retry.WithMaxInterval(60*time.Second),
 			retry.WithMaxElapsedTime(env.RecoveryOperationTimeout()),
 		),
 	)
 
 	if err := retrier.RetryWithBackoff(ctx, func() error {
+		fmt.Println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> retrying -- time:" + time.Now().String())
+
 		recoverySuccessful := iterateKeepersAndTryRecovery(
 			source, successfulKeeperShards,
 		)
@@ -81,11 +155,37 @@ func RecoverBackingStoreUsingKeeperShards(source *workloadapi.X509Source) {
 		log.Log().Info(fName, "msg", "Waiting for keepers to respond")
 		return ErrRecoveryRetry
 	}); err != nil {
-		log.Fatal("Recovery failed; timed out")
+		log.Log().Warn("Recovery failed; timed out")
+		log.Log().Warn("You need to manually bootstrap SPIKE Nexus")
 	}
 }
 
+// RestoreBackingStoreUsingPilotShards reconstructs and initializes the root key
+// from two pilot shards. It takes base64-encoded shards, decodes them, and
+// uses them to recover the root key. The recovered key is then used to
+// initialize the state and set as the root key.
+//
+// Parameters:
+//   - shards: A slice of strings containing exactly two base64-encoded shards.
+//     The function assumes the slice has at least two elements and does not
+//     perform bounds checking.
+//
+// Notes:
+//   - This function does not handle decode errors from
+//     base64.StdEncoding.DecodeString
+//   - The first two shards in the slice are used; any additional shards are
+//     ignored
+//   - The recovered key is hex-encoded before state initialization
+//
+// Areas of improvement:
+//   - Proper error handling should be implemented for production use
+//   - The function assumes the state package is properly imported and
+//     configured
+//   - The shard count shall be congruent with system settings
+//     (i.e. the threshold value that will come from a dynamic configuration)
 func RestoreBackingStoreUsingPilotShards(shards []string) {
+	const fName = "RestoreBackingStoreUsingPilotShards"
+
 	firstShard := shards[0]
 	firstShardDecoded, _ := base64.StdEncoding.DecodeString(firstShard)
 	secondShard := shards[1]
@@ -96,6 +196,18 @@ func RestoreBackingStoreUsingPilotShards(shards []string) {
 	encoded := hex.EncodeToString(binaryRec)
 	state.Initialize(encoded)
 	state.SetRootKey(binaryRec)
+
+	source, _, err := spiffe.Source(
+		context.Background(), spiffe.EndpointSocket(),
+	)
+	if err != nil {
+		log.Log().Info(fName, "msg", "Failed to create source", "err", err)
+		return
+	}
+	defer spiffe.CloseSource(source)
+
+	// Don't wait for the next cycle. Send the shards asap.
+	sendShardsToKeepers(source, env.Keepers())
 }
 
 // SendShardsPeriodically distributes key shards to configured keeper nodes at
@@ -133,71 +245,34 @@ func SendShardsPeriodically(source *workloadapi.X509Source) {
 			log.FatalLn(fName + ": not enough keepers")
 		}
 
-		for keeperId, keeperApiRoot := range keepers {
-			u, err := url.JoinPath(
-				keeperApiRoot, string(net.SpikeKeeperUrlContribute),
-			)
-
-			if err != nil {
-				log.Log().Warn(
-					fName, "msg", "Failed to join path", "url", keeperApiRoot,
-				)
-				continue
-			}
-
-			client, err := network.CreateMtlsClientWithPredicate(
-				source, auth.IsKeeper,
-			)
-
-			if err != nil {
-				log.Log().Warn(fName,
-					"msg", "Failed to create mTLS client",
-					"err", err)
-				continue
-			}
-
-			rk := state.RootKey()
-			if rk == nil {
-				log.Log().Info(fName, "msg", "rootKey is nil; moving on...")
-				continue
-			}
-
-			rootSecret, rootShares := computeShares(rk)
-
-			sanityCheck(rootSecret, rootShares)
-
-			share := findShare(keeperId, keepers, rootShares)
-
-			contribution, err := share.Value.MarshalBinary()
-			if err != nil {
-				log.Log().Warn(fName,
-					"msg", "Failed to marshal share",
-					"err", err, "keeper_id", keeperId)
-				continue
-			}
-
-			scr := reqres.ShardContributionRequest{
-				KeeperId: keeperId,
-				Shard:    base64.StdEncoding.EncodeToString(contribution),
-			}
-			md, err := json.Marshal(scr)
-			if err != nil {
-				log.Log().Warn(fName,
-					"msg", "Failed to marshal request",
-					"err", err, "keeper_id", keeperId)
-				continue
-			}
-
-			_, err = net.Post(client, u, md)
-			if err != nil {
-				log.Log().Warn(fName, "msg",
-					"Failed to post",
-					"err", err, "keeper_id", keeperId)
-			}
-		}
+		sendShardsToKeepers(source, keepers)
 	}
 }
 
+// PilotRecoveryShards generates a set of recovery shards from the root key
+// using Shamir's Secret Sharing scheme. These shards can be used to reconstruct
+// the root key in a recovery scenario.
+//
+// The function first retrieves the root key from the system state. If no root
+// key exists, it returns an empty slice. Otherwise, it splits the root key into
+// shares using a secret sharing scheme, performs validation checks, and
+// converts the shares into base64-encoded strings.
+//
+// Each shard in the returned slice represents a portion of the secret needed to
+// reconstruct the root key. The shares are generated in a way that requires a
+// specific threshold of shards to be combined to recover the original secret.
+//
+// Returns:
+//   - []string: A slice of base64-encoded recovery shards. Returns empty slice
+//     if the root key is not available or if share generation fails.
+//
+// Example:
+//
+//	shards := PilotRecoveryShards()
+//	for _, shard := range shards {
+//	    // Store each shard securely
+//	    storeShard(shard)
+//	}
 func PilotRecoveryShards() []string {
 	rk := state.RootKey()
 	if rk == nil {

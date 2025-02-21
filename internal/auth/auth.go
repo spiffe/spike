@@ -4,6 +4,8 @@
 
 package auth
 
+import "github.com/spiffe/spike-sdk-go/spiffeid"
+
 // IsPilot checks if a given SPIFFE ID matches the SPIKE Pilot's SPIFFE ID.
 //
 // This function is used for identity verification to determine if the provided
@@ -23,8 +25,8 @@ package auth
 //	if IsPilot(id) {
 //	    // Handle pilot-specific logic
 //	}
-func IsPilot(spiffeid string) bool {
-	return spiffeid == SpikePilotSpiffeId()
+func IsPilot(id string) bool {
+	return id == spiffeid.SpikePilot()
 }
 
 // IsPilotRecover checks if a given SPIFFE ID matches the SPIKE Pilot's
@@ -47,8 +49,8 @@ func IsPilot(spiffeid string) bool {
 //	if IsPilotRecover(id) {
 //	    // Handle recovery-specific logic
 //	}
-func IsPilotRecover(spiffeId string) bool {
-	return spiffeId == SpikePilotRecoverSpiffeId()
+func IsPilotRecover(id string) bool {
+	return id == spiffeid.SpikePilotRecover()
 }
 
 // IsPilotRestore checks if a given SPIFFE ID matches the SPIKE Pilot's restore
@@ -72,7 +74,7 @@ func IsPilotRecover(spiffeId string) bool {
 //	    // Handle restore-specific logic
 //	}
 func IsPilotRestore(spiffeId string) bool {
-	return spiffeId == SpikePilotRestoreSpiffeId()
+	return spiffeId == spiffeid.SpikePilotRestore()
 }
 
 // IsKeeper checks if a given SPIFFE ID matches the SPIKE Keeper's SPIFFE ID.
@@ -94,8 +96,8 @@ func IsPilotRestore(spiffeId string) bool {
 //	if IsKeeper(id) {
 //	    // Handle pilot-specific logic
 //	}
-func IsKeeper(spiffeid string) bool {
-	return spiffeid == SpikeKeeperSpiffeId()
+func IsKeeper(id string) bool {
+	return id == spiffeid.SpikeKeeper()
 }
 
 // IsNexus checks if the provided SPIFFE ID matches the SPIKE Nexus SPIFFE ID.
@@ -109,8 +111,8 @@ func IsKeeper(spiffeid string) bool {
 //
 // Returns:
 //   - bool: true if the SPIFFE ID matches the Nexus SPIFFE ID, false otherwise
-func IsNexus(spiffeid string) bool {
-	return spiffeid == SpikeNexusSpiffeId()
+func IsNexus(id string) bool {
+	return id == spiffeid.SpikeNexus()
 }
 
 // CanTalkToAnyone is used for debugging purposes
@@ -130,8 +132,8 @@ func CanTalkToAnyone(_ string) bool {
 // Returns:
 //   - bool: true if the SPIFFE ID matches SPIKE Nexus' SPIFFE ID,
 //     false otherwise
-func CanTalkToKeeper(spiffeid string) bool {
-	return spiffeid == SpikeNexusSpiffeId()
+func CanTalkToKeeper(id string) bool {
+	return id == spiffeid.SpikeNexus()
 }
 
 // CanTalkToPilot checks if the provided SPIFFE ID matches the SPIKE Nexus
@@ -149,6 +151,6 @@ func CanTalkToKeeper(spiffeid string) bool {
 //
 // Returns:
 //   - bool: true if the SPIFFE ID matches the Nexus SPIFFE ID, false otherwise
-func CanTalkToPilot(spiffeid string) bool {
-	return spiffeid == SpikeNexusSpiffeId()
+func CanTalkToPilot(id string) bool {
+	return id == spiffeid.SpikeNexus()
 }

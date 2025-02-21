@@ -75,5 +75,10 @@ func RecoverRootKey(ss [][]byte) []byte {
 		return []byte{}
 	}
 
+	if len(binaryRec) != 32 {
+		log.FatalLn(fName + ": Reconstructed root key has incorrect length")
+		return []byte{}
+	}
+
 	return binaryRec
 }

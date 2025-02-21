@@ -9,7 +9,7 @@ import (
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
-	"github.com/spiffe/spike-sdk-go/api/errors"
+	apiErr "github.com/spiffe/spike-sdk-go/api/errors"
 	"github.com/spiffe/spike-sdk-go/spiffe"
 	"github.com/spiffe/spike-sdk-go/validation"
 
@@ -28,14 +28,16 @@ func guardDeletePolicyRequest(
 			Err: data.ErrUnauthorized,
 		}, w)
 		net.Respond(http.StatusUnauthorized, responseBody, w)
-		return err
+		return apiErr.ErrUnauthorized
 	}
+
 	err = validation.ValidateSpiffeId(spiffeid.String())
 	if err != nil {
 		responseBody := net.MarshalBody(reqres.PolicyDeleteResponse{
 			Err: data.ErrUnauthorized,
 		}, w)
 		net.Respond(http.StatusUnauthorized, responseBody, w)
+		return apiErr.ErrUnauthorized
 	}
 
 	err = validation.ValidatePolicyId(policyId)
@@ -44,11 +46,11 @@ func guardDeletePolicyRequest(
 			Err: data.ErrBadInput,
 		}, w)
 		if responseBody == nil {
-			return errors.ErrMarshalFailure
+			return apiErr.ErrMarshalFailure
 		}
 
 		net.Respond(http.StatusBadRequest, responseBody, w)
-		return err
+		return apiErr.ErrInvalidInput
 	}
 
 	allowed := state.CheckAccess(
@@ -60,7 +62,7 @@ func guardDeletePolicyRequest(
 			Err: data.ErrUnauthorized,
 		}, w)
 		net.Respond(http.StatusUnauthorized, responseBody, w)
-		return errors.ErrUnauthorized
+		return apiErr.ErrUnauthorized
 	}
 
 	return nil

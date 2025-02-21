@@ -12,6 +12,7 @@ import (
 	"github.com/cloudflare/circl/secretsharing"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
+	apiUrl "github.com/spiffe/spike-sdk-go/api/url"
 	network "github.com/spiffe/spike-sdk-go/net"
 
 	"github.com/spiffe/spike/internal/auth"
@@ -22,7 +23,7 @@ import (
 func shardUrl(keeperApiRoot string) string {
 	const fName = "shardUrl"
 
-	u, err := url.JoinPath(keeperApiRoot, string(net.SpikeKeeperUrlShard))
+	u, err := url.JoinPath(keeperApiRoot, string(apiUrl.SpikeKeeperUrlShard))
 	if err != nil {
 		log.Log().Warn(
 			fName, "msg", "Failed to join path", "url", keeperApiRoot,

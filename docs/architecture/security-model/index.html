@@ -175,6 +175,12 @@
                                                         <a href="https://spike.ist/architecture/security-model/#threat-model-exceptions">Threat Model Exceptions</a>
                                                     </li>
                                                 <li>
+                                                        <a href="https://spike.ist/architecture/security-model/#the-backing-store-is-untrusted">The Backing Store is Untrusted</a>
+                                                    </li>
+                                                <li>
+                                                        <a href="https://spike.ist/architecture/security-model/#keeper-shard-distribution-and-disaster-recovery">Keeper Shard Distribution and Disaster Recovery</a>
+                                                    </li>
+                                                <li>
                                                         <a href="https://spike.ist/architecture/security-model/#key-management">Key Management</a>
                                                     </li>
                                                 <li>
@@ -806,6 +812,37 @@ Any data provided as configuration values to <strong>SPIKE</strong> should be
 validated. Misconfiguration of <strong>SPIKE</strong>, or <strong>SPIFFE</strong> can result in the
 compromise of the confidentiality or the integrity of the data stored.</li>
 </ul>
+<h2 id="the-backing-store-is-untrusted">The Backing Store is Untrusted</h2>
+<p>Since the storage backend resides outside the trusted boundary, <strong>SPIKE</strong>
+treats it as untrusted and encrypts data before sending it. This ensures that
+even if a malicious attacker gains access to the storage backend, the data
+remains secure, as it can only be decrypted by <strong>SPIKE Nexus</strong>.</p>
+<p>Additionally, the storage backend serves as a durable, persistent layer,
+ensuring data availability across application crashes and server restarts.</p>
+<h2 id="keeper-shard-distribution-and-disaster-recovery">Keeper Shard Distribution and Disaster Recovery</h2>
+<p><strong>SPIKE</strong> uses <strong>SPIKE Keeper</strong>s, which are apps responsible for storing
+<a href="https://en.wikipedia.org/wiki/Shamir%27s_secret_sharing" title="Shamir&#39;s Secret Sharing">Shamir shards</a> of the <strong>root key</strong>. Both the <strong>root key</strong> and the
+<strong>shards</strong> are always in memory and <strong>never</strong> persisted to disk.</p>
+<p><strong>SPIKE Nexus</strong> can establish a SPIFFE-based mTLS connection to request a shard
+from a <strong>SPIKE Keeper</strong>, enabling the system to auto-recover itself.</p>
+<p>The security model allows for different levels of redundancy and control:</p>
+<ul>
+<li>A typical setup could involve three <strong>SPIKE Keeper</strong> instances. No single
+share can reconstruct the root key alone, ensuring security. However, multiple
+shares can be combined to restore the system when needed.</li>
+<li><strong>SPIKE Nexus</strong> often automatically recovers itself from crashes using
+<strong>SPIKE Keeper</strong>s. However, for the unlikely case of a total system crash,
+each administrator can hold one of these shares and use <code>spike restore</code> to
+restore the system back to normal. Since, a single shard cannot recreate
+the root key we are mitigating risk by distributing trust.</li>
+<li>For those less concerned with strict separation, an alternative approach
+could involve storing both shares on a single thumb drive or distributing
+two shares across separate thumb drives in different safes. This trade-off
+balances security with recovery convenience.</li>
+</ul>
+<p>Ultimately, the design offers flexibility, allowing organizations to choose
+their preferred level of security while considering the operational impact of
+disaster recovery.</p>
 <h2 id="key-management">Key Management</h2>
 <ul>
 <li>The system assumes a long-lived, well-guarded, initial <strong>root key</strong>.
@@ -840,6 +877,9 @@ read-only or full access</em>) on specific secret paths for each workload.</li>
 <p>This ensures that workloads only access or modify the secrets they are
 explicitly permitted to, in accordance with their predefined policies.</p>
 <h2 id="administrative-access">Administrative Access</h2>
+<p>Although <strong>SPIKE</strong> uses policy-based access to secrets and administrative
+operations, <strong>SPIKE Nexus</strong> recognizes certain builtin SPIFFE IDs and assigns
+them predefined roles:</p>
 <ul>
 <li>Administrative access is granted using special SPIFFE IDs:
 <ul>
@@ -853,7 +893,7 @@ restore the root key by providing one shard at a time.</li>
 </li>
 </ul>
 <p>This gives us the flexibility to have separate users own distinct operational
-responsibilities. For example, an specific operator may only restore the system
+responsibilities. For example, a specific operator may only restore the system
 upon an unexpected crash, but they may not have the right to define access
 policies for secrets.</p>
 <p>This separation also provides better auditability.</p>

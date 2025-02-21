@@ -704,21 +704,19 @@ configure the SPIKE components:</p>
 <table><thead><tr><th>Component</th><th>Environment Variable</th><th>Description</th><th>Default Value</th></tr></thead><tbody>
 <tr><td>SPIKE Keeper</td><td><code>SPIKE_KEEPER_TLS_PORT</code></td><td>The TLS port the current SPIKE Keeper instance listens on.</td><td><code>":8443"</code></td></tr>
 <tr><td>SPIKE Keeper</td><td><code>SPIKE_KEEPER_API_URL</code></td><td>The API URL of the current SPIKE Keeper instance.</td><td>`“https://localhost:8443”</td></tr>
-<tr><td>SPIKE Nexus</td><td><code>SPIKE_KEEPER_PEERS</code></td><td>A mapping that contains <code>[{id:keeperurl}]</code> collection for all SPIKE Keepers that SPIKE Nexus knows about.</td><td>“” (check <code>./hack/start.sh</code> for usage examples.</td></tr>
-<tr><td>SPIKE Nexus</td><td><code>SPIKE_NEXUS_POLL_INTERVAL</code></td><td>The interval SPIKE Nexus syncs up its state with SPIKE Keeper.</td><td><code>"5m"</code></td></tr>
+<tr><td>SPIKE Nexus</td><td><code>SPIKE_NEXUS_KEEPER_PEERS</code></td><td>A mapping that contains <code>[{id:keeperurl}]</code> collection for all SPIKE Keepers that SPIKE Nexus knows about.</td><td>“” (check <code>./hack/start.sh</code> for usage examples.</td></tr>
 <tr><td>SPIKE Nexus</td><td><code>SPIKE_NEXUS_TLS_PORT</code></td><td>The TLS port SPIKE Nexus listens on.</td><td><code>":8553"</code></td></tr>
 <tr><td>SPIKE Nexus</td><td><code>SPIKE_NEXUS_MAX_SECRET_VERSIONS</code></td><td>The maximum number of versions of a secret that SPIKE Nexus stores.</td><td><code>10</code></td></tr>
 <tr><td>SPIKE Nexus</td><td><code>SPIKE_NEXUS_BACKEND_STORE</code></td><td>The backend store SPIKE Nexus uses to store secrets (memory, s3, sqlite).</td><td><code>"sqlite"</code></td></tr>
 <tr><td>SPIKE Nexus</td><td><code>SPIKE_NEXUS_DB_OPERATION_TIMEOUT</code></td><td>The timeout for database operations.</td><td><code>"5s"</code></td></tr>
-<tr><td>SPIKE Nexus</td><td><code>SPIKE_NEXUS_DB_DATA_DIR</code></td><td>The directory where SPIKE Nexus stores the database.</td><td><code>"./data"</code></td></tr>
 <tr><td>SPIKE Nexus</td><td><code>SPIKE_NEXUS_DB_JOURNAL_MODE</code></td><td>The journal mode for the SQLite database.</td><td><code>"WAL"</code></td></tr>
 <tr><td>SPIKE Nexus</td><td><code>SPIKE_NEXUS_DB_BUSY_TIMEOUT_MS</code></td><td>The timeout for the database to wait for a lock.</td><td><code>1000</code></td></tr>
 <tr><td>SPIKE Nexus</td><td><code>SPIKE_NEXUS_DB_MAX_OPEN_CONNS</code></td><td>The maximum number of open connections to the database.</td><td><code>10</code></td></tr>
 <tr><td>SPIKE Nexus</td><td><code>SPIKE_NEXUS_DB_MAX_IDLE_CONNS</code></td><td>The maximum number of idle connections to the database.</td><td><code>5</code></td></tr>
 <tr><td>SPIKE Nexus</td><td><code>SPIKE_NEXUS_DB_CONN_MAX_LIFETIME</code></td><td>The maximum lifetime of a database connection.</td><td><code>"1h"</code></td></tr>
 <tr><td>SPIKE Nexus</td><td><code>SPIKE_NEXUS_PBKDF2_ITERATION_COUNT</code></td><td>The number of iterations for the PBKDF2 key derivation function.</td><td><code>600000</code></td></tr>
+<tr><td>SPIKE Nexus</td><td><code>SPIKE_NEXUS_RECOVERY_TIMEOUT</code></td><td>The timeout for attempting recovery from SPIKE Keepers. 0 = unlimited</td><td><code>0</code></td></tr>
 <tr><td>All</td><td><code>SPIKE_SYSTEM_LOG_LEVEL</code></td><td>The log level for all SPIKE components (DEBUG, INFO, WARN, ERROR).</td><td><code>"DEBUG"</code></td></tr>
-<tr><td>All</td><td><code>SPIKE_TRUST_ROOT</code></td><td>The trust root that SPIKE components use in their SVIDs and SPIFFE IDs.</td><td><code>"spike.ist"</code></td></tr>
 </tbody></table>
 <p>We’ll add more configuration options in the future. Stay tuned.</p>
 <hr />

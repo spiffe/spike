@@ -9,7 +9,7 @@ import (
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
-	"github.com/spiffe/spike-sdk-go/api/errors"
+	apiErr "github.com/spiffe/spike-sdk-go/api/errors"
 	"github.com/spiffe/spike-sdk-go/spiffe"
 	"github.com/spiffe/spike-sdk-go/validation"
 
@@ -31,14 +31,16 @@ func guardPutPolicyRequest(
 			Err: data.ErrUnauthorized,
 		}, w)
 		net.Respond(http.StatusUnauthorized, responseBody, w)
-		return err
+		return apiErr.ErrUnauthorized
 	}
+
 	err = validation.ValidateSpiffeId(spiffeid.String())
 	if err != nil {
 		responseBody := net.MarshalBody(reqres.PolicyCreateResponse{
 			Err: data.ErrUnauthorized,
 		}, w)
 		net.Respond(http.StatusUnauthorized, responseBody, w)
+		return apiErr.ErrUnauthorized
 	}
 
 	allowed := state.CheckAccess(
@@ -50,7 +52,7 @@ func guardPutPolicyRequest(
 			Err: data.ErrUnauthorized,
 		}, w)
 		net.Respond(http.StatusUnauthorized, responseBody, w)
-		return errors.ErrUnauthorized
+		return apiErr.ErrUnauthorized
 	}
 
 	err = validation.ValidateName(name)
@@ -59,7 +61,7 @@ func guardPutPolicyRequest(
 			Err: data.ErrBadInput,
 		}, w)
 		net.Respond(http.StatusBadRequest, responseBody, w)
-		return err
+		return apiErr.ErrInvalidInput
 	}
 
 	err = validation.ValidateSpiffeIdPattern(spiffeIdPattern)
@@ -68,7 +70,7 @@ func guardPutPolicyRequest(
 			Err: data.ErrBadInput,
 		}, w)
 		net.Respond(http.StatusBadRequest, responseBody, w)
-		return err
+		return apiErr.ErrInvalidInput
 	}
 
 	err = validation.ValidatePathPattern(pathPattern)
@@ -78,7 +80,7 @@ func guardPutPolicyRequest(
 				Err: data.ErrBadInput,
 			}, w)
 		net.Respond(http.StatusBadRequest, responseBody, w)
-		return err
+		return apiErr.ErrInvalidInput
 	}
 
 	err = validation.ValidatePermissions(permissions)
@@ -87,7 +89,7 @@ func guardPutPolicyRequest(
 			Err: data.ErrBadInput,
 		}, w)
 		net.Respond(http.StatusBadRequest, responseBody, w)
-		return err
+		return apiErr.ErrInvalidInput
 	}
 
 	return nil

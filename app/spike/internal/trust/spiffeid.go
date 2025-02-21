@@ -17,6 +17,9 @@ import (
 // Logs a fatal error and exits if verification fails.
 func Authenticate(spiffeid string) {
 	if !auth.IsPilot(spiffeid) {
+		log.Log().Error(
+			"AuthenticateRestore: You need a 'super user' SPIFFE ID to use this command.",
+		)
 		log.FatalF("Authenticate: SPIFFE ID %s is not valid.\n", spiffeid)
 	}
 }
@@ -25,7 +28,10 @@ func Authenticate(spiffeid string) {
 // the application if it does not match the recover SPIFFE ID.
 func AuthenticateRecover(spiffeid string) {
 	if !auth.IsPilotRecover(spiffeid) {
-		log.FatalF("Authenticate: SPIFFE ID %s is not valid.\n", spiffeid)
+		log.Log().Error(
+			"AuthenticateRestore: You need a 'recover' SPIFFE ID to use this command.",
+		)
+		log.FatalF("AuthenticateRecover: SPIFFE ID %s is not valid.\n", spiffeid)
 	}
 }
 
@@ -33,6 +39,9 @@ func AuthenticateRecover(spiffeid string) {
 // Logs a fatal error and exits if the SPIFFE ID validation fails.
 func AuthenticateRestore(spiffeid string) {
 	if !auth.IsPilotRestore(spiffeid) {
-		log.FatalF("Authenticate: SPIFFE ID %s is not valid.\n", spiffeid)
+		log.Log().Error(
+			"AuthenticateRestore: You need a 'restore' SPIFFE ID to use this command.",
+		)
+		log.FatalF("AuthenticateRestore: SPIFFE ID %s is not valid.\n", spiffeid)
 	}
 }

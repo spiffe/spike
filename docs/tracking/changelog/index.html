@@ -207,6 +207,9 @@
                                                         <a href="https://spike.ist/tracking/changelog/#recent">Recent</a>
                                                     </li>
                                                 <li>
+                                                        <a href="https://spike.ist/tracking/changelog/#0-3-0-2026-02-20">[0.3.0] - 2026-02-20</a>
+                                                    </li>
+                                                <li>
                                                         <a href="https://spike.ist/tracking/changelog/#0-2-1-2026-01-23">[0.2.1] - 2026-01-23</a>
                                                     </li>
                                                 <li>
@@ -718,16 +721,35 @@
             
         <h1 id="spike-changelog">SPIKE Changelog</h1>
 <h2 id="recent">Recent</h2>
+<p>TBD</p>
+<h2 id="0-3-0-2026-02-20">[0.3.0] - 2026-02-20</h2>
+<p>This release was focused around bugfixes, stability, documentation, and
+disaster recovery.</p>
+<h3 id="added">Added</h3>
+<ul>
+<li>Documentation: SPIKE Production Hardening Guide is complete and ready for
+consumption (<em>it was in draft mode before</em>).</li>
+<li>Implemented <code>spike recover</code> and <code>spike restore</code> commands that provide disaster
+recovery capabilities if there is a total system crash and the remaining
+SPIKE Keepers are less than the threshold to recover the root key.</li>
+<li>Several bugfixes and performance improvements.</li>
+<li>Added coverage report to the repository. The coverage is not as high as
+we would like to be; yet we have to start somewhere :).</li>
+<li>Added several architectural decision records to share the projects vision
+and design decisions transparently.</li>
+<li>Started working on containerization (<em>though it’s still a work in progress</em>).</li>
+</ul>
+<h3 id="changed">Changed</h3>
 <ul>
 <li>SPIKE Website has undergone a major overhaul.</li>
 <li>Documentation updates, especially around security and disaster recovery.</li>
 <li>Documentation is now consistent with the code: Removed outdated sections,
 introduced new modules, explained current workflows and state transitions.</li>
-<li>Documentation: SPIKE Production Hardening Guide is complete and ready for
-consumption (<em>it was in draft mode before</em>).</li>
+<li>Moved documentation from Docsify to Zola, that gave, speed, flexibility,
+templateability, and consistency to the overall documentation.</li>
 </ul>
 <h2 id="0-2-1-2026-01-23">[0.2.1] - 2026-01-23</h2>
-<h3 id="added">Added</h3>
+<h3 id="added-1">Added</h3>
 <ul>
 <li>Enabled policy-based access control.</li>
 <li>The root key that SPIKE Nexus generates is now split into several Shamir
@@ -745,7 +767,7 @@ updating and improving it along the way.</li>
 <li>Implemented a Secret Metadata API.</li>
 <li>Implemented exponential retries across several API-consuming methods.</li>
 </ul>
-<h3 id="changed">Changed</h3>
+<h3 id="changed-1">Changed</h3>
 <ul>
 <li><strong>BREAKING</strong>: changed the CLI usage. Instead of <code>spike get</code>, for example, we
 now use <code>spike secret get</code>. The reason for this change is that we introduced
@@ -759,7 +781,7 @@ authorization bypass in golang.org/x/crypto</a></li>
 <code>golang.org/x/net/htm</code></a></li>
 </ul>
 <h2 id="0-2-0-2024-11-22">[0.2.0] - 2024-11-22</h2>
-<h3 id="added-1">Added</h3>
+<h3 id="added-2">Added</h3>
 <ul>
 <li>Added configuration options for SPIKE Nexus and SPIKE Keeper.</li>
 <li>Documentation updates.</li>
@@ -771,7 +793,7 @@ authorization bypass in golang.org/x/crypto</a></li>
 <li>Created initial smoke/integration tests.</li>
 <li>Stability improvements.</li>
 </ul>
-<h3 id="changed-1">Changed</h3>
+<h3 id="changed-2">Changed</h3>
 <ul>
 <li>Removed password authentication for admin users. Admin users’ SVIDs
 are good enough to authenticate them.</li>
@@ -779,7 +801,7 @@ are good enough to authenticate them.</li>
 (<em>the neat thing about passwords is: you don’t need them</em>).</li>
 </ul>
 <h2 id="0-1-0-2024-11-06">[0.1.0] - 2024-11-06</h2>
-<h3 id="added-2">Added</h3>
+<h3 id="added-3">Added</h3>
 <ul>
 <li>Implemented <code>put</code>, <code>read</code>, <code>delete</code>, <code>undelete</code>, and <code>list</code> functionalities.</li>
 <li>Created initial documentation, README, and related files.</li>

@@ -11,7 +11,7 @@ package ddl
 const QueryInitialize = `
 CREATE TABLE IF NOT EXISTS policies (
     id TEXT PRIMARY KEY,
-    name TEXT NOT NULL,
+    name TEXT NOT NULL UNIQUE,
     spiffe_id_pattern TEXT NOT NULL,
     path_pattern TEXT NOT NULL,
     created_time DATETIME NOT NULL

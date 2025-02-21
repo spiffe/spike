@@ -22,3 +22,8 @@ else
     echo "Failed to delete entry with SPIFFE ID: $SPIFFE_ID"
     exit 1
 fi
+
+# Wait for the entry to be updated
+echo "Waiting for entries to be updated..."
+sleep 5
+echo "Everything is awesome!"
