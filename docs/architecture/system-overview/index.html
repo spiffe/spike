@@ -840,9 +840,9 @@ needed to reconstruct the root key. This flexibility allows implementors to
 balance their security requirements against operational needs–from basic
 redundancy to highly paranoid configurations requiring many <strong>SPIKE Keeper</strong>s
 to be healthy.</p>
-<p>Both the individual shards and the assembled root key are exclusively held in
-memory and never persisted to disk, forming a core aspect of
-SPIKE’s security model.</p>
+<p><strong>Both the individual shards and the assembled root key are exclusively held in
+memory and NEVER persisted to disk</strong>, forming a core aspect of SPIKE’s security
+model.</p>
 <p>The system uses mTLS (mutual TLS) throughout for secure communication between
 components, which ensures:</p>
 <ul>
@@ -1027,6 +1027,16 @@ of the system since admin operations will not be possible without
 <p>Similarly, revoking the <strong>SPIRE Server</strong> registration of <strong>SPIKE Pilot</strong>’s
 <strong>SVID</strong> (<em>once SPIKE Pilot is no longer needed</em>) will effectively block
 administrative access to the system, improving the overall security posture.</p>
+<h3 id="builtin-spiffe-ids">Builtin SPIFFE IDs</h3>
+<p><strong>SPIKE Nexus</strong> recognizes the following builtin SPIFFE IDS:</p>
+<ul>
+<li><code>spiffe://$trustRoot/spike/pilot/role/superuser</code>: Super Admin.</li>
+<li><code>spiffe://$trustRoot/spike/pilot/role/recover</code>: Recovery Admin</li>
+<li><code>spiffe://$trustRoot/spike/pilot/role/restore</code>: Restore Admin</li>
+</ul>
+<p>You can check out the <a href="https://spike.ist/architecture/security-model/#administrative-access">**Administrative Access section of SPIKE security
+model</a> for more
+information about these roles.</p>
 <hr />
 <ul>
 <li><a href="https://spike.ist/architecture/system-overview/"><strong>SPIKE</strong> System Overview</a></li>

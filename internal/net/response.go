@@ -151,7 +151,7 @@ func NotReady(
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusBadRequest)
+	w.WriteHeader(http.StatusServiceUnavailable)
 
 	if _, err := w.Write(body); err != nil {
 		log.Log().Error("routeNotReady",

@@ -76,9 +76,11 @@ You can find sample scripts that creates registration entries under the
 
 If you have deployed **SPIRE** on Kubernetes:
 
-* Use Kubernetes **Pod Security Policies**, Network Policies, and RBAC to
-  restrict SPIRE Server and Agent access.
+* Use Kubernetes [**Pod Security Standards**][pod-security], Network Policies, 
+  and RBAC to restrict **SPIRE Server** and **SPIRE Agent** access.
 * Limit SPIRE components to trusted namespaces and nodes.
+
+[pod-security]: https://kubernetes.io/docs/concepts/security/pod-security-standards/ "Pod Security Standards"
 
 ### Regularly Rotate Certificates
 

@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/url"
 	"time"
 
@@ -130,12 +131,14 @@ func RecoverBackingStoreUsingKeeperShards(source *workloadapi.X509Source) {
 
 	retrier := retry.NewExponentialRetrier(
 		retry.WithBackOffOptions(
-			retry.WithMaxInterval(5),
+			retry.WithMaxInterval(60*time.Second),
 			retry.WithMaxElapsedTime(env.RecoveryOperationTimeout()),
 		),
 	)
 
 	if err := retrier.RetryWithBackoff(ctx, func() error {
+		fmt.Println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> retrying -- time:" + time.Now().String())
+
 		recoverySuccessful := iterateKeepersAndTryRecovery(
 			source, successfulKeeperShards,
 		)

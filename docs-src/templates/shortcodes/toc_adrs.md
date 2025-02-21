@@ -4,6 +4,8 @@
 # \\\\\\
 #}
 
+* [ADR-0019: Plugin-Based Storage Backend Architecture](@/architecture/adrs/adr-0019.md)
+* [ADR-0018: Administrative Access to SPIKE](@/architecture/adrs/adr-0018.md)
 * [ADR-0017: Synchronous Persistence for SPIKE Secrets Store](@/architecture/adrs/adr-0017.md)
 * [ADR-0016: Memory-First Secrets Store](@/architecture/adrs/adr-0016.md)
 * [ADR-0015: Use Singular Form for File and Package Naming](@/architecture/adrs/adr-0015.md)

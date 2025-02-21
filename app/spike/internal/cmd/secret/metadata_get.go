@@ -62,6 +62,15 @@ func newSecretMetadataGetCommand(
 
 			secret, err := api.GetSecretMetadata(path, version)
 			if err != nil {
+				if err.Error() == "not ready" {
+					fmt.Println("!")
+					fmt.Println("!  SPIKE is not initialized")
+					fmt.Println("!  Wait a few seconds and try again.")
+					fmt.Println("!  If the problem persists, check out SPIKE Nexus logs.")
+					fmt.Println("!")
+					return
+				}
+
 				fmt.Println("Error reading secret:", err.Error())
 				return
 			}

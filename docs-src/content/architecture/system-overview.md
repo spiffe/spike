@@ -149,10 +149,9 @@ balance their security requirements against operational needs--from basic
 redundancy to highly paranoid configurations requiring many **SPIKE Keeper**s 
 to be healthy.
 
-
-Both the individual shards and the assembled root key are exclusively held in 
-memory and never persisted to disk, forming a core aspect of 
-SPIKE's security model.
+**Both the individual shards and the assembled root key are exclusively held in 
+memory and NEVER persisted to disk**, forming a core aspect of SPIKE's security
+model.
 
 [shamir]: https://en.wikipedia.org/wiki/Shamir%27s_secret_sharing "Shamir's Secret Sharing"
 
@@ -364,6 +363,18 @@ of the system since admin operations will not be possible without
 Similarly, revoking the **SPIRE Server** registration of **SPIKE Pilot**'s
 **SVID** (*once SPIKE Pilot is no longer needed*) will effectively block 
 administrative access to the system, improving the overall security posture.
+
+### Builtin SPIFFE IDs
+
+**SPIKE Nexus** recognizes the following builtin SPIFFE IDS:
+
+* `spiffe://$trustRoot/spike/pilot/role/superuser`: Super Admin.
+* `spiffe://$trustRoot/spike/pilot/role/recover`: Recovery Admin
+* `spiffe://$trustRoot/spike/pilot/role/restore`: Restore Admin
+
+You can check out the [**Administrative Access section of SPIKE security
+model](@/architecture/security-model.md#administrative-access) for more
+information about these roles.
 
 ----
 

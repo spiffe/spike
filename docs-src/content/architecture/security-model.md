@@ -91,6 +91,44 @@ The following are **not** considered part of **SPIKE**'s threat model:
   validated. Misconfiguration of **SPIKE**, or **SPIFFE** can result in the 
   compromise of the confidentiality or the integrity of the data stored.
 
+## The Backing Store is Untrusted
+
+Since the storage backend resides outside the trusted boundary, **SPIKE** 
+treats it as untrusted and encrypts data before sending it. This ensures that 
+even if a malicious attacker gains access to the storage backend, the data 
+remains secure, as it can only be decrypted by **SPIKE Nexus**. 
+
+Additionally, the storage backend serves as a durable, persistent layer, 
+ensuring data availability across application crashes and server restarts.
+
+## Keeper Shard Distribution and Disaster Recovery
+
+**SPIKE** uses **SPIKE Keeper**s, which are apps responsible for storing 
+[Shamir shards][shamir] of the **root key**. Both the **root key** and the
+**shards** are always in memory and **never** persisted to disk. 
+
+**SPIKE Nexus** can establish a SPIFFE-based mTLS connection to request a shard 
+from a **SPIKE Keeper**, enabling the system to auto-recover itself.
+
+The security model allows for different levels of redundancy and control:
+
+* A typical setup could involve three **SPIKE Keeper** instances. No single 
+  share can reconstruct the root key alone, ensuring security. However, multiple 
+  shares can be combined to restore the system when needed.
+* **SPIKE Nexus** often automatically recovers itself from crashes using 
+  **SPIKE Keeper**s. However, for the unlikely case of a total system crash, 
+  each administrator can hold one of these shares and use `spike restore` to
+  restore the system back to normal. Since, a single shard cannot recreate 
+  the root key we are mitigating risk by distributing trust.
+* For those less concerned with strict separation, an alternative approach 
+  could involve storing both shares on a single thumb drive or distributing 
+  two shares across separate thumb drives in different safes. This trade-off 
+  balances security with recovery convenience.
+
+Ultimately, the design offers flexibility, allowing organizations to choose 
+their preferred level of security while considering the operational impact of 
+disaster recovery.
+
 ## Key Management
 
 * The system assumes a long-lived, well-guarded, initial **root key**.
@@ -127,6 +165,10 @@ explicitly permitted to, in accordance with their predefined policies.
 
 ## Administrative Access
 
+Although **SPIKE** uses policy-based access to secrets and administrative
+operations, **SPIKE Nexus** recognizes certain builtin SPIFFE IDs and assigns
+them predefined roles:
+
 * Administrative access is granted using special SPIFFE IDs:
   * `spiffe://$trustRoot/spike/pilot/role/superuser`: Super Admin. Can do 
     everything but recovery or restore operations.
@@ -136,15 +178,15 @@ explicitly permitted to, in accordance with their predefined policies.
     restore the root key by providing one shard at a time.
 
 This gives us the flexibility to have separate users own distinct operational
-responsibilities. For example, an specific operator may only restore the system 
+responsibilities. For example, a specific operator may only restore the system 
 upon an unexpected crash, but they may not have the right to define access 
 policies for secrets.
 
 This separation also provides better auditability.
 
 * Once the system is initialized, accidental re-initialization is prevented.
-    * For emergencies the admin user can use an out-of-band script to 
-      "*factory-reset*" **SPIKE**.
+  * For emergencies the admin user can use an out-of-band script to 
+    "*factory-reset*" **SPIKE**.
 
 ## Multi-Admin Support
 
