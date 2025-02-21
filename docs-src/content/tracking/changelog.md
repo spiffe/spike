@@ -8,18 +8,40 @@ weight = 2
 sort_by = "weight"
 +++
 
-
-
 # SPIKE Changelog
 
 ## Recent
+
+TBD
+
+## [0.3.0] - 2026-02-20
+
+This release was focused around bugfixes, stability, documentation, and 
+disaster recovery.
+
+### Added
+
+* Documentation: SPIKE Production Hardening Guide is complete and ready for
+  consumption (*it was in draft mode before*).
+* Implemented `spike recover` and `spike restore` commands that provide disaster
+  recovery capabilities if there is a total system crash and the remaining
+  SPIKE Keepers are less than the threshold to recover the root key.
+* Several bugfixes and performance improvements.
+* Added coverage report to the repository. The coverage is not as high as
+  we would like to be; yet we have to start somewhere :).
+* Added several architectural decision records to share the projects vision
+  and design decisions transparently.
+* Started working on containerization (*though it's still a work in progress*).
+
+### Changed
 
 * SPIKE Website has undergone a major overhaul.
 * Documentation updates, especially around security and disaster recovery.
 * Documentation is now consistent with the code: Removed outdated sections,
   introduced new modules, explained current workflows and state transitions.
-* Documentation: SPIKE Production Hardening Guide is complete and ready for
-  consumption (*it was in draft mode before*).
+* Moved documentation from Docsify to Zola, that gave, speed, flexibility,
+  templateability, and consistency to the overall documentation.
+* Significant updates in [SPIKE go SDK](https://github.com/spiffe/spike-sdk-go).
 
 ## [0.2.1] - 2026-01-23
 
