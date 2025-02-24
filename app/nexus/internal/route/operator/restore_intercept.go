@@ -6,6 +6,7 @@ package operator
 
 import (
 	"encoding/base64"
+	"github.com/cloudflare/circl/group"
 	"net/http"
 
 	"github.com/cloudflare/circl/secretsharing"
@@ -61,7 +62,12 @@ func guardRestoreRequest(
 
 	// Check 4: The decoded share should be able to unmarshal into a
 	// secretsharing.Share
-	share := &secretsharing.Share{}
+	g := group.P256
+	share := secretsharing.Share{
+		ID:    g.NewScalar(),
+		Value: g.NewScalar(),
+	}
+	share.ID.SetUint64(1)
 	if err := share.Value.UnmarshalBinary(decodedShard); err != nil {
 		return apiErr.ErrInvalidInput
 	}
