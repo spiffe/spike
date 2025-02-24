@@ -46,13 +46,11 @@ func newOperatorRecoverCommand(
 				log.FatalLn(err.Error())
 			}
 
-			fmt.Println("Shards:")
 			if shards != nil {
 				if len(*shards) < 2 {
 					fmt.Println("Not enough shards found.")
+					log.FatalLn("Aborting.")
 				}
-				fmt.Println((*shards)[0])
-				fmt.Println((*shards)[1])
 
 				recoverDir := config.SpikePilotRecoveryFolder()
 
