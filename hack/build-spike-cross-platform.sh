@@ -6,6 +6,8 @@
 
 VERSION="v0.3.0"
 
+CONFIG_FILE="./internal/config/config.go"
+
 # Create a temporary file
 TMP_FILE=$(mktemp)
 
