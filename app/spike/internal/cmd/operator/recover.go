@@ -6,7 +6,6 @@ package operator
 
 import (
 	"fmt"
-	"github.com/spiffe/spike/internal/config"
 	"os"
 	"path/filepath"
 	"strings"
@@ -17,6 +16,7 @@ import (
 
 	"github.com/spiffe/spike/app/spike/internal/trust"
 	"github.com/spiffe/spike/internal/auth"
+	"github.com/spiffe/spike/internal/config"
 	"github.com/spiffe/spike/internal/log"
 )
 
@@ -90,8 +90,8 @@ func newOperatorRecoverCommand(
 				}
 
 				fmt.Println("")
-				fmt.Println("  SPIKE Recovery shards saved to the recovery directory:" +
-					recoverDir)
+				fmt.Println("  SPIKE Recovery shards saved to the recovery directory:")
+				fmt.Println("  " + recoverDir)
 				fmt.Println("")
 				fmt.Println("  Please make sure that:")
 				fmt.Println("    1. You encrypt these shards and keep them safe.")

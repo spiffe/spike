@@ -23,9 +23,10 @@ disaster recovery.
 
 * Documentation: SPIKE Production Hardening Guide is complete and ready for
   consumption (*it was in draft mode before*).
-* Implemented `spike recover` and `spike restore` commands that provide disaster
-  recovery capabilities if there is a total system crash and the remaining
-  SPIKE Keepers are less than the threshold to recover the root key.
+* Implemented `spike operator recover` and `spike operator restore` commands 
+  that provide disaster recovery capabilities if there is a total system crash 
+  and the remaining SPIKE Keepers are less than the threshold to recover the 
+  root key.
 * Several bugfixes and performance improvements.
 * Added coverage report to the repository. The coverage is not as high as
   we would like to be; yet we have to start somewhere :).

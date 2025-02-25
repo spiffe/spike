@@ -2,9 +2,10 @@ package secret
 
 import (
 	"fmt"
-	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"strings"
 	"time"
+
+	"github.com/spiffe/spike-sdk-go/api/entity/data"
 )
 
 func formatTime(t time.Time) string {

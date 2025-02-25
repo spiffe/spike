@@ -75,7 +75,7 @@ func newOperatorRestoreCommand(
 				fmt.Println(" Shards collected: ", status.ShardsCollected)
 				fmt.Println(" Shards remaining: ", status.ShardsRemaining)
 				fmt.Println(
-					" Please run `spike restore` again to provide the remaining shards.")
+					" Please run `spike operator restore` again to provide the remaining shards.")
 				fmt.Println("")
 			}
 		},

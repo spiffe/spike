@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/url"
 	"time"
 
@@ -148,9 +149,11 @@ func RecoverBackingStoreUsingKeeperShards(source *workloadapi.X509Source) {
 
 		log.Log().Warn(fName, "msg", "Recovery unsuccessful. Will retry.")
 		log.Log().Warn(fName, "msg",
-			"Successful keepers: "+string(rune(len(successfulKeeperShards))),
+			fmt.Sprintf(
+				"Successful keepers: %d", len(successfulKeeperShards),
+			),
 		)
-		log.Log().Warn(fName, "msg", "You may need to manually bootstrap.")
+		log.Log().Warn(fName, "msg", "!!! YOU MAY NEED TO MANUALLY BOOSTRAP !!!")
 		log.Log().Info(fName, "msg", "Waiting for keepers to respond")
 		return ErrRecoveryRetry
 	}); err != nil {
