@@ -163,29 +163,6 @@
                 </li>
 
                 </ul>
-    <input class="tree-toggle" type="checkbox" id="operations"
-               />
-        <label class="tree-toggle-label "
-               for="operations">Operations</label>
-
-        <ul class="subtree">
-            <li >
-                    <a href="https://spike.ist/operations/build/">SPIKE Cross-Platform Build</a>
-                </li>
-
-                <li >
-                    <a href="https://spike.ist/operations/production/">SPIKE Production Setup</a>
-                </li>
-
-                <li >
-                    <a href="https://spike.ist/operations/recovery/">SPIKE Recovery Procedures</a>
-                </li>
-
-                <li >
-                    <a href="https://spike.ist/operations/release/">SPIKE Relase Management</a>
-                </li>
-
-                </ul>
     <input class="tree-toggle" type="checkbox" id="tracking"
                checked/>
         <label class="tree-toggle-label "
@@ -223,6 +200,29 @@
                                 </ul>
                         <li >
                     <a href="https://spike.ist/tracking/snapshots/">Documentation Snapshots</a>
+                </li>
+
+                </ul>
+    <input class="tree-toggle" type="checkbox" id="operations"
+               />
+        <label class="tree-toggle-label "
+               for="operations">Operations</label>
+
+        <ul class="subtree">
+            <li >
+                    <a href="https://spike.ist/operations/build/">SPIKE Cross-Platform Build</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/operations/production/">SPIKE Production Setup</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/operations/recovery/">SPIKE Recovery Procedures</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/operations/release/">SPIKE Relase Management</a>
                 </li>
 
                 </ul>
@@ -729,9 +729,10 @@ disaster recovery.</p>
 <ul>
 <li>Documentation: SPIKE Production Hardening Guide is complete and ready for
 consumption (<em>it was in draft mode before</em>).</li>
-<li>Implemented <code>spike recover</code> and <code>spike restore</code> commands that provide disaster
-recovery capabilities if there is a total system crash and the remaining
-SPIKE Keepers are less than the threshold to recover the root key.</li>
+<li>Implemented <code>spike operator recover</code> and <code>spike operator restore</code> commands
+that provide disaster recovery capabilities if there is a total system crash
+and the remaining SPIKE Keepers are less than the threshold to recover the
+root key.</li>
 <li>Several bugfixes and performance improvements.</li>
 <li>Added coverage report to the repository. The coverage is not as high as
 we would like to be; yet we have to start somewhere :).</li>
@@ -747,6 +748,7 @@ and design decisions transparently.</li>
 introduced new modules, explained current workflows and state transitions.</li>
 <li>Moved documentation from Docsify to Zola, that gave, speed, flexibility,
 templateability, and consistency to the overall documentation.</li>
+<li>Significant updates in <a href="https://github.com/spiffe/spike-sdk-go">SPIKE go SDK</a>.</li>
 </ul>
 <h2 id="0-2-1-2026-01-23">[0.2.1] - 2026-01-23</h2>
 <h3 id="added-1">Added</h3>
