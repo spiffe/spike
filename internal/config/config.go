@@ -17,9 +17,9 @@ import (
 // These constants are automatically updated during the release process.
 // Please do not modify them manually.
 
-const NexusVersion = "0.2.1"
-const PilotVersion = "0.2.1"
-const KeeperVersion = "0.2.1"
+const NexusVersion = "0.3.0"
+const PilotVersion = "0.3.0"
+const KeeperVersion = "0.3.0"
 
 // #endregion
 
