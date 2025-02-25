@@ -4,7 +4,7 @@
 #  \\\\\ Copyright 2024-present SPIKE contributors.
 # \\\\\\\ SPDX-License-Identifier: Apache-2.0
 
-VERSION="v0.2.2"
+VERSION="v0.3.0"
 
 # Create a temporary file
 TMP_FILE=$(mktemp)
