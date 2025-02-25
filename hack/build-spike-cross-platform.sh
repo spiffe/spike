@@ -4,7 +4,7 @@
 #  \\\\\ Copyright 2024-present SPIKE contributors.
 # \\\\\\\ SPDX-License-Identifier: Apache-2.0
 
-VERSION="v0.3.0"
+VERSION="0.3.0"
 
 CONFIG_FILE="./internal/config/config.go"
 
