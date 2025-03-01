@@ -4,7 +4,7 @@
 # // \\\\\\\ SPDX-License-Identifier: Apache-2.
 
 title = "Configuring SPIKE"
-weight = 3
+weight = 4
 sort_by = "weight"
 +++
 
@@ -30,7 +30,7 @@ configure the SPIKE components:
 | SPIKE Nexus  | `SPIKE_NEXUS_DB_CONN_MAX_LIFETIME`   | The maximum lifetime of a database connection.                                                            | `"1h"`                                          |
 | SPIKE Nexus  | `SPIKE_NEXUS_PBKDF2_ITERATION_COUNT` | The number of iterations for the PBKDF2 key derivation function.                                          | `600000`                                        |
 | SPIKE Nexus  | `SPIKE_NEXUS_RECOVERY_TIMEOUT`       | The timeout for attempting recovery from SPIKE Keepers. 0 = unlimited                                     | `0`                                             |
-| All          | `SPIKE_SYSTEM_LOG_LEVEL`             | The log level for all SPIKE components (DEBUG, INFO, WARN, ERROR).                                        | `"DEBUG"`                                       |
+| All          | `SPIKE_SYSTEM_LOG_LEVEL`             | The log level for all SPIKE components (`"DEBUG"`, `"INFO"`, `"WARN"`, `"ERROR"`).                        | `"DEBUG"`                                       |
 
 We'll add more configuration options in the future. Stay tuned.
 

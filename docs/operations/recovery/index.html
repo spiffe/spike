@@ -113,6 +113,10 @@
 
         <ul class="subtree">
             <li >
+                    <a href="https://spike.ist/getting-started/about/">About SPIKE</a>
+                </li>
+
+                <li >
                     <a href="https://spike.ist/getting-started/guide/">Quickstart</a>
                 </li>
 
@@ -122,6 +126,10 @@
 
                 <li >
                     <a href="https://spike.ist/getting-started/configuration/">Configuring SPIKE</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/getting-started/cli/">SPIKE CLI</a>
                 </li>
 
                 </ul>
@@ -529,7 +537,7 @@
       class="github-star"
     >
       <i class="bx bx-star"></i>
-      <span>Star us!</span>
+      <span>Star <strong>SPIKE</strong> on <strong>GitHub</strong></span>
     </a>
     <button id="theme-toggle" aria-label="Toggle theme">
       <i class="bx bx-sun light-icon"></i>
@@ -735,14 +743,14 @@ intervention.</p>
 So, if a <strong>SPIKE Keeper</strong> instance crashes, it will eventually receive its
 shard.</p>
 <h2 id="complete-system-recovery">Complete System Recovery</h2>
+<p>In critical scenarios where <strong>SPIKE</strong> remains unavailable for extended periods,</p>
 <p>In the unlikely case that both <strong>SPIKE Nexus</strong> and all <strong>SPIKE Keeper</strong>
 instances crash all together, the system may transition to a state where
 it cannot automatically recover.</p>
-<p>In that case manual intervention will be necessary.</p>
-<p>Here are the steps to take for this scenario:</p>
-<ol>
-<li>Before complete system failure:</li>
-</ol>
+<p>In that case, manual intervention will be necessary. The following sections
+describe this “<em>break-the-glass</em>” procedure to help restore <strong>SPIKE</strong> back to
+its operational state:</p>
+<h3 id="1-before-complete-system-failure">1. Before complete system failure:</h3>
 <ul>
 <li>Change the <strong>SPIFFE ID</strong> of <strong>SPIKE Pilot</strong> to recovery mode by
 executing <code>./hack/spire-server-entry-recover-register.sh</code></li>
@@ -757,9 +765,7 @@ entry entirely for extra security.</li>
 <code>./hack/spire-server-entry-su-register.sh</code> when you need to use
 <strong>SPIKE Pilot</strong>.</li>
 </ul>
-<ol start="2">
-<li>During complete system failure:</li>
-</ol>
+<h3 id="2-during-complete-system-failure">2. During complete system failure:</h3>
 <ul>
 <li>Change the <strong>SPIFFE ID</strong> of <strong>SPIKE Pilot</strong> to restore mode:
 <code>./hack/spire-server-entry-restore-register.sh</code></li>

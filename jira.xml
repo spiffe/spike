@@ -15,13 +15,11 @@
     </target>
     <meta>
       Minimally Delightful Product Requirements:
-      - A containerized SPIKE deployment
       - A Kubernetes SPIKE deployment
-      - Minimal policy enforcement
+      ✅ Minimal policy enforcement
       - Minimal integration tests
-      - A demo workload that uses SPIKE to test things out as a consumer.
-      - A golang SDK (we can start at github/zerotohero-dev/spike-sdk-go
-      and them move it under spiffe once it matures)
+      ✅ A demo workload that uses SPIKE to test things out as a consumer.
+      ✅ A golang SDK
     </meta>
   </purpose>
   <watch>
@@ -31,90 +29,6 @@
       (maybe add some details to the ticket)
     </issue>
   </watch>
-  <section kind="doc-updates">
-    <issue>
-      add documentation for policies and how to create/manage them to
-      the website.
-      or maybe a full-blown CLI documentation.
-
-      or maybe a doc about how to use CLI for documentation
-      as the CLI itself it documentation and it changes.
-    </issue>
-    <issue>
-      also add to documentation:
-      uninstall instructions:
-      * delete binaries
-      * delete the ~/.spike folder.
-      * uninstall spire
-      * delete spire-related folders.
-      * and you sould be pretty much done.
-    </issue>
-    <issue>
-      these may come from the environment:
-
-      DataDir: ".data",
-      DatabaseFile: "spike.db",
-      JournalMode: "WAL",
-      BusyTimeoutMs: 5000,
-      MaxOpenConns: 10,
-      MaxIdleConns: 5,
-      ConnMaxLifetime: time.Hour,
-    </issue>
-    <issue>
-      spike operator reset:
-      deletes and recreates the ~/.spike folder
-      restarts the initialization flow to rekey keepers.
-
-      volkan@spike:~/Desktop/WORKSPACE/spike$ spike secret get /db
-      Error reading secret: post: Problem connecting to peer
-
-      ^ I get an error instead of a "secret not found" message.
-    </issue>
-    <issue kind="adr">
-      One way token flow;
-      keeper provides the rootkey to nexus;
-      nexus init pushes root key to keeper.
-      that's it.
-
-      add this to adr.
-
-      also add to adr that keepers are by design unaware of nexus
-      they have zero configuration; instead nexus polls them for health
-      status and rehydrates them if needed.
-    </issue>
-    <issue>
-      Also, create a script in ./hack that does that.
-      (i.e. something that forces Nexus to reset its root key
-      upon next restart; and see how it impacts the system
-      see SQLite db with a db viewer
-      or maybe let that script delete the database too.)
-
-      // TODO: if you stop nexus, delete the tombstone file, and
-      restart nexus,
-      // (and no keeper returns a shard and returns 404)
-      // it will reset its root key and update the keepers to store
-      the new
-      // root key. This is not an attack vector, because an adversary
-      who can
-      // delete the tombstone file, can also delete the backing store.
-      /// Plus no sensitive data is exposed; it's just all data is
-      inaccessible
-      // now because the root key is lost for good. In either
-      // case, for production systems, the backing store needs to be
-      backed up
-      // and the root key needs to be backed up in a secure place too.
-      // ^ add these to the documentation.
-    </issue>
-    <issue>
-      documentation:
-      explain which log levels mean what, and how to enable
-      log verbosity for development.
-      as in:
-      setting SPIKE_SYSTEM_LOG_LEVEL=debug will show all logs.
-      also explain in the code how logging can be configured from
-      configuration in various components.
-    </issue>
-  </section>
   <bugs>
     <issue kind="bug">
       If there is a backing store, load all secrets from the backing store
@@ -417,6 +331,50 @@
   </low-hanging-fruits>
   <later>
     <issue>
+      Also, create a script in ./hack that does that.
+      (i.e. something that forces Nexus to reset its root key
+      upon next restart; and see how it impacts the system
+      see SQLite db with a db viewer
+      or maybe let that script delete the database too.)
+
+      // TODO: if you stop nexus, delete the tombstone file, and
+      restart nexus,
+      // (and no keeper returns a shard and returns 404)
+      // it will reset its root key and update the keepers to store
+      the new
+      // root key. This is not an attack vector, because an adversary
+      who can
+      // delete the tombstone file, can also delete the backing store.
+      /// Plus no sensitive data is exposed; it's just all data is
+      inaccessible
+      // now because the root key is lost for good. In either
+      // case, for production systems, the backing store needs to be
+      backed up
+      // and the root key needs to be backed up in a secure place too.
+      // ^ add these to the documentation.
+    </issue>
+    <issue>
+      spike operator reset:
+      deletes and recreates the ~/.spike folder
+      restarts the initialization flow to rekey keepers.
+
+      volkan@spike:~/Desktop/WORKSPACE/spike$ spike secret get /db
+      Error reading secret: post: Problem connecting to peer
+
+      ^ I get an error instead of a "secret not found" message.
+    </issue>
+    <issue>
+      these may come from the environment:
+
+      DataDir: ".data",
+      DatabaseFile: "spike.db",
+      JournalMode: "WAL",
+      BusyTimeoutMs: 5000,
+      MaxOpenConns: 10,
+      MaxIdleConns: 5,
+      ConnMaxLifetime: time.Hour,
+    </issue>
+    <issue>
       verify if the keeper has shard before resending it:
       send hash of the shard first
       if keeper says “I have it”, don’t send the actual shard.
@@ -467,17 +425,43 @@
 
       From the context, OpenBao can be swapped with SPIKE Nexus, I think:
 
-      End-to-End TLS. OpenBao should always be used with TLS in production. If intermediate load balancers or reverse proxies are used to front OpenBao, they should not terminate TLS. This way traffic is always encrypted in transit to OpenBao and minimizes risks introduced by intermediate layers.
+      End-to-End TLS. OpenBao should always be used with TLS in production. If
+      intermediate load balancers or reverse proxies are used to front OpenBao,
+      they should not terminate TLS. This way traffic is always encrypted in
+      transit to OpenBao and minimizes risks introduced by intermediate layers.
 
-      Single Tenancy. OpenBao should be the only main process running on a machine. This reduces the risk that another process running on the same machine is compromised and can interact with OpenBao. This can be accomplished by using OpenBao Helm's affinity configurable.
+      Single Tenancy. OpenBao should be the only main process running on a
+      machine. This reduces the risk that another process running on the same
+      machine is compromised and can interact with OpenBao. This can be
+      accomplished by using OpenBao Helm's affinity configurable.
 
-      Enable Auditing. OpenBao supports several auditing backends. Enabling auditing provides a history of all operations performed by OpenBao and provides a forensics trail in the case of misuse or compromise. Audit logs securely hash any sensitive data, but access should still be restricted to prevent any unintended disclosures. OpenBao Helm includes a configurable auditStorage option that provisions a persistent volume to store audit logs.
+      Enable Auditing. OpenBao supports several auditing backends. Enabling
+      auditing provides a history of all operations performed by OpenBao and
+      provides a forensics trail in the case of misuse or compromise. Audit logs
+      securely hash any sensitive data, but access should still be restricted to
+      prevent any unintended disclosures. OpenBao Helm includes a configurable
+      auditStorage option that provisions a persistent volume to store audit
+      logs.
 
-      Immutable Upgrades. OpenBao relies on an external storage backend for persistence, and this decoupling allows the servers running OpenBao to be managed immutably. When upgrading to new versions, new servers with the upgraded version of OpenBao are brought online. They are attached to the same shared storage backend and unsealed. Then the old servers are destroyed. This reduces the need for remote access and upgrade orchestration which may introduce security gaps. See the upgrade section for instructions on upgrading OpenBao on Kubernetes.
+      Immutable Upgrades. OpenBao relies on an external storage backend for
+      persistence, and this decoupling allows the servers running OpenBao to be
+      managed immutably. When upgrading to new versions, new servers with the
+      upgraded version of OpenBao are brought online. They are attached to the
+      same shared storage backend and unsealed. Then the old servers are
+      destroyed. This reduces the need for remote access and upgrade
+      orchestration which may introduce security gaps. See the upgrade section
+      for instructions on upgrading OpenBao on Kubernetes.
 
-      Upgrade Frequently. OpenBao is actively developed, and updating frequently is important to incorporate security fixes and any changes in default settings such as key lengths or cipher suites. Subscribe to the OpenBao mailing list and GitHub CHANGELOG for updates.
+      Upgrade Frequently. OpenBao is actively developed, and updating frequently
+      is important to incorporate security fixes and any changes in default
+      settings such as key lengths or cipher suites. Subscribe to the OpenBao
+      mailing list and GitHub CHANGELOG for updates.
 
-      Restrict Storage Access. OpenBao encrypts all data at rest, regardless of which storage backend is used. Although the data is encrypted, an attacker with arbitrary control can cause data corruption or loss by modifying or deleting keys. Access to the storage backend should be restricted to only OpenBao to avoid unauthorized access or operations.
+      Restrict Storage Access. OpenBao encrypts all data at rest, regardless of
+      which storage backend is used. Although the data is encrypted, an attacker
+      with arbitrary control can cause data corruption or loss by modifying or
+      deleting keys. Access to the storage backend should be restricted to only
+      OpenBao to avoid unauthorized access or operations.
     </issue>
     <issue>
       a mode that enables the admin to load shares to keepers.
@@ -495,11 +479,13 @@
     <issue>
       A /stats endpoint.
 
-      A dedicated /stats endpoint will be implemented to provide real-time metrics about:
+      A dedicated /stats endpoint will be implemented to provide real-time
+      metrics about:
       Total number of secrets managed.
       Status of the key-value store.
       Resource utilization metrics (e.g., CPU, memory).
-      This endpoint will support integration with monitoring tools for enhanced observability.
+      This endpoint will support integration with monitoring tools for enhanced
+      observability.
       These measures will ensure comprehensive monitoring and troubleshooting.
     </issue>
     <issue>

@@ -113,6 +113,10 @@
 
         <ul class="subtree">
             <li >
+                    <a href="https://spike.ist/getting-started/about/">About SPIKE</a>
+                </li>
+
+                <li >
                     <a href="https://spike.ist/getting-started/guide/">Quickstart</a>
                 </li>
 
@@ -122,6 +126,10 @@
 
                 <li >
                     <a href="https://spike.ist/getting-started/configuration/">Configuring SPIKE</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/getting-started/cli/">SPIKE CLI</a>
                 </li>
 
                 </ul>
@@ -510,7 +518,7 @@
       class="github-star"
     >
       <i class="bx bx-star"></i>
-      <span>Star us!</span>
+      <span>Star <strong>SPIKE</strong> on <strong>GitHub</strong></span>
     </a>
     <button id="theme-toggle" aria-label="Toggle theme">
       <i class="bx bx-sun light-icon"></i>
@@ -724,66 +732,50 @@ maintaining SQLite as the default implementation. This architecture will:</p>
 </ol>
 <h2 id="rationale">Rationale</h2>
 <h3 id="plugin-system-benefits">Plugin System Benefits</h3>
-<ol>
-<li><strong>Extensibility</strong>:</li>
-</ol>
+<h4 id="1-extensibility">1. <strong>Extensibility</strong>:</h4>
 <ul>
 <li>Users can implement custom storage solutions</li>
 <li>Third-party developers can contribute new backends</li>
 <li>Specialized solutions can be developed without modifying core code</li>
 </ul>
-<ol start="2">
-<li><strong>Maintainability</strong>:</li>
-</ol>
+<h4 id="2-maintainability">2. <strong>Maintainability</strong>:</h4>
 <ul>
 <li>Core codebase remains focused on primary functionality</li>
 <li>Plugins can be maintained independently</li>
 <li>Testing and validation can be scoped to specific implementations</li>
 </ul>
-<ol start="3">
-<li><strong>Deployment Flexibility</strong>:</li>
-</ol>
+<h4 id="3-deployment-flexibility">3. <strong>Deployment Flexibility</strong>:</h4>
 <ul>
 <li>Different environments can use appropriate storage solutions</li>
 <li>Migration between backends becomes possible</li>
 <li>Development and testing can use simplified implementations</li>
 </ul>
 <h3 id="official-plugin-scope">Official Plugin Scope</h3>
-<ol>
-<li><strong>Core Implementation</strong>:</li>
-</ol>
+<h4 id="1-core-implementation">1. <strong>Core Implementation</strong>:</h4>
 <ul>
 <li>SQLite (default backend, ships with core)</li>
 <li>In-memory (for development and testing)</li>
 </ul>
-<ol start="2">
-<li><strong>Additional Official Plugins</strong>:</li>
-</ol>
+<h4 id="2-additional-official-plugins">2. <strong>Additional Official Plugins</strong>:</h4>
 <ul>
 <li>PostgreSQL</li>
 <li>S3/MinIO compatible storage</li>
 </ul>
 <h3 id="interface-requirements">Interface Requirements</h3>
 <p>Storage plugins must implement:</p>
-<ol>
-<li><strong>Core Operations</strong>:</li>
-</ol>
+<h4 id="1-core-operations">1. <strong>Core Operations</strong>:</h4>
 <ul>
 <li>CRUD operations for secrets</li>
 <li>Atomic transactions</li>
 <li>Concurrent access handling</li>
 <li>Error handling and recovery</li>
 </ul>
-<ol start="2">
-<li><strong>Security Features</strong>:</li>
-</ol>
+<h4 id="2-security-features">2. <strong>Security Features</strong>:</h4>
 <ul>
 <li>Access control integration</li>
 <li>Audit logging support</li>
 </ul>
-<ol start="3">
-<li><strong>Management Functions</strong>:</li>
-</ol>
+<h4 id="3-management-functions">3. <strong>Management Functions</strong>:</h4>
 <ul>
 <li>Health checks</li>
 <li>Backup/restore capabilities</li>
@@ -839,7 +831,7 @@ a starting point and it will likely be subject to change.</p>
 <li>Implement plugin verification tools</li>
 <li>Document security requirements</li>
 </ul>
-<ol start="2">
+<ol>
 <li><strong>Compatibility</strong>:</li>
 </ol>
 <ul>
@@ -847,7 +839,7 @@ a starting point and it will likely be subject to change.</p>
 <li>Provide migration tools between backends</li>
 <li>Maintain compatibility tests</li>
 </ul>
-<ol start="3">
+<ol>
 <li><strong>Documentation</strong>:</li>
 </ol>
 <ul>
@@ -863,6 +855,8 @@ a starting point and it will likely be subject to change.</p>
 </ul>
 <hr />
 <ul>
+<li><a href="https://spike.ist/architecture/adrs/adr-0021/">ADR-0021: SPIKE Keeper as a Stateless Shard Holder</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0020/">ADR-0020: Switch to Zola for Documentation System</a></li>
 <li><a href="https://spike.ist/architecture/adrs/adr-0019/">ADR-0019: Plugin-Based Storage Backend Architecture</a></li>
 <li><a href="https://spike.ist/architecture/adrs/adr-0018/">ADR-0018: Administrative Access to SPIKE</a></li>
 <li><a href="https://spike.ist/architecture/adrs/adr-0017/">ADR-0017: Synchronous Persistence for SPIKE Secrets Store</a></li>

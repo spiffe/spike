@@ -6,7 +6,7 @@
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <link rel="icon" href="https://spike.ist/assets/spike-favicon-16x16.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
-    <title> SPIKE | ADR-0016: ADR-0015: Memory-First Secrets Store </title>
+    <title> SPIKE | ADR-0021: SPIKE Keeper as a Stateless Shard Holder </title>
 </head>
 <body>
 
@@ -702,166 +702,114 @@
 
         <article>
             
-        <h1 id="adr-0016-memory-first-secrets-store">ADR-0016: Memory-First Secrets Store</h1>
-<br style="clear:both" />
+        <h1 id="adr-0021-spike-keeper-as-a-stateless-shard-holder">ADR-0021: SPIKE Keeper as a Stateless Shard Holder</h1>
 <ul>
 <li>Status: accepted</li>
-<li>Date: 2024-12-22</li>
-<li>Tags: Security, Operations, Storage, Performance, Scalability</li>
+<li>Date: 2025-03-01</li>
+<li>Tags: Stateless, Availability, Resilience, Fault-Tolerance</li>
 </ul>
 <h2 id="context">Context</h2>
-<p><strong>SPIKE</strong> keeps secrets in the memory of <strong>SPIKE Nexus</strong> by design. The secrets
-are encrypted and backed up to a secondary backup storage; however, the primary
-source of truth is the in-memory store.</p>
-<p>This is an efficient mechanism to store application secrets (<em>e.g.,
-API keys, certificates, even relatively beefy Kubeconfig files</em>).</p>
-<p>However, we need to maintain certain requirements for <strong>SPIKE</strong> to be a
-production-grade secure, reliable, and robust secrets store:</p>
-<p>Our requirements include:</p>
-<ul>
-<li><strong>High-Performance Access</strong>: Secrets should be rapidly retrievable with
-minimal latency.</li>
-<li><strong>Robust Backup and Recovery</strong>: The system should persist data safely and
-recover quickly from crashes.</li>
-<li><strong>Security</strong>: Restrict access to secrets via path-based policies and protect
-data at rest via encryption.</li>
-<li><strong>Auditability</strong>: Record all read/write operations for compliance and
-monitoring.</li>
-<li><strong>Scalability</strong>: The system should handle up to hundreds of thousands of
-secrets.</li>
-<li><strong>High Availability</strong>: Provide read replicas for scaling reads and failover
-strategies.</li>
-</ul>
-<p>We considered <strong>disk-only</strong>, <strong>disk-first</strong>, <strong>cloud-storage-only</strong>
-(like <em>AWS S3</em>) and <strong>cloud-storage-first</strong> solutions and decided a memory-first
-secrets store with a reliable back-up mechanism is the best fit for <strong>SPIKE</strong>.</p>
+<p><strong>SPIKE Nexus</strong> is the core secret store that generates and manages the
+<strong>root encryption key</strong>. To ensure availability and resilience, the <strong>root key</strong>
+is sharded using <strong>Shamir’s Secret Sharing Scheme</strong> and distributed to multiple
+<strong>SPIKE Keeper</strong> instances. These <strong>SPIKE Keeper</strong>s are responsible for holding
+their respective key shards <strong>in memory</strong> to support the recovery process in
+case <strong>SPIKE Nexus</strong> needs to reconstruct its <strong>root key</strong>.</p>
+<p>A key design principle in <strong>SPIKE</strong> is <strong>simplicity</strong> and <strong>minimalism</strong>:
+The <strong>SPIKE Keeper</strong> component should remain as lightweight as possible,
+avoiding unnecessary complexity such as awareness of Nexus, complex
+configuration, or inter-Keeper communication. Instead, <strong>SPIKE Nexus</strong> should
+maintain full control over key management while leveraging <strong>SPIKE Keeper</strong>s
+as dumb storage units for key shards.</p>
 <h2 id="decision">Decision</h2>
-<p><strong>SPIKE</strong> will be an in-memory secrets store with the following characteristics:</p>
+<p><strong>SPIKE Keeper</strong>s remain stateless and unaware of <strong>SPIKE Nexus</strong>:</p>
 <ul>
-<li><strong>In-Memory Data</strong>: The primary data store resides in RAM, offering
-<strong>near-instant reads and writes</strong>.</li>
-<li><strong>Periodic Backup</strong>: An encrypted backing store (SQLite, Postgres DB, or an
-S3-compatible interface) will serve as a backup. The system uses exponential
-retries to ensure data persistence.</li>
-<li><strong>Hardened Container</strong>: The service is recommended to run in a hardened
-container or sandbox with minimal OS surface area, reducing the likelihood of
-root compromise.</li>
-<li><strong>Path-Based Access Controls</strong>: Secrets are organized hierarchically
-(<em>for, e.g., <code>/secrets/acme/*</code></em>). Only specific roles/tokens can access their
-respective paths.</li>
-<li><strong>Replication</strong>: A primary read-write store with read-only replicas. These
-replicas can be promoted or re-hydrated if the primary fails.</li>
-<li><strong>Auditing</strong>: All secret operations (<em>reads, writes, deletes</em>) are logged to
-an audit trail for compliance and investigation.</li>
+<li><strong>SPIKE Keeper</strong>s do not need to know which <strong>SPIKE Nexus</strong> instance they are
+serving.</li>
+<li>They store their assigned key shard <strong>in-memory</strong> and do not persist any
+state.</li>
+</ul>
+<p><strong>Zero configuration for SPIKE Keepers</strong>:</p>
+<ul>
+<li><strong>SPIKE Keeper</strong>s have no static configuration files or runtime parameters
+related to <strong>SPIKE Nexus</strong>.</li>
+<li>Deployment should be as simple as running a <strong>SPIKE Keeper</strong> instance without
+additional setup.</li>
+</ul>
+<p><strong>SPIKE Nexus is responsible for lifecycle management</strong>:</p>
+<ul>
+<li><strong>SPIKE Nexus</strong> generates the root key, sharding it and distributing the
+pieces to <strong>SPIKE Keeper</strong>s.</li>
+<li><strong>SPIKE Nexus</strong> polls Keepers to check their health and ensure that a quorum
+is available.</li>
+<li>If a <strong>SPIKE Keeper</strong> goes down and restarts, <strong>SPIKE Nexus</strong> is responsible
+for rehydrating it with the correct key shard.</li>
+</ul>
+<p><strong>Polling-based health monitoring and rehydration</strong>:</p>
+<ul>
+<li><strong>SPIKE Keeper</strong>s <em>do not</em> initiate communication with <strong>SPIKE Nexus</strong>.
+<ul>
+<li>Instead, <strong>SPIKE Nexus</strong> periodically queries <strong>SPIKE Keeper</strong>s for their
+status.</li>
+</ul>
+</li>
+<li>If a <strong>SPIKE Keeper</strong> is found to be empty (<em>e.g., after a restart</em>),
+<strong>SPIKE Nexus</strong> reassigns the missing shard.</li>
 </ul>
 <h2 id="rationale">Rationale</h2>
 <ul>
-<li><strong>Performance</strong>: In-memory data reduces latency compared to purely
-disk-backed solutions.</li>
-<li><strong>Backup Safety</strong>: The secondary backup (<em>encrypted at rest</em>) mitigates memory
-volatility by allowing the system to recover from unexpected crashes or
-restarts.</li>
-<li><strong>Security</strong>:
-<ul>
-<li><strong>Hardened Container</strong>: Minimizes OS-level attack surface.</li>
-<li><strong>Encryption at Rest</strong>: Protects offline backups if the disk is compromised.</li>
-<li><strong>Path-Based Policies</strong>: Enforces the principle of least privilege.</li>
-<li><strong>Auditing</strong>: Aids in compliance and detection of unauthorized access.</li>
-<li><strong>Scalability</strong>: Storing thousands or even hundreds of thousands of secrets
-in memory is feasible with proper resource planning.</li>
-</ul>
-</li>
+<li><strong>Security</strong>: <strong>SPIKE Keeper</strong>s hold only a single shard; which is not adequate
+to regenerate the root key. They are never aware of other <strong>SPIKE Keeper</strong>s
+or the full key. This limits their attack surface.</li>
+<li><strong>Simplicity</strong>: By eliminating configuration and inter-service dependencies,
+<strong>SPIKE Keeper</strong>s become easy to deploy, replace, and scale.</li>
+<li><strong>Availability</strong>: The polling and rehydration mechanism ensures that
+<em>SPIKE Nexus</em>* can automatically recover lost shards without manual
+intervention.</li>
+<li><strong>Fault Tolerance</strong>: Stateless <strong>SPIKE Keeper</strong>s can be replaced without
+requiring reconfiguration or coordination with other components.</li>
 </ul>
 <h2 id="consequences">Consequences</h2>
-<h3 id="positive-outcomes">Positive Outcomes</h3>
+<h3 id="positive">Positive</h3>
 <ul>
-<li><strong>Performance Gain</strong>: Ultra-fast secrets retrieval for latency-sensitive
-applications.</li>
-<li><strong>Backup Resilience</strong>: Encrypted disk backups reduce permanent data loss
-if the container restarts.</li>
-<li><strong>Fine-Grained Control</strong>*: Path-based policies and an internal auditing
-mechanism meet security and compliance needs.</li>
+<li>Simplifies Keeper deployment and operation.</li>
+<li>Improves security by ensuring Keepers never hold full knowledge of the system.</li>
+<li>Enhances reliability by making Keepers easily replaceable without system-wide
+impact.</li>
+<li>Reduces operational burden since <strong>SPIKE Nexus</strong> automatically manages the
+lifecycle of <strong>SPIKE Keeper</strong>s and their shards.</li>
 </ul>
-<h2 id="trade-offs-and-risks">Trade-Offs and Risks</h2>
-<p>In contrast to our decision, here are some benefits of using a database (<em>or a
-remote object storage</em>) as the single source of truth:</p>
+<h3 id="negative">Negative</h3>
 <ul>
-<li><em>Security and Persistence</em>: Using an encrypted database as the source of truth
-ensures that secrets are securely stored and persist across system restarts
-or crashes. Though with frequent forced writes, the risk of data loss is
-minimized and can further be mitigated by using mechanisms like message queues.</li>
-<li><em>Scalability</em>: Databases can handle growth more effectively, allowing
-the system to accommodate increasing amounts of secrets without a significant
-redesign. Again, this is a non-issue because if you have to store millions of
-secrets, then you need to review your architecture anyway. In an ideal world,
-the only secret an app needs are PKI certificates (like SVIDs) as they can
-uniquely identify the app.</li>
-<li><em>Simplicity</em>: A single source of truth simplifies the architecture, making
-the system easier to develop, and maintain. To counter this, SPIKE Nexus’
-current architecture is simple enough to maintain and develop. We have
-abstracted exponential backoff and retry mechanisms to the storage layer, and
-once we have adequate abstractions, the maintainability of the system will
-be equivalent to a database-as-the-single-source-of-truth system. Besides,
-at the cost of simplicity, we lose performance and will have to implement
-additional caching mechanisms to mitigate latency, which will add complexity
-and result in an equally complex system. There is no free lunch.</li>
+<li><strong>SPIKE Nexus</strong> must handle additional logic for polling, health monitoring,
+and rehydration.</li>
+<li><strong>SPIKE Keeper</strong>s depend on <strong>SPIKE Nexus</strong> for their purpose, making them
+entirely reliant on <strong>SPIKE Nexus</strong>’ availability.</li>
 </ul>
-<p>Here are some other liabilities of a memory-first secrets store:</p>
+<h2 id="alternatives-considered">Alternatives Considered</h2>
+<h3 id="spike-keepers-as-stateful-services">SPIKE Keepers as Stateful Services:</h3>
 <ul>
-<li><strong>Crash Consistency</strong>: Potential for a small window of data loss if the system
-crashes just before backup.
+<li>Rejected because it adds complexity and requires persistent storage.</li>
+<li>Would introduce additional configuration and synchronization challenges.</li>
+</ul>
+<h3 id="spike-keepers-managing-their-own-shards">SPIKE Keepers Managing Their Own Shards:</h3>
 <ul>
-<li><strong>Mitigation</strong>: frequent or near-synchronous write-through.</li>
+<li>Rejected as it violates the principle of keeping <strong>SPIKE Keeper</strong>s unaware
+of the full system state.</li>
+<li>Would require <strong>SPIKE Keepers</strong> to store metadata about <strong>SPIKE Nexus</strong>,
+increasing complexity and risk.</li>
 </ul>
-</li>
-<li><strong>Failover Complexity</strong>: Replication and promotion logic must be robustly
-implemented to handle node failures seamlessly.</li>
-<li><strong>Memory as an Additional Attack Surface</strong>:
+<h3 id="push-based-shard-distribution-instead-of-polling">Push-Based Shard Distribution Instead of Polling:</h3>
 <ul>
-<li>While ephemeral in-memory storage can mitigate certain disk-theft scenarios,
-memory itself can be inspected if an attacker gains OS-level access.</li>
-<li>That’s why hardening the container and ensuring proper access controls are
-crucial. <strong>SPIKE</strong> assume the machine as the trusted boundary. So, if the
-machine is compromised, the secrets are considered compromised as well.</li>
+<li>Rejected because it would require <strong>SPIKE Keeper</strong>s to maintain knowledge of
+<strong>SPIKE Nexus</strong>.</li>
+<li>Polling ensures that <strong>SPIKE Keeper</strong>s can remain stateless and unaware of
+the system topology.</li>
 </ul>
-</li>
-</ul>
-<h2 id="references">References</h2>
-<ul>
-<li><a href="https://kubernetes.io/docs/concepts/configuration/secret/">Kubernetes Secrets Management Best Practices</a></li>
-<li><a href="https://learn.hashicorp.com/tutorials/vault/ha-with-consul">HashiCorp Vault High-Availability Reference</a></li>
-<li><a href="https://www.sqlite.org/see/doc/trunk/www/index.wiki">SQLite Encryption Extension Documentation</a></li>
-</ul>
-<hr />
-<ul>
-<li><a href="https://spike.ist/architecture/adrs/adr-0021/">ADR-0021: SPIKE Keeper as a Stateless Shard Holder</a></li>
-<li><a href="https://spike.ist/architecture/adrs/adr-0020/">ADR-0020: Switch to Zola for Documentation System</a></li>
-<li><a href="https://spike.ist/architecture/adrs/adr-0019/">ADR-0019: Plugin-Based Storage Backend Architecture</a></li>
-<li><a href="https://spike.ist/architecture/adrs/adr-0018/">ADR-0018: Administrative Access to SPIKE</a></li>
-<li><a href="https://spike.ist/architecture/adrs/adr-0017/">ADR-0017: Synchronous Persistence for SPIKE Secrets Store</a></li>
-<li><a href="https://spike.ist/architecture/adrs/adr-0016/">ADR-0016: Memory-First Secrets Store</a></li>
-<li><a href="https://spike.ist/architecture/adrs/adr-0015/">ADR-0015: Use Singular Form for File and Package Naming</a></li>
-<li><a href="https://spike.ist/architecture/adrs/adr-0014/">ADR-0014: Maintaining SQLite as SPIKE’s Primary Storage Backend</a></li>
-<li><a href="https://spike.ist/architecture/adrs/adr-0013/">ADR-0013: S3-Compatible Storage as SPIKE’s Backing Store</a></li>
-<li><a href="https://spike.ist/architecture/adrs/adr-0012/">ADR-0012: HTTP Methods for SPIKE API</a></li>
-<li><a href="https://spike.ist/architecture/adrs/adr-0011/">ADR-0011: PostgreSQL as SPIKE’s Backing Store</a></li>
-<li><a href="https://spike.ist/architecture/adrs/adr-0010/">ADR-0010: Session Token Storage Strategy for SPIKE Nexus</a></li>
-<li><a href="https://spike.ist/architecture/adrs/adr-0009/">ADR-0009: Multi-Administrator Support System</a></li>
-<li><a href="https://spike.ist/architecture/adrs/adr-0008/">ADR-0008: Administrative Access Control System</a></li>
-<li><a href="https://spike.ist/architecture/adrs/adr-0007/">ADR-0007: Root Key Lifecycle and Management Strategy</a></li>
-<li><a href="https://spike.ist/architecture/adrs/adr-0006/">ADR-0006: Trust Boundary Definition and Security Assumptions</a></li>
-<li><a href="https://spike.ist/architecture/adrs/adr-0005/">ADR-0005: Use SPIFFE mTLS for Inter-Component Authentication and Communication</a></li>
-<li><a href="https://spike.ist/architecture/adrs/adr-0004/">ADR-0004: SPIKE Keeper Minimalist Design Approach</a></li>
-<li><a href="https://spike.ist/architecture/adrs/adr-0003/">ADR-0003: Root Key Management and Storage Strategy</a></li>
-<li><a href="https://spike.ist/architecture/adrs/adr-0002/">ADR-0002: Use Docsify for Documentation System</a></li>
-<li><a href="https://spike.ist/architecture/adrs/adr-0001/">ADR-0001: Display Secrets in Plain Text in SPIKE Pilot Admin CLI</a></li>
-</ul>
-<hr />
-<ul>
-<li><a href="https://spike.ist/architecture/system-overview/"><strong>SPIKE</strong> System Overview</a></li>
-<li><a href="https://spike.ist/architecture/security-model/"><strong>SPIKE</strong> Security Model</a></li>
-<li><a href="https://spike.ist/architecture/architectural-decision-records/"><strong>SPIKE</strong> Architectural Decision Records</a></li>
-</ul>
+<h2 id="decision-outcome">Decision Outcome</h2>
+<p>This decision is final unless significant operational issues arise. Future
+revisions may consider optimizations such as event-driven polling or alternative
+<strong>SPIKE Keeper</strong> designs if the current model proves inefficient at scale.</p>
 
     
         </article>

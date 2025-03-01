@@ -113,6 +113,10 @@
 
         <ul class="subtree">
             <li >
+                    <a href="https://spike.ist/getting-started/about/">About SPIKE</a>
+                </li>
+
+                <li >
                     <a href="https://spike.ist/getting-started/guide/">Quickstart</a>
                 </li>
 
@@ -127,7 +131,11 @@
                 
                         
                         
-                            </ul>
+                            <li >
+                    <a href="https://spike.ist/getting-started/cli/">SPIKE CLI</a>
+                </li>
+
+                </ul>
     <input class="tree-toggle" type="checkbox" id="community"
                />
         <label class="tree-toggle-label "
@@ -513,7 +521,7 @@
       class="github-star"
     >
       <i class="bx bx-star"></i>
-      <span>Star us!</span>
+      <span>Star <strong>SPIKE</strong> on <strong>GitHub</strong></span>
     </a>
     <button id="theme-toggle" aria-label="Toggle theme">
       <i class="bx bx-sun light-icon"></i>
@@ -703,7 +711,6 @@
 configure the SPIKE components:</p>
 <table><thead><tr><th>Component</th><th>Environment Variable</th><th>Description</th><th>Default Value</th></tr></thead><tbody>
 <tr><td>SPIKE Keeper</td><td><code>SPIKE_KEEPER_TLS_PORT</code></td><td>The TLS port the current SPIKE Keeper instance listens on.</td><td><code>":8443"</code></td></tr>
-<tr><td>SPIKE Keeper</td><td><code>SPIKE_KEEPER_API_URL</code></td><td>The API URL of the current SPIKE Keeper instance.</td><td>`“https://localhost:8443”</td></tr>
 <tr><td>SPIKE Nexus</td><td><code>SPIKE_NEXUS_KEEPER_PEERS</code></td><td>A mapping that contains <code>[{id:keeperurl}]</code> collection for all SPIKE Keepers that SPIKE Nexus knows about.</td><td>“” (check <code>./hack/start.sh</code> for usage examples.</td></tr>
 <tr><td>SPIKE Nexus</td><td><code>SPIKE_NEXUS_TLS_PORT</code></td><td>The TLS port SPIKE Nexus listens on.</td><td><code>":8553"</code></td></tr>
 <tr><td>SPIKE Nexus</td><td><code>SPIKE_NEXUS_MAX_SECRET_VERSIONS</code></td><td>The maximum number of versions of a secret that SPIKE Nexus stores.</td><td><code>10</code></td></tr>
@@ -716,14 +723,16 @@ configure the SPIKE components:</p>
 <tr><td>SPIKE Nexus</td><td><code>SPIKE_NEXUS_DB_CONN_MAX_LIFETIME</code></td><td>The maximum lifetime of a database connection.</td><td><code>"1h"</code></td></tr>
 <tr><td>SPIKE Nexus</td><td><code>SPIKE_NEXUS_PBKDF2_ITERATION_COUNT</code></td><td>The number of iterations for the PBKDF2 key derivation function.</td><td><code>600000</code></td></tr>
 <tr><td>SPIKE Nexus</td><td><code>SPIKE_NEXUS_RECOVERY_TIMEOUT</code></td><td>The timeout for attempting recovery from SPIKE Keepers. 0 = unlimited</td><td><code>0</code></td></tr>
-<tr><td>All</td><td><code>SPIKE_SYSTEM_LOG_LEVEL</code></td><td>The log level for all SPIKE components (DEBUG, INFO, WARN, ERROR).</td><td><code>"DEBUG"</code></td></tr>
+<tr><td>All</td><td><code>SPIKE_SYSTEM_LOG_LEVEL</code></td><td>The log level for all SPIKE components (<code>"DEBUG"</code>, <code>"INFO"</code>, <code>"WARN"</code>, <code>"ERROR"</code>).</td><td><code>"DEBUG"</code></td></tr>
 </tbody></table>
 <p>We’ll add more configuration options in the future. Stay tuned.</p>
 <hr />
 <ul>
+<li><a href="https://spike.ist/getting-started/about/">About SPIKE</a></li>
 <li><a href="https://spike.ist/getting-started/guide/">SPIKE Quickstart Guide</a></li>
 <li><a href="https://spike.ist/getting-started/alpha-release-notice/">Alpha Release Notice</a></li>
 <li><a href="https://spike.ist/getting-started/configuration/">Configuring SPIKE</a></li>
+<li><a href="https://spike.ist/getting-started/cli/">SPIKE CLI</a></li>
 </ul>
 <hr />
 <ul>

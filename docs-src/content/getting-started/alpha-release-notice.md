@@ -4,7 +4,7 @@
 # // \\\\\\\ SPDX-License-Identifier: Apache-2.
 
 title = "Alpha Release Notice"
-weight = 2
+weight = 3
 sort_by = "weight"
 +++
 

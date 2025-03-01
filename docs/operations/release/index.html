@@ -113,6 +113,10 @@
 
         <ul class="subtree">
             <li >
+                    <a href="https://spike.ist/getting-started/about/">About SPIKE</a>
+                </li>
+
+                <li >
                     <a href="https://spike.ist/getting-started/guide/">Quickstart</a>
                 </li>
 
@@ -122,6 +126,10 @@
 
                 <li >
                     <a href="https://spike.ist/getting-started/configuration/">Configuring SPIKE</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/getting-started/cli/">SPIKE CLI</a>
                 </li>
 
                 </ul>
@@ -526,7 +534,7 @@
       class="github-star"
     >
       <i class="bx bx-star"></i>
-      <span>Star us!</span>
+      <span>Star <strong>SPIKE</strong> on <strong>GitHub</strong></span>
     </a>
     <button id="theme-toggle" aria-label="Toggle theme">
       <i class="bx bx-sun light-icon"></i>
@@ -714,7 +722,7 @@
 <p>This document provides an overview of how the cut a <strong>SPIKE</strong> release, including
 testing guidelines and instructions.</p>
 <blockquote>
-<p><strong>We Use Humans as Pushbuttons</strong></p>
+<p><strong>We Use Humans as Push-buttons</strong></p>
 <p>At the moment, we don’t have a CI pipeline in place for the release
 process. Most of the operations mentioned here are manual. However, we are
 actively working on improving and automating the release process. This
@@ -734,8 +742,7 @@ ensure a smooth and reliable release process.</p>
 and <code>KeeperVersion</code> in <code>$WORKSPACE/spike/internal/config/config.go</code></li>
 <li>Update any necessary documentation.</li>
 <li>Update the changelog.</li>
-<li>also update documentation snapshots page</li>
-<li>also update the changelog.</li>
+<li>Update the documentation snapshots page.</li>
 </ol>
 <p>Release process:</p>
 <ul>
@@ -748,7 +755,7 @@ copying the generated html in <code>./docs-src/public</code> into <code>/.docs</
 </ul>
 </li>
 <li>Copy the current version’s changelog over to the release notes on <strong>GitHub</strong>.</li>
-<li>On a Mac machine <a href="https://spike.ist/operations/build/" title="SPIKE Cross-Platform Build">follow cross-platform buils instructions</a>
+<li>On a Mac machine <a href="https://spike.ist/operations/build/" title="SPIKE Cross-Platform Build">follow cross-platform build instructions</a>
 to generate binaries.</li>
 <li>Add binaries to the release as assets.</li>
 <li>Announce the release in relevant channels.</li>

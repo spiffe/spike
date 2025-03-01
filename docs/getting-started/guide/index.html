@@ -112,7 +112,11 @@
                for="getting-started">Getting Started</label>
 
         <ul class="subtree">
-            <li class="active">
+            <li >
+                    <a href="https://spike.ist/getting-started/about/">About SPIKE</a>
+                </li>
+
+                <li class="active">
                     <a href="https://spike.ist/getting-started/guide/">Quickstart</a>
                 </li>
 
@@ -123,9 +127,6 @@
                                 <li><a href="
                                             https://spike.ist/getting-started/guide/#spike-quickstart-guide">SPIKE Quickstart Guide</a>
                                         <ul>
-                                                <li>
-                                                        <a href="https://spike.ist/getting-started/guide/#a-brief-introduction-to-spike">A Brief Introduction to SPIKE</a>
-                                                    </li>
                                                 <li>
                                                         <a href="https://spike.ist/getting-started/guide/#prerequisites">Prerequisites</a>
                                                     </li>
@@ -172,6 +173,9 @@
                                                         <a href="https://spike.ist/getting-started/guide/#testing-out-spike">Testing Out SPIKE</a>
                                                     </li>
                                                 <li>
+                                                        <a href="https://spike.ist/getting-started/guide/#uninstalling-spike">Uninstalling SPIKE</a>
+                                                    </li>
+                                                <li>
                                                         <a href="https://spike.ist/getting-started/guide/#have-fun">Have Fun</a>
                                                     </li>
                                                 </ul>
@@ -183,6 +187,10 @@
 
                 <li >
                     <a href="https://spike.ist/getting-started/configuration/">Configuring SPIKE</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/getting-started/cli/">SPIKE CLI</a>
                 </li>
 
                 </ul>
@@ -571,7 +579,7 @@
       class="github-star"
     >
       <i class="bx bx-star"></i>
-      <span>Star us!</span>
+      <span>Star <strong>SPIKE</strong> on <strong>GitHub</strong></span>
     </a>
     <button id="theme-toggle" aria-label="Toggle theme">
       <i class="bx bx-sun light-icon"></i>
@@ -756,87 +764,14 @@
         <article>
             
         <h1 id="spike-quickstart-guide">SPIKE Quickstart Guide</h1>
-<p>In this guide, you will learn how to build, deploy, and test <strong>SPIKE</strong> from the
-source. This guide assumes basic familiarity with terminal commands and the
-ability to install and execute the required software. It is recommended to have
-administrative privileges on your system, as some steps might require them.</p>
+<p>In this guide, you will learn how to build, deploy, and test <a href="https://spike.ist/getting-started/about/" title="About SPIKE"><strong>SPIKE</strong></a>
+from the source. This guide assumes basic familiarity with terminal commands and
+the ability to install and execute the required software. It is recommended to
+have administrative privileges on your system, as some steps might require them.</p>
 <p>The tools and resources mentioned in this guide are essential for building and
 working with <strong>SPIKE</strong> effectively. Make sure to follow each step carefully to
 ensure a smooth experience. In case you encounter issues, please discuss
 them on the <a href="https://slack.spiffe.io/" title="SPIFFE Slack">SPIFFE community Slack</a>.</p>
-<h2 id="a-brief-introduction-to-spike">A Brief Introduction to SPIKE</h2>
-<h3 id="about-spike">About SPIKE</h3>
-<p><strong>SPIKE</strong> is a lightweight secrets store that uses <a href="https://spiffe.io/"><strong>SPIFFE</strong></a> as its
-identity control plane.</p>
-<p>Using <strong>SPIFFE</strong> as the identity layer ensures strong, verifiable workload
-identities without relying on static credentials like API keys or passwords.
-This enables <strong>SPIKE</strong> to authenticate and authorize workloads dynamically,
-reducing the attack surface and preventing key sprawl. Additionally,
-<strong>SPIFFE</strong>’s automatic identity rotation and short-lived cryptographic
-identities <strong>enhance security and resilience</strong>, making it an ideal foundation
-for a <strong>zero-trust secrets management system</strong>.</p>
-<h3 id="why-not-use-kubernetes-secrets">Why Not Use Kubernetes Secrets</h3>
-<p>One of the most misunderstood aspects of Kubernetes secrets is that
-<strong>Kubernetes secrets are not truly secrets</strong>. While Kubernetes provides a
-mechanism to store and manage sensitive information, it is not a dedicated
-secrets management solution.</p>
-<p>Here’s why relying on Kubernetes secrets can be problematic:</p>
-<h3 id="limited-scope-portability">Limited Scope &amp; Portability</h3>
-<p>If a service outside Kubernetes—or in another cluster—needs access to a
-Kubernetes secret, it introduces significant authentication and authorization
-challenges.</p>
-<p>Kubernetes Secrets are designed to work within a single cluster, making it
-difficult to share them securely across different environments
-(<em>e.g., multiple clusters, bare-metal infrastructure, or cloud-based services</em>).
-This limitation can lead to inconsistent security policies and fragmented secret
-management practices.</p>
-<p>A robust secrets management strategy should consider secrets’ scope beyond a
-single cluster.</p>
-<h3 id="static-nature-of-the-secrets">Static Nature of the Secrets</h3>
-<p>Kubernetes secrets are static once created. They are stored in <code>etcd</code> and
-injected into pods at startup, meaning updates require manual
-intervention—modifying the secret, redeploying affected applications, and
-ensuring no stale or expired secrets remain in use.</p>
-<p>Updating a Kubernetes Secret does not automatically notify or reload the
-workloads consuming it. Applications typically need to be restarted or
-re-deployed to pick up the new secret, adding operational complexity and
-potential downtime if not managed carefully.</p>
-<p>This lack of flexibility introduces security risks and operational overhead.</p>
-<h3 id="security-and-governance-limitations">Security and Governance Limitations</h3>
-<p>Kubernetes Secrets are governed by Kubernetes RBAC. Using Kubernetes Secrets, it
-can be tricky to enforce a platform-agnostic security policy that spans
-multiple environments. This often leads to a fragmented governance and
-potential misconfigurations.</p>
-<p>A dedicated secrets manager offers dynamic cross-environment compatibility,
-and stronger security controls—making it a better choice for modern,
-distributed architectures.</p>
-<h3 id="kubernetes-secrets-are-not-encrypted-by-default">Kubernetes Secrets Are Not Encrypted By Default</h3>
-<p>Kubernetes Secrets are stored in <code>etcd</code>, and unless encryption at rest is
-explicitly enabled, they are stored in plaintext. This means that anyone with
-access to etcd (<em>including certain privileged users or attackers who compromise
-the cluster</em>) can retrieve sensitive data without needing Kubernetes API access.</p>
-<p>Moreover, even with encryption at rest, the security model of Kubernetes Secrets
-remains weaker than a dedicated secrets store. While encryption prevents direct
-retrieval of plaintext secrets from <code>etcd</code> storage, an attacker with right
-privileges can get the encryption key. Additionally, the Kubernetes API must
-decrypt secrets when serving them to workloads, meaning any user or process
-with sufficient API permissions can still retrieve secrets in plaintext.</p>
-<p>So not only <code>etcd</code> itself, but also API-layer access is also a risk factor
-in enforcing the security of Kubernetes Secrets.</p>
-<h3 id="when-are-kubernetes-secrets-useful">When Are Kubernetes Secrets Useful?</h3>
-<p>Despite these challenges, Kubernetes Secrets can still be useful in simple,
-cluster-contained workloads where:</p>
-<ul>
-<li>Secrets do not need frequent rotation.</li>
-<li>All applications consuming the secrets reside in the same cluster.</li>
-<li>RBAC policies are well-configured to prevent accidental exposure.</li>
-</ul>
-<p>However, for any multi-cluster, dynamic, or <strong>zero-trust</strong> architecture, a
-dedicated secrets management solution is a better approach—providing
-fine-grained access control, cross-environment compatibility, and stronger
-security guarantees.</p>
-<p>That part taken care of, let’s get our hands dirty with <strong>SPIKE</strong> in the
-following sections.</p>
 <h2 id="prerequisites">Prerequisites</h2>
 <p>This quickstart guide assumes you are using an <a href="https://ubuntu.com/">Ubuntu Linux</a> operating
 system. The steps may slightly differ if you are using a different operating
@@ -883,7 +818,7 @@ might face.</p>
 </span><span style="color:#65737e;"># GOMOD=&#39;/home/spike/Desktop/WORKSPACE/spike/go.mod&#39;
 </span><span style="color:#65737e;"># GOWORK=&#39;&#39;
 </span></code></pre>
-<p>If need, you can also use Go’s built-in tooling to view and modify your Go
+<p>If you need, you can also use Go’s built-in tooling to view and modify your Go
 environment settings. Use the <code>go env</code> command to inspect or set specific
 environment variables.</p>
 <p>For example:</p>
@@ -1102,14 +1037,33 @@ window.</p>
 environment to explore its capabilities and better understand how it works. This
 is a great way to familiarize yourself with its features and test various
 scenarios safely.</p>
+<h2 id="uninstalling-spike">Uninstalling SPIKE</h2>
+<p>Retaining the <strong>SPIKE</strong> binaries on your system poses no issues. These binaries
+are compact, consuming minimal disk space and no resources when inactive. As
+simple executable files, they have no impact on your system’s performance when
+not in use. Therefore, keeping them installed is completely harmless.</p>
+<p>However, if you want to wipe out everything, you can just remove the binaries
+and <strong>SPIKE</strong>’s data folder, and that would be it:</p>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">rm -rf ~</span><span>/.spike
+</span><span style="color:#bf616a;">rm</span><span> spike
+</span><span style="color:#bf616a;">rm</span><span> keeper
+</span><span style="color:#bf616a;">rm</span><span> nexus
+</span></code></pre>
+<p>If you have <code>spire-server</code> and <code>spire-agent</code> on your system, and you are not
+using them for anything else; you can remove them too:</p>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">rm</span><span> spire-server
+</span><span style="color:#bf616a;">rm</span><span> spire-agent
+</span></code></pre>
 <h2 id="have-fun">Have Fun</h2>
 <p>That’s about it.</p>
 <p>Enjoy.</p>
 <hr />
 <ul>
+<li><a href="https://spike.ist/getting-started/about/">About SPIKE</a></li>
 <li><a href="https://spike.ist/getting-started/guide/">SPIKE Quickstart Guide</a></li>
 <li><a href="https://spike.ist/getting-started/alpha-release-notice/">Alpha Release Notice</a></li>
 <li><a href="https://spike.ist/getting-started/configuration/">Configuring SPIKE</a></li>
+<li><a href="https://spike.ist/getting-started/cli/">SPIKE CLI</a></li>
 </ul>
 <hr />
 <ul>
