@@ -367,7 +367,7 @@ administrative access to the system, improving the overall security posture.
 
 **SPIKE Nexus** recognizes the following builtin SPIFFE IDS:
 
-* `spiffe://$trustRoot/spike/pilot/role/superuser`: Super Admin.
+* `spiffe://$trustRoot/spike/pilot/role/superuser`: Super Admin
 * `spiffe://$trustRoot/spike/pilot/role/recover`: Recovery Admin
 * `spiffe://$trustRoot/spike/pilot/role/restore`: Restore Admin
 

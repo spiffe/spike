@@ -37,16 +37,17 @@ intervention.
 So, if a **SPIKE Keeper** instance crashes, it will eventually receive its
 shard.
 
-
 ## Complete System Recovery
+
+In critical scenarios where **SPIKE** remains unavailable for extended periods, 
 
 In the unlikely case that both **SPIKE Nexus** and all **SPIKE Keeper** 
 instances crash all together, the system may transition to a state where
 it cannot automatically recover.
 
-In that case manual intervention will be necessary.
-
-Here are the steps to take for this scenario:
+In that case, manual intervention will be necessary. The following sections 
+describe this "*break-the-glass*" procedure to help restore **SPIKE** back to 
+its operational state:
 
 ### 1. Before complete system failure:
 * Change the **SPIFFE ID** of **SPIKE Pilot** to recovery mode by 
