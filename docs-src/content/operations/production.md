@@ -8,9 +8,7 @@ weight = 2
 sort_by = "weight"
 +++
 
-
-
-## Production Setup Guide
+# SPIKE Production Setup Guide
 
 This guide involves configuring the necessary environment, deploying the
 application with optimized settings, and ensuring scalability, reliability, and
@@ -135,7 +133,7 @@ escalations within the Kubernetes cluster.
 
 ## SPIKE General Hardening Guidelines
 
-The guidelines covered in this section apply too all **SPIKE** components
+The guidelines covered in this section apply to all **SPIKE** components
 including **SPIKE Nexus**, **SPIKE Keeper**, and **SPIKE Pilot**.
 
 ### User Privileges
@@ -252,7 +250,7 @@ security.
 ## Hardening SPIKE Keeper for Production
 
 **SPIKE Keeper**s play a critical role in managing sensitive cryptographic
-material, specifically handling **shards** that are use to generate the
+material, specifically handling **shards** that are used to generate the
 **root key** that **SPIKE Nexus** uses to encrypt its backing store.
 
 As described in the [**SPIKE Security Model**][security], protecting your system

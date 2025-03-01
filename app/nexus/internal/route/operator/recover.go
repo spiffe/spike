@@ -16,6 +16,30 @@ import (
 	"github.com/spiffe/spike/internal/net"
 )
 
+// RouteRecover handles HTTP requests for recovering pilot recovery shards.
+//
+// This function processes HTTP requests to retrieve recovery shards needed for
+// a recovery operation. It reads and validates the request, retrieves the first
+// two recovery shards from the pilot recovery system, and returns them in the
+// response.
+//
+// Parameters:
+//   - w http.ResponseWriter: The HTTP response writer to write the response to.
+//   - r *http.Request: The incoming HTTP request.
+//   - audit *log.AuditEntry: An audit entry for logging the request.
+//
+// Returns:
+//   - error: An error if one occurs during processing, nil otherwise.
+//
+// The function will return various errors in the following cases:
+//   - errors.ErrReadFailure: If the request body cannot be read.
+//   - errors.ErrParseFailure: If the request body cannot be parsed.
+//   - errors.ErrNotFound: If fewer than 2 recovery shards are available.
+//   - Any error returned by guardRecoverRequest: For request validation
+//     failures.
+//
+// On success, the function responds with HTTP 200 OK and the first two recovery
+// shards in the response body.
 func RouteRecover(
 	w http.ResponseWriter, r *http.Request, audit *log.AuditEntry,
 ) error {

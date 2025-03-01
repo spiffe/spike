@@ -12,14 +12,17 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/spiffe/spike-sdk-go/kv"
+
 	"github.com/spiffe/spike/app/nexus/internal/state/backend/sqlite/ddl"
-	"github.com/spiffe/spike/pkg/store"
 )
 
-// StoreSecret stores a secret at the specified path with its metadata and versions.
-// It performs the following operations atomically within a transaction:
-// - Updates the secret metadata (current version, creation time, update time)
-// - Stores all secret versions with their respective data encrypted using AES-GCM
+// StoreSecret stores a secret at the specified path with its metadata and
+// versions. It performs the following operations atomically within a
+// transaction:
+//   - Updates the secret metadata (current version, creation time, update time)
+//   - Stores all secret versions with their respective data encrypted using
+//     AES-GCM
 //
 // The secret data is JSON-encoded before encryption.
 //
@@ -31,7 +34,7 @@ import (
 //
 // This method is thread-safe.
 func (s *DataStore) StoreSecret(
-	ctx context.Context, path string, secret store.Secret,
+	ctx context.Context, path string, secret kv.Value,
 ) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -57,7 +60,7 @@ func (s *DataStore) StoreSecret(
 		path, secret.Metadata.CurrentVersion,
 		secret.Metadata.CreatedTime, secret.Metadata.UpdatedTime)
 	if err != nil {
-		return fmt.Errorf("failed to store secret metadata: %w", err)
+		return fmt.Errorf("failed to kv secret metadata: %w", err)
 	}
 
 	// Update versions
@@ -75,7 +78,7 @@ func (s *DataStore) StoreSecret(
 		_, err = tx.ExecContext(ctx, ddl.QueryUpsertSecret,
 			path, version, nonce, encrypted, sv.CreatedTime, sv.DeletedTime)
 		if err != nil {
-			return fmt.Errorf("failed to store secret version: %w", err)
+			return fmt.Errorf("failed to kv secret version: %w", err)
 		}
 	}
 
@@ -95,18 +98,19 @@ func (s *DataStore) StoreSecret(
 // - Decrypts and unmarshals the version data
 //
 // Returns:
-// - (nil, nil) if the secret doesn't exist
-// - (nil, error) if any operation fails
-// - (*store.Secret, nil) with the decrypted secret and all its versions on success
+//   - (nil, nil) if the secret doesn't exist
+//   - (nil, error) if any operation fails
+//   - (*kv.Secret, nil) with the decrypted secret and all its versions on
+//     success
 //
 // This method is thread-safe.
 func (s *DataStore) LoadSecret(
 	ctx context.Context, path string,
-) (*store.Secret, error) {
+) (*kv.Value, error) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
-	var secret store.Secret
+	var secret kv.Value
 
 	// Load metadata
 	err := s.db.QueryRowContext(ctx, ddl.QuerySecretMetadata, path).Scan(
@@ -132,7 +136,7 @@ func (s *DataStore) LoadSecret(
 		}
 	}(rows)
 
-	secret.Versions = make(map[int]store.Version)
+	secret.Versions = make(map[int]kv.Version)
 	for rows.Next() {
 		var (
 			version     int
@@ -159,7 +163,7 @@ func (s *DataStore) LoadSecret(
 			return nil, fmt.Errorf("failed to unmarshal secret values: %w", err)
 		}
 
-		sv := store.Version{
+		sv := kv.Version{
 			Data:        values,
 			CreatedTime: createdTime,
 		}

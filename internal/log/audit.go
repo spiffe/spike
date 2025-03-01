@@ -31,7 +31,7 @@ const AuditBlocked AuditAction = "blocked"
 // AuditEntry represents a single audit log entry containing information about
 // user actions within the system.
 type AuditEntry struct {
-	// Id is a unique identifier for the audit trail
+	// TrailId is a unique identifier for the audit trail
 	TrailId string
 
 	// Timestamp indicates when the audited action occurred

@@ -5,31 +5,35 @@
 package recovery
 
 import (
-	"encoding/hex"
-
 	"github.com/cloudflare/circl/group"
 	"github.com/cloudflare/circl/secretsharing"
 
-	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 	"github.com/spiffe/spike/internal/log"
 )
 
-func mustUpdateRecoveryInfo(rk string) []secretsharing.Share {
-	const fName = "mustUpdateRecoveryInfo"
-
-	decodedRootKey, err := hex.DecodeString(rk)
-	if err != nil {
-		log.FatalLn(fName + ": failed to decode root key: " + err.Error())
-	}
-	rootSecret, rootShares := computeShares(decodedRootKey)
-	sanityCheck(rootSecret, rootShares)
-
-	// Save recovery information.
-	state.SetRootKey(decodedRootKey)
-
-	return rootShares
-}
-
+// RecoverRootKey reconstructs the original root key from a minimum of two
+// secret shares.
+//
+// The function uses Shamir's Secret Sharing implemented in the secretsharing
+// package to reconstruct the original secret (root key) from at least two
+// shares. It works with the P256 elliptic curve as the mathematical group for
+// the secret sharing operations.
+//
+// Parameters:
+//   - ss [][]byte: A slice containing at least two byte slices representing
+//     the secret shares.
+//     The function currently uses only the first two shares (ss[0] and ss[1]).
+//
+// Returns:
+//   - []byte: The reconstructed root key as a 32-byte slice. If reconstruction
+//     fails, returns an empty byte slice after logging a fatal error.
+//
+// The function will log a fatal error and terminate execution if:
+//   - It fails to unmarshal any of the shares
+//   - The secret reconstruction operation fails
+//   - The reconstructed secret is nil
+//   - The marshaled reconstructed secret doesn't have the expected 32-byte
+//     length
 func RecoverRootKey(ss [][]byte) []byte {
 	const fName = "RecoverRootKey"
 

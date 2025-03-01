@@ -8,5 +8,6 @@ weight = 1
 sort_by = "weight"
 +++
 
+# Architecture Decision Records
 
-asdfas
+{{ toc_adrs() }}

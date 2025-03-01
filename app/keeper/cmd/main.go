@@ -12,11 +12,12 @@ import (
 	"github.com/spiffe/spike-sdk-go/spiffe"
 
 	"github.com/spiffe/spike/app/keeper/internal/env"
-	"github.com/spiffe/spike/app/keeper/internal/route/handle"
+	http "github.com/spiffe/spike/app/keeper/internal/route/base"
 	"github.com/spiffe/spike/app/keeper/internal/trust"
 	"github.com/spiffe/spike/internal/auth"
 	"github.com/spiffe/spike/internal/config"
 	"github.com/spiffe/spike/internal/log"
+	routing "github.com/spiffe/spike/internal/net"
 )
 
 const appName = "SPIKE Keeper"
@@ -35,10 +36,13 @@ func main() {
 
 	trust.Authenticate(spiffeid)
 
-	log.Log().Info(appName, "msg", fmt.Sprintf("Started service: %s v%s",
-		appName, config.KeeperVersion))
+	log.Log().Info(
+		appName, "msg",
+		fmt.Sprintf("Started service: %s v%s", appName, config.KeeperVersion),
+	)
 	if err := net.ServeWithPredicate(
-		source, handle.InitializeRoutes,
+		source,
+		func() { routing.HandleRoute(http.Route) },
 		auth.CanTalkToKeeper,
 		env.TlsPort(),
 	); err != nil {

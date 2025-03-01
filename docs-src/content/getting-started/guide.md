@@ -182,7 +182,7 @@ go env
 # GOWORK=''
 ```
 
-If need, you can also use Go's built-in tooling to view and modify your Go 
+If you need, you can also use Go's built-in tooling to view and modify your Go 
 environment settings. Use the `go env` command to inspect or set specific 
 environment variables.
 

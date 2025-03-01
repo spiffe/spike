@@ -8,7 +8,6 @@ weight = 1
 sort_by = "weight"
 +++
 
-
 # SPIKE System Overview
 
 This document provides an overview of **SPIKE**, a [**SPIFFE**][spiffe]-native 

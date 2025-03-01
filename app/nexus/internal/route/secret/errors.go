@@ -11,16 +11,16 @@ import (
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	apiErr "github.com/spiffe/spike-sdk-go/api/errors"
+	"github.com/spiffe/spike-sdk-go/kv"
 
 	"github.com/spiffe/spike/internal/log"
 	"github.com/spiffe/spike/internal/net"
-	"github.com/spiffe/spike/pkg/store"
 )
 
 func handleGetSecretError(err error, w http.ResponseWriter) error {
 	fName := "handleGetSecretError"
 
-	if errors.Is(err, store.ErrSecretNotFound) {
+	if errors.Is(err, kv.ErrItemNotFound) {
 		log.Log().Info(fName, "msg", "Secret not found")
 
 		res := reqres.SecretReadResponse{Err: data.ErrNotFound}
@@ -51,7 +51,7 @@ func handleGetSecretError(err error, w http.ResponseWriter) error {
 func handleGetSecretMetadataError(err error, w http.ResponseWriter) error {
 	fName := "handleGetSecretMetadataError"
 
-	if errors.Is(err, store.ErrSecretNotFound) {
+	if errors.Is(err, kv.ErrItemNotFound) {
 		log.Log().Info(fName, "msg", "Secret not found")
 
 		res := reqres.SecretMetadataResponse{Err: data.ErrNotFound}

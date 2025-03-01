@@ -20,6 +20,37 @@ import (
 	"github.com/spiffe/spike/internal/log"
 )
 
+// newOperatorRecoverCommand creates a new cobra command for recovery operations
+// on SPIKE Nexus.
+//
+// This function creates a command that allows privileged operators with the
+// 'recover' role to retrieve recovery shards from a healthy SPIKE Nexus system.
+// The retrieved shards are saved to the configured recovery directory and can
+// be used to restore the system in case of a catastrophic failure.
+//
+// Parameters:
+//   - source *workloadapi.X509Source: The X.509 source for SPIFFE
+//     authentication.
+//   - spiffeId string: The SPIFFE ID of the caller for role-based access
+//     control.
+//
+// Returns:
+//   - *cobra.Command: A cobra command that implements the recovery
+//     functionality.
+//
+// The command performs the following operations:
+//   - Verifies the caller has the 'recover' role, aborting otherwise.
+//   - Authenticates the recovery request.
+//   - Retrieves recovery shards from the SPIKE API.
+//   - Cleans the recovery directory of any previous recovery files.
+//   - Saves the retrieved shards as text files in the recovery directory.
+//   - Provides instructions to the operator about securing the recovery shards.
+//
+// The command will abort with a fatal error if:
+//   - The caller lacks the required 'recover' role.
+//   - The API call to retrieve shards fails.
+//   - Fewer than 2 shards are retrieved.
+//   - It fails to read or clean the recovery directory.
 func newOperatorRecoverCommand(
 	source *workloadapi.X509Source, spiffeId string,
 ) *cobra.Command {

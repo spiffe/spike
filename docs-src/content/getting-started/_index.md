@@ -8,10 +8,6 @@ weight = 1
 sort_by = "weight"
 +++
 
-
-
-
-
-## Getting Started
+# Getting Started
 
 {{ toc_getting_started() }}

@@ -8,8 +8,6 @@ weight = 3
 sort_by = "weight"
 +++
 
-
-
 # Presentations and Demos
 
 Here you can find a range of presentations and demos that highlight **SPIKE**'s
@@ -47,7 +45,7 @@ capabilities and showcase its innovative features.
 [spike]: https://vimeo.com/v0lkan/spike
 [spike-intro]: https://vimeo.com/v0lkan/spike-rocks
 [spike-jwt]: https://vimeo.com/v0lkan/spike-jwt
-[spike-passwordless]: http://vimeo.com/v0lkan/passwordless-secrets
+[spike-passwordless]: https://vimeo.com/v0lkan/passwordless-secrets
 [spike-audits]: https://vimeo.com/v0lkan/spike-audits
 [spike-policy]: https://vimeo.com/v0lkan/spike-policy
 [spike-metadata]: https://vimeo.com/v0lkan/spike-metadata

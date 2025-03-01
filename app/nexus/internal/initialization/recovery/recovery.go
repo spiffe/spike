@@ -10,6 +10,7 @@ import (
 	"net/url"
 	"time"
 
+	"github.com/cloudflare/circl/secretsharing"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	apiUrl "github.com/spiffe/spike-sdk-go/api/url"
@@ -361,4 +362,20 @@ func BootstrapBackingStoreWithNewRootKey(source *workloadapi.X509Source) {
 		log.Log().Info(fName, "msg", "Waiting for keepers to initialize")
 		time.Sleep(5 * time.Second)
 	}
+}
+
+func mustUpdateRecoveryInfo(rk string) []secretsharing.Share {
+	const fName = "mustUpdateRecoveryInfo"
+
+	decodedRootKey, err := hex.DecodeString(rk)
+	if err != nil {
+		log.FatalLn(fName + ": failed to decode root key: " + err.Error())
+	}
+	rootSecret, rootShares := computeShares(decodedRootKey)
+	sanityCheck(rootSecret, rootShares)
+
+	// Save recovery information.
+	state.SetRootKey(decodedRootKey)
+
+	return rootShares
 }

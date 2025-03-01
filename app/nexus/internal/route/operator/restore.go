@@ -5,7 +5,6 @@
 package operator
 
 import (
-	"encoding/base64"
 	"net/http"
 	"sync"
 
@@ -28,30 +27,37 @@ var (
 	shardsMutex sync.RWMutex
 )
 
-// validateShard checks if the shard is valid and not duplicate
-func validateShard(shard string) error {
-	// Check if shard is already stored
-	shardsMutex.RLock()
-	for _, existingShard := range shards {
-		if existingShard == shard {
-			shardsMutex.RUnlock()
-			return errors.ErrInvalidInput
-		}
-	}
-	shardsMutex.RUnlock()
-
-	// Validate shard length
-	decodedShard, err := base64.StdEncoding.DecodeString(shard)
-	if err != nil {
-		return errors.ErrInvalidInput
-	}
-	if len(decodedShard) != decodedShardSize {
-		return errors.ErrInvalidInput
-	}
-
-	return nil
-}
-
+// RouteRestore handles HTTP requests for restoring a system using recovery
+// shards.
+//
+// This function processes requests to contribute a recovery shard to the
+// restoration process. It validates the incoming shard, adds it to the
+// collection, and triggers the full restoration once all expected shards have
+// been collected.
+//
+// Parameters:
+//   - w http.ResponseWriter: The HTTP response writer to write the response to.
+//   - r *http.Request: The incoming HTTP request.
+//   - audit *log.AuditEntry: An audit entry for logging the request.
+//
+// Returns:
+//   - error: An error if one occurs during processing, nil otherwise.
+//
+// The function will return various errors in the following cases:
+//   - errors.ErrReadFailure: If the request body cannot be read.
+//   - errors.ErrParseFailure: If the request body cannot be parsed.
+//   - errors.ErrMarshalFailure: If the response body cannot be marshaled.
+//   - Any error returned by guardRestoreRequest: For request validation
+//     failures.
+//
+// The function responds with:
+//   - HTTP 400 Bad Request: If all required shards have already been collected
+//     or if the provided shard is invalid.
+//   - HTTP 200 OK: If the shard is successfully added, including status
+//     information about the restoration progress.
+//
+// When the last required shard is added, the function automatically triggers
+// the restoration process using RestoreBackingStoreUsingPilotShards.
 func RouteRestore(
 	w http.ResponseWriter, r *http.Request, audit *log.AuditEntry,
 ) error {

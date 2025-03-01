@@ -36,7 +36,7 @@ Commands:
 ```
 
 Note that the CLI is work in progress, so what you see above might be slightly
-different than the version that you are using.
+different from the version that you are using.
 
 For additional help, you can check the official documentation.
 

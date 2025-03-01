@@ -8,8 +8,6 @@ weight = 1
 sort_by = "weight"
 +++
 
-
-
 # Cross-Building SPIKE Binaries
 
 We cross-build SPIKE on an ARM64 Mac Machine.

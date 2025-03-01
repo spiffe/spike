@@ -8,9 +8,6 @@ weight = 7
 sort_by = "weight"
 +++
 
-
-<br style="clear:both;">
-
 # SPIKE Architectural Decision Records (*ADRs*)
 
 This section serves as an archive of significant architectural decisions made

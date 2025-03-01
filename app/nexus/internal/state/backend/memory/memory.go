@@ -17,52 +17,51 @@ import (
 	"context"
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
-
-	"github.com/spiffe/spike/pkg/store"
+	"github.com/spiffe/spike-sdk-go/kv"
 )
 
 // NoopStore provides a no-op implementation of a storage backend.
 // This implementation can be used for testing or as a placeholder
 // where no actual storage is needed. NoopStore is also use when the
-// backing store is configured to be in-memory.
+// backing kv is configured to be in-memory.
 type NoopStore struct {
 }
 
-// Close implements the closing operation for the store.
+// Close implements the closing operation for the kv.
 // This implementation is a no-op and always returns nil.
 func (s *NoopStore) Close(_ context.Context) error {
 	return nil
 }
 
-// Initialize prepares the store for use.
+// Initialize prepares the kv for use.
 // This implementation is a no-op and always returns nil.
 func (s *NoopStore) Initialize(_ context.Context) error {
 	return nil
 }
 
-// LoadSecret retrieves a secret from the store by its path.
+// LoadSecret retrieves a secret from the kv by its path.
 // This implementation always returns nil secret and nil error.
 func (s *NoopStore) LoadSecret(
 	_ context.Context, _ string,
-) (*store.Secret, error) {
+) (*kv.Value, error) {
 	return nil, nil
 }
 
-// StoreSecret saves a secret to the store at the specified path.
+// StoreSecret saves a secret to the kv at the specified path.
 // This implementation is a no-op and always returns nil.
 func (s *NoopStore) StoreSecret(
-	_ context.Context, _ string, _ store.Secret,
+	_ context.Context, _ string, _ kv.Value,
 ) error {
 	return nil
 }
 
-// StorePolicy stores a policy in the no-op store.
+// StorePolicy stores a policy in the no-op kv.
 // This implementation is a no-op and always returns nil.
 func (s *NoopStore) StorePolicy(_ context.Context, _ data.Policy) error {
 	return nil
 }
 
-// LoadPolicy retrieves a policy from the store by its ID.
+// LoadPolicy retrieves a policy from the kv by its ID.
 // This implementation always returns nil and nil error.
 func (s *NoopStore) LoadPolicy(
 	_ context.Context, _ string,
@@ -70,7 +69,7 @@ func (s *NoopStore) LoadPolicy(
 	return nil, nil
 }
 
-// DeletePolicy removes a policy from the no-op store by its ID.
+// DeletePolicy removes a policy from the no-op kv by its ID.
 // This implementation is a no-op and always returns nil.
 func (s *NoopStore) DeletePolicy(_ context.Context, _ string) error {
 	return nil

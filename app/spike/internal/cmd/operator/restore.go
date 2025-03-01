@@ -19,6 +19,40 @@ import (
 	"github.com/spiffe/spike/internal/log"
 )
 
+// newOperatorRestoreCommand creates a new cobra command for restoration
+// operations on SPIKE Nexus.
+//
+// This function creates a command that allows privileged operators with the
+// 'restore' role to restore SPIKE Nexus after a system failure. The command
+// accepts recovery shards interactively and initiates the restoration process.
+//
+// Parameters:
+//   - source *workloadapi.X509Source: The X.509 source for SPIFFE
+//     authentication.
+//   - spiffeId string: The SPIFFE ID of the caller for role-based access
+//     control.
+//
+// Returns:
+//   - *cobra.Command: A cobra command that implements the restoration
+//     functionality.
+//
+// The command performs the following operations:
+//   - Verifies the caller has the 'restore' role, aborting otherwise.
+//   - Authenticates the restoration request.
+//   - Prompts the user to enter a recovery shard (input is hidden for
+//     security).
+//   - Sends the shard to the SPIKE API to contribute to restoration.
+//   - Reports the status of the restoration process to the user.
+//
+// The command will abort with a fatal error if:
+//   - The caller lacks the required 'restore' role.
+//   - There's an error reading the recovery shard from input.
+//   - The API call to restore using the shard fails.
+//   - No status is returned from the restoration attempt.
+//
+// If restoration is incomplete (more shards needed), the command displays the
+// current count of collected shards and instructs the user to run the command
+// again to provide additional shards.
 func newOperatorRestoreCommand(
 	source *workloadapi.X509Source, spiffeId string,
 ) *cobra.Command {
@@ -75,7 +109,8 @@ func newOperatorRestoreCommand(
 				fmt.Println(" Shards collected: ", status.ShardsCollected)
 				fmt.Println(" Shards remaining: ", status.ShardsRemaining)
 				fmt.Println(
-					" Please run `spike operator restore` again to provide the remaining shards.")
+					" Please run `spike operator restore` " +
+						"again to provide the remaining shards.")
 				fmt.Println("")
 			}
 		},

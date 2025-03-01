@@ -8,8 +8,6 @@ weight = 3
 sort_by = "weight"
 +++
 
-
-
 # Configuring SPIKE
 
 You can use environment variables to configure the **SPIKE** components.
@@ -20,8 +18,7 @@ configure the SPIKE components:
 | Component    | Environment Variable                 | Description                                                                                               | Default Value                                   |
 |--------------|--------------------------------------|-----------------------------------------------------------------------------------------------------------|-------------------------------------------------|
 | SPIKE Keeper | `SPIKE_KEEPER_TLS_PORT`              | The TLS port the current SPIKE Keeper instance listens on.                                                | `":8443"`                                       |
-| SPIKE Keeper | `SPIKE_KEEPER_API_URL`               | The API URL of the current SPIKE Keeper instance.                                                         | `"https://localhost:8443"                       |
-| SPIKE Nexus  | `SPIKE_NEXUS_KEEPER_PEERS`                 | A mapping that contains `[{id:keeperurl}]` collection for all SPIKE Keepers that SPIKE Nexus knows about. | "" (check `./hack/start.sh` for usage examples. |
+| SPIKE Nexus  | `SPIKE_NEXUS_KEEPER_PEERS`           | A mapping that contains `[{id:keeperurl}]` collection for all SPIKE Keepers that SPIKE Nexus knows about. | "" (check `./hack/start.sh` for usage examples. |
 | SPIKE Nexus  | `SPIKE_NEXUS_TLS_PORT`               | The TLS port SPIKE Nexus listens on.                                                                      | `":8553"`                                       |
 | SPIKE Nexus  | `SPIKE_NEXUS_MAX_SECRET_VERSIONS`    | The maximum number of versions of a secret that SPIKE Nexus stores.                                       | `10`                                            |
 | SPIKE Nexus  | `SPIKE_NEXUS_BACKEND_STORE`          | The backend store SPIKE Nexus uses to store secrets (memory, s3, sqlite).                                 | `"sqlite"`                                      |
