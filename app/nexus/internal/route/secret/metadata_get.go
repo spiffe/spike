@@ -46,25 +46,25 @@ import (
 //
 // Response format on success (200 OK):
 //
-// "versions": {                          // map[int]SecretMetadataVersionResponse
+// "versions": {                       // map[int]SecretMetadataVersionResponse
 //
-//	"version": {                          // SecretMetadataVersionResponse object
-//	  "createdTime": "",                  // time.Time
-//	  "version": 0,                       // int
-//	  "deletedTime": null                 // *time.Time (pointer, can be null)
+//	"version": {                       // SecretMetadataVersionResponse object
+//	  "createdTime": "",               // time.Time
+//	  "version": 0,                    // int
+//	  "deletedTime": null              // *time.Time (pointer, can be null)
 //	 }
 //	},
 //
-// "metadata": {                           // SecretRawMetadataResponse object
+// "metadata": {                        // SecretRawMetadataResponse object
 //
-//	 "currentVersion": 0,                  // int
-//	 "oldestVersion": 0,                   // int
-//	 "createdTime": "",                    // time.Time
-//	 "updatedTime": "",                    // time.Time
-//	 "maxVersions": 0                      // int
+//	 "currentVersion": 0,               // int
+//	 "oldestVersion": 0,                // int
+//	 "createdTime": "",                 // time.Time
+//	 "updatedTime": "",                 // time.Time
+//	 "maxVersions": 0                   // int
 //	},
 //
-// "err": null                             // ErrorCode
+// "err": null                          // ErrorCode
 //
 // Error responses:
 //   - 401 Unauthorized: Invalid or missing JWT token
@@ -75,7 +75,9 @@ import (
 func RouteGetSecretMetadata(
 	w http.ResponseWriter, r *http.Request, audit *log.AuditEntry,
 ) error {
-	log.Log().Info("routeGetSecretMetadata", "method", r.Method, "path", r.URL.Path,
+	log.Log().Info("routeGetSecretMetadata",
+		"method", r.Method,
+		"path", r.URL.Path,
 		"query", r.URL.RawQuery)
 	audit.Action = log.AuditRead
 

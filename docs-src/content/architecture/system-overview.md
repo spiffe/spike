@@ -8,7 +8,6 @@ weight = 1
 sort_by = "weight"
 +++
 
-
 # SPIKE System Overview
 
 This document provides an overview of **SPIKE**, a [**SPIFFE**][spiffe]-native 
@@ -368,7 +367,7 @@ administrative access to the system, improving the overall security posture.
 
 **SPIKE Nexus** recognizes the following builtin SPIFFE IDS:
 
-* `spiffe://$trustRoot/spike/pilot/role/superuser`: Super Admin.
+* `spiffe://$trustRoot/spike/pilot/role/superuser`: Super Admin
 * `spiffe://$trustRoot/spike/pilot/role/recover`: Recovery Admin
 * `spiffe://$trustRoot/spike/pilot/role/restore`: Restore Admin
 

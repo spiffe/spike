@@ -7,14 +7,12 @@ package recovery
 import (
 	"encoding/hex"
 	"encoding/json"
-	"net/url"
-	"os"
-	"path"
-
 	"github.com/cloudflare/circl/secretsharing"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	apiUrl "github.com/spiffe/spike-sdk-go/api/url"
+	"net/url"
+	"os"
 
 	"github.com/spiffe/spike/app/nexus/internal/env"
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
@@ -29,7 +27,9 @@ func iterateKeepersToBootstrap(
 	const fName = "iterateKeepersToBootstrap"
 
 	for keeperId, keeperApiRoot := range keepers {
-		u, err := url.JoinPath(keeperApiRoot, string(apiUrl.SpikeKeeperUrlContribute))
+		u, err := url.JoinPath(
+			keeperApiRoot, string(apiUrl.SpikeKeeperUrlContribute),
+		)
 		if err != nil {
 			log.Log().Warn(
 				fName, "msg", "Failed to join path", "url", keeperApiRoot,
@@ -58,9 +58,7 @@ func iterateKeepersToBootstrap(
 		if len(successfulKeepers) == 3 {
 			log.Log().Info(fName, "msg", "All keepers initialized")
 
-			tombstone := path.Join(
-				config.SpikeNexusDataFolder(), config.SpikeNexusTombstoneFile,
-			)
+			tombstone := config.SpikeNexusTombstonePath()
 
 			// Create the tombstone file to mark SPIKE Nexus as bootstrapped.
 			err = os.WriteFile(

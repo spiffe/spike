@@ -8,6 +8,8 @@ import (
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 )
 
+// formatTime formats a time.Time object into a readable string.
+// The format used is "2006-01-02 15:04:05 MST".
 func formatTime(t time.Time) string {
 	return t.Format("2006-01-02 15:04:05 MST")
 }

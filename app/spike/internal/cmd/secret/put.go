@@ -16,8 +16,8 @@ import (
 	"github.com/spiffe/spike/app/spike/internal/trust"
 )
 
-// newSecretPutCommand creates and returns a new cobra.Command for storing secrets.
-// It configures a command that stores key-value pairs as a secret at a
+// newSecretPutCommand creates and returns a new cobra.Command for storing
+// secrets. It configures a command that stores key-value pairs as a secret at a
 // specified path.
 //
 // Parameters:

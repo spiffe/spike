@@ -8,8 +8,6 @@ weight = 1
 sort_by = "weight"
 +++
 
-
-
 # Community
 
 👋 Welcome to the **SPIKE** community! We are excited to have you here. 

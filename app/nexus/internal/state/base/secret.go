@@ -5,23 +5,24 @@
 package base
 
 import (
+	"github.com/spiffe/spike-sdk-go/kv"
+
 	"github.com/spiffe/spike/app/nexus/internal/state/persist"
-	"github.com/spiffe/spike/pkg/store"
 )
 
 // UpsertSecret stores or updates a secret at the specified path with the
 // provided values. It provides thread-safe access to the underlying key-value
-// store.
+// kv.
 //
 // Parameters:
 //   - path: The location where the secret should be stored
 //   - values: A map containing the secret key-value pairs to be stored
 func UpsertSecret(path string, values map[string]string) {
-	kvMu.Lock()
-	kv.Put(path, values)
-	kvMu.Unlock()
+	secretStoreMu.Lock()
+	secretStore.Put(path, values)
+	secretStoreMu.Unlock()
 
-	persist.StoreSecret(kv, path)
+	persist.StoreSecret(secretStore, path)
 }
 
 // DeleteSecret deletes one or more versions of a secret at the specified path.
@@ -33,22 +34,22 @@ func UpsertSecret(path string, values map[string]string) {
 //   - versions: A slice of version numbers to delete. If empty, deletes the
 //     current version only. Version number 0 is the current version.
 func DeleteSecret(path string, versions []int) error {
-	kvMu.Lock()
-	err := kv.Delete(path, versions)
-	kvMu.Unlock()
+	secretStoreMu.Lock()
+	err := secretStore.Delete(path, versions)
+	secretStoreMu.Unlock()
 
 	if err != nil {
 		return err
 	}
 
-	persist.StoreSecret(kv, path)
+	persist.StoreSecret(secretStore, path)
 	return nil
 }
 
 // UndeleteSecret restores previously deleted versions of a secret at the
 // specified path. It takes a path string identifying the secret's location and
 // a slice of version numbers to restore. The function acquires a lock on the
-// key-value store to ensure thread-safe operations during the undelete process.
+// key-value kv to ensure thread-safe operations during the undelete process.
 //
 // The function operates synchronously and will block until the undelete
 // operation is complete. If any specified version numbers don't exist or were
@@ -63,20 +64,20 @@ func DeleteSecret(path string, versions []int) error {
 //	// Restore versions 1 and 3 of a secret
 //	UndeleteSecret("/app/secrets/api-key", []int{1, 3})
 func UndeleteSecret(path string, versions []int) error {
-	kvMu.Lock()
-	err := kv.Undelete(path, versions)
-	kvMu.Unlock()
+	secretStoreMu.Lock()
+	err := secretStore.Undelete(path, versions)
+	secretStoreMu.Unlock()
 
 	if err != nil {
 		return err
 	}
 
-	persist.StoreSecret(kv, path)
+	persist.StoreSecret(secretStore, path)
 	return nil
 }
 
 // GetSecret retrieves a secret from the specified path and version.
-// It provides thread-safe read access to the secret store.
+// It provides thread-safe read access to the secret kv.
 //
 // Parameters:
 //   - path: The location of the secret to retrieve
@@ -86,9 +87,9 @@ func UndeleteSecret(path string, versions []int) error {
 //   - map[string]string: The secret key-value pairs
 //   - bool: Whether the secret was found
 func GetSecret(path string, version int) (map[string]string, error) {
-	kvMu.RLock()
-	secret, err := kv.Get(path, version)
-	kvMu.RUnlock()
+	secretStoreMu.RLock()
+	secret, err := secretStore.Get(path, version)
+	secretStoreMu.RUnlock()
 
 	if err == nil {
 		return secret, nil
@@ -103,27 +104,27 @@ func GetSecret(path string, version int) (map[string]string, error) {
 		version = cachedSecret.Metadata.CurrentVersion
 	}
 
-	kvMu.Lock()
-	kv.Put(path, cachedSecret.Versions[version].Data)
-	kvMu.Unlock()
+	secretStoreMu.Lock()
+	secretStore.Put(path, cachedSecret.Versions[version].Data)
+	secretStoreMu.Unlock()
 
 	return cachedSecret.Versions[version].Data, nil
 }
 
-// GetRawSecret retrieves a secret with metadata from the specified path and version.
-// It provides thread-safe read access to the secret store.
+// GetRawSecret retrieves a secret with metadata from the specified path and
+// version. It provides thread-safe read access to the secret kv.
 //
 // Parameters:
 //   - path: The location of the secret to retrieve
 //   - version: The specific version of the secret to fetch
 //
 // Returns:
-//   - *store.Secret: The secret type
+//   - *kv.Secret: The secret type
 //   - bool: Whether the secret was found
-func GetRawSecret(path string, version int) (*store.Secret, error) {
-	kvMu.RLock()
-	secret, err := kv.GetRawSecret(path)
-	kvMu.RUnlock()
+func GetRawSecret(path string, version int) (*kv.Value, error) {
+	secretStoreMu.RLock()
+	secret, err := secretStore.GetRawSecret(path)
+	secretStoreMu.RUnlock()
 
 	if err == nil {
 		return secret, nil
@@ -138,9 +139,9 @@ func GetRawSecret(path string, version int) (*store.Secret, error) {
 		version = cachedSecret.Metadata.CurrentVersion
 	}
 
-	kvMu.Lock()
-	kv.Put(path, cachedSecret.Versions[version].Data)
-	kvMu.Unlock()
+	secretStoreMu.Lock()
+	secretStore.Put(path, cachedSecret.Versions[version].Data)
+	secretStoreMu.Unlock()
 
 	return cachedSecret, nil
 }

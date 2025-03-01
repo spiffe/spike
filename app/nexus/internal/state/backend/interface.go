@@ -17,8 +17,7 @@ import (
 	"context"
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
-
-	"github.com/spiffe/spike/pkg/store"
+	"github.com/spiffe/spike-sdk-go/kv"
 )
 
 type DatabaseConfigKey string
@@ -41,9 +40,9 @@ type Backend interface {
 	Close(ctx context.Context) error
 
 	// StoreSecret stores a secret at the specified path
-	StoreSecret(ctx context.Context, path string, secret store.Secret) error
+	StoreSecret(ctx context.Context, path string, secret kv.Value) error
 	// LoadSecret loads a secret from the specified path
-	LoadSecret(ctx context.Context, path string) (*store.Secret, error)
+	LoadSecret(ctx context.Context, path string) (*kv.Value, error)
 
 	// StorePolicy stores a policy object in the backend storage.
 	StorePolicy(ctx context.Context, policy data.Policy) error

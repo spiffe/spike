@@ -13,10 +13,11 @@ import (
 
 	"github.com/spiffe/spike/app/nexus/internal/env"
 	"github.com/spiffe/spike/app/nexus/internal/initialization"
-	"github.com/spiffe/spike/app/nexus/internal/route/handle"
+	http "github.com/spiffe/spike/app/nexus/internal/route/base"
 	"github.com/spiffe/spike/app/nexus/internal/trust"
 	"github.com/spiffe/spike/internal/config"
 	"github.com/spiffe/spike/internal/log"
+	routing "github.com/spiffe/spike/internal/net"
 )
 
 const appName = "SPIKE Nexus"
@@ -43,7 +44,8 @@ func main() {
 	)
 
 	if err := net.Serve(
-		source, handle.InitializeRoutes,
+		source,
+		func() { routing.HandleRoute(http.Route) },
 		env.TlsPort(),
 	); err != nil {
 		log.FatalF("%s: Failed to serve: %s\n", appName, err.Error())

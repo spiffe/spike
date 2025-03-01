@@ -8,8 +8,6 @@ weight = 2
 sort_by = "weight"
 +++
 
-
-
 # Get in Touch
 
 Hi 👋 ---Thank you for wanting to contact us ❤️.

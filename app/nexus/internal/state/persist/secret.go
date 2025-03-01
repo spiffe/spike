@@ -7,11 +7,11 @@ package persist
 import (
 	"context"
 
+	"github.com/spiffe/spike-sdk-go/kv"
 	"github.com/spiffe/spike-sdk-go/retry"
 
 	"github.com/spiffe/spike/app/nexus/internal/env"
 	"github.com/spiffe/spike/internal/log"
-	"github.com/spiffe/spike/pkg/store"
 )
 
 // ReadSecret attempts to retrieve a secret from the backend cache at the
@@ -24,30 +24,31 @@ import (
 //     If 0, uses the current version
 //
 // Returns:
-//   - A pointer to the store.Secret if found and not deleted, nil otherwise
+//   - A pointer to the kv.Secret if found and not deleted, nil otherwise
 //
 // The function returns nil in several cases:
 //   - When the backend is not available
 //   - When there's an error loading from the cache
 //   - When the requested version doesn't exist
 //   - When the secret version has been deleted (DeletedTime is set)
-func ReadSecret(path string, version int) *store.Secret {
+func ReadSecret(path string, version int) *kv.Value {
 	be := Backend()
 	if be == nil {
 		return nil
 	}
 
 	retrier := retry.NewExponentialRetrier()
-	typedRetrier := retry.NewTypedRetrier[*store.Secret](retrier)
+	typedRetrier := retry.NewTypedRetrier[*kv.Value](retrier)
 
 	ctx, cancel := context.WithTimeout(
 		context.Background(), env.DatabaseOperationTimeout(),
 	)
 	defer cancel()
 
-	cachedSecret, err := typedRetrier.RetryWithBackoff(ctx, func() (*store.Secret, error) {
-		return be.LoadSecret(ctx, path)
-	})
+	cachedSecret, err := typedRetrier.RetryWithBackoff(
+		ctx, func() (*kv.Value, error) {
+			return be.LoadSecret(ctx, path)
+		})
 
 	if err != nil {
 		log.Log().Warn("readSecret",
@@ -72,20 +73,20 @@ func ReadSecret(path string, version int) *store.Secret {
 	return nil
 }
 
-// StoreSecret stores a secret from the KV store to the
+// StoreSecret stores a secret from the key-value store kv to the
 // backend cache. It retrieves the secret from the provided path and attempts to
 // cache it in a background goroutine. If the backend is not available or if the
-// store operation fails, it will only log a warning since the KV store remains
-// the source of truth.
+// kv operation fails, it will only log a warning since the key-value store kv
+// remains the source of truth.
 //
 // Parameters:
-//   - kv: A pointer to the KV store containing the secrets
-//   - path: The path where the secret is stored in the KV store
+//   - kv: A pointer to the key-value store kv containing the secrets
+//   - path: The path where the secret is stored in the key-value store kv
 //
 // The function does not return any errors since it handles them internally
-// through logging. Cache failures are non-fatal as the KV store is considered
-// the authoritative data source.
-func StoreSecret(kv *store.KV, path string) {
+// through logging. Cache failures are non-fatal as the key-value store kv is
+// considered the authoritative data source.
+func StoreSecret(kv *kv.KV, path string) {
 	const fName = "storeSecret"
 	be := Backend()
 

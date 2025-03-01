@@ -417,6 +417,12 @@
   </low-hanging-fruits>
   <later>
     <issue>
+      verify if the keeper has shard before resending it:
+      send hash of the shard first
+      if keeper says “I have it”, don’t send the actual shard.
+      this will make things extra secure.
+    </issue>
+    <issue>
       Fleet management:
       - There is a management plane cluster
       - There is a control plane cluster
@@ -431,7 +437,71 @@
       namespace
       that no one other than SPIKE components can see into.
     </issue>
+    <issue>
+      Wrt DR:
 
+      A 404 response from a keeper meens that it does not have the shard
+      if threshold number of keepers do not have the shard too, then there is
+      no way that nexus can recover; so does it mean it should stop polling?
+
+      Not quite. Because later, we can have ways to seed keepers, maybe through
+      other nexuses, maybe via cloning from a backup keeper, maybe using a
+      secure keeper API (i.e. imitating nexus)
+
+      It's better, and simpler to keep the polling always running.
+      It makes less assumptions that way.
+
+      make this an ADR.
+    </issue>
+    <issue>
+      configure SPIKE to rekey itself as per NIST guidelines.
+      Also maybe `spike operator rekey` to manually initiate that.
+      `spike operator rekey` will also change the shamir shares, wheras the
+      internal rekey will just change the encryption key, leaving the shamir
+      shares intact.
+    </issue>
+    <issue>
+      This is OpenBao's production deployment checlist; check of if any of
+      those also applies for SPIKE, of if we need different/additional items
+      for SPIKE.
+
+      From the context, OpenBao can be swapped with SPIKE Nexus, I think:
+
+      End-to-End TLS. OpenBao should always be used with TLS in production. If intermediate load balancers or reverse proxies are used to front OpenBao, they should not terminate TLS. This way traffic is always encrypted in transit to OpenBao and minimizes risks introduced by intermediate layers.
+
+      Single Tenancy. OpenBao should be the only main process running on a machine. This reduces the risk that another process running on the same machine is compromised and can interact with OpenBao. This can be accomplished by using OpenBao Helm's affinity configurable.
+
+      Enable Auditing. OpenBao supports several auditing backends. Enabling auditing provides a history of all operations performed by OpenBao and provides a forensics trail in the case of misuse or compromise. Audit logs securely hash any sensitive data, but access should still be restricted to prevent any unintended disclosures. OpenBao Helm includes a configurable auditStorage option that provisions a persistent volume to store audit logs.
+
+      Immutable Upgrades. OpenBao relies on an external storage backend for persistence, and this decoupling allows the servers running OpenBao to be managed immutably. When upgrading to new versions, new servers with the upgraded version of OpenBao are brought online. They are attached to the same shared storage backend and unsealed. Then the old servers are destroyed. This reduces the need for remote access and upgrade orchestration which may introduce security gaps. See the upgrade section for instructions on upgrading OpenBao on Kubernetes.
+
+      Upgrade Frequently. OpenBao is actively developed, and updating frequently is important to incorporate security fixes and any changes in default settings such as key lengths or cipher suites. Subscribe to the OpenBao mailing list and GitHub CHANGELOG for updates.
+
+      Restrict Storage Access. OpenBao encrypts all data at rest, regardless of which storage backend is used. Although the data is encrypted, an attacker with arbitrary control can cause data corruption or loss by modifying or deleting keys. Access to the storage backend should be restricted to only OpenBao to avoid unauthorized access or operations.
+    </issue>
+    <issue>
+      a mode that enables the admin to load shares to keepers.
+      this will be essentially using the keeper REST API and acting as
+      SPIKE Pilot with a recover svid.
+      The benefit would be; we can have a dedicated recover and restore binaries
+      without having to expose the pilot binary.
+      Or we can update the keepers, even if we don't have access to SPIKE Nexus
+      or SPIKE Nexus is down.
+      maybe by using a "seeder" SPIFFE ID.
+      but I'm also not sure if it's worth it.
+      it would mean more APIs to secure; it would also mean keeping spike
+      keepers more intelligent (instead of keeping them dumb)
+    </issue>
+    <issue>
+      A /stats endpoint.
+
+      A dedicated /stats endpoint will be implemented to provide real-time metrics about:
+      Total number of secrets managed.
+      Status of the key-value store.
+      Resource utilization metrics (e.g., CPU, memory).
+      This endpoint will support integration with monitoring tools for enhanced observability.
+      These measures will ensure comprehensive monitoring and troubleshooting.
+    </issue>
     <issue>
       By design, we regard memory as the source of truth.
       This means that backing store might miss some secrets.

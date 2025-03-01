@@ -8,8 +8,6 @@ weight = 3
 sort_by = "weight"
 +++
 
-
-
 # Documentation Snapshots
 
 The **GitHub** repository contains the latest documentation of **SPIKE** already.

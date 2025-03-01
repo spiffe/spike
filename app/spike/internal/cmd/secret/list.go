@@ -15,6 +15,8 @@ import (
 	"github.com/spiffe/spike/app/spike/internal/trust"
 )
 
+const notFoundMessage = "No secrets found."
+
 // newSecretListCommand creates and returns a new cobra.Command for listing all
 // secret paths. It configures a command that retrieves and displays all
 // available secret paths from the system.
@@ -60,12 +62,12 @@ func newSecretListCommand(
 				return
 			}
 			if keys == nil {
-				fmt.Println("No secrets found")
+				fmt.Println(notFoundMessage)
 				return
 			}
 
 			if len(*keys) == 0 {
-				fmt.Println("No secrets found")
+				fmt.Println(notFoundMessage)
 				return
 			}
 

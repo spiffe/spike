@@ -9,6 +9,7 @@ package config
 
 import (
 	"os"
+	"path"
 	"path/filepath"
 )
 
@@ -23,7 +24,16 @@ const KeeperVersion = "0.3.0"
 
 // #endregion
 
-const SpikeNexusTombstoneFile = "spike.nexus.bootstrap.tombstone"
+const spikeNexusTombstoneFile = "spike.nexus.bootstrap.tombstone"
+
+// SpikeNexusTombstonePath returns the full file path for the tombstone file.
+// This file is used to indicate the bootstrap status of SPIKE Nexus.
+// It combines the data folder path with the tombstone file name.
+func SpikeNexusTombstonePath() string {
+	return path.Join(
+		SpikeNexusDataFolder(), spikeNexusTombstoneFile,
+	)
+}
 
 // SpikeNexusDataFolder returns the path to the directory where Nexus stores
 // its encrypted backup for its secrets and other data.

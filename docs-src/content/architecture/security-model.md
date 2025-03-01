@@ -8,7 +8,6 @@ weight = 2
 sort_by = "weight"
 +++
 
-
 # SPIKE Security Model
 
 Here is a brief introduction to **SPIKE** security model.

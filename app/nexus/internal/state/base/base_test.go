@@ -1,26 +1,27 @@
 package base
 
 import (
+	"errors"
 	"testing"
 
-	"github.com/spiffe/spike/pkg/store"
+	"github.com/spiffe/spike-sdk-go/kv"
 )
 
 func TestDeleteSecret(t *testing.T) {
-	originalKV := kv
+	originalKV := secretStore
 	defer func() {
-		kv = originalKV
+		secretStore = originalKV
 	}()
 
 	tests := []struct {
 		name    string
-		setup   func() *store.KV
+		setup   func() *kv.KV
 		wantErr error
 	}{
 		{
 			name: "success_case",
-			setup: func() *store.KV {
-				mockKV := store.NewKV(store.KVConfig{MaxSecretVersions: 0})
+			setup: func() *kv.KV {
+				mockKV := kv.New(kv.Config{MaxSecretVersions: 0})
 				mockKV.Put("test/path", map[string]string{"key": "value"})
 				return mockKV
 			},
@@ -28,28 +29,28 @@ func TestDeleteSecret(t *testing.T) {
 		},
 		{
 			name: "delete_non_existent",
-			setup: func() *store.KV {
-				return store.NewKV(store.KVConfig{MaxSecretVersions: 0})
+			setup: func() *kv.KV {
+				return kv.New(kv.Config{MaxSecretVersions: 0})
 			},
-			wantErr: store.ErrSecretNotFound,
+			wantErr: kv.ErrItemNotFound,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			kv = tt.setup()
+			secretStore = tt.setup()
 
 			err := DeleteSecret("test/path", nil)
 
 			if (err != nil && tt.wantErr == nil) ||
 				(err == nil && tt.wantErr != nil) ||
-				(err != nil && tt.wantErr != nil && err != tt.wantErr) {
+				(err != nil && tt.wantErr != nil && !errors.Is(err, tt.wantErr)) {
 				t.Errorf("DeleteSecret() error = %v, wantErr %v", err, tt.wantErr)
 			}
 
 			if err == nil {
-				secret, getErr := kv.Get("test/path", 0)
-				if getErr != store.ErrSecretSoftDeleted {
+				secret, getErr := secretStore.Get("test/path", 0)
+				if !errors.Is(getErr, kv.ErrItemSoftDeleted) {
 					t.Errorf("Expected secret to be soft deleted, got error: %v", getErr)
 				}
 				if secret != nil {
@@ -61,15 +62,15 @@ func TestDeleteSecret(t *testing.T) {
 }
 
 func TestDeleteSecretVersions(t *testing.T) {
-	originalKV := kv
+	originalKV := secretStore
 	defer func() {
-		kv = originalKV
+		secretStore = originalKV
 	}()
 
-	testKV := store.NewKV(store.KVConfig{MaxSecretVersions: 0})
+	testKV := kv.New(kv.Config{MaxSecretVersions: 0})
 	testKV.Put("test/path", map[string]string{"key": "v1"})
 	testKV.Put("test/path", map[string]string{"key": "v2"})
-	kv = testKV
+	secretStore = testKV
 
 	tests := []struct {
 		name     string
@@ -97,7 +98,7 @@ func TestDeleteSecretVersions(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			err := DeleteSecret("test/path", tt.versions)
 
-			if err != tt.wantErr {
+			if !errors.Is(err, tt.wantErr) {
 				t.Errorf("DeleteSecret() error = %v, wantErr %v", err, tt.wantErr)
 			}
 
@@ -106,8 +107,8 @@ func TestDeleteSecretVersions(t *testing.T) {
 					if version == 999 {
 						continue
 					}
-					secret, getErr := kv.Get("test/path", version)
-					if getErr != store.ErrSecretSoftDeleted {
+					secret, getErr := secretStore.Get("test/path", version)
+					if !errors.Is(getErr, kv.ErrItemSoftDeleted) {
 						t.Errorf("Expected version %d to be soft deleted, got error: %v", version, getErr)
 					}
 					if secret != nil {

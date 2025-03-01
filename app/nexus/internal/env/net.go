@@ -17,14 +17,3 @@ func TlsPort() string {
 
 	return ":8553"
 }
-
-// KeepApiRoot returns the base URL for the Spike Keep API. It first checks for
-// a custom URL in the SPIKE_KEEP_API_URL environment variable. If no custom URL
-// is set, it returns the default URL "http://localhost:8443".
-func KeeperApiRoot() string {
-	p := os.Getenv("SPIKE_KEEPER_API_URL")
-	if p != "" {
-		return p
-	}
-	return "https://localhost:8443"
-}

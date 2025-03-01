@@ -22,7 +22,7 @@ package base
 //	    fmt.Printf("Found key: %s\n", key)
 //	}
 func ListKeys() []string {
-	kvMu.Lock()
-	defer kvMu.Unlock()
-	return kv.List()
+	secretStoreMu.Lock()
+	defer secretStoreMu.Unlock()
+	return secretStore.List()
 }

@@ -8,8 +8,6 @@ weight = 2
 sort_by = "weight"
 +++
 
-
-
 # 🚨 Alpha Release Notice 🚨
 
 This project is currently in the Alpha stage. It's functional and available for

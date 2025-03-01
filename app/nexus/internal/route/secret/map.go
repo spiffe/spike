@@ -7,12 +7,11 @@ package secret
 import (
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
-
-	"github.com/spiffe/spike/pkg/store"
+	"github.com/spiffe/spike-sdk-go/kv"
 )
 
 func toSecretMetadataResponse(
-	secret *store.Secret,
+	secret *kv.Value,
 ) reqres.SecretMetadataResponse {
 	versions := make(map[int]data.SecretVersionInfo)
 	for _, version := range secret.Versions {

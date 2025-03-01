@@ -17,9 +17,10 @@ import (
 	"github.com/spiffe/spike/app/spike/internal/trust"
 )
 
-// newSecretUndeleteCommand creates and returns a new cobra.Command for restoring
-// deleted secrets. It configures a command that allows users to restore one or
-// more previously deleted versions of a secret at a specified path.
+// newSecretUndeleteCommand creates and returns a new cobra.Command for
+// restoring deleted secrets. It configures a command that allows users to
+// restore one or more previously deleted versions of a secret at a specified
+// path.
 //
 // Parameters:
 //   - source: X.509 source for workload API authentication

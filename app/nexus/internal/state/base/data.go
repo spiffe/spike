@@ -7,15 +7,16 @@ package base
 import (
 	"sync"
 
+	"github.com/spiffe/spike-sdk-go/kv"
+
 	"github.com/spiffe/spike/app/nexus/internal/env"
-	"github.com/spiffe/spike/pkg/store"
 )
 
 var (
-	kv = store.NewKV(store.KVConfig{
+	secretStore = kv.New(kv.Config{
 		MaxSecretVersions: env.MaxSecretVersions(),
 	})
-	kvMu sync.RWMutex
+	secretStoreMu sync.RWMutex
 )
 
 var policies sync.Map

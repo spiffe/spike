@@ -7,7 +7,6 @@ title = "index"
 insert_anchor_links = "right"
 +++
 
-
 > "It is really cool to see a new secret store built on top of SPIFFE
 > in a native way. This is a great way to show how a common production
 > identity framework can make other things much simpler and automated."

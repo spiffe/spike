@@ -5,10 +5,8 @@
 package initialization
 
 import (
-	"os"
-	"path"
-
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
+	"os"
 
 	"github.com/spiffe/spike/app/nexus/internal/initialization/recovery"
 	"github.com/spiffe/spike/internal/config"
@@ -30,9 +28,7 @@ func bootstrap(source *workloadapi.X509Source) {
 	// for shard information until we get enough shards to reconstruct
 	// the root key. If that, too, fails, then a human operator will need to
 	// manually re-key SPIKE Nexus.
-	tombstone := path.Join(
-		config.SpikeNexusDataFolder(), config.SpikeNexusTombstoneFile,
-	)
+	tombstone := config.SpikeNexusTombstonePath()
 
 	_, err := os.Stat(tombstone)
 

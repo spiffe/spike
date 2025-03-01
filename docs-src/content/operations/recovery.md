@@ -8,9 +8,6 @@ weight = 3
 sort_by = "weight"
 +++
 
-
-
-
 # SPIKE Recovery Procedures
 
 SPIKE ensures that your secrets are secure and resilient, aiming for seamless
@@ -40,46 +37,48 @@ intervention.
 So, if a **SPIKE Keeper** instance crashes, it will eventually receive its
 shard.
 
-
 ## Complete System Recovery
+
+In critical scenarios where **SPIKE** remains unavailable for extended periods, 
 
 In the unlikely case that both **SPIKE Nexus** and all **SPIKE Keeper** 
 instances crash all together, the system may transition to a state where
 it cannot automatically recover.
 
-In that case manual intervention will be necessary.
+In that case, manual intervention will be necessary. The following sections 
+describe this "*break-the-glass*" procedure to help restore **SPIKE** back to 
+its operational state:
 
-Here are the steps to take for this scenario:
+### 1. Before complete system failure:
+* Change the **SPIFFE ID** of **SPIKE Pilot** to recovery mode by 
+  executing `./hack/spire-server-entry-recover-register.sh`
+* Run `spike recover`
+* Save the files generated in `~/.spike/recover` folder to a safe,
+  encrypted, and password-protected medium.
+* Securely erase the ~/.spike/recover` folder.
+* Change the **SPIFFE ID** of **SPIKE Pilot** back using
+ `./hack/spire-server-entry-su-register.sh` or delete the registration
+ entry entirely for extra security.
+* You can create the entry back using 
+  `./hack/spire-server-entry-su-register.sh` when you need to use 
+  **SPIKE Pilot**.
 
-1. Before complete system failure:
-  * Change the **SPIFFE ID** of **SPIKE Pilot** to recovery mode by 
-    executing `./hack/spire-server-entry-recover-register.sh`
-  * Run `spike recover`
-  * Save the files generated in `~/.spike/recover` folder to a safe,
-    encrypted, and password-protected medium.
-  * Securely erase the ~/.spike/recover` folder.
-  * Change the **SPIFFE ID** of **SPIKE Pilot** back using
-   `./hack/spire-server-entry-su-register.sh` or delete the registration
-   entry entirely for extra security.
-   * You can create the entry back using 
-     `./hack/spire-server-entry-su-register.sh` when you need to use 
-     **SPIKE Pilot**.
-2. During complete system failure:
-  * Change the **SPIFFE ID** of **SPIKE Pilot** to restore mode:
-    `./hack/spire-server-entry-restore-register.sh`
-  * Execute `spike restore` and enter the shards you created in the
-    previous step one by one. Each `spike restore` call accepts a 
-    single shard.
-  * When you provide enough shards, the system will restore itself:
-    **SPIKE Nexus** will restore its root key, and it will also hydrate
-    its peer **SPIKE Keeper** instances to protect itself against future
-    crashes.
-  * Change the **SPIFFE ID** of **SPIKE Pilot** back using
-    `./hack/spire-server-entry-su-register.sh` or delete the registration
-    entry entirely for extra security.
-    * You can create the entry back using
-      `./hack/spire-server-entry-su-register.sh` when you need to use
-      **SPIKE Pilot**.
+### 2. During complete system failure:
+* Change the **SPIFFE ID** of **SPIKE Pilot** to restore mode:
+  `./hack/spire-server-entry-restore-register.sh`
+* Execute `spike restore` and enter the shards you created in the
+  previous step one by one. Each `spike restore` call accepts a 
+  single shard.
+* When you provide enough shards, the system will restore itself:
+  **SPIKE Nexus** will restore its root key, and it will also hydrate
+  its peer **SPIKE Keeper** instances to protect itself against future
+  crashes.
+* Change the **SPIFFE ID** of **SPIKE Pilot** back using
+  `./hack/spire-server-entry-su-register.sh` or delete the registration
+  entry entirely for extra security.
+  * You can create the entry back using
+    `./hack/spire-server-entry-su-register.sh` when you need to use
+    **SPIKE Pilot**.
 
 1. Both **SPIKE Nexus**, **SPIKE Keeper** are unavailable, or the system is
    in on other irrecoverable state.

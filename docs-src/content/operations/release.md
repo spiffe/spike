@@ -8,14 +8,12 @@ weight = 4
 sort_by = "weight"
 +++
 
-
-
 # SPIKE Release Management
 
 This document provides an overview of how the cut a **SPIKE** release, including
 testing guidelines and instructions.
 
-> **We Use Humans as Pushbuttons**
+> **We Use Humans as Push-buttons**
 > 
 > At the moment, we don't have a CI pipeline in place for the release
 > process. Most of the operations mentioned here are manual. However, we are
@@ -39,8 +37,7 @@ Before every release:
    and `KeeperVersion` in `$WORKSPACE/spike/internal/config/config.go`
 4. Update any necessary documentation.
 5. Update the changelog.
-3. also update documentation snapshots page
-4. also update the changelog.
+6. Update the documentation snapshots page.
 
 Release process:
 
@@ -50,7 +47,7 @@ Release process:
 * Tag a version and convert that version to a **release* on **GitHub**.
   * Make sure you GPG sign your tag.
 * Copy the current version's changelog over to the release notes on **GitHub**.
-* On a Mac machine [follow cross-platform buils instructions][cross-platform]
+* On a Mac machine [follow cross-platform build instructions][cross-platform]
   to generate binaries.
 * Add binaries to the release as assets.
 * Announce the release in relevant channels.

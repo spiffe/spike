@@ -6,9 +6,9 @@ package operator
 
 import (
 	"encoding/base64"
-	"github.com/cloudflare/circl/group"
 	"net/http"
 
+	"github.com/cloudflare/circl/group"
 	"github.com/cloudflare/circl/secretsharing"
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
