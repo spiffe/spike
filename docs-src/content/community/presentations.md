@@ -41,6 +41,10 @@ capabilities and showcase its innovative features.
 * [Using Policies to Read and Write Secrets using SPIKE][spike-policies]:<br>
   This demo introduces the new **Makefile**-based development workflow the
   enhanced starter script, policy-based access control, and metadata support.
+* [Secrets Resiliency with SPIKE: Self-Healing and Doomsday Recovery][spike-doomsday]:<br>
+  Secrets management is critical, but what happens when everything fails? In 
+  this video, we explore SPIKE’s disaster recovery mechanisms, covering both 
+  self-healing capabilities and the manual break-the-glass recovery process.
 
 [spike]: https://vimeo.com/v0lkan/spike
 [spike-intro]: https://vimeo.com/v0lkan/spike-rocks
@@ -50,6 +54,7 @@ capabilities and showcase its innovative features.
 [spike-policy]: https://vimeo.com/v0lkan/spike-policy
 [spike-metadata]: https://vimeo.com/v0lkan/spike-metadata
 [spike-policies]: https://vimeo.com/v0lkan/spike-policies
+[spike-doomsday]: https://vimeo.com/v0lkan/spike-doomsday
 
 ----
 
