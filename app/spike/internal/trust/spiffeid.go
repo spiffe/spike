@@ -18,9 +18,12 @@ import (
 func Authenticate(spiffeid string) {
 	if !auth.IsPilot(spiffeid) {
 		log.Log().Error(
-			"AuthenticateRestore: You need a 'super user' SPIFFE ID to use this command.",
+			"Authenticate: You need a 'super user' SPIFFE ID to use this command.",
 		)
-		log.FatalF("Authenticate: SPIFFE ID %s is not valid.\n", spiffeid)
+		log.FatalF(
+			"Authenticate: You are not authorized to use this command (%s).\n",
+			spiffeid,
+		)
 	}
 }
 
@@ -29,9 +32,12 @@ func Authenticate(spiffeid string) {
 func AuthenticateRecover(spiffeid string) {
 	if !auth.IsPilotRecover(spiffeid) {
 		log.Log().Error(
-			"AuthenticateRestore: You need a 'recover' SPIFFE ID to use this command.",
+			"AuthenticateRecover: You need a 'recover' SPIFFE ID to use this command.",
 		)
-		log.FatalF("AuthenticateRecover: SPIFFE ID %s is not valid.\n", spiffeid)
+		log.FatalF(
+			"AuthenticateRecover: You are not authorized to use this command (%s).\n",
+			spiffeid,
+		)
 	}
 }
 
@@ -42,6 +48,9 @@ func AuthenticateRestore(spiffeid string) {
 		log.Log().Error(
 			"AuthenticateRestore: You need a 'restore' SPIFFE ID to use this command.",
 		)
-		log.FatalF("AuthenticateRestore: SPIFFE ID %s is not valid.\n", spiffeid)
+		log.FatalF(
+			"AuthenticateRecover: You are not authorized to use this command (%s).\n",
+			spiffeid,
+		)
 	}
 }
