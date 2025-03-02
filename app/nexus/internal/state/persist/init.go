@@ -39,6 +39,8 @@ import (
 //   - Connection pool settings (max open, max idle, lifetime)
 //   - Busy timeout settings
 func InitializeSqliteBackend(rootKey string) backend.Backend {
+	const fName = "initializeSqliteBackend"
+
 	opts := map[backend.DatabaseConfigKey]any{}
 
 	opts[backend.KeyDataDir] = config.SpikeNexusDataFolder()
@@ -61,7 +63,7 @@ func InitializeSqliteBackend(rootKey string) backend.Backend {
 	if err != nil {
 		// Log error but don't fail initialization
 		// The system can still work with just in-memory state
-		log.Log().Warn("initializeSqliteBackend",
+		log.Log().Warn(fName,
 			"msg", "Failed to create SQLite backend",
 			"err", err.Error(),
 		)
@@ -72,7 +74,7 @@ func InitializeSqliteBackend(rootKey string) backend.Backend {
 	defer cancel()
 
 	if err := dbBackend.Initialize(ctxC); err != nil {
-		log.Log().Warn("initializeSqliteBackend",
+		log.Log().Warn(fName,
 			"msg", "Failed to initialize SQLite backend",
 			"err", err.Error(),
 		)

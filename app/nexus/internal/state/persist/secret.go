@@ -32,23 +32,22 @@ import (
 //   - When the requested version doesn't exist
 //   - When the secret version has been deleted (DeletedTime is set)
 func ReadSecret(path string, version int) *kv.Value {
+	const fName = "readSecret"
+
 	be := Backend()
 	if be == nil {
 		return nil
 	}
-
-	retrier := retry.NewExponentialRetrier()
-	typedRetrier := retry.NewTypedRetrier[*kv.Value](retrier)
 
 	ctx, cancel := context.WithTimeout(
 		context.Background(), env.DatabaseOperationTimeout(),
 	)
 	defer cancel()
 
-	cachedSecret, err := typedRetrier.RetryWithBackoff(
-		ctx, func() (*kv.Value, error) {
-			return be.LoadSecret(ctx, path)
-		})
+	log.Log().Info(fName, "msg", "Loading secret from cache")
+	cachedSecret, err := retry.Do(ctx, func() (*kv.Value, error) {
+		return be.LoadSecret(ctx, path)
+	})
 
 	if err != nil {
 		log.Log().Warn("readSecret",
@@ -85,26 +84,25 @@ func ReadSecret(path string, version int) *kv.Value {
 //   - map[string]*kv.Value: A map of all secrets with their keys and values.
 //     Returns nil if the backend is unavailable or if loading fails.
 func ReadAllSecrets() map[string]*kv.Value {
+	const fName = "readAllSecrets"
+
 	be := Backend()
 	if be == nil {
 		return nil
 	}
-
-	retrier := retry.NewExponentialRetrier()
-	typedRetrier := retry.NewTypedRetrier[map[string]*kv.Value](retrier)
 
 	ctx, cancel := context.WithTimeout(
 		context.Background(), env.DatabaseOperationTimeout(),
 	)
 	defer cancel()
 
-	cachedSecrets, err := typedRetrier.RetryWithBackoff(
-		ctx, func() (map[string]*kv.Value, error) {
-			return be.LoadAllSecrets(ctx)
-		})
+	log.Log().Info(fName, "msg", "Loading secrets from cache")
+	cachedSecrets, err := retry.Do(ctx, func() (map[string]*kv.Value, error) {
+		return be.LoadAllSecrets(ctx)
+	})
 
 	if err != nil {
-		log.Log().Warn("readAllSecrets",
+		log.Log().Warn(fName,
 			"msg", "Failed to load secrets from cache after retries",
 			"err", err.Error(),
 		)
@@ -129,8 +127,8 @@ func ReadAllSecrets() map[string]*kv.Value {
 // considered the authoritative data source.
 func StoreSecret(kv *kv.KV, path string) {
 	const fName = "storeSecret"
-	be := Backend()
 
+	be := Backend()
 	if be == nil {
 		return
 	}

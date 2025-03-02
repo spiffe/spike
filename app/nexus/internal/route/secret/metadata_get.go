@@ -75,10 +75,13 @@ import (
 func RouteGetSecretMetadata(
 	w http.ResponseWriter, r *http.Request, audit *log.AuditEntry,
 ) error {
-	log.Log().Info("routeGetSecretMetadata",
+	const fName = "routeGetSecretMetadata"
+
+	log.Log().Info(fName,
 		"method", r.Method,
 		"path", r.URL.Path,
-		"query", r.URL.RawQuery)
+		"query", r.URL.RawQuery,
+	)
 	audit.Action = log.AuditRead
 
 	requestBody := net.ReadRequestBody(w, r)

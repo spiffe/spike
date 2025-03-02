@@ -309,6 +309,9 @@ func SendShardsPeriodically(source *workloadapi.X509Source) {
 //	    storeShard(shard)
 //	}
 func PilotRecoveryShards() []string {
+	const fName = "PilotRecoveryShards"
+	log.Log().Info(fName, "msg", "Generating pilot recovery shards")
+
 	rk := state.RootKey()
 	if rk == nil {
 		return []string{}
@@ -398,6 +401,7 @@ func BootstrapBackingStoreWithNewRootKey(source *workloadapi.X509Source) {
 
 func mustUpdateRecoveryInfo(rk string) []secretsharing.Share {
 	const fName = "mustUpdateRecoveryInfo"
+	log.Log().Info(fName, "msg", "Updating recovery info")
 
 	decodedRootKey, err := hex.DecodeString(rk)
 	if err != nil {

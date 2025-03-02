@@ -49,7 +49,7 @@ func (s *NoopStore) LoadSecret(
 
 // LoadAllSecrets retrieves all secrets stored in the kv.
 // This implementation always returns nil and nil error.
-func (s *NoopStore) LoadAllSecrets(ctx context.Context) (
+func (s *NoopStore) LoadAllSecrets(_ context.Context) (
 	map[string]*kv.Value, error,
 ) {
 	return nil, nil

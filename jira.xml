@@ -47,6 +47,53 @@
       as a HOF.
       trust.Authenticate(spiffeId)
     </issue>
+    <issue>
+      add retries to everything under:
+      app/nexus/internal/state/persist
+      ^ they all talk to db; and sqlite can temporarily lock for
+      a variety of reasons.
+    </issue>
+    <issue>
+      refactor retries with `retry.Do()` as its simpler with less
+      configuration mess.
+    </issue>
+    <issue>
+      path is still stored plain in DB; use HMAC instead.
+
+      CREATE TABLE "secrets" (
+      "hashed_path"	BLOB NOT NULL,
+      "version"	INTEGER NOT NULL,
+      "nonce"	BLOB NOT NULL,
+      "encrypted_data"	BLOB NOT NULL,
+      "created_time"	DATETIME NOT NULL,
+      "deleted_time"	DATETIME,
+      PRIMARY KEY("hashed_path","version")
+      );
+    </issue>
+    <issue>
+      path sanitization:
+      ^(?!/)([a-zA-Z0-9._-]+)(/[a-zA-Z0-9._-]+)*$
+
+      Hashi Vault is not as script as the above regex; but I think this
+      gives a nice balance.
+
+      ^(?!/) → Ensures the path does not start with / (Vault does not require a leading /).
+      ([a-zA-Z0-9._-]+) → The first segment must consist of alphanumeric characters, dots, underscores, or dashes.
+      (/[a-zA-Z0-9._-]+)* → Subsequent segments must follow the same pattern and be separated by /.
+      No double slashes (//) allowed.
+      No spaces, backslashes, or reserved URL characters allowed.
+      Example Valid Paths:
+      ✅ secret/myapp/config
+      ✅ secrets/db-creds/admin-user
+      ✅ tenantA/projectX/env1/key
+
+      Example Invalid Paths:
+      ❌ /secret/myapp/config (leading /)
+      ❌ secret//double-slash (double /)
+      ❌ secret\path (backslash used)
+      ❌ secret path/with space (contains spaces)
+      ❌ secret#invalid?path (reserved URL characters)
+    </issue>
 
     <issue priority="important" severity="medium">
       if a keeper crashes it has to wait for the next nexus cycle which is
