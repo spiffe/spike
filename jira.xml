@@ -29,96 +29,10 @@
       (maybe add some details to the ticket)
     </issue>
   </watch>
-  <bugs>
-    <issue kind="bug">
-      If there is a backing store, load all secrets from the backing store
-      upon crash, which will also populate the key list.
-      after recovery, all secrets will be there and the system will be
-      operational.
-      after recovery admin will lose its session and will need to
-      re-login.
-    </issue>
-
-    <issue>
-      newSecreteUndeleteCommand
-
-      Run: func(cmd *cobra.Command, args []string) {
-      // O: we can pass this as a predicate to newSecretUndeleteCommand,
-      as a HOF.
-      trust.Authenticate(spiffeId)
-    </issue>
-    <issue>
-      add retries to everything under:
-      app/nexus/internal/state/persist
-      ^ they all talk to db; and sqlite can temporarily lock for
-      a variety of reasons.
-    </issue>
+  <low-hanging-fruits>
     <issue>
       refactor retries with `retry.Do()` as its simpler with less
       configuration mess.
-    </issue>
-    <issue>
-      path is still stored plain in DB; use HMAC instead.
-
-      CREATE TABLE "secrets" (
-      "hashed_path"	BLOB NOT NULL,
-      "version"	INTEGER NOT NULL,
-      "nonce"	BLOB NOT NULL,
-      "encrypted_data"	BLOB NOT NULL,
-      "created_time"	DATETIME NOT NULL,
-      "deleted_time"	DATETIME,
-      PRIMARY KEY("hashed_path","version")
-      );
-    </issue>
-    <issue>
-      path sanitization:
-      ^(?!/)([a-zA-Z0-9._-]+)(/[a-zA-Z0-9._-]+)*$
-
-      Hashi Vault is not as script as the above regex; but I think this
-      gives a nice balance.
-
-      ^(?!/) → Ensures the path does not start with / (Vault does not require a leading /).
-      ([a-zA-Z0-9._-]+) → The first segment must consist of alphanumeric characters, dots, underscores, or dashes.
-      (/[a-zA-Z0-9._-]+)* → Subsequent segments must follow the same pattern and be separated by /.
-      No double slashes (//) allowed.
-      No spaces, backslashes, or reserved URL characters allowed.
-      Example Valid Paths:
-      ✅ secret/myapp/config
-      ✅ secrets/db-creds/admin-user
-      ✅ tenantA/projectX/env1/key
-
-      Example Invalid Paths:
-      ❌ /secret/myapp/config (leading /)
-      ❌ secret//double-slash (double /)
-      ❌ secret\path (backslash used)
-      ❌ secret path/with space (contains spaces)
-      ❌ secret#invalid?path (reserved URL characters)
-    </issue>
-
-    <issue priority="important" severity="medium">
-      if a keeper crashes it has to wait for the next nexus cycle which is
-      suboptimal. Instead, nexus can send a ping that returns an overall
-      status
-      of keeper (i.e. if it's populated or not)
-      this can be more frequent than hydration; and once nexus realizes
-      keeper
-      is down, it can rehydrate it.
-
-      in addition; nexus can first check the sha hash of the keeper's shard.
-      before resending; if the hashes match, it won't restransmit the shard.
-    </issue>
-    <issue>
-      we don't need state.ReadAppState()
-      and other state enums for keepers anymore
-      keepers are just dummy stateless keepers.
-    </issue>
-    <issue>
-      // 3. spike policy list gives `null` for no policies instead of a
-      message
-      // also the response is json rather than a more human readable
-      output.
-      // also `createdBy` is emppy.
-      // we can create "good first issue"s for these.
     </issue>
     <issue>
       if crashed and trying to restore (instead of recover)
@@ -139,20 +53,6 @@
 
       ^ this happens when the input is invalid; a more explanatory error message
       would be great.
-    </issue>
-    <issue>
-      this is for policy creation:
-
-      allowed := state.CheckAccess(
-      spiffeid.String(), "*",
-      []data.PolicyPermission{data.PermissionSuper},
-      )
-
-      instead of a wildcard, maybe have a predefined path
-      for access check like "/spike/system/acl"
-
-      also disallow people creating secrets etc under
-      /spike/system
     </issue>
     <issue>
       // TDO: Yes memory is the source of truth; but at least
@@ -194,6 +94,8 @@
       Go through all cobra commands and validate/sanitize what needs to
       be.
     </issue>
+  </low-hanging-fruits>
+  <bugs>
     <issue kind="dynamic-keeper-count">
       <core>
         better to tackle these sooner than later.
@@ -377,6 +279,86 @@
     </issue>
   </low-hanging-fruits>
   <later>
+    <issue>
+      newSecreteUndeleteCommand
+
+      Run: func(cmd *cobra.Command, args []string) {
+      // O: we can pass this as a predicate to newSecretUndeleteCommand,
+      as a HOF.
+      trust.Authenticate(spiffeId)
+    </issue>
+    <issue>
+      add retries to everything under:
+      app/nexus/internal/state/persist
+      ^ they all talk to db; and sqlite can temporarily lock for
+      a variety of reasons.
+    </issue>
+    <issue priority="important" severity="medium">
+      if a keeper crashes it has to wait for the next nexus cycle which is
+      suboptimal. Instead, nexus can send a ping that returns an overall
+      status
+      of keeper (i.e. if it's populated or not)
+      this can be more frequent than hydration; and once nexus realizes
+      keeper
+      is down, it can rehydrate it.
+
+      in addition; nexus can first check the sha hash of the keeper's shard.
+      before resending; if the hashes match, it won't restransmit the shard.
+    </issue>
+    <issue>
+      path sanitization:
+      ^(?!/)([a-zA-Z0-9._-]+)(/[a-zA-Z0-9._-]+)*$
+
+      Hashi Vault is not as script as the above regex; but I think this
+      gives a nice balance.
+
+      ^(?!/) → Ensures the path does not start with / (Vault does not require a leading /).
+      ([a-zA-Z0-9._-]+) → The first segment must consist of alphanumeric characters, dots, underscores, or dashes.
+      (/[a-zA-Z0-9._-]+)* → Subsequent segments must follow the same pattern and be separated by /.
+      No double slashes (//) allowed.
+      No spaces, backslashes, or reserved URL characters allowed.
+      Example Valid Paths:
+      ✅ secret/myapp/config
+      ✅ secrets/db-creds/admin-user
+      ✅ tenantA/projectX/env1/key
+
+      Example Invalid Paths:
+      ❌ /secret/myapp/config (leading /)
+      ❌ secret//double-slash (double /)
+      ❌ secret\path (backslash used)
+      ❌ secret path/with space (contains spaces)
+      ❌ secret#invalid?path (reserved URL characters)
+    </issue>
+    <issue>
+      this is for policy creation:
+
+      allowed := state.CheckAccess(
+      spiffeid.String(), "*",
+      []data.PolicyPermission{data.PermissionSuper},
+      )
+
+      instead of a wildcard, maybe have a predefined path
+      for access check like "/spike/system/acl"
+
+      also disallow people creating secrets etc under
+      /spike/system
+    </issue>
+
+    <issue>
+      path is still stored plain in DB; use HMAC instead.
+
+      CREATE TABLE "secrets" (
+      "hashed_path"	BLOB NOT NULL,
+      "version"	INTEGER NOT NULL,
+      "nonce"	BLOB NOT NULL,
+      "encrypted_data"	BLOB NOT NULL,
+      "created_time"	DATETIME NOT NULL,
+      "deleted_time"	DATETIME,
+      PRIMARY KEY("hashed_path","version")
+      );
+
+      same is true for policies; we need to keep them encrypted too.
+    </issue>
     <issue>
       Also, create a script in ./hack that does that.
       (i.e. something that forces Nexus to reset its root key
