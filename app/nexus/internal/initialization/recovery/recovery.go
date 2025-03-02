@@ -21,6 +21,7 @@ import (
 
 	"github.com/spiffe/spike/app/nexus/internal/env"
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
+	"github.com/spiffe/spike/app/nexus/internal/state/persist"
 	"github.com/spiffe/spike/internal/auth"
 	"github.com/spiffe/spike/internal/log"
 	"github.com/spiffe/spike/internal/net"
@@ -163,6 +164,37 @@ func RecoverBackingStoreUsingKeeperShards(source *workloadapi.X509Source) {
 	}
 }
 
+// HydrateMemoryFromBackingStore loads all secrets from the persistent storage
+// into the application's memory state. This function is typically called during
+// application startup to restore the secret state from the previous session.
+//
+// The function reads all secrets from the backing store using
+// persist.ReadAllSecrets() and imports them into the application state using
+// state.ImportSecrets(). If no secrets are found in the backing store, the
+// function returns without making any changes to the application state.
+//
+// Example usage:
+//
+//	func initializeApp() {
+//		// Other initialization code...
+//		memory.HydrateMemoryFromBackingStore()
+//		// Continue with application startup
+//	}
+func HydrateMemoryFromBackingStore() {
+	const fName = "HydrateMemoryFromBackingStore"
+
+	log.Log().Info(fName, "msg", "HydrateMemoryFromBackingStore")
+
+	secrets := persist.ReadAllSecrets()
+	if len(secrets) == 0 {
+		return
+	}
+
+	state.ImportSecrets(secrets)
+
+	log.Log().Info(fName, "msg", "HydrateMemoryFromBackingStore: secrets loaded")
+}
+
 // RestoreBackingStoreUsingPilotShards reconstructs and initializes the root key
 // from two pilot shards. It takes base64-encoded shards, decodes them, and
 // uses them to recover the root key. The recovered key is then used to
@@ -277,6 +309,9 @@ func SendShardsPeriodically(source *workloadapi.X509Source) {
 //	    storeShard(shard)
 //	}
 func PilotRecoveryShards() []string {
+	const fName = "PilotRecoveryShards"
+	log.Log().Info(fName, "msg", "Generating pilot recovery shards")
+
 	rk := state.RootKey()
 	if rk == nil {
 		return []string{}
@@ -366,6 +401,7 @@ func BootstrapBackingStoreWithNewRootKey(source *workloadapi.X509Source) {
 
 func mustUpdateRecoveryInfo(rk string) []secretsharing.Share {
 	const fName = "mustUpdateRecoveryInfo"
+	log.Log().Info(fName, "msg", "Updating recovery info")
 
 	decodedRootKey, err := hex.DecodeString(rk)
 	if err != nil {

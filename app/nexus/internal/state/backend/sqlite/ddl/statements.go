@@ -96,3 +96,5 @@ SELECT name, spiffe_id_pattern, path_pattern, created_time
 FROM policies 
 WHERE id = ?
 `
+
+const QueryPathsFromMetadata = `SELECT path FROM secret_metadata`

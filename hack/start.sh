@@ -47,7 +47,7 @@ fi
 # Your existing script continues here
 echo "Domain check passed. Continuing with the script..."
 
-
+# Helpers
 source ./hack/lib/bg.sh
 
 if ./hack/clear-data.sh; then

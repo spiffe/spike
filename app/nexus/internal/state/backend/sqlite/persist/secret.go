@@ -8,9 +8,7 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
-	"errors"
 	"fmt"
-	"time"
 
 	"github.com/spiffe/spike-sdk-go/kv"
 
@@ -110,24 +108,40 @@ func (s *DataStore) LoadSecret(
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
-	var secret kv.Value
+	return s.loadSecretInternal(ctx, path)
+}
 
-	// Load metadata
-	err := s.db.QueryRowContext(ctx, ddl.QuerySecretMetadata, path).Scan(
-		&secret.Metadata.CurrentVersion,
-		&secret.Metadata.CreatedTime,
-		&secret.Metadata.UpdatedTime)
-	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, nil
-		}
-		return nil, fmt.Errorf("failed to load secret metadata: %w", err)
-	}
+// LoadAllSecrets retrieves all secrets from the database.
+// It returns a map where the keys are secret paths and the values are the
+// corresponding secrets.
+// Each secret includes its metadata and all versions with decrypted data.
+// If an error occurs during the retrieval process, it returns nil and the
+// error. This method acquires a read lock to ensure consistent access to the
+// database.
+//
+// Contexts that are canceled or reach their deadline will result in the
+// operation being interrupted early and returning an error.
+//
+// Example usage:
+//
+//	secrets, err := dataStore.LoadAllSecrets(context.Background())
+//	if err != nil {
+//	    log.Fatalf("Failed to load secrets: %v", err)
+//	}
+//	for path, secret := range secrets {
+//	    fmt.Printf("Secret at path %s has %d versions\n", path,
+//	      len(secret.Versions))
+//	}
+func (s *DataStore) LoadAllSecrets(
+	ctx context.Context,
+) (map[string]*kv.Value, error) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
 
-	// Load versions
-	rows, err := s.db.QueryContext(ctx, ddl.QuerySecretVersions, path)
+	// Get all secret paths
+	rows, err := s.db.QueryContext(ctx, ddl.QueryPathsFromMetadata)
 	if err != nil {
-		return nil, fmt.Errorf("failed to query secret versions: %w", err)
+		return nil, fmt.Errorf("failed to query secret paths: %w", err)
 	}
 	defer func(rows *sql.Rows) {
 		err := rows.Close()
@@ -136,47 +150,30 @@ func (s *DataStore) LoadSecret(
 		}
 	}(rows)
 
-	secret.Versions = make(map[int]kv.Version)
+	// Map to store all secrets
+	secrets := make(map[string]*kv.Value)
+
+	// Iterate over paths
 	for rows.Next() {
-		var (
-			version     int
-			nonce       []byte
-			encrypted   []byte
-			createdTime time.Time
-			deletedTime sql.NullTime
-		)
-
-		if err := rows.Scan(
-			&version, &nonce,
-			&encrypted, &createdTime, &deletedTime,
-		); err != nil {
-			return nil, fmt.Errorf("failed to scan secret version: %w", err)
+		var path string
+		if err := rows.Scan(&path); err != nil {
+			return nil, fmt.Errorf("failed to scan path: %w", err)
 		}
 
-		decrypted, err := s.decrypt(encrypted, nonce)
+		// Load the full secret for this path
+		secret, err := s.loadSecretInternal(ctx, path)
 		if err != nil {
-			return nil, fmt.Errorf("failed to decrypt secret version: %w", err)
+			return nil, fmt.Errorf("failed to load secret at path %s: %w", path, err)
 		}
 
-		var values map[string]string
-		if err := json.Unmarshal(decrypted, &values); err != nil {
-			return nil, fmt.Errorf("failed to unmarshal secret values: %w", err)
+		if secret != nil {
+			secrets[path] = secret
 		}
-
-		sv := kv.Version{
-			Data:        values,
-			CreatedTime: createdTime,
-		}
-		if deletedTime.Valid {
-			sv.DeletedTime = &deletedTime.Time
-		}
-
-		secret.Versions[version] = sv
 	}
 
 	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("failed to iterate secret versions: %w", err)
+		return nil, fmt.Errorf("failed to iterate secret paths: %w", err)
 	}
 
-	return &secret, nil
+	return secrets, nil
 }
