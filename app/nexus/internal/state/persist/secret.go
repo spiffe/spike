@@ -73,6 +73,47 @@ func ReadSecret(path string, version int) *kv.Value {
 	return nil
 }
 
+// ReadAllSecrets retrieves all secrets from the backend key-value store.
+// It uses an exponential backoff retry mechanism to handle transient errors.
+// The function sets a timeout based on the environment's
+// DatabaseOperationTimeout.
+//
+// If the backend is nil or if loading secrets fails after all retry attempts,
+// the function returns nil. Any errors during retrieval are logged as warnings.
+//
+// Returns:
+//   - map[string]*kv.Value: A map of all secrets with their keys and values.
+//     Returns nil if the backend is unavailable or if loading fails.
+func ReadAllSecrets() map[string]*kv.Value {
+	be := Backend()
+	if be == nil {
+		return nil
+	}
+
+	retrier := retry.NewExponentialRetrier()
+	typedRetrier := retry.NewTypedRetrier[map[string]*kv.Value](retrier)
+
+	ctx, cancel := context.WithTimeout(
+		context.Background(), env.DatabaseOperationTimeout(),
+	)
+	defer cancel()
+
+	cachedSecrets, err := typedRetrier.RetryWithBackoff(
+		ctx, func() (map[string]*kv.Value, error) {
+			return be.LoadAllSecrets(ctx)
+		})
+
+	if err != nil {
+		log.Log().Warn("readAllSecrets",
+			"msg", "Failed to load secrets from cache after retries",
+			"err", err.Error(),
+		)
+		return nil
+	}
+
+	return cachedSecrets
+}
+
 // StoreSecret stores a secret from the key-value store kv to the
 // backend cache. It retrieves the secret from the provided path and attempts to
 // cache it in a background goroutine. If the backend is not available or if the

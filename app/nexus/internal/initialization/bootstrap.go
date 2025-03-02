@@ -5,8 +5,9 @@
 package initialization
 
 import (
-	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	"os"
+
+	"github.com/spiffe/go-spiffe/v2/workloadapi"
 
 	"github.com/spiffe/spike/app/nexus/internal/initialization/recovery"
 	"github.com/spiffe/spike/internal/config"
@@ -39,6 +40,7 @@ func bootstrap(source *workloadapi.X509Source) {
 		)
 
 		recovery.RecoverBackingStoreUsingKeeperShards(source)
+		recovery.HydrateMemoryFromBackingStore()
 		return
 	}
 
@@ -52,6 +54,7 @@ func bootstrap(source *workloadapi.X509Source) {
 		)
 
 		recovery.RecoverBackingStoreUsingKeeperShards(source)
+		recovery.HydrateMemoryFromBackingStore()
 		return
 	}
 

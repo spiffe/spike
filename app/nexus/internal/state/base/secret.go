@@ -111,6 +111,14 @@ func GetSecret(path string, version int) (map[string]string, error) {
 	return cachedSecret.Versions[version].Data, nil
 }
 
+// ImportSecrets imports a set of secrets into the application's memory state.
+// Locks the secret store mutex during the operation to ensure thread safety.
+func ImportSecrets(secrets map[string]*kv.Value) {
+	secretStoreMu.Lock()
+	defer secretStoreMu.Unlock()
+	secretStore.ImportSecrets(secrets)
+}
+
 // GetRawSecret retrieves a secret with metadata from the specified path and
 // version. It provides thread-safe read access to the secret kv.
 //

@@ -91,25 +91,9 @@ func (s *DataStore) StoreSecret(
 	return nil
 }
 
-// LoadSecret retrieves a secret and all its versions from the specified path.
-// It performs the following operations:
-// - Loads the secret metadata
-// - Retrieves all secret versions
-// - Decrypts and unmarshals the version data
-//
-// Returns:
-//   - (nil, nil) if the secret doesn't exist
-//   - (nil, error) if any operation fails
-//   - (*kv.Secret, nil) with the decrypted secret and all its versions on
-//     success
-//
-// This method is thread-safe.
-func (s *DataStore) LoadSecret(
+func (s *DataStore) loadSecretInternal(
 	ctx context.Context, path string,
 ) (*kv.Value, error) {
-	s.mu.RLock()
-	defer s.mu.RUnlock()
-
 	var secret kv.Value
 
 	// Load metadata
@@ -179,4 +163,93 @@ func (s *DataStore) LoadSecret(
 	}
 
 	return &secret, nil
+}
+
+// LoadSecret retrieves a secret and all its versions from the specified path.
+// It performs the following operations:
+// - Loads the secret metadata
+// - Retrieves all secret versions
+// - Decrypts and unmarshals the version data
+//
+// Returns:
+//   - (nil, nil) if the secret doesn't exist
+//   - (nil, error) if any operation fails
+//   - (*kv.Secret, nil) with the decrypted secret and all its versions on
+//     success
+//
+// This method is thread-safe.
+func (s *DataStore) LoadSecret(
+	ctx context.Context, path string,
+) (*kv.Value, error) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	return s.loadSecretInternal(ctx, path)
+}
+
+// LoadAllSecrets retrieves all secrets from the database.
+// It returns a map where the keys are secret paths and the values are the
+// corresponding secrets.
+// Each secret includes its metadata and all versions with decrypted data.
+// If an error occurs during the retrieval process, it returns nil and the
+// error. This method acquires a read lock to ensure consistent access to the
+// database.
+//
+// Contexts that are canceled or reach their deadline will result in the
+// operation being interrupted early and returning an error.
+//
+// Example usage:
+//
+//	secrets, err := dataStore.LoadAllSecrets(context.Background())
+//	if err != nil {
+//	    log.Fatalf("Failed to load secrets: %v", err)
+//	}
+//	for path, secret := range secrets {
+//	    fmt.Printf("Secret at path %s has %d versions\n", path,
+//	      len(secret.Versions))
+//	}
+func (s *DataStore) LoadAllSecrets(
+	ctx context.Context,
+) (map[string]*kv.Value, error) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	// Get all secret paths
+	rows, err := s.db.QueryContext(ctx, ddl.QueryPathsFromMetadata)
+	if err != nil {
+		return nil, fmt.Errorf("failed to query secret paths: %w", err)
+	}
+	defer func(rows *sql.Rows) {
+		err := rows.Close()
+		if err != nil {
+			fmt.Printf("failed to close rows: %v\n", err)
+		}
+	}(rows)
+
+	// Map to store all secrets
+	secrets := make(map[string]*kv.Value)
+
+	// Iterate over paths
+	for rows.Next() {
+		var path string
+		if err := rows.Scan(&path); err != nil {
+			return nil, fmt.Errorf("failed to scan path: %w", err)
+		}
+
+		// Load the full secret for this path
+		secret, err := s.loadSecretInternal(ctx, path)
+		if err != nil {
+			return nil, fmt.Errorf("failed to load secret at path %s: %w", path, err)
+		}
+
+		if secret != nil {
+			secrets[path] = secret
+		}
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("failed to iterate secret paths: %w", err)
+	}
+
+	return secrets, nil
 }

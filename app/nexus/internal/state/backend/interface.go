@@ -43,6 +43,9 @@ type Backend interface {
 	StoreSecret(ctx context.Context, path string, secret kv.Value) error
 	// LoadSecret loads a secret from the specified path
 	LoadSecret(ctx context.Context, path string) (*kv.Value, error)
+	// LoadAllSecrets retrieves all secrets stored in the backend.
+	// Returns a map of secret paths to their values or an error.
+	LoadAllSecrets(ctx context.Context) (map[string]*kv.Value, error)
 
 	// StorePolicy stores a policy object in the backend storage.
 	StorePolicy(ctx context.Context, policy data.Policy) error
