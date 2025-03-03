@@ -1,3 +1,7 @@
+//    \\ SPIKE: Secure your secrets with SPIFFE.
+//  \\\\\ Copyright 2024-present SPIKE contributors.
+// \\\\\\\ SPDX-License-Identifier: Apache-2.0
+
 package env
 
 import (
@@ -24,11 +28,6 @@ import (
 //   - SPIKE_NEXUS_KEEPER_PEERS is not set
 //   - SPIKE_NEXUS_KEEPER_PEERS contains invalid JSON
 func Keepers() map[string]string {
-	// example:
-	// '"{"1":"https://localhost:8443",
-	//    "2":"https://localhost:8543"
-	//    "3":"https://localhost:8643"}
-
 	p := os.Getenv("SPIKE_NEXUS_KEEPER_PEERS")
 
 	if p == "" {

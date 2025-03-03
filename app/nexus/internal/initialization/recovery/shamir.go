@@ -11,15 +11,16 @@ import (
 	shamir "github.com/cloudflare/circl/secretsharing"
 	"github.com/spiffe/spike-sdk-go/crypto"
 
+	"github.com/spiffe/spike/app/nexus/internal/env"
 	"github.com/spiffe/spike/internal/log"
 )
 
 func sanityCheck(secret group.Scalar, shares []shamir.Share) {
 	const fName = "sanityCheck"
 
-	t := uint(1) // Need t+1 shares to reconstruct
+	t := uint(env.ShamirThreshold() - 1) // Need t+1 shares to reconstruct
 
-	reconstructed, err := shamir.Recover(t, shares[:2])
+	reconstructed, err := shamir.Recover(t, shares[:env.ShamirThreshold()])
 	if err != nil {
 		log.FatalLn(fName + ": Failed to recover: " + err.Error())
 	}
@@ -33,8 +34,8 @@ func computeShares(finalKey []byte) (group.Scalar, []shamir.Share) {
 
 	// Initialize parameters
 	g := group.P256
-	t := uint(1) // Need t+1 shares to reconstruct
-	n := uint(3) // Total number of shares
+	t := uint(env.ShamirThreshold() - 1) // Need t+1 shares to reconstruct
+	n := uint(env.ShamirShares())        // Total number of shares
 
 	// Create secret from your 32 byte key
 	secret := g.NewScalar()

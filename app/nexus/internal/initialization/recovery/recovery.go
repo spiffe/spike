@@ -1,104 +1,31 @@
+//    \\ SPIKE: Secure your secrets with SPIFFE.
+//  \\\\\ Copyright 2024-present SPIKE contributors.
+// \\\\\\\ SPDX-License-Identifier: Apache-2.0
+
 package recovery
 
 import (
 	"context"
 	"encoding/base64"
 	"encoding/hex"
-	"encoding/json"
 	"errors"
 	"fmt"
-	"net/url"
 	"time"
 
-	"github.com/cloudflare/circl/secretsharing"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
-	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
-	apiUrl "github.com/spiffe/spike-sdk-go/api/url"
 	"github.com/spiffe/spike-sdk-go/crypto"
-	network "github.com/spiffe/spike-sdk-go/net"
 	"github.com/spiffe/spike-sdk-go/retry"
 	"github.com/spiffe/spike-sdk-go/spiffe"
 
 	"github.com/spiffe/spike/app/nexus/internal/env"
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 	"github.com/spiffe/spike/app/nexus/internal/state/persist"
-	"github.com/spiffe/spike/internal/auth"
 	"github.com/spiffe/spike/internal/log"
-	"github.com/spiffe/spike/internal/net"
 )
 
 var (
 	ErrRecoveryRetry = errors.New("recovery failed; retrying")
 )
-
-func sendShardsToKeepers(
-	source *workloadapi.X509Source, keepers map[string]string,
-) {
-	const fName = "sendShardsToKeepers"
-
-	for keeperId, keeperApiRoot := range keepers {
-		u, err := url.JoinPath(
-			keeperApiRoot, string(apiUrl.SpikeKeeperUrlContribute),
-		)
-
-		if err != nil {
-			log.Log().Warn(
-				fName, "msg", "Failed to join path", "url", keeperApiRoot,
-			)
-			continue
-		}
-
-		client, err := network.CreateMtlsClientWithPredicate(
-			source, auth.IsKeeper,
-		)
-
-		if err != nil {
-			log.Log().Warn(fName,
-				"msg", "Failed to create mTLS client",
-				"err", err)
-			continue
-		}
-
-		rk := state.RootKey()
-		if rk == nil {
-			log.Log().Info(fName, "msg", "rootKey is nil; moving on...")
-			continue
-		}
-
-		rootSecret, rootShares := computeShares(rk)
-
-		sanityCheck(rootSecret, rootShares)
-
-		share := findShare(keeperId, keepers, rootShares)
-
-		contribution, err := share.Value.MarshalBinary()
-		if err != nil {
-			log.Log().Warn(fName,
-				"msg", "Failed to marshal share",
-				"err", err, "keeper_id", keeperId)
-			continue
-		}
-
-		scr := reqres.ShardContributionRequest{
-			KeeperId: keeperId,
-			Shard:    base64.StdEncoding.EncodeToString(contribution),
-		}
-		md, err := json.Marshal(scr)
-		if err != nil {
-			log.Log().Warn(fName,
-				"msg", "Failed to marshal request",
-				"err", err, "keeper_id", keeperId)
-			continue
-		}
-
-		_, err = net.Post(client, u, md)
-		if err != nil {
-			log.Log().Warn(fName, "msg",
-				"Failed to post",
-				"err", err, "keeper_id", keeperId)
-		}
-	}
-}
 
 // RecoverBackingStoreUsingKeeperShards iterates through keepers until
 // you get two shards.
@@ -195,39 +122,55 @@ func HydrateMemoryFromBackingStore() {
 	log.Log().Info(fName, "msg", "HydrateMemoryFromBackingStore: secrets loaded")
 }
 
-// RestoreBackingStoreUsingPilotShards reconstructs and initializes the root key
-// from two pilot shards. It takes base64-encoded shards, decodes them, and
-// uses them to recover the root key. The recovered key is then used to
-// initialize the state and set as the root key.
+// RestoreBackingStoreUsingPilotShards restores the backing store using the
+// provided Shamir secret sharing shards. It requires at least the threshold
+// number of shards (as configured in the environment) to successfully
+// recover the root key. Once the root key is recovered, it initializes the
+// state and sends the shards to the keepers.
 //
 // Parameters:
-//   - shards: A slice of strings containing exactly two base64-encoded shards.
-//     The function assumes the slice has at least two elements and does not
-//     perform bounds checking.
+//   - shards: A slice of base64-encoded string shards
 //
-// Notes:
-//   - This function does not handle decode errors from
-//     base64.StdEncoding.DecodeString
-//   - The first two shards in the slice are used; any additional shards are
-//     ignored
-//   - The recovered key is hex-encoded before state initialization
+// The function will:
+//   - Validate that enough shards are provided (at least the threshold amount)
+//   - Decode the required number of shards from base64 format
+//   - Recover the root key using the Shamir secret sharing algorithm
+//   - Initialize the state with the recovered key
+//   - Send the shards to the configured keepers
 //
-// Areas of improvement:
-//   - Proper error handling should be implemented for production use
-//   - The function assumes the state package is properly imported and
-//     configured
-//   - The shard count shall be congruent with system settings
-//     (i.e. the threshold value that will come from a dynamic configuration)
+// It will return early with an error log if:
+//   - There are insufficient shards to meet the threshold
+//   - Any shard fails to decode properly
+//   - The SPIFFE source cannot be created
 func RestoreBackingStoreUsingPilotShards(shards []string) {
 	const fName = "RestoreBackingStoreUsingPilotShards"
 
-	firstShard := shards[0]
-	firstShardDecoded, _ := base64.StdEncoding.DecodeString(firstShard)
-	secondShard := shards[1]
-	secondShardDecoded, _ := base64.StdEncoding.DecodeString(secondShard)
+	shardThreshold := env.ShamirThreshold()
 
-	ss := [][]byte{firstShardDecoded, secondShardDecoded}
-	binaryRec := RecoverRootKey(ss)
+	// Ensure we have at least the threshold number of shards
+	if len(shards) < shardThreshold {
+		log.Log().Error(fName, "msg", "Insufficient shards for recovery",
+			"provided", len(shards), "required", shardThreshold)
+		return
+	}
+
+	// Decode the required number of shards (up to threshold)
+	decodedShards := make([][]byte, 0, shardThreshold)
+	for i := 0; i < shardThreshold; i++ {
+		decodedShard, err := base64.StdEncoding.DecodeString(shards[i])
+		if err != nil {
+			log.Log().Error(fName,
+				"msg", "Failed to decode shard",
+				"index", i,
+				"err", err,
+			)
+			return
+		}
+		decodedShards = append(decodedShards, decodedShard)
+	}
+
+	// Recover the root key using the threshold number of shards
+	binaryRec := RecoverRootKey(decodedShards)
 	encoded := hex.EncodeToString(binaryRec)
 	state.Initialize(encoded)
 	state.SetRootKey(binaryRec)
@@ -381,8 +324,10 @@ func BootstrapBackingStoreWithNewRootKey(source *workloadapi.X509Source) {
 
 	successfulKeepers := make(map[string]bool)
 	keepers := env.Keepers()
-	if len(keepers) < 3 {
-		log.FatalLn(fName + ": not enough keepers")
+
+	shamirShareCount := env.ShamirThreshold()
+	if len(keepers) != shamirShareCount {
+		log.FatalLn(fName + ": Keepers not configured correctly")
 	}
 
 	for {
@@ -397,21 +342,4 @@ func BootstrapBackingStoreWithNewRootKey(source *workloadapi.X509Source) {
 		log.Log().Info(fName, "msg", "Waiting for keepers to initialize")
 		time.Sleep(5 * time.Second)
 	}
-}
-
-func mustUpdateRecoveryInfo(rk string) []secretsharing.Share {
-	const fName = "mustUpdateRecoveryInfo"
-	log.Log().Info(fName, "msg", "Updating recovery info")
-
-	decodedRootKey, err := hex.DecodeString(rk)
-	if err != nil {
-		log.FatalLn(fName + ": failed to decode root key: " + err.Error())
-	}
-	rootSecret, rootShares := computeShares(decodedRootKey)
-	sanityCheck(rootSecret, rootShares)
-
-	// Save recovery information.
-	state.SetRootKey(decodedRootKey)
-
-	return rootShares
 }

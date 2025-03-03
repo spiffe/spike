@@ -40,6 +40,7 @@ func main() {
 		appName, "msg",
 		fmt.Sprintf("Started service: %s v%s", appName, config.KeeperVersion),
 	)
+
 	if err := net.ServeWithPredicate(
 		source,
 		func() { routing.HandleRoute(http.Route) },
