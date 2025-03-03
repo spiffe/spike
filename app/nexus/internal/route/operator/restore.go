@@ -5,6 +5,7 @@
 package operator
 
 import (
+	"github.com/spiffe/spike/app/nexus/internal/env"
 	"net/http"
 	"sync"
 
@@ -18,8 +19,7 @@ import (
 )
 
 const (
-	expectedShardCount = 2
-	decodedShardSize   = 32 // bytes
+	decodedShardSize = 32 // bytes
 )
 
 var (
@@ -89,7 +89,7 @@ func RouteRestore(
 	currentShardCount := len(shards)
 	shardsMutex.RUnlock()
 
-	if currentShardCount >= expectedShardCount {
+	if currentShardCount >= env.ShamirThreshold() {
 		responseBody := net.MarshalBody(reqres.RestoreResponse{
 			RestorationStatus: data.RestorationStatus{
 				ShardsCollected: currentShardCount,
@@ -110,7 +110,7 @@ func RouteRestore(
 		responseBody := net.MarshalBody(reqres.RestoreResponse{
 			RestorationStatus: data.RestorationStatus{
 				ShardsCollected: currentShardCount,
-				ShardsRemaining: expectedShardCount - currentShardCount,
+				ShardsRemaining: env.ShamirThreshold() - currentShardCount,
 				Restored:        false,
 			},
 			Err: data.ErrBadInput,
@@ -129,15 +129,15 @@ func RouteRestore(
 	shardsMutex.Unlock()
 
 	// Trigger restoration if we have collected all shards
-	if currentShardCount == expectedShardCount {
+	if currentShardCount == env.ShamirThreshold() {
 		recovery.RestoreBackingStoreUsingPilotShards(shards)
 	}
 
 	responseBody := net.MarshalBody(reqres.RestoreResponse{
 		RestorationStatus: data.RestorationStatus{
 			ShardsCollected: currentShardCount,
-			ShardsRemaining: expectedShardCount - currentShardCount,
-			Restored:        currentShardCount == expectedShardCount,
+			ShardsRemaining: env.ShamirThreshold() - currentShardCount,
+			Restored:        currentShardCount == env.ShamirThreshold(),
 		},
 	}, w)
 	if responseBody == nil {

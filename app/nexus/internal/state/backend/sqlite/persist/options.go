@@ -5,6 +5,7 @@
 package persist
 
 import (
+	"github.com/spiffe/spike/app/nexus/internal/env"
 	"time"
 )
 
@@ -40,10 +41,10 @@ func DefaultOptions() *Options {
 	return &Options{
 		DataDir:         ".data",
 		DatabaseFile:    "spike.db",
-		JournalMode:     "WAL",
-		BusyTimeoutMs:   5000,
-		MaxOpenConns:    10,
-		MaxIdleConns:    5,
-		ConnMaxLifetime: time.Hour,
+		JournalMode:     env.DatabaseJournalMode(),
+		BusyTimeoutMs:   env.DatabaseBusyTimeoutMs(),
+		MaxOpenConns:    env.DatabaseMaxOpenConns(),
+		MaxIdleConns:    env.DatabaseMaxIdleConns(),
+		ConnMaxLifetime: env.DatabaseConnMaxLifetimeSec(),
 	}
 }

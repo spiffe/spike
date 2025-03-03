@@ -7,12 +7,13 @@ package recovery
 import (
 	"encoding/hex"
 	"encoding/json"
+	"net/url"
+	"os"
+
 	"github.com/cloudflare/circl/secretsharing"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	apiUrl "github.com/spiffe/spike-sdk-go/api/url"
-	"net/url"
-	"os"
 
 	"github.com/spiffe/spike/app/nexus/internal/env"
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
@@ -55,7 +56,7 @@ func iterateKeepersToBootstrap(
 		successfulKeepers[keeperId] = true
 		log.Log().Info(fName, "msg", "Success", "keeper_id", keeperId)
 
-		if len(successfulKeepers) == 3 {
+		if len(successfulKeepers) == env.ShamirShares() {
 			log.Log().Info(fName, "msg", "All keepers initialized")
 
 			tombstone := config.SpikeNexusTombstonePath()
@@ -116,12 +117,12 @@ func iterateKeepersAndTryRecovery(
 		}
 
 		successfulKeeperShards[keeperId] = shard
-		if len(successfulKeeperShards) != 2 {
+		if len(successfulKeeperShards) != env.ShamirThreshold() {
 			continue
 		}
 
 		ss := rawShards(successfulKeeperShards)
-		if len(ss) != 2 {
+		if len(ss) != env.ShamirThreshold() {
 			continue
 		}
 

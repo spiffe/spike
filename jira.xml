@@ -393,17 +393,6 @@
       ^ I get an error instead of a "secret not found" message.
     </issue>
     <issue>
-      these may come from the environment:
-
-      DataDir: ".data",
-      DatabaseFile: "spike.db",
-      JournalMode: "WAL",
-      BusyTimeoutMs: 5000,
-      MaxOpenConns: 10,
-      MaxIdleConns: 5,
-      ConnMaxLifetime: time.Hour,
-    </issue>
-    <issue>
       verify if the keeper has shard before resending it:
       send hash of the shard first
       if keeper says “I have it”, don’t send the actual shard.

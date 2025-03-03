@@ -11,6 +11,7 @@ import (
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	"github.com/spiffe/spike-sdk-go/api/errors"
 
+	"github.com/spiffe/spike/app/nexus/internal/env"
 	"github.com/spiffe/spike/app/nexus/internal/initialization/recovery"
 	"github.com/spiffe/spike/internal/log"
 	"github.com/spiffe/spike/internal/net"
@@ -67,11 +68,11 @@ func RouteRecover(
 
 	shards := recovery.PilotRecoveryShards()
 
-	if len(shards) < 2 {
+	if len(shards) < env.ShamirThreshold() {
 		return errors.ErrNotFound
 	}
 
-	payload := shards[:2]
+	payload := shards[:env.ShamirThreshold()]
 
 	responseBody := net.MarshalBody(reqres.RecoverResponse{
 		Shards: payload,
