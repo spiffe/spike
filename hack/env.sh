@@ -22,6 +22,9 @@ export SPIKE_NEXUS_DB_MAX_IDLE_CONNS="5"
 export SPIKE_NEXUS_DB_CONN_MAX_LIFETIME="1h"
 export SPIKE_NEXUS_RECOVERY_TIMEOUT="0"
 
+export SPIKE_NEXUS_SHAMIR_SHARES="3"
+export SPIKE_NEXUS_SHAMIR_THRESHOLD="2"
+
 export SPIKE_NEXUS_KEEPER_PEERS='{"1":"https://localhost:8443","2":"https://localhost:8543","3":"https://localhost:8643"}'
 
 export SPIKE_KEEPER_TLS_PORT=":8443"
