@@ -9,6 +9,8 @@ package state
 
 import (
 	"sync"
+
+	"github.com/spiffe/spike/internal/memory"
 )
 
 var shard []byte
@@ -23,6 +25,13 @@ var shardMutex sync.RWMutex
 func SetShard(s []byte) {
 	shardMutex.Lock()
 	defer shardMutex.Unlock()
+
+	// Clear the old shard if it exists
+	if shard != nil {
+		oldShard := shard
+		memory.ClearBytes(oldShard)
+	}
+
 	shard = s
 }
 
