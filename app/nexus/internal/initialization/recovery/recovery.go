@@ -325,9 +325,12 @@ func BootstrapBackingStoreWithNewRootKey(source *workloadapi.X509Source) {
 	successfulKeepers := make(map[string]bool)
 	keepers := env.Keepers()
 
-	shamirShareCount := env.ShamirThreshold()
+	shamirShareCount := env.ShamirShares()
 	if len(keepers) != shamirShareCount {
-		log.FatalLn(fName + ": Keepers not configured correctly")
+		log.FatalLn(
+			fName+": Keepers not configured correctly.",
+			"Share count:", shamirShareCount, "Keepers:", len(keepers),
+		)
 	}
 
 	for {
