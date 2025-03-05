@@ -14,6 +14,35 @@ sort_by = "weight"
 
 TBD
 
+## [0.3.1] - 2026-03-04
+
+### Added
+
+* SPIKE Nexus now accepts dynamic number of SPIKE Keepers and Shamir share
+  threshold (defaults to 3 keepers, and minimum 2 shared (out of 3) to
+  recreate the root key).
+* Started containarization work (created a Dockerfile); yet it's far from
+  complete: We will work on that.
+* Various documentation updates.
+* Minor bug fixes in initialization scripts.
+
+### Changed
+
+* Secrets now rehydrate from the backing store immediately after SPIKE
+  Nexus crashes. Former implementation was using an optimistic algorithm
+  (i.e., do not load the secret unless you need it), yet that was causing
+  calls to `spike secret list` return an empty collection. This implementation
+  fixes that issue, and also ensures that SPIKE Nexus' memory continues to
+  be the primary source of truth (by design).
+
+### Security
+
+* SPIKE Nexus now securely erases old root key and shards from memory after
+ it is no longer needed. Before, it was left the the garbage collector to 
+ handle that. The current approach is NIST recommendation and provides better
+ memory protection.
+* [Fixed `CVE-2025-271447`: DoS in go-jose Parsing](https://github.com/spiffe/spike/security/dependabot/3)
+
 ## [0.3.0] - 2026-02-20
 
 This release was focused around bugfixes, stability, documentation, and 
