@@ -15,6 +15,6 @@ const appName = "SPIKE"
 var rootCmd = &cobra.Command{
 	Use:   "spike",
 	Short: appName + " - Secure your secrets with SPIFFE",
-	Long: appName + " v" + config.PilotVersion + `
+	Long: appName + " v" + config.SpikePilotVersion + `
 >> Secure your secrets with SPIFFE: https://spike.ist/ #`,
 }
