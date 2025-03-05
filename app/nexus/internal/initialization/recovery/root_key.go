@@ -7,10 +7,10 @@ package recovery
 import (
 	"github.com/cloudflare/circl/group"
 	"github.com/cloudflare/circl/secretsharing"
+	"github.com/spiffe/spike-sdk-go/security/mem"
 
 	"github.com/spiffe/spike/app/nexus/internal/env"
 	"github.com/spiffe/spike/internal/log"
-	"github.com/spiffe/spike/internal/memory"
 )
 
 // RecoverRootKey reconstructs the original root key from a slice of secret
@@ -41,7 +41,7 @@ func RecoverRootKey(ss [][]byte) []byte {
 	// Create deferred call to clear all input shares before returning
 	defer func() {
 		for i := range ss {
-			memory.ClearBytes(ss[i])
+			mem.ClearBytes(ss[i])
 		}
 	}()
 
