@@ -21,6 +21,7 @@ import (
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 	"github.com/spiffe/spike/app/nexus/internal/state/persist"
 	"github.com/spiffe/spike/internal/log"
+	"github.com/spiffe/spike/internal/memory"
 )
 
 var (
@@ -168,6 +169,13 @@ func RestoreBackingStoreUsingPilotShards(shards []string) {
 		}
 		decodedShards = append(decodedShards, decodedShard)
 	}
+
+	// Clear the decoded shards before returning
+	defer func() {
+		for i := range decodedShards {
+			memory.ClearBytes(decodedShards[i])
+		}
+	}()
 
 	// Recover the root key using the threshold number of shards
 	binaryRec := RecoverRootKey(decodedShards)

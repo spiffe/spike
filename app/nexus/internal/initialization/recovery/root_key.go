@@ -10,6 +10,7 @@ import (
 
 	"github.com/spiffe/spike/app/nexus/internal/env"
 	"github.com/spiffe/spike/internal/log"
+	"github.com/spiffe/spike/internal/memory"
 )
 
 // RecoverRootKey reconstructs the original root key from a slice of secret
@@ -36,6 +37,13 @@ import (
 //   - The binary representation has an incorrect length
 func RecoverRootKey(ss [][]byte) []byte {
 	const fName = "RecoverRootKey"
+
+	// Create deferred call to clear all input shares before returning
+	defer func() {
+		for i := range ss {
+			memory.ClearBytes(ss[i])
+		}
+	}()
 
 	g := group.P256
 	shares := make([]secretsharing.Share, 0, len(ss))
