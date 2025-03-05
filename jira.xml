@@ -199,9 +199,6 @@
       non-nil zeroed-out slice.
     </issue>
     <issue>
-      Move secure memory erase code either to ./pkg or to the SDK.
-    </issue>
-    <issue>
       go runtime update to the recent.
       update SPIRE too while you are at it.
     </issue>
@@ -287,12 +284,6 @@
     <issue>
       nil check wherever Backend() is called.
       var be backend.Backend
-    </issue>
-    <issue>
-      The paths that we set in get put ...etc should look like a unix
-      path.
-      it will require sanitization!
-      Check how other secrets stores manage those paths.
     </issue>
 
     <issue kind="containerization">
