@@ -113,11 +113,29 @@ func CreatePolicy(policy data.Policy) (data.Policy, error) {
 		return data.Policy{}, ErrInvalidPolicy
 	}
 
+	var err error
+
+	// Check for duplicate policy name
+	policies.Range(func(key, value interface{}) bool {
+		if value.(data.Policy).Name == policy.Name {
+			err = ErrPolicyExists
+			return false // stop the iteration
+		}
+		return true
+	})
+	if err != nil {
+		return data.Policy{}, err
+	}
+
 	// Compile and validate patterns
 	if policy.SpiffeIdPattern != "*" {
 		idRegex, err := regexp.Compile(policy.SpiffeIdPattern)
 		if err != nil {
-			return data.Policy{}, fmt.Errorf("%s: %v", "invalid spiffeid pattern", err)
+			return data.Policy{},
+				errors.Join(
+					ErrInvalidPolicy,
+					fmt.Errorf("%s: %v", "invalid spiffeid pattern", err),
+				)
 		}
 		policy.IdRegex = idRegex
 	}
@@ -125,7 +143,11 @@ func CreatePolicy(policy data.Policy) (data.Policy, error) {
 	if policy.PathPattern != "*" {
 		pathRegex, err := regexp.Compile(policy.PathPattern)
 		if err != nil {
-			return data.Policy{}, fmt.Errorf("%s: %v", "invalid path pattern", err)
+			return data.Policy{},
+				errors.Join(
+					ErrInvalidPolicy,
+					fmt.Errorf("%s: %v", "invalid path pattern", err),
+				)
 		}
 		policy.PathRegex = pathRegex
 	}
