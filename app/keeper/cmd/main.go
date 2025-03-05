@@ -23,7 +23,7 @@ import (
 const appName = "SPIKE Keeper"
 
 func main() {
-	log.Log().Info(appName, "msg", appName, "version", config.KeeperVersion)
+	log.Log().Info(appName, "msg", appName, "version", config.SpikeKeeperVersion)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -38,7 +38,7 @@ func main() {
 
 	log.Log().Info(
 		appName, "msg",
-		fmt.Sprintf("Started service: %s v%s", appName, config.KeeperVersion),
+		fmt.Sprintf("Started service: %s v%s", appName, config.SpikeKeeperVersion),
 	)
 
 	if err := net.ServeWithPredicate(

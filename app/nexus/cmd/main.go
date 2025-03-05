@@ -23,7 +23,7 @@ import (
 const appName = "SPIKE Nexus"
 
 func main() {
-	log.Log().Info(appName, "msg", appName, "version", config.NexusVersion)
+	log.Log().Info(appName, "msg", appName, "version", config.SpikeNexusVersion)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -40,7 +40,7 @@ func main() {
 
 	log.Log().Info(appName, "msg", fmt.Sprintf(
 		"Started service: %s v%s",
-		appName, config.NexusVersion),
+		appName, config.SpikeNexusVersion),
 	)
 
 	if err := net.Serve(

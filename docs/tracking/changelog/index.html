@@ -171,29 +171,6 @@
                 </li>
 
                 </ul>
-    <input class="tree-toggle" type="checkbox" id="operations"
-               />
-        <label class="tree-toggle-label "
-               for="operations">Operations</label>
-
-        <ul class="subtree">
-            <li >
-                    <a href="https://spike.ist/operations/build/">SPIKE Cross-Platform Build</a>
-                </li>
-
-                <li >
-                    <a href="https://spike.ist/operations/production/">SPIKE Production Setup</a>
-                </li>
-
-                <li >
-                    <a href="https://spike.ist/operations/recovery/">SPIKE Recovery Procedures</a>
-                </li>
-
-                <li >
-                    <a href="https://spike.ist/operations/release/">SPIKE Relase Management</a>
-                </li>
-
-                </ul>
     <input class="tree-toggle" type="checkbox" id="tracking"
                checked/>
         <label class="tree-toggle-label "
@@ -215,6 +192,9 @@
                                                         <a href="https://spike.ist/tracking/changelog/#recent">Recent</a>
                                                     </li>
                                                 <li>
+                                                        <a href="https://spike.ist/tracking/changelog/#0-3-1-2026-03-04">[0.3.1] - 2026-03-04</a>
+                                                    </li>
+                                                <li>
                                                         <a href="https://spike.ist/tracking/changelog/#0-3-0-2026-02-20">[0.3.0] - 2026-02-20</a>
                                                     </li>
                                                 <li>
@@ -231,6 +211,29 @@
                                 </ul>
                         <li >
                     <a href="https://spike.ist/tracking/snapshots/">Documentation Snapshots</a>
+                </li>
+
+                </ul>
+    <input class="tree-toggle" type="checkbox" id="operations"
+               />
+        <label class="tree-toggle-label "
+               for="operations">Operations</label>
+
+        <ul class="subtree">
+            <li >
+                    <a href="https://spike.ist/operations/build/">SPIKE Cross-Platform Build</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/operations/production/">SPIKE Production Setup</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/operations/recovery/">SPIKE Recovery Procedures</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/operations/release/">SPIKE Relase Management</a>
                 </li>
 
                 </ul>
@@ -730,10 +733,38 @@
         <h1 id="spike-changelog">SPIKE Changelog</h1>
 <h2 id="recent">Recent</h2>
 <p>TBD</p>
+<h2 id="0-3-1-2026-03-04">[0.3.1] - 2026-03-04</h2>
+<h3 id="added">Added</h3>
+<ul>
+<li>SPIKE Nexus now accepts dynamic number of SPIKE Keepers and Shamir share
+threshold (defaults to 3 keepers, and minimum 2 shared (out of 3) to
+recreate the root key).</li>
+<li>Started containarization work (created a Dockerfile); yet it’s far from
+complete: We will work on that.</li>
+<li>Various documentation updates.</li>
+<li>Minor bug fixes in initialization scripts.</li>
+</ul>
+<h3 id="changed">Changed</h3>
+<ul>
+<li>Secrets now rehydrate from the backing store immediately after SPIKE
+Nexus crashes. Former implementation was using an optimistic algorithm
+(i.e., do not load the secret unless you need it), yet that was causing
+calls to <code>spike secret list</code> return an empty collection. This implementation
+fixes that issue, and also ensures that SPIKE Nexus’ memory continues to
+be the primary source of truth (by design).</li>
+</ul>
+<h3 id="security">Security</h3>
+<ul>
+<li>SPIKE Nexus now securely erases old root key and shards from memory after
+it is no longer needed. Before, it was left the the garbage collector to
+handle that. The current approach is NIST recommendation and provides better
+memory protection.</li>
+<li><a href="https://github.com/spiffe/spike/security/dependabot/3">Fixed <code>CVE-2025-271447</code>: DoS in go-jose Parsing</a></li>
+</ul>
 <h2 id="0-3-0-2026-02-20">[0.3.0] - 2026-02-20</h2>
 <p>This release was focused around bugfixes, stability, documentation, and
 disaster recovery.</p>
-<h3 id="added">Added</h3>
+<h3 id="added-1">Added</h3>
 <ul>
 <li>Documentation: SPIKE Production Hardening Guide is complete and ready for
 consumption (<em>it was in draft mode before</em>).</li>
@@ -748,7 +779,7 @@ we would like to be; yet we have to start somewhere :).</li>
 and design decisions transparently.</li>
 <li>Started working on containerization (<em>though it’s still a work in progress</em>).</li>
 </ul>
-<h3 id="changed">Changed</h3>
+<h3 id="changed-1">Changed</h3>
 <ul>
 <li>SPIKE Website has undergone a major overhaul.</li>
 <li>Documentation updates, especially around security and disaster recovery.</li>
@@ -759,7 +790,7 @@ templateability, and consistency to the overall documentation.</li>
 <li>Significant updates in <a href="https://github.com/spiffe/spike-sdk-go">SPIKE go SDK</a>.</li>
 </ul>
 <h2 id="0-2-1-2026-01-23">[0.2.1] - 2026-01-23</h2>
-<h3 id="added-1">Added</h3>
+<h3 id="added-2">Added</h3>
 <ul>
 <li>Enabled policy-based access control.</li>
 <li>The root key that SPIKE Nexus generates is now split into several Shamir
@@ -777,13 +808,13 @@ updating and improving it along the way.</li>
 <li>Implemented a Secret Metadata API.</li>
 <li>Implemented exponential retries across several API-consuming methods.</li>
 </ul>
-<h3 id="changed-1">Changed</h3>
+<h3 id="changed-2">Changed</h3>
 <ul>
 <li><strong>BREAKING</strong>: changed the CLI usage. Instead of <code>spike get</code>, for example, we
 now use <code>spike secret get</code>. The reason for this change is that we introduced
 a <code>policy</code> command (i.e. <code>spike policy get</code>).</li>
 </ul>
-<h3 id="security">Security</h3>
+<h3 id="security-1">Security</h3>
 <ul>
 <li><a href="https://github.com/spiffe/spike/security/dependabot/1">Fixed <code>CVE-2024-45337</code>: Misuse of ServerConfig.PublicKeyCallback may cause
 authorization bypass in golang.org/x/crypto</a></li>
@@ -791,7 +822,7 @@ authorization bypass in golang.org/x/crypto</a></li>
 <code>golang.org/x/net/htm</code></a></li>
 </ul>
 <h2 id="0-2-0-2024-11-22">[0.2.0] - 2024-11-22</h2>
-<h3 id="added-2">Added</h3>
+<h3 id="added-3">Added</h3>
 <ul>
 <li>Added configuration options for SPIKE Nexus and SPIKE Keeper.</li>
 <li>Documentation updates.</li>
@@ -803,7 +834,7 @@ authorization bypass in golang.org/x/crypto</a></li>
 <li>Created initial smoke/integration tests.</li>
 <li>Stability improvements.</li>
 </ul>
-<h3 id="changed-2">Changed</h3>
+<h3 id="changed-3">Changed</h3>
 <ul>
 <li>Removed password authentication for admin users. Admin users’ SVIDs
 are good enough to authenticate them.</li>
@@ -811,7 +842,7 @@ are good enough to authenticate them.</li>
 (<em>the neat thing about passwords is: you don’t need them</em>).</li>
 </ul>
 <h2 id="0-1-0-2024-11-06">[0.1.0] - 2024-11-06</h2>
-<h3 id="added-3">Added</h3>
+<h3 id="added-4">Added</h3>
 <ul>
 <li>Implemented <code>put</code>, <code>read</code>, <code>delete</code>, <code>undelete</code>, and <code>list</code> functionalities.</li>
 <li>Created initial documentation, README, and related files.</li>

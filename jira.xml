@@ -174,6 +174,34 @@
   </feature>
   <low-hanging-fruits>
     <issue>
+      Initialize the root key with 32 bits of zeroes.
+
+      Initializing rootKey with 32 bytes of zeroes (make([]byte, 32)) instead
+      of letting it dynamically grow will be a better practice from a security
+      perspective for several reasons:
+      * Prevents Length Leaks: If we allow the slice to dynamically grow, an
+        attacker observing memory patterns might infer key-related operations
+        based on the length changes. By pre-allocating 32 bytes, the length
+        remains constant.
+      * Ensures Expected Size: It enforces that the encryption key will always
+        have a fixed size, reducing the risk of unexpected behavior or bugs
+        where the key is shorter or longer than expected.
+      * Avoids Accidental nil Access: Without initialization, rootKey defaults
+        to nil, which can lead to runtime panics if accessed before being
+        properly assigned.
+      * Predictable Memory Layout: Pre-allocating avoids potential fragmentation
+        in memory allocation, making access patterns more predictable.
+
+      Or even better, use an array `rootKey [32]byte` since size is fixed.
+
+      When doing it, we'd need to check everywhere rootKey is used because
+      there are nil check which will regress when using an array or a
+      non-nil zeroed-out slice.
+    </issue>
+    <issue>
+      Move secure memory erase code either to ./pkg or to the SDK.
+    </issue>
+    <issue>
       go runtime update to the recent.
       update SPIRE too while you are at it.
     </issue>

@@ -18,9 +18,9 @@ import (
 // These constants are automatically updated during the release process.
 // Please do not modify them manually.
 
-const NexusVersion = "0.3.0"
-const PilotVersion = "0.3.0"
-const KeeperVersion = "0.3.0"
+const SpikeNexusVersion = "0.3.1"
+const SpikePilotVersion = "0.3.1"
+const SpikeKeeperVersion = "0.3.1"
 
 // #endregion
 
