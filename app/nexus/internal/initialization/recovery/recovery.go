@@ -15,13 +15,13 @@ import (
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	"github.com/spiffe/spike-sdk-go/crypto"
 	"github.com/spiffe/spike-sdk-go/retry"
+	"github.com/spiffe/spike-sdk-go/security/mem"
 	"github.com/spiffe/spike-sdk-go/spiffe"
 
 	"github.com/spiffe/spike/app/nexus/internal/env"
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 	"github.com/spiffe/spike/app/nexus/internal/state/persist"
 	"github.com/spiffe/spike/internal/log"
-	"github.com/spiffe/spike/internal/memory"
 )
 
 var (
@@ -173,7 +173,7 @@ func RestoreBackingStoreUsingPilotShards(shards []string) {
 	// Clear the decoded shards before returning
 	defer func() {
 		for i := range decodedShards {
-			memory.ClearBytes(decodedShards[i])
+			mem.ClearBytes(decodedShards[i])
 		}
 	}()
 

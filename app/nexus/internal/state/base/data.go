@@ -8,9 +8,9 @@ import (
 	"sync"
 
 	"github.com/spiffe/spike-sdk-go/kv"
+	"github.com/spiffe/spike-sdk-go/security/mem"
 
 	"github.com/spiffe/spike/app/nexus/internal/env"
-	"github.com/spiffe/spike/internal/memory"
 )
 
 var (
@@ -40,7 +40,7 @@ func SetRootKey(rk []byte) {
 	// Clear the old root key if it exists
 	if rootKey != nil {
 		oldRootKey := rootKey
-		memory.ClearBytes(oldRootKey)
+		mem.ClearBytes(oldRootKey)
 	}
 
 	rootKey = rk
