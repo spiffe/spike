@@ -19,9 +19,9 @@ TBD
 ### Added
 
 * SPIKE Nexus now accepts dynamic number of SPIKE Keepers and Shamir share
-  threshold (defaults to 3 keepers, and minimum 2 shared (out of 3) to
+  threshold (defaults to 3 keepers, and minimum 2 shares (out of 3) to
   recreate the root key).
-* Started containarization work (created a Dockerfile); yet it's far from
+* Started containerization work (created a Dockerfile); yet it's far from
   complete: We will work on that.
 * Various documentation updates.
 * Minor bug fixes in initialization scripts.
