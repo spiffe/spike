@@ -24,10 +24,6 @@
   </purpose>
   <low-hanging-fruits>
     <issue>
-      refactor retries with `retry.Do()` as its simpler with less
-      configuration mess.
-    </issue>
-    <issue>
       if crashed and trying to restore (instead of recover)
       you get this:
 
