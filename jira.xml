@@ -22,13 +22,6 @@
       ✅ A golang SDK
     </meta>
   </purpose>
-  <watch>
-    <issue meta="assigned">
-      admin should not be able to create two policies with the same name.
-      good first issue: https://github.com/spiffe/spike/issues/79
-      (maybe add some details to the ticket)
-    </issue>
-  </watch>
   <low-hanging-fruits>
     <issue>
       refactor retries with `retry.Do()` as its simpler with less
