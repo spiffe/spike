@@ -95,76 +95,34 @@
       be.
     </issue>
   </low-hanging-fruits>
-  <bugs>
-    <issue kind="dynamic-keeper-count">
-      <core>
-        better to tackle these sooner than later.
+  <feature title="Security">
+    <issue>
+      Initialize the root key with 32 bits of zeroes.
 
-        func computeShares(finalKey []byte) (group.Scalar,
-        []secretsharing.Share) {
-        // Initialize parameters
-        g := group.P256
-        // these will be configurable
-        t := uint(1) // Need t+1 shares to reconstruct
-        n := uint(3) // Total number of shares
-      </core>
-      <issue>
-        RouteRecover: shards should be dynamically configurable
+      Initializing rootKey with 32 bytes of zeroes (make([]byte, 32)) instead
+      of letting it dynamically grow will be a better practice from a security
+      perspective for several reasons:
+      * Prevents Length Leaks: If we allow the slice to dynamically grow, an
+      attacker observing memory patterns might infer key-related operations
+      based on the length changes. By pre-allocating 32 bytes, the length
+      remains constant.
+      * Ensures Expected Size: It enforces that the encryption key will always
+      have a fixed size, reducing the risk of unexpected behavior or bugs
+      where the key is shorter or longer than expected.
+      * Avoids Accidental nil Access: Without initialization, rootKey defaults
+      to nil, which can lead to runtime panics if accessed before being
+      properly assigned.
+      * Predictable Memory Layout: Pre-allocating avoids potential fragmentation
+      in memory allocation, making access patterns more predictable.
 
-        if len(shards) &lt; 2 {
-        return errors.ErrNotFound
-        }
-      </issue>
-      <issue>
-        // this check will change once we make #keepers configurable.
-        if len(keepers) &lt; 3 {
-        log.FatalLn("Tick: not enough keepers")
-        }
-      </issue>
-      <issue>
-        // -> 2 is a magic number; need to manipulate shards dynamically.
-        func RestoreBackingStoreUsingPilotShards(shards []string) {
-        firstShard := shards[0]
-        firstShardDecoded, _ := base64.StdEncoding.DecodeString(firstShard)
-        secondShard := shards[1]
-        secondShardDecoded, _ :=
-        base64.StdEncoding.DecodeString(secondShard)
-      </issue>
-      <issue>
-        check the entire codebase to ensure that we don't assume we have 3
-        shards or 3 keepers, or 2 threshold, and we receive those numbers
-        dynamically instead.
-      </issue>
-      <issue>
-        This reconstruction assumes there are two shards
-        it should not have that assumption
+      Or even better, use an array `rootKey [32]byte` since size is fixed.
 
-        var shares []secretsharing.Share
-        shares = append(shares, firstShare)
-        shares = append(shares, secondShare)
-
-        reconstructed, err := secretsharing.Recover(1, shares)
-        if err != nil {
-        log.FatalLn("Failed to recover: " + err.Error())
-        }
-      </issue>
-      <issue>
-        func sanityCheck(secret group.Scalar, shares []shamir.Share) {
-        t := uint(1) // Need t+1 shares to reconstruct
-        // TOxDO: 1 and 3 shall come from configs.
-        // TOxDO: keeper count shall be validated against 3
-
-        reconstructed, err := shamir.Recover(t, shares[:2])
-        if err != nil {
-        log.FatalLn("sanityCheck: Failed to recover: " + err.Error())
-        }
-        if !secret.IsEqual(reconstructed) {
-        log.FatalLn("sanityCheck: Recovered secret does not match original")
-        }
-        }
-      </issue>
+      When doing it, we'd need to check everywhere rootKey is used because
+      there are nil check which will regress when using an array or a
+      non-nil zeroed-out slice.
     </issue>
-  </bugs>
+  </feature>
+
   <feature title="Containerization">
     <issue>
       Next prio is likely containerization.
@@ -174,36 +132,84 @@
   </feature>
   <low-hanging-fruits>
     <issue>
-      Initialize the root key with 32 bits of zeroes.
-
-      Initializing rootKey with 32 bytes of zeroes (make([]byte, 32)) instead
-      of letting it dynamically grow will be a better practice from a security
-      perspective for several reasons:
-      * Prevents Length Leaks: If we allow the slice to dynamically grow, an
-        attacker observing memory patterns might infer key-related operations
-        based on the length changes. By pre-allocating 32 bytes, the length
-        remains constant.
-      * Ensures Expected Size: It enforces that the encryption key will always
-        have a fixed size, reducing the risk of unexpected behavior or bugs
-        where the key is shorter or longer than expected.
-      * Avoids Accidental nil Access: Without initialization, rootKey defaults
-        to nil, which can lead to runtime panics if accessed before being
-        properly assigned.
-      * Predictable Memory Layout: Pre-allocating avoids potential fragmentation
-        in memory allocation, making access patterns more predictable.
-
-      Or even better, use an array `rootKey [32]byte` since size is fixed.
-
-      When doing it, we'd need to check everywhere rootKey is used because
-      there are nil check which will regress when using an array or a
-      non-nil zeroed-out slice.
-    </issue>
-    <issue>
-      Move secure memory erase code either to ./pkg or to the SDK.
-    </issue>
-    <issue>
       go runtime update to the recent.
       update SPIRE too while you are at it.
+    </issue>
+    <issue>
+      try getent in  checkdomain
+
+      check_domain() {
+      # Use getent instead of dig as it respects /etc/hosts
+      if getent hosts "$SPIRE_SERVER_DOMAIN" > /dev/null; then
+      # Get the full answer for display
+      DNS_ANSWER=$(getent hosts "$SPIRE_SERVER_DOMAIN")
+
+      # Print the resolved address(es)
+      echo "DNS resolution for $SPIRE_SERVER_DOMAIN:"
+      echo "$DNS_ANSWER"
+      return 0
+      else
+      echo "Error: No valid DNS answer for $SPIRE_SERVER_DOMAIN"
+      return 1
+      fi
+      }
+
+    </issue>
+    <issue>
+      To docs:
+
+      additional comments.
+
+      wrt `mlock`;
+      * it requires root privileges or `CAP_IPC_LOCK` in Linux.
+      * there is no windows equivalent.
+
+      however without `mlock` if swap is on, zeroing out memory won't be good enough as we won't have any control ove whatever is written on swap.
+
+      --
+
+      @kfox1111 has suggested to add "turning swap off" to the [production guide](https://spike.ist/operations/production/) as a recommendation.
+
+      Turning swap off is recommended for bare-metal k8s control plane and worker nodes anyway; so chances are, it will be turned off if a modern containerized (doker, k8s, etc) environment.
+
+      If turning swap is not an option, encrypting swap could be another option too.
+    </issue>
+    <issue>
+      may want to put a note in docs or something to run with swap off.
+      1:17
+      not sure if the sanitation bits would work with swap on a system.
+
+      ^
+      production guides.
+
+      ^
+
+      also describe how enabling swap might impact the security posture.
+    </issue>
+    <issue>
+      use Mlock optionally
+
+      Also we can either "try and shrug" using `mlock` as in
+
+      ```go
+      err := unix.Mlock(data)
+      if err != nil {
+      // do nothing
+      }
+
+      // Zero out memory
+      for i := range data {
+      data[i] = 0
+      }
+      ```
+
+      Or we can put the mlock option behind a feature flag.
+
+      If the user has granted `CAP_IPC_LOCK` to SPIKE Nexus, then they can also set something like `SPIKE_NEXUS_USE_MLOCK="true"` as an env var, and try locking memory if the variable is set (will be "false" by default).
+
+
+
+      https://github.com/spiffe/spike/issues/68
     </issue>
     <issue>
       sanitize keeper id and shard

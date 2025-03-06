@@ -146,18 +146,16 @@ func HydrateMemoryFromBackingStore() {
 func RestoreBackingStoreUsingPilotShards(shards []string) {
 	const fName = "RestoreBackingStoreUsingPilotShards"
 
-	shardThreshold := env.ShamirThreshold()
-
 	// Ensure we have at least the threshold number of shards
-	if len(shards) < shardThreshold {
+	if len(shards) < env.ShamirThreshold() {
 		log.Log().Error(fName, "msg", "Insufficient shards for recovery",
-			"provided", len(shards), "required", shardThreshold)
+			"provided", len(shards), "required", env.ShamirThreshold())
 		return
 	}
 
 	// Decode the required number of shards (up to threshold)
-	decodedShards := make([][]byte, 0, shardThreshold)
-	for i := 0; i < shardThreshold; i++ {
+	decodedShards := make([][]byte, 0, env.ShamirThreshold())
+	for i := 0; i < env.ShamirThreshold(); i++ {
 		decodedShard, err := base64.StdEncoding.DecodeString(shards[i])
 		if err != nil {
 			log.Log().Error(fName,
@@ -227,7 +225,7 @@ func SendShardsPeriodically(source *workloadapi.X509Source) {
 		}
 
 		keepers := env.Keepers()
-		if len(keepers) < 3 {
+		if len(keepers) < env.ShamirShares() {
 			log.FatalLn(fName + ": not enough keepers")
 		}
 
