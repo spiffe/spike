@@ -24,16 +24,33 @@
 SPIRE_SERVER_DOMAIN="spire.spike.ist"
 
 check_domain() {
-    # Try to resolve the domain and ensure we get an answer
+    # First try DNS resolution with dig
     DNS_ANSWER=$(dig +noall +answer "$SPIRE_SERVER_DOMAIN" | grep -v "^;")
+    
+    # If dig doesn't find it, check if getent exists and try it
     if [ -z "$DNS_ANSWER" ]; then
-        echo "Error: No valid DNS answer for $SPIRE_SERVER_DOMAIN"
-        return 1
+        echo "No DNS record found for $SPIRE_SERVER_DOMAIN, checking hosts file..."
+        
+        # Check if getent is available
+        if command -v getent >/dev/null 2>&1; then
+            HOSTS_ANSWER=$(getent hosts "$SPIRE_SERVER_DOMAIN")
+        else
+            # Fallback for systems without getent (like macOS)
+            HOSTS_ANSWER=$(grep "$SPIRE_SERVER_DOMAIN" /etc/hosts | grep -v "^#")
+        fi
+        
+        # If hosts file check also fails, return error
+        if [ -z "$HOSTS_ANSWER" ]; then
+            echo "Error: Could not resolve $SPIRE_SERVER_DOMAIN through DNS or hosts file"
+            return 1
+        else
+            echo "Found $SPIRE_SERVER_DOMAIN in hosts file:"
+            echo "$HOSTS_ANSWER"
+        fi
+    else
+        echo "DNS resolution for $SPIRE_SERVER_DOMAIN:"
+        echo "$DNS_ANSWER"
     fi
-
-    # Print the resolved address(es)
-    echo "DNS resolution for $DOMAIN:"
-    echo "$DNS_ANSWER"
 
     return 0
 }
