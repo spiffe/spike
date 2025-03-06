@@ -15,13 +15,13 @@ import (
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	"github.com/spiffe/spike-sdk-go/crypto"
 	"github.com/spiffe/spike-sdk-go/retry"
+	"github.com/spiffe/spike-sdk-go/security/mem"
 	"github.com/spiffe/spike-sdk-go/spiffe"
 
 	"github.com/spiffe/spike/app/nexus/internal/env"
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 	"github.com/spiffe/spike/app/nexus/internal/state/persist"
 	"github.com/spiffe/spike/internal/log"
-	"github.com/spiffe/spike/internal/memory"
 )
 
 var (
@@ -59,14 +59,7 @@ func RecoverBackingStoreUsingKeeperShards(source *workloadapi.X509Source) {
 	)
 	defer cancel()
 
-	retrier := retry.NewExponentialRetrier(
-		retry.WithBackOffOptions(
-			retry.WithMaxInterval(60*time.Second),
-			retry.WithMaxElapsedTime(env.RecoveryOperationTimeout()),
-		),
-	)
-
-	if err := retrier.RetryWithBackoff(ctx, func() error {
+	_, err := retry.Do(ctx, func() (bool, error) {
 		log.Log().Info(fName, "msg", "retry:"+time.Now().String())
 
 		recoverySuccessful := iterateKeepersAndTryRecovery(
@@ -74,7 +67,7 @@ func RecoverBackingStoreUsingKeeperShards(source *workloadapi.X509Source) {
 		)
 		if recoverySuccessful {
 			log.Log().Info(fName, "msg", "Recovery successful")
-			return nil
+			return true, nil
 		}
 
 		log.Log().Warn(fName, "msg", "Recovery unsuccessful. Will retry.")
@@ -85,8 +78,15 @@ func RecoverBackingStoreUsingKeeperShards(source *workloadapi.X509Source) {
 		)
 		log.Log().Warn(fName, "msg", "!!! YOU MAY NEED TO MANUALLY BOOSTRAP !!!")
 		log.Log().Info(fName, "msg", "Waiting for keepers to respond")
-		return ErrRecoveryRetry
-	}); err != nil {
+		return false, ErrRecoveryRetry
+	},
+		retry.WithBackOffOptions(
+			retry.WithMaxInterval(60*time.Second),
+			retry.WithMaxElapsedTime(env.RecoveryOperationTimeout()),
+		),
+	)
+
+	if err != nil {
 		log.Log().Warn("Recovery failed; timed out")
 		log.Log().Warn("You need to manually bootstrap SPIKE Nexus")
 	}
@@ -171,7 +171,7 @@ func RestoreBackingStoreUsingPilotShards(shards []string) {
 	// Clear the decoded shards before returning
 	defer func() {
 		for i := range decodedShards {
-			memory.ClearBytes(decodedShards[i])
+			mem.ClearBytes(decodedShards[i])
 		}
 	}()
 

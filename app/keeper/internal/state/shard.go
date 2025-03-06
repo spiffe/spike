@@ -10,7 +10,7 @@ package state
 import (
 	"sync"
 
-	"github.com/spiffe/spike/internal/memory"
+	"github.com/spiffe/spike-sdk-go/security/mem"
 )
 
 var shard []byte
@@ -29,7 +29,7 @@ func SetShard(s []byte) {
 	// Clear the old shard if it exists
 	if shard != nil {
 		oldShard := shard
-		memory.ClearBytes(oldShard)
+		mem.ClearBytes(oldShard)
 	}
 
 	shard = s

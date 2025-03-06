@@ -22,18 +22,7 @@
       ✅ A golang SDK
     </meta>
   </purpose>
-  <watch>
-    <issue meta="assigned">
-      admin should not be able to create two policies with the same name.
-      good first issue: https://github.com/spiffe/spike/issues/79
-      (maybe add some details to the ticket)
-    </issue>
-  </watch>
   <low-hanging-fruits>
-    <issue>
-      refactor retries with `retry.Do()` as its simpler with less
-      configuration mess.
-    </issue>
     <issue>
       if crashed and trying to restore (instead of recover)
       you get this:
@@ -293,12 +282,6 @@
     <issue>
       nil check wherever Backend() is called.
       var be backend.Backend
-    </issue>
-    <issue>
-      The paths that we set in get put ...etc should look like a unix
-      path.
-      it will require sanitization!
-      Check how other secrets stores manage those paths.
     </issue>
 
     <issue kind="containerization">
