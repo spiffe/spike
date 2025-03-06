@@ -39,7 +39,12 @@ func RecoverRootKey(ss []*[32]byte) *[32]byte {
 
 	g := group.P256
 	shares := make([]secretsharing.Share, 0, len(ss))
-	// TODO: zero out shares before function exits.
+	defer func() {
+		for _, s := range shares {
+			s.ID.SetUint64(0)
+			s.Value.SetUint64(0)
+		}
+	}()
 
 	// Process all provided shares
 	for i, shareBinary := range ss {

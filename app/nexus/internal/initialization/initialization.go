@@ -43,8 +43,7 @@ func Initialize(source *workloadapi.X509Source) {
 	// Use a static byte array and pass it as pointer to avoid inadvertent
 	// copying / memory allocation.
 	var seed [32]byte
-	_, err := rand.Read(seed[:])
-	if err != nil {
+	if _, err := rand.Read(seed[:]); err != nil {
 		log.Fatal(err.Error())
 	}
 	state.Initialize(&seed)

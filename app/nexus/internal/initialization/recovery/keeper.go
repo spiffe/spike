@@ -126,13 +126,11 @@ func iterateKeepersAndTryRecovery(
 		for i, b := range shardDecoded {
 			shardB[i] = b
 		}
-
-		successfulKeeperShards[keeperId] = &shardB
-		if len(successfulKeeperShards) != env.ShamirThreshold() {
-			continue
+		for i := range shardDecoded {
+			shardDecoded[i] = 0
 		}
 
-		// ss := rawShards(successfulKeeperShards)
+		successfulKeeperShards[keeperId] = &shardB
 		if len(successfulKeeperShards) != env.ShamirThreshold() {
 			continue
 		}
@@ -143,16 +141,16 @@ func iterateKeepersAndTryRecovery(
 		}
 
 		binaryRec := RecoverRootKey(ss)
-		// zero out binaryRec before returning
-		//goland:noinspection ALL
-		defer func() {
-			for i := range binaryRec {
-				binaryRec[i] = 0
-			}
-		}()
 
 		state.Initialize(binaryRec)
 		state.SetRootKey(binaryRec)
+
+		for i := range binaryRec {
+			binaryRec[i] = 0
+		}
+		for i := range shardB {
+			shardB[i] = 0
+		}
 
 		// System initialized: Exit infinite loop.
 		return true

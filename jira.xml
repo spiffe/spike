@@ -30,6 +30,13 @@
       defer cancel()
     </issue>
     <issue>
+      seed, err := crypto.Aes256Seed()
+
+      create an override function that return a byte slice instead of a string.
+      while at that, we can create a pointer to a byte array too
+      (since the size will be fixed for 256bits anyways)
+    </issue>
+    <issue>
       if crashed and trying to restore (instead of recover)
       you get this:
 

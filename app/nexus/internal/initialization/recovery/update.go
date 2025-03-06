@@ -30,8 +30,9 @@ func mustUpdateRecoveryInfo(rk *[32]byte) []secretsharing.Share {
 
 	rootSecret, rootShares := computeShares()
 	sanityCheck(rootSecret, rootShares)
-
-	// TODO: reset rootSecret before function exits.
+	defer func() {
+		rootSecret.SetUint64(0)
+	}()
 
 	return rootShares
 }
@@ -72,11 +73,19 @@ func sendShardsToKeepers(
 		rootSecret, rootShares := computeShares()
 		sanityCheck(rootSecret, rootShares)
 
-		// TODO: clean up rootSecret and rootShares before funciton exits.
-
 		share := findShare(keeperId, keepers, rootShares)
 
+		rootSecret.SetUint64(0)
+		for i := range rootShares {
+			rootShares[i].Value.SetUint64(0)
+		}
+
 		contribution, err := share.Value.MarshalBinary()
+
+		// TODO: prefix all such security cleanups with // Security:
+		// and give an explanation of why the cleanup is necessary.
+		share.Value.SetUint64(0)
+
 		if err != nil {
 			log.Log().Warn(fName,
 				"msg", "Failed to marshal share",

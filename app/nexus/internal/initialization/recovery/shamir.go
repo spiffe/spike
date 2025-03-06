@@ -22,6 +22,13 @@ func sanityCheck(secret group.Scalar, shares []shamir.Share) {
 	t := uint(env.ShamirThreshold() - 1) // Need t+1 shares to reconstruct
 
 	reconstructed, err := shamir.Recover(t, shares[:env.ShamirThreshold()])
+	defer func() {
+		if reconstructed == nil {
+			return
+		}
+		reconstructed.SetUint64(0)
+	}()
+
 	if err != nil {
 		log.FatalLn(fName + ": Failed to recover: " + err.Error())
 	}
@@ -42,7 +49,7 @@ func computeShares() (group.Scalar, []shamir.Share) {
 	t := uint(env.ShamirThreshold() - 1) // Need t+1 shares to reconstruct
 	n := uint(env.ShamirShares())        // Total number of shares
 
-	// Create secret from your 32 byte key
+	// Create secret from our 32 byte key
 	secret := g.NewScalar()
 
 	if err := secret.UnmarshalBinary(rk[:]); err != nil {

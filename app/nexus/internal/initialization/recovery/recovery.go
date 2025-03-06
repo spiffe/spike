@@ -51,6 +51,11 @@ func RecoverBackingStoreUsingKeeperShards(source *workloadapi.X509Source) {
 	log.Log().Info(fName, "msg", "Recovering backing store using keeper shards")
 
 	successfulKeeperShards := make(map[string]*[32]byte)
+	defer func() {
+		for id := range successfulKeeperShards {
+			successfulKeeperShards[id] = &[32]byte{}
+		}
+	}()
 
 	ctx, cancel := context.WithCancel(
 		context.Background(),
@@ -153,6 +158,11 @@ func RestoreBackingStoreUsingPilotShards(shards []*[32]byte) {
 
 	// Recover the root key using the threshold number of shards
 	binaryRec := RecoverRootKey(shards)
+	defer func() {
+		for i := range binaryRec {
+			binaryRec[i] = 0
+		}
+	}()
 	state.Initialize(binaryRec)
 	state.SetRootKey(binaryRec)
 
@@ -240,8 +250,13 @@ func PilotRecoveryShards() []string {
 	}
 
 	rootSecret, rootShares := computeShares()
-
 	sanityCheck(rootSecret, rootShares)
+	defer func() {
+		rootSecret.SetUint64(0)
+		for i := range rootShares {
+			rootShares[i].Value.SetUint64(0)
+		}
+	}()
 
 	result := make([]string, 0, len(rootShares))
 	for _, share := range rootShares {
@@ -284,12 +299,6 @@ func BootstrapBackingStoreWithNewRootKey(source *workloadapi.X509Source) {
 		return
 	}
 
-	//// Create the root key and create shards out of the root key.
-	//rk, err := crypto.Aes256Seed()
-	//if err != nil {
-	//	log.FatalLn("Bootstrap: failed to create root key: " + err.Error())
-	//}
-
 	// Initialize the backend store before sending shards to the keepers.
 	// SPIKE Keepers are our backup system, and they are not critical for system
 	// operations. Initializing early allows SPIKE Nexus to serve before
@@ -297,16 +306,25 @@ func BootstrapBackingStoreWithNewRootKey(source *workloadapi.X509Source) {
 	// Use a static byte array and pass it as pointer to avoid inadvertent
 	// copying / memory allocation.
 	var seed [32]byte
-	_, err := rand.Read(seed[:])
-	if err != nil {
+	defer func() {
+		for i := range seed {
+			seed[i] = 0
+		}
+	}()
+
+	if _, err := rand.Read(seed[:]); err != nil {
 		log.Fatal(err.Error())
 	}
 	state.Initialize(&seed)
 	log.Log().Info(fName, "msg", "Initialized the backing store")
 
 	// Compute Shamir shares out of the root key.
-	// TODO: pass seed instead!
 	rootShares := mustUpdateRecoveryInfo(&seed)
+	defer func() {
+		for _, share := range rootShares {
+			share.Value.SetUint64(0)
+		}
+	}()
 
 	successfulKeepers := make(map[string]bool)
 	keepers := env.Keepers()
