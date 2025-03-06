@@ -261,12 +261,11 @@ func PilotRecoveryShards() []string {
 	const fName = "PilotRecoveryShards"
 	log.Log().Info(fName, "msg", "Generating pilot recovery shards")
 
-	rk := state.RootKey()
-	if rk == nil {
+	if state.RootKeyZero() {
 		return []string{}
 	}
 
-	rootSecret, rootShares := computeShares(rk)
+	rootSecret, rootShares := computeShares()
 
 	sanityCheck(rootSecret, rootShares)
 

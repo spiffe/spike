@@ -5,6 +5,7 @@
 package recovery
 
 import (
+	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 	"sort"
 
 	"github.com/cloudflare/circl/group"
@@ -29,8 +30,12 @@ func sanityCheck(secret group.Scalar, shares []shamir.Share) {
 	}
 }
 
-func computeShares(finalKey []byte) (group.Scalar, []shamir.Share) {
+func computeShares() (group.Scalar, []shamir.Share) {
 	const fName = "computeShares"
+
+	state.LockRootKey()
+	defer state.UnlockRootKey()
+	rk := state.RootKeyUnlocked()
 
 	// Initialize parameters
 	g := group.P256
@@ -39,7 +44,8 @@ func computeShares(finalKey []byte) (group.Scalar, []shamir.Share) {
 
 	// Create secret from your 32 byte key
 	secret := g.NewScalar()
-	if err := secret.UnmarshalBinary(finalKey); err != nil {
+
+	if err := secret.UnmarshalBinary(rk[:]); err != nil {
 		log.FatalLn(fName + ": Failed to unmarshal key: %v" + err.Error())
 	}
 
@@ -49,8 +55,9 @@ func computeShares(finalKey []byte) (group.Scalar, []shamir.Share) {
 	// the shards being securely kept secret.
 	// If we use `random.Read` instead, then synchronizing shards after Nexus
 	// crashes will be cumbersome and prone to edge-case failures.
-	reader := crypto.NewDeterministicReader(finalKey)
+	reader := crypto.NewDeterministicReader(rk[:])
 	ss := shamir.New(reader, t, secret)
+
 	return secret, ss.Share(n)
 }
 

@@ -8,8 +8,6 @@ import (
 	"sync"
 
 	"github.com/spiffe/spike-sdk-go/kv"
-	"github.com/spiffe/spike-sdk-go/security/mem"
-
 	"github.com/spiffe/spike/app/nexus/internal/env"
 )
 
@@ -23,25 +21,56 @@ var (
 var policies sync.Map
 
 var (
-	rootKey   []byte
+	// An array of 32 bytes initialized to zeroes.
+	rootKey   [32]byte
 	rootKeyMu sync.RWMutex
 )
 
-func RootKey() []byte {
+func RootKey() [32]byte {
 	rootKeyMu.RLock()
 	defer rootKeyMu.RUnlock()
 	return rootKey
 }
 
-func SetRootKey(rk []byte) {
+func RootKeyUnlocked() [32]byte {
+	return rootKey
+}
+
+func LockRootKey() {
+	rootKeyMu.Lock()
+}
+
+func UnlockRootKey() {
+	rootKeyMu.Unlock()
+}
+
+func RootKeyZero() bool {
+	rootKeyMu.RLock()
+	defer rootKeyMu.RUnlock()
+
+	for _, b := range rootKey[:] {
+		if b != 0 {
+			return false
+		}
+	}
+	return true
+}
+
+func ResetRootKey() {
 	rootKeyMu.Lock()
 	defer rootKeyMu.Unlock()
 
-	// Clear the old root key if it exists
-	if rootKey != nil {
-		oldRootKey := rootKey
-		mem.ClearBytes(oldRootKey)
+	// Explicitly reset the root key bytes to zeroes
+	for i := range rootKey {
+		rootKey[i] = 0
 	}
+}
 
-	rootKey = rk
+func SetRootKey(rk [32]byte) {
+	rootKeyMu.Lock()
+	defer rootKeyMu.Unlock()
+
+	for i := range rootKey {
+		rootKey[i] = rk[i]
+	}
 }
