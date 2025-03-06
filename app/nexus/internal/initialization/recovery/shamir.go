@@ -5,7 +5,6 @@
 package recovery
 
 import (
-	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 	"sort"
 
 	"github.com/cloudflare/circl/group"
@@ -13,6 +12,7 @@ import (
 	"github.com/spiffe/spike-sdk-go/crypto"
 
 	"github.com/spiffe/spike/app/nexus/internal/env"
+	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 	"github.com/spiffe/spike/internal/log"
 )
 
@@ -22,6 +22,7 @@ func sanityCheck(secret group.Scalar, shares []shamir.Share) {
 	t := uint(env.ShamirThreshold() - 1) // Need t+1 shares to reconstruct
 
 	reconstructed, err := shamir.Recover(t, shares[:env.ShamirThreshold()])
+	// Security: Ensure that the secret is zeroed out if the check fails.
 	defer func() {
 		if reconstructed == nil {
 			return

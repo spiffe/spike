@@ -11,6 +11,8 @@ import (
 	"github.com/spiffe/spike/app/nexus/internal/env"
 )
 
+// TODO: add documentation.
+
 var (
 	secretStore = kv.New(kv.Config{
 		MaxSecretVersions: env.MaxSecretVersions(),

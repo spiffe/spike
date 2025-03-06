@@ -6,7 +6,6 @@ package operator
 
 import (
 	"encoding/base64"
-	"github.com/spiffe/spike/app/nexus/internal/env"
 	"net/http"
 	"sync"
 
@@ -14,13 +13,10 @@ import (
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	"github.com/spiffe/spike-sdk-go/api/errors"
 
+	"github.com/spiffe/spike/app/nexus/internal/env"
 	"github.com/spiffe/spike/app/nexus/internal/initialization/recovery"
 	"github.com/spiffe/spike/internal/log"
 	"github.com/spiffe/spike/internal/net"
-)
-
-const (
-	decodedShardSize = 32 // bytes
 )
 
 var (
@@ -70,6 +66,8 @@ func RouteRestore(
 	if requestBody == nil {
 		return errors.ErrReadFailure
 	}
+
+	// TODO: properly reset request.Shard after use.
 
 	request := net.HandleRequest[
 		reqres.RestoreRequest, reqres.RestoreResponse](

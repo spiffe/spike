@@ -145,9 +145,11 @@ func iterateKeepersAndTryRecovery(
 		state.Initialize(binaryRec)
 		state.SetRootKey(binaryRec)
 
+		// Security: Zero out temporary variables before function exits.
 		for i := range binaryRec {
 			binaryRec[i] = 0
 		}
+		// Security: Zero out  temporary variables before function exits.
 		for i := range shardB {
 			shardB[i] = 0
 		}

@@ -54,10 +54,6 @@ func InitializeSqliteBackend(rootKey *[32]byte) backend.Backend {
 
 	// Copy the key for configuration and zero out the original immediately
 	keyHex := hex.EncodeToString(rootKey[:])
-	// Zero out the root key for security
-	for i := range rootKey {
-		rootKey[i] = 0
-	}
 
 	// Create SQLite backend configuration
 	cfg := backend.Config{

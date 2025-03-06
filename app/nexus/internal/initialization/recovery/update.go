@@ -30,6 +30,7 @@ func mustUpdateRecoveryInfo(rk *[32]byte) []secretsharing.Share {
 
 	rootSecret, rootShares := computeShares()
 	sanityCheck(rootSecret, rootShares)
+	// Security: Ensure that temporary variables are zeroed out.
 	defer func() {
 		rootSecret.SetUint64(0)
 	}()
@@ -76,14 +77,16 @@ func sendShardsToKeepers(
 		share := findShare(keeperId, keepers, rootShares)
 
 		rootSecret.SetUint64(0)
+		// Security: Ensure that the rootShares are zeroed out before
+		// the function returns.
 		for i := range rootShares {
 			rootShares[i].Value.SetUint64(0)
 		}
 
 		contribution, err := share.Value.MarshalBinary()
 
-		// TODO: prefix all such security cleanups with // Security:
-		// and give an explanation of why the cleanup is necessary.
+		// Security: Ensure that the share is zeroed out before
+		// the function returns.
 		share.Value.SetUint64(0)
 
 		if err != nil {
@@ -97,8 +100,21 @@ func sendShardsToKeepers(
 			KeeperId: keeperId,
 			Shard:    base64.StdEncoding.EncodeToString(contribution),
 		}
+		// Security: Ensure that the contribution is zeroed out before
+		// the function exits.
+		for i := range contribution {
+			contribution[i] = 0
+		}
+
 		md, err := json.Marshal(scr)
+
 		if err != nil {
+			// Security: Ensure that the md is zeroed out before
+			// the function exits.
+			for i := range md {
+				md[i] = 0
+			}
+
 			log.Log().Warn(fName,
 				"msg", "Failed to marshal request",
 				"err", err, "keeper_id", keeperId)
@@ -107,9 +123,23 @@ func sendShardsToKeepers(
 
 		_, err = net.Post(client, u, md)
 		if err != nil {
+			// Security: Ensure that the md is zeroed out before
+			// the function exits.
+			for i := range md {
+				md[i] = 0
+			}
+
 			log.Log().Warn(fName, "msg",
 				"Failed to post",
 				"err", err, "keeper_id", keeperId)
+
+			continue
+		}
+
+		// Security: Ensure that the md is zeroed out before
+		// the function exits.
+		for i := range md {
+			md[i] = 0
 		}
 	}
 }

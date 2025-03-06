@@ -101,9 +101,17 @@ func shardContributionResponse(
 		return []byte{}
 	}
 
+	// Do not zero-out `share`; rootShares is zeroed out elsewhere.
 	share := findShare(keeperId, keepers, rootShares)
 
 	contribution, err := share.Value.MarshalBinary()
+	// Security: Ensure that the share is zeroed out before the function returns.
+	defer func() {
+		for i := range contribution {
+			contribution[i] = 0
+		}
+	}()
+
 	if err != nil {
 		log.Log().Warn(fName,
 			"msg", "Failed to marshal share",
@@ -111,10 +119,17 @@ func shardContributionResponse(
 		return []byte{}
 	}
 
+	// TODO: ShardContributionRequest should use a [32]byte instead of a string
+	// for better memory security.
 	scr := reqres.ShardContributionRequest{
 		KeeperId: keeperId,
 		Shard:    base64.StdEncoding.EncodeToString(contribution),
 	}
+	defer func() {
+		// TODO: do a proper cleanup instead.
+		scr.Shard = ""
+	}()
+
 	md, err := json.Marshal(scr)
 	if err != nil {
 		log.Log().Warn(fName,
@@ -129,6 +144,12 @@ func shardContributionResponse(
 			"Failed to post",
 			"err", err, "keeper_id", keeperId)
 	}
+	// Security: Ensure that the md is zeroed out before the function exits.
+	defer func() {
+		for i := range md {
+			md[i] = 0
+		}
+	}()
 
 	if len(data) == 0 {
 		log.Log().Info(fName, "msg", "No data")

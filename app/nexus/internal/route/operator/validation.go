@@ -29,7 +29,8 @@ func validateShard(shard string) error {
 	}
 	shardsMutex.RUnlock()
 
-	if len(decodedShard) != decodedShardSize {
+	// 32 for SHA-256
+	if len(decodedShard) != 32 {
 		return errors.ErrInvalidInput
 	}
 

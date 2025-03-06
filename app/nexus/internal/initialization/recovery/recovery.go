@@ -51,9 +51,12 @@ func RecoverBackingStoreUsingKeeperShards(source *workloadapi.X509Source) {
 	log.Log().Info(fName, "msg", "Recovering backing store using keeper shards")
 
 	successfulKeeperShards := make(map[string]*[32]byte)
+	// Security: Ensure the shards are zeroed out after use.
 	defer func() {
 		for id := range successfulKeeperShards {
-			successfulKeeperShards[id] = &[32]byte{}
+			for j := range successfulKeeperShards[id] {
+				successfulKeeperShards[id][j] = 0
+			}
 		}
 	}()
 
@@ -158,6 +161,7 @@ func RestoreBackingStoreUsingPilotShards(shards []*[32]byte) {
 
 	// Recover the root key using the threshold number of shards
 	binaryRec := RecoverRootKey(shards)
+	// Security: Ensure the root key is zeroed out after use.
 	defer func() {
 		for i := range binaryRec {
 			binaryRec[i] = 0
@@ -250,6 +254,7 @@ func PilotRecoveryShards() []string {
 	}
 
 	rootSecret, rootShares := computeShares()
+	// Security: Ensure the root key and shares are zeroed out after use.
 	sanityCheck(rootSecret, rootShares)
 	defer func() {
 		rootSecret.SetUint64(0)
@@ -303,9 +308,11 @@ func BootstrapBackingStoreWithNewRootKey(source *workloadapi.X509Source) {
 	// SPIKE Keepers are our backup system, and they are not critical for system
 	// operations. Initializing early allows SPIKE Nexus to serve before
 	// keepers are hydrated.
-	// Use a static byte array and pass it as pointer to avoid inadvertent
-	// copying / memory allocation.
+	//
+	// Security: Use a static byte array and pass it as pointer to avoid
+	// inadvertent copying / pass-by-value / memory allocation.
 	var seed [32]byte
+	// Security: Ensure the seed is zeroed out after use.
 	defer func() {
 		for i := range seed {
 			seed[i] = 0
@@ -320,6 +327,7 @@ func BootstrapBackingStoreWithNewRootKey(source *workloadapi.X509Source) {
 
 	// Compute Shamir shares out of the root key.
 	rootShares := mustUpdateRecoveryInfo(&seed)
+	// Security: Ensure the seed is zeroed out after use.
 	defer func() {
 		for _, share := range rootShares {
 			share.Value.SetUint64(0)

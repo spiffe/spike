@@ -30,6 +30,9 @@
       defer cancel()
     </issue>
     <issue>
+      Address TODO: items in the source code.
+    </issue>
+    <issue>
       seed, err := crypto.Aes256Seed()
 
       create an override function that return a byte slice instead of a string.

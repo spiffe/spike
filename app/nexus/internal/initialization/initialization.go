@@ -6,7 +6,9 @@ package initialization
 
 import (
 	"crypto/rand"
+
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
+
 	"github.com/spiffe/spike/app/nexus/internal/env"
 	"github.com/spiffe/spike/app/nexus/internal/initialization/recovery"
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
@@ -40,11 +42,21 @@ func Initialize(source *workloadapi.X509Source) {
 		return
 	}
 
-	// Use a static byte array and pass it as pointer to avoid inadvertent
-	// copying / memory allocation.
+	// Security: Use a static byte array and pass it as pointer to avoid
+	// inadvertent pass-by-value copying / memory allocation.
 	var seed [32]byte
 	if _, err := rand.Read(seed[:]); err != nil {
 		log.Fatal(err.Error())
 	}
+
 	state.Initialize(&seed)
+
+	// Security: Zero-out seed after use.
+	for i := range seed {
+		seed[i] = 0
+	}
+
+	// Note: Each function must zero-out ONLY the items it has created.
+	// If it is borrowing an item by reference, it must not zero-out the item
+	// and let the owner zero-out the item.
 }
