@@ -35,15 +35,32 @@ if [ -z "$JOIN_TOKEN" ]; then
     exit 1
 fi
 
+# First search in PATH
+AGENT_PATH=$(command -v spire-agent)
+
+# If not found in PATH and WORKSPACE is defined, look in WORKSPACE
+if [ ! -f "$AGENT_PATH" ] && [ -n "$WORKSPACE" ]; then
+    AGENT_PATH="${WORKSPACE}/spire/bin/spire-agent"
+    echo "spire-agent not found in PATH, trying WORKSPACE location: $AGENT_PATH"
+fi
+
+# If still not found, return error
+if [ ! -f "$AGENT_PATH" ]; then
+    echo "Error: SPIRE agent not found at $AGENT_PATH"
+    echo "Please make sure SPIRE is installed or WORKSPACE is correctly set."
+    exit 1
+fi
+
+
 # Running spire-agent as super user to read meta information of other users'
 # processes. If you are using the current user to use SPIKE only, then you
 # can run this command without sudo.
 if [ "$1" == "--use-sudo" ]; then
-  sudo "$WORKSPACE"/spire/bin/spire-agent run \
+  sudo "$AGENT_PATH" run \
     -config ./config/spire/agent/agent.conf \
     -joinToken "$JOIN_TOKEN"
 else
-  "$WORKSPACE"/spire/bin/spire-agent run \
+  "$AGENT_PATH" run \
     -config ./config/spire/agent/agent.conf \
     -joinToken "$JOIN_TOKEN"
 fi
