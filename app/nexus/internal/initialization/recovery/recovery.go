@@ -6,16 +6,14 @@ package recovery
 
 import (
 	"context"
+	"crypto/rand"
 	"encoding/base64"
-	"encoding/hex"
 	"errors"
 	"fmt"
 	"time"
 
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
-	"github.com/spiffe/spike-sdk-go/crypto"
 	"github.com/spiffe/spike-sdk-go/retry"
-	"github.com/spiffe/spike-sdk-go/security/mem"
 	"github.com/spiffe/spike-sdk-go/spiffe"
 
 	"github.com/spiffe/spike/app/nexus/internal/env"
@@ -52,7 +50,7 @@ func RecoverBackingStoreUsingKeeperShards(source *workloadapi.X509Source) {
 
 	log.Log().Info(fName, "msg", "Recovering backing store using keeper shards")
 
-	successfulKeeperShards := make(map[string]string)
+	successfulKeeperShards := make(map[string]*[32]byte)
 
 	ctx, cancel := context.WithCancel(
 		context.Background(),
@@ -143,7 +141,7 @@ func HydrateMemoryFromBackingStore() {
 //   - There are insufficient shards to meet the threshold
 //   - Any shard fails to decode properly
 //   - The SPIFFE source cannot be created
-func RestoreBackingStoreUsingPilotShards(shards []string) {
+func RestoreBackingStoreUsingPilotShards(shards []*[32]byte) {
 	const fName = "RestoreBackingStoreUsingPilotShards"
 
 	// Ensure we have at least the threshold number of shards
@@ -153,32 +151,9 @@ func RestoreBackingStoreUsingPilotShards(shards []string) {
 		return
 	}
 
-	// Decode the required number of shards (up to threshold)
-	decodedShards := make([][]byte, 0, env.ShamirThreshold())
-	for i := 0; i < env.ShamirThreshold(); i++ {
-		decodedShard, err := base64.StdEncoding.DecodeString(shards[i])
-		if err != nil {
-			log.Log().Error(fName,
-				"msg", "Failed to decode shard",
-				"index", i,
-				"err", err,
-			)
-			return
-		}
-		decodedShards = append(decodedShards, decodedShard)
-	}
-
-	// Clear the decoded shards before returning
-	defer func() {
-		for i := range decodedShards {
-			mem.ClearBytes(decodedShards[i])
-		}
-	}()
-
 	// Recover the root key using the threshold number of shards
-	binaryRec := RecoverRootKey(decodedShards)
-	encoded := hex.EncodeToString(binaryRec)
-	state.Initialize(encoded)
+	binaryRec := RecoverRootKey(shards)
+	state.Initialize(binaryRec)
 	state.SetRootKey(binaryRec)
 
 	source, _, err := spiffe.Source(
@@ -218,9 +193,8 @@ func SendShardsPeriodically(source *workloadapi.X509Source) {
 		log.Log().Info(fName, "msg", "Sending shards to keepers")
 
 		// if no root key skip.
-		rk := state.RootKey()
-		if rk == nil {
-			log.Log().Info(fName, "msg", "rootKey is nil; moving on...")
+		if state.RootKeyZero() {
+			log.Log().Info(fName, "msg", "No root key; skipping")
 			continue
 		}
 
@@ -303,29 +277,36 @@ func BootstrapBackingStoreWithNewRootKey(source *workloadapi.X509Source) {
 	log.Log().Info(fName, "msg",
 		"Tombstone file does not exist. Bootstrapping SPIKE Nexus...")
 
-	k := state.RootKey()
-	if k != nil {
+	if !state.RootKeyZero() {
 		log.Log().Info(fName, "msg",
 			"Recovery info found. Backing store already bootstrapped.",
 		)
 		return
 	}
 
-	// Create the root key and create shards out of the root key.
-	rk, err := crypto.Aes256Seed()
-	if err != nil {
-		log.FatalLn("Bootstrap: failed to create root key: " + err.Error())
-	}
+	//// Create the root key and create shards out of the root key.
+	//rk, err := crypto.Aes256Seed()
+	//if err != nil {
+	//	log.FatalLn("Bootstrap: failed to create root key: " + err.Error())
+	//}
 
 	// Initialize the backend store before sending shards to the keepers.
 	// SPIKE Keepers are our backup system, and they are not critical for system
 	// operations. Initializing early allows SPIKE Nexus to serve before
 	// keepers are hydrated.
-	state.Initialize(rk)
+	// Use a static byte array and pass it as pointer to avoid inadvertent
+	// copying / memory allocation.
+	var seed [32]byte
+	_, err := rand.Read(seed[:])
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+	state.Initialize(&seed)
 	log.Log().Info(fName, "msg", "Initialized the backing store")
 
 	// Compute Shamir shares out of the root key.
-	rootShares := mustUpdateRecoveryInfo(rk)
+	// TODO: pass seed instead!
+	rootShares := mustUpdateRecoveryInfo(&seed)
 
 	successfulKeepers := make(map[string]bool)
 	keepers := env.Keepers()
@@ -348,6 +329,7 @@ func BootstrapBackingStoreWithNewRootKey(source *workloadapi.X509Source) {
 		}
 
 		log.Log().Info(fName, "msg", "Waiting for keepers to initialize")
+		// TODO: make the time configurable.
 		time.Sleep(5 * time.Second)
 	}
 }

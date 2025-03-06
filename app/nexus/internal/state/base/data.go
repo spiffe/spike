@@ -32,7 +32,7 @@ func RootKey() [32]byte {
 	return rootKey
 }
 
-func RootKeyUnlocked() [32]byte {
+func RootKeyNoLock() [32]byte {
 	return rootKey
 }
 
@@ -66,7 +66,7 @@ func ResetRootKey() {
 	}
 }
 
-func SetRootKey(rk [32]byte) {
+func SetRootKey(rk *[32]byte) {
 	rootKeyMu.Lock()
 	defer rootKeyMu.Unlock()
 

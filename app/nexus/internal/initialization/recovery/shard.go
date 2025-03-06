@@ -86,24 +86,24 @@ func unmarshalShardResponse(data []byte) *reqres.ShardResponse {
 	return &res
 }
 
-func rawShards(successfulKeeperShards map[string]string) [][]byte {
-	const fName = "rawShards"
-
-	ss := make([][]byte, 0)
-
-	for keeperId, shard := range successfulKeeperShards {
-		decodedShard, err := base64.StdEncoding.DecodeString(shard)
-		if err != nil {
-			log.Log().Warn(fName,
-				"msg", "Failed to decode shard from base64",
-				"err", err, "keeper_id", keeperId)
-			return [][]byte{{}}
-		}
-		ss = append(ss, decodedShard)
-	}
-
-	return ss
-}
+//func rawShards(successfulKeeperShards map[string]string) [][]byte {
+//	const fName = "rawShards"
+//
+//	ss := make([][]byte, 0)
+//
+//	for keeperId, shard := range successfulKeeperShards {
+//		decodedShard, err := base64.StdEncoding.DecodeString(shard)
+//		if err != nil {
+//			log.Log().Warn(fName,
+//				"msg", "Failed to decode shard from base64",
+//				"err", err, "keeper_id", keeperId)
+//			return [][]byte{{}}
+//		}
+//		ss = append(ss, decodedShard)
+//	}
+//
+//	return ss
+//}
 
 func shardContributionResponse(
 	keeperId string, keepers map[string]string, u string,

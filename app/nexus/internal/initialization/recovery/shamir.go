@@ -35,7 +35,7 @@ func computeShares() (group.Scalar, []shamir.Share) {
 
 	state.LockRootKey()
 	defer state.UnlockRootKey()
-	rk := state.RootKeyUnlocked()
+	rk := state.RootKeyNoLock()
 
 	// Initialize parameters
 	g := group.P256

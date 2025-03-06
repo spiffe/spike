@@ -6,7 +6,6 @@ package recovery
 
 import (
 	"encoding/base64"
-	"encoding/hex"
 	"encoding/json"
 	"net/url"
 
@@ -22,19 +21,17 @@ import (
 	"github.com/spiffe/spike/internal/net"
 )
 
-func mustUpdateRecoveryInfo(rk string) []secretsharing.Share {
+func mustUpdateRecoveryInfo(rk *[32]byte) []secretsharing.Share {
 	const fName = "mustUpdateRecoveryInfo"
 	log.Log().Info(fName, "msg", "Updating recovery info")
 
-	decodedRootKey, err := hex.DecodeString(rk)
-	if err != nil {
-		log.FatalLn(fName + ": failed to decode root key: " + err.Error())
-	}
-	rootSecret, rootShares := computeShares(decodedRootKey)
+	// Save recovery information.
+	state.SetRootKey(rk)
+
+	rootSecret, rootShares := computeShares()
 	sanityCheck(rootSecret, rootShares)
 
-	// Save recovery information.
-	state.SetRootKey(decodedRootKey)
+	// TODO: reset rootSecret before function exits.
 
 	return rootShares
 }
@@ -67,15 +64,15 @@ func sendShardsToKeepers(
 			continue
 		}
 
-		rk := state.RootKey()
-		if rk == nil {
-			log.Log().Info(fName, "msg", "rootKey is nil; moving on...")
+		if state.RootKeyZero() {
+			log.Log().Info(fName, "msg", "rootKey is zero; moving on...")
 			continue
 		}
 
-		rootSecret, rootShares := computeShares(rk)
-
+		rootSecret, rootShares := computeShares()
 		sanityCheck(rootSecret, rootShares)
+
+		// TODO: clean up rootSecret and rootShares before funciton exits.
 
 		share := findShare(keeperId, keepers, rootShares)
 

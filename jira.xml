@@ -24,6 +24,12 @@
   </purpose>
   <low-hanging-fruits>
     <issue>
+      this should be configurable:
+
+      ctxC, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+      defer cancel()
+    </issue>
+    <issue>
       if crashed and trying to restore (instead of recover)
       you get this:
 

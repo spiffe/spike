@@ -5,7 +5,7 @@
 package recovery
 
 import (
-	"encoding/hex"
+	"encoding/base64"
 	"encoding/json"
 	"net/url"
 	"os"
@@ -88,7 +88,7 @@ func iterateKeepersToBootstrap(
 
 func iterateKeepersAndTryRecovery(
 	source *workloadapi.X509Source,
-	successfulKeeperShards map[string]string,
+	successfulKeeperShards map[string]*[32]byte,
 ) bool {
 	const fName = "iterateKeepersAndTryRecovery"
 
@@ -116,20 +116,42 @@ func iterateKeepersAndTryRecovery(
 			continue
 		}
 
-		successfulKeeperShards[keeperId] = shard
+		shardDecoded, err := base64.StdEncoding.DecodeString(shard)
+		if err != nil {
+			log.Log().Info(fName, "msg", "Failed to decode shard", "err", err)
+			continue
+		}
+
+		var shardB [32]byte
+		for i, b := range shardDecoded {
+			shardB[i] = b
+		}
+
+		successfulKeeperShards[keeperId] = &shardB
 		if len(successfulKeeperShards) != env.ShamirThreshold() {
 			continue
 		}
 
-		ss := rawShards(successfulKeeperShards)
-		if len(ss) != env.ShamirThreshold() {
+		// ss := rawShards(successfulKeeperShards)
+		if len(successfulKeeperShards) != env.ShamirThreshold() {
 			continue
 		}
 
-		binaryRec := RecoverRootKey(ss)
-		encoded := hex.EncodeToString(binaryRec)
-		state.Initialize(encoded)
+		ss := make([]*[32]byte, 0)
+		for _, shard := range successfulKeeperShards {
+			ss = append(ss, shard)
+		}
 
+		binaryRec := RecoverRootKey(ss)
+		// zero out binaryRec before returning
+		//goland:noinspection ALL
+		defer func() {
+			for i := range binaryRec {
+				binaryRec[i] = 0
+			}
+		}()
+
+		state.Initialize(binaryRec)
 		state.SetRootKey(binaryRec)
 
 		// System initialized: Exit infinite loop.

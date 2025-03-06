@@ -6,6 +6,7 @@ package persist
 
 import (
 	"context"
+	"encoding/hex"
 	"time"
 
 	"github.com/spiffe/spike/app/nexus/internal/env"
@@ -38,7 +39,7 @@ import (
 //   - Journal mode settings
 //   - Connection pool settings (max open, max idle, lifetime)
 //   - Busy timeout settings
-func InitializeSqliteBackend(rootKey string) backend.Backend {
+func InitializeSqliteBackend(rootKey *[32]byte) backend.Backend {
 	const fName = "initializeSqliteBackend"
 
 	opts := map[backend.DatabaseConfigKey]any{}
@@ -51,10 +52,17 @@ func InitializeSqliteBackend(rootKey string) backend.Backend {
 	opts[backend.KeyMaxIdleConns] = env.DatabaseMaxIdleConns()
 	opts[backend.KeyConnMaxLifetimeSeconds] = env.DatabaseConnMaxLifetimeSec()
 
+	// Copy the key for configuration and zero out the original immediately
+	keyHex := hex.EncodeToString(rootKey[:])
+	// Zero out the root key for security
+	for i := range rootKey {
+		rootKey[i] = 0
+	}
+
 	// Create SQLite backend configuration
 	cfg := backend.Config{
 		// Use the root key as the encryption key
-		EncryptionKey: rootKey,
+		EncryptionKey: keyHex,
 		Options:       opts,
 	}
 
@@ -106,7 +114,7 @@ var be backend.Backend
 //
 // The function is safe for concurrent access as it uses a mutex to protect the
 // initialization process.
-func InitializeBackend(rootKey string) {
+func InitializeBackend(rootKey *[32]byte) {
 	const fName = "initializeBackend"
 
 	log.Log().Info(fName,

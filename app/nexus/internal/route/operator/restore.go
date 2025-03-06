@@ -5,6 +5,7 @@
 package operator
 
 import (
+	"encoding/base64"
 	"github.com/spiffe/spike/app/nexus/internal/env"
 	"net/http"
 	"sync"
@@ -23,7 +24,7 @@ const (
 )
 
 var (
-	shards      []string
+	shards      []*[32]byte
 	shardsMutex sync.RWMutex
 )
 
@@ -122,15 +123,48 @@ func RouteRestore(
 		return nil
 	}
 
+	shardDecoded, err := base64.StdEncoding.DecodeString(request.Shard)
+	var shardB [32]byte
+	if err != nil || len(shardDecoded) != 32 {
+		responseBody := net.MarshalBody(reqres.RestoreResponse{
+			RestorationStatus: data.RestorationStatus{
+				ShardsCollected: currentShardCount,
+				ShardsRemaining: env.ShamirThreshold() - currentShardCount,
+				Restored:        false,
+			},
+			Err: data.ErrBadInput,
+		}, w)
+		if responseBody == nil {
+			return errors.ErrMarshalFailure
+		}
+		net.Respond(http.StatusBadRequest, responseBody, w)
+		return nil
+	}
+
 	// Add the new shard
 	shardsMutex.Lock()
-	shards = append(shards, request.Shard)
+	for i := range shardB {
+		shardB[i] = shardDecoded[i]
+	}
+	shards = append(shards, &shardB)
+	// zero out shardDecoded
+	for i := range shardDecoded {
+		shardDecoded[i] = 0
+	}
 	currentShardCount = len(shards)
 	shardsMutex.Unlock()
 
 	// Trigger restoration if we have collected all shards
 	if currentShardCount == env.ShamirThreshold() {
 		recovery.RestoreBackingStoreUsingPilotShards(shards)
+		// Security: Zero out all shards since we have finished restoration:
+		shardsMutex.Lock()
+		for i := range shards {
+			for j := range shards[i][:] {
+				shards[i][j] = 0
+			}
+		}
+		shardsMutex.Unlock()
 	}
 
 	responseBody := net.MarshalBody(reqres.RestoreResponse{

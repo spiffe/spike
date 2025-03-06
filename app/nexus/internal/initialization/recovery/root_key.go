@@ -7,7 +7,6 @@ package recovery
 import (
 	"github.com/cloudflare/circl/group"
 	"github.com/cloudflare/circl/secretsharing"
-	"github.com/spiffe/spike-sdk-go/security/mem"
 
 	"github.com/spiffe/spike/app/nexus/internal/env"
 	"github.com/spiffe/spike/internal/log"
@@ -35,18 +34,12 @@ import (
 //   - The recovery process fails
 //   - The reconstructed key is nil
 //   - The binary representation has an incorrect length
-func RecoverRootKey(ss [][]byte) []byte {
+func RecoverRootKey(ss []*[32]byte) *[32]byte {
 	const fName = "RecoverRootKey"
-
-	// Create deferred call to clear all input shares before returning
-	defer func() {
-		for i := range ss {
-			mem.ClearBytes(ss[i])
-		}
-	}()
 
 	g := group.P256
 	shares := make([]secretsharing.Share, 0, len(ss))
+	// TODO: zero out shares before function exits.
 
 	// Process all provided shares
 	for i, shareBinary := range ss {
@@ -60,7 +53,7 @@ func RecoverRootKey(ss [][]byte) []byte {
 		share.ID.SetUint64(uint64(i + 1))
 
 		// Unmarshal the binary data
-		err := share.Value.UnmarshalBinary(shareBinary)
+		err := share.Value.UnmarshalBinary(shareBinary[:])
 		if err != nil {
 			log.FatalLn(fName + ": Failed to unmarshal share: " + err.Error())
 		}
@@ -85,17 +78,24 @@ func RecoverRootKey(ss [][]byte) []byte {
 		binaryRec, err := reconstructed.MarshalBinary()
 		if err != nil {
 			log.FatalLn(fName + ": Failed to marshal: " + err.Error())
-			return []byte{}
+			return &[32]byte{}
 		}
 
-		// TODO: this 32 comes up a lot; move it to a symbolic constant.
 		if len(binaryRec) != 32 {
 			log.FatalLn(fName + ": Reconstructed root key has incorrect length")
-			return []byte{}
+			return &[32]byte{}
 		}
 
-		return binaryRec
+		var result [32]byte
+		for i := range binaryRec {
+			result[i] = binaryRec[i]
+		}
+		for i := range binaryRec {
+			binaryRec[i] = 0
+		}
+
+		return &result
 	}
 
-	return []byte{}
+	return &[32]byte{}
 }

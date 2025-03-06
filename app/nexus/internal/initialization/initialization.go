@@ -5,9 +5,8 @@
 package initialization
 
 import (
+	"crypto/rand"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
-	"github.com/spiffe/spike-sdk-go/crypto"
-
 	"github.com/spiffe/spike/app/nexus/internal/env"
 	"github.com/spiffe/spike/app/nexus/internal/initialization/recovery"
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
@@ -41,11 +40,12 @@ func Initialize(source *workloadapi.X509Source) {
 		return
 	}
 
-	// For "in-memory" backing stores, we don't need bootstrapping.
-	// Initialize the store with a random seed instead.
-	seed, err := crypto.Aes256Seed()
+	// Use a static byte array and pass it as pointer to avoid inadvertent
+	// copying / memory allocation.
+	var seed [32]byte
+	_, err := rand.Read(seed[:])
 	if err != nil {
 		log.Fatal(err.Error())
 	}
-	state.Initialize(seed)
+	state.Initialize(&seed)
 }
