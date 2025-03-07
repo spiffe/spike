@@ -9,12 +9,19 @@ package state
 
 import (
 	"sync"
-
-	"github.com/spiffe/spike-sdk-go/security/mem"
 )
 
-var shard []byte
+var shard [32]byte
 var shardMutex sync.RWMutex
+
+func zeroed(s *[32]byte) bool {
+	for i := range s {
+		if s[i] != 0 {
+			return false
+		}
+	}
+	return true
+}
 
 // SetShard safely updates the global shard value under a write lock.
 //
@@ -22,17 +29,17 @@ var shardMutex sync.RWMutex
 //   - s []byte: New shard value to store
 //
 // Thread-safe through shardMutex.
-func SetShard(s []byte) {
+func SetShard(s *[32]byte) {
 	shardMutex.Lock()
 	defer shardMutex.Unlock()
 
-	// Clear the old shard if it exists
-	if shard != nil {
-		oldShard := shard
-		mem.ClearBytes(oldShard)
+	if zeroed(s) {
+		return
 	}
 
-	shard = s
+	for i := range s {
+		shard[i] = s[i]
+	}
 }
 
 // Shard safely retrieves the current global shard value under a read lock.
@@ -41,8 +48,10 @@ func SetShard(s []byte) {
 //   - []byte: Current shard value
 //
 // Thread-safe through shardMutex.
-func Shard() []byte {
+func Shard() *[32]byte {
 	shardMutex.RLock()
 	defer shardMutex.RUnlock()
-	return shard
+
+	// Security: return a reference, not a copy.
+	return &shard
 }

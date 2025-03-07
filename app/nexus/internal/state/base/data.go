@@ -28,10 +28,10 @@ var (
 	rootKeyMu sync.RWMutex
 )
 
-func RootKey() [32]byte {
+func RootKey() *[32]byte {
 	rootKeyMu.RLock()
 	defer rootKeyMu.RUnlock()
-	return rootKey
+	return &rootKey
 }
 
 func RootKeyNoLock() [32]byte {

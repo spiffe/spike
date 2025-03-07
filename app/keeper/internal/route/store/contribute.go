@@ -5,7 +5,6 @@
 package store
 
 import (
-	"encoding/base64"
 	"net/http"
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
@@ -16,6 +15,8 @@ import (
 	"github.com/spiffe/spike/internal/log"
 	"github.com/spiffe/spike/internal/net"
 )
+
+// TODO: likely, there's lots of godoc changes too; check the PR for those.
 
 // RouteContribute handles HTTP requests for shard contributions in the system.
 // It processes incoming shard data, decodes it from Base64 encoding, and stores
@@ -70,16 +71,39 @@ func RouteContribute(
 
 	shard := request.Shard
 	id := request.KeeperId
+	// Security: Zero out shard before the function exits.
+	defer func() {
+		for i := 0; i < len(shard); i++ {
+			shard[i] = 0
+		}
+	}()
 
 	// Decode shard content from Base64 encoding.
-	decodedShard, err := base64.StdEncoding.DecodeString(shard)
-	if err != nil {
-		log.Log().Error(fName, "msg", "Failed to decode shard", "err", err.Error())
-		http.Error(w, "Invalid shard content", http.StatusBadRequest)
+	// decodedShard, err := base64.StdEncoding.DecodeString(shard)
+	//if err != nil {
+	//	log.Log().Error(fName, "msg", "Failed to decode shard", "err", err.Error())
+	//	http.Error(w, "Invalid shard content", http.StatusBadRequest)
+	//	return errors.ErrParseFailure
+	//}
+
+	zeroed := true
+	for _, c := range shard {
+		if c != 0 {
+			zeroed = false
+			break
+		}
+	}
+
+	if zeroed {
+		responseBody := net.MarshalBody(reqres.ShardContributionResponse{
+			Err: data.ErrBadInput,
+		}, w)
+		net.Respond(http.StatusBadRequest, responseBody, w)
+
 		return errors.ErrParseFailure
 	}
 
-	state.SetShard(decodedShard)
+	state.SetShard(&shard)
 	log.Log().Info(fName, "msg", "Shard stored", "id", id)
 
 	responseBody := net.MarshalBody(reqres.ShardContributionResponse{}, w)

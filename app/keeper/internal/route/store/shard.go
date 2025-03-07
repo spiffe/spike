@@ -5,7 +5,6 @@
 package store
 
 import (
-	"encoding/base64"
 	"net/http"
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
@@ -61,17 +60,41 @@ func RouteShard(
 	}
 
 	myShard := state.Shard()
+	// Security: Make sure shard is reset before function returns.
+	defer func() {
+		for i := 0; i < len(myShard); i++ {
+			myShard[i] = 0
+		}
+	}()
 
-	if len(myShard) == 0 {
+	zeroed := true
+	for _, c := range myShard {
+		if c != 0 {
+			zeroed = false
+			break
+		}
+	}
+
+	if zeroed {
 		log.Log().Error(fName, "msg", "No shard found")
-		http.Error(w, "No shard found", http.StatusNotFound)
+
+		responseBody := net.MarshalBody(reqres.ShardResponse{
+			Err: data.ErrNotFound,
+		}, w)
+		net.Respond(http.StatusNotFound, responseBody, w)
+
 		return errors.ErrNotFound
 	}
 
-	myShardBase64 := base64.StdEncoding.EncodeToString(myShard)
 	responseBody := net.MarshalBody(reqres.ShardResponse{
-		Shard: myShardBase64,
+		Shard: *myShard,
 	}, w)
+	// Security: Reset response body before function exits.
+	defer func() {
+		for i := 0; i < len(responseBody); i++ {
+			responseBody[i] = 0
+		}
+	}()
 
 	net.Respond(http.StatusOK, responseBody, w)
 	log.Log().Info(fName, "msg", data.ErrSuccess)

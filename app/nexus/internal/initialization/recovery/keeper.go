@@ -5,7 +5,6 @@
 package recovery
 
 import (
-	"encoding/base64"
 	"encoding/json"
 	"net/url"
 	"os"
@@ -111,26 +110,21 @@ func iterateKeepersAndTryRecovery(
 		}
 
 		shard := res.Shard
-		if len(shard) == 0 {
-			log.Log().Info(fName, "msg", "No shard")
+
+		zeroed := true
+		for i := range shard {
+			if shard[i] != 0 {
+				zeroed = false
+				break
+			}
+		}
+
+		if zeroed {
+			log.Log().Info(fName, "msg", "Shard is zeroed")
 			continue
 		}
 
-		shardDecoded, err := base64.StdEncoding.DecodeString(shard)
-		if err != nil {
-			log.Log().Info(fName, "msg", "Failed to decode shard", "err", err)
-			continue
-		}
-
-		var shardB [32]byte
-		for i, b := range shardDecoded {
-			shardB[i] = b
-		}
-		for i := range shardDecoded {
-			shardDecoded[i] = 0
-		}
-
-		successfulKeeperShards[keeperId] = &shardB
+		successfulKeeperShards[keeperId] = &shard
 		if len(successfulKeeperShards) != env.ShamirThreshold() {
 			continue
 		}
@@ -149,9 +143,10 @@ func iterateKeepersAndTryRecovery(
 		for i := range binaryRec {
 			binaryRec[i] = 0
 		}
-		// Security: Zero out  temporary variables before function exits.
-		for i := range shardB {
-			shardB[i] = 0
+		// Security: Zero out temporary variables before function exits.
+		// Note that `successfulKeeperShards` will be reset elsewhere.
+		for i := range shard {
+			shard[i] = 0
 		}
 
 		// System initialized: Exit infinite loop.

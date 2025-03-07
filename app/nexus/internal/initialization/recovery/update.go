@@ -5,7 +5,6 @@
 package recovery
 
 import (
-	"encoding/base64"
 	"encoding/json"
 	"net/url"
 
@@ -96,10 +95,25 @@ func sendShardsToKeepers(
 			continue
 		}
 
+		if len(contribution) != 32 {
+			log.Log().Warn(fName,
+				"msg", "invalid contribution length",
+				"len", len(contribution), "keeper_id", keeperId)
+			continue
+		}
+
+		// Security: shard is binary instead of string because strings
+		// are immutable and thus hard to erase from memory.
+		var sh [32]byte
+		for i, b := range contribution {
+			sh[i] = b
+		}
+
 		scr := reqres.ShardContributionRequest{
 			KeeperId: keeperId,
-			Shard:    base64.StdEncoding.EncodeToString(contribution),
+			Shard:    sh,
 		}
+
 		// Security: Ensure that the contribution is zeroed out before
 		// the function exits.
 		for i := range contribution {

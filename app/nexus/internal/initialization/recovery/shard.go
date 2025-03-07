@@ -5,7 +5,6 @@
 package recovery
 
 import (
-	"encoding/base64"
 	"encoding/json"
 	"net/url"
 
@@ -119,15 +118,41 @@ func shardContributionResponse(
 		return []byte{}
 	}
 
-	// TODO: ShardContributionRequest should use a [32]byte instead of a string
-	// for better memory security.
+	zeroed := true
+	for i := range contribution {
+		if contribution[i] != 0 {
+			zeroed = false
+			break
+		}
+	}
+
+	if zeroed {
+		log.Log().Info(fName, "msg", "All zeros")
+		return []byte{}
+	}
+
+	var c [32]byte
+	for i, b := range contribution {
+		c[i] = b
+	}
+	// Security: Ensure that temporary variable is zeroed out before
+	// function exits.
+	defer func() {
+		for i := range c {
+			c[i] = 0
+		}
+	}()
+
 	scr := reqres.ShardContributionRequest{
 		KeeperId: keeperId,
-		Shard:    base64.StdEncoding.EncodeToString(contribution),
+		Shard:    c,
 	}
+	// Security: Ensure that struct field is zeroed out before the function
+	// exits.
 	defer func() {
-		// TODO: do a proper cleanup instead.
-		scr.Shard = ""
+		for i := range scr.Shard {
+			scr.Shard[i] = 0
+		}
 	}()
 
 	md, err := json.Marshal(scr)
