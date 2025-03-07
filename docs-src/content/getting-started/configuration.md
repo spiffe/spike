@@ -22,7 +22,7 @@ configure the SPIKE components:
 | SPIKE Nexus  | `SPIKE_NEXUS_TLS_PORT`               | The TLS port SPIKE Nexus listens on.                                                                         | `":8553"`                                       |
 | SPIKE Nexus  | `SPIKE_NEXUS_MAX_SECRET_VERSIONS`    | The maximum number of versions of a secret that SPIKE Nexus stores.                                          | `10`                                            |
 | SPIKE Nexus  | `SPIKE_NEXUS_BACKEND_STORE`          | The backend store SPIKE Nexus uses to store secrets (memory, s3, sqlite).                                    | `"sqlite"`                                      |
-| SPIKE Nexus  | `SPIKE_NEXUS_DB_OPERATION_TIMEOUT`   | The timeout for database operations.                                                                         | `"5s"`                                          |
+| SPIKE Nexus  | `SPIKE_NEXUS_DB_OPERATION_TIMEOUT`   | The timeout for database operations.                                                                         | `"15s"`                                         |
 | SPIKE Nexus  | `SPIKE_NEXUS_DB_JOURNAL_MODE`        | The journal mode for the SQLite database.                                                                    | `"WAL"`                                         |
 | SPIKE Nexus  | `SPIKE_NEXUS_DB_BUSY_TIMEOUT_MS`     | The timeout for the database to wait for a lock.                                                             | `1000`                                          |
 | SPIKE Nexus  | `SPIKE_NEXUS_DB_MAX_OPEN_CONNS`      | The maximum number of open connections to the database.                                                      | `10`                                            |

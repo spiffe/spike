@@ -6,6 +6,7 @@ package recovery
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/url"
 	"os"
 
@@ -143,6 +144,8 @@ func iterateKeepersAndTryRecovery(
 		}
 
 		binaryRec := RecoverRootKey(ss)
+
+		fmt.Println("state iniialize>>>>binaryRec")
 
 		// Both of these methods directly or indirectly make a copy of `binaryRec`
 		// It is okay to zero out `binaryRec` after calling these two functions.

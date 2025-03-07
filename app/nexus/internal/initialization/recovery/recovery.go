@@ -53,6 +53,7 @@ func RecoverBackingStoreUsingKeeperShards(source *workloadapi.X509Source) {
 	successfulKeeperShards := make(map[string]*[32]byte)
 	// Security: Ensure the shards are zeroed out after use.
 	defer func() {
+		fmt.Println("RESETTING RESETTING RESETTING successfulKeeperShards")
 		for id := range successfulKeeperShards {
 			for j := range successfulKeeperShards[id] {
 				successfulKeeperShards[id][j] = 0
@@ -166,6 +167,8 @@ func RestoreBackingStoreUsingPilotShards(shards []*[32]byte) {
 			binaryRec[i] = 0
 		}
 	}()
+
+	fmt.Println("state initalize from pilot shards")
 	state.Initialize(binaryRec)
 	state.SetRootKey(binaryRec)
 
@@ -327,6 +330,8 @@ func BootstrapBackingStoreWithNewRootKey(source *workloadapi.X509Source) {
 	if _, err := rand.Read(seed[:]); err != nil {
 		log.Fatal(err.Error())
 	}
+
+	fmt.Println("state initalize from seed.")
 	state.Initialize(&seed)
 	log.Log().Info(fName, "msg", "Initialized the backing store")
 

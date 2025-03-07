@@ -7,6 +7,7 @@ package persist
 import (
 	"context"
 	"encoding/hex"
+	"fmt"
 	"time"
 
 	"github.com/spiffe/spike/app/nexus/internal/env"
@@ -54,6 +55,8 @@ func InitializeSqliteBackend(rootKey *[32]byte) backend.Backend {
 
 	// Copy the key for configuration and zero out the original immediately
 	keyHex := hex.EncodeToString(rootKey[:])
+
+	fmt.Println("INITIALIZING: keyHex: ", keyHex)
 
 	// Create SQLite backend configuration
 	cfg := backend.Config{

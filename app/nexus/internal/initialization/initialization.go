@@ -6,6 +6,7 @@ package initialization
 
 import (
 	"crypto/rand"
+	"fmt"
 
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 
@@ -31,6 +32,8 @@ import (
 func Initialize(source *workloadapi.X509Source) {
 	requireBootstrapping := env.BackendStoreType() == env.Sqlite
 	if requireBootstrapping {
+		fmt.Println(">>>> requires bootstrapping")
+
 		// Try bootstrapping in a loop.
 		go bootstrap(source)
 
@@ -41,6 +44,8 @@ func Initialize(source *workloadapi.X509Source) {
 
 		return
 	}
+
+	fmt.Println(">>>> no bootstrapping")
 
 	// Security: Use a static byte array and pass it as pointer to avoid
 	// inadvertent pass-by-value copying / memory allocation.

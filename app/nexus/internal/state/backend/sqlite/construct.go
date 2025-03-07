@@ -53,6 +53,8 @@ func New(cfg backend.Config) (backend.Backend, error) {
 		return nil, fmt.Errorf("failed to create GCM: %w", err)
 	}
 
+	fmt.Println("RETURNING NEW DATA STORE ")
+
 	return &persist.DataStore{
 		Cipher: gcm,
 		Opts:   opts,
