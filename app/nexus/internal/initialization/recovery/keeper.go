@@ -61,9 +61,11 @@ func iterateKeepersToBootstrap(
 			tombstone := config.SpikeNexusTombstonePath()
 
 			// Create the tombstone file to mark SPIKE Nexus as bootstrapped.
+			// 0600 to align with principle of least privilege. We can change the
+			// permission fi it doesn't work out.
 			err = os.WriteFile(
 				tombstone,
-				[]byte("spike.nexus.bootstrapped=true"), 0644,
+				[]byte("spike.nexus.bootstrapped=true"), 0600,
 			)
 			if err != nil {
 				// Although the tombstone file is just a marker, it's still important.
@@ -102,14 +104,13 @@ func iterateKeepersAndTryRecovery(
 		if len(data) == 0 {
 			continue
 		}
-		// Security: Reset data before the function exits.
-		defer func() {
-			for i := range data {
-				data[i] = 0
-			}
-		}()
 
 		res := unmarshalShardResponse(data)
+		// Security: Reset data before the function exits.
+		for i := range data {
+			data[i] = 0
+		}
+
 		if res == nil {
 			continue
 		}
@@ -132,8 +133,10 @@ func iterateKeepersAndTryRecovery(
 			continue
 		}
 
-		// No need to erase `ss` because `RecoverBackingStoreUsingKeeperShards()`
-		// resets `successfulKeeperShards` which points to the same shards here.
+		// No need to erase `ss` because upon successful recovery,
+		// `RecoverBackingStoreUsingKeeperShards()` resets `successfulKeeperShards`
+		// which points to the same shards here. And until recovery, we will keep
+		// a threshold number of shards in memory.
 		ss := make([]*[32]byte, 0)
 		for _, shard := range successfulKeeperShards {
 			ss = append(ss, shard)
@@ -141,6 +144,8 @@ func iterateKeepersAndTryRecovery(
 
 		binaryRec := RecoverRootKey(ss)
 
+		// Both of these methods directly or indirectly make a copy of `binaryRec`
+		// It is okay to zero out `binaryRec` after calling these two functions.
 		state.Initialize(binaryRec)
 		state.SetRootKey(binaryRec)
 

@@ -132,7 +132,8 @@ func newOperatorRecoverCommand(
 
 				ss := shard[:]
 				encodedShard := base64.StdEncoding.EncodeToString(ss)
-				err := os.WriteFile(filePath, []byte(encodedShard), 0644)
+				// 0600 to be more restrictive.
+				err := os.WriteFile(filePath, []byte(encodedShard), 0600)
 				if err != nil {
 					fmt.Printf("Failed to save shard %d: %s\n", i+1, err.Error())
 				}

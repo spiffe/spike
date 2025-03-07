@@ -88,10 +88,24 @@ func RouteRecover(
 		p := *payload[i]
 		ss = append(ss, p)
 	}
+	// Security: Clean up interim slice before the function exits.
+	defer func() {
+		for i := range ss {
+			for j := range ss[i][:] {
+				ss[i][j] = 0
+			}
+		}
+	}()
 
 	responseBody := net.MarshalBody(reqres.RecoverResponse{
 		Shards: ss,
 	}, w)
+	// Security: Clean up response body before exit.
+	defer func() {
+		for i := range responseBody {
+			responseBody[i] = 0
+		}
+	}()
 
 	net.Respond(http.StatusOK, responseBody, w)
 	log.Log().Info(fName, "msg", data.ErrSuccess)

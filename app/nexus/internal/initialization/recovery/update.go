@@ -37,6 +37,15 @@ func mustUpdateRecoveryInfo(rk *[32]byte) []secretsharing.Share {
 	return rootShares
 }
 
+// sendShardsToKeepers distributes shares of the root key to all keeper nodes.
+// Note that we recompute shares for each keeper rather than computing them once
+// and distributing them. This is safe because:
+//  1. computeShares() uses a deterministic random reader seeded with the
+//     root key
+//  2. Given the same root key, it will always produce identical shares
+//  3. findShare() ensures each keeper receives its designated share
+//     This approach simplifies the code flow and maintains consistency across
+//     potential system restarts or failures.
 func sendShardsToKeepers(
 	source *workloadapi.X509Source, keepers map[string]string,
 ) {

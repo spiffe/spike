@@ -12,21 +12,26 @@ import (
 func validateShard(shard *[32]byte) error {
 	// Check if shard is already stored
 	shardsMutex.RLock()
+	defer shardsMutex.RUnlock() // Ensure lock is always released
 
-	hasSameShard := true
+	// Check for duplicates
 	for _, existingShard := range shards {
+		// Assume this is a duplicate until we find a difference
+		isDuplicate := true
+
+		// Check each byte - if any byte differs, it's not a duplicate
 		for i := range shard {
 			if existingShard[i] != shard[i] {
-				hasSameShard = false
+				isDuplicate = false
 				break
 			}
 		}
-	}
-	if hasSameShard {
-		return errors.ErrInvalidInput
-	}
 
-	shardsMutex.RUnlock()
+		// If we went through all bytes and found no differences, it's a duplicate
+		if isDuplicate {
+			return errors.ErrInvalidInput
+		}
+	}
 
 	return nil
 }

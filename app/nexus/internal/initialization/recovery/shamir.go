@@ -38,6 +38,11 @@ func sanityCheck(secret group.Scalar, shares []shamir.Share) {
 	}
 }
 
+// computeShares generates a set of Shamir secret shares from the root key.
+// The function uses a deterministic random reader seeded with the root key,
+// which ensures that the same shares are always generated for a given root key.
+// This deterministic behavior is crucial for the system's reliability, allowing
+// shares to be recomputed as needed while maintaining consistency.
 func computeShares() (group.Scalar, []shamir.Share) {
 	const fName = "computeShares"
 
