@@ -20,6 +20,21 @@ import (
 	"github.com/spiffe/spike/internal/net"
 )
 
+// mustUpdateRecoveryInfo updates the recovery information by setting a new root
+// key and computing new shares. It returns the computed shares.
+//
+// The function sets the provided root key in the state, computes shares from
+// the root secret, performs a sanity check on the computed shares, and ensures
+// that temporary variables containing sensitive information are zeroed out
+// after use.
+//
+// This is a critical security function that handles sensitive key material.
+//
+// Parameters:
+//   - rk: A pointer to a 32-byte array containing the new root key
+//
+// Returns:
+//   - []secretsharing.Share: The computed shares for the root secret
 func mustUpdateRecoveryInfo(rk *[32]byte) []secretsharing.Share {
 	const fName = "mustUpdateRecoveryInfo"
 	log.Log().Info(fName, "msg", "Updating recovery info")

@@ -11,41 +11,65 @@ import (
 	"github.com/spiffe/spike/app/nexus/internal/env"
 )
 
-// TODO: add documentation.
-
+// Global variables for storing secrets and policies with thread-safety.
 var (
+	// secretStore is a key-value store for managing secrets with version control.
 	secretStore = kv.New(kv.Config{
 		MaxSecretVersions: env.MaxSecretVersions(),
 	})
+	// secretStoreMu provides mutual exclusion for access to the secret store.
 	secretStoreMu sync.RWMutex
 )
 
+// policies is a thread-safe map used to store policy information.
 var policies sync.Map
 
+// Global variables related to the root key with thread-safety protection.
 var (
-	// An array of 32 bytes initialized to zeroes.
-	rootKey   [32]byte
+	// rootKey is a 32-byte array that stores the cryptographic root key.
+	// It is initialized to zeroes by default.
+	rootKey [32]byte
+	// rootKeyMu provides mutual exclusion for access to the root key.
 	rootKeyMu sync.RWMutex
 )
 
+// RootKey returns a pointer to the root key with read locking.
+// The caller must not modify the returned value.
+//
+// Returns:
+//   - *[32]byte: Pointer to the root key
 func RootKey() *[32]byte {
 	rootKeyMu.RLock()
 	defer rootKeyMu.RUnlock()
 	return &rootKey
 }
 
-func RootKeyNoLock() [32]byte {
-	return rootKey
+// RootKeyNoLock returns a copy of the root key without acquiring the lock.
+// This should only be used in contexts where the lock is already held
+// or thread safety is managed externally.
+//
+// Returns:
+//   - *[32]byte: Pointer to the root key
+func RootKeyNoLock() *[32]byte {
+	return &rootKey
 }
 
+// LockRootKey acquires an exclusive lock on the root key.
+// This must be paired with a corresponding call to UnlockRootKey.
 func LockRootKey() {
 	rootKeyMu.Lock()
 }
 
+// UnlockRootKey releases an exclusive lock on the root key previously
+// acquired with LockRootKey.
 func UnlockRootKey() {
 	rootKeyMu.Unlock()
 }
 
+// RootKeyZero checks if the root key contains only zero bytes.
+//
+// Returns:
+//   - bool: true if the root key contains only zeroes, false otherwise
 func RootKeyZero() bool {
 	rootKeyMu.RLock()
 	defer rootKeyMu.RUnlock()
@@ -58,6 +82,8 @@ func RootKeyZero() bool {
 	return true
 }
 
+// ResetRootKey resets the root key to all zeroes.
+// This is typically used when clearing sensitive cryptographic material.
 func ResetRootKey() {
 	rootKeyMu.Lock()
 	defer rootKeyMu.Unlock()
@@ -68,6 +94,10 @@ func ResetRootKey() {
 	}
 }
 
+// SetRootKey updates the root key with the provided value.
+//
+// Parameters:
+//   - rk: Pointer to a 32-byte array containing the new root key value
 func SetRootKey(rk *[32]byte) {
 	rootKeyMu.Lock()
 	defer rootKeyMu.Unlock()

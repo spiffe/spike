@@ -33,7 +33,7 @@ var (
 //
 // This function attempts to recover the backing store by collecting shards
 // from keeper nodes. It continuously polls the keepers until enough valid
-// shards are collected to reconstruct the backing store. The function blocks\
+// shards are collected to reconstruct the backing store. The function blocks
 // until recovery is successful.
 //
 // The function maintains a map of successfully recovered shards from each
@@ -43,7 +43,8 @@ var (
 // defaults to 0 (unlimited; no timeout).
 //
 // Parameters:
-//   - source: An X509Source used for authenticating with keeper nodes
+//   - source *workloadapi.X509Source: An X509Source used for authenticating
+//     with SPIKE Keeper nodes
 func RecoverBackingStoreUsingKeeperShards(source *workloadapi.X509Source) {
 	const fName = "RecoverBackingStoreUsingKeeperShards"
 
@@ -136,18 +137,16 @@ func HydrateMemoryFromBackingStore() {
 // state and sends the shards to the keepers.
 //
 // Parameters:
-//   - shards: A slice of base64-encoded string shards
+//   - shards []*[32]byte: A slice of byte array pointers representing the shards
 //
 // The function will:
 //   - Validate that enough shards are provided (at least the threshold amount)
-//   - Decode the required number of shards from base64 format
 //   - Recover the root key using the Shamir secret sharing algorithm
 //   - Initialize the state with the recovered key
 //   - Send the shards to the configured keepers
 //
 // It will return early with an error log if:
 //   - There are insufficient shards to meet the threshold
-//   - Any shard fails to decode properly
 //   - The SPIFFE source cannot be created
 func RestoreBackingStoreUsingPilotShards(shards []*[32]byte) {
 	const fName = "RestoreBackingStoreUsingPilotShards"
@@ -188,13 +187,14 @@ func RestoreBackingStoreUsingPilotShards(shards []*[32]byte) {
 // them to each keeper using mTLS authentication. The function runs indefinitely
 // until stopped.
 //
-// The function sends shards every 13 seconds (configurable in future). It
-// requires a minimum of 3 keepers to be configured. If any operation fails for
-// a keeper (URL creation, mTLS setup, marshaling, or network request), it logs
-// a warning and continues with the next keeper.
+// The function sends shards every 5 minutes. It requires a minimum number of keepers
+// equal to the configured Shamir shares. If any operation fails for a keeper
+// (URL creation, mTLS setup, marshaling, or network request), it logs a warning
+// and continues with the next keeper.
 //
 // Parameters:
-//   - source: An X509Source used for creating mTLS connections to keepers
+//   - source *workloadapi.X509Source: An X509Source used for creating mTLS
+//     connections to keepers
 func SendShardsPeriodically(source *workloadapi.X509Source) {
 	const fName = "SendShardsPeriodically"
 
@@ -228,15 +228,16 @@ func SendShardsPeriodically(source *workloadapi.X509Source) {
 // The function first retrieves the root key from the system state. If no root
 // key exists, it returns an empty slice. Otherwise, it splits the root key into
 // shares using a secret sharing scheme, performs validation checks, and
-// converts the shares into base64-encoded strings.
+// converts the shares into byte arrays.
 //
 // Each shard in the returned slice represents a portion of the secret needed to
 // reconstruct the root key. The shares are generated in a way that requires a
 // specific threshold of shards to be combined to recover the original secret.
 //
 // Returns:
-//   - []string: A slice of base64-encoded recovery shards. Returns empty slice
-//     if the root key is not available or if share generation fails.
+//   - []*[32]byte: A slice of byte array pointers representing the recovery
+//     shards. Returns empty slice if the root key is not available or if share
+//     generation fails.
 //
 // Example:
 //
@@ -283,17 +284,18 @@ func NewPilotRecoveryShards() []*[32]byte {
 // root key, initializes the state with this key, and distributes key shards
 // to all configured keepers.
 //
-// The function requires a minimum of 3 keepers to be configured. It
-// continuously attempts to distribute shards to all keepers until successful,
-// waiting 5 seconds between retry attempts. The backing store is initialized
-// before keeper distribution to allow immediate operation.
+// The function requires the number of keepers to match the configured Shamir
+// shares. It continuously attempts to distribute shards to all keepers until
+// successful, waiting 5 seconds between retry attempts. The backing store is
+// initialized before keeper distribution to allow immediate operation.
 //
 // Parameters:
-//   - source: An X509Source used for authenticating with keeper nodes
+//   - source *workloadapi.X509Source: An X509Source used for authenticating
+//     with keeper nodes
 //
 // The function will fatal if:
 //   - Root key creation fails
-//   - Fewer than 3 keepers are configured
+//   - The number of keepers doesn't match the configured Shamir shares
 func BootstrapBackingStoreWithNewRootKey(source *workloadapi.X509Source) {
 	const fName = "BootstrapBackingStoreWithNewRootKey"
 

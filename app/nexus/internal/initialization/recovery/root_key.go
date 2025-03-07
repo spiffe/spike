@@ -17,14 +17,14 @@ import (
 // secret.
 //
 // Parameters:
-//   - ss: A slice of byte slices, where each byte slice represents a secret
-//     share
+//   - ss []*[32]byte: A slice of pointers to 32-byte arrays, where each array
+//     represents a secret share
 //
 // Returns:
-//   - []byte: The reconstructed root key as a byte slice
+//   - *[32]byte: A pointer to the reconstructed 32-byte root key
 //
 // The function will:
-//   - Convert each raw byte slice into a properly formatted secretsharing.Share
+//   - Convert each 32-byte array into a properly formatted secretsharing.Share
 //   - Assign sequential IDs to each share starting from 1
 //   - Reconstruct the original secret using the secretsharing.Recover function
 //   - Validate the recovered key has the correct length (32 bytes)

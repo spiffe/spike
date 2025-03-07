@@ -16,10 +16,6 @@ import (
 	"github.com/spiffe/spike/internal/net"
 )
 
-// TODO: likely, there's lots of godoc changes too; check the PR for those.
-
-// TOOD: there are godoc changes to be done on the SDK too.
-
 // RouteContribute handles HTTP requests for shard contributions in the system.
 // It processes incoming shard data, decodes it from Base64 encoding, and stores
 // it in the system state.

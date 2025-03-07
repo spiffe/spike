@@ -19,6 +19,8 @@ import (
 	"github.com/spiffe/spike/internal/net"
 )
 
+// TODO: move private functions to other files.
+
 func shardUrl(keeperApiRoot string) string {
 	const fName = "shardUrl"
 
