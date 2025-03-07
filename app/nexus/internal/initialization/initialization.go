@@ -51,12 +51,14 @@ func Initialize(source *workloadapi.X509Source) {
 
 	state.Initialize(&seed)
 
+	// Note: Each function must zero-out ONLY the items it has created.
+	// If it is borrowing an item by reference, it must not zero-out the item
+	// and let the owner zero-out the item.
+	//
+	// Thus, `seed` should be reset here, but not in `state.Initialize()`.
+
 	// Security: Zero-out seed after use.
 	for i := range seed {
 		seed[i] = 0
 	}
-
-	// Note: Each function must zero-out ONLY the items it has created.
-	// If it is borrowing an item by reference, it must not zero-out the item
-	// and let the owner zero-out the item.
 }

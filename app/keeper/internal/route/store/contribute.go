@@ -78,14 +78,6 @@ func RouteContribute(
 		}
 	}()
 
-	// Decode shard content from Base64 encoding.
-	// decodedShard, err := base64.StdEncoding.DecodeString(shard)
-	//if err != nil {
-	//	log.Log().Error(fName, "msg", "Failed to decode shard", "err", err.Error())
-	//	http.Error(w, "Invalid shard content", http.StatusBadRequest)
-	//	return errors.ErrParseFailure
-	//}
-
 	zeroed := true
 	for _, c := range shard {
 		if c != 0 {
@@ -100,15 +92,15 @@ func RouteContribute(
 		}, w)
 		net.Respond(http.StatusBadRequest, responseBody, w)
 
-		return errors.ErrParseFailure
+		return errors.ErrInvalidInput
 	}
 
 	state.SetShard(&shard)
 	log.Log().Info(fName, "msg", "Shard stored", "id", id)
 
 	responseBody := net.MarshalBody(reqres.ShardContributionResponse{}, w)
-
 	net.Respond(http.StatusOK, responseBody, w)
+
 	log.Log().Info(fName, "msg", data.ErrSuccess)
 
 	return nil

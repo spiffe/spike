@@ -5,34 +5,28 @@
 package operator
 
 import (
-	"encoding/base64"
-
 	"github.com/spiffe/spike-sdk-go/api/errors"
 )
 
 // validateShard checks if the shard is valid and not duplicate
-func validateShard(shard string) error {
-	decodedShard, err := base64.StdEncoding.DecodeString(shard)
-	if err != nil {
-		return errors.ErrInvalidInput
-	}
-
+func validateShard(shard *[32]byte) error {
 	// Check if shard is already stored
 	shardsMutex.RLock()
+
+	hasSameShard := true
 	for _, existingShard := range shards {
-		// Range over decoded shard and print its values
-		for i := range decodedShard {
-			if existingShard[i] != decodedShard[i] {
-				return errors.ErrInvalidInput
+		for i := range shard {
+			if existingShard[i] != shard[i] {
+				hasSameShard = false
+				break
 			}
 		}
 	}
-	shardsMutex.RUnlock()
-
-	// 32 for SHA-256
-	if len(decodedShard) != 32 {
+	if hasSameShard {
 		return errors.ErrInvalidInput
 	}
+
+	shardsMutex.RUnlock()
 
 	return nil
 }

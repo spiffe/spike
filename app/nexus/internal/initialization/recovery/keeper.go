@@ -77,7 +77,6 @@ func iterateKeepersToBootstrap(
 			}
 
 			log.Log().Info(fName, "msg", "Tombstone file created successfully")
-
 			return true
 		}
 	}
@@ -103,17 +102,21 @@ func iterateKeepersAndTryRecovery(
 		if len(data) == 0 {
 			continue
 		}
+		// Security: Reset data before the function exits.
+		defer func() {
+			for i := range data {
+				data[i] = 0
+			}
+		}()
 
 		res := unmarshalShardResponse(data)
 		if res == nil {
 			continue
 		}
 
-		shard := res.Shard
-
 		zeroed := true
-		for i := range shard {
-			if shard[i] != 0 {
+		for i := range res.Shard {
+			if res.Shard[i] != 0 {
 				zeroed = false
 				break
 			}
@@ -124,11 +127,13 @@ func iterateKeepersAndTryRecovery(
 			continue
 		}
 
-		successfulKeeperShards[keeperId] = &shard
+		successfulKeeperShards[keeperId] = &res.Shard
 		if len(successfulKeeperShards) != env.ShamirThreshold() {
 			continue
 		}
 
+		// No need to erase `ss` because `RecoverBackingStoreUsingKeeperShards()`
+		// resets `successfulKeeperShards` which points to the same shards here.
 		ss := make([]*[32]byte, 0)
 		for _, shard := range successfulKeeperShards {
 			ss = append(ss, shard)
@@ -145,8 +150,8 @@ func iterateKeepersAndTryRecovery(
 		}
 		// Security: Zero out temporary variables before function exits.
 		// Note that `successfulKeeperShards` will be reset elsewhere.
-		for i := range shard {
-			shard[i] = 0
+		for i := range res.Shard {
+			res.Shard[i] = 0
 		}
 
 		// System initialized: Exit infinite loop.

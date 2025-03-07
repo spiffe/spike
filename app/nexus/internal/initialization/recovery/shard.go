@@ -100,7 +100,8 @@ func shardContributionResponse(
 		return []byte{}
 	}
 
-	// Do not zero-out `share`; rootShares is zeroed out elsewhere.
+	// Do not zero-out `share` you don't own it;
+	// Also, rootShares is zeroed out elsewhere.
 	share := findShare(keeperId, keepers, rootShares)
 
 	contribution, err := share.Value.MarshalBinary()

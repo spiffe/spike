@@ -66,6 +66,7 @@ func computeShares() (group.Scalar, []shamir.Share) {
 	reader := crypto.NewDeterministicReader(rk[:])
 	ss := shamir.New(reader, t, secret)
 
+	// secret is a pointer type; ss.Share(n) is a slice
 	return secret, ss.Share(n)
 }
 

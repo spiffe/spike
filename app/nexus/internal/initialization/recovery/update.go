@@ -85,10 +85,16 @@ func sendShardsToKeepers(
 		contribution, err := share.Value.MarshalBinary()
 
 		// Security: Ensure that the share is zeroed out before
-		// the function returns.
+		// the next iteration.
 		share.Value.SetUint64(0)
 
 		if err != nil {
+			// Security: Ensure that the contribution is zeroed out before
+			// the next iteration.
+			for i := range contribution {
+				contribution[i] = 0
+			}
+
 			log.Log().Warn(fName,
 				"msg", "Failed to marshal share",
 				"err", err, "keeper_id", keeperId)
@@ -96,39 +102,42 @@ func sendShardsToKeepers(
 		}
 
 		if len(contribution) != 32 {
+			// Security: Ensure that the contribution is zeroed out before
+			// the next iteration.
+			for i := range contribution {
+				contribution[i] = 0
+			}
+
 			log.Log().Warn(fName,
 				"msg", "invalid contribution length",
 				"len", len(contribution), "keeper_id", keeperId)
 			continue
 		}
 
-		// Security: shard is binary instead of string because strings
-		// are immutable and thus hard to erase from memory.
-		var sh [32]byte
-		for i, b := range contribution {
-			sh[i] = b
-		}
-
 		scr := reqres.ShardContributionRequest{
 			KeeperId: keeperId,
-			Shard:    sh,
+		}
+
+		// Security: shard is intentionally binary (instead of string) for
+		// better memory management. Do not change its data type.
+		for i, b := range contribution {
+			scr.Shard[i] = b
 		}
 
 		// Security: Ensure that the contribution is zeroed out before
-		// the function exits.
+		// the next iteration.
 		for i := range contribution {
 			contribution[i] = 0
 		}
 
 		md, err := json.Marshal(scr)
 
-		if err != nil {
-			// Security: Ensure that the md is zeroed out before
-			// the function exits.
-			for i := range md {
-				md[i] = 0
-			}
+		// Security: Erase scr.Shard when no longer in use.
+		for i := range scr.Shard {
+			scr.Shard[i] = 0
+		}
 
+		if err != nil {
 			log.Log().Warn(fName,
 				"msg", "Failed to marshal request",
 				"err", err, "keeper_id", keeperId)
@@ -136,24 +145,18 @@ func sendShardsToKeepers(
 		}
 
 		_, err = net.Post(client, u, md)
-		if err != nil {
-			// Security: Ensure that the md is zeroed out before
-			// the function exits.
-			for i := range md {
-				md[i] = 0
-			}
 
+		// Security: Ensure that the md is zeroed out before
+		// the next iteration.
+		for i := range md {
+			md[i] = 0
+		}
+
+		if err != nil {
 			log.Log().Warn(fName, "msg",
 				"Failed to post",
 				"err", err, "keeper_id", keeperId)
-
 			continue
-		}
-
-		// Security: Ensure that the md is zeroed out before
-		// the function exits.
-		for i := range md {
-			md[i] = 0
 		}
 	}
 }

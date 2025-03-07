@@ -5,7 +5,6 @@
 package operator
 
 import (
-	"encoding/base64"
 	"net/http"
 	"sync"
 
@@ -67,8 +66,6 @@ func RouteRestore(
 		return errors.ErrReadFailure
 	}
 
-	// TODO: properly reset request.Shard after use.
-
 	request := net.HandleRequest[
 		reqres.RestoreRequest, reqres.RestoreResponse](
 		requestBody, w,
@@ -105,7 +102,7 @@ func RouteRestore(
 	}
 
 	// Validate the new shard
-	if err := validateShard(request.Shard); err != nil {
+	if err := validateShard(&request.Shard); err != nil {
 		responseBody := net.MarshalBody(reqres.RestoreResponse{
 			RestorationStatus: data.RestorationStatus{
 				ShardsCollected: currentShardCount,
@@ -121,34 +118,43 @@ func RouteRestore(
 		return nil
 	}
 
-	shardDecoded, err := base64.StdEncoding.DecodeString(request.Shard)
-	var shardB [32]byte
-	if err != nil || len(shardDecoded) != 32 {
-		responseBody := net.MarshalBody(reqres.RestoreResponse{
-			RestorationStatus: data.RestorationStatus{
-				ShardsCollected: currentShardCount,
-				ShardsRemaining: env.ShamirThreshold() - currentShardCount,
-				Restored:        false,
-			},
-			Err: data.ErrBadInput,
-		}, w)
-		if responseBody == nil {
-			return errors.ErrMarshalFailure
-		}
-		net.Respond(http.StatusBadRequest, responseBody, w)
-		return nil
-	}
+	// shardDecoded, err := base64.StdEncoding.DecodeString(request.Shard)
+	//var shardB [32]byte
+	//if err != nil || len(shardDecoded) != 32 {
+	//	responseBody := net.MarshalBody(reqres.RestoreResponse{
+	//		RestorationStatus: data.RestorationStatus{
+	//			ShardsCollected: currentShardCount,
+	//			ShardsRemaining: env.ShamirThreshold() - currentShardCount,
+	//			Restored:        false,
+	//		},
+	//		Err: data.ErrBadInput,
+	//	}, w)
+	//	if responseBody == nil {
+	//		return errors.ErrMarshalFailure
+	//	}
+	//	net.Respond(http.StatusBadRequest, responseBody, w)
+	//	return nil
+	//}
+	//
+	//// Add the new shard
+	//shardsMutex.Lock()
+	//for i := range shardB {
+	//	shardB[i] = shardDecoded[i]
+	//}
 
-	// Add the new shard
-	shardsMutex.Lock()
-	for i := range shardB {
-		shardB[i] = shardDecoded[i]
-	}
-	shards = append(shards, &shardB)
-	// zero out shardDecoded
-	for i := range shardDecoded {
-		shardDecoded[i] = 0
-	}
+	shards = append(shards, &request.Shard)
+	// Security: Reset the field when no longer needed.
+	defer func() {
+		for i := range request.Shard {
+			request.Shard[i] = 0
+		}
+	}()
+
+	//// Security: zero out shardDecoded when no longer needed.
+	//for i := range shardDecoded {
+	//	shardDecoded[i] = 0
+	//}
+
 	currentShardCount = len(shards)
 	shardsMutex.Unlock()
 

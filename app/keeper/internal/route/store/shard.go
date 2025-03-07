@@ -59,13 +59,9 @@ func RouteShard(
 		return errors.ErrParseFailure
 	}
 
+	// DO NOT reset `myShard` after use, as this function does NOT own it.
+	// Treat the value "read-only".
 	myShard := state.Shard()
-	// Security: Make sure shard is reset before function returns.
-	defer func() {
-		for i := 0; i < len(myShard); i++ {
-			myShard[i] = 0
-		}
-	}()
 
 	zeroed := true
 	for _, c := range myShard {

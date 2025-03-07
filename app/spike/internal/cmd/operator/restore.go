@@ -5,6 +5,7 @@
 package operator
 
 import (
+	"encoding/base64"
 	"fmt"
 	"os"
 	"syscall"
@@ -86,7 +87,42 @@ func newOperatorRestoreCommand(
 
 			api := spike.NewWithSource(source)
 
-			status, err := api.Restore(string(shard))
+			var ss [32]byte
+
+			decodedShard, err := base64.StdEncoding.DecodeString(string(shard))
+			// Security: reset shard immediately after use.
+			for i := 0; i < len(shard); i++ {
+				shard[i] = 0
+			}
+
+			if err != nil {
+				log.FatalLn("Failed to decode recovery shard: ", err.Error())
+			}
+
+			if len(decodedShard) != 32 {
+				// Security: reset decodedShard immediately after use.
+				for i := 0; i < 32; i++ {
+					decodedShard[i] = 0
+				}
+
+				log.FatalLn("Invalid recovery shard length: ", len(decodedShard))
+			}
+
+			for i := 0; i < 32; i++ {
+				ss[i] = decodedShard[i]
+			}
+
+			// Security: reset decodedShard immediately after use.
+			for i := 0; i < 32; i++ {
+				decodedShard[i] = 0
+			}
+
+			status, err := api.Restore(&ss)
+
+			// Security: reset ss immediately after recovery.
+			for i := 0; i < 32; i++ {
+				ss[i] = 0
+			}
 
 			if err != nil {
 				log.FatalLn(err.Error())

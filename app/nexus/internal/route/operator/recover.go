@@ -66,7 +66,16 @@ func RouteRecover(
 		return err
 	}
 
-	shards := recovery.PilotRecoveryShards()
+	shards := recovery.NewPilotRecoveryShards()
+	// Security: reset shards before function exits.
+	defer func() {
+		for i := range shards {
+			for j := range shards[i][:] {
+				shards[i][j] = 0
+			}
+		}
+		shards = shards[:0]
+	}()
 
 	if len(shards) < env.ShamirThreshold() {
 		return errors.ErrNotFound
@@ -74,8 +83,14 @@ func RouteRecover(
 
 	payload := shards[:env.ShamirThreshold()]
 
+	var ss [][32]byte
+	for i := range payload {
+		p := *payload[i]
+		ss = append(ss, p)
+	}
+
 	responseBody := net.MarshalBody(reqres.RecoverResponse{
-		Shards: payload,
+		Shards: ss,
 	}, w)
 
 	net.Respond(http.StatusOK, responseBody, w)

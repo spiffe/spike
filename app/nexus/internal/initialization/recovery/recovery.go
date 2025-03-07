@@ -7,7 +7,6 @@ package recovery
 import (
 	"context"
 	"crypto/rand"
-	"encoding/base64"
 	"errors"
 	"fmt"
 	"time"
@@ -87,6 +86,7 @@ func RecoverBackingStoreUsingKeeperShards(source *workloadapi.X509Source) {
 		return false, ErrRecoveryRetry
 	},
 		retry.WithBackOffOptions(
+			// TODO: env var.
 			retry.WithMaxInterval(60*time.Second),
 			retry.WithMaxElapsedTime(env.RecoveryOperationTimeout()),
 		),
@@ -221,7 +221,7 @@ func SendShardsPeriodically(source *workloadapi.X509Source) {
 	}
 }
 
-// PilotRecoveryShards generates a set of recovery shards from the root key
+// NewPilotRecoveryShards generates a set of recovery shards from the root key
 // using Shamir's Secret Sharing scheme. These shards can be used to reconstruct
 // the root key in a recovery scenario.
 //
@@ -240,17 +240,17 @@ func SendShardsPeriodically(source *workloadapi.X509Source) {
 //
 // Example:
 //
-//	shards := PilotRecoveryShards()
+//	shards := NewPilotRecoveryShards()
 //	for _, shard := range shards {
 //	    // Store each shard securely
 //	    storeShard(shard)
 //	}
-func PilotRecoveryShards() []string {
-	const fName = "PilotRecoveryShards"
+func NewPilotRecoveryShards() []*[32]byte {
+	const fName = "NewPilotRecoveryShards"
 	log.Log().Info(fName, "msg", "Generating pilot recovery shards")
 
 	if state.RootKeyZero() {
-		return []string{}
+		return []*[32]byte{}
 	}
 
 	rootSecret, rootShares := computeShares()
@@ -263,14 +263,17 @@ func PilotRecoveryShards() []string {
 		}
 	}()
 
-	result := make([]string, 0, len(rootShares))
+	result := make([]*[32]byte, 0, len(rootShares))
 	for _, share := range rootShares {
 		contribution, err := share.Value.MarshalBinary()
 		if err != nil {
 			continue
 		}
-		shard := base64.StdEncoding.EncodeToString(contribution)
-		result = append(result, shard)
+		var shard [32]byte
+		for i := range shard {
+			shard[i] = contribution[i]
+		}
+		result = append(result, &shard)
 	}
 	return result
 }
