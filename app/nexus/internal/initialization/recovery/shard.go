@@ -112,7 +112,7 @@ func shardContributionResponse(
 
 	// TODO: size validation for contribution to avoid buffer overflow.
 	var c [32]byte
-	copy(to[:], contribution)
+	copy(c[:], contribution)
 	// Security: Ensure that temporary variable is zeroed out before
 	// function exits.
 	defer func() {
