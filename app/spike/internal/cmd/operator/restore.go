@@ -8,6 +8,8 @@ import (
 	"encoding/base64"
 	"fmt"
 	"os"
+	"strconv"
+	"strings"
 	"syscall"
 
 	"github.com/spf13/cobra"
@@ -89,7 +91,18 @@ func newOperatorRestoreCommand(
 
 			var ss [32]byte
 
-			decodedShard, err := base64.StdEncoding.DecodeString(string(shard))
+			// shard is in `spike:$id:$base64` format
+			// split it by :
+
+			shardParts := strings.SplitN(string(shard), ":", 3)
+			if len(shardParts) != 3 {
+				log.FatalLn("Invalid shard format. Expected format: `spike:$id:$secret`.")
+			}
+
+			index := shardParts[1]
+			base64Data := shardParts[2]
+
+			decodedShard, err := base64.StdEncoding.DecodeString(base64Data)
 			// Security: reset shard immediately after use.
 			for i := 0; i < len(shard); i++ {
 				shard[i] = 0
@@ -121,8 +134,11 @@ func newOperatorRestoreCommand(
 
 			// TODO: sanitize data before attempting save too. (the decoded version should be 32 bytes)
 
-			// TODO parse index from `spike:recovery:$index` and send to the restore request.
-			status, err := api.Restore(0, &ss)
+			// TODO parse index from `spike::$index:` and send to the restore request.
+			// TODO: handle error.
+			ix, _ := strconv.Atoi(index)
+
+			status, err := api.Restore(ix, &ss)
 
 			// Security: reset ss immediately after recovery.
 			for i := 0; i < 32; i++ {

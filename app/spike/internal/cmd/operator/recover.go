@@ -128,18 +128,17 @@ func newOperatorRecoverCommand(
 
 			// Save each shard to a file
 			for i, shard := range shards {
-				filePath := fmt.Sprintf("%s/spike.recovery.%d.txt", recoverDir, i+1)
+				filePath := fmt.Sprintf("%s/spike.recovery.%d.txt", recoverDir, i)
 
 				ss := shard[:]
 				encodedShard := base64.StdEncoding.EncodeToString(ss)
 
-				// TODO: prefix with `spike:recovery:$index:`
-				// TODO: need to parse the index when sending to the consumer too.
+				out := fmt.Sprintf("spike:%d:%s", i, encodedShard)
 
 				// 0600 to be more restrictive.
-				err := os.WriteFile(filePath, []byte(encodedShard), 0600)
+				err := os.WriteFile(filePath, []byte(out), 0600)
 				if err != nil {
-					fmt.Printf("Failed to save shard %d: %s\n", i+1, err.Error())
+					fmt.Printf("Failed to save shard %d: %s\n", i, err.Error())
 				}
 			}
 
