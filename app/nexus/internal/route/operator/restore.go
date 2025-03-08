@@ -5,7 +5,6 @@
 package operator
 
 import (
-	"github.com/spiffe/spike/app/nexus/internal/env"
 	"net/http"
 	"sync"
 
@@ -13,17 +12,14 @@ import (
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	"github.com/spiffe/spike-sdk-go/api/errors"
 
+	"github.com/spiffe/spike/app/nexus/internal/env"
 	"github.com/spiffe/spike/app/nexus/internal/initialization/recovery"
 	"github.com/spiffe/spike/internal/log"
 	"github.com/spiffe/spike/internal/net"
 )
 
-const (
-	decodedShardSize = 32 // bytes
-)
-
 var (
-	shards      []string
+	shards      []recovery.ShamirShard
 	shardsMutex sync.RWMutex
 )
 
@@ -105,6 +101,9 @@ func RouteRestore(
 		return nil
 	}
 
+	// TODO: do we need validation for request.Id too?
+	// if request.Id < 1 || request.Id > maxValidShardID etc.
+
 	// Validate the new shard
 	if err := validateShard(request.Shard); err != nil {
 		responseBody := net.MarshalBody(reqres.RestoreResponse{
@@ -122,16 +121,37 @@ func RouteRestore(
 		return nil
 	}
 
-	// Add the new shard
 	shardsMutex.Lock()
-	shards = append(shards, request.Shard)
+
+	// TODO: maybe sanitization.
+
+	shards = append(shards, recovery.ShamirShard{
+		Id:    uint64(request.Id),
+		Value: request.Shard,
+	})
+
 	currentShardCount = len(shards)
-	shardsMutex.Unlock()
+
+	// Security: Reset the field when no longer needed.
+	defer func() {
+		for i := range request.Shard {
+			request.Shard[i] = 0
+		}
+		request.Id = 0
+	}()
 
 	// Trigger restoration if we have collected all shards
 	if currentShardCount == env.ShamirThreshold() {
 		recovery.RestoreBackingStoreUsingPilotShards(shards)
+		// Security: Zero out all shards since we have finished restoration:
+		for i := range shards {
+			for j := range shards[i].Value {
+				shards[i].Value[j] = 0
+			}
+		}
 	}
+
+	shardsMutex.Unlock()
 
 	responseBody := net.MarshalBody(reqres.RestoreResponse{
 		RestorationStatus: data.RestorationStatus{

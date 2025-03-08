@@ -61,7 +61,7 @@ func StorePolicy(policy data.Policy) {
 //
 // Skips operation if:
 //   - Backend is unavailable
-//   - ID is empty
+//   - Id is empty
 func DeletePolicy(id string) {
 	const fName = "deletePolicy"
 

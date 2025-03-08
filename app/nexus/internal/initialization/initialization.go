@@ -5,8 +5,9 @@
 package initialization
 
 import (
+	"crypto/rand"
+
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
-	"github.com/spiffe/spike-sdk-go/crypto"
 
 	"github.com/spiffe/spike/app/nexus/internal/env"
 	"github.com/spiffe/spike/app/nexus/internal/initialization/recovery"
@@ -28,8 +29,11 @@ import (
 //
 // Panics if random seed generation fails for in-memory stores.
 func Initialize(source *workloadapi.X509Source) {
+	const fName = "Initialize"
 	requireBootstrapping := env.BackendStoreType() == env.Sqlite
 	if requireBootstrapping {
+		log.Log().Info(fName, "msg", "Backend store requires bootstrapping")
+
 		// Try bootstrapping in a loop.
 		go bootstrap(source)
 
@@ -41,11 +45,28 @@ func Initialize(source *workloadapi.X509Source) {
 		return
 	}
 
-	// For "in-memory" backing stores, we don't need bootstrapping.
-	// Initialize the store with a random seed instead.
-	seed, err := crypto.Aes256Seed()
-	if err != nil {
+	log.Log().Info(fName, "msg", "Backend store does not require bootstrapping")
+
+	// Security: Use a static byte array and pass it as pointer to avoid
+	// inadvertent pass-by-value copying / memory allocation.
+	var seed [32]byte
+
+	// Security: Zero-out seed after use.
+	defer func() {
+		// Note: Each function must zero-out ONLY the items it has created.
+		// If it is borrowing an item by reference, it must not zero-out the item
+		// and let the owner zero-out the item.
+		//
+		// For example, `seed` should be reset here,
+		// but not in `state.Initialize()`.
+		for i := range seed {
+			seed[i] = 0
+		}
+	}()
+
+	if _, err := rand.Read(seed[:]); err != nil {
 		log.Fatal(err.Error())
 	}
-	state.Initialize(seed)
+
+	state.Initialize(&seed)
 }

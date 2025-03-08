@@ -5,20 +5,19 @@
 package recovery
 
 import (
-	"encoding/base64"
 	"encoding/json"
-	"net/url"
-
-	"github.com/cloudflare/circl/secretsharing"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	apiUrl "github.com/spiffe/spike-sdk-go/api/url"
 	network "github.com/spiffe/spike-sdk-go/net"
+	"net/url"
 
 	"github.com/spiffe/spike/internal/auth"
 	"github.com/spiffe/spike/internal/log"
 	"github.com/spiffe/spike/internal/net"
 )
+
+// TODO: move private functions to other files.
 
 func shardUrl(keeperApiRoot string) string {
 	const fName = "shardUrl"
@@ -33,9 +32,7 @@ func shardUrl(keeperApiRoot string) string {
 	return u
 }
 
-func shardResponse(
-	source *workloadapi.X509Source, u string, keeperId string,
-) []byte {
+func shardResponse(source *workloadapi.X509Source, u string) []byte {
 	const fName = "shardResponse"
 
 	shardRequest := reqres.ShardRequest{}
@@ -43,7 +40,7 @@ func shardResponse(
 	if err != nil {
 		log.Log().Warn(fName,
 			"msg", "Failed to marshal request",
-			"err", err, "keeper_id", keeperId)
+			"err", err)
 		return []byte{}
 	}
 
@@ -62,7 +59,7 @@ func shardResponse(
 	if err != nil {
 		log.Log().Warn(fName,
 			"msg", "Failed to post",
-			"err", err, "keeper_id", keeperId)
+			"err", err)
 	}
 
 	if len(data) == 0 {
@@ -86,28 +83,8 @@ func unmarshalShardResponse(data []byte) *reqres.ShardResponse {
 	return &res
 }
 
-func rawShards(successfulKeeperShards map[string]string) [][]byte {
-	const fName = "rawShards"
-
-	ss := make([][]byte, 0)
-
-	for keeperId, shard := range successfulKeeperShards {
-		decodedShard, err := base64.StdEncoding.DecodeString(shard)
-		if err != nil {
-			log.Log().Warn(fName,
-				"msg", "Failed to decode shard from base64",
-				"err", err, "keeper_id", keeperId)
-			return [][]byte{{}}
-		}
-		ss = append(ss, decodedShard)
-	}
-
-	return ss
-}
-
 func shardContributionResponse(
-	keeperId string, keepers map[string]string, u string,
-	rootShares []secretsharing.Share, source *workloadapi.X509Source,
+	u string, contribution []byte, source *workloadapi.X509Source,
 ) []byte {
 	const fName = "shardContributionResponse"
 
@@ -120,33 +97,62 @@ func shardContributionResponse(
 		return []byte{}
 	}
 
-	share := findShare(keeperId, keepers, rootShares)
+	zeroed := true
+	for i := range contribution {
+		if contribution[i] != 0 {
+			zeroed = false
+			break
+		}
+	}
 
-	contribution, err := share.Value.MarshalBinary()
-	if err != nil {
-		log.Log().Warn(fName,
-			"msg", "Failed to marshal share",
-			"err", err, "keeper_id", keeperId)
+	if zeroed {
+		log.Log().Info(fName, "msg", "All zeros")
 		return []byte{}
 	}
 
-	scr := reqres.ShardContributionRequest{
-		KeeperId: keeperId,
-		Shard:    base64.StdEncoding.EncodeToString(contribution),
+	// TODO: size validation for contribution to avoid buffer overflow.
+	var c [32]byte
+	for i, b := range contribution {
+		c[i] = b
 	}
+	// Security: Ensure that temporary variable is zeroed out before
+	// function exits.
+	defer func() {
+		for i := range c {
+			c[i] = 0
+		}
+	}()
+
+	scr := reqres.ShardContributionRequest{
+		Shard: &c,
+	}
+	// Security: Ensure that struct field is zeroed out before the function
+	// exits.
+	defer func() {
+		for i := range scr.Shard {
+			scr.Shard[i] = 0
+		}
+	}()
+
 	md, err := json.Marshal(scr)
 	if err != nil {
 		log.Log().Warn(fName,
 			"msg", "Failed to marshal request",
-			"err", err, "keeper_id", keeperId)
+			"err", err)
 		return []byte{}
 	}
+	// Security: Ensure that the md is zeroed out before the function exits.
+	defer func() {
+		for i := range md {
+			md[i] = 0
+		}
+	}()
 
 	data, err := net.Post(client, u, md)
 	if err != nil {
 		log.Log().Warn(fName, "msg",
 			"Failed to post",
-			"err", err, "keeper_id", keeperId)
+			"err", err)
 	}
 
 	if len(data) == 0 {

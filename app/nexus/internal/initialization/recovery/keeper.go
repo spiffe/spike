@@ -5,11 +5,12 @@
 package recovery
 
 import (
-	"encoding/hex"
 	"encoding/json"
 	"net/url"
 	"os"
+	"strconv"
 
+	"github.com/cloudflare/circl/group"
 	"github.com/cloudflare/circl/secretsharing"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
@@ -38,12 +39,51 @@ func iterateKeepersToBootstrap(
 			continue
 		}
 
-		data := shardContributionResponse(
-			keeperId, keepers, u, rootShares, source,
-		)
+		var share secretsharing.Share
+
+		for _, sr := range rootShares {
+			kid, err := strconv.Atoi(keeperId)
+			if err != nil {
+				log.Log().Warn(
+					fName, "msg", "Failed to convert keeper id to int", "err", err)
+				continue
+			}
+
+			if sr.ID.IsEqual(group.P256.NewScalar().SetUint64(uint64(kid))) {
+				share = sr
+				break
+			}
+		}
+
+		// If initialized, IDs start from 1. Zero means there is no match.
+		if share.ID.IsZero() {
+			log.Log().Info(fName, "msg",
+				"Failed to find share for keeper", "keeper_id", keeperId)
+			continue
+		}
+
+		contribution, err := share.Value.MarshalBinary()
+		if err != nil {
+			log.Log().Info(fName, "msg",
+				"Failed to marshal share", "err", err, "keeper_id", keeperId)
+			continue
+		}
+
+		data := shardContributionResponse(u, contribution, source)
 		if len(data) == 0 {
+			// Security: Ensure that the share is zeroed out
+			// before the function returns.
+			for i := range contribution {
+				contribution[i] = 0
+			}
+
 			log.Log().Info(fName, "msg", "No data; moving on...")
 			continue
+		}
+		// Security: Ensure that the share is zeroed out
+		// before the function returns.
+		for i := range contribution {
+			contribution[i] = 0
 		}
 
 		var res reqres.ShardContributionResponse
@@ -62,9 +102,11 @@ func iterateKeepersToBootstrap(
 			tombstone := config.SpikeNexusTombstonePath()
 
 			// Create the tombstone file to mark SPIKE Nexus as bootstrapped.
+			// 0600 to align with principle of least privilege. We can change the
+			// permission fi it doesn't work out.
 			err = os.WriteFile(
 				tombstone,
-				[]byte("spike.nexus.bootstrapped=true"), 0644,
+				[]byte("spike.nexus.bootstrapped=true"), 0600,
 			)
 			if err != nil {
 				// Although the tombstone file is just a marker, it's still important.
@@ -78,7 +120,6 @@ func iterateKeepersToBootstrap(
 			}
 
 			log.Log().Info(fName, "msg", "Tombstone file created successfully")
-
 			return true
 		}
 	}
@@ -88,7 +129,7 @@ func iterateKeepersToBootstrap(
 
 func iterateKeepersAndTryRecovery(
 	source *workloadapi.X509Source,
-	successfulKeeperShards map[string]string,
+	successfulKeeperShards map[string]*[32]byte,
 ) bool {
 	const fName = "iterateKeepersAndTryRecovery"
 
@@ -100,37 +141,74 @@ func iterateKeepersAndTryRecovery(
 			continue
 		}
 
-		data := shardResponse(source, u, keeperId)
+		data := shardResponse(source, u)
 		if len(data) == 0 {
 			continue
 		}
 
 		res := unmarshalShardResponse(data)
+		// Security: Reset data before the function exits.
+		for i := range data {
+			data[i] = 0
+		}
+
 		if res == nil {
 			continue
 		}
 
-		shard := res.Shard
-		if len(shard) == 0 {
-			log.Log().Info(fName, "msg", "No shard")
+		zeroed := true
+		for i := range res.Shard {
+			if res.Shard[i] != 0 {
+				zeroed = false
+				break
+			}
+		}
+
+		if zeroed {
+			log.Log().Info(fName, "msg", "Shard is zeroed")
 			continue
 		}
 
-		successfulKeeperShards[keeperId] = shard
+		successfulKeeperShards[keeperId] = res.Shard
 		if len(successfulKeeperShards) != env.ShamirThreshold() {
 			continue
 		}
 
-		ss := rawShards(successfulKeeperShards)
-		if len(ss) != env.ShamirThreshold() {
-			continue
+		// No need to erase `ss` because upon successful recovery,
+		// `RecoverBackingStoreUsingKeeperShards()` resets `successfulKeeperShards`
+		// which points to the same shards here. And until recovery, we will keep
+		// a threshold number of shards in memory.
+		ss := make([]ShamirShard, 0)
+		for ix, shard := range successfulKeeperShards {
+			id, err := strconv.Atoi(ix)
+			if err != nil {
+				// TODO: maybe fatal
+				log.Log().Info(fName, "msg", "Failed to convert keeper Id to int", "err", err)
+				continue
+			}
+
+			ss = append(ss, ShamirShard{
+				Id:    uint64(id),
+				Value: shard,
+			})
 		}
 
 		binaryRec := RecoverRootKey(ss)
-		encoded := hex.EncodeToString(binaryRec)
-		state.Initialize(encoded)
 
+		// Both of these methods directly or indirectly make a copy of `binaryRec`
+		// It is okay to zero out `binaryRec` after calling these two functions.
+		state.Initialize(binaryRec)
 		state.SetRootKey(binaryRec)
+
+		// Security: Zero out temporary variables before function exits.
+		for i := range binaryRec {
+			binaryRec[i] = 0
+		}
+		// Security: Zero out temporary variables before function exits.
+		// Note that `successfulKeeperShards` will be reset elsewhere.
+		for i := range res.Shard {
+			res.Shard[i] = 0
+		}
 
 		// System initialized: Exit infinite loop.
 		return true

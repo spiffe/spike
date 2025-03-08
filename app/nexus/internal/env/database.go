@@ -102,7 +102,7 @@ func DatabaseConnMaxLifetimeSec() time.Duration {
 // variable. The value should be a valid Go duration string (e.g., "10s", "1m").
 //
 // If the environment variable is not set or contains an invalid duration,
-// it defaults to 5 seconds.
+// it defaults to 15 seconds.
 func DatabaseOperationTimeout() time.Duration {
 	p := os.Getenv("SPIKE_NEXUS_DB_OPERATION_TIMEOUT")
 	if p != "" {
@@ -112,5 +112,5 @@ func DatabaseOperationTimeout() time.Duration {
 		}
 	}
 
-	return 5 * time.Second
+	return 15 * time.Second
 }

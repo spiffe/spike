@@ -98,6 +98,7 @@ func ReadAllSecrets() map[string]*kv.Value {
 
 	log.Log().Info(fName, "msg", "Loading secrets from cache")
 	cachedSecrets, err := retry.Do(ctx, func() (map[string]*kv.Value, error) {
+		log.Log().Info(fName, "msg", "Trying to load secrets from cache")
 		return be.LoadAllSecrets(ctx)
 	})
 

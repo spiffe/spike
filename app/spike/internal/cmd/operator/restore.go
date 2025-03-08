@@ -5,8 +5,11 @@
 package operator
 
 import (
+	"encoding/base64"
 	"fmt"
 	"os"
+	"strconv"
+	"strings"
 	"syscall"
 
 	"github.com/spf13/cobra"
@@ -86,7 +89,86 @@ func newOperatorRestoreCommand(
 
 			api := spike.NewWithSource(source)
 
-			status, err := api.Restore(string(shard))
+			var shardToRestore [32]byte
+
+			// shard is in `spike:$id:$base64` format
+			shardParts := strings.SplitN(string(shard), ":", 3)
+			if len(shardParts) != 3 {
+				log.FatalLn(
+					"Invalid shard format. Expected format: `spike:$id:$secret`.",
+				)
+			}
+
+			index := shardParts[1]
+			base64Data := shardParts[2]
+
+			// TODO: The code doesn't verify that the base64 string is of expected
+			// length before decoding
+			// // 32 bytes encoded in base64 should be 44 characters (including possible padding)
+			//if len(base64Data) < 40 || len(base64Data) > 50 {
+			//    log.FatalLn("Invalid base64 shard length:", len(base64Data))
+			//}
+
+			decodedShard, err := base64.StdEncoding.DecodeString(base64Data)
+
+			// Security: Use defer for cleanup to ensure it happens even in error paths
+			defer func() {
+				// TODO: remove redundant dupe resets down below the code.
+
+				// Clean up all sensitive data
+				for i := 0; i < len(shard); i++ {
+					shard[i] = 0
+				}
+				for i := 0; i < len(decodedShard); i++ {
+					decodedShard[i] = 0
+				}
+				for i := 0; i < 32; i++ {
+					shardToRestore[i] = 0
+				}
+			}()
+
+			// Security: reset shard immediately after use.
+			for i := 0; i < len(shard); i++ {
+				shard[i] = 0
+			}
+
+			if err != nil {
+				log.FatalLn("Failed to decode recovery shard: ", err.Error())
+			}
+
+			if len(decodedShard) != 32 {
+				// Security: reset decodedShard immediately after use.
+				for i := 0; i < len(decodedShard); i++ {
+					decodedShard[i] = 0
+				}
+
+				log.FatalLn("Invalid recovery shard length: ", len(decodedShard))
+			}
+
+			for i := 0; i < 32; i++ {
+				shardToRestore[i] = decodedShard[i]
+			}
+
+			// Security: reset decodedShard immediately after use.
+			for i := 0; i < 32; i++ {
+				decodedShard[i] = 0
+			}
+
+			ix, err := strconv.Atoi(index)
+			if err != nil {
+				log.FatalLn("Invalid shard index: ", err.Error())
+			}
+
+			status, err := api.Restore(ix, &shardToRestore)
+
+			// Security: reset shardToRestore immediately after recovery.
+			for i := 0; i < 32; i++ {
+				shardToRestore[i] = 0
+			}
+
+			// TODO: The code assumes exactly 32 bytes for the shard, but doesn't
+			// handle cases where decodedShard might be shorter (though it does check
+			// for length)
 
 			if err != nil {
 				log.FatalLn(err.Error())

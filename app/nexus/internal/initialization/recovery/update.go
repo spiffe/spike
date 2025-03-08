@@ -5,11 +5,11 @@
 package recovery
 
 import (
-	"encoding/base64"
-	"encoding/hex"
 	"encoding/json"
 	"net/url"
+	"strconv"
 
+	"github.com/cloudflare/circl/group"
 	"github.com/cloudflare/circl/secretsharing"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
@@ -22,23 +22,47 @@ import (
 	"github.com/spiffe/spike/internal/net"
 )
 
-func mustUpdateRecoveryInfo(rk string) []secretsharing.Share {
+// mustUpdateRecoveryInfo updates the recovery information by setting a new root
+// key and computing new shares. It returns the computed shares.
+//
+// The function sets the provided root key in the state, computes shares from
+// the root secret, performs a sanity check on the computed shares, and ensures
+// that temporary variables containing sensitive information are zeroed out
+// after use.
+//
+// This is a critical security function that handles sensitive key material.
+//
+// Parameters:
+//   - rk: A pointer to a 32-byte array containing the new root key
+//
+// Returns:
+//   - []secretsharing.Share: The computed shares for the root secret
+func mustUpdateRecoveryInfo(rk *[32]byte) []secretsharing.Share {
 	const fName = "mustUpdateRecoveryInfo"
 	log.Log().Info(fName, "msg", "Updating recovery info")
 
-	decodedRootKey, err := hex.DecodeString(rk)
-	if err != nil {
-		log.FatalLn(fName + ": failed to decode root key: " + err.Error())
-	}
-	rootSecret, rootShares := computeShares(decodedRootKey)
-	sanityCheck(rootSecret, rootShares)
-
 	// Save recovery information.
-	state.SetRootKey(decodedRootKey)
+	state.SetRootKey(rk)
+
+	rootSecret, rootShares := computeShares()
+	sanityCheck(rootSecret, rootShares)
+	// Security: Ensure that temporary variables are zeroed out.
+	defer func() {
+		rootSecret.SetUint64(0)
+	}()
 
 	return rootShares
 }
 
+// sendShardsToKeepers distributes shares of the root key to all keeper nodes.
+// Note that we recompute shares for each keeper rather than computing them once
+// and distributing them. This is safe because:
+//  1. computeShares() uses a deterministic random reader seeded with the
+//     root key
+//  2. Given the same root key, it will always produce identical shares
+//  3. findShare() ensures each keeper receives its designated share
+//     This approach simplifies the code flow and maintains consistency across
+//     potential system restarts or failures.
 func sendShardsToKeepers(
 	source *workloadapi.X509Source, keepers map[string]string,
 ) {
@@ -48,6 +72,14 @@ func sendShardsToKeepers(
 		u, err := url.JoinPath(
 			keeperApiRoot, string(apiUrl.SpikeKeeperUrlContribute),
 		)
+
+		// TODO: The sendShardsToKeepers function continues to the next keeper
+		// on error. This is reasonable, but consider if all keepers must receive
+		// shares for safety.
+		// For example, maybe configuration problems should cause a fatal error
+		// instead of just bypassing the keeper.
+		// Since this is done periodically in `SendShardsPeriodically()`, we
+		// can overlook temporary issues.
 
 		if err != nil {
 			log.Log().Warn(
@@ -67,31 +99,95 @@ func sendShardsToKeepers(
 			continue
 		}
 
-		rk := state.RootKey()
-		if rk == nil {
-			log.Log().Info(fName, "msg", "rootKey is nil; moving on...")
+		if state.RootKeyZero() {
+			log.Log().Info(fName, "msg", "rootKey is zero; moving on...")
 			continue
 		}
 
-		rootSecret, rootShares := computeShares(rk)
-
+		rootSecret, rootShares := computeShares()
 		sanityCheck(rootSecret, rootShares)
 
-		share := findShare(keeperId, keepers, rootShares)
+		var share secretsharing.Share
+
+		for _, sr := range rootShares {
+			kid, err := strconv.Atoi(keeperId)
+			if err != nil {
+				log.Log().Warn(
+					fName, "msg", "Failed to convert keeper id to int", "err", err)
+				continue
+			}
+			if sr.ID.IsEqual(group.P256.NewScalar().SetUint64(uint64(kid))) {
+				share = sr
+				break
+			}
+		}
+
+		if share.ID.IsZero() {
+			log.Log().Warn(fName,
+				"msg", "Failed to find share for keeper", "keeper_id", keeperId)
+			continue
+		}
+
+		rootSecret.SetUint64(0)
+		// Security: Ensure that the rootShares are zeroed out before
+		// the function returns.
+		for i := range rootShares {
+			rootShares[i].Value.SetUint64(0)
+		}
 
 		contribution, err := share.Value.MarshalBinary()
+
+		// Security: Ensure that the share is zeroed out before
+		// the next iteration.
+		share.Value.SetUint64(0)
+
 		if err != nil {
+			// Security: Ensure that the contribution is zeroed out before
+			// the next iteration.
+			for i := range contribution {
+				contribution[i] = 0
+			}
+
 			log.Log().Warn(fName,
 				"msg", "Failed to marshal share",
 				"err", err, "keeper_id", keeperId)
 			continue
 		}
 
-		scr := reqres.ShardContributionRequest{
-			KeeperId: keeperId,
-			Shard:    base64.StdEncoding.EncodeToString(contribution),
+		if len(contribution) != 32 {
+			// Security: Ensure that the contribution is zeroed out before
+			// the next iteration.
+			for i := range contribution {
+				contribution[i] = 0
+			}
+
+			log.Log().Warn(fName,
+				"msg", "invalid contribution length",
+				"len", len(contribution), "keeper_id", keeperId)
+			continue
 		}
+
+		scr := reqres.ShardContributionRequest{}
+
+		// Security: shard is intentionally binary (instead of string) for
+		// better memory management. Do not change its data type.
+		for i, b := range contribution {
+			scr.Shard[i] = b
+		}
+
+		// Security: Ensure that the contribution is zeroed out before
+		// the next iteration.
+		for i := range contribution {
+			contribution[i] = 0
+		}
+
 		md, err := json.Marshal(scr)
+
+		// Security: Erase scr.Shard when no longer in use.
+		for i := range scr.Shard {
+			scr.Shard[i] = 0
+		}
+
 		if err != nil {
 			log.Log().Warn(fName,
 				"msg", "Failed to marshal request",
@@ -100,10 +196,18 @@ func sendShardsToKeepers(
 		}
 
 		_, err = net.Post(client, u, md)
+
+		// Security: Ensure that the md is zeroed out before
+		// the next iteration.
+		for i := range md {
+			md[i] = 0
+		}
+
 		if err != nil {
 			log.Log().Warn(fName, "msg",
 				"Failed to post",
 				"err", err, "keeper_id", keeperId)
+			continue
 		}
 	}
 }

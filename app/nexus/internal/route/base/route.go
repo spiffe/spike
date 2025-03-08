@@ -39,9 +39,7 @@ func Route(
 		url.ApiAction(r.URL.Query().Get(url.KeyApiAction)),
 		r.Method,
 		func(a url.ApiAction, p url.ApiUrl) net.Handler {
-			rk := state.RootKey()
-
-			emptyRootKey := len(rk) == 0
+			emptyRootKey := state.RootKeyZero()
 			emergencyAction := p == url.SpikeNexusUrlOperatorRecover ||
 				p == url.SpikeNexusUrlOperatorRestore
 			if emptyRootKey && !emergencyAction {

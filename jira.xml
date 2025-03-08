@@ -24,6 +24,32 @@
   </purpose>
   <low-hanging-fruits>
     <issue>
+      address todo items inside source code after a release cut.
+
+      Also, things to test before the release cut:
+      1. basic secret creation
+      2. basic secret listing
+      3. nexus crash and recover
+      4. total system crash and recover
+      5. demo application and policy creation
+    </issue>
+    <issue>
+      this should be configurable:
+
+      ctxC, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+      defer cancel()
+    </issue>
+    <issue>
+      Address TODO: items in the source code.
+    </issue>
+    <issue>
+      seed, err := crypto.Aes256Seed()
+
+      create an override function that return a byte slice instead of a string.
+      while at that, we can create a pointer to a byte array too
+      (since the size will be fixed for 256bits anyways)
+    </issue>
+    <issue>
       if crashed and trying to restore (instead of recover)
       you get this:
 
