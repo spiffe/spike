@@ -12,6 +12,11 @@ import (
 	"github.com/spiffe/spike/internal/log"
 )
 
+type ShamirShard struct {
+	ID    uint64
+	Value *[32]byte
+}
+
 // RecoverRootKey reconstructs the original root key from a slice of secret
 // shares. It uses Shamir's Secret Sharing scheme to recover the original
 // secret.
@@ -34,7 +39,9 @@ import (
 //   - The recovery process fails
 //   - The reconstructed key is nil
 //   - The binary representation has an incorrect length
-func RecoverRootKey(ss []*[32]byte) *[32]byte {
+func RecoverRootKey(ss []ShamirShard) *[32]byte {
+	// TODO: update my documentation.
+
 	const fName = "RecoverRootKey"
 
 	g := group.P256
@@ -48,7 +55,7 @@ func RecoverRootKey(ss []*[32]byte) *[32]byte {
 	}()
 
 	// Process all provided shares
-	for i, shareBinary := range ss {
+	for _, shareBinary := range ss {
 		// Create a new share with sequential ID (starting from 1)
 		share := secretsharing.Share{
 			ID:    g.NewScalar(),
@@ -56,10 +63,10 @@ func RecoverRootKey(ss []*[32]byte) *[32]byte {
 		}
 
 		// Set ID (1-indexed)
-		share.ID.SetUint64(uint64(i + 1))
+		share.ID.SetUint64(shareBinary.ID)
 
 		// Unmarshal the binary data
-		err := share.Value.UnmarshalBinary(shareBinary[:])
+		err := share.Value.UnmarshalBinary(shareBinary.Value[:])
 		if err != nil {
 			log.FatalLn(fName + ": Failed to unmarshal share: " + err.Error())
 		}

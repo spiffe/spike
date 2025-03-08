@@ -5,8 +5,6 @@
 package recovery
 
 import (
-	"sort"
-
 	"github.com/cloudflare/circl/group"
 	shamir "github.com/cloudflare/circl/secretsharing"
 	"github.com/spiffe/spike-sdk-go/crypto"
@@ -72,36 +70,6 @@ func computeShares() (group.Scalar, []shamir.Share) {
 	ss := shamir.New(reader, t, secret)
 
 	// secret is a pointer type; ss.Share(n) is a slice
+	// shares will have monotonically increasing IDs, starting from 1.
 	return secret, ss.Share(n)
-}
-
-func findShare(id string, keepers map[string]string,
-	shares []shamir.Share,
-) *shamir.Share {
-	// Each keeper needs to be mapped to a unique shard.
-	// We sort the keeper ids; so same-indexed shards will be sent
-	// to their appropriate keeper instances.
-	sortedKeys := make([]string, 0, len(keepers))
-	for k := range keepers {
-		sortedKeys = append(sortedKeys, k)
-	}
-	sort.Strings(sortedKeys)
-
-	matchingIndex := -1
-	for i, key := range sortedKeys {
-		if key == id {
-			matchingIndex = i
-			break
-		}
-	}
-
-	if matchingIndex == -1 {
-		return nil
-	}
-
-	if matchingIndex < 0 || matchingIndex >= len(shares) {
-		return nil
-	}
-
-	return &shares[matchingIndex]
 }

@@ -61,6 +61,7 @@ func RouteRecover(
 		return errors.ErrParseFailure
 	}
 
+	// TODO: do I need more sanitization here?
 	err := guardRecoverRequest(*request, w, r)
 	if err != nil {
 		return err
@@ -74,31 +75,25 @@ func RouteRecover(
 				shards[i][j] = 0
 			}
 		}
-		shards = shards[:0]
 	}()
 
 	if len(shards) < env.ShamirThreshold() {
 		return errors.ErrNotFound
 	}
 
-	payload := shards[:env.ShamirThreshold()]
-
-	var ss [][32]byte
-	for i := range payload {
-		p := *payload[i]
-		ss = append(ss, p)
+	payload := make(map[int]*[32]byte)
+	for i := range shards {
+		payload[i] = shards[i]
 	}
-	// Security: Clean up interim slice before the function exits.
+	// Security: Clean up the payload before exiting the function.
 	defer func() {
-		for i := range ss {
-			for j := range ss[i][:] {
-				ss[i][j] = 0
-			}
+		for i := range payload {
+			payload[i] = &[32]byte{}
 		}
 	}()
 
 	responseBody := net.MarshalBody(reqres.RecoverResponse{
-		Shards: ss,
+		Shards: payload,
 	}, w)
 	// Security: Clean up response body before exit.
 	defer func() {

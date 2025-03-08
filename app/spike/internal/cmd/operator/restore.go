@@ -117,7 +117,12 @@ func newOperatorRestoreCommand(
 				decodedShard[i] = 0
 			}
 
-			status, err := api.Restore(&ss)
+			// TODO: sanitize data before attempting restoration
+
+			// TODO: sanitize data before attempting save too. (the decoded version should be 32 bytes)
+
+			// TODO parse index from `spike:recovery:$index` and send to the restore request.
+			status, err := api.Restore(0, &ss)
 
 			// Security: reset ss immediately after recovery.
 			for i := 0; i < 32; i++ {

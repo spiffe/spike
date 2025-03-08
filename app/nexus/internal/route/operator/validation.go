@@ -21,7 +21,7 @@ func validateShard(shard *[32]byte) error {
 
 		// Check each byte - if any byte differs, it's not a duplicate
 		for i := range shard {
-			if existingShard[i] != shard[i] {
+			if existingShard.Value[i] != shard[i] {
 				isDuplicate = false
 				break
 			}

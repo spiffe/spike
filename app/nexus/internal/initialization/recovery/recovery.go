@@ -9,11 +9,11 @@ import (
 	"crypto/rand"
 	"errors"
 	"fmt"
-	"time"
-
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	"github.com/spiffe/spike-sdk-go/retry"
 	"github.com/spiffe/spike-sdk-go/spiffe"
+	"math/big"
+	"time"
 
 	"github.com/spiffe/spike/app/nexus/internal/env"
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
@@ -149,7 +149,7 @@ func HydrateMemoryFromBackingStore() {
 // It will return early with an error log if:
 //   - There are insufficient shards to meet the threshold
 //   - The SPIFFE source cannot be created
-func RestoreBackingStoreUsingPilotShards(shards []*[32]byte) {
+func RestoreBackingStoreUsingPilotShards(shards []ShamirShard) {
 	const fName = "RestoreBackingStoreUsingPilotShards"
 
 	// Ensure we have at least the threshold number of shards
@@ -249,12 +249,12 @@ func SendShardsPeriodically(source *workloadapi.X509Source) {
 //	    // Store each shard securely
 //	    storeShard(shard)
 //	}
-func NewPilotRecoveryShards() []*[32]byte {
+func NewPilotRecoveryShards() map[int]*[32]byte {
 	const fName = "NewPilotRecoveryShards"
 	log.Log().Info(fName, "msg", "Generating pilot recovery shards")
 
 	if state.RootKeyZero() {
-		return []*[32]byte{}
+		return nil
 	}
 
 	rootSecret, rootShares := computeShares()
@@ -267,18 +267,27 @@ func NewPilotRecoveryShards() []*[32]byte {
 		}
 	}()
 
-	result := make([]*[32]byte, 0, len(rootShares))
+	var result = make(map[int]*[32]byte)
+
 	for _, share := range rootShares {
-		contribution, err := share.Value.MarshalBinary()
-		if err != nil {
-			continue
-		}
-		var shard [32]byte
-		for i := range shard {
-			shard[i] = contribution[i]
-		}
-		result = append(result, &shard)
+		contribution, _ := share.Value.MarshalBinary()
+		// TODO: error check.
+		var bb []byte
+		// TODO: error check.
+		_ = share.ID.UnmarshalBinary(bb)
+
+		bigInt := new(big.Int).SetBytes(bb)
+
+		ii := bigInt.Uint64()
+
+		// TODO: length check since
+
+		var fizz [32]byte
+		copy(fizz[:], contribution)
+
+		result[int(ii)] = &fizz
 	}
+
 	return result
 }
 
@@ -331,7 +340,7 @@ func BootstrapBackingStoreWithNewRootKey(source *workloadapi.X509Source) {
 		log.Fatal(err.Error())
 	}
 
-	fmt.Println("state initalize from seed.")
+	fmt.Println("state initialize from seed.")
 	state.Initialize(&seed)
 	log.Log().Info(fName, "msg", "Initialized the backing store")
 

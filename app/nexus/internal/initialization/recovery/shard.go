@@ -6,7 +6,9 @@ package recovery
 
 import (
 	"encoding/json"
+	"github.com/cloudflare/circl/group"
 	"net/url"
+	"strconv"
 
 	"github.com/cloudflare/circl/secretsharing"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
@@ -102,9 +104,21 @@ func shardContributionResponse(
 		return []byte{}
 	}
 
+	var share secretsharing.Share
+
+	for _, sr := range rootShares {
+		// TODO: handle error.
+		kid, _ := strconv.Atoi(keeperId)
+		if sr.ID.IsEqual(group.P256.NewScalar().SetUint64(uint64(kid))) {
+			share = sr
+			break
+		}
+	}
+
+	// TODO: nil check for share.
+
 	// Do not zero-out `share` you don't own it;
 	// Also, rootShares is zeroed out elsewhere.
-	share := findShare(keeperId, keepers, rootShares)
 
 	contribution, err := share.Value.MarshalBinary()
 	// Security: Ensure that the share is zeroed out before the function returns.
@@ -147,8 +161,9 @@ func shardContributionResponse(
 	}()
 
 	scr := reqres.ShardContributionRequest{
+		// TODO: no need for keeper id
 		KeeperId: keeperId,
-		Shard:    c,
+		Shard:    &c,
 	}
 	// Security: Ensure that struct field is zeroed out before the function
 	// exits.

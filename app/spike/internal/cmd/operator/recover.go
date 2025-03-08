@@ -76,7 +76,7 @@ func newOperatorRecoverCommand(
 			shards, err := api.Recover()
 			// Security: clean the shards when we no longer need them.
 			defer func() {
-				for _, shard := range *shards {
+				for _, shard := range shards {
 					for i := 0; i < len(shard); i++ {
 						shard[i] = 0
 					}
@@ -127,11 +127,15 @@ func newOperatorRecoverCommand(
 			}
 
 			// Save each shard to a file
-			for i, shard := range *shards {
+			for i, shard := range shards {
 				filePath := fmt.Sprintf("%s/spike.recovery.%d.txt", recoverDir, i+1)
 
 				ss := shard[:]
 				encodedShard := base64.StdEncoding.EncodeToString(ss)
+
+				// TODO: prefix with `spike:recovery:$index:`
+				// TODO: need to parse the index when sending to the consumer too.
+
 				// 0600 to be more restrictive.
 				err := os.WriteFile(filePath, []byte(encodedShard), 0600)
 				if err != nil {

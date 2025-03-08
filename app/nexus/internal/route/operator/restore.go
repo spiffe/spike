@@ -19,7 +19,7 @@ import (
 )
 
 var (
-	shards      []*[32]byte
+	shards      []recovery.ShamirShard
 	shardsMutex sync.RWMutex
 )
 
@@ -102,7 +102,7 @@ func RouteRestore(
 	}
 
 	// Validate the new shard
-	if err := validateShard(&request.Shard); err != nil {
+	if err := validateShard(request.Shard); err != nil {
 		responseBody := net.MarshalBody(reqres.RestoreResponse{
 			RestorationStatus: data.RestorationStatus{
 				ShardsCollected: currentShardCount,
@@ -120,7 +120,13 @@ func RouteRestore(
 
 	shardsMutex.Lock()
 
-	shards = append(shards, &request.Shard)
+	// TODO: maybe sanitization.
+
+	shards = append(shards, recovery.ShamirShard{
+		ID:    uint64(request.Id),
+		Value: request.Shard,
+	})
+
 	currentShardCount = len(shards)
 
 	// Security: Reset the field when no longer needed.
@@ -135,8 +141,8 @@ func RouteRestore(
 		recovery.RestoreBackingStoreUsingPilotShards(shards)
 		// Security: Zero out all shards since we have finished restoration:
 		for i := range shards {
-			for j := range shards[i][:] {
-				shards[i][j] = 0
+			for j := range shards[i].Value {
+				shards[i].Value[j] = 0
 			}
 		}
 	}

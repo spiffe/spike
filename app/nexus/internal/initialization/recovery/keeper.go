@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"net/url"
 	"os"
+	"strconv"
 
 	"github.com/cloudflare/circl/secretsharing"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
@@ -129,7 +130,7 @@ func iterateKeepersAndTryRecovery(
 			continue
 		}
 
-		successfulKeeperShards[keeperId] = &res.Shard
+		successfulKeeperShards[keeperId] = res.Shard
 		if len(successfulKeeperShards) != env.ShamirThreshold() {
 			continue
 		}
@@ -138,9 +139,19 @@ func iterateKeepersAndTryRecovery(
 		// `RecoverBackingStoreUsingKeeperShards()` resets `successfulKeeperShards`
 		// which points to the same shards here. And until recovery, we will keep
 		// a threshold number of shards in memory.
-		ss := make([]*[32]byte, 0)
-		for _, shard := range successfulKeeperShards {
-			ss = append(ss, shard)
+		ss := make([]ShamirShard, 0)
+		for ix, shard := range successfulKeeperShards {
+			id, err := strconv.Atoi(ix)
+			if err != nil {
+				// TODO: maybe fatal
+				log.Log().Info(fName, "msg", "Failed to convert keeper ID to int", "err", err)
+				continue
+			}
+
+			ss = append(ss, ShamirShard{
+				ID:    uint64(id),
+				Value: shard,
+			})
 		}
 
 		binaryRec := RecoverRootKey(ss)

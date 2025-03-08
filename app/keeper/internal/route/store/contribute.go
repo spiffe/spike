@@ -93,7 +93,7 @@ func RouteContribute(
 		return errors.ErrInvalidInput
 	}
 
-	state.SetShard(&shard)
+	state.SetShard(shard)
 	log.Log().Info(fName, "msg", "Shard stored", "id", id)
 
 	responseBody := net.MarshalBody(reqres.ShardContributionResponse{}, w)

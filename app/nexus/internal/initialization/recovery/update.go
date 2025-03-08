@@ -6,7 +6,9 @@ package recovery
 
 import (
 	"encoding/json"
+	"github.com/cloudflare/circl/group"
 	"net/url"
+	"strconv"
 
 	"github.com/cloudflare/circl/secretsharing"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
@@ -97,7 +99,20 @@ func sendShardsToKeepers(
 		rootSecret, rootShares := computeShares()
 		sanityCheck(rootSecret, rootShares)
 
-		share := findShare(keeperId, keepers, rootShares)
+		var share secretsharing.Share
+
+		for _, sr := range rootShares {
+			// TODO: handle error.
+			kid, _ := strconv.Atoi(keeperId)
+			if sr.ID.IsEqual(group.P256.NewScalar().SetUint64(uint64(kid))) {
+				share = sr
+				break
+			}
+		}
+
+		// TODO: nil check for share.
+
+		//.share := findShare(keeperId, keepers, rootShares)
 
 		rootSecret.SetUint64(0)
 		// Security: Ensure that the rootShares are zeroed out before
@@ -139,6 +154,7 @@ func sendShardsToKeepers(
 		}
 
 		scr := reqres.ShardContributionRequest{
+			// TODO: we don't need keeper id for this request.
 			KeeperId: keeperId,
 		}
 
