@@ -16,7 +16,7 @@ import (
 	"github.com/spiffe/spike/app/nexus/internal/state/backend/sqlite/ddl"
 )
 
-// DeletePolicy removes a policy from the database by its Id.
+// DeletePolicy removes a policy from the database by its ID.
 //
 // Uses serializable transaction isolation to ensure consistency.
 // Automatically rolls back on error.
@@ -67,7 +67,7 @@ func (s *DataStore) DeletePolicy(ctx context.Context, id string) error {
 //
 // Parameters:
 //   - ctx: Context for the database operation
-//   - policy: Policy data to store, containing Id, name, patterns, and creation
+//   - policy: Policy data to store, containing ID, name, patterns, and creation
 //     time
 //
 // Returns error if:
@@ -113,7 +113,7 @@ func (s *DataStore) StorePolicy(ctx context.Context, policy data.Policy) error {
 
 // LoadPolicy retrieves a policy from the database and compiles its patterns.
 //
-// The function loads policy data and compiles regex patterns for SPIFFE Id
+// The function loads policy data and compiles regex patterns for SPIFFE ID
 // and path matching if they aren't wildcards (*).
 //
 // Parameters:
@@ -130,7 +130,7 @@ func (s *DataStore) LoadPolicy(
 	defer s.mu.RUnlock()
 
 	var policy data.Policy
-	policy.Id = id // Set the Id since we queried with it
+	policy.Id = id // Set the ID since we queried with it
 
 	err := s.db.QueryRowContext(ctx, ddl.QueryLoadPolicy, id).Scan(
 		&policy.Name,

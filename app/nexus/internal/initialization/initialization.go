@@ -6,6 +6,7 @@ package initialization
 
 import (
 	"crypto/rand"
+
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 
 	"github.com/spiffe/spike/app/nexus/internal/env"
@@ -56,7 +57,8 @@ func Initialize(source *workloadapi.X509Source) {
 		// If it is borrowing an item by reference, it must not zero-out the item
 		// and let the owner zero-out the item.
 		//
-		// For example, `seed` should be reset here, but not in `state.Initialize()`.
+		// For example, `seed` should be reset here,
+		// but not in `state.Initialize()`.
 		for i := range seed {
 			seed[i] = 0
 		}

@@ -69,7 +69,7 @@ func (s *NoopStore) StorePolicy(_ context.Context, _ data.Policy) error {
 	return nil
 }
 
-// LoadPolicy retrieves a policy from the kv by its Id.
+// LoadPolicy retrieves a policy from the kv by its ID.
 // This implementation always returns nil and nil error.
 func (s *NoopStore) LoadPolicy(
 	_ context.Context, _ string,
@@ -77,7 +77,7 @@ func (s *NoopStore) LoadPolicy(
 	return nil, nil
 }
 
-// DeletePolicy removes a policy from the no-op kv by its Id.
+// DeletePolicy removes a policy from the no-op kv by its ID.
 // This implementation is a no-op and always returns nil.
 func (s *NoopStore) DeletePolicy(_ context.Context, _ string) error {
 	return nil

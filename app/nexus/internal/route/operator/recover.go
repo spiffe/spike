@@ -81,6 +81,10 @@ func RouteRecover(
 		return errors.ErrNotFound
 	}
 
+	// TODO: verify the quality and validity of shards before sending them out.
+	// TODO:  The function passes shards directly to the response without
+	// explicit validation of their format or content
+
 	responseBody := net.MarshalBody(reqres.RecoverResponse{
 		Shards: shards,
 	}, w)

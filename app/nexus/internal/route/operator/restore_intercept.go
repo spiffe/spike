@@ -19,6 +19,8 @@ import (
 func guardRestoreRequest(
 	_ reqres.RestoreRequest, w http.ResponseWriter, r *http.Request,
 ) error {
+	// TODO: validate id; validate shard of RestoreRequest
+
 	spiffeid, err := spiffe.IdFromRequest(r)
 	if err != nil {
 		responseBody := net.MarshalBody(reqres.RestoreResponse{

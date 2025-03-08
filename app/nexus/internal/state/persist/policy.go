@@ -23,7 +23,7 @@ import (
 //
 // Skips operation if:
 //   - Backend is unavailable
-//   - Policy Id is empty
+//   - Policy ID is empty
 func StorePolicy(policy data.Policy) {
 	const fName = "storePolicy"
 
@@ -57,7 +57,7 @@ func StorePolicy(policy data.Policy) {
 // operation.
 //
 // Parameters:
-//   - id: Policy Id to remove from cache
+//   - id: Policy ID to remove from cache
 //
 // Skips operation if:
 //   - Backend is unavailable
@@ -93,7 +93,7 @@ func DeletePolicy(id string) {
 // ReadPolicy retrieves a policy from the cache with retries.
 //
 // Parameters:
-//   - id: Policy Id to retrieve
+//   - id: Policy ID to retrieve
 //
 // Returns:
 //   - *data.Policy: Retrieved policy, nil if not found or on error

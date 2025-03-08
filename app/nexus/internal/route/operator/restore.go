@@ -101,6 +101,9 @@ func RouteRestore(
 		return nil
 	}
 
+	// TODO: do we need validation for request.Id too?
+	// if request.Id < 1 || request.Id > maxValidShardID etc.
+
 	// Validate the new shard
 	if err := validateShard(request.Shard); err != nil {
 		responseBody := net.MarshalBody(reqres.RestoreResponse{
@@ -134,6 +137,7 @@ func RouteRestore(
 		for i := range request.Shard {
 			request.Shard[i] = 0
 		}
+		request.Id = 0
 	}()
 
 	// Trigger restoration if we have collected all shards

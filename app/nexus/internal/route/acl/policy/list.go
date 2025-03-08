@@ -18,7 +18,7 @@ import (
 
 // RouteListPolicies handles HTTP requests to retrieve all existing policies.
 // It returns a list of all policies in the system, including their IDs, names,
-// SPIFFE Id patterns, path patterns, and permissions.
+// SPIFFE ID patterns, path patterns, and permissions.
 //
 // The function expects an empty JSON request body ({}) and returns an array
 // of policy objects.

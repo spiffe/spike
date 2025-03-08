@@ -73,6 +73,14 @@ func sendShardsToKeepers(
 			keeperApiRoot, string(apiUrl.SpikeKeeperUrlContribute),
 		)
 
+		// TODO: The sendShardsToKeepers function continues to the next keeper
+		// on error. This is reasonable, but consider if all keepers must receive
+		// shares for safety.
+		// For example, maybe configuration problems should cause a fatal error
+		// instead of just bypassing the keeper.
+		// Since this is done periodically in `SendShardsPeriodically()`, we
+		// can overlook temporary issues.
+
 		if err != nil {
 			log.Log().Warn(
 				fName, "msg", "Failed to join path", "url", keeperApiRoot,

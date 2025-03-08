@@ -33,17 +33,6 @@ var (
 	rootKeyMu sync.RWMutex
 )
 
-// RootKey returns a pointer to the root key with read locking.
-// The caller must not modify the returned value.
-//
-// Returns:
-//   - *[32]byte: Pointer to the root key
-func RootKey() *[32]byte {
-	rootKeyMu.RLock()
-	defer rootKeyMu.RUnlock()
-	return &rootKey
-}
-
 // RootKeyNoLock returns a copy of the root key without acquiring the lock.
 // This should only be used in contexts where the lock is already held
 // or thread safety is managed externally.

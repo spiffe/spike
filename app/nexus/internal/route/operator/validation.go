@@ -10,6 +10,15 @@ import (
 
 // validateShard checks if the shard is valid and not duplicate
 func validateShard(shard *[32]byte) error {
+	// TODO: in a valid Shamir Secret Sharing scheme, what matters is both the
+	// shard ID and its value.
+	// Two different shards (with different IDs) could legitimately have the same
+	// value in some cases. Similarly, an attacker could submit the same value
+	// with different claimed IDs to potentially manipulate the reconstruction.
+	// TODO: first check for dupe id (most common)
+	// TODO: then check for the content duplicity.
+	// TODO: additionally ensure that shard is not all zeroes
+
 	// Check if shard is already stored
 	shardsMutex.RLock()
 	defer shardsMutex.RUnlock() // Ensure lock is always released

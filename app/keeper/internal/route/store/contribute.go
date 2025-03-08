@@ -66,6 +66,22 @@ func RouteContribute(
 	if request == nil {
 		return errors.ErrParseFailure
 	}
+	if request.Shard == nil {
+		responseBody := net.MarshalBody(reqres.ShardContributionResponse{
+			Err: data.ErrBadInput,
+		}, w)
+		net.Respond(http.StatusBadRequest, responseBody, w)
+
+		return errors.ErrInvalidInput
+	}
+	if request.KeeperId == "" {
+		responseBody := net.MarshalBody(reqres.ShardContributionResponse{
+			Err: data.ErrBadInput,
+		}, w)
+		net.Respond(http.StatusBadRequest, responseBody, w)
+
+		return errors.ErrInvalidInput
+	}
 
 	// Security: Zero out shard before the function exits.
 	// [1]
@@ -75,6 +91,9 @@ func RouteContribute(
 		}
 	}()
 
+	// Ensure the client didn't send an array of all zeros, which would
+	// indicate invalid input. Since Shard is a fixed-length array in the request,
+	// clients must send meaningful non-zero data.
 	zeroed := true
 	for _, c := range request.Shard {
 		if c != 0 {

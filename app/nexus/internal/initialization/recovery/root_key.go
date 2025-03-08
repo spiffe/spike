@@ -80,16 +80,33 @@ func RecoverRootKey(ss []ShamirShard) *[32]byte {
 	threshold := env.ShamirThreshold()
 	reconstructed, err := secretsharing.Recover(uint(threshold-1), shares)
 	if err != nil {
+		// Security: reset shares.
+		// defer won't get called since log.Fatalln terminates the program.
+		for _, s := range shares {
+			s.ID.SetUint64(0)
+			s.Value.SetUint64(0)
+		}
+
 		log.FatalLn(fName + ": Failed to recover: " + err.Error())
 	}
 
 	if reconstructed == nil {
+		// Security: reset shares.
+		// defer won't get called since log.Fatalln terminates the program.
+		for _, s := range shares {
+			s.ID.SetUint64(0)
+			s.Value.SetUint64(0)
+		}
+
 		log.FatalLn(fName + ": Failed to reconstruct the root key")
 	}
 
 	if reconstructed != nil {
 		binaryRec, err := reconstructed.MarshalBinary()
 		if err != nil {
+			// Security: Zero out:
+			reconstructed.SetUint64(0)
+
 			log.FatalLn(fName + ": Failed to marshal: " + err.Error())
 			return &[32]byte{}
 		}

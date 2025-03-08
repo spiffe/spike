@@ -42,28 +42,37 @@ func iterateKeepersToBootstrap(
 		var share secretsharing.Share
 
 		for _, sr := range rootShares {
-			// TODO: handle error.
-			kid, _ := strconv.Atoi(keeperId)
+			kid, err := strconv.Atoi(keeperId)
+			if err != nil {
+				log.Log().Warn(
+					fName, "msg", "Failed to convert keeper id to int", "err", err)
+				continue
+			}
+
 			if sr.ID.IsEqual(group.P256.NewScalar().SetUint64(uint64(kid))) {
 				share = sr
 				break
 			}
 		}
 
+		// If initialized, IDs start from 1. Zero means there is no match.
 		if share.ID.IsZero() {
-			log.Log().Info(fName, "msg", "Failed to find share for keeper", "keeper_id", keeperId)
+			log.Log().Info(fName, "msg",
+				"Failed to find share for keeper", "keeper_id", keeperId)
 			continue
 		}
 
 		contribution, err := share.Value.MarshalBinary()
 		if err != nil {
-			log.Log().Info(fName, "msg", "Failed to marshal share", "err", err, "keeper_id", keeperId)
+			log.Log().Info(fName, "msg",
+				"Failed to marshal share", "err", err, "keeper_id", keeperId)
 			continue
 		}
 
 		data := shardContributionResponse(u, contribution, source)
 		if len(data) == 0 {
-			// Security: Ensure that the share is zeroed out before the function returns.
+			// Security: Ensure that the share is zeroed out
+			// before the function returns.
 			for i := range contribution {
 				contribution[i] = 0
 			}
@@ -71,7 +80,8 @@ func iterateKeepersToBootstrap(
 			log.Log().Info(fName, "msg", "No data; moving on...")
 			continue
 		}
-		// Security: Ensure that the share is zeroed out before the function returns.
+		// Security: Ensure that the share is zeroed out
+		// before the function returns.
 		for i := range contribution {
 			contribution[i] = 0
 		}

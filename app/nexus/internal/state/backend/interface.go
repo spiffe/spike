@@ -50,7 +50,7 @@ type Backend interface {
 	// StorePolicy stores a policy object in the backend storage.
 	StorePolicy(ctx context.Context, policy data.Policy) error
 
-	// LoadPolicy retrieves a policy by its Id from the backend storage.
+	// LoadPolicy retrieves a policy by its ID from the backend storage.
 	// It returns the policy object and an error, if any.
 	LoadPolicy(ctx context.Context, id string) (*data.Policy, error)
 

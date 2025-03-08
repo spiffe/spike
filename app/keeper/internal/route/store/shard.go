@@ -43,7 +43,7 @@ func RouteShard(
 	w http.ResponseWriter, r *http.Request, audit *log.AuditEntry,
 ) error {
 	const fName = "routeShard"
-	log.AuditRequest(fName, r, audit, log.AuditCreate)
+	log.AuditRequest(fName, r, audit, log.AuditRead)
 
 	requestBody := net.ReadRequestBody(w, r)
 	if requestBody == nil {

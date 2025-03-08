@@ -48,8 +48,6 @@ func (s *DataStore) Initialize(ctx context.Context) error {
 			s.Opts.JournalMode,
 			s.Opts.BusyTimeoutMs))
 	if err != nil {
-		fmt.Printf("failed to open database: %v\n", err)
-
 		return fmt.Errorf("failed to open database: %w", err)
 	}
 

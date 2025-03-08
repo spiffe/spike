@@ -110,6 +110,7 @@ func shardContributionResponse(
 		return []byte{}
 	}
 
+	// TODO: size validation for contribution to avoid buffer overflow.
 	var c [32]byte
 	for i, b := range contribution {
 		c[i] = b
@@ -140,6 +141,12 @@ func shardContributionResponse(
 			"err", err)
 		return []byte{}
 	}
+	// Security: Ensure that the md is zeroed out before the function exits.
+	defer func() {
+		for i := range md {
+			md[i] = 0
+		}
+	}()
 
 	data, err := net.Post(client, u, md)
 	if err != nil {
@@ -147,12 +154,6 @@ func shardContributionResponse(
 			"Failed to post",
 			"err", err)
 	}
-	// Security: Ensure that the md is zeroed out before the function exits.
-	defer func() {
-		for i := range md {
-			md[i] = 0
-		}
-	}()
 
 	if len(data) == 0 {
 		log.Log().Info(fName, "msg", "No data")

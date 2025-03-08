@@ -12,9 +12,9 @@ import (
 	"github.com/spiffe/spike/internal/log"
 )
 
-// Authenticate validates the SPIFFE Id.
+// Authenticate validates the SPIFFE ID.
 func Authenticate(spiffeid string) {
 	if !auth.IsNexus(spiffeid) {
-		log.FatalF("Authenticate: SPIFFE Id %s is not valid.\n", spiffeid)
+		log.FatalF("Authenticate: SPIFFE ID %s is not valid.\n", spiffeid)
 	}
 }

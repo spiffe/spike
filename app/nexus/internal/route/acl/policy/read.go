@@ -17,7 +17,7 @@ import (
 	"github.com/spiffe/spike/internal/net"
 )
 
-// RouteGetPolicy handles HTTP requests to retrieve a specific policy by its Id.
+// RouteGetPolicy handles HTTP requests to retrieve a specific policy by its ID.
 // It processes the request body to fetch detailed information about a single
 // policy.
 //
@@ -30,7 +30,7 @@ import (
 //
 // Parameters:
 //   - w: HTTP response writer for sending the response
-//   - r: HTTP request containing the policy Id to retrieve
+//   - r: HTTP request containing the policy ID to retrieve
 //   - audit: Audit entry for logging the policy read action
 //
 // Returns:

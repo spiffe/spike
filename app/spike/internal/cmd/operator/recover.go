@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -100,6 +101,8 @@ func newOperatorRecoverCommand(
 
 			recoverDir := config.SpikePilotRecoveryFolder()
 
+			// TODO: sanitize recoverDir and ensure it does not contain path traversal sequences.
+
 			// Ensure the recover directory is clean by
 			// deleting any existing recovery files.
 			// We are NOT warning the user about this operation because
@@ -126,6 +129,10 @@ func newOperatorRecoverCommand(
 				}
 			}
 
+			// TODO: add entropy validation for shards.
+
+			// TODO: add logic to create recovery directory if it does not exist.
+
 			// Save each shard to a file
 			for i, shard := range shards {
 				filePath := fmt.Sprintf("%s/spike.recovery.%d.txt", recoverDir, i)
@@ -137,6 +144,12 @@ func newOperatorRecoverCommand(
 
 				// 0600 to be more restrictive.
 				err := os.WriteFile(filePath, []byte(out), 0600)
+
+				// Security: Hint gc to reclaim memory.
+				encodedShard = ""
+				out = ""
+				runtime.GC()
+
 				if err != nil {
 					fmt.Printf("Failed to save shard %d: %s\n", i, err.Error())
 				}
