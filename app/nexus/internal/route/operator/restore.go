@@ -123,7 +123,7 @@ func RouteRestore(
 	// TODO: maybe sanitization.
 
 	shards = append(shards, recovery.ShamirShard{
-		ID:    uint64(request.Id),
+		Id:    uint64(request.Id),
 		Value: request.Shard,
 	})
 

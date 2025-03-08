@@ -89,14 +89,14 @@ func newOperatorRestoreCommand(
 
 			api := spike.NewWithSource(source)
 
-			var ss [32]byte
+			var shardToRestore [32]byte
 
 			// shard is in `spike:$id:$base64` format
-			// split it by :
-
 			shardParts := strings.SplitN(string(shard), ":", 3)
 			if len(shardParts) != 3 {
-				log.FatalLn("Invalid shard format. Expected format: `spike:$id:$secret`.")
+				log.FatalLn(
+					"Invalid shard format. Expected format: `spike:$id:$secret`.",
+				)
 			}
 
 			index := shardParts[1]
@@ -122,7 +122,7 @@ func newOperatorRestoreCommand(
 			}
 
 			for i := 0; i < 32; i++ {
-				ss[i] = decodedShard[i]
+				shardToRestore[i] = decodedShard[i]
 			}
 
 			// Security: reset decodedShard immediately after use.
@@ -130,19 +130,16 @@ func newOperatorRestoreCommand(
 				decodedShard[i] = 0
 			}
 
-			// TODO: sanitize data before attempting restoration
+			ix, err := strconv.Atoi(index)
+			if err != nil {
+				log.FatalLn("Invalid shard index: ", err.Error())
+			}
 
-			// TODO: sanitize data before attempting save too. (the decoded version should be 32 bytes)
+			status, err := api.Restore(ix, &shardToRestore)
 
-			// TODO parse index from `spike::$index:` and send to the restore request.
-			// TODO: handle error.
-			ix, _ := strconv.Atoi(index)
-
-			status, err := api.Restore(ix, &ss)
-
-			// Security: reset ss immediately after recovery.
+			// Security: reset shardToRestore immediately after recovery.
 			for i := 0; i < 32; i++ {
-				ss[i] = 0
+				shardToRestore[i] = 0
 			}
 
 			if err != nil {

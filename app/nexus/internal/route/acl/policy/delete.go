@@ -17,7 +17,7 @@ import (
 )
 
 // RouteDeletePolicy handles HTTP DELETE requests to remove existing policies.
-// It processes the request body to delete a policy specified by its ID.
+// It processes the request body to delete a policy specified by its Id.
 //
 // The function expects a JSON request body containing:
 //   - Id: unique identifier of the policy to delete
@@ -27,7 +27,7 @@ import (
 //
 // Parameters:
 //   - w: HTTP response writer for sending the response
-//   - r: HTTP request containing the policy ID to delete
+//   - r: HTTP request containing the policy Id to delete
 //   - audit: Audit entry for logging the policy deletion action
 //
 // Returns:

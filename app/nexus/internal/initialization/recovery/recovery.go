@@ -9,11 +9,12 @@ import (
 	"crypto/rand"
 	"errors"
 	"fmt"
+	"time"
+
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	"github.com/spiffe/spike-sdk-go/retry"
 	"github.com/spiffe/spike-sdk-go/spiffe"
 	"math/big"
-	"time"
 
 	"github.com/spiffe/spike/app/nexus/internal/env"
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
@@ -53,7 +54,7 @@ func RecoverBackingStoreUsingKeeperShards(source *workloadapi.X509Source) {
 	successfulKeeperShards := make(map[string]*[32]byte)
 	// Security: Ensure the shards are zeroed out after use.
 	defer func() {
-		fmt.Println("RESETTING RESETTING RESETTING successfulKeeperShards")
+		log.Log().Info(fName, "msg", "Resetting successfulKeeperShards")
 		for id := range successfulKeeperShards {
 			for j := range successfulKeeperShards[id] {
 				successfulKeeperShards[id][j] = 0
@@ -168,7 +169,7 @@ func RestoreBackingStoreUsingPilotShards(shards []ShamirShard) {
 		}
 	}()
 
-	fmt.Println("state initalize from pilot shards")
+	log.Log().Info(fName, "msg", "Initializing state and root key")
 	state.Initialize(binaryRec)
 	state.SetRootKey(binaryRec)
 
@@ -270,22 +271,33 @@ func NewPilotRecoveryShards() map[int]*[32]byte {
 	var result = make(map[int]*[32]byte)
 
 	for _, share := range rootShares {
-		contribution, _ := share.Value.MarshalBinary()
-		// TODO: error check.
+		contribution, err := share.Value.MarshalBinary()
+		if err != nil {
+			log.Log().Error(fName, "msg", "Failed to marshal share")
+			return nil
+		}
+
+		if len(contribution) != 32 {
+			log.Log().Error(fName, "msg", "Length of share is unexpected")
+			return nil
+		}
+
 		var bb []byte
-		// TODO: error check.
-		_ = share.ID.UnmarshalBinary(bb)
+		err = share.ID.UnmarshalBinary(bb)
+		if err != nil {
+			log.Log().Error(fName, "msg", "Failed to unmarshal share Id")
+			return nil
+		}
 
 		bigInt := new(big.Int).SetBytes(bb)
-
 		ii := bigInt.Uint64()
 
 		// TODO: length check since
 
-		var fizz [32]byte
-		copy(fizz[:], contribution)
+		var rs [32]byte
+		copy(rs[:], contribution)
 
-		result[int(ii)] = &fizz
+		result[int(ii)] = &rs
 	}
 
 	return result

@@ -81,19 +81,8 @@ func RouteRecover(
 		return errors.ErrNotFound
 	}
 
-	payload := make(map[int]*[32]byte)
-	for i := range shards {
-		payload[i] = shards[i]
-	}
-	// Security: Clean up the payload before exiting the function.
-	defer func() {
-		for i := range payload {
-			payload[i] = &[32]byte{}
-		}
-	}()
-
 	responseBody := net.MarshalBody(reqres.RecoverResponse{
-		Shards: payload,
+		Shards: shards,
 	}, w)
 	// Security: Clean up response body before exit.
 	defer func() {

@@ -84,13 +84,13 @@ ON CONFLICT(id) DO UPDATE SET
     path_pattern = excluded.path_pattern
 `
 
-// QueryDeletePolicy defines the SQL statement to delete a policy by its ID.
+// QueryDeletePolicy defines the SQL statement to delete a policy by its Id.
 const QueryDeletePolicy = `
 DELETE FROM policies 
 WHERE id = ?
 `
 
-// QueryLoadPolicy is a SQL query to select policy details by ID.
+// QueryLoadPolicy is a SQL query to select policy details by Id.
 const QueryLoadPolicy = `
 SELECT name, spiffe_id_pattern, path_pattern, created_time 
 FROM policies 

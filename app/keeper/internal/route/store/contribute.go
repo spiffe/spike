@@ -67,17 +67,16 @@ func RouteContribute(
 		return errors.ErrParseFailure
 	}
 
-	shard := request.Shard
-	id := request.KeeperId
 	// Security: Zero out shard before the function exits.
+	// [1]
 	defer func() {
-		for i := 0; i < len(shard); i++ {
-			shard[i] = 0
+		for i := 0; i < len(request.Shard); i++ {
+			request.Shard[i] = 0
 		}
 	}()
 
 	zeroed := true
-	for _, c := range shard {
+	for _, c := range request.Shard {
 		if c != 0 {
 			zeroed = false
 			break
@@ -93,8 +92,9 @@ func RouteContribute(
 		return errors.ErrInvalidInput
 	}
 
-	state.SetShard(shard)
-	log.Log().Info(fName, "msg", "Shard stored", "id", id)
+	// state.SetShard copies the shard. We can safely reset this one at [1].
+	state.SetShard(request.Shard)
+	log.Log().Info(fName, "msg", "Shard stored", "keeperId", request.KeeperId)
 
 	responseBody := net.MarshalBody(reqres.ShardContributionResponse{}, w)
 	net.Respond(http.StatusOK, responseBody, w)

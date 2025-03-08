@@ -13,7 +13,7 @@ import (
 )
 
 type ShamirShard struct {
-	ID    uint64
+	Id    uint64
 	Value *[32]byte
 }
 
@@ -40,7 +40,7 @@ type ShamirShard struct {
 //   - The reconstructed key is nil
 //   - The binary representation has an incorrect length
 func RecoverRootKey(ss []ShamirShard) *[32]byte {
-	// TODO: update my documentation.
+	// TODO: check function signatures and update documentation across the project
 
 	const fName = "RecoverRootKey"
 
@@ -55,18 +55,18 @@ func RecoverRootKey(ss []ShamirShard) *[32]byte {
 	}()
 
 	// Process all provided shares
-	for _, shareBinary := range ss {
-		// Create a new share with sequential ID (starting from 1)
+	for _, shamirShard := range ss {
+		// Create a new share with sequential Id (starting from 1)
 		share := secretsharing.Share{
 			ID:    g.NewScalar(),
 			Value: g.NewScalar(),
 		}
 
-		// Set ID (1-indexed)
-		share.ID.SetUint64(shareBinary.ID)
+		// Set ID
+		share.ID.SetUint64(shamirShard.Id)
 
 		// Unmarshal the binary data
-		err := share.Value.UnmarshalBinary(shareBinary.Value[:])
+		err := share.Value.UnmarshalBinary(shamirShard.Value[:])
 		if err != nil {
 			log.FatalLn(fName + ": Failed to unmarshal share: " + err.Error())
 		}

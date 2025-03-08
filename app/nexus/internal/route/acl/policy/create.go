@@ -19,15 +19,15 @@ import (
 
 // RoutePutPolicy handles HTTP PUT requests for creating new policies.
 // It processes the request body to create a policy with the specified name,
-// SPIFFE ID pattern, path pattern, and permissions.
+// SPIFFE Id pattern, path pattern, and permissions.
 //
 // The function expects a JSON request body containing:
 //   - Name: policy name
-//   - SpiffeIdPattern: SPIFFE ID matching pattern
+//   - SpiffeIdPattern: SPIFFE Id matching pattern
 //   - PathPattern: path matching pattern
 //   - Permissions: set of allowed permissions
 //
-// On success, it returns a JSON response with the created policy's ID.
+// On success, it returns a JSON response with the created policy's Id.
 // On failure, it returns an appropriate error response with status code.
 //
 // Parameters:

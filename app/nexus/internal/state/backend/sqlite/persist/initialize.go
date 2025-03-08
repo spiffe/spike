@@ -29,8 +29,6 @@ func (s *DataStore) Initialize(ctx context.Context) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	fmt.Println(">>>>>>> Initializing backend")
-
 	if s.db != nil {
 		return errors.New("backend already initialized")
 	}
@@ -68,8 +66,6 @@ func (s *DataStore) Initialize(ctx context.Context) error {
 		}
 		return fmt.Errorf("failed to create tables: %w", err)
 	}
-
-	fmt.Println(">>>>>>> Backend initialized")
 
 	s.db = db
 	return nil

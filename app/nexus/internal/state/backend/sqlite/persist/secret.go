@@ -138,12 +138,9 @@ func (s *DataStore) LoadAllSecrets(
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
-	fmt.Println("in LoadAllSecrets ACTUAL")
-
 	// Get all secret paths
 	rows, err := s.db.QueryContext(ctx, ddl.QueryPathsFromMetadata)
 	if err != nil {
-		fmt.Println(">>>exit 001")
 		return nil, fmt.Errorf("failed to query secret paths: %w", err)
 	}
 	defer func(rows *sql.Rows) {
@@ -156,20 +153,16 @@ func (s *DataStore) LoadAllSecrets(
 	// Map to store all secrets
 	secrets := make(map[string]*kv.Value)
 
-	fmt.Println(">>>> wil iterate thru rows")
-
 	// Iterate over paths
 	for rows.Next() {
 		var path string
 		if err := rows.Scan(&path); err != nil {
-			fmt.Println(">>>exit 002")
 			return nil, fmt.Errorf("failed to scan path: %w", err)
 		}
 
 		// Load the full secret for this path
 		secret, err := s.loadSecretInternal(ctx, path)
 		if err != nil {
-			fmt.Println(">>>exit 003 :", err.Error())
 			return nil, fmt.Errorf("failed to load secret at path %s: %w", path, err)
 		}
 
@@ -179,10 +172,8 @@ func (s *DataStore) LoadAllSecrets(
 	}
 
 	if err := rows.Err(); err != nil {
-		fmt.Println(">>>exit 004")
 		return nil, fmt.Errorf("failed to iterate secret paths: %w", err)
 	}
 
-	fmt.Println(">>>> exit 005")
 	return secrets, nil
 }

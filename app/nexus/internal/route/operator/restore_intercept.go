@@ -17,7 +17,7 @@ import (
 )
 
 func guardRestoreRequest(
-	request reqres.RestoreRequest, w http.ResponseWriter, r *http.Request,
+	_ reqres.RestoreRequest, w http.ResponseWriter, r *http.Request,
 ) error {
 	spiffeid, err := spiffe.IdFromRequest(r)
 	if err != nil {

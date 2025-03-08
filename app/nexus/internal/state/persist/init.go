@@ -7,7 +7,6 @@ package persist
 import (
 	"context"
 	"encoding/hex"
-	"fmt"
 	"time"
 
 	"github.com/spiffe/spike/app/nexus/internal/env"
@@ -42,26 +41,23 @@ import (
 //   - Busy timeout settings
 func InitializeSqliteBackend(rootKey *[32]byte) backend.Backend {
 	const fName = "initializeSqliteBackend"
+	const dbName = "spike.db"
 
 	opts := map[backend.DatabaseConfigKey]any{}
 
 	opts[backend.KeyDataDir] = config.SpikeNexusDataFolder()
-	opts[backend.KeyDatabaseFile] = "spike.db"
+	opts[backend.KeyDatabaseFile] = dbName
 	opts[backend.KeyJournalMode] = env.DatabaseJournalMode()
 	opts[backend.KeyBusyTimeoutMs] = env.DatabaseBusyTimeoutMs()
 	opts[backend.KeyMaxOpenConns] = env.DatabaseMaxOpenConns()
 	opts[backend.KeyMaxIdleConns] = env.DatabaseMaxIdleConns()
 	opts[backend.KeyConnMaxLifetimeSeconds] = env.DatabaseConnMaxLifetimeSec()
 
-	// Copy the key for configuration and zero out the original immediately
-	keyHex := hex.EncodeToString(rootKey[:])
-
-	fmt.Println("INITIALIZING: keyHex: ", keyHex)
-
 	// Create SQLite backend configuration
 	cfg := backend.Config{
-		// Use the root key as the encryption key
-		EncryptionKey: keyHex,
+		// Use a copy of the root key as the encryption key.
+		// The original root key will be securely zeroed out by the caller.
+		EncryptionKey: hex.EncodeToString(rootKey[:]),
 		Options:       opts,
 	}
 
@@ -77,6 +73,7 @@ func InitializeSqliteBackend(rootKey *[32]byte) backend.Backend {
 		return nil
 	}
 
+	// TODO: config
 	ctxC, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 

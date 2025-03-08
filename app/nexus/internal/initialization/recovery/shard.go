@@ -6,15 +6,11 @@ package recovery
 
 import (
 	"encoding/json"
-	"github.com/cloudflare/circl/group"
-	"net/url"
-	"strconv"
-
-	"github.com/cloudflare/circl/secretsharing"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	apiUrl "github.com/spiffe/spike-sdk-go/api/url"
 	network "github.com/spiffe/spike-sdk-go/net"
+	"net/url"
 
 	"github.com/spiffe/spike/internal/auth"
 	"github.com/spiffe/spike/internal/log"
@@ -36,9 +32,7 @@ func shardUrl(keeperApiRoot string) string {
 	return u
 }
 
-func shardResponse(
-	source *workloadapi.X509Source, u string, keeperId string,
-) []byte {
+func shardResponse(source *workloadapi.X509Source, u string) []byte {
 	const fName = "shardResponse"
 
 	shardRequest := reqres.ShardRequest{}
@@ -46,7 +40,7 @@ func shardResponse(
 	if err != nil {
 		log.Log().Warn(fName,
 			"msg", "Failed to marshal request",
-			"err", err, "keeper_id", keeperId)
+			"err", err)
 		return []byte{}
 	}
 
@@ -65,7 +59,7 @@ func shardResponse(
 	if err != nil {
 		log.Log().Warn(fName,
 			"msg", "Failed to post",
-			"err", err, "keeper_id", keeperId)
+			"err", err)
 	}
 
 	if len(data) == 0 {
@@ -90,8 +84,7 @@ func unmarshalShardResponse(data []byte) *reqres.ShardResponse {
 }
 
 func shardContributionResponse(
-	keeperId string, keepers map[string]string, u string,
-	rootShares []secretsharing.Share, source *workloadapi.X509Source,
+	u string, contribution []byte, source *workloadapi.X509Source,
 ) []byte {
 	const fName = "shardContributionResponse"
 
@@ -101,37 +94,6 @@ func shardContributionResponse(
 		log.Log().Warn(fName,
 			"msg", "Failed to create mTLS client",
 			"err", err)
-		return []byte{}
-	}
-
-	var share secretsharing.Share
-
-	for _, sr := range rootShares {
-		// TODO: handle error.
-		kid, _ := strconv.Atoi(keeperId)
-		if sr.ID.IsEqual(group.P256.NewScalar().SetUint64(uint64(kid))) {
-			share = sr
-			break
-		}
-	}
-
-	// TODO: nil check for share.
-
-	// Do not zero-out `share` you don't own it;
-	// Also, rootShares is zeroed out elsewhere.
-
-	contribution, err := share.Value.MarshalBinary()
-	// Security: Ensure that the share is zeroed out before the function returns.
-	defer func() {
-		for i := range contribution {
-			contribution[i] = 0
-		}
-	}()
-
-	if err != nil {
-		log.Log().Warn(fName,
-			"msg", "Failed to marshal share",
-			"err", err, "keeper_id", keeperId)
 		return []byte{}
 	}
 
@@ -161,9 +123,7 @@ func shardContributionResponse(
 	}()
 
 	scr := reqres.ShardContributionRequest{
-		// TODO: no need for keeper id
-		KeeperId: keeperId,
-		Shard:    &c,
+		Shard: &c,
 	}
 	// Security: Ensure that struct field is zeroed out before the function
 	// exits.
@@ -177,7 +137,7 @@ func shardContributionResponse(
 	if err != nil {
 		log.Log().Warn(fName,
 			"msg", "Failed to marshal request",
-			"err", err, "keeper_id", keeperId)
+			"err", err)
 		return []byte{}
 	}
 
@@ -185,7 +145,7 @@ func shardContributionResponse(
 	if err != nil {
 		log.Log().Warn(fName, "msg",
 			"Failed to post",
-			"err", err, "keeper_id", keeperId)
+			"err", err)
 	}
 	// Security: Ensure that the md is zeroed out before the function exits.
 	defer func() {

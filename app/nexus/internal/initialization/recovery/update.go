@@ -6,10 +6,10 @@ package recovery
 
 import (
 	"encoding/json"
-	"github.com/cloudflare/circl/group"
 	"net/url"
 	"strconv"
 
+	"github.com/cloudflare/circl/group"
 	"github.com/cloudflare/circl/secretsharing"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
@@ -102,17 +102,23 @@ func sendShardsToKeepers(
 		var share secretsharing.Share
 
 		for _, sr := range rootShares {
-			// TODO: handle error.
-			kid, _ := strconv.Atoi(keeperId)
+			kid, err := strconv.Atoi(keeperId)
+			if err != nil {
+				log.Log().Warn(
+					fName, "msg", "Failed to convert keeper id to int", "err", err)
+				continue
+			}
 			if sr.ID.IsEqual(group.P256.NewScalar().SetUint64(uint64(kid))) {
 				share = sr
 				break
 			}
 		}
 
-		// TODO: nil check for share.
-
-		//.share := findShare(keeperId, keepers, rootShares)
+		if share.ID.IsZero() {
+			log.Log().Warn(fName,
+				"msg", "Failed to find share for keeper", "keeper_id", keeperId)
+			continue
+		}
 
 		rootSecret.SetUint64(0)
 		// Security: Ensure that the rootShares are zeroed out before
@@ -153,10 +159,7 @@ func sendShardsToKeepers(
 			continue
 		}
 
-		scr := reqres.ShardContributionRequest{
-			// TODO: we don't need keeper id for this request.
-			KeeperId: keeperId,
-		}
+		scr := reqres.ShardContributionRequest{}
 
 		// Security: shard is intentionally binary (instead of string) for
 		// better memory management. Do not change its data type.
