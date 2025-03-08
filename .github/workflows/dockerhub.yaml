@@ -1,0 +1,113 @@
+name: Build and Push to Docker Hub
+
+on:
+  release:
+    types: [published]
+
+env:
+  # Use docker.io for Docker Hub if empty
+  REGISTRY: docker.io
+  # github.repository as <account>/<repo>
+  IMAGE_NAME: ${{ github.repository }}
+  DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+  COSIGN_EXPERIMENTAL: 1
+  DOCKER_CONTENT_TRUST: 1
+  DOCKER_CONTENT_TRUST_SERVER: https://notary.docker.io
+
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - dockerfile: kubernetes/dockerfiles/spike.Dockerfile
+            image: spike/spike
+          - dockerfile: kubernetes/dockerfiles/keeper.Dockerfile
+            image: spike/keeper
+          - dockerfile: kubernetes/dockerfiles/nexus.Dockerfile
+            image: spike/nexus
+    permissions:
+      contents: read
+      packages: write
+      id-token: write # needed for signing the images with GitHub OIDC Token
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.release.tag_name }}
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Install cosign
+        uses: sigstore/cosign-installer@v3.3.0
+
+      # Setup Docker Content Trust keys
+      - name: Setup DCT
+        if: github.event_name == 'release'
+        env:
+          DCT_DELEGATION_KEY: ${{ secrets.DCT_DELEGATION_KEY }}
+          DCT_ROOT_KEY: ${{ secrets.DCT_ROOT_KEY }}
+        run: |
+          mkdir -p ~/.docker/trust/private
+          echo "$DCT_DELEGATION_KEY" > ~/.docker/trust/private/$(echo -n "${{ env.REGISTRY }}/${{ matrix.image }}" | sha256sum | cut -d' ' -f1).key
+          echo "$DCT_ROOT_KEY" > ~/.docker/trust/private/root_keys
+
+      # Login to Docker Hub
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      # Extract metadata (tags, labels) for Docker
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ matrix.image }}
+          tags: |
+            type=semver,pattern={{version}},value=${{ github.event.release.tag_name }}
+            type=semver,pattern={{major}}.{{minor}},value=${{ github.event.release.tag_name }}
+            type=raw,value=latest
+            type=sha
+        # example tags in order: 1.2.3, 1.2, latest, sha-1234567890(git commit sha)
+
+      # Build and push Docker image
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        id: build-and-push
+        with:
+          context: .
+          file: ${{ matrix.dockerfile }}
+          platforms: linux/amd64,linux/arm64
+          push: ${{ github.event_name == 'release' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ matrix.image }}:buildcache
+          cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ matrix.image }}:buildcache,mode=max
+          provenance: mode=max
+
+      - name: Sign the images with GitHub OIDC (Cosign)
+        if: github.event_name == 'release'
+        env:
+          DIGEST: ${{ steps.build-and-push.outputs.digest }}
+          TAGS: ${{ steps.meta.outputs.tags }}
+        run: |
+          echo "${TAGS}" | tr ',' '\n' | while read -r tag; do
+            cosign sign --yes "${tag}@${DIGEST}"
+          done
+
+      - name: Sign the images with DCT
+        if: github.event_name == 'release'
+        env:
+          DOCKER_CONTENT_TRUST_REPOSITORY_PASSPHRASE: ${{ secrets.DCT_REPOSITORY_PASSPHRASE }}
+          TAGS: ${{ steps.meta.outputs.tags }}
+        run: |
+          echo "${TAGS}" | tr ',' '\n' | while read -r tag; do
+            docker trust sign "$tag"
+          done
