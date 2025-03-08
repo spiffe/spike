@@ -61,7 +61,7 @@ jobs:
           # go-version-file: 'go.mod'
 
           # Specify a compatible Go version for linting
-          go-version: '1.23'
+          go-version: '1.24.1'
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v6
         with:
