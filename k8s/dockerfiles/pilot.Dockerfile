@@ -30,7 +30,7 @@ COPY . .
 
 # Build the app for the target architecture
 RUN echo "Building spike on $BUILDPLATFORM targeting $TARGETPLATFORM"
-RUN ./kubernetes/build.sh ${TARGETARCH} spike
+RUN ./k8s/build.sh ${TARGETARCH} spike
 
 # Target distroless base image for CGO_ENABLED apps
 # This image includes a basic runtime environment with libc and other minimal dependencies

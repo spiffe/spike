@@ -30,7 +30,7 @@ COPY . .
 
 # Build the app for the target architecture
 RUN echo "Building keeper on $BUILDPLATFORM targeting $TARGETPLATFORM"
-RUN ./kubernetes/build.sh ${TARGETARCH} keeper
+RUN ./k8s/build.sh ${TARGETARCH} keeper
 
 # Target distroless base image for CGO_ENABLED apps
 # This image includes a basic runtime environment with libc and other minimal dependencies
