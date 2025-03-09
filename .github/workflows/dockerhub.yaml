@@ -20,12 +20,12 @@ jobs:
     strategy:
       matrix:
         include:
-          - dockerfile: kubernetes/dockerfiles/spike.Dockerfile
-            image: spike/spike
-          - dockerfile: kubernetes/dockerfiles/keeper.Dockerfile
-            image: spike/keeper
-          - dockerfile: kubernetes/dockerfiles/nexus.Dockerfile
-            image: spike/nexus
+          - dockerfile: k8s/dockerfiles/pilot.Dockerfile
+            image: getspike/pilot
+          - dockerfile: k8s/dockerfiles/keeper.Dockerfile
+            image: getspike/keeper
+          - dockerfile: k8s/dockerfiles/nexus.Dockerfile
+            image: getspike/nexus
     permissions:
       contents: read
       packages: write
