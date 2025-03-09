@@ -146,8 +146,8 @@ func newOperatorRecoverCommand(
 				err := os.WriteFile(filePath, []byte(out), 0600)
 
 				// Security: Hint gc to reclaim memory.
-				encodedShard = ""
-				out = ""
+				encodedShard = "" // nolint:ineffassign
+				out = ""          // nolint:ineffassign
 				runtime.GC()
 
 				if err != nil {
