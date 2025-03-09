@@ -5,7 +5,6 @@
 package store
 
 import (
-	"encoding/base64"
 	"net/http"
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
@@ -67,24 +66,58 @@ func RouteContribute(
 	if request == nil {
 		return errors.ErrParseFailure
 	}
+	if request.Shard == nil {
+		responseBody := net.MarshalBody(reqres.ShardContributionResponse{
+			Err: data.ErrBadInput,
+		}, w)
+		net.Respond(http.StatusBadRequest, responseBody, w)
 
-	shard := request.Shard
-	id := request.KeeperId
+		return errors.ErrInvalidInput
+	}
+	if request.KeeperId == "" {
+		responseBody := net.MarshalBody(reqres.ShardContributionResponse{
+			Err: data.ErrBadInput,
+		}, w)
+		net.Respond(http.StatusBadRequest, responseBody, w)
 
-	// Decode shard content from Base64 encoding.
-	decodedShard, err := base64.StdEncoding.DecodeString(shard)
-	if err != nil {
-		log.Log().Error(fName, "msg", "Failed to decode shard", "err", err.Error())
-		http.Error(w, "Invalid shard content", http.StatusBadRequest)
-		return errors.ErrParseFailure
+		return errors.ErrInvalidInput
 	}
 
-	state.SetShard(decodedShard)
-	log.Log().Info(fName, "msg", "Shard stored", "id", id)
+	// Security: Zero out shard before the function exits.
+	// [1]
+	defer func() {
+		for i := 0; i < len(request.Shard); i++ {
+			request.Shard[i] = 0
+		}
+	}()
+
+	// Ensure the client didn't send an array of all zeros, which would
+	// indicate invalid input. Since Shard is a fixed-length array in the request,
+	// clients must send meaningful non-zero data.
+	zeroed := true
+	for _, c := range request.Shard {
+		if c != 0 {
+			zeroed = false
+			break
+		}
+	}
+
+	if zeroed {
+		responseBody := net.MarshalBody(reqres.ShardContributionResponse{
+			Err: data.ErrBadInput,
+		}, w)
+		net.Respond(http.StatusBadRequest, responseBody, w)
+
+		return errors.ErrInvalidInput
+	}
+
+	// state.SetShard copies the shard. We can safely reset this one at [1].
+	state.SetShard(request.Shard)
+	log.Log().Info(fName, "msg", "Shard stored", "keeperId", request.KeeperId)
 
 	responseBody := net.MarshalBody(reqres.ShardContributionResponse{}, w)
-
 	net.Respond(http.StatusOK, responseBody, w)
+
 	log.Log().Info(fName, "msg", data.ErrSuccess)
 
 	return nil

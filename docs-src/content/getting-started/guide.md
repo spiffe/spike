@@ -364,15 +364,6 @@ spike secret put /tenants/acme/credentials/db \
 # OK
 ```
 
-Then let's read the secret:
-
-```bash
-spike (feature/zola)$ spike secret get /tenants/acme/credentials/db
-pass: SPIKERocks
-username: root
-
-```
-
 Now, let's read the secret back:
 
 ```bash

@@ -61,22 +61,39 @@ func RouteRecover(
 		return errors.ErrParseFailure
 	}
 
+	// TODO: do I need more sanitization here?
 	err := guardRecoverRequest(*request, w, r)
 	if err != nil {
 		return err
 	}
 
-	shards := recovery.PilotRecoveryShards()
+	shards := recovery.NewPilotRecoveryShards()
+	// Security: reset shards before function exits.
+	defer func() {
+		for i := range shards {
+			for j := range shards[i][:] {
+				shards[i][j] = 0
+			}
+		}
+	}()
 
 	if len(shards) < env.ShamirThreshold() {
 		return errors.ErrNotFound
 	}
 
-	payload := shards[:env.ShamirThreshold()]
+	// TODO: verify the quality and validity of shards before sending them out.
+	// TODO:  The function passes shards directly to the response without
+	// explicit validation of their format or content
 
 	responseBody := net.MarshalBody(reqres.RecoverResponse{
-		Shards: payload,
+		Shards: shards,
 	}, w)
+	// Security: Clean up response body before exit.
+	defer func() {
+		for i := range responseBody {
+			responseBody[i] = 0
+		}
+	}()
 
 	net.Respond(http.StatusOK, responseBody, w)
 	log.Log().Info(fName, "msg", data.ErrSuccess)

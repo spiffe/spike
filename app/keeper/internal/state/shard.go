@@ -9,40 +9,52 @@ package state
 
 import (
 	"sync"
-
-	"github.com/spiffe/spike-sdk-go/security/mem"
 )
 
-var shard []byte
+var shard [32]byte
 var shardMutex sync.RWMutex
 
+func zeroed(s *[32]byte) bool {
+	for i := range s {
+		if s[i] != 0 {
+			return false
+		}
+	}
+	return true
+}
+
 // SetShard safely updates the global shard value under a write lock.
+// Although the value is a pointer type, it creates a copy. The value `s`
+// can be safely erased after calling `SetShard()`.
 //
 // Parameters:
-//   - s []byte: New shard value to store
+//   - s *[32]byte: Pointer to the new shard value to store
 //
 // Thread-safe through shardMutex.
-func SetShard(s []byte) {
+func SetShard(s *[32]byte) {
 	shardMutex.Lock()
 	defer shardMutex.Unlock()
 
-	// Clear the old shard if it exists
-	if shard != nil {
-		oldShard := shard
-		mem.ClearBytes(oldShard)
+	if zeroed(s) {
+		return
 	}
 
-	shard = s
+	copy(shard[:], s[:])
 }
 
 // Shard safely retrieves the current global shard value under a read lock.
+// Although this function returns a pointer, it is intended to be used for
+// read-only access. Do not mutate the value that this function's return value
+// points at. If you want to change the shard, use `SetShard()` instead.
 //
 // Returns:
-//   - []byte: Current shard value
+//   - *[32]byte: Pointer to the current shard value
 //
 // Thread-safe through shardMutex.
-func Shard() []byte {
+func Shard() *[32]byte {
 	shardMutex.RLock()
 	defer shardMutex.RUnlock()
-	return shard
+
+	// Security: return a reference, not a copy.
+	return &shard
 }

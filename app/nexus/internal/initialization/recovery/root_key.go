@@ -7,25 +7,29 @@ package recovery
 import (
 	"github.com/cloudflare/circl/group"
 	"github.com/cloudflare/circl/secretsharing"
-	"github.com/spiffe/spike-sdk-go/security/mem"
 
 	"github.com/spiffe/spike/app/nexus/internal/env"
 	"github.com/spiffe/spike/internal/log"
 )
+
+type ShamirShard struct {
+	Id    uint64
+	Value *[32]byte
+}
 
 // RecoverRootKey reconstructs the original root key from a slice of secret
 // shares. It uses Shamir's Secret Sharing scheme to recover the original
 // secret.
 //
 // Parameters:
-//   - ss: A slice of byte slices, where each byte slice represents a secret
-//     share
+//   - ss []*[32]byte: A slice of pointers to 32-byte arrays, where each array
+//     represents a secret share
 //
 // Returns:
-//   - []byte: The reconstructed root key as a byte slice
+//   - *[32]byte: A pointer to the reconstructed 32-byte root key
 //
 // The function will:
-//   - Convert each raw byte slice into a properly formatted secretsharing.Share
+//   - Convert each 32-byte array into a properly formatted secretsharing.Share
 //   - Assign sequential IDs to each share starting from 1
 //   - Reconstruct the original secret using the secretsharing.Recover function
 //   - Validate the recovered key has the correct length (32 bytes)
@@ -35,32 +39,34 @@ import (
 //   - The recovery process fails
 //   - The reconstructed key is nil
 //   - The binary representation has an incorrect length
-func RecoverRootKey(ss [][]byte) []byte {
-	const fName = "RecoverRootKey"
+func RecoverRootKey(ss []ShamirShard) *[32]byte {
+	// TODO: check function signatures and update documentation across the project
 
-	// Create deferred call to clear all input shares before returning
-	defer func() {
-		for i := range ss {
-			mem.ClearBytes(ss[i])
-		}
-	}()
+	const fName = "RecoverRootKey"
 
 	g := group.P256
 	shares := make([]secretsharing.Share, 0, len(ss))
+	// Security: Ensure that the shares are zeroed out after the function returns:
+	defer func() {
+		for _, s := range shares {
+			s.ID.SetUint64(0)
+			s.Value.SetUint64(0)
+		}
+	}()
 
 	// Process all provided shares
-	for i, shareBinary := range ss {
-		// Create a new share with sequential ID (starting from 1)
+	for _, shamirShard := range ss {
+		// Create a new share with sequential Id (starting from 1)
 		share := secretsharing.Share{
 			ID:    g.NewScalar(),
 			Value: g.NewScalar(),
 		}
 
-		// Set ID (1-indexed)
-		share.ID.SetUint64(uint64(i + 1))
+		// Set ID
+		share.ID.SetUint64(shamirShard.Id)
 
 		// Unmarshal the binary data
-		err := share.Value.UnmarshalBinary(shareBinary)
+		err := share.Value.UnmarshalBinary(shamirShard.Value[:])
 		if err != nil {
 			log.FatalLn(fName + ": Failed to unmarshal share: " + err.Error())
 		}
@@ -74,28 +80,51 @@ func RecoverRootKey(ss [][]byte) []byte {
 	threshold := env.ShamirThreshold()
 	reconstructed, err := secretsharing.Recover(uint(threshold-1), shares)
 	if err != nil {
+		// Security: reset shares.
+		// defer won't get called since log.Fatalln terminates the program.
+		for _, s := range shares {
+			s.ID.SetUint64(0)
+			s.Value.SetUint64(0)
+		}
+
 		log.FatalLn(fName + ": Failed to recover: " + err.Error())
 	}
 
 	if reconstructed == nil {
+		// Security: reset shares.
+		// defer won't get called since log.Fatalln terminates the program.
+		for _, s := range shares {
+			s.ID.SetUint64(0)
+			s.Value.SetUint64(0)
+		}
+
 		log.FatalLn(fName + ": Failed to reconstruct the root key")
 	}
 
 	if reconstructed != nil {
 		binaryRec, err := reconstructed.MarshalBinary()
 		if err != nil {
+			// Security: Zero out:
+			reconstructed.SetUint64(0)
+
 			log.FatalLn(fName + ": Failed to marshal: " + err.Error())
-			return []byte{}
+			return &[32]byte{}
 		}
 
-		// TODO: this 32 comes up a lot; move it to a symbolic constant.
 		if len(binaryRec) != 32 {
 			log.FatalLn(fName + ": Reconstructed root key has incorrect length")
-			return []byte{}
+			return &[32]byte{}
 		}
 
-		return binaryRec
+		var result [32]byte
+		copy(result[:], binaryRec)
+		// Security: Zero out temporary variables before function exits.
+		for i := range binaryRec {
+			binaryRec[i] = 0
+		}
+
+		return &result
 	}
 
-	return []byte{}
+	return &[32]byte{}
 }

@@ -37,9 +37,9 @@ func New(cfg backend.Config) (backend.Backend, error) {
 	}
 
 	// Validate key length
-	if len(key) != 16 && len(key) != 24 && len(key) != 32 {
+	if len(key) != 32 {
 		return nil, fmt.Errorf(
-			"invalid encryption key length: must be 16, 24, or 32 bytes",
+			"invalid encryption key length: must be 32 bytes",
 		)
 	}
 

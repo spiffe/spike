@@ -5,7 +5,6 @@
 package store
 
 import (
-	"encoding/base64"
 	"net/http"
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
@@ -44,7 +43,7 @@ func RouteShard(
 	w http.ResponseWriter, r *http.Request, audit *log.AuditEntry,
 ) error {
 	const fName = "routeShard"
-	log.AuditRequest(fName, r, audit, log.AuditCreate)
+	log.AuditRequest(fName, r, audit, log.AuditRead)
 
 	requestBody := net.ReadRequestBody(w, r)
 	if requestBody == nil {
@@ -60,18 +59,38 @@ func RouteShard(
 		return errors.ErrParseFailure
 	}
 
-	myShard := state.Shard()
+	// DO NOT reset `sh` after use, as this function does NOT own it.
+	// Treat the value "read-only".
+	sh := state.Shard()
 
-	if len(myShard) == 0 {
+	zeroed := true
+	for _, c := range sh {
+		if c != 0 {
+			zeroed = false
+			break
+		}
+	}
+
+	if zeroed {
 		log.Log().Error(fName, "msg", "No shard found")
-		http.Error(w, "No shard found", http.StatusNotFound)
+
+		responseBody := net.MarshalBody(reqres.ShardResponse{
+			Err: data.ErrNotFound,
+		}, w)
+		net.Respond(http.StatusNotFound, responseBody, w)
+
 		return errors.ErrNotFound
 	}
 
-	myShardBase64 := base64.StdEncoding.EncodeToString(myShard)
 	responseBody := net.MarshalBody(reqres.ShardResponse{
-		Shard: myShardBase64,
+		Shard: sh,
 	}, w)
+	// Security: Reset response body before function exits.
+	defer func() {
+		for i := 0; i < len(responseBody); i++ {
+			responseBody[i] = 0
+		}
+	}()
 
 	net.Respond(http.StatusOK, responseBody, w)
 	log.Log().Info(fName, "msg", data.ErrSuccess)

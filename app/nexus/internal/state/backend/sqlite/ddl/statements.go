@@ -90,7 +90,7 @@ DELETE FROM policies
 WHERE id = ?
 `
 
-// QueryLoadPolicy is a SQL query to select policy details by ID.
+// QueryLoadPolicy is a SQL query to select policy details by ID
 const QueryLoadPolicy = `
 SELECT name, spiffe_id_pattern, path_pattern, created_time 
 FROM policies 
