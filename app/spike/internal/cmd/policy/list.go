@@ -5,104 +5,102 @@
 package policy
 
 import (
-	"encoding/json"
 	"fmt"
 
 	"github.com/spf13/cobra"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	spike "github.com/spiffe/spike-sdk-go/api"
-
-	"github.com/spiffe/spike/app/spike/internal/stdout"
 	"github.com/spiffe/spike/app/spike/internal/trust"
 )
 
 // newPolicyListCommand creates a new Cobra command for listing all policies.
-// It retrieves and displays all existing policies in the system as formatted
-// JSON output.
+// It retrieves and displays all existing policies in the system.
 //
 // The command requires an X509Source for SPIFFE authentication and validates
 // that the system is initialized before listing policies.
 //
 // Parameters:
 //   - source: SPIFFE X.509 SVID source for authentication
+//   - spiffeId: The SPIFFE ID to authenticate with
 //
 // Returns:
 //   - *cobra.Command: Configured Cobra command for policy listing
 //
 // Command usage:
 //
-//	list
+//	list [--format=<format>]
+//
+// Flags:
+//   - --format: Output format ("human" or "json", default is "human")
 //
 // Example usage:
 //
 //	spike policy list
+//	spike policy list --format=json
 //
-// Example output:
+// Example output for human format:
+//
+//	POLICIES
+//	========
+//
+//	ID: policy-123
+//	Name: web-service-policy
+//	SPIFFE ID Pattern: spiffe://example.org/web-service/*
+//	Path Pattern: /api/v1/*
+//	Permissions: read, write
+//	Created At: 2024-01-01T00:00:00Z
+//	Created By: user-abc
+//	--------
+//
+// Example output for JSON format:
 //
 //	[
 //	  {
 //	    "id": "policy-123",
 //	    "name": "web-service-policy",
-//	    "spiffe_id_pattern": "spiffe://example.org/web-service/*",
-//	    "path_pattern": "/api/v1/*",
+//	    "spiffeIdPattern": "spiffe://example.org/web-service/*",
+//	    "pathPattern": "/api/v1/*",
 //	    "permissions": ["read", "write"],
-//	    "created_at": "2024-01-01T00:00:00Z",
-//	    "created_by": "user-abc"
-//	  },
-//	  {
-//	    "id": "policy-456",
-//	    "name": "db-service-policy",
-//	    "spiffe_id_pattern": "spiffe://example.org/db/*",
-//	    "path_pattern": "/data/*",
-//	    "permissions": ["read"],
-//	    "created_at": "2024-01-02T00:00:00Z",
-//	    "created_by": "user-xyz"
+//	    "createdAt": "2024-01-01T00:00:00Z",
+//	    "createdBy": "user-abc"
 //	  }
 //	]
 //
 // The command will:
 //  1. Check if the system is initialized
 //  2. Retrieve all existing policies
-//  3. Format the policy list as indented JSON
+//  3. Format the policies based on the format flag
 //  4. Display the formatted output
 //
 // Error conditions:
 //   - System not initialized (requires running 'spike init' first)
+//   - Invalid format specified
 //   - Insufficient permissions
 //   - Policy retrieval failure
-//   - JSON formatting failure
 //
-// Note: If no policies exist, an empty array ([]) will be displayed.
+// Note: If no policies exist, it returns "No policies found" for human format
+// or "[]" for JSON format.
 func newPolicyListCommand(
-	source *workloadapi.X509Source, spiffeId string,
+    source *workloadapi.X509Source, spiffeId string,
 ) *cobra.Command {
-	return &cobra.Command{
-		Use:   "list",
-		Short: "List all policies",
-		Args:  cobra.NoArgs,
-		Run: func(cmd *cobra.Command, args []string) {
-			trust.Authenticate(spiffeId)
+    cmd := &cobra.Command{
+        Use:   "list",
+        Short: "List all policies",
+        Args:  cobra.NoArgs,
+        Run: func(cmd *cobra.Command, args []string) {
+            trust.Authenticate(spiffeId)
+            api := spike.NewWithSource(source)
 
-			api := spike.NewWithSource(source)
-
-			policies, err := api.ListPolicies()
-			if err != nil {
-				if err.Error() == "not ready" {
-					stdout.PrintNotReady()
-					return
-				}
-
-				fmt.Printf("Error: %v\n", err)
-				return
-			}
-
-			output, err := json.MarshalIndent(policies, "", "  ")
-			if err != nil {
-				fmt.Printf("Error formatting output: %v\n", err)
-				return
-			}
-
-			fmt.Println(string(output))
-		},
-	}
+            policies, err := api.ListPolicies()
+            if handleAPIError(err) {
+                return
+            }
+            
+            output := formatPoliciesOutput(cmd, policies)
+            fmt.Println(output)
+        },
+    }
+    
+    addFormatFlag(cmd)
+    return cmd
 }
