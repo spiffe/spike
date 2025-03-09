@@ -79,6 +79,9 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v5
         id: build-and-push
+        env:
+          DOCKER_CONTENT_TRUST_REPOSITORY_PASSPHRASE: ${{ secrets.DCT_DELEGATION_PASSPHRASE }}
+          DOCKER_CONTENT_TRUST: 1
         with:
           context: .
           file: ${{ matrix.dockerfile }}
@@ -98,14 +101,4 @@ jobs:
         run: |
           echo "${TAGS}" | tr ',' '\n' | while read -r tag; do
             cosign sign --yes "${tag}@${DIGEST}"
-          done
-
-      - name: Sign the images with DCT
-        if: github.event_name == 'release'
-        env:
-          DOCKER_CONTENT_TRUST_REPOSITORY_PASSPHRASE: ${{ secrets.DCT_DELEGATION_PASSPHRASE }}
-          TAGS: ${{ steps.meta.outputs.tags }}
-        run: |
-          echo "${TAGS}" | tr ',' '\n' | while read -r tag; do
-            docker trust sign "$tag"
           done
