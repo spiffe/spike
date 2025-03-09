@@ -171,9 +171,7 @@ func sendShardsToKeepers(
 
 		// Security: shard is intentionally binary (instead of string) for
 		// better memory management. Do not change its data type.
-		for i, b := range contribution {
-			scr.Shard[i] = b
-		}
+		copy(scr.Shard[:], contribution)
 
 		// Security: Ensure that the contribution is zeroed out before
 		// the next iteration.
