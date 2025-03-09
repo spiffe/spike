@@ -24,6 +24,175 @@
   </purpose>
   <low-hanging-fruits>
     <issue>
+      cut a new vsecm version too
+    </issue>
+    <issue>
+      some of the memory resets can be done by the generic library at the SDK;
+      check them out.
+    </issue>
+    <issue>
+      to docs: keepers need to have monotonically increasing ids, starting
+      from 1.
+    </issue>
+    <isuse>
+      godoc updates required on this repo, and also SDK.
+      check and ensure ALL files are up-to-date.
+    </isuse>
+    <issue kind="good-first-issue">
+      Consider Additional Security Headers:
+      // Add before net.Respond
+      w.Header().Set("Cache-Control", "no-store, no-cache, must-revalidate")
+      w.Header().Set("Pragma", "no-cache")
+      w.Header().Set("Expires", "0")
+    </issue>
+    <issue>
+      adding a timeout or circuit breaker to the infinite loop in BootstrapBackingStoreWithNewRootKey, I was suggesting a way to prevent the function from running indefinitely if something goes wrong with keeper initialization.
+      The current implementation uses:
+      for {
+      // Ensure to get a success response from ALL keepers eventually.
+      exit := iterateKeepersToBootstrap(
+      keepers, rootShares, successfulKeepers, source,
+      )
+      if exit {
+      return
+      }
+
+      log.Log().Info(fName, "msg", "Waiting for keepers to initialize")
+      // TODO: make the time configurable.
+      time.Sleep(5 * time.Second)
+      }
+      This loop will continue forever until all keepers are successfully initialized. While this makes sense for normal operation, there are scenarios where this could become problematic:
+
+      If one or more keepers are permanently unavailable or unreachable
+      If there's a persistent network issue preventing communication
+      If there's a configuration issue that makes successful initialization impossible
+
+      A potential improvement would be to add:
+      maxAttempts := env.GetMaxBootstrapAttempts() // Could be configurable
+      attempts := 0
+
+      ctx, cancel := context.WithTimeout(context.Background(), env.GetBootstrapTimeout())
+      defer cancel()
+
+      for {
+      select {
+      case lt-ctx.Done():
+      log.Log().Warn(fName, "msg", "Bootstrap timed out after waiting threshold")
+      // Implement fallback strategy or escalate the issue
+      return
+      default:
+      attempts++
+      if maxAttempts > 0 ++ attempts > maxAttempts {
+      log.Log().Warn(fName, "msg", "Exceeded maximum bootstrap attempts")
+      // Implement fallback strategy or escalate the issue
+      return
+      }
+
+      exit := iterateKeepersToBootstrap(
+      keepers, rootShares, successfulKeepers, source,
+      )
+      if exit {
+      return
+      }
+
+      log.Log().Info(fName, "msg", "Waiting for keepers to initialize",
+      "attempt", attempts, "maxAttempts", maxAttempts)
+      time.Sleep(5 * time.Second)
+      }
+      }
+      This approach provides:
+
+      A maximum number of attempts (configurable)
+      A total timeout for the entire operation (configurable)
+      Better observability of progress through attempt counting
+
+      In highly reliable systems, you might want the bootstrap to keep trying forever, but even then, it's valuable to have observability into how long it's been trying and an option to break the loop if needed.
+    </issue>
+    <issue>
+      JSON Security:
+
+      Marshaling/unmarshaling sensitive data with standard JSON functions can leave traces in memory
+      Consider if a more secure serialization approach is needed for sensitive data
+
+      Regarding more secure JSON serialization approaches for sensitive data, here are several strategies you could consider:
+
+      Custom Secure Marshaler/Unmarshaler:
+
+      Implement custom JSON marshal/unmarshal methods that use secure memory practices
+      Include zero-out operations immediately after the data is no longer needed
+      Use fixed-size arrays rather than slices to avoid heap allocations
+
+
+      Buffer Pooling with Zeroing:
+
+      Create a pool of fixed-size buffers for serialization operations
+      Zero out buffers before returning them to the pool
+      This minimizes allocations and ensures cleanup
+
+
+      Memory-Safe Serialization Libraries:
+
+      Look into security-focused serialization libraries that handle memory better than standard encoding/json
+      Some cryptographic libraries include serialization functions designed for sensitive data
+
+
+      Encrypted Serialization:
+
+      Serialize to an encrypted format directly
+      The data stays encrypted in memory except during actual use
+
+
+      Use of Go's io.Writer Interface:
+
+      Marshal directly to a pre-allocated buffer using json.Encoder
+      This gives more control over the underlying memory
+
+
+      Manual Field-by-Field Handling:
+
+      For extremely sensitive structures, avoid automatic JSON marshaling entirely
+      json marshaling and unmarshaling can leave traces in memory.
+
+      Instead, construct the JSON manually field by field, zeroing intermediate
+      buffers
+
+
+
+      A practical implementation might look like:
+      goCopyfunc secureJSONMarshal(v interface{}) ([]byte, error) {
+      // Pre-allocate buffer of reasonable size to avoid resizing
+      buffer := make([]byte, 0, 1024)
+
+      // Use buffer as writer to avoid intermediate string allocations
+      b := bytes.NewBuffer(buffer)
+      encoder := json.NewEncoder(b)
+
+      // Disable HTML escaping to reduce copying
+      encoder.SetEscapeHTML(false)
+
+      err := encoder.Encode(v)
+      if err != nil {
+      return nil, err
+      }
+
+      // Get result as byte slice
+      result := b.Bytes()
+
+      // Create a copy that we'll return
+      finalResult := make([]byte, len(result))
+      copy(finalResult, result)
+
+      // Zero out the original buffer
+      for i := range result {
+      result[i] = 0
+      }
+
+      return finalResult, nil
+      }
+      For unmarshaling, we could use a similar approach with a pre-allocated
+      structure and careful buffer management.
+    </issue>
+    <issue>
       address todo items inside source code after a release cut.
 
       Also, things to test before the release cut:
