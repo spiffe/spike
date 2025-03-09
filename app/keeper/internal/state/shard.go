@@ -39,9 +39,7 @@ func SetShard(s *[32]byte) {
 		return
 	}
 
-	for i := range s {
-		shard[i] = s[i]
-	}
+	copy(shard[:], s[:])
 }
 
 // Shard safely retrieves the current global shard value under a read lock.

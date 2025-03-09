@@ -117,9 +117,7 @@ func RecoverRootKey(ss []ShamirShard) *[32]byte {
 		}
 
 		var result [32]byte
-		for i := range binaryRec {
-			result[i] = binaryRec[i]
-		}
+		copy(result[:], binaryRec)
 		// Security: Zero out temporary variables before function exits.
 		for i := range binaryRec {
 			binaryRec[i] = 0
