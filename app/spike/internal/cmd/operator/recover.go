@@ -101,7 +101,37 @@ func newOperatorRecoverCommand(
 
 			recoverDir := config.SpikePilotRecoveryFolder()
 
-			// TODO: sanitize recoverDir and ensure it does not contain path traversal sequences.
+			// Clean the path to normalize it
+			cleanPath, err := filepath.Abs(filepath.Clean(recoverDir))
+			if err != nil {
+				fmt.Println("")
+				fmt.Println("    Error resolving recovery directory path.")
+				fmt.Println("    " + err.Error())
+				fmt.Println("")
+				log.FatalLn("Aborting.")
+			}
+
+			// Verify the path exists and is a directory
+			fileInfo, err := os.Stat(cleanPath)
+			if err != nil || !fileInfo.IsDir() {
+				fmt.Println("")
+				fmt.Println("    Invalid recovery directory path.")
+				fmt.Println("    Path does not exist or is not a directory.")
+				fmt.Println("")
+				log.FatalLn("Aborting.")
+			}
+
+			// Ensure the cleaned path doesn't contain suspicious components
+			// This helps catch any attempts at path traversal that survived cleaning
+			if strings.Contains(cleanPath, "..") ||
+				strings.Contains(cleanPath, "./") ||
+				strings.Contains(cleanPath, "//") {
+				fmt.Println("")
+				fmt.Println("    Invalid recovery directory path.")
+				fmt.Println("    Path contains suspicious components.")
+				fmt.Println("")
+				log.FatalLn("Aborting.")
+			}
 
 			// Ensure the recover directory is clean by
 			// deleting any existing recovery files.

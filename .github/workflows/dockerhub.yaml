@@ -51,11 +51,9 @@ jobs:
         if: github.event_name == 'release'
         env:
           DCT_DELEGATION_KEY: ${{ secrets.DCT_DELEGATION_KEY }}
-          DCT_ROOT_KEY: ${{ secrets.DCT_ROOT_KEY }}
         run: |
           mkdir -p ~/.docker/trust/private
           echo "$DCT_DELEGATION_KEY" > ~/.docker/trust/private/$(echo -n "${{ env.REGISTRY }}/${{ matrix.image }}" | sha256sum | cut -d' ' -f1).key
-          echo "$DCT_ROOT_KEY" > ~/.docker/trust/private/root_keys
 
       # Login to Docker Hub
       - name: Log in to Docker Hub
@@ -105,7 +103,7 @@ jobs:
       - name: Sign the images with DCT
         if: github.event_name == 'release'
         env:
-          DOCKER_CONTENT_TRUST_REPOSITORY_PASSPHRASE: ${{ secrets.DCT_REPOSITORY_PASSPHRASE }}
+          DOCKER_CONTENT_TRUST_REPOSITORY_PASSPHRASE: ${{ secrets.DCT_DELEGATION_PASSPHRASE }}
           TAGS: ${{ steps.meta.outputs.tags }}
         run: |
           echo "${TAGS}" | tr ',' '\n' | while read -r tag; do
