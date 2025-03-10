@@ -113,11 +113,24 @@ jobs:
         env:
           DCT_DELEGATION_PASSPHRASE: ${{ secrets.DCT_DELEGATION_PASSPHRASE }}
         run: |
+          set -e  # Exit on any error
+          
           export DOCKER_CONTENT_TRUST=1
-          export DOCKER_CONTENT_TRUST_REPOSITORY_PASSPHRASE=${{ secrets.DCT_DELEGATION_PASSPHRASE }}
+          export DOCKER_CONTENT_TRUST_REPOSITORY_PASSPHRASE="${{ secrets.DCT_DELEGATION_PASSPHRASE }}"
           
-          docker trust inspect --pretty "${{ env.REGISTRY }}/${{ matrix.image }}" || echo "No trust data found, signing now."
+          echo "Checking if notary CLI is installed..."
+          if ! command -v notary &> /dev/null; then
+            echo "Error: notary CLI is not installed. Install it before proceeding."
+            exit 1
+          fi
           
+          echo "Inspecting trust data for ${{ env.REGISTRY }}/${{ matrix.image }}..."
+          if ! docker trust inspect --pretty "${{ env.REGISTRY }}/${{ matrix.image }}"; then
+            echo "No trust data found, signing now."
+          fi
+          
+          echo "Signing the image with Notary..."
           notary -s https://notary.docker.io -d ~/.docker/trust addhash \
-            "${{ env.REGISTRY }}/${{ matrix.image }}" "${{ steps.build-and-push.outputs.digest }}" \
-            --role targets/releases
+            "${{ env.REGISTRY }}/${{ matrix.image }}" "${{ steps.build-and-push.outputs.digest }}"
+          
+          echo "Signature added successfully."
