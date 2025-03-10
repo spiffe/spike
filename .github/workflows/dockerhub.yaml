@@ -104,7 +104,7 @@ jobs:
           export DOCKER_CONTENT_TRUST_REPOSITORY_PASSPHRASE="${{ secrets.DCT_DELEGATION_PASSPHRASE }}"
 
           echo "Authenticating with Docker Hub..."
-          echo "${{ secrets.DOCKERHUB_PASSWORD }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
+          echo "${DOCKERHUB_TOKEN}" | docker login -u "${DOCKERHUB_USERNAME}" --password-stdin
 
           echo "Checking if notary CLI is installed..."
           if ! command -v notary &> /dev/null; then
@@ -137,4 +137,4 @@ jobs:
             "${{ env.REGISTRY }}/${{ matrix.image }}" "${{ steps.build-and-push.outputs.digest }}" \
             "$IMAGE_SIZE" --sha256 "${{ steps.build-and-push.outputs.digest }}"
 
-          echo "Signature added successfully.""
+            echo "Signature added successfully.""
