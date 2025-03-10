@@ -45,46 +45,28 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      # Extract metadata (tags, labels) for Docker
-      - name: Extract metadata
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.REPOSITORY }}/${{ matrix.app }}
-          tags: |
-            type=semver,pattern={{version}}-${{ matrix.arch }},value=${{ github.event.release.tag_name }}
-            type=semver,pattern={{major}}.{{minor}}-${{ matrix.arch }},value=${{ github.event.release.tag_name }}
-            type=raw,value=latest-${{ matrix.arch }}
-            type=raw,value=${{ github.sha }}-${{ matrix.arch }}
-            ${{ matrix.arch == 'linux/amd64' && 'type=raw,value=latest' || '' }}
-        # example tags in order: 1.2.3-linux/amd64, 1.2-linux/amd64, latest-linux/amd64, sha-1234567890(git commit sha)
-        # if arch is linux/amd64, then add latest tag
+      # Set up Docker Content Trust delegation key
+      - name: Set up Docker Content Trust
+        env:
+          DOCKER_CONTENT_TRUST_REPOSITORY_PASSPHRASE: ${{ secrets.DCT_DELEGATION_PASSPHRASE }}
+          DOCKER_DELEGATION_KEY: ${{ secrets.DCT_DELEGATION_KEY }}
+        run: |
+          # Create a temporary file with the delegation key
+          echo "$DOCKER_DELEGATION_KEY" > delegation.key
+          # Load the key using docker trust key load
+          docker trust key load delegation.key --name delegation
 
-      # Build and load Docker image
-      - name: Build and load
-        uses: docker/build-push-action@v5
-        id: build-and-load
-        with:
-          context: .
-          file: k8s/dockerfiles/${{ matrix.app }}.Dockerfile
-          platforms: ${{ matrix.arch }}
-          load: true
-          push: false
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-          provenance: mode=max
-
-      - name: Push to Docker Hub
+      # Build and push images using the script
+      - name: Build and push images
         env:
           DOCKER_CONTENT_TRUST_REPOSITORY_PASSPHRASE: ${{ secrets.DCT_DELEGATION_PASSPHRASE }}
           DOCKER_CONTENT_TRUST: 1
         run: |
-          for tag in $(echo "${{ steps.meta.outputs.tags }}"); do
-            echo "Pushing tag: $tag"
-            docker push "${{ env.REGISTRY }}/${{ env.REPOSITORY }}/${{ matrix.app }}:$tag"
-          done
+          # Extract version from release tag
+          VERSION="${{ github.event.release.tag_name }}"
+          VERSION=${VERSION#v}  # Remove 'v' prefix if present
+          
+          ./k8s/build-push-sign.sh ${{ matrix.app }} ${{ matrix.arch }} ${VERSION} ${{ env.REGISTRY }} ${{ env.REPOSITORY }}
 
       - name: Sign the images with GitHub OIDC (Cosign)
         env:
