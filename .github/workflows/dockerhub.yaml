@@ -59,9 +59,14 @@ jobs:
           echo "bbbb"
           mkdir -p /home/runner/.docker/trust/private
           echo "cccc"
-          echo "$DOCKER_DELEGATION_KEY" > "~/.docker/trust/private/${{secrets.DCT_DELEGATION_KEY_FILENAME}}"
+          if [ -z "$DOCKER_DELEGATION_KEY" ]; then
+            echo "osman is empty, please check your secrets configuration."
+          else
+            echo "osman in not empty"
+          fi
+          echo "$DOCKER_DELEGATION_KEY" > "/home/runner/.docker/trust/private/${{secrets.DCT_DELEGATION_KEY_FILENAME}}"
           echo "dddd"
-          chmod 600 "~/.docker/trust/private/${{secrets.DCT_DELEGATION_KEY_FILENAME}}"
+          chmod 600 "/home/runner/.docker/trust/private/${{secrets.DCT_DELEGATION_KEY_FILENAME}}"
           echo "eeee"
 
       # Build and push images using the script
