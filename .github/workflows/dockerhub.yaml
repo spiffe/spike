@@ -52,9 +52,17 @@ jobs:
           DOCKER_DELEGATION_KEY: ${{ secrets.DCT_DELEGATION_KEY }}
         run: |
           # Create a temporary file with the delegation key
-          mkdir -p ~/.docker/trust/private
+          echo "0000"
+          mkdir -p /home/runner/.docker/
+          echo "aaaaa"
+          mkdir -p /home/runner/.docker/trust
+          echo "bbbb"
+          mkdir -p /home/runner/.docker/trust/private
+          echo "cccc"
           echo "$DOCKER_DELEGATION_KEY" > "~/.docker/trust/private/${{secrets.DCT_DELEGATION_KEY_FILENAME}}"
+          echo "dddd"
           chmod 600 "~/.docker/trust/private/${{secrets.DCT_DELEGATION_KEY_FILENAME}}"
+          echo "eeee"
 
       # Build and push images using the script
       - name: Build and push images
