@@ -85,3 +85,12 @@ jobs:
             echo "Pushing tag: $tag"
             docker push "${{ env.REGISTRY }}/${{ env.REPOSITORY }}/${{ matrix.app }}:$tag"
           done
+
+      - name: Sign the images with GitHub OIDC (Cosign)
+        env:
+          DIGEST: ${{ steps.build-and-load.outputs.digest }}
+          TAGS: ${{ steps.meta.outputs.tags }}
+        run: |
+          echo "${TAGS}" | tr ',' '\n' | while read -r tag; do
+            cosign sign --yes "${tag}@${DIGEST}"
+          done
