@@ -102,3 +102,17 @@ jobs:
           echo "${TAGS}" | tr ',' '\n' | while read -r tag; do
             cosign sign --yes "${tag}@${DIGEST}"
           done
+
+      - name: Sign the image using Notary
+        if: github.event_name == 'release'
+        env:
+          DCT_DELEGATION_PASSPHRASE: ${{ secrets.DCT_DELEGATION_PASSPHRASE }}
+        run: |
+          export DOCKER_CONTENT_TRUST=1
+          export DOCKER_CONTENT_TRUST_REPOSITORY_PASSPHRASE=${{ secrets.DCT_DELEGATION_PASSPHRASE }}
+          
+          docker trust inspect --pretty "${{ env.REGISTRY }}/${{ matrix.image }}" || echo "No trust data found, signing now."
+          
+          notary -s https://notary.docker.io -d ~/.docker/trust addhash \
+            "${{ env.REGISTRY }}/${{ matrix.image }}" "${{ steps.build-and-push.outputs.digest }}" \
+            --role targets/releases
