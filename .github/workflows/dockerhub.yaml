@@ -81,11 +81,11 @@ jobs:
           
           ./k8s/build-push-sign.sh ${{ matrix.app }} ${{ matrix.arch }} ${VERSION} ${{ env.REGISTRY }} ${{ env.REPOSITORY }}
 
-      - name: Sign the images with GitHub OIDC (Cosign)
-        env:
-          DIGEST: ${{ steps.build-and-load.outputs.digest }}
-          TAGS: ${{ steps.meta.outputs.tags }}
-        run: |
-          echo "${TAGS}" | tr ',' '\n' | while read -r tag; do
-            cosign sign --yes "${tag}@${DIGEST}"
-          done
+#      - name: Sign the images with GitHub OIDC (Cosign)
+#        env:
+#          DIGEST: ${{ steps.build-and-load.outputs.digest }}
+#          TAGS: ${{ steps.meta.outputs.tags }}
+#        run: |
+#          echo "${TAGS}" | tr ',' '\n' | while read -r tag; do
+#            cosign sign --yes "${tag}@${DIGEST}"
+#          done
