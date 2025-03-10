@@ -5,79 +5,105 @@
 package policy
 
 import (
+	"bufio"
 	"fmt"
+	"os"
+	"strings"
 
 	"github.com/spf13/cobra"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	spike "github.com/spiffe/spike-sdk-go/api"
 
-	"github.com/spiffe/spike/app/spike/internal/stdout"
 	"github.com/spiffe/spike/app/spike/internal/trust"
 )
 
 // newPolicyDeleteCommand creates a new Cobra command for policy deletion.
-// It allows users to delete existing policies by providing the policy ID
-// as a command line argument.
+// It allows users to delete existing policies by providing either the policy ID
+// as a command line argument or the policy name with the --name flag.
 //
 // The command requires an X509Source for SPIFFE authentication and validates
 // that the system is initialized before attempting to delete a policy.
 //
 // Parameters:
 //   - source: SPIFFE X.509 SVID source for authentication
+//   - spiffeId: The SPIFFE ID to authenticate with
 //
 // Returns:
 //   - *cobra.Command: Configured Cobra command for policy deletion
 //
 // Command usage:
 //
-//	delete <policy-id>
+//	delete [policy-id] [flags]
 //
 // Arguments:
-//   - policy-id: The unique identifier of the policy to delete (required)
+//   - policy-id: The unique identifier of the policy to delete (optional if --name is provided)
+//
+// Flags:
+//   - --name: Policy name to look up (alternative to policy ID)
 //
 // Example usage:
 //
 //	spike policy delete policy-123
+//	spike policy delete --name=web-service-policy
 //
 // The command will:
 //  1. Check if the system is initialized
-//  2. Attempt to delete the policy with the specified ID
-//  3. Confirm successful deletion or report any errors
+//  2. Get the policy ID either from arguments or by looking up the policy name
+//  3. Prompt the user to confirm deletion
+//  4. If confirmed, attempt to delete the policy with the specified ID
+//  5. Confirm successful deletion or report any errors
 //
 // Error conditions:
-//   - Missing policy ID argument
+//   - Neither policy ID argument nor --name flag provided
+//   - Policy not found by ID or name
+//   - User cancels the operation
 //   - System not initialized (requires running 'spike init' first)
-//   - Policy not found
 //   - Insufficient permissions
 //   - Policy deletion failure
 //
 // Note: This operation cannot be undone. The policy will be permanently removed
-// from the system.
+// from the system. The command requires confirmation before proceeding.
 func newPolicyDeleteCommand(
-	source *workloadapi.X509Source, spiffeId string,
+    source *workloadapi.X509Source, spiffeId string,
 ) *cobra.Command {
-	return &cobra.Command{
-		Use:   "delete <policy-id>",
-		Short: "Delete a policy",
-		Args:  cobra.ExactArgs(1),
-		Run: func(cmd *cobra.Command, args []string) {
-			trust.Authenticate(spiffeId)
-
-			api := spike.NewWithSource(source)
-
-			policyID := args[0]
-			err := api.DeletePolicy(policyID)
-			if err != nil {
-				if err.Error() == "not ready" {
-					stdout.PrintNotReady()
-					return
-				}
-
-				fmt.Printf("Error: %v\n", err)
-				return
-			}
-
-			fmt.Println("Policy deleted successfully")
-		},
-	}
+    cmd := &cobra.Command{
+        Use:   "delete [policy-id]",
+        Short: "Delete a policy",
+        Long: `Delete a policy by ID or name.
+        
+        You can provide either:
+        - A policy ID as an argument: spike policy delete abc123
+        - A policy name with the --name flag: spike policy delete --name=mypolicy`,
+        Run: func(cmd *cobra.Command, args []string) {
+            trust.Authenticate(spiffeId)
+            api := spike.NewWithSource(source)
+            
+            policyId, err := getPolicyID(cmd, args, api)
+            if err != nil {
+                fmt.Printf("Error: %v\n", err)
+                return
+            }
+            
+            // Confirm deletion
+            fmt.Printf("Are you sure you want to delete policy with ID '%s'? (y/N): ", policyId)
+            reader := bufio.NewReader(os.Stdin)
+            confirm, _ := reader.ReadString('\n')
+            confirm = strings.TrimSpace(confirm)
+            
+            if confirm != "y" && confirm != "Y" {
+                fmt.Println("Operation canceled")
+                return
+            }
+            
+            err = api.DeletePolicy(policyId)
+            if handleAPIError(err) {
+                return
+            }
+            
+            fmt.Println("Policy deleted successfully")
+        },
+    }
+    
+    addNameFlag(cmd)
+    return cmd
 }
