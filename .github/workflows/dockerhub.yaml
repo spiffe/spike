@@ -105,7 +105,7 @@ jobs:
 
       - name: Install Notary CLI
         run: |
-          curl -L https://github.com/theupdateframework/notary/releases/download/v0.7.0/notary-Linux-amd64 -o /usr/local/bin/notary
+          curl -L https://github.com/notaryproject/notary/releases/download/v0.6.1/notary-Linux-amd64 -o /usr/local/bin/notary
           chmod +x /usr/local/bin/notary
 
       - name: Sign the image using Notary
