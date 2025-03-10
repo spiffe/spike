@@ -53,6 +53,7 @@ jobs:
         run: |
           # Create a temporary file with the delegation key
           echo "$DOCKER_DELEGATION_KEY" > delegation.key
+          chmod 600 delegation.key
           # Load the key using docker trust key load
           docker trust key load delegation.key --name delegation
 
