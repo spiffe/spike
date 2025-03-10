@@ -106,42 +106,47 @@ jobs:
           DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
         run: |
           set -e  # Exit on any error
-
+          
           export DOCKER_CONTENT_TRUST=1
           export DOCKER_CONTENT_TRUST_REPOSITORY_PASSPHRASE="${{ secrets.DCT_DELEGATION_PASSPHRASE }}"
-
+          
           echo "Authenticating with Docker Hub..."
-          echo "${DOCKERHUB_TOKEN}" | docker login -u "${DOCKERHUB_USERNAME}" --password-stdin
-
+          echo "$DOCKERHUB_TOKEN" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+          
           echo "Checking if notary CLI is installed..."
           if ! command -v notary &> /dev/null; then
             echo "Error: notary CLI is not installed. Install it before proceeding."
             exit 1
           fi
-
+          
           echo "Inspecting trust data for ${{ env.REGISTRY }}/${{ matrix.image }}..."
           if ! docker trust inspect --pretty "${{ env.REGISTRY }}/${{ matrix.image }}"; then
             echo "No trust data found, signing now."
           fi
-
+          
           echo "Fetching image size..."
           MANIFEST_JSON=$(docker manifest inspect "${{ env.REGISTRY }}/${{ matrix.image }}")
-
+          
           if [ -z "$MANIFEST_JSON" ] || [ "$MANIFEST_JSON" == "null" ]; then
             echo "Error: Unable to fetch manifest for the image. Ensure the image exists and is public."
             exit 1
           fi
-
+          
           IMAGE_SIZE=$(echo "$MANIFEST_JSON" | jq -r 'if .layers then .layers | map(.size) | add else .manifests | map(.size) | add end')
-
+          
           if [ -z "$IMAGE_SIZE" ] || [ "$IMAGE_SIZE" == "null" ]; then
             echo "Error: Unable to determine image size."
             exit 1
           fi
-
+          
+          # Extract the hash without the 'sha256:' prefix
+          DIGEST_RAW=$(echo "${{ steps.build-and-push.outputs.digest }}" | sed 's/^sha256://')
+          
+          echo "digest: $DIGEST_RAW"
+          
           echo "Signing the image with Notary..."
           notary -s https://notary.docker.io -d ~/.docker/trust addhash \
             "${{ env.REGISTRY }}/${{ matrix.image }}" "${{ steps.build-and-push.outputs.digest }}" \
-            "$IMAGE_SIZE" --sha256 "${{ steps.build-and-push.outputs.digest }}"
-
-            echo "Signature added successfully.""
+            "$IMAGE_SIZE" --sha256 "$DIGEST_RAW"
+          
+          echo "Signature added successfully."
