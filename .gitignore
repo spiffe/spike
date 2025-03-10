@@ -24,6 +24,7 @@ go.work.sum
 
 # env file
 .env
+.env.*
 
 # Generated binaries.
 /keeper
