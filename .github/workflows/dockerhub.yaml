@@ -97,6 +97,8 @@ jobs:
         if: github.event_name == 'release'
         env:
           DCT_DELEGATION_PASSPHRASE: ${{ secrets.DCT_DELEGATION_PASSPHRASE }}
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
         run: |
           set -e  # Exit on any error
 
