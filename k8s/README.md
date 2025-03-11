@@ -1,6 +1,8 @@
-# SPIKE Kubernetes Resources
+![SPIKE](assets/spike-banner-lg.png)
 
-This directory contains container and deployment-related files for the SPIKE project.
+## SPIKE Kubernetes Resources
+
+This directory contains container and deployment-related files for **SPIKE**.
 
 ## Directory Structure
 
@@ -15,7 +17,8 @@ To build a SPIKE component container image:
 
 ```bash
 # General syntax
-docker build -t <component-name>:tag -f kubernetes/dockerfiles/<component-name>.Dockerfile .
+docker build -t <component-name>:tag \
+  -f kubernetes/dockerfiles/<component-name>.Dockerfile .
 
 # Examples
 docker build -t keeper:latest -f kubernetes/dockerfiles/keeper.Dockerfile .
@@ -56,7 +59,8 @@ docker run --rm -v /path/to/config:/config nexus:latest
 
 ## Kubernetes Deployment
 
-Sample Kubernetes manifests for deploying SPIKE components will be added in future releases.
+Sample Kubernetes manifests for deploying SPIKE components will be added in 
+future releases.
 
 ## Notes
 
