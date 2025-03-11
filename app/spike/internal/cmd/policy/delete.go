@@ -64,46 +64,46 @@ import (
 // Note: This operation cannot be undone. The policy will be permanently removed
 // from the system. The command requires confirmation before proceeding.
 func newPolicyDeleteCommand(
-    source *workloadapi.X509Source, spiffeId string,
+	source *workloadapi.X509Source, spiffeId string,
 ) *cobra.Command {
-    cmd := &cobra.Command{
-        Use:   "delete [policy-id]",
-        Short: "Delete a policy",
-        Long: `Delete a policy by ID or name.
+	cmd := &cobra.Command{
+		Use:   "delete [policy-id]",
+		Short: "Delete a policy",
+		Long: `Delete a policy by ID or name.
         
         You can provide either:
         - A policy ID as an argument: spike policy delete abc123
         - A policy name with the --name flag: spike policy delete --name=mypolicy`,
-        Run: func(cmd *cobra.Command, args []string) {
-            trust.Authenticate(spiffeId)
-            api := spike.NewWithSource(source)
-            
-            policyId, err := getPolicyID(cmd, args, api)
-            if err != nil {
-                fmt.Printf("Error: %v\n", err)
-                return
-            }
-            
-            // Confirm deletion
-            fmt.Printf("Are you sure you want to delete policy with ID '%s'? (y/N): ", policyId)
-            reader := bufio.NewReader(os.Stdin)
-            confirm, _ := reader.ReadString('\n')
-            confirm = strings.TrimSpace(confirm)
-            
-            if confirm != "y" && confirm != "Y" {
-                fmt.Println("Operation canceled")
-                return
-            }
-            
-            err = api.DeletePolicy(policyId)
-            if handleAPIError(err) {
-                return
-            }
-            
-            fmt.Println("Policy deleted successfully")
-        },
-    }
-    
-    addNameFlag(cmd)
-    return cmd
+		Run: func(cmd *cobra.Command, args []string) {
+			trust.Authenticate(spiffeId)
+			api := spike.NewWithSource(source)
+
+			policyId, err := sendGetPolicyIdRequest(cmd, args, api)
+			if err != nil {
+				fmt.Printf("Error: %v\n", err)
+				return
+			}
+
+			// Confirm deletion
+			fmt.Printf("Are you sure you want to delete policy with ID '%s'? (y/N): ", policyId)
+			reader := bufio.NewReader(os.Stdin)
+			confirm, _ := reader.ReadString('\n')
+			confirm = strings.TrimSpace(confirm)
+
+			if confirm != "y" && confirm != "Y" {
+				fmt.Println("Operation canceled")
+				return
+			}
+
+			err = api.DeletePolicy(policyId)
+			if handleAPIError(err) {
+				return
+			}
+
+			fmt.Println("Policy deleted successfully")
+		},
+	}
+
+	addNameFlag(cmd)
+	return cmd
 }
