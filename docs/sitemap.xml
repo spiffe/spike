@@ -106,6 +106,18 @@
         <loc>https://spike.ist/getting-started/cli/</loc>
     </url>
     <url>
+        <loc>https://spike.ist/getting-started/commands/</loc>
+    </url>
+    <url>
+        <loc>https://spike.ist/getting-started/commands/operator/</loc>
+    </url>
+    <url>
+        <loc>https://spike.ist/getting-started/commands/policy/</loc>
+    </url>
+    <url>
+        <loc>https://spike.ist/getting-started/commands/secret/</loc>
+    </url>
+    <url>
         <loc>https://spike.ist/getting-started/configuration/</loc>
     </url>
     <url>

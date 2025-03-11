@@ -15,13 +15,24 @@ sort_by = "weight"
 > To watch **SPIKE** CLI in action, [you can check out **SPIKE** presentations
 and demo recordings][demos].
 
-**SPIKE** uses **SPIKE Pilot** (*the command line tool*) to interact with 
+**SPIKE** uses **SPIKE Pilot** (*the command line tool*) to interact with
 **SPIKE Nexus** (*the secrets store*).
 
-Since **SPIKE** is in active development, its command line interface changes
-a lot. The best way to learn about it will be to use its `--help` flag.
+## Detailed CLI Documentation
 
-Here is how the interface looks like. Note that what you see might be 
+The rest of this page focuses on providing a **practical** sense of how to use 
+the **SPIKE** command line interface. It's aimed at explaining its usage through 
+examples and common scenarios. Please note that it is not a normative or 
+exhaustive reference; for that, refer to the 
+[**SPIKE CLI Reference**][cli-list].
+
+[cli-list]: @/getting-started/commands/_index.md "SPIKE Command Index"
+
+## How to Get Help
+
+The best way to learn about it will be to use its `--help` flag.
+
+Here is how the interface looks like. Note that what you see might be
 different based on the version you use.
 
 ```bash

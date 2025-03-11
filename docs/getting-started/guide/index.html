@@ -1013,12 +1013,6 @@ window.</p>
 </span><span style="color:#65737e;"># Output:
 </span><span style="color:#65737e;"># OK
 </span></code></pre>
-<p>Then let’s read the secret:</p>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">spike</span><span> (feature/zola)</span><span style="color:#bf616a;">$</span><span> spike secret get /tenants/acme/credentials/db
-</span><span style="color:#bf616a;">pass:</span><span> SPIKERocks
-</span><span style="color:#bf616a;">username:</span><span> root
-</span><span>
-</span></code></pre>
 <p>Now, let’s read the secret back:</p>
 <pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">spike</span><span> secret get /tenants/acme/credentials/db
 </span><span>

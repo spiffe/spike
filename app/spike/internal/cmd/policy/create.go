@@ -63,86 +63,91 @@ import (
 //   - Policy creation failure
 
 func newPolicyCreateCommand(
-    source *workloadapi.X509Source, spiffeId string,
+	source *workloadapi.X509Source, spiffeId string,
 ) *cobra.Command {
-    var (
-        name            string
-        pathPattern     string
-        spiffeIdPattern string
-        permsStr        string
-    )
+	var (
+		name            string
+		pathPattern     string
+		spiffeIdPattern string
+		permsStr        string
+	)
 
-    cmd := &cobra.Command{
-        Use:   "create",
-        Short: "Create a new policy",
-        Long: `Create a new policy that grants specific permissions to workloads.
+	cmd := &cobra.Command{
+		Use:   "create",
+		Short: "Create a new policy",
+		Long: `Create a new policy that grants specific permissions to workloads.
 
         Example:
-        spike policy create --name=db-access --path="/db/*" --spiffeid="spiffe://example.org/service/*" --permissions="read,write"
+        spike policy create --name=db-access 
+          --path="db/*" --spiffeid="spiffe://example.org/service/*" 
+          --permissions="read,write"
 
         Valid permissions: read, write, list, super`,
-        Args: cobra.NoArgs,
-        Run: func(cmd *cobra.Command, args []string) {
+		Args: cobra.NoArgs,
+		Run: func(cmd *cobra.Command, args []string) {
 
-            // Check if all required flags are provided
-            missingFlags := []string{}
-            if name == "" {
-                missingFlags = append(missingFlags, "name")
-            }
-            if pathPattern == "" {
-                missingFlags = append(missingFlags, "path")
-            }
-            if spiffeIdPattern == "" {
-                missingFlags = append(missingFlags, "spiffeid")
-            }
-            if permsStr == "" {
-                missingFlags = append(missingFlags, "permissions")
-            }
+			// Check if all required flags are provided
+			missingFlags := []string{}
+			if name == "" {
+				missingFlags = append(missingFlags, "name")
+			}
+			if pathPattern == "" {
+				missingFlags = append(missingFlags, "path")
+			}
+			if spiffeIdPattern == "" {
+				missingFlags = append(missingFlags, "spiffeid")
+			}
+			if permsStr == "" {
+				missingFlags = append(missingFlags, "permissions")
+			}
 
-            if len(missingFlags) > 0 {
-                fmt.Println("Error: all flags are required")
-                for _, flag := range missingFlags {
-                    fmt.Printf("  --%s is missing\n", flag)
-                }
-                return
-            }
+			if len(missingFlags) > 0 {
+				fmt.Println("Error: all flags are required")
+				for _, flag := range missingFlags {
+					fmt.Printf("  --%s is missing\n", flag)
+				}
+				return
+			}
 
-            trust.Authenticate(spiffeId)
-            api := spike.NewWithSource(source)
-            
-            // Validate permissions
-            permissions, err := validatePermissions(permsStr)
-            if err != nil {
-                fmt.Printf("Error: %v\n", err)
-                return
-            }
-            
-           // Check if a policy with this name already exists
-           exists, err := checkPolicyNameExists(api, name)
-           if handleAPIError(err) {
-                return
-            }
-            
-            if exists {
-                fmt.Printf("Error: A policy with name '%s' already exists\n", name)
-                return
-            }
-            
-            // Create policy
-            err = api.CreatePolicy(name, spiffeIdPattern, pathPattern, permissions)
-            if handleAPIError(err) {
-                return
-            }
-            
-            fmt.Println("Policy created successfully")
-        },
-    }
-    
-    // Define flags
-    cmd.Flags().StringVar(&name, "name", "", "Policy name (required)")
-    cmd.Flags().StringVar(&pathPattern, "path", "", "Resource path pattern, e.g., '/secrets/*' (required)")
-    cmd.Flags().StringVar(&spiffeIdPattern, "spiffeid", "", "SPIFFE ID pattern, e.g., 'spiffe://example.org/service/*' (required)")
-    cmd.Flags().StringVar(&permsStr, "permissions", "", "Comma-separated permissions: read, write, list, super (required)")
-    
-    return cmd
+			trust.Authenticate(spiffeId)
+			api := spike.NewWithSource(source)
+
+			// Validate permissions
+			permissions, err := validatePermissions(permsStr)
+			if err != nil {
+				fmt.Printf("Error: %v\n", err)
+				return
+			}
+
+			// Check if a policy with this name already exists
+			exists, err := checkPolicyNameExists(api, name)
+			if handleAPIError(err) {
+				return
+			}
+
+			if exists {
+				fmt.Printf("Error: A policy with name '%s' already exists\n", name)
+				return
+			}
+
+			// Create policy
+			err = api.CreatePolicy(name, spiffeIdPattern, pathPattern, permissions)
+			if handleAPIError(err) {
+				return
+			}
+
+			fmt.Println("Policy created successfully")
+		},
+	}
+
+	// Define flags
+	cmd.Flags().StringVar(&name, "name", "", "Policy name (required)")
+	cmd.Flags().StringVar(&pathPattern, "path", "",
+		"Resource path pattern, e.g., '/secrets/*' (required)")
+	cmd.Flags().StringVar(&spiffeIdPattern, "spiffeid", "",
+		"SPIFFE ID pattern, e.g., 'spiffe://example.org/service/*' (required)")
+	cmd.Flags().StringVar(&permsStr, "permissions", "",
+		"Comma-separated permissions: read, write, list, super (required)")
+
+	return cmd
 }

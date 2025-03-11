@@ -14,9 +14,9 @@ import (
 	"github.com/spiffe/spike/app/spike/internal/trust"
 )
 
-// newPolicyGetCommand creates a new Cobra command for retrieving policy details.
-// It fetches and displays the complete information about a specific policy by
-// ID or name.
+// newPolicyGetCommand creates a new Cobra command for retrieving policy
+// details. It fetches and displays the complete information about a specific
+// policy by ID or name.
 //
 // The command requires an X509Source for SPIFFE authentication and validates
 // that the system is initialized before retrieving policy information.
@@ -33,7 +33,8 @@ import (
 //	get [policy-id] [flags]
 //
 // Arguments:
-//   - policy-id: The unique identifier of the policy to retrieve (optional if --name is provided)
+//   - policy-id: The unique identifier of the policy to retrieve
+//     (optional if --name is provided)
 //
 // Flags:
 //   - --name: Policy name to look up (alternative to policy ID)
@@ -84,52 +85,52 @@ import (
 //   - System not initialized (requires running 'spike init' first)
 //   - Insufficient permissions
 func newPolicyGetCommand(
-    source *workloadapi.X509Source, spiffeId string,
+	source *workloadapi.X509Source, spiffeId string,
 ) *cobra.Command {
-    cmd := &cobra.Command{
-        Use:   "get [policy-id]",
-        Short: "Get policy details",
-        Long: `Get detailed information about a policy by ID or name.
+	cmd := &cobra.Command{
+		Use:   "get [policy-id]",
+		Short: "Get policy details",
+		Long: `Get detailed information about a policy by ID or name.
 
         You can provide either:
         - A policy ID as an argument: spike policy get abc123
         - A policy name with the --name flag: spike policy get --name=mypolicy
 
         Use --format=json to get the output in JSON format.`,
-        Run: func(cmd *cobra.Command, args []string) {
-            trust.Authenticate(spiffeId)
-            api := spike.NewWithSource(source)
+		Run: func(cmd *cobra.Command, args []string) {
+			trust.Authenticate(spiffeId)
+			api := spike.NewWithSource(source)
 
-            // If first argument is provided without --name flag, it could be
-            // misinterpreted as trying to use policy name directly
-            if len(args) > 0 && !cmd.Flags().Changed("name") {
-                fmt.Println("Note: To look up a policy by name, use --name flag:")
-                fmt.Printf("  spike policy get --name=%s\n\n", args[0])
-                fmt.Printf("Attempting to use '%s' as policy ID...\n", args[0])
-            }
-            
-            policyId, err := getPolicyID(cmd, args, api)
-            if err != nil {
-                fmt.Printf("Error: %v\n", err)
-                return
-            }
-            
-            policy, err := api.GetPolicy(policyId)
-            if handleAPIError(err) {
-                return
-            }
+			// If first argument is provided without --name flag, it could be
+			// misinterpreted as trying to use policy name directly
+			if len(args) > 0 && !cmd.Flags().Changed("name") {
+				fmt.Println("Note: To look up a policy by name, use --name flag:")
+				fmt.Printf("  spike policy get --name=%s\n\n", args[0])
+				fmt.Printf("Attempting to use '%s' as policy ID...\n", args[0])
+			}
 
-            if policy == nil {
-                fmt.Println("Error: Got empty response from server")
-                return
-            }
-            
-            output := formatPolicy(cmd, policy)
-            fmt.Println(output)
-        },
-    }
-    
-    addNameFlag(cmd)
-    addFormatFlag(cmd)
-    return cmd
+			policyId, err := sendGetPolicyIdRequest(cmd, args, api)
+			if err != nil {
+				fmt.Printf("Error: %v\n", err)
+				return
+			}
+
+			policy, err := api.GetPolicy(policyId)
+			if handleAPIError(err) {
+				return
+			}
+
+			if policy == nil {
+				fmt.Println("Error: Got empty response from server")
+				return
+			}
+
+			output := formatPolicy(cmd, policy)
+			fmt.Println(output)
+		},
+	}
+
+	addNameFlag(cmd)
+	addFormatFlag(cmd)
+	return cmd
 }

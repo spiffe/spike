@@ -7,5 +7,8 @@
 // specify rules for which workloads can access specific resources based on
 // SPIFFE IDs, resource paths, and assigned permissions.
 //
-// This package includes utilities for creating policies via
+// This package implements the SPIKE CLI policy commands that allow users to
+// manage access control policies in their SPIKE deployment.
+//
+// See <link-here> for CLI documentation.
 package policy
