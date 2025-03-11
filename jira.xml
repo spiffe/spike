@@ -22,176 +22,37 @@
       ✅ A golang SDK
     </meta>
   </purpose>
+  <watch>
+    <issue>
+      There is ongoing work on kubernetification.
+    </issue>
+    <issue>
+      There is ongoing work on CLI documentation.
+    </issue>
+  </watch>
   <immediate-backlog>
     <issue>
       * cut a new vsecm version too.
       * there are also open PRs there.
     </issue>
-  </immediate-backlog>
-  <low-hanging-fruits>
-
+    <issue>
+      SPIFFE turtle book PDF to markdown conversion.
+    </issue>
+    <issue>
+      aes256-cbc
+    </issue>
+    <issue>
+      jay:U2FsdGVkX1+VhdGia1yk+JAUSraXj60ZA2ydT9TuHmQBE1sWLcMLb5z0B76sCqpJVGi1GQCl8BnnoV5kznYneQ==
+    </issue>
     <issue>
       to docs: keepers need to have monotonically increasing ids, starting
       from 1.
+      Also give an example for nexus configuration.
     </issue>
     <isuse>
       godoc updates required on this repo, and also SDK.
       check and ensure ALL files are up-to-date.
     </isuse>
-    <issue kind="good-first-issue">
-      Consider Additional Security Headers:
-      // Add before net.Respond
-      w.Header().Set("Cache-Control", "no-store, no-cache, must-revalidate")
-      w.Header().Set("Pragma", "no-cache")
-      w.Header().Set("Expires", "0")
-    </issue>
-    <issue>
-      adding a timeout or circuit breaker to the infinite loop in BootstrapBackingStoreWithNewRootKey, I was suggesting a way to prevent the function from running indefinitely if something goes wrong with keeper initialization.
-      The current implementation uses:
-      for {
-      // Ensure to get a success response from ALL keepers eventually.
-      exit := iterateKeepersToBootstrap(
-      keepers, rootShares, successfulKeepers, source,
-      )
-      if exit {
-      return
-      }
-
-      log.Log().Info(fName, "msg", "Waiting for keepers to initialize")
-      // TODO: make the time configurable.
-      time.Sleep(5 * time.Second)
-      }
-      This loop will continue forever until all keepers are successfully initialized. While this makes sense for normal operation, there are scenarios where this could become problematic:
-
-      If one or more keepers are permanently unavailable or unreachable
-      If there's a persistent network issue preventing communication
-      If there's a configuration issue that makes successful initialization impossible
-
-      A potential improvement would be to add:
-      maxAttempts := env.GetMaxBootstrapAttempts() // Could be configurable
-      attempts := 0
-
-      ctx, cancel := context.WithTimeout(context.Background(), env.GetBootstrapTimeout())
-      defer cancel()
-
-      for {
-      select {
-      case lt-ctx.Done():
-      log.Log().Warn(fName, "msg", "Bootstrap timed out after waiting threshold")
-      // Implement fallback strategy or escalate the issue
-      return
-      default:
-      attempts++
-      if maxAttempts > 0 ++ attempts > maxAttempts {
-      log.Log().Warn(fName, "msg", "Exceeded maximum bootstrap attempts")
-      // Implement fallback strategy or escalate the issue
-      return
-      }
-
-      exit := iterateKeepersToBootstrap(
-      keepers, rootShares, successfulKeepers, source,
-      )
-      if exit {
-      return
-      }
-
-      log.Log().Info(fName, "msg", "Waiting for keepers to initialize",
-      "attempt", attempts, "maxAttempts", maxAttempts)
-      time.Sleep(5 * time.Second)
-      }
-      }
-      This approach provides:
-
-      A maximum number of attempts (configurable)
-      A total timeout for the entire operation (configurable)
-      Better observability of progress through attempt counting
-
-      In highly reliable systems, you might want the bootstrap to keep trying forever, but even then, it's valuable to have observability into how long it's been trying and an option to break the loop if needed.
-    </issue>
-    <issue>
-      JSON Security:
-
-      Marshaling/unmarshaling sensitive data with standard JSON functions can leave traces in memory
-      Consider if a more secure serialization approach is needed for sensitive data
-
-      Regarding more secure JSON serialization approaches for sensitive data, here are several strategies you could consider:
-
-      Custom Secure Marshaler/Unmarshaler:
-
-      Implement custom JSON marshal/unmarshal methods that use secure memory practices
-      Include zero-out operations immediately after the data is no longer needed
-      Use fixed-size arrays rather than slices to avoid heap allocations
-
-
-      Buffer Pooling with Zeroing:
-
-      Create a pool of fixed-size buffers for serialization operations
-      Zero out buffers before returning them to the pool
-      This minimizes allocations and ensures cleanup
-
-
-      Memory-Safe Serialization Libraries:
-
-      Look into security-focused serialization libraries that handle memory better than standard encoding/json
-      Some cryptographic libraries include serialization functions designed for sensitive data
-
-
-      Encrypted Serialization:
-
-      Serialize to an encrypted format directly
-      The data stays encrypted in memory except during actual use
-
-
-      Use of Go's io.Writer Interface:
-
-      Marshal directly to a pre-allocated buffer using json.Encoder
-      This gives more control over the underlying memory
-
-
-      Manual Field-by-Field Handling:
-
-      For extremely sensitive structures, avoid automatic JSON marshaling entirely
-      json marshaling and unmarshaling can leave traces in memory.
-
-      Instead, construct the JSON manually field by field, zeroing intermediate
-      buffers
-
-
-
-      A practical implementation might look like:
-      goCopyfunc secureJSONMarshal(v interface{}) ([]byte, error) {
-      // Pre-allocate buffer of reasonable size to avoid resizing
-      buffer := make([]byte, 0, 1024)
-
-      // Use buffer as writer to avoid intermediate string allocations
-      b := bytes.NewBuffer(buffer)
-      encoder := json.NewEncoder(b)
-
-      // Disable HTML escaping to reduce copying
-      encoder.SetEscapeHTML(false)
-
-      err := encoder.Encode(v)
-      if err != nil {
-      return nil, err
-      }
-
-      // Get result as byte slice
-      result := b.Bytes()
-
-      // Create a copy that we'll return
-      finalResult := make([]byte, len(result))
-      copy(finalResult, result)
-
-      // Zero out the original buffer
-      for i := range result {
-      result[i] = 0
-      }
-
-      return finalResult, nil
-      }
-      For unmarshaling, we could use a similar approach with a pre-allocated
-      structure and careful buffer management.
-    </issue>
     <issue>
       address todo items inside source code after a release cut.
 
@@ -204,19 +65,8 @@
     </issue>
     <issue>
       this should be configurable:
-
       ctxC, cancel := context.WithTimeout(context.Background(), 30*time.Second)
       defer cancel()
-    </issue>
-    <issue>
-      Address TODO: items in the source code.
-    </issue>
-    <issue>
-      seed, err := crypto.Aes256Seed()
-
-      create an override function that return a byte slice instead of a string.
-      while at that, we can create a pointer to a byte array too
-      (since the size will be fixed for 256bits anyways)
     </issue>
     <issue>
       if crashed and trying to restore (instead of recover)
@@ -237,21 +87,6 @@
 
       ^ this happens when the input is invalid; a more explanatory error message
       would be great.
-    </issue>
-    <issue>
-      // TDO: Yes memory is the source of truth; but at least
-      // attempt some exponential retries before giving up.
-      if err := be.StoreSecret(ctx, path, *secret); err != nil {
-      // Log error but continue - memory is the source of truth
-      log.Log().Warn(fName,
-      "msg", "Failed to cache secret",
-      "path", path,
-      "err", err.Error(),
-      )
-      }
-
-      SQLLite can error out if there is a blocked transaction or
-      a integrity issue, which a retry can fix it.
     </issue>
     <issue>
       sanitize perms
@@ -278,66 +113,16 @@
       Go through all cobra commands and validate/sanitize what needs to
       be.
     </issue>
-  </low-hanging-fruits>
-  <feature title="Security">
     <issue>
-      Initialize the root key with 32 bits of zeroes.
+      use dig too, since dig works better than parsing hosts file in mac os
 
-      Initializing rootKey with 32 bytes of zeroes (make([]byte, 32)) instead
-      of letting it dynamically grow will be a better practice from a security
-      perspective for several reasons:
-      * Prevents Length Leaks: If we allow the slice to dynamically grow, an
-      attacker observing memory patterns might infer key-related operations
-      based on the length changes. By pre-allocating 32 bytes, the length
-      remains constant.
-      * Ensures Expected Size: It enforces that the encryption key will always
-      have a fixed size, reducing the risk of unexpected behavior or bugs
-      where the key is shorter or longer than expected.
-      * Avoids Accidental nil Access: Without initialization, rootKey defaults
-      to nil, which can lead to runtime panics if accessed before being
-      properly assigned.
-      * Predictable Memory Layout: Pre-allocating avoids potential fragmentation
-      in memory allocation, making access patterns more predictable.
-
-      Or even better, use an array `rootKey [32]byte` since size is fixed.
-
-      When doing it, we'd need to check everywhere rootKey is used because
-      there are nil check which will regress when using an array or a
-      non-nil zeroed-out slice.
-    </issue>
-  </feature>
-
-  <feature title="Containerization">
-    <issue>
-      Next prio is likely containerization.
-      * start by creating dockerhub repos.
-      * also containerize things locally.
-    </issue>
-  </feature>
-  <low-hanging-fruits>
-    <issue>
-      go runtime update to the recent.
-      update SPIRE too while you are at it.
-    </issue>
-    <issue>
-      try getent in  checkdomain
-
-      check_domain() {
-      # Use getent instead of dig as it respects /etc/hosts
-      if getent hosts "$SPIRE_SERVER_DOMAIN" > /dev/null; then
-      # Get the full answer for display
-      DNS_ANSWER=$(getent hosts "$SPIRE_SERVER_DOMAIN")
-
-      # Print the resolved address(es)
-      echo "DNS resolution for $SPIRE_SERVER_DOMAIN:"
-      echo "$DNS_ANSWER"
-      return 0
+      # Check if getent is available
+      if command -v getent >/dev/null 2>&1; then
+      HOSTS_ANSWER=$(getent hosts "$SPIRE_SERVER_DOMAIN")
       else
-      echo "Error: No valid DNS answer for $SPIRE_SERVER_DOMAIN"
-      return 1
+      # Fallback for systems without getent (like macOS)
+      HOSTS_ANSWER=$(grep "$SPIRE_SERVER_DOMAIN" /etc/hosts | grep -v "^#")
       fi
-      }
-
     </issue>
     <issue>
       To docs:
@@ -348,52 +133,30 @@
       * it requires root privileges or `CAP_IPC_LOCK` in Linux.
       * there is no windows equivalent.
 
-      however without `mlock` if swap is on, zeroing out memory won't be good enough as we won't have any control ove whatever is written on swap.
+      however without `mlock` if swap is on, zeroing out memory won't be good
+      enough as we won't have any control ove whatever is written on swap.
 
       --
 
-      @kfox1111 has suggested to add "turning swap off" to the [production guide](https://spike.ist/operations/production/) as a recommendation.
+      @kfox1111 has suggested to add "turning swap off" to the
+      [production guide](https://spike.ist/operations/production/) as a
+      recommendation.
 
-      Turning swap off is recommended for bare-metal k8s control plane and worker nodes anyway; so chances are, it will be turned off if a modern containerized (doker, k8s, etc) environment.
+      Turning swap off is recommended for bare-metal k8s control plane and
+      worker nodes anyway; so chances are, it will be turned off if a modern
+      containerized (doker, k8s, etc) environment.
 
-      If turning swap is not an option, encrypting swap could be another option too.
-    </issue>
-    <issue>
+      If turning swap is not an option, encrypting swap could be another option
+      too.
+
+      --
+
       may want to put a note in docs or something to run with swap off.
-      1:17
       not sure if the sanitation bits would work with swap on a system.
-
       ^
       production guides.
-
       ^
-
       also describe how enabling swap might impact the security posture.
-    </issue>
-    <issue>
-      use Mlock optionally
-
-      Also we can either "try and shrug" using `mlock` as in
-
-      ```go
-      err := unix.Mlock(data)
-      if err != nil {
-      // do nothing
-      }
-
-      // Zero out memory
-      for i := range data {
-      data[i] = 0
-      }
-      ```
-
-      Or we can put the mlock option behind a feature flag.
-
-      If the user has granted `CAP_IPC_LOCK` to SPIKE Nexus, then they can also set something like `SPIKE_NEXUS_USE_MLOCK="true"` as an env var, and try locking memory if the variable is set (will be "false" by default).
-
-
-
-      https://github.com/spiffe/spike/issues/68
     </issue>
     <issue>
       sanitize keeper id and shard
@@ -454,22 +217,9 @@
 
     </issue>
     <issue>
-      something similar for SPIKE too:
-      Dev mode
-      The Helm chart may run a OpenBao server in development. This
-      installs a
-      single OpenBao server with a memory storage backend.
-
-      For dev mode:
-      - no keepers
-      - no backing store (everything is in memory)
-    </issue>
-
-    <issue>
       Ensure the system works w/o keepers in "in memory" mode.
       also document it and also create a video out of it.
     </issue>
-
     <issue>
       this should be configurable:
       ticker := time.NewTicker(5 * time.Minute)
@@ -478,18 +228,7 @@
       nil check wherever Backend() is called.
       var be backend.Backend
     </issue>
-
-    <issue kind="containerization">
-      GitHub has now arm64 runners. we can use it for
-      cross-compilation/automation.
-      https://github.blog/changelog/2025-01-16-linux-arm64-hosted-runners-now-available-for-free-in-public-repositories-public-preview/
-      Here's an example:
-      https://github.com/kfox1111/cid2pid/blob/main/.github/workflows/release.yaml
-
-      Also, we can (at least temporarily) stop bundling for Mac OS.
-      Also, worth checking if ARM linux binaries work on Mac.
-    </issue>
-  </low-hanging-fruits>
+  </immediate-backlog>
   <later>
     <issue>
       newSecreteUndeleteCommand
@@ -1051,6 +790,208 @@
     </issue>
   </later>
   <runner-up>
+    <issue>
+      dev mode, single binary.
+    </issue>
+    <issue>
+      use Mlock optionally
+
+      Also we can either "try and shrug" using `mlock` as in
+
+      ```go
+      err := unix.Mlock(data)
+      if err != nil {
+      // do nothing
+      }
+
+      // Zero out memory
+      for i := range data {
+      data[i] = 0
+      }
+      ```
+
+      Or we can put the mlock option behind a feature flag.
+
+      If the user has granted `CAP_IPC_LOCK` to SPIKE Nexus, then they can also
+      set something like `SPIKE_NEXUS_USE_MLOCK="true"` as an env var, and try
+      locking memory if the variable is set (will be "false" by default).
+
+      Also research more about mlock before jumping at this.
+
+      https://github.com/spiffe/spike/issues/68
+    </issue>
+    <issue>
+      // TDO: Yes memory is the source of truth; but at least
+      // attempt some exponential retries before giving up.
+      if err := be.StoreSecret(ctx, path, *secret); err != nil {
+      // Log error but continue - memory is the source of truth
+      log.Log().Warn(fName,
+      "msg", "Failed to cache secret",
+      "path", path,
+      "err", err.Error(),
+      )
+      }
+
+      SQLLite can error out if there is a blocked transaction or
+      a integrity issue, which a retry can fix it.
+    </issue>
+    <issue>
+      seed, err := crypto.Aes256Seed()
+
+      create an override function that return a byte slice instead of a string.
+      while at that, we can create a pointer to a byte array too
+      (since the size will be fixed for 256bits anyways)
+
+      We can reuse that instead of the [32]byte array creation in the source code.
+    </issue>
+
+    <issue>
+      adding a timeout or circuit breaker to the infinite loop in BootstrapBackingStoreWithNewRootKey, I was suggesting a way to prevent the function from running indefinitely if something goes wrong with keeper initialization.
+      The current implementation uses:
+      for {
+      // Ensure to get a success response from ALL keepers eventually.
+      exit := iterateKeepersToBootstrap(
+      keepers, rootShares, successfulKeepers, source,
+      )
+      if exit {
+      return
+      }
+
+      log.Log().Info(fName, "msg", "Waiting for keepers to initialize")
+      // TODO: make the time configurable.
+      time.Sleep(5 * time.Second)
+      }
+      This loop will continue forever until all keepers are successfully initialized. While this makes sense for normal operation, there are scenarios where this could become problematic:
+
+      If one or more keepers are permanently unavailable or unreachable
+      If there's a persistent network issue preventing communication
+      If there's a configuration issue that makes successful initialization impossible
+
+      A potential improvement would be to add:
+      maxAttempts := env.GetMaxBootstrapAttempts() // Could be configurable
+      attempts := 0
+
+      ctx, cancel := context.WithTimeout(context.Background(), env.GetBootstrapTimeout())
+      defer cancel()
+
+      for {
+      select {
+      case lt-ctx.Done():
+      log.Log().Warn(fName, "msg", "Bootstrap timed out after waiting threshold")
+      // Implement fallback strategy or escalate the issue
+      return
+      default:
+      attempts++
+      if maxAttempts > 0 ++ attempts > maxAttempts {
+      log.Log().Warn(fName, "msg", "Exceeded maximum bootstrap attempts")
+      // Implement fallback strategy or escalate the issue
+      return
+      }
+
+      exit := iterateKeepersToBootstrap(
+      keepers, rootShares, successfulKeepers, source,
+      )
+      if exit {
+      return
+      }
+
+      log.Log().Info(fName, "msg", "Waiting for keepers to initialize",
+      "attempt", attempts, "maxAttempts", maxAttempts)
+      time.Sleep(5 * time.Second)
+      }
+      }
+      This approach provides:
+
+      A maximum number of attempts (configurable)
+      A total timeout for the entire operation (configurable)
+      Better observability of progress through attempt counting
+
+      In highly reliable systems, you might want the bootstrap to keep trying forever, but even then, it's valuable to have observability into how long it's been trying and an option to break the loop if needed.
+    </issue>
+    <issue>
+      JSON Security:
+
+      Marshaling/unmarshaling sensitive data with standard JSON functions can leave traces in memory
+      Consider if a more secure serialization approach is needed for sensitive data
+
+      Regarding more secure JSON serialization approaches for sensitive data, here are several strategies you could consider:
+
+      Custom Secure Marshaler/Unmarshaler:
+
+      Implement custom JSON marshal/unmarshal methods that use secure memory practices
+      Include zero-out operations immediately after the data is no longer needed
+      Use fixed-size arrays rather than slices to avoid heap allocations
+
+
+      Buffer Pooling with Zeroing:
+
+      Create a pool of fixed-size buffers for serialization operations
+      Zero out buffers before returning them to the pool
+      This minimizes allocations and ensures cleanup
+
+
+      Memory-Safe Serialization Libraries:
+
+      Look into security-focused serialization libraries that handle memory better than standard encoding/json
+      Some cryptographic libraries include serialization functions designed for sensitive data
+
+
+      Encrypted Serialization:
+
+      Serialize to an encrypted format directly
+      The data stays encrypted in memory except during actual use
+
+
+      Use of Go's io.Writer Interface:
+
+      Marshal directly to a pre-allocated buffer using json.Encoder
+      This gives more control over the underlying memory
+
+
+      Manual Field-by-Field Handling:
+
+      For extremely sensitive structures, avoid automatic JSON marshaling entirely
+      json marshaling and unmarshaling can leave traces in memory.
+
+      Instead, construct the JSON manually field by field, zeroing intermediate
+      buffers
+
+
+
+      A practical implementation might look like:
+      func secureJSONMarshal(v interface{}) ([]byte, error) {
+      // Pre-allocate buffer of reasonable size to avoid resizing
+      buffer := make([]byte, 0, 1024)
+
+      // Use buffer as writer to avoid intermediate string allocations
+      b := bytes.NewBuffer(buffer)
+      encoder := json.NewEncoder(b)
+
+      // Disable HTML escaping to reduce copying
+      encoder.SetEscapeHTML(false)
+
+      err := encoder.Encode(v)
+      if err != nil {
+      return nil, err
+      }
+
+      // Get result as byte slice
+      result := b.Bytes()
+
+      // Create a copy that we'll return
+      finalResult := make([]byte, len(result))
+      copy(finalResult, result)
+
+      // Zero out the original buffer
+      for i := range result {
+      result[i] = 0
+      }
+
+      return finalResult, nil
+      }
+      For unmarshaling, we could use a similar approach with a pre-allocated
+      structure and careful buffer management.
+    </issue>
     <issue>
     FIPS compliance in Go is gaining traction;
     if we don't want to have a FIPS-non-compliant mode (for performance,
