@@ -11,6 +11,7 @@ import (
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	"github.com/spiffe/spike-sdk-go/api/errors"
+	"github.com/spiffe/spike-sdk-go/security/mem"
 
 	"github.com/spiffe/spike/app/nexus/internal/env"
 	"github.com/spiffe/spike/app/nexus/internal/initialization/recovery"
@@ -134,9 +135,7 @@ func RouteRestore(
 
 	// Security: Reset the field when no longer needed.
 	defer func() {
-		for i := range request.Shard {
-			request.Shard[i] = 0
-		}
+		mem.Clear(request.Shard)
 		request.Id = 0
 	}()
 
@@ -145,9 +144,8 @@ func RouteRestore(
 		recovery.RestoreBackingStoreUsingPilotShards(shards)
 		// Security: Zero out all shards since we have finished restoration:
 		for i := range shards {
-			for j := range shards[i].Value {
-				shards[i].Value[j] = 0
-			}
+			mem.Clear(shards[i].Value)
+			shards[i].Id = 0
 		}
 	}
 

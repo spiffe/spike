@@ -14,15 +14,6 @@ import (
 var shard [32]byte
 var shardMutex sync.RWMutex
 
-func zeroed(s *[32]byte) bool {
-	for i := range s {
-		if s[i] != 0 {
-			return false
-		}
-	}
-	return true
-}
-
 // SetShard safely updates the global shard value under a write lock.
 // Although the value is a pointer type, it creates a copy. The value `s`
 // can be safely erased after calling `SetShard()`.
@@ -35,7 +26,16 @@ func SetShard(s *[32]byte) {
 	shardMutex.Lock()
 	defer shardMutex.Unlock()
 
-	if zeroed(s) {
+	zeroed := true
+	for i := range s {
+		if s[i] != 0 {
+			zeroed = false
+			break
+		}
+	}
+
+	// Do not reset the shard if the new value is zero.
+	if zeroed {
 		return
 	}
 

@@ -10,6 +10,7 @@ import (
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	"github.com/spiffe/spike-sdk-go/api/errors"
+	"github.com/spiffe/spike-sdk-go/security/mem"
 
 	"github.com/spiffe/spike/app/keeper/internal/state"
 	"github.com/spiffe/spike/internal/log"
@@ -63,6 +64,7 @@ func RouteShard(
 	// Treat the value "read-only".
 	sh := state.Shard()
 
+	// TODO: this is repeated; maybe a utility function?
 	zeroed := true
 	for _, c := range sh {
 		if c != 0 {
@@ -87,9 +89,7 @@ func RouteShard(
 	}, w)
 	// Security: Reset response body before function exits.
 	defer func() {
-		for i := 0; i < len(responseBody); i++ {
-			responseBody[i] = 0
-		}
+		mem.Clear(&responseBody)
 	}()
 
 	net.Respond(http.StatusOK, responseBody, w)

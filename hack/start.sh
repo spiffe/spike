@@ -29,7 +29,7 @@ check_domain() {
     
     # If dig doesn't find it, check if getent exists and try it
     if [ -z "$DNS_ANSWER" ]; then
-        echo "No DNS record found for $SPIRE_SERVER_DOMAIN, checking hosts file..."
+        echo "No DNS record found for $SPIRE_SERVER_DOMAIN. using other methods..."
         
         # Check if getent is available
         if command -v getent >/dev/null 2>&1; then
@@ -41,7 +41,7 @@ check_domain() {
         
         # If hosts file check also fails, return error
         if [ -z "$HOSTS_ANSWER" ]; then
-            echo "Error: Could not resolve $SPIRE_SERVER_DOMAIN through DNS or hosts file"
+            echo "Error: Could not resolve $SPIRE_SERVER_DOMAIN through any means."
             return 1
         else
             echo "Found $SPIRE_SERVER_DOMAIN in hosts file:"

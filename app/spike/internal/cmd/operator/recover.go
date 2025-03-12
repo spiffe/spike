@@ -15,6 +15,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	spike "github.com/spiffe/spike-sdk-go/api"
+	"github.com/spiffe/spike-sdk-go/security/mem"
 
 	"github.com/spiffe/spike/app/spike/internal/trust"
 	"github.com/spiffe/spike/internal/auth"
@@ -78,9 +79,7 @@ func newOperatorRecoverCommand(
 			// Security: clean the shards when we no longer need them.
 			defer func() {
 				for _, shard := range shards {
-					for i := 0; i < len(shard); i++ {
-						shard[i] = 0
-					}
+					mem.Clear(shard)
 				}
 			}()
 

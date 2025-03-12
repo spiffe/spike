@@ -7,6 +7,7 @@ package recovery
 import (
 	"github.com/cloudflare/circl/group"
 	"github.com/cloudflare/circl/secretsharing"
+	"github.com/spiffe/spike-sdk-go/security/mem"
 
 	"github.com/spiffe/spike/app/nexus/internal/env"
 	"github.com/spiffe/spike/internal/log"
@@ -119,9 +120,7 @@ func RecoverRootKey(ss []ShamirShard) *[32]byte {
 		var result [32]byte
 		copy(result[:], binaryRec)
 		// Security: Zero out temporary variables before function exits.
-		for i := range binaryRec {
-			binaryRec[i] = 0
-		}
+		mem.Clear(&binaryRec)
 
 		return &result
 	}

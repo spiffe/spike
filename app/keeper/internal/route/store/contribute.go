@@ -10,6 +10,7 @@ import (
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	"github.com/spiffe/spike-sdk-go/api/errors"
+	"github.com/spiffe/spike-sdk-go/security/mem"
 
 	"github.com/spiffe/spike/app/keeper/internal/state"
 	"github.com/spiffe/spike/internal/log"
@@ -86,9 +87,7 @@ func RouteContribute(
 	// Security: Zero out shard before the function exits.
 	// [1]
 	defer func() {
-		for i := 0; i < len(request.Shard); i++ {
-			request.Shard[i] = 0
-		}
+		mem.Clear(request.Shard)
 	}()
 
 	// Ensure the client didn't send an array of all zeros, which would

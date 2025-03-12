@@ -21,6 +21,9 @@ import (
 //	    "3": "https://localhost:8643"
 //	}
 //
+// The SPIKE Keeper address mappings MUST start with the key "1" and they MUST
+// increment by 1 for each subsequent SPIKE Keeper.
+//
 // Returns:
 //   - map[string]string: Mapping of keeper IDs to their URLs
 //

@@ -8,6 +8,7 @@ import (
 	"crypto/rand"
 
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
+	"github.com/spiffe/spike-sdk-go/security/mem"
 
 	"github.com/spiffe/spike/app/nexus/internal/env"
 	"github.com/spiffe/spike/app/nexus/internal/initialization/recovery"
@@ -59,9 +60,7 @@ func Initialize(source *workloadapi.X509Source) {
 		//
 		// For example, `seed` should be reset here,
 		// but not in `state.Initialize()`.
-		for i := range seed {
-			seed[i] = 0
-		}
+		mem.Clear(&seed)
 	}()
 
 	if _, err := rand.Read(seed[:]); err != nil {

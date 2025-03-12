@@ -6,11 +6,13 @@ package recovery
 
 import (
 	"encoding/json"
+	"net/url"
+
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	apiUrl "github.com/spiffe/spike-sdk-go/api/url"
 	network "github.com/spiffe/spike-sdk-go/net"
-	"net/url"
+	"github.com/spiffe/spike-sdk-go/security/mem"
 
 	"github.com/spiffe/spike/internal/auth"
 	"github.com/spiffe/spike/internal/log"
@@ -116,9 +118,7 @@ func shardContributionResponse(
 	// Security: Ensure that temporary variable is zeroed out before
 	// function exits.
 	defer func() {
-		for i := range c {
-			c[i] = 0
-		}
+		mem.Clear(&c)
 	}()
 
 	scr := reqres.ShardContributionRequest{
@@ -127,9 +127,7 @@ func shardContributionResponse(
 	// Security: Ensure that struct field is zeroed out before the function
 	// exits.
 	defer func() {
-		for i := range scr.Shard {
-			scr.Shard[i] = 0
-		}
+		mem.Clear(scr.Shard)
 	}()
 
 	md, err := json.Marshal(scr)
@@ -141,9 +139,7 @@ func shardContributionResponse(
 	}
 	// Security: Ensure that the md is zeroed out before the function exits.
 	defer func() {
-		for i := range md {
-			md[i] = 0
-		}
+		mem.Clear(&md)
 	}()
 
 	data, err := net.Post(client, u, md)

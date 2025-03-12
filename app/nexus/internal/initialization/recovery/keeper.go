@@ -15,6 +15,7 @@ import (
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	apiUrl "github.com/spiffe/spike-sdk-go/api/url"
+	"github.com/spiffe/spike-sdk-go/security/mem"
 
 	"github.com/spiffe/spike/app/nexus/internal/env"
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
@@ -148,9 +149,7 @@ func iterateKeepersAndTryRecovery(
 
 		res := unmarshalShardResponse(data)
 		// Security: Reset data before the function exits.
-		for i := range data {
-			data[i] = 0
-		}
+		mem.Clear(&data)
 
 		if res == nil {
 			continue
@@ -201,14 +200,10 @@ func iterateKeepersAndTryRecovery(
 		state.SetRootKey(binaryRec)
 
 		// Security: Zero out temporary variables before function exits.
-		for i := range binaryRec {
-			binaryRec[i] = 0
-		}
+		mem.Clear(binaryRec)
 		// Security: Zero out temporary variables before function exits.
 		// Note that `successfulKeeperShards` will be reset elsewhere.
-		for i := range res.Shard {
-			res.Shard[i] = 0
-		}
+		mem.Clear(res.Shard)
 
 		// System initialized: Exit infinite loop.
 		return true

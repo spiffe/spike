@@ -27,7 +27,8 @@ import (
 // Parameters:
 //   - w: The HTTP ResponseWriter to write the response to
 //   - r: The HTTP Request containing the client's request details
-func Route(w http.ResponseWriter, r *http.Request, a *log.AuditEntry) error {
+//   - audit: The AuditEntry containing the client's audit information
+func Route(w http.ResponseWriter, r *http.Request, audit *log.AuditEntry) error {
 	return net.RouteFactory[url.ApiAction](
 		url.ApiUrl(r.URL.Path),
 		url.ApiAction(r.URL.Query().Get(url.KeyApiAction)),
@@ -43,5 +44,5 @@ func Route(w http.ResponseWriter, r *http.Request, a *log.AuditEntry) error {
 			default:
 				return net.Fallback
 			}
-		})(w, r, a)
+		})(w, r, audit)
 }

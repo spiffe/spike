@@ -15,6 +15,7 @@ import (
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	apiUrl "github.com/spiffe/spike-sdk-go/api/url"
 	network "github.com/spiffe/spike-sdk-go/net"
+	"github.com/spiffe/spike-sdk-go/security/mem"
 
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 	"github.com/spiffe/spike/internal/auth"
@@ -157,9 +158,21 @@ func sendShardsToKeepers(
 		if len(contribution) != 32 {
 			// Security: Ensure that the contribution is zeroed out before
 			// the next iteration.
+			//
+			// Note that you cannot do `mem.Clear(contribution)` because
+			// contribution is a slice, not a struct.
+			// When we pass a byte slice s to the function Clear[T any](s *T),
+			// we are passing a pointer to the slice header, not a pointer to the
+			// underlying array. The slice header contains three fields:
+			// * A pointer to the underlying array
+			// * The length of the slice
+			// * The capacity of the slice
+			// mem.Clear(s) will zero out this slice header structure, but not the
+			// actual array data the slice points to
 			for i := range contribution {
 				contribution[i] = 0
 			}
+			// TODO: maybe a helper function for this too.
 
 			log.Log().Warn(fName,
 				"msg", "invalid contribution length",
@@ -182,9 +195,7 @@ func sendShardsToKeepers(
 		md, err := json.Marshal(scr)
 
 		// Security: Erase scr.Shard when no longer in use.
-		for i := range scr.Shard {
-			scr.Shard[i] = 0
-		}
+		mem.Clear(scr.Shard)
 
 		if err != nil {
 			log.Log().Warn(fName,
@@ -197,9 +208,7 @@ func sendShardsToKeepers(
 
 		// Security: Ensure that the md is zeroed out before
 		// the next iteration.
-		for i := range md {
-			md[i] = 0
-		}
+		mem.Clear(&md)
 
 		if err != nil {
 			log.Log().Warn(fName, "msg",

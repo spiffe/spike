@@ -10,6 +10,7 @@ import (
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	"github.com/spiffe/spike-sdk-go/api/errors"
+	"github.com/spiffe/spike-sdk-go/security/mem"
 
 	"github.com/spiffe/spike/app/nexus/internal/env"
 	"github.com/spiffe/spike/app/nexus/internal/initialization/recovery"
@@ -71,9 +72,7 @@ func RouteRecover(
 	// Security: reset shards before function exits.
 	defer func() {
 		for i := range shards {
-			for j := range shards[i][:] {
-				shards[i][j] = 0
-			}
+			mem.Clear(shards[i])
 		}
 	}()
 
@@ -90,9 +89,7 @@ func RouteRecover(
 	}, w)
 	// Security: Clean up response body before exit.
 	defer func() {
-		for i := range responseBody {
-			responseBody[i] = 0
-		}
+		mem.Clear(&responseBody)
 	}()
 
 	net.Respond(http.StatusOK, responseBody, w)

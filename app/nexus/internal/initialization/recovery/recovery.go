@@ -13,6 +13,7 @@ import (
 
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	"github.com/spiffe/spike-sdk-go/retry"
+	"github.com/spiffe/spike-sdk-go/security/mem"
 	"github.com/spiffe/spike-sdk-go/spiffe"
 	"math/big"
 
@@ -56,9 +57,9 @@ func RecoverBackingStoreUsingKeeperShards(source *workloadapi.X509Source) {
 	defer func() {
 		log.Log().Info(fName, "msg", "Resetting successfulKeeperShards")
 		for id := range successfulKeeperShards {
-			for j := range successfulKeeperShards[id] {
-				successfulKeeperShards[id][j] = 0
-			}
+			// Note: you cannot simply use `mem.Clear(successfulKeeperShards)`
+			// because it will reset the pointer but not the data it points to.
+			mem.Clear(successfulKeeperShards[id])
 		}
 	}()
 
@@ -164,9 +165,7 @@ func RestoreBackingStoreUsingPilotShards(shards []ShamirShard) {
 	binaryRec := RecoverRootKey(shards)
 	// Security: Ensure the root key is zeroed out after use.
 	defer func() {
-		for i := range binaryRec {
-			binaryRec[i] = 0
-		}
+		mem.Clear(binaryRec)
 	}()
 
 	log.Log().Info(fName, "msg", "Initializing state and root key")
@@ -343,9 +342,7 @@ func BootstrapBackingStoreWithNewRootKey(source *workloadapi.X509Source) {
 	var seed [32]byte
 	// Security: Ensure the seed is zeroed out after use.
 	defer func() {
-		for i := range seed {
-			seed[i] = 0
-		}
+		mem.Clear(&seed)
 	}()
 
 	if _, err := rand.Read(seed[:]); err != nil {

@@ -44,18 +44,13 @@
         * cut a new vsecm version too.
         * there are also open PRs there.
       </issue>
+      <issue>
+        aes256-cbc
+      </issue>
+      <issue>
+        jay:U2FsdGVkX1+VhdGia1yk+JAUSraXj60ZA2ydT9TuHmQBE1sWLcMLb5z0B76sCqpJVGi1GQCl8BnnoV5kznYneQ==
+      </issue>
     </aside>
-    <issue>
-      aes256-cbc
-    </issue>
-    <issue>
-      jay:U2FsdGVkX1+VhdGia1yk+JAUSraXj60ZA2ydT9TuHmQBE1sWLcMLb5z0B76sCqpJVGi1GQCl8BnnoV5kznYneQ==
-    </issue>
-    <issue>
-      to docs: keepers need to have monotonically increasing ids, starting
-      from 1.
-      Also give an example for nexus configuration.
-    </issue>
     <isuse>
       godoc updates required on this repo, and also SDK.
       check and ensure ALL files are up-to-date.

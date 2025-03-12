@@ -15,6 +15,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	spike "github.com/spiffe/spike-sdk-go/api"
+	"github.com/spiffe/spike-sdk-go/security/mem"
 	"golang.org/x/term"
 
 	"github.com/spiffe/spike/app/spike/internal/trust"
@@ -116,21 +117,13 @@ func newOperatorRestoreCommand(
 				// TODO: remove redundant dupe resets down below the code.
 
 				// Clean up all sensitive data
-				for i := 0; i < len(shard); i++ {
-					shard[i] = 0
-				}
-				for i := 0; i < len(decodedShard); i++ {
-					decodedShard[i] = 0
-				}
-				for i := 0; i < 32; i++ {
-					shardToRestore[i] = 0
-				}
+				mem.Clear(&shard)
+				mem.Clear(&decodedShard)
+				mem.Clear(&shardToRestore)
 			}()
 
 			// Security: reset shard immediately after use.
-			for i := 0; i < len(shard); i++ {
-				shard[i] = 0
-			}
+			mem.Clear(&shard)
 
 			if err != nil {
 				log.FatalLn("Failed to decode recovery shard: ", err.Error())
@@ -138,21 +131,18 @@ func newOperatorRestoreCommand(
 
 			if len(decodedShard) != 32 {
 				// Security: reset decodedShard immediately after use.
-				for i := 0; i < len(decodedShard); i++ {
-					decodedShard[i] = 0
-				}
+				mem.Clear(&decodedShard)
 
 				log.FatalLn("Invalid recovery shard length: ", len(decodedShard))
 			}
 
+			// TODO: maybe a copy helper?
 			for i := 0; i < 32; i++ {
 				shardToRestore[i] = decodedShard[i]
 			}
 
 			// Security: reset decodedShard immediately after use.
-			for i := 0; i < 32; i++ {
-				decodedShard[i] = 0
-			}
+			mem.Clear(&decodedShard)
 
 			ix, err := strconv.Atoi(index)
 			if err != nil {
@@ -162,9 +152,7 @@ func newOperatorRestoreCommand(
 			status, err := api.Restore(ix, &shardToRestore)
 
 			// Security: reset shardToRestore immediately after recovery.
-			for i := 0; i < 32; i++ {
-				shardToRestore[i] = 0
-			}
+			mem.Clear(&shardToRestore)
 
 			// TODO: The code assumes exactly 32 bytes for the shard, but doesn't
 			// handle cases where decodedShard might be shorter (though it does check

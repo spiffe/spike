@@ -7,6 +7,8 @@ package base
 import (
 	"sync"
 
+	"github.com/spiffe/spike-sdk-go/security/mem"
+
 	"github.com/spiffe/spike-sdk-go/kv"
 	"github.com/spiffe/spike/app/nexus/internal/env"
 )
@@ -78,9 +80,7 @@ func ResetRootKey() {
 	defer rootKeyMu.Unlock()
 
 	// Explicitly reset the root key bytes to zeroes
-	for i := range rootKey {
-		rootKey[i] = 0
-	}
+	mem.Clear(&rootKey)
 }
 
 // SetRootKey updates the root key with the provided value.
