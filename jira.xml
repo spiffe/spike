@@ -29,8 +29,16 @@
     <issue>
       There is ongoing work on CLI documentation.
     </issue>
+    <issue kind="research">
+      spike, but as an http proxy?
+      like, point http(s)_proxy at this thing, connect to it using your spiffe id, the proxy can use policies and the client spiffeid to allow/disallow an http proxy request
+      No; but not a bad idea indeed. -- will look around; I'll share if I find something related.
+    </issue>
   </watch>
   <immediate-backlog>
+    <issue>
+      turtle book markdownification
+    </issue>
     <issue>
       * cut a new vsecm version too.
       * there are also open PRs there.
