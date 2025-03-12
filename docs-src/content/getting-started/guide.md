@@ -335,6 +335,35 @@ cd $WORKSPACE/spike
 ./hack/start-keeper-3.sh
 ```
 
+Here is how one of these **SPIKE Keeper** startup scripts looks like:
+
+```bash
+# ./hack/start-keeper-1.sh
+SPIKE_KEEPER_TLS_PORT=':8443' \
+./keeper
+````
+
+And here is how **SPIKE Nexus** startup script looks like:
+
+```bash
+# ./hack/start-nexus.sh
+SPIKE_NEXUS_KEEPER_PEERS='{\
+  "1":"https://localhost:8443",\
+  "2":"https://localhost:8543",\
+  "3":"https://localhost:8643"\
+}'\
+./nexus
+```
+
+> **Sequential SPIKE Keeper IDs**
+> 
+> The mapping in `SPIKE_NEXUS_KEEPER_PEERS` should start from `"1"` 
+> and increase monotonically without any gaps in the sequence as shown
+> in the sample code above. This because of the way SPIKE Nexus internally
+> computes and distributes the Shamir Shards. Not following this sequence
+> will lead into errors---We may improve this behavior in the future and make
+> it more flexible.
+
 ## Using SPIKE Pilot
 
 Define an alias to **SPIKE** Pilot:

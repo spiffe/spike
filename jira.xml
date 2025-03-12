@@ -36,16 +36,15 @@
     </issue>
   </watch>
   <immediate-backlog>
-    <issue>
-      turtle book markdownification
-    </issue>
-    <issue>
-      * cut a new vsecm version too.
-      * there are also open PRs there.
-    </issue>
-    <issue>
-      SPIFFE turtle book PDF to markdown conversion.
-    </issue>
+    <aside>
+      <issue>
+        turtle book markdownification
+      </issue>
+      <issue>
+        * cut a new vsecm version too.
+        * there are also open PRs there.
+      </issue>
+    </aside>
     <issue>
       aes256-cbc
     </issue>
