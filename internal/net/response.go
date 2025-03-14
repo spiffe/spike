@@ -55,9 +55,10 @@ func MarshalBody(res any, w http.ResponseWriter) []byte {
 
 // Respond writes a JSON response with the specified status code and body.
 //
-// This function sets the Content-Type header to application/json, writes the
-// provided status code, and sends the response body. Any errors during writing
-// are logged but not returned to the caller.
+// This function sets the Content-Type header to application/json, adds cache
+// invalidation headers (Cache-Control, Pragma, Expires), writes the provided 
+// status code, and sends the response body. Any errors during writing are 
+// logged but not returned to the caller.
 //
 // Parameters:
 //   - statusCode: int - The HTTP status code to send
@@ -65,6 +66,12 @@ func MarshalBody(res any, w http.ResponseWriter) []byte {
 //   - w: http.ResponseWriter - The response writer to use
 func Respond(statusCode int, body []byte, w http.ResponseWriter) {
 	w.Header().Set("Content-Type", "application/json")
+
+	// Add cache invalidation headers
+	w.Header().Set("Cache-Control", "no-store, no-cache, must-revalidate, private")
+	w.Header().Set("Pragma", "no-cache")
+	w.Header().Set("Expires", "0")
+
 	w.WriteHeader(statusCode)
 
 	_, err := w.Write(body)
