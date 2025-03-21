@@ -29,16 +29,13 @@
     <issue>
       There is ongoing work on CLI documentation.
     </issue>
-    <issue kind="research">
-      spike, but as an http proxy?
-      like, point http(s)_proxy at this thing, connect to it using your spiffe id, the proxy can use policies and the client spiffeid to allow/disallow an http proxy request
-      No; but not a bad idea indeed. -- will look around; I'll share if I find something related.
-    </issue>
   </watch>
   <immediate-backlog>
     <aside>
       <issue>
         turtle book markdownification
+        * Try it with pandoc.
+        * automate some minimal script.
       </issue>
       <issue>
         * cut a new vsecm version too.
@@ -790,6 +787,12 @@
       #sleep 5
       #run_background "./hack/start-nexus.sh"
     </issue>
+    <issue kind="research">
+      spike, but as an http proxy?
+      like, point http(s)_proxy at this thing, connect to it using your spiffe id, the proxy can use policies and the client spiffeid to allow/disallow an http proxy request
+      No; but not a bad idea indeed. -- will look around; I'll share if I find something related.
+    </issue>
+
   </later>
   <runner-up>
     <issue>
