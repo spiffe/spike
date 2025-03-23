@@ -1,0 +1,22 @@
+% First load hyperref which defines \href
+\usepackage{hyperref}
+
+% Then add URL breaking options
+\makeatletter
+\g@addto@macro{\UrlBreaks}{\UrlOrds}
+\makeatother
+
+% Set penalties to allow breaks at more places
+\def\UrlBreaks{\do\.\do\@\do\\\do\/\do\!\do\_\do\|\do\;\do\>\do\]%
+  \do\)\do\,\do\?\do\'\do\+\do\=\do\#\do\&\do\-\do\~}
+
+% Allow URLs to break anywhere
+\Urlmuskip=0mu plus 1mu
+
+% Override the \href command to allow breaks
+\AtBeginDocument{
+  \let\oldhref\href
+  \renewcommand{\href}[2]{%
+    \oldhref{#1}{\begingroup\def\UrlBigBreaks{\do\A\do\B\do\C\do\D\do\E\do\F\do\G\do\H\do\I\do\J\do\K\do\L\do\M\do\N\do\O\do\P\do\Q\do\R\do\S\do\T\do\U\do\V\do\W\do\X\do\Y\do\Z\do\a\do\b\do\c\do\d\do\e\do\f\do\g\do\h\do\i\do\j\do\k\do\l\do\m\do\n\do\o\do\p\do\q\do\r\do\s\do\t\do\u\do\v\do\w\do\x\do\y\do\z}\def\UrlBreaks{\do\.\do\@\do\\\do\/\do\!\do\_\do\|\do\;\do\>\do\]\do\)\do\,\do\?\do\'\do\+\do\=\do\#\do\$\do\&\do\*\do\-\do\~\do\%\do\<\do\[\do\{\do\(\do0\do1\do2\do3\do4\do5\do6\do7\do8\do9}#2\endgroup}%
+  }
+}

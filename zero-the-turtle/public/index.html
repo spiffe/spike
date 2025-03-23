@@ -133,8 +133,8 @@ security rests, is the goal of the SPIFFE and SPIRE projects.</p>
 Zero represents the foundation for security in the data center and the cloud. 4
 Zero is trustworthy and happily supports all the other turtles.</p>
 
-<p>SPIFFE and SPIRE are projects that help you ﬁnd the bottom turtle for your
-organization. With the tools in this book, we hope you ﬁnd a home for Zero the
+<p>SPIFFE and SPIRE are projects that help you find the bottom turtle for your
+organization. With the tools in this book, we hope you find a home for Zero the
 Turtle, too.</p>
 
 <h2 id="addendum-for-this-edition-march-2025"><strong>Addendum for this Edition</strong>, March, 2025</h2>
@@ -167,7 +167,7 @@ continually evolve over time.</p></blockquote>
 
 <h3 id="overwhelming-motivation-and-need">Overwhelming Motivation and Need</h3>
 
-<p>We haven&rsquo;t arrived where we are today without ﬁrst experiencing some growing
+<p>We haven&rsquo;t arrived where we are today without first experiencing some growing
 pains.</p>
 
 <p>When the internet first became widely available in 1981, <a href="https://tools.ietf.org/html/rfc1296" title="RFC1296">it had just 213
@@ -234,16 +234,16 @@ microservices, security became a barrier to growth.</p>
 
 <p><img src="assets/Image_014.jpg" alt="Evolution of networks." /></p>
 
-<p><em>Fig. 1.1: Evolution of networks from the conﬁnes of the university campus to
+<p><em>Fig. 1.1: Evolution of networks from the confines of the university campus to
 the global network of networks.</em></p>
 
 <p>Initially, conventional methods of protecting physical access to computers with
-walls and guards were emulated through ﬁrewalls, network segmentation, private
+walls and guards were emulated through firewalls, network segmentation, private
 address space, and ACLs. This made sense at the time, especially when
 considering the limited number of points needing control.</p>
 
 <p>With the proliferation of networks, and increased access points for users and
-business partners, physical identity veriﬁcation (common with walls and guards),
+business partners, physical identity verification (common with walls and guards),
 became virtualized through securely exchanging and managing keys, credentials,
 and tokens, all of which become increasingly problematic as technology and needs
 evolved.</p>
@@ -251,7 +251,7 @@ evolved.</p>
 <h3 id="adopting-public-cloud">Adopting Public Cloud</h3>
 
 <p>The migration from conventional on-premises and data center operations to a
-public cloud, ampliﬁed existing problems of yesteryear.</p>
+public cloud, amplified existing problems of yesteryear.</p>
 
 <p>With the new freedom to create computing resources in the cloud, the development
 teams and operations teams within organizations began to collaborate more
@@ -293,7 +293,7 @@ potential vulnerabilities that an attacker can exploit, and also makes managing
 perimeter defenses increasingly impractical.</p>
 
 <p>The push to do more, faster, means increasingly more components are deployed
-across automated infrastructure, often sacriﬁcing safety and security. Bypassing
+across automated infrastructure, often sacrificing safety and security. Bypassing
 manual processes such as firewall rule tickets or security group changes are
 not unheard of. In this new, modern world, network-oriented access controls
 become rapidly out-of-date and require constant maintenance, regardless of the
@@ -309,10 +309,10 @@ to happen expediently, which can be challenging in larger infrastructures.
 Further, network topology, such as Network Address Translation (NAT), can
 make this difficult and leaky. As infrastructure becomes larger and more
 dynamic, human-in-the-loop systems simply won’t scale. After all, nobody wants
-to pay for a team of people to play with ﬁrewall rules all day who are still
+to pay for a team of people to play with firewall rules all day who are still
 unable to keep up.</p>
 
-<p>Reliance on location-speciﬁc details such as server names, DNS names, network
+<p>Reliance on location-specific details such as server names, DNS names, network
 interface details has several shortcomings in a world of dynamically scheduled
 and elastically scaled applications. While there is prevalent usage of
 networking constructs, the model is an ineffective analog of software identity.
@@ -322,7 +322,7 @@ identity but deals more with authorization than authentication.</p>
 
 <p>Integrating security and introducing feedback earlier in software development
 lifecycles enables developers more operational control over the mechanisms by
-which their workloads can be identiﬁed and exchange information. With this
+which their workloads can be identified and exchange information. With this
 change, authorization policy decisions may be delegated to individual service
 or product owners who are best suited to make decisions relevant to the
 component in question.</p>
@@ -333,7 +333,7 @@ component in question.</p>
 cloud adoption, and painfully forthcoming as a result of this adoption, pushed
 the concept that conventional perimeters are insufficient and better solutions
 need to exist. Ultimately, deperimeterization meant that organizations needed
-to ﬁgure out how to identify their software and enable service-to-service
+to figure out how to identify their software and enable service-to-service
 access control.</p>
 
 <h4 id="secrets-as-a-solution">Secrets as a Solution</h4>
@@ -372,7 +372,7 @@ to protect.</li>
 </ul>
 
 
-<p>To break this loop, we need to ﬁnd a <strong>bottom turtle</strong>, that is, some secret
+<p>To break this loop, we need to find a <strong>bottom turtle</strong>, that is, some secret
 that provides access to the rest of the secrets we need for authentication and
 access control. One option is to manually provision secrets on services when
 they’re deployed. However, this does not scale in highly dynamic ecosystems. As
@@ -419,7 +419,7 @@ cloud APIs to attest the machine image running on instances and CI/CD
 integration to produce cryptographic bindings between machine images and code
 identity.</p>
 
-<p>This software identity takes the form of X.509 certiﬁcates to perform mutual
+<p>This software identity takes the form of X.509 certificates to perform mutual
 authentication of service-to-service communication, including access to the
 <em>secrets service</em> developed as part of this solution which enables secrets
 management on top of this foundation.</p>
@@ -462,10 +462,10 @@ they had implemented similar solutions to solve the same problem, and could work
 together to build a common standard.</p>
 
 <p>The initial goals of solving the workload identity problem were to establish an
-open speciﬁcation and corresponding production implementation. The framework
+open specification and corresponding production implementation. The framework
 needed to provide interoperability between different implementations and
 off-the-shelf software, at its core establishing a root of trust in an untrusted
-environment, exorcising implicit trust. And ﬁnally, moving away from
+environment, exorcising implicit trust. And finally, moving away from
 network-centric identity to achieve ﬂexibility and better scaling properties.</p>
 
 <p><img src="assets/Image_024.jpg" alt="Netflix HQ" /></p>
@@ -475,31 +475,31 @@ experts started to sketch out the concepts for SPIFFE.</em></p>
 
 <h2 id="2.-benefits">2. Benefits</h2>
 
-<blockquote><p>This chapter explains the beneﬁts of deploying SPIFFE and SPIRE across your
+<blockquote><p>This chapter explains the benefits of deploying SPIFFE and SPIRE across your
 infrastructure, from a business and technology perspective.</p></blockquote>
 
 <h3 id="for-everyone-everywhere">For Everyone, Everywhere</h3>
 
-<p>SPIFFE and SPIRE aim to strengthen the identiﬁcation of software components in
+<p>SPIFFE and SPIRE aim to strengthen the identification of software components in
 a common way that can be leveraged across distributed systems by anyone,
 anywhere. The modern infrastructure technology landscape is convoluted.
 Environments grow increasingly disparate with mixes of hardware and software
 investments.</p>
 
-<p>Maintaining software security by standardizing how systems deﬁne, attest, and
+<p>Maintaining software security by standardizing how systems define, attest, and
 maintain software identity, regardless of where systems are deployed or who
-deploys those systems, confers many beneﬁts.</p>
+deploys those systems, confers many benefits.</p>
 
 <p>For business leaders focused on improving business expediency and returns,
-SPIFFE and SPIRE can signiﬁcantly reduce costs associated with the overhead of
-managing and issuing cryptographic identity documents (e.g. X.509 certiﬁcates),
+SPIFFE and SPIRE can significantly reduce costs associated with the overhead of
+managing and issuing cryptographic identity documents (e.g. X.509 certificates),
 and accelerate development and deployment by removing the need for developers
 to understand the identity and authentication technologies required to secure
 service-to- service communication.</p>
 
 <p>For service providers and software vendors focused on delivering a robust,
 secure, and interoperable product, SPIFFE and SPIRE solve a critical identity
-problem prevalent when interconnecting many solutions into a ﬁnal product.
+problem prevalent when interconnecting many solutions into a final product.
 For example, SPIFFE can be used as the basis for a product’s TLS features and
 user management/authentication features in one fell swoop. In another example,
 SPIFFE can replace the need for managing and issuing API tokens for platform
@@ -542,7 +542,7 @@ within existing solutions.</p>
 
 <h5 id="the-impact-of-interoperability">The impact of interoperability</h5>
 
-<p>As systems evolve, the need for interoperability grows indeﬁnitely. Disjointed
+<p>As systems evolve, the need for interoperability grows indefinitely. Disjointed
 teams build services that are siloed and unaware of each other, even though
 they need to eventually be conscious of one another. Acquisitions occur in
 which new or never-before-seen systems need to be folded into existing systems.
@@ -554,14 +554,14 @@ each with its own unique properties and history, in a secure way?”.</p>
 <p>Technology integration as a result of organizational convergence can be a
 challenge when different technology stacks must come together and interoperate.
 Aligning on a common, industry-accepted standard for system-to-system
-communication with identity and authentication, simpliﬁes the technical aspects
+communication with identity and authentication, simplifies the technical aspects
 of full interoperability and integration across multiple stacks.</p>
 
 <p>SPIFFE brings a shared understanding of what constitutes software identity. By
 further leveraging SPIFFE Federation, components in disparate systems in
 different organizations or teams can establish trust to communicate securely
 without the added overhead of constructs such as VPN tunnels, one-off
-certiﬁcates, or shared credentials for use between such systems.</p>
+certificates, or shared credentials for use between such systems.</p>
 
 <h5 id="compliance-and-auditability">Compliance and auditability</h5>
 
@@ -570,9 +570,9 @@ performing actions cannot be repudiated as a result of enforcing mutual
 authentication within the environment. Further, the identity documents issued by
 SPIFFE/SPIRE enable the pervasive use of mutually-authenticated TLS, effectively
 solving one of the most difficult challenges associated with projects of this
-nature. Additional beneﬁts to mutually authenticated TLS include native
+nature. Additional benefits to mutually authenticated TLS include native
 encryption of data in transit between services, not only protecting the
-integrity of the communications but also assuring the conﬁdentiality of
+integrity of the communications but also assuring the confidentiality of
 sensitive or proprietary data.</p>
 
 <p><img src="assets/Image_032.jpg" alt="Regulatory compliance." /></p>
@@ -581,7 +581,7 @@ sensitive or proprietary data.</p>
 SPIFFE.</em></p>
 
 <p>Another common compliance requirement is brought on by the General Data
-Protection Regulation (GDPR)—speciﬁcally requiring that European Union (EU)
+Protection Regulation (GDPR)—specifically requiring that European Union (EU)
 data reside wholly within the EU, not transiting or being processed by entities
 outside its jurisdiction. With multiple roots of trust, global organizations
 can ensure that EU entities communicate only with other EU entities.</p>
@@ -590,7 +590,7 @@ can ensure that EU entities communicate only with other EU entities.</p>
 
 <p>Ensuring that development, security, and operations teams are equipped with the
 right knowledge and experience to handle security-sensitive systems
-appropriately, remains a signiﬁcant challenge.</p>
+appropriately, remains a significant challenge.</p>
 
 <p>Enterprises need to be able to hire developers with standards-based skill sets
 to decrease onboarding time and improve time-to-market with reduced risk.</p>
@@ -600,7 +600,7 @@ instance in an automated fashion, and enabling credential rotation from the root
 down, poses a major challenge. For security and operations teams, the expertise
 required to implement such systems is few and far between. Sustaining day-to-day
 operations without relying on community or industry knowledge exacerbates the
-problem, leading to outages and ﬁnger-pointing.</p>
+problem, leading to outages and finger-pointing.</p>
 
 <p>Developers cannot reasonably be expected to know or gain subject matter
 expertise in practical matters of security, especially as it applies to service
@@ -617,8 +617,8 @@ growing community of SPIFFE/SPIRE end-users and practitioners.</p>
 cloud/platform lock-in, improved developer efficiency, and reduced reliance on
 specialized expertise, to name a few.</p>
 
-<p>By abstracting cloud provider identity interfaces into a set of well-deﬁned
-common APIs built on open standards, SPIFFE signiﬁcantly reduces the burden of
+<p>By abstracting cloud provider identity interfaces into a set of well-defined
+common APIs built on open standards, SPIFFE significantly reduces the burden of
 developing and maintaining <em>cloud-aware</em> apps. Since SPIFFE is
 platform-agnostic, it can be deployed practically anywhere. This differentiator
 saves time and money when a platform technology change is necessary, and can
@@ -628,7 +628,7 @@ control of every organization’s deployments—cloud services providers know th
 and leverage this constraint as the primary lock-in mechanism to fully integrate
 with their platform.</p>
 
-<p>There are signiﬁcant savings to be had in the area of improved developer
+<p>There are significant savings to be had in the area of improved developer
 efficiency as well. Two important aspects of SPIFFE/SPIRE unlock these savings:
 the fully automated issuance and management of cryptographic identity and its
 associated lifecycle, and the uniformity and offloading of authentication and
@@ -646,7 +646,7 @@ logic.</p>
 </thead>
 <tbody>
 <tr>
-<td> Avg. time spent by developers in obtaining credentials and conﬁguring authentication/conﬁdentiality protocols per application component (hours) </td>
+<td> Avg. time spent by developers in obtaining credentials and configuring authentication/confidentiality protocols per application component (hours) </td>
 <td> 2       </td>
 </tr>
 <tr>
@@ -654,11 +654,11 @@ logic.</p>
 <td> 95%     </td>
 </tr>
 <tr>
-<td> Avg time spent by the developer in learning and implementing controls for speciﬁc API gateways, secret stores, etc. (hours)                     </td>
+<td> Avg time spent by the developer in learning and implementing controls for specific API gateways, secret stores, etc. (hours)                     </td>
 <td> 1       </td>
 </tr>
 <tr>
-<td> Reduction in time spent by developers in learning and implementing controls for speciﬁc API gateways, secret stores, etc.                       </td>
+<td> Reduction in time spent by developers in learning and implementing controls for specific API gateways, secret stores, etc.                       </td>
 <td> 75%     </td>
 </tr>
 <tr>
@@ -692,17 +692,17 @@ example, if a database product needs to support TLS because it is required for
 customer compliance, it is simple to add a few configurables to the product and
 call it a day.</p>
 
-<p>Unfortunately, this pushes some signiﬁcant challenges to the customer. Similar
+<p>Unfortunately, this pushes some significant challenges to the customer. Similar
 challenges are faced even with seemingly simple user management. Consider the
 following customer pain points that both of these common features introduce by
 default:</p>
 
 <ul>
-<li>Who generates the certiﬁcates and passwords, and how?</li>
+<li>Who generates the certificates and passwords, and how?</li>
 <li>How are they securely distributed to the applications that need them?</li>
 <li>How is access to private keys and passwords restricted?</li>
 <li>How are these secrets stored such that they don’t leak into backups?</li>
-<li>What happens when a certiﬁcate expires, or a password must be changed? Is the
+<li>What happens when a certificate expires, or a password must be changed? Is the
 process disruptive?</li>
 <li>How many of these tasks necessarily involve a human operator?</li>
 </ul>
@@ -759,7 +759,7 @@ the likelihood of a breach through credential compromise, SPIRE provides a
 strongly attested identity for authentication across the entire infrastructure.</p>
 
 <p>The automation that keeps the promise of assurance makes the platform
-secure-by-default, removing an additional conﬁguration burden by development
+secure-by-default, removing an additional configuration burden by development
 teams.</p>
 
 <p>For organizations looking to solve the root of trust and identity issues within
@@ -776,7 +776,7 @@ before making their way to distribution.</p>
 
 <p>SPIRE’s APIs provide a mechanism for security teams to enforce consistent
 authentication policies across platforms and business units in an easy-to-use
-manner. When coupled with a well-deﬁned policy, interactions between services
+manner. When coupled with a well-defined policy, interactions between services
 can be kept to a minimum, ensuring only authorized workloads may communicate
 with each other. This constrains the potential attack surface by a malicious
 entity and can trigger alerts in the policy engine’s default deny rule.</p>
@@ -791,13 +791,13 @@ reﬂects the operational state of the workloads.</p>
 
 <p>Adopting a zero trust model in the architecture reduces the blast radius if a
 breach were to occur. Mutual authentication and trust revocation can block a
-compromised front end application server from exﬁltrating data from unrelated
+compromised front end application server from exfiltrating data from unrelated
 databases that may be available on the network or within a cluster. While not
 likely to occur in organizations with tight network security, SPIFFE/SPIRE
 certainly adds additional defense layers to mitigate vulnerabilities and
-exposure points from misconﬁgured ﬁrewalls or unchanged default logins. It also
+exposure points from misconfigured firewalls or unchanged default logins. It also
 shifts security decisions away from IP addresses and port numbers (which can
-be manipulated in undetectable ways) and towards cryptographic identiﬁers that
+be manipulated in undetectable ways) and towards cryptographic identifiers that
 enjoy integrity protections.</p>
 
 <p><img src="assets/Image_040.jpg" alt="Shield" /></p>
@@ -830,11 +830,11 @@ team.</p>
 <p>SPIFFE and SPIRE provide a uniform service identity control plane that is
 available through a consistent API across platforms and domains, so the team
 can focus on delivering applications and products without concern or special
-conﬁgurations for the destination. Each developer can leverage this API to
+configurations for the destination. Each developer can leverage this API to
 securely and easily authenticate across platforms and domains.</p>
 
 <p>Developers can also request and receive an identity that may then be used to
-build additional application-speciﬁc controls for the supplied identity, while
+build additional application-specific controls for the supplied identity, while
 operators and DevOps teams can manage and scale identities in an automated
 manner, simultaneously implementing and executing policies that consume these
 identities. Further, teams can use the OIDC Federation to correlate SPIFFE
@@ -861,7 +861,7 @@ operator and developer interruptions related to credential lifecycle management.
 
 <p>It is important to note that it is not just rotation that is automated. The
 initial issuance of the credential (most commonly in the form of an X.509
-certiﬁcate) is also fully automated. This works to streamline developer ﬂow,
+certificate) is also fully automated. This works to streamline developer ﬂow,
 taking the task of generating or procuring the credential out of the checklist
 for spinning up a new service.</p>
 
@@ -875,19 +875,19 @@ if the organization requires a set of proprietary APIs to generate SPIRE’s key
 or if the intermediate signing keys of SPIRE should live in a specific
 proprietary Key Management Service (KMS). Developers also need not worry about
 developing custom wrappers for new workloads to be brought online because the
-organization is adhering to an open speciﬁcation.</p>
+organization is adhering to an open specification.</p>
 
-<p>Many teams are afraid to change or remove ﬁrewall rules that permit traffic
+<p>Many teams are afraid to change or remove firewall rules that permit traffic
 between networks because of the potential adverse effect of critical systems
 availability. Operators may scope identities and their associated policies to
 applications instead of globally. Locally scoped identities and policies give
-operators the conﬁdence to enact changes without fear of downstream impact.</p>
+operators the confidence to enact changes without fear of downstream impact.</p>
 
 <h4 id="improvement-of-daily-work">Improvement of daily work</h4>
 
 <p>Without a robust software identity system, service-to-service access management
 is often accomplished through the use of network-level controls (e.g.
-IP/Port-based policy). Unfortunately, this approach generates a signiﬁcant
+IP/Port-based policy). Unfortunately, this approach generates a significant
 amount of operational toil associated with managing network access control
 lists (or ACLs). As elastic infrastructure comes up and down, and network
 topologies change, these ACLs need constant care and feeding. They can even get
@@ -910,7 +910,7 @@ cloud native), and providing an audit trail of identity issuance and usage,
 SPIFFE/SPIRE can greatly improve situational awareness before, during, and
 after an incident occurs.</p>
 
-<p>More mature teams may even ﬁnd that it improves their ability to predict
+<p>More mature teams may even find that it improves their ability to predict
 problems before they impact service availability.</p>
 
 <hr />
@@ -933,7 +933,7 @@ are just as complex.</p>
 
 <p>A single program might scale out to thousands of nodes, or change its code many
 times a day as a build system pushes new updates. In such a rapidly changing
-environment, an identity must represent the speciﬁc logical purpose of the
+environment, an identity must represent the specific logical purpose of the
 service (e.g. a <em>customer billing database</em>) and an association with
 established authority or root of trust (e.g. <em>my</em> <code>company.example.org</code> or
 <em>the issuing authority for my production workloads</em>).</p>
@@ -941,9 +941,9 @@ established authority or root of trust (e.g. <em>my</em> <code>company.example.o
 <p>Once identities are issued for all the services in an organization, they can be
 used for <em>authentication</em>: proving that a service is what it says it is. Once
 services can authenticate to each other, they can use identities for
-<em>authorization</em>, or control who can access those services, and <em>conﬁdentiality</em>,
+<em>authorization</em>, or control who can access those services, and <em>confidentiality</em>,
 or keeping the data they transmit to each other secret. While SPIFFE does not
-itself include authentication, authorization, or conﬁdentiality, the identities
+itself include authentication, authorization, or confidentiality, the identities
 it issues can be used for all of them.</p>
 
 <p>Designating service identities for an organization is similar to designing any
@@ -953,7 +953,7 @@ locations, it may be logical for it to keep the same identity.</p>
 
 <h4 id="trustworthy-identity">Trustworthy identity</h4>
 
-<p>Now that we’ve deﬁned identity, how do we represent that identity? How do we
+<p>Now that we’ve defined identity, how do we represent that identity? How do we
 know that when a piece of software (or <em>workload</em>) claims its identity, that
 the claim is trustworthy? To start exploring these questions, we must first
 discuss how an identity is established.</p>
@@ -975,8 +975,8 @@ least contain some common information such as the user’s name.</p>
 <p>What is the difference between a passport and a napkin with your name scribbled
 on it?</p>
 
-<p>The most signiﬁcant difference is the source. With passports, we trust that the
-<em>Issuing Authority</em> has veriﬁed your identity, and we have the ability to verify
+<p>The most significant difference is the source. With passports, we trust that the
+<em>Issuing Authority</em> has verified your identity, and we have the ability to verify
 that the passport was issued by that trusted authority (validation). With that
 napkin, we don’t know where it came from and have no way to validate that it
 comes from the restaurant you say it does. We also can’t trust that the
@@ -995,7 +995,7 @@ someone’s identity.</p>
 <h5 id="verifying-the-identity-document">Verifying the identity document</h5>
 
 <p>Given this, how can we differentiate between a real passport and a fake one?
-This is where <em>veriﬁcation</em> comes in. Organizations need a way to determine
+This is where <em>verification</em> comes in. Organizations need a way to determine
 whether the identity document is issued by the authority we trust. This is
 typically done through watermarks that are hard to replicate but easy to verify.</p>
 
@@ -1020,15 +1020,15 @@ passport with the person holding it.</p>
 
 <p>Circling back to workload identity, how do the above concepts map onto computer
 systems? Instead of passports, <em>Digital Identity Documents</em> are used. X.509
-certiﬁcates, signed JSON Web Tokens (JWTs), and Kerberos tickets, are examples
-of digital identity documents. Digital identity documents can be veriﬁed using
+certificates, signed JSON Web Tokens (JWTs), and Kerberos tickets, are examples
+of digital identity documents. Digital identity documents can be verified using
 cryptographic techniques. Then, the computer system can be authenticated, much
 like a person with a passport.</p>
 
 <p>One of the most useful and prevalent techniques to do this is Public Key
-Infrastructure (PKI). A PKI is deﬁned as a set of roles, policies, hardware,
+Infrastructure (PKI). A PKI is defined as a set of roles, policies, hardware,
 software, and procedures needed to create, manage, distribute, use, store and
-revoke digital certiﬁcates and manage public-key encryption. With PKI, digital
+revoke digital certificates and manage public-key encryption. With PKI, digital
 identity documents can be validated locally, ofline, against a small, static set
 of root trust bundles.</p>
 
@@ -1037,7 +1037,7 @@ of root trust bundles.</p>
 <p>When the <a href="https://www.itu.int/en/ITU-T/about/" title="International Telecommunication Union Telecommunication Standardization Sector">International Telecommunication Union Telecommunication
 Standardization Sector (ITU-T)</a> initially released the X.509 standard for
 PKI in 1988, it was extraordinarily ambitious for its time and is still
-considered to be so. The standard originally envisioned giving certiﬁcates to
+considered to be so. The standard originally envisioned giving certificates to
 humans, servers, and other devices alike, forming an enormous globally
 integrated secure communication system.</p>
 
@@ -1053,31 +1053,31 @@ foundation for nearly every secure communications protocol. You can check out
 <h5 id="how-x.509-works-with-a-single-authority">How X.509 works with a single authority</h5>
 
 <ol>
-<li>Bob’s computer needs a certiﬁcate. He generates a random <em>private key</em> , and
-also a <em>certiﬁcate signing request</em> (or CSR), which includes basic information
+<li>Bob’s computer needs a certificate. He generates a random <em>private key</em> , and
+also a <em>certificate signing request</em> (or CSR), which includes basic information
 on his computer, such as its name; we’ll call it <em>bobsbox</em>. A CSR is a little
 bit like a passport application.</li>
-<li>Bob sends his CSR to a <em>certiﬁcate authority</em> (or CA). The CA validates that
+<li>Bob sends his CSR to a <em>certificate authority</em> (or CA). The CA validates that
 Bob is really Bob. The exact way this validation happens can vary—it may
 involve a human checking Bob’s paperwork, or an automatic check.</li>
-<li>The CA then creates a <em>certiﬁcate</em> by encoding the information presented in
+<li>The CA then creates a <em>certificate</em> by encoding the information presented in
 the CSR, and adding a digital signature, which serves to assert that the CA
-has veriﬁed the information contained within to be true and correct. It sends
-the certiﬁcate back to Bob.</li>
+has verified the information contained within to be true and correct. It sends
+the certificate back to Bob.</li>
 <li>When Bob wants to establish secure communications with Alice, his computer
-can present his certiﬁcate, and cryptographically demonstrate that it has
+can present his certificate, and cryptographically demonstrate that it has
 Bob’s private key (without ever actually sharing the contents of that private
 key with anyone).</li>
-<li>Alice’s computer can check that Bob’s certiﬁcate is really Bob’s certiﬁcate
-by checking that the Certiﬁcate Authority signed it. She trusts that the
-Certiﬁcate Authority properly checked Bob’s identity before signing the
-certiﬁcate.</li>
+<li>Alice’s computer can check that Bob’s certificate is really Bob’s certificate
+by checking that the Certificate Authority signed it. She trusts that the
+Certificate Authority properly checked Bob’s identity before signing the
+certificate.</li>
 </ol>
 
 
 <p><img src="assets/Image_057.jpg" alt="Alice trusts Bob." /></p>
 
-<p><em>Fig. 3.1: Illustration of Bob requesting a certiﬁcate from the Certiﬁcate
+<p><em>Fig. 3.1: Illustration of Bob requesting a certificate from the Certificate
 Authority, and using it to prove his identity to Alice.</em></p>
 
 <p><img src="assets/Image_058.jpg" alt="Public Key Infrastructure." /></p>
@@ -1086,24 +1086,24 @@ Authority, and using it to prove his identity to Alice.</em></p>
 
 <p><img src="assets/Image_059.jpg" alt="Intermediate CAs." /></p>
 
-<p><em>Fig. 3.3: Illustration of intermediate certiﬁcate authorities.</em></p>
+<p><em>Fig. 3.3: Illustration of intermediate certificate authorities.</em></p>
 
-<h5 id="x.509-with-intermediate-certi%EF%AC%81cate-authorities">X.509 with intermediate certiﬁcate authorities</h5>
+<h5 id="x.509-with-intermediate-certi%EF%AC%81cate-authorities">X.509 with intermediate certificate authorities</h5>
 
-<p>In many cases, the CA that has signed a given certiﬁcate is <em>not</em> well-known.
+<p>In many cases, the CA that has signed a given certificate is <em>not</em> well-known.
 Instead, the CA has its own key and certificate, and that certificate is signed
 by another CA. By signing this CA certificate, the parent CA is certifying that
 the lower-order CA is authorized to issue digital identities. This authorization
 of lower-order CAs by higher-order CAs is known as <em>delegation</em>.</p>
 
 <p>Delegation can occur repeatedly, with lower-order CAs further delegating their
-power, forming an arbitrarily tall tree of certiﬁcate authorities. The
+power, forming an arbitrarily tall tree of certificate authorities. The
 highest-order CA is known as the <em>root CA</em> and must have a well-known
 certificate. Every other CA in the chain is known as an <em>intermediate CA</em>. The
 benefit of this approach is that fewer keys need to be well-known, allowing the
 list to change less frequently.</p>
 
-<p>This leads to a key weakness of X.509: <em>any CA can sign any certiﬁcate, with no
+<p>This leads to a key weakness of X.509: <em>any CA can sign any certificate, with no
 restrictions</em>. If a hacker decides to start her own intermediate CA and can get
 approval from any one existing intermediate CA, then she can effectively issue
 any identity she wants. It is vital that each well-known CA is <em>completely</em>
@@ -1129,25 +1129,25 @@ new software services are written, and in each of these cases, we must issue an
 identity where one was not present before.</p>
 
 <p>First, a service needs to request a new identity. For a human, this might be a
-paper form. For software, it is an X.509 document called a Certiﬁcate Signing
+paper form. For software, it is an X.509 document called a Certificate Signing
 Request (CSR), which is created with a corresponding private key. The CSR is
 similar to a certificate, but since it has not been signed by any Certificate
 Authority, no one will recognize it as valid. The service then sends the CSR
-securely to the Certiﬁcate Authority.</p>
+securely to the Certificate Authority.</p>
 
 <blockquote><p><strong>Sidenote</strong>: How does the service communicate securely to the Certificate
 Authority? Since the Certificate Authority’s certificate is itself widely
 known, anyone can establish a secure connection to it.</p></blockquote>
 
-<p>Next, the Certiﬁcate Authority checks every detail of the CSR against the
-service that requested the certiﬁcate. Originally, this was intended to be a
+<p>Next, the Certificate Authority checks every detail of the CSR against the
+service that requested the certificate. Originally, this was intended to be a
 manual process: humans checking paperwork and making decisions on an individual
 basis. Today, the checks and the signing process are often completely automated.
-If you have used the popular LetsEncrypt certiﬁcate authority, then you are
-familiar with a fully automated certiﬁcate authority signing process.</p>
+If you have used the popular LetsEncrypt certificate authority, then you are
+familiar with a fully automated certificate authority signing process.</p>
 
-<p>Once satisﬁed, the Certiﬁcate Authority attaches its digital signature to the
-CSR, turning it into a fully-ﬂedged certiﬁcate. It sends the certiﬁcate back to
+<p>Once satisfied, the Certificate Authority attaches its digital signature to the
+CSR, turning it into a fully-ﬂedged certificate. It sends the certificate back to
 the service. Along with the private key that it generated earlier, the service
 can securely identify itself to the world.</p>
 
@@ -1156,9 +1156,9 @@ can securely identify itself to the world.</p>
 <p>So, what happens if a service is compromised? What if Bob’s laptop is hacked, or
 Bob leaves the company and should not have access anymore?</p>
 
-<p>This process of undoing trust is called Certiﬁcate Revocation. The Certiﬁcate
+<p>This process of undoing trust is called Certificate Revocation. The Certificate
 Authority maintains a file called the Certificate Revocation List with the
-unique IDs of the revoked certiﬁcates and distributes a signed copy of the file
+unique IDs of the revoked certificates and distributes a signed copy of the file
 to anyone who asks.</p>
 
 <p>Revocation is tricky for several reasons. First, the CRL must be hosted and
@@ -1167,54 +1167,54 @@ that the endpoint is up and reachable. When it isn’t… does PKI stop working?
 practice, most software will <em>fail open</em>, continuing to trust certificates when
 CRLs are unavailable, making them effectively useless.</p>
 
-<p>Second, CRLs can get large and unwieldy. A revoked certiﬁcate must remain in the
+<p>Second, CRLs can get large and unwieldy. A revoked certificate must remain in the
 CRL until it expires, and certificates are generally long-lived (on the order of
 years). This can lead to performance problems in serving, downloading, and
 processing the lists themselves.</p>
 
-<p>Several different technologies have been developed to try to make certiﬁcate
-revocation simpler and more reliable, such as the Online Certiﬁcate Status
-Protocol (OCSP). The variety of approaches make certiﬁcate revocation a
+<p>Several different technologies have been developed to try to make certificate
+revocation simpler and more reliable, such as the Online Certificate Status
+Protocol (OCSP). The variety of approaches make certificate revocation a
 continual challenge. 7</p>
 
 <blockquote><p><strong>Sidenote</strong>: For an introduction to CRLs alongside some of the potential
-problems, see “<a href="https://people.csail.mit.edu/rivest/pubs/Riv98b.pdf" title="Can we eliminate certiﬁcate revocation lists?">Can we eliminate certificate revocation lists?</a>”
+problems, see “<a href="https://people.csail.mit.edu/rivest/pubs/Riv98b.pdf" title="Can we eliminate certificate revocation lists?">Can we eliminate certificate revocation lists?</a>”
 by Ronald Rivest.</p></blockquote>
 
 <h5 id="certificate-expiration">Certificate expiration</h5>
 
-<p>Every certiﬁcate has a built-in expiration date. Expiration dates are a vital
+<p>Every certificate has a built-in expiration date. Expiration dates are a vital
 part of the security of X.509 for several different reasons: to manage
 obsolescence, to limit the potential for change in the identity indicated by
-the certiﬁcate, to limit the size of CRLs, and to lessen the possibility that
+the certificate, to limit the size of CRLs, and to lessen the possibility that
 the key will be stolen.</p>
 
-<p>Certiﬁcates have been around for a long time. When they were ﬁrst developed,
+<p>Certificates have been around for a long time. When they were first developed,
 many CAs used the MD2 hashing algorithm from 1989, which was relatively quickly
-found to be insecure. If those certiﬁcates were still valid, attackers could
+found to be insecure. If those certificates were still valid, attackers could
 forge them.</p>
 
-<p>Another important aspect of a limited certiﬁcate lifetime is that the CA only
+<p>Another important aspect of a limited certificate lifetime is that the CA only
 has a single chance to validate the identity of the requester, but this
 information is not guaranteed to remain correct over time. For example, domain
 names frequently change ownership and are one of the more critical pieces of
-information generally included in a certiﬁcate.</p>
+information generally included in a certificate.</p>
 
-<p>If certiﬁcate revocation lists are in use, then each certiﬁcate that is still
-valid has the potential to be revoked. If certiﬁcates lasted forever, then the
-certiﬁcate revocation list could grow endlessly. To keep the certiﬁcate
-revocation list small, certiﬁcates need to expire.</p>
+<p>If certificate revocation lists are in use, then each certificate that is still
+valid has the potential to be revoked. If certificates lasted forever, then the
+certificate revocation list could grow endlessly. To keep the certificate
+revocation list small, certificates need to expire.</p>
 
-<p>Finally, the longer a certiﬁcate is valid, the greater the risk that the private
-key for its certiﬁcate or any certiﬁcate leading to the root could be stolen.</p>
+<p>Finally, the longer a certificate is valid, the greater the risk that the private
+key for its certificate or any certificate leading to the root could be stolen.</p>
 
 <h5 id="frequent-certificate-renewal">Frequent certificate renewal</h5>
 
 <p>One compromise in solving the challenges posed by revocation is to rely more
-heavily on expiration. If the certiﬁcate lifetime is very short (perhaps only a
+heavily on expiration. If the certificate lifetime is very short (perhaps only a
 few hours), then the CA can frequently re-perform any checks that it originally
-made. If certiﬁcates renew frequently enough, then CRLs might not even be
-necessary since it may be faster just to wait for the certiﬁcate to expire.</p>
+made. If certificates renew frequently enough, then CRLs might not even be
+necessary since it may be faster just to wait for the certificate to expire.</p>
 
 <table>
 <thead>
@@ -1230,7 +1230,7 @@ necessary since it may be faster just to wait for the certiﬁcate to expire.</p
 </tr>
 <tr>
 <td> If a document is stolen, it is valid for a shorter time                  </td>
-<td> Reduced load on certiﬁcate authorities (humans and programs)                        </td>
+<td> Reduced load on certificate authorities (humans and programs)                        </td>
 </tr>
 <tr>
 <td> CRLs are shorter and maybe unnecessary                                   </td>
@@ -1238,7 +1238,7 @@ necessary since it may be faster just to wait for the certiﬁcate to expire.</p
 </tr>
 <tr>
 <td> Fewer outstanding identity documents at a time (easier to keep track of) </td>
-<td> Better resiliency in case a node can’t renew its certiﬁcate due to a network outage </td>
+<td> Better resiliency in case a node can’t renew its certificate due to a network outage </td>
 </tr>
 </tbody>
 </table>
@@ -1247,11 +1247,11 @@ necessary since it may be faster just to wait for the certiﬁcate to expire.</p
 <h5 id="another-cryptographic-identity%3A-json-web-tokens-%28jwt%29">Another cryptographic identity: JSON Web Tokens (JWT)</h5>
 
 <p>Another public key identity document, JSON Web Tokens (RFC7519), also behaves as
-a PKI-like system. Instead of certiﬁcates, it uses a JSON token and has a
+a PKI-like system. Instead of certificates, it uses a JSON token and has a
 construct called JSON Web Key Set which acts as a CA Bundle to authenticate the
-JSON tokens. There are important differences between certiﬁcates and JWTs that
-are beyond the scope of this book, but just like X.509 certiﬁcates, the
-authenticity of a JWT can be veriﬁed using PKI.</p>
+JSON tokens. There are important differences between certificates and JWTs that
+are beyond the scope of this book, but just like X.509 certificates, the
+authenticity of a JWT can be verified using PKI.</p>
 
 <h4 id="the-trustworthiness-of-foreign-identities">The trustworthiness of foreign identities</h4>
 
@@ -1279,7 +1279,7 @@ observability, and metering.</p>
 
 <p>The most common use of an identity document is as a basis for authentication.
 For software identities, several different authentication protocols exist that
-use X.509 certiﬁcates or JWTs to prove the identity of a service to another
+use X.509 certificates or JWTs to prove the identity of a service to another
 service.</p>
 
 <h4 id="confidentiality-and-integrity">Confidentiality and integrity</h4>
@@ -1287,8 +1287,8 @@ service.</p>
 <p>Confidentiality means that attackers can’t see the contents of a message, while
 integrity means that they can’t alter it in transit. Transport Layer Security
 (TLS) is a widely used protocol for building secure connections that provides
-authentication, conﬁdentiality, and message integrity on top of an untrusted
-network connection using X.509 certiﬁcates.</p>
+authentication, confidentiality, and message integrity on top of an untrusted
+network connection using X.509 certificates.</p>
 
 <p>One feature of TLS is that <strong>either side</strong> of the connection can be
 authenticated using certificates. As an example, when you connect to your
@@ -1298,7 +1298,7 @@ certificate to the bank. (You log in with a username and password, not a
 certificate.)</p>
 
 <p>When two pieces of software are communicating, it is common for <strong>both sides</strong>
-of the connection to have X.509 certiﬁcates and authenticate each other. This is
+of the connection to have X.509 certificates and authenticate each other. This is
 called <em>mutually authenticated TLS</em>.</p>
 
 <h4 id="authorization">Authorization</h4>
@@ -1334,9 +1334,9 @@ solve this problem or to deny access altogether.</p>
 <p>Both humans and pieces of software have identities, and both can use identity
 documents to prove their identities. For humans, passports are a typical form
 of an identity document. For software, the most common form of a digital
-identity document is an X.509 certiﬁcate.</p>
+identity document is an X.509 certificate.</p>
 
-<p>Certiﬁcates are issued by Certiﬁcate Authorities. Certiﬁcate Authorities need to
+<p>Certificates are issued by Certificate Authorities. Certificate Authorities need to
 take care to properly validate the people or things they are creating
 certificates for, and manage the lifespan of the certificates.</p>
 
@@ -1345,8 +1345,8 @@ authority that issued it.</p>
 
 <p>Once trusted digital identity documents are available, they have many different
 uses. One of the most common is to create a mutually authenticated TLS
-connection, which includes authentication, conﬁdentiality, and integrity.
-Another common use is for authorization. With authentication, conﬁdentiality,
+connection, which includes authentication, confidentiality, and integrity.
+Another common use is for authorization. With authentication, confidentiality,
 integrity, and authorization, connections between services are secure.</p>
 
 <hr />
@@ -1358,14 +1358,14 @@ integrity, and authorization, connections between services are secure.</p>
 
 <p>Building upon the concepts introduced in Chapter 3, this chapter illustrates the
 SPIFFE standard. It explains the components of the SPIRE implementation and how
-they ﬁt together. Finally, it discusses the threat model and what happens if
-speciﬁc components are compromised.</p>
+they fit together. Finally, it discusses the threat model and what happens if
+specific components are compromised.</p>
 
 <h3 id="what-is-spiffe">What is SPIFFE?</h3>
 
 <p>The Secure Production Identity Framework For Everyone (or SPIFFE) is a set of
 open source standards for software identity. To achieve interoperable software
-identity in an organization- and platform- agnostic way, SPIFFE deﬁnes the
+identity in an organization- and platform- agnostic way, SPIFFE defines the
 interfaces and documents necessary to obtain and validate cryptographic identity
 in a fully automated fashion.</p>
 
@@ -1377,7 +1377,7 @@ in a fully automated fashion.</p>
 
 <ul>
 <li>The SPIFFE ID, how a software service’s name (or identity) is represented</li>
-<li>The SPIFFE Veriﬁable Identity Document (SVID), a cryptographically veriﬁable
+<li>The SPIFFE Verifiable Identity Document (SVID), a cryptographically verifiable
 document used to prove a service’s identity to a peer</li>
 <li>The SPIFFE Workload API, a simple node-local API that services use to obtain
 their identities without the need for authentication</li>
@@ -1422,7 +1422,7 @@ and public keys for validating SVIDs.</p></blockquote>
 <p>A SPIFFE ID is a string that functions as the unique name for a service. It is
 modeled as a URI and is made up of several parts. The prefix <code>spiffe://</code>
 (as the URI’s scheme), the name of the trust domain (as the host component),
-and the name or identity of the speciﬁc workload (as the path component).</p>
+and the name or identity of the specific workload (as the path component).</p>
 
 <p>A simple SPIFFE ID might just be <code>spiffe://example.com/myservice</code>.</p>
 
@@ -1469,7 +1469,7 @@ between organizations, and every SPIFFE ID has the name of its trust domain
 embedded in it, as described above.</p>
 
 <p>Concretely, a trust domain is a portion of the SPIFFE ID namespace over which a
-speciﬁc set of public keys is considered authoritative.</p>
+specific set of public keys is considered authoritative.</p>
 
 <p>Since different trust domains have different issuing authorities, the compromise
 of one trust domain does not result in the compromise of another. This is an
@@ -1480,9 +1480,9 @@ between one company and another.</p>
 <p>The ability to validate SPIFFE identities across multiple trust domains is known
 as the SPIFFE Federation, introduced later in this chapter.</p>
 
-<h4 id="the-spiffe-veri%EF%AC%81able-identity-document-%28svid%29">The SPIFFE Veriﬁable Identity Document (SVID)</h4>
+<h4 id="the-spiffe-veri%EF%AC%81able-identity-document-%28svid%29">The SPIFFE Verifiable Identity Document (SVID)</h4>
 
-<p>The SPIFFE Veriﬁable Identity Document (SVID) is a cryptographically-veriﬁable
+<p>The SPIFFE Verifiable Identity Document (SVID) is a cryptographically-verifiable
 <em>identity document</em> that is used to prove a service’s identity to a peer. SVIDs
 include a single SPIFFE ID and are signed by an issuing authority that
 represents the trust domain that the service resides in.</p>
@@ -1490,7 +1490,7 @@ represents the trust domain that the service resides in.</p>
 <p>Rather than invent a new type of document that software must be taught to
 support, SPIFFE opts to utilize document types that are already in wide use and
 are well-understood. At the time of this writing, two types of identity
-documents are deﬁned for use as an SVID by the SPIFFE speciﬁcations: X.509 and
+documents are defined for use as an SVID by the SPIFFE specifications: X.509 and
 JWT.</p>
 
 <h4 id="x509-svid">X509-SVID</h4>
@@ -1499,18 +1499,18 @@ JWT.</p>
 certificate</a>. The corresponding SPIFFE ID is set as a URI type in the
 Subject Alternative Name (SAN) extension field. While only one URI SAN field is
 permitted to be set on an X509-SVID, the certificate may contain any number of
-SAN ﬁelds of other types, including DNS SANs.</p>
+SAN fields of other types, including DNS SANs.</p>
 
 <p>X509-SVIDs are recommended to be used wherever possible, as they have better
 security properties than JWT-SVIDs. Specifically, when used in conjunction with
-TLS, an X.509 certiﬁcate can’t be recorded and replayed by an intermediary.</p>
+TLS, an X.509 certificate can’t be recorded and replayed by an intermediary.</p>
 
 <p>Utilization of X509-SVID may have additional requirements, please refer to
-the <a href="https://github.com/spiffe/spiffe/blob/main/standards/X509-SVID.md" title="X509-SVID Spec">X509-SVID portion of the speciﬁcation</a>.</p>
+the <a href="https://github.com/spiffe/spiffe/blob/main/standards/X509-SVID.md" title="X509-SVID Spec">X509-SVID portion of the specification</a>.</p>
 
 <h4 id="jwt-svid">JWT-SVID</h4>
 
-<p>A JWT-SVID encodes a SPIFFE identity into a standard <a href="https://tools.ietf.org/html/rfc7519" title="RFC 7519">JWT</a>—speciﬁcally
+<p>A JWT-SVID encodes a SPIFFE identity into a standard <a href="https://tools.ietf.org/html/rfc7519" title="RFC 7519">JWT</a>—specifically
 a (<a href="https://tools.ietf.org/html/rfc7515">https://tools.ietf.org/html/rfc7515</a>) <a href="https://tools.ietf.org/html/rfc7515" title="RFC 7515">JWS</a>. JWT-SVIDs are used as
 bearer tokens to prove identity to peers at the application layer. Unlike
 X509-SVIDs, JWT-SVIDs suffer from a class of attack known as “<a href="https://en.wikipedia.org/wiki/Replay_attack" title="Replay attack (Wikipedia)">replay
@@ -1531,7 +1531,7 @@ scenarios where it is not possible to establish an end-to-end communication
 channel.</p>
 
 <p>Utilization of JWT-SVID may have additional requirements, please refer to
-the <a href="https://github.com/spiffe/spiffe/blob/master/standards/JWT-SVID.md" title="JWT-SVID Spec">JWT-SVID portion of the speciﬁcation</a>.</p>
+the <a href="https://github.com/spiffe/spiffe/blob/master/standards/JWT-SVID.md" title="JWT-SVID Spec">JWT-SVID portion of the specification</a>.</p>
 
 <h4 id="the-spiffe-trust-bundle">The SPIFFE Trust Bundle</h4>
 
@@ -1544,14 +1544,14 @@ domain.</p>
 
 <p>Since the trust bundle does not contain any secrets (only public keys), it can
 be safely shared with the public. Despite this fact, it does need to be
-distributed securely to protect its contents from unauthorized modiﬁcation. In
-other words, conﬁdentiality is not required, but integrity is.</p>
+distributed securely to protect its contents from unauthorized modification. In
+other words, confidentiality is not required, but integrity is.</p>
 
 <p>SPIFFE bundles are formatted as a JWK Set (or JWKS document) and are compatible
 with existing authentication technologies such as <a href="https://openid.net/connect/" title="OpenID Connect">OpenID Connect</a>. JWKS
 is a flexible and widely adopted format for representing various types of
-cryptographic keys and documents, which provides for some future-prooﬁng in the
-event that new SVID formats are deﬁned.</p>
+cryptographic keys and documents, which provides for some future-proofing in the
+event that new SVID formats are defined.</p>
 
 <h4 id="spiffe-federation">SPIFFE Federation</h4>
 
@@ -1572,7 +1572,7 @@ domain. The mechanism used to share a trust domain’s bundle contents is known 
 the bundle endpoint.</p>
 
 <p>Bundle endpoints are simple TLS-protected HTTP services. Operators wishing to
-federate with foreign trust domains must conﬁgure their SPIFFE implementation
+federate with foreign trust domains must configure their SPIFFE implementation
 with the name of the foreign trust domain and the URL of the bundle endpoint,
 allowing the contents of the bundle to be periodically fetched.</p>
 
@@ -1610,18 +1610,18 @@ rotates them as necessary.</p>
 <h3 id="what-is-spire">What is SPIRE?</h3>
 
 <p>The SPIFFE Runtime Environment (SPIRE) is a production-ready open source
-implementation of all ﬁve pieces of the SPIFFE speciﬁcation.</p>
+implementation of all five pieces of the SPIFFE specification.</p>
 
 <p>The SPIRE project (as well as SPIFFE) is hosted by the Cloud Native Computing
 Foundation, a group founded by many of the leading infrastructure technology
-companies to provide a neutral home for open source projects that beneﬁt the
+companies to provide a neutral home for open source projects that benefit the
 cloud native community.</p>
 
 <p>SPIRE has two major components: the server and the agent. The server is
 responsible for authenticating agents and minting SVIDs, while the agent is
 responsible for serving the SPIFFE Workload API. Both components are written
 using a plugin-oriented architecture so they can easily be extended to adapt to
-a vast array of different conﬁgurations and platforms.</p>
+a vast array of different configurations and platforms.</p>
 
 <h4 id="spire-architecture">SPIRE architecture</h4>
 
@@ -1651,21 +1651,21 @@ embedded database, for development and testing purposes.</p>
 <h6 id="upstream-authorities">Upstream authorities</h6>
 
 <p>All SVIDs in a trust domain are signed by the SPIRE Server. By default, the
-SPIRE Server generates a self-signed certiﬁcate (a certiﬁcate signed with its
-own randomly generated private key) to sign SVIDs unless an <em>Upstream Certiﬁcate
-Authority</em> plugin interface is conﬁgured. The plugin interface called <em>Upstream
-Certiﬁcate Authorities</em> allows SPIRE to obtain its signing certiﬁcate from
-another certiﬁcate authority.</p>
+SPIRE Server generates a self-signed certificate (a certificate signed with its
+own randomly generated private key) to sign SVIDs unless an <em>Upstream Certificate
+Authority</em> plugin interface is configured. The plugin interface called <em>Upstream
+Certificate Authorities</em> allows SPIRE to obtain its signing certificate from
+another certificate authority.</p>
 
-<p>In many simple cases, it’s ﬁne to use a self-signed certiﬁcate. However, for
+<p>In many simple cases, it’s fine to use a self-signed certificate. However, for
 larger installations, it may be desirable to take advantage of preexisting
-Certiﬁcate Authorities and the hierarchical nature of X.509 certiﬁcates to make
-multiple SPIRE Servers (and other software that generates X.509 certiﬁcates)
+Certificate Authorities and the hierarchical nature of X.509 certificates to make
+multiple SPIRE Servers (and other software that generates X.509 certificates)
 work together.</p>
 
-<p>In some organizations, the upstream certiﬁcate authority might be a central
-certiﬁcate authority that your organization uses for other purposes. This is
-useful if you have many different kinds of certiﬁcates in use, and you want
+<p>In some organizations, the upstream certificate authority might be a central
+certificate authority that your organization uses for other purposes. This is
+useful if you have many different kinds of certificates in use, and you want
 them all to be trusted throughout your infrastructure.</p>
 
 <h5 id="spire-agent">SPIRE Agent</h5>
@@ -1677,10 +1677,10 @@ securely introducing itself to the SPIRE Server. In this arrangement, it is the
 agent that performs all of the heavy lifting.</p>
 
 <p>Agents do not require active management in the way that SPIRE Servers do. While
-they do require a conﬁguration file, SPIRE Agents receive information about the
+they do require a configuration file, SPIRE Agents receive information about the
 local trust domain and the workloads that might call it directly from the SPIRE
-Server. When deﬁning new workloads in a given trust domain, the records are
-simply deﬁned or updated in a SPIRE Server, and information about the new
+Server. When defining new workloads in a given trust domain, the records are
+simply defined or updated in a SPIRE Server, and information about the new
 workload propagates to the appropriate agents automatically.</p>
 
 <p><img src="assets/Image_082.jpg" alt="SPIFFE Workload API" /></p>
@@ -1738,12 +1738,12 @@ the system to support additional selector types as they see fit.</p>
 
 <h5 id="node-attestation">Node Attestation</h5>
 
-<p>Node attestation occurs when an agent starts for the ﬁrst time. In node
+<p>Node attestation occurs when an agent starts for the first time. In node
 attestation, the agent contacts the SPIRE Server and enters into an exchange in
 which the server aims to positively identify the node the agent is running on
-and all its related selectors. To accomplish this, a platform-speciﬁc plugin is
+and all its related selectors. To accomplish this, a platform-specific plugin is
 exercised in both the agent and the server. For example, in the case of AWS,
-the agent plugin collects information from AWS that only that speciﬁc node has
+the agent plugin collects information from AWS that only that specific node has
 access to (a document signed by an AWS key), and passes it to the server. The
 server plugin then validates the AWS signature and makes further calls to AWS
 APIs to both assert the accuracy of the claim, as well as gather additional
@@ -1778,7 +1778,7 @@ agent will leverage operating system features to determine exactly which process
 has opened the new connection. The operating system features leveraged will be
 dependent on the operating system the agent is running on. In the case of Linux,
 the agent will make a system call to retrieve the process ID, the user
-identifier and the globally unique identiﬁer of the remote system calling on the
+identifier and the globally unique identifier of the remote system calling on the
 particular socket. The kernel metadata requested will be different in BSD and
 Windows. The agent, in turn, will provide the attestor plugins with the ID of
 the calling workload. From there, attestation fans out across its plugins,
@@ -1858,7 +1858,7 @@ of available node selectors are:</p>
 
 <p>Node entries have their Parent ID set to the SPIFFE ID of the SPIRE Server, as
 it is the server which is performing attestation and asserting that the node in
-question does indeed match the selectors deﬁned by the entry.</p>
+question does indeed match the selectors defined by the entry.</p>
 
 <h5 id="workload-entries">Workload entries</h5>
 
@@ -1874,15 +1874,15 @@ selectors that must be attested before issuing an SVID for that particular
 entry.</p>
 
 <p>When a workload calls the agent, the agent performs workload attestation and
-cross-references the discovered selectors with the selectors deﬁned in the
-entry. If a workload possesses the entire set of deﬁned selectors, then the
-conditions are met and the workload is issued an SVID with the deﬁned SPIFFE ID.</p>
+cross-references the discovered selectors with the selectors defined in the
+entry. If a workload possesses the entire set of defined selectors, then the
+conditions are met and the workload is issued an SVID with the defined SPIFFE ID.</p>
 
 <p>Unlike node attestation, SPIRE Agent supports loading many workload attestor
 plugins simultaneously. This allows mix-and-match selectors in workload entries.
 For example, a workload entry may require that a workload is in a specific
-Kubernetes namespace, have a speciﬁc label applied to its Docker image, and have
-a speciﬁc SHA sum.</p>
+Kubernetes namespace, have a specific label applied to its Docker image, and have
+a specific SHA sum.</p>
 
 <h3 id="spiffe%2Fspire-applied-concepts-threat-model">SPIFFE/SPIRE Applied Concepts Threat Model</h3>
 
@@ -1893,7 +1893,7 @@ mitigation may be necessary.</p>
 
 <p>In this section, we will describe the security boundaries of both SPIFFE and
 SPIRE and the impact of compromise of each component in the system. Later in the
-book, we’ll cover speciﬁc security considerations imposed by different SPIRE
+book, we’ll cover specific security considerations imposed by different SPIRE
 deployment models.</p>
 
 <h4 id="assumptions">Assumptions</h4>
@@ -1909,7 +1909,7 @@ that network communication is hostile or presumably fully compromised. That
 said, it is also assumed that the hardware on which SPIRE components run, as
 well as its operators, are trustworthy. If hardware implants or insider threats
 are part of the threat model, careful considerations should be made around the
-physical placement of SPIRE Servers and the security of their conﬁguration
+physical placement of SPIRE Servers and the security of their configuration
 parameters.</p>
 
 <p>There may further be implied trust in third-party platforms or software,
@@ -1932,7 +1932,7 @@ this assessment. Instead, they should be evaluated on a case-by-case basis.</p>
 <p>Security boundaries are formally understood as the line of intersection between
 two areas of differing levels of trust.</p>
 
-<p>There are three major security boundaries deﬁned by SPIFFE/SPIRE: one between
+<p>There are three major security boundaries defined by SPIFFE/SPIRE: one between
 workloads and agents, one between agents and servers, and another between
 servers in different trust domains. In this model, workloads are fully
 untrusted, as are servers in other trust domains and, as mentioned previously,
@@ -1972,7 +1972,7 @@ of where a particular workload is authorized to run (in the form of a Parent
 ID). Agents must be able to prove ownership of a registration entry before they
 can obtain an identity for it. As a result, compromised agents are not able to
 obtain arbitrary identities—they may only obtain the identities of workloads
-that should be running on the node in the ﬁrst place.</p>
+that should be running on the node in the first place.</p>
 
 <p>It is worth noting that communications between the SPIRE Server and SPIRE Agent
 can use TLS and mutual TLS at different points in time during the node
@@ -2030,7 +2030,7 @@ much worse.</p>
 significantly limiting the possibility of lateral movement between agents. This
 is an important design decision that is intended to mitigate the impact of a
 possible agent vulnerability. However, it should be understood that certain
-conﬁgurations or deployment choices may undermine this mitigation in part or
+configurations or deployment choices may undermine this mitigation in part or
 whole. For example, SPIRE Agent supports exposing a Prometheus metrics endpoint,
 however, if all agents expose this endpoint and vulnerability exists there, then
 lateral movement becomes trivial unless adequate network-level controls are in
@@ -2085,18 +2085,18 @@ matter the most to your business and frame these as drivers for the project and
 the value of the solution you will deliver.</p>
 
 <p>Each team needs to see the benefits of SPIRE to themselves as well as to the
-business as a whole. Many of the beneﬁts of a SPIRE deployment are described in
-“Chapter 2: Beneﬁts of this book” and in this section, we will distill some of
-these beneﬁts down into compelling arguments.</p>
+business as a whole. Many of the benefits of a SPIRE deployment are described in
+“Chapter 2: Benefits of this book” and in this section, we will distill some of
+these benefits down into compelling arguments.</p>
 
 <h5 id="compelling-arguments-to-security-teams">Compelling arguments to security teams</h5>
 
 <p>Reducing the security team’s workload is one very persuasive case for deploying
 SPIRE: instead of deploying ad hoc security solutions, and managing hundreds or
-thousands of certiﬁcates manually, they can focus on designing the right
+thousands of certificates manually, they can focus on designing the right
 registration entries to make sure each service gets the right identity.</p>
 
-<p>A more long-term beneﬁt is that SPIRE can increase the overall security posture
+<p>A more long-term benefit is that SPIRE can increase the overall security posture
 of the organization, as SPIRE has no credentials that can easily be stolen or
 misused. A large range of attacks related to misappropriation or
 misrepresentation of credentials, as well as sensitive data exposure, are
@@ -2108,12 +2108,12 @@ launch attacks on other services is limited.</p>
 <h5 id="compelling-arguments-to-software-development-teams">Compelling arguments to software development teams</h5>
 
 <p>For application development teams, their ability to move faster by not waiting
-on tickets or manual workﬂows to provision certiﬁcates is the most compelling
+on tickets or manual workﬂows to provision certificates is the most compelling
 case. If they are currently manually deploying secrets alongside their code and
 getting talked to by their security teams, they no longer have to endure that.
 They also don’t need to manage secrets in a secret store.</p>
 
-<p>A secondary beneﬁt is that software components may be able to directly
+<p>A secondary benefit is that software components may be able to directly
 communicate in ways they couldn’t do securely before. If cloud services can’t
 access a critical database or essential cloud service because there’s no way to
 do it securely, it may be possible to use SPIFFE identities to create a secure
@@ -2128,7 +2128,7 @@ This new ﬂexibility allows lowered cost, higher scalability, and improved
 reliability since deployment decisions can be made independently of security
 requirements.</p>
 
-<p>Another key beneﬁt for DevOps teams is that incoming requests to each service
+<p>Another key benefit for DevOps teams is that incoming requests to each service
 are all tagged with a SPIFFE ID, which can be logged, measured, and reported to
 a monitoring system. This is extraordinarily helpful for performance management
 in large organizations with hundreds or thousands of services.</p>
@@ -2199,7 +2199,7 @@ there needs to be a gateway.</em></p>
 <p>With a Bridged Islands architecture, gateways are created on non-SPIFFE-enabled
 islands. There are many reasons these non-SPIFFE islands may not be able to
 easily adopt a SPIFFE architecture: there may be legacy software that cannot be
-easily modiﬁed or updated; the island may be using its own identiﬁcation
+easily modified or updated; the island may be using its own identification
 ecosystem, such as Kerberos or one of the other options described in the
 “Comparing SPIFFE to Other Technologies” chapter; or the system may be running
 workloads on technologies not well suited to the models of existing SPIFFE
@@ -2289,7 +2289,7 @@ the following preparatory steps:</p>
 </tr>
 <tr>
 <td> Determine what languages, frameworks, IPC technologies, etc. are in use at your organization that will need to be SPIFFE- compatible </td>
-<td> If using X.509-SVIDs for mutual TLS, determine what web servers are in use in your organization (Apache HTTPD, NGINX, Tomcat, Jetty, etc.) and what client libraries are in use. If client libraries are expecting to perform DNS hostname veriﬁcation, make sure your SPIFFE deployment is compatible with this expectation. </td>
+<td> If using X.509-SVIDs for mutual TLS, determine what web servers are in use in your organization (Apache HTTPD, NGINX, Tomcat, Jetty, etc.) and what client libraries are in use. If client libraries are expecting to perform DNS hostname verification, make sure your SPIFFE deployment is compatible with this expectation. </td>
 </tr>
 </tbody>
 </table>
@@ -2308,7 +2308,7 @@ the rollout.</p>
 
 <h5 id="tls-performance">TLS performance</h5>
 
-<p>In many organizations, the ﬁrst concern that developers and operation teams
+<p>In many organizations, the first concern that developers and operation teams
 raise is that establishing mutual TLS connections between services will be too
 slow. On modern hardware, with modern TLS implementations, the performance
 impact of TLS is minimal:</p>
@@ -2327,12 +2327,12 @@ without needing to resort to dedicated cryptographic hardware.”
 Interest</a>, 2012</p></blockquote>
 
 <p>In general, performance implication depends on multiple factors, including
-network topology, API gateways, L4-L7 ﬁrewalls, and many others. Also, the
-protocols you are using and their implementation and certiﬁcate and key sizes
+network topology, API gateways, L4-L7 firewalls, and many others. Also, the
+protocols you are using and their implementation and certificate and key sizes
 might affect performance, so it is a pretty broad topic to cover.</p>
 
 <p>The table below provides data points about overhead for two different stages
-compared to TCP, speciﬁcally for handshake and data transfer phases.</p>
+compared to TCP, specifically for handshake and data transfer phases.</p>
 
 <table>
 <thead>
@@ -2479,7 +2479,7 @@ APIs are no longer used, then the non-SPIFFE APIs can be turned off.</p>
 <blockquote><p><strong>Warning</strong>: Be careful that you don’t turn off legacy endpoints prematurely.
 Pay special attention to batch jobs, scheduled tasks, and other kinds of
 infrequent or irregular call patterns. You don’t want to be the person who
-caused an end-of-quarter or end-of-ﬁnancial-year reconciliation job to fail.</p></blockquote>
+caused an end-of-quarter or end-of-financial-year reconciliation job to fail.</p></blockquote>
 
 <p>If your environment is too big or complex to do an all at once approach, it is
 important to be thoughtful when choosing the order in which services become
@@ -2488,7 +2488,7 @@ SPIFFE-enabled. It can be helpful to think about it in terms of <em>big rocks</e
 
 <p><img src="assets/Image_121.jpg" alt="Microservices" /></p>
 
-<p><em>Fig. 5.7: Simpliﬁed microservice call graph.</em></p>
+<p><em>Fig. 5.7: Simplified microservice call graph.</em></p>
 
 <h5 id="big-rocks">Big rocks</h5>
 
@@ -2497,20 +2497,20 @@ connect with the highest count of unique services. Tackling big rocks early may
 be tempting to speed up adoption, but may result in biting off more than you can
 chew, causing problems and dissuading others from adopting SPIFFE.</p>
 
-<p>Looking at the call graph above, the big rocks can be identiﬁed by the nodes
+<p>Looking at the call graph above, the big rocks can be identified by the nodes
 with the most connections. They may be key services that are called by many
 clients like Service 0. They may be clients that call many services like
 Service 4. Big rocks may also include services that are both a client and
 server, like Service 7. Tackling the migration of these services entails both
-beneﬁts and risks:</p>
+benefits and risks:</p>
 
 <ul>
-<li><strong>Beneﬁts</strong>
+<li><strong>Benefits</strong>
 
 <ul>
 <li>Attractive choice</li>
 <li>Potential speedy adoption</li>
-<li>Wide-reaching beneﬁts</li>
+<li>Wide-reaching benefits</li>
 <li>Motivate others to adopt</li>
 </ul>
 </li>
@@ -2545,7 +2545,7 @@ maintain dual endpoints (legacy and SPIFFE), or those services which will have
 to maintain a dual-stack for the shortest period.</p>
 
 <ul>
-<li><strong>Beneﬁts</strong>
+<li><strong>Benefits</strong>
 
 <ul>
 <li>Less risk if something goes wrong</li>
@@ -2568,7 +2568,7 @@ owners</li>
 <h4 id="accelerating-adoption">Accelerating adoption</h4>
 
 <p>Several precursors and enablers can boost the adoption of SPIFFE in complex and
-heterogeneous environments. Each of them comes with a different set of beneﬁts
+heterogeneous environments. Each of them comes with a different set of benefits
 and challenges to consider. The considerations above apply here too; pick
 systems that will have the broadest impact and don’t turn off non-SPIFFE
 functionality until you’re certain that all non-SPIFFE consumers have been
@@ -2576,7 +2576,7 @@ converted.</p>
 
 <p>Precursors include tooling and services (such as CI/CD and workﬂow engines) that
 help others adopt SPIFFE. Development and operational tooling should be made
-available to the ﬁrst adopters (Innovators) and iteratively improved as the
+available to the first adopters (Innovators) and iteratively improved as the
 early adopters come on board. The aim is for enabling tools and services to have
 reached maturity as the early majority comes on board. The late majority and
 laggards will struggle if there hasn’t been enough investment in precursors.</p>
@@ -2596,8 +2596,8 @@ transition.</p>
 consultation with their intended users, ideally in an incremental and iterative
 way. Doing this properly can take time.</p>
 
-<p>Choosing when a tool is good enough for the ﬁrst and early adopters is a
-judgment call. On rare occasions, the ﬁrst iteration of tooling is good enough
+<p>Choosing when a tool is good enough for the first and early adopters is a
+judgment call. On rare occasions, the first iteration of tooling is good enough
 for the early and late majority.</p>
 
 <h5 id="continuous-integration-and-deployment-systems">Continuous Integration and Deployment systems</h5>
@@ -2660,7 +2660,7 @@ team to make sure they have all the alerts and run books in place.</p>
 
 <p>We’ve compiled a list of some scenarios you want to include in your failure
 testing program. It is not a complete guide, just a starting point to build the
-checklist for your speciﬁc environment and deployment model. It would be best to
+checklist for your specific environment and deployment model. It would be best to
 execute all these tests with a different downtime: shorter than half of
 configured TTL and longer.</p>
 
@@ -2709,7 +2709,7 @@ storage</li>
 <h4 id="monitoring">Monitoring</h4>
 
 <p>In addition to the usual health of SPIRE components to ensure the system is
-functioning properly, you should set up monitoring of conﬁgurations of servers,
+functioning properly, you should set up monitoring of configurations of servers,
 agents, and trust bundles to detect unauthorized changes, as these components
 are the foundation of the system&rsquo;s security. Besides, monitoring of issuance of
 identities and communication between servers and agents can be done to detect
@@ -2719,7 +2719,7 @@ may wish to reconsider the extent of monitoring.</p>
 <p>SPIRE offers ﬂexible support for metric reporting through
 <a href="https://en.wikipedia.org/wiki/Telemetry" title="Telemetry (Wikipedia)">telemetry</a>, allowing metrics collection using multiple collectors.
 The metrics collectors that are currently supported are Prometheus, Statsd,
-DogStatsd, and M3. Multiple collectors can be conﬁgured simultaneously, both in
+DogStatsd, and M3. Multiple collectors can be configured simultaneously, both in
 the servers and the agents.</p>
 
 <p>Many metrics are available on SPIRE, with records that cover all the APIs and
@@ -2766,11 +2766,11 @@ will serve as the basis for your deployment activities.</p>
 
 <p>Remember from the previous chapters that a SPIFFE ID is a structured string
 representing the identity name of a workload, as you saw in Chapter 4. The
-workload identiﬁer section (the path portion of the URI) appended to the trust
+workload identifier section (the path portion of the URI) appended to the trust
 domain name (host part of the URI) can be composed to convey meaning about the
 ownership of a service to denote what platform it runs in, who owns it, its
 intended purpose, or other conventions. It is purposely ﬂexible and customizable
-for you to deﬁne.</p>
+for you to define.</p>
 
 <p>Your naming scheme may be hierarchical, like file system paths. That said, to
 reduce ambiguity, name schemes should not end with a trailing forward-slash
@@ -2780,7 +2780,7 @@ particularly inspired.</p>
 
 <h4 id="identifying-services-directly">Identifying services directly</h4>
 
-<p>You may ﬁnd it useful to identify a service directly by the functionality it
+<p>You may find it useful to identify a service directly by the functionality it
 presents from an application perspective and the environment it runs in as part
 of the software development lifecycle. For example, an administrator may dictate
 that any process running in a particular environment should be able to present
@@ -2892,7 +2892,7 @@ organizations that may have different development practices.</p>
 
 <h4 id="one-for-one%3A-single-spire-cluster-in-your-single-trust-domain">One for one: Single SPIRE cluster in your single trust domain</h4>
 
-<p>A single SPIRE server, in a high availability conﬁguration, is the best starting
+<p>A single SPIRE server, in a high availability configuration, is the best starting
 point for environments with a single trust domain.</p>
 
 <p><img src="assets/Image_143.jpg" alt="Single trust domain" /></p>
@@ -2904,15 +2904,15 @@ regions, platforms, and cloud provider environments, there are potential scaling
 issues when SPIRE Agents are dependent on a distant SPIRE Server. Under
 circumstances where a single deployment would span multiple environments, a
 solution to address the use of a shared data store over a single trust domain is
-to conﬁgure SPIRE Servers in a nested topology.</p>
+to configure SPIRE Servers in a nested topology.</p>
 
 <p> #### Nested SPIRE</p>
 
 <p>A nested topology for your SPIRE Servers lets you keeps communication between
 SPIRE Agents and the SPIRE Server as close as possible.</p>
 
-<p>In this conﬁguration, the top-tier SPIRE Servers hold the root certiﬁcates and
-keys, and the downstream servers request an intermediate signing certiﬁcate to
+<p>In this configuration, the top-tier SPIRE Servers hold the root certificates and
+keys, and the downstream servers request an intermediate signing certificate to
 use as the downstream server’s X.509 signing authority. If the top tier goes
 down, intermediate servers continue to operate, providing resilience to the
 topology.</p>
@@ -2939,7 +2939,7 @@ Server is secure.</p>
 
 <p><em>Fig. 6.3: Illustration of a company architecture with one upstream SPIRE Server
 and two nested SPIRE Servers. Each of the two nested SPIRE Servers can have its
-own conﬁguration (relevant for AWS and Azure), and if either one of them fails,
+own configuration (relevant for AWS and Azure), and if either one of them fails,
 the other is unaffected.</em></p>
 
 <h4 id="federated-spire">Federated SPIRE</h4>
@@ -2957,7 +2957,7 @@ between a cloud provider and its customers.</p>
 <p><em>Fig. 6.4: SPIRE Server using Federated trust domains.</em></p>
 
 <p>These multiple trust domains and interoperability use cases both require a
-well-deﬁned, interoperable method for a workload in one trust domain to
+well-defined, interoperable method for a workload in one trust domain to
 authenticate a workload in a different trust domain. In federated SPIRE, trust
 between the different trust domains is established by first authenticating the
 respective bundle endpoint, followed by retrieval of the foreign trust domain
@@ -2984,14 +2984,14 @@ re-attest to get new identities if you lose the database.</p>
 
 <h5 id="avoiding-a-single-point-of-failure">Avoiding a single point of failure</h5>
 
-<p>The beneﬁt of simplicity always comes with a trade-off. If there is only one
+<p>The benefit of simplicity always comes with a trade-off. If there is only one
 SPIRE Server and it is lost, everything is lost and will need to be rebuilt.
 The system’s availability can be improved by having more than one server. There
 will still be a shared data store and secure connectivity and data replication.
 We’ll talk about the different security effects of such decisions later in the
 chapter.</p>
 
-<p>To scale the SPIRE Server horizontally, conﬁgure all servers in the same trust
+<p>To scale the SPIRE Server horizontally, configure all servers in the same trust
 domain to read and write to the same shared data store.</p>
 
 <p>The data store is where the SPIRE Server persists dynamic configuration
@@ -3046,7 +3046,7 @@ described above. However, it may make the design and operations more intricate
 and rely on other systems to detect outages and update DNS records in the event
 of a failure. Further, the design still requires pieces of database
 infrastructure for each SPIRE availability domain, per region or data center
-depending on the speciﬁc infrastructure. <a href="//github.com/spiffe/spire/blob/master/doc/plugin_server_datastore_sql.md" title="SPIRE Datastore Plugin Documentation">Please check the SPIRE documentation
+depending on the specific infrastructure. <a href="//github.com/spiffe/spire/blob/master/doc/plugin_server_datastore_sql.md" title="SPIRE Datastore Plugin Documentation">Please check the SPIRE documentation
 for more details</a>.</p>
 
 <p><img src="assets/Image_156.jpg" alt="Shared datastore." /></p>
@@ -3301,16 +3301,16 @@ they are rotated, are key questions you need to ask yourself at this point.</p>
 <p><img src="assets/Image_178.jpg" alt="Trust chain." /></p>
 
 <p><em>Fig. 6.15: An example SPIRE deployment with three trust domains, each of which
-uses a different corporate Certiﬁcate Authority, each of which uses the same
-Root Certiﬁcate Authority. In each layer, certiﬁcates have a shorter TTL.</em></p>
+uses a different corporate Certificate Authority, each of which uses the same
+Root Certificate Authority. In each layer, certificates have a shorter TTL.</em></p>
 
-<p>Each organization will have a different certiﬁcate hierarchy because each
+<p>Each organization will have a different certificate hierarchy because each
 organization has different requirements. The diagram above represents one
 potential certificate hierarchy.</p>
 
 <h5 id="ttl-revocation-and-renewal">TTL, revocation, and renewal</h5>
 
-<p>When dealing with PKI, questions around certiﬁcate expiry, re-issuance, and
+<p>When dealing with PKI, questions around certificate expiry, re-issuance, and
 revocation always surface. Several considerations can influence the decisions
 made here. These include:</p>
 
@@ -3354,7 +3354,7 @@ as well as built-in services for each of the major cloud providers.</p>
 
 <p>Another possible design strategy to integrate SPIRE with existing PKI is to use
 the SPIRE Upstream Authority plugin interface. In this case, the SPIRE Server
-signs its intermediate CA certiﬁcate by communicating with existing PKI using
+signs its intermediate CA certificate by communicating with existing PKI using
 one of the supported plugins.</p>
 
 <h4 id="spire-data-store-security-considerations">SPIRE data store security considerations</h4>
@@ -3375,7 +3375,7 @@ denial of service to the rest of the infrastructure.</p>
 <p>When you consider a design with any database for SPIRE Server infrastructure in
 production, you won’t likely use the model where the database process coexists
 on the same host with the server. Though the model with limited access to the
-database, and co-hosting it with the server signiﬁcantly limits the attack
+database, and co-hosting it with the server significantly limits the attack
 surface, it is very hard to scale in a production environment.</p>
 
 <p><img src="assets/Image_180.jpg" alt="Remote data store." /></p>
@@ -3403,10 +3403,10 @@ data secure.</p>
 
 <p>In some deployments, you may need to add another lower-level <em>meta PKI</em>
 infrastructure that will allow you to secure communication with all low-level
-dependencies for the SPIRE Server, including your conﬁguration management or
+dependencies for the SPIRE Server, including your configuration management or
 deployment software.</p>
 
-<h4 id="spire-agent-con%EF%AC%81guration-and-trust-bundle">SPIRE Agent conﬁguration and trust bundle</h4>
+<h4 id="spire-agent-con%EF%AC%81guration-and-trust-bundle">SPIRE Agent configuration and trust bundle</h4>
 
 <p>The way you distribute and deploy components of your SPIRE ecosystem, and its
 configuration in your environment might have severe consequences for your threat
@@ -3423,9 +3423,9 @@ bundle and perform a <em>monster-in-the-middle</em> attack, it will perform the 
 attack on workloads because they receive SVID and trust bundle from the victim
 agent.</p>
 
-<h5 id="con%EF%AC%81guration">Conﬁguration</h5>
+<h5 id="con%EF%AC%81guration">Configuration</h5>
 
-<p>The SPIRE Agent conﬁguration also needs to be kept secure. If an attacker can
+<p>The SPIRE Agent configuration also needs to be kept secure. If an attacker can
 modify this configuration file, then they could point it at a compromised SPIRE
 Server and control the agent.</p>
 
@@ -3453,7 +3453,7 @@ telemetry. It might not be immediately apparent that enabling or
 misconfiguration of health checks and telemetry may increase the attack surface
 for the SPIRE infrastructure. The SPIFFE and SPIRE threat models assume that the
 agent only exposes the Workload API interface over the local Unix socket. The
-model doesn’t consider that misconﬁgured (or intentionally conﬁgured) health
+model doesn’t consider that misconfigured (or intentionally configured) health
 check service listening not on the localhost might expose the agent to
 potential attacks such as DoS, RCE, and memory leak. It would be best to take
 similar precautions when choosing the telemetry integration model because some
@@ -3484,7 +3484,7 @@ that go along with them.</p>
 <h4 id="native-spiffe-support">Native SPIFFE support</h4>
 
 <p>This approach requires modifying existing services to make them SPIFFE aware.
-It is the preferred choice when the modiﬁcations required are minimal, or can
+It is the preferred choice when the modifications required are minimal, or can
 be introduced in a common library or framework used across application services.
 Native integration is the best approach for data plane services that are
 sensitive to latency, or services that want to utilize identity at the
@@ -3505,7 +3505,7 @@ underway for SPIFFE libraries in Python, Rust, and C programming languages.</p>
 <h4 id="spiffe-aware-proxies">SPIFFE-aware proxies</h4>
 
 <p>Often, the refactoring cost is deemed too high, or the service is running a
-third-party code that can not be modiﬁed. In these situations, it is often a
+third-party code that can not be modified. In these situations, it is often a
 pragmatic choice to front the application with a proxy that supports SPIFFE.
 Depending on the application deployment model, it could be a standalone proxy or
 a set of colocated proxies.</p>
@@ -3523,16 +3523,16 @@ SPIFFE specification set, including support for the SPIFFE Workload API and
 Federation. For applications that require L7 features, Envoy is recommended.
 While Envoy does not natively support the SPIFFE Workload API, SPIRE implements
 the Secret Discovery Service API (or SDS API) which is an Envoy API used to
-retrieve and maintain certiﬁcates and private keys.</p>
+retrieve and maintain certificates and private keys.</p>
 
 <p><img src="assets/Image_191.jpg" alt="mTLS with Envoy." /></p>
 
 <p><em>Fig. 7.1: A high-level diagram of two Envoy proxies sitting between two
 services using the SPIRE Agent SDS implementation to establish mutual TLS.</em></p>
 
-<p>By implementing the SDS API, SPIRE can push TLS certiﬁcates, private keys, and
-trusted CA certiﬁcates directly into Envoy. SPIRE then takes care of rotating
-the short-lived keys and certiﬁcates as required, pushing updates to Envoy
+<p>By implementing the SDS API, SPIRE can push TLS certificates, private keys, and
+trusted CA certificates directly into Envoy. SPIRE then takes care of rotating
+the short-lived keys and certificates as required, pushing updates to Envoy
 without the need for a restart.</p>
 
 <h5 id="service-mesh">Service mesh</h5>
@@ -3542,7 +3542,7 @@ security. For example, service discovery, request authorization, and load
 balancing are all features that Envoy brings to the table. It can be
 particularly attractive to offload this kind of functionality to a proxy in
 environments where using a shared library is prohibitive (e.g. when applications
-are written in many different languages, or are not able to be modiﬁed). This
+are written in many different languages, or are not able to be modified). This
 approach also pushes proxy deployment towards the colocated model, in which
 every application instance has a dedicated proxy running next to it.</p>
 
@@ -3557,7 +3557,7 @@ service mesh, applications can be made agnostic of these functions.</p>
 
 <p>Most service mesh implementations, to date, leverage SPIFFE authentication for
 service-to-service traffic. Some use SPIRE to accomplish this, and others have
-implemented product-speciﬁc SPIFFE identity providers.</p>
+implemented product-specific SPIFFE identity providers.</p>
 
 <h4 id="helper-programs">Helper programs</h4>
 
@@ -3568,14 +3568,14 @@ program is the <a href="https://github.com/spiffe/spiffe-helper/" title="SPIFFE 
 from the SPIFFE Workload API and writes them to disk where they can be picked up
 by the application. The SPIFFE Helper can continue to run, ensuring that
 certificates on disk are continually updated as they rotate. When an update does
-occur, the helper can signal the application (or run a conﬁgurable command) such
+occur, the helper can signal the application (or run a configurable command) such
 that the changes are picked up by the running application.</p>
 
-<p>Many off-the-shelf applications that support TLS can be conﬁgured to use SPIFFE
-this way. The SPIFFE Helper repository has examples of conﬁguring MySQL and
+<p>Many off-the-shelf applications that support TLS can be configured to use SPIFFE
+this way. The SPIFFE Helper repository has examples of configuring MySQL and
 PostgreSQL. Many web servers such as Apache HTTPD and NGINX can be similarly
 configured. That is also useful for client software, which can only be
-configured to utilize certiﬁcates on disk.</p>
+configured to utilize certificates on disk.</p>
 
 <ul>
 <li>openssl</li>
@@ -3586,8 +3586,8 @@ configured to utilize certiﬁcates on disk.</p>
 
 <p>It is important to note that this gives less flexibility than native SPIFFE
 integration since, in particular, it may not allow the same granularity of trust
-configuration. For example, when using SPIFFE Helper to conﬁgure Apache HTTPD
-for mutual TLS, it is not possible to conﬁgure <code>mod_ssl</code> to only accept clients
+configuration. For example, when using SPIFFE Helper to configure Apache HTTPD
+for mutual TLS, it is not possible to configure <code>mod_ssl</code> to only accept clients
 with particular SPIFFE IDs.</p>
 
 <h3 id="using-svids-with-software-that-is-not-spiffe-aware">Using SVIDs with Software That Is Not SPIFFE-aware</h3>
@@ -3602,8 +3602,8 @@ condition and that SPIFFE/SPIRE have been designed to handle this case well.</p>
 <p>Many non-SPIFFE systems support using TLS (or mutual TLS) but rely on
 certificates having identity information in either the common name (CN) of the
 certificate subject or a DNS name of the Subject Alternative Name (SAN)
-extension. SPIRE supports issuing X.509 certiﬁcates with speciﬁc CN and DNS SAN
-values that can be speciﬁed on a workload-by-workload basis (as part of a
+extension. SPIRE supports issuing X.509 certificates with specific CN and DNS SAN
+values that can be specified on a workload-by-workload basis (as part of a
 registration entry).</p>
 
 <p>This functionality is an important detail, as it allows for the use of
@@ -3630,7 +3630,7 @@ Identity Federation will also support accepting JWT-SVIDs, regardless of whether
 or not they’re SPIFFE-aware.</p>
 
 <p>One example of an integration supporting this identity federation is Amazon Web
-Services (AWS) Identity and Access Management (IAM). By conﬁguring IAM in an
+Services (AWS) Identity and Access Management (IAM). By configuring IAM in an
 AWS account to accept identities from SPIRE as an OIDC identity provider, it
 becomes possible to use JWT-SVIDs from the SPIFFE Workload API to assume AWS IAM
 roles. This is particularly powerful when the workload which needs to access AWS
@@ -3690,10 +3690,10 @@ labels or other data that is being sent across.</p>
 
 <p>Certificate Transparency (CT) helps spot attacks on certificate infrastructure
 by providing an open framework for monitoring and auditing X.509 certificates
-in nearly real-time. Certificate Transparency allows detecting certiﬁcates that
+in nearly real-time. Certificate Transparency allows detecting certificates that
 have been maliciously acquired from a compromised certificate authority. It also
-makes it possible to identify certiﬁcate authorities that have gone rogue and
-are maliciously issuing certiﬁcates. To learn more about Certiﬁcate
+makes it possible to identify certificate authorities that have gone rogue and
+are maliciously issuing certificates. To learn more about Certificate
 Transparency, read the <a href="https://www.certificate-transparency.org/what-is-ct" title="Certificate Transparency">introductory documentation</a>.</p>
 
 <p>There are different possibilities for the integration of SPIRE with Certificate
@@ -3702,10 +3702,10 @@ all certificates issued by your system and protect it with a special
 cryptographic mechanism known as Merkle Tree Hashes to prevent tampering and
 misbehavior.</p>
 
-<p>Another method you might consider is to enforce Certiﬁcate Transparency across
+<p>Another method you might consider is to enforce Certificate Transparency across
 all your systems. That would prevent establishing TLS and mutual TLS connection
 with applications and services that do not have certificate information logged
-in the certiﬁcate transparency server.</p>
+in the certificate transparency server.</p>
 
 <p>Integration with CT is beyond the scope of the book. Check the SPIFFE/SPIRE
 communities for more information and the latest updates.</p>
@@ -3719,7 +3719,7 @@ the communications between software systems at runtime.</p>
 deployed. Supply chain compromises a potential attack vector. For that reason,
 it is desirable to protect the integrity of the software supply chain to prevent
 malicious actors from introducing backdoors or vulnerable libraries into the
-code. Veriﬁcation of the provenance of software artifacts and the set of steps
+code. Verification of the provenance of software artifacts and the set of steps
 performed during the pipeline is a way to verify that software has not been
 tampered with.</p>
 
@@ -3752,7 +3752,7 @@ distribute SPIFFE identities to users.</p>
 <p>How should users interact in a SPIFFE-enabled ecosystem? Remember that SPIFFE
 stands for Secure Production Identity Framework for <em>Everyone</em>. While most of
 this book focuses on identity for software, it is equally valid and even
-desirable for SPIFFE veriﬁable identities (SVIDs) to be given to users. This
+desirable for SPIFFE verifiable identities (SVIDs) to be given to users. This
 way, everything that workloads can do with SVIDs can be done by people as well,
 such as mutual TLS access to services. This can be especially useful for
 developers who are building software and need access to the same resources that
@@ -3767,11 +3767,11 @@ distinct trust domain for users versus workloads, e.g.
 
 <p>In an ideal scenario, your existing SSO provider is capable of producing JWTs
 for your users, as is the case for OIDC identity providers. In this case, if you
-can conﬁgure your SSO provider to use a SPIFFE ID for the sub claim, you might
+can configure your SSO provider to use a SPIFFE ID for the sub claim, you might
 not need to do any extra work to produce SVIDs for your users.</p>
 
 <p>If you are unable to get SPIFFE JWTs from your identity provider directly but
-you do have the means to get a veriﬁable identity token, you could instead
+you do have the means to get a verifiable identity token, you could instead
 utilize a custom SPIRE attestor that accepts an identity token from your
 provider as a rudimentary means of attestation.</p>
 
@@ -3786,10 +3786,10 @@ for <a href="https://github.com/JackOfMostTrades/spiffe-user-demo" title="SPIFFE
 
 <h5 id="using-spiffe-and-spire-with-ssh">Using SPIFFE and SPIRE with SSH</h5>
 
-<p>OpenSSH supports authentication with Certiﬁcate Authorities (CAs) and
+<p>OpenSSH supports authentication with Certificate Authorities (CAs) and
 <a href="https://github.com/openssh/openssh-portable/blob/master/PROTOCOL.certkeys" title="OpenSSH Certificate Keys">certificates</a>. Although the <a href="https://github.com/openssh/openssh-portable/blob/master/PROTOCOL.certkeys" title="OpenSSH Certificate Keys">format</a> of
 OpenSSH certificates is different from X.509, one can build a service for
-creating SSH certiﬁcates using SVIDs as authentication. This allows you to
+creating SSH certificates using SVIDs as authentication. This allows you to
 utilize your SPIFFE identities for SSH as well.</p>
 
 <p>For users that need SSH access to workloads in your ecosystem, this model
@@ -3799,12 +3799,12 @@ or multi-factor authentication.</p>
 
 <p>This also allows the workloads to retrieve server-side (aka “host”) SSH
 certificates that allow the workload to authenticate itself to the user. Using
-this certiﬁcate, users no longer need to have their SSH connection interrupted
+this certificate, users no longer need to have their SSH connection interrupted
 with a question about trusting a server’s host key on the first connection.</p>
 
 <p><img src="assets/Image_204.jpg" alt="SVIDs and SSH certificates." /></p>
 
-<p><em>Fig. 7.3: Using SVIDs to bootstrap SSH certiﬁcates.</em></p>
+<p><em>Fig. 7.3: Using SVIDs to bootstrap SSH certificates.</em></p>
 
 <h5 id="microservice-uis">Microservice UIs</h5>
 
@@ -3824,11 +3824,11 @@ that uses mutual TLS and another API port that accepts a browser-friendly
 authentication method such as an existing web-based SSO mechanism or
 OAuth2.0/OIDC.</p>
 
-<p>A post-authentication ﬁlter for requests on the secondary port should provide a
+<p>A post-authentication filter for requests on the secondary port should provide a
 translation layer between the browser-based authentication principal and a
 corresponding SPIFFE ID. If you have set up a mechanism for users to get SVIDs
 directly, as described above, then the same translation should be used here.
-This way, the underlying application is agnostic to the speciﬁc authentication
+This way, the underlying application is agnostic to the specific authentication
 mechanism used, so web-based requests made by a given user are functionally
 equivalent to the same request made via mutual TLS using that user’s SVID.</p>
 
@@ -3887,7 +3887,7 @@ can be managed through maintaining a list of identities with access.</p>
 identity of clients alone.</p>
 
 <p>The advantage of this model is that it’s easy to understand. As long as you have
-a limited number of identities that don’t change, it is easy to deﬁne and update
+a limited number of identities that don’t change, it is easy to define and update
 access control on resources. However, scalability can become a hurdle. If an
 organization has hundreds or thousands of identities, maintaining allowlists
 quickly becomes unmanageable. For instance, every time a new service is added,
@@ -3916,7 +3916,7 @@ SPIFFE ID scheme.</p>
 
 <h3 id="designing-spiffe-id-schemes-for-authorization">Designing SPIFFE ID Schemes for Authorization</h3>
 
-<p>The SPIFFE speciﬁcation doesn’t specify or limit what information you can or
+<p>The SPIFFE specification doesn’t specify or limit what information you can or
 should encode into a SPIFFE ID. The only limitations you need to be aware of
 come from the maximum length SAN extension and what characters you’re are
 allowed to use.</p>
@@ -3929,8 +3929,8 @@ concepts.</p></blockquote>
 <h4 id="spiffe-scheme-examples">SPIFFE scheme examples</h4>
 
 <p>To make an authorization decision on the SPIFFE identity substrings, we must
-deﬁne what each part of the identity means. You can design your scheme in the
-format where you encode information by the order. In this case, the ﬁrst part
+define what each part of the identity means. You can design your scheme in the
+format where you encode information by the order. In this case, the first part
 might represent a region, the second environment, and so on.</p>
 
 <pre><code class="txt">spiffe://trust.domain.org/&lt;region&gt;/&lt;dev,stage,prod&gt;/&lt;organization&gt;/&lt;workload_name&gt;</code></pre>
@@ -3942,16 +3942,16 @@ might represent a region, the second environment, and so on.</p>
 
 <p><em>Fig. 8.1: Components of a SPIFFE ID and potential meanings at one organization.</em></p>
 
-<p>An identity scheme can not only take the shape of a series of ﬁxed ﬁelds but can
+<p>An identity scheme can not only take the shape of a series of fixed fields but can
 take a more complex structure, depending on the needs of an organization. A
 common example we can look at is workload identities across different
 orchestration systems. For example, in Kubernetes and OpenShift, the naming
 conventions of workloads are different. The following illustration shows this as
-an example. You may notice that the ﬁelds not only refer to different attributes
+an example. You may notice that the fields not only refer to different attributes
 and objects but that the structure of the SPIFFE ID also depends on the context.</p>
 
 <p>The consumer can distinguish the structure of the scheme by observing the prefix
-of the identity. For example, an identity with the preﬁx
+of the identity. For example, an identity with the prefix
 <code>spiffe://trust.domain.org/Kubernetes/…</code> would be parsed as a Kubernetes
 identity according to the scheme structure in the following figure.</p>
 
@@ -3978,15 +3978,15 @@ that we’re all too familiar with: versioning!</p>
 <h5 id="scheme-based-on-key-value-pairs">Scheme based on key-value pairs</h5>
 
 <p>We notice that the above scheme designs are all ordered. The scheme is evaluated
-by looking at the preﬁx of the identity and determining how to evaluate the
+by looking at the prefix of the identity and determining how to evaluate the
 suffix that follows. However, we note that because of this ordering, it is
-difficult to easily add new ﬁelds to the scheme.</p>
+difficult to easily add new fields to the scheme.</p>
 
 <pre><code class="txt">spiffe://trust.domain.org/environment:dev/region:us/organization:zero/name: turtle</code></pre>
 
 
 <p>Key-value pairs, by their nature, are unordered, and this is one way to easily
-extend ﬁelds into an identity scheme without much change. For example, you can
+extend fields into an identity scheme without much change. For example, you can
 use key-value pairs with a known delimiter, e.g. column (<code>:</code>) character within
 the identity. In this case, the identity above might be encoded in the
 following way:</p>
@@ -4002,7 +4002,7 @@ considered.</p>
 <h5 id="versioning">Versioning</h5>
 
 <p>One of the possible solutions here is to incorporate versioning into the scheme.
-The version could be the ﬁrst item and the most critical part of your scheme.
+The version could be the first item and the most critical part of your scheme.
 The rest of the systems need to follow the mapping between versions and encoded
 entities when dealing with SPIFFE IDs data.</p>
 
@@ -4026,7 +4026,7 @@ v2 scheme:
 
 <p>In SPIFFE, a single workload can have multiple identities. However, it’s the
 responsibility of your workload to decide which identity to use. To keep
-authorization simple, it’s best to ﬁrst have one identity per workload and add
+authorization simple, it’s best to first have one identity per workload and add
 more if necessary.</p>
 
 <h3 id="authorization-examples-with-hashicorp-vault">Authorization Examples with HashiCorp Vault</h3>
@@ -4051,13 +4051,13 @@ dealing with client requests. Like many other applications that handle the
 management of resources (in this case, secrets), it has a pluggable interface
 into various mechanisms for authentication and authorization.</p>
 
-<p>In Vault, this is through the <a href="https://www.vaultproject.io/api/auth/cert" title="TLS Certificate Authentication">TLS Certiﬁcate Auth Method</a> or
-<a href="https://www.vaultproject.io/api-docs/auth/jwt" title="JWT/OIDC Authentication">JWT/OIDC Auth Method</a> which can be conﬁgured to recognize and
+<p>In Vault, this is through the <a href="https://www.vaultproject.io/api/auth/cert" title="TLS Certificate Authentication">TLS Certificate Auth Method</a> or
+<a href="https://www.vaultproject.io/api-docs/auth/jwt" title="JWT/OIDC Authentication">JWT/OIDC Auth Method</a> which can be configured to recognize and
 validate JWTs and X509-SVIDs generated from SPIFFE. To enable Vault to use
-SPIFFE identities to be used, the trust bundle needs to be conﬁgured with these
+SPIFFE identities to be used, the trust bundle needs to be configured with these
 pluggable interfaces so that it can authenticate the SVIDs.</p>
 
-<p>This takes care of authentication, but we still need to conﬁgure it to perform
+<p>This takes care of authentication, but we still need to configure it to perform
 authorization. To do that, a set of authorization rules need to be put into
 place for Vault to decide which identities can access secrets.</p>
 
@@ -4136,7 +4136,7 @@ request and determines what resources it should be allowed to access. With Rego,
 it is possible to design elaborate authorization policies and rules including
 ABAC and RBAC. It can also take into account the properties of the connection
 that are unrelated to SPIFFE, such as the user ID of an incoming request. The
-Rego policies are stored in text ﬁles so they can be centrally maintained and
+Rego policies are stored in text files so they can be centrally maintained and
 deployed through a continuous integration system, and even unit tested.</p>
 
 <p>Here is an example which encodes access to a certain database service which
@@ -4184,7 +4184,7 @@ has to have some form of identity to be secure. Web Public Key Infrastructure,
 Kerberos/Active Directory, OAuth, secret stores, and service meshes are
 examples.</p>
 
-<p>However, these existing forms of identity are not a good ﬁt for identifying
+<p>However, these existing forms of identity are not a good fit for identifying
 internal services within an organization. Web PKI is challenging to implement
 and also insecure for typical internal deployments. Kerberos, the authentication
 component of Active Directory, requires an always-online Ticket Granting Server
@@ -4196,35 +4196,35 @@ service identity problem.</p>
 <h3 id="web-public-key-infrastructure">Web Public Key Infrastructure</h3>
 
 <p>Web Public Key Infrastructure (Web PKI) is the widely used method to connect
-from our web browsers to secure web sites. It utilizes X.509 certiﬁcates to
+from our web browsers to secure web sites. It utilizes X.509 certificates to
 assert that the user is connecting to the website they intend to visit. Since
 you are probably familiar with this model, it’s reasonable to ask: why can’t we
 use Web PKI for service identity within our organization?</p>
 
-<p>In traditional Web PKI, certiﬁcate issuance and renewal were entirely manual
-processes. These manual processes are a poor ﬁt for modern infrastructure, where
+<p>In traditional Web PKI, certificate issuance and renewal were entirely manual
+processes. These manual processes are a poor fit for modern infrastructure, where
 service instances may dynamically grow and shrink at any time. However, in the
-last few years, Web PKI has shifted to an automatic certiﬁcate issuance and
+last few years, Web PKI has shifted to an automatic certificate issuance and
 renewal process called Domain Validation (DV).</p>
 
-<p>In DV, the certiﬁcate authority sends a token to the certiﬁcate requester. The
+<p>In DV, the certificate authority sends a token to the certificate requester. The
 certificate requester shares this token using an HTTP server. The certificate
-authority accesses the token, veriﬁes it, and then signs the certiﬁcate.</p>
+authority accesses the token, verifies it, and then signs the certificate.</p>
 
-<p>The ﬁrst problem with this arrangement is that internal services frequently
+<p>The first problem with this arrangement is that internal services frequently
 don’t have individual DNS names or IP addresses. If you wanted to do mutual TLS
 between all services, then even the <strong>clients</strong> would need DNS names to get
-certificates, which would be challenging to conﬁgure. Assigning identities to
+certificates, which would be challenging to configure. Assigning identities to
 multiple services running on one host requires separate DNS names, which would
-also be challenging to conﬁgure.</p>
+also be challenging to configure.</p>
 
 <p>A more subtle problem is that anyone who could successfully respond to requests
-for the token could successfully acquire a certiﬁcate. This might be a different
+for the token could successfully acquire a certificate. This might be a different
 service running on the same server, or even on a different server that can
 tamper with the local Layer 2 network.</p>
 
 <p>In general, while Web PKI works great for secure web sites on the internet, it
-is not a good ﬁt for service identity. Many internal services that need
+is not a good fit for service identity. Many internal services that need
 certificates don’t have DNS names. The currently available process for doing
 certificate validation is easily compromised if attackers successfully
 infiltrate any services on local network.</p>
@@ -4309,7 +4309,7 @@ OAuth client secret or refresh token, fails to resolve the bottom turtle problem
 instances permits the <em>bootstrap credential</em> or bottom turtle’s issuance before
 contacting the OAuth infrastructure.</p>
 
-<p>SPIRE signiﬁcantly improves security since no long-lived static credential needs
+<p>SPIRE significantly improves security since no long-lived static credential needs
 to be co-deployed with the workload itself. SPIFFE can be complimentary to
 OAuth. It removes the need to manage OAuth client credentials directly—apps may
 use their SPIFFE ID to authenticate to the OAuth provider as needed. Indeed,
@@ -4341,8 +4341,8 @@ strong identities.</p>
 
 <h4 id="how-spiffe-and-spire-can-be-used-to-mitigate-secrets-managers-challenges">How SPIFFE and SPIRE can be used to mitigate secrets managers challenges</h4>
 
-<p>If you do need to use a secrets manager, it can be conﬁgured to authenticate
-using SPIFFE certiﬁcates. This allows you to use the same SPIFFE certiﬁcates
+<p>If you do need to use a secrets manager, it can be configured to authenticate
+using SPIFFE certificates. This allows you to use the same SPIFFE certificates
 for direct authentication between services and retrieve secrets to talk to
 non-SPIFFE certificates.</p>
 
@@ -4353,7 +4353,7 @@ automatic authentication, authorization, and enforcing mutual TLS between
 workloads. A service mesh typically provides integrated tooling that:</p>
 
 <ul>
-<li>Identiﬁes workloads</li>
+<li>Identifies workloads</li>
 <li>Mediates communication between workloads, usually through a proxy deployed
 adjacent to each workload (side-car pattern)</li>
 <li>Ensures each adjacent proxy enforces a consistent authentication and
@@ -4361,7 +4361,7 @@ authorization policy (generally through an authorization policy engine)</li>
 </ul>
 
 
-<p>All the major service mesh packages include a native platform-speciﬁc service
+<p>All the major service mesh packages include a native platform-specific service
 authentication mechanism.</p>
 
 <p>While a service mesh can function without a cryptographic identity plane, weak
@@ -4374,13 +4374,13 @@ identity issue discussed previously.</p>
 integrate with an existing identity solution to provide both transit
 communication security and root of trust resolution. Most service mesh offerings
 implement SPIFFE or parts of it. Many service mesh implementations have adopted
-partial implementations of the SPIFFE speciﬁcation (including Istio and
+partial implementations of the SPIFFE specification (including Istio and
 <a href="https://www.consul.io/" title="Consul">Consul</a>) and can be considered SPIFFE identity providers. Some
 incorporate SPIRE as a component of their solution (i.e. Grey Matter or Network
 Service Mesh).</p>
 
-<p>For example, Istio uses SPIFFE for node identiﬁcation, but its identity model is
-tightly coupled to and solely based on Kubernetes speciﬁc primitives. There is
+<p>For example, Istio uses SPIFFE for node identification, but its identity model is
+tightly coupled to and solely based on Kubernetes specific primitives. There is
 no way to identify services in Istio based on attributes outside of Kubernetes.
 IBM explains <a href="https://developer.ibm.com/articles/istio-identity-spiffe-spire/%23why-the-current-istio-mechanism-is-not-enough" title="Why Istio’s current mechanism is not enough">Why the current Istio mechanism is not
 enough</a>. This presents a constraint on Istio compared
@@ -4397,7 +4397,7 @@ SPIFFE/SPIRE</a>.</p>
 complementary, with SPIFFE/SPIRE acting as the identity solution for
 higher-level abstractions within the mesh.</p>
 
-<p>Service mesh solutions that speciﬁcally implement the SPIFFE Workload API
+<p>Service mesh solutions that specifically implement the SPIFFE Workload API
 support any software that expects this API to be available. Service mesh
 solutions that can deliver SVIDs to their workloads and support the SPIFFE
 Federation API can establish trust automatically between mesh-identified
@@ -4406,7 +4406,7 @@ implementations.</p>
 
 <h3 id="overlay-networks">Overlay Networks</h3>
 
-<p>Overlay networks simulate a single uniﬁed network for services across multiple
+<p>Overlay networks simulate a single unified network for services across multiple
 platforms. Unlike a service mesh, an overlay network uses standard networking
 concepts such as IP addresses and routing tables to connect services. The data
 is encapsulated and routed across other networks, creating a virtual network of
@@ -4414,8 +4414,8 @@ nodes and logical links built on top of an existing network.</p>
 
 <p>While the most common overlay networks have no authentication features, the
 latest ones do. However, they still don’t attest the identity of services before
-allowing them to connect. Typically, they rely on a pre-existing certiﬁcate.
-SPIFFE is a good ﬁt for providing certiﬁcates for overlay network nodes.</p>
+allowing them to connect. Typically, they rely on a pre-existing certificate.
+SPIFFE is a good fit for providing certificates for overlay network nodes.</p>
 
 <hr />
 
@@ -4424,7 +4424,7 @@ SPIFFE is a good ﬁt for providing certiﬁcates for overlay network nodes.</p>
 
 <h2 id="10.-practitioners%E2%80%99-stories">10. Practitioners’ Stories</h2>
 
-<blockquote><p>This chapter includes ﬁve stories from practitioners who are engineers at
+<blockquote><p>This chapter includes five stories from practitioners who are engineers at
 real-world businesses that have deployed SPIFFE and SPIRE.</p></blockquote>
 
 <hr />
@@ -4445,17 +4445,17 @@ we saw some early traction with the open source projects SPIFFE and SPIRE.</p>
 <p>We immediately saw the value SPIFFE could bring by enabling us to strengthen our
 next-generation infrastructure security posture. We have rolled out SPIRE at
 Uber and are now using it to establish trust across various workload
-environments using cryptographically veriﬁable identities. We started with a few
+environments using cryptographically verifiable identities. We started with a few
 application services and internal services, such as a workflow engine that spins
-multiple dynamic workloads to complete speciﬁc tasks by accessing data across
+multiple dynamic workloads to complete specific tasks by accessing data across
 the platform. SPIRE provides SPIFFE identities to our workloads across our
 application cycle. SPIFFE is used to authenticate services and helps us avoid
-misconﬁgurations that might result in production issues.</p>
+misconfigurations that might result in production issues.</p>
 
 <h4 id="retrofitting-spire-into-the-legacy-stack">Retrofitting SPIRE into the legacy stack</h4>
 
 <p>SPIRE is now a key component of Uber&rsquo;s next infrastructure, but we are also
-using a side-car approach to retroﬁt authentication into legacy infrastructure.
+using a side-car approach to retrofit authentication into legacy infrastructure.
 While SPIFFE and SPIRE are commonly known to work in modern, cloud native
 architectures, we can adapt the projects to our proprietary legacy stack
 quickly. SPIRE can provide a critical bridge of trust within Uber&rsquo;s next-gen and
@@ -4466,10 +4466,10 @@ efficiency.</p>
 find solutions. As a result, our engineers have actively been making code
 contributions to the projects as well.</p>
 
-<h4 id="security-development-and-audit-teams-are-bene%EF%AC%81ting-from-spiffe">Security, development, and audit teams are beneﬁting from SPIFFE</h4>
+<h4 id="security-development-and-audit-teams-are-bene%EF%AC%81ting-from-spiffe">Security, development, and audit teams are benefiting from SPIFFE</h4>
 
-<p>SPIFFE gives our security team more conﬁdence in the back-end infrastructure and
-less reliance on network-based security controls. As we deal with ﬁnancial data
+<p>SPIFFE gives our security team more confidence in the back-end infrastructure and
+less reliance on network-based security controls. As we deal with financial data
 and operate across geographic boundaries, we have to control access to financial
 and customer data. With SPIRE, we can provide a strongly attested identity for
 access control. It helps us meet these requirements and reduces the burden on
@@ -4503,7 +4503,7 @@ generic way that could be used across our heterogeneous services.</p>
 certificates based on hostnames. It was heavily used for secrets management
 (see <a href="https://github.com/pinterest/knox" title="Knox">Knox</a>), but broader adoption had not yet occurred. As we continued
 to scale, in particular with multi-tenant systems such as Kubernetes, we needed
-more finely tuned identities that weren’t tied to speciﬁc hosts in our
+more finely tuned identities that weren’t tied to specific hosts in our
 infrastructure, but rather to the identity of the service itself.</p>
 
 <p>Enter SPIFFE.</p>
@@ -4529,7 +4529,7 @@ Knox</a>.</p>
 <h4 id="dev-sec-and-ops-are-in-harmony-again.">Dev, Sec, and Ops are in harmony again.</h4>
 
 <p>SPIFFE makes it easier for the security team to write authorization policies.
-Developer velocity is signiﬁcantly better as our engineers don&rsquo;t have to worry
+Developer velocity is significantly better as our engineers don&rsquo;t have to worry
 about custom schemes or disparate integrations for authentication. As we now
 have a standard way to interpret identity across our infrastructure it is much
 easier for billing and ownership teams to determine who owns a service. Having a
@@ -4561,24 +4561,24 @@ these authentication schemes. In the case of a known vulnerability in an
 authentication framework, we could not move swiftly as each framework had to be
 dealt with separately. In some cases, they had code level dependencies, which
 made it even harder to change. Audit and compliance across geographic boundaries
-were challenging as each platform-speciﬁc authentication approach had to be
+were challenging as each platform-specific authentication approach had to be
 reviewed and governed separately.</p>
 
 <p><img src="assets/Image_259.jpg" alt="Heterogeneous architecture." /></p>
 
 <p>A move towards zero trust-based architecture in general, and an effort to
-improve our developer productivity, forced us to build a uniﬁed identity
+improve our developer productivity, forced us to build a unified identity
 management plane for our services that would scale to our growing needs.</p>
 
 <h4 id="building-web-scale-pki-with-spire">Building web-scale PKI with SPIRE</h4>
 
 <p>It is hard to build an identity system that can work across different islands of
 infrastructure or platforms like ours. We could have created our own, but it
-would have required a signiﬁcant amount of effort. We went ahead with SPIRE as
+would have required a significant amount of effort. We went ahead with SPIRE as
 it provided the scale and ﬂexibility in supporting a wide variety of platforms
 we needed and at web-scale.</p>
 
-<p>Since it offers cryptographic identity based on standard X.509 certiﬁcates, it
+<p>Since it offers cryptographic identity based on standard X.509 certificates, it
 helps us easily enable mutual TLS, which, by default, meets a lot of the
 compliance requirements. Extensibility and being open source were another plus
 as we could easily integrate it with our existing control plane and data stacks.</p>
@@ -4589,10 +4589,10 @@ as we could easily integrate it with our existing control plane and data stacks.
 across all our platforms. The burden of authentication and security is now
 encapsulated from the developers so they can focus on business or application
 logic. This has improved our deployment velocity overall. We are also less
-likely to get “production errors” due to conﬁguration issues such as using
+likely to get “production errors” due to configuration issues such as using
 development credentials in production.</p>
 
-<p>Standardized authentication with SPIRE has also simpliﬁed compliance and audit
+<p>Standardized authentication with SPIRE has also simplified compliance and audit
 since we have mutual TLS across trust domains and platforms. SPIRE also has
 allowed us to move to a more semi-decentralized model in terms of identity
 distribution where the identity system is local to say a data center. This
@@ -4619,15 +4619,15 @@ infrastructure based on cloud native technologies such as Kubernetes. This new
 infrastructure will drive rapid innovation and engage a broader ecosystem of
 organizations and developers. An example of this would be our HealthOS platform.
 HealthOS will enable third parties to build HealthApp capabilities to deliver
-into front-end interfaces, leveraging an ocean of de-identiﬁed health data.</p>
+into front-end interfaces, leveraging an ocean of de-identified health data.</p>
 
 <p>But at nearly every major enterprise, especially healthcare organizations,
 someone is trying to get their data with malicious intent. Protected Healthcare
-Information (PHI) sells for much higher than ﬁnancial information; thus,
-malicious actors such as hackers and script kiddies, ﬁnd healthcare systems and
+Information (PHI) sells for much higher than financial information; thus,
+malicious actors such as hackers and script kiddies, find healthcare systems and
 the corresponding health information highly lucrative. With the adoption of
 cloud native architectures, the risk and complexity rise further. The risk of a
-breach is even higher since the threat radius increases signiﬁcantly while
+breach is even higher since the threat radius increases significantly while
 manual security reviews and processes become <em>cloud-scale</em> inhibitors.</p>
 
 <h4 id="building-a-foundation-for-zero-trust-architecture">Building a foundation for zero trust architecture</h4>
@@ -4653,7 +4653,7 @@ risk and source of complexity at Anthem. They tend to be long-lived, and
 management or rotation of these was tricky. We wanted to shift away from this
 type of secret management practices in general. Instead of asking a service,
 “what do you have,” we want to ask, “who are you.” In short, we wanted to move
-to cryptographic identities, such as SPIFFE. We can see additional beneﬁts of
+to cryptographic identities, such as SPIFFE. We can see additional benefits of
 using a strongly attested identity in the future, such as establishing mutual
 TLS between workloads and bubbling identity up to the applications.</p>
 
@@ -4683,7 +4683,7 @@ less than two weeks in most scenarios.</p>
 
 <p><strong>Michael Weissbacher and Mat Byczkowski, Senior Security Engineers, Square</strong></p>
 
-<p>Square provides a wide variety of ﬁnancial services. Over its lifetime the
+<p>Square provides a wide variety of financial services. Over its lifetime the
 company grew new business units from within the company, such as Capital and
 Cash, but also acquired companies like Weebly and Stitch Labs. Different
 business units use different technologies and can operate from different data
