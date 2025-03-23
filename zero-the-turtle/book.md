@@ -43,7 +43,7 @@ Converted to Markdown, for portability, and ease of editing, by
 
 <p>&nbsp;</p>
 
-This work is licensed under the [Creative Commons Attribution 4.0 International
+Licensed under the [Creative Commons Attribution 4.0 International
 License (CC BY 4.0)][creative-commons].
 
 \includegraphics[width=0.1\textwidth]{assets/Image_002.png}
