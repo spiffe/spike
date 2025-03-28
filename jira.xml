@@ -53,6 +53,220 @@
       check and ensure ALL files are up-to-date.
     </isuse>
     <issue>
+      - TODO also   vault k8s security concerns
+        read this and see if there are similar things that applies to SPIKE
+        https://developer.hashicorp.com/vault/tutorials/kubernetes/kubernetes-security-concerns
+    </issue>
+    <issue>
+      - TODO optimize sqlite default params and also make sure we retry database operations 	- ref: https://tenthousandmeters.com/blog/sqlite-concurrent-writes-and-database-is-locked-errors/
+    </issue>
+    <issue>
+      TODO update vsecm documentation about cloudflare changes 1. manually upload 2. point to github for older versions.
+    </issue>
+    <issue>
+      TODO it's early but have a deprecation policy for SPIKE https://external-secrets.io/latest/introduction/deprecation-policy/
+    </issue>
+    <issue>
+      create (or update) a spike production hardening guidelines page https://developer.hashicorp.com/vault/docs/concepts/production-hardening
+    </issue>
+    <issue>
+      LATER set a periodic reminder for VSecM security issues check.
+    </issue>
+    <issue>
+      //Cache-Control header is for HTTP/1.1 clients
+      servletResponse.addHeader("Cache-Control","no-cache, no-store, must-revalidate");
+
+      //Pragma header is for HTTP/1.0 clients
+      servletResponse.addHeader("Pragma","no-cache");
+
+      ^ check if we add all these headers.
+    </issue>
+    <issue>
+      Go binaries do not have stripped symbols by default. By default, Go includes symbols for debugging, function names, and even full DWARF debugging information unless explicitly removed. This can make Go binaries quite large.
+
+      How to Strip Symbols
+      If you want to strip symbols from a Go binary to reduce its size, you can use:
+
+      Using strip (Linux/macOS)
+      strip mybinary
+      This removes debugging symbols and symbol tables.
+      Building with ldflags
+      go build -ldflags="-s -w" -o mybinary
+      -s: Omits the symbol table.
+      -w: Omits DWARF debugging information.
+      Using upx for Compression You can further reduce the binary size with:
+      upx --best mybinary
+      Checking Symbols
+      You can check if a binary has symbols using:
+
+      nm mybinary  # On Linux/macOS
+      objdump -t mybinary  # Alternative
+    </issue>
+    <issue>
+
+      SPIFFE and SPIRE are intended to be used as the foundation for distributed identity and authentication that is consistent with cloud native design architectures. SPIRE supports Linux and the BSD family (including MacOS). Windows is not currently supported, though some early prototyping has been done in this area.
+
+      SPIRE adheres to the zero trust networking security model in which it is assumed that network communication is hostile or presumably fully compromised. That said, it is also assumed that the hardware on which SPIRE components run, as well as its operators, are trustworthy. If hardware implants or insider threats are part of the threat model, careful considerations should be made around the physical placement of SPIRE Servers and the security of their conﬁguration parameters.
+
+      There may further be implied trust in third-party platforms or software, depending on the chosen methods of node and workload attestation. Asserting trust through multiple independent mechanisms provides a greater assertion of trust. For example, leveraging AWS or GCP-based node attestation implies that the compute platform is assumed to be trustworthy, and leveraging Kubernetes for workload attestation implies that the Kubernetes deployment is assumed to be trustworthy. Due to the great variety of ways that attestation can be accomplished, and the fact that the SPIRE architecture is fully pluggable, the security (and associated assumptions) of these processes are not considered in this assessment. Instead, they should be evaluated on a case-by-case basis.
+    </issue>
+    <issue>
+      1=>
+      for i := range b { b[i] = 0xFF } 2=>
+      , = rand.Read(b) for i := range b { b[i] = 0xFF }
+      ^ this one might be a better cleanup -- update memory reset code and
+      memory reset library too;
+      maybe provide modes of operation and/or options.
+      (i.e. zero out, or random write)
+    </issue>
+    <issue>
+
+      when using an external data store although SPIKE assumes the store is untrusted still considering these would be important
+      * If this is a shared database with other services, who else has access to it
+      and manages it?
+      * How will the SPIRE Server authenticate to the database?
+      * Does the database connection allow TLS-protected secure communication?
+    </issue>
+    <issue>
+      create a list of failure scenarios to test.
+
+      this is from SPIRE, for example:
+
+      1. If a SPIRE deployment is using a single database instance, take down the
+      database.
+      2. If a SPIRE deployment is using a database in a cluster with a written replica
+      and multiple read replicas, take down the *write* instance.
+      3. Simulate database loss and test data recovery. What if you cannot recover the
+      data or you can only recover from a month-old data?
+      4. Take down several of the SPIRE Servers in a HA deployment.
+      5. Take down the Load Balancer in a HA deployment.
+      6. Take down agents after they have been attested or simulate SPIRE Server loss
+      completely.
+      7. If using upstream authority, simulate upstream authority failure.
+      8. Simulate root and intermediate CA compromise, rotation, and revocation.
+
+
+    </issue>
+    <issue>
+
+      Like all systems, logging is an essential part of SPIRE. However, the logs
+      produced by SPIRE also function as evidence for audits and security incidents.
+
+      For now we don't separate auddit logs from event logs.
+
+      to docs.
+
+      Since the logs can be considered evidence, you may wish to take note
+      of these few considerations when putting together a logging solution:
+
+      * Retention of logs should match your organization's legal requirements
+
+      * The logging system should have high availability in both admitting logs and storage
+
+      * The logs should be tamper-proof and must be able to provide evidence of it
+
+      * The logging system should be able to provide a chain of custody
+
+      ^ to prod docs.
+      ^
+    </issue>
+    <issue>
+      The metrics collectors that are currently supported are Prometheus, Statsd,
+      DogStatsd, and M3. Multiple collectors can be conﬁgured simultaneously, both in
+      the servers and the agents.
+
+      create telemetry data and support certain metrics collectors.
+
+      * Server:
+      *   Management API operations
+
+      *   DB operations per API
+
+      *   SVID Issuance API operations
+
+      *   Rotation and Key Management
+      * Agent:
+
+      *   Interactions with the Server
+
+      *   SVID Rotation and Cache Maintenance
+
+      *   Workload Attestation
+      *
+      ——
+
+      create a monitoring epic
+    </issue>
+    <issue>
+
+      SPIKE: traversal-resistent file apis: https://go.dev/blog/osroot\
+
+
+      significantly limiting the possibility of lateral movement between agents. This
+      is an important design decision that is intended to mitigate the impact of a
+      possible agent vulnerability. However, it should be understood that certain
+      configurations or deployment choices may undermine this mitigation in part or
+      whole. For example, SPIRE Agent supports exposing a Prometheus metrics endpoint,
+      however, if all agents expose this endpoint and vulnerability exists there, then
+      lateral movement becomes trivial unless adequate network-level controls are in
+      place. For this reason, exposing the SPIRE agent to incoming network connections
+      is strongly discouraged.
+      ^
+      same can be told for spike keepers; udpate the threat model doc.
+      SPIRE Agents do not have any communication pathway between each other,
+    </issue>
+    <issue>
+      The SPIRE Server can run completely in Kubernetes, alongside the workloads.
+      However, for security, it might be desirable to run it on a separate Kubernetes
+      cluster, or standalone hardware. That way, if the primary cluster is
+      compromised, the SPIRE private keys are not at risk.
+
+      modify and add to SPIKE production guidelines.
+    </issue>
+    <issue>
+
+      VSecM: Maybe use SPIFFE Helper instead of VSecM sidecar since it essentially does the same thing. Or maybe have an alternative implementation that uses spiffe helper instead of vsecm sidecar.
+
+      ——
+
+      when using an external data store although SPIKE assumes the store is untrusted still considering these would be important
+      * If this is a shared database with other services, who else has access to it
+      and manages it?
+      * How will the SPIRE Server authenticate to the database?
+      * Does the database connection allow TLS-protected secure communication?
+
+
+    </issue>
+    <issue>
+      To SPIKE documentation:
+      this is similar to "Admin Account Tiering" commonly found in zero trust architectures.
+      operations are forbidden between tiers
+      for example a restore account cannot create secrets
+
+      To SPIKE documentation:
+      other people need to sign-off for elevated privileges
+      (for example changing the SPIRE registration of SPIKE Pilot)
+      can we have a tool that facilitates that
+      1. log in with your OIDC credential.
+      2. if you have enough privileges, talk to SPIRE Server to change the pilot SVID
+      3. evrything is audited,
+
+      Think about this:
+      SPIRE is packed with SQLite, an in-memory
+      embedded database, for development and testing purposes.
+      can sqlite be in-memory.
+
+      Yes, SQLite can be used as an in-memory database by specifying :memory: as the database name when connecting. This means the entire database exists only in RAM and is discarded when the connection is closed.
+      How to Use SQLite as an In-Memory Database
+      You can create an in-memory SQLite database in Python like this:
+      ^
+      could be useful maybe, not sure.
+    </issue>
+    <issue>
+      * issue add: fips compatibility
+      * issue add: remove symbols while building
+    </issue>
+    <issue>
       address todo items inside source code after a release cut.
 
       Also, things to test before the release cut:
