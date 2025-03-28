@@ -16,7 +16,7 @@ from the initial version of the book to come up with the current version
 in a timely manner. We may add certain features (such as footnotes) in 
 the upcoming versions by introducing further changes and automation scripts.
 
-Here are notable changes from since v1.0.0 of the book:
+Here are notable changes since v1.0.0 of the book:
 
 * Moved footnotes as "side notes", as they play better with markdown, and HTML
   formatting.
@@ -33,5 +33,5 @@ Here are notable changes from since v1.0.0 of the book:
 * The initial iteration was focused on keeping the content as intact as
   possible. A follow-up iteration can focus more on modernizing the content.
 * Updated the "Secrets Management" chapter introducing products like
-  SPIKE and VMware Secrets Manager. --- We plan to create an ebook soley on
+  SPIKE and VMware Secrets Manager---We plan to create an ebook soley on
   SPIFFE-based secrets management later.
