@@ -116,7 +116,7 @@ Use GitHub issues to request features or file bugs.
 
 ## License
 
-[Mozilla Public License v2.0](LICENSE).
+[Apache v2.0](LICENSE).
 
 [spiffe-slack]: https://slack.spiffe.io/
 [spiffe]: https://spiffe.io/
