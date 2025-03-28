@@ -1,3 +1,0 @@
-* have a single assets folder and copy the assets to the public folder during
-  html creation.
-* more to be added here.
