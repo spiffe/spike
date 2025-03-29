@@ -90,8 +90,7 @@ func RecoverBackingStoreUsingKeeperShards(source *workloadapi.X509Source) {
 		return false, ErrRecoveryRetry
 	},
 		retry.WithBackOffOptions(
-			// TODO: env var.
-			retry.WithMaxInterval(60*time.Second),
+			retry.WithMaxInterval(env.RecoveryOperationMaxInterval()),
 			retry.WithMaxElapsedTime(env.RecoveryOperationTimeout()),
 		),
 	)
@@ -291,7 +290,10 @@ func NewPilotRecoveryShards() map[int]*[32]byte {
 		bigInt := new(big.Int).SetBytes(bb)
 		ii := bigInt.Uint64()
 
-		// TODO: length check since
+		if len(contribution) != 32 {
+			log.Log().Error(fName, "msg", "Length of share is unexpected")
+			return nil
+		}
 
 		var rs [32]byte
 		copy(rs[:], contribution)
@@ -383,7 +385,6 @@ func BootstrapBackingStoreWithNewRootKey(source *workloadapi.X509Source) {
 		}
 
 		log.Log().Info(fName, "msg", "Waiting for keepers to initialize")
-		// TODO: make the time configurable.
-		time.Sleep(5 * time.Second)
+		time.Sleep(env.RecoveryOperationPollInterval())
 	}
 }

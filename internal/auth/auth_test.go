@@ -188,8 +188,8 @@ func TestCanTalkToAnyone(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := CanTalkToAnyone(tt.in); got != tt.want {
-				t.Errorf("CanTalkToAnyone() = %v, want %v", got, tt.want)
+			if got := PeerCanTalkToAnyone(tt.in); got != tt.want {
+				t.Errorf("PeerCanTalkToAnyone() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -248,52 +248,8 @@ func TestCanTalkToKeeper(t *testing.T) {
 			if tt.beforeTest != nil {
 				tt.beforeTest()
 			}
-			if got := CanTalkToKeeper(tt.spiffeid); got != tt.want {
-				t.Errorf("CanTalkToKeeper() = %v, want %v", got, tt.want)
-			}
-		})
-		if err := os.Unsetenv("SPIKE_TRUST_ROOT"); err != nil {
-			panic("failed to unset env SPIKE_TRUST_ROOT")
-		}
-	}
-}
-
-func TestCanTalkToPilot(t *testing.T) {
-	tests := []struct {
-		name       string
-		beforeTest func()
-		spiffeid   string
-		want       bool
-	}{
-		{
-			name:       "default nexus spiffe id",
-			beforeTest: nil,
-			spiffeid:   "spiffe://spike.ist/spike/nexus",
-			want:       true,
-		},
-		{
-			name: "default nexus spiffe id",
-			beforeTest: func() {
-				if err := os.Setenv("SPIKE_TRUST_ROOT", "corp.com"); err != nil {
-					panic("failed to set env SPIKE_TRUST_ROOT")
-				}
-			},
-			spiffeid: "spiffe://corp.com/spike/nexus",
-			want:     true,
-		},
-		{
-			name:     "default keeper spiffe id",
-			spiffeid: "spiffe://corp.com/spike/keeper",
-			want:     false,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if tt.beforeTest != nil {
-				tt.beforeTest()
-			}
-			if got := CanTalkToPilot(tt.spiffeid); got != tt.want {
-				t.Errorf("CanTalkToPilot() = %v, want %v", got, tt.want)
+			if got := PeerCanTalkToKeeper(tt.spiffeid); got != tt.want {
+				t.Errorf("PeerCanTalkToKeeper() = %v, want %v", got, tt.want)
 			}
 		})
 		if err := os.Unsetenv("SPIKE_TRUST_ROOT"); err != nil {

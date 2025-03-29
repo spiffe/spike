@@ -19,8 +19,6 @@ import (
 	"github.com/spiffe/spike/internal/net"
 )
 
-// TODO: move private functions to other files.
-
 func shardUrl(keeperApiRoot string) string {
 	const fName = "shardUrl"
 
@@ -86,7 +84,7 @@ func unmarshalShardResponse(data []byte) *reqres.ShardResponse {
 }
 
 func shardContributionResponse(
-	u string, contribution []byte, source *workloadapi.X509Source,
+	u string, contribution *[]byte, source *workloadapi.X509Source,
 ) []byte {
 	const fName = "shardContributionResponse"
 
@@ -100,8 +98,8 @@ func shardContributionResponse(
 	}
 
 	zeroed := true
-	for i := range contribution {
-		if contribution[i] != 0 {
+	for i := range *contribution {
+		if (*contribution)[i] != 0 {
 			zeroed = false
 			break
 		}
@@ -112,9 +110,18 @@ func shardContributionResponse(
 		return []byte{}
 	}
 
-	// TODO: size validation for contribution to avoid buffer overflow.
+	if len(*contribution) != 32 {
+		log.Log().Warn(fName,
+			"msg", "invalid contribution length",
+			"len", len(*contribution))
+
+		// Do not reset `contribution` as this function does not "own" it.
+
+		return []byte{}
+	}
+
 	var c [32]byte
-	copy(c[:], contribution)
+	copy(c[:], *contribution)
 	// Security: Ensure that temporary variable is zeroed out before
 	// function exits.
 	defer func() {

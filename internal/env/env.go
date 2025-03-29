@@ -16,6 +16,8 @@ import (
 	"strings"
 )
 
+// TODO: this module and/or function can go to spike-sdk-go
+
 // LogLevel returns the logging level for the SPIKE components.
 //
 // It reads from the SPIKE_SYSTEM_LOG_LEVEL environment variable and
@@ -34,14 +36,14 @@ func LogLevel() slog.Level {
 
 	switch level {
 	case "DEBUG":
-		return slog.LevelDebug
+		return slog.LevelDebug // -4
 	case "INFO":
-		return slog.LevelInfo
+		return slog.LevelInfo // 0
 	case "WARN":
-		return slog.LevelWarn
+		return slog.LevelWarn // 4
 	case "ERROR":
-		return slog.LevelError
+		return slog.LevelError // 8
 	default:
-		return slog.LevelWarn
+		return slog.LevelWarn // 4
 	}
 }

@@ -60,20 +60,13 @@ func RouteShard(
 		return errors.ErrParseFailure
 	}
 
+	state.RLockShard()
+	defer state.RUnlockShard()
 	// DO NOT reset `sh` after use, as this function does NOT own it.
 	// Treat the value "read-only".
-	sh := state.Shard()
+	sh := state.ShardNoSync()
 
-	// TODO: this is repeated; maybe a utility function?
-	zeroed := true
-	for _, c := range sh {
-		if c != 0 {
-			zeroed = false
-			break
-		}
-	}
-
-	if zeroed {
+	if mem.Zeroed32(sh) {
 		log.Log().Error(fName, "msg", "No shard found")
 
 		responseBody := net.MarshalBody(reqres.ShardResponse{

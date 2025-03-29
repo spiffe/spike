@@ -29,29 +29,20 @@
     <issue>
       There is ongoing work on CLI documentation.
     </issue>
+    <issue>
+      There is an ongoing work on HTML...ization of the Turtle Book.
+      We also need to start a work on updating spiffe.io for the
+      new book.
+    </issue>
   </watch>
   <immediate-backlog>
-    <aside>
-      <issue>
-        turtle book markdownification
-        * Try it with pandoc.
-        * automate some minimal script.
-      </issue>
-      <issue>
-        * cut a new vsecm version too.
-        * there are also open PRs there.
-      </issue>
-      <issue>
-        aes256-cbc
-      </issue>
-      <issue>
-        jay:U2FsdGVkX1+VhdGia1yk+JAUSraXj60ZA2ydT9TuHmQBE1sWLcMLb5z0B76sCqpJVGi1GQCl8BnnoV5kznYneQ==
-      </issue>
-    </aside>
-    <isuse>
-      godoc updates required on this repo, and also SDK.
-      check and ensure ALL files are up-to-date.
-    </isuse>
+    <remark>
+      Don't cut a new version until this immediate backlog is processed.
+      Processing can also mean deferring things to after version cut.
+    </remark>
+    <issue>
+      Address ALL TODOs in the source code.
+    </issue>
     <issue>
       - TODO also   vault k8s security concerns
         read this and see if there are similar things that applies to SPIKE
@@ -118,6 +109,18 @@
       memory reset library too;
       maybe provide modes of operation and/or options.
       (i.e. zero out, or random write)
+
+      Filling with random data instead of zeros doesn't provide significant additional security benefits in most scenarios. The key security concern is making sure the data is overwritten rather than what it's overwritten with. Zeroing is also slightly more efficient than using rand.Read().
+      Regarding multiple passes of zeroing:
+      Multiple overwrites were once recommended based on concerns about data remanence in physical storage media (like hard drives), but for RAM, a single overwrite is typically sufficient. Modern RAM generally doesn't retain data after a single overwrite the way old magnetic media might.
+      A couple important considerations for your implementation:
+
+      Your approach using explicit iteration and runtime.KeepAlive() is good - it helps prevent compiler optimizations from removing what might look like "unnecessary" memory operations.
+      For truly sensitive applications, you might consider using memory that's been allocated in ways that prevent it from being swapped to disk (though Go doesn't provide direct control over this by default).
+
+      If you're working on highly sensitive applications where you're concerned about advanced memory forensics, you might want to look into specialized secure memory handling libraries that are tailored for your specific security requirements.
+
+
     </issue>
     <issue>
 
@@ -169,6 +172,11 @@
 
       ^ to prod docs.
       ^
+    </issue>
+    <issue>
+      CLI and API
+      List policies by path
+      List policies by SPIFFE ID
     </issue>
     <issue>
       The metrics collectors that are currently supported are Prometheus, Statsd,
@@ -330,7 +338,7 @@
       use dig too, since dig works better than parsing hosts file in mac os
 
       # Check if getent is available
-      if command -v getent >/dev/null 2>&1; then
+      if command -v getent >/dev/null 2>&amp;1; then
       HOSTS_ANSWER=$(getent hosts "$SPIRE_SERVER_DOMAIN")
       else
       # Fallback for systems without getent (like macOS)
@@ -441,8 +449,24 @@
       nil check wherever Backend() is called.
       var be backend.Backend
     </issue>
+    <issue>
+      Test with different shamir ratios
+
+      * 5/3 -- 5 keepers, out of 3 should be alive.
+      * 1/1 -- A single keeper
+      * 0/0 -- edge case; not sure how it should behave.
+      * in-memory -- in-memory mode should disregard any keeper config.
+    </issue>
   </immediate-backlog>
   <later>
+    <issue>
+      * cut a new vsecm version too.
+      * there are also open PRs there.
+    </issue>
+    <issue>
+      aes256-cbc
+      jay:U2FsdGVkX1+VhdGia1yk+JAUSraXj60ZA2ydT9TuHmQBE1sWLcMLb5z0B76sCqpJVGi1GQCl8BnnoV5kznYneQ==
+    </issue>
     <issue>
       newSecreteUndeleteCommand
 

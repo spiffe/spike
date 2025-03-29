@@ -114,3 +114,21 @@ func DatabaseOperationTimeout() time.Duration {
 
 	return 15 * time.Second
 }
+
+// DatabaseInitializationTimeout returns the duration to wait for database
+// initialization.
+//
+// The timeout is read from the environment variable
+// `SPIKE_NEXUS_DB_INITIALIZATION_TIMEOUT`. If this variable is set and its
+// value can be parsed as a duration (e.g., "1m30s"), it is used.
+// Otherwise, the function defaults to a timeout of 30 seconds.
+func DatabaseInitializationTimeout() time.Duration {
+	p := os.Getenv("SPIKE_NEXUS_DB_INITIALIZATION_TIMEOUT")
+	if p != "" {
+		d, err := time.ParseDuration(p)
+		if err == nil {
+			return d
+		}
+	}
+	return 30 * time.Second
+}

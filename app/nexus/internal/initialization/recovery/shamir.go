@@ -14,6 +14,30 @@ import (
 	"github.com/spiffe/spike/internal/log"
 )
 
+// sanityCheck verifies that a set of secret shares can correctly reconstruct
+// the original secret. It performs this verification by attempting to recover
+// the secret using the minimum required number of shares and comparing the
+// result with the original secret.
+//
+// Parameters:
+//   - secret group.Scalar: The original secret to verify against
+//   - shares []shamir.Share: The generated secret shares to verify
+//
+// The function will:
+//   - Calculate the threshold (t) from the environment configuration
+//   - Attempt to reconstruct the secret using exactly t+1 shares
+//   - Compare the reconstructed secret with the original
+//   - Zero out the reconstructed secret regardless of success or failure
+//
+// If the verification fails, the function will:
+//   - Log a fatal error and exit if recovery fails
+//   - Log a fatal error and exit if the recovered secret doesn't match the
+//     original
+//
+// Security:
+//   - The reconstructed secret is always zeroed out to prevent memory leaks
+//   - In case of fatal errors, the reconstructed secret is explicitly zeroed
+//     before logging since deferred functions won't run after log.FatalLn
 func sanityCheck(secret group.Scalar, shares []shamir.Share) {
 	const fName = "sanityCheck"
 

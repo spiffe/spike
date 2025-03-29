@@ -7,8 +7,6 @@ package persist
 import (
 	"context"
 	"encoding/hex"
-	"time"
-
 	"github.com/spiffe/spike/app/nexus/internal/env"
 	"github.com/spiffe/spike/app/nexus/internal/state/backend"
 	"github.com/spiffe/spike/app/nexus/internal/state/backend/memory"
@@ -74,7 +72,9 @@ func InitializeSqliteBackend(rootKey *[32]byte) backend.Backend {
 	}
 
 	// TODO: config
-	ctxC, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	ctxC, cancel := context.WithTimeout(
+		context.Background(), env.DatabaseInitializationTimeout(),
+	)
 	defer cancel()
 
 	if err := dbBackend.Initialize(ctxC); err != nil {

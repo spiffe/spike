@@ -58,3 +58,23 @@ func Shard() *[32]byte {
 	// Security: return a reference, not a copy.
 	return &shard
 }
+
+// ShardNoSync returns a pointer to the shard without acquiring any locks.
+// Callers must ensure proper synchronization by using RLockShard and
+// RUnlockShard when accessing the returned pointer.
+func ShardNoSync() *[32]byte {
+	return &shard
+}
+
+// RLockShard acquires a read lock on the shard mutex.
+// This should be paired with a corresponding call to RUnlockShard,
+// typically using defer.
+func RLockShard() {
+	shardMutex.RLock()
+}
+
+// RUnlockShard releases a read lock on the shard mutex.
+// This should only be called after a corresponding call to RLockShard.
+func RUnlockShard() {
+	shardMutex.RUnlock()
+}
