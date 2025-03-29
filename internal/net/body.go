@@ -10,6 +10,8 @@ import (
 	"net/http"
 )
 
+// TODO: this method can go to spike-sdk-go
+
 func requestBody(r *http.Request) (bod []byte, err error) {
 	body, err := io.ReadAll(r.Body)
 	if err != nil {

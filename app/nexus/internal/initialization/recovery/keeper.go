@@ -70,22 +70,18 @@ func iterateKeepersToBootstrap(
 			continue
 		}
 
-		data := shardContributionResponse(u, contribution, source)
+		data := shardContributionResponse(u, &contribution, source)
 		if len(data) == 0 {
 			// Security: Ensure that the share is zeroed out
 			// before the function returns.
-			for i := range contribution {
-				contribution[i] = 0
-			}
+			mem.Clear(&contribution)
 
 			log.Log().Info(fName, "msg", "No data; moving on...")
 			continue
 		}
 		// Security: Ensure that the share is zeroed out
 		// before the function returns.
-		for i := range contribution {
-			contribution[i] = 0
-		}
+		mem.Clear(&contribution)
 
 		var res reqres.ShardContributionResponse
 		err = json.Unmarshal(data, &res)
@@ -155,15 +151,7 @@ func iterateKeepersAndTryRecovery(
 			continue
 		}
 
-		zeroed := true
-		for i := range res.Shard {
-			if res.Shard[i] != 0 {
-				zeroed = false
-				break
-			}
-		}
-
-		if zeroed {
+		if mem.Zeroed32(res.Shard) {
 			log.Log().Info(fName, "msg", "Shard is zeroed")
 			continue
 		}
@@ -181,8 +169,11 @@ func iterateKeepersAndTryRecovery(
 		for ix, shard := range successfulKeeperShards {
 			id, err := strconv.Atoi(ix)
 			if err != nil {
-				// TODO: maybe fatal
-				log.Log().Info(fName, "msg", "Failed to convert keeper Id to int", "err", err)
+				// This is a configuration error; we cannot recover from it,
+				// and it may cause further security issues. Crash immediately.
+				log.FatalLn(
+					fName, "msg", "Failed to convert keeper Id to int", "err", err,
+				)
 				continue
 			}
 

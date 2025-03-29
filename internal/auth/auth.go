@@ -6,6 +6,8 @@ package auth
 
 import "github.com/spiffe/spike-sdk-go/spiffeid"
 
+// TODO: this module can move to spiffe-sdk-go
+
 // IsPilot checks if a given SPIFFE ID matches the SPIKE Pilot's SPIFFE ID.
 //
 // This function is used for identity verification to determine if the provided
@@ -115,42 +117,23 @@ func IsNexus(id string) bool {
 	return id == spiffeid.SpikeNexus()
 }
 
-// CanTalkToAnyone is used for debugging purposes
-func CanTalkToAnyone(_ string) bool {
+// PeerCanTalkToAnyone is used for debugging purposes
+func PeerCanTalkToAnyone(_ string) bool {
 	return true
 }
 
-// CanTalkToKeeper checks if the provided SPIFFE ID matches the SPIKE Nexus
+// PeerCanTalkToKeeper checks if the provided SPIFFE ID matches the SPIKE Nexus
 // SPIFFE ID.
 //
 // This is used as a validator in SPIKE Keeper, because currently only SPIKE
 // Nexus can talk to SPIKE Keeper.
 //
 // Parameters:
-//   - spiffeid: The SPIFFE ID string to check
+//   - peerSpiffeId: The SPIFFE ID string to check
 //
 // Returns:
 //   - bool: true if the SPIFFE ID matches SPIKE Nexus' SPIFFE ID,
 //     false otherwise
-func CanTalkToKeeper(id string) bool {
-	return id == spiffeid.SpikeNexus()
-}
-
-// CanTalkToPilot checks if the provided SPIFFE ID matches the SPIKE Nexus
-// SPIFFE ID.
-//
-// This is used as a validator in SPIKE Pilot, because currently only SPIKE
-// Nexus can talk to SPIKE Pilot.
-//
-// The function compares the input SPIFFE ID against the configured Spike Pilot
-// SPIFFE ID from the environment. This is typically used for validating whether
-// a given identity represents the Keeper service.
-//
-// Parameters:
-//   - spiffeid: The SPIFFE ID string to check
-//
-// Returns:
-//   - bool: true if the SPIFFE ID matches the Nexus SPIFFE ID, false otherwise
-func CanTalkToPilot(id string) bool {
-	return id == spiffeid.SpikeNexus()
+func PeerCanTalkToKeeper(peerSpiffeId string) bool {
+	return peerSpiffeId == spiffeid.SpikeNexus()
 }

@@ -18,22 +18,23 @@ type ShamirShard struct {
 	Value *[32]byte
 }
 
-// RecoverRootKey reconstructs the original root key from a slice of secret
-// shares. It uses Shamir's Secret Sharing scheme to recover the original
-// secret.
+// RecoverRootKey reconstructs the original root key from a slice of ShamirShard.
+// It uses Shamir's Secret Sharing scheme to recover the original secret.
 //
 // Parameters:
-//   - ss []*[32]byte: A slice of pointers to 32-byte arrays, where each array
-//     represents a secret share
+//   - ss []ShamirShard: A slice of ShamirShard structures, each containing
+//     an ID and a pointer to a 32-byte value representing a secret share
 //
 // Returns:
 //   - *[32]byte: A pointer to the reconstructed 32-byte root key
 //
 // The function will:
-//   - Convert each 32-byte array into a properly formatted secretsharing.Share
-//   - Assign sequential IDs to each share starting from 1
+//   - Convert each ShamirShard into a properly formatted secretsharing.Share
+//   - Use the IDs from the provided ShamirShards
+//   - Retrieve the threshold from the environment
 //   - Reconstruct the original secret using the secretsharing.Recover function
 //   - Validate the recovered key has the correct length (32 bytes)
+//   - Zero out all shares after use for security
 //
 // It will log a fatal error and exit if:
 //   - Any share fails to unmarshal properly

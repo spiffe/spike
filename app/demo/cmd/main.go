@@ -11,12 +11,16 @@ import (
 )
 
 func main() {
+	// https://pkg.go.dev/github.com/spiffe/spike-sdk-go/api#New
 	api := spike.New() // Use the default Workload API Socket
-	defer api.Close()  // Close the connection when done
+
+	// https://pkg.go.dev/github.com/spiffe/spike-sdk-go/api#Close
+	defer api.Close() // Close the connection when done
 
 	path := "/tenants/demo/db/creds"
 
 	// Create a Secret
+	// https://pkg.go.dev/github.com/spiffe/spike-sdk-go/api#PutSecret
 	err := api.PutSecret(path, map[string]string{
 		"username": "SPIKE",
 		"password": "SPIKE_Rocks",
@@ -27,6 +31,7 @@ func main() {
 	}
 
 	// Read the Secret
+	// https://pkg.go.dev/github.com/spiffe/spike-sdk-go/api#GetSecret
 	secret, err := api.GetSecret(path)
 	if err != nil {
 		fmt.Println("Error reading secret:", err.Error())

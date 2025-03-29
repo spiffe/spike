@@ -47,9 +47,10 @@ var (
 //  2. Its SPIFFE ID pattern matches the requestor's ID and its path pattern
 //     matches the requested path
 func CheckAccess(
-	spiffeId string, path string, wants []data.PolicyPermission,
+	peerSpiffeId string, path string, wants []data.PolicyPermission,
 ) bool {
-	if auth.IsPilot(spiffeId) {
+	// Role:SpikePilot can always manage secrets.
+	if auth.IsPilot(peerSpiffeId) {
 		return true
 	}
 
@@ -66,7 +67,7 @@ func CheckAccess(
 		// Check specific patterns using pre-compiled regexes
 
 		if policy.SpiffeIdPattern != "*" {
-			if !policy.IdRegex.MatchString(spiffeId) {
+			if !policy.IdRegex.MatchString(peerSpiffeId) {
 				continue
 			}
 		}

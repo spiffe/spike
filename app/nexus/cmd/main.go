@@ -14,7 +14,7 @@ import (
 	"github.com/spiffe/spike/app/nexus/internal/env"
 	"github.com/spiffe/spike/app/nexus/internal/initialization"
 	http "github.com/spiffe/spike/app/nexus/internal/route/base"
-	"github.com/spiffe/spike/app/nexus/internal/trust"
+	"github.com/spiffe/spike/internal/auth"
 	"github.com/spiffe/spike/internal/config"
 	"github.com/spiffe/spike/internal/log"
 	routing "github.com/spiffe/spike/internal/net"
@@ -28,13 +28,16 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	source, spiffeid, err := spiffe.Source(ctx, spiffe.EndpointSocket())
+	source, selfSpiffeid, err := spiffe.Source(ctx, spiffe.EndpointSocket())
 	if err != nil {
 		log.Fatal(err.Error())
 	}
 	defer spiffe.CloseSource(source)
 
-	trust.Authenticate(spiffeid)
+	// I should be Nexus.
+	if !auth.IsNexus(selfSpiffeid) {
+		log.FatalF("Authenticate: SPIFFE ID %s is not valid.\n", selfSpiffeid)
+	}
 
 	initialization.Initialize(source)
 

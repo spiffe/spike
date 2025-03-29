@@ -75,14 +75,6 @@ func RouteContribute(
 
 		return errors.ErrInvalidInput
 	}
-	if request.KeeperId == "" {
-		responseBody := net.MarshalBody(reqres.ShardContributionResponse{
-			Err: data.ErrBadInput,
-		}, w)
-		net.Respond(http.StatusBadRequest, responseBody, w)
-
-		return errors.ErrInvalidInput
-	}
 
 	// Security: Zero out shard before the function exits.
 	// [1]
@@ -93,15 +85,7 @@ func RouteContribute(
 	// Ensure the client didn't send an array of all zeros, which would
 	// indicate invalid input. Since Shard is a fixed-length array in the request,
 	// clients must send meaningful non-zero data.
-	zeroed := true
-	for _, c := range request.Shard {
-		if c != 0 {
-			zeroed = false
-			break
-		}
-	}
-
-	if zeroed {
+	if mem.Zeroed32(request.Shard) {
 		responseBody := net.MarshalBody(reqres.ShardContributionResponse{
 			Err: data.ErrBadInput,
 		}, w)
@@ -112,7 +96,6 @@ func RouteContribute(
 
 	// state.SetShard copies the shard. We can safely reset this one at [1].
 	state.SetShard(request.Shard)
-	log.Log().Info(fName, "msg", "Shard stored", "keeperId", request.KeeperId)
 
 	responseBody := net.MarshalBody(reqres.ShardContributionResponse{}, w)
 	net.Respond(http.StatusOK, responseBody, w)

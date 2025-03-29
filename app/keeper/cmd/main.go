@@ -13,7 +13,6 @@ import (
 
 	"github.com/spiffe/spike/app/keeper/internal/env"
 	http "github.com/spiffe/spike/app/keeper/internal/route/base"
-	"github.com/spiffe/spike/app/keeper/internal/trust"
 	"github.com/spiffe/spike/internal/auth"
 	"github.com/spiffe/spike/internal/config"
 	"github.com/spiffe/spike/internal/log"
@@ -28,13 +27,16 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	source, spiffeid, err := spiffe.Source(ctx, spiffe.EndpointSocket())
+	source, selfSpiffeid, err := spiffe.Source(ctx, spiffe.EndpointSocket())
 	if err != nil {
 		log.FatalLn(err.Error())
 	}
 	defer spiffe.CloseSource(source)
 
-	trust.Authenticate(spiffeid)
+	// I should be Keeper.
+	if !auth.IsKeeper(selfSpiffeid) {
+		log.FatalF("Authenticate: SPIFFE ID %s is not valid.\n", selfSpiffeid)
+	}
 
 	log.Log().Info(
 		appName, "msg",
@@ -44,7 +46,7 @@ func main() {
 	if err := net.ServeWithPredicate(
 		source,
 		func() { routing.HandleRoute(http.Route) },
-		auth.CanTalkToKeeper,
+		auth.PeerCanTalkToKeeper,
 		env.TlsPort(),
 	); err != nil {
 		log.FatalF("%s: Failed to serve: %s\n", appName, err.Error())
