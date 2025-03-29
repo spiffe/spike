@@ -171,7 +171,7 @@ func iterateKeepersAndTryRecovery(
 			if err != nil {
 				// This is a configuration error; we cannot recover from it,
 				// and it may cause further security issues. Crash immediately.
-				log.FatalF(
+				log.FatalLn(
 					fName, "msg", "Failed to convert keeper Id to int", "err", err,
 				)
 				continue
