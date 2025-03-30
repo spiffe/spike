@@ -135,7 +135,7 @@ func RouteRestore(
 
 	// Security: Reset the field when no longer needed.
 	defer func() {
-		mem.Clear(request.Shard)
+		mem.ClearRawBytes(request.Shard)
 		request.Id = 0
 	}()
 
@@ -144,7 +144,7 @@ func RouteRestore(
 		recovery.RestoreBackingStoreUsingPilotShards(shards)
 		// Security: Zero out all shards since we have finished restoration:
 		for i := range shards {
-			mem.Clear(shards[i].Value)
+			mem.ClearRawBytes(shards[i].Value)
 			shards[i].Id = 0
 		}
 	}

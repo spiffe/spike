@@ -109,7 +109,6 @@ func sendShardsToKeepers(
 		sanityCheck(rootSecret, rootShares)
 
 		var share secretsharing.Share
-
 		for _, sr := range rootShares {
 			kid, err := strconv.Atoi(keeperId)
 			if err != nil {
@@ -117,6 +116,7 @@ func sendShardsToKeepers(
 					fName, "msg", "Failed to convert keeper id to int", "err", err)
 				continue
 			}
+
 			if sr.ID.IsEqual(group.P256.NewScalar().SetUint64(uint64(kid))) {
 				share = sr
 				break
@@ -130,23 +130,24 @@ func sendShardsToKeepers(
 		}
 
 		rootSecret.SetUint64(0)
-		// Security: Ensure that the rootShares are zeroed out before
-		// the function returns.
-		for i := range rootShares {
-			rootShares[i].Value.SetUint64(0)
-		}
 
 		contribution, err := share.Value.MarshalBinary()
-
-		// Security: Ensure that the share is zeroed out before
-		// the next iteration.
-		share.Value.SetUint64(0)
-
 		if err != nil {
+			log.Log().Warn(fName, "msg", "Failed to marshal share",
+				"err", err, "keeper_id", keeperId)
+
 			// Security: Ensure that the contribution is zeroed out before
 			// the next iteration.
-			for i := range contribution {
-				contribution[i] = 0
+			mem.ClearBytes(contribution)
+
+			// Security: Ensure that the share is zeroed out before
+			// the next iteration.
+			share.Value.SetUint64(0)
+
+			// Security: Ensure that the rootShares are zeroed out before
+			// the function returns.
+			for i := range rootShares {
+				rootShares[i].Value.SetUint64(0)
 			}
 
 			log.Log().Warn(fName,
@@ -159,20 +160,20 @@ func sendShardsToKeepers(
 			// Security: Ensure that the contribution is zeroed out before
 			// the next iteration.
 			//
-			// Note that you cannot do `mem.Clear(contribution)` because
-			// contribution is a slice, not a struct.
-			// When we pass a byte slice s to the function Clear[T any](s *T),
-			// we are passing a pointer to the slice header, not a pointer to the
-			// underlying array. The slice header contains three fields:
-			// * A pointer to the underlying array
-			// * The length of the slice
-			// * The capacity of the slice
-			// mem.Clear(s) will zero out this slice header structure, but not the
-			// actual array data the slice points to
-			for i := range contribution {
-				contribution[i] = 0
+			// Note that you cannot do `mem.ClearRawBytes(contribution)` because
+			// contribution is a slice, not a struct; we use `mem.ClearBytes()`
+			// instead.
+			mem.ClearBytes(contribution)
+
+			// Security: Ensure that the share is zeroed out before
+			// the next iteration.
+			share.Value.SetUint64(0)
+
+			// Security: Ensure that the rootShares are zeroed out before
+			// the function returns.
+			for i := range rootShares {
+				rootShares[i].Value.SetUint64(0)
 			}
-			// TODO: maybe a helper function for this too.
 
 			log.Log().Warn(fName,
 				"msg", "invalid contribution length",
@@ -188,16 +189,24 @@ func sendShardsToKeepers(
 		copy(shard[:], contribution)
 		scr.Shard = shard
 
-		// Security: Ensure that the contribution is zeroed out before
-		// the next iteration.
-		for i := range contribution {
-			contribution[i] = 0
-		}
-
 		md, err := json.Marshal(scr)
 
 		// Security: Erase scr.Shard when no longer in use.
-		mem.Clear(scr.Shard)
+		mem.ClearRawBytes(scr.Shard)
+
+		// Security: Ensure that the contribution is zeroed out before
+		// the next iteration.
+		mem.ClearBytes(contribution)
+
+		// Security: Ensure that the share is zeroed out before
+		// the next iteration.
+		share.Value.SetUint64(0)
+
+		// Security: Ensure that the rootShares are zeroed out before
+		// the function returns.
+		for i := range rootShares {
+			rootShares[i].Value.SetUint64(0)
+		}
 
 		if err != nil {
 			log.Log().Warn(fName,
@@ -207,10 +216,9 @@ func sendShardsToKeepers(
 		}
 
 		_, err = net.Post(client, u, md)
-
 		// Security: Ensure that the md is zeroed out before
 		// the next iteration.
-		mem.Clear(&md)
+		mem.ClearBytes(md)
 
 		if err != nil {
 			log.Log().Warn(fName, "msg",

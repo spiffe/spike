@@ -82,7 +82,7 @@ func RouteShard(
 	}, w)
 	// Security: Reset response body before function exits.
 	defer func() {
-		mem.Clear(&responseBody)
+		mem.ClearBytes(responseBody)
 	}()
 
 	net.Respond(http.StatusOK, responseBody, w)

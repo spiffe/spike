@@ -79,7 +79,7 @@ func newOperatorRecoverCommand(
 			// Security: clean the shards when we no longer need them.
 			defer func() {
 				for _, shard := range shards {
-					mem.Clear(shard)
+					mem.ClearRawBytes(shard)
 				}
 			}()
 

@@ -125,7 +125,7 @@ func shardContributionResponse(
 	// Security: Ensure that temporary variable is zeroed out before
 	// function exits.
 	defer func() {
-		mem.Clear(&c)
+		mem.ClearRawBytes(&c)
 	}()
 
 	scr := reqres.ShardContributionRequest{
@@ -134,7 +134,7 @@ func shardContributionResponse(
 	// Security: Ensure that struct field is zeroed out before the function
 	// exits.
 	defer func() {
-		mem.Clear(scr.Shard)
+		mem.ClearRawBytes(scr.Shard)
 	}()
 
 	md, err := json.Marshal(scr)
@@ -146,7 +146,7 @@ func shardContributionResponse(
 	}
 	// Security: Ensure that the md is zeroed out before the function exits.
 	defer func() {
-		mem.Clear(&md)
+		mem.ClearBytes(md)
 	}()
 
 	data, err := net.Post(client, u, md)

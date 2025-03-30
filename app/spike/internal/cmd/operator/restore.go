@@ -117,13 +117,13 @@ func newOperatorRestoreCommand(
 				// TODO: remove redundant dupe resets down below the code.
 
 				// Clean up all sensitive data
-				mem.Clear(&shard)
-				mem.Clear(&decodedShard)
-				mem.Clear(&shardToRestore)
+				mem.ClearBytes(shard)
+				mem.ClearBytes(decodedShard)
+				mem.ClearRawBytes(&shardToRestore)
 			}()
 
 			// Security: reset shard immediately after use.
-			mem.Clear(&shard)
+			mem.ClearBytes(shard)
 
 			if err != nil {
 				log.FatalLn("Failed to decode recovery shard: ", err.Error())
@@ -131,7 +131,7 @@ func newOperatorRestoreCommand(
 
 			if len(decodedShard) != 32 {
 				// Security: reset decodedShard immediately after use.
-				mem.Clear(&decodedShard)
+				mem.ClearBytes(decodedShard)
 
 				log.FatalLn("Invalid recovery shard length: ", len(decodedShard))
 			}
@@ -142,7 +142,7 @@ func newOperatorRestoreCommand(
 			}
 
 			// Security: reset decodedShard immediately after use.
-			mem.Clear(&decodedShard)
+			mem.ClearBytes(decodedShard)
 
 			ix, err := strconv.Atoi(index)
 			if err != nil {
@@ -152,7 +152,7 @@ func newOperatorRestoreCommand(
 			status, err := api.Restore(ix, &shardToRestore)
 
 			// Security: reset shardToRestore immediately after recovery.
-			mem.Clear(&shardToRestore)
+			mem.ClearRawBytes(&shardToRestore)
 
 			// TODO: The code assumes exactly 32 bytes for the shard, but doesn't
 			// handle cases where decodedShard might be shorter (though it does check

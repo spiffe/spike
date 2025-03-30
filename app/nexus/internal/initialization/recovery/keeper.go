@@ -74,14 +74,15 @@ func iterateKeepersToBootstrap(
 		if len(data) == 0 {
 			// Security: Ensure that the share is zeroed out
 			// before the function returns.
-			mem.Clear(&contribution)
+			mem.ClearBytes(contribution)
 
 			log.Log().Info(fName, "msg", "No data; moving on...")
 			continue
 		}
+
 		// Security: Ensure that the share is zeroed out
 		// before the function returns.
-		mem.Clear(&contribution)
+		mem.ClearBytes(contribution)
 
 		var res reqres.ShardContributionResponse
 		err = json.Unmarshal(data, &res)
@@ -145,7 +146,7 @@ func iterateKeepersAndTryRecovery(
 
 		res := unmarshalShardResponse(data)
 		// Security: Reset data before the function exits.
-		mem.Clear(&data)
+		mem.ClearBytes(data)
 
 		if res == nil {
 			continue
@@ -191,10 +192,10 @@ func iterateKeepersAndTryRecovery(
 		state.SetRootKey(binaryRec)
 
 		// Security: Zero out temporary variables before function exits.
-		mem.Clear(binaryRec)
+		mem.ClearRawBytes(binaryRec)
 		// Security: Zero out temporary variables before function exits.
 		// Note that `successfulKeeperShards` will be reset elsewhere.
-		mem.Clear(res.Shard)
+		mem.ClearRawBytes(res.Shard)
 
 		// System initialized: Exit infinite loop.
 		return true

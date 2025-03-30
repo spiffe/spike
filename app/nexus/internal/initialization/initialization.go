@@ -60,7 +60,7 @@ func Initialize(source *workloadapi.X509Source) {
 		//
 		// For example, `seed` should be reset here,
 		// but not in `state.Initialize()`.
-		mem.Clear(&seed)
+		mem.ClearRawBytes(&seed)
 	}()
 
 	if _, err := rand.Read(seed[:]); err != nil {

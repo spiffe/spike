@@ -78,7 +78,7 @@ func RootKeyZero() bool {
 //	defer rootKeyMu.Unlock()
 //
 //	// Explicitly reset the root key bytes to zeroes
-//	mem.Clear(&rootKey)
+//	mem.ClearRawBytes(&rootKey)
 //}
 
 // SetRootKey updates the root key with the provided value.

@@ -57,9 +57,9 @@ func RecoverBackingStoreUsingKeeperShards(source *workloadapi.X509Source) {
 	defer func() {
 		log.Log().Info(fName, "msg", "Resetting successfulKeeperShards")
 		for id := range successfulKeeperShards {
-			// Note: you cannot simply use `mem.Clear(successfulKeeperShards)`
+			// Note: you cannot simply use `mem.ClearRawBytes(successfulKeeperShards)`
 			// because it will reset the pointer but not the data it points to.
-			mem.Clear(successfulKeeperShards[id])
+			mem.ClearRawBytes(successfulKeeperShards[id])
 		}
 	}()
 
@@ -164,7 +164,7 @@ func RestoreBackingStoreUsingPilotShards(shards []ShamirShard) {
 	binaryRec := RecoverRootKey(shards)
 	// Security: Ensure the root key is zeroed out after use.
 	defer func() {
-		mem.Clear(binaryRec)
+		mem.ClearRawBytes(binaryRec)
 	}()
 
 	log.Log().Info(fName, "msg", "Initializing state and root key")
@@ -202,7 +202,9 @@ func SendShardsPeriodically(source *workloadapi.X509Source) {
 
 	log.Log().Info(fName, "msg", "Will send shards to keepers")
 
-	ticker := time.NewTicker(5 * time.Minute)
+	// TODO: get this from config.
+	//ticker := time.NewTicker(5 * time.Minute)
+	ticker := time.NewTicker(30 * time.Second)
 	defer ticker.Stop()
 
 	for range ticker.C {
@@ -344,7 +346,7 @@ func BootstrapBackingStoreWithNewRootKey(source *workloadapi.X509Source) {
 	var seed [32]byte
 	// Security: Ensure the seed is zeroed out after use.
 	defer func() {
-		mem.Clear(&seed)
+		mem.ClearRawBytes(&seed)
 	}()
 
 	if _, err := rand.Read(seed[:]); err != nil {

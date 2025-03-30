@@ -119,7 +119,7 @@ func RecoverRootKey(ss []ShamirShard) *[32]byte {
 		var result [32]byte
 		copy(result[:], binaryRec)
 		// Security: Zero out temporary variables before function exits.
-		mem.Clear(&binaryRec)
+		mem.ClearBytes(binaryRec)
 
 		return &result
 	}

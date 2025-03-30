@@ -72,7 +72,7 @@ func RouteRecover(
 	// Security: reset shards before function exits.
 	defer func() {
 		for i := range shards {
-			mem.Clear(shards[i])
+			mem.ClearRawBytes(shards[i])
 		}
 	}()
 
@@ -89,7 +89,7 @@ func RouteRecover(
 	}, w)
 	// Security: Clean up response body before exit.
 	defer func() {
-		mem.Clear(&responseBody)
+		mem.ClearBytes(responseBody)
 	}()
 
 	net.Respond(http.StatusOK, responseBody, w)
