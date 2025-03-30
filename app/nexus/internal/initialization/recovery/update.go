@@ -182,9 +182,11 @@ func sendShardsToKeepers(
 
 		scr := reqres.ShardContributionRequest{}
 
+		shard := new([32]byte)
 		// Security: shard is intentionally binary (instead of string) for
 		// better memory management. Do not change its data type.
-		copy(scr.Shard[:], contribution)
+		copy(shard[:], contribution)
+		scr.Shard = shard
 
 		// Security: Ensure that the contribution is zeroed out before
 		// the next iteration.

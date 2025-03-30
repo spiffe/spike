@@ -42,8 +42,6 @@ type ShamirShard struct {
 //   - The reconstructed key is nil
 //   - The binary representation has an incorrect length
 func RecoverRootKey(ss []ShamirShard) *[32]byte {
-	// TODO: check function signatures and update documentation across the project
-
 	const fName = "RecoverRootKey"
 
 	g := group.P256

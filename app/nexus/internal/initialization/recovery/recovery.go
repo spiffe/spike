@@ -351,7 +351,6 @@ func BootstrapBackingStoreWithNewRootKey(source *workloadapi.X509Source) {
 		log.Fatal(err.Error())
 	}
 
-	fmt.Println("state initialize from seed.")
 	state.Initialize(&seed)
 	log.Log().Info(fName, "msg", "Initialized the backing store")
 
