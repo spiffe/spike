@@ -33,7 +33,7 @@ func main() {
 	}
 	defer spiffe.CloseSource(source)
 
-	// I should be Keeper.
+	// I should be a SPIKE Keeper.
 	if !auth.IsKeeper(selfSpiffeid) {
 		log.FatalF("Authenticate: SPIFFE ID %s is not valid.\n", selfSpiffeid)
 	}

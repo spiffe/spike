@@ -36,6 +36,8 @@ configure the SPIKE components:
 | SPIKE Nexus  | `SPIKE_NEXUS_SHAMIR_SHARES`             | The total number of shares used for secret sharding, this should be equal to the number of SPIKE Keepers too. | `3`                                                   |
 | SPIKE Nexus  | `SPIKE_NEXUS_SHAMIR_THRESHOLD`          | The minimum number of shares to be able to reconstruct the root key.                                          | `2`                                                   |
 | All          | `SPIKE_SYSTEM_LOG_LEVEL`                | The log level for all SPIKE components (`"DEBUG"`, `"INFO"`, `"WARN"`, `"ERROR"`).                            | `"DEBUG"`                                             |
+| All          | `SPIKE_NEXUS_API_URL`                   | The URL where SPIKE Nexus can be reached                                                                      | `"https://localhost:8553"`                            |
+| All          | `SPIKE_TRUST_ROOT`                      | The SPIFFE trust root used within the SPIKE trust boundary.                                                   | `"spike.ist"`                                         |
 
 We'll add more configuration options in the future. Stay tuned.
 

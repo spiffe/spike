@@ -380,6 +380,46 @@
       also describe how enabling swap might impact the security posture.
     </issue>
     <issue>
+      Use Case: Each SPIKE Keeper in its own trust domain.
+      (we can also create a demo once this feature is established)
+
+      Details:
+
+      The current design assumes that all keepers are in the same trust boundary
+      (which defaults to spike.ist)
+      that can make sense for a single-cluster deployment
+      (each keeper can be tainted to deploy itself on a distinct node for
+      redundancy)
+      however; a keeper's SPIFFE ID does not have to have a single trust root.
+      each SPIKE keeper can (in theory) live in a separate cluster, in its own
+      trust boundary, depicted by a different trust root.
+
+      If that's the case the below function will not be valid
+
+      func IsKeeper(id string) bool {
+        return id == spiffeid.SpikeKeeper()
+      }
+
+      Instead of this the validation should be done against SPIKE_NEXUS_KEEPER_PEERS
+      and the env var should also contain the trust root of each keeper.
+
+      Similarly, the function cannot check the trust root.
+      it may however verify the part of spiffeID "after" the trust root.
+
+      // I should be a SPIKE Keeper.
+      if !auth.IsKeeper(selfSpiffeid) {
+      log.FatalF("Authenticate: SPIFFE ID %s is not valid.\n", selfSpiffeid)
+      }
+
+      So for the `main` function of SPIKE Keeper we'll need a more relaxed
+      version of IsKeeper.
+      and the IsKeeper in SPIKE Nexus will validate looking at the env
+      config.
+
+      which also means, SPIKE Keeper can require SPIKE_TRUST_ROOT along
+      with SPIKE_KEEPER_TLS_PORT to start. at start-keeper-1.sh
+    </issue>
+    <issue>
       sanitize keeper id and shard
 
       request := net.HandleRequest[

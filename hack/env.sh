@@ -34,3 +34,6 @@ export SPIKE_NEXUS_KEEPER_PEERS='{"1":"https://localhost:8443","2":"https://loca
 export SPIKE_KEEPER_TLS_PORT=":8443"
 
 export SPIKE_SYSTEM_LOG_LEVEL="debug"
+
+expoort SPIKE_TRUST_ROOT="spike.ist"
+export SPIKE_NEXUS_API_URL="https://localhost:8553"
