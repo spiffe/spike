@@ -44,6 +44,11 @@
       Address ALL TODOs in the source code.
     </issue>
     <issue>
+      audit trails print differently than other logger methods.
+      {"time":"2025-03-30T08:05:13.802795974-07:00","level":"INFO","msg":"iterateKeepersToBootstrap","msg":"Tombstone file created successfully"}
+      2025/03/30 08:06:30 {"TrailId":"tXm6L5KG","Timestamp":"2025-03-30T08:06:30.721144469-07:00","UserId":"","Action":"enter","Path":"/v1/
+    </issue>
+    <issue>
       - TODO also   vault k8s security concerns
         read this and see if there are similar things that applies to SPIKE
         https://developer.hashicorp.com/vault/tutorials/kubernetes/kubernetes-security-concerns
