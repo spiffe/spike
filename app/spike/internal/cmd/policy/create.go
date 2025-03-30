@@ -87,7 +87,7 @@ func newPolicyCreateCommand(
 		Run: func(cmd *cobra.Command, args []string) {
 
 			// Check if all required flags are provided
-			missingFlags := []string{}
+			var missingFlags []string
 			if name == "" {
 				missingFlags = append(missingFlags, "name")
 			}

@@ -7,8 +7,6 @@ package base
 import (
 	"sync"
 
-	"github.com/spiffe/spike-sdk-go/security/mem"
-
 	"github.com/spiffe/spike-sdk-go/kv"
 	"github.com/spiffe/spike/app/nexus/internal/env"
 )
@@ -73,15 +71,15 @@ func RootKeyZero() bool {
 	return true
 }
 
-// ResetRootKey resets the root key to all zeroes.
-// This is typically used when clearing sensitive cryptographic material.
-func ResetRootKey() {
-	rootKeyMu.Lock()
-	defer rootKeyMu.Unlock()
-
-	// Explicitly reset the root key bytes to zeroes
-	mem.Clear(&rootKey)
-}
+//// ResetRootKey resets the root key to all zeroes.
+//// This is typically used when clearing sensitive cryptographic material.
+//func ResetRootKey() {
+//	rootKeyMu.Lock()
+//	defer rootKeyMu.Unlock()
+//
+//	// Explicitly reset the root key bytes to zeroes
+//	mem.Clear(&rootKey)
+//}
 
 // SetRootKey updates the root key with the provided value.
 //

@@ -18,7 +18,7 @@ import (
 )
 
 func guardListPolicyRequest(
-	request reqres.PolicyListRequest, w http.ResponseWriter, r *http.Request,
+	_ reqres.PolicyListRequest, w http.ResponseWriter, r *http.Request,
 ) error {
 	spiffeid, err := spiffe.IdFromRequest(r)
 	if err != nil {
