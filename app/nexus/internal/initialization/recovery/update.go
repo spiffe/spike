@@ -64,6 +64,12 @@ func mustUpdateRecoveryInfo(rk *[32]byte) []secretsharing.Share {
 //  3. findShare() ensures each keeper receives its designated share
 //     This approach simplifies the code flow and maintains consistency across
 //     potential system restarts or failures.
+//
+// Note that sendSharesToKeepers optimistically moves on to the next SPIKE
+// Keeper in the list on error. This is okay, because SPIKE Nexus may not
+// need all keepers to be healthy all at once, and since we periodically
+// send shards to keepers, provided there is no configration mistake,
+// all SPIKE Keepers will get their shards eventually.
 func sendShardsToKeepers(
 	source *workloadapi.X509Source, keepers map[string]string,
 ) {
@@ -73,14 +79,6 @@ func sendShardsToKeepers(
 		u, err := url.JoinPath(
 			keeperApiRoot, string(apiUrl.SpikeKeeperUrlContribute),
 		)
-
-		// TODO: The sendShardsToKeepers function continues to the next keeper
-		// on error. This is reasonable, but consider if all keepers must receive
-		// shares for safety.
-		// For example, maybe configuration problems should cause a fatal error
-		// instead of just bypassing the keeper.
-		// Since this is done periodically in `SendShardsPeriodically()`, we
-		// can overlook temporary issues.
 
 		if err != nil {
 			log.Log().Warn(

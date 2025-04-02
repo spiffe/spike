@@ -202,9 +202,8 @@ func SendShardsPeriodically(source *workloadapi.X509Source) {
 
 	log.Log().Info(fName, "msg", "Will send shards to keepers")
 
-	// TODO: get this from config.
-	//ticker := time.NewTicker(5 * time.Minute)
-	ticker := time.NewTicker(30 * time.Second)
+	// TODO: add this to docs too, and also to the sample env file.
+	ticker := time.NewTicker(env.RecoveryKeeperUpdateInterval())
 	defer ticker.Stop()
 
 	for range ticker.C {

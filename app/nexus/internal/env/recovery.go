@@ -58,3 +58,20 @@ func RecoveryOperationPollInterval() time.Duration {
 
 	return 5 * time.Second
 }
+
+// RecoveryKeeperUpdateInterval returns the duration between keeper updates for
+// SPIKE Nexus. It first attempts to read the duration from the
+// SPIKE_NEXUS_KEEPER_UPDATE_INTERVAL environment variable. If the environment
+// variable is set and contains a valid duration string (as parsed by
+// time.ParseDuration), that duration is returned. Otherwise, it returns a
+// default value of 5 minutes.
+func RecoveryKeeperUpdateInterval() time.Duration {
+	e := os.Getenv("SPIKE_NEXUS_KEEPER_UPDATE_INTERVAL")
+	if e != "" {
+		if d, err := time.ParseDuration(e); err == nil {
+			return d
+		}
+	}
+
+	return 5 * time.Minute
+}

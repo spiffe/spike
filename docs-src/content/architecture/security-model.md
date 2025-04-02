@@ -12,6 +12,24 @@ sort_by = "weight"
 
 Here is a brief introduction to **SPIKE** security model.
 
+## Machine as the Trust Boundary
+
+**SPIKE** components are intended to be used as the foundation for 
+cloud native secrets management in a zero trust environment. **SPIKE**
+supports Linux and the BSD family (including MacOS). Windows is not currently 
+supported, though some early prototyping is a work in progress. 
+
+**SPIKE** (*with the help of SPIFFE and SPIRE*) adheres to the zero trust 
+networking security model in which it is assumed that network communication is 
+hostile or presumably fully compromised. That said, it is also assumed that 
+the hardware on which ***SPIKE** components run, as well as its operators, 
+are trustworthy.
+
+If the hardware is considered as an attack surface, or insider threats are
+part of the threat model, then careaful considerations should be made around the 
+physical placement of **SPIRE Server**, **SPIKE Nexus**, and **SPIKE Keeper**
+instances, and the security of their relevant conﬁguration parameters.
+
 ## Authentication and Communication
 
 * All inter-component communication is secured through [**SPIFFE** mTLS][spiffe].

@@ -25,6 +25,7 @@
   <watch>
     <issue>
       There is ongoing work on kubernetification.
+        * Create a local Minikube cluster and test images locally.
     </issue>
     <issue>
       There is ongoing work on CLI documentation.
@@ -43,118 +44,7 @@
     <issue>
       Address ALL TODOs in the source code.
     </issue>
-    <issue>
-      audit trails print differently than other logger methods.
-      {"time":"2025-03-30T08:05:13.802795974-07:00","level":"INFO","msg":"iterateKeepersToBootstrap","msg":"Tombstone file created successfully"}
-      2025/03/30 08:06:30 {"TrailId":"tXm6L5KG","Timestamp":"2025-03-30T08:06:30.721144469-07:00","UserId":"","Action":"enter","Path":"/v1/
-    </issue>
-    <issue>
-      - TODO also   vault k8s security concerns
-        read this and see if there are similar things that applies to SPIKE
-        https://developer.hashicorp.com/vault/tutorials/kubernetes/kubernetes-security-concerns
-    </issue>
-    <issue>
-      - TODO optimize sqlite default params and also make sure we retry database operations 	- ref: https://tenthousandmeters.com/blog/sqlite-concurrent-writes-and-database-is-locked-errors/
-    </issue>
-    <issue>
-      TODO update vsecm documentation about cloudflare changes 1. manually upload 2. point to github for older versions.
-    </issue>
-    <issue>
-      TODO it's early but have a deprecation policy for SPIKE https://external-secrets.io/latest/introduction/deprecation-policy/
-    </issue>
-    <issue>
-      create (or update) a spike production hardening guidelines page https://developer.hashicorp.com/vault/docs/concepts/production-hardening
-    </issue>
-    <issue>
-      LATER set a periodic reminder for VSecM security issues check.
-    </issue>
-    <issue>
-      //Cache-Control header is for HTTP/1.1 clients
-      servletResponse.addHeader("Cache-Control","no-cache, no-store, must-revalidate");
 
-      //Pragma header is for HTTP/1.0 clients
-      servletResponse.addHeader("Pragma","no-cache");
-
-      ^ check if we add all these headers.
-    </issue>
-    <issue>
-      Go binaries do not have stripped symbols by default. By default, Go includes symbols for debugging, function names, and even full DWARF debugging information unless explicitly removed. This can make Go binaries quite large.
-
-      How to Strip Symbols
-      If you want to strip symbols from a Go binary to reduce its size, you can use:
-
-      Using strip (Linux/macOS)
-      strip mybinary
-      This removes debugging symbols and symbol tables.
-      Building with ldflags
-      go build -ldflags="-s -w" -o mybinary
-      -s: Omits the symbol table.
-      -w: Omits DWARF debugging information.
-      Using upx for Compression You can further reduce the binary size with:
-      upx --best mybinary
-      Checking Symbols
-      You can check if a binary has symbols using:
-
-      nm mybinary  # On Linux/macOS
-      objdump -t mybinary  # Alternative
-    </issue>
-    <issue>
-
-      SPIFFE and SPIRE are intended to be used as the foundation for distributed identity and authentication that is consistent with cloud native design architectures. SPIRE supports Linux and the BSD family (including MacOS). Windows is not currently supported, though some early prototyping has been done in this area.
-
-      SPIRE adheres to the zero trust networking security model in which it is assumed that network communication is hostile or presumably fully compromised. That said, it is also assumed that the hardware on which SPIRE components run, as well as its operators, are trustworthy. If hardware implants or insider threats are part of the threat model, careful considerations should be made around the physical placement of SPIRE Servers and the security of their conﬁguration parameters.
-
-      There may further be implied trust in third-party platforms or software, depending on the chosen methods of node and workload attestation. Asserting trust through multiple independent mechanisms provides a greater assertion of trust. For example, leveraging AWS or GCP-based node attestation implies that the compute platform is assumed to be trustworthy, and leveraging Kubernetes for workload attestation implies that the Kubernetes deployment is assumed to be trustworthy. Due to the great variety of ways that attestation can be accomplished, and the fact that the SPIRE architecture is fully pluggable, the security (and associated assumptions) of these processes are not considered in this assessment. Instead, they should be evaluated on a case-by-case basis.
-    </issue>
-    <issue>
-      1=>
-      for i := range b { b[i] = 0xFF } 2=>
-      , = rand.Read(b) for i := range b { b[i] = 0xFF }
-      ^ this one might be a better cleanup -- update memory reset code and
-      memory reset library too;
-      maybe provide modes of operation and/or options.
-      (i.e. zero out, or random write)
-
-      Filling with random data instead of zeros doesn't provide significant additional security benefits in most scenarios. The key security concern is making sure the data is overwritten rather than what it's overwritten with. Zeroing is also slightly more efficient than using rand.Read().
-      Regarding multiple passes of zeroing:
-      Multiple overwrites were once recommended based on concerns about data remanence in physical storage media (like hard drives), but for RAM, a single overwrite is typically sufficient. Modern RAM generally doesn't retain data after a single overwrite the way old magnetic media might.
-      A couple important considerations for your implementation:
-
-      Your approach using explicit iteration and runtime.KeepAlive() is good - it helps prevent compiler optimizations from removing what might look like "unnecessary" memory operations.
-      For truly sensitive applications, you might consider using memory that's been allocated in ways that prevent it from being swapped to disk (though Go doesn't provide direct control over this by default).
-
-      If you're working on highly sensitive applications where you're concerned about advanced memory forensics, you might want to look into specialized secure memory handling libraries that are tailored for your specific security requirements.
-
-
-    </issue>
-    <issue>
-
-      when using an external data store although SPIKE assumes the store is untrusted still considering these would be important
-      * If this is a shared database with other services, who else has access to it
-      and manages it?
-      * How will the SPIRE Server authenticate to the database?
-      * Does the database connection allow TLS-protected secure communication?
-    </issue>
-    <issue>
-      create a list of failure scenarios to test.
-
-      this is from SPIRE, for example:
-
-      1. If a SPIRE deployment is using a single database instance, take down the
-      database.
-      2. If a SPIRE deployment is using a database in a cluster with a written replica
-      and multiple read replicas, take down the *write* instance.
-      3. Simulate database loss and test data recovery. What if you cannot recover the
-      data or you can only recover from a month-old data?
-      4. Take down several of the SPIRE Servers in a HA deployment.
-      5. Take down the Load Balancer in a HA deployment.
-      6. Take down agents after they have been attested or simulate SPIRE Server loss
-      completely.
-      7. If using upstream authority, simulate upstream authority failure.
-      8. Simulate root and intermediate CA compromise, rotation, and revocation.
-
-
-    </issue>
     <issue>
 
       Like all systems, logging is an essential part of SPIRE. However, the logs
@@ -503,7 +393,82 @@
       * in-memory -- in-memory mode should disregard any keeper config.
     </issue>
   </immediate-backlog>
+  <good-first-issue>
+    <issue>
+      audit trails print differently than other logger methods.
+      {"time":"2025-03-30T08:05:13.802795974-07:00","level":"INFO","msg":"iterateKeepersToBootstrap","msg":"Tombstone file created successfully"}
+      2025/03/30 08:06:30 {"TrailId":"tXm6L5KG","Timestamp":"2025-03-30T08:06:30.721144469-07:00","UserId":"","Action":"enter","Path":"/v1/
+    </issue>
+    <issue>
+      add mLockAll to the main process in unix systems.
+      also update relevant production hardening guide that although
+      we use mlock you are recommended to turn swap off on your machine.
+
+    </issue>
+  </good-first-issue>
   <later>
+    <issue>
+      create a list of failure scenarios to test and put it into a document
+
+      this is from SPIRE, for example:
+
+      1. If a SPIRE deployment is using a single database instance, take down the
+      database.
+      2. If a SPIRE deployment is using a database in a cluster with a written replica
+      and multiple read replicas, take down the *write* instance.
+      3. Simulate database loss and test data recovery. What if you cannot recover the
+      data or you can only recover from a month-old data?
+      4. Take down several of the SPIRE Servers in a HA deployment.
+      5. Take down the Load Balancer in a HA deployment.
+      6. Take down agents after they have been attested or simulate SPIRE Server loss
+      completely.
+      7. If using upstream authority, simulate upstream authority failure.
+      8. Simulate root and intermediate CA compromise, rotation, and revocation.
+    </issue>
+
+
+    <issue>
+      Go binaries do not have stripped symbols by default. By default,
+      Go includes symbols for debugging, function names, and even full DWARF
+      debugging information unless explicitly removed. This can make Go binaries
+      quite large.
+
+      How to Strip Symbols
+      If you want to strip symbols from a Go binary to reduce its size, you can use:
+
+      Using strip (Linux/macOS)
+      strip mybinary
+      This removes debugging symbols and symbol tables.
+      Building with ldflags
+      go build -ldflags="-s -w" -o mybinary
+      -s: Omits the symbol table.
+      -w: Omits DWARF debugging information.
+      Using upx for Compression You can further reduce the binary size with:
+      upx --best mybinary
+      Checking Symbols
+      You can check if a binary has symbols using:
+
+      nm mybinary  # On Linux/macOS
+      objdump -t mybinary  # Alternative
+    </issue>
+
+
+    <issue>
+      LATER set a periodic reminder for VSecM security issues check.
+    </issue>
+
+    <issue>
+      - TODO optimize sqlite default params and also make sure we retry
+      database operations
+      - ref: https://tenthousandmeters.com/blog/sqlite-concurrent-writes-and-database-is-locked-errors/
+    </issue>
+    <issue>
+      TODO update vsecm documentation about cloudflare changes 1. manually upload 2. point to github for older versions.
+    </issue>
+    <issue>
+      TODO it's early but have a deprecation policy for SPIKE
+      https://external-secrets.io/latest/introduction/deprecation-policy/
+    </issue>
     <issue>
       * cut a new vsecm version too.
       * there are also open PRs there.
