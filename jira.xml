@@ -45,84 +45,10 @@
       Address ALL TODOs in the source code.
     </issue>
 
+
+
     <issue>
 
-      Like all systems, logging is an essential part of SPIRE. However, the logs
-      produced by SPIRE also function as evidence for audits and security incidents.
-
-      For now we don't separate auddit logs from event logs.
-
-      to docs.
-
-      Since the logs can be considered evidence, you may wish to take note
-      of these few considerations when putting together a logging solution:
-
-      * Retention of logs should match your organization's legal requirements
-
-      * The logging system should have high availability in both admitting logs and storage
-
-      * The logs should be tamper-proof and must be able to provide evidence of it
-
-      * The logging system should be able to provide a chain of custody
-
-      ^ to prod docs.
-      ^
-    </issue>
-    <issue>
-      CLI and API
-      List policies by path
-      List policies by SPIFFE ID
-    </issue>
-    <issue>
-      The metrics collectors that are currently supported are Prometheus, Statsd,
-      DogStatsd, and M3. Multiple collectors can be conﬁgured simultaneously, both in
-      the servers and the agents.
-
-      create telemetry data and support certain metrics collectors.
-
-      * Server:
-      *   Management API operations
-
-      *   DB operations per API
-
-      *   SVID Issuance API operations
-
-      *   Rotation and Key Management
-      * Agent:
-
-      *   Interactions with the Server
-
-      *   SVID Rotation and Cache Maintenance
-
-      *   Workload Attestation
-      *
-      ——
-
-      create a monitoring epic
-    </issue>
-    <issue>
-
-      SPIKE: traversal-resistent file apis: https://go.dev/blog/osroot\
-
-
-      significantly limiting the possibility of lateral movement between agents. This
-      is an important design decision that is intended to mitigate the impact of a
-      possible agent vulnerability. However, it should be understood that certain
-      configurations or deployment choices may undermine this mitigation in part or
-      whole. For example, SPIRE Agent supports exposing a Prometheus metrics endpoint,
-      however, if all agents expose this endpoint and vulnerability exists there, then
-      lateral movement becomes trivial unless adequate network-level controls are in
-      place. For this reason, exposing the SPIRE agent to incoming network connections
-      is strongly discouraged.
-      ^
-      same can be told for spike keepers; udpate the threat model doc.
-      SPIRE Agents do not have any communication pathway between each other,
-    </issue>
-    <issue>
-      The SPIRE Server can run completely in Kubernetes, alongside the workloads.
-      However, for security, it might be desirable to run it on a separate Kubernetes
-      cluster, or standalone hardware. That way, if the primary cluster is
-      compromised, the SPIRE private keys are not at risk.
 
       modify and add to SPIKE production guidelines.
     </issue>
@@ -425,7 +351,56 @@
       7. If using upstream authority, simulate upstream authority failure.
       8. Simulate root and intermediate CA compromise, rotation, and revocation.
     </issue>
+    <issue kind="good-first-issue">
+      CLI and API
+      List policies by path
+      List policies by SPIFFE ID
+    </issue>
+    <issue>
+      The metrics collectors that are currently supported are Prometheus, Statsd,
+      DogStatsd, and M3. Multiple collectors can be conﬁgured simultaneously, both in
+      the servers and the agents.
 
+      create telemetry data and support certain metrics collectors.
+
+      * Server:
+      *   Management API operations
+
+      *   DB operations per API
+
+      *   SVID Issuance API operations
+
+      *   Rotation and Key Management
+      * Agent:
+
+      *   Interactions with the Server
+
+      *   SVID Rotation and Cache Maintenance
+
+      *   Workload Attestation
+      *
+      ——
+
+      create a monitoring epic
+    </issue>
+    <issue>
+
+      SPIKE: traversal-resistent file apis: https://go.dev/blog/osroot\
+
+
+      significantly limiting the possibility of lateral movement between agents. This
+      is an important design decision that is intended to mitigate the impact of a
+      possible agent vulnerability. However, it should be understood that certain
+      configurations or deployment choices may undermine this mitigation in part or
+      whole. For example, SPIRE Agent supports exposing a Prometheus metrics endpoint,
+      however, if all agents expose this endpoint and vulnerability exists there, then
+      lateral movement becomes trivial unless adequate network-level controls are in
+      place. For this reason, exposing the SPIRE agent to incoming network connections
+      is strongly discouraged.
+      ^
+      same can be told for spike keepers; udpate the threat model doc.
+      SPIRE Agents do not have any communication pathway between each other,
+    </issue>
 
     <issue>
       Go binaries do not have stripped symbols by default. By default,

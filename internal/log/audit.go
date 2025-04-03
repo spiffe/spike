@@ -74,7 +74,7 @@ func Audit(entry AuditEntry) {
 		return
 	}
 
-	log.Println(string(body))
+	log.Println("[AUDIT]: ", string(body))
 }
 
 // AuditRequest logs the details of an HTTP request and updates the audit entry
