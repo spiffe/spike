@@ -44,27 +44,13 @@
     <issue>
       Address ALL TODOs in the source code.
     </issue>
-
-
-
     <issue>
-
-
-      modify and add to SPIKE production guidelines.
-    </issue>
-    <issue>
-
-      VSecM: Maybe use SPIFFE Helper instead of VSecM sidecar since it essentially does the same thing. Or maybe have an alternative implementation that uses spiffe helper instead of vsecm sidecar.
-
-      ——
-
-      when using an external data store although SPIKE assumes the store is untrusted still considering these would be important
+      when using an external data store although SPIKE assumes the store is
+      untrusted still considering these would be important
       * If this is a shared database with other services, who else has access to it
       and manages it?
       * How will the SPIRE Server authenticate to the database?
       * Does the database connection allow TLS-protected secure communication?
-
-
     </issue>
     <issue>
       To SPIKE documentation:
@@ -334,6 +320,11 @@
   </good-first-issue>
   <later>
     <issue>
+      VSecM: Maybe use SPIFFE Helper instead of VSecM sidecar since it
+      essentially does the same thing. Or maybe have an alternative
+      implementation that uses spiffe helper instead of vsecm sidecar.
+    </issue>
+    <issue>
       create a list of failure scenarios to test and put it into a document
 
       this is from SPIRE, for example:
@@ -384,23 +375,12 @@
       create a monitoring epic
     </issue>
     <issue>
-
-      SPIKE: traversal-resistent file apis: https://go.dev/blog/osroot\
-
-
-      significantly limiting the possibility of lateral movement between agents. This
-      is an important design decision that is intended to mitigate the impact of a
-      possible agent vulnerability. However, it should be understood that certain
-      configurations or deployment choices may undermine this mitigation in part or
-      whole. For example, SPIRE Agent supports exposing a Prometheus metrics endpoint,
-      however, if all agents expose this endpoint and vulnerability exists there, then
-      lateral movement becomes trivial unless adequate network-level controls are in
-      place. For this reason, exposing the SPIRE agent to incoming network connections
-      is strongly discouraged.
+      [vmware-tanzu/secrets-manager] Scorecard supply-chain security workflow run
       ^
-      same can be told for spike keepers; udpate the threat model doc.
-      SPIRE Agents do not have any communication pathway between each other,
+      this is constantly failig.
+      maybe disable it.
     </issue>
+
 
     <issue>
       Go binaries do not have stripped symbols by default. By default,
@@ -1015,7 +995,10 @@
       like, point http(s)_proxy at this thing, connect to it using your spiffe id, the proxy can use policies and the client spiffeid to allow/disallow an http proxy request
       No; but not a bad idea indeed. -- will look around; I'll share if I find something related.
     </issue>
-
+    <issue>
+      Check if we need traversal resistant file api needs anywhere.
+      SPIKE: traversal-resistant file apis: https://go.dev/blog/osroot
+    </issue>
   </later>
   <runner-up>
     <issue>

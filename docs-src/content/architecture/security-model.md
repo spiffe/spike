@@ -118,7 +118,17 @@ remains secure, as it can only be decrypted by **SPIKE Nexus**.
 Additionally, the storage backend serves as a durable, persistent layer, 
 ensuring data availability across application crashes and server restarts.
 
-## Keeper Shard Distribution and Disaster Recovery
+## Network Isolation of SPIKE Keepers
+
+SPIKE Keepers do not have any communication pathway between each other and this
+is a decision by design. This significantly limits the possibility of lateral
+movements as even when an attacker gains a foothold on a SPIKE Keeper instance
+they cannot laterally move to other SPIKE Keeper instances.
+
+SPIKE Nexus and SPIKE Keepers establish a hub-spoke topology where SPIKE
+Keepers (the spokes) can only communicate with SPIKE Nexus (the hub).
+
+## SPIKE Keeper Shard Distribution and Disaster Recovery
 
 **SPIKE** uses **SPIKE Keeper**s, which are apps responsible for storing 
 [Shamir shards][shamir] of the **root key**. Both the **root key** and the
