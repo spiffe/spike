@@ -118,6 +118,17 @@ remains secure, as it can only be decrypted by **SPIKE Nexus**.
 Additionally, the storage backend serves as a durable, persistent layer, 
 ensuring data availability across application crashes and server restarts.
 
+Especially when using an external data store other than the default local
+SQLite backing store, although SPIKE assumes the store is untrusted, 
+still considering the following will be prudent:
+
+* If possible, have SPIKE's backing store as an isolated database not shared
+  by any other service to reduce the attack surface.
+* If that's not possible and the backing store is a shared database with other 
+  services, be aware of who else has access to it and manages it?
+* Be cognizant about how SPIKE Nexus will authenticate to this database. 
+* Make sure the database connection is secure with TLS or mTLS.
+
 ## Network Isolation of SPIKE Keepers
 
 SPIKE Keepers do not have any communication pathway between each other and this
