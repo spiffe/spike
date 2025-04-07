@@ -11,7 +11,7 @@ import (
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	apiErr "github.com/spiffe/spike-sdk-go/api/errors"
 	"github.com/spiffe/spike-sdk-go/spiffe"
-	"github.com/spiffe/spike-sdk-go/validation"
+	"github.com/spiffe/spike-sdk-go/spiffeid"
 
 	"github.com/spiffe/spike/internal/net"
 )
@@ -19,7 +19,7 @@ import (
 func guardRecoverRequest(
 	_ reqres.RecoverRequest, w http.ResponseWriter, r *http.Request,
 ) error {
-	spiffeid, err := spiffe.IdFromRequest(r)
+	peerSpiffeId, err := spiffe.IdFromRequest(r)
 	if err != nil {
 		responseBody := net.MarshalBody(reqres.RestoreResponse{
 			Err: data.ErrUnauthorized,
@@ -28,8 +28,7 @@ func guardRecoverRequest(
 		return apiErr.ErrUnauthorized
 	}
 
-	err = validation.ValidateSpiffeId(spiffeid.String())
-	if err != nil {
+	if peerSpiffeId.String() != spiffeid.SpikePilotRecover() {
 		responseBody := net.MarshalBody(reqres.RestoreResponse{
 			Err: data.ErrUnauthorized,
 		}, w)

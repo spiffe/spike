@@ -11,17 +11,15 @@ import (
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	apiErr "github.com/spiffe/spike-sdk-go/api/errors"
 	"github.com/spiffe/spike-sdk-go/spiffe"
-	"github.com/spiffe/spike-sdk-go/validation"
+	"github.com/spiffe/spike-sdk-go/spiffeid"
 
 	"github.com/spiffe/spike/internal/net"
 )
 
 func guardRestoreRequest(
-	_ reqres.RestoreRequest, w http.ResponseWriter, r *http.Request,
+	request reqres.RestoreRequest, w http.ResponseWriter, r *http.Request,
 ) error {
-	// TODO: validate id; validate shard of RestoreRequest
-
-	spiffeid, err := spiffe.IdFromRequest(r)
+	peerSpiffeid, err := spiffe.IdFromRequest(r)
 	if err != nil {
 		responseBody := net.MarshalBody(reqres.RestoreResponse{
 			Err: data.ErrUnauthorized,
@@ -30,13 +28,39 @@ func guardRestoreRequest(
 		return apiErr.ErrUnauthorized
 	}
 
-	err = validation.ValidateSpiffeId(spiffeid.String())
-	if err != nil {
+	if peerSpiffeid.String() != spiffeid.SpikePilotRestore() {
 		responseBody := net.MarshalBody(reqres.RestoreResponse{
 			Err: data.ErrUnauthorized,
 		}, w)
 		net.Respond(http.StatusUnauthorized, responseBody, w)
 		return apiErr.ErrUnauthorized
+	}
+
+	// It's unlikely to have 1000 SPIKE Keepers across the board.
+	// The indexes start from 1 and increase one-by-one by design.
+	const maxShardId = 1000
+
+	if request.Id < 1 || request.Id > maxShardId {
+		responseBody := net.MarshalBody(reqres.RestoreResponse{
+			Err: data.ErrBadInput,
+		}, w)
+		net.Respond(http.StatusUnauthorized, responseBody, w)
+		return apiErr.ErrInvalidInput
+	}
+
+	allZero := true
+	for _, b := range request.Shard {
+		if b != 0 {
+			allZero = false
+			break
+		}
+	}
+	if allZero {
+		responseBody := net.MarshalBody(reqres.RestoreResponse{
+			Err: data.ErrBadInput,
+		}, w)
+		net.Respond(http.StatusUnauthorized, responseBody, w)
+		return apiErr.ErrInvalidInput
 	}
 
 	return nil

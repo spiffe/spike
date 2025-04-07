@@ -85,8 +85,10 @@ Here is a list of manual tests that can be done before every release:
 9. Switch to sqlite mode.
 10. Make sure SPIKE Nexus and SPIKE Keepers are up and running.
 11. Repeat steps 2--7.
-12. If everything looks good so far and the unit tests pass, you can cut
-    a release.
+12. Test recover and restore scenarios:
+    (a: Nexus autorecover; b: doomsday recovery)
+
+If everything looks good so far and the unit tests pass, you can cut a release.
 
 Ideally, this setup should be automated, but since our releasee cadence is 
 not that frequent, it's okay to do these checks manually.

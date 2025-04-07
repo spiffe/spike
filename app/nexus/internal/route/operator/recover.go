@@ -62,7 +62,6 @@ func RouteRecover(
 		return errors.ErrParseFailure
 	}
 
-	// TODO: do I need more sanitization here?
 	err := guardRecoverRequest(*request, w, r)
 	if err != nil {
 		return err
@@ -80,9 +79,43 @@ func RouteRecover(
 		return errors.ErrNotFound
 	}
 
-	// TODO: verify the quality and validity of shards before sending them out.
-	// TODO:  The function passes shards directly to the response without
-	// explicit validation of their format or content
+	// Track seen indices to check for duplicates
+	seenIndices := make(map[int]bool)
+
+	for idx, shard := range shards {
+		if seenIndices[idx] {
+			// Duplicate index.
+			return errors.ErrInvalidInput
+		}
+
+		// We cannot check for duplicate values, because although it's
+		// astronomically unlikely, there is still a possibility of two
+		// different indices having the same shard value.
+
+		seenIndices[idx] = true
+
+		// Check for nil pointers
+		if shard == nil {
+			return errors.ErrInvalidInput
+		}
+
+		// Check for empty shards (all zeros)
+		zeroed := true
+		for _, b := range *shard {
+			if b != 0 {
+				zeroed = false
+				break
+			}
+		}
+		if zeroed {
+			return errors.ErrInvalidInput
+		}
+
+		// Verify shard index is within valid range:
+		if idx <= 1 {
+			return errors.ErrInvalidInput
+		}
+	}
 
 	responseBody := net.MarshalBody(reqres.RecoverResponse{
 		Shards: shards,

@@ -98,6 +98,24 @@ func newOperatorRecoverCommand(
 				return
 			}
 
+			for _, shard := range shards {
+				emptyShard := true
+				for _, v := range shard {
+					if v != 0 {
+						emptyShard = false
+						break
+					}
+				}
+				if emptyShard {
+					fmt.Println("")
+					fmt.Println("  Empty shard found.")
+					fmt.Println("  Cannot save recovery shards.")
+					fmt.Println("  Please try again later.")
+					fmt.Println("  If the problem persists, check SPIKE logs.")
+				}
+			}
+
+			// Creates the folder if it does not exist.
 			recoverDir := config.SpikePilotRecoveryFolder()
 
 			// Clean the path to normalize it
@@ -157,10 +175,6 @@ func newOperatorRecoverCommand(
 					}
 				}
 			}
-
-			// TODO: add entropy validation for shards.
-
-			// TODO: add logic to create recovery directory if it does not exist.
 
 			// Save each shard to a file
 			for i, shard := range shards {
