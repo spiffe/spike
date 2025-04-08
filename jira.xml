@@ -319,7 +319,13 @@
       }
     </issue>
 
+    <issue>
+      SPIKE_NEXUS_KEEPER_PEERS='{"1":"https://localhost:8443","2":"https://localhost:8543","3":"https://localhost:8643"}' \
+      If these ids have to monotonically increase and start from one; they essentially define an array.
+      better to use an array instead of and object than; or even a comma-delimited list of urls for that matter.
 
+      When you implement the feature, update the documentation, and also the relevant shell script.
+    </issue>
 
 
     <issue>

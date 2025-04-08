@@ -103,20 +103,17 @@ func newOperatorRestoreCommand(
 			index := shardParts[1]
 			base64Data := shardParts[2]
 
-			// TODO: The code doesn't verify that the base64 string is of expected
-			// length before decoding
-			// // 32 bytes encoded in base64 should be 44 characters (including possible padding)
-			//if len(base64Data) < 40 || len(base64Data) > 50 {
-			//    log.FatalLn("Invalid base64 shard length:", len(base64Data))
-			//}
+			// 32 bytes encoded in base64 should be 44 characters (including
+			// possible padding)
+			if len(base64Data) < 40 || len(base64Data) > 50 {
+				log.FatalLn("Invalid base64 shard length:", len(base64Data))
+			}
 
 			decodedShard, err := base64.StdEncoding.DecodeString(base64Data)
 
-			// Security: Use defer for cleanup to ensure it happens even in error paths
+			// Security: Use defer for cleanup to ensure it happens even in
+			// error paths
 			defer func() {
-				// TODO: remove redundant dupe resets down below the code.
-
-				// Clean up all sensitive data
 				mem.ClearBytes(shard)
 				mem.ClearBytes(decodedShard)
 				mem.ClearRawBytes(&shardToRestore)
@@ -136,7 +133,6 @@ func newOperatorRestoreCommand(
 				log.FatalLn("Invalid recovery shard length: ", len(decodedShard))
 			}
 
-			// TODO: maybe a copy helper?
 			for i := 0; i < 32; i++ {
 				shardToRestore[i] = decodedShard[i]
 			}
@@ -153,10 +149,6 @@ func newOperatorRestoreCommand(
 
 			// Security: reset shardToRestore immediately after recovery.
 			mem.ClearRawBytes(&shardToRestore)
-
-			// TODO: The code assumes exactly 32 bytes for the shard, but doesn't
-			// handle cases where decodedShard might be shorter (though it does check
-			// for length)
 
 			if err != nil {
 				log.FatalLn(err.Error())
