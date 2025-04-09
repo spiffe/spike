@@ -12,9 +12,9 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
+	"github.com/spiffe/spike-sdk-go/spiffeid"
 
 	"github.com/spiffe/spike/app/nexus/internal/state/persist"
-	"github.com/spiffe/spike/internal/auth"
 )
 
 var (
@@ -50,7 +50,7 @@ func CheckAccess(
 	peerSpiffeId string, path string, wants []data.PolicyPermission,
 ) bool {
 	// Role:SpikePilot can always manage secrets.
-	if auth.IsPilot(peerSpiffeId) {
+	if spiffeid.IsPilot(peerSpiffeId) {
 		return true
 	}
 

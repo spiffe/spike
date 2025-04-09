@@ -10,6 +10,8 @@ import (
 	"io"
 	"net/http"
 
+	"github.com/spiffe/spike-sdk-go/net"
+
 	"github.com/spiffe/spike/internal/log"
 )
 
@@ -19,7 +21,7 @@ import (
 // to the response writer and returns an empty byte slice. Any errors
 // encountered are logged.
 func ReadRequestBody(w http.ResponseWriter, r *http.Request) []byte {
-	body, err := requestBody(r)
+	body, err := net.RequestBody(r)
 	if err != nil {
 		log.Log().Info("readRequestBody",
 			"msg", "Problem reading request body",

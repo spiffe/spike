@@ -10,8 +10,6 @@ import (
 	"os"
 	"strings"
 	"sync"
-
-	"github.com/spiffe/spike/internal/env"
 )
 
 var logger *slog.Logger
@@ -30,7 +28,7 @@ func Log() *slog.Logger {
 	}
 
 	opts := &slog.HandlerOptions{
-		Level: env.LogLevel(),
+		Level: Level(),
 	}
 
 	handler := slog.NewJSONHandler(os.Stdout, opts)

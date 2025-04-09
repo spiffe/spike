@@ -16,9 +16,9 @@ import (
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	spike "github.com/spiffe/spike-sdk-go/api"
 	"github.com/spiffe/spike-sdk-go/security/mem"
+	"github.com/spiffe/spike-sdk-go/spiffeid"
 
 	"github.com/spiffe/spike/app/spike/internal/trust"
-	"github.com/spiffe/spike/internal/auth"
 	"github.com/spiffe/spike/internal/config"
 	"github.com/spiffe/spike/internal/log"
 )
@@ -61,7 +61,7 @@ func newOperatorRecoverCommand(
 		Use:   "recover",
 		Short: "Recover SPIKE Nexus (do this while SPIKE Nexus is healthy)",
 		Run: func(cmd *cobra.Command, args []string) {
-			if !auth.IsPilotRecover(spiffeId) {
+			if !spiffeid.IsPilotRecover(spiffeId) {
 				fmt.Println("")
 				fmt.Println("  You need to have a `recover` role to use this command.")
 				fmt.Println(

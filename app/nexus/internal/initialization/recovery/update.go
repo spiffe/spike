@@ -16,9 +16,9 @@ import (
 	apiUrl "github.com/spiffe/spike-sdk-go/api/url"
 	network "github.com/spiffe/spike-sdk-go/net"
 	"github.com/spiffe/spike-sdk-go/security/mem"
+	"github.com/spiffe/spike-sdk-go/spiffeid"
 
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
-	"github.com/spiffe/spike/internal/auth"
 	"github.com/spiffe/spike/internal/log"
 	"github.com/spiffe/spike/internal/net"
 )
@@ -88,7 +88,7 @@ func sendShardsToKeepers(
 		}
 
 		client, err := network.CreateMtlsClientWithPredicate(
-			source, auth.IsKeeper,
+			source, spiffeid.IsKeeper,
 		)
 
 		if err != nil {

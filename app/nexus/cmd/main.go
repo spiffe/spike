@@ -10,11 +10,11 @@ import (
 
 	"github.com/spiffe/spike-sdk-go/net"
 	"github.com/spiffe/spike-sdk-go/spiffe"
+	"github.com/spiffe/spike-sdk-go/spiffeid"
 
 	"github.com/spiffe/spike/app/nexus/internal/env"
 	"github.com/spiffe/spike/app/nexus/internal/initialization"
 	http "github.com/spiffe/spike/app/nexus/internal/route/base"
-	"github.com/spiffe/spike/internal/auth"
 	"github.com/spiffe/spike/internal/config"
 	"github.com/spiffe/spike/internal/log"
 	routing "github.com/spiffe/spike/internal/net"
@@ -35,7 +35,7 @@ func main() {
 	defer spiffe.CloseSource(source)
 
 	// I should be Nexus.
-	if !auth.IsNexus(selfSpiffeid) {
+	if !spiffeid.IsNexus(selfSpiffeid) {
 		log.FatalF("Authenticate: SPIFFE ID %s is not valid.\n", selfSpiffeid)
 	}
 

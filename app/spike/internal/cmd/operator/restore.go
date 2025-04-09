@@ -16,10 +16,10 @@ import (
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	spike "github.com/spiffe/spike-sdk-go/api"
 	"github.com/spiffe/spike-sdk-go/security/mem"
+	"github.com/spiffe/spike-sdk-go/spiffeid"
 	"golang.org/x/term"
 
 	"github.com/spiffe/spike/app/spike/internal/trust"
-	"github.com/spiffe/spike/internal/auth"
 	"github.com/spiffe/spike/internal/log"
 )
 
@@ -64,7 +64,7 @@ func newOperatorRestoreCommand(
 		Use:   "restore",
 		Short: "Restore SPIKE Nexus (do this if SPIKE Nexus cannot auto-recover)",
 		Run: func(cmd *cobra.Command, args []string) {
-			if !auth.IsPilotRestore(spiffeId) {
+			if !spiffeid.IsPilotRestore(spiffeId) {
 				fmt.Println("")
 				fmt.Println(
 					"  You need to have a `restore` role to use this command.")
