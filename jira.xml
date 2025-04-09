@@ -44,6 +44,18 @@
     <issue>
       Address ALL TODOs in the source code.
     </issue>
+    <issue kind="bug" severity="high" priority="high">
+      Killing nexus and restarting retains secrets but loses policies.
+
+      spike (feature/release-cleanup)$ spike secret list
+      - test
+      spike (feature/release-cleanup)$ spike policy list
+      No policies found
+      spike (feature/release-cleanup)$ spike policy get --name=workload-can-read
+      Error: no policy found with name 'workload-can-read'
+      spike (feature/release-cleanup)$
+
+    </issue>
     <issue>
       this should be configurable:
       ctxC, cancel := context.WithTimeout(context.Background(), 30*time.Second)
@@ -181,6 +193,11 @@
     </issue>
   </immediate-backlog>
   <later>
+    <issue>
+      the "created" state in audit logs is misleading:
+      We are not creating an entity; we are starting an audit trail.
+      a different name will be more appropriate.
+    </issue>
     <issue>
       Before doing anything, create a local Kubernetes setup that works.
     </issue>
