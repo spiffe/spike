@@ -256,10 +256,8 @@ func NewPilotRecoveryShards() map[int]*[32]byte {
 	const fName = "NewPilotRecoveryShards"
 	log.Log().Info(fName, "msg", "Generating pilot recovery shards")
 
-	fmt.Println(">>>>>>>>>>>>>>>>>>>>>>>>>>> generating shards")
-
 	if state.RootKeyZero() {
-		fmt.Println(">>>>>>>>>>>>>>>>>>>>>>>>>>> exit: root key zero!!!!")
+		log.Log().Info(fName, "msg", "No root key; skipping")
 		return nil
 	}
 
@@ -276,7 +274,7 @@ func NewPilotRecoveryShards() map[int]*[32]byte {
 	var result = make(map[int]*[32]byte)
 
 	for _, share := range rootShares {
-		fmt.Println(">>>>>>>>>>>>>>>>>>>>>>>>>>> share:", share.ID)
+		log.Log().Info(fName, "msg", "Generating share:", share.ID)
 
 		contribution, err := share.Value.MarshalBinary()
 		if err != nil {
@@ -296,8 +294,6 @@ func NewPilotRecoveryShards() map[int]*[32]byte {
 			return nil
 		}
 
-		fmt.Println(">>>>>> bb", bb, "len:", len(bb), "share.ID:", share.ID, "")
-
 		bigInt := new(big.Int).SetBytes(bb)
 		ii := bigInt.Uint64()
 
@@ -309,12 +305,12 @@ func NewPilotRecoveryShards() map[int]*[32]byte {
 		var rs [32]byte
 		copy(rs[:], contribution)
 
-		fmt.Println(">>>>> SETTING RESULT: ", ii, ":", rs, "", int(ii))
+		log.Log().Info(fName, "msg", "Generated shares. len:", len(rs))
 
 		result[int(ii)] = &rs
 	}
 
-	fmt.Println(">>>>>>>>>>>>>>>>>>>>>>>>>>> exit: result:", result, "len:", len(result))
+	log.Log().Info(fName, "msg", "Successfully generated pilot recovery shards.")
 	return result
 }
 

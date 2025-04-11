@@ -5,7 +5,6 @@
 package recovery
 
 import (
-	"fmt"
 	"github.com/cloudflare/circl/group"
 	shamir "github.com/cloudflare/circl/secretsharing"
 	"github.com/spiffe/spike-sdk-go/crypto"
@@ -75,6 +74,8 @@ func sanityCheck(secret group.Scalar, shares []shamir.Share) {
 func computeShares() (group.Scalar, []shamir.Share) {
 	const fName = "computeShares"
 
+	log.Log().Info(fName, "msg", "Computing Shamir shares")
+
 	state.LockRootKey()
 	defer state.UnlockRootKey()
 	rk := state.RootKeyNoLock()
@@ -84,7 +85,7 @@ func computeShares() (group.Scalar, []shamir.Share) {
 	t := uint(env.ShamirThreshold() - 1) // Need t+1 shares to reconstruct
 	n := uint(env.ShamirShares())        // Total number of shares
 
-	fmt.Printf(">>>>>>>>>>>>>> COMPUTE SHARES t: %d, n: %d\n", t, n)
+	log.Log().Info(fName, "t", t, "n", n)
 
 	// Create secret from our 32 byte key
 	secret := g.NewScalar()
@@ -102,6 +103,7 @@ func computeShares() (group.Scalar, []shamir.Share) {
 	reader := crypto.NewDeterministicReader(rk[:])
 	ss := shamir.New(reader, t, secret)
 
+	log.Log().Info(fName, "msg", "Generated Shamir shares")
 	// secret is a pointer type; ss.Share(n) is a slice
 	// shares will have monotonically increasing IDs, starting from 1.
 	return secret, ss.Share(n)

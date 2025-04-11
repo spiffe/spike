@@ -5,7 +5,7 @@
 package base
 
 import (
-	"fmt"
+	"github.com/spiffe/spike/internal/log"
 	"sync"
 
 	"github.com/spiffe/spike-sdk-go/kv"
@@ -87,7 +87,8 @@ func RootKeyZero() bool {
 // Parameters:
 //   - rk: Pointer to a 32-byte array containing the new root key value
 func SetRootKey(rk *[32]byte) {
-	fmt.Println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>SetRootKey:", string(rk[:]))
+	fName := "SetRootKey"
+	log.Log().Info(fName, "msg", "Setting root key")
 
 	rootKeyMu.Lock()
 	defer rootKeyMu.Unlock()
@@ -95,4 +96,6 @@ func SetRootKey(rk *[32]byte) {
 	for i := range rootKey {
 		rootKey[i] = rk[i]
 	}
+
+	log.Log().Info(fName, "msg", "Root key set")
 }

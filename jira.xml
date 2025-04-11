@@ -44,6 +44,17 @@
   </immediate-backlog>
   <later>
     <issue>
+      some of these exit-state log shall better be warn or even error than info
+      since they are not expected outcomes
+
+      if state.RootKeyZero() {
+      log.Log().Info(fName, "msg", "No root key; skipping")
+      return nil
+      }
+
+      check the project globally.
+    </issue>
+    <issue>
       Ensure the system works w/o keepers in "in memory" mode.
       also document it and also create a video out of it.
     </issue>

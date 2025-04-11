@@ -5,7 +5,6 @@
 package operator
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
@@ -46,15 +45,12 @@ import (
 func RouteRecover(
 	w http.ResponseWriter, r *http.Request, audit *log.AuditEntry,
 ) error {
-	// TODO: some of these logs are useful. add them as log.Info() or something.
-	fmt.Println(">>>>>>>>>>>>>>>>>>>>>>>>>> IN RECOVER ROUTER")
-
 	const fName = "routeRecover"
 	log.AuditRequest(fName, r, audit, log.AuditCreate)
 
 	requestBody := net.ReadRequestBody(w, r)
 	if requestBody == nil {
-		fmt.Println(">>>>>>>>>>>>>>>>>>>>>>>>> requestBody is nil")
+		log.Log().Info(fName, "msg", "requestBody is nil")
 		return errors.ErrReadFailure
 	}
 
@@ -64,7 +60,7 @@ func RouteRecover(
 		reqres.RecoverResponse{Err: data.ErrBadInput},
 	)
 	if request == nil {
-		fmt.Println(">>>>>>>>>>>>>>>>>>>>>>>>> request is nil")
+		log.Log().Info(fName, "msg", "request is nil")
 		return errors.ErrParseFailure
 	}
 
@@ -73,9 +69,8 @@ func RouteRecover(
 		return err
 	}
 
-	fmt.Println(">>>>>>>>>>>>>>>>>>>>>>>>> before newPilotRecoveryShards")
+	log.Log().Info(fName, "msg", "request is valid. Recovery shards requested.")
 	shards := recovery.NewPilotRecoveryShards()
-	fmt.Println(">>>>>>>>>>>>>>>>>>>>>>>>> after newPilotRecoveryShards: len(shards) = ", len(shards))
 
 	// Security: reset shards before function exits.
 	defer func() {
@@ -85,7 +80,7 @@ func RouteRecover(
 	}()
 
 	if len(shards) < env.ShamirThreshold() {
-		fmt.Println(">>>>>>>>>>>>>>>>>>>>>>>>> len(shards) < env.ShamirThreshold()", len(shards), env.ShamirThreshold())
+		log.Log().Error(fName, "msg", "not enough shards. Exiting.")
 		return errors.ErrNotFound
 	}
 
@@ -94,8 +89,7 @@ func RouteRecover(
 
 	for idx, shard := range shards {
 		if seenIndices[idx] {
-			fmt.Println(">>>>>>>>>>>>>>>>>>>>>>>>> invalid input 0001")
-
+			log.Log().Error(fName, "msg", "duplicate index. Exiting.")
 			// Duplicate index.
 			return errors.ErrInvalidInput
 		}
@@ -108,6 +102,7 @@ func RouteRecover(
 
 		// Check for nil pointers
 		if shard == nil {
+			log.Log().Error(fName, "msg", "nil shard. Exiting.")
 			return errors.ErrInvalidInput
 		}
 
@@ -120,15 +115,13 @@ func RouteRecover(
 			}
 		}
 		if zeroed {
-			fmt.Println(">>>>>>>>>>>>>>>>>>>>>>>>> invalid input 0002")
-
+			log.Log().Error(fName, "msg", "zeroed shard. Exiting.")
 			return errors.ErrInvalidInput
 		}
 
 		// Verify shard index is within valid range:
 		if idx < 1 || idx > env.ShamirShares() {
-			fmt.Println(">>>>>>>>>>>>>>>>>>>>>>>>> invalid input 0003 ", idx, env.ShamirShares())
-
+			log.Log().Error(fName, "msg", "invalid index. Exiting.")
 			return errors.ErrInvalidInput
 		}
 	}
