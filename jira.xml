@@ -41,6 +41,22 @@
       Don't cut a new version until this immediate backlog is processed.
       Processing can also mean deferring things to after version cut.
     </remark>
+    <issue>
+      fix fmt.Printlns
+    </issue>
+    <issue>
+      update mtls config to avoid goroutine leaks
+
+      tlsConfig := tlsconfig.MTLSClientConfig(source, source, authorizer)
+      client := &http.Client(
+      Transport: &http. Transportf
+      TLSClientConfig: tlsConfig,
+      IdleConnTimeout: 30 * time.Second, MaxIdleConns: 100,
+      MaxIdleConnsPerHost: 10,
+      ｝
+      ^
+      read the docs to find proper values for these.
+    </issue>
   </immediate-backlog>
   <later>
     <issue>
