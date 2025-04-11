@@ -7,6 +7,8 @@
 # see: https://spike.ist/#/configuration
 
 # source this file in your ~/.profile for your convenience.
+# Note that some of these values might deviate from the defaults to make
+# debugging easier.
 
 export SPIKE_NEXUS_MAX_SECRET_VERSIONS="10"
 export SPIKE_NEXUS_BACKEND_STORE="sqlite"
@@ -23,9 +25,9 @@ export SPIKE_NEXUS_DB_MAX_IDLE_CONNS="5"
 export SPIKE_NEXUS_DB_CONN_MAX_LIFETIME="1h"
 
 export SPIKE_NEXUS_RECOVERY_TIMEOUT="0"
-export SPIKE_NEXUS_RECOVER_MAX_INTERVAL="60s"
+export SPIKE_NEXUS_RECOVER_MAX_INTERVAL="30s"
 export SPIKE_NEXUS_RECOVERY_POLL_INTERVAL="5s"
-export SPIKE_NEXUS_KEEPER_UPDATE_INTERVAL="5m"
+export SPIKE_NEXUS_KEEPER_UPDATE_INTERVAL="1m"
 
 export SPIKE_NEXUS_SHAMIR_SHARES="3"
 export SPIKE_NEXUS_SHAMIR_THRESHOLD="2"
