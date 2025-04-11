@@ -123,13 +123,17 @@ func HydrateMemoryFromBackingStore() {
 	log.Log().Info(fName, "msg", "HydrateMemoryFromBackingStore")
 
 	secrets := persist.ReadAllSecrets()
-	if len(secrets) == 0 {
-		return
+	if len(secrets) > 0 {
+		state.ImportSecrets(secrets)
+	}
+	log.Log().Info(fName, "msg", "HydrateMemoryFromBackingStore: secrets loaded")
+
+	policies := persist.ReadAllPolicies()
+	if len(policies) > 0 {
+		state.ImportPolicies(policies)
 	}
 
-	state.ImportSecrets(secrets)
-
-	log.Log().Info(fName, "msg", "HydrateMemoryFromBackingStore: secrets loaded")
+	log.Log().Info(fName, "msg", "HydrateMemoryFromBackingStore: policies loaded")
 }
 
 // RestoreBackingStoreUsingPilotShards restores the backing store using the

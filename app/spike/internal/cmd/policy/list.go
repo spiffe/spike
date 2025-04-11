@@ -81,26 +81,26 @@ import (
 // Note: If no policies exist, it returns "No policies found" for human format
 // or "[]" for JSON format.
 func newPolicyListCommand(
-    source *workloadapi.X509Source, spiffeId string,
+	source *workloadapi.X509Source, spiffeId string,
 ) *cobra.Command {
-    cmd := &cobra.Command{
-        Use:   "list",
-        Short: "List all policies",
-        Args:  cobra.NoArgs,
-        Run: func(cmd *cobra.Command, args []string) {
-            trust.Authenticate(spiffeId)
-            api := spike.NewWithSource(source)
+	cmd := &cobra.Command{
+		Use:   "list",
+		Short: "List all policies",
+		Args:  cobra.NoArgs,
+		Run: func(cmd *cobra.Command, args []string) {
+			trust.Authenticate(spiffeId)
+			api := spike.NewWithSource(source)
 
-            policies, err := api.ListPolicies()
-            if handleAPIError(err) {
-                return
-            }
-            
-            output := formatPoliciesOutput(cmd, policies)
-            fmt.Println(output)
-        },
-    }
-    
-    addFormatFlag(cmd)
-    return cmd
+			policies, err := api.ListPolicies()
+			if handleAPIError(err) {
+				return
+			}
+
+			output := formatPoliciesOutput(cmd, policies)
+			fmt.Println(output)
+		},
+	}
+
+	addFormatFlag(cmd)
+	return cmd
 }
