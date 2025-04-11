@@ -41,92 +41,12 @@
       Don't cut a new version until this immediate backlog is processed.
       Processing can also mean deferring things to after version cut.
     </remark>
-    <issue>
-      Address ALL TODOs in the source code.
-    </issue>
-
-    <issue>
-      sanitize keeper id and shard
-
-      request := net.HandleRequest[
-      reqres.ShardContributionRequest, reqres.ShardContributionResponse](
-      requestBody, w,
-      reqres.ShardContributionResponse{Err: data.ErrBadInput},
-      )
-      if request == nil {
-      return errors.ErrParseFailure
-      }
-
-      shard := request.Shard
-      id := request.KeeperId
-
-    </issue>
-    <issue>
-      validate spiffe id and other parameters
-      for this and also other keeper endpoints
-
-      func RouteShard(
-      w http.ResponseWriter, r *http.Request, audit *log.AuditEntry,
-      ) error {
-      const fName = "routeContribute"
-      log.AuditRequest(fName, r, audit, log.AuditCreate)
-
-      requestBody := net.ReadRequestBody(w, r)
-      if requestBody == nil {
-      return errors.ErrReadFailure
-      }
-
-      here is an example that does that:
-      func RoutePutPolicy(
-      w http.ResponseWriter, r *http.Request, audit *log.AuditEntry,
-      ) error {
-      const fName = "routePutPolicy"
-      log.AuditRequest(fName, r, audit, log.AuditCreate)
-
-      requestBody := net.ReadRequestBody(w, r)
-      if requestBody == nil {
-      return errors.ErrParseFailure
-      }
-
-      request := net.HandleRequest[
-      reqres.PolicyCreateRequest, reqres.PolicyCreateResponse](
-      requestBody, w,
-      reqres.PolicyCreateResponse{Err: data.ErrBadInput},
-      )
-      if request == nil {
-      return errors.ErrReadFailure
-      }
-
-      err := guardPutPolicyRequest(*request, w, r)
-      if err != nil {
-      return err
-      }
-
-    </issue>
+  </immediate-backlog>
+  <later>
     <issue>
       Ensure the system works w/o keepers in "in memory" mode.
       also document it and also create a video out of it.
     </issue>
-    <issue>
-      this should be configurable:
-      ticker := time.NewTicker(5 * time.Minute)
-    </issue>
-    <issue>
-      nil check wherever Backend() is called.
-      var be backend.Backend
-    </issue>
-    <issue>
-      audit trails print differently than other logger methods.
-      {"time":"2025-03-30T08:05:13.802795974-07:00","level":"INFO","msg":"iterateKeepersToBootstrap","msg":"Tombstone file created successfully"}
-      2025/03/30 08:06:30 {"TrailId":"tXm6L5KG","Timestamp":"2025-03-30T08:06:30.721144469-07:00","UserId":"","Action":"enter","Path":"/v1/
-    </issue>
-    <issue>
-      add mLockAll to the main process in unix systems.
-      also update relevant production hardening guide that although
-      we use mlock you are recommended to turn swap off on your machine.
-    </issue>
-  </immediate-backlog>
-  <later>
     <issue>
       spike (main)$ spike operator restore
       (your input will be hidden as you paste/type it)
