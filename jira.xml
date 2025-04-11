@@ -45,29 +45,6 @@
       Address ALL TODOs in the source code.
     </issue>
 
-
-
-    <issue>
-      return cobra.Command{
-      Use: "delete policy-id",
-      Short: "Delete a policy",
-      Args: cobra.ExactArgs(1),
-      Run: func(cmd *cobra.Command, args []string) {
-      api := spike.NewWithSource(source)
-
-      // TOD: sanitize policy id.
-      // also validate other command line arguments too if it makes sense.
-      // better to stop bad data at the client (but still not trust the
-      // client fully)
-
-      Go through all cobra commands and validate/sanitize what needs to
-      be.
-    </issue>
-    <issue>
-     Try using `mlock` in the source code for Keeper and Nexus if the system
-      supports it.
-    </issue>
-
     <issue>
       sanitize keeper id and shard
 

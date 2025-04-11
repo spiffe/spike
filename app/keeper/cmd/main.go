@@ -9,6 +9,7 @@ import (
 	"fmt"
 
 	"github.com/spiffe/spike-sdk-go/net"
+	"github.com/spiffe/spike-sdk-go/security/mem"
 	"github.com/spiffe/spike-sdk-go/spiffe"
 	"github.com/spiffe/spike-sdk-go/spiffeid"
 
@@ -23,6 +24,12 @@ const appName = "SPIKE Keeper"
 
 func main() {
 	log.Log().Info(appName, "msg", appName, "version", config.SpikeKeeperVersion)
+
+	if mem.Lock() {
+		log.Log().Info(appName, "msg", "Successfully locked memory.")
+	} else {
+		log.Log().Info(appName, "msg", "Memory is not locked. Please disable swap.")
+	}
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
