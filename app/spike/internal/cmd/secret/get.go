@@ -56,6 +56,11 @@ func newSecretGetCommand(
 			path := args[0]
 			version, _ := cmd.Flags().GetInt("version")
 
+			if !validSecretPath(path) {
+				fmt.Printf("Error: invalid secret path: %s\n", path)
+				return
+			}
+
 			secret, err := api.GetSecretVersion(path, version)
 			if err != nil {
 				if err.Error() == "not ready" {

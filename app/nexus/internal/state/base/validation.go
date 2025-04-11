@@ -4,7 +4,9 @@
 
 package base
 
-import "github.com/spiffe/spike-sdk-go/api/entity/data"
+import (
+	"github.com/spiffe/spike-sdk-go/api/entity/data"
+)
 
 func contains(permissions []data.PolicyPermission,
 	permission data.PolicyPermission) bool {

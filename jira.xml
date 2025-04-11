@@ -44,52 +44,9 @@
     <issue>
       Address ALL TODOs in the source code.
     </issue>
-    <issue kind="bug" severity="high" priority="high">
-      Killing nexus and restarting retains secrets but loses policies.
 
-      spike (feature/release-cleanup)$ spike secret list
-      - test
-      spike (feature/release-cleanup)$ spike policy list
-      No policies found
-      spike (feature/release-cleanup)$ spike policy get --name=workload-can-read
-      Error: no policy found with name 'workload-can-read'
-      spike (feature/release-cleanup)$
 
-    </issue>
-    <issue>
-      this should be configurable:
-      ctxC, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-      defer cancel()
-    </issue>
-    <issue>
-      if crashed and trying to restore (instead of recover)
-      you get this:
 
-      spike (main)$ spike operator recover
-      2025/02/24 21:30:35 recover: Problem parsing response body
-      unexpected end of JSON input
-
-      error could be more explanatory
-    </issue>
-    <issue>
-      spike (main)$ spike operator restore
-      (your input will be hidden as you paste/type it)
-      Enter recovery shard: 2025/02/24 22:09:34 recover: Problem parsing
-      response body
-      unexpected end of JSON input
-
-      ^ this happens when the input is invalid; a more explanatory error message
-      would be great.
-    </issue>
-    <issue>
-      sanitize perms
-
-      err := api.CreatePolicy(name, spiffeIddPattern, pathPattern, perms)
-      if err != nil {
-      fmt.Printf("Error: %v\n", err)
-      return
-      }
-    </issue>
     <issue>
       return cobra.Command{
       Use: "delete policy-id",
@@ -194,6 +151,26 @@
   </immediate-backlog>
   <later>
     <issue>
+      spike (main)$ spike operator restore
+      (your input will be hidden as you paste/type it)
+      Enter recovery shard: 2025/02/24 22:09:34 recover: Problem parsing
+      response body
+      unexpected end of JSON input
+
+      ^ this happens when the input is invalid; a more explanatory error message
+      would be great.
+    </issue>
+    <issue>
+      if crashed and trying to restore (instead of recover)
+      you get this:
+
+      spike (main)$ spike operator recover
+      2025/02/24 21:30:35 recover: Problem parsing response body
+      unexpected end of JSON input
+
+      error could be more explanatory
+    </issue>
+    <issue>
       the "created" state in audit logs is misleading:
       We are not creating an entity; we are starting an audit trail.
       a different name will be more appropriate.
@@ -208,6 +185,12 @@
       * 1/1 -- A single keeper
       * 0/0 -- edge case; not sure how it should behave.
       * in-memory -- in-memory mode should disregard any keeper config.
+    </issue>
+    <issue>
+      Create an ADR about secret path format
+      i.e. it should match  const validPath = `^[a-zA-Z0-9._\-/()?+*|[\]{}\\]+$`
+      and recommended but not mandated to not start with /.
+
     </issue>
 
     <issue>

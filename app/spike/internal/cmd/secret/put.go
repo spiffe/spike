@@ -60,6 +60,12 @@ func newSecretPutCommand(
 			api := spike.NewWithSource(source)
 
 			path := args[0]
+
+			if !validSecretPath(path) {
+				fmt.Printf("Error: invalid secret path: %s\n", path)
+				return
+			}
+
 			kvPairs := args[1:]
 			values := make(map[string]string)
 			for _, kv := range kvPairs {
