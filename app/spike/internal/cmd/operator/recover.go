@@ -6,7 +6,12 @@ package operator
 
 import (
 	"encoding/base64"
+	"encoding/json"
+	"errors"
 	"fmt"
+	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
+	"github.com/spiffe/spike-sdk-go/api/url"
+	"github.com/spiffe/spike-sdk-go/net"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -14,7 +19,6 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
-	spike "github.com/spiffe/spike-sdk-go/api"
 	"github.com/spiffe/spike-sdk-go/security/mem"
 	"github.com/spiffe/spike-sdk-go/spiffeid"
 
@@ -22,6 +26,59 @@ import (
 	"github.com/spiffe/spike/internal/config"
 	"github.com/spiffe/spike/internal/log"
 )
+
+func operatorRecover(source *workloadapi.X509Source) (map[int]*[32]byte, error) {
+	r := reqres.RecoverRequest{}
+
+	fmt.Println(">>>>>> in OperatorRecover")
+
+	mr, err := json.Marshal(r)
+	if err != nil {
+		return nil, errors.Join(
+			errors.New("recover: failed to marshal recover request"),
+			err,
+		)
+	}
+
+	client, err := net.CreateMtlsClient(source)
+	if err != nil {
+		return nil, err
+	}
+
+	body, err := net.Post(client, url.Recover(), mr)
+	if err != nil {
+		if errors.Is(err, net.ErrNotFound) {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	fmt.Println(">>>>> body: ", string(body))
+
+	var res reqres.RecoverResponse
+	err = json.Unmarshal(body, &res)
+	if err != nil {
+		return nil, errors.Join(
+			errors.New("recover: Problem parsing response body"),
+			err,
+		)
+	}
+	if res.Err != "" {
+		return nil, errors.New(string(res.Err))
+	}
+
+	result := make(map[int]*[32]byte)
+
+	for i, shard := range res.Shards {
+		result[i] = shard
+	}
+
+	return result, nil
+}
+
+func apiRecover(source *workloadapi.X509Source) (map[int]*[32]byte, error) {
+	return operatorRecover(source)
+}
 
 // newOperatorRecoverCommand creates a new cobra command for recovery operations
 // on SPIKE Nexus.
@@ -73,9 +130,9 @@ func newOperatorRecoverCommand(
 
 			trust.AuthenticateRecover(spiffeId)
 
-			api := spike.NewWithSource(source)
+			// api := spike.NewWithSource(source)
 
-			shards, err := api.Recover()
+			shards, err := apiRecover(source)
 			// Security: clean the shards when we no longer need them.
 			defer func() {
 				for _, shard := range shards {

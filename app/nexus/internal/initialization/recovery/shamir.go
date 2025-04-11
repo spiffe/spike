@@ -5,6 +5,7 @@
 package recovery
 
 import (
+	"fmt"
 	"github.com/cloudflare/circl/group"
 	shamir "github.com/cloudflare/circl/secretsharing"
 	"github.com/spiffe/spike-sdk-go/crypto"
@@ -82,6 +83,8 @@ func computeShares() (group.Scalar, []shamir.Share) {
 	g := group.P256
 	t := uint(env.ShamirThreshold() - 1) // Need t+1 shares to reconstruct
 	n := uint(env.ShamirShares())        // Total number of shares
+
+	fmt.Printf(">>>>>>>>>>>>>> COMPUTE SHARES t: %d, n: %d\n", t, n)
 
 	// Create secret from our 32 byte key
 	secret := g.NewScalar()
