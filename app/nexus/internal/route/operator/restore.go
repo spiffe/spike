@@ -133,11 +133,15 @@ func RouteRestore(
 
 	currentShardCount = len(shards)
 
-	// Security: Reset the field when no longer needed.
-	defer func() {
-		mem.ClearRawBytes(request.Shard)
-		request.Id = 0
-	}()
+	// Warning: We cannot clear request.Shard because it's a pointer type,
+	// and we need it later in the "restore" operation.
+	// RouteRestore cleans this up, when it is no longer needed.
+
+	//// Security: Reset the field when no longer needed.
+	//defer func() {
+	//	mem.ClearRawBytes(request.Shard)
+	//	request.Id = 0
+	//}()
 
 	// Trigger restoration if we have collected all shards
 	if currentShardCount == env.ShamirThreshold() {

@@ -157,12 +157,24 @@ func HydrateMemoryFromBackingStore() {
 func RestoreBackingStoreUsingPilotShards(shards []ShamirShard) {
 	const fName = "RestoreBackingStoreUsingPilotShards"
 
+	fmt.Println(">>>>>>>>>>>>>>>>>>>>>>>>>>>> RESTORING BACKING STORE WE ARE RECOVERING FROM A BACKUP")
+
+	// TODO: warn if shard value is zero. or shard id is zero; both means a premature memory wipe.
+
+	for shard := range shards {
+		fmt.Println(">>>>>>>>>> shard", shard, "value", shards[shard].Value, "id", shards[shard].Id)
+	}
+
+	fmt.Println(">>>>>>>>>>>>>>>>>>>>>>>>>>>> len(shards)", len(shards), "threshold", env.ShamirThreshold())
+
 	// Ensure we have at least the threshold number of shards
 	if len(shards) < env.ShamirThreshold() {
 		log.Log().Error(fName, "msg", "Insufficient shards for recovery",
 			"provided", len(shards), "required", env.ShamirThreshold())
 		return
 	}
+
+	fmt.Println(">>>>>>>>>>>>>>>>>>>>>>>>>>>> enough shards collected; will recover root key")
 
 	// Recover the root key using the threshold number of shards
 	binaryRec := RecoverRootKey(shards)
@@ -253,6 +265,8 @@ func SendShardsPeriodically(source *workloadapi.X509Source) {
 //	    storeShard(shard)
 //	}
 func NewPilotRecoveryShards() map[int]*[32]byte {
+	fmt.Println(">>>>>>>>>>>>>>>>>>>>>>>>>>>> CREATING NEW RECOVERY SHARDS (this probably should not happen if you are recovering from a backup)")
+
 	const fName = "NewPilotRecoveryShards"
 	log.Log().Info(fName, "msg", "Generating pilot recovery shards")
 
@@ -274,7 +288,8 @@ func NewPilotRecoveryShards() map[int]*[32]byte {
 	var result = make(map[int]*[32]byte)
 
 	for _, share := range rootShares {
-		log.Log().Info(fName, "msg", "Generating share:", share.ID)
+		log.Log().Info(fName, "msg", "Generating share", "share.id", share.ID)
+		fmt.Println("share.id", share.ID, "share.value", share.Value)
 
 		contribution, err := share.Value.MarshalBinary()
 		if err != nil {

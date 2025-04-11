@@ -5,6 +5,7 @@
 package base
 
 import (
+	"fmt"
 	"github.com/spiffe/spike/internal/log"
 	"sync"
 
@@ -90,12 +91,17 @@ func SetRootKey(rk *[32]byte) {
 	fName := "SetRootKey"
 	log.Log().Info(fName, "msg", "Setting root key")
 
+	fmt.Printf("rk: %x\n", rk)
+	fmt.Printf("Root key: %x\n", rootKey)
+
 	rootKeyMu.Lock()
 	defer rootKeyMu.Unlock()
 
 	for i := range rootKey {
 		rootKey[i] = rk[i]
 	}
+
+	fmt.Printf("Root key: %x\n", rootKey)
 
 	log.Log().Info(fName, "msg", "Root key set")
 }

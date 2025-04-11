@@ -41,25 +41,17 @@
       Don't cut a new version until this immediate backlog is processed.
       Processing can also mean deferring things to after version cut.
     </remark>
-    <issue>
-      recovery:
-
-      after accepting shards successfully, if there are no keepers alive
-      HydrateMemoryFromBackingStore does not run and listing secrets or
-      policies give a 404.
-
-      when restarting keepers, readAllSecrets try to read secrets from cache
-      but context deadline exceeds eventually.
-      that might mean root key computed incorrectly, or shards are out of
-      order, needs checking.
-
-      I get bad request for a second restore attempt:
-      spike (feature/release-cleanup)$ spike operator restore
-      (your input will be hidden as you paste/type it)
-      Enter recovery shard: 2025/04/11 07:49:09 bad request
-    </issue>
   </immediate-backlog>
   <later>
+    <issue>
+      provide the restore txt files in hex form so that it will be much easier to sanitize, validate length etc.
+      to validate a base64 encoded text is error-prone.
+    </issue>
+    <issue>
+      if keepers are not up after a doomsday recovery
+      spike secret list and spike policy list return empty although database is full.
+      we might need an early recovery (but need to think about that too)
+    </issue>
     <issue>
       some of these exit-state log shall better be warn or even error than info
       since they are not expected outcomes
