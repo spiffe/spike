@@ -13,13 +13,14 @@ import (
 
 type AuditState string
 
-const AuditCreated AuditState = "created"
-const AuditErrored AuditState = "error"
-const AuditSuccess AuditState = "success"
+const AuditEntryCreated AuditState = "audit-entry-created"
+const AuditErrored AuditState = "audit-errored"
+const AuditSuccess AuditState = "audit-success"
 
 type AuditAction string
 
 const AuditEnter AuditAction = "enter"
+const AuditExit AuditAction = "exit"
 const AuditCreate AuditAction = "create"
 const AuditList AuditAction = "list"
 const AuditDelete AuditAction = "delete"
