@@ -6,11 +6,12 @@ package base
 
 import (
 	"fmt"
-	"github.com/spiffe/spike/internal/log"
 	"sync"
 
 	"github.com/spiffe/spike-sdk-go/kv"
+
 	"github.com/spiffe/spike/app/nexus/internal/env"
+	"github.com/spiffe/spike/internal/log"
 )
 
 // Global variables for storing secrets and policies with thread-safety.
@@ -72,16 +73,6 @@ func RootKeyZero() bool {
 	}
 	return true
 }
-
-//// ResetRootKey resets the root key to all zeroes.
-//// This is typically used when clearing sensitive cryptographic material.
-//func ResetRootKey() {
-//	rootKeyMu.Lock()
-//	defer rootKeyMu.Unlock()
-//
-//	// Explicitly reset the root key bytes to zeroes
-//	mem.ClearRawBytes(&rootKey)
-//}
 
 // SetRootKey updates the root key with the provided value.
 //

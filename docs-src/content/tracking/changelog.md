@@ -22,6 +22,19 @@ TBD
 * Updated documentation around security and production hardening.
 * Fixed a bug related to policies not recovering after a SPIKE Nexus crash.
   Now, both secrets and policies recover without an issue.
+* Updated release instructions, added a series of tests to follow and cutting
+  a release only after all tests pass. These test are manual for now, but
+  can be automated later down the line.
+* For added security, we strip symbols during the build process now.
+* The startup script does not initiate SPIKE Keepers if SPIKE is running in
+  "in memory" mode.
+* Ensured that "in memory" mode functions, and we can create policies and
+  secrets.
+* Fixed inconsistencies in the audit log format.
+* Renamed `AuditCreated` enum as `AuditEntryCreated` to specify its intention
+  better (i.e., it's not an creation of a an entity or a DAO, but rather it's
+  the start of an audit trail).
+* 
 
 ## [0.3.1] - 2025-03-04
 

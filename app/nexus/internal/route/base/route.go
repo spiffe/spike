@@ -11,11 +11,11 @@
 package base
 
 import (
-	"github.com/spiffe/spike/app/nexus/internal/env"
 	"net/http"
 
 	"github.com/spiffe/spike-sdk-go/api/url"
 
+	"github.com/spiffe/spike/app/nexus/internal/env"
 	"github.com/spiffe/spike/app/nexus/internal/route/acl/policy"
 	"github.com/spiffe/spike/app/nexus/internal/route/operator"
 	"github.com/spiffe/spike/app/nexus/internal/route/secret"

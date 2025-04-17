@@ -5,7 +5,6 @@
 package recovery
 
 import (
-	"fmt"
 	"github.com/cloudflare/circl/group"
 	shamir "github.com/cloudflare/circl/secretsharing"
 	"github.com/spiffe/spike-sdk-go/crypto"
@@ -106,16 +105,7 @@ func computeShares() (group.Scalar, []shamir.Share) {
 
 	log.Log().Info(fName, "msg", "Generated Shamir shares")
 
-	fmt.Printf("rk: %x\n", *rk)
-	fmt.Printf("Secret: %v\n", secret)
-
 	computedShares := ss.Share(n)
-
-	for i, share := range computedShares {
-		fmt.Printf("Share %d: %v\n", i, share)
-		fmt.Printf("ID: %v\n", share.ID)
-		fmt.Printf("Value: %v\n", share.Value)
-	}
 
 	// secret is a pointer type; ss.Share(n) is a slice
 	// shares will have monotonically increasing IDs, starting from 1.
