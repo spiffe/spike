@@ -50,6 +50,7 @@ func RouteRecover(
 
 	requestBody := net.ReadRequestBody(w, r)
 	if requestBody == nil {
+		log.Log().Info(fName, "msg", "requestBody is nil")
 		return errors.ErrReadFailure
 	}
 
@@ -59,16 +60,18 @@ func RouteRecover(
 		reqres.RecoverResponse{Err: data.ErrBadInput},
 	)
 	if request == nil {
+		log.Log().Info(fName, "msg", "request is nil")
 		return errors.ErrParseFailure
 	}
 
-	// TODO: do I need more sanitization here?
 	err := guardRecoverRequest(*request, w, r)
 	if err != nil {
 		return err
 	}
 
+	log.Log().Info(fName, "msg", "request is valid. Recovery shards requested.")
 	shards := recovery.NewPilotRecoveryShards()
+
 	// Security: reset shards before function exits.
 	defer func() {
 		for i := range shards {
@@ -77,12 +80,51 @@ func RouteRecover(
 	}()
 
 	if len(shards) < env.ShamirThreshold() {
+		log.Log().Error(fName, "msg", "not enough shards. Exiting.")
 		return errors.ErrNotFound
 	}
 
-	// TODO: verify the quality and validity of shards before sending them out.
-	// TODO:  The function passes shards directly to the response without
-	// explicit validation of their format or content
+	// Track seen indices to check for duplicates
+	seenIndices := make(map[int]bool)
+
+	for idx, shard := range shards {
+		if seenIndices[idx] {
+			log.Log().Error(fName, "msg", "duplicate index. Exiting.")
+			// Duplicate index.
+			return errors.ErrInvalidInput
+		}
+
+		// We cannot check for duplicate values, because although it's
+		// astronomically unlikely, there is still a possibility of two
+		// different indices having the same shard value.
+
+		seenIndices[idx] = true
+
+		// Check for nil pointers
+		if shard == nil {
+			log.Log().Error(fName, "msg", "nil shard. Exiting.")
+			return errors.ErrInvalidInput
+		}
+
+		// Check for empty shards (all zeros)
+		zeroed := true
+		for _, b := range *shard {
+			if b != 0 {
+				zeroed = false
+				break
+			}
+		}
+		if zeroed {
+			log.Log().Error(fName, "msg", "zeroed shard. Exiting.")
+			return errors.ErrInvalidInput
+		}
+
+		// Verify shard index is within valid range:
+		if idx < 1 || idx > env.ShamirShares() {
+			log.Log().Error(fName, "msg", "invalid index. Exiting.")
+			return errors.ErrInvalidInput
+		}
+	}
 
 	responseBody := net.MarshalBody(reqres.RecoverResponse{
 		Shards: shards,

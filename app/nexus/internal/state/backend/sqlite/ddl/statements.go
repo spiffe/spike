@@ -97,4 +97,9 @@ FROM policies
 WHERE id = ?
 `
 
+const QueryAllPolicies = `
+SELECT id, name, spiffe_id_pattern, path_pattern, created_time 
+FROM policies
+`
+
 const QueryPathsFromMetadata = `SELECT path FROM secret_metadata`

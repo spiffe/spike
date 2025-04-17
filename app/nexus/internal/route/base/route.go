@@ -15,6 +15,7 @@ import (
 
 	"github.com/spiffe/spike-sdk-go/api/url"
 
+	"github.com/spiffe/spike/app/nexus/internal/env"
 	"github.com/spiffe/spike/app/nexus/internal/route/acl/policy"
 	"github.com/spiffe/spike/app/nexus/internal/route/operator"
 	"github.com/spiffe/spike/app/nexus/internal/route/secret"
@@ -40,9 +41,11 @@ func Route(
 		r.Method,
 		func(a url.ApiAction, p url.ApiUrl) net.Handler {
 			emptyRootKey := state.RootKeyZero()
+			inMemoryMode := env.BackendStoreType() == env.Memory
+
 			emergencyAction := p == url.SpikeNexusUrlOperatorRecover ||
 				p == url.SpikeNexusUrlOperatorRestore
-			if emptyRootKey && !emergencyAction {
+			if !inMemoryMode && emptyRootKey && !emergencyAction {
 				return net.NotReady
 			}
 

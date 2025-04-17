@@ -10,7 +10,7 @@ run_background "./hack/start.sh"
 sleep 5
 
 echo "Starting tests..."
-go build -o ci-test ./ci/test/main.go
+go build -ldflags="-s -w" -o ci-test ./ci/test/main.go
 ./ci-test
 
 echo "Tests completed successfully!"

@@ -8,7 +8,9 @@ import (
 	"sync"
 
 	"github.com/spiffe/spike-sdk-go/kv"
+
 	"github.com/spiffe/spike/app/nexus/internal/env"
+	"github.com/spiffe/spike/internal/log"
 )
 
 // Global variables for storing secrets and policies with thread-safety.
@@ -71,25 +73,23 @@ func RootKeyZero() bool {
 	return true
 }
 
-//// ResetRootKey resets the root key to all zeroes.
-//// This is typically used when clearing sensitive cryptographic material.
-//func ResetRootKey() {
-//	rootKeyMu.Lock()
-//	defer rootKeyMu.Unlock()
-//
-//	// Explicitly reset the root key bytes to zeroes
-//	mem.ClearRawBytes(&rootKey)
-//}
-
 // SetRootKey updates the root key with the provided value.
+// This function does not own its parameter; the `rk` argument can
+// be (and should be) cleaned up after calling this function without
+// impacting the saved root key.
 //
 // Parameters:
 //   - rk: Pointer to a 32-byte array containing the new root key value
 func SetRootKey(rk *[32]byte) {
+	fName := "SetRootKey"
+	log.Log().Info(fName, "msg", "Setting root key")
+
 	rootKeyMu.Lock()
 	defer rootKeyMu.Unlock()
 
 	for i := range rootKey {
 		rootKey[i] = rk[i]
 	}
+
+	log.Log().Info(fName, "msg", "Root key set")
 }

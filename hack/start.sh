@@ -128,18 +128,23 @@ else
   run_background "./hack/spire-agent-start.sh"
 fi
 
-echo ""
-echo "Waiting before SPIKE Keeper 1..."
-sleep 5
-run_background "./hack/start-keeper-1.sh"
-echo ""
-echo "Waiting before SPIKE Keeper 2..."
-sleep 5
-run_background "./hack/start-keeper-2.sh"
-echo ""
-echo "Waiting before SPIKE Keeper 3..."
-sleep 5
-run_background "./hack/start-keeper-3.sh"
+# Check if SPIKE_NEXUS_BACKEND_STORE is set to memory
+if [ "$SPIKE_NEXUS_BACKEND_STORE" != "memory" ]; then
+  echo ""
+  echo "Waiting before SPIKE Keeper 1..."
+  sleep 5
+  run_background "./hack/start-keeper-1.sh"
+  echo ""
+  echo "Waiting before SPIKE Keeper 2..."
+  sleep 5
+  run_background "./hack/start-keeper-2.sh"
+  echo ""
+  echo "Waiting before SPIKE Keeper 3..."
+  sleep 5
+  run_background "./hack/start-keeper-3.sh"
+else
+  echo "SPIKE_NEXUS_BACKEND_STORE is set to memory, skipping Keeper instances."
+fi
 
 echo ""
 echo "Waiting before SPIKE Nexus..."

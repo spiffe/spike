@@ -174,6 +174,9 @@
                                             https://spike.ist/architecture/security-model/#spike-security-model">SPIKE Security Model</a>
                                         <ul>
                                                 <li>
+                                                        <a href="https://spike.ist/architecture/security-model/#machine-as-the-trust-boundary">Machine as the Trust Boundary</a>
+                                                    </li>
+                                                <li>
                                                         <a href="https://spike.ist/architecture/security-model/#authentication-and-communication">Authentication and Communication</a>
                                                     </li>
                                                 <li>
@@ -186,7 +189,10 @@
                                                         <a href="https://spike.ist/architecture/security-model/#the-backing-store-is-untrusted">The Backing Store is Untrusted</a>
                                                     </li>
                                                 <li>
-                                                        <a href="https://spike.ist/architecture/security-model/#keeper-shard-distribution-and-disaster-recovery">Keeper Shard Distribution and Disaster Recovery</a>
+                                                        <a href="https://spike.ist/architecture/security-model/#network-isolation-of-spike-keepers">Network Isolation of SPIKE Keepers</a>
+                                                    </li>
+                                                <li>
+                                                        <a href="https://spike.ist/architecture/security-model/#spike-keeper-shard-distribution-and-disaster-recovery">SPIKE Keeper Shard Distribution and Disaster Recovery</a>
                                                     </li>
                                                 <li>
                                                         <a href="https://spike.ist/architecture/security-model/#key-management">Key Management</a>
@@ -741,6 +747,20 @@
             
         <h1 id="spike-security-model">SPIKE Security Model</h1>
 <p>Here is a brief introduction to <strong>SPIKE</strong> security model.</p>
+<h2 id="machine-as-the-trust-boundary">Machine as the Trust Boundary</h2>
+<p><strong>SPIKE</strong> components are intended to be used as the foundation for
+cloud native secrets management in a zero trust environment. <strong>SPIKE</strong>
+supports Linux and the BSD family (including MacOS). Windows is not currently
+supported, though some early prototyping is a work in progress.</p>
+<p><strong>SPIKE</strong> (<em>with the help of SPIFFE and SPIRE</em>) adheres to the zero trust
+networking security model in which it is assumed that network communication is
+hostile or presumably fully compromised. That said, it is also assumed that
+the hardware on which *<strong>SPIKE</strong> components run, as well as its operators,
+are trustworthy.</p>
+<p>If the hardware is considered as an attack surface, or insider threats are
+part of the threat model, then careaful considerations should be made around the
+physical placement of <strong>SPIRE Server</strong>, <strong>SPIKE Nexus</strong>, and <strong>SPIKE Keeper</strong>
+instances, and the security of their relevant conﬁguration parameters.</p>
 <h2 id="authentication-and-communication">Authentication and Communication</h2>
 <ul>
 <li>All inter-component communication is secured through <a href="https://spiffe.io/"><strong>SPIFFE</strong> mTLS</a>.</li>
@@ -827,7 +847,25 @@ even if a malicious attacker gains access to the storage backend, the data
 remains secure, as it can only be decrypted by <strong>SPIKE Nexus</strong>.</p>
 <p>Additionally, the storage backend serves as a durable, persistent layer,
 ensuring data availability across application crashes and server restarts.</p>
-<h2 id="keeper-shard-distribution-and-disaster-recovery">Keeper Shard Distribution and Disaster Recovery</h2>
+<p>Especially when using an external data store other than the default local
+SQLite backing store, although SPIKE assumes the store is untrusted,
+still considering the following will be prudent:</p>
+<ul>
+<li>If possible, have SPIKE’s backing store as an isolated database not shared
+by any other service to reduce the attack surface.</li>
+<li>If that’s not possible and the backing store is a shared database with other
+services, be aware of who else has access to it and manages it?</li>
+<li>Be cognizant about how SPIKE Nexus will authenticate to this database.</li>
+<li>Make sure the database connection is secure with TLS or mTLS.</li>
+</ul>
+<h2 id="network-isolation-of-spike-keepers">Network Isolation of SPIKE Keepers</h2>
+<p>SPIKE Keepers do not have any communication pathway between each other and this
+is a decision by design. This significantly limits the possibility of lateral
+movements as even when an attacker gains a foothold on a SPIKE Keeper instance
+they cannot laterally move to other SPIKE Keeper instances.</p>
+<p>SPIKE Nexus and SPIKE Keepers establish a hub-spoke topology where SPIKE
+Keepers (the spokes) can only communicate with SPIKE Nexus (the hub).</p>
+<h2 id="spike-keeper-shard-distribution-and-disaster-recovery">SPIKE Keeper Shard Distribution and Disaster Recovery</h2>
 <p><strong>SPIKE</strong> uses <strong>SPIKE Keeper</strong>s, which are apps responsible for storing
 <a href="https://en.wikipedia.org/wiki/Shamir%27s_secret_sharing" title="Shamir&#39;s Secret Sharing">Shamir shards</a> of the <strong>root key</strong>. Both the <strong>root key</strong> and the
 <strong>shards</strong> are always in memory and <strong>never</strong> persisted to disk.</p>

@@ -11,7 +11,7 @@ sort_by = "weight"
 # SPIKE Architectural Decision Records (*ADRs*)
 
 This section serves as an archive of significant architectural decisions made
-during the design and development of **SPIKE**. Each **ADR* documents the 
+during the design and development of **SPIKE**. Each **ADR** documents the 
 reasoning behind a specific choice, along with the associated alternatives 
 and their trade-offs. By maintaining this record, we provide transparency, 
 traceability, and clarity for current and future maintainers of the **SPIKE** 

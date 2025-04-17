@@ -52,6 +52,40 @@ func StorePolicy(policy data.Policy) {
 	}
 }
 
+// ReadAllPolicies retrieves all policies from the backend storage.
+// It uses retry mechanism to handle temporary failures and times out
+// after the configured database operation timeout.
+// Returns a map of policy IDs to policy objects, or nil if an error occurs.
+func ReadAllPolicies() map[string]*data.Policy {
+	const fName = "readAllPolicies"
+
+	be := Backend()
+	if be == nil {
+		return nil
+	}
+
+	ctx, cancel := context.WithTimeout(
+		context.Background(), env.DatabaseOperationTimeout(),
+	)
+	defer cancel()
+
+	log.Log().Info(fName, "msg", "Loading policies from cache")
+	cachedPolicies, err := retry.Do(ctx, func() (map[string]*data.Policy, error) {
+		log.Log().Info(fName, "msg", "Trying to load policies from cache")
+		return be.LoadAllPolicies(ctx)
+	})
+
+	if err != nil {
+		log.Log().Warn(fName,
+			"msg", "Failed to load policies from cache after retries",
+			"err", err.Error(),
+		)
+		return nil
+	}
+
+	return cachedPolicies
+}
+
 // DeletePolicy removes a policy from the cache.
 // Memory remains the source of truth - failures are logged but don't affect
 // operation.

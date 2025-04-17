@@ -89,6 +89,16 @@ its operational state:
 5. **SPIKE Nexus** syncs the **root key** with **SPIKE Keeper**.
 6. The system resumes normal operation.
 
+> **Why Do We Change SVIDs Between Operations?**
+> 
+> This approach is similar to "*Admin Account Tiering*" commonly found in zero 
+> trust architectures: Certain operations are forbidden between tiers; for 
+> example, a restore account cannot create secrets, and an account that can
+> manage secrets and policies cannot initiate restoration operations.
+> 
+> For operations that need unusual/elevated access, and administrator will
+> explicitly have to sign off for that elevated privilege.
+
 ### Total System Reset
 
 This procedure is for resetting **SPIKE** to its factory defaults.

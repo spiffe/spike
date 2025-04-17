@@ -16,9 +16,9 @@ import (
 	apiUrl "github.com/spiffe/spike-sdk-go/api/url"
 	network "github.com/spiffe/spike-sdk-go/net"
 	"github.com/spiffe/spike-sdk-go/security/mem"
+	"github.com/spiffe/spike-sdk-go/spiffeid"
 
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
-	"github.com/spiffe/spike/internal/auth"
 	"github.com/spiffe/spike/internal/log"
 	"github.com/spiffe/spike/internal/net"
 )
@@ -64,6 +64,12 @@ func mustUpdateRecoveryInfo(rk *[32]byte) []secretsharing.Share {
 //  3. findShare() ensures each keeper receives its designated share
 //     This approach simplifies the code flow and maintains consistency across
 //     potential system restarts or failures.
+//
+// Note that sendSharesToKeepers optimistically moves on to the next SPIKE
+// Keeper in the list on error. This is okay, because SPIKE Nexus may not
+// need all keepers to be healthy all at once, and since we periodically
+// send shards to keepers, provided there is no configration mistake,
+// all SPIKE Keepers will get their shards eventually.
 func sendShardsToKeepers(
 	source *workloadapi.X509Source, keepers map[string]string,
 ) {
@@ -74,14 +80,6 @@ func sendShardsToKeepers(
 			keeperApiRoot, string(apiUrl.SpikeKeeperUrlContribute),
 		)
 
-		// TODO: The sendShardsToKeepers function continues to the next keeper
-		// on error. This is reasonable, but consider if all keepers must receive
-		// shares for safety.
-		// For example, maybe configuration problems should cause a fatal error
-		// instead of just bypassing the keeper.
-		// Since this is done periodically in `SendShardsPeriodically()`, we
-		// can overlook temporary issues.
-
 		if err != nil {
 			log.Log().Warn(
 				fName, "msg", "Failed to join path", "url", keeperApiRoot,
@@ -90,7 +88,7 @@ func sendShardsToKeepers(
 		}
 
 		client, err := network.CreateMtlsClientWithPredicate(
-			source, auth.IsKeeper,
+			source, spiffeid.IsKeeper,
 		)
 
 		if err != nil {

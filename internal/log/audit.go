@@ -6,20 +6,21 @@ package log
 
 import (
 	"encoding/json"
-	"log"
+	"fmt"
 	"net/http"
 	"time"
 )
 
 type AuditState string
 
-const AuditCreated AuditState = "created"
-const AuditErrored AuditState = "error"
-const AuditSuccess AuditState = "success"
+const AuditEntryCreated AuditState = "audit-entry-created"
+const AuditErrored AuditState = "audit-errored"
+const AuditSuccess AuditState = "audit-success"
 
 type AuditAction string
 
 const AuditEnter AuditAction = "enter"
+const AuditExit AuditAction = "exit"
 const AuditCreate AuditAction = "create"
 const AuditList AuditAction = "list"
 const AuditDelete AuditAction = "delete"
@@ -62,11 +63,21 @@ type AuditEntry struct {
 	Duration time.Duration
 }
 
+type AuditLogLine struct {
+	Timestamp  time.Time  `json:"time"`
+	AuditEntry AuditEntry `json:"audit"`
+}
+
 // Audit logs an audit entry as JSON to the standard log output.
 // If JSON marshaling fails, it logs an error using the structured logger
 // but continues execution.
 func Audit(entry AuditEntry) {
-	body, err := json.Marshal(entry)
+	audit := AuditLogLine{
+		Timestamp:  time.Now(),
+		AuditEntry: entry,
+	}
+
+	body, err := json.Marshal(audit)
 	if err != nil {
 		Log().Error("Audit",
 			"msg", "Problem marshalling audit entry",
@@ -74,7 +85,7 @@ func Audit(entry AuditEntry) {
 		return
 	}
 
-	log.Println(string(body))
+	fmt.Println(string(body))
 }
 
 // AuditRequest logs the details of an HTTP request and updates the audit entry

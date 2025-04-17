@@ -16,9 +16,9 @@ import (
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	spike "github.com/spiffe/spike-sdk-go/api"
 	"github.com/spiffe/spike-sdk-go/security/mem"
+	"github.com/spiffe/spike-sdk-go/spiffeid"
 
 	"github.com/spiffe/spike/app/spike/internal/trust"
-	"github.com/spiffe/spike/internal/auth"
 	"github.com/spiffe/spike/internal/config"
 	"github.com/spiffe/spike/internal/log"
 )
@@ -61,7 +61,7 @@ func newOperatorRecoverCommand(
 		Use:   "recover",
 		Short: "Recover SPIKE Nexus (do this while SPIKE Nexus is healthy)",
 		Run: func(cmd *cobra.Command, args []string) {
-			if !auth.IsPilotRecover(spiffeId) {
+			if !spiffeid.IsPilotRecover(spiffeId) {
 				fmt.Println("")
 				fmt.Println("  You need to have a `recover` role to use this command.")
 				fmt.Println(
@@ -98,6 +98,24 @@ func newOperatorRecoverCommand(
 				return
 			}
 
+			for _, shard := range shards {
+				emptyShard := true
+				for _, v := range shard {
+					if v != 0 {
+						emptyShard = false
+						break
+					}
+				}
+				if emptyShard {
+					fmt.Println("")
+					fmt.Println("  Empty shard found.")
+					fmt.Println("  Cannot save recovery shards.")
+					fmt.Println("  Please try again later.")
+					fmt.Println("  If the problem persists, check SPIKE logs.")
+				}
+			}
+
+			// Creates the folder if it does not exist.
 			recoverDir := config.SpikePilotRecoveryFolder()
 
 			// Clean the path to normalize it
@@ -157,10 +175,6 @@ func newOperatorRecoverCommand(
 					}
 				}
 			}
-
-			// TODO: add entropy validation for shards.
-
-			// TODO: add logic to create recovery directory if it does not exist.
 
 			// Save each shard to a file
 			for i, shard := range shards {

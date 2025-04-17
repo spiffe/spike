@@ -12,9 +12,9 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
+	"github.com/spiffe/spike-sdk-go/spiffeid"
 
 	"github.com/spiffe/spike/app/nexus/internal/state/persist"
-	"github.com/spiffe/spike/internal/auth"
 )
 
 var (
@@ -50,7 +50,7 @@ func CheckAccess(
 	peerSpiffeId string, path string, wants []data.PolicyPermission,
 ) bool {
 	// Role:SpikePilot can always manage secrets.
-	if auth.IsPilot(peerSpiffeId) {
+	if spiffeid.IsPilot(peerSpiffeId) {
 		return true
 	}
 
@@ -276,4 +276,49 @@ func ListPoliciesBySpiffeId(spiffeIdPattern string) []data.Policy {
 	})
 
 	return result
+}
+
+// ImportPolicies imports a set of policies into the application's memory state.
+// It validates each policy, ensuring it has compiled regex patterns before
+// storing.
+//
+// Parameters:
+//   - importedPolicies: A map of policy IDs to policy objects
+//
+// Returns:
+//   - error: An error if any policy fails validation
+func ImportPolicies(importedPolicies map[string]*data.Policy) {
+	for id, policy := range importedPolicies {
+		// Skip nil policies.
+		if policy == nil {
+			continue
+		}
+
+		// Skip if ID does not match.
+		if policy.Id != id {
+			continue
+		}
+
+		// Compile patterns if they aren't already compiled
+		if policy.SpiffeIdPattern != "*" && policy.IdRegex == nil {
+			idRegex, err := regexp.Compile(policy.SpiffeIdPattern)
+			if err != nil {
+				// Skip invalid policies.
+				continue
+			}
+			policy.IdRegex = idRegex
+		}
+
+		if policy.PathPattern != "*" && policy.PathRegex == nil {
+			pathRegex, err := regexp.Compile(policy.PathPattern)
+			if err != nil {
+				// Skip invalid policies.
+				continue
+			}
+			policy.PathRegex = pathRegex
+		}
+
+		// Store the policy in the global map
+		policies.Store(policy.Id, *policy)
+	}
 }

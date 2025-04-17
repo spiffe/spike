@@ -81,10 +81,11 @@ func RouteRestore(
 		return err
 	}
 
+	shardsMutex.Lock()
+	defer shardsMutex.Unlock()
+
 	// Check if we already have enough shards
-	shardsMutex.RLock()
 	currentShardCount := len(shards)
-	shardsMutex.RUnlock()
 
 	if currentShardCount >= env.ShamirThreshold() {
 		responseBody := net.MarshalBody(reqres.RestoreResponse{
@@ -102,29 +103,28 @@ func RouteRestore(
 		return nil
 	}
 
-	// TODO: do we need validation for request.Id too?
-	// if request.Id < 1 || request.Id > maxValidShardID etc.
+	for _, shard := range shards {
+		if int(shard.Id) != request.Id {
+			continue
+		}
 
-	// Validate the new shard
-	if err := validateShard(request.Shard); err != nil {
+		// Duplicate shard found.
+
 		responseBody := net.MarshalBody(reqres.RestoreResponse{
 			RestorationStatus: data.RestorationStatus{
 				ShardsCollected: currentShardCount,
 				ShardsRemaining: env.ShamirThreshold() - currentShardCount,
-				Restored:        false,
+				Restored:        currentShardCount == env.ShamirThreshold(),
 			},
 			Err: data.ErrBadInput,
 		}, w)
 		if responseBody == nil {
 			return errors.ErrMarshalFailure
 		}
+
 		net.Respond(http.StatusBadRequest, responseBody, w)
 		return nil
 	}
-
-	shardsMutex.Lock()
-
-	// TODO: maybe sanitization.
 
 	shards = append(shards, recovery.ShamirShard{
 		Id:    uint64(request.Id),
@@ -133,11 +133,15 @@ func RouteRestore(
 
 	currentShardCount = len(shards)
 
-	// Security: Reset the field when no longer needed.
-	defer func() {
-		mem.ClearRawBytes(request.Shard)
-		request.Id = 0
-	}()
+	// Warning: We cannot clear request.Shard because it's a pointer type,
+	// and we need it later in the "restore" operation.
+	// RouteRestore cleans this up, when it is no longer needed.
+
+	//// Security: Reset the field when no longer needed.
+	//defer func() {
+	//	mem.ClearRawBytes(request.Shard)
+	//	request.Id = 0
+	//}()
 
 	// Trigger restoration if we have collected all shards
 	if currentShardCount == env.ShamirThreshold() {
@@ -148,8 +152,6 @@ func RouteRestore(
 			shards[i].Id = 0
 		}
 	}
-
-	shardsMutex.Unlock()
 
 	responseBody := net.MarshalBody(reqres.RestoreResponse{
 		RestorationStatus: data.RestorationStatus{

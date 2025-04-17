@@ -77,6 +77,14 @@ func (s *NoopStore) LoadPolicy(
 	return nil, nil
 }
 
+// LoadAllPolicies retrieves all policies from the no-op store.
+// This implementation always returns nil and nil error.
+func (s *NoopStore) LoadAllPolicies(
+	_ context.Context,
+) (map[string]*data.Policy, error) {
+	return nil, nil
+}
+
 // DeletePolicy removes a policy from the no-op kv by its ID.
 // This implementation is a no-op and always returns nil.
 func (s *NoopStore) DeletePolicy(_ context.Context, _ string) error {

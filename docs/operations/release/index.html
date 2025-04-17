@@ -774,6 +774,26 @@ working <strong>SPIKE</strong> and <strong>SPIKE</strong> environment to execute
 replacement for a full integration test. We may add more steps, but we’ll
 keep it lightweight. — Passing the smoke test means that the core components
 and the features of the system are reliably functional.</p>
+<p>Here is a list of manual tests that can be done before every release:</p>
+<ol>
+<li>Reset the test bed.</li>
+<li>Switch to “in-memory” mode.</li>
+<li>Make sure you can create a secret and read it back.</li>
+<li>Make sure you can create a policy and read it back.</li>
+<li>Make sure you can list secrets.</li>
+<li>Make sure you can list policies.</li>
+<li>Make sure the demo workload reads and writes based on the
+policies you created.</li>
+<li>Reset entire test bed.</li>
+<li>Switch to sqlite mode.</li>
+<li>Make sure SPIKE Nexus and SPIKE Keepers are up and running.</li>
+<li>Repeat steps 2–7.</li>
+<li>Test recover and restore scenarios:
+(a: Nexus autorecover; b: doomsday recovery)</li>
+</ol>
+<p>If everything looks good so far and the unit tests pass, you can cut a release.</p>
+<p>Ideally, this setup should be automated, but since our releasee cadence is
+not that frequent, it’s okay to do these checks manually.</p>
 <h3 id="start-the-test-environment">Start the Test Environment</h3>
 <pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">make</span><span> start
 </span><span>

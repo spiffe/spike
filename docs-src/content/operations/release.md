@@ -32,12 +32,13 @@ ensure a smooth and reliable release process.
 Before every release:
 
 1. Run the unit tests
-2. Run the following smoke test documented in the next section.
+2. Run the following smoke tests documented in the next section.
 3. If everything passes, update `NexusVersion`, `PilotVersion` 
    and `KeeperVersion` in `$WORKSPACE/spike/internal/config/config.go`
 4. Update any necessary documentation.
 5. Update the changelog.
 6. Update the documentation snapshots page.
+7. Run `./hack/cover.sh` to update and send coverage report to the public docs.
 
 Release process:
 
@@ -70,6 +71,28 @@ Note that these are instructions for a manual smoke test, and it's not a
 replacement for a full integration test. We may add more steps, but we'll
 keep it lightweight. --- Passing the smoke test means that the core components
 and the features of the system are reliably functional.
+
+Here is a list of manual tests that can be done before every release:
+
+1. Reset the test bed.
+2. Switch to "in-memory" mode.
+3. Make sure you can create a secret and read it back.
+4. Make sure you can create a policy and read it back.
+5. Make sure you can list secrets.
+6. Make sure you can list policies.
+7. Make sure the demo workload reads and writes based on the
+   policies you created.
+8. Reset entire test bed.
+9. Switch to sqlite mode.
+10. Make sure SPIKE Nexus and SPIKE Keepers are up and running.
+11. Repeat steps 2--7.
+12. Test recover and restore scenarios:
+    (a: Nexus autorecover; b: doomsday recovery)
+
+If everything looks good so far and the unit tests pass, you can cut a release.
+
+Ideally, this setup should be automated, but since our releasee cadence is 
+not that frequent, it's okay to do these checks manually.
 
 ### Start the Test Environment
 

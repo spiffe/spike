@@ -6,6 +6,8 @@ package policy
 
 import (
 	"fmt"
+	"regexp"
+	"strings"
 
 	"github.com/spf13/cobra"
 	spike "github.com/spiffe/spike-sdk-go/api"
@@ -39,6 +41,13 @@ func findPolicyByName(api *spike.Api, name string) (string, error) {
 	return "", fmt.Errorf("no policy found with name '%s'", name)
 }
 
+const uuidRegex = `^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$`
+
+func validUuid(uuid string) bool {
+	r := regexp.MustCompile(uuidRegex)
+	return r.MatchString(strings.ToLower(uuid))
+}
+
 // sendGetPolicyIdRequest gets the policy ID either from command arguments or the name flag.
 // If args contains a policy ID, it returns that. If the name flag is provided,
 // it looks up the policy by name and returns its ID. If neither is provided,
@@ -62,6 +71,11 @@ func sendGetPolicyIdRequest(cmd *cobra.Command,
 
 	if len(args) > 0 {
 		policyId = args[0]
+
+		if !validUuid(policyId) {
+			return "", fmt.Errorf("invalid policy ID '%s'", policyId)
+		}
+
 	} else if name != "" {
 		id, err := findPolicyByName(api, name)
 		if err != nil {

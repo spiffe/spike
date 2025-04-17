@@ -164,3 +164,75 @@ func (s *DataStore) LoadPolicy(
 
 	return &policy, nil
 }
+
+// LoadAllPolicies retrieves all policies from the backend storage.
+//
+// The function loads all policy data and compiles regex patterns for SPIFFE ID
+// and path matching if they aren't wildcards (*).
+//
+// Parameters:
+//   - ctx: Context for the database operation
+//
+// Returns:
+//   - map[string]*data.Policy: Map of policy IDs to loaded policies with compiled patterns
+//   - error: Database errors or pattern compilation errors
+func (s *DataStore) LoadAllPolicies(ctx context.Context) (map[string]*data.Policy, error) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	// Query to get all policies
+	rows, err := s.db.QueryContext(ctx, ddl.QueryAllPolicies)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to query policies: %w", err)
+	}
+	defer func(rows *sql.Rows) {
+		err := rows.Close()
+		if err != nil {
+			fmt.Printf("failed to close rows: %v\n", err)
+		}
+	}(rows)
+
+	// Map to store all policies
+	policies := make(map[string]*data.Policy)
+
+	// Iterate over policy rows
+	for rows.Next() {
+		var policy data.Policy
+
+		if err := rows.Scan(
+			&policy.Id,
+			&policy.Name,
+			&policy.SpiffeIdPattern,
+			&policy.PathPattern,
+			&policy.CreatedAt,
+		); err != nil {
+			return nil, fmt.Errorf("failed to scan policy: %w", err)
+		}
+
+		// Compile the patterns just like in LoadPolicy
+		if policy.SpiffeIdPattern != "*" {
+			idRegex, err := regexp.Compile(policy.SpiffeIdPattern)
+			if err != nil {
+				return nil, fmt.Errorf("invalid spiffeid pattern for policy %s: %w", policy.Id, err)
+			}
+			policy.IdRegex = idRegex
+		}
+
+		if policy.PathPattern != "*" {
+			pathRegex, err := regexp.Compile(policy.PathPattern)
+			if err != nil {
+				return nil, fmt.Errorf("invalid path pattern for policy %s: %w", policy.Id, err)
+			}
+			policy.PathRegex = pathRegex
+		}
+
+		policies[policy.Id] = &policy
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("failed to iterate policy rows: %w", err)
+	}
+
+	return policies, nil
+}

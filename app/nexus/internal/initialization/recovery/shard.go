@@ -13,8 +13,8 @@ import (
 	apiUrl "github.com/spiffe/spike-sdk-go/api/url"
 	network "github.com/spiffe/spike-sdk-go/net"
 	"github.com/spiffe/spike-sdk-go/security/mem"
+	"github.com/spiffe/spike-sdk-go/spiffeid"
 
-	"github.com/spiffe/spike/internal/auth"
 	"github.com/spiffe/spike/internal/log"
 	"github.com/spiffe/spike/internal/net"
 )
@@ -45,7 +45,7 @@ func shardResponse(source *workloadapi.X509Source, u string) []byte {
 	}
 
 	client, err := network.CreateMtlsClientWithPredicate(
-		source, auth.IsKeeper,
+		source, spiffeid.IsKeeper,
 	)
 
 	if err != nil {
@@ -88,7 +88,7 @@ func shardContributionResponse(
 ) []byte {
 	const fName = "shardContributionResponse"
 
-	client, err := network.CreateMtlsClientWithPredicate(source, auth.IsKeeper)
+	client, err := network.CreateMtlsClientWithPredicate(source, spiffeid.IsKeeper)
 
 	if err != nil {
 		log.Log().Warn(fName,

@@ -54,7 +54,11 @@ type Backend interface {
 	// It returns the policy object and an error, if any.
 	LoadPolicy(ctx context.Context, id string) (*data.Policy, error)
 
-	// DeletePolicy removes a policy object identified by the given Id from
+	// LoadAllPolicies retrieves all policies stored in the backend.
+	// Returns a map of policy IDs to their policy objects or an error.
+	LoadAllPolicies(ctx context.Context) (map[string]*data.Policy, error)
+
+	// DeletePolicy removes a policy object identified by the given ID from
 	// storage.
 	// ctx is the context for managing cancellations and timeouts.
 	// id is the identifier of the policy to delete.

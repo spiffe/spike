@@ -995,6 +995,29 @@ window.</p>
 </span><span style="color:#bf616a;">./hack/start-keeper-2.sh
 </span><span style="color:#bf616a;">./hack/start-keeper-3.sh
 </span></code></pre>
+<p>Here is how one of these <strong>SPIKE Keeper</strong> startup scripts looks like:</p>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># ./hack/start-keeper-1.sh
+</span><span style="color:#bf616a;">SPIKE_KEEPER_TLS_PORT</span><span>=&#39;</span><span style="color:#a3be8c;">:8443</span><span>&#39; \
+</span><span style="color:#bf616a;">./keeper
+</span></code></pre>
+<p>And here is how <strong>SPIKE Nexus</strong> startup script looks like:</p>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># ./hack/start-nexus.sh
+</span><span style="color:#bf616a;">SPIKE_NEXUS_KEEPER_PEERS</span><span>=&#39;</span><span style="color:#a3be8c;">{\
+</span><span style="color:#a3be8c;">  &quot;1&quot;:&quot;https://localhost:8443&quot;,\
+</span><span style="color:#a3be8c;">  &quot;2&quot;:&quot;https://localhost:8543&quot;,\
+</span><span style="color:#a3be8c;">  &quot;3&quot;:&quot;https://localhost:8643&quot;\
+</span><span style="color:#a3be8c;">}</span><span>&#39;</span><span style="color:#a3be8c;">\
+</span><span style="color:#a3be8c;">./nexus
+</span></code></pre>
+<blockquote>
+<p><strong>Sequential SPIKE Keeper IDs</strong></p>
+<p>The mapping in <code>SPIKE_NEXUS_KEEPER_PEERS</code> should start from <code>"1"</code>
+and increase monotonically without any gaps in the sequence as shown
+in the sample code above. This because of the way SPIKE Nexus internally
+computes and distributes the Shamir Shards. Not following this sequence
+will lead into errors—We may improve this behavior in the future and make
+it more flexible.</p>
+</blockquote>
 <h2 id="using-spike-pilot">Using SPIKE Pilot</h2>
 <p>Define an alias to <strong>SPIKE</strong> Pilot:</p>
 <pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># ~/.bashrc

@@ -12,6 +12,24 @@ sort_by = "weight"
 
 Here is a brief introduction to **SPIKE** security model.
 
+## Machine as the Trust Boundary
+
+**SPIKE** components are intended to be used as the foundation for 
+cloud native secrets management in a zero trust environment. **SPIKE**
+supports Linux and the BSD family (including MacOS). Windows is not currently 
+supported, though some early prototyping is a work in progress. 
+
+**SPIKE** (*with the help of SPIFFE and SPIRE*) adheres to the zero trust 
+networking security model in which it is assumed that network communication is 
+hostile or presumably fully compromised. That said, it is also assumed that 
+the hardware on which ***SPIKE** components run, as well as its operators, 
+are trustworthy.
+
+If the hardware is considered as an attack surface, or insider threats are
+part of the threat model, then careaful considerations should be made around the 
+physical placement of **SPIRE Server**, **SPIKE Nexus**, and **SPIKE Keeper**
+instances, and the security of their relevant conﬁguration parameters.
+
 ## Authentication and Communication
 
 * All inter-component communication is secured through [**SPIFFE** mTLS][spiffe].
@@ -100,7 +118,28 @@ remains secure, as it can only be decrypted by **SPIKE Nexus**.
 Additionally, the storage backend serves as a durable, persistent layer, 
 ensuring data availability across application crashes and server restarts.
 
-## Keeper Shard Distribution and Disaster Recovery
+Especially when using an external data store other than the default local
+SQLite backing store, although SPIKE assumes the store is untrusted, 
+still considering the following will be prudent:
+
+* If possible, have SPIKE's backing store as an isolated database not shared
+  by any other service to reduce the attack surface.
+* If that's not possible and the backing store is a shared database with other 
+  services, be aware of who else has access to it and manages it?
+* Be cognizant about how SPIKE Nexus will authenticate to this database. 
+* Make sure the database connection is secure with TLS or mTLS.
+
+## Network Isolation of SPIKE Keepers
+
+SPIKE Keepers do not have any communication pathway between each other and this
+is a decision by design. This significantly limits the possibility of lateral
+movements as even when an attacker gains a foothold on a SPIKE Keeper instance
+they cannot laterally move to other SPIKE Keeper instances.
+
+SPIKE Nexus and SPIKE Keepers establish a hub-spoke topology where SPIKE
+Keepers (the spokes) can only communicate with SPIKE Nexus (the hub).
+
+## SPIKE Keeper Shard Distribution and Disaster Recovery
 
 **SPIKE** uses **SPIKE Keeper**s, which are apps responsible for storing 
 [Shamir shards][shamir] of the **root key**. Both the **root key** and the

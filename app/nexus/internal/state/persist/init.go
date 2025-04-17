@@ -71,7 +71,6 @@ func InitializeSqliteBackend(rootKey *[32]byte) backend.Backend {
 		return nil
 	}
 
-	// TODO: config
 	ctxC, cancel := context.WithTimeout(
 		context.Background(), env.DatabaseInitializationTimeout(),
 	)

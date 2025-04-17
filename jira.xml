@@ -25,6 +25,7 @@
   <watch>
     <issue>
       There is ongoing work on kubernetification.
+        * Create a local Minikube cluster and test images locally.
     </issue>
     <issue>
       There is ongoing work on CLI documentation.
@@ -36,273 +37,47 @@
     </issue>
   </watch>
   <immediate-backlog>
-    <remark>
-      Don't cut a new version until this immediate backlog is processed.
-      Processing can also mean deferring things to after version cut.
-    </remark>
+  </immediate-backlog>
+  <later>
     <issue>
-      Address ALL TODOs in the source code.
+      Project status change.
+
+      SPIKE is relatively stable now.
+
+      It is not production grade (yet); but saying that it is "alpha" is
+      misleading and discouraging too.
+
+      Change project status to something in-between, and remove the alpha
+      release notice from places.
+    </issue>
+    <issue priority="highy" severity="low">
+      When SPIKE is restored if keepers are not up, recovery is not done.
+      After a successful restore, SPIKE Nexus should recover its backing store
+      without relying on keepers.
     </issue>
     <issue>
-      audit trails print differently than other logger methods.
-      {"time":"2025-03-30T08:05:13.802795974-07:00","level":"INFO","msg":"iterateKeepersToBootstrap","msg":"Tombstone file created successfully"}
-      2025/03/30 08:06:30 {"TrailId":"tXm6L5KG","Timestamp":"2025-03-30T08:06:30.721144469-07:00","UserId":"","Action":"enter","Path":"/v1/
+      provide the restore txt files in hex form so that it will be much easier to sanitize, validate length etc.
+      to validate a base64 encoded text is error-prone.
     </issue>
     <issue>
-      - TODO also   vault k8s security concerns
-        read this and see if there are similar things that applies to SPIKE
-        https://developer.hashicorp.com/vault/tutorials/kubernetes/kubernetes-security-concerns
+      if keepers are not up after a doomsday recovery
+      spike secret list and spike policy list return empty although database is full.
+      we might need an early recovery (but need to think about that too)
     </issue>
     <issue>
-      - TODO optimize sqlite default params and also make sure we retry database operations 	- ref: https://tenthousandmeters.com/blog/sqlite-concurrent-writes-and-database-is-locked-errors/
+      some of these exit-state log shall better be warn or even error than info
+      since they are not expected outcomes
+
+      if state.RootKeyZero() {
+      log.Log().Info(fName, "msg", "No root key; skipping")
+      return nil
+      }
+
+      check the project globally.
     </issue>
     <issue>
-      TODO update vsecm documentation about cloudflare changes 1. manually upload 2. point to github for older versions.
-    </issue>
-    <issue>
-      TODO it's early but have a deprecation policy for SPIKE https://external-secrets.io/latest/introduction/deprecation-policy/
-    </issue>
-    <issue>
-      create (or update) a spike production hardening guidelines page https://developer.hashicorp.com/vault/docs/concepts/production-hardening
-    </issue>
-    <issue>
-      LATER set a periodic reminder for VSecM security issues check.
-    </issue>
-    <issue>
-      //Cache-Control header is for HTTP/1.1 clients
-      servletResponse.addHeader("Cache-Control","no-cache, no-store, must-revalidate");
-
-      //Pragma header is for HTTP/1.0 clients
-      servletResponse.addHeader("Pragma","no-cache");
-
-      ^ check if we add all these headers.
-    </issue>
-    <issue>
-      Go binaries do not have stripped symbols by default. By default, Go includes symbols for debugging, function names, and even full DWARF debugging information unless explicitly removed. This can make Go binaries quite large.
-
-      How to Strip Symbols
-      If you want to strip symbols from a Go binary to reduce its size, you can use:
-
-      Using strip (Linux/macOS)
-      strip mybinary
-      This removes debugging symbols and symbol tables.
-      Building with ldflags
-      go build -ldflags="-s -w" -o mybinary
-      -s: Omits the symbol table.
-      -w: Omits DWARF debugging information.
-      Using upx for Compression You can further reduce the binary size with:
-      upx --best mybinary
-      Checking Symbols
-      You can check if a binary has symbols using:
-
-      nm mybinary  # On Linux/macOS
-      objdump -t mybinary  # Alternative
-    </issue>
-    <issue>
-
-      SPIFFE and SPIRE are intended to be used as the foundation for distributed identity and authentication that is consistent with cloud native design architectures. SPIRE supports Linux and the BSD family (including MacOS). Windows is not currently supported, though some early prototyping has been done in this area.
-
-      SPIRE adheres to the zero trust networking security model in which it is assumed that network communication is hostile or presumably fully compromised. That said, it is also assumed that the hardware on which SPIRE components run, as well as its operators, are trustworthy. If hardware implants or insider threats are part of the threat model, careful considerations should be made around the physical placement of SPIRE Servers and the security of their conﬁguration parameters.
-
-      There may further be implied trust in third-party platforms or software, depending on the chosen methods of node and workload attestation. Asserting trust through multiple independent mechanisms provides a greater assertion of trust. For example, leveraging AWS or GCP-based node attestation implies that the compute platform is assumed to be trustworthy, and leveraging Kubernetes for workload attestation implies that the Kubernetes deployment is assumed to be trustworthy. Due to the great variety of ways that attestation can be accomplished, and the fact that the SPIRE architecture is fully pluggable, the security (and associated assumptions) of these processes are not considered in this assessment. Instead, they should be evaluated on a case-by-case basis.
-    </issue>
-    <issue>
-      1=>
-      for i := range b { b[i] = 0xFF } 2=>
-      , = rand.Read(b) for i := range b { b[i] = 0xFF }
-      ^ this one might be a better cleanup -- update memory reset code and
-      memory reset library too;
-      maybe provide modes of operation and/or options.
-      (i.e. zero out, or random write)
-
-      Filling with random data instead of zeros doesn't provide significant additional security benefits in most scenarios. The key security concern is making sure the data is overwritten rather than what it's overwritten with. Zeroing is also slightly more efficient than using rand.Read().
-      Regarding multiple passes of zeroing:
-      Multiple overwrites were once recommended based on concerns about data remanence in physical storage media (like hard drives), but for RAM, a single overwrite is typically sufficient. Modern RAM generally doesn't retain data after a single overwrite the way old magnetic media might.
-      A couple important considerations for your implementation:
-
-      Your approach using explicit iteration and runtime.KeepAlive() is good - it helps prevent compiler optimizations from removing what might look like "unnecessary" memory operations.
-      For truly sensitive applications, you might consider using memory that's been allocated in ways that prevent it from being swapped to disk (though Go doesn't provide direct control over this by default).
-
-      If you're working on highly sensitive applications where you're concerned about advanced memory forensics, you might want to look into specialized secure memory handling libraries that are tailored for your specific security requirements.
-
-
-    </issue>
-    <issue>
-
-      when using an external data store although SPIKE assumes the store is untrusted still considering these would be important
-      * If this is a shared database with other services, who else has access to it
-      and manages it?
-      * How will the SPIRE Server authenticate to the database?
-      * Does the database connection allow TLS-protected secure communication?
-    </issue>
-    <issue>
-      create a list of failure scenarios to test.
-
-      this is from SPIRE, for example:
-
-      1. If a SPIRE deployment is using a single database instance, take down the
-      database.
-      2. If a SPIRE deployment is using a database in a cluster with a written replica
-      and multiple read replicas, take down the *write* instance.
-      3. Simulate database loss and test data recovery. What if you cannot recover the
-      data or you can only recover from a month-old data?
-      4. Take down several of the SPIRE Servers in a HA deployment.
-      5. Take down the Load Balancer in a HA deployment.
-      6. Take down agents after they have been attested or simulate SPIRE Server loss
-      completely.
-      7. If using upstream authority, simulate upstream authority failure.
-      8. Simulate root and intermediate CA compromise, rotation, and revocation.
-
-
-    </issue>
-    <issue>
-
-      Like all systems, logging is an essential part of SPIRE. However, the logs
-      produced by SPIRE also function as evidence for audits and security incidents.
-
-      For now we don't separate auddit logs from event logs.
-
-      to docs.
-
-      Since the logs can be considered evidence, you may wish to take note
-      of these few considerations when putting together a logging solution:
-
-      * Retention of logs should match your organization's legal requirements
-
-      * The logging system should have high availability in both admitting logs and storage
-
-      * The logs should be tamper-proof and must be able to provide evidence of it
-
-      * The logging system should be able to provide a chain of custody
-
-      ^ to prod docs.
-      ^
-    </issue>
-    <issue>
-      CLI and API
-      List policies by path
-      List policies by SPIFFE ID
-    </issue>
-    <issue>
-      The metrics collectors that are currently supported are Prometheus, Statsd,
-      DogStatsd, and M3. Multiple collectors can be conﬁgured simultaneously, both in
-      the servers and the agents.
-
-      create telemetry data and support certain metrics collectors.
-
-      * Server:
-      *   Management API operations
-
-      *   DB operations per API
-
-      *   SVID Issuance API operations
-
-      *   Rotation and Key Management
-      * Agent:
-
-      *   Interactions with the Server
-
-      *   SVID Rotation and Cache Maintenance
-
-      *   Workload Attestation
-      *
-      ——
-
-      create a monitoring epic
-    </issue>
-    <issue>
-
-      SPIKE: traversal-resistent file apis: https://go.dev/blog/osroot\
-
-
-      significantly limiting the possibility of lateral movement between agents. This
-      is an important design decision that is intended to mitigate the impact of a
-      possible agent vulnerability. However, it should be understood that certain
-      configurations or deployment choices may undermine this mitigation in part or
-      whole. For example, SPIRE Agent supports exposing a Prometheus metrics endpoint,
-      however, if all agents expose this endpoint and vulnerability exists there, then
-      lateral movement becomes trivial unless adequate network-level controls are in
-      place. For this reason, exposing the SPIRE agent to incoming network connections
-      is strongly discouraged.
-      ^
-      same can be told for spike keepers; udpate the threat model doc.
-      SPIRE Agents do not have any communication pathway between each other,
-    </issue>
-    <issue>
-      The SPIRE Server can run completely in Kubernetes, alongside the workloads.
-      However, for security, it might be desirable to run it on a separate Kubernetes
-      cluster, or standalone hardware. That way, if the primary cluster is
-      compromised, the SPIRE private keys are not at risk.
-
-      modify and add to SPIKE production guidelines.
-    </issue>
-    <issue>
-
-      VSecM: Maybe use SPIFFE Helper instead of VSecM sidecar since it essentially does the same thing. Or maybe have an alternative implementation that uses spiffe helper instead of vsecm sidecar.
-
-      ——
-
-      when using an external data store although SPIKE assumes the store is untrusted still considering these would be important
-      * If this is a shared database with other services, who else has access to it
-      and manages it?
-      * How will the SPIRE Server authenticate to the database?
-      * Does the database connection allow TLS-protected secure communication?
-
-
-    </issue>
-    <issue>
-      To SPIKE documentation:
-      this is similar to "Admin Account Tiering" commonly found in zero trust architectures.
-      operations are forbidden between tiers
-      for example a restore account cannot create secrets
-
-      To SPIKE documentation:
-      other people need to sign-off for elevated privileges
-      (for example changing the SPIRE registration of SPIKE Pilot)
-      can we have a tool that facilitates that
-      1. log in with your OIDC credential.
-      2. if you have enough privileges, talk to SPIRE Server to change the pilot SVID
-      3. evrything is audited,
-
-      Think about this:
-      SPIRE is packed with SQLite, an in-memory
-      embedded database, for development and testing purposes.
-      can sqlite be in-memory.
-
-      Yes, SQLite can be used as an in-memory database by specifying :memory: as the database name when connecting. This means the entire database exists only in RAM and is discarded when the connection is closed.
-      How to Use SQLite as an In-Memory Database
-      You can create an in-memory SQLite database in Python like this:
-      ^
-      could be useful maybe, not sure.
-    </issue>
-    <issue>
-      * issue add: fips compatibility
-      * issue add: remove symbols while building
-    </issue>
-    <issue>
-      address todo items inside source code after a release cut.
-
-      Also, things to test before the release cut:
-      1. basic secret creation
-      2. basic secret listing
-      3. nexus crash and recover
-      4. total system crash and recover
-      5. demo application and policy creation
-    </issue>
-    <issue>
-      this should be configurable:
-      ctxC, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-      defer cancel()
-    </issue>
-    <issue>
-      if crashed and trying to restore (instead of recover)
-      you get this:
-
-      spike (main)$ spike operator recover
-      2025/02/24 21:30:35 recover: Problem parsing response body
-      unexpected end of JSON input
-
-      error could be more explanatory
+      Ensure the system works w/o keepers in "in memory" mode.
+      also document it and also create a video out of it.
     </issue>
     <issue>
       spike (main)$ spike operator restore
@@ -315,75 +90,38 @@
       would be great.
     </issue>
     <issue>
-      sanitize perms
+      if crashed and trying to restore (instead of recover)
+      you get this:
 
-      err := api.CreatePolicy(name, spiffeIddPattern, pathPattern, perms)
-      if err != nil {
-      fmt.Printf("Error: %v\n", err)
-      return
-      }
+      spike (main)$ spike operator recover
+      2025/02/24 21:30:35 recover: Problem parsing response body
+      unexpected end of JSON input
+
+      error could be more explanatory
     </issue>
     <issue>
-      return cobra.Command{
-      Use: "delete policy-id",
-      Short: "Delete a policy",
-      Args: cobra.ExactArgs(1),
-      Run: func(cmd *cobra.Command, args []string) {
-      api := spike.NewWithSource(source)
-
-      // TOD: sanitize policy id.
-      // also validate other command line arguments too if it makes sense.
-      // better to stop bad data at the client (but still not trust the
-      // client fully)
-
-      Go through all cobra commands and validate/sanitize what needs to
-      be.
+      the "created" state in audit logs is misleading:
+      We are not creating an entity; we are starting an audit trail.
+      a different name will be more appropriate.
     </issue>
     <issue>
-      use dig too, since dig works better than parsing hosts file in mac os
+      Before doing anything, create a local Kubernetes setup that works.
+    </issue>
+    <issue priority="high" severity="medium">
+      Test with different shamir ratios
 
-      # Check if getent is available
-      if command -v getent >/dev/null 2>&amp;1; then
-      HOSTS_ANSWER=$(getent hosts "$SPIRE_SERVER_DOMAIN")
-      else
-      # Fallback for systems without getent (like macOS)
-      HOSTS_ANSWER=$(grep "$SPIRE_SERVER_DOMAIN" /etc/hosts | grep -v "^#")
-      fi
+      * 5/3 -- 5 keepers, out of 3 should be alive.
+      * 1/1 -- A single keeper
+      * 0/0 -- edge case; not sure how it should behave.
+      * in-memory -- in-memory mode should disregard any keeper config.
     </issue>
     <issue>
-      To docs:
+      Create an ADR about secret path format
+      i.e. it should match  const validPath = `^[a-zA-Z0-9._\-/()?+*|[\]{}\\]+$`
+      and recommended but not mandated to not start with /.
 
-      additional comments.
-
-      wrt `mlock`;
-      * it requires root privileges or `CAP_IPC_LOCK` in Linux.
-      * there is no windows equivalent.
-
-      however without `mlock` if swap is on, zeroing out memory won't be good
-      enough as we won't have any control ove whatever is written on swap.
-
-      --
-
-      @kfox1111 has suggested to add "turning swap off" to the
-      [production guide](https://spike.ist/operations/production/) as a
-      recommendation.
-
-      Turning swap off is recommended for bare-metal k8s control plane and
-      worker nodes anyway; so chances are, it will be turned off if a modern
-      containerized (doker, k8s, etc) environment.
-
-      If turning swap is not an option, encrypting swap could be another option
-      too.
-
-      --
-
-      may want to put a note in docs or something to run with swap off.
-      not sure if the sanitation bits would work with swap on a system.
-      ^
-      production guides.
-      ^
-      also describe how enabling swap might impact the security posture.
     </issue>
+
     <issue>
       Use Case: Each SPIKE Keeper in its own trust domain.
       (we can also create a demo once this feature is established)
@@ -402,7 +140,7 @@
       If that's the case the below function will not be valid
 
       func IsKeeper(id string) bool {
-        return id == spiffeid.SpikeKeeper()
+      return id == spiffeid.SpikeKeeper()
       }
 
       Instead of this the validation should be done against SPIKE_NEXUS_KEEPER_PEERS
@@ -424,86 +162,143 @@
       which also means, SPIKE Keeper can require SPIKE_TRUST_ROOT along
       with SPIKE_KEEPER_TLS_PORT to start. at start-keeper-1.sh
     </issue>
-    <issue>
-      sanitize keeper id and shard
 
-      request := net.HandleRequest[
-      reqres.ShardContributionRequest, reqres.ShardContributionResponse](
-      requestBody, w,
-      reqres.ShardContributionResponse{Err: data.ErrBadInput},
-      )
-      if request == nil {
-      return errors.ErrParseFailure
+    <issue>
+      Check what else needed (aside from enabling boring crypto) to
+      be algorithmically fips-compatible.
+    </issue>
+
+    <issue priority="high" severity="low">
+      [vmware-tanzu/secrets-manager] Scorecard supply-chain security workflow run
+      ^
+      this is constantly failig.
+      maybe disable it.
+    </issue>
+    <issue priority="low">
+      Have an in-memory SQLite mode as an option.
+
+      Yes, SQLite can be used as an in-memory database by specifying :memory: as the database name when connecting. This means the entire database exists only in RAM and is discarded when the connection is closed.
+      How to Use SQLite as an In-Memory Database
+      You can create an in-memory SQLite database in Python like this:
+      ^
+      could be useful maybe, not sure.
+    </issue>
+    <issue for="vsecm">
+      VSecM: Maybe use SPIFFE Helper instead of VSecM sidecar since it
+      essentially does the same thing. Or maybe have an alternative
+      implementation that uses spiffe helper instead of vsecm sidecar.
+    </issue>
+
+    <issue>
+      Consider metrics collector integartion.
+
+      This is from SPIRE:
+      The metrics collectors that are currently supported are Prometheus, Statsd,
+      DogStatsd, and M3. Multiple collectors can be conﬁgured simultaneously, both in
+      the servers and the agents.
+
+      Think about what telemetry SPIKE can create.
+
+      create telemetry data and support certain metrics collectors.
+
+      create a monitoring epic
+    </issue>
+    <issue>
+      Add validation: Paths should not start with a slash.
+    </issue>
+    <issue kind="good-first-issue">
+      For: CLI and API
+      * List policies by path
+      * List policies by SPIFFE ID
+    </issue>
+
+    <issue>
+      breaking : these should take trust root as an argument because
+      they can have distinct trust roots
+
+      // SpikeKeeper constructs and returns the SPIKE Keeper's
+      // SPIFFE ID string.
+      // The output is constructed based on the trust root from the environment.
+      func SpikeKeeper() string {
+      return "spiffe://" + env.TrustRoot() + "/spike/keeper"
       }
 
-      shard := request.Shard
-      id := request.KeeperId
-
-    </issue>
-    <issue>
-      validate spiffe id and other parameters
-      for this and also other keeper endpoints
-
-      func RouteShard(
-      w http.ResponseWriter, r *http.Request, audit *log.AuditEntry,
-      ) error {
-      const fName = "routeContribute"
-      log.AuditRequest(fName, r, audit, log.AuditCreate)
-
-      requestBody := net.ReadRequestBody(w, r)
-      if requestBody == nil {
-      return errors.ErrReadFailure
+      // SpikeNexus constructs and returns the SPIFFE ID for SPIKE Nexus.
+      // The output is constructed based on the trust root from the environment.
+      func SpikeNexus() string {
+      return "spiffe://" + env.TrustRoot() + "/spike/nexus"
       }
 
-      here is an example that does that:
-      func RoutePutPolicy(
-      w http.ResponseWriter, r *http.Request, audit *log.AuditEntry,
-      ) error {
-      const fName = "routePutPolicy"
-      log.AuditRequest(fName, r, audit, log.AuditCreate)
-
-      requestBody := net.ReadRequestBody(w, r)
-      if requestBody == nil {
-      return errors.ErrParseFailure
+      // SpikePilot generates the SPIFFE ID for a SPIKE Pilot superuser role.
+      // The output is constructed based on the trust root from the environment.
+      func SpikePilot() string {
+      return "spiffe://" + env.TrustRoot() + "/spike/pilot/role/superuser"
       }
 
-      request := net.HandleRequest[
-      reqres.PolicyCreateRequest, reqres.PolicyCreateResponse](
-      requestBody, w,
-      reqres.PolicyCreateResponse{Err: data.ErrBadInput},
-      )
-      if request == nil {
-      return errors.ErrReadFailure
+      // SpikePilotRecover generates the SPIFFE ID for a SPIKE Pilot recovery role.
+      // The output is constructed based on the trust root from the environment.
+      func SpikePilotRecover() string {
+      return "spiffe://" + env.TrustRoot() + "/spike/pilot/role/recover"
       }
 
-      err := guardPutPolicyRequest(*request, w, r)
-      if err != nil {
-      return err
+      // SpikePilotRestore generates the SPIFFE ID for a SPIKE Pilot restore role.
+      // The output is constructed based on the trust root from the environment.
+      func SpikePilotRestore() string {
+      return "spiffe://" + env.TrustRoot() + "/spike/pilot/role/restore"
       }
+    </issue>
 
-    </issue>
     <issue>
-      Ensure the system works w/o keepers in "in memory" mode.
-      also document it and also create a video out of it.
-    </issue>
-    <issue>
-      this should be configurable:
-      ticker := time.NewTicker(5 * time.Minute)
-    </issue>
-    <issue>
-      nil check wherever Backend() is called.
-      var be backend.Backend
-    </issue>
-    <issue>
-      Test with different shamir ratios
+      SPIKE_NEXUS_KEEPER_PEERS='{"1":"https://localhost:8443","2":"https://localhost:8543","3":"https://localhost:8643"}' \
+      If these ids have to monotonically increase and start from one; they essentially define an array.
+      better to use an array instead of and object than; or even a comma-delimited list of urls for that matter.
 
-      * 5/3 -- 5 keepers, out of 3 should be alive.
-      * 1/1 -- A single keeper
-      * 0/0 -- edge case; not sure how it should behave.
-      * in-memory -- in-memory mode should disregard any keeper config.
+      When you implement the feature, update the documentation, and also the relevant shell script.
     </issue>
-  </immediate-backlog>
-  <later>
+
+
+    <issue>
+      Go binaries do not have stripped symbols by default. By default,
+      Go includes symbols for debugging, function names, and even full DWARF
+      debugging information unless explicitly removed. This can make Go binaries
+      quite large.
+
+      How to Strip Symbols
+      If you want to strip symbols from a Go binary to reduce its size, you can use:
+
+      Using strip (Linux/macOS)
+      strip mybinary
+      This removes debugging symbols and symbol tables.
+      Building with ldflags
+      go build -ldflags="-s -w" -o mybinary
+      -s: Omits the symbol table.
+      -w: Omits DWARF debugging information.
+      Using upx for Compression You can further reduce the binary size with:
+      upx --best mybinary
+      Checking Symbols
+      You can check if a binary has symbols using:
+
+      nm mybinary  # On Linux/macOS
+      objdump -t mybinary  # Alternative
+    </issue>
+
+
+    <issue>
+      LATER set a periodic reminder for VSecM security issues check.
+    </issue>
+
+    <issue>
+      - TODO optimize sqlite default params and also make sure we retry
+      database operations
+      - ref: https://tenthousandmeters.com/blog/sqlite-concurrent-writes-and-database-is-locked-errors/
+    </issue>
+    <issue>
+      TODO update vsecm documentation about cloudflare changes 1. manually upload 2. point to github for older versions.
+    </issue>
+    <issue>
+      TODO it's early but have a deprecation policy for SPIKE
+      https://external-secrets.io/latest/introduction/deprecation-policy/
+    </issue>
     <issue>
       * cut a new vsecm version too.
       * there are also open PRs there.
@@ -1075,7 +870,10 @@
       like, point http(s)_proxy at this thing, connect to it using your spiffe id, the proxy can use policies and the client spiffeid to allow/disallow an http proxy request
       No; but not a bad idea indeed. -- will look around; I'll share if I find something related.
     </issue>
-
+    <issue>
+      Check if we need traversal resistant file api needs anywhere.
+      SPIKE: traversal-resistant file apis: https://go.dev/blog/osroot
+    </issue>
   </later>
   <runner-up>
     <issue>

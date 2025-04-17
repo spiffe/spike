@@ -8,9 +8,8 @@ import (
 	"log"
 	"log/slog"
 	"os"
+	"strings"
 	"sync"
-
-	"github.com/spiffe/spike/internal/env"
 )
 
 var logger *slog.Logger
@@ -29,7 +28,7 @@ func Log() *slog.Logger {
 	}
 
 	opts := &slog.HandlerOptions{
-		Level: env.LogLevel(),
+		Level: Level(),
 	}
 
 	handler := slog.NewJSONHandler(os.Stdout, opts)
@@ -53,4 +52,34 @@ func FatalF(format string, args ...any) {
 // os.Exit(1).
 func FatalLn(args ...any) {
 	log.Fatalln(args...)
+}
+
+// Level returns the logging level for the SPIKE components.
+//
+// It reads from the SPIKE_SYSTEM_LOG_LEVEL environment variable and
+// converts it to the corresponding slog.Level value.
+// Valid values (case-insensitive) are:
+//   - "DEBUG": returns slog.LevelDebug
+//   - "INFO": returns slog.LevelInfo
+//   - "WARN": returns slog.LevelWarn
+//   - "ERROR": returns slog.LevelError
+//
+// If the environment variable is not set or contains an invalid value,
+// it returns the default level slog.LevelWarn.
+func Level() slog.Level {
+	level := os.Getenv("SPIKE_SYSTEM_LOG_LEVEL")
+	level = strings.ToUpper(level)
+
+	switch level {
+	case "DEBUG":
+		return slog.LevelDebug // -4
+	case "INFO":
+		return slog.LevelInfo // 0
+	case "WARN":
+		return slog.LevelWarn // 4
+	case "ERROR":
+		return slog.LevelError // 8
+	default:
+		return slog.LevelWarn // 4
+	}
 }

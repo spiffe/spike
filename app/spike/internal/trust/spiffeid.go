@@ -9,14 +9,15 @@
 package trust
 
 import (
-	"github.com/spiffe/spike/internal/auth"
+	svid "github.com/spiffe/spike-sdk-go/spiffeid"
+
 	"github.com/spiffe/spike/internal/log"
 )
 
 // Authenticate verifies if the provided SPIFFE ID belongs to a pilot instance.
 // Logs a fatal error and exits if verification fails.
 func Authenticate(spiffeid string) {
-	if !auth.IsPilot(spiffeid) {
+	if !svid.IsPilot(spiffeid) {
 		log.Log().Error(
 			"Authenticate: You need a 'super user' SPIFFE ID to use this command.",
 		)
@@ -30,7 +31,7 @@ func Authenticate(spiffeid string) {
 // AuthenticateRecover validates the SPIFFE ID for the recover role and exits
 // the application if it does not match the recover SPIFFE ID.
 func AuthenticateRecover(spiffeid string) {
-	if !auth.IsPilotRecover(spiffeid) {
+	if !svid.IsPilotRecover(spiffeid) {
 		log.Log().Error(
 			"AuthenticateRecover: You need a 'recover' SPIFFE ID to use this command.",
 		)
@@ -44,7 +45,7 @@ func AuthenticateRecover(spiffeid string) {
 // AuthenticateRestore verifies if the given SPIFFE ID is valid for restoration.
 // Logs a fatal error and exits if the SPIFFE ID validation fails.
 func AuthenticateRestore(spiffeid string) {
-	if !auth.IsPilotRestore(spiffeid) {
+	if !svid.IsPilotRestore(spiffeid) {
 		log.Log().Error(
 			"AuthenticateRestore: You need a 'restore' SPIFFE ID to use this command.",
 		)
