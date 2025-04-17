@@ -14,27 +14,48 @@ sort_by = "weight"
 
 TBD
 
-## [0.4.0] - 2025
+## [0.4.0] - 2025-04-16
 
-* Moved some common reusable code to `spike-sdk-go`.
+### Added
+
 * Added more configuration options to SPIKE Nexus.
-* Better memory protection.
 * Updated documentation around security and production hardening.
-* Fixed a bug related to policies not recovering after a SPIKE Nexus crash.
-  Now, both secrets and policies recover without an issue.
 * Updated release instructions, added a series of tests to follow and cutting
   a release only after all tests pass. These test are manual for now, but
   can be automated later down the line.
-* For added security, we strip symbols during the build process now.
+
+### Fixed
+
+* Fixed a bug related to policies not recovering after a SPIKE Nexus crash.
+  Now, both secrets and policies recover without an issue.
+* Ensured that "in memory" mode works as expected, and we can create policies
+  and secrets.
+* Fixed inconsistencies in the audit log format.
+* Fixed NilPointer exception during certain shard creation paths.
+* Fixed regressions due to premature memory cleanup. Now the memory is cleaned
+  up when no longer needed (but not before).
+* Various bug fixes and improvements.
+
+### Changed
+
+* Moved some common reusable code to `spike-sdk-go`.
+* Various changes and improvements in SPIKE Go SDK.
 * The startup script does not initiate SPIKE Keepers if SPIKE is running in
   "in memory" mode.
-* Ensured that "in memory" mode functions, and we can create policies and
-  secrets.
-* Fixed inconsistencies in the audit log format.
 * Renamed `AuditCreated` enum as `AuditEntryCreated` to specify its intention
   better (i.e., it's not an creation of a an entity or a DAO, but rather it's
   the start of an audit trail).
-* 
+* Improved `spike policy` commands with better UX and error handling.
+
+### Security
+
+* Added cache invalidation headers to all API responses.
+* For added security, we strip symbols during the build process now.
+* Implemented better memory protection with cleaning up memory when no longer needed.
+* SPIKE Nexus and SPIKE Keepers use `mlock` to avoid memory swapping when possible.
+* [Fixed `CVE-2025-22872`: golang.org/x/net vulnerable to Cross-site Scripting](https://github.com/spiffe/spike/security/dependabot/5)
+* [Fixed `CVE-2025-22870`: HTTP Proxy bypass using IPv6 Zone IDs in golang.org/x/net](https://github.com/spiffe/spike/security/dependabot/4)
+
 
 ## [0.3.1] - 2025-03-04
 
