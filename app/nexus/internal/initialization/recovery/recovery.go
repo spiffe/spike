@@ -299,7 +299,6 @@ func NewPilotRecoveryShards() map[int]*[32]byte {
 
 	for _, share := range rootShares {
 		log.Log().Info(fName, "msg", "Generating share", "share.id", share.ID)
-		fmt.Println("share.id", share.ID, "share.value", share.Value)
 
 		contribution, err := share.Value.MarshalBinary()
 		if err != nil {

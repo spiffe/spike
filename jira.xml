@@ -37,15 +37,13 @@
     </issue>
   </watch>
   <immediate-backlog>
-    <remark>
-      Don't cut a new version until this immediate backlog is processed.
-      Processing can also mean deferring things to after version cut.
-    </remark>
-    <issue>
-      fix fmt.Printlns
-    </issue>
   </immediate-backlog>
   <later>
+    <issue priority="highy" severity="low">
+      When SPIKE is restored if keepers are not up, recovery is not done.
+      After a successful restore, SPIKE Nexus should recover its backing store
+      without relying on keepers.
+    </issue>
     <issue>
       provide the restore txt files in hex form so that it will be much easier to sanitize, validate length etc.
       to validate a base64 encoded text is error-prone.
