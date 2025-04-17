@@ -32,12 +32,13 @@ ensure a smooth and reliable release process.
 Before every release:
 
 1. Run the unit tests
-2. Run the following smoke test documented in the next section.
+2. Run the following smoke tests documented in the next section.
 3. If everything passes, update `NexusVersion`, `PilotVersion` 
    and `KeeperVersion` in `$WORKSPACE/spike/internal/config/config.go`
 4. Update any necessary documentation.
 5. Update the changelog.
 6. Update the documentation snapshots page.
+7. Run `./hack/cover.sh` to update and send coverage report to the public docs.
 
 Release process:
 
