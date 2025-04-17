@@ -329,7 +329,7 @@ func NewPilotRecoveryShards() map[int]*[32]byte {
 		var rs [32]byte
 		copy(rs[:], contribution)
 
-		log.Log().Info(fName, "msg", "Generated shares. len:", len(rs))
+		log.Log().Info(fName, "msg", "Generated shares", "len", len(rs))
 
 		result[int(ii)] = &rs
 	}
