@@ -157,15 +157,27 @@ func HydrateMemoryFromBackingStore() {
 func RestoreBackingStoreUsingPilotShards(shards []ShamirShard) {
 	const fName = "RestoreBackingStoreUsingPilotShards"
 
-	fmt.Println(">>>>>>>>>>>>>>>>>>>>>>>>>>>> RESTORING BACKING STORE WE ARE RECOVERING FROM A BACKUP")
+	log.Log().Info(fName, "msg", "Restoring backing store using pilot shards")
 
-	// TODO: warn if shard value is zero. or shard id is zero; both means a premature memory wipe.
-
+	// Sanity check:
 	for shard := range shards {
-		fmt.Println(">>>>>>>>>> shard", shard, "value", shards[shard].Value, "id", shards[shard].Id)
+		value := shards[shard].Value
+		id := shards[shard].Id
+
+		if mem.Zeroed32(value) || id == 0 {
+			log.Log().Error(
+				fName,
+				"msg", "Bad input: ID or Value of a shard is zero. Exiting recovery",
+			)
+			return
+		}
 	}
 
-	fmt.Println(">>>>>>>>>>>>>>>>>>>>>>>>>>>> len(shards)", len(shards), "threshold", env.ShamirThreshold())
+	log.Log().Info(fName,
+		"msg", "Recovering backing store using pilot shards",
+		"threshold", env.ShamirThreshold(),
+		"len", len(shards),
+	)
 
 	// Ensure we have at least the threshold number of shards
 	if len(shards) < env.ShamirThreshold() {
@@ -174,7 +186,7 @@ func RestoreBackingStoreUsingPilotShards(shards []ShamirShard) {
 		return
 	}
 
-	fmt.Println(">>>>>>>>>>>>>>>>>>>>>>>>>>>> enough shards collected; will recover root key")
+	log.Log().Info(fName, "msg", "Recovering backing store using pilot shards")
 
 	// Recover the root key using the threshold number of shards
 	binaryRec := RecoverRootKey(shards)
@@ -265,8 +277,6 @@ func SendShardsPeriodically(source *workloadapi.X509Source) {
 //	    storeShard(shard)
 //	}
 func NewPilotRecoveryShards() map[int]*[32]byte {
-	fmt.Println(">>>>>>>>>>>>>>>>>>>>>>>>>>>> CREATING NEW RECOVERY SHARDS (this probably should not happen if you are recovering from a backup)")
-
 	const fName = "NewPilotRecoveryShards"
 	log.Log().Info(fName, "msg", "Generating pilot recovery shards")
 
@@ -302,7 +312,6 @@ func NewPilotRecoveryShards() map[int]*[32]byte {
 			return nil
 		}
 
-		// var bb []byte
 		bb, err := share.ID.MarshalBinary()
 		if err != nil {
 			log.Log().Error(fName, "msg", "Failed to unmarshal share Id")

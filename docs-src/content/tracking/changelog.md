@@ -14,7 +14,16 @@ sort_by = "weight"
 
 TBD
 
-## [0.3.1] - 2026-03-04
+## [0.4.0] - 2025
+
+* Moved some common reusable code to `spike-sdk-go`.
+* Added more configuration options to SPIKE Nexus.
+* Better memory protection.
+* Updated documentation around security and production hardening.
+* Fixed a bug related to policies not recovering after a SPIKE Nexus crash.
+  Now, both secrets and policies recover without an issue.
+
+## [0.3.1] - 2025-03-04
 
 ### Added
 
@@ -43,7 +52,7 @@ TBD
  memory protection.
 * [Fixed `CVE-2025-271447`: DoS in go-jose Parsing](https://github.com/spiffe/spike/security/dependabot/3)
 
-## [0.3.0] - 2026-02-20
+## [0.3.0] - 2025-02-20
 
 This release was focused around bugfixes, stability, documentation, and 
 disaster recovery.
@@ -73,7 +82,7 @@ disaster recovery.
   templateability, and consistency to the overall documentation.
 * Significant updates in [SPIKE go SDK](https://github.com/spiffe/spike-sdk-go).
 
-## [0.2.1] - 2026-01-23
+## [0.2.1] - 2025-01-23
 
 ### Added
 
