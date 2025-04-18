@@ -76,9 +76,6 @@
 
       check the project globally.
     </issue>
-  </immediate-backlog>
-  <later>
-
     <issue>
       spike (main)$ spike operator restore
       (your input will be hidden as you paste/type it)
@@ -100,251 +97,23 @@
       error could be more explanatory
     </issue>
     <issue>
-      the "created" state in audit logs is misleading:
-      We are not creating an entity; we are starting an audit trail.
-      a different name will be more appropriate.
-    </issue>
-    <issue>
-      Before doing anything, create a local Kubernetes setup that works.
-    </issue>
-    <issue priority="high" severity="medium">
-      Test with different shamir ratios
-
-      * 5/3 -- 5 keepers, out of 3 should be alive.
-      * 1/1 -- A single keeper
-      * 0/0 -- edge case; not sure how it should behave.
-      * in-memory -- in-memory mode should disregard any keeper config.
-    </issue>
-    <issue>
-      Create an ADR about secret path format
-      i.e. it should match  const validPath = `^[a-zA-Z0-9._\-/()?+*|[\]{}\\]+$`
-      and recommended but not mandated to not start with /.
-
-    </issue>
-
-    <issue>
-      Use Case: Each SPIKE Keeper in its own trust domain.
-      (we can also create a demo once this feature is established)
-
-      Details:
-
-      The current design assumes that all keepers are in the same trust boundary
-      (which defaults to spike.ist)
-      that can make sense for a single-cluster deployment
-      (each keeper can be tainted to deploy itself on a distinct node for
-      redundancy)
-      however; a keeper's SPIFFE ID does not have to have a single trust root.
-      each SPIKE keeper can (in theory) live in a separate cluster, in its own
-      trust boundary, depicted by a different trust root.
-
-      If that's the case the below function will not be valid
-
-      func IsKeeper(id string) bool {
-      return id == spiffeid.SpikeKeeper()
-      }
-
-      Instead of this the validation should be done against SPIKE_NEXUS_KEEPER_PEERS
-      and the env var should also contain the trust root of each keeper.
-
-      Similarly, the function cannot check the trust root.
-      it may however verify the part of spiffeID "after" the trust root.
-
-      // I should be a SPIKE Keeper.
-      if !auth.IsKeeper(selfSpiffeid) {
-      log.FatalF("Authenticate: SPIFFE ID %s is not valid.\n", selfSpiffeid)
-      }
-
-      So for the `main` function of SPIKE Keeper we'll need a more relaxed
-      version of IsKeeper.
-      and the IsKeeper in SPIKE Nexus will validate looking at the env
-      config.
-
-      which also means, SPIKE Keeper can require SPIKE_TRUST_ROOT along
-      with SPIKE_KEEPER_TLS_PORT to start. at start-keeper-1.sh
-    </issue>
-
-    <issue>
       Check what else needed (aside from enabling boring crypto) to
       be algorithmically fips-compatible.
-    </issue>
-
-    <issue priority="high" severity="low">
-      [vmware-tanzu/secrets-manager] Scorecard supply-chain security workflow run
-      ^
-      this is constantly failig.
-      maybe disable it.
-    </issue>
-    <issue priority="low">
-      Have an in-memory SQLite mode as an option.
-
-      Yes, SQLite can be used as an in-memory database by specifying :memory: as the database name when connecting. This means the entire database exists only in RAM and is discarded when the connection is closed.
-      How to Use SQLite as an In-Memory Database
-      You can create an in-memory SQLite database in Python like this:
-      ^
-      could be useful maybe, not sure.
-    </issue>
-    <issue for="vsecm">
-      VSecM: Maybe use SPIFFE Helper instead of VSecM sidecar since it
-      essentially does the same thing. Or maybe have an alternative
-      implementation that uses spiffe helper instead of vsecm sidecar.
-    </issue>
-
-    <issue>
-      Consider metrics collector integartion.
-
-      This is from SPIRE:
-      The metrics collectors that are currently supported are Prometheus, Statsd,
-      DogStatsd, and M3. Multiple collectors can be conﬁgured simultaneously, both in
-      the servers and the agents.
-
-      Think about what telemetry SPIKE can create.
-
-      create telemetry data and support certain metrics collectors.
-
-      create a monitoring epic
-    </issue>
-    <issue>
-      Add validation: Paths should not start with a slash.
     </issue>
     <issue kind="good-first-issue">
       For: CLI and API
       * List policies by path
       * List policies by SPIFFE ID
     </issue>
-
     <issue>
-      breaking : these should take trust root as an argument because
-      they can have distinct trust roots
+      Create an ADR about secret path format
+      i.e. it should match  const validPath = `^[a-zA-Z0-9._\-/()?+*|[\]{}\\]+$`
+      and recommended but not mandated to not start with /.
 
-      // SpikeKeeper constructs and returns the SPIKE Keeper's
-      // SPIFFE ID string.
-      // The output is constructed based on the trust root from the environment.
-      func SpikeKeeper() string {
-      return "spiffe://" + env.TrustRoot() + "/spike/keeper"
-      }
-
-      // SpikeNexus constructs and returns the SPIFFE ID for SPIKE Nexus.
-      // The output is constructed based on the trust root from the environment.
-      func SpikeNexus() string {
-      return "spiffe://" + env.TrustRoot() + "/spike/nexus"
-      }
-
-      // SpikePilot generates the SPIFFE ID for a SPIKE Pilot superuser role.
-      // The output is constructed based on the trust root from the environment.
-      func SpikePilot() string {
-      return "spiffe://" + env.TrustRoot() + "/spike/pilot/role/superuser"
-      }
-
-      // SpikePilotRecover generates the SPIFFE ID for a SPIKE Pilot recovery role.
-      // The output is constructed based on the trust root from the environment.
-      func SpikePilotRecover() string {
-      return "spiffe://" + env.TrustRoot() + "/spike/pilot/role/recover"
-      }
-
-      // SpikePilotRestore generates the SPIFFE ID for a SPIKE Pilot restore role.
-      // The output is constructed based on the trust root from the environment.
-      func SpikePilotRestore() string {
-      return "spiffe://" + env.TrustRoot() + "/spike/pilot/role/restore"
-      }
-    </issue>
-
-    <issue>
-      SPIKE_NEXUS_KEEPER_PEERS='{"1":"https://localhost:8443","2":"https://localhost:8543","3":"https://localhost:8643"}' \
-      If these ids have to monotonically increase and start from one; they essentially define an array.
-      better to use an array instead of and object than; or even a comma-delimited list of urls for that matter.
-
-      When you implement the feature, update the documentation, and also the relevant shell script.
-    </issue>
-
-
-    <issue>
-      Go binaries do not have stripped symbols by default. By default,
-      Go includes symbols for debugging, function names, and even full DWARF
-      debugging information unless explicitly removed. This can make Go binaries
-      quite large.
-
-      How to Strip Symbols
-      If you want to strip symbols from a Go binary to reduce its size, you can use:
-
-      Using strip (Linux/macOS)
-      strip mybinary
-      This removes debugging symbols and symbol tables.
-      Building with ldflags
-      go build -ldflags="-s -w" -o mybinary
-      -s: Omits the symbol table.
-      -w: Omits DWARF debugging information.
-      Using upx for Compression You can further reduce the binary size with:
-      upx --best mybinary
-      Checking Symbols
-      You can check if a binary has symbols using:
-
-      nm mybinary  # On Linux/macOS
-      objdump -t mybinary  # Alternative
-    </issue>
-
-
-    <issue>
-      LATER set a periodic reminder for VSecM security issues check.
-    </issue>
-
-    <issue>
-      - TODO optimize sqlite default params and also make sure we retry
-      database operations
-      - ref: https://tenthousandmeters.com/blog/sqlite-concurrent-writes-and-database-is-locked-errors/
+      Maybe not an ADR but more part of the documentation.
     </issue>
     <issue>
-      TODO update vsecm documentation about cloudflare changes 1. manually upload 2. point to github for older versions.
-    </issue>
-    <issue>
-      TODO it's early but have a deprecation policy for SPIKE
-      https://external-secrets.io/latest/introduction/deprecation-policy/
-    </issue>
-    <issue>
-      * cut a new vsecm version too.
-      * there are also open PRs there.
-    </issue>
-    <issue>
-      aes256-cbc
-      jay:U2FsdGVkX1+VhdGia1yk+JAUSraXj60ZA2ydT9TuHmQBE1sWLcMLb5z0B76sCqpJVGi1GQCl8BnnoV5kznYneQ==
-    </issue>
-    <issue>
-      newSecreteUndeleteCommand
-
-      Run: func(cmd *cobra.Command, args []string) {
-      // O: we can pass this as a predicate to newSecretUndeleteCommand,
-      as a HOF.
-      trust.Authenticate(spiffeId)
-    </issue>
-    <issue>
-      add retries to everything under:
-      app/nexus/internal/state/persist
-      ^ they all talk to db; and sqlite can temporarily lock for
-      a variety of reasons.
-    </issue>
-    <issue priority="important" severity="medium">
-      if a keeper crashes it has to wait for the next nexus cycle which is
-      suboptimal. Instead, nexus can send a ping that returns an overall
-      status
-      of keeper (i.e. if it's populated or not)
-      this can be more frequent than hydration; and once nexus realizes
-      keeper
-      is down, it can rehydrate it.
-
-      in addition; nexus can first check the sha hash of the keeper's shard.
-      before resending; if the hashes match, it won't restransmit the shard.
-    </issue>
-    <issue>
-      path sanitization:
-      ^(?!/)([a-zA-Z0-9._-]+)(/[a-zA-Z0-9._-]+)*$
-
-      Hashi Vault is not as script as the above regex; but I think this
-      gives a nice balance.
-
-      ^(?!/) → Ensures the path does not start with / (Vault does not require a leading /).
-      ([a-zA-Z0-9._-]+) → The first segment must consist of alphanumeric characters, dots, underscores, or dashes.
-      (/[a-zA-Z0-9._-]+)* → Subsequent segments must follow the same pattern and be separated by /.
-      No double slashes (//) allowed.
-      No spaces, backslashes, or reserved URL characters allowed.
+      To docs. -- note that the validation is not "as strict" but these are recommended.
       Example Valid Paths:
       ✅ secret/myapp/config
       ✅ secrets/db-creds/admin-user
@@ -358,111 +127,60 @@
       ❌ secret#invalid?path (reserved URL characters)
     </issue>
     <issue>
-      this is for policy creation:
+      control these with flags.
+      i.e. the starter script can optionally NOT automatically
+      start nexus or keepers.
 
-      allowed := state.CheckAccess(
-      spiffeid.String(), "*",
-      []data.PolicyPermission{data.PermissionSuper},
-      )
+      #echo ""
+      #echo "Waiting before SPIKE Keeper 1..."
+      #sleep 5
+      #run_background "./hack/start-keeper-1.sh"
+      #echo ""
+      #echo "Waiting before SPIKE Keeper 2..."
+      #sleep 5
+      #run_background "./hack/start-keeper-2.sh"
+      #echo ""
+      #echo "Waiting before SPIKE Keeper 3..."
+      #sleep 5
+      #run_background "./hack/start-keeper-3.sh"
 
-      instead of a wildcard, maybe have a predefined path
-      for access check like "/spike/system/acl"
-
-      also disallow people creating secrets etc under
-      /spike/system
+      #echo ""
+      #echo "Waiting before SPIKE Nexus..."
+      #sleep 5
+      #run_background "./hack/start-nexus.sh"
     </issue>
+    <issue kind="good-first-issue"
+           ref="https://github.com/spiffe/spike/issues/80">
+      validations:
 
-    <issue>
-      path is still stored plain in DB; use HMAC instead.
+      along with the error code, also return some explanatory message
 
-      CREATE TABLE "secrets" (
-      "hashed_path"	BLOB NOT NULL,
-      "version"	INTEGER NOT NULL,
-      "nonce"	BLOB NOT NULL,
-      "encrypted_data"	BLOB NOT NULL,
-      "created_time"	DATETIME NOT NULL,
-      "deleted_time"	DATETIME,
-      PRIMARY KEY("hashed_path","version")
-      );
+      instead of this for example
 
-      same is true for policies; we need to keep them encrypted too.
-    </issue>
-    <issue>
-      Also, create a script in ./hack that does that.
-      (i.e. something that forces Nexus to reset its root key
-      upon next restart; and see how it impacts the system
-      see SQLite db with a db viewer
-      or maybe let that script delete the database too.)
+      err = validation.ValidateSpiffeIdPattern(spiffeIdPattern)
+      if err != nil {
+      responseBody := net.MarshalBody(reqres.PolicyCreateResponse{
+      Err: data.ErrBadInput,
+      }, w)
+      net.Respond(http.StatusBadRequest, responseBody, w)
+      return err
+      }
 
-      // TODO: if you stop nexus, delete the tombstone file, and
-      restart nexus,
-      // (and no keeper returns a shard and returns 404)
-      // it will reset its root key and update the keepers to store
-      the new
-      // root key. This is not an attack vector, because an adversary
-      who can
-      // delete the tombstone file, can also delete the backing store.
-      /// Plus no sensitive data is exposed; it's just all data is
-      inaccessible
-      // now because the root key is lost for good. In either
-      // case, for production systems, the backing store needs to be
-      backed up
-      // and the root key needs to be backed up in a secure place too.
-      // ^ add these to the documentation.
-    </issue>
-    <issue>
-      spike operator reset:
-      deletes and recreates the ~/.spike folder
-      restarts the initialization flow to rekey keepers.
+      do this
 
-      volkan@spike:~/Desktop/WORKSPACE/spike$ spike secret get /db
-      Error reading secret: post: Problem connecting to peer
-
-      ^ I get an error instead of a "secret not found" message.
+      err = validation.ValidateSpiffeIdPattern(spiffeIdPattern)
+      if err != nil {
+      responseBody := net.MarshalBody(reqres.PolicyCreateResponse{
+      Err: data.ErrBadInput,
+      Reason: "Invalid spiffe id pattern. Matcher should be a regex that
+      can match a spiffe id"
+      }, w)
+      net.Respond(http.StatusBadRequest, responseBody, w)
+      return err
+      }
     </issue>
     <issue>
-      verify if the keeper has shard before resending it:
-      send hash of the shard first
-      if keeper says “I have it”, don’t send the actual shard.
-      this will make things extra secure.
-    </issue>
-    <issue>
-      Fleet management:
-      - There is a management plane cluster
-      - There is a control plane cluster
-      - There are workload clusters connected to the control plane
-      - All of those are their own trust domains.
-      - There is MP-CP connectivity
-      - There is CP-WL connectivity
-      - MP has a central secrets store
-      - WL and CP need secrets
-      - Securely dispatch them without "ever" using Kubernetes secrets.
-      - Have an alternative that uses ESO and a restricted secrets
-      namespace
-      that no one other than SPIKE components can see into.
-    </issue>
-    <issue>
-      Wrt DR:
-
-      A 404 response from a keeper meens that it does not have the shard
-      if threshold number of keepers do not have the shard too, then there is
-      no way that nexus can recover; so does it mean it should stop polling?
-
-      Not quite. Because later, we can have ways to seed keepers, maybe through
-      other nexuses, maybe via cloning from a backup keeper, maybe using a
-      secure keeper API (i.e. imitating nexus)
-
-      It's better, and simpler to keep the polling always running.
-      It makes less assumptions that way.
-
-      make this an ADR.
-    </issue>
-    <issue>
-      configure SPIKE to rekey itself as per NIST guidelines.
-      Also maybe `spike operator rekey` to manually initiate that.
-      `spike operator rekey` will also change the shamir shares, wheras the
-      internal rekey will just change the encryption key, leaving the shamir
-      shares intact.
+      read policies from a yaml or a json file and create them.
     </issue>
     <issue>
       This is OpenBao's production deployment checlist; check of if any of
@@ -510,43 +228,431 @@
       OpenBao to avoid unauthorized access or operations.
     </issue>
     <issue>
-      a mode that enables the admin to load shares to keepers.
-      this will be essentially using the keeper REST API and acting as
-      SPIKE Pilot with a recover svid.
-      The benefit would be; we can have a dedicated recover and restore binaries
-      without having to expose the pilot binary.
-      Or we can update the keepers, even if we don't have access to SPIKE Nexus
-      or SPIKE Nexus is down.
-      maybe by using a "seeder" SPIFFE ID.
-      but I'm also not sure if it's worth it.
-      it would mean more APIs to secure; it would also mean keeping spike
-      keepers more intelligent (instead of keeping them dumb)
-    </issue>
-    <issue>
-      A /stats endpoint.
+      Wrt DR:
 
-      A dedicated /stats endpoint will be implemented to provide real-time
-      metrics about:
-      Total number of secrets managed.
-      Status of the key-value store.
-      Resource utilization metrics (e.g., CPU, memory).
-      This endpoint will support integration with monitoring tools for enhanced
-      observability.
-      These measures will ensure comprehensive monitoring and troubleshooting.
+      A 404 response from a keeper means that it does not have the shard
+      if threshold number of keepers do not have the shard too, then there is
+      no way that nexus can recover; so does it mean it should stop polling?
+
+      Not quite. Because later, we can have ways to seed keepers, maybe through
+      other nexuses, maybe via cloning from a backup keeper, maybe using a
+      secure keeper API (i.e. imitating nexus)
+
+      It's better, and simpler to keep the polling always running.
+      It makes less assumptions that way.
+
+      make this an ADR.
     </issue>
     <issue>
-      By design, we regard memory as the source of truth.
-      This means that backing store might miss some secrets.
-      Find ways to reduce the likelihood of this happening.
-      1. Implement exponential retries.
-      2. Implement a health check to ensure backing store is up.
-      3. Create background jobs to sync the backing store.
+      path is still stored plain in DB; use HMAC instead.
+
+      CREATE TABLE "secrets" (
+      "hashed_path"	BLOB NOT NULL,
+      "version"	INTEGER NOT NULL,
+      "nonce"	BLOB NOT NULL,
+      "encrypted_data"	BLOB NOT NULL,
+      "created_time"	DATETIME NOT NULL,
+      "deleted_time"	DATETIME,
+      PRIMARY KEY("hashed_path","version")
+      );
+
+      same is true for policies; we need to keep them encrypted too.
     </issue>
     <issue>
-      all components shall have
-      liveness and readiness endpoints
-      (or maybe we can design it once we k8s...ify things.
+      this is for policy creation:
+
+      allowed := state.CheckAccess(
+      spiffeid.String(), "*",
+      []data.PolicyPermission{data.PermissionSuper},
+      )
+
+      instead of a wildcard, maybe have a predefined path
+      for access check like "/spike/system/acl"
+
+      also disallow people creating secrets etc under
+      /spike/system
     </issue>
+    <issue>
+      breaking : these should take trust root as an argument because
+      they can have distinct trust roots
+
+      // SpikeKeeper constructs and returns the SPIKE Keeper's
+      // SPIFFE ID string.
+      // The output is constructed based on the trust root from the environment.
+      func SpikeKeeper() string {
+      return "spiffe://" + env.TrustRoot() + "/spike/keeper"
+      }
+
+      // SpikeNexus constructs and returns the SPIFFE ID for SPIKE Nexus.
+      // The output is constructed based on the trust root from the environment.
+      func SpikeNexus() string {
+      return "spiffe://" + env.TrustRoot() + "/spike/nexus"
+      }
+
+      // SpikePilot generates the SPIFFE ID for a SPIKE Pilot superuser role.
+      // The output is constructed based on the trust root from the environment.
+      func SpikePilot() string {
+      return "spiffe://" + env.TrustRoot() + "/spike/pilot/role/superuser"
+      }
+
+      // SpikePilotRecover generates the SPIFFE ID for a SPIKE Pilot recovery role.
+      // The output is constructed based on the trust root from the environment.
+      func SpikePilotRecover() string {
+      return "spiffe://" + env.TrustRoot() + "/spike/pilot/role/recover"
+      }
+
+      // SpikePilotRestore generates the SPIFFE ID for a SPIKE Pilot restore role.
+      // The output is constructed based on the trust root from the environment.
+      func SpikePilotRestore() string {
+      return "spiffe://" + env.TrustRoot() + "/spike/pilot/role/restore"
+      }
+    </issue>
+    <issue>
+      we need a "reset" command for the restore operation in case
+      we pushed an incorrect set of shards.
+    </issue>
+    <issue>
+      spike policy write my-policy ./the-policy-file.yaml
+      also check out: https://developer.hashicorp.com/vault/docs/concepts/policies
+      to see if we can amend any updates to the policy rules
+      (one such update, for example, is limiting what kind of attributes are
+      allowed, but we should discuss whether that much granularity is worth the
+      hassle)
+    </issue>
+    <issue>
+      the backing store is considered untrusted and it stores
+      encrypted information
+      todo: if it's "really" untrusted then maybe it's better to encrypt
+      everything
+      (including metadata) -- check how other secrets managers does this.
+    </issue>
+    <issue kind="good-first-issue">
+      create a `spike status` command that shows the current status and
+      stats
+      of SPIKE Nexus (i.e. whether root key initialized; how many secrets
+      are
+      in the system etc.)
+      It does not have to be too detailed; we can always amend it later.
+    </issue>
+    <issue>
+      check open/in-progress GitHub issues and verify their status with
+      the contributors.
+    </issue>
+    <issue>
+      add to docs: we strip binaries of symbols before build for
+      additional security.
+      Also, check if there is a way to verify the result.
+    </issue>
+    <issue severity="important" priority="elevated">
+      write an adr about why those asnyc are snyc from now on:
+
+      // TOD we don't have any retry for policies or for recovery info.
+      // they are equally important.
+
+      // TO: these xsync operations can cause race conditions
+      //
+      // 1. process a writes secret
+      // 2. process b marks secret as deleted
+      // 3. in memory we write then delete
+      // 4. but to the backing store it goes as delete then write.
+      // 5. memory: secret deleted; backing store: secret exists.
+      //
+      // to solve it; have a queue of operations (as a go channel)
+      // and do not consume the next operation until the current
+      // one is complete.
+      //
+      // have one channel for each resource:
+      // - secrets
+      // - policies
+      // - key recovery info.
+      //
+      // Or as an alternative; make these xsync operations sync
+      // and wait for them to complete before reporting success.
+      // this will make the architecture way simpler without needing
+      // to rely on channels.
+    </issue>
+    <issue>
+      enable and verify FIPS mode.
+      It should have been easier with the new Go version by now.
+
+      Also upgrade Go to the latest while you are at it.
+
+      Go 1.24 introduces native support to FIPS 140-3. The Go Cryptographic
+      Module in 1.24 will be FIPS 140-3 certified.
+
+      It will not require linking to BoringCrypto/BoringSSL nor enabling CGO.
+
+      This approach if it works, is more preferrable; research about it.
+    </issue>
+    <issue>
+      seed, err := crypto.Aes256Seed()
+
+      create an override function that return a byte slice instead of a string.
+      while at that, we can create a pointer to a byte array too
+      (since the size will be fixed for 256bits anyways)
+
+      We can reuse that instead of the [32]byte array creation in the source code.
+    </issue>
+    <issue>
+      SPIKE_NEXUS_KEEPER_PEERS='{"1":"https://localhost:8443","2":"https://localhost:8543","3":"https://localhost:8643"}' \
+      If these ids have to monotonically increase and start from one; they essentially define an array.
+      better to use an array instead of and object than; or even a comma-delimited list of urls for that matter.
+
+      When you implement the feature, update the documentation, and also the relevant shell script.
+    </issue>
+    <issue>
+      Optionally disable mlock via config -- it should be enabled by default though.
+
+      If the user has granted `CAP_IPC_LOCK` to SPIKE Nexus, then they can also
+      set something like `SPIKE_NEXUS_USE_MLOCK="true"` as an env var, and try
+      locking memory if the variable is set (will be "false" by default).
+    </issue>
+    <issue severity="important" urgency="moderate">
+      // TDO: check all database operations (secrets, policies, metadata)
+      and
+      // ensure that they are retried with exponential backooff.
+    </issue>
+    <issue>
+      newSecreteUndeleteCommand
+
+      Run: func(cmd *cobra.Command, args []string) {
+      // O: we can pass this as a predicate to newSecretUndeleteCommand,
+      as a HOF.
+      trust.Authenticate(spiffeId)
+    </issue>
+    <issue>
+      add retries to everything under:
+      app/nexus/internal/state/persist
+      ^ they all talk to db; and sqlite can temporarily lock for
+      a variety of reasons.
+    </issue>
+    <issue>
+      guidelines about how to backup and restore
+    </issue>
+    <issue>
+      Optionally not create tables and other ddl during backing store
+      creation
+    </issue>
+    <issue>
+      SPIKE Pilot to ingest a policy YAML file(s) to create policies.
+      (similar to kubectl)
+    </issue>
+    <issue>
+      having a mode of not directly creating the database can also
+      be helpful for migration scripts.
+      (not that we support any migration path for now, but maybe for the
+      future)
+    </issue>
+    <issue kind="qa">
+      Add  relevant ones of those to the smoke tests
+      - SPIKE Nexus Sanity Tests
+      - Ensure SPIKE Nexus caches the root key in memory.
+      - Ensure SPIKE Nexus reads from SPIKE keep if it does not have
+      the root
+      key.
+      - Ensure SPIKE Nexus saves the encrypted root key to the
+      database.
+      - Ensure SPIKE Nexus caches the user's session key.
+      - Ensure SPIKE Nexus removes outdated session keys.
+      - Ensure SPIKE Nexus does not re-init (without manual
+      intervention)
+      after
+      being initialized.
+      - Ensure SPIKE Nexus adheres to the bootstrapping sequence
+      diagram.
+      - Ensure SPIKE Nexus backs up the admin token by encrypting it
+      with the
+      root
+      key and storing in the database.
+      - Ensure SPIKE Nexus stores the initialization tombstone in the
+      database.
+
+      - SPIKE Pilot Sanity Tests
+      - Ensure SPIKE Pilot denies any operation if SPIKE Nexus is not
+      initialized.
+      - Ensure SPIKE Pilot can warn if SPIKE Nexus is unreachable
+      - Ensure SPIKE Pilot does not indefinitely hang up if SPIRE is
+      not
+      there.
+      - Ensure SPIKE Pilot can get and set a secret.
+      - Ensure SPIKE Pilot can do a force reset.
+      - Ensure SPIKE Pilot can recover the root password.
+      - Ensure that after `spike init` you have a password-encrypted
+      root key
+      in the db.
+      - Ensure that you can recover the password-encrypted root key.
+    </issue>
+  </immediate-backlog>
+  <runner-up>
+    <issue>
+      Try SPIKE on a Mac.
+    </issue>
+    <issue>
+      Try SPIKE on an x-86 Linux.
+    </issue>
+    <issue>
+      - SPIKE Keeper Sanity Tests
+    </issue>
+    <issue>
+      Kubernetification
+    </issue>
+    <issue kind="v1.0-requirement">
+      - Run SPIKE in Kubernetes too.
+    </issue>
+    <issue kind="v1.0-requirement">
+      - Postgres support as a backing store.
+    </issue>
+    <issue kind="v1.0-requirement">
+      - Ability to channel audit logs to a log aggregator.
+    </issue>
+    <issue kind="v1.0-requirement">
+      - OIDC integration: Ability to connect to an identity provider.
+    </issue>
+    <issue kind="v1.0-requirement">
+      - ESO (External Secrets Operator) integration
+    </issue>
+    <issue kind="v1.0-requirement">
+      - An ADMIN UI (linked to OIDC probably)
+    </issue>
+    <issue kind="v1.0-requirement">
+      - Ability to use the RESTful API without needing an SDK.
+      That could be hard though since we rely on SPIFFE authentication and
+      SPIFFE workload API to gather certs: We can use a tool to automate
+      that
+      part. But it's not that hard either if I know where my certs are:
+      `curl --cert /path/to/svid_cert.pem --key /path/to/svid_key.pem
+      https://mtls.example.com/resource`
+    </issue>
+    <issue kind="v1.0-requirement">
+      > 80% unit test coverage
+    </issue>
+    <issue kind="v1.0-requirement">
+      Fuzzing for the user-facing API
+    </issue>
+    <isssue kind="v1.0-requirement">
+      100% Integration test (all features will have automated integration
+      tests
+      in all possible environments)
+    </isssue>
+    <issue kind="user-request,v1.0-requirement">
+      Ability to add custom metadata to secrets.
+    </issue>
+
+    <issue>
+      postgresql backend
+    </issue>
+    <issue>
+      document limits and maximums of SPIKE (such as key length, path
+      length, policy size etc)
+
+      also ensure that in the source code.
+    </issue>
+    <issue>
+      have a mode where nexus does not create tables upon initialization
+      (i.e. the admin is expected to create them beforehand)
+    </issue>
+    <issue>
+      increase unit test coverage.
+    </issue>
+    <issue>
+      pattern-based random secret generation
+    </issue>
+    <issue>
+      ability to lock nexus programmatically.
+      when locked, nexus will deny almost all operations
+      locking is done by executing nexus binary with a certain command
+      line flag.
+      (i.e. there is no API access, you'll need to physically exec the
+      ./nexus
+      binary -- regular svid verifications are still required)
+      only a superadmin can lock or unlock nexus.
+
+      ^ instead of that, you can run a script that removes all SVID
+      registrations. That will effectively result in the same thing.
+    </issue>
+    <issue>
+      test that the timeout results in an error.
+
+      ctx, cancel := context.WithTimeout(
+      context.Background(), env.DatabaseOperationTimeout(),
+      )
+      defer cancel()
+
+      cachedPolicy, err := retry.Do(ctx, func() (*data.Policy, error) {
+      return be.LoadPolicy(ctx, id)
+      })
+
+    </issue>
+    <issue>
+      Before doing anything, create a local Kubernetes setup that works.
+    </issue>
+    <issue priority="high" severity="medium">
+      Test with different shamir ratios
+
+      * 5/3 -- 5 keepers, out of 3 should be alive.
+      * 1/1 -- A single keeper
+      * 0/0 -- edge case; not sure how it should behave.
+      * in-memory -- in-memory mode should disregard any keeper config.
+    </issue>
+    <issue>
+      - TODO optimize sqlite default params and also make sure we retry
+      database operations -- at least check that we have sane defaults.
+      - ref: https://tenthousandmeters.com/blog/sqlite-concurrent-writes-and-database-is-locked-errors/
+    </issue>
+    <issue>
+      Also, create a script in ./hack that does that.
+      (i.e. something that forces Nexus to reset its root key
+      upon next restart; and see how it impacts the system
+      see SQLite db with a db viewer
+      or maybe let that script delete the database too.)
+
+      // TODO: if you stop nexus, delete the tombstone file, and
+      restart nexus,
+      // (and no keeper returns a shard and returns 404)
+      // it will reset its root key and update the keepers to store
+      the new
+      // root key. This is not an attack vector, because an adversary
+      who can
+      // delete the tombstone file, can also delete the backing store.
+      /// Plus no sensitive data is exposed; it's just all data is
+      inaccessible
+      // now because the root key is lost for good. In either
+      // case, for production systems, the backing store needs to be
+      backed up
+      // and the root key needs to be backed up in a secure place too.
+      // ^ add these to the documentation.
+    </issue>
+    <issue>
+      a way to factory-reset SPIKE: reset db; recreate rootkey; delete
+      tombstone file etc.
+
+      spike operator reset:
+      deletes and recreates the ~/.spike folder
+      restarts the initialization flow to rekey keepers.
+
+      volkan@spike:~/Desktop/WORKSPACE/spike$ spike secret get /db
+      Error reading secret: post: Problem connecting to peer
+
+      ^ I get an error instead of a "secret not found" message.
+    </issue>
+
+  </runner-up>
+
+  <later>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     <issue>
       in development mode, nexus shall act as a single binary:
       - you can create secrets and policies via `nexus create policy` etc
@@ -811,100 +917,8 @@
       or maybe this algorithm has changed already; needs to be
       double-checked.
     </issue>
-
-    <issue kind="good-first-issue"
-           ref="https://github.com/spiffe/spike/issues/80">
-      validations:
-
-      along with the error code, also return some explanatory message
-
-      instead of this for example
-
-      err = validation.ValidateSpiffeIdPattern(spiffeIdPattern)
-      if err != nil {
-      responseBody := net.MarshalBody(reqres.PolicyCreateResponse{
-      Err: data.ErrBadInput,
-      }, w)
-      net.Respond(http.StatusBadRequest, responseBody, w)
-      return err
-      }
-
-      do this
-
-      err = validation.ValidateSpiffeIdPattern(spiffeIdPattern)
-      if err != nil {
-      responseBody := net.MarshalBody(reqres.PolicyCreateResponse{
-      Err: data.ErrBadInput,
-      Reason: "Invalid spiffe id pattern. Matcher should be a regex that
-      can match a spiffe id"
-      }, w)
-      net.Respond(http.StatusBadRequest, responseBody, w)
-      return err
-      }
-    </issue>
-    <issue>
-      control these with flags.
-      i.e. the starter script can optionally NOT automatically
-      start nexus or keepers.
-
-      #echo ""
-      #echo "Waiting before SPIKE Keeper 1..."
-      #sleep 5
-      #run_background "./hack/start-keeper-1.sh"
-      #echo ""
-      #echo "Waiting before SPIKE Keeper 2..."
-      #sleep 5
-      #run_background "./hack/start-keeper-2.sh"
-      #echo ""
-      #echo "Waiting before SPIKE Keeper 3..."
-      #sleep 5
-      #run_background "./hack/start-keeper-3.sh"
-
-      #echo ""
-      #echo "Waiting before SPIKE Nexus..."
-      #sleep 5
-      #run_background "./hack/start-nexus.sh"
-    </issue>
-    <issue kind="research">
-      spike, but as an http proxy?
-      like, point http(s)_proxy at this thing, connect to it using your spiffe id, the proxy can use policies and the client spiffeid to allow/disallow an http proxy request
-      No; but not a bad idea indeed. -- will look around; I'll share if I find something related.
-    </issue>
-    <issue>
-      Check if we need traversal resistant file api needs anywhere.
-      SPIKE: traversal-resistant file apis: https://go.dev/blog/osroot
-    </issue>
-  </later>
-  <runner-up>
     <issue>
       dev mode, single binary.
-    </issue>
-    <issue>
-      use Mlock optionally
-
-      Also we can either "try and shrug" using `mlock` as in
-
-      ```go
-      err := unix.Mlock(data)
-      if err != nil {
-      // do nothing
-      }
-
-      // Zero out memory
-      for i := range data {
-      data[i] = 0
-      }
-      ```
-
-      Or we can put the mlock option behind a feature flag.
-
-      If the user has granted `CAP_IPC_LOCK` to SPIKE Nexus, then they can also
-      set something like `SPIKE_NEXUS_USE_MLOCK="true"` as an env var, and try
-      locking memory if the variable is set (will be "false" by default).
-
-      Also research more about mlock before jumping at this.
-
-      https://github.com/spiffe/spike/issues/68
     </issue>
     <issue>
       // TDO: Yes memory is the source of truth; but at least
@@ -922,17 +936,10 @@
       a integrity issue, which a retry can fix it.
     </issue>
     <issue>
-      seed, err := crypto.Aes256Seed()
-
-      create an override function that return a byte slice instead of a string.
-      while at that, we can create a pointer to a byte array too
-      (since the size will be fixed for 256bits anyways)
-
-      We can reuse that instead of the [32]byte array creation in the source code.
-    </issue>
-
-    <issue>
-      adding a timeout or circuit breaker to the infinite loop in BootstrapBackingStoreWithNewRootKey, I was suggesting a way to prevent the function from running indefinitely if something goes wrong with keeper initialization.
+      adding a timeout or circuit breaker to the infinite loop in
+      BootstrapBackingStoreWithNewRootKey, I was suggesting a way to prevent
+      the function from running indefinitely if something goes wrong with keeper
+      initialization.
       The current implementation uses:
       for {
       // Ensure to get a success response from ALL keepers eventually.
@@ -947,17 +954,21 @@
       // TODO: make the time configurable.
       time.Sleep(5 * time.Second)
       }
-      This loop will continue forever until all keepers are successfully initialized. While this makes sense for normal operation, there are scenarios where this could become problematic:
+      This loop will continue forever until all keepers are successfully
+      initialized. While this makes sense for normal operation, there are
+      scenarios where this could become problematic:
 
       If one or more keepers are permanently unavailable or unreachable
       If there's a persistent network issue preventing communication
-      If there's a configuration issue that makes successful initialization impossible
+      If there's a configuration issue that makes successful initialization
+      impossible
 
       A potential improvement would be to add:
       maxAttempts := env.GetMaxBootstrapAttempts() // Could be configurable
       attempts := 0
 
-      ctx, cancel := context.WithTimeout(context.Background(), env.GetBootstrapTimeout())
+      ctx, cancel := context.WithTimeout(context.Background(),
+      env.GetBootstrapTimeout())
       defer cancel()
 
       for {
@@ -992,261 +1003,99 @@
       A total timeout for the entire operation (configurable)
       Better observability of progress through attempt counting
 
-      In highly reliable systems, you might want the bootstrap to keep trying forever, but even then, it's valuable to have observability into how long it's been trying and an option to break the loop if needed.
+      In highly reliable systems, you might want the bootstrap to keep trying
+      forever, but even then, it's valuable to have observability into how
+      long it's been trying and an option to break the loop if needed.
+    </issue>
+  </later>
+  <future>
+    <issue>
+      maybe a default auditor SPIFFEID that can only read stuff (for
+      Pilot;
+      not for named admins; named admins will use the policy system
+      instead)
     </issue>
     <issue>
-      JSON Security:
-
-      Marshaling/unmarshaling sensitive data with standard JSON functions can leave traces in memory
-      Consider if a more secure serialization approach is needed for sensitive data
-
-      Regarding more secure JSON serialization approaches for sensitive data, here are several strategies you could consider:
-
-      Custom Secure Marshaler/Unmarshaler:
-
-      Implement custom JSON marshal/unmarshal methods that use secure memory practices
-      Include zero-out operations immediately after the data is no longer needed
-      Use fixed-size arrays rather than slices to avoid heap allocations
-
-
-      Buffer Pooling with Zeroing:
-
-      Create a pool of fixed-size buffers for serialization operations
-      Zero out buffers before returning them to the pool
-      This minimizes allocations and ensures cleanup
-
-
-      Memory-Safe Serialization Libraries:
-
-      Look into security-focused serialization libraries that handle memory better than standard encoding/json
-      Some cryptographic libraries include serialization functions designed for sensitive data
-
-
-      Encrypted Serialization:
-
-      Serialize to an encrypted format directly
-      The data stays encrypted in memory except during actual use
-
-
-      Use of Go's io.Writer Interface:
-
-      Marshal directly to a pre-allocated buffer using json.Encoder
-      This gives more control over the underlying memory
-
-
-      Manual Field-by-Field Handling:
-
-      For extremely sensitive structures, avoid automatic JSON marshaling entirely
-      json marshaling and unmarshaling can leave traces in memory.
-
-      Instead, construct the JSON manually field by field, zeroing intermediate
-      buffers
-
-
-
-      A practical implementation might look like:
-      func secureJSONMarshal(v interface{}) ([]byte, error) {
-      // Pre-allocate buffer of reasonable size to avoid resizing
-      buffer := make([]byte, 0, 1024)
-
-      // Use buffer as writer to avoid intermediate string allocations
-      b := bytes.NewBuffer(buffer)
-      encoder := json.NewEncoder(b)
-
-      // Disable HTML escaping to reduce copying
-      encoder.SetEscapeHTML(false)
-
-      err := encoder.Encode(v)
-      if err != nil {
-      return nil, err
-      }
-
-      // Get result as byte slice
-      result := b.Bytes()
-
-      // Create a copy that we'll return
-      finalResult := make([]byte, len(result))
-      copy(finalResult, result)
-
-      // Zero out the original buffer
-      for i := range result {
-      result[i] = 0
-      }
-
-      return finalResult, nil
-      }
-      For unmarshaling, we could use a similar approach with a pre-allocated
-      structure and careful buffer management.
+      We need use cases in the website
+      - Policy-based access control for workloads
+      - Secret CRUD operations
+      - etc
+    </issue>
+    <issue when="future" reason="no immediate product value">
+      get an OpenSSF badge sometime.
     </issue>
     <issue>
-    FIPS compliance in Go is gaining traction;
-    if we don't want to have a FIPS-non-compliant mode (for performance,
-    etc, reasons), than it looks relatively simpler to implement such a
-    thing with recent Go.
-    Take a look at these and devise a plan:
-    * https://github.com/golang/go/issues/69536
-    * https://go.dev/doc/security/fips140
-
-    Go 1.24 + Go Native Cryptography Module is preferred for non-Linux platforms.
-
-    Prerequisites:
-    Go FIPS (aka BoringCrypto) on Linux requires CGO therefore glibc is required.
-    any modern glibc based Linux distro to build it
-
-    C Complier and Linker
-    GCC or clang version is usually independent to FIPS
-    any modern gcc or clang for CGO as long as the build succeeds.
-
-    ensure C compile and linker flags passed to CGO
-    (CGO_CFLAGS  and CGO_LDFLAGS)
-    see https://pkg.go.dev/cmd/cgo
-
-    // fips_only.go can be imported for linux-only targes.
-    package main
-    import _ "crypto/tls/fipsonly"
-    ^ research a bit more about this.
-
-    $ strings "$PROGRAM" | grep -ci boringcrypto_FIPS_mode
-    _cgo_12e963b132a6_Cfunc__goboringcrypto_FIPS_mode
-    _goboringcrypto_FIPS_mode
-    crypto/internal/boring._Cfunc__goboringcrypto_FIPS_mode
-    _goboringcrypto_FIPS_mode
-    _cgo_12e963b132a6_Cfunc__goboringcrypto_FIPS_mode
-    crypto/internal/boring._Cfunc__goboringcrypto_FIPS_mode.abi0
-    crypto/internal/boring._cgo_12e963b132a6_Cfunc__goboringcrypto_FIPS_mode
-    You may use integrate this verify-fips.sh to your build script.
-
-    #!/bin/bash
-
-    set -x
-
-    PROGRAM="$1"
-    GOVERSION="$2"
-    [ -z "$GOVERSION" ] and GOVERSION="go1.23." # the target go version
-
-    declare -A SYMBOLS_MAP=(
-    ["Cfunc__goboringcrypto"]=1
-    ["goboringcrypto"]=1
-    ["crypto/internal/boring/sig.BoringCrypto"]=1
-    ["crypto/internal/boring/sig.StandardCrypto"]=0
-    ["$GOVERSION"]=1
-    ["X:boringcrypto"]=1
-    )
-
-    for symbol in "${!SYMBOLS_MAP[@]}"; do
-    count=$(strings "$PROGRAM" | grep -ci "$symbol")
-    expected="${SYMBOLS_MAP[$symbol]}"
-
-    if [ "$expected" -eq 1 ]; then
-    if [ "$count" -gt 0 ]; then
-    echo "Symbol: $symbol Count: $count. PASS"
-    else
-    echo "Symbol: $symbol Count: $count. FAIL, expects > 0"
-    exit 1
-    fi
-    else
-    if [ "$count" -eq 0 ]; then
-    echo "Symbol: $symbol Count: $count. PASS"
-    else
-    echo "Symbol: $symbol Count: $count. FAIL, expects == 0"
-    exit 1
-    fi
-    fi
-    done
-    goversion
-    ^
-    this would work
-      on stripped binaries too
+      OIDC authentication for named admins.
     </issue>
     <issue>
-      Go 1.24 introduces native support to FIPS 140-3. The Go Cryptographic
-      Module in 1.24 will be FIPS 140-3 certified.
-
-      It will not require linking to BoringCrypto/BoringSSL nor enabling CGO.
-
-      This approach if it works, is more preferrable; research about it.,
+      SPIKE Dynamic secret sidecar injector
     </issue>
     <issue>
-      some of the memory resets can be done by the generic library at the SDK;
-      check them out.
-    </issue>
+      maybe ha mode
 
-    <issue>
-      spike policy write my-policy ./the-policy-file.yaml
-      also check out: https://developer.hashicorp.com/vault/docs/concepts/policies
-      to see if we can amend any updates to the policy rules
-      (one such update, for example, is limiting what kind of attributes are
-      allowed, but we should discuss whether that much granularity is worth the
-      hassle)
+      HA Mode in OpenBao: In HA mode, OpenBao operates with one active server
+      and multiple standby servers. The active server processes all requests,
+      while standby servers redirect requests to the active instance. If the
+      active server fails, one of the standby servers takes over as the new
+      active instance. This mechanism relies on PostgreSQL's ability to manage
+      locks and ensure consistency across nodes35.
+      Limitations:
+      The PostgreSQL backend for OpenBao is community-supported and considered
+      in an early preview stage, meaning it may have breaking changes or limited
+      testing in production environments2.
+      While PostgreSQL supports replication and failover mechanisms for its own
+      HA, these features operate independently of OpenBao's HA mode. Proper
+      configuration and monitoring of the PostgreSQL cluster are essential to
+      ensure database-level resilience
     </issue>
     <issue>
-      strip binaries of smybols before build
-    </issue>
-
-
-    <issue>
-      read policies from a yaml or a json file and create them.
+      v.1.0.0 Requirements:
+      - Having S3 as a backing store
     </issue>
     <issue>
-      test that the timeout results in an error.
-
-      ctx, cancel := context.WithTimeout(
-      context.Background(), env.DatabaseOperationTimeout(),
-      )
-      defer cancel()
-
-      cachedPolicy, err := retry.Do(ctx, func() (*data.Policy, error) {
-      return be.LoadPolicy(ctx, id)
-      })
-
+      Consider a health check / heartbeat between Nexus and Keeper.
+      This can be more frequent than the root key sync interval.
     </issue>
     <issue>
-      ability to lock nexus programmatically.
-      when locked, nexus will deny almost all operations
-      locking is done by executing nexus binary with a certain command
-      line flag.
-      (i.e. there is no API access, you'll need to physically exec the
-      ./nexus
-      binary -- regular svid verifications are still required)
-      only a superadmin can lock or unlock nexus.
-
-      ^ instead of that, you can run a script that removes all SVID
-      registrations. That will effectively result in the same thing.
+      Unit tests and coverage reports.
+      Create a solid integration test before.
     </issue>
     <issue>
-      consider using NATS for cross trust boundary (or nor) secret
-      federation
+      Test automation.
     </issue>
     <issue>
-      over the break, I dusted off
-      https://github.com/spiffe/helm-charts-hardened/pull/166 and started
-      playing with the new k8s built in cel based mutation functionality.
-      the k8s cel support is a little rough, but I was able to do a whole
-      lot in it, and think I can probably get it to work for everything.
-      once 1.33 hits, I think it will be even easier.
-      I mention this, as I think spike may want similar functionality?
-      csi driver, specify secrets to fetch to volume automatically, keep
-      it up to date, and maybe poke the process once refreshed
+      double encryption when passing secrets around
+      (can be optional for client-nexus interaction; and can be mandatory
+      for
+      tools that transcend trust boundaries (as in a relay / message queue
+      that
+      may be used for secrets federation)
     </issue>
     <issue>
-      wrt: secure erasing shards and the root key >>
-      It would be interesting to try and chat with some of the folks under
-      the cncf
-      (That's a good idea indeed; I'm noting it down.)
+      active/standby HA mode
     </issue>
-    <issue severity="important" urgency="moderate">
-      // TDO: check all database operations (secrets, policies, metadata)
-      and
-      // ensure that they are retried with exponential backooff.
+    <issue>
+      audit targets:
+      - file
+      - syslog
+      - socket
+      (if audit targets are enabled then command will not execute unless
+      an
+      audit trail is started)
+    </issue>
+    <issue>
+      admin ui
+    </issue>
+    <issue>
+      - AWS KMS support for keepers
+      - Azure keyvault support for keepers
+      - GCP kms support for keepers
+      - HSM support for keepers
+      - OCI kms support for keepers
+      - keepers storing their shards in a separate SPIKE deployment
+      (i.e. SPIKE using another SPIKE to restore root token)
     </issue>
 
-    <issue>
-      we need a "reset" command for the restore operation in case
-      we pushed an incorrect set of shards.
-    </issue>
-    <issue>
-      better play with OIDC and keycloak sometime.
-    </issue>
     <issue>
       attribute-based policy control
 
@@ -1257,6 +1106,17 @@
       "bar" = ["zip", "zap"]
       }
       }
+    </issue>
+    <issue>
+      spike dev mode:
+      - it will not require SPIFFE
+      - it will be in memory
+      - it will be a single binary
+      - it will present a SPIKE Nexus API in that binary.
+      - regular unsafe `curl` would work.
+      - would be SDK-compatible.
+
+      ^ not sure it's worth the effort, but it will be nice-to-have.
     </issue>
     <issue>
       Note: this is non-trivial, but doable.
@@ -1279,322 +1139,199 @@
       encryption key to be rotated behind-the-scenes automatically as per
       NIST guidance.
     </issue>
-    <issue severity="important" priority="elevated">
-      write an adr about why those asnyc are snyc from now on:
+    <issue>
+      better play with OIDC and keycloak sometime.
+    </issue>
+    <issue>
+      wrt: secure erasing shards and the root key >>
+      It would be interesting to try and chat with some of the folks under
+      the cncf
+      (That's a good idea indeed; I'm noting it down.)
+    </issue>
+    <issue>
+      over the break, I dusted off
+      https://github.com/spiffe/helm-charts-hardened/pull/166 and started
+      playing with the new k8s built in cel based mutation functionality.
+      the k8s cel support is a little rough, but I was able to do a whole
+      lot in it, and think I can probably get it to work for everything.
+      once 1.33 hits, I think it will be even easier.
+      I mention this, as I think spike may want similar functionality?
+      csi driver, specify secrets to fetch to volume automatically, keep
+      it up to date, and maybe poke the process once refreshed
+    </issue>
+    <issue>
+      consider using NATS for cross trust boundary (or nor) secret
+      federation
+    </issue>
+    <issue kind="research">
+      spike, but as an http proxy?
+      like, point http(s)_proxy at this thing, connect to it using your spiffe id, the proxy can use policies and the client spiffeid to allow/disallow an http proxy request
+      No; but not a bad idea indeed. -- will look around; I'll share if I find something related.
+    </issue>
+    <issue>
+      Check if we need traversal resistant file api needs anywhere.
+      SPIKE: traversal-resistant file apis: https://go.dev/blog/osroot
+    </issue>
+    <issue>
+      all components shall have
+      liveness and readiness endpoints
+      (or maybe we can design it once we k8s...ify things.
+    </issue>
+    <issue priority="important" severity="medium">
+      if a keeper crashes it has to wait for the next nexus cycle which is
+      suboptimal. Instead, nexus can send a ping that returns an overall
+      status
+      of keeper (i.e. if it's populated or not)
+      this can be more frequent than hydration; and once nexus realizes
+      keeper
+      is down, it can rehydrate it.
 
-      // TOD we don't have any retry for policies or for recovery info.
-      // they are equally important.
+      in addition; nexus can first check the sha hash of the keeper's shard.
+      before resending; if the hashes match, it won't restransmit the shard.
+    </issue>
+    <issue>
+      By design, we regard memory as the source of truth.
+      This means that backing store might miss some secrets.
+      Find ways to reduce the likelihood of this happening.
+      1. Implement exponential retries.
+      2. Implement a health check to ensure backing store is up.
+      3. Create background jobs to sync the backing store.
+    </issue>
+    <issue>
+      A /stats endpoint.
 
-      // TO: these xsync operations can cause race conditions
-      //
-      // 1. process a writes secret
-      // 2. process b marks secret as deleted
-      // 3. in memory we write then delete
-      // 4. but to the backing store it goes as delete then write.
-      // 5. memory: secret deleted; backing store: secret exists.
-      //
-      // to solve it; have a queue of operations (as a go channel)
-      // and do not consume the next operation until the current
-      // one is complete.
-      //
-      // have one channel for each resource:
-      // - secrets
-      // - policies
-      // - key recovery info.
-      //
-      // Or as an alternative; make these xsync operations sync
-      // and wait for them to complete before reporting success.
-      // this will make the architecture way simpler without needing
-      // to rely on channels.
+      A dedicated /stats endpoint will be implemented to provide real-time
+      metrics about:
+      Total number of secrets managed.
+      Status of the key-value store.
+      Resource utilization metrics (e.g., CPU, memory).
+      This endpoint will support integration with monitoring tools for enhanced
+      observability.
+      These measures will ensure comprehensive monitoring and troubleshooting.
     </issue>
     <issue>
-      the backing store is considered untrusted and it stores
-      encrypted information
-      todo: if it's "really" untrusted then maybe it's better to encrypt
-      everything
-      (including metadata) -- check how other secrets managers does this.
-    </issue>
-    <issue kind="good-first-issue">
-      create a `spike status` command that shows the current status an
-      stats
-      of SPIKE Nexus (i.e. whether root key initialized; how many secrets
-      are
-      in the system etc.)
-      It does not have to be too detailed; we can always amend it later.
+      a mode that enables the admin to load shares to keepers.
+      this will be essentially using the keeper REST API and acting as
+      SPIKE Pilot with a recover svid.
+      The benefit would be; we can have a dedicated recover and restore binaries
+      without having to expose the pilot binary.
+      Or we can update the keepers, even if we don't have access to SPIKE Nexus
+      or SPIKE Nexus is down.
+      maybe by using a "seeder" SPIFFE ID.
+      but I'm also not sure if it's worth it.
+      it would mean more APIs to secure; it would also mean keeping spike
+      keepers more intelligent (instead of keeping them dumb)
     </issue>
     <issue>
-      Kubernetification
-    </issue>
-    <issue>
-      v.1.0.0 Requirements:
-      - Having S3 as a backing store
-    </issue>
-    <issue>
-      Consider a health check / heartbeat between Nexus and Keeper.
-      This can be more frequent than the root key sync interval.
-    </issue>
-    <issue>
-      Unit tests and coverage reports.
-      Create a solid integration test before.
-    </issue>
-    <issue>
-      Test automation.
-    </issue>
-
-
-    <issue>
-      spike dev mode
-    </issue>
-    <issue>
-      document limits and maximums of SPIKE (such as key length, path
-      lenght, policy size etc)
-    </issue>
-    <issue>
-      double encryption when passing secrets around
-      (can be optional for client-nexus interaction; and can be mandatory
-      for
-      tools that transcend trust boundaries (as in a relay / message queue
-      that
-      may be used for secrets federation)
-    </issue>
-    <issue>
-      active/standby HA mode
-    </issue>
-    <issue>
-      pattern-based random secret generation
-    </issue>
-    <issue>
-      admin ui
-    </issue>
-    <issue>
-      guidelines about how to backup and restore
-    </issue>
-    <issue>
-      - AWS KMS support for keepers
-      - Azure keyvault support for keepers
-      - GCP kms support for keepers
-      - HSM support for keepers
-      - OCI kms support for keepers
-      - keepers storing their shards in a separate SPIKE deployment
-      (i.e. SPIKE using another SPIKE to restore root token)
-    </issue>
-    <issue>
-      postgresql backend
-    </issue>
-    <issue>
-      audit targets:
-      - file
-      - syslog
-      - socket
-      (if audit targets are enabled then command will not execute unless
-      an
-      audit trail is started)
-    </issue>
-    <issue>
-      have a mode where nexus does not create tables upon initialization
-      (i.e. the admin is expected to create them beforehand)
-    </issue>
-    <issue>
-      maybe ha mode
-
-      HA Mode in OpenBao: In HA mode, OpenBao operates with one active server
-      and multiple standby servers. The active server processes all requests,
-      while standby servers redirect requests to the active instance. If the
-      active server fails, one of the standby servers takes over as the new
-      active instance. This mechanism relies on PostgreSQL's ability to manage
-      locks and ensure consistency across nodes35.
-      Limitations:
-      The PostgreSQL backend for OpenBao is community-supported and considered
-      in an early preview stage, meaning it may have breaking changes or limited
-      testing in production environments2.
-      While PostgreSQL supports replication and failover mechanisms for its own
-      HA, these features operate independently of OpenBao's HA mode. Proper
-      configuration and monitoring of the PostgreSQL cluster are essential to
-      ensure database-level resilience
-    </issue>
-    <issue>
-      OIDC authentication for named admins.
-    </issue>
-    <issue>
-      SPIKE Dynamic secret sidecar injector
-    </issue>
-  </runner-up>
-  <future reason="no immediate product value">
-    <issue>
-      get an OpenSSF badge sometime.
-    </issue>
-  </future>
-  <backlog>
-
-    <issue kind="v1.0-requirement">
-      - Run SPIKE in Kubernetes too.
-    </issue>
-    <issue kind="v1.0-requirement">
-      - Postgres support as a backing store.
-    </issue>
-    <issue kind="v1.0-requirement">
-      - Ability to channel audit logs to a log aggregator.
-    </issue>
-    <issue kind="v1.0-requirement">
-      - OIDC integration: Ability to connect to an identity provider.
-    </issue>
-    <issue kind="v1.0-requirement">
-      - ESO (External Secrets Operator) integration
-    </issue>
-    <issue kind="v1.0-requirement">
-      - An ADMIN UI (linked to OIDC probably)
-    </issue>
-    <issue kind="v1.0-requirement">
-      - Ability to use the RESTful API without needing an SDK.
-      That could be hard though since we rely on SPIFFE authentication and
-      SPIFFE workload API to gather certs: We can use a tool to automate
-      that
-      part. But it's not that hard either if I know where my certs are:
-      `curl --cert /path/to/svid_cert.pem --key /path/to/svid_key.pem
-      https://mtls.example.com/resource`
-    </issue>
-    <issue kind="v1.0-requirement">
-      > 80% unit test coverage
-    </issue>
-    <issue kind="v1.0-requirement">
-      Fuzzing for the user-facing API
-    </issue>
-    <isssue kind="v1.0-requirement">
-      100% Integration test (all features will have automated integration
-      tests
-      in all possible environments)
-    </isssue>
-    <issue kind="user-request">
-      Ability to add custom metadata to secrets.
-    </issue>
-    <issue>
-      We need use cases in the website
-      - Policy-based access control for workloads
-      - Secret CRUD operations
-      - etc
-    </issue>
-    <issue kind="v1.0-requirement">
-      Postgresql support for backing store.
-    </issue>
-    <issue>
-      maybe a default auditor SPIFFEID that can only read stuff (for
-      Pilot;
-      not for named admins; named admins will use the policy system
-      instead)
-    </issue>
-    <issue>
-      Optionally not create tables and other ddl during backing store
-      creation
-    </issue>
-    <issue>
-      SPIKE Pilot to ingest a policy YAML file(s) to create policies.
-      (similar to kubectl)
-    </issue>
-    <issue>
-      - SPIKE Keep Sanity Tests
-      - Ensure that the root key is stored in SPIKE Keep's memory.
-      - Ensure that SPIKE Keep can return the root key back to SPIKE
-      Nexus.
-    </issue>
-    <issue>
-      Try SPIKE on a Mac.
-    </issue>
-    <issue>
-      Try SPIKE on an x-86 Linux.
-    </issue>
-    <issue>
-      not an adr, but a feature flag to have it start w/o a prepopulated db.
-      that can also be useful for brownfield deployments.
-
-      --
-
-      based on the following, maybe move SQLite "create table" ddls to a
-      separate file.
-      Still a "tool" or a "job" can do that out-of-band.
-
-      update: for SQLite it does not matter as SQLite does not have a
-      concept
-      of RBAC; creating a db is equivalent to creating a file.
-      For other databases, it can be considered, so maybe write an ADR for
-      that.
-
-      ADR:
-
-      It's generally considered better security practice to create the
-      schema
-      out-of-band (separate from the application) for several reasons:
-
-      Principle of Least Privilege:
-
-      The application should only have the permissions it needs for
-      runtime
-      (INSERT, UPDATE, SELECT, etc.)
-      Schema modification rights (CREATE TABLE, ALTER TABLE, etc.) are not
-      needed during normal operation
-      This limits potential damage if the application is compromised
-
-
-      Change Management:
-
-      Database schema changes can be managed through proper migration
-      tools
-      Changes can be reviewed, versioned, and rolled back if needed
-      Prevents accidental schema modifications during application restarts
-
-
-      Environment Consistency:
-
-      Ensures all environments (dev, staging, prod) have identical schemas
-      Reduces risk of schema drift between environments
-      Makes it easier to track schema changes in version control
+      configure SPIKE to rekey itself as per NIST guidelines.
+      Also maybe `spike operator rekey` to manually initiate that.
+      `spike operator rekey` will also change the shamir shares, wheras the
+      internal rekey will just change the encryption key, leaving the shamir
+      shares intact.
     </issue>
 
+    <issue>
+      verify if the keeper has shard before resending it:
+      send hash of the shard first
+      if keeper says “I have it”, don’t send the actual shard.
+      this will make things extra secure.
+    </issue>
+    <issue>
+      Fleet management:
+      - There is a management plane cluster
+      - There is a control plane cluster
+      - There are workload clusters connected to the control plane
+      - All of those are their own trust domains.
+      - There is MP-CP connectivity
+      - There is CP-WL connectivity
+      - MP has a central secrets store
+      - WL and CP need secrets
+      - Securely dispatch them without "ever" using Kubernetes secrets.
+      - Have an alternative that uses ESO and a restricted secrets
+      namespace
+      that no one other than SPIKE components can see into.
+    </issue>
 
-    <qa>
-      <issue>
-        - SPIKE Nexus Sanity Tests
-        - Ensure SPIKE Nexus caches the root key in memory.
-        - Ensure SPIKE Nexus reads from SPIKE keep if it does not have
-        the root
-        key.
-        - Ensure SPIKE Nexus saves the encrypted root key to the
-        database.
-        - Ensure SPIKE Nexus caches the user's session key.
-        - Ensure SPIKE Nexus removes outdated session keys.
-        - Ensure SPIKE Nexus does not re-init (without manual
-        intervention)
-        after
-        being initialized.
-        - Ensure SPIKE Nexus adheres to the bootstrapping sequence
-        diagram.
-        - Ensure SPIKE Nexus backs up the admin token by encrypting it
-        with the
-        root
-        key and storing in the database.
-        - Ensure SPIKE Nexus stores the initialization tombstone in the
-        database.
-      </issue>
-      <issue>
-        - SPIKE Pilot Sanity Tests
-        - Ensure SPIKE Pilot denies any operation if SPIKE Nexus is not
-        initialized.
-        - Ensure SPIKE Pilot can warn if SPIKE Nexus is unreachable
-        - Ensure SPIKE Pilot does not indefinitely hang up if SPIRE is
-        not
-        there.
-        - Ensure SPIKE Pilot can get and set a secret.
-        - Ensure SPIKE Pilot can do a force reset.
-        - Ensure SPIKE Pilot can recover the root password.
-        - Ensure that after `spike init` you have a password-encrypted
-        root key
-        in the db.
-        - Ensure that you can recover the password-encrypted root key.
-      </issue>
-    </qa>
+    <issue>
+      aes256-cbc
+      jay:U2FsdGVkX1+VhdGia1yk+JAUSraXj60ZA2ydT9TuHmQBE1sWLcMLb5z0B76sCqpJVGi1GQCl8BnnoV5kznYneQ==
+    </issue>
+    <issue>
+      TODO it's early but have a deprecation policy for SPIKE
+      https://external-secrets.io/latest/introduction/deprecation-policy/
+    </issue>
+    <issue>
+      TODO update vsecm documentation about cloudflare changes 1. manually upload 2. point to github for older versions.
+    </issue>
+    <issue>
+      Consider metrics collector integration.
 
+      This is from SPIRE:
+      The metrics collectors that are currently supported are Prometheus, Statsd,
+      DogStatsd, and M3. Multiple collectors can be conﬁgured simultaneously, both in
+      the servers and the agents.
 
-  </backlog>
-  <future>
+      Think about what telemetry SPIKE can create.
+
+      create telemetry data and support certain metrics collectors.
+
+      create a monitoring epic
+    </issue>
+    <issue priority="high" severity="low">
+      [vmware-tanzu/secrets-manager] Scorecard supply-chain security workflow run
+      ^
+      this is constantly failing.
+      maybe disable it.
+
+      also it's about time to cut a VSecM release since we had quite a few
+      security patches in already.
+    </issue>
+    <issue for="vsecm">
+      VSecM: Maybe use SPIFFE Helper instead of VSecM sidecar since it
+      essentially does the same thing. Or maybe have an alternative
+      implementation that uses spiffe helper instead of vsecm sidecar.
+    </issue>
+    <issue>
+      Use Case: Each SPIKE Keeper in its own trust domain.
+      (we can also create a demo once this feature is established)
+
+      Details:
+
+      The current design assumes that all keepers are in the same trust boundary
+      (which defaults to spike.ist)
+      that can make sense for a single-cluster deployment
+      (each keeper can be tainted to deploy itself on a distinct node for
+      redundancy)
+      however; a keeper's SPIFFE ID does not have to have a single trust root.
+      each SPIKE keeper can (in theory) live in a separate cluster, in its own
+      trust boundary, depicted by a different trust root.
+
+      If that's the case the below function will not be valid
+
+      func IsKeeper(id string) bool {
+      return id == spiffeid.SpikeKeeper()
+      }
+
+      Instead of this the validation should be done against SPIKE_NEXUS_KEEPER_PEERS
+      and the env var should also contain the trust root of each keeper.
+
+      Similarly, the function cannot check the trust root.
+      it may however verify the part of spiffeID "after" the trust root.
+
+      // I should be a SPIKE Keeper.
+      if !auth.IsKeeper(selfSpiffeid) {
+      log.FatalF("Authenticate: SPIFFE ID %s is not valid.\n", selfSpiffeid)
+      }
+
+      So for the `main` function of SPIKE Keeper we'll need a more relaxed
+      version of IsKeeper.
+      and the IsKeeper in SPIKE Nexus will validate looking at the env
+      config.
+
+      which also means, SPIKE Keeper can require SPIKE_TRUST_ROOT along
+      with SPIKE_KEEPER_TLS_PORT to start. at start-keeper-1.sh
+    </issue>
+
     <issue kind="idea">
       ideation:
 
