@@ -3,7 +3,7 @@
 # //  \\\\\ Copyright 2024-present SPIKE contributors.
 # // \\\\\\\ SPDX-License-Identifier: Apache-2.
 
-title = "Alpha Release Notice"
+title = "Early Access Notice"
 weight = 3
 sort_by = "weight"
 +++

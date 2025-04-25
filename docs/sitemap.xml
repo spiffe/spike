@@ -100,9 +100,6 @@
         <loc>https://spike.ist/getting-started/about/</loc>
     </url>
     <url>
-        <loc>https://spike.ist/getting-started/alpha-release-notice/</loc>
-    </url>
-    <url>
         <loc>https://spike.ist/getting-started/cli/</loc>
     </url>
     <url>
@@ -122,6 +119,9 @@
     </url>
     <url>
         <loc>https://spike.ist/getting-started/guide/</loc>
+    </url>
+    <url>
+        <loc>https://spike.ist/getting-started/project-status/</loc>
     </url>
     <url>
         <loc>https://spike.ist/operations/</loc>
