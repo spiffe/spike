@@ -5,6 +5,7 @@
 package operator
 
 import (
+	"fmt"
 	"net/http"
 	"sync"
 
@@ -151,6 +152,10 @@ func RouteRestore(
 			mem.ClearRawBytes(shards[i].Value)
 			shards[i].Id = 0
 		}
+
+		fmt.Println(">>>>>>>>>>>>>>>>>>>>>>>>>> restoration complete")
+		recovery.HydrateMemoryFromBackingStore()
+		fmt.Println(">>>>>>>>>>>>>>>>>>>>>>>>>> memory hydrated")
 	}
 
 	responseBody := net.MarshalBody(reqres.RestoreResponse{

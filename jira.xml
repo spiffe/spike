@@ -40,17 +40,6 @@
     <meta>
       Things to do before working further on containerization.
     </meta>
-    <issue>
-      Project status change.
-
-      SPIKE is relatively stable now.
-
-      It is not production grade (yet); but saying that it is "alpha" is
-      misleading and discouraging too.
-
-      Change project status to something in-between, and remove the alpha
-      release notice from places.
-    </issue>
     <issue priority="highy" severity="low">
       When SPIKE is restored if keepers are not up, recovery is not done.
       After a successful restore, SPIKE Nexus should recover its backing store

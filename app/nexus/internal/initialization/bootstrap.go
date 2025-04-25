@@ -43,7 +43,7 @@ func bootstrap(source *workloadapi.X509Source) {
 	const fName = "bootstrap"
 
 	if source == nil {
-		// If source is nil, nobody is going to recreate the source,
+		// If `source` is nil, nobody is going to recreate the source,
 		// it's better to log and crash.
 		log.FatalLn(fName + ": source is nil. this should not happen.")
 	}
