@@ -121,7 +121,7 @@
                 </li>
 
                 <li >
-                    <a href="https://spike.ist/getting-started/alpha-release-notice/">Alpha Release Notice</a>
+                    <a href="https://spike.ist/getting-started/project-status/">Project Maturity</a>
                 </li>
 
                 <li >
@@ -737,12 +737,13 @@ ensure a smooth and reliable release process.</p>
 <p>Before every release:</p>
 <ol>
 <li>Run the unit tests</li>
-<li>Run the following smoke test documented in the next section.</li>
+<li>Run the following smoke tests documented in the next section.</li>
 <li>If everything passes, update <code>NexusVersion</code>, <code>PilotVersion</code>
 and <code>KeeperVersion</code> in <code>$WORKSPACE/spike/internal/config/config.go</code></li>
 <li>Update any necessary documentation.</li>
 <li>Update the changelog.</li>
 <li>Update the documentation snapshots page.</li>
+<li>Run <code>./hack/cover.sh</code> to update and send coverage report to the public docs.</li>
 </ol>
 <p>Release process:</p>
 <ul>
