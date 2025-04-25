@@ -34,10 +34,10 @@ Key components include:
 With its minimal footprint and robust security, **SPIKE** provides peace of mind 
 for your team and critical data resilience when it counts.
 
-## Project Maturity: Development  [![Development Phase](https://github.com/spiffe/spiffe/blob/main/.img/maturity/dev.svg)]
+## Project Maturity: Development  ![Development Phase](https://github.com/spiffe/spiffe/blob/main/.img/maturity/dev.svg)
 
-SPIKE is a SPIFFE-affiliated project that has reached **Development** maturity
-as defined in the [SPIFFE Project Lifecycle][lifecycle]. This means:
+**SPIKE** is a SPIFFE-affiliated project that has reached **Development** 
+maturity as defined in the [SPIFFE Project Lifecycle][lifecycle]. This means:
 
 * **SPIKE** is functionally stable and suitable for broader experimentation and
   community involvement.
@@ -50,10 +50,11 @@ We invite developers and early adopters to explore, test, and contribute. Your
 input is invaluable in helping us shape a robust and reliable product.
 
 Use in critical systems is not advised at this time.
+We'll announce when the project is ready for production adoption.
 
-🐻 Thanks for your patience and support. We welcome your thoughts at
-📬 [team@spike.ist](mailto:team@spike.ist), and we'll announce when the project
-is ready for production adoption.
+🦔 Thanks for your patience and support. We welcome your thoughts at
+📬 [team@spike.ist](mailto:team@spike.ist). 
+
 
 [lifecycle]: https://github.com/spiffe/spiffe/blob/main/NEW_PROJECTS.md
 
