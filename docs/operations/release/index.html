@@ -171,21 +171,6 @@
                 </li>
 
                 </ul>
-    <input class="tree-toggle" type="checkbox" id="tracking"
-               />
-        <label class="tree-toggle-label "
-               for="tracking">Tracking</label>
-
-        <ul class="subtree">
-            <li >
-                    <a href="https://spike.ist/tracking/changelog/">Changelog</a>
-                </li>
-
-                <li >
-                    <a href="https://spike.ist/tracking/snapshots/">Documentation Snapshots</a>
-                </li>
-
-                </ul>
     <input class="tree-toggle" type="checkbox" id="operations"
                checked/>
         <label class="tree-toggle-label "
@@ -225,6 +210,21 @@
                                         </li>
                                 </ul>
                         </ul>
+    <input class="tree-toggle" type="checkbox" id="tracking"
+               />
+        <label class="tree-toggle-label "
+               for="tracking">Tracking</label>
+
+        <ul class="subtree">
+            <li >
+                    <a href="https://spike.ist/tracking/changelog/">Changelog</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/tracking/snapshots/">Documentation Snapshots</a>
+                </li>
+
+                </ul>
     </div>
 <style>
     /* Navigation tree structure */
@@ -737,12 +737,13 @@ ensure a smooth and reliable release process.</p>
 <p>Before every release:</p>
 <ol>
 <li>Run the unit tests</li>
-<li>Run the following smoke test documented in the next section.</li>
+<li>Run the following smoke tests documented in the next section.</li>
 <li>If everything passes, update <code>NexusVersion</code>, <code>PilotVersion</code>
 and <code>KeeperVersion</code> in <code>$WORKSPACE/spike/internal/config/config.go</code></li>
 <li>Update any necessary documentation.</li>
 <li>Update the changelog.</li>
 <li>Update the documentation snapshots page.</li>
+<li>Run <code>./hack/cover.sh</code> to update and send coverage report to the public docs.</li>
 </ol>
 <p>Release process:</p>
 <ul>

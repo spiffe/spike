@@ -8,27 +8,21 @@ weight = 3
 sort_by = "weight"
 +++
 
-# 🚨 Alpha Release Notice 🚨
+# Early Access Release Notice
 
-This project is currently in the Alpha stage. It's functional and available for
-experimentation, but it's **NOT** yet ready for production use: You may
-encounter bugs, incomplete features, or breaking changes as the project evolves.
+**SPIKE** is now available in an *Early Access* phase. While it's functionally 
+stable and ready for deeper experimentation and feedback, it's not yet 
+recommended for production environments. Features may still evolve, and some 
+interfaces could change as we refine the project.
 
-## **Project Status**: **Alpha**
+We invite developers and early adopters to explore, test, and contribute. Your 
+input is invaluable in helping us shape a robust and reliable product.
 
-Use this project at your own risk if you're experimenting or contributing to its
-development. For production-level stability, please wait for a more stable
-release.
+Use in critical systems is not advised at this time.
 
-Please note that the **SPIKE** documentation (*this website*) is a work in
-progress too. It might be incomplete or inaccurate at times, and what the
-document states may not fully reflect how the code or the product behaves.
-
-Please 🐻 with us for now, and send your feedback to
-[team@spike.ist](mailto:team@spike.ist).
-
-We will let you know through various channels when the project reaches adequate
-maturity for public adoption.
+🐻 Thanks for your patience and support. We welcome your thoughts at
+[team@spike.ist](mailto:team@spike.ist), and we'll announce broader availability 
+as the project matures.
 
 ----
 
