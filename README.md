@@ -34,26 +34,29 @@ Key components include:
 With its minimal footprint and robust security, **SPIKE** provides peace of mind 
 for your team and critical data resilience when it counts.
 
-## 🚨 Alpha Release Notice 🚨
+## Project Maturity: Development  ![Development Phase](https://github.com/spiffe/spiffe/blob/main/.img/maturity/dev.svg)
 
-* **Project Status**: **Alpha**
+**SPIKE** is a SPIFFE-affiliated project that has reached **Development** 
+maturity as defined in the [SPIFFE Project Lifecycle][lifecycle]. This means:
 
-This project is currently in the Alpha stage. It's functional and available for
-experimentation, but it's **NOT** yet ready for production use: You may encounter
-bugs, incomplete features, or breaking changes as the project evolves.
+* **SPIKE** is functionally stable and suitable for broader experimentation and
+  community involvement.
+* **SPIKE** is not yet production-ready, and certain features or interfaces may
+  continue to evolve.
+* Stability and polish are improving, but users should expect occasional bugs or
+  breaking changes.
 
-Use this project at your own risk if you're experimenting or contributing to its
-development. For production-level stability, please wait for a more stable
-release.
+We invite developers and early adopters to explore, test, and contribute. Your
+input is invaluable in helping us shape a robust and reliable product.
 
-Please note that the [**SPIKE** documentation][docs] is a work in progress too.
-It might be incomplete or inaccurate at times, and what the document
-states may not fully reflect how the code or the product behaves.
+Use in critical systems is not advised at this time.
+We'll announce when the project is ready for production adoption.
 
-Please 🐻 with us for now, and send your feedback to [team@spike.ist](mailto:team@spike.ist).
+🦔 Thanks for your patience and support. We welcome your thoughts at
+📬 [team@spike.ist](mailto:team@spike.ist). 
 
-We will let you know through various channels when the project reaches adequate
-maturity for public adoption.
+
+[lifecycle]: https://github.com/spiffe/spiffe/blob/main/NEW_PROJECTS.md
 
 ## Getting Your Hands Dirty
 

@@ -39,7 +39,7 @@ free to discuss them on the [SPIFFE community Slack][slack].
 
 Here's the OS details that we are testing this guide on:
 
-```text
+```txt
 DISTRIB_ID=Ubuntu
 DISTRIB_RELEASE=24.04
 DISTRIB_CODENAME=noble
@@ -179,7 +179,7 @@ spire-server -h
 
 Output:
 
-```text
+```txt
 Usage: spire-server [--version] [--help] <command> [<args>]
 
 Available commands are:
