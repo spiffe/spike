@@ -5,7 +5,6 @@
 package operator
 
 import (
-	"fmt"
 	"net/http"
 	"sync"
 
@@ -134,15 +133,9 @@ func RouteRestore(
 
 	currentShardCount = len(shards)
 
-	// Warning: We cannot clear request.Shard because it's a pointer type,
+	// Note: We cannot clear request.Shard because it's a pointer type,
 	// and we need it later in the "restore" operation.
 	// RouteRestore cleans this up, when it is no longer needed.
-
-	//// Security: Reset the field when no longer needed.
-	//defer func() {
-	//	mem.ClearRawBytes(request.Shard)
-	//	request.Id = 0
-	//}()
 
 	// Trigger restoration if we have collected all shards
 	if currentShardCount == env.ShamirThreshold() {
@@ -153,9 +146,8 @@ func RouteRestore(
 			shards[i].Id = 0
 		}
 
-		fmt.Println(">>>>>>>>>>>>>>>>>>>>>>>>>> restoration complete")
+		// Recover data since we now have the root key in memory:
 		recovery.HydrateMemoryFromBackingStore()
-		fmt.Println(">>>>>>>>>>>>>>>>>>>>>>>>>> memory hydrated")
 	}
 
 	responseBody := net.MarshalBody(reqres.RestoreResponse{

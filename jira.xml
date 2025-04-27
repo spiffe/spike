@@ -40,11 +40,6 @@
     <meta>
       Things to do before working further on containerization.
     </meta>
-    <issue priority="highy" severity="low">
-      When SPIKE is restored if keepers are not up, recovery is not done.
-      After a successful restore, SPIKE Nexus should recover its backing store
-      without relying on keepers.
-    </issue>
     <issue>
       provide the restore txt files in hex form so that it will be much easier to sanitize, validate length etc.
       to validate a base64 encoded text is error-prone.
@@ -624,7 +619,37 @@
 
       ^ I get an error instead of a "secret not found" message.
     </issue>
+    <issue>
+      2025/04/25 13:12:19 Aborting.
+      spike (feature/faster-recovery)$ ./hack/spire-server-entry-recover-register.sh
 
+      Also this should be part of operator
+
+      spire-server entry update \
+      -entryID "$ENTRY_ID" \
+      -spiffeID spiffe://spike.ist/spike/pilot/role/recover \
+      -parentID "spiffe://spike.ist/spire-agent" \
+      -selector unix:uid:"$(id -u)" \
+      -selector unix:path:"$PILOT_PATH" \
+      -selector unix:sha256:"$PILOT_SHA"
+
+      as in run the above command where PILOT_PATH is … … etc etc.
+
+      should be part of the binary.
+      or maybe a separate binary should execute those in an interactive manner.
+
+      create make targets for these.
+    </issue>
+    <issue>
+      {"time":"2025-04-25T13:24:52.652299515-07:00","level":"INFO","msg":"HydrateMemoryFromBackingStore","msg":"HydrateMemoryFromBackingStore: secrets loaded"}
+      {"time":"2025-04-25T13:24:52.652368182-07:00","level":"INFO","msg":"HydrateMemoryFromBackingStore","msg":"HydrateMemoryFromBackingStore: policies loaded"}
+      ^
+      how can we know that this data has already been pushed.
+      a brute force way is to hash the last payloads and compare with the hashes of the current payloads.
+      if hydrated, no need to re-hydrate then.
+      but that requires two full table scans, json serialization, and hashing.
+      could there be a better way?
+    </issue>
   </runner-up>
 
   <later>
