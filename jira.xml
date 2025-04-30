@@ -37,12 +37,11 @@
     </issue>
   </watch>
   <immediate-backlog>
-    <meta>
-      Things to do before working further on containerization.
-    </meta>
+    <meta>Things to do before working further on containerization.</meta>
     <issue>
-      provide the restore txt files in hex form so that it will be much easier to sanitize, validate length etc.
-      to validate a base64 encoded text is error-prone.
+      provide the restore txt files in hex form so that it will be much easier
+      to sanitize, validate length etc. to validate a base64 encoded text is
+      error-prone.
     </issue>
     <issue>
       if keepers are not up after a doomsday recovery
@@ -468,15 +467,8 @@
     </issue>
   </immediate-backlog>
   <runner-up>
-    <issue>
-      Try SPIKE on a Mac.
-    </issue>
-    <issue>
-      Try SPIKE on an x-86 Linux.
-    </issue>
-    <issue>
-      - SPIKE Keeper Sanity Tests
-    </issue>
+
+
     <issue>
       Kubernetification
     </issue>
@@ -653,7 +645,12 @@
   </runner-up>
 
   <later>
-
+    <issue>
+      Try SPIKE on a Mac (and create a video)
+    </issue>
+    <issue>
+      Try SPIKE on an x-86 Linux (and create a video)
+    </issue>
 
 
 

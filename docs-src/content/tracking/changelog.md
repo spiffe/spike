@@ -12,7 +12,8 @@ sort_by = "weight"
 
 ## Recent
 
-TBD
+* Fixed: Doomsday recovery was not immediately restoring data from the backing
+  store. Now it does.
 
 ## [0.4.0] - 2025-04-16
 
