@@ -7,7 +7,6 @@ package main
 import (
 	"context"
 	"fmt"
-
 	"github.com/spiffe/spike-sdk-go/net"
 	"github.com/spiffe/spike-sdk-go/security/mem"
 	"github.com/spiffe/spike-sdk-go/spiffe"
@@ -23,7 +22,10 @@ import (
 const appName = "SPIKE Keeper"
 
 func main() {
-	log.Log().Info(appName, "msg", appName, "version", config.SpikeKeeperVersion)
+	fmt.Printf(
+		"%s v%s. | SPIKE secures your secrets with SPIFFE. | LOG LEVEL: %s\n",
+		appName, config.SpikeKeeperVersion, log.Level(),
+	)
 
 	if mem.Lock() {
 		log.Log().Info(appName, "msg", "Successfully locked memory.")

@@ -38,7 +38,15 @@ Before every release:
 4. Update any necessary documentation.
 5. Update the changelog.
 6. Update the documentation snapshots page.
-7. Run `./hack/cover.sh` to update and send coverage report to the public docs.
+7. Run `./hack/cover.sh` to update and send the coverage report to the public 
+   docs.
+8. Make sure version numbers in the code are updated to reflect the release:
+
+```go
+const SpikeNexusVersion = "0.4.0"
+const SpikePilotVersion = "0.4.0"
+const SpikeKeeperVersion = "0.4.0"
+````
 
 Release process:
 
@@ -87,7 +95,7 @@ Here is a list of manual tests that can be done before every release:
 10. Make sure SPIKE Nexus and SPIKE Keepers are up and running.
 11. Repeat steps 2--7.
 12. Test recover and restore scenarios:
-    (a: Nexus autorecover; b: doomsday recovery)
+    (a: Nexus auto-recover; b: doomsday recovery)
 
 If everything looks good so far and the unit tests pass, you can cut a release.
 

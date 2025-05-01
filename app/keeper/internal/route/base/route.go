@@ -37,10 +37,10 @@ func Route(
 		r.Method,
 		func(a url.ApiAction, p url.ApiUrl) net.Handler {
 			switch {
-			// Get contribution from SPIKE Nexus
+			// Get a contribution from SPIKE Nexus:
 			case a == url.ActionDefault && p == url.SpikeKeeperUrlContribute:
 				return store.RouteContribute
-			// Provide your shard to SPIKE Nexus
+			// Provide your shard to SPIKE Nexus:
 			case a == url.ActionDefault && p == url.SpikeKeeperUrlShard:
 				return store.RouteShard
 			default:

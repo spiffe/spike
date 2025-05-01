@@ -32,6 +32,9 @@ const AuditBlocked AuditAction = "blocked"
 // AuditEntry represents a single audit log entry containing information about
 // user actions within the system.
 type AuditEntry struct {
+	// Component is the name of the component that performed the action.
+	Component string
+
 	// TrailId is a unique identifier for the audit trail
 	TrailId string
 
@@ -47,7 +50,7 @@ type AuditEntry struct {
 	// Path is the URL path of the request
 	Path string
 
-	// Resource identifies the object or entity that was acted upon
+	// Resource identifies the object or entity acted upon
 	Resource string
 
 	// SessionID links the action to a specific user session
@@ -79,7 +82,8 @@ func Audit(entry AuditEntry) {
 
 	body, err := json.Marshal(audit)
 	if err != nil {
-		Log().Error("Audit",
+		// If you cannot audit, crashing is the best option.
+		FatalLn("Audit",
 			"msg", "Problem marshalling audit entry",
 			"err", err.Error())
 		return
@@ -99,7 +103,9 @@ func Audit(entry AuditEntry) {
 //   - action: The AuditAction to be recorded in the audit entry
 func AuditRequest(fName string,
 	r *http.Request, audit *AuditEntry, action AuditAction) {
-	Log().Info(fName, "method", r.Method, "path", r.URL.Path,
-		"query", r.URL.RawQuery)
+	audit.Component = fName
+	audit.Path = r.URL.Path
+	audit.Resource = r.URL.RawQuery
 	audit.Action = action
+	Audit(*audit)
 }

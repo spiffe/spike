@@ -39,15 +39,8 @@
   <immediate-backlog>
     <meta>Things to do before working further on containerization.</meta>
     <issue>
-      some of these exit-state log shall better be warn or even error than info
-      since they are not expected outcomes
-
-      if state.RootKeyZero() {
-      log.Log().Info(fName, "msg", "No root key; skipping")
-      return nil
-      }
-
-      check the project globally.
+      Run a static code analysis, and also go through all the files.
+      It turns out IntelliJ has become "more" grammatically-picky.
     </issue>
     <issue>
       spike (main)$ spike operator restore

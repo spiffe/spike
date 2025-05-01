@@ -18,9 +18,9 @@ import (
 // These constants are automatically updated during the release process.
 // Please do not modify them manually.
 
-const SpikeNexusVersion = "0.3.1"
-const SpikePilotVersion = "0.3.1"
-const SpikeKeeperVersion = "0.3.1"
+const SpikeNexusVersion = "0.4.0"
+const SpikePilotVersion = "0.4.0"
+const SpikeKeeperVersion = "0.4.0"
 
 // #endregion
 
@@ -45,7 +45,7 @@ func SpikeNexusDataFolder() string {
 
 	spikeDir := filepath.Join(homeDir, ".spike")
 
-	// Create directory if it doesn't exist
+	// Create the directory if it doesn't exist
 	// 0700 because we want to restrict access to the directory
 	// but allow the user to create db files in it.
 	err = os.MkdirAll(spikeDir+"/data", 0700)
@@ -68,7 +68,7 @@ func SpikePilotRecoveryFolder() string {
 
 	spikeDir := filepath.Join(homeDir, ".spike")
 
-	// Create directory if it doesn't exist
+	// Create the directory if it doesn't exist
 	// 0700 because we want to restrict access to the directory
 	// but allow the user to create recovery files in it.
 	err = os.MkdirAll(spikeDir+"/recover", 0700)

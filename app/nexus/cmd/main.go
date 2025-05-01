@@ -24,8 +24,10 @@ import (
 const appName = "SPIKE Nexus"
 
 func main() {
-
-	log.Log().Info(appName, "msg", appName, "version", config.SpikeNexusVersion)
+	fmt.Printf(
+		"%s v%s. | SPIKE secures your secrets with SPIFFE. | LOG LEVEL: %s\n",
+		appName, config.SpikeNexusVersion, log.Level(),
+	)
 
 	if mem.Lock() {
 		log.Log().Info(appName, "msg", "Successfully locked memory.")
