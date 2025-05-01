@@ -22,8 +22,11 @@ import (
 const appName = "SPIKE Keeper"
 
 func main() {
-	fmt.Printf(
-		"%s v%s. | SPIKE secures your secrets with SPIFFE. | LOG LEVEL: %s\n",
+	fmt.Printf(`
+   \\ SPIKE: Secure your secrets with SPIFFE.
+ \\\\\ Copyright 2024-present SPIKE contributors.
+\\\\\\\ SPDX-License-Identifier: Apache-2.0`+"\n\n"+
+		"%s v%s. | LOG LEVEL: %s\n\n",
 		appName, config.SpikeKeeperVersion, log.Level(),
 	)
 
