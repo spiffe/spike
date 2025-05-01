@@ -39,11 +39,6 @@
   <immediate-backlog>
     <meta>Things to do before working further on containerization.</meta>
     <issue>
-      if keepers are not up after a doomsday recovery
-      spike secret list and spike policy list return empty although database is full.
-      we might need an early recovery (but need to think about that too)
-    </issue>
-    <issue>
       some of these exit-state log shall better be warn or even error than info
       since they are not expected outcomes
 

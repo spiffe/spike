@@ -86,7 +86,7 @@ func RouteDeleteSecret(
 
 	err = state.DeleteSecret(path, versions)
 	if err != nil {
-		log.Log().Info(fName, "msg", "Failed to delete secret", "err", err)
+		log.Log().Error(fName, "msg", "Failed to delete secret", "err", err)
 	} else {
 		log.Log().Info(fName, "msg", "Secret deleted")
 	}

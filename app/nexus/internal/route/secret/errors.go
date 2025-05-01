@@ -34,7 +34,7 @@ func handleGetSecretError(err error, w http.ResponseWriter) error {
 		return nil
 	}
 
-	log.Log().Info(fName, "msg", "Failed to retrieve secret", "err", err)
+	log.Log().Warn(fName, "msg", "Failed to retrieve secret", "err", err)
 
 	responseBody := net.MarshalBody(reqres.SecretReadResponse{
 		Err: data.ErrInternal}, w,
@@ -44,7 +44,7 @@ func handleGetSecretError(err error, w http.ResponseWriter) error {
 	}
 
 	net.Respond(http.StatusInternalServerError, responseBody, w)
-	log.Log().Info(fName, "msg", data.ErrInternal)
+	log.Log().Error(fName, "msg", data.ErrInternal)
 	return err
 }
 

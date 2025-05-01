@@ -236,9 +236,9 @@ func SendShardsPeriodically(source *workloadapi.X509Source) {
 	for range ticker.C {
 		log.Log().Info(fName, "msg", "Sending shards to keepers")
 
-		// if no root key skip.
+		// if no root key, then skip.
 		if state.RootKeyZero() {
-			log.Log().Info(fName, "msg", "No root key; skipping")
+			log.Log().Warn(fName, "msg", "No root key; skipping")
 			continue
 		}
 
@@ -281,7 +281,7 @@ func NewPilotRecoveryShards() map[int]*[32]byte {
 	log.Log().Info(fName, "msg", "Generating pilot recovery shards")
 
 	if state.RootKeyZero() {
-		log.Log().Info(fName, "msg", "No root key; skipping")
+		log.Log().Warn(fName, "msg", "No root key; skipping")
 		return nil
 	}
 

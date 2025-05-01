@@ -99,7 +99,7 @@ func sendShardsToKeepers(
 		}
 
 		if state.RootKeyZero() {
-			log.Log().Info(fName, "msg", "rootKey is zero; moving on...")
+			log.Log().Warn(fName, "msg", "rootKey is zero; moving on...")
 			continue
 		}
 

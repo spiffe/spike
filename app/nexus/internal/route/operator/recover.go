@@ -50,7 +50,7 @@ func RouteRecover(
 
 	requestBody := net.ReadRequestBody(w, r)
 	if requestBody == nil {
-		log.Log().Info(fName, "msg", "requestBody is nil")
+		log.Log().Warn(fName, "msg", "requestBody is nil")
 		return errors.ErrReadFailure
 	}
 
@@ -60,7 +60,7 @@ func RouteRecover(
 		reqres.RecoverResponse{Err: data.ErrBadInput},
 	)
 	if request == nil {
-		log.Log().Info(fName, "msg", "request is nil")
+		log.Log().Warn(fName, "msg", "request is nil")
 		return errors.ErrParseFailure
 	}
 

@@ -98,7 +98,7 @@ func RoutePutPolicy(
 		CreatedBy:       "",
 	})
 	if err != nil {
-		log.Log().Info(fName, "msg", "Failed to create policy", "err", err)
+		log.Log().Warn(fName, "msg", "Failed to create policy", "err", err)
 
 		responseBody := net.MarshalBody(reqres.PolicyCreateResponse{
 			Err: data.ErrInternal,

@@ -83,7 +83,7 @@ func RouteDeletePolicy(
 
 	err = state.DeletePolicy(policyId)
 	if err != nil {
-		log.Log().Info(fName, "msg", "Failed to delete policy", "err", err)
+		log.Log().Warn(fName, "msg", "Failed to delete policy", "err", err)
 
 		responseBody := net.MarshalBody(reqres.PolicyDeleteResponse{
 			Err: data.ErrInternal,
@@ -93,7 +93,7 @@ func RouteDeletePolicy(
 		}
 
 		net.Respond(http.StatusInternalServerError, responseBody, w)
-		log.Log().Info(fName, "msg", data.ErrInternal)
+		log.Log().Error(fName, "msg", data.ErrInternal)
 		return err
 	}
 

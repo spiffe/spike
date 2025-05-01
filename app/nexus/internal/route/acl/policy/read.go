@@ -120,7 +120,7 @@ func RouteGetPolicy(
 		}
 
 		net.Respond(http.StatusNotFound, responseBody, w)
-		log.Log().Info(fName, "msg", "not found")
+		log.Log().Info(fName, "msg", "Policy not found: returning nil")
 		return nil
 	} else {
 		// I should not be here, normally.
@@ -135,7 +135,7 @@ func RouteGetPolicy(
 		}
 
 		net.Respond(http.StatusInternalServerError, responseBody, w)
-		log.Log().Info(fName, "msg", data.ErrInternal)
+		log.Log().Warn(fName, "msg", data.ErrInternal)
 		return err
 	}
 
