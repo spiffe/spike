@@ -105,12 +105,13 @@ func newOperatorRestoreCommand(
 
 			// 32 bytes encoded in hex should be 64 characters
 			if len(hexData) != 64 {
-				log.FatalLn("Invalid hex shard length:", len(hexData))
+				log.FatalLn("Invalid hex shard length:", len(hexData),
+					" (expected 64 characters). Did miss some characters when pasting?")
 			}
 
 			decodedShard, err := hex.DecodeString(hexData)
 
-			// Security: Use defer for cleanup to ensure it happens even in
+			// Security: Use `defer` for cleanup to ensure it happens even in
 			// error paths
 			defer func() {
 				mem.ClearBytes(shard)
