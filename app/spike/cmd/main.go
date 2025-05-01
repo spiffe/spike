@@ -6,7 +6,9 @@ package main
 
 import (
 	"context"
+	"fmt"
 
+	"github.com/spiffe/spike-sdk-go/security/mem"
 	"github.com/spiffe/spike-sdk-go/spiffe"
 
 	"github.com/spiffe/spike/app/spike/internal/cmd"
@@ -14,6 +16,13 @@ import (
 )
 
 func main() {
+	if !mem.Lock() {
+		fmt.Println("")
+		fmt.Println("Memory locking is not available.")
+		fmt.Println("Consider disabling swap to enhance security.")
+		fmt.Println("")
+	}
+
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 

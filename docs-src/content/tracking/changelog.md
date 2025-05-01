@@ -15,6 +15,8 @@ sort_by = "weight"
 * Fixed: Doomsday recovery was not immediately restoring data from the backing
   store. Now it does.
 * Better shard sanitization during doomsday recovery operation.
+* Added memory locking to SPIKE Pilot too (along with SPIKE Nexus and 
+  SPIKE Keeper, which already had memory locking)
 
 ## [0.4.0] - 2025-04-16
 
