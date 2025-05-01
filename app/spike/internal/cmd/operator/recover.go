@@ -180,8 +180,7 @@ func newOperatorRecoverCommand(
 			for i, shard := range shards {
 				filePath := fmt.Sprintf("%s/spike.recovery.%d.txt", recoverDir, i)
 
-				ss := shard[:]
-				encodedShard := base64.StdEncoding.EncodeToString(ss)
+				encodedShard := base64.StdEncoding.EncodeToString(shard[:])
 
 				out := fmt.Sprintf("spike:%d:%s", i, encodedShard)
 

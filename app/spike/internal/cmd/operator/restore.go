@@ -5,7 +5,7 @@
 package operator
 
 import (
-	"encoding/base64"
+	"encoding/hex"
 	"fmt"
 	"os"
 	"strconv"
@@ -101,17 +101,17 @@ func newOperatorRestoreCommand(
 			}
 
 			index := shardParts[1]
-			base64Data := shardParts[2]
+			hexData := shardParts[2]
 
-			// 32 bytes encoded in base64 should be 44 characters (including
-			// possible padding)
-			if len(base64Data) < 40 || len(base64Data) > 50 {
-				log.FatalLn("Invalid base64 shard length:", len(base64Data))
+			// 32 bytes encoded in hex should be 64 characters
+			if len(hexData) != 64 {
+				log.FatalLn("Invalid hex shard length:", len(hexData),
+					" (expected 64 characters). Did miss some characters when pasting?")
 			}
 
-			decodedShard, err := base64.StdEncoding.DecodeString(base64Data)
+			decodedShard, err := hex.DecodeString(hexData)
 
-			// Security: Use defer for cleanup to ensure it happens even in
+			// Security: Use `defer` for cleanup to ensure it happens even in
 			// error paths
 			defer func() {
 				mem.ClearBytes(shard)
