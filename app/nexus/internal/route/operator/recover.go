@@ -72,7 +72,7 @@ func RouteRecover(
 	log.Log().Info(fName, "msg", "request is valid. Recovery shards requested.")
 	shards := recovery.NewPilotRecoveryShards()
 
-	// Security: reset shards before function exits.
+	// Security: reset shards before the function exits.
 	defer func() {
 		for i := range shards {
 			mem.ClearRawBytes(shards[i])

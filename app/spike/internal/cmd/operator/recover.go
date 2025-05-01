@@ -5,7 +5,6 @@
 package operator
 
 import (
-	"encoding/base64"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -181,7 +180,8 @@ func newOperatorRecoverCommand(
 				filePath := fmt.Sprintf("%s/spike.recovery.%d.txt", recoverDir, i)
 
 				ss := shard[:]
-				encodedShard := base64.StdEncoding.EncodeToString(ss)
+
+				encodedShard := fmt.Sprintf("%x", ss)
 
 				out := fmt.Sprintf("spike:%d:%s", i, encodedShard)
 

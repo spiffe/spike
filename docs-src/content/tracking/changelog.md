@@ -14,6 +14,7 @@ sort_by = "weight"
 
 * Fixed: Doomsday recovery was not immediately restoring data from the backing
   store. Now it does.
+* Better shard sanitization during doomsday recovery operation.
 
 ## [0.4.0] - 2025-04-16
 
@@ -22,7 +23,7 @@ sort_by = "weight"
 * Added more configuration options to SPIKE Nexus.
 * Updated documentation around security and production hardening.
 * Updated release instructions, added a series of tests to follow and cutting
-  a release only after all tests pass. These test are manual for now, but
+  a release only after all tests pass. These tests are manual for now, but
   can be automated later down the line.
 
 ### Fixed
