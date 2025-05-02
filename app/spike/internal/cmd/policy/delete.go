@@ -73,7 +73,7 @@ func newPolicyDeleteCommand(
         
         You can provide either:
         - A policy ID as an argument: spike policy delete abc123
-        - A policy name with the --name flag: spike policy delete --name=mypolicy`,
+        - A policy name with the --name flag: spike policy delete --name=my-policy`,
 		Run: func(cmd *cobra.Command, args []string) {
 			trust.Authenticate(spiffeId)
 			api := spike.NewWithSource(source)

@@ -14,7 +14,7 @@ import (
 	"github.com/spiffe/spike/internal/log"
 )
 
-// bootstrap initializes the SPIKE Nexus by either recovering from existing
+// bootstrap initializes the SPIKE Nexus by either recovering from the existing
 // state or creating a new root key. The function determines the appropriate
 // initialization // strategy based on system state indicators.
 //
@@ -25,7 +25,7 @@ import (
 // The function follows this decision flow:
 //  1. Check for a tombstone file as an indicator of previous bootstrapping
 //  2. If tombstone exists, perform recovery using keeper shards
-//  3. If tombstone check fails for reasons other than non-existence, attempt
+//  3. If the tombstone check fails for reasons other than non-existence, attempt
 //     recovery
 //  4. If no tombstone exists, assume first-time initialization and create a
 //     new root key

@@ -63,7 +63,7 @@ func RouteShard(
 	state.RLockShard()
 	defer state.RUnlockShard()
 	// DO NOT reset `sh` after use, as this function does NOT own it.
-	// Treat the value "read-only".
+	// Treat the value as "read-only".
 	sh := state.ShardNoSync()
 
 	if mem.Zeroed32(sh) {

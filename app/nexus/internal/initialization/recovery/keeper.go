@@ -100,8 +100,8 @@ func iterateKeepersToBootstrap(
 			tombstone := config.SpikeNexusTombstonePath()
 
 			// Create the tombstone file to mark SPIKE Nexus as bootstrapped.
-			// 0600 to align with principle of least privilege. We can change the
-			// permission fi it doesn't work out.
+			// 0600 to align with the principle of least privilege. We can change the
+			// permission if it doesn't work out.
 			err = os.WriteFile(
 				tombstone,
 				[]byte("spike.nexus.bootstrapped=true"), 0600,
@@ -110,10 +110,10 @@ func iterateKeepersToBootstrap(
 				// Although the tombstone file is just a marker, it's still important.
 				// If SPIKE Nexus cannot create the tombstone file, or if someone
 				// deletes it, this can slightly change system operations.
-				// To be on the safe side, we let SPIKE Nexus crash because not being
-				// able to write to the data volume (where the tombstone file would be)
-				// can be a precursor of other problems that can affect the reliability
-				// of the backing store.
+				// To be on the safe side, we let SPIKE Nexus crash. If we don't let
+				// it crash, not being able to write to the data volume (where the
+				// tombstone file would be) can be a precursor of other problems that
+				// can affect the reliability of the backing store.
 				log.FatalLn(fName + ": failed to create tombstone file: " + err.Error())
 			}
 
@@ -191,9 +191,9 @@ func iterateKeepersAndTryRecovery(
 		state.Initialize(binaryRec)
 		state.SetRootKey(binaryRec)
 
-		// Security: Zero out temporary variables before function exits.
+		// Security: Zero out temporary variables before the function exits.
 		mem.ClearRawBytes(binaryRec)
-		// Security: Zero out temporary variables before function exits.
+		// Security: Zero out temporary variables before the function exits.
 		// Note that `successfulKeeperShards` will be reset elsewhere.
 		mem.ClearRawBytes(res.Shard)
 

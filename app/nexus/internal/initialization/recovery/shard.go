@@ -122,8 +122,8 @@ func shardContributionResponse(
 
 	var c [32]byte
 	copy(c[:], *contribution)
-	// Security: Ensure that temporary variable is zeroed out before
-	// function exits.
+	// Security: Ensure that the temporary variable is zeroed out before
+	// the function exits.
 	defer func() {
 		mem.ClearRawBytes(&c)
 	}()
@@ -131,7 +131,7 @@ func shardContributionResponse(
 	scr := reqres.ShardContributionRequest{
 		Shard: &c,
 	}
-	// Security: Ensure that struct field is zeroed out before the function
+	// Security: Ensure that the struct field is zeroed out before the function
 	// exits.
 	defer func() {
 		mem.ClearRawBytes(scr.Shard)

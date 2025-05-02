@@ -25,7 +25,7 @@ import (
 // an empty version list is used.
 //
 // The function validates the JWT, reads and unmarshals the request body,
-// processes the undelete operation, and returns a 200 OK response upon success.
+// processes the undelete operation, and returns a "200 OK" response upon success.
 //
 // Parameters:
 //   - w: http.ResponseWriter to write the HTTP response
@@ -38,8 +38,8 @@ import (
 // Request body format:
 //
 //	{
-//	    "path": string,    // Path to the secret to undelete
-//	    "versions": []int  // Optional list of specific versions to undelete
+//	    "path": string,   // Path to the secret to undelete
+//	    "versions": []int // Optional list of specific versions to undelete
 //	}
 //
 // Responses:

@@ -87,7 +87,7 @@ func computeShares() (group.Scalar, []shamir.Share) {
 
 	log.Log().Info(fName, "t", t, "n", n)
 
-	// Create secret from our 32 byte key
+	// Create a secret from our 32-byte key:
 	secret := g.NewScalar()
 
 	if err := secret.UnmarshalBinary(rk[:]); err != nil {

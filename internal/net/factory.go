@@ -23,7 +23,7 @@ import (
 //   - p: API URL for the route
 //   - a: API action instance
 //   - m: HTTP method
-//   - switchyard: Function that returns appropriate handler based on
+//   - switchyard: Function that returns an appropriate handler based on
 //     action and URL
 //
 // Returns:

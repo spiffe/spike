@@ -266,8 +266,8 @@ func SendShardsPeriodically(source *workloadapi.X509Source) {
 //
 // Returns:
 //   - []*[32]byte: A slice of byte array pointers representing the recovery
-//     shards. Returns empty slice if the root key is not available or if share
-//     generation fails.
+//     shards. Returns an empty slice if the root key is not available or if
+//     share generation fails.
 //
 // Example:
 //
@@ -351,7 +351,7 @@ func NewPilotRecoveryShards() map[int]*[32]byte {
 //   - source *workloadapi.X509Source: An X509Source used for authenticating
 //     with keeper nodes
 //
-// The function will fatal if:
+// The function will crash fatally if:
 //   - Root key creation fails
 //   - The number of keepers doesn't match the configured Shamir shares
 func BootstrapBackingStoreWithNewRootKey(source *workloadapi.X509Source) {
@@ -372,7 +372,7 @@ func BootstrapBackingStoreWithNewRootKey(source *workloadapi.X509Source) {
 	// operations. Initializing early allows SPIKE Nexus to serve before
 	// keepers are hydrated.
 	//
-	// Security: Use a static byte array and pass it as pointer to avoid
+	// Security: Use a static byte array and pass it as a pointer to avoid
 	// inadvertent copying / pass-by-value / memory allocation.
 	var seed [32]byte
 	// Security: Ensure the seed is zeroed out after use.

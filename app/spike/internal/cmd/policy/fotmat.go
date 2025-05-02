@@ -20,7 +20,7 @@ import (
 // to indented JSON.
 //
 // If the format flag is invalid, it returns an error message.
-// If the policies list is empty, it returns an appropriate message based on
+// If the "policies" list is empty, it returns an appropriate message based on
 // the format.
 //
 // Parameters:
@@ -38,12 +38,12 @@ func formatPoliciesOutput(cmd *cobra.Command, policies *[]data.Policy) string {
 			" Valid formats are: human, json", format)
 	}
 
-	// Check if policies is nil or empty
+	// Check if "policies" is nil or empty
 	isEmptyList := policies == nil || len(*policies) == 0
 
 	if format == "json" {
 		if isEmptyList {
-			// Return empty array instead of null for empty list in JSON format
+			// Return an empty array instead of null for an empty list in JSON format
 			return "[]"
 		}
 
@@ -59,7 +59,7 @@ func formatPoliciesOutput(cmd *cobra.Command, policies *[]data.Policy) string {
 		return "No policies found"
 	}
 
-	// Rest of the function remains the same...
+	// The rest of the function remains the same:
 	var result strings.Builder
 	result.WriteString("POLICIES\n========\n\n")
 

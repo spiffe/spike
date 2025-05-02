@@ -35,8 +35,8 @@ Commands:
   list
 ```
 
-Note that the CLI is work in progress, so what you see above might be slightly
-different from the version that you are using.
+Note that the CLI is a constant work in progress, so what you see above might be 
+slightly different from the version that you are using.
 
 For additional help, you can check the official documentation.
 

@@ -22,7 +22,7 @@ import (
 
 // NoopStore provides a no-op implementation of a storage backend.
 // This implementation can be used for testing or as a placeholder
-// where no actual storage is needed. NoopStore is also use when the
+// where no actual storage is needed. NoopStore is also used when the
 // backing kv is configured to be in-memory.
 type NoopStore struct {
 }

@@ -42,23 +42,6 @@ func SetShard(s *[32]byte) {
 	copy(shard[:], s[:])
 }
 
-//// Shard safely retrieves the current global shard value under a read lock.
-//// Although this function returns a pointer, it is intended to be used for
-//// read-only access. Do not mutate the value that this function's return value
-//// points at. If you want to change the shard, use `SetShard()` instead.
-////
-//// Returns:
-////   - *[32]byte: Pointer to the current shard value
-////
-//// Thread-safe through shardMutex.
-//func Shard() *[32]byte {
-//	shardMutex.RLock()
-//	defer shardMutex.RUnlock()
-//
-//	// Security: return a reference, not a copy.
-//	return &shard
-//}
-
 // ShardNoSync returns a pointer to the shard without acquiring any locks.
 // Callers must ensure proper synchronization by using RLockShard and
 // RUnlockShard when accessing the returned pointer.
@@ -68,7 +51,7 @@ func ShardNoSync() *[32]byte {
 
 // RLockShard acquires a read lock on the shard mutex.
 // This should be paired with a corresponding call to RUnlockShard,
-// typically using defer.
+// typically using `defer`.
 func RLockShard() {
 	shardMutex.RLock()
 }

@@ -6,7 +6,7 @@
 
 ## SPIKE Nexus
 
-**SPIKE Nexus** is the secrets store of SPIKE. It stores secrets securely in
+**SPIKE Nexus** is the Secrets Store of SPIKE. It stores secrets securely in
 memory and also can optionally back them up (*in encrypted form*) to a Postgres
 database for production deployments.
 

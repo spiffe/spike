@@ -38,13 +38,13 @@ var (
 //   - bool: true if access is granted, false otherwise
 //
 // The function grants access if any of these conditions are met:
-//  1. The requestor is a pilot
+//  1. The requestor is a SPIKE Pilot instance.
 //  2. A matching policy has the super permission
 //  3. A matching policy contains all requested permissions
 //
 // A policy matches when:
 //  1. It has wildcard patterns ("*") for both SPIFFE ID and path, or
-//  2. Its SPIFFE ID pattern matches the requestor's ID and its path pattern
+//  2. Its SPIFFE ID pattern matches the requestor's ID, and its path pattern
 //     matches the requested path
 func CheckAccess(
 	peerSpiffeId string, path string, wants []data.PolicyPermission,
@@ -56,7 +56,7 @@ func CheckAccess(
 
 	policies := ListPolicies()
 	for _, policy := range policies {
-		// Check wildcard pattern first
+		// Check the wildcard pattern first
 		if policy.SpiffeIdPattern == "*" && policy.PathPattern == "*" {
 			if hasAllPermissions(policy.Permissions, wants) {
 				return true
@@ -92,11 +92,11 @@ func CheckAccess(
 
 // CreatePolicy creates a new policy in the system after validating and
 // preparing it. The function compiles regex patterns, generates a UUID, and
-// sets creation timestamp before storing the policy.
+// sets the creation timestamp before storing the policy.
 //
 // Parameters:
 //   - policy: The policy to create. Must have a non-empty Name field.
-//     SpiffeIdPattern and PathPattern can be "*" for wildcard matching,
+//     SpiffeIdPattern and PathPattern can be "*" for wildcard matching
 //     or valid regular expressions.
 //
 // Returns:
@@ -178,7 +178,7 @@ func GetPolicy(id string) (data.Policy, error) {
 		return value.(data.Policy), nil
 	}
 
-	// Try loading from cache
+	// Try loading from the cache:
 	cachedPolicy := persist.ReadPolicy(id)
 	if cachedPolicy == nil {
 		return data.Policy{}, ErrPolicyNotFound

@@ -40,7 +40,7 @@ import (
 //
 //	{} // Empty request body expected
 //
-// Response format on success (200 OK):
+// The response format on success (200 OK):
 //
 //	{
 //	    "keys": []string   // Array of all secret paths

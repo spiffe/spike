@@ -56,7 +56,7 @@ func RecoverRootKey(ss []ShamirShard) *[32]byte {
 
 	// Process all provided shares
 	for _, shamirShard := range ss {
-		// Create a new share with sequential Id (starting from 1)
+		// Create a new share with sequential ID (starting from 1):
 		share := secretsharing.Share{
 			ID:    g.NewScalar(),
 			Value: g.NewScalar(),
@@ -80,8 +80,8 @@ func RecoverRootKey(ss []ShamirShard) *[32]byte {
 	threshold := env.ShamirThreshold()
 	reconstructed, err := secretsharing.Recover(uint(threshold-1), shares)
 	if err != nil {
-		// Security: reset shares.
-		// defer won't get called since log.Fatalln terminates the program.
+		// Security: Reset shares.
+		// Defer won't get called because `log.FatalLn` terminates the program.
 		for _, s := range shares {
 			s.ID.SetUint64(0)
 			s.Value.SetUint64(0)
@@ -91,8 +91,8 @@ func RecoverRootKey(ss []ShamirShard) *[32]byte {
 	}
 
 	if reconstructed == nil {
-		// Security: reset shares.
-		// defer won't get called since log.Fatalln terminates the program.
+		// Security: Reset shares.
+		// Defer won't get called because `log.FatalLn` terminates the program.
 		for _, s := range shares {
 			s.ID.SetUint64(0)
 			s.Value.SetUint64(0)
@@ -118,7 +118,7 @@ func RecoverRootKey(ss []ShamirShard) *[32]byte {
 
 		var result [32]byte
 		copy(result[:], binaryRec)
-		// Security: Zero out temporary variables before function exits.
+		// Security: Zero out temporary variables before the function exits.
 		mem.ClearBytes(binaryRec)
 
 		return &result

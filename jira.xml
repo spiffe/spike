@@ -35,13 +35,12 @@
       We also need to start a work on updating spiffe.io for the
       new book.
     </issue>
+    <issue kind="good-first-issue"
+           ref="https://github.com/spiffe/spike/issues/80"
+           title="add reason to errors" />
   </watch>
   <immediate-backlog>
     <meta>Things to do before working further on containerization.</meta>
-    <issue>
-      Run a static code analysis, and also go through all the files.
-      It turns out IntelliJ has become "more" grammatically-picky.
-    </issue>
     <issue>
       spike (main)$ spike operator restore
       (your input will be hidden as you paste/type it)
@@ -66,19 +65,13 @@
       Check what else needed (aside from enabling boring crypto) to
       be algorithmically fips-compatible.
     </issue>
-    <issue kind="good-first-issue">
-      For: CLI and API
-      * List policies by path
-      * List policies by SPIFFE ID
-    </issue>
     <issue>
       Create an ADR about secret path format
       i.e. it should match  const validPath = `^[a-zA-Z0-9._\-/()?+*|[\]{}\\]+$`
       and recommended but not mandated to not start with /.
 
       Maybe not an ADR but more part of the documentation.
-    </issue>
-    <issue>
+
       To docs. -- note that the validation is not "as strict" but these are recommended.
       Example Valid Paths:
       ✅ secret/myapp/config
@@ -115,45 +108,16 @@
       #sleep 5
       #run_background "./hack/start-nexus.sh"
     </issue>
-    <issue kind="good-first-issue"
-           ref="https://github.com/spiffe/spike/issues/80">
-      validations:
-
-      along with the error code, also return some explanatory message
-
-      instead of this for example
-
-      err = validation.ValidateSpiffeIdPattern(spiffeIdPattern)
-      if err != nil {
-      responseBody := net.MarshalBody(reqres.PolicyCreateResponse{
-      Err: data.ErrBadInput,
-      }, w)
-      net.Respond(http.StatusBadRequest, responseBody, w)
-      return err
-      }
-
-      do this
-
-      err = validation.ValidateSpiffeIdPattern(spiffeIdPattern)
-      if err != nil {
-      responseBody := net.MarshalBody(reqres.PolicyCreateResponse{
-      Err: data.ErrBadInput,
-      Reason: "Invalid spiffe id pattern. Matcher should be a regex that
-      can match a spiffe id"
-      }, w)
-      net.Respond(http.StatusBadRequest, responseBody, w)
-      return err
-      }
-    </issue>
     <issue>
       read policies from a yaml or a json file and create them.
     </issue>
     <issue>
-      This is OpenBao's production deployment checlist; check of if any of
+      This is OpenBao's production deployment checklist; check of if any of
       those also applies for SPIKE, of if we need different/additional items
       for SPIKE.
 
-      From the context, OpenBao can be swapped with SPIKE Nexus, I think:
+      From the context, OpenBao can be swapped with SPIKE Nexus, I think,
+      and the requirements will be similar:
 
       End-to-End TLS. OpenBao should always be used with TLS in production. If
       intermediate load balancers or reverse proxies are used to front OpenBao,
@@ -210,21 +174,6 @@
       make this an ADR.
     </issue>
     <issue>
-      path is still stored plain in DB; use HMAC instead.
-
-      CREATE TABLE "secrets" (
-      "hashed_path"	BLOB NOT NULL,
-      "version"	INTEGER NOT NULL,
-      "nonce"	BLOB NOT NULL,
-      "encrypted_data"	BLOB NOT NULL,
-      "created_time"	DATETIME NOT NULL,
-      "deleted_time"	DATETIME,
-      PRIMARY KEY("hashed_path","version")
-      );
-
-      same is true for policies; we need to keep them encrypted too.
-    </issue>
-    <issue>
       this is for policy creation:
 
       allowed := state.CheckAccess(
@@ -274,35 +223,11 @@
       }
     </issue>
     <issue>
-      we need a "reset" command for the restore operation in case
-      we pushed an incorrect set of shards.
-    </issue>
-    <issue>
-      spike policy write my-policy ./the-policy-file.yaml
       also check out: https://developer.hashicorp.com/vault/docs/concepts/policies
       to see if we can amend any updates to the policy rules
       (one such update, for example, is limiting what kind of attributes are
       allowed, but we should discuss whether that much granularity is worth the
       hassle)
-    </issue>
-    <issue>
-      the backing store is considered untrusted and it stores
-      encrypted information
-      todo: if it's "really" untrusted then maybe it's better to encrypt
-      everything
-      (including metadata) -- check how other secrets managers does this.
-    </issue>
-    <issue kind="good-first-issue">
-      create a `spike status` command that shows the current status and
-      stats
-      of SPIKE Nexus (i.e. whether root key initialized; how many secrets
-      are
-      in the system etc.)
-      It does not have to be too detailed; we can always amend it later.
-    </issue>
-    <issue>
-      check open/in-progress GitHub issues and verify their status with
-      the contributors.
     </issue>
     <issue>
       add to docs: we strip binaries of symbols before build for
@@ -366,13 +291,6 @@
 
       When you implement the feature, update the documentation, and also the relevant shell script.
     </issue>
-    <issue>
-      Optionally disable mlock via config -- it should be enabled by default though.
-
-      If the user has granted `CAP_IPC_LOCK` to SPIKE Nexus, then they can also
-      set something like `SPIKE_NEXUS_USE_MLOCK="true"` as an env var, and try
-      locking memory if the variable is set (will be "false" by default).
-    </issue>
     <issue severity="important" urgency="moderate">
       // TDO: check all database operations (secrets, policies, metadata)
       and
@@ -402,12 +320,6 @@
     <issue>
       SPIKE Pilot to ingest a policy YAML file(s) to create policies.
       (similar to kubectl)
-    </issue>
-    <issue>
-      having a mode of not directly creating the database can also
-      be helpful for migration scripts.
-      (not that we support any migration path for now, but maybe for the
-      future)
     </issue>
     <issue kind="qa">
       Add  relevant ones of those to the smoke tests
@@ -450,13 +362,11 @@
     </issue>
   </immediate-backlog>
   <runner-up>
-
-
-    <issue>
-      Kubernetification
-    </issue>
     <issue kind="v1.0-requirement">
-      - Run SPIKE in Kubernetes too.
+      Kubernetification:
+      step 1: containerize using github registry.
+      step 2: use minikube and those container images and ensure things work
+      step 3: use a local registry for development build (this can be done before step 1)
     </issue>
     <issue kind="v1.0-requirement">
       - Postgres support as a backing store.

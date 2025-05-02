@@ -93,7 +93,7 @@ func RouteContribute(
 		return errors.ErrInvalidInput
 	}
 
-	// state.SetShard copies the shard. We can safely reset this one at [1].
+	// `state.SetShard` copies the shard. We can safely reset this one at [1].
 	state.SetShard(request.Shard)
 
 	responseBody := net.MarshalBody(reqres.ShardContributionResponse{}, w)

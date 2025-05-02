@@ -7,6 +7,7 @@ package persist
 import (
 	"context"
 	"encoding/hex"
+
 	"github.com/spiffe/spike/app/nexus/internal/env"
 	"github.com/spiffe/spike/app/nexus/internal/state/backend"
 	"github.com/spiffe/spike/app/nexus/internal/state/backend/memory"
@@ -15,7 +16,7 @@ import (
 	"github.com/spiffe/spike/internal/log"
 )
 
-// InitializeSqliteBackend creates and initializes a SQLite backend instance
+// InitializeSqliteBackend creates and initializes an SQLite backend instance
 // using the provided root key for encryption. The backend is configured using
 // environment variables for database settings such as directory location,
 // connection limits, and journal mode.
@@ -31,7 +32,7 @@ import (
 //  2. Initializing the backend with a 30-second timeout
 //
 // If either operation fails, it logs a warning and returns nil. This allows
-// the system to continue operating with in-memory state only. Configuration
+// the system to continue operating with an in-memory state only. Configuration
 // options include:
 //   - Database directory and filename
 //   - Journal mode settings

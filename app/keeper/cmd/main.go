@@ -7,6 +7,7 @@ package main
 import (
 	"context"
 	"fmt"
+
 	"github.com/spiffe/spike-sdk-go/net"
 	"github.com/spiffe/spike-sdk-go/security/mem"
 	"github.com/spiffe/spike-sdk-go/spiffe"

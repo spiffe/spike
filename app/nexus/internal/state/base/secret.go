@@ -49,7 +49,7 @@ func DeleteSecret(path string, versions []int) error {
 // UndeleteSecret restores previously deleted versions of a secret at the
 // specified path. It takes a path string identifying the secret's location and
 // a slice of version numbers to restore. The function acquires a lock on the
-// key-value kv to ensure thread-safe operations during the undelete process.
+// key-value kv to ensure thread-safe operations during the `undelete` process.
 //
 // The function operates synchronously and will block until the undelete
 // operation is complete. If any specified version numbers don't exist or were

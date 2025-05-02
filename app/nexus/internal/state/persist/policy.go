@@ -43,7 +43,7 @@ func StorePolicy(policy data.Policy) {
 	defer cancel()
 
 	if err := be.StorePolicy(ctx, policy); err != nil {
-		// Log error but continue - memory is source of truth
+		// Log error but continue - memory is the source of truth
 		log.Log().Warn(fName,
 			"msg", "Failed to cache policy",
 			"id", policy.Id,
@@ -53,7 +53,7 @@ func StorePolicy(policy data.Policy) {
 }
 
 // ReadAllPolicies retrieves all policies from the backend storage.
-// It uses retry mechanism to handle temporary failures and times out
+// It uses the retry mechanism to handle temporary failures and times out
 // after the configured database operation timeout.
 // Returns a map of policy IDs to policy objects, or nil if an error occurs.
 func ReadAllPolicies() map[string]*data.Policy {
@@ -115,7 +115,7 @@ func DeletePolicy(id string) {
 	defer cancel()
 
 	if err := be.DeletePolicy(ctx, id); err != nil {
-		// Log error but continue - memory is source of truth
+		// Log error but continue - memory is the source of truth
 		log.Log().Warn(fName,
 			"msg", "Failed to delete policy from cache",
 			"id", id,

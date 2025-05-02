@@ -54,9 +54,9 @@ import (
 //   - The API call to restore using the shard fails.
 //   - No status is returned from the restoration attempt.
 //
-// If restoration is incomplete (more shards needed), the command displays the
-// current count of collected shards and instructs the user to run the command
-// again to provide additional shards.
+// If restoration is incomplete (more shards are needed), the command displays
+// the current count of collected shards and instructs the user to run the
+// command again to provide additional shards.
 func newOperatorRestoreCommand(
 	source *workloadapi.X509Source, spiffeId string,
 ) *cobra.Command {

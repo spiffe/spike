@@ -39,8 +39,8 @@ import (
 //
 // Error cases:
 //   - SPIKE not initialized: Prompts user to run 'spike init'
-//   - Secret not found: Displays appropriate message
-//   - Read errors: Displays error message
+//   - Secret not found: Displays an appropriate message
+//   - Read errors: Displays an error message
 func newSecretGetCommand(
 	source *workloadapi.X509Source, spiffeId string,
 ) *cobra.Command {

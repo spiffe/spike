@@ -68,7 +68,7 @@ func mustUpdateRecoveryInfo(rk *[32]byte) []secretsharing.Share {
 // Note that sendSharesToKeepers optimistically moves on to the next SPIKE
 // Keeper in the list on error. This is okay, because SPIKE Nexus may not
 // need all keepers to be healthy all at once, and since we periodically
-// send shards to keepers, provided there is no configration mistake,
+// send shards to keepers, provided there is no configuration mistake,
 // all SPIKE Keepers will get their shards eventually.
 func sendShardsToKeepers(
 	source *workloadapi.X509Source, keepers map[string]string,
@@ -159,7 +159,7 @@ func sendShardsToKeepers(
 			// the next iteration.
 			//
 			// Note that you cannot do `mem.ClearRawBytes(contribution)` because
-			// contribution is a slice, not a struct; we use `mem.ClearBytes()`
+			// the contribution is a slice, not a struct; we use `mem.ClearBytes()`
 			// instead.
 			mem.ClearBytes(contribution)
 

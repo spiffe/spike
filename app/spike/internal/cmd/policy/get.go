@@ -94,14 +94,14 @@ func newPolicyGetCommand(
 
         You can provide either:
         - A policy ID as an argument: spike policy get abc123
-        - A policy name with the --name flag: spike policy get --name=mypolicy
+        - A policy name with the --name flag: spike policy get --name=my-policy
 
         Use --format=json to get the output in JSON format.`,
 		Run: func(cmd *cobra.Command, args []string) {
 			trust.Authenticate(spiffeId)
 			api := spike.NewWithSource(source)
 
-			// If first argument is provided without --name flag, it could be
+			// If the first argument is provided without `--name` flag, it could be
 			// misinterpreted as trying to use policy name directly
 			if len(args) > 0 && !cmd.Flags().Changed("name") {
 				fmt.Println("Note: To look up a policy by name, use --name flag:")

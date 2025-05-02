@@ -60,9 +60,9 @@ type Backend interface {
 
 	// DeletePolicy removes a policy object identified by the given ID from
 	// storage.
-	// ctx is the context for managing cancellations and timeouts.
-	// id is the identifier of the policy to delete.
-	// Returns an error, if the operation fails.
+	// - `ctx` is the context for managing cancellations and timeouts.
+	// - `id` is the identifier of the policy to delete.
+	// Returns an error if the operation fails.
 	DeletePolicy(ctx context.Context, id string) error
 }
 

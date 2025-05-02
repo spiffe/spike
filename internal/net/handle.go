@@ -15,7 +15,7 @@ type Handler func(http.ResponseWriter, *http.Request, *log.AuditEntry) error
 
 // HandleRoute wraps an HTTP handler with audit logging functionality.
 // It creates and manages audit log entries for the request lifecycle,
-// including:
+// including
 // - Generating unique trail IDs
 // - Recording timestamps and durations
 // - Tracking request status (created, success, error)

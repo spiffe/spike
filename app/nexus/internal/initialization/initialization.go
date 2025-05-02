@@ -48,7 +48,7 @@ func Initialize(source *workloadapi.X509Source) {
 
 	log.Log().Info(fName, "msg", "Backend store does not require bootstrapping")
 
-	// Security: Use a static byte array and pass it as pointer to avoid
+	// Security: Use a static byte array and pass it as a pointer to avoid
 	// inadvertent pass-by-value copying / memory allocation.
 	var seed [32]byte
 

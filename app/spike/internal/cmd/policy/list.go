@@ -74,7 +74,7 @@ import (
 //
 // Error conditions:
 //   - System not initialized (requires running 'spike init' first)
-//   - Invalid format specified
+//   - An invalid format specified
 //   - Insufficient permissions
 //   - Policy retrieval failure
 //

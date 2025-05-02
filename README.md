@@ -15,7 +15,7 @@ For more information, [see the documentation][docs].
 
 ## The Elevator Pitch
 
-[**SPIKE**][spike] is a streamlined, highly-reliable secrets store that leverages 
+[**SPIKE**][spike] is a streamlined, highly reliable secrets store that leverages 
 [SPIFFE][spiffe] framework for strong, production-grade identity control. 
 
 Built with simplicity and high availability in mind, SPIKE empowers ops teams, 

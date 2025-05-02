@@ -9,9 +9,9 @@ import (
 	"os"
 )
 
-// Keepers retrieves and parses the keeper peer configurations from environment.
-// It reads SPIKE_NEXUS_KEEPER_PEERS environment variable which should contain a
-// JSON map of keeper IDs to their URLs.
+// Keepers retrieves and parses the keeper peer configurations from the
+// environment. It reads SPIKE_NEXUS_KEEPER_PEERS environment variable which
+// should contain a JSON map of keeper IDs to their URLs.
 //
 // The environment variable should be formatted as:
 //
