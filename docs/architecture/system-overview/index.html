@@ -739,8 +739,8 @@ Secrets Management solution. It is designed to ensure secure storage, recovery,
 and management of sensitive data with a focus on simplicity, reliability,
 and scalability for production environments.</p>
 <h2 id="spike-components">SPIKE Components</h2>
-<p><strong>SPIKE</strong> (<em>Secure Production Identity for Key Encryption</em>) is a secrets
-management system build on top of a <a href="https://spiffe.io/" title="SPIFFE"><strong>SPIFFE</strong></a> (<em>Secure Production
+<p><strong>SPIKE</strong> (<em>Secure Production Identity for Key Encryption</em>) is a Secrets
+Management system built on top of a <a href="https://spiffe.io/" title="SPIFFE"><strong>SPIFFE</strong></a> (<em>Secure Production
 Identity Framework for Everyone</em>) identity control plane, consisting of three
 components:</p>
 <ul>
@@ -779,7 +779,7 @@ control plane.</p>
 </li>
 </ul>
 <p>Each component receives its own SVID, which serves as a
-<strong>cryptographically-verifiable</strong> identity document. These SVIDs allow the
+<strong>cryptographically verifiable</strong> identity document. These SVIDs allow the
 components to:</p>
 <ul>
 <li>Prove their identity to other services</li>
@@ -884,7 +884,7 @@ root key (<em>e.g., any 2 of 3, or 3 of 5, etc.</em>)</li>
 </ul>
 <p>This provides both security and fault tolerance: The system can continue
 operating even if some <strong>SPIKE Keeper</strong>s become temporarily unavailable, as
-long as the threshold number of shards remain accessible.</p>
+long as the threshold number of shards remains accessible.</p>
 <h2 id="spike-nexus-init-flow">SPIKE Nexus Init Flow</h2>
 <p>The following diagram depicts <strong>SPIKE Nexus</strong> initial bootstrapping flow:</p>
 
@@ -914,14 +914,14 @@ shards to relevant <strong>SPIKE Keeper</strong> instances.</li>
 bottom part of the diagram</em>) that runs as a separate <strong>goroutine</strong>.</p>
 <ul>
 <li>At regular intervals, if <strong>SPIKE Nexus</strong> happens to have a <strong>root key</strong>, it
-computes <a href="https://en.wikipedia.org/wiki/Shamir%27s_secret_sharing" title="Shamir&#39;s Secret Sharing"><strong>Shamir</strong></a> shards out of it, and dispatches these shards
+computes <a href="https://en.wikipedia.org/wiki/Shamir%27s_secret_sharing" title="Shamir&#39;s Secret Sharing"><strong>Shamir</strong></a> shards out of it and dispatches these shards
 to the <strong>SPIKE Keeper</strong>s.</li>
 </ul>
 <p>This flow establishes a secure boot process that handles both initial setup and
 subsequent startups. The system ensures the <strong>root key</strong> is either properly
 recovered from existing shards or securely generated and distributed when
 starting fresh.</p>
-<p>There is one edge case though: When there is a total system crash, and <strong>SPIKE
+<p>There is one edge case, though: When there is a total system crash, and <strong>SPIKE
 Keeper</strong>s don’t have any shards in their memory, then you’ll need a manual
 recovery.</p>
 <p>This event is highly unlikely, as deploying a sufficient number of <strong>SPIKE
@@ -941,7 +941,7 @@ step-by-step instructions to follow during, before, and a disaster occurs.</p>
 <p>You will need to prepare <strong>beforehand</strong> so that you can recover the root
 key when the system fails to automatically recover it from <strong>SPIKE Keeper</strong>s.</p>
 </blockquote>
-<p>The following diagram outline <strong>SPIKE</strong>’s manual disaster recovery procedure.
+<p>The following diagram outlines <strong>SPIKE</strong>’s manual disaster recovery procedure.
 You can open the picture on a new tab for an enlarged version of it.</p>
 
 <a href="&#x2F;assets&#x2F;docs&#x2F;spike-doomsday-recovery.jpg" title="SPIKE Manual disaster recovery flow.">
@@ -960,7 +960,7 @@ disaster strikes.</p>
 main keys. Without this proactive backup step, there would be nothing to
 recover from in a catastrophic failure.</p>
 </blockquote>
-<p>This operation need to be done <strong>BEFORE</strong> any disaster; ideally, shortly after
+<p>This operation needs to be done <strong>BEFORE</strong> any disaster; ideally, shortly after
 deploying <strong>SPIKE</strong>.</p>
 <p>Here is how the flow goes:</p>
 <ul>
@@ -984,8 +984,8 @@ recovery.</li>
 backed-up shards one at a time</p>
 <ul>
 <li><strong>SPIKE Pilot</strong> forwards the entered shard to <strong>SPIKE Nexus</strong></li>
-<li>System acknowledges and tracks progress of shard restoration returning
-the amount of shards received, and the number of shards remaining to restore
+<li>System acknowledges and tracks the progress of shard restoration, returning
+the number of shards received, and the number of shards remaining to restore
 the root key.</li>
 </ul>
 <h3 id="system-restoration">System Restoration</h3>
@@ -1008,7 +1008,7 @@ upon a crash.</li>
 <h3 id="spike-keeper">SPIKE Keeper</h3>
 <ul>
 <li>It is designed to be <strong>simple</strong> and <strong>reliable</strong>.</li>
-<li>It does one thing, and does it well.</li>
+<li>It does one thing and does it well.</li>
 <li>Its <strong>only</strong> goal is to keep a <a href="https://en.wikipedia.org/wiki/Shamir%27s_secret_sharing" title="Shamir&#39;s Secret Sharing"><strong>Shamir Shard</strong></a> in <strong>memory</strong>.</li>
 <li>By design, it does not have any knowledge about its peer <strong>SPIKE Keepers</strong>,
 nor <strong>SPIKE Nexus</strong>. It doesn’t require any configuration to be brought up.

@@ -746,21 +746,22 @@
         <article>
             
         <h1 id="spike-security-model">SPIKE Security Model</h1>
-<p>Here is a brief introduction to <strong>SPIKE</strong> security model.</p>
+<p>Here is a brief introduction to <strong>SPIKE</strong>’s security model.</p>
 <h2 id="machine-as-the-trust-boundary">Machine as the Trust Boundary</h2>
 <p><strong>SPIKE</strong> components are intended to be used as the foundation for
 cloud native secrets management in a zero trust environment. <strong>SPIKE</strong>
-supports Linux and the BSD family (including MacOS). Windows is not currently
+supports Linux and the BSD family (<em>including macOS</em>). Windows is not currently
 supported, though some early prototyping is a work in progress.</p>
 <p><strong>SPIKE</strong> (<em>with the help of SPIFFE and SPIRE</em>) adheres to the zero trust
 networking security model in which it is assumed that network communication is
 hostile or presumably fully compromised. That said, it is also assumed that
 the hardware on which *<strong>SPIKE</strong> components run, as well as its operators,
-are trustworthy.</p>
+is trustworthy.</p>
 <p>If the hardware is considered as an attack surface, or insider threats are
-part of the threat model, then careaful considerations should be made around the
-physical placement of <strong>SPIRE Server</strong>, <strong>SPIKE Nexus</strong>, and <strong>SPIKE Keeper</strong>
-instances, and the security of their relevant conﬁguration parameters.</p>
+part of the threat model, then careful considerations should be made around
+key components. The physical placement of <strong>SPIRE Server</strong>, <strong>SPIKE Nexus</strong>,
+and <strong>SPIKE Keeper</strong>instances, and the security of their relevant configuration
+parameters will be important.</p>
 <h2 id="authentication-and-communication">Authentication and Communication</h2>
 <ul>
 <li>All inter-component communication is secured through <a href="https://spiffe.io/"><strong>SPIFFE</strong> mTLS</a>.</li>
@@ -770,7 +771,7 @@ instances, and the security of their relevant conﬁguration parameters.</p>
 <h2 id="trust-boundaries">Trust Boundaries</h2>
 <p><strong>The primary trust boundary is at the machine level</strong>. Once the machine is
 compromised, hardening <strong>SPIKE</strong> components will provide diminishing returns.
-In that regard, both physical, and OS-level security are important.</p>
+In that regard, both physical, and OS-level security is important.</p>
 <p>For example, when the machine is compromised, an attacker with sufficient
 privileges can observe and control the memory of <strong>SPIKE Nexus</strong>, or
 <strong>SPIKE Keeper</strong>; they can inject their counterfeit workloads; they can modify
@@ -825,7 +826,7 @@ protect against malicious code execution as that ability likely requires
 administrative privileges, which should be avoided for <strong>SPIKE</strong> components
 in the first place to prevent privilege escalation.</li>
 <li>Protecting against the underlying system’s flaws. The systems shall be
-up-to-date with respect to dependencies, properly secured, monitored, and
+up to date with respect to dependencies, properly secured, monitored, and
 hardened.</li>
 <li>Protecting against ill intent of <strong>SPIKE</strong> super admins: <strong>SPIKE</strong> assumes
 trust for super administrators. Any malicious actions performed by super
@@ -859,9 +860,9 @@ services, be aware of who else has access to it and manages it?</li>
 <li>Make sure the database connection is secure with TLS or mTLS.</li>
 </ul>
 <h2 id="network-isolation-of-spike-keepers">Network Isolation of SPIKE Keepers</h2>
-<p>SPIKE Keepers do not have any communication pathway between each other and this
+<p>SPIKE Keepers do not have any communication pathway between each other, and this
 is a decision by design. This significantly limits the possibility of lateral
-movements as even when an attacker gains a foothold on a SPIKE Keeper instance
+movements as even when an attacker gains a foothold on a SPIKE Keeper instance,
 they cannot laterally move to other SPIKE Keeper instances.</p>
 <p>SPIKE Nexus and SPIKE Keepers establish a hub-spoke topology where SPIKE
 Keepers (the spokes) can only communicate with SPIKE Nexus (the hub).</p>
@@ -880,7 +881,7 @@ shares can be combined to restore the system when needed.</li>
 <strong>SPIKE Keeper</strong>s. However, for the unlikely case of a total system crash,
 each administrator can hold one of these shares and use <code>spike restore</code> to
 restore the system back to normal. Since, a single shard cannot recreate
-the root key we are mitigating risk by distributing trust.</li>
+the root key, we are mitigating risk by distributing trust.</li>
 <li>For those less concerned with strict separation, an alternative approach
 could involve storing both shares on a single thumb drive or distributing
 two shares across separate thumb drives in different safes. This trade-off
@@ -915,8 +916,8 @@ specify what a workload is allowed to do with the secrets managed by
 super administrators have full access by default.</li>
 <li><strong>Policy Enforcement:</strong> Workloads require a valid, explicitly defined policy
 to perform any lifecycle operation on paths that contain secrets.</li>
-<li><strong>Controlled Operations:</strong> Operations such as creating, deleting, or modifying
-secrets are strictly governed by the access policies.</li>
+<li><strong>Controlled Operations:</strong> The access policies strictly govern operations such
+as creating, deleting, or modifying secrets.</li>
 <li><strong>Access Scoping:</strong> Policies can define the scope and level of access (<em>e.g.,
 read-only or full access</em>) on specific secret paths for each workload.</li>
 </ul>

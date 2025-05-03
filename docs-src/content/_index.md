@@ -8,7 +8,7 @@ insert_anchor_links = "right"
 +++
 
 > "It is really cool to see a new secret store built on top of SPIFFE
-> in a native way. This is a great way to show how a common production
+> natively. This is a great way to show how a common production
 > identity framework can make other things much simpler and automated."
 >
 > --- **Joe Beda**, creator of SPIFFE, co-creator of Kubernetes.
@@ -17,7 +17,7 @@ insert_anchor_links = "right"
 
 ## Secure Production Identity for Key Encryption (SPIKE)
 
-**SPIKE**  is a lightweight **secrets store** that uses [SPIFFE][spiffe]
+**SPIKE** is a lightweight **secrets store** that uses [SPIFFE][spiffe]
 as its identity control plane.
 
 **SPIKE** protects your secrets and helps your ops, SREs, and sysadmins
@@ -39,5 +39,5 @@ Here are a few pointers to learn more about **SPIKE**:
 [architecture]: @/architecture/system-overview.md "SPIKE Architecture"
 [quickstart]: @/getting-started/guide.md "SPIKE Quickstart"
 [community]: @/community/hello.md "Open Source is better together."
-[github]: https://github.com/spiffe/spike
 [cli]: @/getting-started/commands/_index.md
+[github]: https://github.com/spiffe/spike

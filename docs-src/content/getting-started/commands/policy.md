@@ -178,7 +178,7 @@ policy.PathRegex = pathRegex
 ```
 
 As seen from the example above, both the path pattern and the SPIFFE ID
-pattern that are provided during policy creation, are used "**AS IS**" to 
+pattern that are provided during policy creation which are used "**AS IS**" to 
 create regular expression matchers. These patterns are compiled
 into Go's built-in regex engine, ensuring that the matching process strictly
 adheres to the patterns defined in the policy, allowing for precise and flexible

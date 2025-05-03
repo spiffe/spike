@@ -42,49 +42,6 @@
   <immediate-backlog>
     <meta>Things to do before working further on containerization.</meta>
     <issue>
-      Create an ADR about secret path format
-      i.e. it should match const validPath = `^[a-zA-Z0-9._\-/()?+*|[\]{}\\]+$`
-      and recommended but not mandated to not start with /.
-
-      Maybe not an ADR but more part of the documentation.
-
-      To docs. -- note that the validation is not "as strict" but these are recommended.
-      Example Valid Paths:
-      ✅ secret/myapp/config
-      ✅ secrets/db-creds/admin-user
-      ✅ tenantA/projectX/env1/key
-
-      Example Invalid Paths:
-      ❌ /secret/myapp/config (leading /)
-      ❌ secret//double-slash (double /)
-      ❌ secret\path (backslash used)
-      ❌ secret path/with space (contains spaces)
-      ❌ secret#invalid?path (reserved URL characters)
-    </issue>
-    <issue>
-      control these with flags.
-      i.e. the starter script can optionally NOT automatically
-      start nexus or keepers.
-
-      #echo ""
-      #echo "Waiting before SPIKE Keeper 1..."
-      #sleep 5
-      #run_background "./hack/start-keeper-1.sh"
-      #echo ""
-      #echo "Waiting before SPIKE Keeper 2..."
-      #sleep 5
-      #run_background "./hack/start-keeper-2.sh"
-      #echo ""
-      #echo "Waiting before SPIKE Keeper 3..."
-      #sleep 5
-      #run_background "./hack/start-keeper-3.sh"
-
-      #echo ""
-      #echo "Waiting before SPIKE Nexus..."
-      #sleep 5
-      #run_background "./hack/start-nexus.sh"
-    </issue>
-    <issue>
       read policies from a yaml or a json file and create them.
     </issue>
     <issue>

@@ -728,7 +728,7 @@ uses. This key is critical for the system’s security and requires:</p>
 </ul>
 <h3 id="2-persistent-storage">2. Persistent Storage:</h3>
 <ul>
-<li>Root key will be stored in PostgreSQL database</li>
+<li>Root key will be stored in a PostgreSQL database</li>
 <li>The stored version will be:
 <ul>
 <li>Salted</li>
@@ -741,15 +741,15 @@ uses. This key is critical for the system’s security and requires:</p>
 <h3 id="positive">Positive</h3>
 <ul>
 <li>Enhanced security through memory-only plain text storage</li>
-<li>Reduced attack surface as plain text key never touches disk</li>
-<li>Recovery possible through encrypted backup in PostgreSQL</li>
+<li>Reduced attack surface as the plain text key never touches the disk</li>
+<li>Recovery is possible through encrypted backup in PostgreSQL</li>
 <li>Admin password dependency ensures authorized access only</li>
 <li>Salting provides protection against rainbow table attacks</li>
 <li>Separation of concerns between runtime and persistent storage</li>
 </ul>
 <h3 id="negative">Negative</h3>
 <ul>
-<li>Memory-only storage means key is lost on service restart</li>
+<li>Memory-only storage means the key is lost on service restart</li>
 <li>Dependency on admin user’s password for recovery</li>
 <li>Need to manage salt generation and storage</li>
 <li>Potential performance impact from encryption/decryption operations</li>
@@ -758,7 +758,7 @@ uses. This key is critical for the system’s security and requires:</p>
 </ul>
 <h2 id="security-considerations">Security Considerations</h2>
 <ul>
-<li>Memory must be properly zeroed when key is no longer needed</li>
+<li>Memory must be properly zeroed when the key is no longer needed</li>
 <li>PostgreSQL access must be properly secured</li>
 <li>Admin password strength becomes critical for system security</li>
 <li>Salt management and storage must be handled securely</li>
@@ -773,7 +773,7 @@ uses. This key is critical for the system’s security and requires:</p>
 <h3 id="2-postgresql-storage">2. PostgreSQL Storage:</h3>
 <ul>
 <li>Use strong encryption algorithm (e.g., AES-256)</li>
-<li>Implement secure key derivation from admin password</li>
+<li>Implement secure key derivation from the admin password</li>
 <li>Ensure proper salt generation and storage</li>
 </ul>
 <h2 id="references">References</h2>

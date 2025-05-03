@@ -16,7 +16,7 @@ This page outlines the various ways you can touch base.
 
 ## SPIFFE Slack Workspace
 
-The [**SPIFFE** Slack Workspace](https://slack.spiffe.io/) if one of the best
+The [**SPIFFE** Slack Workspace](https://slack.spiffe.io/) is one of the best
 ways to get in touch with the community. 
 
 You can use the [**SPIFFE** Slack Workspace](https://slack.spiffe.io/) ask 

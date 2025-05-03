@@ -23,11 +23,11 @@ capabilities and showcase its innovative features.
   In this demo, we see **SPIKE**'s new JWT authentication flow.
 * [Goodbye Passwords: Secure Secrets Management with SPIFFE
   and SPIKE][spike-passwordless]:<br>
-  In this demo, we allow a user to use `spike` just by checkin an SVID; we don't
-  any kind of passwords to identify the user, SPIFFE does it for us.
+  In this demo, we allow a user to use `spike` just by checking an SVID; we don't
+  use any kind of passwords to identify the user, SPIFFE does it for us.
 * [Unveiling SPIKE's New Audit Trail Capabilities: Zero-Trust Meets
   Accountability][spike-audits]:<br>
-  This demo explain the new auditing capabilities of **SPIKE** that we will
+  This demo explains the new auditing capabilities of **SPIKE** that we will
   continue developing. This is the initial incarnation of the feature and
   more will come.
 * [Introducing Policy-Based Access Control in SPIKE][spike-policy]:<br>
@@ -39,7 +39,7 @@ capabilities and showcase its innovative features.
   This demo introduces the new **SPIKE** metadata API. We also use the **SPIKE**
   Go SDK to consume secrets.
 * [Using Policies to Read and Write Secrets using SPIKE][spike-policies]:<br>
-  This demo introduces the new **Makefile**-based development workflow the
+  This demo introduces the new **Makefile**-based development workflow, the
   enhanced starter script, policy-based access control, and metadata support.
 * [Secrets Resiliency with SPIKE: Self-Healing and Doomsday Recovery][spike-doomsday]:<br>
   Secrets management is critical, but what happens when everything fails? In 

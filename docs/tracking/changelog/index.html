@@ -748,7 +748,7 @@ SPIKE Keeper, which already had memory locking)</li>
 <li>Added more configuration options to SPIKE Nexus.</li>
 <li>Updated documentation around security and production hardening.</li>
 <li>Updated release instructions, added a series of tests to follow and cutting
-a release only after all tests pass. These tests are manual for now, but
+a release only after all tests pass. These tests are manual for now but
 can be automated later down the line.</li>
 </ul>
 <h3 id="fixed">Fixed</h3>
@@ -770,7 +770,7 @@ up when no longer needed (but not before).</li>
 <li>The startup script does not initiate SPIKE Keepers if SPIKE is running in
 “in memory” mode.</li>
 <li>Renamed <code>AuditCreated</code> enum as <code>AuditEntryCreated</code> to specify its intention
-better (i.e., it’s not an creation of a an entity or a DAO, but rather it’s
+better (i.e., it’s not creation of an entity or a DAO, but rather it’s
 the start of an audit trail).</li>
 <li>Improved <code>spike policy</code> commands with better UX and error handling.</li>
 </ul>
@@ -786,7 +786,7 @@ the start of an audit trail).</li>
 <h2 id="0-3-1-2025-03-04">[0.3.1] - 2025-03-04</h2>
 <h3 id="added-1">Added</h3>
 <ul>
-<li>SPIKE Nexus now accepts dynamic number of SPIKE Keepers and Shamir share
+<li>SPIKE Nexus now accepts a dynamic number of SPIKE Keepers and Shamir share
 threshold (defaults to 3 keepers, and minimum 2 shares (out of 3) to
 recreate the root key).</li>
 <li>Started containerization work (created a Dockerfile); yet it’s far from
@@ -800,13 +800,13 @@ complete: We will work on that.</li>
 Nexus crashes. Former implementation was using an optimistic algorithm
 (i.e., do not load the secret unless you need it), yet that was causing
 calls to <code>spike secret list</code> return an empty collection. This implementation
-fixes that issue, and also ensures that SPIKE Nexus’ memory continues to
+fixes that issue and also ensures that SPIKE Nexus’ memory continues to
 be the primary source of truth (by design).</li>
 </ul>
 <h3 id="security-1">Security</h3>
 <ul>
-<li>SPIKE Nexus now securely erases old root key and shards from memory after
-it is no longer needed. Before, it was left the the garbage collector to
+<li>SPIKE Nexus now securely erases the old root key and shards from memory after
+it is no longer necessary. Before, it was left to the garbage collector to
 handle that. The current approach is NIST recommendation and provides better
 memory protection.</li>
 <li><a href="https://github.com/spiffe/spike/security/dependabot/3">Fixed <code>CVE-2025-271447</code>: DoS in go-jose Parsing</a></li>
@@ -823,9 +823,9 @@ that provide disaster recovery capabilities if there is a total system crash
 and the remaining SPIKE Keepers are less than the threshold to recover the
 root key.</li>
 <li>Several bugfixes and performance improvements.</li>
-<li>Added coverage report to the repository. The coverage is not as high as
+<li>Added a coverage report to the repository. The coverage is not as high as
 we would like to be; yet we have to start somewhere :).</li>
-<li>Added several architectural decision records to share the projects vision
+<li>Added several architectural decision records to share the projects’ vision
 and design decisions transparently.</li>
 <li>Started working on containerization (<em>though it’s still a work in progress</em>).</li>
 </ul>
@@ -844,7 +844,7 @@ templateability, and consistency to the overall documentation.</li>
 <ul>
 <li>Enabled policy-based access control.</li>
 <li>The root key that SPIKE Nexus generates is now split into several Shamir
-shards and distribute to SPIKE Keepers.</li>
+shards and distributed to SPIKE Keepers.</li>
 <li>New additions and improvements to SPIKE Go SDK.</li>
 <li>Various minor bugfixes.</li>
 <li>Code cleanup.</li>
@@ -876,7 +876,7 @@ authorization bypass in golang.org/x/crypto</a></li>
 <ul>
 <li>Added configuration options for SPIKE Nexus and SPIKE Keeper.</li>
 <li>Documentation updates.</li>
-<li>Max secret versions is now configurable.</li>
+<li>Max secret version is now configurable.</li>
 <li>Introduced standard and configurable logging.</li>
 <li>Added sqlite3 as a backing store.</li>
 <li>Enabled cross-compilation and SHA checksums.</li>
@@ -897,9 +897,9 @@ are good enough to authenticate them.</li>
 <li>Implemented <code>put</code>, <code>read</code>, <code>delete</code>, <code>undelete</code>, and <code>list</code> functionalities.</li>
 <li>Created initial documentation, README, and related files.</li>
 <li>Compiled binaries targeting various platforms (x86, arm64, darwin, linux).</li>
-<li>SPIKE is demoable, however we need to update certain login and initialization
+<li>SPIKE is demoable; however, we need to update certain login and initialization
 flows.</li>
-<li>In memory secrets storage only (<em>using database as a backing store is coming up
+<li>In-memory secrets storage only (<em>using database as a backing store is coming up
 next</em>)</li>
 <li>Created a <code>jira.txt</code> to track things (<em>to avoid polluting GitHub issues
 unnecessarily</em>)</li>

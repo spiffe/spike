@@ -67,10 +67,10 @@ This lack of flexibility introduces security risks and operational overhead.
 
 Kubernetes Secrets are governed by Kubernetes RBAC. Using Kubernetes Secrets, it
 can be tricky to enforce a platform-agnostic security policy that spans
-multiple environments. This often leads to a fragmented governance and
+multiple environments. This often leads to fragmented governance and
 potential misconfigurations.
 
-A dedicated secrets manager offers dynamic cross-environment compatibility,
+A dedicated secrets manager offers dynamic cross-environment compatibility
 and stronger security controls—making it a better choice for modern,
 distributed architectures.
 

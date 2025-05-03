@@ -710,7 +710,7 @@
 <li>Tags: Security, Persistence, Database, Backing-Store, Performance</li>
 </ul>
 <h2 id="context">Context</h2>
-<p><strong>SPIKE</strong> is a secrets store that can use a SQLite backing store (<em>among other
+<p><strong>SPIKE</strong> is a Secrets Store that can use an SQLite backing store (<em>among other
 backing store options</em>) to persist secrets. However, the source of truth for
 the secrets is held in memory. SQLite is primarily used as a backup to rehydrate
 secrets in case the secrets store crashes or needs to be recovered.</p>
@@ -729,7 +729,7 @@ and troubleshoot.</li>
 <li><strong>Race conditions and edge cases</strong>: The asynchronous operations have led to
 potential race conditions, which compromise the system’s reliability.</li>
 <li><strong>Debugging difficulty</strong>: To avoid the race conditions above, we could have
-use abstractions, including Go channels. However, using Go channels and
+used abstractions, including Go channels. However, using Go channels and
 asynchronous operations creates challenges for debugging, as tracking state
 transitions becomes non-trivial.</li>
 </ul>

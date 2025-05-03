@@ -730,7 +730,7 @@ instead of storing them in the database.</p>
 <ul>
 <li>Eliminates risks associated with persistent storage</li>
 <li>Reduces attack surface by removing database attack vectors</li>
-<li>Automatic token invalidation on server restart provides security benefit</li>
+<li>Automatic token invalidation on server restart provides a security benefit</li>
 <li>Aligns with SPIKE’s security-first approach</li>
 </ul>
 <h4 id="performance"><strong>Performance</strong></h4>
@@ -749,12 +749,12 @@ instead of storing them in the database.</p>
 <ul>
 <li>Limited admin users means memory impact is negligible</li>
 <li>Session tokens are small in size</li>
-<li>Vertical scaling is sufficient for admin-focused tool</li>
+<li>Vertical scaling is sufficient for an admin-focused tool</li>
 </ul>
 <h3 id="why-not-database-storage">Why Not Database Storage</h3>
 <ol>
 <li>Session persistence across restarts is not a requirement</li>
-<li>Additional security exposure through database is unnecessary</li>
+<li>Additional security exposure through the database is unnecessary</li>
 <li>Encryption/decryption overhead is not justified</li>
 <li>Database cleanup complexity can be avoided</li>
 </ol>
@@ -775,10 +775,13 @@ instead of storing them in the database.</p>
 </ol>
 <h3 id="mitigations">Mitigations:</h3>
 <ol>
-<li>Clear documentation that sessions require re-authentication after server restart</li>
-<li>Implement proper logging for security events to compensate for lack of session history</li>
+<li>Clear documentation that sessions require re-authentication after a server
+restart</li>
+<li>Implement proper logging for security events to compensate for lack of
+session history</li>
 <li>Monitor memory usage in production</li>
-<li>Consider distributed caching solutions if horizontal scaling becomes necessary</li>
+<li>Consider distributed caching solutions if horizontal scaling becomes
+necessary</li>
 </ol>
 <h2 id="implementation-notes">Implementation Notes</h2>
 <ol>

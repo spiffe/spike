@@ -726,7 +726,7 @@ as dumb storage units for key shards.</p>
 <ul>
 <li><strong>SPIKE Keeper</strong>s do not need to know which <strong>SPIKE Nexus</strong> instance they are
 serving.</li>
-<li>They store their assigned key shard <strong>in-memory</strong> and do not persist any
+<li>They store their assigned key shard <strong>in-memory</strong> and do not persist in any
 state.</li>
 </ul>
 <p><strong>Zero configuration for SPIKE Keepers</strong>:</p>
@@ -758,9 +758,9 @@ status.</li>
 </ul>
 <h2 id="rationale">Rationale</h2>
 <ul>
-<li><strong>Security</strong>: <strong>SPIKE Keeper</strong>s hold only a single shard; which is not adequate
-to regenerate the root key. They are never aware of other <strong>SPIKE Keeper</strong>s
-or the full key. This limits their attack surface.</li>
+<li><strong>Security</strong>: <strong>SPIKE Keeper</strong>s hold only a single shard, which is not
+adequate to regenerate the root key. They are never aware of other
+<strong>SPIKE Keeper</strong>s or the full key. This limits their attack surface.</li>
 <li><strong>Simplicity</strong>: By eliminating configuration and inter-service dependencies,
 <strong>SPIKE Keeper</strong>s become easy to deploy, replace, and scale.</li>
 <li><strong>Availability</strong>: The polling and rehydration mechanism ensures that

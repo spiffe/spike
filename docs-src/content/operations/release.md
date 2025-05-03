@@ -51,7 +51,7 @@ const SpikeKeeperVersion = "0.4.0"
 Release process:
 
 * Publish documentation by running `zola build` in `./docs-src` and then
-  copying the generated html in `./docs-src/public` into `/.docs`.
+  copying the generated HTML in `./docs-src/public` into `/.docs`.
 * Merge all the changes to the `main` branch.
 * Tag a version and convert that version to a **release* on **GitHub**.
   * Make sure you GPG sign your tag.
@@ -90,7 +90,7 @@ Here is a list of manual tests that can be done before every release:
 6. Make sure you can list policies.
 7. Make sure the demo workload reads and writes based on the
    policies you created.
-8. Reset entire test bed.
+8. Reset the entire test bed.
 9. Switch to sqlite mode.
 10. Make sure SPIKE Nexus and SPIKE Keepers are up and running.
 11. Repeat steps 2--7.

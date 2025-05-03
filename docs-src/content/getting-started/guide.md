@@ -37,7 +37,7 @@ free to discuss them on the [SPIFFE community Slack][slack].
 [ubuntu]: https://ubuntu.com/
 [spiffe]: https://spiffe.io/
 
-Here's the OS details that we are testing this guide on:
+Here are the OS details that we are testing this guide on:
 
 ```txt
 DISTRIB_ID=Ubuntu
@@ -117,7 +117,7 @@ go env -u GOPATH
 
 ## Building SPIRE
 
-To get started let's create a development version of [**SPIRE**][spire]. 
+To get started, let's create a development version of [**SPIRE**][spire]. 
 Note that this is not a production-ready setup. For production, you should 
 follow the [official SPIRE documentation][spire-prod].
 
@@ -315,7 +315,7 @@ cd $WORKSPACE/spike
 
 Then start **SPIKE** components:
 
-Make sure you started the following binaries each run on a specific terminal
+Make sure you started the following binaries, each runs on a specific terminal
 window.
 
 Start the workloads:
@@ -359,9 +359,9 @@ SPIKE_NEXUS_KEEPER_PEERS='{\
 > 
 > The mapping in `SPIKE_NEXUS_KEEPER_PEERS` should start from `"1"` 
 > and increase monotonically without any gaps in the sequence as shown
-> in the sample code above. This because of the way SPIKE Nexus internally
+> in the sample code above. This is because of the way SPIKE Nexus internally
 > computes and distributes the Shamir Shards. Not following this sequence
-> will lead into errors---We may improve this behavior in the future and make
+> will lead to errors---We may improve this behavior in the future and make
 > it more flexible.
 
 ## Using SPIKE Pilot
@@ -383,7 +383,7 @@ spike
 
 ## Testing Out SPIKE
 
-Let test **SPIKE** by creating a secret:
+Let's test **SPIKE** by creating a secret:
 
 ```bash
 spike secret put /tenants/acme/credentials/db \
@@ -426,7 +426,7 @@ are compact, consuming minimal disk space and no resources when inactive. As
 simple executable files, they have no impact on your system's performance when 
 not in use. Therefore, keeping them installed is completely harmless.
 
-However, if you want to wipe out everything, you can just remove the binaries
+However, if you want to wipe everything out, you can just remove the binaries
 and **SPIKE**'s data folder, and that would be it:
 
 ```bash

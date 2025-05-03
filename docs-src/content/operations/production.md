@@ -31,7 +31,7 @@ the directories and files of the backing store.
 
 ### Disable Swap
 
-**SPIKE** encrypts data in transit and at rest, however it must still have 
+**SPIKE** encrypts data in transit and at rest; however, it must still have 
 sensitive data in memory to function. Risk of exposure should be minimized by 
 disabling swap to prevent the operating system from paging sensitive data to 
 disk. 
@@ -39,8 +39,8 @@ disk.
 ### Disable Core Dumps
 
 A user or administrator that can force a core dump and has access to the 
-resulting file can potentially access **SPIKE**'s root key, and other 
-cryptographically-sensitive material encryption keys. Preventing core dumps is 
+resulting file can potentially access **SPIKE**'s root key and other 
+cryptographically sensitive material encryption keys. Preventing core dumps is 
 a platform-specific process; on Linux setting the resource limit `RLIMIT_CORE` 
 to `0` disables core dumps. In the `systemd` service unit file, setting 
 `LimitCORE=0` will enforce this setting for the Vault service.
@@ -50,9 +50,9 @@ to `0` disables core dumps. In the `systemd` service unit file, setting
 Although **SPIKE** relies on Zero Trust networking principles and establishes
 mTLS everywhere, that does not mean perimeter defense is unimportant.
 
-Use a local firewall or netw**SPIRE Server**, **SPIKE Nexus**, and **SPIKE Keeper**
-instances, eatures of your cloud provrelevant ider to 
-restrict incoming and outgoing traffic to the bare minimum that you need.
+Use a local firewall for **SPIRE Server**, **SPIKE Nexus**, and **SPIKE Keeper**
+instances, or relevant features of your cloud provider to restrict incoming and 
+outgoing traffic to the bare minimum that you need.
 
 ### Disable Shell Command History
 
@@ -60,7 +60,7 @@ You may want the `spike` commands themselves not appear in history at all.
 
 ### Keep a Frequent Upgrade Cadence
 
-**SPIKE** is actively developed, hardened, and patched against vulnerabiities.
+**SPIKE** is actively developed, hardened, and patched against vulnerabilities.
 You should upgrade **SPIKE** often to incorporate security fixes and any 
 changes in default settings such as key lengths or cipher suites. 
 
@@ -70,10 +70,10 @@ changes in default settings such as key lengths or cipher suites.
 uses. Although **SPIKE** encrypts the data, an attacker with arbitrary 
 control can cause data corruption or loss by modifying or deleting keys. 
 
-You should restrict storage access outside of **SPIKE Nexus** to avoid 
+You should restrict storage access outside **SPIKE Nexus** to avoid 
 unauthorized access or operations.
 
-Also, when using an external data store although **SPIKE** assumes the store is 
+Also, when using an external data store, although **SPIKE** assumes the store is 
 untrusted, yet, still, considering the following is important:
 
 * If this is a shared database with other services, who else has access to it
@@ -233,7 +233,7 @@ You are encouraged to isolate the **SPIRE Server** from other SPIKE components.
 
 By doing this, a separate administrator can access the **SPIRE Server** and
 create **SPIKE registration entries**, whereas other **SPIKE** users, including
-the **SPIKE Pilot superadmin**, will not have the ability to create SPIRE Server
+the **SPIKE Pilot superadmin**, will not be able to create SPIRE Server
 registration entries.
 
 This approach aligns with **zero-trust**best practices by enforcing separation
@@ -251,7 +251,7 @@ escalations within the Kubernetes cluster.
 
 ## SPIKE General Hardening Guidelines
 
-The guidelines covered in this section apply to all **SPIKE** components
+The guidelines covered in this section apply to all **SPIKE** components, 
 including **SPIKE Nexus**, **SPIKE Keeper**, and **SPIKE Pilot**.
 
 ### User Privileges
@@ -259,7 +259,7 @@ including **SPIKE Nexus**, **SPIKE Keeper**, and **SPIKE Pilot**.
 * For **bare-metal** deployments:
   * Run **SPIKE Nexus** and **SPIKE Keeper** processes as **non-root** users.
   * Configure them to have minimal permissions.
-  * Keep OS and security packages up-to-date.
+  * Keep OS and security packages up to date.
 * For **Kubernetes** deployments:
   * Disable privilege escalation for containers by setting
     `allowPrivilegeEscalation: false` in your PodSecurity configuration.
@@ -299,7 +299,7 @@ including **SPIKE Nexus**, **SPIKE Keeper**, and **SPIKE Pilot**.
 
 ### Logging and Monitoring
 
-* Set up comprehensive process logging
+* Set up a comprehensive process logging mechanism
 * Monitor for unauthorized access attempts
 * Implement real-time alerting
 * Regular log analysis and review
@@ -343,7 +343,7 @@ keeping out the untrusted binary.
 
 * Implement multiple layers of security controls.
 * Have regular security control reviews.
-* Have a comprehensive security documentation.
+* Have comprehensive security documentation.
 
 ## How the Root Key Is Protected in SPIKE
 
@@ -374,11 +374,11 @@ material of varying degrees of sensitivity in memory.
 
 Although **SPIKE** uses secure memory erasing and memory locking practices to
 as a defense mechanism against memory-based attacks, it's a good practice to
-establish defense-in-depth practices, especially when an expose root key
+establish defense-in-depth practices, especially when an exposed root key
 provides the possibility to reveal encrypted secrets.
 
 If the memory is swapped, an attacker could potentially extract this 
-cryptographic key material from the swap file on disk. This would compromise 
+cryptographic key material from the swap file on the disk. This would compromise 
 the security of the system, as swap files are stored unencrypted on disk and 
 may persist even after the system is powered down.
 
@@ -388,15 +388,15 @@ sensitive data that was in memory. An attacker with access to these core dump
 files could analyze them to extract the sensitive information.
 
 Although **SPIKE** considers the machine as the trust boundary and assumes the
-system is breached if machine is breached, it does not mean we should relax 
-security if machine is compromised. Defense in depth is still important, and
+system is breached if the machine is breached, it does not mean we should relax 
+security if the machine is compromised. Defense in depth is still important, and
 minimizing the exposure of sensitive cryptographic material provides additional 
 layers of protection against sophisticated attacks.
 
 To mitigate these risks:
 
 1. Disable swap entirely on systems handling sensitive cryptographic operations
-2. If swap cannot be disabled, configure encrypted swap
+2. If swap cannot be disabled, configure an encrypted swap
 3. Disable core dumps for security-critical applications
 4. Ensure proper permissions on any diagnostic files that might be generated
 5. Consider using memory allocation techniques that minimize exposure of 
@@ -414,7 +414,7 @@ material, specifically handling **shards** that are used to generate the
 
 As described in the [**SPIKE Security Model**][security], protecting your system
 against memory analysis is important, not only for **SPIKE**, but for any 
-application you may be running n your system.
+application you may be running in your system.
 
 System administrators should implement the following security measures to
 prevent memory analysis:
@@ -493,7 +493,7 @@ configuration.
 ### Resource Management
 
 * Set appropriate resource limits:
-  * Configure memory limits based on expected load
+  * Configure memory limits based on an expected load
   * Set CPU quotas to prevent resource exhaustion
   * Implement disk I/O limits
 * Monitor resource usage:
@@ -503,7 +503,7 @@ configuration.
 
 ### Access Control
 
-* Implement least privilege access:
+* Implement the least privilege access:
   * Create dedicated service accounts
   * Restrict file system permissions
   * Use **SELinux** or **AppArmor** profiles
@@ -537,16 +537,16 @@ as a continuous process rather than a one-time setup.
 
 ## Conclusion
 
-Although **SPIKE** is designed security best-practices in mind, a multi-layer
-approach focusing on system, process, and network security is important when
-configuring **SPIKE** for production.
+Although **SPIKE** is designed with security best-practices in mind, a 
+multi-layer approach focusing on system, process, and network security is 
+important when configuring **SPIKE** for production.
 
 The combination of **mTLS API protection**, **SPIFFE attestation**, and proper
 **system-level security controls** will provide robust protection against
 unauthorized access to sensitive cryptographic material.
 
 Remember that **security is an ongoing process**, and every system's security
-posture and requirements is different. Thus, these measures outlined in this
+posture and requirements are different. Thus, these measures outlined in this
 guide shall be taken as starting recommendations and adjusted to meet your
 organization's security requirements.
 

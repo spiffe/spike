@@ -181,8 +181,8 @@ spike secret get <path> [--version=<version>]
 ```
 
 Retrieves and displays the key-value pairs stored at the specified secret path. 
-By default, returns the current (latest) version, but a specific version can be 
-requested.
+By default, it returns the current (latest) version, but a specific version can 
+be requested.
 
 #### Flags:
 

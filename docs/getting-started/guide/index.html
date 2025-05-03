@@ -780,7 +780,7 @@ system.</p>
 the tutorials and guides in <strong>SPIKE</strong> documentation use <a href="https://ubuntu.com/"><strong>Ubuntu</strong></a> as
 the base operating system. Though, if you encounter issues with your OS, feel
 free to discuss them on the <a href="https://slack.spiffe.io/" title="SPIFFE Slack">SPIFFE community Slack</a>.</p>
-<p>Here’s the OS details that we are testing this guide on:</p>
+<p>Here are the OS details that we are testing this guide on:</p>
 <pre data-lang="txt" style="background-color:#2b303b;color:#c0c5ce;" class="language-txt "><code class="language-txt" data-lang="txt"><span>DISTRIB_ID=Ubuntu
 </span><span>DISTRIB_RELEASE=24.04
 </span><span>DISTRIB_CODENAME=noble
@@ -842,7 +842,7 @@ Go configuration files. You can view these changes in the file located at
 <pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">go</span><span> env</span><span style="color:#bf616a;"> -u</span><span> GOPATH
 </span></code></pre>
 <h2 id="building-spire">Building SPIRE</h2>
-<p>To get started let’s create a development version of <a href="https://spiffe.io/docs/latest/spire-about/" title="SPIRE"><strong>SPIRE</strong></a>.
+<p>To get started, let’s create a development version of <a href="https://spiffe.io/docs/latest/spire-about/" title="SPIRE"><strong>SPIRE</strong></a>.
 Note that this is not a production-ready setup. For production, you should
 follow the <a href="https://spiffe.io/docs/latest/deploying/configuring/" title="SPIRE Production Configuration">official SPIRE documentation</a>.</p>
 <p>Let’s first build <strong>SPIRE</strong> from the source:</p>
@@ -979,7 +979,7 @@ action.</p>
 </span></code></pre>
 <h2 id="start-spike-components">Start SPIKE Components</h2>
 <p>Then start <strong>SPIKE</strong> components:</p>
-<p>Make sure you started the following binaries each run on a specific terminal
+<p>Make sure you started the following binaries, each runs on a specific terminal
 window.</p>
 <p>Start the workloads:</p>
 <pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># Optional: Increase the log level to debug:
@@ -1013,9 +1013,9 @@ window.</p>
 <p><strong>Sequential SPIKE Keeper IDs</strong></p>
 <p>The mapping in <code>SPIKE_NEXUS_KEEPER_PEERS</code> should start from <code>"1"</code>
 and increase monotonically without any gaps in the sequence as shown
-in the sample code above. This because of the way SPIKE Nexus internally
+in the sample code above. This is because of the way SPIKE Nexus internally
 computes and distributes the Shamir Shards. Not following this sequence
-will lead into errors—We may improve this behavior in the future and make
+will lead to errors—We may improve this behavior in the future and make
 it more flexible.</p>
 </blockquote>
 <h2 id="using-spike-pilot">Using SPIKE Pilot</h2>
@@ -1029,7 +1029,7 @@ it more flexible.</p>
 <pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">spike
 </span></code></pre>
 <h2 id="testing-out-spike">Testing Out SPIKE</h2>
-<p>Let test <strong>SPIKE</strong> by creating a secret:</p>
+<p>Let’s test <strong>SPIKE</strong> by creating a secret:</p>
 <pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">spike</span><span> secret put /tenants/acme/credentials/db \
 </span><span>  username=root pass=SPIKERocks
 </span><span>
@@ -1059,7 +1059,7 @@ scenarios safely.</p>
 are compact, consuming minimal disk space and no resources when inactive. As
 simple executable files, they have no impact on your system’s performance when
 not in use. Therefore, keeping them installed is completely harmless.</p>
-<p>However, if you want to wipe out everything, you can just remove the binaries
+<p>However, if you want to wipe everything out, you can just remove the binaries
 and <strong>SPIKE</strong>’s data folder, and that would be it:</p>
 <pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">rm -rf ~</span><span>/.spike
 </span><span style="color:#bf616a;">rm</span><span> spike

@@ -22,7 +22,7 @@ Here is how this happens:
 
 1. **SPIKE Nexus** crashes.
 2. New **SPIKE Nexus** instance starts.
-3. **SPIKE Nexus** ask for shards from **SPIKE Keeper**s.
+3. **SPIKE Nexus** asks for shards from **SPIKE Keeper**s.
 4. Once **SPIKE Nexus** gathers adequate shards, it recreates its **root key**
    and resumes normal operations.
 
@@ -30,7 +30,7 @@ Here is how this happens:
 
 ## SPIKE Keeper Crash Recovery
 
-**SPIKE Keeper** recovery is automatic, and does not require any manual
+**SPIKE Keeper** recovery is automatic and does not require any manual
 intervention.
 
 **SPIKE Nexus** regularly sends the shard that a **SPIKE Keeper** has to store.
@@ -81,7 +81,7 @@ its operational state:
     **SPIKE Pilot**.
 
 1. Both **SPIKE Nexus**, **SPIKE Keeper** are unavailable, or the system is
-   in on other irrecoverable state.
+   in another irrecoverable state.
 2. Admin executes `spike recover`.
 3. Admin provides their **password**.
 4. The encrypted **root key** is fetched from the database and injected to
@@ -109,7 +109,7 @@ The situation:
   is no way to fetch the root key from **SPIKE Keeper**(s).
 * The system administrator has not used `spike recover` to create recovery 
   shards, or they have lost access to the recovery shards.
-* Everyone have learned their lessons, and now it's time to reset the system
+* Everyone has learned their lessons, and now it's time to reset the system
   and conduct an extensive "what went wrong / what should have been done" 
   analysis.
 

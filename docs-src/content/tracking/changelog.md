@@ -17,6 +17,7 @@ sort_by = "weight"
 * Better shard sanitization during doomsday recovery operation.
 * Added memory locking to SPIKE Pilot too (along with SPIKE Nexus and 
   SPIKE Keeper, which already had memory locking)
+* Finer control of the startup script via flags.
 
 ## [0.4.0] - 2025-04-16
 
@@ -25,7 +26,7 @@ sort_by = "weight"
 * Added more configuration options to SPIKE Nexus.
 * Updated documentation around security and production hardening.
 * Updated release instructions, added a series of tests to follow and cutting
-  a release only after all tests pass. These tests are manual for now, but
+  a release only after all tests pass. These tests are manual for now but
   can be automated later down the line.
 
 ### Fixed
@@ -47,7 +48,7 @@ sort_by = "weight"
 * The startup script does not initiate SPIKE Keepers if SPIKE is running in
   "in memory" mode.
 * Renamed `AuditCreated` enum as `AuditEntryCreated` to specify its intention
-  better (i.e., it's not an creation of a an entity or a DAO, but rather it's
+  better (i.e., it's not creation of an entity or a DAO, but rather it's
   the start of an audit trail).
 * Improved `spike policy` commands with better UX and error handling.
 
@@ -65,7 +66,7 @@ sort_by = "weight"
 
 ### Added
 
-* SPIKE Nexus now accepts dynamic number of SPIKE Keepers and Shamir share
+* SPIKE Nexus now accepts a dynamic number of SPIKE Keepers and Shamir share
   threshold (defaults to 3 keepers, and minimum 2 shares (out of 3) to
   recreate the root key).
 * Started containerization work (created a Dockerfile); yet it's far from
@@ -79,13 +80,13 @@ sort_by = "weight"
   Nexus crashes. Former implementation was using an optimistic algorithm
   (i.e., do not load the secret unless you need it), yet that was causing
   calls to `spike secret list` return an empty collection. This implementation
-  fixes that issue, and also ensures that SPIKE Nexus' memory continues to
+  fixes that issue and also ensures that SPIKE Nexus' memory continues to
   be the primary source of truth (by design).
 
 ### Security
 
-* SPIKE Nexus now securely erases old root key and shards from memory after
- it is no longer needed. Before, it was left the the garbage collector to 
+* SPIKE Nexus now securely erases the old root key and shards from memory after
+ it is no longer necessary. Before, it was left to the garbage collector to 
  handle that. The current approach is NIST recommendation and provides better
  memory protection.
 * [Fixed `CVE-2025-271447`: DoS in go-jose Parsing](https://github.com/spiffe/spike/security/dependabot/3)
@@ -104,9 +105,9 @@ disaster recovery.
   and the remaining SPIKE Keepers are less than the threshold to recover the 
   root key.
 * Several bugfixes and performance improvements.
-* Added coverage report to the repository. The coverage is not as high as
+* Added a coverage report to the repository. The coverage is not as high as
   we would like to be; yet we have to start somewhere :).
-* Added several architectural decision records to share the projects vision
+* Added several architectural decision records to share the projects' vision
   and design decisions transparently.
 * Started working on containerization (*though it's still a work in progress*).
 
@@ -126,7 +127,7 @@ disaster recovery.
 
 * Enabled policy-based access control.
 * The root key that SPIKE Nexus generates is now split into several Shamir
-  shards and distribute to SPIKE Keepers.
+  shards and distributed to SPIKE Keepers.
 * New additions and improvements to SPIKE Go SDK.
 * Various minor bugfixes.
 * Code cleanup.
@@ -160,7 +161,7 @@ disaster recovery.
 
 * Added configuration options for SPIKE Nexus and SPIKE Keeper.
 * Documentation updates.
-* Max secret versions is now configurable.
+* Max secret version is now configurable.
 * Introduced standard and configurable logging.
 * Added sqlite3 as a backing store.
 * Enabled cross-compilation and SHA checksums.
@@ -182,9 +183,9 @@ disaster recovery.
 * Implemented `put`, `read`, `delete`, `undelete`, and `list` functionalities.
 * Created initial documentation, README, and related files.
 * Compiled binaries targeting various platforms (x86, arm64, darwin, linux).
-* SPIKE is demoable, however we need to update certain login and initialization
+* SPIKE is demoable; however, we need to update certain login and initialization
   flows.
-* In memory secrets storage only (*using database as a backing store is coming up
+* In-memory secrets storage only (*using database as a backing store is coming up
   next*)
 * Created a `jira.txt` to track things (*to avoid polluting GitHub issues
   unnecessarily*)

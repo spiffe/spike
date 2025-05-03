@@ -746,7 +746,7 @@ store for SPIKE, leveraging their native policy engines for access control.</p>
 <ul>
 <li>S3’s IAM/policy engine is battle-tested and well-understood</li>
 <li>Path-based policies align perfectly with SPIKE’s access patterns</li>
-<li>Eliminates need to build and maintain a custom policy framework</li>
+<li>Eliminates the need to build and maintain a custom policy framework</li>
 <li>Policies can be managed through existing tools and processes</li>
 </ul>
 <h3 id="storage-capabilities">Storage Capabilities</h3>
@@ -782,12 +782,12 @@ store for SPIKE, leveraging their native policy engines for access control.</p>
 <h2 id="consequences">Consequences</h2>
 <h3 id="positive">Positive</h3>
 <ul>
-<li>Simplified architecture by using storage system’s native policy engine</li>
+<li>Simplified architecture by using the storage system’s native policy engine</li>
 <li>Reduced code complexity in SPIKE</li>
 <li>Better separation of concerns (<em>storage/policy vs. application logic</em>)</li>
 <li>Flexibility in deployment options (<em>cloud or on-prem</em>)</li>
 <li>Future-proof: Can adopt better policy engines (<em>e.g., OPA</em>) without changing
-storage layer</li>
+the storage layer</li>
 <li>Built-in versioning and audit capabilities</li>
 </ul>
 <h3 id="negative">Negative</h3>
@@ -844,7 +844,7 @@ S3 implementations</li>
 <h3 id="storage-layer">Storage Layer</h3>
 <ul>
 <li>Use AWS SDK for S3 operations</li>
-<li>Implement storage interface that can work with any S3-compatible system</li>
+<li>Implement the storage interface that can work with any S3-compatible system</li>
 <li>Encrypt all data before storage</li>
 <li>Use versioning for secret history</li>
 </ul>
@@ -857,7 +857,7 @@ S3 implementations</li>
 </ul>
 <h3 id="policy-management">Policy Management</h3>
 <ul>
-<li>Use native S3 policy format</li>
+<li>Use a native S3 policy format</li>
 <li>Document common policy patterns</li>
 <li>Provide helper utilities for policy creation</li>
 <li>Test policies across different S3 implementations</li>

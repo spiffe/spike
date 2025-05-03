@@ -838,7 +838,7 @@ happens behind-the-scenes:</p>
 </span><span style="color:#65737e;">// `pathRegEx` is used for policy validation.
 </span></code></pre>
 <p>As seen from the example above, both the path pattern and the SPIFFE ID
-pattern that are provided during policy creation, are used “<strong>AS IS</strong>” to
+pattern that are provided during policy creation which are used “<strong>AS IS</strong>” to
 create regular expression matchers. These patterns are compiled
 into Go’s built-in regex engine, ensuring that the matching process strictly
 adheres to the patterns defined in the policy, allowing for precise and flexible

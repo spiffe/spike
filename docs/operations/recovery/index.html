@@ -732,12 +732,12 @@ Here is how this happens:</p>
 <ol>
 <li><strong>SPIKE Nexus</strong> crashes.</li>
 <li>New <strong>SPIKE Nexus</strong> instance starts.</li>
-<li><strong>SPIKE Nexus</strong> ask for shards from <strong>SPIKE Keeper</strong>s.</li>
+<li><strong>SPIKE Nexus</strong> asks for shards from <strong>SPIKE Keeper</strong>s.</li>
 <li>Once <strong>SPIKE Nexus</strong> gathers adequate shards, it recreates its <strong>root key</strong>
 and resumes normal operations.</li>
 </ol>
 <h2 id="spike-keeper-crash-recovery">SPIKE Keeper Crash Recovery</h2>
-<p><strong>SPIKE Keeper</strong> recovery is automatic, and does not require any manual
+<p><strong>SPIKE Keeper</strong> recovery is automatic and does not require any manual
 intervention.</p>
 <p><strong>SPIKE Nexus</strong> regularly sends the shard that a <strong>SPIKE Keeper</strong> has to store.
 So, if a <strong>SPIKE Keeper</strong> instance crashes, it will eventually receive its
@@ -788,7 +788,7 @@ entry entirely for extra security.
 </ul>
 <ol>
 <li>Both <strong>SPIKE Nexus</strong>, <strong>SPIKE Keeper</strong> are unavailable, or the system is
-in on other irrecoverable state.</li>
+in another irrecoverable state.</li>
 <li>Admin executes <code>spike recover</code>.</li>
 <li>Admin provides their <strong>password</strong>.</li>
 <li>The encrypted <strong>root key</strong> is fetched from the database and injected to
@@ -813,7 +813,7 @@ explicitly have to sign off for that elevated privilege.</p>
 is no way to fetch the root key from <strong>SPIKE Keeper</strong>(s).</li>
 <li>The system administrator has not used <code>spike recover</code> to create recovery
 shards, or they have lost access to the recovery shards.</li>
-<li>Everyone have learned their lessons, and now it’s time to reset the system
+<li>Everyone has learned their lessons, and now it’s time to reset the system
 and conduct an extensive “what went wrong / what should have been done”
 analysis.</li>
 </ul>

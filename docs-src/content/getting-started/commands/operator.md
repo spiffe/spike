@@ -170,7 +170,7 @@ Where:
 * `INDEX` is the numeric index of the shard
 * `HEXDATA` is the 64-character hexadecimal representation of a 32-byte secret
 
-The system enforces strict validation on this format to ensure security and 
+The system enforces strict validation of this format to ensure security and 
 proper restoration.
 
 ## Best Practices

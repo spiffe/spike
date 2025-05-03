@@ -10,25 +10,26 @@ sort_by = "weight"
 
 # SPIKE Security Model
 
-Here is a brief introduction to **SPIKE** security model.
+Here is a brief introduction to **SPIKE**'s security model.
 
 ## Machine as the Trust Boundary
 
 **SPIKE** components are intended to be used as the foundation for 
 cloud native secrets management in a zero trust environment. **SPIKE**
-supports Linux and the BSD family (including MacOS). Windows is not currently 
+supports Linux and the BSD family (*including macOS*). Windows is not currently 
 supported, though some early prototyping is a work in progress. 
 
 **SPIKE** (*with the help of SPIFFE and SPIRE*) adheres to the zero trust 
 networking security model in which it is assumed that network communication is 
 hostile or presumably fully compromised. That said, it is also assumed that 
 the hardware on which ***SPIKE** components run, as well as its operators, 
-are trustworthy.
+is trustworthy.
 
 If the hardware is considered as an attack surface, or insider threats are
-part of the threat model, then careaful considerations should be made around the 
-physical placement of **SPIRE Server**, **SPIKE Nexus**, and **SPIKE Keeper**
-instances, and the security of their relevant conﬁguration parameters.
+part of the threat model, then careful considerations should be made around 
+key components. The physical placement of **SPIRE Server**, **SPIKE Nexus**, 
+and **SPIKE Keeper**instances, and the security of their relevant configuration 
+parameters will be important.
 
 ## Authentication and Communication
 
@@ -42,7 +43,7 @@ instances, and the security of their relevant conﬁguration parameters.
 
 **The primary trust boundary is at the machine level**. Once the machine is
 compromised, hardening **SPIKE** components will provide diminishing returns.
-In that regard, both physical, and OS-level security are important.
+In that regard, both physical, and OS-level security is important.
 
 For example, when the machine is compromised, an attacker with sufficient
 privileges can observe and control the memory of **SPIKE Nexus**, or
@@ -93,7 +94,7 @@ The following are **not** considered part of **SPIKE**'s threat model:
   administrative privileges, which should be avoided for **SPIKE** components 
   in the first place to prevent privilege escalation.
 * Protecting against the underlying system's flaws. The systems shall be 
-  up-to-date with respect to dependencies, properly secured, monitored, and 
+  up to date with respect to dependencies, properly secured, monitored, and 
   hardened.
 * Protecting against ill intent of **SPIKE** super admins: **SPIKE** assumes 
   trust for super administrators. Any malicious actions performed by super 
@@ -131,9 +132,9 @@ still considering the following will be prudent:
 
 ## Network Isolation of SPIKE Keepers
 
-SPIKE Keepers do not have any communication pathway between each other and this
+SPIKE Keepers do not have any communication pathway between each other, and this
 is a decision by design. This significantly limits the possibility of lateral
-movements as even when an attacker gains a foothold on a SPIKE Keeper instance
+movements as even when an attacker gains a foothold on a SPIKE Keeper instance,
 they cannot laterally move to other SPIKE Keeper instances.
 
 SPIKE Nexus and SPIKE Keepers establish a hub-spoke topology where SPIKE
@@ -157,7 +158,7 @@ The security model allows for different levels of redundancy and control:
   **SPIKE Keeper**s. However, for the unlikely case of a total system crash, 
   each administrator can hold one of these shares and use `spike restore` to
   restore the system back to normal. Since, a single shard cannot recreate 
-  the root key we are mitigating risk by distributing trust.
+  the root key, we are mitigating risk by distributing trust.
 * For those less concerned with strict separation, an alternative approach 
   could involve storing both shares on a single thumb drive or distributing 
   two shares across separate thumb drives in different safes. This trade-off 
@@ -193,8 +194,8 @@ specify what a workload is allowed to do with the secrets managed by
   super administrators have full access by default.
 * **Policy Enforcement:** Workloads require a valid, explicitly defined policy
   to perform any lifecycle operation on paths that contain secrets.
-* **Controlled Operations:** Operations such as creating, deleting, or modifying
-  secrets are strictly governed by the access policies.
+* **Controlled Operations:** The access policies strictly govern operations such 
+  as creating, deleting, or modifying secrets.
 * **Access Scoping:** Policies can define the scope and level of access (*e.g.,
   read-only or full access*) on specific secret paths for each workload.
 

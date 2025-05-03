@@ -19,8 +19,8 @@ and scalability for production environments.
 
 ## SPIKE Components
 
-**SPIKE** (*Secure Production Identity for Key Encryption*) is a secrets 
-management system build on top of a [**SPIFFE**][spiffe] (*Secure Production
+**SPIKE** (*Secure Production Identity for Key Encryption*) is a Secrets 
+Management system built on top of a [**SPIFFE**][spiffe] (*Secure Production
 Identity Framework for Everyone*) identity control plane, consisting of three
 components:
 
@@ -58,7 +58,7 @@ In a **SPIKE** deployment, **SPIRE** acts as the central authority that issues
   * Multiple **SPIKE** Keeper instances.
 
 Each component receives its own SVID, which serves as a 
-**cryptographically-verifiable** identity document. These SVIDs allow the 
+**cryptographically verifiable** identity document. These SVIDs allow the 
 components to:
 
 * Prove their identity to other services
@@ -188,7 +188,7 @@ created using polynomial interpolation, meaning:
 
 This provides both security and fault tolerance: The system can continue 
 operating even if some **SPIKE Keeper**s become temporarily unavailable, as 
-long as the threshold number of shards remain accessible.
+long as the threshold number of shards remains accessible.
 
 ## SPIKE Nexus Init Flow
 
@@ -220,7 +220,7 @@ Regardless of the above flow, there is an ongoing operation (*shown in the
 bottom part of the diagram*) that runs as a separate **goroutine**.
 
 * At regular intervals, if **SPIKE Nexus** happens to have a **root key**, it
-  computes [**Shamir**][shamir] shards out of it, and dispatches these shards
+  computes [**Shamir**][shamir] shards out of it and dispatches these shards
   to the **SPIKE Keeper**s.
 
 This flow establishes a secure boot process that handles both initial setup and 
@@ -228,7 +228,7 @@ subsequent startups. The system ensures the **root key** is either properly
 recovered from existing shards or securely generated and distributed when 
 starting fresh.
 
-There is one edge case though: When there is a total system crash, and **SPIKE
+There is one edge case, though: When there is a total system crash, and **SPIKE
 Keeper**s don't have any shards in their memory, then you'll need a manual 
 recovery.
 
@@ -253,7 +253,7 @@ procedure for these situations is described in the next section.
 > You will need to prepare **beforehand** so that you can recover the root
 > key when the system fails to automatically recover it from **SPIKE Keeper**s.
 
-The following diagram outline **SPIKE**'s manual disaster recovery procedure.
+The following diagram outlines **SPIKE**'s manual disaster recovery procedure.
 You can open the picture on a new tab for an enlarged version of it.
 
 {{imglink(
@@ -273,7 +273,7 @@ You can open the picture on a new tab for an enlarged version of it.
 > main keys. Without this proactive backup step, there would be nothing to 
 > recover from in a catastrophic failure.
 
-This operation need to be done **BEFORE** any disaster; ideally, shortly after 
+This operation needs to be done **BEFORE** any disaster; ideally, shortly after 
 deploying **SPIKE**.
 
 Here is how the flow goes:
@@ -300,8 +300,8 @@ In that case, the Operator uses `spike restore` to provide the previously
 backed-up shards one at a time
 
 * **SPIKE Pilot** forwards the entered shard to **SPIKE Nexus**
-* System acknowledges and tracks progress of shard restoration returning
-  the amount of shards received, and the number of shards remaining to restore
+* System acknowledges and tracks the progress of shard restoration, returning
+  the number of shards received, and the number of shards remaining to restore
   the root key.
 
 ### System Restoration
@@ -329,7 +329,7 @@ Here is an overview of each **SPIKE** component:
 ### SPIKE Keeper
 
 * It is designed to be **simple** and **reliable**.
-* It does one thing, and does it well.
+* It does one thing and does it well.
 * Its **only** goal is to keep a [**Shamir Shard**][shamir] in **memory**.
 * By design, it does not have any knowledge about its peer **SPIKE Keepers**, 
   nor **SPIKE Nexus**. It doesn't require any configuration to be brought up.

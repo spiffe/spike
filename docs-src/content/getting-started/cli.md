@@ -32,8 +32,8 @@ exhaustive reference; for that, refer to the
 
 The best way to learn about it will be to use its `--help` flag.
 
-Here is how the interface looks like. Note that what you see might be
-different based on the version you use.
+The following snippet shows what the interface looks like. Note that what you 
+see might be different based on the version you use.
 
 ```bash
 spike (main)$ spike
@@ -55,7 +55,8 @@ Flags:
 Use "spike [command] --help" for more information about a command.
 ```
 
-And here is how we can get help about a certain using the `--help` flag:
+And here is how we can get help about a certain using of the `spike` command
+using the `--help` flag:
 
 ```bash
 spike (main)$ spike secret --help

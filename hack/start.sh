@@ -67,49 +67,70 @@ echo "Domain check passed. Continuing with the script..."
 # Helpers
 source ./hack/lib/bg.sh
 
-if ./hack/clear-data.sh; then
-    echo "Data cleared successfully"
+if [ -z "$SPIKE_SKIP_CLEAR_DATA" ]; then
+    if ./hack/clear-data.sh; then
+        echo "Data cleared successfully"
+    else
+        echo "Failed to clear data"
+        exit 1
+    fi
 else
-    echo "Failed to clear data"
-    exit 1
+    echo "SPIKE_SKIP_CLEAR_DATA is set, skipping data clear."
 fi
 
-if ./hack/build-spike.sh; then
-    echo "SPIKE binaries built successfully"
+if [ -z "$SPIKE_SKIP_SPIKE_BUILD" ]; then
+    if ./hack/build-spike.sh; then
+        echo "SPIKE binaries built successfully"
+    else
+        echo "Failed to build SPIKE binaries"
+        exit 1
+    fi
 else
-    echo "Failed to build SPIKE binaries"
-    exit 1
+    echo "SPIKE_SKIP_SPIKE_BUILD is set, skipping SPIKE build."
 fi
 
 # Start SPIRE server in background and save its PID
-run_background "./hack/spire-server-start.sh"
-# Wait for SPIRE server to initialize
-echo "Waiting for SPIRE server to start..."
-sleep 5
+if [ -z "$SPIKE_SKIP_SPIRE_SERVER_START" ]; then
+  run_background "./hack/spire-server-start.sh"
+  # Wait for SPIRE server to initialize
+  echo "Waiting for SPIRE server to start..."
+  sleep 5
+else
+  echo "SPIKE_SKIP_SPIRE_SERVER_START is set, skipping SPIRE server start."
+fi
+
 
 # Run the registration scripts
-echo "Generating agent token..."
-if ./hack/spire-server-generate-agent-token.sh; then
-    echo "Agent token retrieved successfully"
+if [ -z "$SPIKE_SKIP_GENERATE_AGENT_TOKEN" ]; then
+    echo "Generating agent token..."
+    if ./hack/spire-server-generate-agent-token.sh; then
+        echo "Agent token retrieved successfully"
+    else
+        echo "Failed to retrieve agent token"
+        exit 1
+    fi
 else
-    echo "Failed to retrieve agent token"
-    exit 1
+    echo "SPIKE_SKIP_GENERATE_AGENT_TOKEN is set, skipping agent token generation."
 fi
 
-echo "Registering SPIRE entries..."
-if ./hack/spire-server-entry-spike-register.sh; then
-    echo "SPIRE entries registered successfully"
-else
-    echo "Failed to register SPIRE entries"
-    exit 1
-fi
+if [ -z "$SPIKE_SKIP_REGISTER_ENTRIES" ]; then
+    echo "Registering SPIRE entries..."
+    if ./hack/spire-server-entry-spike-register.sh; then
+        echo "SPIRE entries registered successfully"
+    else
+        echo "Failed to register SPIRE entries"
+        exit 1
+    fi
 
-echo "Registering SU..."
-if ./hack/spire-server-entry-su-register.sh; then
-    echo "SU registered successfully"
+    echo "Registering SU..."
+    if ./hack/spire-server-entry-su-register.sh; then
+        echo "SU registered successfully"
+    else
+        echo "Failed to register SU"
+        exit 1
+    fi
 else
-    echo "Failed to register SU"
-    exit 1
+    echo "SPIKE_SKIP_REGISTER_ENTRIES is set, skipping entries registration."
 fi
 
 if [ "$1" == "--use-sudo" ]; then
@@ -117,39 +138,52 @@ if [ "$1" == "--use-sudo" ]; then
   sudo -v
 fi
 
-echo ""
-echo "Waiting before starting SPIRE Agent"
-sleep 5
-
 # Start SPIRE agent in background and save its PID
-if [ "$1" == "--use-sudo" ]; then
-  run_background "./hack/spire-agent-start.sh" --use-sudo
+if [ -z "$SPIKE_SKIP_SPIRE_AGENT_START" ]; then
+  echo ""
+  echo "Waiting before starting SPIRE Agent"
+  sleep 5
+  
+  if [ "$1" == "--use-sudo" ]; then
+    run_background "./hack/spire-agent-start.sh" --use-sudo
+  else
+    run_background "./hack/spire-agent-start.sh"
+  fi
 else
-  run_background "./hack/spire-agent-start.sh"
+  echo "SPIKE_SKIP_SPIRE_AGENT_START is set, skipping SPIRE agent start."
 fi
 
-# Check if SPIKE_NEXUS_BACKEND_STORE is set to memory
+# Check if SPIKE_NEXUS_BACKEND_STORE is set to memory:
 if [ "$SPIKE_NEXUS_BACKEND_STORE" != "memory" ]; then
-  echo ""
-  echo "Waiting before SPIKE Keeper 1..."
-  sleep 5
-  run_background "./hack/start-keeper-1.sh"
-  echo ""
-  echo "Waiting before SPIKE Keeper 2..."
-  sleep 5
-  run_background "./hack/start-keeper-2.sh"
-  echo ""
-  echo "Waiting before SPIKE Keeper 3..."
-  sleep 5
-  run_background "./hack/start-keeper-3.sh"
+  # Check if we want to skip the keeper initialization step:
+  if [ -z "$SPIKE_SKIP_KEEPER_INITIALIZATION" ]; then
+    echo ""
+    echo "Waiting before SPIKE Keeper 1..."
+    sleep 5
+    run_background "./hack/start-keeper-1.sh"
+    echo ""
+    echo "Waiting before SPIKE Keeper 2..."
+    sleep 5
+    run_background "./hack/start-keeper-2.sh"
+    echo ""
+    echo "Waiting before SPIKE Keeper 3..."
+    sleep 5
+    run_background "./hack/start-keeper-3.sh"
+  else
+    echo "SPIKE_SKIP_KEEPER_INITIALIZATION is set, skipping Keeper instances."
+  fi
 else
   echo "SPIKE_NEXUS_BACKEND_STORE is set to memory, skipping Keeper instances."
 fi
 
-echo ""
-echo "Waiting before SPIKE Nexus..."
-sleep 5
-run_background "./hack/start-nexus.sh"
+if [ -z "$SPIKE_SKIP_NEXUS_START" ]; then
+  echo ""
+  echo "Waiting before SPIKE Nexus..."
+  sleep 5
+  run_background "./hack/start-nexus.sh"
+else
+  echo "SPIKE_SKIP_NEXUS_START is set, skipping Nexus start."
+fi
 
 echo ""
 echo ""
