@@ -31,6 +31,7 @@ Here are a few pointers to learn more about **SPIKE**:
   about **SPIKE**,
 * [**Take a look at the quickstart guide**][quickstart] to get your hands
   dirty.
+* [Check out **SPIKE** CLI Reference][cli]
 * [**Join the SPIKE community**][community] to ask your questions and 
   learn from the subject-matter experts.
 
@@ -39,3 +40,4 @@ Here are a few pointers to learn more about **SPIKE**:
 [quickstart]: @/getting-started/guide.md "SPIKE Quickstart"
 [community]: @/community/hello.md "Open Source is better together."
 [github]: https://github.com/spiffe/spike
+[cli]: @/getting-started/commands/_index.md
