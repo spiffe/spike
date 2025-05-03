@@ -743,8 +743,14 @@ and <code>KeeperVersion</code> in <code>$WORKSPACE/spike/internal/config/config.
 <li>Update any necessary documentation.</li>
 <li>Update the changelog.</li>
 <li>Update the documentation snapshots page.</li>
-<li>Run <code>./hack/cover.sh</code> to update and send coverage report to the public docs.</li>
+<li>Run <code>./hack/cover.sh</code> to update and send the coverage report to the public
+docs.</li>
+<li>Make sure version numbers in the code are updated to reflect the release:</li>
 </ol>
+<pre data-lang="go" style="background-color:#2b303b;color:#c0c5ce;" class="language-go "><code class="language-go" data-lang="go"><span style="color:#b48ead;">const </span><span style="color:#bf616a;">SpikeNexusVersion </span><span>= &quot;</span><span style="color:#a3be8c;">0.4.0</span><span>&quot;
+</span><span style="color:#b48ead;">const </span><span style="color:#bf616a;">SpikePilotVersion </span><span>= &quot;</span><span style="color:#a3be8c;">0.4.0</span><span>&quot;
+</span><span style="color:#b48ead;">const </span><span style="color:#bf616a;">SpikeKeeperVersion </span><span>= &quot;</span><span style="color:#a3be8c;">0.4.0</span><span>&quot;
+</span></code></pre>
 <p>Release process:</p>
 <ul>
 <li>Publish documentation by running <code>zola build</code> in <code>./docs-src</code> and then
@@ -790,7 +796,7 @@ policies you created.</li>
 <li>Make sure SPIKE Nexus and SPIKE Keepers are up and running.</li>
 <li>Repeat steps 2–7.</li>
 <li>Test recover and restore scenarios:
-(a: Nexus autorecover; b: doomsday recovery)</li>
+(a: Nexus auto-recover; b: doomsday recovery)</li>
 </ol>
 <p>If everything looks good so far and the unit tests pass, you can cut a release.</p>
 <p>Ideally, this setup should be automated, but since our releasee cadence is

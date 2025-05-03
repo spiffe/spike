@@ -735,14 +735,20 @@
             
         <h1 id="spike-changelog">SPIKE Changelog</h1>
 <h2 id="recent">Recent</h2>
-<p>TBD</p>
+<ul>
+<li>Fixed: Doomsday recovery was not immediately restoring data from the backing
+store. Now it does.</li>
+<li>Better shard sanitization during doomsday recovery operation.</li>
+<li>Added memory locking to SPIKE Pilot too (along with SPIKE Nexus and
+SPIKE Keeper, which already had memory locking)</li>
+</ul>
 <h2 id="0-4-0-2025-04-16">[0.4.0] - 2025-04-16</h2>
 <h3 id="added">Added</h3>
 <ul>
 <li>Added more configuration options to SPIKE Nexus.</li>
 <li>Updated documentation around security and production hardening.</li>
 <li>Updated release instructions, added a series of tests to follow and cutting
-a release only after all tests pass. These test are manual for now, but
+a release only after all tests pass. These tests are manual for now, but
 can be automated later down the line.</li>
 </ul>
 <h3 id="fixed">Fixed</h3>

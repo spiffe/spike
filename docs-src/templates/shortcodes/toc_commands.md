@@ -4,6 +4,8 @@
 # \\\\\\
 #}
 
-* [`spike secret`](@/getting-started/commands/secret.md)
-* [`spike policy`](@/getting-started/commands/policy.md)
-* [`spike operator`](@/getting-started/commands/operator.md)
+* [`spike secret`](@/getting-started/commands/secret.md):  Manage secrets.
+* [`spike policy`](@/getting-started/commands/policy.md): Manage rules that 
+  control access to secrets.
+* [`spike operator`](@/getting-started/commands/operator.md): Administrative 
+  functionality for system operations and disaster recovery.
