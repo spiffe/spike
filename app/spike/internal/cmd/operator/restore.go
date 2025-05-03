@@ -72,7 +72,7 @@ func newOperatorRestoreCommand(
 					"  Please run `./hack/spire-server-entry-restore-register.sh`")
 				fmt.Println("  with necessary privileges to assign this role.")
 				fmt.Println("")
-				log.FatalLn("Aborting.")
+				os.Exit(1)
 			}
 
 			trust.AuthenticateRestore(spiffeId)
@@ -95,9 +95,11 @@ func newOperatorRestoreCommand(
 			// shard is in `spike:$id:$base64` format
 			shardParts := strings.SplitN(string(shard), ":", 3)
 			if len(shardParts) != 3 {
-				log.FatalLn(
+				fmt.Println("")
+				fmt.Println(
 					"Invalid shard format. Expected format: `spike:$id:$secret`.",
 				)
+				os.Exit(1)
 			}
 
 			index := shardParts[1]
@@ -105,8 +107,13 @@ func newOperatorRestoreCommand(
 
 			// 32 bytes encoded in hex should be 64 characters
 			if len(hexData) != 64 {
-				log.FatalLn("Invalid hex shard length:", len(hexData),
-					" (expected 64 characters). Did miss some characters when pasting?")
+				fmt.Println("")
+				fmt.Println(
+					"Invalid hex shard length:", len(hexData),
+					"(expected 64 characters).",
+					"Did you miss some characters when pasting?",
+				)
+				os.Exit(1)
 			}
 
 			decodedShard, err := hex.DecodeString(hexData)
@@ -123,14 +130,18 @@ func newOperatorRestoreCommand(
 			mem.ClearBytes(shard)
 
 			if err != nil {
-				log.FatalLn("Failed to decode recovery shard: ", err.Error())
+				fmt.Println("")
+				fmt.Println("Failed to decode recovery shard: ", err.Error())
+				os.Exit(1)
 			}
 
 			if len(decodedShard) != 32 {
 				// Security: reset decodedShard immediately after use.
 				mem.ClearBytes(decodedShard)
 
-				log.FatalLn("Invalid recovery shard length: ", len(decodedShard))
+				fmt.Println("")
+				fmt.Println("Invalid recovery shard length: ", len(decodedShard))
+				os.Exit(1)
 			}
 
 			for i := 0; i < 32; i++ {
@@ -142,7 +153,9 @@ func newOperatorRestoreCommand(
 
 			ix, err := strconv.Atoi(index)
 			if err != nil {
-				log.FatalLn("Invalid shard index: ", err.Error())
+				fmt.Println("")
+				fmt.Println("Invalid shard index: ", err.Error())
+				os.Exit(1)
 			}
 
 			status, err := api.Restore(ix, &shardToRestore)
@@ -155,7 +168,9 @@ func newOperatorRestoreCommand(
 			}
 
 			if status == nil {
-				log.FatalLn("Didn't get any status while trying to restore SPIKE.")
+				fmt.Println("")
+				fmt.Println("Didn't get any status while trying to restore SPIKE.")
+				os.Exit(1)
 			}
 
 			if status.Restored {
