@@ -40,7 +40,7 @@ func guardListSecretRequest(
 	}
 
 	allowed := state.CheckAccess(
-		spiffeid.String(), "*",
+		spiffeid.String(), "spike/system/secrets",
 		[]data.PolicyPermission{data.PermissionList},
 	)
 	if !allowed {

@@ -43,9 +43,10 @@ func guardPutPolicyRequest(
 		return apiErr.ErrUnauthorized
 	}
 
+	// Request "write" access to the ACL system for the SPIFFE ID.
 	allowed := state.CheckAccess(
-		spiffeid.String(), "*",
-		[]data.PolicyPermission{data.PermissionSuper},
+		spiffeid.String(), "spike/system/acl",
+		[]data.PolicyPermission{data.PermissionWrite},
 	)
 	if !allowed {
 		responseBody := net.MarshalBody(reqres.PolicyCreateResponse{

@@ -28,7 +28,7 @@ func guardRecoverRequest(
 		return apiErr.ErrUnauthorized
 	}
 
-	if peerSpiffeId.String() != spiffeid.SpikePilotRecover() {
+	if !spiffeid.IsPilotRecover(peerSpiffeId.String()) {
 		responseBody := net.MarshalBody(reqres.RestoreResponse{
 			Err: data.ErrUnauthorized,
 		}, w)

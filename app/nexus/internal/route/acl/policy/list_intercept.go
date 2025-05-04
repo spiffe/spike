@@ -39,8 +39,8 @@ func guardListPolicyRequest(
 	}
 
 	allowed := state.CheckAccess(
-		spiffeid.String(), "*",
-		[]data.PolicyPermission{data.PermissionSuper},
+		spiffeid.String(), "spike/system/acl",
+		[]data.PolicyPermission{data.PermissionList},
 	)
 	if !allowed {
 		responseBody := net.MarshalBody(reqres.PolicyListResponse{
