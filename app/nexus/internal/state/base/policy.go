@@ -49,7 +49,7 @@ var (
 func CheckAccess(
 	peerSpiffeId string, path string, wants []data.PolicyPermission,
 ) bool {
-	// Role:SpikePilot can always manage secrets.
+	// Role:SpikePilot can always manage secrets and policies.
 	if spiffeid.IsPilot(peerSpiffeId) {
 		return true
 	}

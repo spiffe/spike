@@ -54,8 +54,8 @@ func guardDeletePolicyRequest(
 	}
 
 	allowed := state.CheckAccess(
-		spiffeid.String(), "*",
-		[]data.PolicyPermission{data.PermissionSuper},
+		spiffeid.String(), "spike/system/acl",
+		[]data.PolicyPermission{data.PermissionWrite},
 	)
 	if !allowed {
 		responseBody := net.MarshalBody(reqres.PolicyDeleteResponse{
