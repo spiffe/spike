@@ -254,6 +254,15 @@ escalations within the Kubernetes cluster.
 The guidelines covered in this section apply to all **SPIKE** components, 
 including **SPIKE Nexus**, **SPIKE Keeper**, and **SPIKE Pilot**.
 
+### Single Tenancy
+
+**SPIKE Nexus** is recommended to be the only main process running on a machine.
+This reduces the risk that another process running on the same
+machine is compromised and can interact with **SPIKE Nexus**.
+
+In a Kubernetes deployment, you can achieve this with setting up appropriate 
+Node affinity rules.
+
 ### User Privileges
 
 * For **bare-metal** deployments:

@@ -171,6 +171,21 @@
                 </li>
 
                 </ul>
+    <input class="tree-toggle" type="checkbox" id="tracking"
+               />
+        <label class="tree-toggle-label "
+               for="tracking">Tracking</label>
+
+        <ul class="subtree">
+            <li >
+                    <a href="https://spike.ist/tracking/changelog/">Changelog</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/tracking/snapshots/">Documentation Snapshots</a>
+                </li>
+
+                </ul>
     <input class="tree-toggle" type="checkbox" id="operations"
                checked/>
         <label class="tree-toggle-label "
@@ -225,21 +240,6 @@
 
                 <li >
                     <a href="https://spike.ist/operations/release/">SPIKE Relase Management</a>
-                </li>
-
-                </ul>
-    <input class="tree-toggle" type="checkbox" id="tracking"
-               />
-        <label class="tree-toggle-label "
-               for="tracking">Tracking</label>
-
-        <ul class="subtree">
-            <li >
-                    <a href="https://spike.ist/tracking/changelog/">Changelog</a>
-                </li>
-
-                <li >
-                    <a href="https://spike.ist/tracking/snapshots/">Documentation Snapshots</a>
                 </li>
 
                 </ul>
@@ -930,6 +930,12 @@ escalations within the Kubernetes cluster.</p>
 <h2 id="spike-general-hardening-guidelines">SPIKE General Hardening Guidelines</h2>
 <p>The guidelines covered in this section apply to all <strong>SPIKE</strong> components,
 including <strong>SPIKE Nexus</strong>, <strong>SPIKE Keeper</strong>, and <strong>SPIKE Pilot</strong>.</p>
+<h3 id="single-tenancy">Single Tenancy</h3>
+<p><strong>SPIKE Nexus</strong> is recommended to be the only main process running on a machine.
+This reduces the risk that another process running on the same
+machine is compromised and can interact with <strong>SPIKE Nexus</strong>.</p>
+<p>In a Kubernetes deployment, you can achieve this with setting up appropriate
+Node affinity rules.</p>
 <h3 id="user-privileges">User Privileges</h3>
 <ul>
 <li>For <strong>bare-metal</strong> deployments:
