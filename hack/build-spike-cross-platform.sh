@@ -87,4 +87,10 @@ for file in keeper-* nexus-* spike-*; do
     shasum -a 256 "$file" > "$file.sum.txt"
 done
 
+echo "!!! The symbols have been stripped from binaries for security."
+echo "!!! Use 'readelf --symbols #binary_name#' to verify."
+
+echo ""
+echo ""
+
 echo "Everything is awesome!"

@@ -7,6 +7,7 @@ package base
 import (
 	"errors"
 	"fmt"
+	"github.com/spiffe/spike/app/nexus/internal/env"
 	"regexp"
 	"time"
 
@@ -50,7 +51,7 @@ func CheckAccess(
 	peerSpiffeId string, path string, wants []data.PolicyPermission,
 ) bool {
 	// Role:SpikePilot can always manage secrets and policies.
-	if spiffeid.IsPilot(peerSpiffeId) {
+	if spiffeid.IsPilot(env.TrustRootForPilot(), peerSpiffeId) {
 		return true
 	}
 

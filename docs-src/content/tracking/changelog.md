@@ -18,6 +18,7 @@ sort_by = "weight"
 * Added memory locking to SPIKE Pilot too (along with SPIKE Nexus and 
   SPIKE Keeper, which already had memory locking)
 * Finer control of the startup script via flags.
+* BREAKING: SDK validation methods now take trust root as an argument.
 
 ## [0.4.0] - 2025-04-16
 

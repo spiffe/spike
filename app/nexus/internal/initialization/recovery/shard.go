@@ -6,6 +6,7 @@ package recovery
 
 import (
 	"encoding/json"
+	"github.com/spiffe/spike/app/nexus/internal/env"
 	"net/url"
 
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
@@ -45,7 +46,10 @@ func shardResponse(source *workloadapi.X509Source, u string) []byte {
 	}
 
 	client, err := network.CreateMtlsClientWithPredicate(
-		source, spiffeid.IsKeeper,
+		source,
+		func(peerId string) bool {
+			return spiffeid.IsKeeper(env.TrustRootForKeeper(), peerId)
+		},
 	)
 
 	if err != nil {
@@ -88,7 +92,11 @@ func shardContributionResponse(
 ) []byte {
 	const fName = "shardContributionResponse"
 
-	client, err := network.CreateMtlsClientWithPredicate(source, spiffeid.IsKeeper)
+	client, err := network.CreateMtlsClientWithPredicate(source,
+		func(peerId string) bool {
+			return spiffeid.IsKeeper(env.TrustRootForKeeper(), peerId)
+		},
+	)
 
 	if err != nil {
 		log.Log().Warn(fName,

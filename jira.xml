@@ -41,160 +41,22 @@
   </watch>
   <immediate-backlog>
     <meta>Things to do before working further on containerization.</meta>
-    <issue>
-      read policies from a yaml or a json file and create them.
-    </issue>
-    <issue>
-    <issue>
-      this is for policy creation:
-
-      allowed := state.CheckAccess(
-      spiffeid.String(), "*",
-      []data.PolicyPermission{data.PermissionSuper},
-      )
-
-      instead of a wildcard, maybe have a predefined path
-      for access check like "/spike/system/acl"
-
-      also disallow people creating secrets etc under
-      /spike/system
-    </issue>
-    <issue>
-      breaking : these should take trust root as an argument because
-      they can have distinct trust roots
-
-      // SpikeKeeper constructs and returns the SPIKE Keeper's
-      // SPIFFE ID string.
-      // The output is constructed based on the trust root from the environment.
-      func SpikeKeeper() string {
-      return "spiffe://" + env.TrustRoot() + "/spike/keeper"
-      }
-
-      // SpikeNexus constructs and returns the SPIFFE ID for SPIKE Nexus.
-      // The output is constructed based on the trust root from the environment.
-      func SpikeNexus() string {
-      return "spiffe://" + env.TrustRoot() + "/spike/nexus"
-      }
-
-      // SpikePilot generates the SPIFFE ID for a SPIKE Pilot superuser role.
-      // The output is constructed based on the trust root from the environment.
-      func SpikePilot() string {
-      return "spiffe://" + env.TrustRoot() + "/spike/pilot/role/superuser"
-      }
-
-      // SpikePilotRecover generates the SPIFFE ID for a SPIKE Pilot recovery role.
-      // The output is constructed based on the trust root from the environment.
-      func SpikePilotRecover() string {
-      return "spiffe://" + env.TrustRoot() + "/spike/pilot/role/recover"
-      }
-
-      // SpikePilotRestore generates the SPIFFE ID for a SPIKE Pilot restore role.
-      // The output is constructed based on the trust root from the environment.
-      func SpikePilotRestore() string {
-      return "spiffe://" + env.TrustRoot() + "/spike/pilot/role/restore"
-      }
-    </issue>
-    <issue>
-      also check out: https://developer.hashicorp.com/vault/docs/concepts/policies
-      to see if we can amend any updates to the policy rules
-      (one such update, for example, is limiting what kind of attributes are
-      allowed, but we should discuss whether that much granularity is worth the
-      hassle)
-    </issue>
-    <issue>
-      add to docs: we strip binaries of symbols before build for
-      additional security.
-      Also, check if there is a way to verify the result.
-    </issue>
-    <issue severity="important" priority="elevated">
-      write an adr about why those asnyc are snyc from now on:
-
-      // TOD we don't have any retry for policies or for recovery info.
-      // they are equally important.
-
-      // TO: these xsync operations can cause race conditions
-      //
-      // 1. process a writes secret
-      // 2. process b marks secret as deleted
-      // 3. in memory we write then delete
-      // 4. but to the backing store it goes as delete then write.
-      // 5. memory: secret deleted; backing store: secret exists.
-      //
-      // to solve it; have a queue of operations (as a go channel)
-      // and do not consume the next operation until the current
-      // one is complete.
-      //
-      // have one channel for each resource:
-      // - secrets
-      // - policies
-      // - key recovery info.
-      //
-      // Or as an alternative; make these xsync operations sync
-      // and wait for them to complete before reporting success.
-      // this will make the architecture way simpler without needing
-      // to rely on channels.
-    </issue>
-    <issue>
-      enable and verify FIPS mode.
-      It should have been easier with the new Go version by now.
-
-      Also upgrade Go to the latest while you are at it.
-
-      Go 1.24 introduces native support to FIPS 140-3. The Go Cryptographic
-      Module in 1.24 will be FIPS 140-3 certified.
-
-      It will not require linking to BoringCrypto/BoringSSL nor enabling CGO.
-
-      This approach if it works, is more preferrable; research about it.
-    </issue>
-    <issue>
-      seed, err := crypto.Aes256Seed()
-
-      create an override function that return a byte slice instead of a string.
-      while at that, we can create a pointer to a byte array too
-      (since the size will be fixed for 256bits anyways)
-
-      We can reuse that instead of the [32]byte array creation in the source code.
-    </issue>
-    <issue>
+    <issue note="create-pr">
       SPIKE_NEXUS_KEEPER_PEERS='{"1":"https://localhost:8443","2":"https://localhost:8543","3":"https://localhost:8643"}' \
       If these ids have to monotonically increase and start from one; they essentially define an array.
       better to use an array instead of and object than; or even a comma-delimited list of urls for that matter.
 
       When you implement the feature, update the documentation, and also the relevant shell script.
     </issue>
-    <issue severity="important" urgency="moderate">
-      // TDO: check all database operations (secrets, policies, metadata)
-      and
-      // ensure that they are retried with exponential backooff.
-    </issue>
-    <issue>
-      newSecreteUndeleteCommand
-
-      Run: func(cmd *cobra.Command, args []string) {
-      // O: we can pass this as a predicate to newSecretUndeleteCommand,
-      as a HOF.
-      trust.Authenticate(spiffeId)
-    </issue>
-    <issue>
-      add retries to everything under:
-      app/nexus/internal/state/persist
-      ^ they all talk to db; and sqlite can temporarily lock for
-      a variety of reasons.
-    </issue>
-    <issue>
+    <issue note="create-pr">
       guidelines about how to backup and restore
     </issue>
-    <issue>
+    <issue note="create-pr">
       Optionally not create tables and other ddl during backing store
       creation
     </issue>
-    <issue>
-      SPIKE Pilot to ingest a policy YAML file(s) to create policies.
-      (similar to kubectl)
-    </issue>
-    <issue kind="qa">
-      Add  relevant ones of those to the smoke tests
+    <issue kind="qa" note="create-pr">
+      Add  relevant ones of those to the smoke tests (to the docs)
       - SPIKE Nexus Sanity Tests
       - Ensure SPIKE Nexus caches the root key in memory.
       - Ensure SPIKE Nexus reads from SPIKE keep if it does not have
@@ -410,6 +272,29 @@
   </runner-up>
 
   <later>
+    <issue severity="important" urgency="moderate">
+      // TDO: check all database operations (secrets, policies, metadata)
+      and
+      // ensure that they are retried with exponential backoff.
+
+      add retries to everything under:
+      app/nexus/internal/state/persist
+      ^ they all talk to db; and sqlite can temporarily lock for
+      a variety of reasons.
+    </issue>
+    <issue>
+      enable and verify FIPS mode.
+      It should have been easier with the new Go version by now.
+
+      Also upgrade Go to the latest while you are at it.
+
+      Go 1.24 introduces native support to FIPS 140-3. The Go Cryptographic
+      Module in 1.24 will be FIPS 140-3 certified.
+
+      It will not require linking to BoringCrypto/BoringSSL nor enabling CGO.
+
+      This approach if it works, is more preferrable; research about it.
+    </issue>
     <issue>
       Try SPIKE on a Mac (and create a video)
     </issue>
@@ -419,6 +304,13 @@
     <issue>
       Check what else needed (aside from enabling fips-algorithms) to
       be fips-compatible.
+    </issue>
+    <issue>
+      also check out: https://developer.hashicorp.com/vault/docs/concepts/policies
+      to see if we can amend any updates to the policy rules
+      (one such update, for example, is limiting what kind of attributes are
+      allowed, but we should discuss whether that much granularity is worth the
+      hassle)
     </issue>
     <issue>
       in development mode, nexus shall act as a single binary:

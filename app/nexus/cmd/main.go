@@ -7,6 +7,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/spiffe/go-spiffe/v2/workloadapi"
 
 	"github.com/spiffe/spike-sdk-go/net"
 	"github.com/spiffe/spike-sdk-go/security/mem"
@@ -22,6 +23,16 @@ import (
 )
 
 const appName = "SPIKE Nexus"
+
+func serve(source *workloadapi.X509Source) {
+	if err := net.Serve(
+		source,
+		func() { routing.HandleRoute(http.Route) },
+		env.TlsPort(),
+	); err != nil {
+		log.FatalF("%s: Failed to serve: %s\n", appName, err.Error())
+	}
+}
 
 func main() {
 	fmt.Printf(`
@@ -48,7 +59,7 @@ func main() {
 	defer spiffe.CloseSource(source)
 
 	// I should be Nexus.
-	if !spiffeid.IsNexus(selfSpiffeid) {
+	if !spiffeid.IsNexus(env.TrustRoot(), selfSpiffeid) {
 		log.FatalF("Authenticate: SPIFFE ID %s is not valid.\n", selfSpiffeid)
 	}
 
@@ -59,11 +70,5 @@ func main() {
 		appName, config.SpikeNexusVersion),
 	)
 
-	if err := net.Serve(
-		source,
-		func() { routing.HandleRoute(http.Route) },
-		env.TlsPort(),
-	); err != nil {
-		log.FatalF("%s: Failed to serve: %s\n", appName, err.Error())
-	}
+	serve(source)
 }
