@@ -13,6 +13,7 @@ import (
 	"github.com/spiffe/spike-sdk-go/spiffeid"
 
 	"github.com/spiffe/spike/app/keeper/internal/env"
+	"github.com/spiffe/spike/app/keeper/internal/net"
 	"github.com/spiffe/spike/internal/config"
 	"github.com/spiffe/spike/internal/log"
 )
@@ -53,5 +54,6 @@ func main() {
 		fmt.Sprintf("Started service: %s v%s", appName, config.SpikeKeeperVersion),
 	)
 
-	serve(source)
+	// Serve the app:
+	net.Serve(appName, source)
 }

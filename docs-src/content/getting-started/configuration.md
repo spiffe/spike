@@ -38,7 +38,10 @@ configure the SPIKE components:
 | SPIKE Nexus  | `SPIKE_NEXUS_KEEPER_UPDATE_INTERVAL`    | The duration between SPIKE Nexus updates SPIKE Keepers with the relevant shard information.                                                                         | `5m`                                                  |
 | All          | `SPIKE_SYSTEM_LOG_LEVEL`                | The log level for all SPIKE components (`"DEBUG"`, `"INFO"`, `"WARN"`, `"ERROR"`).                                                                                  | `"DEBUG"`                                             |
 | All          | `SPIKE_NEXUS_API_URL`                   | The URL where SPIKE Nexus can be reached                                                                                                                            | `"https://localhost:8553"`                            |
-| All          | `SPIKE_TRUST_ROOT`                      | The SPIFFE trust root used within the SPIKE trust boundary.                                                                                                         | `"spike.ist"`                                         |
+| All          | `SPIKE_TRUST_ROOT`                      | The SPIFFE trust root used within the SPIKE trust boundary. Can be a single entry, or a comma-delimited list of suitable trust roots.                               | `"spike.ist"`                                         |
+| All          | `SPIKE_TRUST_ROOT_KEEPER`               | The SPIFFE trust root used for SPIKE Keeper instances. Can be a single entry, or a comma-delimited list of suitable trust roots.                                    | `"spike.ist"`                                         |
+| All          | `SPIKE_TRUST_ROOT_PILOT`                | The SPIFFE trust root used for SPIKE Pilot instances. Can be a single entry, or a comma-delimited list of suitable trust roots.                                     | `"spike.ist"`                                         |
+| All          | `SPIKE_TRUST_ROOT_NEXUS`                | The SPIFFE trust root used for SPIKE Nexus instances. Can be a single entry, or a comma-delimited list of suitable trust roots.                                     | `"spike.ist"`                                         |
 
 We'll add more configuration options in the future. Stay tuned.
 

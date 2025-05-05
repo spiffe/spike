@@ -6,7 +6,6 @@ package recovery
 
 import (
 	"encoding/json"
-	"github.com/spiffe/spike/app/nexus/internal/env"
 	"net/url"
 
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
@@ -16,6 +15,7 @@ import (
 	"github.com/spiffe/spike-sdk-go/security/mem"
 	"github.com/spiffe/spike-sdk-go/spiffeid"
 
+	"github.com/spiffe/spike/app/nexus/internal/env"
 	"github.com/spiffe/spike/internal/log"
 	"github.com/spiffe/spike/internal/net"
 )

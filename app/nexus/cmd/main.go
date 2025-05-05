@@ -7,32 +7,19 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/spiffe/go-spiffe/v2/workloadapi"
 
-	"github.com/spiffe/spike-sdk-go/net"
 	"github.com/spiffe/spike-sdk-go/security/mem"
 	"github.com/spiffe/spike-sdk-go/spiffe"
 	"github.com/spiffe/spike-sdk-go/spiffeid"
 
 	"github.com/spiffe/spike/app/nexus/internal/env"
 	"github.com/spiffe/spike/app/nexus/internal/initialization"
-	http "github.com/spiffe/spike/app/nexus/internal/route/base"
+	"github.com/spiffe/spike/app/nexus/internal/net"
 	"github.com/spiffe/spike/internal/config"
 	"github.com/spiffe/spike/internal/log"
-	routing "github.com/spiffe/spike/internal/net"
 )
 
 const appName = "SPIKE Nexus"
-
-func serve(source *workloadapi.X509Source) {
-	if err := net.Serve(
-		source,
-		func() { routing.HandleRoute(http.Route) },
-		env.TlsPort(),
-	); err != nil {
-		log.FatalF("%s: Failed to serve: %s\n", appName, err.Error())
-	}
-}
 
 func main() {
 	fmt.Printf(`
@@ -70,5 +57,6 @@ func main() {
 		appName, config.SpikeNexusVersion),
 	)
 
-	serve(source)
+	// Start the server:
+	net.Serve(appName, source)
 }

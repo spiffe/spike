@@ -28,9 +28,6 @@
         * Create a local Minikube cluster and test images locally.
     </issue>
     <issue>
-      There is ongoing work on CLI documentation.
-    </issue>
-    <issue>
       There is an ongoing work on HTML...ization of the Turtle Book.
       We also need to start a work on updating spiffe.io for the
       new book.
@@ -40,7 +37,9 @@
            title="add reason to errors" />
   </watch>
   <immediate-backlog>
-    <meta>Things to do before working further on containerization.</meta>
+    <meta>Things to do before working further on containerization---Aim to finish
+    all low-hanging fruits and tasks that can be done quickly and without
+    major code change</meta>
     <issue note="create-pr">
       SPIKE_NEXUS_KEEPER_PEERS='{"1":"https://localhost:8443","2":"https://localhost:8543","3":"https://localhost:8643"}' \
       If these ids have to monotonically increase and start from one; they essentially define an array.
@@ -56,7 +55,7 @@
       creation
     </issue>
     <issue kind="qa" note="create-pr">
-      Add  relevant ones of those to the smoke tests (to the docs)
+      Add relevant ones of those to the smoke tests (to the docs)
       - SPIKE Nexus Sanity Tests
       - Ensure SPIKE Nexus caches the root key in memory.
       - Ensure SPIKE Nexus reads from SPIKE keep if it does not have
