@@ -18,4 +18,11 @@ CGO_ENABLED=1 GOEXPERIMENT=boringcrypto go build -ldflags="-s -w" \
   -o spike ./app/spike/cmd/main.go
 CGO_ENABLED=1 GOEXPERIMENT=boringcrypto go build -ldflags="-s -w" \
   -o demo ./app/demo/cmd/main.go
+
+echo "!!! The symbols have been stripped from binaries for security."
+echo "!!! Use 'readelf --symbols #binary_name#' to verify."
+
+echo ""
+echo ""
+
 echo "Built SPIKE binaries."

@@ -174,21 +174,6 @@
                 </li>
 
                 </ul>
-    <input class="tree-toggle" type="checkbox" id="tracking"
-               />
-        <label class="tree-toggle-label "
-               for="tracking">Tracking</label>
-
-        <ul class="subtree">
-            <li >
-                    <a href="https://spike.ist/tracking/changelog/">Changelog</a>
-                </li>
-
-                <li >
-                    <a href="https://spike.ist/tracking/snapshots/">Documentation Snapshots</a>
-                </li>
-
-                </ul>
     <input class="tree-toggle" type="checkbox" id="operations"
                />
         <label class="tree-toggle-label "
@@ -209,6 +194,21 @@
 
                 <li >
                     <a href="https://spike.ist/operations/release/">SPIKE Relase Management</a>
+                </li>
+
+                </ul>
+    <input class="tree-toggle" type="checkbox" id="tracking"
+               />
+        <label class="tree-toggle-label "
+               for="tracking">Tracking</label>
+
+        <ul class="subtree">
+            <li >
+                    <a href="https://spike.ist/tracking/changelog/">Changelog</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/tracking/snapshots/">Documentation Snapshots</a>
                 </li>
 
                 </ul>
@@ -731,7 +731,10 @@ configure the SPIKE components:</p>
 <tr><td>SPIKE Nexus</td><td><code>SPIKE_NEXUS_KEEPER_UPDATE_INTERVAL</code></td><td>The duration between SPIKE Nexus updates SPIKE Keepers with the relevant shard information.</td><td><code>5m</code></td></tr>
 <tr><td>All</td><td><code>SPIKE_SYSTEM_LOG_LEVEL</code></td><td>The log level for all SPIKE components (<code>"DEBUG"</code>, <code>"INFO"</code>, <code>"WARN"</code>, <code>"ERROR"</code>).</td><td><code>"DEBUG"</code></td></tr>
 <tr><td>All</td><td><code>SPIKE_NEXUS_API_URL</code></td><td>The URL where SPIKE Nexus can be reached</td><td><code>"https://localhost:8553"</code></td></tr>
-<tr><td>All</td><td><code>SPIKE_TRUST_ROOT</code></td><td>The SPIFFE trust root used within the SPIKE trust boundary.</td><td><code>"spike.ist"</code></td></tr>
+<tr><td>All</td><td><code>SPIKE_TRUST_ROOT</code></td><td>The SPIFFE trust root used within the SPIKE trust boundary. Can be a single entry, or a comma-delimited list of suitable trust roots.</td><td><code>"spike.ist"</code></td></tr>
+<tr><td>All</td><td><code>SPIKE_TRUST_ROOT_KEEPER</code></td><td>The SPIFFE trust root used for SPIKE Keeper instances. Can be a single entry, or a comma-delimited list of suitable trust roots.</td><td><code>"spike.ist"</code></td></tr>
+<tr><td>All</td><td><code>SPIKE_TRUST_ROOT_PILOT</code></td><td>The SPIFFE trust root used for SPIKE Pilot instances. Can be a single entry, or a comma-delimited list of suitable trust roots.</td><td><code>"spike.ist"</code></td></tr>
+<tr><td>All</td><td><code>SPIKE_TRUST_ROOT_NEXUS</code></td><td>The SPIFFE trust root used for SPIKE Nexus instances. Can be a single entry, or a comma-delimited list of suitable trust roots.</td><td><code>"spike.ist"</code></td></tr>
 </tbody></table>
 <p>We’ll add more configuration options in the future. Stay tuned.</p>
 <hr />

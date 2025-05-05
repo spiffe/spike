@@ -6,6 +6,7 @@ package recovery
 
 import (
 	"encoding/json"
+	"github.com/spiffe/spike/app/nexus/internal/env"
 	"net/url"
 	"strconv"
 
@@ -88,7 +89,9 @@ func sendShardsToKeepers(
 		}
 
 		client, err := network.CreateMtlsClientWithPredicate(
-			source, spiffeid.IsKeeper,
+			source, func(peerId string) bool {
+				return spiffeid.IsKeeper(env.TrustRootForKeeper(), peerId)
+			},
 		)
 
 		if err != nil {

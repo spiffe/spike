@@ -237,6 +237,27 @@ manager such as an OIDC provider.
 and identity management to established standards like OIDC, keeping 
 authentication concerns out of scope.
 
+## Security of SPIKE Binaries
+
+**SPIKE** takes several measures to ensure the security of its binary 
+distributions:
+
+* **Symbol Stripping**: Release binaries have symbols stripped to reduce attack 
+  surface and minimize information leakage that could be used in exploitation 
+  attempts.
+* **Cryptographic Verification**: All official SPIKE releases include SHA256
+  checksums that users should verify before installation. This ensures the 
+  integrity of the binaries and confirms they haven't been tampered with during
+  distribution. 
+  * **Verification Process**: Users can verify the integrity of downloaded 
+    binaries using the following command: `sha256sum -c spike-v$version.sha256`.
+    Or, on macOS: `shasum -a 256 -c spike-v0.4.0.sha256`.
+* **Transparency**: All release artifacts and their corresponding checksums are 
+  publicly available on [the official GitHub releases page][releases], 
+  allowing for community verification and trust.
+
+[releases]: https://github.com/spiffe/spike/releases "SPIKE Releases"
+
 ----
 
 {{ toc_architecture() }}

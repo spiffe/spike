@@ -7,6 +7,7 @@ package operator
 import (
 	"encoding/hex"
 	"fmt"
+	"github.com/spiffe/spike/app/spike/internal/env"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -61,7 +62,7 @@ func newOperatorRecoverCommand(
 		Use:   "recover",
 		Short: "Recover SPIKE Nexus (do this while SPIKE Nexus is healthy)",
 		Run: func(cmd *cobra.Command, args []string) {
-			if !spiffeid.IsPilotRecover(spiffeId) {
+			if !spiffeid.IsPilotRecover(env.TrustRoot(), spiffeId) {
 				fmt.Println("")
 				fmt.Println("  You need to have a `recover` role to use this command.")
 				fmt.Println(

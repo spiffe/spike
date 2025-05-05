@@ -7,6 +7,7 @@ package operator
 import (
 	"encoding/hex"
 	"fmt"
+	"github.com/spiffe/spike/app/spike/internal/env"
 	"os"
 	"strconv"
 	"strings"
@@ -64,7 +65,7 @@ func newOperatorRestoreCommand(
 		Use:   "restore",
 		Short: "Restore SPIKE Nexus (do this if SPIKE Nexus cannot auto-recover)",
 		Run: func(cmd *cobra.Command, args []string) {
-			if !spiffeid.IsPilotRestore(spiffeId) {
+			if !spiffeid.IsPilotRestore(env.TrustRoot(), spiffeId) {
 				fmt.Println("")
 				fmt.Println(
 					"  You need to have a `restore` role to use this command.")

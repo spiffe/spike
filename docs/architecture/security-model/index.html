@@ -206,26 +206,14 @@
                                                 <li>
                                                         <a href="https://spike.ist/architecture/security-model/#multi-admin-support">Multi-Admin Support</a>
                                                     </li>
+                                                <li>
+                                                        <a href="https://spike.ist/architecture/security-model/#security-of-spike-binaries">Security of SPIKE Binaries</a>
+                                                    </li>
                                                 </ul>
                                         </li>
                                 </ul>
                         <li >
                     <a href="https://spike.ist/architecture/architectural-decision-records/">ADRs</a>
-                </li>
-
-                </ul>
-    <input class="tree-toggle" type="checkbox" id="tracking"
-               />
-        <label class="tree-toggle-label "
-               for="tracking">Tracking</label>
-
-        <ul class="subtree">
-            <li >
-                    <a href="https://spike.ist/tracking/changelog/">Changelog</a>
-                </li>
-
-                <li >
-                    <a href="https://spike.ist/tracking/snapshots/">Documentation Snapshots</a>
                 </li>
 
                 </ul>
@@ -249,6 +237,21 @@
 
                 <li >
                     <a href="https://spike.ist/operations/release/">SPIKE Relase Management</a>
+                </li>
+
+                </ul>
+    <input class="tree-toggle" type="checkbox" id="tracking"
+               />
+        <label class="tree-toggle-label "
+               for="tracking">Tracking</label>
+
+        <ul class="subtree">
+            <li >
+                    <a href="https://spike.ist/tracking/changelog/">Changelog</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/tracking/snapshots/">Documentation Snapshots</a>
                 </li>
 
                 </ul>
@@ -959,6 +962,27 @@ manager such as an OIDC provider.</p>
 <p><strong>SPIKE</strong> focuses on secure and efficient secret storage. It delegates access
 and identity management to established standards like OIDC, keeping
 authentication concerns out of scope.</p>
+<h2 id="security-of-spike-binaries">Security of SPIKE Binaries</h2>
+<p><strong>SPIKE</strong> takes several measures to ensure the security of its binary
+distributions:</p>
+<ul>
+<li><strong>Symbol Stripping</strong>: Release binaries have symbols stripped to reduce attack
+surface and minimize information leakage that could be used in exploitation
+attempts.</li>
+<li><strong>Cryptographic Verification</strong>: All official SPIKE releases include SHA256
+checksums that users should verify before installation. This ensures the
+integrity of the binaries and confirms they haven’t been tampered with during
+distribution.
+<ul>
+<li><strong>Verification Process</strong>: Users can verify the integrity of downloaded
+binaries using the following command: <code>sha256sum -c spike-v$version.sha256</code>.
+Or, on macOS: <code>shasum -a 256 -c spike-v0.4.0.sha256</code>.</li>
+</ul>
+</li>
+<li><strong>Transparency</strong>: All release artifacts and their corresponding checksums are
+publicly available on <a href="https://github.com/spiffe/spike/releases" title="SPIKE Releases">the official GitHub releases page</a>,
+allowing for community verification and trust.</li>
+</ul>
 <hr />
 <ul>
 <li><a href="https://spike.ist/architecture/system-overview/"><strong>SPIKE</strong> System Overview</a></li>

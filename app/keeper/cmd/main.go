@@ -8,16 +8,14 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/spiffe/spike-sdk-go/net"
 	"github.com/spiffe/spike-sdk-go/security/mem"
 	"github.com/spiffe/spike-sdk-go/spiffe"
 	"github.com/spiffe/spike-sdk-go/spiffeid"
 
 	"github.com/spiffe/spike/app/keeper/internal/env"
-	http "github.com/spiffe/spike/app/keeper/internal/route/base"
+	"github.com/spiffe/spike/app/keeper/internal/net"
 	"github.com/spiffe/spike/internal/config"
 	"github.com/spiffe/spike/internal/log"
-	routing "github.com/spiffe/spike/internal/net"
 )
 
 const appName = "SPIKE Keeper"
@@ -47,7 +45,7 @@ func main() {
 	defer spiffe.CloseSource(source)
 
 	// I should be a SPIKE Keeper.
-	if !spiffeid.IsKeeper(selfSpiffeid) {
+	if !spiffeid.IsKeeper(env.TrustRoot(), selfSpiffeid) {
 		log.FatalF("Authenticate: SPIFFE ID %s is not valid.\n", selfSpiffeid)
 	}
 
@@ -56,12 +54,6 @@ func main() {
 		fmt.Sprintf("Started service: %s v%s", appName, config.SpikeKeeperVersion),
 	)
 
-	if err := net.ServeWithPredicate(
-		source,
-		func() { routing.HandleRoute(http.Route) },
-		spiffeid.PeerCanTalkToKeeper,
-		env.TlsPort(),
-	); err != nil {
-		log.FatalF("%s: Failed to serve: %s\n", appName, err.Error())
-	}
+	// Serve the app:
+	net.Serve(appName, source)
 }
