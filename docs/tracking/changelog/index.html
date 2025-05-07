@@ -171,29 +171,6 @@
                 </li>
 
                 </ul>
-    <input class="tree-toggle" type="checkbox" id="operations"
-               />
-        <label class="tree-toggle-label "
-               for="operations">Operations</label>
-
-        <ul class="subtree">
-            <li >
-                    <a href="https://spike.ist/operations/build/">SPIKE Cross-Platform Build</a>
-                </li>
-
-                <li >
-                    <a href="https://spike.ist/operations/production/">SPIKE Production Setup</a>
-                </li>
-
-                <li >
-                    <a href="https://spike.ist/operations/recovery/">SPIKE Recovery Procedures</a>
-                </li>
-
-                <li >
-                    <a href="https://spike.ist/operations/release/">SPIKE Relase Management</a>
-                </li>
-
-                </ul>
     <input class="tree-toggle" type="checkbox" id="tracking"
                checked/>
         <label class="tree-toggle-label "
@@ -237,6 +214,29 @@
                                 </ul>
                         <li >
                     <a href="https://spike.ist/tracking/snapshots/">Documentation Snapshots</a>
+                </li>
+
+                </ul>
+    <input class="tree-toggle" type="checkbox" id="operations"
+               />
+        <label class="tree-toggle-label "
+               for="operations">Operations</label>
+
+        <ul class="subtree">
+            <li >
+                    <a href="https://spike.ist/operations/build/">SPIKE Cross-Platform Build</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/operations/production/">SPIKE Production Setup</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/operations/recovery/">SPIKE Recovery Procedures</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/operations/release/">SPIKE Relase Management</a>
                 </li>
 
                 </ul>
@@ -743,6 +743,11 @@ store. Now it does.</li>
 SPIKE Keeper, which already had memory locking)</li>
 <li>Finer control of the startup script via flags.</li>
 <li>BREAKING: SDK validation methods now take trust root as an argument.</li>
+<li>BREAKING: SPIKE_NEXUS_KEEPER_URL is now a comma-delimited list of URLs
+(instead of JSON).</li>
+<li>SPIKE components can now be configured to accept multiple trust roots as
+legitimate peers—this will be useful in complex mesh and federation
+deployment scenarios.</li>
 </ul>
 <h2 id="0-4-0-2025-04-16">[0.4.0] - 2025-04-16</h2>
 <h3 id="added">Added</h3>

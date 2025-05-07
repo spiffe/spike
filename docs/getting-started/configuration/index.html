@@ -174,6 +174,21 @@
                 </li>
 
                 </ul>
+    <input class="tree-toggle" type="checkbox" id="tracking"
+               />
+        <label class="tree-toggle-label "
+               for="tracking">Tracking</label>
+
+        <ul class="subtree">
+            <li >
+                    <a href="https://spike.ist/tracking/changelog/">Changelog</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/tracking/snapshots/">Documentation Snapshots</a>
+                </li>
+
+                </ul>
     <input class="tree-toggle" type="checkbox" id="operations"
                />
         <label class="tree-toggle-label "
@@ -194,21 +209,6 @@
 
                 <li >
                     <a href="https://spike.ist/operations/release/">SPIKE Relase Management</a>
-                </li>
-
-                </ul>
-    <input class="tree-toggle" type="checkbox" id="tracking"
-               />
-        <label class="tree-toggle-label "
-               for="tracking">Tracking</label>
-
-        <ul class="subtree">
-            <li >
-                    <a href="https://spike.ist/tracking/changelog/">Changelog</a>
-                </li>
-
-                <li >
-                    <a href="https://spike.ist/tracking/snapshots/">Documentation Snapshots</a>
                 </li>
 
                 </ul>
@@ -711,7 +711,7 @@
 configure the SPIKE components:</p>
 <table><thead><tr><th>Component</th><th>Environment Variable</th><th>Description</th><th>Default Value</th></tr></thead><tbody>
 <tr><td>SPIKE Keeper</td><td><code>SPIKE_KEEPER_TLS_PORT</code></td><td>The TLS port the current SPIKE Keeper instance listens on.</td><td><code>":8443"</code></td></tr>
-<tr><td>SPIKE Nexus</td><td><code>SPIKE_NEXUS_KEEPER_PEERS</code></td><td>A mapping that contains <code>[{id:keeperurl}]</code> collection for all SPIKE Keepers that SPIKE Nexus knows about. The ids should start from <code>1</code> and monotonically increase.</td><td>“” (check <code>./hack/start-nexus.sh</code> for usage examples.</td></tr>
+<tr><td>SPIKE Nexus</td><td><code>SPIKE_NEXUS_KEEPER_PEERS</code></td><td>A mapping that contains a comma-delimited list of URLs for all SPIKE Keepers that SPIKE Nexus knows about.</td><td>“” (check <code>./hack/start-nexus.sh</code> for usage examples.</td></tr>
 <tr><td>SPIKE Nexus</td><td><code>SPIKE_NEXUS_TLS_PORT</code></td><td>The TLS port SPIKE Nexus listens on.</td><td><code>":8553"</code></td></tr>
 <tr><td>SPIKE Nexus</td><td><code>SPIKE_NEXUS_MAX_SECRET_VERSIONS</code></td><td>The maximum number of versions of a secret that SPIKE Nexus stores.</td><td><code>10</code></td></tr>
 <tr><td>SPIKE Nexus</td><td><code>SPIKE_NEXUS_BACKEND_STORE</code></td><td>The backend store SPIKE Nexus uses to store secrets (memory, s3, sqlite).</td><td><code>"sqlite"</code></td></tr>
