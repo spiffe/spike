@@ -19,6 +19,8 @@ sort_by = "weight"
   SPIKE Keeper, which already had memory locking)
 * Finer control of the startup script via flags.
 * BREAKING: SDK validation methods now take trust root as an argument.
+* BREAKING: SPIKE_NEXUS_KEEPER_URL is now a comma-delimited list of URLs
+  (instead of JSON).
 * SPIKE components can now be configured to accept multiple trust roots as
   legitimate peers---this will be useful in complex mesh and federation
   deployment scenarios.

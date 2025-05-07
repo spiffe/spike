@@ -232,6 +232,21 @@
                 </li>
 
                 </ul>
+    <input class="tree-toggle" type="checkbox" id="tracking"
+               />
+        <label class="tree-toggle-label "
+               for="tracking">Tracking</label>
+
+        <ul class="subtree">
+            <li >
+                    <a href="https://spike.ist/tracking/changelog/">Changelog</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/tracking/snapshots/">Documentation Snapshots</a>
+                </li>
+
+                </ul>
     <input class="tree-toggle" type="checkbox" id="operations"
                />
         <label class="tree-toggle-label "
@@ -252,21 +267,6 @@
 
                 <li >
                     <a href="https://spike.ist/operations/release/">SPIKE Relase Management</a>
-                </li>
-
-                </ul>
-    <input class="tree-toggle" type="checkbox" id="tracking"
-               />
-        <label class="tree-toggle-label "
-               for="tracking">Tracking</label>
-
-        <ul class="subtree">
-            <li >
-                    <a href="https://spike.ist/tracking/changelog/">Changelog</a>
-                </li>
-
-                <li >
-                    <a href="https://spike.ist/tracking/snapshots/">Documentation Snapshots</a>
                 </li>
 
                 </ul>
@@ -1002,12 +1002,9 @@ window.</p>
 </span></code></pre>
 <p>And here is how <strong>SPIKE Nexus</strong> startup script looks like:</p>
 <pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># ./hack/start-nexus.sh
-</span><span style="color:#bf616a;">SPIKE_NEXUS_KEEPER_PEERS</span><span>=&#39;</span><span style="color:#a3be8c;">{\
-</span><span style="color:#a3be8c;">  &quot;1&quot;:&quot;https://localhost:8443&quot;,\
-</span><span style="color:#a3be8c;">  &quot;2&quot;:&quot;https://localhost:8543&quot;,\
-</span><span style="color:#a3be8c;">  &quot;3&quot;:&quot;https://localhost:8643&quot;\
-</span><span style="color:#a3be8c;">}</span><span>&#39;</span><span style="color:#a3be8c;">\
-</span><span style="color:#a3be8c;">./nexus
+</span><span style="color:#bf616a;">SPIKE_NEXUS_KEEPER_PEERS</span><span>=&#39;</span><span style="color:#a3be8c;">https://localhost:8443,\
+</span><span style="color:#a3be8c;">https://localhost:8543,https://localhost:8643</span><span>&#39;
+</span><span style="color:#bf616a;">./nexus
 </span></code></pre>
 <blockquote>
 <p><strong>Sequential SPIKE Keeper IDs</strong></p>
