@@ -6,7 +6,7 @@
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <link rel="icon" href="https://spike.ist/assets/spike-favicon-16x16.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
-    <title> SPIKE | spike secret </title>
+    <title> SPIKE | SPIKE Backup and Restore </title>
 </head>
 <body>
 
@@ -107,7 +107,7 @@
     }
 </style> <div id="trees">
     <input class="tree-toggle" type="checkbox" id="getting-started"
-               checked/>
+               />
         <label class="tree-toggle-label "
                for="getting-started">Getting Started</label>
 
@@ -187,7 +187,7 @@
 
                 </ul>
     <input class="tree-toggle" type="checkbox" id="operations"
-               />
+               checked/>
         <label class="tree-toggle-label "
                for="operations">Operations</label>
 
@@ -204,11 +204,39 @@
                     <a href="https://spike.ist/operations/recovery/">SPIKE Recovery Procedures</a>
                 </li>
 
-                <li >
+                <li class="active">
                     <a href="https://spike.ist/operations/backup/">SPIKE Backup and Restore</a>
                 </li>
 
-                <li >
+                
+                        
+                        
+                            <ul id="toc">
+                                <li><a href="
+                                            https://spike.ist/operations/backup/#spike-backup-and-restore-guide">SPIKE Backup and Restore Guide</a>
+                                        <ul>
+                                                <li>
+                                                        <a href="https://spike.ist/operations/backup/#architecture-foundations-for-effective-backup-planning">Architecture Foundations for Effective Backup Planning</a>
+                                                    </li>
+                                                <li>
+                                                        <a href="https://spike.ist/operations/backup/#backup-procedures">Backup procedures</a>
+                                                    </li>
+                                                <li>
+                                                        <a href="https://spike.ist/operations/backup/#restore-procedures">Restore procedures</a>
+                                                    </li>
+                                                <li>
+                                                        <a href="https://spike.ist/operations/backup/#backup-best-practices">Backup best practices</a>
+                                                    </li>
+                                                <li>
+                                                        <a href="https://spike.ist/operations/backup/#migration-limitations-and-planning">Migration Limitations and Planning</a>
+                                                    </li>
+                                                <li>
+                                                        <a href="https://spike.ist/operations/backup/#conclusion">Conclusion</a>
+                                                    </li>
+                                                </ul>
+                                        </li>
+                                </ul>
+                        <li >
                     <a href="https://spike.ist/operations/release/">SPIKE Relase Management</a>
                 </li>
 
@@ -706,264 +734,237 @@
 
         <article>
             
-        <h1 id="spike-secret"><code>spike secret</code></h1>
-<p>The <code>spike secret</code> command is the main entry point for managing <strong>secrets</strong> in
-<strong>SPIKE</strong>. It allows administrators to create, read, update, and delete secrets
-based on SPIFFE identities and corresponding access policies.</p>
-<h2 id="quick-start">Quick Start</h2>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># Store a new secret
-</span><span style="color:#bf616a;">spike</span><span> secret put secrets/app/config api_key=abc123 environment=production
-</span><span>
-</span><span style="color:#65737e;"># Retrieve a secret
-</span><span style="color:#bf616a;">spike</span><span> secret get secrets/app/config
-</span><span>
-</span><span style="color:#65737e;"># List all secrets
-</span><span style="color:#bf616a;">spike</span><span> secret list
-</span><span>
-</span><span style="color:#65737e;"># Delete a secret version
-</span><span style="color:#bf616a;">spike</span><span> secret delete secrets/app/config
-</span></code></pre>
-<h2 id="what-are-spike-secrets">What are SPIKE Secrets?</h2>
-<p>Secrets in <strong>SPIKE</strong> are sensitive pieces of information that need to be
-securely stored, accessed, and managed. Each secret:</p>
-<ul>
-<li>Is stored at a specific <strong>path</strong></li>
-<li>Contains one or more <strong>key-value pairs</strong></li>
-<li>Has <strong>version history</strong> for auditing and recovery</li>
-<li>Is protected by <strong>access policies</strong> based on workload identity</li>
-</ul>
-<p>Secrets are the core data objects managed by <strong>SPIKE</strong>, providing a secure way
-to distribute sensitive configuration data, credentials, and other confidential
-information to authorized workloads based on their SPIFFE identities.</p>
-<h3 id="how-secrets-work">How Secrets Work</h3>
-<p>When a workload attempts to access a secret in SPIKE:</p>
+        <h1 id="spike-backup-and-restore-guide">SPIKE Backup and Restore Guide</h1>
+<p><strong>SPIKE</strong>, the Secure Production Identity Framework for Key Encryption, provides
+robust secrets management with strong identity controls. But even the most
+reliable systems need comprehensive backup and recovery plans. This guide
+explains how to properly back up, secure, and restore SPIKE deployments—ensuring
+your critical secrets infrastructure remains resilient against catastrophic
+failures.</p>
+<h2 id="architecture-foundations-for-effective-backup-planning">Architecture Foundations for Effective Backup Planning</h2>
+<p>SPIKE consists of three critical components, each requiring specific backup
+considerations:</p>
 <ol>
-<li>The workload presents its <strong>SPIFFE ID</strong> through a SPIFFE Verifiable Identity
-Document (<strong>SVID</strong>)</li>
-<li><strong>SPIKE</strong> validates the <strong>SVID</strong> to verify the workload’s identity</li>
-<li><strong>SPIKE</strong> checks if any policy allows the workload to access the requested
-secret path</li>
-<li>If authorized, the secret is securely delivered to the workload</li>
+<li>
+<p><strong>SPIKE Nexus</strong>: The central component handling secret encryption/decryption
+and root key management. It stores encrypted secrets in a SQLite database
+and communicates via an mTLS API.</p>
+</li>
+<li>
+<p><strong>SPIKE Keeper</strong>: A redundancy mechanism holding Shamir Secret Sharing shards
+of the root key in memory. Multiple Keeper instances provide resiliency,
+requiring a configurable threshold of shards to reconstruct the root key.</p>
+</li>
+<li>
+<p><strong>SPIKE Pilot</strong>: The CLI interface that translates administrative commands
+into mTLS API calls to <strong>SPIKE Nexus</strong>.</p>
+</li>
 </ol>
-<p>This ensures that only authorized workloads can access specific secrets based on
-their verified identity, following zero-trust security principles.</p>
-<h2 id="path-syntax-and-conventions">Path Syntax and Conventions</h2>
-<p>Secret paths in <strong>SPIKE</strong> have specific syntax requirements and recommended
-conventions to ensure consistency and avoid common pitfalls.</p>
-<h3 id="path-format-requirements">Path Format Requirements</h3>
-<p>All secret paths must match the regex pattern:</p>
-<pre style="background-color:#2b303b;color:#c0c5ce;"><code><span>^[a-zA-Z0-9._\-/()?+*|[\]{}\\]+$
-</span></code></pre>
-<p>This pattern allows alphanumeric characters, dots, underscores, hyphens, forward
-slashes, parentheses, question marks, plus signs, asterisks, pipes, square
-brackets, curly braces, and backslashes.</p>
-<h3 id="path-format-recommendations">Path Format Recommendations</h3>
-<p>While the validation requirements allow for flexibility, the following
-conventions are strongly recommended:</p>
+<p>The foundation of SPIKE’s security model lies in its root key management:</p>
 <ul>
-<li><strong>Avoid leading slashes</strong>: Paths should not start with a forward slash (<code>/</code>)</li>
-<li><strong>Use forward slashes</strong> to create hierarchical structures (like a file system)</li>
-<li><strong>Use descriptive, hierarchical naming</strong> to organize secrets logically</li>
-<li><strong>Avoid double slashes</strong> or other ambiguous path constructions</li>
-<li><strong>Avoid special characters</strong> when possible, even if they are technically allowed</li>
+<li>The <strong>root key</strong> encrypts all data in the backing store and <strong>never</strong> exists
+on disk in plaintext</li>
+<li>The system splits the root key into multiple Shamir shards based on a
+configurable threshold (<em>e.g., any 2 of 3 or 3 of 5 shards needed to
+reconstruct</em>)</li>
+<li><strong>SPIKE Keeper</strong>s hold these shards in memory for automatic recovery if
+<strong>SPIKE Nexus</strong> crashes</li>
+<li>For disaster recovery scenarios, administrators can create additional recovery
+shards</li>
 </ul>
-<h3 id="example-valid-paths">Example Valid Paths</h3>
-<ul>
-<li>✅ <code>secrets/myapp/config</code> - Clear hierarchy, no leading slash</li>
-<li>✅ <code>secrets/db-creds/admin-user</code> - Well-structured with hyphens</li>
-<li>✅ <code>tenantA/projectX/env1/key</code> - Multi-level organization</li>
-</ul>
-<h3 id="example-invalid-or-discouraged-paths">Example Invalid or Discouraged Paths</h3>
-<ul>
-<li>❌ <code>/secrets/myapp/config</code> - Avoid leading slashes</li>
-<li>❌ <code>secrets//double-slash</code> - Avoid double slashes</li>
-<li>❌ <code>secret\path</code> - Avoid backslashes (use forward slashes)</li>
-<li>❌ <code>secret path/with space</code> - Avoid spaces</li>
-<li>❌ <code>secret#invalid?path</code> - Avoid URL-reserved characters when possible</li>
-</ul>
-<h3 id="best-path-practices">Best Path Practices</h3>
-<ul>
-<li>Use consistent prefixes like <code>secrets/</code> or <code>credentials/</code> as the first segment</li>
-<li>Organize paths by application, service, or environment</li>
-<li>Include version indicators in the path for managed rotation (e.g., <code>secrets/database/v1/credentials</code>)</li>
-<li>Use clear, descriptive names that indicate the purpose of the secret</li>
-<li>Keep paths reasonably short while maintaining clarity</li>
-</ul>
-<h3 id="path-examples">Path Examples</h3>
-<pre style="background-color:#2b303b;color:#c0c5ce;"><code><span>secrets/app/config                # Application configuration
-</span><span>secrets/database/production/creds # Production database credentials
-</span><span>secrets/certificates/tls          # TLS certificates
-</span><span>secrets/api/external/stripe/key   # External API credentials with service name
-</span></code></pre>
-<h2 id="best-practices">Best Practices</h2>
-<ul>
-<li>Organize secrets hierarchically with descriptive paths</li>
-<li>Use separate paths for different environments (dev, staging, production)</li>
-<li>Limit the number of key-value pairs in a single secret for better management</li>
-<li>Use version history for auditing and rollback capability</li>
-<li>Create specific policies that grant the minimum required access to each secret path</li>
-<li>Regularly rotate sensitive secrets like API keys and passwords</li>
-<li>Use secret delete and undelete for safe secret lifecycle management</li>
-<li>Validate paths are properly formatted and follow naming conventions</li>
-</ul>
-<h2 id="security-considerations">Security Considerations</h2>
-<ul>
-<li>Each secret access is authenticated and authorized based on workload identity</li>
-<li>Version history allows for audit trails and secure secret rotation</li>
-<li>Deleted secrets can be recovered if needed</li>
-<li>Secret access is controlled by the <code>spike policy</code> permissions system</li>
-</ul>
-<h2 id="features">Features</h2>
-<ul>
-<li><strong>Store secrets</strong> as key-value pairs at specific paths</li>
-<li><strong>Retrieve secrets</strong> with full or partial key selection</li>
-<li><strong>List available secrets</strong> across the system</li>
-<li><strong>Delete and undelete secret versions</strong> for lifecycle management</li>
-<li><strong>View secret metadata</strong> to track changes and versioning</li>
-<li><strong>Path validation</strong> to ensure proper secret organization</li>
-</ul>
-<h2 id="commands">Commands</h2>
-<h3 id="spike-secret-list"><code>spike secret list</code></h3>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">spike</span><span> secret list
-</span></code></pre>
-<p>Lists all available secret paths in the system. Displays paths in a readable
-format.</p>
-<h3 id="spike-secret-put"><code>spike secret put</code></h3>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">spike</span><span> secret put &lt;path&gt; &lt;key=value&gt;...
-</span></code></pre>
-<p>Stores key-value pairs as a secret at the specified path. Multiple key-value
-pairs can be specified.</p>
-<h4 id="examples">Examples:</h4>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># Store a single key-value pair
-</span><span style="color:#bf616a;">spike</span><span> secret put secrets/database/creds username=admin
+<h2 id="backup-procedures">Backup procedures</h2>
+<h3 id="sqlite-database-backup">SQLite database backup</h3>
+<p>The SPIKE Nexus uses a SQLite database to store all encrypted secrets and
+metadata. This database is typically located in <code>~/.spike</code> on the Nexus server.</p>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># 1. First, ensure consistent state by using SQLite&#39;s online backup API
+</span><span style="color:#bf616a;">sqlite3 ~</span><span>/.spike/database.sqlite \
+</span><span>  &quot;</span><span style="color:#a3be8c;">.backup &#39;/backup/spike_nexus_db_</span><span>$</span><span style="color:#a3be8c;">(</span><span style="color:#bf616a;">date</span><span style="color:#a3be8c;"> +</span><span>%</span><span style="color:#bf616a;">Y</span><span>%</span><span style="color:#bf616a;">m</span><span>%</span><span style="color:#bf616a;">d_</span><span>%</span><span style="color:#bf616a;">H</span><span>%</span><span style="color:#bf616a;">M</span><span>%</span><span style="color:#bf616a;">S</span><span style="color:#a3be8c;">).sqlite&#39;</span><span>&quot;
 </span><span>
-</span><span style="color:#65737e;"># Store multiple key-value pairs in one command
-</span><span style="color:#bf616a;">spike</span><span> secret put secrets/application/config host=localhost port=8080 debug=true
+</span><span style="color:#65737e;"># 2. For WAL mode databases, checkpoint first to ensure consistency
+</span><span style="color:#bf616a;">sqlite3 ~</span><span>/.spike/database.sqlite &quot;</span><span style="color:#a3be8c;">PRAGMA wal_checkpoint(FULL);</span><span>&quot;
+</span><span style="color:#bf616a;">sqlite3 ~</span><span>/.spike/database.sqlite \
+</span><span>  &quot;</span><span style="color:#a3be8c;">.backup &#39;/backup/spike_nexus_db_</span><span>$</span><span style="color:#a3be8c;">(</span><span style="color:#bf616a;">date</span><span style="color:#a3be8c;"> +</span><span>%</span><span style="color:#bf616a;">Y</span><span>%</span><span style="color:#bf616a;">m</span><span>%</span><span style="color:#bf616a;">d_</span><span>%</span><span style="color:#bf616a;">H</span><span>%</span><span style="color:#bf616a;">M</span><span>%</span><span style="color:#bf616a;">S</span><span style="color:#a3be8c;">).sqlite&#39;</span><span>&quot;
+</span><span>
+</span><span style="color:#65737e;"># 3. Verify backup integrity
+</span><span style="color:#bf616a;">sqlite3</span><span> /backup/spike_nexus_db_*.sqlite &quot;</span><span style="color:#a3be8c;">PRAGMA integrity_check;</span><span>&quot;
 </span></code></pre>
-<h3 id="spike-secret-get"><code>spike secret get</code></h3>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">spike</span><span> secret get &lt;path&gt; </span><span style="color:#b48ead;">[</span><span>--version=&lt;version&gt;</span><span style="color:#b48ead;">]
+<p><strong>Important considerations:</strong></p>
+<ul>
+<li>The SQLite database backup contains encrypted data that can only be decrypted
+with the root key</li>
+<li>Use database-level locking through SQLite’s <code>.backup</code> command rather than
+direct file copying</li>
+</ul>
+<h3 id="root-key-and-cryptographic-material-backup">Root key and cryptographic material backup</h3>
+<p>The root key is <strong>SPIKE</strong>’s most critical component. While it exists only in
+memory during normal operation, you must back it up for disaster recovery using
+Shamir’s Secret Sharing:</p>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># Create recovery shards of the root key
+</span><span style="color:#65737e;"># IMPORTANT: Run this BEFORE any disaster occurs
+</span><span style="color:#bf616a;">spike</span><span> recover
+</span><span>
+</span><span style="color:#65737e;"># This will generate multiple shard files under `~/.spike/recovery` folder. 
 </span></code></pre>
-<p>Retrieves and displays the key-value pairs stored at the specified secret path.
-By default, it returns the current (latest) version, but a specific version can
-be requested.</p>
-<h4 id="flags">Flags:</h4>
-<table><thead><tr><th>Flag</th><th>Description</th></tr></thead><tbody>
-<tr><td><code>--version</code>, <code>-v</code></td><td>Specific version to retrieve (default: 0, the current version)</td></tr>
+<p><strong>Secure handling of recovery shards:</strong></p>
+<ol>
+<li>Encrypt each shard immediately after creation (<em>e.g., using GPG with
+hardware keys</em>)</li>
+<li>Store encrypted shards in separate secure locations</li>
+<li>Consider using HSMs or smart cards for shard storage</li>
+<li>Implement strict access controls for shard access</li>
+<li>Document the threshold configuration (<em>e.g., “2 of 3 shards required”</em>)</li>
+</ol>
+<h3 id="configuration-and-other-components-backup">Configuration and other components backup</h3>
+<p>Beyond the database and root key, back up these critical components:</p>
+<ol>
+<li>
+<p><strong>SPIRE Server</strong> and <strong>SPIRE Agent</strong> configuration.</p>
+</li>
+<li>
+<p>SPIFFE registration entries:</p>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># Back up SPIFFE registration entries
+</span><span style="color:#bf616a;">spire-server</span><span> entry show &gt; /backup/spire_entries_$(</span><span style="color:#bf616a;">date</span><span> +%</span><span style="color:#bf616a;">Y</span><span>%</span><span style="color:#bf616a;">m</span><span>%</span><span style="color:#bf616a;">d</span><span>).txt
+</span></code></pre>
+</li>
+</ol>
+<h2 id="restore-procedures">Restore procedures</h2>
+<h3 id="prerequisites-for-restoration">Prerequisites for Restoration</h3>
+<p>Before beginning any restore operation, ensure:</p>
+<ol>
+<li>
+<p>You have all necessary components:</p>
+<ul>
+<li>SQLite database backup</li>
+<li>Access to the required number of recovery shards (<em>meeting your threshold</em>)</li>
+<li>SPIFFE/SPIRE configuration backups</li>
+</ul>
+</li>
+<li>
+<p>You have the appropriate SPIFFE identity for restoration:</p>
+<ul>
+<li>Required SPIFFE ID: <code>spiffe://$trustRoot/spike/pilot/role/restore</code></li>
+</ul>
+</li>
+<li>
+<p>All <strong>SPIKE</strong> services are properly installed on the target system</p>
+</li>
+</ol>
+<h3 id="root-key-restoration">Root key restoration</h3>
+<p>If both <strong>SPIKE Nexus</strong> and all <strong>SPIKE Keeper</strong>s are unavailable
+(<em>catastrophic failure</em>), follow this procedure:</p>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># 1. Configure SPIKE Pilot for restore operations 
+</span><span style="color:#65737e;"># (adjust the script path for your environment)
+</span><span style="color:#bf616a;">./hack/spire-server-entry-restore-register.sh
+</span><span>
+</span><span style="color:#65737e;"># 2. Run the restore command
+</span><span style="color:#bf616a;">spike</span><span> restore
+</span><span>
+</span><span style="color:#65737e;"># 3. When prompted, provide recovery shards one at a time
+</span><span style="color:#65737e;"># You&#39;ll need to provide enough shards to meet your threshold (e.g., 2 of 3)
+</span><span>
+</span><span style="color:#65737e;"># 4. After successful restoration, revert SPIKE Pilot to normal operation
+</span><span style="color:#bf616a;">./hack/spire-server-entry-su-register.sh
+</span></code></pre>
+<p>SPIKE Nexus will:</p>
+<ul>
+<li>Automatically reconstruct the root key from the provided shards</li>
+<li>Redistribute shards to available SPIKE Keeper instances</li>
+<li>Resume normal operation with the restored key</li>
+</ul>
+<h3 id="sqlite-database-restoration">SQLite database restoration</h3>
+<p>To restore the SQLite database:</p>
+<ol>
+<li>
+<p>Stop <strong>SPIKE Nexus</strong>.</p>
+</li>
+<li>
+<p>Replace the current database with the backup.</p>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">cp</span><span> /backup/spike_nexus_db_TIMESTAMP.sqlite \
+</span><span>  </span><span style="color:#bf616a;">~</span><span>/.spike/database.sqlite
+</span><span>
+</span></code></pre>
+</li>
+<li>
+<p>Set appropriate permissions</p>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">chown</span><span> spike:spike </span><span style="color:#bf616a;">~</span><span>/.spike/database.sqlite
+</span><span style="color:#bf616a;">chmod</span><span> 600 </span><span style="color:#bf616a;">~</span><span>/.spike/database.sqlite
+</span></code></pre>
+</li>
+<li>
+<p>Start <strong>SPIKE Nexus</strong></p>
+</li>
+</ol>
+<p><strong>Note</strong>: After restoring the database, if <strong>SPIKE Nexus</strong> cannot automatically
+recover the root key from <strong>SPIKE Keeper</strong>s, you’ll need to perform the root
+key restoration procedure above.</p>
+<h3 id="verification-procedures">Verification procedures</h3>
+<p>After completing a restore operation, verify system integrity:</p>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># Verify database integrity
+</span><span style="color:#bf616a;">sqlite3 ~</span><span>/.spike/database.sqlite &quot;</span><span style="color:#a3be8c;">PRAGMA integrity_check;</span><span>&quot;
+</span><span>
+</span><span style="color:#65737e;"># Test secret access to verify encryption/decryption is working
+</span><span style="color:#bf616a;">spike</span><span> get /path/to/test/secret
+</span></code></pre>
+<h2 id="backup-best-practices">Backup best practices</h2>
+<h3 id="backup-frequency-and-scheduling">Backup frequency and scheduling</h3>
+<table><thead><tr><th>Component</th><th>Recommended Frequency</th><th>Reasoning</th></tr></thead><tbody>
+<tr><td>SQLite Database</td><td>Daily</td><td>Captures secret changes promptly</td></tr>
+<tr><td>Root Key Shards</td><td>After initial setup and after any root key rotation</td><td>Critical security component</td></tr>
+<tr><td>Configuration</td><td>After any configuration change</td><td>Ensures you can recreate the environment</td></tr>
+<tr><td>SPIFFE Entries</td><td>After any identity changes</td><td>Required for workload authentication</td></tr>
 </tbody></table>
-<h4 id="examples-1">Examples:</h4>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># Get the current version of a secret
-</span><span style="color:#bf616a;">spike</span><span> secret get secrets/database/creds
-</span><span>
-</span><span style="color:#65737e;"># Get a specific version of a secret
-</span><span style="color:#bf616a;">spike</span><span> secret get secrets/database/creds</span><span style="color:#bf616a;"> --version</span><span>=2
-</span></code></pre>
-<h3 id="spike-secret-delete"><code>spike secret delete</code></h3>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">spike</span><span> secret delete &lt;path&gt; </span><span style="color:#b48ead;">[</span><span>--versions=&lt;versions&gt;</span><span style="color:#b48ead;">]
-</span></code></pre>
-<p>Deletes one or more versions of a secret at the specified path.</p>
-<h4 id="flags-1">Flags:</h4>
-<table><thead><tr><th>Flag</th><th>Description</th></tr></thead><tbody>
-<tr><td><code>--versions</code>, <code>-v</code></td><td>Comma-separated list of versions to delete (default: 0, the current version)</td></tr>
-</tbody></table>
-<h4 id="examples-2">Examples:</h4>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># Delete the current version of a secret
-</span><span style="color:#bf616a;">spike</span><span> secret delete secrets/app/config
-</span><span>
-</span><span style="color:#65737e;"># Delete specific versions of a secret
-</span><span style="color:#bf616a;">spike</span><span> secret delete secrets/app/config</span><span style="color:#bf616a;"> --versions</span><span>=1,2,3
-</span><span>
-</span><span style="color:#65737e;"># Delete the current version plus specific versions
-</span><span style="color:#bf616a;">spike</span><span> secret delete secrets/app/config</span><span style="color:#bf616a;"> --versions</span><span>=0,1,2
-</span></code></pre>
-<h3 id="spike-secret-undelete"><code>spike secret undelete</code></h3>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">spike</span><span> secret undelete &lt;path&gt; </span><span style="color:#b48ead;">[</span><span>--versions=&lt;versions&gt;</span><span style="color:#b48ead;">]
-</span></code></pre>
-<p>Restores one or more previously deleted versions of a secret at the specified path.</p>
-<h4 id="flags-2">Flags:</h4>
-<table><thead><tr><th>Flag</th><th>Description</th></tr></thead><tbody>
-<tr><td><code>--versions</code>, <code>-v</code></td><td>Comma-separated list of versions to restore (default: 0, the current version)</td></tr>
-</tbody></table>
-<h4 id="examples-3">Examples:</h4>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># Restore the current version of a secret
-</span><span style="color:#bf616a;">spike</span><span> secret undelete secrets/app/config
-</span><span>
-</span><span style="color:#65737e;"># Restore specific versions of a secret
-</span><span style="color:#bf616a;">spike</span><span> secret undelete secrets/app/config</span><span style="color:#bf616a;"> --versions</span><span>=1,2,3
-</span><span>
-</span><span style="color:#65737e;"># Restore the current version plus specific versions
-</span><span style="color:#bf616a;">spike</span><span> secret undelete secrets/app/config</span><span style="color:#bf616a;"> --versions</span><span>=0,1,2
-</span></code></pre>
-<h3 id="spike-secret-metadata-get"><code>spike secret metadata get</code></h3>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">spike</span><span> secret metadata get &lt;path&gt; </span><span style="color:#b48ead;">[</span><span>--version=&lt;version&gt;</span><span style="color:#b48ead;">]
-</span></code></pre>
-<p>Retrieves and displays metadata for a secret, including creation time,
-modification time, version history, and other administrative information.</p>
-<h4 id="flags-3">Flags:</h4>
-<table><thead><tr><th>Flag</th><th>Description</th></tr></thead><tbody>
-<tr><td><code>--version</code>, <code>-v</code></td><td>Specific version to retrieve metadata for (default: 0, the current version)</td></tr>
-</tbody></table>
-<h4 id="examples-4">Examples:</h4>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># Get metadata for the current version of a secret
-</span><span style="color:#bf616a;">spike</span><span> secret metadata get secrets/database/creds
-</span><span>
-</span><span style="color:#65737e;"># Get metadata for a specific version of a secret
-</span><span style="color:#bf616a;">spike</span><span> secret metadata get secrets/database/creds</span><span style="color:#bf616a;"> --version</span><span>=2
-</span></code></pre>
-<h2 id="path-syntax">Path Syntax</h2>
-<p>Secret paths in <strong>SPIKE</strong> have specific syntax requirements and conventions:</p>
+<h3 id="backup-rotation-and-retention">Backup rotation and retention</h3>
+<p>Implement a comprehensive retention policy:</p>
 <ul>
-<li>Paths must match the regex pattern: <code>^[a-zA-Z0-9._\-/()?+*|[\]{}\\]+$</code></li>
-<li>Paths should not have a leading slash</li>
-<li>Using descriptive hierarchical paths is recommended for organization</li>
+<li><strong>Short-term backups</strong>: Keep daily backups for 14 days</li>
+<li><strong>Medium-term backups</strong>: Keep weekly backups for 3 months</li>
+<li><strong>Long-term backups</strong>: Keep monthly backups for 1 year</li>
 </ul>
-<h3 id="path-examples-1">Path Examples</h3>
-<pre style="background-color:#2b303b;color:#c0c5ce;"><code><span>secrets/app/config                # Application configuration
-</span><span>secrets/database/production/creds # Production database credentials
-</span><span>secrets/certificates/tls          # TLS certificates
-</span></code></pre>
-<h2 id="best-practices-1">Best Practices</h2>
+<blockquote>
+<p><strong>Test Your Backup Integrity</strong></p>
+<p>A backup that does not work when you need most is not a backup.
+Make sure you validate the integrity and efficacy of your backups
+regularly.</p>
+</blockquote>
+<h3 id="secure-storage-recommendations">Secure Storage Recommendations</h3>
+<p>For root key recovery shards:</p>
 <ul>
-<li>Organize secrets hierarchically with descriptive paths</li>
-<li>Use separate paths for different environments (dev, staging, production)</li>
-<li>Limit the number of key-value pairs in a single secret for better management</li>
-<li>Use version history for auditing and rollback capability</li>
-<li>Create specific policies that grant the minimum required access to each secret path</li>
-<li>Regularly rotate sensitive secrets like API keys and passwords</li>
-<li>Use secret delete and undelete for safe secret lifecycle management</li>
-<li>Validate paths are properly formatted and follow naming conventions</li>
+<li><strong>Multi-level security</strong>: Encrypt shards before storage</li>
+<li><strong>Physical separation</strong>: Store shards in different physical locations</li>
+<li><strong>Access controls</strong>: Implement strict controls with separation of duties</li>
+<li><strong>Hardware security</strong>: Consider HSMs or smart cards for shard storage</li>
+<li><strong>Environmental protection</strong>: Use fire/water-resistant safes for physical media</li>
 </ul>
-<h2 id="security-considerations-1">Security Considerations</h2>
+<p>For database backups:</p>
 <ul>
-<li>Each secret access is authenticated and authorized based on workload identity</li>
-<li>Version history allows for audit trails and secure secret rotation</li>
-<li>Deleted secrets can be recovered if needed</li>
-<li>Secret access is controlled by the <code>spike policy</code> permissions system</li>
+<li><strong>Encryption</strong>: Implement at-rest encryption for all backup files</li>
+<li><strong>Access limitations</strong>: Restrict backup access to authorized personnel only</li>
+<li><strong>Immutability</strong>: Consider WORM (Write Once Read Many) storage for critical backups</li>
+<li><strong>Offline copies</strong>: Maintain air-gapped copies of critical backups</li>
 </ul>
-<hr />
-<h2 id="spike-command-index"><code>spike</code> Command Index</h2>
+<h2 id="migration-limitations-and-planning">Migration Limitations and Planning</h2>
+<p>While <strong>SPIKE</strong> currently lacks built-in migration tools, careful planning can
+facilitate future migrations.</p>
+<h3 id="current-migration-limitations">Current migration limitations</h3>
 <ul>
-<li><a href="https://spike.ist/getting-started/commands/secret/"><code>spike secret</code></a>:  Manage secrets.</li>
-<li><a href="https://spike.ist/getting-started/commands/policy/"><code>spike policy</code></a>: Manage rules that
-control access to secrets.</li>
-<li><a href="https://spike.ist/getting-started/commands/operator/"><code>spike operator</code></a>: Administrative
-functionality for system operations and disaster recovery.</li>
+<li>No direct database migration between different SPIKE versions</li>
+<li>Manual coordination is required for root key transfers</li>
 </ul>
-<hr />
+<h2 id="conclusion">Conclusion</h2>
+<p>A comprehensive backup and restore strategy is essential for maintaining the
+resilience of your <strong>SPIKE</strong> deployment. By following the procedures in this
+guide, you can ensure that even in catastrophic failure scenarios, your secrets
+management infrastructure can be rapidly restored with minimal data loss.</p>
+<p>Remember these key principles:</p>
 <ul>
-<li><a href="https://spike.ist/getting-started/about/">About SPIKE</a></li>
-<li><a href="https://spike.ist/getting-started/guide/">SPIKE Quickstart Guide</a></li>
-<li><a href="https://spike.ist/getting-started/project-status/">Early Access Notice</a></li>
-<li><a href="https://spike.ist/getting-started/configuration/">Configuring SPIKE</a></li>
-<li><a href="https://spike.ist/getting-started/cli/">SPIKE CLI</a></li>
+<li><strong>Regular backups</strong>: Automated, validated, and securely stored</li>
+<li><strong>Root key protection</strong>: The foundation of your security model</li>
+<li><strong>Tested procedures</strong>: Verify your restore process works before you need it</li>
+<li><strong>Documentation</strong>: Keep clear records of all configurations and procedures</li>
 </ul>
-<hr />
-<ul>
-<li><a href="https://spike.ist/getting-started/">Getting Started</a></li>
-<li><a href="https://spike.ist/community/">Community</a></li>
-<li><a href="https://spike.ist/architecture/">SPIKE Architecture</a></li>
-<li><a href="https://spike.ist/operations/">Operations</a></li>
-<li><a href="https://spike.ist/tracking/">Tracking</a></li>
-</ul>
+<p>By implementing these practices, your DevOps team will be prepared to handle
+any recovery scenario while maintaining the security guarantees that make
+<strong>SPIKE</strong> an effective secrets management solution.</p>
 
     
         </article>

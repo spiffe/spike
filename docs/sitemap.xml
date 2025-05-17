@@ -130,6 +130,9 @@
         <loc>https://spike.ist/operations/</loc>
     </url>
     <url>
+        <loc>https://spike.ist/operations/backup/</loc>
+    </url>
+    <url>
         <loc>https://spike.ist/operations/build/</loc>
     </url>
     <url>
