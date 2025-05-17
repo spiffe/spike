@@ -61,7 +61,8 @@ func bootstrap(source *workloadapi.X509Source) {
 	nexusAlreadyBootstrapped := err == nil
 	if nexusAlreadyBootstrapped {
 		log.Log().Info(fName,
-			"msg", "Tombstone file exists, SPIKE Nexus is bootstrapped",
+			"msg", "Tombstone file exists, "+
+				"SPIKE Nexus is bootstrapped. Will try keeper recovery",
 		)
 
 		recovery.RecoverBackingStoreUsingKeeperShards(source)

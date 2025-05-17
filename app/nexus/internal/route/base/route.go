@@ -42,10 +42,12 @@ func Route(
 		func(a url.ApiAction, p url.ApiUrl) net.Handler {
 			emptyRootKey := state.RootKeyZero()
 			inMemoryMode := env.BackendStoreType() == env.Memory
-
 			emergencyAction := p == url.SpikeNexusUrlOperatorRecover ||
 				p == url.SpikeNexusUrlOperatorRestore
-			if !inMemoryMode && emptyRootKey && !emergencyAction {
+			canBypassRootKeyValidation := inMemoryMode || emergencyAction
+			rootKeyValidationRequired := !canBypassRootKeyValidation
+
+			if rootKeyValidationRequired && emptyRootKey {
 				return net.NotReady
 			}
 

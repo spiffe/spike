@@ -59,6 +59,10 @@ func UnlockRootKey() {
 
 // RootKeyZero checks if the root key contains only zero bytes.
 //
+// If the rot key is zero and SPIKE Nexus is not in "in memory" mode,
+// then it means SPIKE Nexus has not been initialized yet, and any secret
+// and policy management operation should be denied at the API level.
+//
 // Returns:
 //   - bool: true if the root key contains only zeroes, false otherwise
 func RootKeyZero() bool {

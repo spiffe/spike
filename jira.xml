@@ -45,44 +45,31 @@
     <issue kind="qa" note="create-pr">
       Add relevant ones of those to the smoke tests (to the docs)
       - SPIKE Nexus Sanity Tests
-      - Ensure SPIKE Nexus caches the root key in memory.
-      - Ensure SPIKE Nexus reads from SPIKE keep if it does not have
-      the root
-      key.
-      - Ensure SPIKE Nexus saves the encrypted root key to the
-      database.
-      - Ensure SPIKE Nexus caches the user's session key.
-      - Ensure SPIKE Nexus removes outdated session keys.
-      - Ensure SPIKE Nexus does not re-init (without manual
-      intervention)
-      after
-      being initialized.
-      - Ensure SPIKE Nexus adheres to the bootstrapping sequence
-      diagram.
-      - Ensure SPIKE Nexus backs up the admin token by encrypting it
-      with the
-      root
-      key and storing in the database.
-      - Ensure SPIKE Nexus stores the initialization tombstone in the
-      database.
-
-      - SPIKE Pilot Sanity Tests
-      - Ensure SPIKE Pilot denies any operation if SPIKE Nexus is not
-      initialized.
+      - Ensure SPIKE Nexus caches the root key in memory. :: can be added to logs.
+      - Ensure SPIKE Nexus reads from SPIKE keep if it does not have the root key. :: check logs again
+      - Ensure SPIKE Nexus saves the encrypted root key to the database. :: check db
+      - Ensure SPIKE Nexus does not re-init (without manual intervention) after being initialized. :: check logs
+      - Ensure SPIKE Pilot denies any operation if SPIKE Nexus is not initialized.
       - Ensure SPIKE Pilot can warn if SPIKE Nexus is unreachable
-      - Ensure SPIKE Pilot does not indefinitely hang up if SPIRE is
-      not
-      there.
-      - Ensure SPIKE Pilot can get and set a secret.
-      - Ensure SPIKE Pilot can do a force reset.
-      - Ensure SPIKE Pilot can recover the root password.
-      - Ensure that after `spike init` you have a password-encrypted
-      root key
-      in the db.
-      - Ensure that you can recover the password-encrypted root key.
     </issue>
   </immediate-backlog>
   <runner-up>
+    <issue>
+      Ensure SPIKE Pilot does not indefinitely hang up if SPIRE Nexus is not there
+      or there is a SPIFFEID/SVID issue. It should give up after a while and
+      print a warning that a connection to the api server could not be established
+      in a timely manner.
+    </issue>
+    <issue>
+      ADR:
+      why not store the tombstone in the db?
+      because we don't use the db before initialization
+      actually, having a db schema can count as a tombstone
+      also, what if we are not using the db (in memory mode) but we still need
+      to rely on the tombstone
+      but there are edge cases
+      better to use a file. file access is simple.
+    </issue>
     <issue kind="v1.0-requirement">
       Kubernetification:
       step 1: containerize using github registry.
