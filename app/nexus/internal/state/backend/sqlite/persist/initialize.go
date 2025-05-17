@@ -10,6 +10,8 @@ import (
 	"errors"
 	"fmt"
 	"path/filepath"
+
+	"github.com/spiffe/spike/app/nexus/internal/env"
 )
 
 // Initialize prepares the DataStore for use by:
@@ -55,6 +57,12 @@ func (s *DataStore) Initialize(ctx context.Context) error {
 	db.SetMaxOpenConns(s.Opts.MaxOpenConns)
 	db.SetMaxIdleConns(s.Opts.MaxIdleConns)
 	db.SetConnMaxLifetime(s.Opts.ConnMaxLifetime)
+
+	// Use the existing database if the schema is not to be created.
+	if env.DatabaseSkipSchemaCreation() {
+		s.db = db
+		return nil
+	}
 
 	// Create tables
 	if err := s.createTables(ctx, db); err != nil {

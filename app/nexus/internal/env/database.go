@@ -132,3 +132,18 @@ func DatabaseInitializationTimeout() time.Duration {
 	}
 	return 30 * time.Second
 }
+
+// DatabaseSkipSchemaCreation determines if schema creation should be skipped.
+// It checks the "SPIKE_NEXUS_DB_SKIP_SCHEMA_CREATION" env variable to decide.
+// If the env variable is set and its value is "true", it returns true.
+// Otherwise, it returns false.
+func DatabaseSkipSchemaCreation() bool {
+	p := os.Getenv("SPIKE_NEXUS_DB_SKIP_SCHEMA_CREATION")
+	if p != "" {
+		s, err := strconv.ParseBool(p)
+		if err == nil {
+			return s
+		}
+	}
+	return false
+}
