@@ -115,12 +115,12 @@ Beyond the database and root key, back up these critical components:
 Before beginning any restore operation, ensure:
 
 1. You have all necessary components:
-   - SQLite database backup
-   - Access to the required number of recovery shards (*meeting your threshold*)
-   - SPIFFE/SPIRE configuration backups
+   * SQLite database backup
+   * Access to the required number of recovery shards (*meeting your threshold*)
+   * SPIFFE/SPIRE configuration backups
 
 2. You have the appropriate SPIFFE identity for restoration:
-   - Required SPIFFE ID: `spiffe://$trustRoot/spike/pilot/role/restore`
+   * Required SPIFFE ID: `spiffe://$trustRoot/spike/pilot/role/restore`
 
 3. All **SPIKE** services are properly installed on the target system
 
