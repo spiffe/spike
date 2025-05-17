@@ -40,13 +40,8 @@
     <meta>Things to do before working further on containerization---Aim to finish
     all low-hanging fruits and tasks that can be done quickly and without
     major code change</meta>
-    <issue note="create-pr">
-      guidelines about how to backup and restore
-    </issue>
-    <issue note="create-pr">
-      Optionally not create tables and other ddl during backing store
-      creation
-    </issue>
+    <issue>Finish important (or "low-hanging") issue on GitHub too before
+    starting containerization work.</issue>
     <issue kind="qa" note="create-pr">
       Add relevant ones of those to the smoke tests (to the docs)
       - SPIKE Nexus Sanity Tests

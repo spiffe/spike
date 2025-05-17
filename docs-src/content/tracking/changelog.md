@@ -24,6 +24,13 @@ sort_by = "weight"
 * SPIKE components can now be configured to accept multiple trust roots as
   legitimate peers---this will be useful in complex mesh and federation
   deployment scenarios.
+* Added the ability to optionally skip database schema creation during SPIKE
+  initialization. This can be useful if the operator does not want to give
+  db schema modification privileges to SPIKE to adhere to the principle of
+  least privilege. The default behavior is to allow automatic schema creation:
+  Since SPIKE is assumed to own its backing store, limiting its access
+  does not provide a significant security benefit. Letting SPIKE manage
+  its own database schema provides operational convenience.
 
 ## [0.4.0] - 2025-04-16
 
