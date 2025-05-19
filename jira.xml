@@ -5,6 +5,25 @@
 # \\\\\\\ SPDX-License-Identifier: Apache-2.0
 -->
 <stuff>
+  <kubernetification>
+    <issue>
+      Goal: Have a running local k8s setup as fast as possible.
+            We can make things re-usable later.
+            Need to wrap things up before KubeCon.
+
+      Things to do:
+      1. Ensure Nexus, Keeper, Pilot build and run in pods
+      2. Increase log verbosity of Nexus, Keeper, Pilot
+      3. Create three keeper instances.
+      4. Disable automatic spiffeid creation for SPIKE elements
+      5. Create helm values for SPIRE setup in the cluster.
+      6. Ensure SPIFFE workload API works for Nexus, Keeper, Pilot
+      7. Create ClusterSPIFFEIDs
+      8. Validate SPIRE Server Registration Entries
+
+      600e16bf-b318-4246-a1fc-3c284f21dad3
+    </issue>
+  </kubernetification>
   <purpose>
     <target>Our goal is to have a minimally delightful product.</target>
     <target>Strive not to add features just for the sake of adding
