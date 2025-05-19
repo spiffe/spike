@@ -16,4 +16,6 @@ helm repo update
 kubectl create namespace spire-system
 
 # Install SPIRE using Helm
-helm install spire spiffe/spire --namespace spire-system
+helm install spire spiffe/spire --namespace spire-system \
+ -f ./config/spire/helm/values.yaml
+

@@ -1,0 +1,39 @@
+#    \\ SPIKE: Secure your secrets with SPIFFE.
+#  \\\\\ Copyright 2024-present SPIKE contributors.
+# \\\\\\\ SPDX-License-Identifier: Apache-2.0
+
+global:
+  openshift: false
+  spire:
+    recommendations:
+      enabled: true
+    namespaces:
+      create: true
+    clusterName: spike-demo-cluster
+    trustDomain: spike.ist
+    caSubject:
+      country: US
+      organization: SPIKE
+      commonName: spike.ist
+
+# Add the controller manager configuration under the spire-server subchart
+spire-server:
+  controllerManager:
+    enabled: true
+    ignoreNamespaces:
+      - kube-system
+      - kube-public
+      - kube-node-lease
+      - spire-system
+      - spike-system  # Let us manage our own SPIFFE IDs.
+      - spike-demo
+
+    # If you want to restrict by pod selector instead
+    # identities:
+    #   clusterSPIFFEIDs:
+    #     default:
+    #       enabled: true
+    #       spiffeIDTemplate: spiffe://{{ .TrustDomain }}/ns/{{ .PodMeta.Namespace }}/sa/{{ .PodSpec.ServiceAccountName }}
+    #       podSelector:
+    #         matchLabels:
+    #           spiffe.io/register: "true"  # Only pods with this label will get automatic SPIFFE IDs
