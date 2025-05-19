@@ -28,6 +28,14 @@ demo-create-policy:
 demo-put-secret:
 	./examples/consume-secrets/demo-put-secret.sh
 
+# Reset docker.
+docker-cleanup:
+	./hack/docker-cleanup.sh
+
+# Build container images.
+docker-build:
+	./hack/docker-build.sh
+
 .PHONY: lint-go
 lint-go:
 	./hack/lint-go.sh

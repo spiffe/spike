@@ -36,17 +36,17 @@ RUN go mod download
 COPY . .
 
 # Build the app for the target architecture
-RUN echo "Building SPIKE Pilot on $BUILDPLATFORM targeting $TARGETPLATFORM"
-RUN ./dockerfiles/build.sh ${TARGETARCH} keeper
+RUN echo "Building SPIKE Nexus on $BUILDPLATFORM targeting $TARGETPLATFORM"
+RUN ./dockerfiles/build.sh ${TARGETARCH} nexus
 
 # Target distroless base image for CGO_ENABLED apps
 # This image includes a basic runtime environment with libc and
 # other minimal dependencies
-FROM gcr.io/distroless/static AS keeper
+FROM gcr.io/distroless/base AS nexus
 # Redefine the ARG in this stage to make it available
 ARG APPVERSION
 
-COPY --from=builder /workspace/keeper /keeper
+COPY --from=builder /workspace/nexus /nexus
 
 # Apply labels to the final image
 LABEL maintainers="SPIKE Maintainers <maintainers@spike.ist>" \
@@ -58,4 +58,4 @@ LABEL maintainers="SPIKE Maintainers <maintainers@spike.ist>" \
       community="https://spike.ist/community/hello/" \
       changelog="https://spike.ist/tracking/changelog/"
 
-ENTRYPOINT ["/keeper"]
+ENTRYPOINT ["/nexus"]

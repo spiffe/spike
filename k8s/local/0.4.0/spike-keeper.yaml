@@ -1,0 +1,35 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: spike-keeper-headless
+  labels:
+    app: spike-keeper
+spec:
+  ports:
+    - port: 8080
+      name: api
+  clusterIP: None
+  selector:
+    app: spike-keeper
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: spike-keeper
+spec:
+  serviceName: "spike-keeper-headless"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: spike-keeper
+  template:
+    metadata:
+      labels:
+        app: spike-keeper
+    spec:
+      containers:
+        - name: keeper
+          image: localhost:32000/spike-keeper:0.4.1
+          ports:
+            - containerPort: 8080
+              name: api
