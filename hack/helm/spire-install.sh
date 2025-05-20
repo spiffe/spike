@@ -9,7 +9,7 @@ set -e  # Exit on any error
 # Enable alias expansion in non-interactive shells
 shopt -s expand_aliases
 
-source ./hack/aliases.sh
+source ./hack/lib/aliases.sh
 
 # Add Helm repository if it doesn't exist
 if ! helm repo list | grep -q "^spiffe\s"; then

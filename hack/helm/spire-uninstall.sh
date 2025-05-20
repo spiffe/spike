@@ -7,7 +7,7 @@
 # Enable alias expansion in non-interactive shells
 shopt -s expand_aliases
 
-source ./hack/aliases.sh
+source ./hack/lib/aliases.sh
 
 helm uninstall spire -n spire-system
 
