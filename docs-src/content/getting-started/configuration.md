@@ -43,6 +43,7 @@ configure the SPIKE components:
 | All          | `SPIKE_TRUST_ROOT_KEEPER`               | The SPIFFE trust root used for SPIKE Keeper instances. Can be a single entry, or a comma-delimited list of suitable trust roots.                    | `"spike.ist"`                                         |
 | All          | `SPIKE_TRUST_ROOT_PILOT`                | The SPIFFE trust root used for SPIKE Pilot instances. Can be a single entry, or a comma-delimited list of suitable trust roots.                     | `"spike.ist"`                                         |
 | All          | `SPIKE_TRUST_ROOT_NEXUS`                | The SPIFFE trust root used for SPIKE Nexus instances. Can be a single entry, or a comma-delimited list of suitable trust roots.                     | `"spike.ist"`                                         |
+| All          | `SPIFFE_ENDPOINT_SOCKET`                | The Unix domain socket path used for SPIFFE Workload API                                                                                            | `"unix:///tmp/spire-agent/public/api.sock"`           |
 
 We'll add more configuration options in the future. Stay tuned.
 

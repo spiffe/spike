@@ -1,3 +1,8 @@
+#    \\ SPIKE: Secure your secrets with SPIFFE.
+#  \\\\\ Copyright 2024-present SPIKE contributors.
+# \\\\\\\ SPDX-License-Identifier: Apache-2.0
+
+# The headless service for the StatefulSet's internal DNS
 apiVersion: v1
 kind: Service
 metadata:
@@ -6,19 +11,20 @@ metadata:
     app: spike-keeper
 spec:
   ports:
-    - port: 8080
+    - port: 8443
       name: api
   clusterIP: None
   selector:
     app: spike-keeper
 ---
+# The StatefulSet with 3 replicas
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: spike-keeper
 spec:
   serviceName: "spike-keeper-headless"
-  replicas: 1
+  replicas: 3
   selector:
     matchLabels:
       app: spike-keeper
@@ -28,8 +34,92 @@ spec:
         app: spike-keeper
     spec:
       containers:
-        - name: keeper
-          image: localhost:32000/spike-keeper:0.4.1
+        - name: app
+          image: localhost:32000/spike-keeper:0.4.0
           ports:
-            - containerPort: 8080
+            - containerPort: 8443
               name: api
+          env:
+            - name: SPIFFE_ENDPOINT_SOCKET
+              value: "unix:///spiffe-workload-api/spire-agent.sock"
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+          volumeMounts:
+            - name: spiffe-workload-api
+              mountPath: /spiffe-workload-api
+              readOnly: true
+      volumes:
+        - name: spiffe-workload-api
+          csi:
+            driver: "csi.spiffe.io"
+            readOnly: true
+---
+# SPIFFE ID for the keeper pods
+apiVersion: spiffe.io/v1beta1
+kind: ClusterSPIFFEID
+metadata:
+  name: spike-keeper
+spec:
+  spiffeIDTemplate: "spiffe://spike.ist/spike/keeper/{{ .Pod.Name }}"
+  workloadSelectorTemplates:
+    - serviceAccount: "default"
+      namespace: "default"
+      podSelector:
+        matchLabels:
+          app: spike-keeper
+---
+# Individual LoadBalancer service for pod 0
+apiVersion: v1
+kind: Service
+metadata:
+  name: spike-keeper-0-external
+  labels:
+    app: spike-keeper
+    instance: "0"
+spec:
+  type: LoadBalancer
+  ports:
+    - port: 443
+      targetPort: 8443
+      name: api
+  selector:
+    app: spike-keeper
+    statefulset.kubernetes.io/pod-name: spike-keeper-0
+---
+# Individual LoadBalancer service for pod 1
+apiVersion: v1
+kind: Service
+metadata:
+  name: spike-keeper-1-external
+  labels:
+    app: spike-keeper
+    instance: "1"
+spec:
+  type: LoadBalancer
+  ports:
+    - port: 443
+      targetPort: 8443
+      name: api
+  selector:
+    app: spike-keeper
+    statefulset.kubernetes.io/pod-name: spike-keeper-1
+---
+# Individual LoadBalancer service for pod 2
+apiVersion: v1
+kind: Service
+metadata:
+  name: spike-keeper-2-external
+  labels:
+    app: spike-keeper
+    instance: "2"
+spec:
+  type: LoadBalancer
+  ports:
+    - port: 443
+      targetPort: 8443
+      name: api
+  selector:
+    app: spike-keeper
+    statefulset.kubernetes.io/pod-name: spike-keeper-2
