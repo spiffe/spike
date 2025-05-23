@@ -1,0 +1,20 @@
+#    \\ SPIKE: Secure your secrets with SPIFFE.
+#  \\\\\ Copyright 2024-present SPIKE contributors.
+# \\\\\\\ SPDX-License-Identifier: Apache-2.0
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: spike-nexus-0-external
+  labels:
+    app: spike-nexus
+    instance: "0"
+spec:
+  type: LoadBalancer
+  ports:
+    - port: 443
+      targetPort: 8553
+      name: api
+  selector:
+    app: spike-nexus
+    statefulset.kubernetes.io/pod-name: spike-nexus-0

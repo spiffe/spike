@@ -1,0 +1,21 @@
+#    \\ SPIKE: Secure your secrets with SPIFFE.
+#  \\\\\ Copyright 2024-present SPIKE contributors.
+# \\\\\\\ SPDX-License-Identifier: Apache-2.0
+
+apiVersion: spiffe.io/v1beta1
+kind: ClusterSPIFFEID
+metadata:
+  name: spike-keeper
+  labels:
+    app.kubernetes.io/name: spike-keeper
+    app.kubernetes.io/component: keeper
+    app.kubernetes.io/part-of: spike
+spec:
+  spiffeIDTemplate: "spiffe://spike.ist/spike/keeper/{{ .Pod.Name }}"
+  workloadSelectorTemplates:
+    - serviceAccount: "default"
+      namespace: "default"
+      podSelector:
+        matchLabels:
+          app.kubernetes.io/name: spike-keeper
+          app.kubernetes.io/component: keeper
