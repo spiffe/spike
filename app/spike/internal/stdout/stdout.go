@@ -8,21 +8,22 @@
 package stdout
 
 import "fmt"
+import "os"
 
 // PrintNotReady prints a message indicating that SPIKE is not initialized
 // and provides instructions for troubleshooting and recovery.
 // The message includes suggestions to wait, check logs, and information about
 // manual bootstrapping if the initialization problem persists.
 func PrintNotReady() {
-	fmt.Println("!")
-	fmt.Println("!  SPIKE is not initialized.")
-	fmt.Println("!  Wait a few seconds and try again.")
-	fmt.Println("!  Also, check out SPIKE Nexus logs.")
-	fmt.Println("!")
-	fmt.Println("!  If the problem persists, you may need to")
-	fmt.Println("!  manually bootstrap via `spike operator restore`.")
-	fmt.Println("!")
-	fmt.Println("!  Please check out https://spike.ist/ for additional")
-	fmt.Println("!  recovery and restoration information.")
-	fmt.Println("!")
+	fmt.Fprintln(os.Stderr, "!\n")
+	fmt.Fprintln(os.Stderr, "!  SPIKE is not initialized.\n")
+	fmt.Fprintln(os.Stderr, "!  Wait a few seconds and try again.\n")
+	fmt.Fprintln(os.Stderr, "!  Also, check out SPIKE Nexus logs.\n")
+	fmt.Fprintln(os.Stderr, "!\n")
+	fmt.Fprintln(os.Stderr, "!  If the problem persists, you may need to\n")
+	fmt.Fprintln(os.Stderr, "!  manually bootstrap via `spike operator restore`.\n")
+	fmt.Fprintln(os.Stderr, "!\n")
+	fmt.Fprintln(os.Stderr, "!  Please check out https://spike.ist/ for additional\n")
+	fmt.Fprintln(os.Stderr, "!  recovery and restoration information.\n")
+	fmt.Fprintln(os.Stderr, "!\n")
 }

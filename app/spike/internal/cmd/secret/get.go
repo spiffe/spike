@@ -45,10 +45,10 @@ func newSecretGetCommand(
 	source *workloadapi.X509Source, spiffeId string,
 ) *cobra.Command {
 	var getCmd = &cobra.Command{
-		Use:   "get <path>",
+		Use:   "get <path> [key]",
 		Short: "Get secrets from the specified path",
-		Args:  cobra.ExactArgs(1),
-		Run: func(cmd *cobra.Command, args []string) {
+		Args:  cobra.RangeArgs(1, 2),
+		RunE: func(cmd *cobra.Command, args []string) error {
 			trust.Authenticate(spiffeId)
 
 			api := spike.NewWithSource(source)
@@ -57,30 +57,32 @@ func newSecretGetCommand(
 			version, _ := cmd.Flags().GetInt("version")
 
 			if !validSecretPath(path) {
-				fmt.Printf("Error: invalid secret path: %s\n", path)
-				return
+				return fmt.Errorf("invalid secret path: %s", path)
 			}
 
 			secret, err := api.GetSecretVersion(path, version)
 			if err != nil {
 				if err.Error() == "not ready" {
 					stdout.PrintNotReady()
-					return
+					return fmt.Errorf("server not ready")
 				}
 
-				fmt.Println("Error reading secret:", err.Error())
-				return
+				return fmt.Errorf("failure reading secret: %v", err.Error())
 			}
 
 			if secret == nil {
-				fmt.Println("Secret not found.")
-				return
+				return fmt.Errorf("Secret not found")
 			}
 
 			d := secret.Data
 			for k, v := range d {
-				fmt.Printf("%s: %s\n", k, v)
+				if len(args) < 2 || args[1] == "" {
+					fmt.Printf("%s: %s\n", k, v)
+				} else if args[1] == k {
+					fmt.Printf("\n", v)
+				}
 			}
+			return nil
 		},
 	}
 
