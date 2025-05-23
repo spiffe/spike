@@ -8,9 +8,9 @@ set -e
 APP=${1:-pilot}
 ARCH=${2:-linux/amd64}
 VERSION=${3:-latest}
-REGISTRY=${4:-docker.io}
-REPOSITORY=${5:-getspike}
-IMAGE_URL="$REGISTRY/$REPOSITORY/$APP"
+REGISTRY=${4:-ghcr.io}
+REPOSITORY=${5:-spiffe}
+IMAGE_URL="$REGISTRY/$REPOSITORY/spike-$APP"
 
 # Validate required arguments
 if [ -z "$APP" ] || [ -z "$ARCH" ] || [ -z "$VERSION" ]; then
@@ -58,7 +58,7 @@ docker buildx build \
   --label "org.opencontainers.image.version=$VERSION" \
   --label "org.opencontainers.image.revision=$GIT_SHA" \
   --label "org.opencontainers.image.source=https://github.com/spiffe/spike" \
-  --label "org.opencontainers.image.licenses=MPL-2.0" \
+  --label "org.opencontainers.image.licenses=Apache-2.0" \
   --label "org.opencontainers.image.title=spike" \
   --label "org.opencontainers.image.description=SPIKE is a lightweight secrets store that uses SPIFFE as its identity control plane" \
   $TAG_ARGS \

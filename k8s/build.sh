@@ -12,11 +12,9 @@ fi
 TARGETARCH=$1
 APP=$2
 
-if [ "$TARGETARCH" = "amd64" ]; then
-    CC=x86_64-linux-gnu-gcc go build -ldflags="-s -w" -o $APP /workspace/app/$APP/cmd/main.go
-elif [ "$TARGETARCH" = "arm64" ]; then
-    CC=aarch64-linux-gnu-gcc go build -ldflags="-s -w" -o $APP /workspace/app/$APP/cmd/main.go
-else
+if [ "$TARGETARCH" != "amd64" -a "$TARGETARCH" = "arm64" ]; then
     echo "Error: Supported architectures are amd64 and arm64"
     exit 1
 fi
+
+go build -ldflags='-s -w -linkmode external -extldflags "-static"' -o $APP /workspace/app/$APP/cmd/main.go
