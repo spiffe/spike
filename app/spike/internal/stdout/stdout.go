@@ -15,15 +15,15 @@ import "os"
 // The message includes suggestions to wait, check logs, and information about
 // manual bootstrapping if the initialization problem persists.
 func PrintNotReady() {
-	fmt.Fprintln(os.Stderr, "!\n")
-	fmt.Fprintln(os.Stderr, "!  SPIKE is not initialized.\n")
-	fmt.Fprintln(os.Stderr, "!  Wait a few seconds and try again.\n")
-	fmt.Fprintln(os.Stderr, "!  Also, check out SPIKE Nexus logs.\n")
-	fmt.Fprintln(os.Stderr, "!\n")
-	fmt.Fprintln(os.Stderr, "!  If the problem persists, you may need to\n")
-	fmt.Fprintln(os.Stderr, "!  manually bootstrap via `spike operator restore`.\n")
-	fmt.Fprintln(os.Stderr, "!\n")
-	fmt.Fprintln(os.Stderr, "!  Please check out https://spike.ist/ for additional\n")
-	fmt.Fprintln(os.Stderr, "!  recovery and restoration information.\n")
-	fmt.Fprintln(os.Stderr, "!\n")
+	fmt.Fprintln(os.Stderr, "!")
+	fmt.Fprintln(os.Stderr, "!  SPIKE is not initialized.")
+	fmt.Fprintln(os.Stderr, "!  Wait a few seconds and try again.")
+	fmt.Fprintln(os.Stderr, "!  Also, check out SPIKE Nexus logs.")
+	fmt.Fprintln(os.Stderr, "!")
+	fmt.Fprintln(os.Stderr, "!  If the problem persists, you may need to")
+	fmt.Fprintln(os.Stderr, "!  manually bootstrap via `spike operator restore`.")
+	fmt.Fprintln(os.Stderr, "!")
+	fmt.Fprintln(os.Stderr, "!  Please check out https://spike.ist/ for additional")
+	fmt.Fprintln(os.Stderr, "!  recovery and restoration information.")
+	fmt.Fprintln(os.Stderr, "!")
 }
