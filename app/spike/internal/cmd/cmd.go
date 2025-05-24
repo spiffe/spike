@@ -49,7 +49,7 @@ func Initialize(source *workloadapi.X509Source, spiffeId string) {
 // with status code 1.
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
-		fmt.Println(err)
+		fmt.Fprintf(os.Stderr, "%v\n", err)
 		os.Exit(1)
 	}
 }
