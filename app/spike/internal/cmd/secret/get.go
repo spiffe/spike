@@ -5,11 +5,14 @@
 package secret
 
 import (
+	"encoding/json"
 	"fmt"
+	"slices"
 
 	"github.com/spf13/cobra"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	spike "github.com/spiffe/spike-sdk-go/api"
+	"gopkg.in/yaml.v3"
 
 	"github.com/spiffe/spike/app/spike/internal/stdout"
 	"github.com/spiffe/spike/app/spike/internal/trust"
@@ -55,6 +58,11 @@ func newSecretGetCommand(
 
 			path := args[0]
 			version, _ := cmd.Flags().GetInt("version")
+			format, _ := cmd.Flags().GetString("format")
+
+			if !slices.Contains([]string{"plain", "yaml", "json", "y", "p", "j"}, format) {
+				return fmt.Errorf("invalid format specified: %s", format)
+			}
 
 			if !validSecretPath(path) {
 				return fmt.Errorf("invalid secret path: %s", path)
@@ -75,18 +83,57 @@ func newSecretGetCommand(
 			}
 
 			d := secret.Data
-			for k, v := range d {
-				if len(args) < 2 || args[1] == "" {
-					fmt.Printf("%s: %s\n", k, v)
-				} else if args[1] == k {
-					fmt.Printf("\n", v)
+			found := false
+			if format == "plain" || format == "p" {
+				for k, v := range d {
+					if len(args) < 2 || args[1] == "" {
+						fmt.Printf("%s: %s\n", k, v)
+						found = true
+					} else if args[1] == k {
+						fmt.Printf("%s\n", v)
+						found = true
+						break
+					}
 				}
+				if !found {
+					return fmt.Errorf("Key not found")
+				}
+			} else {
+				var b []byte
+				if len(args) < 2 || args[1] == "" {
+					if format == "yaml" || format == "y" {
+						b, err = yaml.Marshal(d)
+					} else {
+						b, err = json.MarshalIndent(d, "", "    ")
+					}
+					found = true
+				} else {
+					for k, v := range d {
+						if args[1] == k {
+							if format == "yaml" || format == "y" {
+								b, err = yaml.Marshal(v)
+							} else {
+								b, err = json.Marshal(v)
+							}
+							found = true
+							break
+						}
+					}
+				}
+				if err != nil {
+					return err
+				}
+				if !found {
+					return fmt.Errorf("Key not found")
+				}
+				fmt.Printf("%s\n", string(b))
 			}
 			return nil
 		},
 	}
 
 	getCmd.Flags().IntP("version", "v", 0, "Specific version to retrieve")
+	getCmd.Flags().StringP("format", "f", "plain", "Format to use. Valid options: plain, p, yaml, y, json, j")
 
 	return getCmd
 }
