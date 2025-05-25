@@ -28,23 +28,34 @@ demo-create-policy:
 demo-put-secret:
 	./examples/consume-secrets/demo-put-secret.sh
 
+# TODO:
+# x. reset microk8s
+# x. setup deps & metallb
+# 3. deploy SPIRE from charts
+# x. build dockerfiles
+# x. push images to a local registry
+# 6. deploy SPIKE from local registry + manifests
+# 7. test if you can create/read secrets and policies
+# 8. verify that all files in ./hack has a accompanying make target
+#    and also they are references properly across code and docs.
+
 # Reset docker.
 docker-cleanup:
-	./hack/docker-cleanup.sh
+	./hack/docker/cleanup.sh
 
 # Build container images.
 docker-build:
-	./hack/docker-build.sh
+	./hack/docker/build.sh
+
+docker-push:
+	./hack/docker/push.sh
+
+k8s-reset:
+	./hack/k8s/microk8s-reset.sh
+
+deploy-spire:
+	./hack/k8s/spire-install.sh
 
 .PHONY: lint-go
 lint-go:
 	./hack/lint-go.sh
-
-# TODO:
-# 1. reset microk8s
-# 2. setup deps & metallb
-# 3. deploy SPIRE from charts
-# 4. build dockerfiles
-# 5. push images to a local registry
-# 6. deploy SPIKE from local registry + manifests
-# 7. test if you can create/read secrets and policies

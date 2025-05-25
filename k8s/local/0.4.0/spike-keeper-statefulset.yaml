@@ -5,6 +5,7 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
+  namespace: spike-system
   name: spike-keeper
   labels:
     app.kubernetes.io/name: spike-keeper
@@ -20,12 +21,14 @@ spec:
       app.kubernetes.io/component: keeper
   template:
     metadata:
+      namespace: spike-system
       labels:
         app.kubernetes.io/name: spike-keeper
         app.kubernetes.io/component: keeper
         app.kubernetes.io/part-of: spike
         app.kubernetes.io/version: "0.4.0"
     spec:
+      serviceAccountName: spike-keeper
       containers:
       - name: app
         image: localhost:32000/spike-keeper:0.4.0

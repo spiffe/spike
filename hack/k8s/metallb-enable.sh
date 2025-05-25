@@ -10,5 +10,6 @@ set -e  # Exit on any error
 shopt -s expand_aliases
 
 source ./hack/lib/aliases.sh
+source ./hack/lib/env-k8s.sh
 
 microk8s enable metallb:10.211.55.200-10.211.55.210

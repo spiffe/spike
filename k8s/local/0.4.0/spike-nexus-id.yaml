@@ -11,6 +11,7 @@ metadata:
     app.kubernetes.io/component: nexus
     app.kubernetes.io/part-of: spike
 spec:
+  className: "spire-server-spire"
   spiffeIDTemplate: "spiffe://spike.ist/spike/nexus/{{ .Pod.Name }}"
   workloadSelectorTemplates:
   - serviceAccount: "spike-nexus"

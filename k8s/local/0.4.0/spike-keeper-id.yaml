@@ -5,16 +5,17 @@
 apiVersion: spiffe.io/v1beta1
 kind: ClusterSPIFFEID
 metadata:
-  name: spike-keeper
+  name: spike-system
   labels:
     app.kubernetes.io/name: spike-keeper
     app.kubernetes.io/component: keeper
     app.kubernetes.io/part-of: spike
 spec:
+  className: "spire-server-spire"
   spiffeIDTemplate: "spiffe://spike.ist/spike/keeper/{{ .Pod.Name }}"
   workloadSelectorTemplates:
-    - serviceAccount: "default"
-      namespace: "default"
+    - serviceAccount: "spike-keeper"
+      namespace: "spike-syskutem"
       podSelector:
         matchLabels:
           app.kubernetes.io/name: spike-keeper

@@ -9,7 +9,7 @@
 
 set -e
 
-export SPIKE_VERSION="0.4.1"
+export SPIKE_VERSION="0.4.0"
 COMPONENTS=("keeper" "nexus" "pilot")
 PLATFORMS="linux/amd64,linux/arm64"
 
@@ -52,24 +52,10 @@ build_component() {
   echo "Finished building spike-${component}:${version}"
 }
 
-# Check for configuration
-PUSH_TO_REGISTRY=${PUSH_TO_REGISTRY:-false}
-LOCAL_ONLY=${LOCAL_ONLY:-true}
-
-# Configure output options
-if [ "$PUSH_TO_REGISTRY" = "true" ]; then
-    OUTPUT_FLAG="--push"
-    REGISTRY=${REGISTRY:-"localhost:5000/"}
-elif [ "$LOCAL_ONLY" = "true" ]; then
-    # For local only, we can only build for the current architecture with --load
-    PLATFORMS=$(docker info --format '{{.Architecture}}' | sed 's/^/linux\//')
-    OUTPUT_FLAG="--load"
-    echo "Building only for local platform: $PLATFORMS"
-else
-    # Multi-platform without pushing - images will be built
-    # but not loaded to Docker daemon
-    OUTPUT_FLAG="--output=type=image"
-fi
+# For local only, we can only build for the current architecture with --load
+PLATFORMS=$(docker info --format '{{.Architecture}}' | sed 's/^/linux\//')
+OUTPUT_FLAG="--load"
+echo "Building only for local platform: $PLATFORMS"
 
 # Set up buildx
 setup_buildx

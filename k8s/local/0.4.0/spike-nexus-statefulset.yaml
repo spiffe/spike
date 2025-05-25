@@ -5,6 +5,7 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
+  namespace: spike-system
   name: spike-nexus
   labels:
     app.kubernetes.io/name: spike-nexus
@@ -20,12 +21,14 @@ spec:
       app.kubernetes.io/component: nexus
   template:
     metadata:
+      namespace: spike-system
       labels:
         app.kubernetes.io/name: spike-nexus
         app.kubernetes.io/component: nexus
         app.kubernetes.io/part-of: spike
         app.kubernetes.io/version: "0.4.0"
     spec:
+      serviceAccountName: spike-nexus
       containers:
       - name: app
         image: localhost:32000/spike-nexus:0.4.0

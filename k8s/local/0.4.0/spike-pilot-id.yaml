@@ -11,6 +11,7 @@ metadata:
     app.kubernetes.io/component: pilot
     app.kubernetes.io/part-of: spike
 spec:
+  className: "spire-server-spire"
   spiffeIDTemplate: "spiffe://spike.ist/spike/pilot/{{ .Pod.Name }}"
   workloadSelectorTemplates:
   - serviceAccount: "spike-pilot"

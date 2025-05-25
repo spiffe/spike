@@ -9,7 +9,7 @@ shopt -s expand_aliases
 
 set -e
 
-export SPIKE_VERSION="0.4.1"
+export SPIKE_VERSION="0.4.0"
 
 # Tag the images for the MicroK8s registry (which runs on localhost:32000)
 docker tag spike-keeper:$SPIKE_VERSION localhost:32000/spike-keeper:$SPIKE_VERSION

@@ -3,12 +3,10 @@
 # \\\\\\\ SPDX-License-Identifier: Apache-2.0
 
 global:
-  openshift: false
+  openshift: false # If running on openshift, set to true
   spire:
     recommendations:
       enabled: true
-    namespaces:
-      create: true
     clusterName: spike-demo-cluster
     trustDomain: spike.ist
     caSubject:
@@ -17,16 +15,16 @@ global:
       commonName: spike.ist
 
 # Add the controller manager configuration under the spire-server subchart
-spire-server:
-  controllerManager:
-    enabled: true
-    ignoreNamespaces:
-      - kube-system
-      - kube-public
-      - kube-node-lease
-      - spire-system
-      - spike-system  # Let us manage our own SPIFFE IDs.
-      - spike-demo
+#spire-server:
+#  controllerManager:
+#    enabled: true
+#    ignoreNamespaces:
+#      - kube-system
+#      - kube-public
+#      - kube-node-lease
+#      - spire-system
+#      - spike-system  # Let us manage our own SPIFFE IDs.
+#      - spike-demo    # "                               "
 
     # If you want to restrict by pod selector instead
     # identities:
