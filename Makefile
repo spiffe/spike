@@ -34,27 +34,46 @@ demo-put-secret:
 # 3. deploy SPIRE from charts
 # x. build dockerfiles
 # x. push images to a local registry
-# 6. deploy SPIKE from local registry + manifests
+# x. deploy SPIKE from local registry + manifests
 # 7. test if you can create/read secrets and policies
 # 8. verify that all files in ./hack has a accompanying make target
 #    and also they are references properly across code and docs.
 
-# Reset docker.
-docker-cleanup:
-	./hack/docker/cleanup.sh
+# --------...--------
 
-# Build container images.
+# 1. Reset the test cluster.
+k8s-delete:
+	./hack/k8s/minikube-delete.sh
+
+# 2. Start the test cluster.
+k8s-start:
+	./hack/k8s/minikube-start.sh
+
+# 3. Build container images.
 docker-build:
 	./hack/docker/build.sh
 
+# 4. Forward registry.
+docker-forward-registry:
+	./hack/docker/minikube-forward-registry.sh
+
+# 5. Push to the container registry.
 docker-push:
 	./hack/docker/push.sh
 
-k8s-reset:
-	./hack/k8s/microk8s-reset.sh
-
+# 4. Deploy SPIRE to the test cluster.
 deploy-spire:
 	./hack/k8s/spire-install.sh
+
+# 5. Deploy SPIKE
+deploy-spike:
+	./hack/k8s/spike-install.sh
+
+# --------...--------
+
+# Reset docker.
+docker-cleanup:
+	./hack/docker/cleanup.sh
 
 .PHONY: lint-go
 lint-go:

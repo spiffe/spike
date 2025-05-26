@@ -6,7 +6,11 @@
 
 set -e  # Exit on any error
 
-sudo microk8s reset --destroy-storage
+echo "Resetting the MicroK8s Test Cluster... This will take a while; go grab a sandwich."
+
+# helm delete -n spire-mgmt spire
+
+sudo microk8s reset # --destroy-storage
 # rm -rf ~/.cache/helm ~/.config/helm ~/.local/share/helm
 
 # Enable alias expansion in non-interactive shells
@@ -27,8 +31,10 @@ kubectl delete clusterrole spire-agent \
   spire-server-pre-upgrade \
   spire-system-spire-controller-manager \
   spire-system-spire-server \
+  spire-server-spire-controller-manager \
+  spire-server-spire-server \
   --ignore-not-found
-#
+
 kubectl delete clusterrolebinding \
    spire-agent \
    spire-controller-manager \
@@ -37,20 +43,19 @@ kubectl delete clusterrolebinding \
    spire-server-pre-upgrade \
    spire-system-spire-controller-manager \
    spire-system-spire-server \
+   spire-server-spire-controller-manager \
+   spire-server-spire-server \
    --ignore-not-found
-#
+
 kubectl delete csidriver csi.spiffe.io --ignore-not-found
-#
+
 kubectl delete validatingwebhookconfiguration \
   spire-controller-manager-webhook \
   spire-mgmt-spire-controller-manager-webhook \
+  spire-server-spire-controller-manager-webhook \
+  spire-system-spire-controller-manager-webhook \
   --ignore-not-found
 
-#kubectl get clusterrole -o name | grep spire | xargs -r kubectl delete --ignore-not-found
-#kubectl get clusterrolebinding -o name | grep spire | xargs -r kubectl delete --ignore-not-found
-#kubectl delete csidriver csi.spiffe.io --ignore-not-found
-#kubectl get validatingwebhookconfiguration -o name | grep spire | xargs -r kubectl delete --ignore-not-found
-#kubectl get mutatingwebhookconfiguration -o name | grep spire | xargs -r kubectl delete --ignore-not-found
 
 
 echo "Everything is awesome!"

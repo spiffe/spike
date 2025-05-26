@@ -23,6 +23,18 @@
 
       600e16bf-b318-4246-a1fc-3c284f21dad3
     </issue>
+    <issue>
+      # to be added to docs.
+      # how to expose things to other clusters:
+      # kubectl port-forward --address 0.0.0.0 svc/nginx-lb 8080:80
+      # no need for ingress
+      # no need for `kubectl port-forward`
+      # great for demo/development setups.
+      # Also forward registry to docker to work
+      # kubectl port-forward -n kube-system svc/registry 5000:80 &
+      # You don't need to `eval $(minikube -p minikube docker-env)`
+      # Again, this is simpler.
+    </issue>
   </kubernetification>
   <purpose>
     <target>Our goal is to have a minimally delightful product.</target>
@@ -78,6 +90,11 @@
       or there is a SPIFFEID/SVID issue. It should give up after a while and
       print a warning that a connection to the api server could not be established
       in a timely manner.
+    </issue>
+    <issue>
+      Make vSecM use helm only (you can override images if needed,
+      to test with local images. -- that will be better than
+      generating local manifests and maintaining them separately)
     </issue>
     <issue>
       ADR:

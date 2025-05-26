@@ -5,6 +5,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
+  namespace: spike-control
   name: spike-pilot
   labels:
     app.kubernetes.io/name: spike-pilot
@@ -19,6 +20,7 @@ spec:
       app.kubernetes.io/component: pilot
   template:
     metadata:
+      namespace: spike-control
       labels:
         app.kubernetes.io/name: spike-pilot
         app.kubernetes.io/component: pilot
@@ -29,6 +31,8 @@ spec:
       containers:
       - name: app
         image: localhost:32000/spike-pilot:0.4.0
+        # Override the entrypoint to keep the container running
+        command: ["sleep", "infinity"]
         env:
         - name: SPIKE_TRUST_ROOT
           value: spike.ist

@@ -9,6 +9,9 @@
 
 set -e
 
+# shellcheck disable=SC2046
+eval $(minikube -p minikube docker-env)
+
 export SPIKE_VERSION="0.4.0"
 COMPONENTS=("keeper" "nexus" "pilot")
 PLATFORMS="linux/amd64,linux/arm64"

@@ -11,7 +11,7 @@ metadata:
     app.kubernetes.io/component: keeper
     app.kubernetes.io/part-of: spike
 spec:
-  className: "spire-mgmt-spire"
+  className: "spire-server-spire"
   spiffeIDTemplate: "spiffe://spike.ist/spike/keeper/{{ .PodMeta.Name }}"
   namespaceSelector:
     matchLabels:

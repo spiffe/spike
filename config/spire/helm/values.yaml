@@ -7,6 +7,8 @@ global:
   spire:
     recommendations:
       enabled: true
+    namespaces:
+      create: true
     clusterName: spike-demo-cluster
     trustDomain: spike.ist
     caSubject:
@@ -14,7 +16,7 @@ global:
       organization: SPIKE
       commonName: spike.ist
 
-# Add the controller manager configuration under the spire-server subchart
+## Add the controller manager configuration under the spire-server subchart
 #spire-server:
 #  controllerManager:
 #    enabled: true
@@ -23,8 +25,10 @@ global:
 #      - kube-public
 #      - kube-node-lease
 #      - spire-system
-#      - spike-system  # Let us manage our own SPIFFE IDs.
-#      - spike-demo    # "                               "
+##      - spike-control
+##      - spike-edge
+##      - spike-system
+##      - spike-demo
 
     # If you want to restrict by pod selector instead
     # identities:
@@ -35,3 +39,7 @@ global:
     #       podSelector:
     #         matchLabels:
     #           spiffe.io/register: "true"  # Only pods with this label will get automatic SPIFFE IDs
+
+
+#  helm upgrade --install -n spire-mgmt spire-crds spire-crds --repo https://spiffe.github.io/helm-charts-hardened/ --create-namespace
+#  helm upgrade --install -n spire-mgmt spire spire --repo https://spiffe.github.io/helm-charts-hardened/ -f your-values.yaml
