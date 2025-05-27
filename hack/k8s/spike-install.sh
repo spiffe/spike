@@ -4,13 +4,26 @@
 
 cd ./k8s/local/0.4.0/ || exit 1
 
+echo "SPIKE install..."
+echo "Current context: $(kubectl config current-context)"
+
 create_namespace_if_not_exists() {
     local ns=$1
-    if kubectl get namespace "$ns" &> /dev/null; then
+    echo "Checking namespace '$ns'..."
+
+    # More explicit check
+    if kubectl get namespace "$ns" 2>/dev/null | grep -q "$ns"; then
         echo "Namespace '$ns' already exists, skipping..."
     else
         echo "Creating namespace '$ns'..."
         kubectl create namespace "$ns"
+        # shellcheck disable=SC2181
+        if [ $? -eq 0 ]; then
+            echo "Successfully created namespace '$ns'"
+        else
+            echo "Failed to create namespace '$ns'"
+            return 1
+        fi
     fi
 }
 
@@ -18,4 +31,11 @@ create_namespace_if_not_exists "spike-control"
 create_namespace_if_not_exists "spike-system"
 create_namespace_if_not_exists "spike-edge"
 
+# List all namespaces after creation
+echo "SPIKE namespaces:"
+kubectl get namespaces | grep spike || echo "No spike namespaces found"
+
+echo "Deploying SPIKE."
 kubectl apply -f .
+
+echo "Everything is awesome!"

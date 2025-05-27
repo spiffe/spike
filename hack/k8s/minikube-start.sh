@@ -11,6 +11,12 @@ then
     exit 1
 fi
 
+if ! command -v kubectl &> /dev/null
+then
+    echo "Command 'kubectl' not found. Please install kubectl first."
+    exit 1
+fi
+
 # Set default values
 DEFAULT_MEMORY="4096"  # 4GB
 DEFAULT_CPU="4"        # 4 CPUs
