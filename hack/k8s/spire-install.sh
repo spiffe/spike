@@ -16,6 +16,8 @@ fi
 
 helm repo update
 
+# TODO: update manifests to use not root (security context)
+
 # Note that this is NOT a SPIRE production setup.
 # Consult SPIRE documentation for production deployment and hardening:
 # https://spiffe.io/docs/latest/spire-helm-charts-hardened-about/recommendations/
@@ -25,11 +27,14 @@ helm repo update
 helm upgrade --install -n spire-mgmt spire-crds spire-crds \
   --repo https://spiffe.github.io/helm-charts-hardened/ --create-namespace
 
-echo "Sleeping for 30secs..."
-sleep 30
+echo "Sleeping for 15 secs..."
+sleep 15
 
 helm upgrade --install -n spire-mgmt spire spire \
   --repo https://spiffe.github.io/helm-charts-hardened/ \
   -f ./config/spire/helm/values.yaml
+
+echo "Sleeping for 15 secs..."
+sleep 15
 
 echo "Everything is awesome!"

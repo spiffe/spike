@@ -27,9 +27,9 @@ create_namespace_if_not_exists() {
     fi
 }
 
-create_namespace_if_not_exists "spike-control"
-create_namespace_if_not_exists "spike-system"
-create_namespace_if_not_exists "spike-edge"
+create_namespace_if_not_exists "spike-control" # Pilot
+create_namespace_if_not_exists "spike-system"  # Nexus
+create_namespace_if_not_exists "spike-edge"    # Keepers
 
 # List all namespaces after creation
 echo "SPIKE namespaces:"

@@ -30,7 +30,7 @@ spec:
       serviceAccountName: spike-pilot
       containers:
       - name: app
-        image: localhost:32000/spike-pilot:0.4.0
+        image: localhost:5000/spike-pilot:0.4.0
         # Override the entrypoint to keep the container running
         command: ["sleep", "infinity"]
         env:

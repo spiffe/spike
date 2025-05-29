@@ -31,7 +31,7 @@ spec:
       serviceAccountName: spike-keeper
       containers:
       - name: app
-        image: localhost:32000/spike-keeper:0.4.0
+        image: localhost:5000/spike-keeper:0.4.0
         ports:
         - containerPort: 8443
           name: api

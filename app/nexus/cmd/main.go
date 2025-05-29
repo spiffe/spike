@@ -39,11 +39,19 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
+	fmt.Println("SPIFFE Endpoint: ", spiffe.EndpointSocket())
+	fmt.Println("SPIFFE Trust Domain: ", env.TrustRoot())
+
+	fmt.Println("before trying to get source...")
 	source, selfSpiffeid, err := spiffe.Source(ctx, spiffe.EndpointSocket())
 	if err != nil {
 		log.Fatal(err.Error())
 	}
 	defer spiffe.CloseSource(source)
+
+	fmt.Println("self spiffe id:", selfSpiffeid)
+
+	fmt.Println("after trying to get source...")
 
 	// I should be Nexus.
 	if !spiffeid.IsNexus(env.TrustRoot(), selfSpiffeid) {
