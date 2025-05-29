@@ -32,7 +32,7 @@ spec:
       - name: app
         image: localhost:5000/spike-pilot:0.4.0
         # Override the entrypoint to keep the container running
-        command: ["sleep", "infinity"]
+        command: ["sh", "-c", "tail -f /dev/null"]
         env:
         - name: SPIKE_TRUST_ROOT
           value: spike.ist

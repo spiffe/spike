@@ -69,6 +69,20 @@ deploy-spire:
 deploy-spike:
 	./hack/k8s/spike-install.sh
 
+tail-nexus:
+	kubectl logs spike-nexus-0 -n spike-system -f
+
+tail-keeper-0:
+	kubectl logs spike-keeper-0 -n spike-edge -f
+
+tail-keeper-1:
+	kubectl logs spike-keeper-1 -n spike-edge -f
+
+tail-keeper-2:
+	kubectl logs spike-keeper-2 -n spike-edge -f
+
+
+
 # --------...--------
 
 # Reset docker.

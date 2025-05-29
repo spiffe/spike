@@ -40,7 +40,8 @@ RUN echo "Building SPIKE Pilot on $BUILDPLATFORM targeting $TARGETPLATFORM"
 RUN ./dockerfiles/build.sh ${TARGETARCH} spike
 
 # Use BusyBox as the base image
-FROM busybox:1.36-musl AS spike
+# FROM busybox:1.36-musl AS spike
+FROM busybox:1.36 AS spike
 # Redefine the ARG in this stage to make it available
 ARG APPVERSION
 
