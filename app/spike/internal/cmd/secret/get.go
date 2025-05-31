@@ -82,6 +82,10 @@ func newSecretGetCommand(
 				return fmt.Errorf("Secret not found")
 			}
 
+			if secret.Data == nil {
+				return fmt.Errorf("secret has no data")
+			}
+
 			d := secret.Data
 			found := false
 			if format == "plain" || format == "p" {
@@ -121,7 +125,7 @@ func newSecretGetCommand(
 					}
 				}
 				if err != nil {
-					return err
+					return fmt.Errorf("failed to marshal data: %w", err)
 				}
 				if !found {
 					return fmt.Errorf("Key not found")
