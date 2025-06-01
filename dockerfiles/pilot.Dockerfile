@@ -67,4 +67,4 @@ LABEL maintainers="SPIKE Maintainers <maintainers@spike.ist>" \
       community="https://spike.ist/community/hello/" \
       changelog="https://spike.ist/tracking/changelog/"
 
-ENTRYPOINT ["/spike"]
+ENTRYPOINT ["/usr/local/bin/spike"]
