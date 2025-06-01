@@ -50,7 +50,7 @@ build_component() {
     --build-arg APPVERSION="${version}" \
     -t "spike-${component}:${version}" \
     "${output_flag}" \
-    -f "./k8s/dockerfiles/${component}.Dockerfile" .
+    -f "./dockerfiles/${component}.Dockerfile" .
 
   echo "Finished building spike-${component}:${version}"
 }

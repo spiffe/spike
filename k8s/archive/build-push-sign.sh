@@ -50,7 +50,7 @@ done
 echo "Building image for $APP on $ARCH"
 docker buildx build \
   --platform "$ARCH" \
-  --file "k8s/dockerfiles/$APP.Dockerfile" \
+  --file "dockerfiles/$APP.Dockerfile" \
   --cache-from type=gha \
   --cache-to type=gha,mode=max \
   --output type=docker \
@@ -61,7 +61,7 @@ docker buildx build \
   --label "org.opencontainers.image.licenses=MPL-2.0" \
   --label "org.opencontainers.image.title=spike" \
   --label "org.opencontainers.image.description=SPIKE is a lightweight secrets store that uses SPIFFE as its identity control plane" \
-  $TAG_ARGS \
+  "$TAG_ARGS" \
   .
 
 # Push images
