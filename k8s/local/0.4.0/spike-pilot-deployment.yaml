@@ -31,6 +31,9 @@ spec:
       containers:
       - name: app
         image: localhost:5000/spike-pilot:0.4.0
+        securityContext:
+          runAsUser: 1000
+          runAsGroup: 1000
         # Override the entrypoint to keep the container running
         command: ["sh", "-c", "tail -f /dev/null"]
         env:

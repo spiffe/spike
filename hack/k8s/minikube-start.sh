@@ -55,5 +55,6 @@ minikube addons enable registry
 minikube addons enable metrics-server
 minikube addons enable ingress
 minikube addons enable csi-hostpath-driver
+minikube addons enable volumesnapshots
 
 kubectl get node

@@ -37,7 +37,7 @@ COPY . .
 
 # Build the app for the target architecture
 RUN echo "Building SPIKE Pilot on $BUILDPLATFORM targeting $TARGETPLATFORM"
-RUN ./dockerfiles/build.sh ${TARGETARCH} spike
+RUN ./hack/docker/buildx.sh ${TARGETARCH} spike
 
 # Use BusyBox as the base image
 # FROM busybox:1.36-musl AS spike
@@ -49,13 +49,13 @@ ARG APPVERSION
 RUN adduser -D -H -u 1000 spike
 
 # Copy the binary from builder
-COPY --from=builder /workspace/spike /spike
+COPY --from=builder /workspace/spike /usr/local/bin/spike
+
+# Change ownership to spike user
+RUN chown spike:spike /spike
 
 # Ensure the binary is executable
 RUN chmod +x /spike
-
-# Switch to non-root user
-USER spike
 
 # Apply labels to the final image
 LABEL maintainers="SPIKE Maintainers <maintainers@spike.ist>" \

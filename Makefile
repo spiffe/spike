@@ -41,6 +41,10 @@ demo-put-secret:
 
 # --------...--------
 
+# 0. Prune docker file system to save resources.
+docker-cleanup:
+	./hack/docker/cleanup.sh
+
 # 1. Reset the test cluster.
 k8s-delete:
 	./hack/k8s/minikube-delete.sh
@@ -85,9 +89,7 @@ tail-keeper-2:
 
 # --------...--------
 
-# Reset docker.
-docker-cleanup:
-	./hack/docker/cleanup.sh
+
 
 .PHONY: lint-go
 lint-go:

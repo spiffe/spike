@@ -30,26 +30,39 @@ spec:
     spec:
       serviceAccountName: spike-nexus
       containers:
-      - name: app
-        image: localhost:5000/spike-nexus:0.4.0
-        volumeMounts:
-          - name: spiffe-workload-api
-            mountPath: /spiffe-workload-api
-            readOnly: true
-        ports:
-        - containerPort: 8553
-          name: api
-        env:
-        - name: SPIKE_TRUST_ROOT
-          value: spike.ist
-        - name: SPIKE_SYSTEM_LOG_LEVEL
-          value: DEBUG
-        - name: SPIKE_NEXUS_KEEPER_PEERS
-          value: "https://spike-keeper-0.spike-keeper-headless.spike-edge.svc.cluster.local:8443,https://spike-keeper-1.spike-keeper-headless.spike-edge.svc.cluster.local:8443,https://spike-keeper-2.spike-keeper-headless.spike-edge.svc.cluster.local:8443"
-        - name: SPIFFE_ENDPOINT_SOCKET
-          value: "unix:///spiffe-workload-api/spire-agent.sock"
+        - name: app
+          image: localhost:5000/spike-nexus:0.4.0
+          securityContext:
+            runAsUser: 1000
+            runAsGroup: 1000
+          volumeMounts:
+            - name: spiffe-workload-api
+              mountPath: /spiffe-workload-api
+              readOnly: true
+            - name: spike-data
+              mountPath: /.spike
+          ports:
+            - containerPort: 8553
+              name: api
+          env:
+            - name: SPIKE_TRUST_ROOT
+              value: spike.ist
+            - name: SPIKE_SYSTEM_LOG_LEVEL
+              value: DEBUG
+            - name: SPIKE_NEXUS_KEEPER_PEERS
+              value: "https://spike-keeper-0.spike-keeper-headless.spike-edge.svc.cluster.local:8443,https://spike-keeper-1.spike-keeper-headless.spike-edge.svc.cluster.local:8443,https://spike-keeper-2.spike-keeper-headless.spike-edge.svc.cluster.local:8443"
+            - name: SPIFFE_ENDPOINT_SOCKET
+              value: "unix:///spiffe-workload-api/spire-agent.sock"
       volumes:
-      - name: spiffe-workload-api
-        csi:
-          driver: "csi.spiffe.io"
-          readOnly: true
+        - name: spiffe-workload-api
+          csi:
+            driver: "csi.spiffe.io"
+            readOnly: true
+  volumeClaimTemplates:
+    - metadata:
+        name: spike-data
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        resources:
+          requests:
+            storage: 1Gi

@@ -37,7 +37,7 @@ COPY . .
 
 # Build the app for the target architecture
 RUN echo "Building SPIKE Keeper on $BUILDPLATFORM targeting $TARGETPLATFORM"
-RUN ./dockerfiles/build.sh ${TARGETARCH} keeper
+RUN ./hack/docker/buildx.sh ${TARGETARCH} keeper
 
 # Target distroless base image for CGO_ENABLED apps
 # This image includes a basic runtime environment with libc and
@@ -46,7 +46,11 @@ FROM gcr.io/distroless/static AS keeper
 # Redefine the ARG in this stage to make it available
 ARG APPVERSION
 
-COPY --from=builder /workspace/keeper /keeper
+# Copy with numeric UID ownership
+COPY --from=builder --chown=1000:1000 /workspace/keeper /keeper
+
+# Run as non-root.
+USER 1000
 
 # Apply labels to the final image
 LABEL maintainers="SPIKE Maintainers <maintainers@spike.ist>" \

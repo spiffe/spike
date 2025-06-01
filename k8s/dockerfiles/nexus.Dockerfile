@@ -37,16 +37,20 @@ COPY . .
 
 # Build the app for the target architecture
 RUN echo "Building SPIKE Nexus on $BUILDPLATFORM targeting $TARGETPLATFORM"
-RUN ./dockerfiles/build.sh ${TARGETARCH} nexus
+RUN ./hack/docker/buildx.sh ${TARGETARCH} nexus
 
 # Target distroless base image for CGO_ENABLED apps
 # This image includes a basic runtime environment with libc and
 # other minimal dependencies
-FROM gcr.io/distroless/static AS keeper
+FROM gcr.io/distroless/base AS nexus
 # Redefine the ARG in this stage to make it available
 ARG APPVERSION
 
-COPY --from=builder /workspace/keeper /keeper
+# Copy with numeric UID ownership
+COPY --from=builder --chown=1000:1000 /workspace/nexus /nexus
+
+# Run as non-root.
+USER 1000
 
 # Apply labels to the final image
 LABEL maintainers="SPIKE Maintainers <maintainers@spike.ist>" \
@@ -58,4 +62,4 @@ LABEL maintainers="SPIKE Maintainers <maintainers@spike.ist>" \
       community="https://spike.ist/community/hello/" \
       changelog="https://spike.ist/tracking/changelog/"
 
-ENTRYPOINT ["/keeper"]
+ENTRYPOINT ["/nexus"]
