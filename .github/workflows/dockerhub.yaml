@@ -13,7 +13,6 @@ env:
 
 jobs:
   docker:
-    runs-on: ubuntu-latest
     runs-on: {{ matrix.archmap[matrix.arch] }}
     strategy:
       matrix:
