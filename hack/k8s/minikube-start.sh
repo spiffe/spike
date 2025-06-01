@@ -38,11 +38,6 @@ echo "eval #(minikube -p minikube docker-env)"
 # Minikube might need additional flags for SPIRE to work properly.
 # A bare-metal or cloud Kubernetes cluster will not need these extra configs.
 minikube start \
-  --extra-config=apiserver.service-account-signing-key-file=/var/lib/minikube/certs/sa.key \
-  --extra-config=apiserver.service-account-key-file=/var/lib/minikube/certs/sa.pub \
-  --extra-config=apiserver.service-account-issuer=api \
-  --extra-config=apiserver.api-audiences=api,spire-server,spire-server-custom \
-  --extra-config=apiserver.authorization-mode=Node,RBAC \
   --memory="$MEMORY" \
   --cpus="$CPU" \
   --nodes="$NODES" \
@@ -54,7 +49,7 @@ sleep 10
 minikube addons enable registry
 minikube addons enable metrics-server
 minikube addons enable ingress
-minikube addons enable csi-hostpath-driver
 minikube addons enable volumesnapshots
+minikube addons enable csi-hostpath-driver
 
 kubectl get node
