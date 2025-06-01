@@ -48,6 +48,7 @@ done
 
 # Build image
 echo "Building image for $APP on $ARCH"
+set -e
 docker buildx build \
   --platform "$ARCH" \
   --file "dockerfiles/$APP.Dockerfile" \
