@@ -6,7 +6,6 @@ on:
 env:
   REGISTRY: ghcr.io
   REPOSITORY: spiffe
-  DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
   COSIGN_EXPERIMENTAL: 1
 
 jobs:
