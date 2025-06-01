@@ -71,6 +71,13 @@
     <meta>Things to do before working further on containerization---Aim to finish
     all low-hanging fruits and tasks that can be done quickly and without
     major code change</meta>
+    <issue>
+      This warning should be cancellable via env var configuration:
+
+      Memory locking is not available.
+      Consider disabling swap to enhance security.
+
+    </issue>
     <issue>Finish important (or "low-hanging") issue on GitHub too before
     starting containerization work.</issue>
     <issue kind="qa" note="create-pr">

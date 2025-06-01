@@ -28,19 +28,6 @@ demo-create-policy:
 demo-put-secret:
 	./examples/consume-secrets/demo-put-secret.sh
 
-# TODO:
-# x. reset microk8s
-# x. setup deps & metallb
-# 3. deploy SPIRE from charts
-# x. build dockerfiles
-# x. push images to a local registry
-# x. deploy SPIKE from local registry + manifests
-# 7. test if you can create/read secrets and policies
-# 8. verify that all files in ./hack has a accompanying make target
-#    and also they are references properly across code and docs.
-
-# --------...--------
-
 # 0. Prune docker file system to save resources.
 docker-cleanup:
 	./hack/docker/cleanup.sh
@@ -85,11 +72,8 @@ tail-keeper-1:
 tail-keeper-2:
 	kubectl logs spike-keeper-2 -n spike-edge -f
 
-
-
-# --------...--------
-
-
+exec-spike:
+	./hack/k8s/spike-sh.sh
 
 .PHONY: lint-go
 lint-go:
