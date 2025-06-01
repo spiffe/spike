@@ -8,6 +8,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+
 	"github.com/spiffe/spike-sdk-go/security/mem"
 	"github.com/spiffe/spike-sdk-go/spiffe"
 
@@ -17,10 +18,14 @@ import (
 
 func main() {
 	if !mem.Lock() {
-		fmt.Fprintf(os.Stderr, "\n")
-		fmt.Fprintf(os.Stderr, "Memory locking is not available.\n")
-		fmt.Fprintf(os.Stderr, "Consider disabling swap to enhance security.\n")
-		fmt.Fprintf(os.Stderr, "\n")
+		_, err := fmt.Fprintln(os.Stderr, `
+		Memory locking is not available.
+		Consider disabling swap to enhance security.
+		`)
+		if err != nil {
+			fmt.Println("Error writing to stderr:", err.Error())
+			return
+		}
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())

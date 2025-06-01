@@ -152,7 +152,7 @@ Additionally, you can source the following file to define additional
 required because if you don't define them, **SPIKE** will assume sensible
 defaults. 
 
-Sourcing `./hack/env.sh` allows you to override the default **SPIKE**
+Sourcing `./hack/lib/env.sh` allows you to override the default **SPIKE**
 environment settings. This can be particularly useful for development
 purposes to test custom setups or alternative paths.
 
@@ -165,7 +165,7 @@ as documentation to help understand the development environment.
 # ...
 
 # SPIKE Environment configuration                                                
-source $WORKSPACE/spike/hack/env.sh 
+source $WORKSPACE/spike/hack/lib/env.sh 
 ```
 
 ## Verifying SPIRE Installation

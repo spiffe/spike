@@ -5,6 +5,37 @@
 # \\\\\\\ SPDX-License-Identifier: Apache-2.0
 -->
 <stuff>
+  <kubernetification>
+    <issue>
+      Goal: Have a running local k8s setup as fast as possible.
+            We can make things re-usable later.
+            Need to wrap things up before KubeCon.
+
+      Things to do:
+      1. Ensure Nexus, Keeper, Pilot build and run in pods
+      2. Increase log verbosity of Nexus, Keeper, Pilot
+      3. Create three keeper instances.
+      4. Disable automatic spiffeid creation for SPIKE elements
+      5. Create helm values for SPIRE setup in the cluster.
+      6. Ensure SPIFFE workload API works for Nexus, Keeper, Pilot
+      7. Create ClusterSPIFFEIDs
+      8. Validate SPIRE Server Registration Entries
+
+      600e16bf-b318-4246-a1fc-3c284f21dad3
+    </issue>
+    <issue>
+      # to be added to docs.
+      # how to expose things to other clusters:
+      # kubectl port-forward --address 0.0.0.0 svc/nginx-lb 8080:80
+      # no need for ingress
+      # no need for `kubectl port-forward`
+      # great for demo/development setups.
+      # Also forward registry to docker to work
+      # kubectl port-forward -n kube-system svc/registry 5000:80 &
+      # You don't need to `eval $(minikube -p minikube docker-env)`
+      # Again, this is simpler.
+    </issue>
+  </kubernetification>
   <purpose>
     <target>Our goal is to have a minimally delightful product.</target>
     <target>Strive not to add features just for the sake of adding
@@ -40,6 +71,13 @@
     <meta>Things to do before working further on containerization---Aim to finish
     all low-hanging fruits and tasks that can be done quickly and without
     major code change</meta>
+    <issue>
+      This warning should be cancellable via env var configuration:
+
+      Memory locking is not available.
+      Consider disabling swap to enhance security.
+
+    </issue>
     <issue>Finish important (or "low-hanging") issue on GitHub too before
     starting containerization work.</issue>
     <issue kind="qa" note="create-pr">
@@ -55,10 +93,157 @@
   </immediate-backlog>
   <runner-up>
     <issue>
+      Notes to be processed from VSecM analysis:
+
+      ---
+
+      Create an ADR about the near/mid future plans wrt VSecM and SPIKE.
+
+      ---
+
+      VSecM: need to automate documentation
+      right now, we create manual deployments on CloudFlare and that does
+      not scale.
+      - create a public folder in the repo
+      - let cloudflare update the website from the "public" folder.
+      - "older versions" are still broken; but since documentation is markdown
+        we can always point the tagged version of it as former docs we
+        don't need an entire browsable website for it. At least, that's how we
+        do it with SPIKE and it saves effort.
+
+
+      ----
+
+      Documentation
+      Generating Protocol Buffers should be before the "build the project" section
+      also, needed to do "go mod vendor"
+      https://vsecm.com/documentation/development/use-the-source/
+
+
+      Build the Project
+      Make sure you have a running local Docker daemon and execute the following:
+      make build-local
+      ^
+      missing doucmentation. this directive assumes that we have a local registr
+      at port 5000; so we need to start minikube as well.
+
+      will remove spike (feature/k8s)$ eval $(minikube -p minikube docker-env)
+      from docs.
+
+
+      func log(message string) {
+      conn, err := grpc.Dial(
+      SentinelLoggerUrl(),
+      grpc.WithTransportCredentials(insecure.NewCredentials()),
+      grpc.WithBlock(),
+      )
+      Dial is deprecated
+      WithBlock is deprecated
+
+      // Create a gRPC client
+      conn, err := grpc.Dial(lis.Addr().String(), grpc.WithInsecure(), grpc.WithBlock())
+      if err != nil {
+      t.Fatalf("failed to dial server: %v", err)
+      }
+      WithInsecure/WithBlock are deprecated at rpc_test.go
+
+
+      http_test
+      nopcloser is deprecated
+      func TestReadBody_Success(t *testing.T) {
+      // Prepare the test data
+      cid := "test-cid"
+      expectedBody := []byte("test body content")
+      r := &amp;http.Request{
+      Body: ioutil.NopCloser(bytes.NewBuffer(expectedBody)),
+      }
+
+
+      secret-server/main.go
+      ReadAll is deprected
+
+      // Read the request body
+      body, err := ioutil.ReadAll(r.Body)
+      if err != nil {
+      http.Error(w, "Cannot read body", http.StatusBadRequest)
+      return
+      }
+      defer r.Body.Close()
+      and there are unhandled errors in r.Body.Close() s.
+
+
+
+      postgres.go +> remove postgres support; it's better to add it to SPIKE instead.
+
+      move backoff/retry code to the go sdk.
+
+
+      stream := cipher.NewCFBDecrypter(block, iv)
+      NewCFBDecrypter is deprecated.
+      decrypt.go
+
+      same:
+      stream := cipher.NewCFBEncrypter(block, iv)
+      stream.XORKeyStream(ciphertext[aes.BlockSize:], []byte(data))
+      NewCFBDecrypter is deprecated.
+
+      remove relay client and relay server-related code.
+
+
+      create github workflow to run tests and coverage report and publish it on
+      /public at every merge.
+
+      codeql is failing because there is no legit github actions to scan.
+      Error: "No source code was seen during the build"
+
+
+
+      https://github.com/spiffe/spike/pull/157
+
+
+      move docs to public.
+
+      consume SPIRE from upstream helm instead of our custom fork.
+
+      For Ubuntu users; do not use snap to install docker as it can create permission issues when working with minikube. */
+      ^
+      rendering on the page has error.
+
+      GitHub actions is creating pipeline errors:
+      https://github.com/vmware/secrets-manager/settings/code-scanning/default-setup
+
+
+      VSecM-SPIKE Integration Strategy
+
+      SPIKE: SPIFFE-native secrets manager
+      VSecM: Secrets Manager and Orchestrator
+
+      SPIKE: mandatory SPIFFE use
+      VSecM: SPIFFE is a core feature but can work/integrate with others
+
+      SPIKE: minimal CLI as UX structure (and API)
+      VSecM: policy engine, audits, secret LCM, automation, UI-ready.
+
+      SPIKE: embedded, edge, stateless
+      VSecM: stateful, policy-aware, multi-tenant
+
+      Helm:
+      SPIKE: subchart under SPIFFE
+      VSecM: consumes SPIRE helm chart; can enable SPIKE
+      * SPIKE is set up as the "default" secrets manager and first-class
+      integration; but it can integrate with other secrets stores too.
+
+    </issue>
+    <issue>
       Ensure SPIKE Pilot does not indefinitely hang up if SPIRE Nexus is not there
       or there is a SPIFFEID/SVID issue. It should give up after a while and
       print a warning that a connection to the api server could not be established
       in a timely manner.
+    </issue>
+    <issue>
+      Make vSecM use helm only (you can override images if needed,
+      to test with local images. -- that will be better than
+      generating local manifests and maintaining them separately)
     </issue>
     <issue>
       ADR:
