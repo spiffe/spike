@@ -9,11 +9,11 @@ env:
   REPOSITORY: spiffe
   DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
   COSIGN_EXPERIMENTAL: 1
-  DOCKER_CONTENT_TRUST: 1
+#  DOCKER_CONTENT_TRUST: 1
 
 jobs:
   docker:
-    runs-on: {{ matrix.archmap[matrix.arch] }}
+    runs-on: ${{ matrix.archmap[matrix.arch] }}
     strategy:
       matrix:
         app: [pilot, keeper, nexus]
@@ -63,3 +63,25 @@ jobs:
 #          echo "${TAGS}" | tr ',' '\n' | while read -r tag; do
 #            cosign sign --yes "${tag}@${DIGEST}"
 #          done
+
+  manifest:
+    runs-on: ubuntu-24.04
+    needs: docker
+    strategy:
+      matrix:
+        app: [pilot, keeper, nexus]
+    steps:
+      - name: Log in to the Container registry
+        uses: docker/login-action@v3.3.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - run: |
+          # Extract version from release tag
+          VERSION="${{ github.event.release.tag_name }}"
+          VERSION=${VERSION#v}  # Remove 'v' prefix if present
+          docker manifest create ghcr.io/spiffe/spike-${{ matrix.app }}:${VERSION} \
+            --amend ghcr.io/spiffe/spike-${{ matrix.app }}:${VERSION}-x86_64 \
+            --amend ghcr.io/spiffe/spike-${{ matrix.app }}:${VERSION}-aarch64 && \
+          docker manifest push ghcr.io/spiffe/spike-${{ matrix.app }}:${VERSION}

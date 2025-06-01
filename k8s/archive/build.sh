@@ -12,7 +12,7 @@ fi
 TARGETARCH=$1
 APP=$2
 
-if [ "$TARGETARCH" != "amd64" ] && [ "$TARGETARCH" != "arm64" ]; then
+if [ "$TARGETARCH" != "amd64" -a "$TARGETARCH" != "arm64" ]; then
     echo "Error: Supported architectures are amd64 and arm64"
     exit 1
 fi
