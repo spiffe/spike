@@ -13,7 +13,7 @@ env:
 
 jobs:
   docker:
-    runs-on: {{ matrix.archmap[matrix.arch] }}
+    runs-on: ${{ matrix.archmap[matrix.arch] }}
     strategy:
       matrix:
         app: [pilot, keeper, nexus]
