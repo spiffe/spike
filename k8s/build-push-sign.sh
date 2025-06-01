@@ -64,10 +64,12 @@ docker buildx build \
   "$TAG_ARGS" \
   .
 
-# Push images
-echo "Pushing images"
-for tag in "${TAGS[@]}"; do
-  docker push "$tag"
-done
+if [ "x$PUSH" != "x" ]; then
+  # Push images
+  echo "Pushing images"
+  for tag in "${TAGS[@]}"; do
+    docker push "$tag"
+  done
+fi
 
 echo "Done!"
