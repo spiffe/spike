@@ -5,19 +5,20 @@ on:
     types: [published]
 
 env:
-  REGISTRY: docker.io
-  REPOSITORY: getspike
+  REGISTRY: ghcr.io
+  REPOSITORY: spiffe
   DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
   COSIGN_EXPERIMENTAL: 1
   DOCKER_CONTENT_TRUST: 1
 
 jobs:
   docker:
-    runs-on: ubuntu-latest
+    runs-on: {{ matrix.archmap[matrix.arch] }}
     strategy:
       matrix:
         app: [pilot, keeper, nexus]
         arch: [linux/amd64, linux/arm64]
+        archmap: [{ "linux/amd64": "ubuntu-24.04", "linux/arm64": "ubuntu-24.04-arm" }]
     permissions:
       contents: read
       packages: write
@@ -38,42 +39,15 @@ jobs:
       - name: Install cosign
         uses: sigstore/cosign-installer@v3.3.0
 
-      # Login to Docker Hub
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v3
+      - name: Login to Docker HUB
+        uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # v3.3.0
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      # Set up Docker Content Trust delegation key
-      - name: Set up Docker Content Trust
-        env:
-          DOCKER_CONTENT_TRUST_REPOSITORY_PASSPHRASE: ${{ secrets.DCT_DELEGATION_PASSPHRASE }}
-          DOCKER_DELEGATION_KEY: ${{ secrets.DCT_DELEGATION_KEY }}
-        run: |
-          # Create a temporary file with the delegation key
-          echo "0000"
-          mkdir -p /home/runner/.docker/
-          echo "aaaaa"
-          mkdir -p /home/runner/.docker/trust
-          echo "bbbb"
-          mkdir -p /home/runner/.docker/trust/private
-          echo "cccc"
-          if [ -z "$DOCKER_DELEGATION_KEY" ]; then
-            echo "osman is empty, please check your secrets configuration."
-          else
-            echo "osman in not empty"
-          fi
-          echo "$DOCKER_DELEGATION_KEY" > "/home/runner/.docker/trust/private/${{secrets.DCT_DELEGATION_KEY_FILENAME}}"
-          echo "dddd"
-          chmod 600 "/home/runner/.docker/trust/private/${{secrets.DCT_DELEGATION_KEY_FILENAME}}"
-          echo "eeee"
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       # Build and push images using the script
       - name: Build and push images
-        env:
-          DOCKER_CONTENT_TRUST_REPOSITORY_PASSPHRASE: ${{ secrets.DCT_DELEGATION_PASSPHRASE }}
-          DOCKER_CONTENT_TRUST: 1
         run: |
           # Extract version from release tag
           VERSION="${{ github.event.release.tag_name }}"

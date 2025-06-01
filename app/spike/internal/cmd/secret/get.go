@@ -5,11 +5,14 @@
 package secret
 
 import (
+	"encoding/json"
 	"fmt"
+	"slices"
 
 	"github.com/spf13/cobra"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	spike "github.com/spiffe/spike-sdk-go/api"
+	"gopkg.in/yaml.v3"
 
 	"github.com/spiffe/spike/app/spike/internal/stdout"
 	"github.com/spiffe/spike/app/spike/internal/trust"
@@ -45,46 +48,96 @@ func newSecretGetCommand(
 	source *workloadapi.X509Source, spiffeId string,
 ) *cobra.Command {
 	var getCmd = &cobra.Command{
-		Use:   "get <path>",
+		Use:   "get <path> [key]",
 		Short: "Get secrets from the specified path",
-		Args:  cobra.ExactArgs(1),
-		Run: func(cmd *cobra.Command, args []string) {
+		Args:  cobra.RangeArgs(1, 2),
+		RunE: func(cmd *cobra.Command, args []string) error {
 			trust.Authenticate(spiffeId)
 
 			api := spike.NewWithSource(source)
 
 			path := args[0]
 			version, _ := cmd.Flags().GetInt("version")
+			format, _ := cmd.Flags().GetString("format")
+
+			if !slices.Contains([]string{"plain", "yaml", "json", "y", "p", "j"}, format) {
+				return fmt.Errorf("invalid format specified: %s", format)
+			}
 
 			if !validSecretPath(path) {
-				fmt.Printf("Error: invalid secret path: %s\n", path)
-				return
+				return fmt.Errorf("invalid secret path: %s", path)
 			}
 
 			secret, err := api.GetSecretVersion(path, version)
 			if err != nil {
 				if err.Error() == "not ready" {
 					stdout.PrintNotReady()
-					return
+					return fmt.Errorf("server not ready")
 				}
 
-				fmt.Println("Error reading secret:", err.Error())
-				return
+				return fmt.Errorf("failure reading secret: %v", err.Error())
 			}
 
 			if secret == nil {
-				fmt.Println("Secret not found.")
-				return
+				return fmt.Errorf("Secret not found")
+			}
+
+			if secret.Data == nil {
+				return fmt.Errorf("secret has no data")
 			}
 
 			d := secret.Data
-			for k, v := range d {
-				fmt.Printf("%s: %s\n", k, v)
+			found := false
+			if format == "plain" || format == "p" {
+				for k, v := range d {
+					if len(args) < 2 || args[1] == "" {
+						fmt.Printf("%s: %s\n", k, v)
+						found = true
+					} else if args[1] == k {
+						fmt.Printf("%s\n", v)
+						found = true
+						break
+					}
+				}
+				if !found {
+					return fmt.Errorf("Key not found")
+				}
+			} else {
+				var b []byte
+				if len(args) < 2 || args[1] == "" {
+					if format == "yaml" || format == "y" {
+						b, err = yaml.Marshal(d)
+					} else {
+						b, err = json.MarshalIndent(d, "", "    ")
+					}
+					found = true
+				} else {
+					for k, v := range d {
+						if args[1] == k {
+							if format == "yaml" || format == "y" {
+								b, err = yaml.Marshal(v)
+							} else {
+								b, err = json.Marshal(v)
+							}
+							found = true
+							break
+						}
+					}
+				}
+				if err != nil {
+					return fmt.Errorf("failed to marshal data: %w", err)
+				}
+				if !found {
+					return fmt.Errorf("Key not found")
+				}
+				fmt.Printf("%s\n", string(b))
 			}
+			return nil
 		},
 	}
 
 	getCmd.Flags().IntP("version", "v", 0, "Specific version to retrieve")
+	getCmd.Flags().StringP("format", "f", "plain", "Format to use. Valid options: plain, p, yaml, y, json, j")
 
 	return getCmd
 }

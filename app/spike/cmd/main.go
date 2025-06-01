@@ -16,10 +16,10 @@ import (
 
 func main() {
 	if !mem.Lock() {
-		fmt.Println("")
-		fmt.Println("Memory locking is not available.")
-		fmt.Println("Consider disabling swap to enhance security.")
-		fmt.Println("")
+		fmt.Fprintf(os.Stderr, "\n")
+		fmt.Fprintf(os.Stderr, "Memory locking is not available.\n")
+		fmt.Fprintf(os.Stderr, "Consider disabling swap to enhance security.\n")
+		fmt.Fprintf(os.Stderr, "\n")
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
