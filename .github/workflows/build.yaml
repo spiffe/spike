@@ -1,0 +1,41 @@
+name: Build Containers
+
+on:
+  pull_request: {}
+
+env:
+  REGISTRY: ghcr.io
+  REPOSITORY: spiffe
+  COSIGN_EXPERIMENTAL: 1
+
+jobs:
+  build:
+    runs-on: ${{ matrix.archmap[matrix.arch] }}
+    strategy:
+      matrix:
+        app: [pilot, keeper, nexus]
+        arch: [linux/amd64, linux/arm64]
+        archmap: [{ "linux/amd64": "ubuntu-24.04", "linux/arm64": "ubuntu-24.04-arm" }]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Install cosign
+        uses: sigstore/cosign-installer@v3.3.0
+
+      # Build and push images using the script
+      - name: Build and push images
+        run: |
+          # Extract version from release tag
+          VERSION="${{ github.sha }}"
+          
+          ./k8s/build-push-sign.sh ${{ matrix.app }} ${{ matrix.arch }} ${VERSION} ${{ env.REGISTRY }} ${{ env.REPOSITORY }}
