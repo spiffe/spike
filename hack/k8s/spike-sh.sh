@@ -6,7 +6,7 @@
 
 # Script to find and shell into spike pod
 
-NAMESPACE="spike-control"
+NAMESPACE="spike-system"
 POD_PREFIX="spike-pilot"
 
 # Find the pod

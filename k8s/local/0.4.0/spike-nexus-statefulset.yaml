@@ -50,7 +50,7 @@ spec:
             - name: SPIKE_SYSTEM_LOG_LEVEL
               value: DEBUG
             - name: SPIKE_NEXUS_KEEPER_PEERS
-              value: "https://spike-keeper-0.spike-keeper-headless.spike-edge.svc.cluster.local:8443,https://spike-keeper-1.spike-keeper-headless.spike-edge.svc.cluster.local:8443,https://spike-keeper-2.spike-keeper-headless.spike-edge.svc.cluster.local:8443"
+              value: "https://spike-keeper-0.spike-keeper-headless.spike-system.svc.cluster.local:8443,https://spike-keeper-1.spike-keeper-headless.spike-system.svc.cluster.local:8443,https://spike-keeper-2.spike-keeper-headless.spike-system.svc.cluster.local:8443"
             - name: SPIFFE_ENDPOINT_SOCKET
               value: "unix:///spiffe-workload-api/spire-agent.sock"
       volumes:

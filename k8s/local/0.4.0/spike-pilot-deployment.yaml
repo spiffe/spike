@@ -5,7 +5,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  namespace: spike-control
+  namespace: spike-system
   name: spike-pilot
   labels:
     app.kubernetes.io/name: spike-pilot
@@ -20,7 +20,7 @@ spec:
       app.kubernetes.io/component: pilot
   template:
     metadata:
-      namespace: spike-control
+      namespace: spike-system
       labels:
         app.kubernetes.io/name: spike-pilot
         app.kubernetes.io/component: pilot

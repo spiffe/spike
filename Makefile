@@ -64,13 +64,13 @@ tail-nexus:
 	kubectl logs spike-nexus-0 -n spike-system -f
 
 tail-keeper-0:
-	kubectl logs spike-keeper-0 -n spike-edge -f
+	kubectl logs spike-keeper-0 -n spike-system -f
 
 tail-keeper-1:
-	kubectl logs spike-keeper-1 -n spike-edge -f
+	kubectl logs spike-keeper-1 -n spike-system -f
 
 tail-keeper-2:
-	kubectl logs spike-keeper-2 -n spike-edge -f
+	kubectl logs spike-keeper-2 -n spike-system -f
 
 exec-spike:
 	./hack/k8s/spike-sh.sh

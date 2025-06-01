@@ -5,7 +5,7 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  namespace: spike-edge
+  namespace: spike-system
   name: spike-keeper
   labels:
     app.kubernetes.io/name: spike-keeper
@@ -21,7 +21,7 @@ spec:
       app.kubernetes.io/component: keeper
   template:
     metadata:
-      namespace: spike-edge
+      namespace: spike-system
       labels:
         app.kubernetes.io/name: spike-keeper
         app.kubernetes.io/component: keeper
