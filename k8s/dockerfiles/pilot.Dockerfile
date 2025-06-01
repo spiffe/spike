@@ -52,10 +52,10 @@ RUN adduser -D -H -u 1000 spike
 COPY --from=builder /workspace/spike /usr/local/bin/spike
 
 # Change ownership to spike user
-RUN chown spike:spike /spike
+RUN chown spike:spike /usr/local/bin/spike
 
 # Ensure the binary is executable
-RUN chmod +x /spike
+RUN chmod +x /usr/local/bin/spike
 
 # Apply labels to the final image
 LABEL maintainers="SPIKE Maintainers <maintainers@spike.ist>" \

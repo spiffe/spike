@@ -10,29 +10,19 @@
 # Enable alias expansion in non-interactive shells
 shopt -s expand_aliases
 
-echo "11111"
-
 set -e
-
-echo "22222"
 
 # shellcheck disable=SC2046
 # eval $(minikube -p minikube docker-env)
-
-echo "3333"
 
 export SPIKE_VERSION="0.4.0"
 
 REGISTRY_PORT=5000
 
-echo "4444"
-
 # Tag the images for the MicroK8s registry (which runs on localhost:$REGISTRY_PORT)
 docker tag spike-keeper:$SPIKE_VERSION localhost:$REGISTRY_PORT/spike-keeper:$SPIKE_VERSION
 docker tag spike-nexus:$SPIKE_VERSION localhost:$REGISTRY_PORT/spike-nexus:$SPIKE_VERSION
 docker tag spike-pilot:$SPIKE_VERSION localhost:$REGISTRY_PORT/spike-pilot:$SPIKE_VERSION
-
-echo "5555"
 
 # Push the images to the MicroK8s registry
 docker push localhost:$REGISTRY_PORT/spike-keeper:$SPIKE_VERSION

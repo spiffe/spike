@@ -8,7 +8,9 @@ metadata:
   namespace: spike-system
   name: spike-nexus-0-external
   labels:
-    app: spike-nexus
+    app.kubernetes.io/name: spike-nexus
+    app.kubernetes.io/component: nexus
+    app.kubernetes.io/part-of: spike
     instance: "0"
 spec:
   type: LoadBalancer

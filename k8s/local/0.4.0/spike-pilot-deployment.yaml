@@ -41,6 +41,8 @@ spec:
           value: spike.ist
         - name: SPIKE_SYSTEM_LOG_LEVEL
           value: DEBUG
+        - name: SPIKE_NEXUS_API_URL
+          value: https://spike-nexus-0.spike-nexus-headless.spike-system.svc.cluster.local:8553
         - name: SPIFFE_ENDPOINT_SOCKET
           value: "unix:///spiffe-workload-api/spire-agent.sock"
         volumeMounts:
