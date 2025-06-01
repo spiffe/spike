@@ -14,7 +14,7 @@ start-privileged:
 
 # Builds SPIKE binaries.
 build:
-	./hack/build-spike.sh
+	./hack/bare-metal/build/build-spike.sh
 
 # Registry an entry to the SPIRE server for the demo app.
 demo-register-entry:

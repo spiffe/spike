@@ -79,7 +79,7 @@ else
 fi
 
 if [ -z "$SPIKE_SKIP_SPIKE_BUILD" ]; then
-    if ./hack/build-spike.sh; then
+    if ./hack/bare-metal/build/build-spike.sh; then
         echo "SPIKE binaries built successfully"
     else
         echo "Failed to build SPIKE binaries"
