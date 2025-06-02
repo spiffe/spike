@@ -1,0 +1,273 @@
+package integration
+
+import (
+	"bytes"
+	"context"
+	"fmt"
+	"os"
+	"os/exec"
+	"strings"
+	"testing"
+	"time"
+
+	v1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/kubernetes/scheme"
+	"k8s.io/client-go/tools/clientcmd"
+	"k8s.io/client-go/tools/remotecommand"
+	"k8s.io/client-go/util/homedir"
+	"path/filepath"
+)
+
+type TestHarness struct {
+	clientset          *kubernetes.Clientset
+	portForwardCancel  context.CancelFunc
+	minikubeProfile    string
+}
+
+func NewTestHarness() *TestHarness {
+	return &TestHarness{
+		minikubeProfile: "spike-test",
+	}
+}
+
+// Run make command
+func (h *TestHarness) runMake(target string) error {
+	cmd := exec.Command("make", target)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	fmt.Printf("Running: make %s\n", target)
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("make %s failed: %w", target, err)
+	}
+	return nil
+}
+
+// Setup Minikube cluster
+func (h *TestHarness) setupMinikube() error {
+	fmt.Println("Setting up Minikube...")
+
+	// Start minikube
+	cmd := exec.Command("minikube", "start", "--profile", h.minikubeProfile)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("failed to start minikube: %w", err)
+	}
+
+	// Setup kubernetes client
+	kubeconfig := filepath.Join(homedir.HomeDir(), ".kube", "config")
+	config, err := clientcmd.BuildConfigFromFlags("", kubeconfig)
+	if err != nil {
+		return fmt.Errorf("failed to build kubeconfig: %w", err)
+	}
+
+	h.clientset, err = kubernetes.NewForConfig(config)
+	if err != nil {
+		return fmt.Errorf("failed to create kubernetes client: %w", err)
+	}
+
+	return nil
+}
+
+// Start port forwarding in background
+func (h *TestHarness) startPortForward() error {
+	ctx, cancel := context.WithCancel(context.Background())
+	h.portForwardCancel = cancel
+
+	// Run port forward in goroutine
+	errChan := make(chan error, 1)
+	go func() {
+		cmd := exec.CommandContext(ctx, "make", "docker-port-forward")
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+
+		fmt.Println("Starting registry port forward...")
+		if err := cmd.Run(); err != nil {
+			// Only send error if context wasn't cancelled
+			if ctx.Err() == nil {
+				errChan <- fmt.Errorf("port forward failed: %w", err)
+			}
+		}
+	}()
+
+	// Give port forward time to establish
+	select {
+	case err := <-errChan:
+		return err
+	case <-time.After(5 * time.Second):
+		// Assume port forward is working if no error after 5 seconds
+		return nil
+	}
+}
+
+// Execute command in pod
+func (h *TestHarness) execInPod(namespace, podName string, command []string) (string, error) {
+	req := h.clientset.CoreV1().RESTClient().Post().
+		Resource("pods").
+		Name(podName).
+		Namespace(namespace).
+		SubResource("exec").
+		VersionedParams(&v1.PodExecOptions{
+			Command: command,
+			Stdout:  true,
+			Stderr:  true,
+			TTY:     false,
+		}, scheme.ParameterCodec)
+
+	config, err := clientcmd.BuildConfigFromFlags("", filepath.Join(homedir.HomeDir(), ".kube", "config"))
+	if err != nil {
+		return "", fmt.Errorf("failed to get config: %w", err)
+	}
+
+	exec, err := remotecommand.NewSPDYExecutor(config, "POST", req.URL())
+	if err != nil {
+		return "", fmt.Errorf("failed to create executor: %w", err)
+	}
+
+	var stdout, stderr bytes.Buffer
+	err = exec.Stream(remotecommand.StreamOptions{
+		Stdout: &stdout,
+		Stderr: &stderr,
+	})
+
+	if err != nil {
+		return "", fmt.Errorf("exec failed: %w, stderr: %s", err, stderr.String())
+	}
+
+	return stdout.String(), nil
+}
+
+// Wait for pod to be ready
+func (h *TestHarness) waitForPod(namespace, labelSelector string, timeout time.Duration) (string, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+
+	for {
+		select {
+		case <-ctx.Done():
+			return "", fmt.Errorf("timeout waiting for pod with selector %s", labelSelector)
+		case <-time.After(2 * time.Second):
+			pods, err := h.clientset.CoreV1().Pods(namespace).List(context.TODO(), metav1.ListOptions{
+				LabelSelector: labelSelector,
+			})
+			if err != nil {
+				continue
+			}
+
+			for _, pod := range pods.Items {
+				if pod.Status.Phase == v1.PodRunning {
+					allReady := true
+					for _, c := range pod.Status.ContainerStatuses {
+						if !c.Ready {
+							allReady = false
+							break
+						}
+					}
+					if allReady {
+						return pod.Name, nil
+					}
+				}
+			}
+		}
+	}
+}
+
+// Cleanup
+func (h *TestHarness) cleanup() error {
+	fmt.Println("Cleaning up...")
+
+	// Cancel port forward
+	if h.portForwardCancel != nil {
+		h.portForwardCancel()
+	}
+
+	// Delete minikube cluster
+	cmd := exec.Command("minikube", "delete", "--profile", h.minikubeProfile)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("failed to delete minikube: %w", err)
+	}
+
+	return nil
+}
+
+func TestSpikeIntegration(t *testing.T) {
+	harness := NewTestHarness()
+
+	// Ensure cleanup happens
+	defer func() {
+		if err := harness.cleanup(); err != nil {
+			t.Errorf("Cleanup failed: %v", err)
+		}
+	}()
+
+	// Step 1: Setup Minikube
+	if err := harness.setupMinikube(); err != nil {
+		t.Fatalf("Failed to setup minikube: %v", err)
+	}
+
+	// Step 2: Build container images
+	if err := harness.runMake("docker-build"); err != nil {
+		t.Fatalf("Failed to build images: %v", err)
+	}
+
+	// Step 3: Start port forward (in background)
+	if err := harness.startPortForward(); err != nil {
+		t.Fatalf("Failed to start port forward: %v", err)
+	}
+
+	// Step 4: Push images
+	if err := harness.runMake("docker-push"); err != nil {
+		t.Fatalf("Failed to push images: %v", err)
+	}
+
+	// Step 5: Install charts
+	if err := harness.runMake("deploy"); err != nil {
+		t.Fatalf("Failed to deploy charts: %v", err)
+	}
+
+	// Step 6: Wait for spike-pilot pod and run command
+	fmt.Println("Waiting for spike-pilot pod...")
+	podName, err := harness.waitForPod("spike-system", "app=spike-pilot", 5*time.Minute)
+	if err != nil {
+		t.Fatalf("Failed to find ready spike-pilot pod: %v", err)
+	}
+
+	fmt.Printf("Found pod: %s\n", podName)
+
+	// Execute spike secret list command
+	output, err := harness.execInPod("spike-system", podName, []string{"spike", "secret", "list"})
+	if err != nil {
+		t.Fatalf("Failed to execute command in pod: %v", err)
+	}
+
+	// Step 7: Verify output
+	fmt.Printf("Command output: %s\n", output)
+	if !strings.Contains(output, "no secrets") {
+		t.Errorf("Expected output to contain 'no secrets', got: %s", output)
+	}
+}
+
+// Additional test for more complex scenarios
+func TestSpikeWithSecrets(t *testing.T) {
+	harness := NewTestHarness()
+	defer harness.cleanup()
+
+	// ... setup steps ...
+
+	// You can add more test scenarios here
+}
+
+--------
+
+.PHONY: test-integration
+test-integration:
+	go test -v ./tests/integration -timeout 30m
+
+.PHONY: test-integration-short
+test-integration-short:
+	go test -v ./tests/integration -short -timeout 10m

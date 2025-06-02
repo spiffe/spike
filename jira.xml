@@ -5,55 +5,32 @@
 # \\\\\\\ SPDX-License-Identifier: Apache-2.0
 -->
 <stuff>
-  <purpose>
-    <target>Our goal is to have a minimally delightful product.</target>
-    <target>Strive not to add features just for the sake of adding
-      features.
-    </target>
-    <target>Half-assed features shall be completed before adding more
-      features.
-    </target>
-    <meta>
-      Minimally Delightful Product Requirements:
-      - A Kubernetes SPIKE deployment
-      ✅ Minimal policy enforcement
-      - Minimal integration tests
-      ✅ A demo workload that uses SPIKE to test things out as a consumer.
-      ✅ A golang SDK
-    </meta>
-  </purpose>
-  <watch>
-    <issue>
-      There is ongoing work on kubernetification.
-        * Create a local Minikube cluster and test images locally.
-    </issue>
-    <issue>
-      There is an ongoing work on HTML...ization of the Turtle Book.
-      We also need to start a work on updating spiffe.io for the
-      new book.
-    </issue>
-    <issue kind="good-first-issue"
-           ref="https://github.com/spiffe/spike/issues/80"
-           title="add reason to errors" />
-  </watch>
   <immediate-backlog>
-    <meta>Things to do before working further on containerization---Aim to finish
-    all low-hanging fruits and tasks that can be done quickly and without
-    major code change</meta>
-    <issue>Finish important (or "low-hanging") issue on GitHub too before
-    starting containerization work.</issue>
-    <issue kind="qa" note="create-pr">
-      Add relevant ones of those to the smoke tests (to the docs)
-      - SPIKE Nexus Sanity Tests
-      - Ensure SPIKE Nexus caches the root key in memory. :: can be added to logs.
-      - Ensure SPIKE Nexus reads from SPIKE keep if it does not have the root key. :: check logs again
-      - Ensure SPIKE Nexus saves the encrypted root key to the database. :: check db
-      - Ensure SPIKE Nexus does not re-init (without manual intervention) after being initialized. :: check logs
-      - Ensure SPIKE Pilot denies any operation if SPIKE Nexus is not initialized.
-      - Ensure SPIKE Pilot can warn if SPIKE Nexus is unreachable
+    <issue>
+      Consume SPIKE from helm-charts-hardened.
+      Compare generated manifests with what we have.
+      Update helm-charts-hardened as needed.
+      Helm-charts should be the source of truth.
+    </issue>
+    <issue>
+      (potential KubeCon) demo setup:
+      VM edge-1 has a minikube cluster with 3 SPIKE Keepers
+      VM edge-2 has a minikube cluster with 3 SPIKE Keepers
+      VM mgmt   has a minikube cluster with SPIKE Nexus (connects to 6 keepers)
+      VM workload has a minikube cluster with a demo-workload in it.
+
+      All cluster have SPIRE on them installed via charts.
+      They will be federated.
+      // claude:ref: 7382c489-8d4d-45d1-a53d-7165f64c4b90
+
+      Set up a secret on pilot and the workload will see it.
     </issue>
   </immediate-backlog>
   <runner-up>
+    <issue>
+      VSecM ADR:
+      SPIKE Integration Plans
+    </issue>
     <issue>
       Notes to be processed from VSecM analysis:
 
@@ -393,6 +370,40 @@
   </runner-up>
 
   <later>
+    <issue>
+      Integration test: Ensure SPIKE Nexus caches the root key in memory.
+    </issue>
+    <issue>
+      Integration test: Ensure SPIKE Nexus recovers root key from keepers.
+    </issue>
+    <issue>
+      Integration test: Ensure SPIKE Nexus does not (inadvertently) initialize twice.
+      Once it's initialized successfully it should not recompute root key
+      material without manual `spike operator` intervention (because rotating
+      the root key without re-encrypting secrets will turn the backing store
+      unreadable)
+      when the key is lost, it should wait it to be re-seeded by keepers, or
+      manually recovered via `spike operator`.
+    </issue>
+    <issue>
+      Integration test: Ensure SPIKE Pilot denies any operation when SPIKE
+      Nexus is not initialized.
+    </issue>
+    <issue>
+      Integration test: Ensure SPIKE Pilot warns the user if SPIKE Nexus is
+      unreachable.
+    </issue>
+    <issue>
+      Integration tests: Ensure we can create and read secrets.
+    </issue>
+    <issue>
+      Integration test: Ensure we can create and read policies.
+    </issue>
+    <issue>
+      There is an ongoing work on HTML...ization of the Turtle Book.
+      We also need to start a work on updating spiffe.io for the
+      new book.
+    </issue>
     <issue severity="important" urgency="moderate">
       // TDO: check all database operations (secrets, policies, metadata)
       and
