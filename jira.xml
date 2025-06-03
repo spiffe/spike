@@ -27,7 +27,10 @@
     </issue>
   </kubernetification>
   <immediate-backlog>
-    <issue>update changelog, publish docs, also update changelog in github</issue>
+    <issue>
+      update changelog, publish docs, also update changelog in github
+      also generate non-docker binary assets for the release too.
+    </issue>
   </immediate-backlog>
   <runner-up>
     <issue>
