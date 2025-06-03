@@ -1,0 +1,17 @@
+#    \\ SPIKE: Secure your secrets with SPIFFE.
+#  \\\\\ Copyright 2024-present SPIKE contributors.
+# \\\\\\\ SPDX-License-Identifier: Apache-2.0
+
+global:
+  openshift: false # If running on openshift, set to true
+  spire:
+    recommendations:
+      enabled: true
+    namespaces:
+      create: true
+    clusterName: spike-demo-cluster
+    trustDomain: spike.ist
+    caSubject:
+      country: US
+      organization: SPIKE
+      commonName: spike.ist

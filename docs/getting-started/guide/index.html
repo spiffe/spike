@@ -868,7 +868,7 @@ follow the <a href="https://spiffe.io/docs/latest/deploying/configuring/" title=
 <strong>SPIKE</strong>-related environment variables for your convenience. This is not
 required because if you don’t define them, <strong>SPIKE</strong> will assume sensible
 defaults.</p>
-<p>Sourcing <code>./hack/env.sh</code> allows you to override the default <strong>SPIKE</strong>
+<p>Sourcing <code>./hack/lib/env.sh</code> allows you to override the default <strong>SPIKE</strong>
 environment settings. This can be particularly useful for development
 purposes to test custom setups or alternative paths.</p>
 <p>Having all overrides in a single place is also handy as it doubles
@@ -878,7 +878,7 @@ as documentation to help understand the development environment.</p>
 </span><span style="color:#65737e;"># ...
 </span><span>
 </span><span style="color:#65737e;"># SPIKE Environment configuration                                                
-</span><span style="color:#96b5b4;">source </span><span>$</span><span style="color:#bf616a;">WORKSPACE</span><span>/spike/hack/env.sh 
+</span><span style="color:#96b5b4;">source </span><span>$</span><span style="color:#bf616a;">WORKSPACE</span><span>/spike/hack/lib/env.sh 
 </span></code></pre>
 <h2 id="verifying-spire-installation">Verifying SPIRE Installation</h2>
 <p>Verify SPIRE installation as follows:</p>

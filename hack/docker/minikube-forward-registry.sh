@@ -4,7 +4,4 @@
 #  \\\\\ Copyright 2024-present SPIKE contributors.
 # \\\\\\\ SPDX-License-Identifier: Apache-2.0
 
-# Builds SPIKE components and pushes them to the local registry
-# for development.
-
-# TODO: implement me!
+kubectl port-forward -n kube-system svc/registry 5000:80

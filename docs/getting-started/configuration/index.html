@@ -726,6 +726,7 @@ configure the SPIKE components:</p>
 <tr><td>SPIKE Nexus</td><td><code>SPIKE_NEXUS_DB_MAX_IDLE_CONNS</code></td><td>The maximum number of idle connections to the database.</td><td><code>5</code></td></tr>
 <tr><td>SPIKE Nexus</td><td><code>SPIKE_NEXUS_DB_CONN_MAX_LIFETIME</code></td><td>The maximum lifetime of a database connection.</td><td><code>"1h"</code></td></tr>
 <tr><td>SPIKE Nexus</td><td><code>SPIKE_NEXUS_DB_INITIALIZATION_TIMEOUT</code></td><td>The maximum initialization time for SPIKE Nexus DB before bailing out</td><td><code>30s</code></td></tr>
+<tr><td>SPIKE Nexus</td><td><code>SPIKE_NEXUS_DB_SKIP_SCHEMA_CREATION</code></td><td>If set to <code>true</code>, skip creating SPIKE Nexus backing store. When set to <code>true</code>, the operator will manually have to create the initial backing store.</td><td><code>false</code></td></tr>
 <tr><td>SPIKE Nexus</td><td><code>SPIKE_NEXUS_PBKDF2_ITERATION_COUNT</code></td><td>The number of iterations for the PBKDF2 key derivation function.</td><td><code>600000</code></td></tr>
 <tr><td>SPIKE Nexus</td><td><code>SPIKE_NEXUS_RECOVERY_TIMEOUT</code></td><td>The timeout for attempting recovery from SPIKE Keepers. 0 = unlimited</td><td><code>0</code></td></tr>
 <tr><td>SPIKE Nexus</td><td><code>SPIKE_NEXUS_RECOVER_MAX_INTERVAL</code></td><td>Maximum interval between retries the recovery operation’s backing off algorithm</td><td><code>60s</code></td></tr>
@@ -733,12 +734,13 @@ configure the SPIKE components:</p>
 <tr><td>SPIKE Nexus</td><td><code>SPIKE_NEXUS_SHAMIR_SHARES</code></td><td>The total number of shares used for secret sharding, this should be equal to the number of SPIKE Keepers too.</td><td><code>3</code></td></tr>
 <tr><td>SPIKE Nexus</td><td><code>SPIKE_NEXUS_SHAMIR_THRESHOLD</code></td><td>The minimum number of shares to be able to reconstruct the root key.</td><td><code>2</code></td></tr>
 <tr><td>SPIKE Nexus</td><td><code>SPIKE_NEXUS_KEEPER_UPDATE_INTERVAL</code></td><td>The duration between SPIKE Nexus updates SPIKE Keepers with the relevant shard information.</td><td><code>5m</code></td></tr>
-<tr><td>All</td><td><code>SPIKE_SYSTEM_LOG_LEVEL</code></td><td>The log level for all SPIKE components (<code>"DEBUG"</code>, <code>"INFO"</code>, <code>"WARN"</code>, <code>"ERROR"</code>).</td><td><code>"DEBUG"</code></td></tr>
+<tr><td>All</td><td><code>SPIKE_SYSTEM_LOG_LEVEL</code></td><td>The log level for all SPIKE components (<code>"DEBUG"</code>, <code>"INFO"</code>, <code>"WARN"</code>, <code>"ERROR"</code>).</td><td><code>"WARN"</code></td></tr>
 <tr><td>All</td><td><code>SPIKE_NEXUS_API_URL</code></td><td>The URL where SPIKE Nexus can be reached</td><td><code>"https://localhost:8553"</code></td></tr>
 <tr><td>All</td><td><code>SPIKE_TRUST_ROOT</code></td><td>The SPIFFE trust root used within the SPIKE trust boundary. Can be a single entry, or a comma-delimited list of suitable trust roots.</td><td><code>"spike.ist"</code></td></tr>
 <tr><td>All</td><td><code>SPIKE_TRUST_ROOT_KEEPER</code></td><td>The SPIFFE trust root used for SPIKE Keeper instances. Can be a single entry, or a comma-delimited list of suitable trust roots.</td><td><code>"spike.ist"</code></td></tr>
 <tr><td>All</td><td><code>SPIKE_TRUST_ROOT_PILOT</code></td><td>The SPIFFE trust root used for SPIKE Pilot instances. Can be a single entry, or a comma-delimited list of suitable trust roots.</td><td><code>"spike.ist"</code></td></tr>
 <tr><td>All</td><td><code>SPIKE_TRUST_ROOT_NEXUS</code></td><td>The SPIFFE trust root used for SPIKE Nexus instances. Can be a single entry, or a comma-delimited list of suitable trust roots.</td><td><code>"spike.ist"</code></td></tr>
+<tr><td>All</td><td><code>SPIFFE_ENDPOINT_SOCKET</code></td><td>The Unix domain socket path used for SPIFFE Workload API</td><td><code>"unix:///tmp/spire-agent/public/api.sock"</code></td></tr>
 </tbody></table>
 <p>We’ll add more configuration options in the future. Stay tuned.</p>
 <hr />

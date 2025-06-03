@@ -50,7 +50,7 @@ done
 echo "Building image for $APP on $ARCH"
 docker buildx build \
   --platform "$ARCH" \
-  --file "k8s/dockerfiles/$APP.Dockerfile" \
+  --file "dockerfiles/$APP.Dockerfile" \
   --cache-from type=gha \
   --cache-to type=gha,mode=max \
   --output type=docker \
@@ -64,10 +64,12 @@ docker buildx build \
   $TAG_ARGS \
   .
 
-# Push images
-echo "Pushing images"
-for tag in "${TAGS[@]}"; do
-  docker push "$tag"
-done
+if [ "x$PUSH" != "x" ]; then
+  # Push images
+  echo "Pushing images"
+  for tag in "${TAGS[@]}"; do
+    docker push "$tag"
+  done
+fi
 
 echo "Done!"

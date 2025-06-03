@@ -52,6 +52,7 @@ jobs:
           # Extract version from release tag
           VERSION="${{ github.event.release.tag_name }}"
           VERSION=${VERSION#v}  # Remove 'v' prefix if present
+          export PUSH=true
           
           ./k8s/build-push-sign.sh ${{ matrix.app }} ${{ matrix.arch }} ${VERSION} ${{ env.REGISTRY }} ${{ env.REPOSITORY }}
 
@@ -82,6 +83,6 @@ jobs:
           VERSION="${{ github.event.release.tag_name }}"
           VERSION=${VERSION#v}  # Remove 'v' prefix if present
           docker manifest create ghcr.io/spiffe/spike-${{ matrix.app }}:${VERSION} \
-            --amend ghcr.io/spiffe/spike-${{ matrix.app }}:${VERSION}-x86_64 \
-            --amend ghcr.io/spiffe/spike-${{ matrix.app }}:${VERSION}-aarch64 && \
+            --amend ghcr.io/spiffe/spike-${{ matrix.app }}:${VERSION}-linux-amd64 \
+            --amend ghcr.io/spiffe/spike-${{ matrix.app }}:${VERSION}-linux-arm64 && \
           docker manifest push ghcr.io/spiffe/spike-${{ matrix.app }}:${VERSION}

@@ -1,0 +1,56 @@
+#    \\ SPIKE: Secure your secrets with SPIFFE.
+#  \\\\\ Copyright 2024-present SPIKE contributors.
+# \\\\\\\ SPDX-License-Identifier: Apache-2.0
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: spike-system
+  name: spike-pilot
+  labels:
+    app.kubernetes.io/name: spike-pilot
+    app.kubernetes.io/component: pilot
+    app.kubernetes.io/part-of: spike
+    app.kubernetes.io/version: "0.4.0"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: spike-pilot
+      app.kubernetes.io/component: pilot
+  template:
+    metadata:
+      namespace: spike-system
+      labels:
+        app.kubernetes.io/name: spike-pilot
+        app.kubernetes.io/component: pilot
+        app.kubernetes.io/part-of: spike
+        app.kubernetes.io/version: "0.4.0"
+    spec:
+      serviceAccountName: spike-pilot
+      containers:
+      - name: app
+        image: localhost:5000/spike-pilot:0.4.0
+        securityContext:
+          runAsUser: 1000
+          runAsGroup: 1000
+        # Override the entrypoint to keep the container running
+        command: ["sh", "-c", "tail -f /dev/null"]
+        env:
+        - name: SPIKE_TRUST_ROOT
+          value: spike.ist
+        - name: SPIKE_SYSTEM_LOG_LEVEL
+          value: DEBUG
+        - name: SPIKE_NEXUS_API_URL
+          value: https://spike-nexus-0.spike-nexus-headless.spike-system.svc.cluster.local:8553
+        - name: SPIFFE_ENDPOINT_SOCKET
+          value: "unix:///spiffe-workload-api/spire-agent.sock"
+        volumeMounts:
+        - name: spiffe-workload-api
+          mountPath: /spiffe-workload-api
+          readOnly: true
+      volumes:
+      - name: spiffe-workload-api
+        csi:
+          driver: "csi.spiffe.io"
+          readOnly: true
