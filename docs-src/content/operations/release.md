@@ -43,9 +43,9 @@ Before every release:
 8. Make sure version numbers in the code are updated to reflect the release:
 
 ```go
-const SpikeNexusVersion = "0.4.0"
-const SpikePilotVersion = "0.4.0"
-const SpikeKeeperVersion = "0.4.0"
+const SpikeNexusVersion = "0.4.1"
+const SpikePilotVersion = "0.4.1"
+const SpikeKeeperVersion = "0.4.1"
 ````
 
 Release process:
