@@ -18,13 +18,11 @@ import (
 
 func main() {
 	if !mem.Lock() {
-		_, err := fmt.Fprintln(os.Stderr, `
-		Memory locking is not available.
-		Consider disabling swap to enhance security.
-		`)
-		if err != nil {
-			fmt.Println("Error writing to stderr:", err.Error())
-			return
+		if _, err := fmt.Fprintln(os.Stderr, `
+Memory locking is not available.
+Consider disabling swap to enhance security.
+ `); err != nil {
+			fmt.Println("failed to write to stderr: ", err.Error())
 		}
 	}
 

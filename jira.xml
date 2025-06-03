@@ -5,6 +5,7 @@
 # \\\\\\\ SPDX-License-Identifier: Apache-2.0
 -->
 <stuff>
+  <immediate-backlog>
   <kubernetification>
     <issue>
       Goal: Have a running local k8s setup as fast as possible.
@@ -55,14 +56,23 @@
   </purpose>
   <watch>
     <issue>
-      There is ongoing work on kubernetification.
-        * Create a local Minikube cluster and test images locally.
+      1. Consume SPIKE from helm-charts-hardened.
+      2. Compare generated manifests with what we have.
+      3. Update helm-charts-hardened as needed.
+      4. Helm-charts should be the source of truth.
     </issue>
     <issue>
-      There is an ongoing work on HTML...ization of the Turtle Book.
-      We also need to start a work on updating spiffe.io for the
-      new book.
-    </issue>
+      (potential KubeCon) demo setup:
+      VM edge-1 has a minikube cluster with 3 SPIKE Keepers
+      VM edge-2 has a minikube cluster with 3 SPIKE Keepers
+      VM mgmt   has a minikube cluster with SPIKE Nexus (connects to 6 keepers)
+      VM workload has a minikube cluster with a demo-workload in it.
+
+      All cluster have SPIRE on them installed via charts.
+      They will be federated.
+      // claude:ref: 7382c489-8d4d-45d1-a53d-7165f64c4b90
+
+      Set up a secret on pilot and the workload will see it.
     <issue kind="good-first-issue"
            ref="https://github.com/spiffe/spike/issues/80"
            title="add reason to errors" />
@@ -93,152 +103,37 @@
   </immediate-backlog>
   <runner-up>
     <issue>
-      Notes to be processed from VSecM analysis:
-
-      ---
-
+      VSecM ADR:
+      SPIKE Integration Plans
       Create an ADR about the near/mid future plans wrt VSecM and SPIKE.
-
-      ---
-
-      VSecM: need to automate documentation
-      right now, we create manual deployments on CloudFlare and that does
-      not scale.
-      - create a public folder in the repo
-      - let cloudflare update the website from the "public" folder.
-      - "older versions" are still broken; but since documentation is markdown
-        we can always point the tagged version of it as former docs we
-        don't need an entire browsable website for it. At least, that's how we
-        do it with SPIKE and it saves effort.
-
-
-      ----
-
-      Documentation
+    </issue>
+    <issue>
+      SPIKE Documentation
       Generating Protocol Buffers should be before the "build the project" section
       also, needed to do "go mod vendor"
       https://vsecm.com/documentation/development/use-the-source/
-
-
+    </issue>
+    <issue>
+      SPIKE Documentation
       Build the Project
       Make sure you have a running local Docker daemon and execute the following:
       make build-local
       ^
-      missing doucmentation. this directive assumes that we have a local registr
+      missing documentation. this directive assumes that we have a local registry
       at port 5000; so we need to start minikube as well.
 
       will remove spike (feature/k8s)$ eval $(minikube -p minikube docker-env)
       from docs.
-
-
-      func log(message string) {
-      conn, err := grpc.Dial(
-      SentinelLoggerUrl(),
-      grpc.WithTransportCredentials(insecure.NewCredentials()),
-      grpc.WithBlock(),
-      )
-      Dial is deprecated
-      WithBlock is deprecated
-
-      // Create a gRPC client
-      conn, err := grpc.Dial(lis.Addr().String(), grpc.WithInsecure(), grpc.WithBlock())
-      if err != nil {
-      t.Fatalf("failed to dial server: %v", err)
-      }
-      WithInsecure/WithBlock are deprecated at rpc_test.go
-
-
-      http_test
-      nopcloser is deprecated
-      func TestReadBody_Success(t *testing.T) {
-      // Prepare the test data
-      cid := "test-cid"
-      expectedBody := []byte("test body content")
-      r := &amp;http.Request{
-      Body: ioutil.NopCloser(bytes.NewBuffer(expectedBody)),
-      }
-
-
-      secret-server/main.go
-      ReadAll is deprected
-
-      // Read the request body
-      body, err := ioutil.ReadAll(r.Body)
-      if err != nil {
-      http.Error(w, "Cannot read body", http.StatusBadRequest)
-      return
-      }
-      defer r.Body.Close()
-      and there are unhandled errors in r.Body.Close() s.
-
-
-
-      postgres.go +> remove postgres support; it's better to add it to SPIKE instead.
-
-      move backoff/retry code to the go sdk.
-
-
-      stream := cipher.NewCFBDecrypter(block, iv)
-      NewCFBDecrypter is deprecated.
-      decrypt.go
-
-      same:
-      stream := cipher.NewCFBEncrypter(block, iv)
-      stream.XORKeyStream(ciphertext[aes.BlockSize:], []byte(data))
-      NewCFBDecrypter is deprecated.
-
-      remove relay client and relay server-related code.
-
-
-      create github workflow to run tests and coverage report and publish it on
-      /public at every merge.
-
-      codeql is failing because there is no legit github actions to scan.
-      Error: "No source code was seen during the build"
-
-
-
-      https://github.com/spiffe/spike/pull/157
-
-
-      move docs to public.
-
-      consume SPIRE from upstream helm instead of our custom fork.
-
-      For Ubuntu users; do not use snap to install docker as it can create permission issues when working with minikube. */
-      ^
-      rendering on the page has error.
-
-      GitHub actions is creating pipeline errors:
-      https://github.com/vmware/secrets-manager/settings/code-scanning/default-setup
-
-
-      VSecM-SPIKE Integration Strategy
-
-      SPIKE: SPIFFE-native secrets manager
-      VSecM: Secrets Manager and Orchestrator
-
-      SPIKE: mandatory SPIFFE use
-      VSecM: SPIFFE is a core feature but can work/integrate with others
-
-      SPIKE: minimal CLI as UX structure (and API)
-      VSecM: policy engine, audits, secret LCM, automation, UI-ready.
-
-      SPIKE: embedded, edge, stateless
-      VSecM: stateful, policy-aware, multi-tenant
-
-      Helm:
-      SPIKE: subchart under SPIFFE
-      VSecM: consumes SPIRE helm chart; can enable SPIKE
-      * SPIKE is set up as the "default" secrets manager and first-class
-      integration; but it can integrate with other secrets stores too.
-
     </issue>
     <issue>
       Ensure SPIKE Pilot does not indefinitely hang up if SPIRE Nexus is not there
       or there is a SPIFFEID/SVID issue. It should give up after a while and
       print a warning that a connection to the api server could not be established
       in a timely manner.
+
+      We had a timeout configurable somewhere; we can verify that and document
+      it in "best practices" section. The timeout was infinite by default,
+      I think.
     </issue>
     <issue>
       Make vSecM use helm only (you can override images if needed,
@@ -255,113 +150,7 @@
       but there are edge cases
       better to use a file. file access is simple.
     </issue>
-    <issue kind="v1.0-requirement">
-      Kubernetification:
-      step 1: containerize using github registry.
-      step 2: use minikube and those container images and ensure things work
-      step 3: use a local registry for development build (this can be done before step 1)
-    </issue>
-    <issue kind="v1.0-requirement">
-      - Postgres support as a backing store.
-    </issue>
-    <issue kind="v1.0-requirement">
-      - Ability to channel audit logs to a log aggregator.
-    </issue>
-    <issue kind="v1.0-requirement">
-      - OIDC integration: Ability to connect to an identity provider.
-    </issue>
-    <issue kind="v1.0-requirement">
-      - ESO (External Secrets Operator) integration
-    </issue>
-    <issue kind="v1.0-requirement">
-      - An ADMIN UI (linked to OIDC probably)
-    </issue>
-    <issue kind="v1.0-requirement">
-      - Ability to use the RESTful API without needing an SDK.
-      That could be hard though since we rely on SPIFFE authentication and
-      SPIFFE workload API to gather certs: We can use a tool to automate
-      that
-      part. But it's not that hard either if I know where my certs are:
-      `curl --cert /path/to/svid_cert.pem --key /path/to/svid_key.pem
-      https://mtls.example.com/resource`
-    </issue>
-    <issue kind="v1.0-requirement">
-      > 80% unit test coverage
-    </issue>
-    <issue kind="v1.0-requirement">
-      Fuzzing for the user-facing API
-    </issue>
-    <isssue kind="v1.0-requirement">
-      100% Integration test (all features will have automated integration
-      tests
-      in all possible environments)
-    </isssue>
-    <issue kind="user-request,v1.0-requirement">
-      Ability to add custom metadata to secrets.
-    </issue>
-
-    <issue>
-      postgresql backend
-    </issue>
-    <issue>
-      document limits and maximums of SPIKE (such as key length, path
-      length, policy size etc)
-
-      also ensure that in the source code.
-    </issue>
-    <issue>
-      have a mode where nexus does not create tables upon initialization
-      (i.e. the admin is expected to create them beforehand)
-    </issue>
-    <issue>
-      increase unit test coverage.
-    </issue>
-    <issue>
-      pattern-based random secret generation
-    </issue>
-    <issue>
-      ability to lock nexus programmatically.
-      when locked, nexus will deny almost all operations
-      locking is done by executing nexus binary with a certain command
-      line flag.
-      (i.e. there is no API access, you'll need to physically exec the
-      ./nexus
-      binary -- regular svid verifications are still required)
-      only a superadmin can lock or unlock nexus.
-
-      ^ instead of that, you can run a script that removes all SVID
-      registrations. That will effectively result in the same thing.
-    </issue>
-    <issue>
-      test that the timeout results in an error.
-
-      ctx, cancel := context.WithTimeout(
-      context.Background(), env.DatabaseOperationTimeout(),
-      )
-      defer cancel()
-
-      cachedPolicy, err := retry.Do(ctx, func() (*data.Policy, error) {
-      return be.LoadPolicy(ctx, id)
-      })
-
-    </issue>
-    <issue>
-      Before doing anything, create a local Kubernetes setup that works.
-    </issue>
-    <issue priority="high" severity="medium">
-      Test with different shamir ratios
-
-      * 5/3 -- 5 keepers, out of 3 should be alive.
-      * 1/1 -- A single keeper
-      * 0/0 -- edge case; not sure how it should behave.
-      * in-memory -- in-memory mode should disregard any keeper config.
-    </issue>
-    <issue>
-      - TODO optimize sqlite default params and also make sure we retry
-      database operations -- at least check that we have sane defaults.
-      - ref: https://tenthousandmeters.com/blog/sqlite-concurrent-writes-and-database-is-locked-errors/
-    </issue>
-    <issue>
+    <issue kind="documentation">
       Also, create a script in ./hack that does that.
       (i.e. something that forces Nexus to reset its root key
       upon next restart; and see how it impacts the system
@@ -384,53 +173,185 @@
       // and the root key needs to be backed up in a secure place too.
       // ^ add these to the documentation.
     </issue>
-    <issue>
-      a way to factory-reset SPIKE: reset db; recreate rootkey; delete
-      tombstone file etc.
-
-      spike operator reset:
-      deletes and recreates the ~/.spike folder
-      restarts the initialization flow to rekey keepers.
-
-      volkan@spike:~/Desktop/WORKSPACE/spike$ spike secret get /db
-      Error reading secret: post: Problem connecting to peer
-
-      ^ I get an error instead of a "secret not found" message.
+    <issue kind="v1.0-requirement">
+      - Postgres support as a backing store.
+      - Postgres should be a plugin (similar to SQLite)
     </issue>
-    <issue>
-      2025/04/25 13:12:19 Aborting.
-      spike (feature/faster-recovery)$ ./hack/spire-server-entry-recover-register.sh
-
-      Also this should be part of operator
-
-      spire-server entry update \
-      -entryID "$ENTRY_ID" \
-      -spiffeID spiffe://spike.ist/spike/pilot/role/recover \
-      -parentID "spiffe://spike.ist/spire-agent" \
-      -selector unix:uid:"$(id -u)" \
-      -selector unix:path:"$PILOT_PATH" \
-      -selector unix:sha256:"$PILOT_SHA"
-
-      as in run the above command where PILOT_PATH is … … etc etc.
-
-      should be part of the binary.
-      or maybe a separate binary should execute those in an interactive manner.
-
-      create make targets for these.
+    <issue kind="v1.0-requirement">
+      - Ability to channel audit logs to a log aggregator.
+      - NOTE: This feature can be delegated to VSecM instead.
     </issue>
-    <issue>
-      {"time":"2025-04-25T13:24:52.652299515-07:00","level":"INFO","msg":"HydrateMemoryFromBackingStore","msg":"HydrateMemoryFromBackingStore: secrets loaded"}
-      {"time":"2025-04-25T13:24:52.652368182-07:00","level":"INFO","msg":"HydrateMemoryFromBackingStore","msg":"HydrateMemoryFromBackingStore: policies loaded"}
-      ^
-      how can we know that this data has already been pushed.
-      a brute force way is to hash the last payloads and compare with the hashes of the current payloads.
-      if hydrated, no need to re-hydrate then.
-      but that requires two full table scans, json serialization, and hashing.
-      could there be a better way?
+    <issue kind="v1.0-requirement">
+      - OIDC integration: Ability to connect to an identity provider.
+      - NOTE: This feature can be delegated to VSecM instead.
+        VSecM can be an identity broker; and SPIKE can be a client.
+    </issue>
+    <issue kind="v1.0-requirement">
+      - ESO (External Secrets Operator) integration
+      - NOTE: This feature can be delegated to VSecM to.
+    </issue>
+    <issue kind="v1.0-requirement">
+      - An ADMIN UI (linked to OIDC probably)
+      - NOTE: This feature can be delegated to VSecM instead.
+        VSecM can provide a UI for SPIKE Nexus.
+    </issue>
+    <issue kind="v1.0-requirement">
+      - Ability to use the RESTful API without needing an SDK.
+      That could be hard though since we rely on SPIFFE authentication and
+      SPIFFE workload API to gather certs: We can use a tool to automate
+      that
+      part. But it's not that hard either if I know where my certs are:
+      `curl --cert /path/to/svid_cert.pem --key /path/to/svid_key.pem
+      https://mtls.example.com/resource`
+    </issue>
+    <issue kind="v1.0-requirement">
+      > 80% unit test coverage
+    </issue>
+    <issue kind="v1.0-requirement">
+      Fuzzing for the user-facing API
+    </issue>
+    <issue kind="v1.0-requirement">
+      100% Integration test (all features will have automated integration
+      tests
+      in all possible environments)
+    </issue>
+    <issue kind="user-request,v1.0-requirement">
+      Ability to add custom metadata to secrets.
     </issue>
   </runner-up>
-
   <later>
+    <issue>
+      SPIKE (and also VSecM)
+      create github workflow to run tests and coverage report and publish it on
+      /public at every merge.
+    </issue>
+    <issue>
+      VSecM: codeql is failing because there is no legit github actions to scan.
+      Error: "No source code was seen during the build"
+    </issue>
+    <issue>
+      VSecM: Use GCR.
+    </issue>
+    <issue>
+      VSecM fix:
+      func log(message string) {
+      conn, err := grpc.Dial(
+      SentinelLoggerUrl(),
+      grpc.WithTransportCredentials(insecure.NewCredentials()),
+      grpc.WithBlock(),
+      )
+      Dial is deprecated
+      WithBlock is deprecated
+
+      // Create a gRPC client
+      conn, err := grpc.Dial(lis.Addr().String(), grpc.WithInsecure(), grpc.WithBlock())
+      if err != nil {
+      t.Fatalf("failed to dial server: %v", err)
+      }
+      WithInsecure/WithBlock are deprecated at rpc_test.go
+    </issue>
+    <issue>
+      VSecM fix:
+      http_test
+      nopcloser is deprecated
+      func TestReadBody_Success(t *testing.T) {
+      // Prepare the test data
+      cid := "test-cid"
+      expectedBody := []byte("test body content")
+      r := &amp;http.Request{
+      Body: ioutil.NopCloser(bytes.NewBuffer(expectedBody)),
+      }
+    </issue>
+    <issue>
+      VSecM Fix:
+      secret-server/main.go
+      ReadAll is deprected
+    </issue>
+    <issue>
+      VSecM Fix
+      // Read the request body
+      body, err := ioutil.ReadAll(r.Body)
+      if err != nil {
+      http.Error(w, "Cannot read body", http.StatusBadRequest)
+      return
+      }
+      defer r.Body.Close()
+      and there are unhandled errors in r.Body.Close() s.
+    </issue>
+    <issue>
+      VSecM Fix
+
+      postgres.go +> remove postgres support; it's better to add it to SPIKE instead.
+    </issue>
+    <issue>
+      VSecM Fix:
+      move backoff/retry code to the go sdk.
+    </issue>
+    <issue>
+      VSecM Fix:
+      stream := cipher.NewCFBDecrypter(block, iv)
+      NewCFBDecrypter is deprecated.
+      decrypt.go
+
+      same:
+      stream := cipher.NewCFBEncrypter(block, iv)
+      stream.XORKeyStream(ciphertext[aes.BlockSize:], []byte(data))
+      NewCFBDecrypter is deprecated.
+    </issue>
+    <issue>
+      VSecM Fix:
+      remove relay client and relay server-related code.
+    </issue>
+    <issue>
+      VSecM:
+      move docs to public and update CloudFlare worker to automatically
+      consume it.
+    </issue>
+    <issue>
+      VSecM: need to automate documentation
+      right now, we create manual deployments on CloudFlare and that does
+      not scale.
+      - create a public folder in the repo
+      - let cloudflare update the website from the "public" folder.
+      - "older versions" are still broken; but since documentation is markdown
+      we can always point the tagged version of it as former docs we
+      don't need an entire browsable website for it. At least, that's how we
+      do it with SPIKE and it saves effort.
+    </issue>
+    <issue>
+      Integration test: Ensure SPIKE Nexus caches the root key in memory.
+    </issue>
+    <issue>
+      Integration test: Ensure SPIKE Nexus recovers root key from keepers.
+    </issue>
+    <issue>
+      Integration test: Ensure SPIKE Nexus does not (inadvertently) initialize twice.
+      Once it's initialized successfully it should not recompute root key
+      material without manual `spike operator` intervention (because rotating
+      the root key without re-encrypting secrets will turn the backing store
+      unreadable)
+      when the key is lost, it should wait it to be re-seeded by keepers, or
+      manually recovered via `spike operator`.
+    </issue>
+    <issue>
+      Integration test: Ensure SPIKE Pilot denies any operation when SPIKE
+      Nexus is not initialized.
+    </issue>
+    <issue>
+      Integration test: Ensure SPIKE Pilot warns the user if SPIKE Nexus is
+      unreachable.
+    </issue>
+    <issue>
+      Integration tests: Ensure we can create and read secrets.
+    </issue>
+    <issue>
+      Integration test: Ensure we can create and read policies.
+    </issue>
+    <issue>
+      There is an ongoing work on HTML...ization of the Turtle Book.
+      We also need to start a work on updating spiffe.io for the
+      new book.
+    </issue>
     <issue severity="important" urgency="moderate">
       // TDO: check all database operations (secrets, policies, metadata)
       and
@@ -825,13 +746,149 @@
       forever, but even then, it's valuable to have observability into how
       long it's been trying and an option to break the loop if needed.
     </issue>
+    <issue>
+      pattern-based random secret generation
+      VSecM already does it; leverage it from it.
+      Or, alternatively, move the code to SPIKE SDK and let VSecM use it
+      from SPIKE.
+    </issue>
+    <issue>
+      - TODO optimize sqlite default params and also make sure we retry
+      database operations -- at least check that we have sane defaults.
+      - ref: https://tenthousandmeters.com/blog/sqlite-concurrent-writes-and-database-is-locked-errors/
+    </issue>
+    <issue kind="qa">
+      test that the timeout results in an error.
+
+      ctx, cancel := context.WithTimeout(
+      context.Background(), env.DatabaseOperationTimeout(),
+      )
+      defer cancel()
+
+      cachedPolicy, err := retry.Do(ctx, func() (*data.Policy, error) {
+      return be.LoadPolicy(ctx, id)
+      })
+
+    </issue>
+    <issue>
+      ability to lock nexus programmatically.
+      `spike operator lock/unlock` => will need the right clusterspiffeid for
+      the command to work.
+
+      ^ instead of that, you can run a script that removes all SVID
+      registrations. That will effectively result in the same thing.
+    </issue>
+    <issue>
+      increase unit test coverage.
+    </issue>
+    <issue priority="medium" severity="medium">
+      a way to factory-reset SPIKE: reset db; recreate rootkey; delete
+      tombstone file etc.
+
+      spike operator reset:
+      deletes and recreates the ~/.spike folder
+      restarts the initialization flow to rekey keepers.
+
+      volkan@spike:~/Desktop/WORKSPACE/spike$ spike secret get /db
+      Error reading secret: post: Problem connecting to peer
+
+      ^ I get an error instead of a "secret not found" message.
+    </issue>
+    <issue priority="medium" severity="medium">
+      2025/04/25 13:12:19 Aborting.
+      spike (feature/faster-recovery)$ ./hack/spire-server-entry-recover-register.sh
+
+      Also this should be part of operator
+
+      spire-server entry update \
+      -entryID "$ENTRY_ID" \
+      -spiffeID spiffe://spike.ist/spike/pilot/role/recover \
+      -parentID "spiffe://spike.ist/spire-agent" \
+      -selector unix:uid:"$(id -u)" \
+      -selector unix:path:"$PILOT_PATH" \
+      -selector unix:sha256:"$PILOT_SHA"
+
+      as in run the above command where PILOT_PATH is … … etc etc.
+
+      should be part of the binary.
+      or maybe a separate binary should execute those in an interactive manner.
+
+      create make targets for these.
+    </issue>
+    <issue priority="high" severity="medium">
+      Test with different shamir ratios
+
+      * 5/3 -- 5 keepers, out of 3 should be alive.
+      * 1/1 -- A single keeper
+      * 0/0 -- edge case; not sure how it should behave.
+      * in-memory -- in-memory mode should disregard any keeper config.
+    </issue>
+    <issue kind="performance,research" severity="low" priority="low" fun="high">
+      {"time":"2025-04-25T13:24:52.652299515-07:00","level":"INFO","msg":"HydrateMemoryFromBackingStore","msg":"HydrateMemoryFromBackingStore: secrets loaded"}
+      {"time":"2025-04-25T13:24:52.652368182-07:00","level":"INFO","msg":"HydrateMemoryFromBackingStore","msg":"HydrateMemoryFromBackingStore: policies loaded"}
+      ^
+      how can we know that this data has already been pushed.
+      a brute force way is to hash the last payloads and compare with the hashes of the current payloads.
+      if hydrated, no need to re-hydrate then.
+      but that requires two full table scans, json serialization, and hashing.
+      could there be a better way?
+    </issue>
   </later>
   <future>
+    <issue>
+      Make vSecM uses helm only (you can override images if needed,
+      to test with local images. -- that will be better than
+      generating local manifests and maintaining them separately)
+    </issue>
+
+    <issue>
+      Create VSecM ADR:
+
+      VSecM-SPIKE Integration Strategy
+
+      SPIKE: SPIFFE-native secrets manager
+      VSecM: Secrets Manager and Orchestrator
+
+      SPIKE: mandatory SPIFFE use
+      VSecM: SPIFFE is a core feature but can work/integrate with others
+
+      SPIKE: minimal CLI as UX structure (and API)
+      VSecM: policy engine, audits, secret LCM, automation, UI-ready.
+
+      SPIKE: embedded, edge, stateless
+      VSecM: stateful, policy-aware, multi-tenant
+
+      Helm:
+      SPIKE: subchart under SPIFFE
+      VSecM: consumes SPIRE helm chart; can enable SPIKE
+      * SPIKE is set up as the "default" secrets manager and first-class
+      integration; but it can integrate with other secrets stores too.
+    </issue>
+    <issue>
+      GitHub actions is creating pipeline errors:
+      https://github.com/vmware/secrets-manager/settings/code-scanning/default-setup
+    </issue>
+    <issue>
+      VSecM:
+      For Ubuntu users; do not use snap to install docker as it can create permission issues when working with minikube. */
+      ^
+      rendering on the page has error.
+    </issue>
+    <issue>
+      VSecM:
+      consume SPIRE from upstream helm instead of our custom fork.
+    </issue>
     <issue>
       maybe a default auditor SPIFFEID that can only read stuff (for
       Pilot;
       not for named admins; named admins will use the policy system
       instead)
+    </issue>
+    <issue>
+      document limits and maximums of SPIKE (such as key length, path
+      length, policy size etc)
+
+      also ensure that in the source code.
     </issue>
     <issue>
       We need use cases in the website
