@@ -5,56 +5,7 @@
 # \\\\\\\ SPDX-License-Identifier: Apache-2.0
 -->
 <stuff>
-  <immediate-backlog>
   <kubernetification>
-    <issue>
-      Goal: Have a running local k8s setup as fast as possible.
-            We can make things re-usable later.
-            Need to wrap things up before KubeCon.
-
-      Things to do:
-      1. Ensure Nexus, Keeper, Pilot build and run in pods
-      2. Increase log verbosity of Nexus, Keeper, Pilot
-      3. Create three keeper instances.
-      4. Disable automatic spiffeid creation for SPIKE elements
-      5. Create helm values for SPIRE setup in the cluster.
-      6. Ensure SPIFFE workload API works for Nexus, Keeper, Pilot
-      7. Create ClusterSPIFFEIDs
-      8. Validate SPIRE Server Registration Entries
-
-      600e16bf-b318-4246-a1fc-3c284f21dad3
-    </issue>
-    <issue>
-      # to be added to docs.
-      # how to expose things to other clusters:
-      # kubectl port-forward --address 0.0.0.0 svc/nginx-lb 8080:80
-      # no need for ingress
-      # no need for `kubectl port-forward`
-      # great for demo/development setups.
-      # Also forward registry to docker to work
-      # kubectl port-forward -n kube-system svc/registry 5000:80 &
-      # You don't need to `eval $(minikube -p minikube docker-env)`
-      # Again, this is simpler.
-    </issue>
-  </kubernetification>
-  <purpose>
-    <target>Our goal is to have a minimally delightful product.</target>
-    <target>Strive not to add features just for the sake of adding
-      features.
-    </target>
-    <target>Half-assed features shall be completed before adding more
-      features.
-    </target>
-    <meta>
-      Minimally Delightful Product Requirements:
-      - A Kubernetes SPIKE deployment
-      ✅ Minimal policy enforcement
-      - Minimal integration tests
-      ✅ A demo workload that uses SPIKE to test things out as a consumer.
-      ✅ A golang SDK
-    </meta>
-  </purpose>
-  <watch>
     <issue>
       1. Consume SPIKE from helm-charts-hardened.
       2. Compare generated manifests with what we have.
@@ -73,33 +24,10 @@
       // claude:ref: 7382c489-8d4d-45d1-a53d-7165f64c4b90
 
       Set up a secret on pilot and the workload will see it.
-    <issue kind="good-first-issue"
-           ref="https://github.com/spiffe/spike/issues/80"
-           title="add reason to errors" />
-  </watch>
+    </issue>
+  </kubernetification>
   <immediate-backlog>
-    <meta>Things to do before working further on containerization---Aim to finish
-    all low-hanging fruits and tasks that can be done quickly and without
-    major code change</meta>
-    <issue>
-      This warning should be cancellable via env var configuration:
-
-      Memory locking is not available.
-      Consider disabling swap to enhance security.
-
-    </issue>
-    <issue>Finish important (or "low-hanging") issue on GitHub too before
-    starting containerization work.</issue>
-    <issue kind="qa" note="create-pr">
-      Add relevant ones of those to the smoke tests (to the docs)
-      - SPIKE Nexus Sanity Tests
-      - Ensure SPIKE Nexus caches the root key in memory. :: can be added to logs.
-      - Ensure SPIKE Nexus reads from SPIKE keep if it does not have the root key. :: check logs again
-      - Ensure SPIKE Nexus saves the encrypted root key to the database. :: check db
-      - Ensure SPIKE Nexus does not re-init (without manual intervention) after being initialized. :: check logs
-      - Ensure SPIKE Pilot denies any operation if SPIKE Nexus is not initialized.
-      - Ensure SPIKE Pilot can warn if SPIKE Nexus is unreachable
-    </issue>
+    <issue>update changelog, publish docs, also update changelog in github</issue>
   </immediate-backlog>
   <runner-up>
     <issue>
@@ -220,6 +148,18 @@
     </issue>
   </runner-up>
   <later>
+    <issue>
+      # to be added to docs.
+      # how to expose things to other clusters:
+      # kubectl port-forward --address 0.0.0.0 svc/nginx-lb 8080:80
+      # no need for ingress
+      # no need for `kubectl port-forward`
+      # great for demo/development setups.
+      # Also forward registry to docker to work
+      # kubectl port-forward -n kube-system svc/registry 5000:80
+      # You don't need to `eval $(minikube -p minikube docker-env)`
+      # Again, this is simpler.
+    </issue>
     <issue>
       SPIKE (and also VSecM)
       create github workflow to run tests and coverage report and publish it on

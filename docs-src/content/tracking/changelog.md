@@ -12,6 +12,15 @@ sort_by = "weight"
 
 ## Recent
 
+(recent)
+
+* Ability to configure to not how SPIKE banner on startup.
+* Ability to configure to show a warning if memory locking is not
+  available on the system.
+
+(0.4.1)
+
+* Initial introduction to Kubernetes support.
 * Fixed: Doomsday recovery was not immediately restoring data from the backing
   store. Now it does.
 * Better shard sanitization during doomsday recovery operation.
