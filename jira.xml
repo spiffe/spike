@@ -28,13 +28,6 @@
   </immediate-backlog>
   <runner-up>
     <issue>
-      have a mode where nexus does not create tables upon initialization
-      (i.e. the admin is expected to create them beforehand)
-
-      I think we have this already.
-      Verify, and document it.
-    </issue>
-    <issue>
       VSecM ADR:
       SPIKE Integration Plans
       Create an ADR about the near/mid future plans wrt VSecM and SPIKE.

@@ -49,7 +49,9 @@ func Initialize(source *workloadapi.X509Source, spiffeId string) {
 // with status code 1.
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
-		fmt.Fprintf(os.Stderr, "%v\n", err)
+		if _, err := fmt.Fprintf(os.Stderr, "%v\n", err); err != nil {
+			fmt.Println("failed to write to stderr: ", err.Error())
+		}
 		os.Exit(1)
 	}
 }
