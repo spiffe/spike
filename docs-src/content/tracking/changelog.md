@@ -12,34 +12,36 @@ sort_by = "weight"
 
 ## Recent
 
-(recent)
-
 * Ability to configure to not how SPIKE banner on startup.
 * Ability to configure to show a warning if memory locking is not
   available on the system.
 
-(0.4.1)
+## [0.4.1] - 2025-06-01 (*prerelease*)
 
-* Initial introduction to Kubernetes support.
-* Fixed: Doomsday recovery was not immediately restoring data from the backing
-  store. Now it does.
-* Better shard sanitization during doomsday recovery operation.
-* Added memory locking to SPIKE Pilot too (along with SPIKE Nexus and 
-  SPIKE Keeper, which already had memory locking)
+### Added
+
+* Initial support for Kubernetes deployments.
+* Better shard sanitization during recovery procedures.
+* Added memory locking to SPIKE Pilot too.
 * Finer control of the startup script via flags.
-* BREAKING: SDK validation methods now take trust root as an argument.
-* BREAKING: SPIKE_NEXUS_KEEPER_URL is now a comma-delimited list of URLs
+* Added the ability to optionally skip database schema creation during SPIKE
+  initialization.
+
+### Changed
+
+* **BREAKING**: SDK validation methods now take trust root as an argument.
+* **BREAKING**: `SPIKE_NEXUS_KEEPER_URL` is now a comma-delimited list of URLs
   (instead of JSON).
 * SPIKE components can now be configured to accept multiple trust roots as
   legitimate peers---this will be useful in complex mesh and federation
   deployment scenarios.
-* Added the ability to optionally skip database schema creation during SPIKE
-  initialization. This can be useful if the operator does not want to give
-  db schema modification privileges to SPIKE to adhere to the principle of
-  least privilege. The default behavior is to allow automatic schema creation:
-  Since SPIKE is assumed to own its backing store, limiting its access
-  does not provide a significant security benefit. Letting SPIKE manage
-  its own database schema provides operational convenience.
+* SPIKE now uses GitHub Container Registry to store its container image
+  (instead of Docker Hub).
+
+### Fixed
+
+* Fixed a bug where the doomsday recovery procedure was not immediately 
+  restoring the data.
 
 ## [0.4.0] - 2025-04-16
 
