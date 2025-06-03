@@ -22,13 +22,15 @@ import (
 const appName = "SPIKE Nexus"
 
 func main() {
-	fmt.Printf(`
+	if env.BannerEnabled() {
+		fmt.Printf(`
    \\ SPIKE: Secure your secrets with SPIFFE.
  \\\\\ Copyright 2024-present SPIKE contributors.
 \\\\\\\ SPDX-License-Identifier: Apache-2.0`+"\n\n"+
-		"%s v%s. | LOG LEVEL: %s\n\n",
-		appName, config.SpikeNexusVersion, log.Level(),
-	)
+			"%s v%s. | LOG LEVEL: %s\n\n",
+			appName, config.SpikeNexusVersion, log.Level(),
+		)
+	}
 
 	if mem.Lock() {
 		log.Log().Info(appName, "msg", "Successfully locked memory.")

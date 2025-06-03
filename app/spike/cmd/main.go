@@ -13,16 +13,19 @@ import (
 	"github.com/spiffe/spike-sdk-go/spiffe"
 
 	"github.com/spiffe/spike/app/spike/internal/cmd"
+	"github.com/spiffe/spike/app/spike/internal/env"
 	"github.com/spiffe/spike/internal/log"
 )
 
 func main() {
 	if !mem.Lock() {
-		if _, err := fmt.Fprintln(os.Stderr, `
+		if env.ShowMemoryWarning() {
+			if _, err := fmt.Fprintln(os.Stderr, `
 Memory locking is not available.
 Consider disabling swap to enhance security.
  `); err != nil {
-			fmt.Println("failed to write to stderr: ", err.Error())
+				fmt.Println("failed to write to stderr: ", err.Error())
+			}
 		}
 	}
 
