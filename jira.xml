@@ -34,6 +34,10 @@
   </immediate-backlog>
   <runner-up>
     <issue>
+      build.sh and build-push-sign.sh have a lot of commonalities;
+      maybe refactor/merge them?
+    </issue>
+    <issue>
       VSecM ADR:
       SPIKE Integration Plans
       Create an ADR about the near/mid future plans wrt VSecM and SPIKE.
