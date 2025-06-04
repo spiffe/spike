@@ -38,4 +38,4 @@ jobs:
           # Extract version from release tag
           VERSION="${{ github.sha }}"
           
-          ./k8s/build-push-sign.sh ${{ matrix.app }} ${{ matrix.arch }} ${VERSION} ${{ env.REGISTRY }} ${{ env.REPOSITORY }}
+          ./hack/docker/build-push-sign.sh ${{ matrix.app }} ${{ matrix.arch }} ${VERSION} ${{ env.REGISTRY }} ${{ env.REPOSITORY }}

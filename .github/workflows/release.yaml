@@ -54,7 +54,7 @@ jobs:
           VERSION=${VERSION#v}  # Remove 'v' prefix if present
           export PUSH=true
           
-          ./k8s/build-push-sign.sh ${{ matrix.app }} ${{ matrix.arch }} ${VERSION} ${{ env.REGISTRY }} ${{ env.REPOSITORY }}
+          ./hack/docker/build-push-sign.sh ${{ matrix.app }} ${{ matrix.arch }} ${VERSION} ${{ env.REGISTRY }} ${{ env.REPOSITORY }}
 
 #      - name: Sign the images with GitHub OIDC (Cosign)
 #        env:
