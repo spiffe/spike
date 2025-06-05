@@ -22,7 +22,7 @@ global:
 
 spike-keeper:
   enabled: true
-  namespaceOverride: spike-system
+  namespaceOverride: spike
   # TODO: replace it with localhost; I need to test it with recent local images.
   image:
     registry: ghcr.io
@@ -32,7 +32,7 @@ spike-keeper:
 
 spike-nexus:
   enabled: true
-  namespaceOverride: spike-system
+  namespaceOverride: spike
   # TODO: replace it with localhost; I need to test it with recent local images.
   image:
     registry: ghcr.io
@@ -42,7 +42,7 @@ spike-nexus:
 
 spike-pilot:
   enabled: true
-  namespaceOverride: spike-system
+  namespaceOverride: spike
   # TODO: replace it with localhost; I need to test it with recent local images.
   image:
     registry: ghcr.io
@@ -65,7 +65,7 @@ spire-server:
               - key: kubernetes.io/metadata.name
                 operator: In
                 values:
-                  - spike-system
+                  - spike
         spike-nexus:
           type: raw
           enabled: true
@@ -75,7 +75,7 @@ spire-server:
               - key: kubernetes.io/metadata.name
                 operator: In
                 values:
-                  - spike-system
+                  - spike
         spike-pilot:
           type: raw
           enabled: true
@@ -85,7 +85,7 @@ spire-server:
               - key: kubernetes.io/metadata.name
                 operator: In
                 values:
-                  - spike-system
+                  - spike
 
 spire-agent:
   enabled: true

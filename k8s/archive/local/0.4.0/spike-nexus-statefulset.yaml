@@ -5,7 +5,7 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  namespace: spike-system
+  namespace: spike
   name: spike-nexus
   labels:
     app.kubernetes.io/name: spike-nexus
@@ -21,7 +21,7 @@ spec:
       app.kubernetes.io/component: nexus
   template:
     metadata:
-      namespace: spike-system
+      namespace: spike
       labels:
         app.kubernetes.io/name: spike-nexus
         app.kubernetes.io/component: nexus
@@ -50,7 +50,7 @@ spec:
             - name: SPIKE_SYSTEM_LOG_LEVEL
               value: DEBUG
             - name: SPIKE_NEXUS_KEEPER_PEERS
-              value: "https://spike-keeper-0.spike-keeper-headless.spike-system.svc.cluster.local:8443,https://spike-keeper-1.spike-keeper-headless.spike-system.svc.cluster.local:8443,https://spike-keeper-2.spike-keeper-headless.spike-system.svc.cluster.local:8443"
+              value: "https://spike-keeper-0.spike-keeper-headless.spike.svc.cluster.local:8443,https://spike-keeper-1.spike-keeper-headless.spike.svc.cluster.local:8443,https://spike-keeper-2.spike-keeper-headless.spike.svc.cluster.local:8443"
             - name: SPIFFE_ENDPOINT_SOCKET
               value: "unix:///spiffe-workload-api/spire-agent.sock"
       volumes:

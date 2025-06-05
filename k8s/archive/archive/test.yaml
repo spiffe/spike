@@ -2,19 +2,19 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: spike-system
+  name: spike
 ---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: spike-keeper
-  namespace: spike-system
+  namespace: spike
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: spike-keeper-test
-  namespace: spike-system
+  namespace: spike
 spec:
   replicas: 1
   selector:

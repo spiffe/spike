@@ -15,7 +15,7 @@ spec:
   spiffeIDTemplate: "spiffe://spike.ist/spike/nexus/{{ .PodMeta.Name }}"
   namespaceSelector:
     matchLabels:
-      kubernetes.io/metadata.name: spike-system
+      kubernetes.io/metadata.name: spike
   podSelector:
     matchLabels:
       app.kubernetes.io/name: spike-nexus

@@ -17,7 +17,7 @@ spec:
   spiffeIDTemplate: "spiffe://spike.ist/spike/pilot/role/superuser"
   namespaceSelector:
     matchLabels:
-      kubernetes.io/metadata.name: spike-system
+      kubernetes.io/metadata.name: spike
   podSelector:
     matchLabels:
       app.kubernetes.io/name: spike-pilot

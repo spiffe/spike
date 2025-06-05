@@ -5,7 +5,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  namespace: spike-system
+  namespace: spike
   name: spike-pilot
   labels:
     app.kubernetes.io/name: spike-pilot
@@ -20,7 +20,7 @@ spec:
       app.kubernetes.io/component: pilot
   template:
     metadata:
-      namespace: spike-system
+      namespace: spike
       labels:
         app.kubernetes.io/name: spike-pilot
         app.kubernetes.io/component: pilot
@@ -42,7 +42,7 @@ spec:
         - name: SPIKE_SYSTEM_LOG_LEVEL
           value: DEBUG
         - name: SPIKE_NEXUS_API_URL
-          value: https://spike-nexus-0.spike-nexus-headless.spike-system.svc.cluster.local:8553
+          value: https://spike-nexus-0.spike-nexus-headless.spike.svc.cluster.local:8553
         - name: SPIFFE_ENDPOINT_SOCKET
           value: "unix:///spiffe-workload-api/spire-agent.sock"
         volumeMounts:
