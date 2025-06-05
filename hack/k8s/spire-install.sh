@@ -63,12 +63,14 @@ sleep 15
 
 #helm upgrade --install -n spire-mgmt spire spire \
 #  --repo https://spiffe.github.io/helm-charts-hardened/ \
-#  -f ./config/spire/helm/values.yaml
+#  -f ./config/helm/values.yaml
 
 # Install SPIKE from feature branch until it gets merged to upstream:
-cd ../..
-helm upgrade install spiffe ./helm-charts-hardened/charts/spire \
-  -f ./spike/config/spire/helm/values.yaml
+# See: https://github.com/spiffe/helm-charts-hardened/pull/591
+cd ..
+
+helm upgrade --install -n spire-mgmt spiffe ./helm-charts-hardened/charts/spire \
+  -f ./spike/config/helm/values.yaml
 
 echo "Sleeping for 15 secs..."
 sleep 15

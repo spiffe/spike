@@ -23,32 +23,29 @@ global:
 spike-keeper:
   enabled: true
   namespaceOverride: spike
-  # TODO: replace it with localhost; I need to test it with recent local images.
   image:
-    registry: ghcr.io
-    repository: spiffe/spike-keeper
+    registry: localhost:5000
+    repository: spike-keeper
     pullPolicy: IfNotPresent
-    tag: ""
+    tag: "0.4.0"
 
 spike-nexus:
   enabled: true
   namespaceOverride: spike
-  # TODO: replace it with localhost; I need to test it with recent local images.
   image:
-    registry: ghcr.io
-    repository: spiffe/spike-keeper
+    registry: localhost:5000
+    repository: spike-nexus
     pullPolicy: IfNotPresent
-    tag: ""
+    tag: "0.4.0"
 
 spike-pilot:
   enabled: true
   namespaceOverride: spike
-  # TODO: replace it with localhost; I need to test it with recent local images.
   image:
-    registry: ghcr.io
-    repository: spiffe/spike-keeper
+    registry: localhost:5000
+    repository: spike-pilot
     pullPolicy: IfNotPresent
-    tag: ""
+    tag: "0.4.0"
 
 spire-server:
   enabled: true
@@ -60,6 +57,9 @@ spire-server:
           type: raw
           enabled: true
           spiffeIDTemplate: spiffe://{{ .TrustDomain }}/spike/keeper/{{ .PodMeta.Name }}
+          podSelector:
+            matchLabels:
+              component: spike-keeper
           namespaceSelector:
             matchExpressions:
               - key: kubernetes.io/metadata.name
@@ -70,6 +70,9 @@ spire-server:
           type: raw
           enabled: true
           spiffeIDTemplate: spiffe://{{ .TrustDomain }}/spike/nexus/{{ .PodMeta.Name }}
+          podSelector:
+            matchLabels:
+              component: spike-nexus
           namespaceSelector:
             matchExpressions:
               - key: kubernetes.io/metadata.name
@@ -80,6 +83,9 @@ spire-server:
           type: raw
           enabled: true
           spiffeIDTemplate: spiffe://{{ .TrustDomain }}/spike/pilot/role/superuser
+          podSelector:
+            matchLabels:
+              component: spike-pilot
           namespaceSelector:
             matchExpressions:
               - key: kubernetes.io/metadata.name
