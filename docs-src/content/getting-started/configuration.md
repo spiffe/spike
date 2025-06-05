@@ -4,7 +4,7 @@
 # // \\\\\\\ SPDX-License-Identifier: Apache-2.
 
 title = "Configuring SPIKE"
-weight = 4
+weight = 5
 sort_by = "weight"
 +++
 

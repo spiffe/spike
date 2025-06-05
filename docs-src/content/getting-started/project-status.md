@@ -4,7 +4,7 @@
 # // \\\\\\\ SPDX-License-Identifier: Apache-2.
 
 title = "Project Maturity"
-weight = 3
+weight = 2
 sort_by = "weight"
 +++
 
