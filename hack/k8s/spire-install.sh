@@ -69,8 +69,11 @@ sleep 15
 # See: https://github.com/spiffe/helm-charts-hardened/pull/591
 cd ..
 
+#helm upgrade --install -n spire-mgmt spiffe ./helm-charts-hardened/charts/spire \
+#  -f ./spike/config/helm/values.yaml
+
 helm upgrade --install -n spire-mgmt spiffe ./helm-charts-hardened/charts/spire \
-  -f ./spike/config/helm/values.yaml
+  -f ./spike/config/helm/values-default.yaml
 
 echo "Sleeping for 15 secs..."
 sleep 15

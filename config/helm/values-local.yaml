@@ -6,6 +6,9 @@
 # See https://github.com/spiffe/helm-charts-hardened for documentation
 # and configuration options.
 
+# `values.yaml`, but pointing to a local container registry instead of the
+# upstream SPIFFE `helm-charts-hardened` registry.
+
 spike-keeper:
   enabled: true
   image:
