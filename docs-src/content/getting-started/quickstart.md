@@ -83,11 +83,10 @@ spike-pilot:
 Then deploy SPIKE using the following command:
 
 ```bash 
-helm upgrade --install -n spire-mgmt spire-crds spire-crds \
-  --repo https://spiffe.github.io/helm-charts-hardened/ \
-  --create-namespace
+helm upgrade --install spire-crds spire-crds \
+  --repo https://spiffe.github.io/helm-charts-hardened/
   
-helm upgrade --install -n spire-mgmt spiffe \
+helm upgrade --install spiffe \
   https://spiffe.github.io/helm-charts-hardened \
   -f ./values.yaml # The values.yaml file we created earlier
 ```
