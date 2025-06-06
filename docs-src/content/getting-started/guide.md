@@ -83,9 +83,6 @@ spike-pilot:
 Then deploy SPIKE using the following command:
 
 ```bash 
-helm repo add spiffe https://spiffe.github.io/helm-charts-hardened
-helm repo update
-
 helm upgrade --install -n spire-mgmt spire-crds spire-crds \
   --repo https://spiffe.github.io/helm-charts-hardened/ \
   --create-namespace
