@@ -3,8 +3,8 @@
 # //  \\\\\ Copyright 2024-present SPIKE contributors.
 # // \\\\\\\ SPDX-License-Identifier: Apache-2.
 
-title = "Quickstart"
-weight = 3
+title = "SPIKE Quickstart Guide"
+weight = 2
 sort_by = "weight"
 +++
 
@@ -52,7 +52,9 @@ following command in the root directory of the project:
 cd $WORKSPACE # Replace with your workspace directory
 git clone https://github.com/spiffe/spike.git
 cd spike
-make minikube-start # This will start a Minikube cluster.
+make docker-cleanup # (Optional) Purge docker registry.
+make k8s-delete     # Delete any former Minikube installation.
+make k8s-start      # This will start a Minikube cluster.
 ```
 
 If successful, you will have a local Minikube cluster running with the

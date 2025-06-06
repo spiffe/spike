@@ -106,7 +106,7 @@ fine-grained access control, cross-environment compatibility, and stronger
 security guarantees.
 
 That part taken care of, [we can get our hands dirty with **SPIKE** in the
-**SPIKE Quickstart Guide**](@/getting-started/guide.md).
+**SPIKE Quickstart Guide**](@/getting-started/quickstart.md).
 
 ----
 
