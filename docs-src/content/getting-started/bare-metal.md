@@ -3,21 +3,21 @@
 # //  \\\\\ Copyright 2024-present SPIKE contributors.
 # // \\\\\\\ SPDX-License-Identifier: Apache-2.
 
-title = "Quickstart"
-weight = 2
+title = "SPIKE on Linux"
+weight = 4
 sort_by = "weight"
 +++
 
-# SPIKE Quickstart Guide
+# SPIKE on Linux
 
-In this guide, you will learn how to build, deploy, and test [**SPIKE**][spike] 
-from the source. This guide assumes basic familiarity with terminal commands and 
-the ability to install and execute the required software. It is recommended to 
-have administrative privileges on your system, as some steps might require them. 
+In this guide, you will learn how to build, deploy, and test [**SPIKE**][spike]
+from the source. This guide assumes basic familiarity with terminal commands and
+the ability to install and execute the required software. It is recommended to
+have administrative privileges on your system, as some steps might require them.
 
 The tools and resources mentioned in this guide are essential for building and
-working with **SPIKE** effectively. Make sure to follow each step carefully to 
-ensure a smooth experience. In case you encounter issues, please discuss 
+working with **SPIKE** effectively. Make sure to follow each step carefully to
+ensure a smooth experience. In case you encounter issues, please discuss
 them on the [SPIFFE community Slack][slack].
 
 [slack]: https://slack.spiffe.io/ "SPIFFE Slack"
@@ -29,8 +29,8 @@ This quickstart guide assumes you are using an [Ubuntu Linux][ubuntu] operating
 system. The steps may slightly differ if you are using a different operating
 system.
 
-**SPIKE** can run anywhere [SPIFFE][spiffe] can be deployed. For consistency, 
-the tutorials and guides in **SPIKE** documentation use [**Ubuntu**][ubuntu] as 
+**SPIKE** can run anywhere [SPIFFE][spiffe] can be deployed. For consistency,
+the tutorials and guides in **SPIKE** documentation use [**Ubuntu**][ubuntu] as
 the base operating system. Though, if you encounter issues with your OS, feel
 free to discuss them on the [SPIFFE community Slack][slack].
 
@@ -59,11 +59,11 @@ In addition, you will need the usual suspects:
 
 ## Go Environment Setup
 
-Here's part of the `go env` setting we use for this guide. Yours might slightly 
+Here's part of the `go env` setting we use for this guide. Yours might slightly
 vary depending on your development configuration.
 
-The environment setup shown below is mostly what Go uses by default, yet, we 
-provide them just-in-case to eliminate any environment-related setup issues you 
+The environment setup shown below is mostly what Go uses by default, yet, we
+provide them just-in-case to eliminate any environment-related setup issues you
 might face.
 
 ```bash
@@ -85,8 +85,8 @@ go env
 # GOWORK=''
 ```
 
-If you need, you can also use Go's built-in tooling to view and modify your Go 
-environment settings. Use the `go env` command to inspect or set specific 
+If you need, you can also use Go's built-in tooling to view and modify your Go
+environment settings. Use the `go env` command to inspect or set specific
 environment variables.
 
 For example:
@@ -117,8 +117,8 @@ go env -u GOPATH
 
 ## Building SPIRE
 
-To get started, let's create a development version of [**SPIRE**][spire]. 
-Note that this is not a production-ready setup. For production, you should 
+To get started, let's create a development version of [**SPIRE**][spire].
+Note that this is not a production-ready setup. For production, you should
 follow the [official SPIRE documentation][spire-prod].
 
 [spire]: https://spiffe.io/docs/latest/spire-about/ "SPIRE"
@@ -150,7 +150,7 @@ echo 'PATH=$PATH:$WORKSPACE/spire/bin' >> ~/.profile
 Additionally, you can source the following file to define additional
 **SPIKE**-related environment variables for your convenience. This is not
 required because if you don't define them, **SPIKE** will assume sensible
-defaults. 
+defaults.
 
 Sourcing `./hack/lib/env.sh` allows you to override the default **SPIKE**
 environment settings. This can be particularly useful for development
@@ -214,8 +214,8 @@ make build
 
 ## Configure Local DNS
 
-[The default agent configuration file][agent-config] uses 
-`spire.spike.ist` as the SPIRE Server DNS name. To resolve this name to the 
+[The default agent configuration file][agent-config] uses
+`spire.spike.ist` as the SPIRE Server DNS name. To resolve this name to the
 loopback address, add the following entry to your `/etc/hosts` file:
 
 [agent-config]: https://github.com/spiffe/spike/blob/main/config/spire/agent/agent.conf#L4
@@ -353,8 +353,8 @@ https://localhost:8543,https://localhost:8643'
 ```
 
 > **Sequential SPIKE Keeper IDs**
-> 
-> The mapping in `SPIKE_NEXUS_KEEPER_PEERS` should start from `"1"` 
+>
+> The mapping in `SPIKE_NEXUS_KEEPER_PEERS` should start from `"1"`
 > and increase monotonically without any gaps in the sequence as shown
 > in the sample code above. This is because of the way SPIKE Nexus internally
 > computes and distributes the Shamir Shards. Not following this sequence
@@ -418,9 +418,9 @@ scenarios safely.
 
 ## Uninstalling SPIKE
 
-Retaining the **SPIKE** binaries on your system poses no issues. These binaries 
-are compact, consuming minimal disk space and no resources when inactive. As 
-simple executable files, they have no impact on your system's performance when 
+Retaining the **SPIKE** binaries on your system poses no issues. These binaries
+are compact, consuming minimal disk space and no resources when inactive. As
+simple executable files, they have no impact on your system's performance when
 not in use. Therefore, keeping them installed is completely harmless.
 
 However, if you want to wipe everything out, you can just remove the binaries
@@ -433,7 +433,7 @@ rm keeper
 rm nexus
 ```
 
-If you have `spire-server` and `spire-agent` on your system, and you are not 
+If you have `spire-server` and `spire-agent` on your system, and you are not
 using them for anything else; you can remove them too:
 
 ```bash

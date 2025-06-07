@@ -4,7 +4,7 @@
 # // \\\\\\\ SPDX-License-Identifier: Apache-2.
 
 title = "SPIKE CLI"
-weight = 5
+weight = 6
 sort_by = "weight"
 +++
 

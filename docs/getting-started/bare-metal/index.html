@@ -1,0 +1,1180 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://spike.ist/main.css">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link rel="icon" href="https://spike.ist/assets/spike-favicon-16x16.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+    <title> SPIKE | SPIKE on Linux </title>
+</head>
+<body>
+
+<main>
+    
+    <nav>
+  <script>
+    fetch('https://api.github.com/repos/spiffe/spike/releases/latest')
+        .then(response => response.json())
+        .then(data => {
+            const release = document.getElementById('release');
+            const icon = '<i class="bx bx-package"></i>';
+            release.href = data.name ? data.html_url : 'https://api.github.com/repos/spiffe/spike/releases';
+            release.innerHTML = icon + (data.name ? ' ' + data.name : ' Releases');
+        });
+</script>
+<div id="banner">
+    <a href="https://spike.ist">
+        <img src="https://spike.ist/assets/spike-banner.png" alt="logo" />
+    </a>
+    <div id="banner-body">
+        <a class="banner-title" href="https://spike.ist">
+            SPIKE
+        </a>
+        <span class="banner-tagline">
+            Secure your secrets<br> with SPIFFE.
+        </span>
+        <a id="release" class="banner-link" href="https://github.com/spiffe/spike/releases">
+            <i class='bx bx-package'></i>
+        </a>
+        <a href="https://github.com/spiffe/spike" class="banner-link">
+            <i class='bx bxl-github'></i> GitHub
+        </a>
+
+    </div>
+</div>
+<style>
+   /* Banner on top of the nav */
+   #banner {
+        position: sticky;
+        background-color: var(--bg-primary);
+        z-index: 100;
+        top: 0;
+        display: flex;
+        flex-direction: row;
+        padding: 1rem;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        margin-bottom: 1rem;
+    }
+
+    #banner img {
+        width: 100px;
+        height: auto;
+    }
+
+    #banner-body {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        justify-content: space-between;
+        margin-left: 1rem;
+    }
+
+    .banner-title {
+        font-size: 1.75rem;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        margin-bottom: -15px;
+        font-family: var(--brand-font-family);
+    }
+    .banner-tagline {
+        font-size: 0.875rem;
+        color: var(--text-muted);
+        font-style: italic;
+    }
+
+    .banner-link {
+        display: flex;
+        gap: 0.5rem;
+        min-width: 84px;
+        font-size: 0.875rem;
+        font-weight: 300;
+        padding: 0.25rem 0.75rem;
+        border-radius: 4px;
+        background-color: var(--bg-interactive);
+        transition: all 0.2s ease;
+    }
+
+    .banner-link i {
+        font-size: 1.125rem;
+        color: var(--spike-blue);
+    }
+
+    .banner-link:hover {
+        background-color: var(--spike-blue);
+    }
+</style> <div id="trees">
+    <input class="tree-toggle" type="checkbox" id="getting-started"
+               checked/>
+        <label class="tree-toggle-label "
+               for="getting-started">Getting Started</label>
+
+        <ul class="subtree">
+            <li >
+                    <a href="https://spike.ist/getting-started/about/">About SPIKE</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/getting-started/project-status/">Project Maturity</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/getting-started/quickstart/">SPIKE Quickstart Guide</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/getting-started/local-deployment/">Building SPIKE Locally</a>
+                </li>
+
+                <li class="active">
+                    <a href="https://spike.ist/getting-started/bare-metal/">SPIKE on Linux</a>
+                </li>
+
+                
+                        
+                        
+                            <ul id="toc">
+                                <li><a href="
+                                            https://spike.ist/getting-started/bare-metal/#spike-on-linux">SPIKE on Linux</a>
+                                        <ul>
+                                                <li>
+                                                        <a href="https://spike.ist/getting-started/bare-metal/#prerequisites">Prerequisites</a>
+                                                    </li>
+                                                <li>
+                                                        <a href="https://spike.ist/getting-started/bare-metal/#go-environment-setup">Go Environment Setup</a>
+                                                    </li>
+                                                <li>
+                                                        <a href="https://spike.ist/getting-started/bare-metal/#building-spire">Building SPIRE</a>
+                                                    </li>
+                                                <li>
+                                                        <a href="https://spike.ist/getting-started/bare-metal/#adding-spire-binaries-to-path">Adding SPIRE Binaries to $PATH</a>
+                                                    </li>
+                                                <li>
+                                                        <a href="https://spike.ist/getting-started/bare-metal/#adding-spike-binaries-to-path">Adding SPIKE Binaries to $PATH</a>
+                                                    </li>
+                                                <li>
+                                                        <a href="https://spike.ist/getting-started/bare-metal/#verifying-spire-installation">Verifying SPIRE Installation</a>
+                                                    </li>
+                                                <li>
+                                                        <a href="https://spike.ist/getting-started/bare-metal/#building-spike">Building SPIKE</a>
+                                                    </li>
+                                                <li>
+                                                        <a href="https://spike.ist/getting-started/bare-metal/#configure-local-dns">Configure Local DNS</a>
+                                                    </li>
+                                                <li>
+                                                        <a href="https://spike.ist/getting-started/bare-metal/#starting-spike">Starting SPIKE</a>
+                                                    </li>
+                                                <li>
+                                                        <a href="https://spike.ist/getting-started/bare-metal/#start-spire-server">Start SPIRE Server</a>
+                                                    </li>
+                                                <li>
+                                                        <a href="https://spike.ist/getting-started/bare-metal/#creating-registration-entries">Creating Registration Entries</a>
+                                                    </li>
+                                                <li>
+                                                        <a href="https://spike.ist/getting-started/bare-metal/#start-spire-agent">Start SPIRE Agent</a>
+                                                    </li>
+                                                <li>
+                                                        <a href="https://spike.ist/getting-started/bare-metal/#start-spike-components">Start SPIKE Components</a>
+                                                    </li>
+                                                <li>
+                                                        <a href="https://spike.ist/getting-started/bare-metal/#using-spike-pilot">Using SPIKE Pilot</a>
+                                                    </li>
+                                                <li>
+                                                        <a href="https://spike.ist/getting-started/bare-metal/#testing-out-spike">Testing Out SPIKE</a>
+                                                    </li>
+                                                <li>
+                                                        <a href="https://spike.ist/getting-started/bare-metal/#uninstalling-spike">Uninstalling SPIKE</a>
+                                                    </li>
+                                                <li>
+                                                        <a href="https://spike.ist/getting-started/bare-metal/#have-fun">Have Fun</a>
+                                                    </li>
+                                                </ul>
+                                        </li>
+                                </ul>
+                        <li >
+                    <a href="https://spike.ist/getting-started/configuration/">Configuring SPIKE</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/getting-started/cli/">SPIKE CLI</a>
+                </li>
+
+                </ul>
+    <input class="tree-toggle" type="checkbox" id="community"
+               />
+        <label class="tree-toggle-label "
+               for="community">Community</label>
+
+        <ul class="subtree">
+            <li >
+                    <a href="https://spike.ist/community/hello/">Hello Universe</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/community/contact/">Contact Us</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/community/presentations/">Presentations and Demos</a>
+                </li>
+
+                </ul>
+    <input class="tree-toggle" type="checkbox" id="spike-architecture"
+               />
+        <label class="tree-toggle-label "
+               for="spike-architecture">SPIKE Architecture</label>
+
+        <ul class="subtree">
+            <li >
+                    <a href="https://spike.ist/architecture/system-overview/">System Overview</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/architecture/security-model/">SPIKE Security Model</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/architecture/architectural-decision-records/">ADRs</a>
+                </li>
+
+                </ul>
+    <input class="tree-toggle" type="checkbox" id="tracking"
+               />
+        <label class="tree-toggle-label "
+               for="tracking">Tracking</label>
+
+        <ul class="subtree">
+            <li >
+                    <a href="https://spike.ist/tracking/changelog/">Changelog</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/tracking/snapshots/">Documentation Snapshots</a>
+                </li>
+
+                </ul>
+    <input class="tree-toggle" type="checkbox" id="operations"
+               />
+        <label class="tree-toggle-label "
+               for="operations">Operations</label>
+
+        <ul class="subtree">
+            <li >
+                    <a href="https://spike.ist/operations/build/">SPIKE Cross-Platform Build</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/operations/production/">SPIKE Production Setup</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/operations/recovery/">SPIKE Recovery Procedures</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/operations/backup/">SPIKE Backup and Restore</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/operations/release/">SPIKE Relase Management</a>
+                </li>
+
+                </ul>
+    </div>
+<style>
+    /* Navigation tree structure */
+    #trees {
+        padding: 0 1rem;
+    }
+
+    .tree-toggle {
+        display: none;
+    }
+
+    .tree-toggle:checked + .tree-toggle-label + .subtree {
+        display: block;
+    }
+
+    .tree-toggle-label {
+        display: block;
+        padding: 0.75rem 1rem;
+        margin: 0.25rem 0;
+        border-radius: 6px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .tree-toggle-label:hover {
+        background-color: rgba(0, 0, 0, 0.05);
+    }
+
+    .tree-toggle-label::before {
+        content: '▸';
+        display: inline-block;
+        margin-right: 0.5rem;
+        transition: transform 0.2s ease;
+    }
+
+    .tree-toggle:checked + .tree-toggle-label::before {
+        transform: rotate(90deg);
+    }
+
+    .subtree {
+        display: none;
+        margin: 0;
+        padding: 0 0 0 1rem;
+        list-style: none;
+    }
+
+    .subtree li {
+        margin: 0.25rem 0;
+    }
+
+    .subtree li a {
+        display: block;
+        padding: 0.5rem 1rem;
+        text-decoration: none;
+        border-radius: 4px;
+        font-size: 0.9375rem;
+        transition: all 0.2s ease;
+    }
+
+    .subtree li a:hover {
+        background-color: rgba(0, 0, 0, 0.05);
+    }
+
+    .subtree li.active a {
+        font-weight: 600;
+        background-color: rgba(0, 0, 0, 0.05);
+    }
+
+    /* Table of contents styling */
+    #toc {
+        margin: 0.5rem 0 0.5rem 1.5rem;
+        padding: 0;
+        list-style: none;
+        font-size: 0.875rem;
+    }
+
+    #toc li {
+        margin: 0.25rem 0;
+    }
+
+    #toc li a {
+        padding: 0.375rem 0.75rem;
+        opacity: 0.8;
+    }
+
+    #toc li a:hover {
+        opacity: 1;
+    }
+
+    #toc ul {
+        margin: 0.25rem 0 0.25rem 1rem;
+        padding: 0;
+        list-style: none;
+    }
+</style>
+</nav>
+<style>
+  nav {
+    position: sticky;
+    width: 300px;
+    height: 100vh;
+    top: 0;
+    max-height: 100vh;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 0, 0, 0.3) transparent;
+    z-index: 100;
+    box-shadow: 5px 0 20px var(--shadow-color);
+    border-right: 1px solid var(--border-color);
+    transition: transform 0.4s ease-in-out;
+    background-color: var(--bg-primary);
+  }
+
+  nav::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  nav::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  nav::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.3);
+    border-radius: 4px;
+    border: 2px solid transparent;
+  }
+
+  @media (max-width: 1300px) {
+    .nav-toggle {
+      display: none;
+    }
+
+    nav {
+      position: fixed;
+      transform: translateX(-100%);
+      width: 85%;
+      max-width: 300px;
+      height: calc(100vh - 57px);
+      top: 57px;
+    }
+
+    nav.active {
+      transform: translateX(0);
+    }
+  }
+</style>
+
+
+    <div class="content">
+        <div class="header">
+  <div class="header-content">
+    <button
+      id="mobile-nav-toggle"
+      aria-label="Toggle navigation"
+      class="mobile-only"
+    >
+      <i class="bx bx-menu"></i>
+    </button>
+    <script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const searchInput = document.querySelector(".search-input");
+    const overlay = document.querySelector(".overlay");
+    const searchResults = document.querySelector(".search-results");
+
+    function closeSearch() {
+      overlay.style.display = "none";
+      searchResults.style.display = "none";
+      searchInput.blur();
+    }
+
+    function openSearch() {
+      overlay.style.display = "block";
+      searchResults.style.display = "block";
+    }
+
+    searchInput.addEventListener("focus", openSearch);
+    overlay.addEventListener("click", closeSearch);
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        closeSearch();
+      }
+    });
+  });
+</script>
+<div class="overlay"></div>
+<input class="search-input" type="text" placeholder="Search..." />
+<div class="search-results">
+  <div class="search-results__header">
+    <span class="search-results__count">Waiting for input...</span>
+  </div>
+  <div class="search-results__items"></div>
+</div>
+
+<style>
+  .search-input {
+    width: 100%;
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background-color: var(--bg-interactive);
+    color: var(--text-primary);
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+    z-index: 101;
+  }
+
+  .search-input:focus {
+    outline: none;
+    border-color: var(--spike-blue);
+    background-color: var(--bg-primary);
+    box-shadow: 0 0 0 2px rgba(var(--spike-blue-rgb), 0.2);
+  }
+
+  .search-input::placeholder {
+    color: var(--text-muted);
+  }
+
+  .overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 100;
+  }
+
+  .search-results {
+    display: none;
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 100%;
+    max-width: 700px;
+    margin: 0.5rem auto;
+    background: var(--bg-primary);
+    border-radius: 8px;
+    box-shadow: 0px 4px 8px 3px rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--border-color);
+    z-index: 102;
+  }
+
+  .search-results__header {
+    padding: 0.75rem 1rem;
+    color: var(--text-muted);
+    font-size: 0.875rem;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .search-results__items {
+    max-height: 60vh;
+    overflow-y: auto;
+  }
+
+  .search-results__item {
+    display: block;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--border-color);
+    transition: background-color 0.2s ease;
+  }
+
+  .search-results__item:hover {
+    background-color: var(--bg-interactive);
+  }
+
+  .search-results__title {
+    color: var(--spike-blue);
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+  }
+
+  .search-results__preview {
+    color: var(--text-secondary);
+    font-size: 0.8125rem;
+    line-height: 1.4;
+  }
+
+  .search-results__preview b {
+    color: var(--spike-dark-green);
+    font-weight: 600;
+  }
+
+  .search-results__items::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  .search-results__items::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 4px;
+  }
+
+  /* Empty state */
+  .search-results__empty {
+    padding: 2rem 1rem;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.875rem;
+  }
+</style>
+
+    <a
+      href="https://github.com/spiffe/spike"
+      target="_blank"
+      rel="noopener"
+      class="github-star"
+    >
+      <i class="bx bx-star"></i>
+      <span>Star <strong>SPIKE</strong> on <strong>GitHub</strong></span>
+    </a>
+    <button id="theme-toggle" aria-label="Toggle theme">
+      <i class="bx bx-sun light-icon"></i>
+      <i class="bx bx-moon dark-icon"></i>
+    </button>
+  </div>
+</div>
+
+<style>
+  .header {
+    position: sticky;
+    top: 0;
+    background-color: var(--bg-primary);
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color);
+    box-shadow: 0 4px 6px -1px var(--shadow-color),
+      0 2px 4px -1px var(--shadow-color);
+    z-index: 101;
+  }
+
+  .header-content {
+    max-width: 800px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  #mobile-nav-toggle {
+    display: none;
+    background: none;
+    border: none;
+    padding: 0.5rem;
+    cursor: pointer;
+    color: var(--text-primary);
+    font-size: 1.5rem;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+  }
+
+  #mobile-nav-toggle i {
+    pointer-events: none;
+    display: block;
+  }
+
+  #mobile-nav-toggle:hover {
+    background-color: var(--bg-interactive);
+  }
+
+  @media (max-width: 1300px) {
+    #mobile-nav-toggle {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+    }
+  }
+
+  #theme-toggle {
+    background: none;
+    border: none;
+    padding: 0.5rem;
+    cursor: pointer;
+    color: var(--text-primary);
+    font-size: 1.25rem;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  #theme-toggle:hover {
+    background-color: var(--bg-interactive);
+  }
+
+  #theme-toggle:active {
+    background-color: var(--bg-secondary);
+  }
+
+  /* Show/hide icons based on theme */
+  [data-theme="dark"] .light-icon,
+  :root:not([data-theme="dark"]) .dark-icon {
+    display: none;
+  }
+
+  /* GitHub Star Button */
+  .github-star {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    color: white;
+    text-decoration: none;
+    background: linear-gradient(
+      135deg,
+      var(--spike-blue),
+      var(--spike-dark-green)
+    );
+    border-radius: 20px;
+    transition: all 0.2s ease;
+    font-size: 0.875rem;
+    white-space: nowrap;
+  }
+
+  .github-star:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(var(--spike-blue-rgb), 0.3);
+  }
+
+  .github-star i {
+    font-size: 1.1rem;
+    animation: starBounce 2s infinite;
+    color: #ffd700;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+  }
+
+  @keyframes starBounce {
+    0%,
+    100% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.2);
+    }
+  }
+
+  .github-star span {
+    white-space: nowrap;
+  }
+
+  @media (max-width: 768px) {
+    .github-star span {
+      display: none;
+    }
+
+    .github-star {
+      padding: 0.5rem;
+    }
+  }
+</style>
+
+<script>
+  // Theme toggle functionality
+  document.addEventListener("DOMContentLoaded", () => {
+    const themeToggle = document.getElementById("theme-toggle");
+
+    // Function to set theme
+    function setTheme(theme) {
+      document.documentElement.setAttribute("data-theme", theme);
+      localStorage.setItem("theme", theme);
+    }
+
+    // Initialize theme
+    const savedTheme = localStorage.getItem("theme");
+    if (savedTheme) {
+      setTheme(savedTheme);
+    } else if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+      setTheme("dark");
+    }
+
+    // Toggle theme on button click
+    themeToggle.addEventListener("click", () => {
+      const currentTheme = document.documentElement.getAttribute("data-theme");
+      const newTheme = currentTheme === "dark" ? "light" : "dark";
+      setTheme(newTheme);
+    });
+
+    // Listen for system theme changes
+    window
+      .matchMedia("(prefers-color-scheme: dark)")
+      .addEventListener("change", (e) => {
+        if (!localStorage.getItem("theme")) {
+          setTheme(e.matches ? "dark" : "light");
+        }
+      });
+  });
+</script>
+
+
+        <article>
+            
+        <h1 id="spike-on-linux">SPIKE on Linux</h1>
+<p>In this guide, you will learn how to build, deploy, and test <a href="https://spike.ist/getting-started/about/" title="About SPIKE"><strong>SPIKE</strong></a>
+from the source. This guide assumes basic familiarity with terminal commands and
+the ability to install and execute the required software. It is recommended to
+have administrative privileges on your system, as some steps might require them.</p>
+<p>The tools and resources mentioned in this guide are essential for building and
+working with <strong>SPIKE</strong> effectively. Make sure to follow each step carefully to
+ensure a smooth experience. In case you encounter issues, please discuss
+them on the <a href="https://slack.spiffe.io/" title="SPIFFE Slack">SPIFFE community Slack</a>.</p>
+<h2 id="prerequisites">Prerequisites</h2>
+<p>This quickstart guide assumes you are using an <a href="https://ubuntu.com/">Ubuntu Linux</a> operating
+system. The steps may slightly differ if you are using a different operating
+system.</p>
+<p><strong>SPIKE</strong> can run anywhere <a href="https://spiffe.io/">SPIFFE</a> can be deployed. For consistency,
+the tutorials and guides in <strong>SPIKE</strong> documentation use <a href="https://ubuntu.com/"><strong>Ubuntu</strong></a> as
+the base operating system. Though, if you encounter issues with your OS, feel
+free to discuss them on the <a href="https://slack.spiffe.io/" title="SPIFFE Slack">SPIFFE community Slack</a>.</p>
+<p>Here are the OS details that we are testing this guide on:</p>
+<pre data-lang="txt" style="background-color:#2b303b;color:#c0c5ce;" class="language-txt "><code class="language-txt" data-lang="txt"><span>DISTRIB_ID=Ubuntu
+</span><span>DISTRIB_RELEASE=24.04
+</span><span>DISTRIB_CODENAME=noble
+</span><span>DISTRIB_DESCRIPTION=&quot;Ubuntu 24.04 LTS&quot;
+</span></code></pre>
+<p>In addition, you will need the usual suspects:</p>
+<ul>
+<li><a href="https://git-scm.com/"><code>git</code></a></li>
+<li><a href="https://www.gnu.org/software/make/"><code>make</code></a></li>
+<li><a href="https://go.dev/"><code>go</code></a> (<em>the most recent version would do</em>)</li>
+<li><a href="https://nodejs.org"><code>node</code></a> (<em>at least <a href="https://copilot.github.com/" title="GitHub Copilot">GitHub Copilot</a> requires it on Linux</em>)</li>
+<li><a href="https://packages.ubuntu.com/hirsute/build-essential"><code>build-essential</code></a>
+(<em>i.e., <code>sudo apt install build-essential</code></em>)</li>
+</ul>
+<h2 id="go-environment-setup">Go Environment Setup</h2>
+<p>Here’s part of the <code>go env</code> setting we use for this guide. Yours might slightly
+vary depending on your development configuration.</p>
+<p>The environment setup shown below is mostly what Go uses by default, yet, we
+provide them just-in-case to eliminate any environment-related setup issues you
+might face.</p>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">go</span><span> env
+</span><span style="color:#65737e;"># GO111MODULE=&#39;on&#39;
+</span><span style="color:#65737e;"># GOCACHE=&#39;/home/spike/.cache/go-build&#39;
+</span><span style="color:#65737e;"># GOENV=&#39;/home/spike/.config/go/env&#39;
+</span><span style="color:#65737e;"># GOMODCACHE=&#39;/home/spike/packages/go/pkg/mod&#39;
+</span><span style="color:#65737e;"># GONOPROXY=&#39;&#39;
+</span><span style="color:#65737e;"># GONOSUMDB=&#39;&#39;
+</span><span style="color:#65737e;"># GOOS=&#39;linux&#39;
+</span><span style="color:#65737e;"># GOPATH=&#39;/home/spike/packages/go&#39;
+</span><span style="color:#65737e;"># GOPRIVATE=&#39;&#39;
+</span><span style="color:#65737e;"># GOPROXY=&#39;https://proxy.golang.org,direct&#39;
+</span><span style="color:#65737e;"># GOROOT=&#39;/usr/local/go&#39;
+</span><span style="color:#65737e;"># GOSUMDB=&#39;sum.golang.org&#39;
+</span><span style="color:#65737e;"># GOTOOLCHAIN=&#39;auto&#39;
+</span><span style="color:#65737e;"># GOMOD=&#39;/home/spike/Desktop/WORKSPACE/spike/go.mod&#39;
+</span><span style="color:#65737e;"># GOWORK=&#39;&#39;
+</span></code></pre>
+<p>If you need, you can also use Go’s built-in tooling to view and modify your Go
+environment settings. Use the <code>go env</code> command to inspect or set specific
+environment variables.</p>
+<p>For example:</p>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># View the current list of environment variables
+</span><span style="color:#bf616a;">go</span><span> env
+</span><span>
+</span><span style="color:#65737e;"># Set a specific environment variable like GOPATH
+</span><span style="color:#bf616a;">go</span><span> env</span><span style="color:#bf616a;"> -w</span><span> GOPATH=$</span><span style="color:#bf616a;">HOME</span><span>/my-gopath
+</span><span>
+</span><span style="color:#65737e;"># Set multiple variables, e.g., GOROOT and GO111MODULE
+</span><span style="color:#bf616a;">go</span><span> env</span><span style="color:#bf616a;"> -w</span><span> GOROOT=/usr/local/go GO111MODULE=on
+</span><span>
+</span><span style="color:#65737e;"># Verify the changes were made
+</span><span style="color:#bf616a;">go</span><span> env GOPATH
+</span><span style="color:#bf616a;">go</span><span> env GOROOT
+</span><span style="color:#bf616a;">go</span><span> env GO111MODULE
+</span></code></pre>
+<p>These changes made using the <code>go env -w</code> command are persistent and stored in
+Go configuration files. You can view these changes in the file located at
+<code>$(go env GOENV)</code>. To reset a variable to its default value, use:</p>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">go</span><span> env</span><span style="color:#bf616a;"> -u</span><span> GOPATH
+</span></code></pre>
+<h2 id="building-spire">Building SPIRE</h2>
+<p>To get started, let’s create a development version of <a href="https://spiffe.io/docs/latest/spire-about/" title="SPIRE"><strong>SPIRE</strong></a>.
+Note that this is not a production-ready setup. For production, you should
+follow the <a href="https://spiffe.io/docs/latest/deploying/configuring/" title="SPIRE Production Configuration">official SPIRE documentation</a>.</p>
+<p>Let’s first build <strong>SPIRE</strong> from the source:</p>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#96b5b4;">echo </span><span>&#39;</span><span style="color:#a3be8c;">export WORKSPACE=&quot;$HOME/-change_to_dev_dir-&quot;</span><span>&#39; &gt;&gt; </span><span style="color:#bf616a;">~</span><span>/.profile
+</span><span style="color:#96b5b4;">source </span><span style="color:#bf616a;">~</span><span>/.profile
+</span><span style="color:#96b5b4;">echo </span><span>$</span><span style="color:#bf616a;">WORKSPACE
+</span><span style="color:#96b5b4;">cd </span><span>$</span><span style="color:#bf616a;">WORKSPACE
+</span><span style="color:#bf616a;">git</span><span> clone https://github.com/spiffe/spire &amp;&amp; </span><span style="color:#96b5b4;">cd</span><span> spire
+</span><span style="color:#bf616a;">make</span><span> build
+</span></code></pre>
+<h2 id="adding-spire-binaries-to-path">Adding SPIRE Binaries to <code>$PATH</code></h2>
+<p>Add the <strong>SPIRE</strong> binaries to your <code>$PATH</code>:</p>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># ~/.profile
+</span><span style="color:#b48ead;">export </span><span style="color:#bf616a;">PATH</span><span>=$</span><span style="color:#bf616a;">PATH</span><span style="color:#a3be8c;">:</span><span>$</span><span style="color:#bf616a;">WORKSPACE</span><span style="color:#a3be8c;">/spire/bin
+</span><span style="color:#96b5b4;">echo </span><span>&#39;</span><span style="color:#a3be8c;">PATH=$PATH:$WORKSPACE/spire/bin</span><span>&#39; &gt;&gt; </span><span style="color:#bf616a;">~</span><span>/.profile
+</span></code></pre>
+<h2 id="adding-spike-binaries-to-path">Adding SPIKE Binaries to <code>$PATH</code></h2>
+<p>Additionally, you can source the following file to define additional
+<strong>SPIKE</strong>-related environment variables for your convenience. This is not
+required because if you don’t define them, <strong>SPIKE</strong> will assume sensible
+defaults.</p>
+<p>Sourcing <code>./hack/lib/env.sh</code> allows you to override the default <strong>SPIKE</strong>
+environment settings. This can be particularly useful for development
+purposes to test custom setups or alternative paths.</p>
+<p>Having all overrides in a single place is also handy as it doubles
+as documentation to help understand the development environment.</p>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># ~/.profile
+</span><span>
+</span><span style="color:#65737e;"># ...
+</span><span>
+</span><span style="color:#65737e;"># SPIKE Environment configuration                                                
+</span><span style="color:#96b5b4;">source </span><span>$</span><span style="color:#bf616a;">WORKSPACE</span><span>/spike/hack/lib/env.sh 
+</span></code></pre>
+<h2 id="verifying-spire-installation">Verifying SPIRE Installation</h2>
+<p>Verify SPIRE installation as follows:</p>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#96b5b4;">source </span><span style="color:#bf616a;">~</span><span>/.profile
+</span><span style="color:#bf616a;">spire-server -h
+</span></code></pre>
+<p>Output:</p>
+<pre data-lang="txt" style="background-color:#2b303b;color:#c0c5ce;" class="language-txt "><code class="language-txt" data-lang="txt"><span>Usage: spire-server [--version] [--help] &lt;command&gt; [&lt;args&gt;]
+</span><span>
+</span><span>Available commands are:
+</span><span>    agent                
+</span><span>    bundle               
+</span><span>    entry                
+</span><span>    federation           
+</span><span>    healthcheck          Health status 
+</span><span>    jwt                  
+</span><span>    localauthority       
+</span><span>    logger               
+</span><span>    run                  Runs the server
+</span><span>    token                
+</span><span>    upstreamauthority    
+</span><span>    validate             Validates config 
+</span><span>    x509  
+</span></code></pre>
+<h2 id="building-spike">Building SPIKE</h2>
+<p>Next, build <strong>SPIKE</strong> binaries:</p>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#96b5b4;">cd </span><span>$</span><span style="color:#bf616a;">WORKSPACE</span><span>/spike
+</span><span style="color:#bf616a;">make</span><span> build
+</span><span>
+</span><span style="color:#65737e;"># Created files:
+</span><span style="color:#65737e;">#   keeper*
+</span><span style="color:#65737e;">#   nexus*
+</span><span style="color:#65737e;">#   spike*
+</span></code></pre>
+<h2 id="configure-local-dns">Configure Local DNS</h2>
+<p><a href="https://github.com/spiffe/spike/blob/main/config/spire/agent/agent.conf#L4">The default agent configuration file</a> uses
+<code>spire.spike.ist</code> as the SPIRE Server DNS name. To resolve this name to the
+loopback address, add the following entry to your <code>/etc/hosts</code> file:</p>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># /etc/hosts
+</span><span>
+</span><span style="color:#65737e;"># If SPIRE Server is running on a different IP, replace
+</span><span style="color:#65737e;"># this with the correct IP address.
+</span><span style="color:#bf616a;">127.0.0.1</span><span> spire.spike.ist
+</span></code></pre>
+<h2 id="starting-spike">Starting SPIKE</h2>
+<p>There is a starter script that combines and automates some of the steps in the
+following sections. It configures and runs SPIRE Server, SPIRE Agent,
+SPIKE Nexus, and SPIKE Keeper.</p>
+<p>You can run this to start all the required components:</p>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># Start everything.
+</span><span style="color:#bf616a;">make</span><span> start
+</span></code></pre>
+<p>And then, on a separate terminal, you can run <code>spike</code>:</p>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># Make sure you have the `spike` binary in your PATH.
+</span><span style="color:#bf616a;">spike
+</span><span>
+</span><span style="color:#65737e;"># Sample Output: 
+</span><span style="color:#65737e;"># SPIKE v$version
+</span><span style="color:#65737e;"># &gt;&gt; Secure your secrets with SPIFFE: https://spike.ist/ #
+</span><span style="color:#65737e;">#
+</span><span style="color:#65737e;"># Usage:
+</span><span style="color:#65737e;">#  spike [command]
+</span><span style="color:#65737e;">#
+</span><span style="color:#65737e;"># Available Commands:
+</span><span style="color:#65737e;">#   completion  Generate the autocompletion script
+</span><span style="color:#65737e;">#   help        Help about any command
+</span><span style="color:#65737e;">#   operator    Manage admin operations
+</span><span style="color:#65737e;">#   policy      Manage policies
+</span><span style="color:#65737e;">#   secret      Manage secrets
+</span><span style="color:#65737e;">#
+</span><span style="color:#65737e;"># Flags:
+</span><span style="color:#65737e;">#  -h, --help   help for spike
+</span><span style="color:#65737e;"># 
+</span><span style="color:#65737e;"># Use &quot;spike [command] --help&quot; for help.
+</span></code></pre>
+<p>Although the <code>make start</code> script is convenient, it might be useful
+to run the components individually to understand the process better and
+debug any issues that might arise.</p>
+<p>The following sections will guide you through the individual steps.</p>
+<blockquote>
+<p><strong>CLI Reference</strong></p>
+<p>Since the <strong>SPIKE CLI</strong> is a work in progress and highly in flux, the best
+way to get the most up-to-date information is to run <code>spike --help</code> or
+<code>spike [command] --help</code> to learn about the available commands and flags.</p>
+<p>In addition, you can <a href="https://spike.ist/community/presentations/">check out the demo recordings</a> to see the CLI in
+action.</p>
+</blockquote>
+<h2 id="start-spire-server">Start SPIRE Server</h2>
+<p>Start the SPIRE Server:</p>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#96b5b4;">cd </span><span>$</span><span style="color:#bf616a;">WORKSPACE</span><span>/spike
+</span><span style="color:#bf616a;">./hack/spire-server-start.sh
+</span></code></pre>
+<h2 id="creating-registration-entries">Creating Registration Entries</h2>
+<p>The following script will create registration entries for the SPIKE components:</p>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#96b5b4;">cd </span><span>$</span><span style="color:#bf616a;">WORKSPACE</span><span>/spike
+</span><span style="color:#bf616a;">./hack/spire-server-entry-spike-register.sh
+</span></code></pre>
+<h2 id="start-spire-agent">Start SPIRE Agent</h2>
+<p>Start the SPIRE Agent:</p>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#96b5b4;">cd </span><span>$</span><span style="color:#bf616a;">WORKSPACE</span><span>/spike
+</span><span style="color:#bf616a;">./hack/spire-agent-start.sh
+</span></code></pre>
+<h2 id="start-spike-components">Start SPIKE Components</h2>
+<p>Then start <strong>SPIKE</strong> components:</p>
+<p>Make sure you started the following binaries, each runs on a specific terminal
+window.</p>
+<p>Start the workloads:</p>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># Optional: Increase the log level to debug:
+</span><span style="color:#b48ead;">export </span><span style="color:#bf616a;">SPIKE_SYSTEM_LOG_LEVEL</span><span>=</span><span style="color:#a3be8c;">debug
+</span><span>
+</span><span style="color:#96b5b4;">cd </span><span>$</span><span style="color:#bf616a;">WORKSPACE</span><span>/spike
+</span><span>
+</span><span style="color:#65737e;"># Start SPIKE Nexus in one terminal.
+</span><span style="color:#bf616a;">./hack/start-nexus.sh
+</span><span>
+</span><span style="color:#65737e;"># Start SPIKE Keepers in separate terminals.
+</span><span style="color:#bf616a;">./hack/start-keeper-1.sh
+</span><span style="color:#bf616a;">./hack/start-keeper-2.sh
+</span><span style="color:#bf616a;">./hack/start-keeper-3.sh
+</span></code></pre>
+<p>Here is how one of these <strong>SPIKE Keeper</strong> startup scripts looks like:</p>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># ./hack/start-keeper-1.sh
+</span><span style="color:#bf616a;">SPIKE_KEEPER_TLS_PORT</span><span>=&#39;</span><span style="color:#a3be8c;">:8443</span><span>&#39; \
+</span><span style="color:#bf616a;">./keeper
+</span></code></pre>
+<p>And here is how <strong>SPIKE Nexus</strong> startup script looks like:</p>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># ./hack/start-nexus.sh
+</span><span style="color:#bf616a;">SPIKE_NEXUS_KEEPER_PEERS</span><span>=&#39;</span><span style="color:#a3be8c;">https://localhost:8443,\
+</span><span style="color:#a3be8c;">https://localhost:8543,https://localhost:8643</span><span>&#39;
+</span><span style="color:#bf616a;">./nexus
+</span></code></pre>
+<blockquote>
+<p><strong>Sequential SPIKE Keeper IDs</strong></p>
+<p>The mapping in <code>SPIKE_NEXUS_KEEPER_PEERS</code> should start from <code>"1"</code>
+and increase monotonically without any gaps in the sequence as shown
+in the sample code above. This is because of the way SPIKE Nexus internally
+computes and distributes the Shamir Shards. Not following this sequence
+will lead to errors—We may improve this behavior in the future and make
+it more flexible.</p>
+</blockquote>
+<h2 id="using-spike-pilot">Using SPIKE Pilot</h2>
+<p>Define an alias to <strong>SPIKE</strong> Pilot:</p>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># ~/.bashrc
+</span><span>
+</span><span style="color:#65737e;"># path to the SPIKE Pilot binary (`spike`)
+</span><span style="color:#96b5b4;">alias </span><span style="color:#8fa1b3;">spike</span><span>=$</span><span style="color:#bf616a;">WORKSPACE</span><span style="color:#a3be8c;">/spike/spike
+</span></code></pre>
+<p>Run <strong>SPIKE</strong> Pilot and explore the CLI:</p>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">spike
+</span></code></pre>
+<h2 id="testing-out-spike">Testing Out SPIKE</h2>
+<p>Let’s test <strong>SPIKE</strong> by creating a secret:</p>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">spike</span><span> secret put /tenants/acme/credentials/db \
+</span><span>  username=root pass=SPIKERocks
+</span><span>
+</span><span style="color:#65737e;"># Output:
+</span><span style="color:#65737e;"># OK
+</span></code></pre>
+<p>Now, let’s read the secret back:</p>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">spike</span><span> secret get /tenants/acme/credentials/db
+</span><span>
+</span><span style="color:#65737e;"># Output:
+</span><span style="color:#65737e;"># pass: SPIKERocks
+</span><span style="color:#65737e;"># username: root
+</span></code></pre>
+<p>Let’s delete the secret now:</p>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">spike</span><span> secret delete /tenants/acme/credentials/db
+</span><span>
+</span><span style="color:#65737e;"># Output:
+</span><span style="color:#65737e;"># OK
+</span></code></pre>
+<p>If you try to read the secret again, you won’t be able to get it.</p>
+<p>Feel free to experiment with other <strong>SPIKE</strong> commands in your sandbox
+environment to explore its capabilities and better understand how it works. This
+is a great way to familiarize yourself with its features and test various
+scenarios safely.</p>
+<h2 id="uninstalling-spike">Uninstalling SPIKE</h2>
+<p>Retaining the <strong>SPIKE</strong> binaries on your system poses no issues. These binaries
+are compact, consuming minimal disk space and no resources when inactive. As
+simple executable files, they have no impact on your system’s performance when
+not in use. Therefore, keeping them installed is completely harmless.</p>
+<p>However, if you want to wipe everything out, you can just remove the binaries
+and <strong>SPIKE</strong>’s data folder, and that would be it:</p>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">rm -rf ~</span><span>/.spike
+</span><span style="color:#bf616a;">rm</span><span> spike
+</span><span style="color:#bf616a;">rm</span><span> keeper
+</span><span style="color:#bf616a;">rm</span><span> nexus
+</span></code></pre>
+<p>If you have <code>spire-server</code> and <code>spire-agent</code> on your system, and you are not
+using them for anything else; you can remove them too:</p>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">rm</span><span> spire-server
+</span><span style="color:#bf616a;">rm</span><span> spire-agent
+</span></code></pre>
+<h2 id="have-fun">Have Fun</h2>
+<p>That’s about it.</p>
+<p>Enjoy.</p>
+<hr />
+<ul>
+<li><a href="https://spike.ist/getting-started/about/">About SPIKE</a></li>
+<li><a href="https://spike.ist/getting-started/quickstart/">SPIKE Quickstart Guide</a></li>
+<li><a href="https://spike.ist/getting-started/local-deployment/">Building SPIKE Locally</a></li>
+<li><a href="https://spike.ist/getting-started/project-status/">Early Access Notice</a></li>
+<li><a href="https://spike.ist/getting-started/configuration/">Configuring SPIKE</a></li>
+<li><a href="https://spike.ist/getting-started/cli/">SPIKE CLI</a></li>
+</ul>
+<hr />
+<ul>
+<li><a href="https://spike.ist/getting-started/">Getting Started</a></li>
+<li><a href="https://spike.ist/community/">Community</a></li>
+<li><a href="https://spike.ist/architecture/">SPIKE Architecture</a></li>
+<li><a href="https://spike.ist/operations/">Operations</a></li>
+<li><a href="https://spike.ist/tracking/">Tracking</a></li>
+</ul>
+
+    
+        </article>
+
+        <footer id="footer">
+            Copyright © 2024-present <strong>SPIKE Contributors</strong>.<br>
+            <strong>SPIKE</strong>'s code
+            is distributed under <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache (v2.0)</a>.
+            <br>
+            The documentation on this website
+            is distributed under <a href="https://creativecommons.org/licenses/by/4.0/">CC-BY-4.0</a>.
+            <br><br>
+            We <strong>do not</strong> collect your data.
+            This site <strong>does not</strong> use any tracking cookies or scripts.
+        </footer>
+    </div>
+
+</main>
+
+
+    <script type="text/javascript" src="https://spike.ist/elasticlunr.min.js" defer></script>
+    <script type="text/javascript" src="https://spike.ist/search_index.en.js" defer></script>
+<script type="text/javascript" src="https://spike.ist/js.js" defer></script>
+</body>
+</html>
+<style>
+body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    font-family: var(--font-family);
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+}
+
+main {
+    width: 100vw;
+    max-width: 1920px;
+    display: flex;
+    flex-direction: row;
+    overflow: hidden;
+}
+
+#footer {
+    text-align: center;
+    padding: 2rem;
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    border-top: 1px solid var(--border-color);
+    margin-top: 2rem;
+}
+
+.content {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    height: 100vh;
+    overflow-y: auto;
+    background-color: var(--bg-primary);
+    line-height: 1.6;
+    border-left: 1px solid var(--border-color);
+}
+
+#footer a {
+    color: var(--spike-blue);
+    text-decoration: none;
+    transition: all 0.2s ease;
+    border-bottom: 1px solid transparent;
+    font-weight: 500;
+
+}
+
+#footer a:hover {
+    border-bottom-color: var(--spike-blue);
+}
+
+</style>

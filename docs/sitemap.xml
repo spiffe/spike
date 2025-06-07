@@ -103,6 +103,9 @@
         <loc>https://spike.ist/getting-started/about/</loc>
     </url>
     <url>
+        <loc>https://spike.ist/getting-started/bare-metal/</loc>
+    </url>
+    <url>
         <loc>https://spike.ist/getting-started/cli/</loc>
     </url>
     <url>
@@ -121,10 +124,13 @@
         <loc>https://spike.ist/getting-started/configuration/</loc>
     </url>
     <url>
-        <loc>https://spike.ist/getting-started/guide/</loc>
+        <loc>https://spike.ist/getting-started/local-deployment/</loc>
     </url>
     <url>
         <loc>https://spike.ist/getting-started/project-status/</loc>
+    </url>
+    <url>
+        <loc>https://spike.ist/getting-started/quickstart/</loc>
     </url>
     <url>
         <loc>https://spike.ist/operations/</loc>

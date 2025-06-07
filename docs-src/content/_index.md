@@ -37,7 +37,7 @@ Here are a few pointers to learn more about **SPIKE**:
 
 [spiffe]: https://spiffe.io/ "Turtle Power"
 [architecture]: @/architecture/system-overview.md "SPIKE Architecture"
-[quickstart]: @/getting-started/guide.md "SPIKE Quickstart"
+[quickstart]: @/getting-started/quickstart.md "SPIKE Quickstart"
 [community]: @/community/hello.md "Open Source is better together."
 [cli]: @/getting-started/commands/_index.md
 [github]: https://github.com/spiffe/spike

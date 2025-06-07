@@ -232,7 +232,7 @@ func TestSpikeIntegration(t *testing.T) {
 
 	// Step 6: Wait for spike-pilot pod and run command
 	fmt.Println("Waiting for spike-pilot pod...")
-	podName, err := harness.waitForPod("spike-system", "app=spike-pilot", 5*time.Minute)
+	podName, err := harness.waitForPod("spike", "app=spike-pilot", 5*time.Minute)
 	if err != nil {
 		t.Fatalf("Failed to find ready spike-pilot pod: %v", err)
 	}
@@ -240,7 +240,7 @@ func TestSpikeIntegration(t *testing.T) {
 	fmt.Printf("Found pod: %s\n", podName)
 
 	// Execute spike secret list command
-	output, err := harness.execInPod("spike-system", podName, []string{"spike", "secret", "list"})
+	output, err := harness.execInPod("spike", podName, []string{"spike", "secret", "list"})
 	if err != nil {
 		t.Fatalf("Failed to execute command in pod: %v", err)
 	}
