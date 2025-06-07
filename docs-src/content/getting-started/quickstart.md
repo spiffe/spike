@@ -38,10 +38,12 @@ starting with this guide:
 * Have a [`kubectl`][kubectl] client installed. 
 * Have [`make`][make] installed on your machine.
 * Have a [`minikube`][minikube] binary installed.
+* Have [`helm`][helm] binary installed.
 
 [docker]: https://www.docker.com/ "Docker: Build, Share, and Run Applications"
 [kubectl]: https://kubernetes.io/docs/tasks/tools/ "kubectl: Kubernetes command-line tool"
 [make]: https://www.gnu.org/software/make/ "GNU Make: Build Automation Tool"
+[helm]: https://helm.sh/ "Helm"
 
 ## Starting Minikube
 
@@ -64,6 +66,20 @@ necessary plugins enabled. You can verify that Minikube is running by executing:
 minikube status
 # or...
 kubectl get node
+
+# Sample Outputs:
+#
+# $ minikube status
+# minikube
+# type: Control Plane
+# host: Running
+# kubelet: Running
+# apiserver: Running
+# kubeconfig: Configured
+#
+# $ kubectl get node
+# NAME       STATUS   ROLES           AGE   VERSION
+# minikube   Ready    control-plane   67s   v1.33.1
 ```
 
 ## Deploying SPIKE to Minikube
@@ -88,23 +104,50 @@ Then deploy SPIKE using the following command:
 helm upgrade --install spire-crds spire-crds \
   --repo https://spiffe.github.io/helm-charts-hardened/
   
-helm upgrade --install spiffe \
-  https://spiffe.github.io/helm-charts-hardened \
+helm upgrade --install spiffe spire \
+  --repo https://spiffe.github.io/helm-charts-hardened \
   -f ./values.yaml # The values.yaml file we created earlier
 ```
 
 ## Verifying SPIKE Deployment
 
+First, make sure that your components are up and running.
+
+```bash
+kubectl get po 
+# Sample Output:
+#
+# NAME                                      READY  STATUS 
+# spiffe-agent-j6448                        1/1    Running
+# spiffe-server-0                           2/2    Running
+# spiffe-spiffe-csi-driver-ngqnk            2/2    Running
+# spiffe-spiffe-oidc-discovery-provider-78  2/2    Running
+# spiffe-spike-keeper-0                     1/1    Running
+# spiffe-spike-keeper-1                     1/1    Running
+# spiffe-spike-keeper-2                     1/1    Running
+# spiffe-spike-nexus-0                      1/1    Running
+# spiffe-spike-pilot-6997997fcb-nlqk8       1/1    Running
+```
+
 Once the deployment is complete, you can verify SPIKE is running by 
 creating a sample secret and reading its value back.
 
 ```bash
-kubectl exec -it -n spire-mgmt deploy/spire-spike-pilot -- sh
+kubectl exec -it deploy/spiffe-spike-pilot -- sh
 # Shell into the container and run the following commands:
 spike secret list
+# Output:
+# No Secrets found.
 spike secret put test/creds username=spike password=SPIKERocks
+# Output:
+# OK
 spike secret list
+# Output:
+# - test/creds
 spike secret get test/creds
+# Output:
+# password: SPIKERocks
+# username: spike
 ```
 
 ## Next Up
