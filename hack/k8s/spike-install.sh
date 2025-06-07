@@ -4,9 +4,8 @@
 #  \\\\\ Copyright 2024-present SPIKE contributors.
 # \\\\\\\ SPDX-License-Identifier: Apache-2.0
 
-# TODO: rename file since it does not only install SPIRE, but also SPIKE.
-
-# TODO: remove spike-install.sh -- From Makefile too.
+# Installs SPIRE and SPIKE to the cluster.
+# Uses the local container registry for SPIKE images.
 
 set -e  # Exit on any error
 
@@ -17,8 +16,6 @@ if ! helm repo list | grep -q "^spiffe\s"; then
 else
     echo "SPIFFE Helm repository already exists."
 fi
-
-helm repo update
 
 # Note that this is NOT a SPIRE production setup.
 # Consult SPIRE documentation for production deployment and hardening:

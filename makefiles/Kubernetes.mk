@@ -28,7 +28,7 @@ docker-push:
 
 # 4. Deploy SPIRE and SPIKE to the cluster.
 deploy-local:
-	./hack/k8s/spire-install.sh
+	./hack/k8s/spike-install.sh
 
 tail-nexus:
 	kubectl logs spike-nexus-0 -n spike -f
