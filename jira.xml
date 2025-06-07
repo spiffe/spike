@@ -31,6 +31,10 @@
       update changelog, publish docs, also update changelog in github
       also generate non-docker binary assets for the release too.
     </issue>
+    <issue>
+      fix bare metal instructions.
+      a lot of files have new paths now and the instructions will fail.
+    </issue>
   </immediate-backlog>
   <runner-up>
     <issue>

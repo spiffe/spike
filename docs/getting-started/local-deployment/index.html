@@ -6,7 +6,7 @@
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <link rel="icon" href="https://spike.ist/assets/spike-favicon-16x16.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
-    <title> SPIKE | ADRs </title>
+    <title> SPIKE | Building SPIKE Locally </title>
 </head>
 <body>
 
@@ -107,7 +107,7 @@
     }
 </style> <div id="trees">
     <input class="tree-toggle" type="checkbox" id="getting-started"
-               />
+               checked/>
         <label class="tree-toggle-label "
                for="getting-started">Getting Started</label>
 
@@ -124,11 +124,45 @@
                     <a href="https://spike.ist/getting-started/quickstart/">SPIKE Quickstart Guide</a>
                 </li>
 
-                <li >
+                <li class="active">
                     <a href="https://spike.ist/getting-started/local-deployment/">Building SPIKE Locally</a>
                 </li>
 
-                <li >
+                
+                        
+                        
+                            <ul id="toc">
+                                <li><a href="
+                                            https://spike.ist/getting-started/local-deployment/#building-spike-locally-and-deploying-to-minikube">Building SPIKE Locally and Deploying to Minikube</a>
+                                        <ul>
+                                                <li>
+                                                        <a href="https://spike.ist/getting-started/local-deployment/#prerequisites">Prerequisites</a>
+                                                    </li>
+                                                <li>
+                                                        <a href="https://spike.ist/getting-started/local-deployment/#starting-minikube">Starting Minikube</a>
+                                                    </li>
+                                                <li>
+                                                        <a href="https://spike.ist/getting-started/local-deployment/#forwarding-the-local-registry">Forwarding the Local Registry</a>
+                                                    </li>
+                                                <li>
+                                                        <a href="https://spike.ist/getting-started/local-deployment/#build-container-images-locally">Build Container Images Locally</a>
+                                                    </li>
+                                                <li>
+                                                        <a href="https://spike.ist/getting-started/local-deployment/#pushing-container-images-to-the-local-registry">Pushing Container Images to the Local Registry</a>
+                                                    </li>
+                                                <li>
+                                                        <a href="https://spike.ist/getting-started/local-deployment/#deploying-spire-and-spike-to-the-local-cluster">Deploying SPIRE and SPIKE to the Local Cluster</a>
+                                                    </li>
+                                                <li>
+                                                        <a href="https://spike.ist/getting-started/local-deployment/#verifying-spike-deployment">Verifying SPIKE Deployment</a>
+                                                    </li>
+                                                <li>
+                                                        <a href="https://spike.ist/getting-started/local-deployment/#you-are-all-set">You Are All Set</a>
+                                                    </li>
+                                                </ul>
+                                        </li>
+                                </ul>
+                        <li >
                     <a href="https://spike.ist/getting-started/bare-metal/">SPIKE on Linux</a>
                 </li>
 
@@ -161,7 +195,7 @@
 
                 </ul>
     <input class="tree-toggle" type="checkbox" id="spike-architecture"
-               checked/>
+               />
         <label class="tree-toggle-label "
                for="spike-architecture">SPIKE Architecture</label>
 
@@ -174,14 +208,11 @@
                     <a href="https://spike.ist/architecture/security-model/">SPIKE Security Model</a>
                 </li>
 
-                <li class="active">
+                <li >
                     <a href="https://spike.ist/architecture/architectural-decision-records/">ADRs</a>
                 </li>
 
-                
-                        
-                        
-                            </ul>
+                </ul>
     <input class="tree-toggle" type="checkbox" id="tracking"
                />
         <label class="tree-toggle-label "
@@ -717,44 +748,145 @@
 
         <article>
             
-        <h1 id="spike-architectural-decision-records-adrs">SPIKE Architectural Decision Records (<em>ADRs</em>)</h1>
-<p>This section serves as an archive of significant architectural decisions made
-during the design and development of <strong>SPIKE</strong>. Each <strong>ADR</strong> documents the
-reasoning behind a specific choice, along with the associated alternatives
-and their trade-offs. By maintaining this record, we provide transparency,
-traceability, and clarity for current and future maintainers of the <strong>SPIKE</strong>
-project.</p>
-<p>Below, you will find the list of ADRs organized for easy access. Click on each
-entry to read more details.</p>
+        <h1 id="building-spike-locally-and-deploying-to-minikube">Building SPIKE Locally and Deploying to Minikube</h1>
+<p>If you want to contribute to the <strong>SPIKE</strong> codebase and test your changes on a
+local Kubernetes cluster, follow this guide. If you want to build SPIKE from
+the source code but want to test it on a <em>bare metal</em> Linux machine without
+using any containerization solution, check out
+<a href="https://spike.ist/getting-started/bare-metal/" title="SPIKE on Linux"><strong>SPIKE</strong> on Linux</a> instead.</p>
+<p>In this guide we will follow a similar approach to
+<a href="https://spike.ist/getting-started/quickstart/" title="Getting Started with SPIKE"><strong>SPIKE</strong> Quickstart</a>, with the following changes:</p>
+<ol>
+<li>Build container images locally from existing source code.</li>
+<li>Push the container images to a local container registry.</li>
+<li>Use a customized <code>values.yaml</code> for the helm charts to create a more
+production-like namespace structure.</li>
+</ol>
+<p>Without further ado, let’s begin with the prerequisites.</p>
+<h2 id="prerequisites">Prerequisites</h2>
+<p>Here is a list of things you need to have installed on your machine before
+starting with this guide:</p>
 <ul>
-<li><a href="https://spike.ist/architecture/adrs/adr-0022/">ADR-0022: Continuous Polling of SPIKE Keepers Despite 404 Response</a></li>
-<li><a href="https://spike.ist/architecture/adrs/adr-0021/">ADR-0021: SPIKE Keeper as a Stateless Shard Holder</a></li>
-<li><a href="https://spike.ist/architecture/adrs/adr-0020/">ADR-0020: Switch to Zola for Documentation System</a></li>
-<li><a href="https://spike.ist/architecture/adrs/adr-0019/">ADR-0019: Plugin-Based Storage Backend Architecture</a></li>
-<li><a href="https://spike.ist/architecture/adrs/adr-0018/">ADR-0018: Administrative Access to SPIKE</a></li>
-<li><a href="https://spike.ist/architecture/adrs/adr-0017/">ADR-0017: Synchronous Persistence for SPIKE Secrets Store</a></li>
-<li><a href="https://spike.ist/architecture/adrs/adr-0016/">ADR-0016: Memory-First Secrets Store</a></li>
-<li><a href="https://spike.ist/architecture/adrs/adr-0015/">ADR-0015: Use Singular Form for File and Package Naming</a></li>
-<li><a href="https://spike.ist/architecture/adrs/adr-0014/">ADR-0014: Maintaining SQLite as SPIKE’s Primary Storage Backend</a></li>
-<li><a href="https://spike.ist/architecture/adrs/adr-0013/">ADR-0013: S3-Compatible Storage as SPIKE’s Backing Store</a></li>
-<li><a href="https://spike.ist/architecture/adrs/adr-0012/">ADR-0012: HTTP Methods for SPIKE API</a></li>
-<li><a href="https://spike.ist/architecture/adrs/adr-0011/">ADR-0011: PostgreSQL as SPIKE’s Backing Store</a></li>
-<li><a href="https://spike.ist/architecture/adrs/adr-0010/">ADR-0010: Session Token Storage Strategy for SPIKE Nexus</a></li>
-<li><a href="https://spike.ist/architecture/adrs/adr-0009/">ADR-0009: Multi-Administrator Support System</a></li>
-<li><a href="https://spike.ist/architecture/adrs/adr-0008/">ADR-0008: Administrative Access Control System</a></li>
-<li><a href="https://spike.ist/architecture/adrs/adr-0007/">ADR-0007: Root Key Lifecycle and Management Strategy</a></li>
-<li><a href="https://spike.ist/architecture/adrs/adr-0006/">ADR-0006: Trust Boundary Definition and Security Assumptions</a></li>
-<li><a href="https://spike.ist/architecture/adrs/adr-0005/">ADR-0005: Use SPIFFE mTLS for Inter-Component Authentication and Communication</a></li>
-<li><a href="https://spike.ist/architecture/adrs/adr-0004/">ADR-0004: SPIKE Keeper Minimalist Design Approach</a></li>
-<li><a href="https://spike.ist/architecture/adrs/adr-0003/">ADR-0003: Root Key Management and Storage Strategy</a></li>
-<li><a href="https://spike.ist/architecture/adrs/adr-0002/">ADR-0002: Use Docsify for Documentation System</a></li>
-<li><a href="https://spike.ist/architecture/adrs/adr-0001/">ADR-0001: Display Secrets in Plain Text in SPIKE Pilot Admin CLI</a></li>
+<li>Have <a href="https://www.docker.com/" title="Docker: Build, Share, and Run Applications">Docker</a> installed and running on your machine.</li>
+<li>Have a <a href="https://kubernetes.io/docs/tasks/tools/" title="kubectl: Kubernetes command-line tool"><code>kubectl</code></a> client installed.</li>
+<li>Have <a href="https://www.gnu.org/software/make/" title="GNU Make: Build Automation Tool"><code>make</code></a> installed on your machine.</li>
+<li>Have a [<code>minikube</code>][minikube] binary installed.</li>
+<li>Have <a href="https://helm.sh/" title="Helm"><code>helm</code></a> binary installed.</li>
 </ul>
+<h2 id="starting-minikube">Starting Minikube</h2>
+<p>To start a local Minikube cluster, clone the project repository and run the
+following command in the root directory of the project:</p>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#96b5b4;">cd </span><span>$</span><span style="color:#bf616a;">WORKSPACE </span><span style="color:#65737e;"># Replace with your workspace directory
+</span><span style="color:#bf616a;">git</span><span> clone https://github.com/spiffe/spike.git
+</span><span style="color:#96b5b4;">cd</span><span> spike
+</span><span style="color:#bf616a;">make</span><span> docker-cleanup </span><span style="color:#65737e;"># (Optional) Purge docker registry.
+</span><span style="color:#bf616a;">make</span><span> k8s-delete     </span><span style="color:#65737e;"># Delete any former Minikube installation.
+</span><span style="color:#bf616a;">make</span><span> k8s-start      </span><span style="color:#65737e;"># This will start a Minikube cluster.
+</span></code></pre>
+<p>If successful, you will have a local Minikube cluster running with the
+necessary plugins enabled. You can verify that Minikube is running by executing:</p>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">minikube</span><span> status
+</span><span style="color:#65737e;"># or...
+</span><span style="color:#bf616a;">kubectl</span><span> get node
+</span><span>
+</span><span style="color:#65737e;"># Sample Outputs:
+</span><span style="color:#65737e;">#
+</span><span style="color:#65737e;"># $ minikube status
+</span><span style="color:#65737e;"># minikube
+</span><span style="color:#65737e;"># type: Control Plane
+</span><span style="color:#65737e;"># host: Running
+</span><span style="color:#65737e;"># kubelet: Running
+</span><span style="color:#65737e;"># apiserver: Running
+</span><span style="color:#65737e;"># kubeconfig: Configured
+</span><span style="color:#65737e;">#
+</span><span style="color:#65737e;"># $ kubectl get node
+</span><span style="color:#65737e;"># NAME       STATUS   ROLES           AGE   VERSION
+</span><span style="color:#65737e;"># minikube   Ready    control-plane   67s   v1.33.1
+</span></code></pre>
+<h2 id="forwarding-the-local-registry">Forwarding the Local Registry</h2>
+<p>Since Minikube contains its Kubernetes cluster in a virtual machine, accessing
+its container registry requires network mapping. There are several ways to
+achieve this. In this guide, we will use Kubernetes port forwarding.</p>
+<p>Open a terminal, change your directory to the project’s folder and execute
+the following:</p>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">make</span><span> docker-forward-registry
+</span><span style="color:#65737e;"># Sample Output:
+</span><span style="color:#65737e;"># Forwarding from 127.0.0.1:5000 -&gt; 5000
+</span><span style="color:#65737e;"># Forwarding from [::1]:5000 -&gt; 5000
+</span></code></pre>
+<p>Leave this terminal open. We will execute the rest of the commands on
+a separate terminal window.</p>
+<h2 id="build-container-images-locally">Build Container Images Locally</h2>
+<p>We have a <code>make</code> target to build the container images locally.</p>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">make</span><span> docker-build
+</span></code></pre>
+<h2 id="pushing-container-images-to-the-local-registry">Pushing Container Images to the Local Registry</h2>
+<p>Next up, we’ll push the container images to our internal Minikube container
+registry:</p>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># Make sure you port forward using 
+</span><span style="color:#65737e;"># `make docker-forward-registry`
+</span><span style="color:#65737e;"># before executing this command:
+</span><span style="color:#bf616a;">make</span><span> docker-push
+</span></code></pre>
+<h2 id="deploying-spire-and-spike-to-the-local-cluster">Deploying SPIRE and SPIKE to the Local Cluster</h2>
+<p>Once we push the container images to the registry, we can now deploy <strong>SPIRE</strong>
+and <strong>SPIKE</strong>.</p>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># Uses `./config/helm/values-custom.yaml`
+</span><span style="color:#bf616a;">make</span><span> deploy-local
+</span></code></pre>
+<h2 id="verifying-spike-deployment">Verifying SPIKE Deployment</h2>
+<p>First, make sure that your components are up and running.</p>
+<p>The following commands should <strong>all</strong> show <code>Ready</code> and <code>Runing</code> containers.</p>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">kubectl</span><span> get po</span><span style="color:#bf616a;"> -n</span><span> spire-server
+</span><span style="color:#65737e;"># spiffe-server-0
+</span><span style="color:#65737e;"># spiffe-spiffe-oidc-discovery-provider
+</span><span style="color:#bf616a;">kubectl</span><span> get po</span><span style="color:#bf616a;"> -n</span><span> spire-system
+</span><span style="color:#65737e;"># spiffe-agent
+</span><span style="color:#65737e;"># spiffe-spiffe-csi-driver
+</span><span style="color:#bf616a;">kubectl</span><span> get po</span><span style="color:#bf616a;"> -n</span><span> spike
+</span><span style="color:#65737e;"># spiffe-spike-keeper-0
+</span><span style="color:#65737e;"># spiffe-spike-keeper-1
+</span><span style="color:#65737e;"># spiffe-spike-keeper-2
+</span><span style="color:#65737e;"># spiffe-spike-nexus-0
+</span><span style="color:#65737e;"># spiffe-spike-pilot
+</span></code></pre>
+<p>You can also shell into <strong>SPIKE Pilot</strong> to create and retrieve secrets to
+ensure <strong>SPIKE</strong> is up and running and properly configured in the cluster.</p>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">make</span><span> exec-spike
+</span><span style="color:#65737e;"># ^ This will shell into SPIKE Pilot.
+</span><span style="color:#65737e;"># Now you can execute the following commands:
+</span><span style="color:#bf616a;">spike</span><span> secret list
+</span><span style="color:#65737e;"># Output:
+</span><span style="color:#65737e;"># No Secrets found.
+</span><span style="color:#bf616a;">spike</span><span> secret put test/creds username=spike password=SPIKERocks
+</span><span style="color:#65737e;"># Output:
+</span><span style="color:#65737e;"># OK
+</span><span style="color:#bf616a;">spike</span><span> secret list
+</span><span style="color:#65737e;"># Output:
+</span><span style="color:#65737e;"># - test/creds
+</span><span style="color:#bf616a;">spike</span><span> secret get test/creds
+</span><span style="color:#65737e;"># Output:
+</span><span style="color:#65737e;"># password: SPIKERocks
+</span><span style="color:#65737e;"># username: spike
+</span><span>
+</span></code></pre>
+<h2 id="you-are-all-set">You Are All Set</h2>
+<p>That’s it. Now, you know how to modify <strong>SPIKE</strong>’s source code and test your
+changes in a local Kubernetes cluster.</p>
+<p>Next up, you might want to <a href="https://github.com/spiffe/spike" title="SPIKE on GitHub">Read <strong>SPIKE</strong>’s Source Code</a> to learn more
+about <strong>SPIKE</strong>’s internals, or <a href="https://spike.ist/architecture/" title="SPIKE Architecture">learn more about <strong>SPIKE</strong>’s
+architecture</a> or <a href="https://spike.ist/architecture/security-model/" title="SPIKE Security Model">security model</a>.</p>
+<p>You might also want to try <a href="https://spike.ist/getting-started/bare-metal/" title="SPIKE on Linux">building <strong>SPIKE</strong> on a bare metal
+Linux</a>, if you want to see how <strong>SPIKE</strong> can be used on a bare
+metal Linux machine without using container orchestration such as <em>Kubernetes</em></p>
 <hr />
 <ul>
-<li><a href="https://spike.ist/architecture/system-overview/"><strong>SPIKE</strong> System Overview</a></li>
-<li><a href="https://spike.ist/architecture/security-model/"><strong>SPIKE</strong> Security Model</a></li>
-<li><a href="https://spike.ist/architecture/architectural-decision-records/"><strong>SPIKE</strong> Architectural Decision Records</a></li>
+<li><a href="https://spike.ist/getting-started/about/">About SPIKE</a></li>
+<li><a href="https://spike.ist/getting-started/quickstart/">SPIKE Quickstart Guide</a></li>
+<li><a href="https://spike.ist/getting-started/local-deployment/">Building SPIKE Locally</a></li>
+<li><a href="https://spike.ist/getting-started/project-status/">Early Access Notice</a></li>
+<li><a href="https://spike.ist/getting-started/configuration/">Configuring SPIKE</a></li>
+<li><a href="https://spike.ist/getting-started/cli/">SPIKE CLI</a></li>
 </ul>
 <hr />
 <ul>

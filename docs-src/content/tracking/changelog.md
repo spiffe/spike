@@ -15,6 +15,7 @@ sort_by = "weight"
 * Ability to configure to not how SPIKE banner on startup.
 * Ability to configure to show a warning if memory locking is not
   available on the system.
+* SPIKE can now be deployed from SPIFFE helm charts. Tested and verified!
 
 ## [0.4.1] - 2025-06-01 (*prerelease*)
 
