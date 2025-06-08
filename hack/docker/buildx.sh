@@ -14,18 +14,18 @@ if [ $# -ne 2 ]; then
   exit 1
 fi
 
-TARGETARCH=$1
+TARGET_ARCH=$1
 APP=$2
 
 # Set common environment variables
 export CGO_ENABLED=1
-export GOARCH=$TARGETARCH
+export GOARCH=$TARGET_ARCH
 
-if [ "$TARGETARCH" = "amd64" ]; then
+if [ "$TARGET_ARCH" = "amd64" ]; then
   export CC=x86_64-linux-gnu-gcc
   export CXX=x86_64-linux-gnu-g++
   export AR=x86_64-linux-gnu-ar
-elif [ "$TARGETARCH" = "arm64" ]; then
+elif [ "$TARGET_ARCH" = "arm64" ]; then
   export CC=aarch64-linux-gnu-gcc
   export CXX=aarch64-linux-gnu-g++
   export AR=aarch64-linux-gnu-ar
@@ -34,7 +34,7 @@ else
   exit 1
 fi
 
-echo "Building $APP for $TARGETARCH with CGO_ENABLED=1"
+echo "Building $APP for $TARGET_ARCH with CGO_ENABLED=1"
 echo "CC=$CC"
 
 # Determine if this app needs CGO
@@ -62,7 +62,7 @@ go build -ldflags="-s -w" -o "$APP" /workspace/app/"$APP"/cmd/main.go
 
 # Verify the binary was created
 if [ -f "$APP" ]; then
-  echo "Successfully built $APP for $TARGETARCH"
+  echo "Successfully built $APP for $TARGET_ARCH"
 else
   echo "Error: Failed to build $APP"
   exit 1

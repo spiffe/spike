@@ -4,4 +4,4 @@
 #  \\\\\ Copyright 2024-present SPIKE contributors.
 # \\\\\\\ SPDX-License-Identifier: Apache-2.0
 
-tail -100f ./start-keeper-1.sh.log
+kubectl -n spire-server port-forward svc/spiffe-server 8443:8443 --address=0.0.0.0

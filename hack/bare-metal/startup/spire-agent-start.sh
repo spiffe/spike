@@ -51,7 +51,6 @@ if [ ! -f "$AGENT_PATH" ]; then
   exit 1
 fi
 
-
 # Running spire-agent as super user to read meta information of other users'
 # processes. If you are using the current user to use SPIKE only, then you
 # can run this command without sudo.
