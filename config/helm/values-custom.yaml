@@ -33,7 +33,7 @@ spike-keeper:
     registry: localhost:5000
     repository: spike-keeper
     pullPolicy: IfNotPresent
-    tag: "0.4.0"
+    tag: "dev"
 
 spike-nexus:
   enabled: true
@@ -42,7 +42,7 @@ spike-nexus:
     registry: localhost:5000
     repository: spike-nexus
     pullPolicy: IfNotPresent
-    tag: "0.4.0"
+    tag: "dev"
 
 spike-pilot:
   enabled: true
@@ -51,7 +51,7 @@ spike-pilot:
     registry: localhost:5000
     repository: spike-pilot
     pullPolicy: IfNotPresent
-    tag: "0.4.0"
+    tag: "dev"
 
 spire-server:
   enabled: true

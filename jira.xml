@@ -38,7 +38,7 @@
   </immediate-backlog>
   <runner-up>
     <issue>
-      build.sh and build-push-sign.sh have a lot of commonalities;
+      build-local.sh and build-push-sign.sh have a lot of commonalities;
       maybe refactor/merge them?
     </issue>
     <issue>
@@ -405,6 +405,11 @@
     <issue>
       shall we implement rate limiting; or should that be out of scope
       (i.e. to be implemented by the user.
+    </issue>
+    <issue>
+      change CGO_ENABLED depending on the app we build.
+      Only Nexus needs CGO.
+      That applies for bare metal builds, and docker.
     </issue>
     <issue>
       more fine grained policy management

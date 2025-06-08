@@ -20,13 +20,13 @@ sed -E "s/(const [[:alnum:]]+Version = )\"[^\"]+\"/\1\"$VERSION\"/" \
 
 # Check if any changes were made
 if ! diff -q "$CONFIG_FILE" "$TMP_FILE" >/dev/null; then
-    mv "$TMP_FILE" "$CONFIG_FILE"
-    echo "Updated versions in $CONFIG_FILE to $GO_VERSION"
-    echo "Backup saved as ${CONFIG_FILE}.bak"
+  mv "$TMP_FILE" "$CONFIG_FILE"
+  echo "Updated versions in $CONFIG_FILE to $GO_VERSION"
+  echo "Backup saved as ${CONFIG_FILE}.bak"
 else
-    rm "$TMP_FILE"
-    rm "${CONFIG_FILE}.bak"
-    echo "No version changes needed in $CONFIG_FILE"
+  rm "$TMP_FILE"
+  rm "${CONFIG_FILE}.bak"
+  echo "No version changes needed in $CONFIG_FILE"
 fi
 
 echo "Building for Mac ARM64..."
@@ -84,7 +84,7 @@ echo "Built for Linux AMD64."
 echo "Computing SHA Sums"
 
 for file in keeper-* nexus-* spike-*; do
-    shasum -a 256 "$file" > "$file.sum.txt"
+  shasum -a 256 "$file" > "$file.sum.txt"
 done
 
 echo "!!! The symbols have been stripped from binaries for security."
