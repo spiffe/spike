@@ -132,7 +132,7 @@ If both **SPIKE Nexus** and all **SPIKE Keeper**s are unavailable
 ```bash
 # 1. Configure SPIKE Pilot for restore operations 
 # (adjust the script path for your environment)
-./hack/spire-server-entry-restore-register.sh
+./hack/bare-metal/entry/spire-server-entry-restore-register.sh
 
 # 2. Run the restore command
 spike restore
@@ -141,7 +141,7 @@ spike restore
 # You'll need to provide enough shards to meet your threshold (e.g., 2 of 3)
 
 # 4. After successful restoration, revert SPIKE Pilot to normal operation
-./hack/spire-server-entry-su-register.sh
+./hack/bare-metal/entry/spire-server-entry-su-register.sh
 ```
 
 SPIKE Nexus will:

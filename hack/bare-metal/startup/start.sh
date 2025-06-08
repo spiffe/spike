@@ -4,7 +4,7 @@
 #  \\\\\ Copyright 2024-present SPIKE contributors.
 # \\\\\\\ SPDX-License-Identifier: Apache-2.0
 
-# ./hack/start.sh
+# ./hack/bare-metal/startup/start.sh
 #
 # This is a helper script that establishes the following tasks:
 #
@@ -68,7 +68,7 @@ echo "Domain check passed. Continuing with the script..."
 source ./hack/lib/bg.sh
 
 if [ -z "$SPIKE_SKIP_CLEAR_DATA" ]; then
-  if ./hack/clear-data.sh; then
+  if ./hack/bare-metal/build/clear-data.sh; then
     echo "Data cleared successfully"
   else
     echo "Failed to clear data"
@@ -91,7 +91,7 @@ fi
 
 # Start SPIRE server in background and save its PID
 if [ -z "$SPIKE_SKIP_SPIRE_SERVER_START" ]; then
-  run_background "./hack/spire-server-start.sh"
+  run_background "./hack/bare-metal/startup/spire-server-start.sh"
   # Wait for SPIRE server to initialize
   echo "Waiting for SPIRE server to start..."
   sleep 5
@@ -103,7 +103,7 @@ fi
 # Run the registration scripts
 if [ -z "$SPIKE_SKIP_GENERATE_AGENT_TOKEN" ]; then
   echo "Generating agent token..."
-  if ./hack/spire-server-generate-agent-token.sh; then
+  if ./hack/bare-metal/entry/spire-server-generate-agent-token.sh; then
     echo "Agent token retrieved successfully"
   else
     echo "Failed to retrieve agent token"
@@ -115,7 +115,7 @@ fi
 
 if [ -z "$SPIKE_SKIP_REGISTER_ENTRIES" ]; then
   echo "Registering SPIRE entries..."
-  if ./hack/spire-server-entry-spike-register.sh; then
+  if ./hack/bare-metal/entry/spire-server-entry-spike-register.sh; then
     echo "SPIRE entries registered successfully"
   else
     echo "Failed to register SPIRE entries"
@@ -123,7 +123,7 @@ if [ -z "$SPIKE_SKIP_REGISTER_ENTRIES" ]; then
   fi
 
   echo "Registering SU..."
-  if ./hack/spire-server-entry-su-register.sh; then
+  if ./hack/bare-metal/entry/spire-server-entry-su-register.sh; then
     echo "SU registered successfully"
   else
     echo "Failed to register SU"
@@ -145,9 +145,9 @@ if [ -z "$SPIKE_SKIP_SPIRE_AGENT_START" ]; then
   sleep 5
   
   if [ "$1" == "--use-sudo" ]; then
-    run_background "./hack/spire-agent-start.sh" --use-sudo
+    run_background "./hack/bare-metal/startup/spire-agent-start.sh" --use-sudo
   else
-    run_background "./hack/spire-agent-start.sh"
+    run_background "./hack/bare-metal/startup/spire-agent-start.sh"
   fi
 else
   echo "SPIKE_SKIP_SPIRE_AGENT_START is set, skipping SPIRE agent start."
@@ -160,15 +160,15 @@ if [ "$SPIKE_NEXUS_BACKEND_STORE" != "memory" ]; then
     echo ""
     echo "Waiting before SPIKE Keeper 1..."
     sleep 5
-    run_background "./hack/start-keeper-1.sh"
+    run_background "./hack/bare-metal/startup/start-keeper-1.sh"
     echo ""
     echo "Waiting before SPIKE Keeper 2..."
     sleep 5
-    run_background "./hack/start-keeper-2.sh"
+    run_background "./hack/bare-metal/startup/start-keeper-2.sh"
     echo ""
     echo "Waiting before SPIKE Keeper 3..."
     sleep 5
-    run_background "./hack/start-keeper-3.sh"
+    run_background "./hack/bare-metal/startup/start-keeper-3.sh"
   else
     echo "SPIKE_SKIP_KEEPER_INITIALIZATION is set, skipping Keeper instances."
   fi
@@ -180,7 +180,7 @@ if [ -z "$SPIKE_SKIP_NEXUS_START" ]; then
   echo ""
   echo "Waiting before SPIKE Nexus..."
   sleep 5
-  run_background "./hack/start-nexus.sh"
+  run_background "./hack/bare-metal/startup/start-nexus.sh"
 else
   echo "SPIKE_SKIP_NEXUS_START is set, skipping Nexus start."
 fi

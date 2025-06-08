@@ -30,7 +30,7 @@ brew install aarch64-elf-gcc
 To cross-compile the binaries, run the following:
 
 ```bash
-./hack/build-spike-cross-platform.sh
+./hack/bare-metal/build/build-spike-cross-platform.sh
 ```
 
 After the script runs to completion, you should get the following artifacts:
