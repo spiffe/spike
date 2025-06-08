@@ -2,15 +2,8 @@
 #  \\\\\ Copyright 2024-present SPIKE contributors.
 # \\\\\\\ SPDX-License-Identifier: Apache-2.0
 
-# SPIRE Helm Charts
-# See https://github.com/spiffe/helm-charts-hardened for documentation
-# and configuration options.
-
-# This `values` file shows additional customization options that you can use
-# for your SPIKE deployment.
-#
-# If you want to "just test out" SPIKE without any configuration hurdles,
-# you might be better off trying out the `values.yaml` instead.
+# values file for a demo setup:
+# Management Cluster that hosts SPIKE Nexus and SPIKE Pilot.
 
 global:
   openshift: false # If running on openshift, set to true
@@ -94,10 +87,12 @@ spire-server:
               component: spike-keeper
           namespaceSelector:
             matchExpressions:
-              - key: kubernetes.io/metadata.name
-                operator: In
-                values:
-                  - spike
+            - key: kubernetes.io/metadata.name
+              operator: In
+              values:
+              - spike
+          federatesWith:
+          - mgmt.spike.ist
         spike-nexus:
           type: raw
           enabled: true
@@ -107,10 +102,14 @@ spire-server:
               component: spike-nexus
           namespaceSelector:
             matchExpressions:
-              - key: kubernetes.io/metadata.name
-                operator: In
-                values:
-                  - spike
+            - key: kubernetes.io/metadata.name
+              operator: In
+              values:
+              - spike
+          federatesWith:
+            - edge-1.spike.ist
+            - edge-2.spike.ist
+            - workload.spike.ist
         spike-pilot:
           type: raw
           enabled: true
@@ -120,10 +119,25 @@ spire-server:
               component: spike-pilot
           namespaceSelector:
             matchExpressions:
-              - key: kubernetes.io/metadata.name
-                operator: In
-                values:
-                  - spike
+            - key: kubernetes.io/metadata.name
+              operator: In
+              values:
+              - spike
+        spike-workload:
+          type: raw
+          enabled: true
+          spiffeIDTemplate: spiffe://{{ .TrustDomain }}/spike/workload/{{ .PodMeta.Name }}
+          podSelector:
+            matchLabels:
+              component: spike-nexus
+          namespaceSelector:
+            matchExpressions:
+            - key: kubernetes.io/metadata.name
+              operator: In
+              values:
+              - workload
+          federatesWith:
+          - mgmt.spike.ist
 
 spire-agent:
   enabled: true
