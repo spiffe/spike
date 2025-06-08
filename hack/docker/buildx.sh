@@ -1,12 +1,17 @@
 #!/bin/bash
+
+#    \\ SPIKE: Secure your secrets with SPIFFE.
+#  \\\\\ Copyright 2024-present SPIKE contributors.
+# \\\\\\\ SPDX-License-Identifier: Apache-2.0
+
 set -e
 
 # Check if both arguments are provided
 if [ $# -ne 2 ]; then
-    echo "Usage: $0 <arch> <app>"
-    echo "  arch: amd64 or arm64"
-    echo "  app: application name"
-    exit 1
+  echo "Usage: $0 <arch> <app>"
+  echo "  arch: amd64 or arm64"
+  echo "  app: application name"
+  exit 1
 fi
 
 TARGETARCH=$1
@@ -17,42 +22,39 @@ export CGO_ENABLED=1
 export GOARCH=$TARGETARCH
 
 if [ "$TARGETARCH" = "amd64" ]; then
-    export CC=x86_64-linux-gnu-gcc
-    export CXX=x86_64-linux-gnu-g++
-    export AR=x86_64-linux-gnu-ar
+  export CC=x86_64-linux-gnu-gcc
+  export CXX=x86_64-linux-gnu-g++
+  export AR=x86_64-linux-gnu-ar
 elif [ "$TARGETARCH" = "arm64" ]; then
-    export CC=aarch64-linux-gnu-gcc
-    export CXX=aarch64-linux-gnu-g++
-    export AR=aarch64-linux-gnu-ar
+  export CC=aarch64-linux-gnu-gcc
+  export CXX=aarch64-linux-gnu-g++
+  export AR=aarch64-linux-gnu-ar
 else
-    echo "Error: Supported architectures are amd64 and arm64"
-    exit 1
+  echo "Error: Supported architectures are amd64 and arm64"
+  exit 1
 fi
 
 echo "Building $APP for $TARGETARCH with CGO_ENABLED=1"
 echo "CC=$CC"
 
-# TODO: change CGO_ENABLED depending on the app we build.
-# Only Nexus needs CGO.
-
 # Determine if this app needs CGO
 NEEDS_CGO=false
 case $APP in
-    nexus)
-        NEEDS_CGO=true
-        ;;
-    pilot|keeper)
-        NEEDS_CGO=false
-        ;;
+  nexus)
+    NEEDS_CGO=true
+    ;;
+  pilot|keeper)
+    NEEDS_CGO=false
+    ;;
 esac
 
 if [ "$NEEDS_CGO" = "true" ]; then
-    export CGO_ENABLED=1
-    # Set cross-compile toolchain...
-    echo "Building $APP with CGO enabled (for SQLite)"
+  export CGO_ENABLED=1
+  # Set cross-compile toolchain...
+  echo "Building $APP with CGO enabled (for SQLite)"
 else
-    export CGO_ENABLED=0
-    echo "Building $APP as static binary (no CGO needed)"
+  export CGO_ENABLED=0
+  echo "Building $APP as static binary (no CGO needed)"
 fi
 
 # Build with proper flags
@@ -60,8 +62,8 @@ go build -ldflags="-s -w" -o "$APP" /workspace/app/"$APP"/cmd/main.go
 
 # Verify the binary was created
 if [ -f "$APP" ]; then
-    echo "Successfully built $APP for $TARGETARCH"
+  echo "Successfully built $APP for $TARGETARCH"
 else
-    echo "Error: Failed to build $APP"
-    exit 1
+  echo "Error: Failed to build $APP"
+  exit 1
 fi

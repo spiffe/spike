@@ -7,14 +7,14 @@
 # Check if minikube binary is present
 if ! command -v minikube &> /dev/null
 then
-    echo "Command 'minikube' not found. Please install Minikube first."
-    exit 1
+  echo "Command 'minikube' not found. Please install Minikube first."
+  exit 1
 fi
 
 if ! command -v kubectl &> /dev/null
 then
-    echo "Command 'kubectl' not found. Please install kubectl first."
-    exit 1
+  echo "Command 'kubectl' not found. Please install kubectl first."
+  exit 1
 fi
 
 # Set default values

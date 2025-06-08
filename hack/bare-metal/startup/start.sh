@@ -24,41 +24,41 @@
 SPIRE_SERVER_DOMAIN="spire.spike.ist"
 
 check_domain() {
-    # First try DNS resolution with dig
-    DNS_ANSWER=$(dig +noall +answer "$SPIRE_SERVER_DOMAIN" | grep -v "^;")
+  # First try DNS resolution with dig
+  DNS_ANSWER=$(dig +noall +answer "$SPIRE_SERVER_DOMAIN" | grep -v "^;")
     
-    # If dig doesn't find it, check if getent exists and try it
-    if [ -z "$DNS_ANSWER" ]; then
-        echo "No DNS record found for $SPIRE_SERVER_DOMAIN. using other methods..."
-        
-        # Check if getent is available
-        if command -v getent >/dev/null 2>&1; then
-            HOSTS_ANSWER=$(getent hosts "$SPIRE_SERVER_DOMAIN")
-        else
-            # Fallback for systems without getent (like macOS)
-            HOSTS_ANSWER=$(grep "$SPIRE_SERVER_DOMAIN" /etc/hosts | grep -v "^#")
-        fi
-        
-        # If hosts file check also fails, return error
-        if [ -z "$HOSTS_ANSWER" ]; then
-            echo "Error: Could not resolve $SPIRE_SERVER_DOMAIN through any means."
-            return 1
-        else
-            echo "Found $SPIRE_SERVER_DOMAIN in hosts file:"
-            echo "$HOSTS_ANSWER"
-        fi
-    else
-        echo "DNS resolution for $SPIRE_SERVER_DOMAIN:"
-        echo "$DNS_ANSWER"
-    fi
+  # If dig doesn't find it, check if getent exists and try it
+  if [ -z "$DNS_ANSWER" ]; then
+    echo "No DNS record found for $SPIRE_SERVER_DOMAIN. using other methods..."
 
-    return 0
+    # Check if getent is available
+    if command -v getent >/dev/null 2>&1; then
+      HOSTS_ANSWER=$(getent hosts "$SPIRE_SERVER_DOMAIN")
+    else
+      # Fallback for systems without getent (like macOS)
+      HOSTS_ANSWER=$(grep "$SPIRE_SERVER_DOMAIN" /etc/hosts | grep -v "^#")
+    fi
+        
+    # If hosts file check also fails, return error
+    if [ -z "$HOSTS_ANSWER" ]; then
+      echo "Error: Could not resolve $SPIRE_SERVER_DOMAIN through any means."
+      return 1
+    else
+      echo "Found $SPIRE_SERVER_DOMAIN in hosts file:"
+      echo "$HOSTS_ANSWER"
+    fi
+  else
+    echo "DNS resolution for $SPIRE_SERVER_DOMAIN:"
+    echo "$DNS_ANSWER"
+  fi
+
+  return 0
 }
 
 # Check domain before proceeding
 if ! check_domain; then
-    echo "Domain check failed. Exiting..."
-    exit 1
+  echo "Domain check failed. Exiting..."
+  exit 1
 fi
 
 # Your existing script continues here
@@ -68,25 +68,25 @@ echo "Domain check passed. Continuing with the script..."
 source ./hack/lib/bg.sh
 
 if [ -z "$SPIKE_SKIP_CLEAR_DATA" ]; then
-    if ./hack/clear-data.sh; then
-        echo "Data cleared successfully"
-    else
-        echo "Failed to clear data"
-        exit 1
-    fi
+  if ./hack/clear-data.sh; then
+    echo "Data cleared successfully"
+  else
+    echo "Failed to clear data"
+    exit 1
+  fi
 else
-    echo "SPIKE_SKIP_CLEAR_DATA is set, skipping data clear."
+  echo "SPIKE_SKIP_CLEAR_DATA is set, skipping data clear."
 fi
 
 if [ -z "$SPIKE_SKIP_SPIKE_BUILD" ]; then
-    if ./hack/bare-metal/build/build-spike.sh; then
-        echo "SPIKE binaries built successfully"
-    else
-        echo "Failed to build SPIKE binaries"
-        exit 1
-    fi
+  if ./hack/bare-metal/build/build-spike.sh; then
+    echo "SPIKE binaries built successfully"
+  else
+    echo "Failed to build SPIKE binaries"
+    exit 1
+  fi
 else
-    echo "SPIKE_SKIP_SPIKE_BUILD is set, skipping SPIKE build."
+  echo "SPIKE_SKIP_SPIKE_BUILD is set, skipping SPIKE build."
 fi
 
 # Start SPIRE server in background and save its PID
@@ -102,35 +102,35 @@ fi
 
 # Run the registration scripts
 if [ -z "$SPIKE_SKIP_GENERATE_AGENT_TOKEN" ]; then
-    echo "Generating agent token..."
-    if ./hack/spire-server-generate-agent-token.sh; then
-        echo "Agent token retrieved successfully"
-    else
-        echo "Failed to retrieve agent token"
-        exit 1
-    fi
+  echo "Generating agent token..."
+  if ./hack/spire-server-generate-agent-token.sh; then
+    echo "Agent token retrieved successfully"
+  else
+    echo "Failed to retrieve agent token"
+    exit 1
+  fi
 else
-    echo "SPIKE_SKIP_GENERATE_AGENT_TOKEN is set, skipping agent token generation."
+  echo "SPIKE_SKIP_GENERATE_AGENT_TOKEN is set, skipping agent token generation."
 fi
 
 if [ -z "$SPIKE_SKIP_REGISTER_ENTRIES" ]; then
-    echo "Registering SPIRE entries..."
-    if ./hack/spire-server-entry-spike-register.sh; then
-        echo "SPIRE entries registered successfully"
-    else
-        echo "Failed to register SPIRE entries"
-        exit 1
-    fi
+  echo "Registering SPIRE entries..."
+  if ./hack/spire-server-entry-spike-register.sh; then
+    echo "SPIRE entries registered successfully"
+  else
+    echo "Failed to register SPIRE entries"
+    exit 1
+  fi
 
-    echo "Registering SU..."
-    if ./hack/spire-server-entry-su-register.sh; then
-        echo "SU registered successfully"
-    else
-        echo "Failed to register SU"
-        exit 1
-    fi
+  echo "Registering SU..."
+  if ./hack/spire-server-entry-su-register.sh; then
+    echo "SU registered successfully"
+  else
+    echo "Failed to register SU"
+    exit 1
+  fi
 else
-    echo "SPIKE_SKIP_REGISTER_ENTRIES is set, skipping entries registration."
+  echo "SPIKE_SKIP_REGISTER_ENTRIES is set, skipping entries registration."
 fi
 
 if [ "$1" == "--use-sudo" ]; then

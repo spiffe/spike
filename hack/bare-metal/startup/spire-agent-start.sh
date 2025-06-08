@@ -7,20 +7,20 @@
 TOKEN_FILE=".spire-agent-join-token"
 
 if ! command -v spire-server &>/dev/null; then
-    echo "Error: spire-server binary not found in PATH"
-    echo "Please install SPIRE to your system."
-    exit 1
+  echo "Error: spire-server binary not found in PATH"
+  echo "Please install SPIRE to your system."
+  exit 1
 fi
 
 if ! command -v spire-agent &>/dev/null; then
-    echo "Error: spire-agent binary not found in PATH"
-    echo "Please install SPIRE to your system."
-    exit 1
+  echo "Error: spire-agent binary not found in PATH"
+  echo "Please install SPIRE to your system."
+  exit 1
 fi
 
 if [ ! -f $TOKEN_FILE ]; then
-    echo "Error: token does not exist"
-    exit 1
+  echo "Error: token does not exist"
+  exit 1
 fi
 
 # Verify file was created and is not empty
@@ -40,15 +40,15 @@ AGENT_PATH=$(command -v spire-agent)
 
 # If not found in PATH and WORKSPACE is defined, look in WORKSPACE
 if [ ! -f "$AGENT_PATH" ] && [ -n "$WORKSPACE" ]; then
-    AGENT_PATH="${WORKSPACE}/spire/bin/spire-agent"
-    echo "spire-agent not found in PATH, trying WORKSPACE location: $AGENT_PATH"
+  AGENT_PATH="${WORKSPACE}/spire/bin/spire-agent"
+  echo "spire-agent not found in PATH, trying WORKSPACE location: $AGENT_PATH"
 fi
 
 # If still not found, return error
 if [ ! -f "$AGENT_PATH" ]; then
-    echo "Error: SPIRE agent not found at $AGENT_PATH"
-    echo "Please make sure SPIRE is installed or WORKSPACE is correctly set."
-    exit 1
+  echo "Error: SPIRE agent not found at $AGENT_PATH"
+  echo "Please make sure SPIRE is installed or WORKSPACE is correctly set."
+  exit 1
 fi
 
 

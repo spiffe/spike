@@ -1,4 +1,9 @@
 #!/bin/bash
+
+#    \\ SPIKE: Secure your secrets with SPIFFE.
+#  \\\\\ Copyright 2024-present SPIKE contributors.
+# \\\\\\\ SPDX-License-Identifier: Apache-2.0
+
 set -e
 
 # This script builds, pushes, and signs Docker images for SPIKE components
@@ -48,6 +53,9 @@ done
 
 # Build image
 echo "Building image for $APP on $ARCH"
+
+# Don't quote $TAG_ARGS; it has to be parsed.
+# shellcheck disable=SC2086
 docker buildx build \
   --platform "$ARCH" \
   --file "dockerfiles/$APP.Dockerfile" \
@@ -60,7 +68,7 @@ docker buildx build \
   --label "org.opencontainers.image.source=https://github.com/spiffe/spike" \
   --label "org.opencontainers.image.licenses=Apache-2.0" \
   --label "org.opencontainers.image.title=spike" \
-  --label "org.opencontainers.image.description=SPIKE is a lightweight secrets store that uses SPIFFE as its identity control plane" \
+  --label "org.opencontainers.image.description=SPIKE is a lightweight secrets store that uses SPIFFE as its Identity Control Plane." \
   $TAG_ARGS \
   .
 

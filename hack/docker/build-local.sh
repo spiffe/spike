@@ -9,10 +9,7 @@
 
 set -e
 
-# shellcheck disable=SC2046
-# eval $(minikube -p minikube docker-env)
-
-export SPIKE_VERSION="0.4.0"
+export SPIKE_VERSION="dev"
 COMPONENTS=("keeper" "nexus" "pilot")
 PLATFORMS="linux/amd64,linux/arm64"
 
@@ -65,7 +62,7 @@ setup_buildx
 
 # Build all components
 for component in "${COMPONENTS[@]}"; do
-    build_component "${component}" "${SPIKE_VERSION}" "${PLATFORMS}" "${OUTPUT_FLAG}"
+  build_component "${component}" "${SPIKE_VERSION}" "${PLATFORMS}" "${OUTPUT_FLAG}"
 done
 
 echo "All components built successfully!"

@@ -16,7 +16,7 @@ k8s-start:
 
 # 3. Build container images.
 docker-build:
-	./hack/docker/build.sh
+	./hack/docker/build-local.sh
 
 # 4. Forward registry.
 docker-forward-registry:
@@ -24,7 +24,7 @@ docker-forward-registry:
 
 # 5. Push to the container registry.
 docker-push:
-	./hack/docker/push.sh
+	./hack/docker/push-local.sh
 
 # 4. Deploy SPIRE and SPIKE to the cluster.
 deploy-local:

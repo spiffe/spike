@@ -4,20 +4,13 @@
 #  \\\\\ Copyright 2024-present SPIKE contributors.
 # \\\\\\\ SPDX-License-Identifier: Apache-2.0
 
-# eval $(minikube -p minikube docker-env) -> use Minikube docker instead of host docker
-# kubectl port-forward -n kube-system svc/registry 5000:80 -> port forward registry
-
 # Enable alias expansion in non-interactive shells
 shopt -s expand_aliases
 
 set -e
 
-# shellcheck disable=SC2046
-# eval $(minikube -p minikube docker-env)
-
-export SPIKE_VERSION="0.4.0"
-
-REGISTRY_PORT=5000
+export SPIKE_VERSION="dev" # "dev" since this is a local build.
+export REGISTRY_PORT=5000
 
 # Tag the images for the MicroK8s registry (which runs on localhost:$REGISTRY_PORT)
 docker tag spike-keeper:$SPIKE_VERSION localhost:$REGISTRY_PORT/spike-keeper:$SPIKE_VERSION
