@@ -1,0 +1,80 @@
+#    \\ SPIKE: Secure your secrets with SPIFFE.
+#  \\\\\ Copyright 2024-present SPIKE contributors.
+# \\\\\\\ SPDX-License-Identifier: Apache-2.0
+
+# values file for a demo setup:
+# Edge Cluster 2 that hosts 3 SPIKE Keeper instances.
+
+global:
+  openshift: false
+  spire:
+    recommendations:
+      enabled: true
+    namespaces:
+      create: true
+    clusterName: spiffe
+    trustDomain: edge-2.spike.ist
+    caSubject:
+      country: US
+      organization: SPIKE
+      commonName: edge-2.spike.ist
+
+spike-keeper:
+  enabled: true
+  namespaceOverride: spike
+  image:
+    registry: localhost:5000
+    repository: spike-keeper
+    pullPolicy: IfNotPresent
+    tag: "dev"
+
+spike-nexus:
+  enabled: false
+
+spike-pilot:
+  enabled: false
+
+spire-server:
+  enabled: true
+
+  federation:
+    enabled: true
+    bundleEndpoint:
+      address: "0.0.0.0"
+      port: 8443
+
+  controllerManager:
+    clusterFederatedTrustDomains:
+      mgmt:
+        bundleEndpointProfile:
+          endpointSPIFFEID: spiffe://mgmt.spike.ist/spire/server
+          type: https_spiffe
+        bundleEndpointURL: https://spiffe-management-cluster:8443
+        trustDomain: mgmt.spike.ist
+
+    identities:
+      clusterSPIFFEIDs:
+        spike-keeper:
+          type: raw
+          enabled: true
+          spiffeIDTemplate: spiffe://{{ .TrustDomain }}/spike/keeper/{{ .PodMeta.Name }}
+          podSelector:
+            matchLabels:
+              component: spike-keeper
+          namespaceSelector:
+            matchExpressions:
+            - key: kubernetes.io/metadata.name
+              operator: In
+              values:
+              - spike
+          federatesWith:
+          - mgmt.spike.ist
+
+spire-agent:
+  enabled: true
+
+spiffe-csi-driver:
+  enabled: true
+
+spiffe-oidc-discovery-provider:
+  enabled: true

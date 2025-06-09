@@ -56,6 +56,4 @@ kubectl delete validatingwebhookconfiguration \
   spire-system-spire-controller-manager-webhook \
   --ignore-not-found
 
-
-
 echo "Everything is awesome!"
