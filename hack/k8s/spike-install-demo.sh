@@ -21,9 +21,27 @@ pre_install
 # Install SPIKE from feature branch until it gets merged to upstream:
 # See: https://github.com/spiffe/helm-charts-hardened/pull/591
 cd ..
+HOSTNAME=$(hostname)
+VALUES_FILE="./spike/config/helm/values-demo-mgmt.yaml"
+
+case "$HOSTNAME" in
+  "mgmt")
+    VALUES_FILE="./spike/config/helm/values-demo-mgmt.yaml"
+    ;;
+  "edge-1")
+    VALUES_FILE="./spike/config/helm/values-demo-edge-1.yaml"
+    ;;
+  "edge-2")
+    VALUES_FILE="./spike/config/helm/values-demo-edge-2.yaml"
+    ;;
+  "workload")
+    VALUES_FILE="./spike/config/helm/values-demo-workload.yaml"
+    ;;
+esac
+
 helm upgrade --install -n spire-mgmt spiffe \
   ./helm-charts-hardened/charts/spire \
-  -f ./spike/config/helm/values-demo-mgmt.yaml
+  -f $VALUES_FILE
 
 echo "Sleeping for 15 secs..."
 sleep 15

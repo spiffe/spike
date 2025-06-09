@@ -30,8 +30,8 @@ docker-push:
 deploy-local:
 	./hack/k8s/spike-install.sh
 
-deploy-demo-management:
-	./hack/k8s/spike-install-demo-mgmt.sh
+deploy-demo:
+	./hack/k8s/spike-install-demo.sh
 
 tail-nexus:
 	kubectl logs spike-nexus-0 -n spike -f
