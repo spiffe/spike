@@ -33,6 +33,10 @@ deploy-local:
 deploy-demo:
 	./hack/k8s/spike-install-demo.sh
 
+# Port forward the bundle endpoint for the demo.
+spire-bundle-port-forward:
+	./hack/k8s/spire-server-bundle-endpoint-port-forward.sh
+
 tail-nexus:
 	kubectl logs spike-nexus-0 -n spike -f
 
@@ -45,5 +49,6 @@ tail-keeper-1:
 tail-keeper-2:
 	kubectl logs spike-keeper-2 -n spike -f
 
+# Shell into SPIKE Pilot.
 exec-spike:
 	./hack/k8s/spike-sh.sh
