@@ -5,12 +5,12 @@
 # Start a local development environment to test SPIKE.
 # By default, SPIRE Agent will have the same privileges as the user.
 start:
-	./hack/start.sh
+	./hack/bare-metal/startup/start.sh
 
 # Start a local SPIKE development environment.
 # In this case, SPIRE Agent will use privileged mode.
 start-privileged:
-	./hack/start.sh --use-sudo
+	./hack/bare-metal/startup/start.sh --use-sudo
 
 # Builds SPIKE binaries.
 build:

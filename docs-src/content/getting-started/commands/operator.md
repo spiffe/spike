@@ -145,7 +145,7 @@ If restoration is complete:
 
 ```
 SPIKE is now restored and ready to use.
-Please run `./hack/spire-server-entry-su-register.sh` with necessary privileges
+Please run `./hack/bare-metal/entry/spire-server-entry-su-register.sh` with necessary privileges
 to start using SPIKE as a superuser.
 ```
 
@@ -200,12 +200,12 @@ To assign the required roles for operator commands:
 
 1. For recovery role:
    ```bash
-   ./hack/spire-server-entry-recover-register.sh
+   ./hack/bare-metal/entry/spire-server-entry-recover-register.sh
    ```
 
 2. For restore role:
    ```bash
-   ./hack/spire-server-entry-restore-register.sh
+   ./hack/bare-metal/entry/spire-server-entry-restore-register.sh
    ```
 
 These scripts must be run with appropriate privileges.

@@ -762,7 +762,7 @@
     </issue>
     <issue priority="medium" severity="medium">
       2025/04/25 13:12:19 Aborting.
-      spike (feature/faster-recovery)$ ./hack/spire-server-entry-recover-register.sh
+      spike (feature/faster-recovery)$ ./hack/bare-metal/entry/spire-server-entry-recover-register.sh
 
       Also this should be part of operator
 

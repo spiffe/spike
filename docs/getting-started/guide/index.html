@@ -969,17 +969,17 @@ action.</p>
 <h2 id="start-spire-server">Start SPIRE Server</h2>
 <p>Start the SPIRE Server:</p>
 <pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#96b5b4;">cd </span><span>$</span><span style="color:#bf616a;">WORKSPACE</span><span>/spike
-</span><span style="color:#bf616a;">./hack/spire-server-start.sh
+</span><span style="color:#bf616a;">./hack/bare-metal/startup/spire-server-start.sh
 </span></code></pre>
 <h2 id="creating-registration-entries">Creating Registration Entries</h2>
 <p>The following script will create registration entries for the SPIKE components:</p>
 <pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#96b5b4;">cd </span><span>$</span><span style="color:#bf616a;">WORKSPACE</span><span>/spike
-</span><span style="color:#bf616a;">./hack/spire-server-entry-spike-register.sh
+</span><span style="color:#bf616a;">./hack/bare-metal/entry/spire-server-entry-spike-register.sh
 </span></code></pre>
 <h2 id="start-spire-agent">Start SPIRE Agent</h2>
 <p>Start the SPIRE Agent:</p>
 <pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#96b5b4;">cd </span><span>$</span><span style="color:#bf616a;">WORKSPACE</span><span>/spike
-</span><span style="color:#bf616a;">./hack/spire-agent-start.sh
+</span><span style="color:#bf616a;">./hack/bare-metal/startup/spire-agent-start.sh
 </span></code></pre>
 <h2 id="start-spike-components">Start SPIKE Components</h2>
 <p>Then start <strong>SPIKE</strong> components:</p>
@@ -992,20 +992,20 @@ window.</p>
 </span><span style="color:#96b5b4;">cd </span><span>$</span><span style="color:#bf616a;">WORKSPACE</span><span>/spike
 </span><span>
 </span><span style="color:#65737e;"># Start SPIKE Nexus in one terminal.
-</span><span style="color:#bf616a;">./hack/start-nexus.sh
+</span><span style="color:#bf616a;">./hack/bare-metal/startup/start-nexus.sh
 </span><span>
 </span><span style="color:#65737e;"># Start SPIKE Keepers in separate terminals.
-</span><span style="color:#bf616a;">./hack/start-keeper-1.sh
-</span><span style="color:#bf616a;">./hack/start-keeper-2.sh
-</span><span style="color:#bf616a;">./hack/start-keeper-3.sh
+</span><span style="color:#bf616a;">./hack/bare-metal/startup/start-keeper-1.sh
+</span><span style="color:#bf616a;">./hack/bare-metal/startup/start-keeper-2.sh
+</span><span style="color:#bf616a;">./hack/bare-metal/startup/start-keeper-3.sh
 </span></code></pre>
 <p>Here is how one of these <strong>SPIKE Keeper</strong> startup scripts looks like:</p>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># ./hack/start-keeper-1.sh
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># ./hack/bare-metal/startup/start-keeper-1.sh
 </span><span style="color:#bf616a;">SPIKE_KEEPER_TLS_PORT</span><span>=&#39;</span><span style="color:#a3be8c;">:8443</span><span>&#39; \
 </span><span style="color:#bf616a;">./keeper
 </span></code></pre>
 <p>And here is how <strong>SPIKE Nexus</strong> startup script looks like:</p>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># ./hack/start-nexus.sh
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># ./hack/bare-metal/startup/start-nexus.sh
 </span><span style="color:#bf616a;">SPIKE_NEXUS_KEEPER_PEERS</span><span>=&#39;</span><span style="color:#a3be8c;">https://localhost:8443,\
 </span><span style="color:#a3be8c;">https://localhost:8543,https://localhost:8643</span><span>&#39;
 </span><span style="color:#bf616a;">./nexus

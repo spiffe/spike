@@ -6,7 +6,7 @@
 
 source ./hack/lib/bg.sh
 
-run_background "./hack/start.sh"
+run_background "./hack/bare-metal/startup/start.sh"
 sleep 5
 
 echo "Starting tests..."

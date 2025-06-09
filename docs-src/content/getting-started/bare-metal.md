@@ -290,7 +290,7 @@ Start the SPIRE Server:
 
 ```bash
 cd $WORKSPACE/spike
-./hack/spire-server-start.sh
+./hack/bare-metal/startup/spire-server-start.sh
 ```
 
 ## Creating Registration Entries
@@ -299,7 +299,7 @@ The following script will create registration entries for the SPIKE components:
 
 ```bash
 cd $WORKSPACE/spike
-./hack/spire-server-entry-spike-register.sh
+./hack/bare-metal/entry/spire-server-entry-spike-register.sh
 ```
 
 ## Start SPIRE Agent
@@ -308,7 +308,7 @@ Start the SPIRE Agent:
 
 ```bash
 cd $WORKSPACE/spike
-./hack/spire-agent-start.sh
+./hack/bare-metal/startup/spire-agent-start.sh
 ```
 
 ## Start SPIKE Components
@@ -327,18 +327,18 @@ export SPIKE_SYSTEM_LOG_LEVEL=debug
 cd $WORKSPACE/spike
 
 # Start SPIKE Nexus in one terminal.
-./hack/start-nexus.sh
+./hack/bare-metal/startup/start-nexus.sh
 
 # Start SPIKE Keepers in separate terminals.
-./hack/start-keeper-1.sh
-./hack/start-keeper-2.sh
-./hack/start-keeper-3.sh
+./hack/bare-metal/startup/start-keeper-1.sh
+./hack/bare-metal/startup/start-keeper-2.sh
+./hack/bare-metal/startup/start-keeper-3.sh
 ```
 
 Here is how one of these **SPIKE Keeper** startup scripts looks like:
 
 ```bash
-# ./hack/start-keeper-1.sh
+# ./hack/bare-metal/startup/start-keeper-1.sh
 SPIKE_KEEPER_TLS_PORT=':8443' \
 ./keeper
 ````
@@ -346,7 +346,7 @@ SPIKE_KEEPER_TLS_PORT=':8443' \
 And here is how **SPIKE Nexus** startup script looks like:
 
 ```bash
-# ./hack/start-nexus.sh
+# ./hack/bare-metal/startup/start-nexus.sh
 SPIKE_NEXUS_KEEPER_PEERS='https://localhost:8443,\
 https://localhost:8543,https://localhost:8643'
 ./nexus

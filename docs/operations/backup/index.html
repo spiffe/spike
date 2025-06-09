@@ -862,7 +862,7 @@ hardware keys</em>)</li>
 (<em>catastrophic failure</em>), follow this procedure:</p>
 <pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># 1. Configure SPIKE Pilot for restore operations 
 </span><span style="color:#65737e;"># (adjust the script path for your environment)
-</span><span style="color:#bf616a;">./hack/spire-server-entry-restore-register.sh
+</span><span style="color:#bf616a;">./hack/bare-metal/entry/spire-server-entry-restore-register.sh
 </span><span>
 </span><span style="color:#65737e;"># 2. Run the restore command
 </span><span style="color:#bf616a;">spike</span><span> restore
@@ -871,7 +871,7 @@ hardware keys</em>)</li>
 </span><span style="color:#65737e;"># You&#39;ll need to provide enough shards to meet your threshold (e.g., 2 of 3)
 </span><span>
 </span><span style="color:#65737e;"># 4. After successful restoration, revert SPIKE Pilot to normal operation
-</span><span style="color:#bf616a;">./hack/spire-server-entry-su-register.sh
+</span><span style="color:#bf616a;">./hack/bare-metal/entry/spire-server-entry-su-register.sh
 </span></code></pre>
 <p>SPIKE Nexus will:</p>
 <ul>

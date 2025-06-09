@@ -765,22 +765,22 @@ its operational state:</p>
 <h3 id="1-before-complete-system-failure">1. Before complete system failure:</h3>
 <ul>
 <li>Change the <strong>SPIFFE ID</strong> of <strong>SPIKE Pilot</strong> to recovery mode by
-executing <code>./hack/spire-server-entry-recover-register.sh</code></li>
+executing <code>./hack/bare-metal/entry/spire-server-entry-recover-register.sh</code></li>
 <li>Run <code>spike recover</code></li>
 <li>Save the files generated in <code>~/.spike/recover</code> folder to a safe,
 encrypted, and password-protected medium.</li>
 <li>Securely erase the ~/.spike/recover` folder.</li>
 <li>Change the <strong>SPIFFE ID</strong> of <strong>SPIKE Pilot</strong> back using
-<code>./hack/spire-server-entry-su-register.sh</code> or delete the registration
+<code>./hack/bare-metal/entry/spire-server-entry-su-register.sh</code> or delete the registration
 entry entirely for extra security.</li>
 <li>You can create the entry back using
-<code>./hack/spire-server-entry-su-register.sh</code> when you need to use
+<code>./hack/bare-metal/entry/spire-server-entry-su-register.sh</code> when you need to use
 <strong>SPIKE Pilot</strong>.</li>
 </ul>
 <h3 id="2-during-complete-system-failure">2. During complete system failure:</h3>
 <ul>
 <li>Change the <strong>SPIFFE ID</strong> of <strong>SPIKE Pilot</strong> to restore mode:
-<code>./hack/spire-server-entry-restore-register.sh</code></li>
+<code>./hack/bare-metal/entry/spire-server-entry-restore-register.sh</code></li>
 <li>Execute <code>spike restore</code> and enter the shards you created in the
 previous step one by one. Each <code>spike restore</code> call accepts a
 single shard.</li>
@@ -789,11 +789,11 @@ single shard.</li>
 its peer <strong>SPIKE Keeper</strong> instances to protect itself against future
 crashes.</li>
 <li>Change the <strong>SPIFFE ID</strong> of <strong>SPIKE Pilot</strong> back using
-<code>./hack/spire-server-entry-su-register.sh</code> or delete the registration
+<code>./hack/bare-metal/entry/spire-server-entry-su-register.sh</code> or delete the registration
 entry entirely for extra security.
 <ul>
 <li>You can create the entry back using
-<code>./hack/spire-server-entry-su-register.sh</code> when you need to use
+<code>./hack/bare-metal/entry/spire-server-entry-su-register.sh</code> when you need to use
 <strong>SPIKE Pilot</strong>.</li>
 </ul>
 </li>
@@ -836,7 +836,7 @@ in the SQLite backing store.</li>
 <li>Delete <strong>SPIRE Server</strong> registration entries.</li>
 <li>Redeploy <strong>SPIKE</strong> using your preferred method.
 <ul>
-<li>You can check out <code>./hack/start.sh</code> to see a sample startup/deployment
+<li>You can check out <code>./hack/bare-metal/startup/start.sh</code> to see a sample startup/deployment
 script.</li>
 </ul>
 </li>
