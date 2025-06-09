@@ -29,7 +29,7 @@ spike-keeper:
     tag: "dev"
 
 spike-nexus:
-  enabled: false
+  enabled: true
   namespaceOverride: spike
   image:
     registry: localhost:5000
@@ -38,7 +38,7 @@ spike-nexus:
     tag: "dev"
 
 spike-pilot:
-  enabled: false
+  enabled: true
   namespaceOverride: spike
   image:
     registry: localhost:5000
