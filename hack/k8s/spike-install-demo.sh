@@ -26,15 +26,19 @@ VALUES_FILE="./spike/config/helm/values-demo-mgmt.yaml"
 
 case "$HOSTNAME" in
   "mgmt")
+    echo "using values-demo-mgmt.yaml"
     VALUES_FILE="./spike/config/helm/values-demo-mgmt.yaml"
     ;;
   "edge-1")
+    echo "using values-demo-edge-1.yaml"
     VALUES_FILE="./spike/config/helm/values-demo-edge-1.yaml"
     ;;
   "edge-2")
+    echo "using values-demo-edge-2.yaml"
     VALUES_FILE="./spike/config/helm/values-demo-edge-2.yaml"
     ;;
   "workload")
+    echo "using values-demo-workload.yaml"
     VALUES_FILE="./spike/config/helm/values-demo-workload.yaml"
     ;;
 esac

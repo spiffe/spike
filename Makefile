@@ -4,4 +4,5 @@
 
 include ./makefiles/BareMetal.mk
 include ./makefiles/Kubernetes.mk
+include ./makefiles/Spiffe.mk
 include ./makefiles/Test.mk
