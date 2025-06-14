@@ -38,9 +38,9 @@ spec:
           env:
             #FIXME make this configurable
             - name: SPIKE_NEXUS_SHAMIR_SHARES
-              value: 6
+              value: "6"
             - name: SPIKE_NEXUS_SHAMIR_THRESHOLD
-              value: 2
+              value: "2"
             - name: SPIKE_NEXUS_KEEPER_PEERS
               value: "https://spiffe-edge-cluster-1:8443,https://spiffe-edge-cluster-1:8543,https://spiffe-edge-cluster-1:8643,https://spiffe-edge-cluster-2:8443,https://spiffe-edge-cluster-2:8543,https://spiffe-edge-cluster-2:8643"
             - name: SPIFFE_ENDPOINT_SOCKET
