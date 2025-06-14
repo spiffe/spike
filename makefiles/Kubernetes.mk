@@ -26,20 +26,16 @@ docker-forward-registry:
 docker-push:
 	./hack/docker/push-local.sh
 
-# 4. Deploy SPIRE and SPIKE to the cluster.
+# For Multi-Cluster Federation Demo, DO NOT run `deploy-local`
+# Instead, see FederationDemo.mk for the remaining steps.
+
+# 6. (Single Cluster) Deploy SPIRE and SPIKE to the cluster.
 deploy-local:
 	./hack/k8s/spike-install.sh
 
-deploy-demo:
-	./hack/k8s/spike-install-demo.sh
-
-# Port forward the bundle endpoint for the demo.
-spire-bundle-port-forward:
-	./hack/k8s/spire-server-bundle-endpoint-port-forward.sh
-
-# Port forward SPIKE Keeper instance for the demo setup.
-spike-keeper-port-forward:
-	./hack/k8s/spike-keeper-port-forward.sh
+# Shell into SPIKE Pilot.
+exec-spike:
+	./hack/k8s/spike-sh.sh
 
 tail-nexus:
 	kubectl logs spike-nexus-0 -n spike -f
@@ -52,7 +48,3 @@ tail-keeper-1:
 
 tail-keeper-2:
 	kubectl logs spike-keeper-2 -n spike -f
-
-# Shell into SPIKE Pilot.
-exec-spike:
-	./hack/k8s/spike-sh.sh
