@@ -1,0 +1,84 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app.kubernetes.io/instance: spiffe
+    app.kubernetes.io/name: spike-demo
+  name: spiffe-spike-demo
+  namespace: spike
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: spiffe
+      app.kubernetes.io/name: spike-demo
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/instance: spiffe
+        app.kubernetes.io/name: spike-demo
+        component: spike-demo
+    spec:
+      containers:
+      - command:
+        - /bin/sh
+        - -c
+        - echo I live; while true; do sleep 1000; done
+        env:
+        - name: SPIKE_NEXUS_API_URL
+          value: https://10.211.55.28:8444
+        - name: SPIFFE_ENDPOINT_SOCKET
+          value: unix:///spiffe-workload-api/spire-agent.sock
+        - name: SPIKE_SYSTEM_LOG_LEVEL
+          value: DEBUG
+        - name: SPIKE_TRUST_ROOT
+          value: workload.spike.ist
+        - name: SPIKE_TRUST_ROOT_NEXUS
+          value: mgmt.spike.ist
+        image: localhost:5000/spike-demo:dev
+        imagePullPolicy: IfNotPresent
+        name: spiffe-spike-demo
+        resources: {}
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+          seccompProfile:
+            type: RuntimeDefault
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /spiffe-workload-api
+          name: spiffe-workload-api
+          readOnly: true
+        - mountPath: /bin/demo
+          name: demo
+          readOnly: true
+          subPath: demo
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext:
+        fsGroup: 1000
+        fsGroupChangePolicy: OnRootMismatch
+        runAsGroup: 1000
+        runAsUser: 1000
+      serviceAccountName: spiffe-spike-demo
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - csi:
+          driver: csi.spiffe.io
+          readOnly: true
+        name: spiffe-workload-api
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app.kubernetes.io/instance: spiffe
+    app.kubernetes.io/name: spike-demo
+  name: spiffe-spike-demo
+  namespace: spike

@@ -40,7 +40,7 @@ RUN ./hack/docker/buildx.sh ${TARGETARCH} demo
 # Target distroless base image for CGO_ENABLED apps
 # This image includes a basic runtime environment with libc and
 # other minimal dependencies
-FROM gcr.io/distroless/static AS demo
+FROM busybox:1.36 AS spike
 # Redefine the ARG in this stage to make it available
 ARG APPVERSION
 
