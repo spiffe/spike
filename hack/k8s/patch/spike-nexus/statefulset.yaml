@@ -50,8 +50,9 @@ spec:
               value: {{ .Values.logLevel | upper }}
             - name: SPIKE_TRUST_ROOT
               value: {{ include "spire-lib.trust-domain" . }}
+            # note: Trust roots can be different, can can be comma-delimeted.
             - name: SPIKE_TRUST_ROOT_KEEPER
-              value: {{ include "spire-lib.trust-domain" . }}
+              value: "edge-1.spike.ist,edge-2.spike.ist"
             - name: SPIKE_TRUST_ROOT_PILOT
               value: {{ include "spire-lib.trust-domain" . }}
             - name: SPIKE_NEXUS_TLS_PORT
