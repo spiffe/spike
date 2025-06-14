@@ -37,6 +37,10 @@ deploy-demo:
 spire-bundle-port-forward:
 	./hack/k8s/spire-server-bundle-endpoint-port-forward.sh
 
+# Port forward SPIKE Keeper instance for the demo setup.
+spike-keeper-port-forward:
+	./hack/k8s/spike-keeper-port-forward.sh
+
 tail-nexus:
 	kubectl logs spike-nexus-0 -n spike -f
 
