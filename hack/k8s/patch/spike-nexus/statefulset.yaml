@@ -51,6 +51,9 @@ spec:
             - name: SPIKE_TRUST_ROOT
               value: {{ include "spire-lib.trust-domain" . }}
             # note: Trust roots can be different, can can be comma-delimeted.
+            # nexus and keeper, pilot can be peers, so their trust roots may differ.
+            - name: SPIKE_TRUST_ROOT_NEXUS
+              value: "mgmt.spike.ist"
             - name: SPIKE_TRUST_ROOT_KEEPER
               value: "edge-1.spike.ist,edge-2.spike.ist"
             - name: SPIKE_TRUST_ROOT_PILOT
