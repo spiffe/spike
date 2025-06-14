@@ -14,8 +14,8 @@ cleanup() {
 trap cleanup EXIT INT TERM
 
 # Start port-forward commands in background
-echo "Starting port-forward for spiffe-spike-keeper-0 on port 8443..."
-kubectl -n spike port-forward svc/spiffe-spike-keeper-0 8443:443 --address=0.0.0.0 &
+echo "Starting port-forward for spiffe-spike-keeper-0 on port 8444..."
+kubectl -n spike port-forward svc/spiffe-spike-keeper-0 8444:443 --address=0.0.0.0 &
 
 echo "Starting port-forward for spiffe-spike-keeper-1 on port 8543..."
 kubectl -n spike port-forward svc/spiffe-spike-keeper-1 8543:443 --address=0.0.0.0 &

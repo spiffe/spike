@@ -41,8 +41,9 @@ spec:
               value: "6"
             - name: SPIKE_NEXUS_SHAMIR_THRESHOLD
               value: "2"
+            # Note: IP will depend on the testbed.
             - name: SPIKE_NEXUS_KEEPER_PEERS
-              value: "https://spiffe-edge-cluster-1:8443,https://spiffe-edge-cluster-1:8543,https://spiffe-edge-cluster-1:8643,https://spiffe-edge-cluster-2:8443,https://spiffe-edge-cluster-2:8543,https://spiffe-edge-cluster-2:8643"
+              value: "https://10.211.55.27:8444,https://10.211.55.27:8543,https://10.211.55.27:8643,https://10.211.55.26:8444,https://10.211.55.26:8543,https://10.211.55.26:8643"
             - name: SPIFFE_ENDPOINT_SOCKET
               value: unix://{{ include "spike-nexus.workload-api-socket-path" . }}
             - name: SPIKE_SYSTEM_LOG_LEVEL
