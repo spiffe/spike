@@ -54,6 +54,10 @@ spire-server:
 
     identities:
       clusterSPIFFEIDs:
+        spike-nexus:
+          enabled: false
+        spike-pilot:
+          enabled: false
         spike-keeper:
           type: raw
           enabled: true

@@ -79,20 +79,7 @@ spire-server:
     identities:
       clusterSPIFFEIDs:
         spike-keeper:
-          type: raw
-          enabled: true
-          spiffeIDTemplate: spiffe://{{ .TrustDomain }}/spike/keeper/{{ .PodMeta.Name }}
-          podSelector:
-            matchLabels:
-              component: spike-keeper
-          namespaceSelector:
-            matchExpressions:
-            - key: kubernetes.io/metadata.name
-              operator: In
-              values:
-              - spike
-          federatesWith:
-          - mgmt.spike.ist
+          enabled: false
         spike-nexus:
           type: raw
           enabled: true
@@ -123,21 +110,6 @@ spire-server:
               operator: In
               values:
               - spike
-        spike-workload:
-          type: raw
-          enabled: true
-          spiffeIDTemplate: spiffe://{{ .TrustDomain }}/spike/workload/{{ .PodMeta.Name }}
-          podSelector:
-            matchLabels:
-              component: spike-nexus
-          namespaceSelector:
-            matchExpressions:
-            - key: kubernetes.io/metadata.name
-              operator: In
-              values:
-              - workload
-          federatesWith:
-          - mgmt.spike.ist
 
 spire-agent:
   enabled: true

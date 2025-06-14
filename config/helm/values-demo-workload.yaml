@@ -48,6 +48,12 @@ spire-server:
 
     identities:
       clusterSPIFFEIDs:
+        spike-keeper:
+          enabled: false
+        spike-nexus:
+          enabled: false
+        spike-pilot:
+          enabled: false
         workload:
           type: raw
           enabled: true
