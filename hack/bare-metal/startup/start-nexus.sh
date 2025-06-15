@@ -5,4 +5,4 @@
 # The SPIKE Keeper peer address mappings MUST start with the key "1" and they MUST
 # increment by 1 for each subsequent SPIKE Keeper.
 SPIKE_NEXUS_KEEPER_PEERS='https://localhost:8443,https://localhost:8543,https://localhost:8643' \
-./nexus
+exec ./nexus

@@ -3,4 +3,4 @@
 # \\\\\\\ SPDX-License-Identifier: Apache-2.0
 
 SPIKE_KEEPER_TLS_PORT=':8443' \
-./keeper
+exec ./keeper
