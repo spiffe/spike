@@ -54,10 +54,6 @@ spec:
         - mountPath: /spiffe-workload-api
           name: spiffe-workload-api
           readOnly: true
-        - mountPath: /bin/demo
-          name: demo
-          readOnly: true
-          subPath: demo
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       schedulerName: default-scheduler
