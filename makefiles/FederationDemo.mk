@@ -2,6 +2,9 @@
 #  \\\\ SPIKE: Secure your secrets with SPIFFE.
 # \\\\\\
 
+# TODO: once the demo is working, maybe remove everything from ./hack to
+# ./examples.
+
 # 6. Patch charts
 demo-patch-charts:
 	./hack/k8s/patch-charts.sh
@@ -25,3 +28,7 @@ demo-bundle-set:
 # 11. Port forward SPIKE Keeper instances for the demo setup.
 demo-spike-keeper-port-forward:
 	./hack/k8s/spike-keeper-port-forward.sh
+
+# 12. Port forward SPIKE Nexus for the workload to consume it.
+demo-spike-nexus-port-forward:
+	./hack/k8s/spike-nexus-port-forward.sh
