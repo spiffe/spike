@@ -5,6 +5,8 @@
 # values file for a demo setup:
 # Edge Cluster 2 that hosts 3 SPIKE Keeper instances.
 
+# TODO: extensively document these values files.
+
 global:
   openshift: false
   spire:
