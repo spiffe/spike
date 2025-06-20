@@ -28,6 +28,9 @@ spike-keeper:
     pullPolicy: IfNotPresent
     tag: "dev"
 
+  trustRoot:
+    nexus: "mgmt.spike.ist"
+
 spike-nexus:
   enabled: true
   namespaceOverride: spike
