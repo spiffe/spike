@@ -7,6 +7,8 @@
 
 # TODO: extensively document these values files.
 
+# TODO: make k8s-reset: will delete and restart
+
 global:
   openshift: false
   spire:
