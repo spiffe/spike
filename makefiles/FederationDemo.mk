@@ -5,6 +5,7 @@
 # TODO: once the demo is working, maybe remove everything from ./hack to
 # ./examples.
 
+# TODO: this step is no longer needed; remove.
 # 6. Patch charts
 demo-patch-charts:
 	./hack/k8s/patch-charts.sh

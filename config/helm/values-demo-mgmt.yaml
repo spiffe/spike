@@ -21,15 +21,6 @@ global:
 
 spike-keeper:
   enabled: false
-  namespaceOverride: spike
-  image:
-    registry: localhost:5000
-    repository: spike-keeper
-    pullPolicy: IfNotPresent
-    tag: "dev"
-
-  trustRoot:
-    nexus: "mgmt.spike.ist"
 
 spike-nexus:
   enabled: true
