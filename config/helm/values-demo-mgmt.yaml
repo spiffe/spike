@@ -37,6 +37,25 @@ spike-nexus:
     pullPolicy: IfNotPresent
     tag: "dev"
 
+  shamir:
+    shares: 6
+    threshold: 2
+
+  keeperPeers:
+  - "https://10.211.55.27:8444"
+  - "https://10.211.55.27:8543"
+  - "https://10.211.55.27:8643"
+  - "https://10.211.55.26:8444"
+  - "https://10.211.55.26:8543"
+  - "https://10.211.55.26:8643"
+
+  trustRoot:
+    nexus: "mgmt.spike.ist"
+    pilot: "mgmt.spike.ist"
+    keepers:
+    - "edge-1.spike.ist"
+    - "edge-2.spike.ist"
+
 spike-pilot:
   enabled: true
   namespaceOverride: spike
