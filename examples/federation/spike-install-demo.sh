@@ -14,7 +14,7 @@
 
 set -e  # Exit on any error
 
-source ./hack/lib/k8s.sh
+source ./examples/federation/lib/k8s.sh
 
 pre_install
 
