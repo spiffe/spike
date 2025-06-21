@@ -820,7 +820,7 @@ previously generated with the <code>recover</code> command.</p>
 <p>After providing a valid shard, you will see one of two responses:</p>
 <p>If restoration is complete:</p>
 <pre style="background-color:#2b303b;color:#c0c5ce;"><code><span>SPIKE is now restored and ready to use.
-</span><span>Please run `./hack/spire-server-entry-su-register.sh` with necessary privileges
+</span><span>Please run `./hack/bare-metal/entry/spire-server-entry-su-register.sh` with necessary privileges
 </span><span>to start using SPIKE as a superuser.
 </span></code></pre>
 <p>If more shards are needed:</p>
@@ -865,12 +865,12 @@ administrators</li>
 <ol>
 <li>
 <p>For recovery role:</p>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">./hack/spire-server-entry-recover-register.sh
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">./hack/bare-metal/entry/spire-server-entry-recover-register.sh
 </span></code></pre>
 </li>
 <li>
 <p>For restore role:</p>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">./hack/spire-server-entry-restore-register.sh
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">./hack/bare-metal/entry/spire-server-entry-restore-register.sh
 </span></code></pre>
 </li>
 </ol>

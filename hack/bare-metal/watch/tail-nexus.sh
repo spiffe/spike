@@ -4,4 +4,4 @@
 #  \\\\\ Copyright 2024-present SPIKE contributors.
 # \\\\\\\ SPDX-License-Identifier: Apache-2.0
 
-tail -100f ./start-nexus.sh.log
+tail -100f ./bare-metal/startup/start-nexus.sh.log

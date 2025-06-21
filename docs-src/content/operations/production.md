@@ -184,9 +184,9 @@ You can find sample scripts that creates registration entries under the
 
 [hack]: https://github.com/spiffe/spike/tree/main/hack
 
-* `./hack/spire-server-entry-recover-register.sh`
-* `./hack/spire-server-entry-spike-register.sh`
-* `./hack/spire-server-entry-restore-register.sh`
+* `./hack/bare-metal/entry/spire-server-entry-recover-register.sh`
+* `./hack/bare-metal/entry/spire-server-entry-spike-register.sh`
+* `./hack/bare-metal/entry/spire-server-entry-restore-register.sh`
 
 ### Harden SPIRE Deployment on Kubernetes
 

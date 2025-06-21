@@ -56,10 +56,10 @@ fi
 # can run this command without sudo.
 if [ "$1" == "--use-sudo" ]; then
   sudo "$AGENT_PATH" run \
-    -config ./config/spire/agent/agent.conf \
+    -config ./config/bare-metal/agent/agent.conf \
     -joinToken "$JOIN_TOKEN"
 else
   "$AGENT_PATH" run \
-    -config ./config/spire/agent/agent.conf \
+    -config ./config/bare-metal/agent/agent.conf \
     -joinToken "$JOIN_TOKEN"
 fi
