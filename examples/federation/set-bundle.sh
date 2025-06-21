@@ -30,7 +30,7 @@ list_bundles() {
     -socketPath /tmp/spire-server/private/api.sock
 }
 
-cd ~
+cd ~ || exit
 
 case $CURRENT_HOST in
   mgmt)

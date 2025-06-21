@@ -31,18 +31,16 @@ extract_bundle() {
 
 # Function to copy bundle to management cluster
 copy_to_mgmt() {
-    local bundle_file=$1
-    echo "Copying ${bundle_file} to ${MGMT_HOST}..."
+  local bundle_file=$1
+  echo "Copying ${bundle_file} to ${MGMT_HOST}..."
 
-    scp "${bundle_file}" "${MGMT_HOST}@spiffe-management-cluster:~/"
-
-    if [ $? -eq 0 ]; then
-        echo "Bundle copied successfully to ${MGMT_HOST}"
-        return 0
-    else
-        echo "Error: Failed to copy bundle to ${MGMT_HOST}"
-        return 1
-    fi
+  if ! scp "${bundle_file}" "${MGMT_HOST}@spiffe-management-cluster:~/"; then
+    echo "Bundle copied successfully to ${MGMT_HOST}"
+    return 0
+  else
+    echo "Error: Failed to copy bundle to ${MGMT_HOST}"
+    return 1
+  fi
 }
 
 # Main logic based on hostname
@@ -50,8 +48,7 @@ case "${HOSTNAME}" in
   "mgmt")
     echo "Running on management cluster"
     extract_bundle "bundle-mgmt.json"
-    mv "bundle-mgmt.json" ~/
-    if [ $? -eq 0 ]; then
+    if mv "bundle-mgmt.json" ~/; then
       echo "Bundle moved to ~/"
     else
       echo "Error: Failed to move bundle to home directory"
@@ -62,8 +59,7 @@ case "${HOSTNAME}" in
 
     # Copy to edge-1
     echo "Copying to edge-1..."
-    scp "$HOME/bundle-mgmt.json" "edge-1@spiffe-edge-cluster-1:~/"
-    if [ $? -eq 0 ]; then
+    if ! scp "$HOME/bundle-mgmt.json" "edge-1@spiffe-edge-cluster-1:~/"; then
       echo "✓ Bundle copied to edge-1"
     else
       echo "✗ Failed to copy bundle to edge-1"
@@ -71,8 +67,7 @@ case "${HOSTNAME}" in
 
     # Copy to edge-2
     echo "Copying to edge-2..."
-    scp "$HOME/bundle-mgmt.json" "edge-2@spiffe-edge-cluster-2:~/"
-    if [ $? -eq 0 ]; then
+    if ! scp "$HOME/bundle-mgmt.json" "edge-2@spiffe-edge-cluster-2:~/"; then
       echo "✓ Bundle copied to edge-2"
     else
       echo "✗ Failed to copy bundle to edge-2"
@@ -80,8 +75,7 @@ case "${HOSTNAME}" in
 
     # Copy to workload
     echo "Copying to workload..."
-    scp "$HOME/bundle-mgmt.json" "workload@spiffe-workload-cluster:~/"
-    if [ $? -eq 0 ]; then
+    if ! scp "$HOME/bundle-mgmt.json" "workload@spiffe-workload-cluster:~/"; then
       echo "✓ Bundle copied to workload"
     else
       echo "✗ Failed to copy bundle to workload"
@@ -90,26 +84,20 @@ case "${HOSTNAME}" in
 
   "edge-1")
     echo "Running on edge-1 cluster"
-    extract_bundle "bundle-edge-1.json"
-    if [ $? -eq 0 ]; then
+    extract_bundle "bundle-edge-1.json" && \
       copy_to_mgmt "bundle-edge-1.json"
-    fi
     ;;
 
   "edge-2")
     echo "Running on edge-2 cluster"
-    extract_bundle "bundle-edge-2.json"
-    if [ $? -eq 0 ]; then
+    extract_bundle "bundle-edge-2.json" && \
       copy_to_mgmt "bundle-edge-2.json"
-    fi
     ;;
 
   "workload")
     echo "Running on workload cluster"
-    extract_bundle "bundle-workload.json"
-    if [ $? -eq 0 ]; then
+    extract_bundle "bundle-workload.json" && \
       copy_to_mgmt "bundle-workload.json"
-    fi
     ;;
 
   *)
@@ -120,6 +108,7 @@ case "${HOSTNAME}" in
 esac
 
 # Check if everything completed successfully
+# shellcheck disable=SC2181
 if [ $? -eq 0 ]; then
   echo "Everything is awesome!"
 else
