@@ -37,10 +37,10 @@ import (
 // Each subcommand has its own set of flags and arguments. See the individual
 // command documentation for details.
 func NewPolicyCommand(source *workloadapi.X509Source, spiffeId string) *cobra.Command {
-    cmd := &cobra.Command{
-        Use:   "policy",
-        Short: "Manage policies",
-        Long: `Manage access control policies.
+	cmd := &cobra.Command{
+		Use:   "policy",
+		Short: "Manage policies",
+		Long: `Manage access control policies.
 
 		Policies control which workloads can access which secrets.
 		Each policy defines a set of permissions granted to workloads
@@ -51,13 +51,14 @@ func NewPolicyCommand(source *workloadapi.X509Source, spiffeId string) *cobra.Co
 		list      List all policies
 		get       Get details of a specific policy
 		delete    Delete a policy`,
-    }
+	}
 
-    // Add subcommands
-    cmd.AddCommand(newPolicyListCommand(source, spiffeId))
-    cmd.AddCommand(newPolicyGetCommand(source, spiffeId))
-    cmd.AddCommand(newPolicyCreateCommand(source, spiffeId))
-    cmd.AddCommand(newPolicyDeleteCommand(source, spiffeId))
+	// Add subcommands
+	cmd.AddCommand(newPolicyListCommand(source, spiffeId))
+	cmd.AddCommand(newPolicyGetCommand(source, spiffeId))
+	cmd.AddCommand(newPolicyCreateCommand(source, spiffeId))
+	cmd.AddCommand(newPolicyDeleteCommand(source, spiffeId))
+	cmd.AddCommand(newPolicyApplyCommand(source, spiffeId))
 
-    return cmd
+	return cmd
 }
