@@ -5,8 +5,9 @@
 # values file for a demo setup:
 # Management Cluster that hosts SPIKE Nexus and SPIKE Pilot.
 
+# Basic SPIRE Server Configuration
 global:
-  openshift: false # If running on openshift, set to true
+  openshift: false
   spire:
     recommendations:
       enabled: true
@@ -18,10 +19,19 @@ global:
       country: US
       organization: SPIKE
       commonName: mgmt.spike.ist
+spire-agent:
+  enabled: true
+spiffe-csi-driver:
+  enabled: true
+spiffe-oidc-discovery-provider:
+  enabled: true
 
+# Don't install SPIKE Keeper here.
+# We will install it to its own cluster.
 spike-keeper:
   enabled: false
 
+# SPIKE Nexus Settings
 spike-nexus:
   enabled: true
   namespaceOverride: spike
@@ -31,10 +41,12 @@ spike-nexus:
     pullPolicy: IfNotPresent
     tag: "dev"
 
+  # Six shards; two of which can recreate the root key.
   shamir:
     shares: 6
     threshold: 2
 
+  # These six SPIKE Keepers securely store each of these six shards.
   keeperPeers:
   - "https://10.211.55.27:8444"
   - "https://10.211.55.27:8543"
@@ -44,12 +56,16 @@ spike-nexus:
   - "https://10.211.55.26:8643"
 
   trustRoot:
-    nexus: "mgmt.spike.ist"
+    # SPIKE Pilot is in the mgmt.spike.ist trust domain.
+    # mgmt.spike.ist trust domain also identifies the Management Cluster.
     pilot: "mgmt.spike.ist"
+    # SPIKE Keepers are in edge-1.spike-ist, and edge-2.spike.ist trust
+    # domains. These trust domains also identify Edge-1 and Edge-2 clusters.
     keepers:
     - "edge-1.spike.ist"
     - "edge-2.spike.ist"
 
+# SPIKE Pilot
 spike-pilot:
   enabled: true
   namespaceOverride: spike
@@ -59,9 +75,16 @@ spike-pilot:
     pullPolicy: IfNotPresent
     tag: "dev"
 
+  trustRoot:
+    # SPIKE Nexus is in the mgmt.spike.ist trust domain.
+    # mgmt.spike.ist trust domain also identifies the Management Cluster.
+    nexus: "mgmt.spike.ist"
+
+# SPIRE Server
 spire-server:
   enabled: true
 
+  # Enable Federation
   federation:
     enabled: true
     bundleEndpoint:
@@ -69,6 +92,7 @@ spire-server:
       port: 8443
 
   controllerManager:
+    # Federate with the following trust domains:
     clusterFederatedTrustDomains:
       workload:
         bundleEndpointProfile:
@@ -89,10 +113,13 @@ spire-server:
         bundleEndpointURL: https://spiffe-edge-cluster-2:8443
         trustDomain: edge-2.spike.ist
 
+    # ClusterSPIFFEIDs
     identities:
       clusterSPIFFEIDs:
+        # We don't have SPIKE Keeper in this cluster:
         spike-keeper:
           enabled: false
+
         spike-nexus:
           type: raw
           enabled: true
@@ -110,6 +137,7 @@ spire-server:
             - edge-1.spike.ist
             - edge-2.spike.ist
             - workload.spike.ist
+
         spike-pilot:
           type: raw
           enabled: true
@@ -124,11 +152,4 @@ spire-server:
               values:
               - spike
 
-spire-agent:
-  enabled: true
 
-spiffe-csi-driver:
-  enabled: true
-
-spiffe-oidc-discovery-provider:
-  enabled: true

@@ -14,6 +14,11 @@ k8s-delete:
 k8s-start:
 	./hack/k8s/minikube-start.sh
 
+# Deletes and re-installs the Minikube cluster.
+k8s-reset:
+	k8s-delete
+	k8s-start
+
 # 3. Build container images.
 docker-build:
 	./hack/docker/build-local.sh

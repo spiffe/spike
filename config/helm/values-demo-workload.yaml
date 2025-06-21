@@ -5,6 +5,7 @@
 # values file for a demo setup:
 # Workload Cluster that hosts a sample workload that consumes secrets.
 
+# Basic SPIRE Server Configuration
 global:
   openshift: false
   spire:
@@ -18,19 +19,26 @@ global:
       country: US
       organization: SPIKE
       commonName: workload.spike.ist
+spire-agent:
+  enabled: true
+spiffe-csi-driver:
+  enabled: true
+spiffe-oidc-discovery-provider:
+  enabled: true
 
+# We don't need any SPIKE component in this cluster.
 spike-keeper:
   enabled: false
-
 spike-nexus:
   enabled: false
-
 spike-pilot:
   enabled: false
 
+# SPIRE Server
 spire-server:
   enabled: true
 
+  # Enable Federation
   federation:
     enabled: true
     bundleEndpoint:
@@ -38,6 +46,7 @@ spire-server:
       port: 8443
 
   controllerManager:
+    # Federate With the Management Cluster
     clusterFederatedTrustDomains:
       mgmt:
         bundleEndpointProfile:
@@ -46,14 +55,17 @@ spire-server:
         bundleEndpointURL: https://spiffe-management-cluster:8443
         trustDomain: mgmt.spike.ist
 
+    # ClusterSPIFFEIDs
     identities:
       clusterSPIFFEIDs:
+        # We don't have any SPIKE component in this cluster:
         spike-keeper:
           enabled: false
         spike-nexus:
           enabled: false
         spike-pilot:
           enabled: false
+
         workload:
           type: raw
           enabled: true
@@ -69,12 +81,3 @@ spire-server:
               - workload
           federatesWith:
           - mgmt.spike.ist
-
-spire-agent:
-  enabled: true
-
-spiffe-csi-driver:
-  enabled: true
-
-spiffe-oidc-discovery-provider:
-  enabled: true

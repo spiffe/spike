@@ -5,10 +5,7 @@
 # values file for a demo setup:
 # Edge Cluster 2 that hosts 3 SPIKE Keeper instances.
 
-# TODO: extensively document these values files.
-
-# TODO: make k8s-reset: will delete and restart
-
+# Basic SPIRE Server Configuration
 global:
   openshift: false
   spire:
@@ -22,7 +19,21 @@ global:
       country: US
       organization: SPIKE
       commonName: edge-2.spike.ist
+spire-agent:
+  enabled: true
+spiffe-csi-driver:
+  enabled: true
+spiffe-oidc-discovery-provider:
+  enabled: true
 
+# Don't install SPIKE Nexus or SPIKE Pilot
+# We will install them in the Management cluster.
+spike-nexus:
+  enabled: false
+spike-pilot:
+  enabled: false
+
+# SPIKE Keeper Settings
 spike-keeper:
   enabled: true
   namespaceOverride: spike
@@ -31,18 +42,16 @@ spike-keeper:
     repository: spike-keeper
     pullPolicy: IfNotPresent
     tag: "dev"
+  # SPIKE Keepers federate with SPIKE Nexus
+  # in the `mgmt.spike.ist` trust root.
   trustRoot:
     nexus: "mgmt.spike.ist"
 
-spike-nexus:
-  enabled: false
-
-spike-pilot:
-  enabled: false
-
+# SPIRE Server
 spire-server:
   enabled: true
 
+  # Enable Federation
   federation:
     enabled: true
     bundleEndpoint:
@@ -50,6 +59,7 @@ spire-server:
       port: 8443
 
   controllerManager:
+    # Federate with the Management cluster.
     clusterFederatedTrustDomains:
       mgmt:
         bundleEndpointProfile:
@@ -58,12 +68,15 @@ spire-server:
         bundleEndpointURL: https://spiffe-management-cluster:8443
         trustDomain: mgmt.spike.ist
 
+    # ClusterSPIFFEIDs
     identities:
       clusterSPIFFEIDs:
+        # We don't have SPIKE Keeper or SPIKE Pilot in this cluster:
         spike-nexus:
           enabled: false
         spike-pilot:
           enabled: false
+
         spike-keeper:
           type: raw
           enabled: true
@@ -79,12 +92,3 @@ spire-server:
               - spike
           federatesWith:
           - mgmt.spike.ist
-
-spire-agent:
-  enabled: true
-
-spiffe-csi-driver:
-  enabled: true
-
-spiffe-oidc-discovery-provider:
-  enabled: true

@@ -2,34 +2,43 @@
 #  \\\\ SPIKE: Secure your secrets with SPIFFE.
 # \\\\\\
 
-# TODO: once the demo is working, maybe remove everything from ./hack to
-# ./examples.
-
-# TODO: this step is no longer needed; remove.
-# 6. Patch charts
-demo-patch-charts:
-	./hack/k8s/patch-charts.sh
-
-# 7. Deploy SPIRE and SPIKE (based on the hostname)
+# 6. Deploy SPIRE and SPIKE (based on the hostname)
 demo-deploy:
-	./hack/k8s/spike-install-demo.sh
+	./examples/federation/spike-install-demo.sh
 
-# 8. Port forward the bundle endpoint for the demo.
+# 7. Port forward the bundle endpoint for the demo.
 demo-spire-bundle-port-forward:
-	./hack/k8s/spire-server-bundle-endpoint-port-forward.sh
+	./examples/federations/spire-server-bundle-endpoint-port-forward.sh
 
-# 9. Extract bundles.
+# 8. Extract bundles.
 demo-bundle-extract:
-	./hack/spiffe/extract-bundle.sh
+	./examples/federation/extract-bundle.sh
 
-# 10. Exchange bundles.
+# 9. Exchange bundles.
 demo-bundle-set:
-	./hack/spiffe/set-bundle.sh
+	./examples/federation/set-bundle.sh
 
-# 11. Port forward SPIKE Keeper instances for the demo setup.
+# Extract and set in a single step.
+demo-bundle-exchange:
+	demo-bundle-extract
+	demo-bundle-set
+
+# 10. Port forward SPIKE Keeper instances for the demo setup.
 demo-spike-keeper-port-forward:
-	./hack/k8s/spike-keeper-port-forward.sh
+	./examples/federation/spike-keeper-port-forward.sh
 
-# 12. Port forward SPIKE Nexus for the workload to consume it.
+# 11. Port forward SPIKE Nexus for the workload to consume it.
 demo-spike-nexus-port-forward:
-	./hack/k8s/spike-nexus-port-forward.sh
+	./examples/federation/spike-nexus-port-forward.sh
+
+# 12. Deploy sample workload
+demo-deploy-workload:
+	./examples/federation/workload-deploy.sh
+
+# 13. Set policies for the workload to consume secrets.
+demo-set-policies:
+	./examples/federation/workload-set-policies.sh
+
+# 15. Check whether workload received secrets.
+demo-exec:
+	./examples/federation/workload-exec.sh
