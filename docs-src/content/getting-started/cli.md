@@ -95,7 +95,7 @@ Flags:
 Okay, that explains a lot. Let's try the command:
 
 ```bash
-spike (main)$ spike secret put /tenants/acme/db/creds pass=SPIKERocks
+spike (main)$ spike secret put tenants/acme/db/creds pass=SPIKERocks
 OK
 ```
 
