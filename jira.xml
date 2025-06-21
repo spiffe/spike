@@ -28,6 +28,16 @@
   </kubernetification>
   <immediate-backlog>
     <issue>
+      SPIKE Nexus has config for SPIKE_TRUST_ROOT_PILOT
+      but SPIKE pilot does not have a corresponding config.
+
+      which means, if SPIKE Pilot is deployed in a different trust zone, it won't be able to talk to SPIKE Nexus.
+
+      ---
+
+      provide demo.Dockerfile as another container image that we provide via gcr.
+    </issue>
+    <issue>
       update changelog, publish docs, also update changelog in github
       also generate non-docker binary assets for the release too.
     </issue>

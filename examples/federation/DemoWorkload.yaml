@@ -1,0 +1,92 @@
+#    \\ SPIKE: Secure your secrets with SPIFFE.
+#  \\\\\ Copyright 2024-present SPIKE contributors.
+# \\\\\\\ SPDX-License-Identifier: Apache-2.0
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: workload
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app.kubernetes.io/instance: spiffe
+    app.kubernetes.io/name: workload
+    component: workload
+  name: workload
+  namespace: workload
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: spiffe
+      app.kubernetes.io/name: workload
+      component: workload
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/instance: spiffe
+        app.kubernetes.io/name: workload
+        component: workload
+      namespace: workload
+    spec:
+      containers:
+      - command:
+        - /bin/sh
+        - -c
+        - echo I live; while true; do sleep 1000; done
+        env:
+        - name: SPIKE_NEXUS_API_URL
+          value: https://10.211.55.28:8444
+        - name: SPIFFE_ENDPOINT_SOCKET
+          value: unix:///spiffe-workload-api/spire-agent.sock
+        - name: SPIKE_SYSTEM_LOG_LEVEL
+          value: DEBUG
+        - name: SPIKE_TRUST_ROOT
+          value: workload.spike.ist
+        - name: SPIKE_TRUST_ROOT_NEXUS
+          value: mgmt.spike.ist
+        image: localhost:5000/spike-demo:dev
+        imagePullPolicy: IfNotPresent
+        name: spiffe-spike-demo
+        resources: {}
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+          seccompProfile:
+            type: RuntimeDefault
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /spiffe-workload-api
+          name: spiffe-workload-api
+          readOnly: true
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext:
+        fsGroup: 1000
+        fsGroupChangePolicy: OnRootMismatch
+        runAsGroup: 1000
+        runAsUser: 1000
+      serviceAccountName: spiffe-spike-demo
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - csi:
+          driver: csi.spiffe.io
+          readOnly: true
+        name: spiffe-workload-api
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app.kubernetes.io/instance: spiffe
+    app.kubernetes.io/name: spike-demo
+  name: spiffe-spike-demo
+  namespace: workload

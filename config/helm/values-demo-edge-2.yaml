@@ -1,0 +1,94 @@
+#    \\ SPIKE: Secure your secrets with SPIFFE.
+#  \\\\\ Copyright 2024-present SPIKE contributors.
+# \\\\\\\ SPDX-License-Identifier: Apache-2.0
+
+# values file for a demo setup:
+# Edge Cluster 2 that hosts 3 SPIKE Keeper instances.
+
+# Basic SPIRE Server Configuration
+global:
+  openshift: false
+  spire:
+    recommendations:
+      enabled: true
+    namespaces:
+      create: true
+    clusterName: spiffe
+    trustDomain: edge-2.spike.ist
+    caSubject:
+      country: US
+      organization: SPIKE
+      commonName: edge-2.spike.ist
+spire-agent:
+  enabled: true
+spiffe-csi-driver:
+  enabled: true
+spiffe-oidc-discovery-provider:
+  enabled: true
+
+# Don't install SPIKE Nexus or SPIKE Pilot
+# We will install them in the Management cluster.
+spike-nexus:
+  enabled: false
+spike-pilot:
+  enabled: false
+
+# SPIKE Keeper Settings
+spike-keeper:
+  enabled: true
+  namespaceOverride: spike
+  image:
+    registry: localhost:5000
+    repository: spike-keeper
+    pullPolicy: IfNotPresent
+    tag: "dev"
+  # SPIKE Keepers federate with SPIKE Nexus
+  # in the `mgmt.spike.ist` trust root.
+  trustRoot:
+    nexus: "mgmt.spike.ist"
+
+# SPIRE Server
+spire-server:
+  enabled: true
+
+  # Enable Federation
+  federation:
+    enabled: true
+    bundleEndpoint:
+      address: "0.0.0.0"
+      port: 8443
+
+  controllerManager:
+    # Federate with the Management cluster.
+    clusterFederatedTrustDomains:
+      mgmt:
+        bundleEndpointProfile:
+          endpointSPIFFEID: spiffe://mgmt.spike.ist/spire/server
+          type: https_spiffe
+        bundleEndpointURL: https://spiffe-management-cluster:8443
+        trustDomain: mgmt.spike.ist
+
+    # ClusterSPIFFEIDs
+    identities:
+      clusterSPIFFEIDs:
+        # We don't have SPIKE Keeper or SPIKE Pilot in this cluster:
+        spike-nexus:
+          enabled: false
+        spike-pilot:
+          enabled: false
+
+        spike-keeper:
+          type: raw
+          enabled: true
+          spiffeIDTemplate: spiffe://{{ .TrustDomain }}/spike/keeper/{{ .PodMeta.Name }}
+          podSelector:
+            matchLabels:
+              component: spike-keeper
+          namespaceSelector:
+            matchExpressions:
+            - key: kubernetes.io/metadata.name
+              operator: In
+              values:
+              - spike
+          federatesWith:
+          - mgmt.spike.ist

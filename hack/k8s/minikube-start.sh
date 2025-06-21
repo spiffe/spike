@@ -19,7 +19,7 @@ fi
 
 # Set default values
 DEFAULT_MEMORY="4096"  # 4GB
-DEFAULT_CPU="4"        # 4 CPUs
+DEFAULT_CPU="2"        # 2 CPUs
 DEFAULT_NODES="1"      # 1 node
 
 # Use environment variables if set, otherwise use defaults

@@ -1,0 +1,83 @@
+#    \\ SPIKE: Secure your secrets with SPIFFE.
+#  \\\\\ Copyright 2024-present SPIKE contributors.
+# \\\\\\\ SPDX-License-Identifier: Apache-2.0
+
+# values file for a demo setup:
+# Workload Cluster that hosts a sample workload that consumes secrets.
+
+# Basic SPIRE Server Configuration
+global:
+  openshift: false
+  spire:
+    recommendations:
+      enabled: true
+    namespaces:
+      create: true
+    clusterName: spiffe
+    trustDomain: workload.spike.ist
+    caSubject:
+      country: US
+      organization: SPIKE
+      commonName: workload.spike.ist
+spire-agent:
+  enabled: true
+spiffe-csi-driver:
+  enabled: true
+spiffe-oidc-discovery-provider:
+  enabled: true
+
+# We don't need any SPIKE component in this cluster.
+spike-keeper:
+  enabled: false
+spike-nexus:
+  enabled: false
+spike-pilot:
+  enabled: false
+
+# SPIRE Server
+spire-server:
+  enabled: true
+
+  # Enable Federation
+  federation:
+    enabled: true
+    bundleEndpoint:
+      address: "0.0.0.0"
+      port: 8443
+
+  controllerManager:
+    # Federate With the Management Cluster
+    clusterFederatedTrustDomains:
+      mgmt:
+        bundleEndpointProfile:
+          endpointSPIFFEID: spiffe://mgmt.spike.ist/spire/server
+          type: https_spiffe
+        bundleEndpointURL: https://spiffe-management-cluster:8443
+        trustDomain: mgmt.spike.ist
+
+    # ClusterSPIFFEIDs
+    identities:
+      clusterSPIFFEIDs:
+        # We don't have any SPIKE component in this cluster:
+        spike-keeper:
+          enabled: false
+        spike-nexus:
+          enabled: false
+        spike-pilot:
+          enabled: false
+
+        workload:
+          type: raw
+          enabled: true
+          spiffeIDTemplate: spiffe://{{ .TrustDomain }}/workload/{{ .PodMeta.Name }}
+          podSelector:
+            matchLabels:
+              component: workload
+          namespaceSelector:
+            matchExpressions:
+            - key: kubernetes.io/metadata.name
+              operator: In
+              values:
+              - workload
+          federatesWith:
+          - mgmt.spike.ist

@@ -14,6 +14,11 @@ k8s-delete:
 k8s-start:
 	./hack/k8s/minikube-start.sh
 
+# Deletes and re-installs the Minikube cluster.
+k8s-reset:
+	k8s-delete
+	k8s-start
+
 # 3. Build container images.
 docker-build:
 	./hack/docker/build-local.sh
@@ -26,9 +31,16 @@ docker-forward-registry:
 docker-push:
 	./hack/docker/push-local.sh
 
-# 4. Deploy SPIRE and SPIKE to the cluster.
+# For Multi-Cluster Federation Demo, DO NOT run `deploy-local`
+# Instead, see FederationDemo.mk for the remaining steps.
+
+# 6. (Single Cluster) Deploy SPIRE and SPIKE to the cluster.
 deploy-local:
 	./hack/k8s/spike-install.sh
+
+# Shell into SPIKE Pilot.
+exec-spike:
+	./hack/k8s/spike-sh.sh
 
 tail-nexus:
 	kubectl logs spike-nexus-0 -n spike -f
@@ -41,6 +53,3 @@ tail-keeper-1:
 
 tail-keeper-2:
 	kubectl logs spike-keeper-2 -n spike -f
-
-exec-spike:
-	./hack/k8s/spike-sh.sh

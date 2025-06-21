@@ -4,8 +4,6 @@
 #  \\\\\ Copyright 2024-present SPIKE contributors.
 # \\\\\\\ SPDX-License-Identifier: Apache-2.0
 
-# Environment variables related to the local Kubernetes setup.
+# TODO: move all these demo-related scripts to a "demo" folder maybe.
 
-export METALLB_IP_RANGE_START=10.211.55.200
-export METALLB_IP_RANGE_END=10.211.55.210
-
+kubectl -n spire-server port-forward svc/spiffe-server 8443:8443 --address=0.0.0.0
