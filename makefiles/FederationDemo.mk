@@ -8,7 +8,7 @@ demo-deploy:
 
 # 7. Port forward the bundle endpoint for the demo.
 demo-spire-bundle-port-forward:
-	./examples/federations/spire-server-bundle-endpoint-port-forward.sh
+	./examples/federation/spire-server-bundle-endpoint-port-forward.sh
 
 # 8. Extract bundles.
 demo-bundle-extract:
