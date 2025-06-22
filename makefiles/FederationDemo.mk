@@ -19,9 +19,7 @@ demo-bundle-set:
 	./examples/federation/set-bundle.sh
 
 # Extract and set in a single step.
-demo-bundle-exchange:
-	demo-bundle-extract
-	demo-bundle-set
+demo-bundle-exchange: demo-bundle-extract demo-bundle-set
 
 # 10. Port forward SPIKE Keeper instances for the demo setup.
 demo-spike-keeper-port-forward:
