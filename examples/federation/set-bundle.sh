@@ -34,7 +34,7 @@ cd ~ || exit
 
 case $CURRENT_HOST in
   mgmt)
-    echo "=== Running on MGMT host ==="
+    echo "=== Running on ${CURRENT_HOST} host ==="
 
     # Check if spoke bundles exist
     if [[ -f "bundle-workload.json" && -f "bundle-edge-1.json" && -f "bundle-edge-2.json" ]]; then
