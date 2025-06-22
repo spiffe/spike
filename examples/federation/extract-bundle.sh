@@ -20,6 +20,7 @@ extract_bundle() {
     -socketPath /tmp/spire-server/private/api.sock \
     -format spiffe > "${bundle_name}"
 
+  # shellcheck disable=SC2181
   if [ $? -eq 0 ]; then
     echo "Bundle extracted successfully to ${bundle_name}"
     return 0
@@ -34,7 +35,7 @@ copy_to_mgmt() {
   local bundle_file=$1
   echo "Copying ${bundle_file} to ${MGMT_HOST}..."
 
-  if ! scp "${bundle_file}" "${MGMT_HOST}@spiffe-management-cluster:~/"; then
+  if scp "${bundle_file}" "${MGMT_HOST}@spiffe-management-cluster:~/"; then
     echo "Bundle copied successfully to ${MGMT_HOST}"
     return 0
   else
@@ -59,7 +60,7 @@ case "${HOSTNAME}" in
 
     # Copy to edge-1
     echo "Copying to edge-1..."
-    if ! scp "$HOME/bundle-mgmt.json" "edge-1@spiffe-edge-cluster-1:~/"; then
+    if scp "$HOME/bundle-mgmt.json" "edge-1@spiffe-edge-cluster-1:~/"; then
       echo "✓ Bundle copied to edge-1"
     else
       echo "✗ Failed to copy bundle to edge-1"
@@ -67,7 +68,7 @@ case "${HOSTNAME}" in
 
     # Copy to edge-2
     echo "Copying to edge-2..."
-    if ! scp "$HOME/bundle-mgmt.json" "edge-2@spiffe-edge-cluster-2:~/"; then
+    if scp "$HOME/bundle-mgmt.json" "edge-2@spiffe-edge-cluster-2:~/"; then
       echo "✓ Bundle copied to edge-2"
     else
       echo "✗ Failed to copy bundle to edge-2"
@@ -75,7 +76,7 @@ case "${HOSTNAME}" in
 
     # Copy to workload
     echo "Copying to workload..."
-    if ! scp "$HOME/bundle-mgmt.json" "workload@spiffe-workload-cluster:~/"; then
+    if scp "$HOME/bundle-mgmt.json" "workload@spiffe-workload-cluster:~/"; then
       echo "✓ Bundle copied to workload"
     else
       echo "✗ Failed to copy bundle to workload"
