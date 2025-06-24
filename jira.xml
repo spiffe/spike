@@ -15,10 +15,41 @@
   </kubernetification>
   <immediate-backlog>
     <issue>
+      fips compliance and boringcrpto
+
+      with new go you don’t need boring crypto for FIPS compliance; you still do need to change code, but not build parameters.
+      boring-crypto requires CGO, so without it, Keepers (and pilot) don’t need CGO.
+      but for Nexus we still need cgo (because of sqlite)
+      that might be a reason enough to ditch sqlite and move towards some other database (and the “plugin” architecture that we discussed that will allow s3 etc compatibility)
+      But
+      that will be removing a feature that we support and have tested so far (which is okay, this is an alpha version product)
+      a lot of work since the new backings store does not exist
+    </issue>
+    <issue>
+      create a banner for SPIKE too; vSecM has fancy banner that show when sharing links on bluesky.
+
+      https://github.com/vmware/secrets-manager/security/dependabot
+    </issue>
+    <issue>
+      vsecm: cleanup experimental parts;
+      switch to github registry; switch to %100 helm;
+      directly consume spire charts from upstreams
+    </issue>
+    <issue>
+      create a federated spike doc; and also a video.
+    </issue>
+    <issue>
+      verify that these still work:
+      * https://spike.ist/getting-started/local-deployment/
+      * https://spike.ist/getting-started/quickstart/
+      * https://spike.ist/getting-started/bare-metal/
+    </issue>
+    <issue>
       SPIKE Nexus has config for SPIKE_TRUST_ROOT_PILOT
       but SPIKE pilot does not have a corresponding config.
 
-      which means, if SPIKE Pilot is deployed in a different trust zone, it won't be able to talk to SPIKE Nexus.
+      which means, if SPIKE Pilot is deployed in a different trust zone,
+      it won't be able to talk to SPIKE Nexus.
 
       ---
 
@@ -156,6 +187,17 @@
     </issue>
   </runner-up>
   <later>
+    <issue>
+      thing like
+      systemctl start spike-nexus
+      systemctl start spike-keeper
+      systemctl status spike-nexus
+      systemctl status spike-keeper
+      --
+      also `spike status` from SPIKE Pilot should give a brief status of the
+      system... how many keepers, what are the health of the keepers,
+      health of nexus, how many secrets, resource usage, etc.
+    </issue>
     <issue>
       # to be added to docs.
       # how to expose things to other clusters:
@@ -618,6 +660,17 @@
     </issue>
     <issue>
       dev mode with "zero" keepers.
+    </issue>
+    <issue>
+      etc-like watch feature for SPIKE
+
+      one functionality that would be really cool and kind of a game changer I
+      think, but would be hard to do with sql, would be something similar to
+      etcd/k8s's watches.
+
+      spike watch /foo keyhere -o /tmp/somefile
+
+      would update /tmp/somefile whenever it changes on the server
     </issue>
     <issue>
       remove symbols when packaging binaries for release.
