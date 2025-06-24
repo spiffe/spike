@@ -7,23 +7,10 @@
 <stuff>
   <kubernetification>
     <issue>
-      1. Consume SPIKE from helm-charts-hardened.
-      2. Compare generated manifests with what we have.
-      3. Update helm-charts-hardened as needed.
-      4. Helm-charts should be the source of truth.
-    </issue>
-    <issue>
-      (potential KubeCon) demo setup:
-      VM edge-1 has a minikube cluster with 3 SPIKE Keepers
-      VM edge-2 has a minikube cluster with 3 SPIKE Keepers
-      VM mgmt   has a minikube cluster with SPIKE Nexus (connects to 6 keepers)
-      VM workload has a minikube cluster with a demo-workload in it.
-
-      All cluster have SPIRE on them installed via charts.
-      They will be federated.
-      // claude:ref: 7382c489-8d4d-45d1-a53d-7165f64c4b90
-
-      Set up a secret on pilot and the workload will see it.
+      Demo update:
+      4/9 setup with 3 edge servers instead of 2;
+      this will mean a single edge server will never have enough shards
+      to recompute the root key, which will be an added level of security.
     </issue>
   </kubernetification>
   <immediate-backlog>
@@ -262,6 +249,25 @@
     <issue>
       VSecM Fix:
       remove relay client and relay server-related code.
+    </issue>
+    <issue>
+      kind of thinking of a new mode for spike.... something like calling it spike lite or something.
+      Where we basically turn off the secrets and policy api, and add an endpoint for encrypt / decrypt.
+
+      2:51
+      we could still do a full s3 backend too, but for someone just wanting to handle things themselves, but have the power of nexus/keepers for encrypting/decrypting things just stored somewhere, it might be a nice feature.
+      2:52
+      what do you thnk?
+
+      Volkan Ozcelik
+      5:09 PM
+      could be useful.
+
+      SPIKE Lite:
+
+      curl -s -X POST --header "Content-Type:application/octet-stream" --data-binary "This is a test encryption" https://spire-spike-nexus/v1/encrypt -k --cert /tmp/pem/svid.0.pem --key /tmp/pem/svid.0.key -o encrypted
+      curl -s -X POST --header "Content-Type:application/octet-stream" --data-binary  @encrypted https://spire-spike-nexus/v1/decrypt -k --cert /tmp/pem/svid.0.pem --key /tmp/pem/svid.0.key -o decrypted
+      cat decrypted; echo
     </issue>
     <issue>
       VSecM:
@@ -649,6 +655,9 @@
 
       SQLLite can error out if there is a blocked transaction or
       a integrity issue, which a retry can fix it.
+    </issue>
+    <issue>
+      idea: custom resources for policies and secrets.
     </issue>
     <issue>
       adding a timeout or circuit breaker to the infinite loop in

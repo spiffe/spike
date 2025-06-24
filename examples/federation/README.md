@@ -208,7 +208,14 @@ the script asks you:
 
 ```bash
 cd $WORKSPACE/spike
-make demo-bundle-exchange
+make demo-bundle-extract
+```
+
+When that's done, execute the following the finish bundle exchange:
+
+```bash
+cd $WORKSPACE/spike
+make demo-bundle-set
 ```
 
 ### Port Forward Nexus and Keepers
