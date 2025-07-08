@@ -10,6 +10,7 @@ in the configuration files:
 
 * `./config/helm/values-demo-edge-1.yaml`
 * `./config/helm/values-demo-edge-2.yaml`
+* `./config/helm/values-demo-edge-3.yaml`
 * `./config/helm/values-demo-mgmt.yaml`
 * `./config/helm/values-demo-workload.yaml`
 
@@ -72,6 +73,26 @@ broadcast: 10.211.55.255
       DNS: spiffe-edge-cluster-2.shared
 Linux User: edge-2
   Hostname: edge-2
+   Host OS: Ubuntu 24.04.2 LTS
+```
+
+### Edge 3
+
+This machine will contain a **Minikube** Kubernetes cluster that has
+three **SPIKE Keeper** instances.
+
+There will also be **SPIRE** deployed on the cluster as the Identity Control
+Plane, federated with the **Management** cluster.
+
+Machine details:
+
+```text
+     inet: 10.211.55.31
+  netmask: 255.255.255.0  
+broadcast: 10.211.55.255
+      DNS: spiffe-edge-cluster-3.shared
+Linux User: edge-3
+  Hostname: edge-3
    Host OS: Ubuntu 24.04.2 LTS
 ```
 

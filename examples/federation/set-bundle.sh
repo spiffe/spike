@@ -37,7 +37,8 @@ case $CURRENT_HOST in
     echo "=== Running on ${CURRENT_HOST} host ==="
 
     # Check if spoke bundles exist
-    if [[ -f "bundle-workload.json" && -f "bundle-edge-1.json" && -f "bundle-edge-2.json" ]]; then
+    if [[ -f "bundle-workload.json" && -f "bundle-edge-1.json" \
+      && -f "bundle-edge-2.json" && -f "bundle-edge-3.json" ]]; then
       echo "Found spoke bundles, setting them up..."
       set_bundle "workload.spike.ist" "bundle-workload.json"
       set_bundle "edge-1.spike.ist" "bundle-edge-1.json"
@@ -49,7 +50,7 @@ case $CURRENT_HOST in
     fi
     ;;
 
-  workload|edge-1|edge-2)
+  workload|edge-1|edge-2|edge-3)
     echo "=== Running on ${CURRENT_HOST} host ==="
 
     # Set mgmt bundle if it exists
@@ -64,7 +65,7 @@ case $CURRENT_HOST in
 
   *)
     echo "ERROR: Unknown hostname: $CURRENT_HOST"
-    echo "Expected one of: mgmt, workload, edge-1, edge-2"
+    echo "Expected one of: mgmt, workload, edge-1, edge-2, edge-3"
     exit 1
     ;;
 esac
