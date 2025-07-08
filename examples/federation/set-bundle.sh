@@ -43,6 +43,7 @@ case $CURRENT_HOST in
       set_bundle "workload.spike.ist" "bundle-workload.json"
       set_bundle "edge-1.spike.ist" "bundle-edge-1.json"
       set_bundle "edge-2.spike.ist" "bundle-edge-2.json"
+      set_bundle "edge-3.spike.ist" "bundle-edge-3.json"
       list_bundles
     else
       echo "Missing bundles!"
