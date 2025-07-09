@@ -47,9 +47,9 @@ echo "waiting 10 secs before enabling registry"
 
 sleep 10
 minikube addons enable registry
-minikube addons enable metrics-server
-minikube addons enable ingress
-minikube addons enable volumesnapshots
+# minikube addons enable metrics-server
+# minikube addons enable ingress
+# minikube addons enable volumesnapshots
 minikube addons enable csi-hostpath-driver
 
 kubectl get node

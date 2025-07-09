@@ -74,6 +74,14 @@ case "${HOSTNAME}" in
       echo "✗ Failed to copy bundle to edge-2"
     fi
 
+    # Copy to edge-3
+    echo "Copying to edge-3..."
+    if scp "$HOME/bundle-mgmt.json" "edge-3@spiffe-edge-cluster-3:~/"; then
+      echo "✓ Bundle copied to edge-2"
+    else
+      echo "✗ Failed to copy bundle to edge-3"
+    fi
+
     # Copy to workload
     echo "Copying to workload..."
     if scp "$HOME/bundle-mgmt.json" "workload@spiffe-workload-cluster:~/"; then
@@ -95,6 +103,12 @@ case "${HOSTNAME}" in
       copy_to_mgmt "bundle-edge-2.json"
     ;;
 
+  "edge-3")
+    echo "Running on edge-3 cluster"
+    extract_bundle "bundle-edge-3.json" && \
+      copy_to_mgmt "bundle-edge-3.json"
+    ;;
+
   "workload")
     echo "Running on workload cluster"
     extract_bundle "bundle-workload.json" && \
@@ -103,7 +117,7 @@ case "${HOSTNAME}" in
 
   *)
     echo "Error: Unknown hostname '${HOSTNAME}'"
-    echo "Expected: mgmt, edge-1, edge-2, or workload"
+    echo "Expected: mgmt, edge-1, edge-2, edge-3, or workload"
     exit 1
     ;;
 esac

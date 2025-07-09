@@ -37,6 +37,10 @@ case "$HOSTNAME" in
     echo "using values-demo-edge-2.yaml"
     VALUES_FILE="./spike/config/helm/values-demo-edge-2.yaml"
     ;;
+  "edge-3")
+    echo "using values-demo-edge-3.yaml"
+    VALUES_FILE="./spike/config/helm/values-demo-edge-3.yaml"
+    ;;
   "workload")
     echo "using values-demo-workload.yaml"
     VALUES_FILE="./spike/config/helm/values-demo-workload.yaml"
