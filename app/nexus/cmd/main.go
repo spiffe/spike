@@ -1,4 +1,4 @@
-//    \\ SPIKE: Secure your secrets with SPIFFE.
+//    \\ SPIKE: Secure your secrets with SPIFFE. — https://spike.ist/
 //  \\\\\ Copyright 2024-present SPIKE contributors.
 // \\\\\\\ SPDX-License-Identifier: Apache-2.0
 
@@ -24,7 +24,7 @@ const appName = "SPIKE Nexus"
 func main() {
 	if env.BannerEnabled() {
 		fmt.Printf(`
-   \\ SPIKE: Secure your secrets with SPIFFE.
+   \\ SPIKE: Secure your secrets with SPIFFE. — https://spike.ist/
  \\\\\ Copyright 2024-present SPIKE contributors.
 \\\\\\\ SPDX-License-Identifier: Apache-2.0`+"\n\n"+
 			"%s v%s. | LOG LEVEL: %s\n\n",

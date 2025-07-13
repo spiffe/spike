@@ -1,4 +1,4 @@
-//    \\ SPIKE: Secure your secrets with SPIFFE.
+//    \\ SPIKE: Secure your secrets with SPIFFE. — https://spike.ist/
 //  \\\\\ Copyright 2024-present SPIKE contributors.
 // \\\\\\\ SPDX-License-Identifier: Apache-2.0
 
@@ -56,8 +56,8 @@ func MarshalBody(res any, w http.ResponseWriter) []byte {
 // Respond writes a JSON response with the specified status code and body.
 //
 // This function sets the Content-Type header to application/json, adds cache
-// invalidation headers (Cache-Control, Pragma, Expires), writes the provided 
-// status code, and sends the response body. Any errors during writing are 
+// invalidation headers (Cache-Control, Pragma, Expires), writes the provided
+// status code, and sends the response body. Any errors during writing are
 // logged but not returned to the caller.
 //
 // Parameters:

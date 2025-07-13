@@ -1,5 +1,5 @@
 #   \\
-#  \\\\ SPIKE: Secure your secrets with SPIFFE.
+#  \\\\ SPIKE: Secure your secrets with SPIFFE. — https://spike.ist/
 # \\\\\\
 
 # Start a local development environment to test SPIKE.

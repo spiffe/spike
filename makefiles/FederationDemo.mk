@@ -1,5 +1,5 @@
 #   \\
-#  \\\\ SPIKE: Secure your secrets with SPIFFE.
+#  \\\\ SPIKE: Secure your secrets with SPIFFE. — https://spike.ist/
 # \\\\\\
 
 # 6. Deploy SPIRE and SPIKE (based on the hostname)

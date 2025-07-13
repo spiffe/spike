@@ -1,6 +1,6 @@
 {#
 # \\
-# \\\\ SPIKE: Secure your secrets with SPIFFE.
+# \\\\ SPIKE: Secure your secrets with SPIFFE. — https://spike.ist/
 # \\\\\\
 #}
 
