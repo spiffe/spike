@@ -7,7 +7,7 @@ import (
 
 	"github.com/spiffe/spike-sdk-go/api/errors"
 
-	"github.com/spiffe/spike/app/nexus/int
+	"github.com/spiffe/spike/app/nexus/internal/state/persist"
 	"github.com/spiffe/spike/internal/log"
 	"github.com/spiffe/spike/internal/net"
 )
@@ -46,7 +46,7 @@ func RouteDecrypt(
 
 	plaintext, err := c.Open(nil, nonce, requestBody, nil)
 	if err != nil {
-		log.Log().Info(fName, "msg", fmt.Sprintf("Failed to decrypt %w", err))
+		log.Log().Info(fName, "msg", fmt.Errorf("failed to decrypt %w", err))
 		return err
 	}
 

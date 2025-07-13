@@ -33,8 +33,17 @@ func RouteEncrypt(
 	ciphertext := c.Seal(nil, nonce, requestBody, nil)
 	log.Log().Info(fName, "msg", fmt.Sprintf("len after %d %d", len(nonce), len(ciphertext)))
 	v := byte('1')
-	w.Write([]byte{v})
-	w.Write(nonce)
-	w.Write(ciphertext)
+	_, err := w.Write([]byte{v})
+	if err != nil {
+		return err
+	}
+	_, err = w.Write(nonce)
+	if err != nil {
+		return err
+	}
+	_, err = w.Write(ciphertext)
+	if err != nil {
+		return err
+	}
 	return nil
 }
