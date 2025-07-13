@@ -31,7 +31,7 @@ import (
 // Panics if random seed generation fails for in-memory stores.
 func Initialize(source *workloadapi.X509Source) {
 	const fName = "Initialize"
-	requireBootstrapping := env.BackendStoreType() == env.Sqlite
+	requireBootstrapping := env.BackendStoreType() == env.Sqlite || env.BackendStoreType() == env.Lite
 	if requireBootstrapping {
 		log.Log().Info(fName, "msg", "Backend store requires bootstrapping")
 

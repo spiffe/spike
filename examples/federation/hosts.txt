@@ -1,0 +1,5 @@
+mgmt@spiffe-management-cluster
+workload@spiffe-workload-cluster
+edge-1@spiffe-edge-cluster-1
+edge-2@spiffe-edge-cluster-2
+edge-3@spiffe-edge-cluster-3

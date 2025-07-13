@@ -9,6 +9,7 @@ import (
 
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 
+	"github.com/spiffe/spike/app/nexus/internal/env"
 	"github.com/spiffe/spike/app/nexus/internal/initialization/recovery"
 	"github.com/spiffe/spike/internal/config"
 	"github.com/spiffe/spike/internal/log"
@@ -48,6 +49,10 @@ func bootstrap(source *workloadapi.X509Source) {
 		log.FatalLn(fName + ": source is nil. this should not happen.")
 	}
 
+	sqlBackend := env.BackendStoreType() == env.Sqlite
+
+	// FIXME Consider alternate toomstone mechanisms. Needed for HA SPIKE Nexus
+
 	// The tombstone file is a fast heuristic to validate SPIKE Nexus bootstrap
 	// completion. However, it's not the ultimate criterion. If we cannot
 	// find a tombstone file, then we'll query existing SPIKE Keeper instances
@@ -66,7 +71,9 @@ func bootstrap(source *workloadapi.X509Source) {
 		)
 
 		recovery.RecoverBackingStoreUsingKeeperShards(source)
-		recovery.HydrateMemoryFromBackingStore()
+		if sqlBackend {
+			recovery.HydrateMemoryFromBackingStore()
+		}
 		return
 	}
 
@@ -80,7 +87,9 @@ func bootstrap(source *workloadapi.X509Source) {
 		)
 
 		recovery.RecoverBackingStoreUsingKeeperShards(source)
-		recovery.HydrateMemoryFromBackingStore()
+		if sqlBackend {
+			recovery.HydrateMemoryFromBackingStore()
+		}
 		return
 	}
 

@@ -4,4 +4,4 @@
 
 .PHONY: lint-go
 lint-go:
-	./hack/lint-go.sh
+	./hack/qa/lint-go.sh

@@ -42,6 +42,7 @@ func Route(
 		func(a url.ApiAction, p url.ApiUrl) net.Handler {
 			emptyRootKey := state.RootKeyZero()
 			inMemoryMode := env.BackendStoreType() == env.Memory
+			fullMode := env.BackendStoreType() != env.Lite
 			emergencyAction := p == url.SpikeNexusUrlOperatorRecover ||
 				p == url.SpikeNexusUrlOperatorRestore
 			canBypassRootKeyValidation := inMemoryMode || emergencyAction
@@ -52,30 +53,35 @@ func Route(
 			}
 
 			switch {
-			case a == url.ActionDefault && p == url.SpikeNexusUrlSecrets:
+			case a == url.ActionDefault && p == url.SpikeNexusUrlSecrets && fullMode:
 				return secret.RoutePutSecret
-			case a == url.ActionGet && p == url.SpikeNexusUrlSecrets:
+			case a == url.ActionGet && p == url.SpikeNexusUrlSecrets && fullMode:
 				return secret.RouteGetSecret
-			case a == url.ActionDelete && p == url.SpikeNexusUrlSecrets:
+			case a == url.ActionDelete && p == url.SpikeNexusUrlSecrets && fullMode:
 				return secret.RouteDeleteSecret
-			case a == url.ActionUndelete && p == url.SpikeNexusUrlSecrets:
+			case a == url.ActionUndelete && p == url.SpikeNexusUrlSecrets && fullMode:
 				return secret.RouteUndeleteSecret
-			case a == url.ActionList && p == url.SpikeNexusUrlSecrets:
+			case a == url.ActionList && p == url.SpikeNexusUrlSecrets && fullMode:
 				return secret.RouteListPaths
-			case a == url.ActionDefault && p == url.SpikeNexusUrlPolicy:
+			case a == url.ActionDefault && p == url.SpikeNexusUrlPolicy && fullMode:
 				return policy.RoutePutPolicy
-			case a == url.ActionGet && p == url.SpikeNexusUrlPolicy:
+			case a == url.ActionGet && p == url.SpikeNexusUrlPolicy && fullMode:
 				return policy.RouteGetPolicy
-			case a == url.ActionDelete && p == url.SpikeNexusUrlPolicy:
+			case a == url.ActionDelete && p == url.SpikeNexusUrlPolicy && fullMode:
 				return policy.RouteDeletePolicy
-			case a == url.ActionList && p == url.SpikeNexusUrlPolicy:
+			case a == url.ActionList && p == url.SpikeNexusUrlPolicy && fullMode:
 				return policy.RouteListPolicies
-			case a == url.ActionGet && p == url.SpikeNexusUrlSecretsMetadata:
+			case a == url.ActionGet && p == url.SpikeNexusUrlSecretsMetadata && fullMode:
 				return secret.RouteGetSecretMetadata
 			case a == url.ActionDefault && p == url.SpikeNexusUrlOperatorRestore:
 				return operator.RouteRestore
 			case a == url.ActionDefault && p == url.SpikeNexusUrlOperatorRecover:
 				return operator.RouteRecover
+			// FIXME move constant
+			case a == url.ActionDefault && p == "/v1/encrypt" && !fullMode:
+				return secret.RouteEncrypt
+			case a == url.ActionDefault && p == "/v1/decrypt" && !fullMode:
+				return secret.RouteDecrypt
 			default:
 				return net.Fallback
 			}

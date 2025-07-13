@@ -16,6 +16,9 @@ const (
 	// S3 indicates an Amazon S3 (or compatible) storage backend
 	S3 StoreType = "s3"
 
+	// Lite mode
+	Lite StoreType = "lite"
+
 	// Sqlite indicates a SQLite database storage backend
 	// This is the default backing store. SPIKE_NEXUS_BACKEND_STORE environment
 	// variable can override it.
@@ -42,6 +45,8 @@ func BackendStoreType() StoreType {
 	switch strings.ToLower(st) {
 	case string(S3):
 		panic("SPIKE_NEXUS_BACKEND_STORE=s3 is not implemented yet")
+	case string(Lite):
+		return Lite
 	case string(Sqlite):
 		return Sqlite
 	case string(Memory):
