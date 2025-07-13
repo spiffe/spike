@@ -10,6 +10,7 @@ import (
 
 	"github.com/spiffe/spike/app/nexus/internal/env"
 	"github.com/spiffe/spike/app/nexus/internal/state/backend"
+	"github.com/spiffe/spike/app/nexus/internal/state/backend/lite"
 	"github.com/spiffe/spike/app/nexus/internal/state/backend/memory"
 	"github.com/spiffe/spike/app/nexus/internal/state/backend/sqlite"
 	"github.com/spiffe/spike/internal/config"
@@ -88,6 +89,21 @@ func InitializeSqliteBackend(rootKey *[32]byte) backend.Backend {
 	return dbBackend
 }
 
+func InitializeLiteBackend(rootKey *[32]byte) backend.Backend {
+	const fName = "initializeLiteBackend"
+	dbBackend, err := lite.New(rootKey)
+	if err != nil {
+		// Log error but don't fail initialization
+		// The system can still work with just in-memory state
+		log.Log().Warn(fName,
+			"msg", "Failed to create SQLite backend",
+			"err", err.Error(),
+		)
+		return nil
+	}
+	return dbBackend
+}
+
 var be backend.Backend
 
 // InitializeBackend creates and returns a backend storage implementation based
@@ -122,6 +138,8 @@ func InitializeBackend(rootKey *[32]byte) {
 	storeType := env.BackendStoreType()
 
 	switch storeType {
+	case env.Lite:
+		be = InitializeLiteBackend(rootKey)
 	case env.Memory:
 		be = &memory.NoopStore{}
 	case env.Sqlite:

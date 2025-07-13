@@ -15,6 +15,7 @@ package backend
 
 import (
 	"context"
+	"crypto/cipher"
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/kv"
@@ -64,6 +65,8 @@ type Backend interface {
 	// - `id` is the identifier of the policy to delete.
 	// Returns an error if the operation fails.
 	DeletePolicy(ctx context.Context, id string) error
+
+	GetCipher() cipher.AEAD
 }
 
 // Config holds configuration for backend initialization

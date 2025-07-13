@@ -15,6 +15,7 @@ package memory
 
 import (
 	"context"
+	"crypto/cipher"
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/kv"
@@ -88,5 +89,9 @@ func (s *NoopStore) LoadAllPolicies(
 // DeletePolicy removes a policy from the no-op kv by its ID.
 // This implementation is a no-op and always returns nil.
 func (s *NoopStore) DeletePolicy(_ context.Context, _ string) error {
+	return nil
+}
+
+func (s *NoopStore) GetCipher() cipher.AEAD {
 	return nil
 }

@@ -6,6 +6,7 @@ package persist
 
 import (
 	"context"
+	"crypto/cipher"
 	"database/sql"
 	"errors"
 	"fmt"
@@ -87,4 +88,8 @@ func (s *DataStore) Close(_ context.Context) error {
 		err = s.db.Close()
 	})
 	return err
+}
+
+func (s *DataStore) GetCipher() cipher.AEAD {
+	return nil
 }
