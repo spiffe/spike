@@ -769,6 +769,7 @@ location</li>
 <h2 id="features">Features</h2>
 <ul>
 <li><strong>Create policies</strong> with specific permissions and access patterns</li>
+<li><strong>Apply policies</strong> using upsert semantics (create new or update existing)</li>
 <li><strong>List all policies</strong> in human-readable or JSON format</li>
 <li><strong>Get policy details</strong> by ID or name</li>
 <li><strong>Delete policies</strong> with confirmation protection</li>
@@ -787,6 +788,20 @@ machine-readable output.</p>
 </span><span style="color:#bf616a;">  --permissions</span><span>=&lt;permissions&gt;
 </span></code></pre>
 <p>Creates a new policy with the specified parameters.</p>
+<h3 id="spike-policy-apply"><code>spike policy apply</code></h3>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span>
+</span><span style="color:#bf616a;">spike</span><span> policy apply</span><span style="color:#bf616a;"> --file</span><span>=&lt;policy-file.yaml&gt;
+</span></code></pre>
+<p>Creates a new policy with file-based input using YAML configuration.</p>
+<h4 id="yaml-configuration-format">YAML Configuration Format</h4>
+<p>When using the <code>--file</code> flag, the YAML file should follow this structure:</p>
+<pre data-lang="yaml" style="background-color:#2b303b;color:#c0c5ce;" class="language-yaml "><code class="language-yaml" data-lang="yaml"><span style="color:#bf616a;">name</span><span>: </span><span style="color:#a3be8c;">policy-name
+</span><span style="color:#bf616a;">spiffeid</span><span>: </span><span style="color:#a3be8c;">spiffe://example.org/service/*
+</span><span style="color:#bf616a;">path</span><span>: </span><span style="color:#a3be8c;">secrets/database/production
+</span><span style="color:#bf616a;">permissions</span><span>:
+</span><span>  - </span><span style="color:#a3be8c;">read
+</span><span>  - </span><span style="color:#a3be8c;">write
+</span></code></pre>
 <h4 id="permission-types">Permission Types</h4>
 <table><thead><tr><th>Permission</th><th>Description</th></tr></thead><tbody>
 <tr><td><strong>read</strong></td><td>Allows reading secrets and resources</td></tr>
@@ -819,6 +834,9 @@ for machine-readable output.</p>
 </span><span style="color:#bf616a;">  --path</span><span>=&quot;</span><span style="color:#a3be8c;">secrets/*</span><span>&quot; \
 </span><span style="color:#bf616a;">  --spiffeid</span><span>=&quot;</span><span style="color:#a3be8c;">spiffe://example.org/admin/*</span><span>&quot; \
 </span><span style="color:#bf616a;">  --permissions</span><span>=read,write,list
+</span><span>
+</span><span style="color:#65737e;"># Apply a policy using a YAML file
+</span><span style="color:#bf616a;">spike</span><span> policy apply</span><span style="color:#bf616a;"> --file</span><span>=policy.yaml
 </span><span>
 </span><span style="color:#65737e;"># List all policies in JSON format (useful for automation)
 </span><span style="color:#bf616a;">spike</span><span> policy list</span><span style="color:#bf616a;"> --format</span><span>=json
