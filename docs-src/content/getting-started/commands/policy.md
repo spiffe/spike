@@ -70,6 +70,7 @@ When a workload attempts to access a resource in SPIKE:
 ## Features
 
 - **Create policies** with specific permissions and access patterns
+- **Apply policies** using upsert semantics (create new or update existing)
 - **List all policies** in human-readable or JSON format
 - **Get policy details** by ID or name
 - **Delete policies** with confirmation protection
@@ -94,8 +95,30 @@ spike policy create --name=<name> \
   --spiffeid=<spiffe-id-pattern> \
   --permissions=<permissions>
 ```
-
 Creates a new policy with the specified parameters.
+
+
+### `spike policy apply`
+
+```bash
+
+spike policy apply --file=<policy-file.yaml>
+```
+
+Creates a new policy with file-based input using YAML configuration.
+
+#### YAML Configuration Format
+
+When using the `--file` flag, the YAML file should follow this structure:
+
+```yaml
+name: policy-name
+spiffeid: spiffe://example.org/service/*
+path: secrets/database/production
+permissions:
+  - read
+  - write
+```
 
 #### Permission Types
 
@@ -141,6 +164,9 @@ spike policy create \
   --path="secrets/*" \
   --spiffeid="spiffe://example.org/admin/*" \
   --permissions=read,write,list
+
+# Apply a policy using a YAML file
+spike policy apply --file=policy.yaml
 
 # List all policies in JSON format (useful for automation)
 spike policy list --format=json
