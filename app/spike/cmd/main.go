@@ -9,12 +9,12 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/spiffe/spike-sdk-go/log"
 	"github.com/spiffe/spike-sdk-go/security/mem"
 	"github.com/spiffe/spike-sdk-go/spiffe"
 
 	"github.com/spiffe/spike/app/spike/internal/cmd"
 	"github.com/spiffe/spike/app/spike/internal/env"
-	"github.com/spiffe/spike/internal/log"
 )
 
 func main() {

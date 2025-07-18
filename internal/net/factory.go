@@ -8,8 +8,7 @@ import (
 	"net/http"
 
 	"github.com/spiffe/spike-sdk-go/api/url"
-
-	"github.com/spiffe/spike/internal/log"
+	"github.com/spiffe/spike-sdk-go/log"
 )
 
 // RouteFactory creates HTTP route handlers for API endpoints using a generic

@@ -9,6 +9,8 @@ import (
 	"fmt"
 	"net/http"
 	"time"
+
+	logger "github.com/spiffe/spike-sdk-go/log"
 )
 
 type AuditState string
@@ -83,7 +85,7 @@ func Audit(entry AuditEntry) {
 	body, err := json.Marshal(audit)
 	if err != nil {
 		// If you cannot audit, crashing is the best option.
-		FatalLn("Audit",
+		logger.FatalLn("Audit",
 			"msg", "Problem marshalling audit entry",
 			"err", err.Error())
 		return

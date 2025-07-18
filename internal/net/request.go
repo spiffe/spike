@@ -10,9 +10,8 @@ import (
 	"io"
 	"net/http"
 
+	"github.com/spiffe/spike-sdk-go/log"
 	"github.com/spiffe/spike-sdk-go/net"
-
-	"github.com/spiffe/spike/internal/log"
 )
 
 // ReadRequestBody reads the entire request body from an HTTP request.

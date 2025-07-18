@@ -16,6 +16,9 @@ sort_by = "weight"
 * Ability to configure to show a warning if memory locking is not
   available on the system.
 * SPIKE can now be deployed from SPIFFE helm charts. Tested and verified!
+* Moved logging to SPIKE SDK.
+* `spike policy` command now accepts file input; you can design your policies
+  as `yaml` files and then `spike policy apply -f` them.
 
 ## [0.4.1] - 2025-06-01 (*prerelease*)
 
