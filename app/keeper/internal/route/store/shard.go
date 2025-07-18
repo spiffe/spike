@@ -14,6 +14,7 @@ import (
 	"github.com/spiffe/spike-sdk-go/security/mem"
 
 	"github.com/spiffe/spike/app/keeper/internal/state"
+	journal "github.com/spiffe/spike/internal/log"
 	"github.com/spiffe/spike/internal/net"
 )
 
@@ -41,10 +42,10 @@ import (
 // The function returns a 200 OK status with the encoded shard on success,
 // or a 404 Not Found status if no shard exists in the system.
 func RouteShard(
-	w http.ResponseWriter, r *http.Request, audit *log.AuditEntry,
+	w http.ResponseWriter, r *http.Request, audit *journal.AuditEntry,
 ) error {
 	const fName = "routeShard"
-	log.AuditRequest(fName, r, audit, log.AuditRead)
+	journal.AuditRequest(fName, r, audit, journal.AuditRead)
 
 	requestBody := net.ReadRequestBody(w, r)
 	if requestBody == nil {
