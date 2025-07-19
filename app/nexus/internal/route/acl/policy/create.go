@@ -11,9 +11,10 @@ import (
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	"github.com/spiffe/spike-sdk-go/api/errors"
+	"github.com/spiffe/spike-sdk-go/log"
 
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
-	"github.com/spiffe/spike/internal/log"
+	journal "github.com/spiffe/spike/internal/log"
 	"github.com/spiffe/spike/internal/net"
 )
 
@@ -59,10 +60,10 @@ import (
 //	    "err": "Internal server error"
 //	}
 func RoutePutPolicy(
-	w http.ResponseWriter, r *http.Request, audit *log.AuditEntry,
+	w http.ResponseWriter, r *http.Request, audit *journal.AuditEntry,
 ) error {
 	const fName = "routePutPolicy"
-	log.AuditRequest(fName, r, audit, log.AuditCreate)
+	journal.AuditRequest(fName, r, audit, journal.AuditCreate)
 
 	requestBody := net.ReadRequestBody(w, r)
 	if requestBody == nil {

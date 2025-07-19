@@ -5,8 +5,9 @@
 package persist
 
 import (
-	"github.com/spiffe/spike/app/nexus/internal/env"
 	"time"
+
+	"github.com/spiffe/spike/app/nexus/internal/env"
 )
 
 // Options defines SQLite-specific configuration options

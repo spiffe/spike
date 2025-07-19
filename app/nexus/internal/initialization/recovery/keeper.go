@@ -15,12 +15,12 @@ import (
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	apiUrl "github.com/spiffe/spike-sdk-go/api/url"
+	"github.com/spiffe/spike-sdk-go/log"
 	"github.com/spiffe/spike-sdk-go/security/mem"
 
 	"github.com/spiffe/spike/app/nexus/internal/env"
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 	"github.com/spiffe/spike/internal/config"
-	"github.com/spiffe/spike/internal/log"
 )
 
 func iterateKeepersToBootstrap(

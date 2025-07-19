@@ -7,7 +7,6 @@ package operator
 import (
 	"encoding/hex"
 	"fmt"
-	"github.com/spiffe/spike/app/spike/internal/env"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -16,12 +15,13 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	spike "github.com/spiffe/spike-sdk-go/api"
+	"github.com/spiffe/spike-sdk-go/log"
 	"github.com/spiffe/spike-sdk-go/security/mem"
 	"github.com/spiffe/spike-sdk-go/spiffeid"
 
+	"github.com/spiffe/spike/app/spike/internal/env"
 	"github.com/spiffe/spike/app/spike/internal/trust"
 	"github.com/spiffe/spike/internal/config"
-	"github.com/spiffe/spike/internal/log"
 )
 
 // newOperatorRecoverCommand creates a new cobra command for recovery operations

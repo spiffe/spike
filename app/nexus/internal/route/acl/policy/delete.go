@@ -10,9 +10,10 @@ import (
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	"github.com/spiffe/spike-sdk-go/api/errors"
+	"github.com/spiffe/spike-sdk-go/log"
 
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
-	"github.com/spiffe/spike/internal/log"
+	journal "github.com/spiffe/spike/internal/log"
 	"github.com/spiffe/spike/internal/net"
 )
 
@@ -55,10 +56,10 @@ import (
 //   - Failed to marshal response body
 //   - Failed to delete policy (internal server error)
 func RouteDeletePolicy(
-	w http.ResponseWriter, r *http.Request, audit *log.AuditEntry,
+	w http.ResponseWriter, r *http.Request, audit *journal.AuditEntry,
 ) error {
 	const fName = "routeDeletePolicy"
-	log.AuditRequest(fName, r, audit, log.AuditDelete)
+	journal.AuditRequest(fName, r, audit, journal.AuditDelete)
 
 	requestBody := net.ReadRequestBody(w, r)
 	if requestBody == nil {

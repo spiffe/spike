@@ -8,13 +8,14 @@ import (
 	"context"
 	"encoding/hex"
 
+	"github.com/spiffe/spike-sdk-go/log"
+
 	"github.com/spiffe/spike/app/nexus/internal/env"
 	"github.com/spiffe/spike/app/nexus/internal/state/backend"
 	"github.com/spiffe/spike/app/nexus/internal/state/backend/lite"
 	"github.com/spiffe/spike/app/nexus/internal/state/backend/memory"
 	"github.com/spiffe/spike/app/nexus/internal/state/backend/sqlite"
 	"github.com/spiffe/spike/internal/config"
-	"github.com/spiffe/spike/internal/log"
 )
 
 // InitializeSqliteBackend creates and initializes an SQLite backend instance
@@ -56,7 +57,7 @@ func InitializeSqliteBackend(rootKey *[32]byte) backend.Backend {
 	// Create SQLite backend configuration
 	cfg := backend.Config{
 		// Use a copy of the root key as the encryption key.
-		// The original root key will be securely zeroed out by the caller.
+		// The caller will securely zero out the original root key.
 		EncryptionKey: hex.EncodeToString(rootKey[:]),
 		Options:       opts,
 	}

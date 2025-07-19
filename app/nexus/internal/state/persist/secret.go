@@ -8,10 +8,10 @@ import (
 	"context"
 
 	"github.com/spiffe/spike-sdk-go/kv"
+	"github.com/spiffe/spike-sdk-go/log"
 	"github.com/spiffe/spike-sdk-go/retry"
 
 	"github.com/spiffe/spike/app/nexus/internal/env"
-	"github.com/spiffe/spike/internal/log"
 )
 
 // ReadSecret attempts to retrieve a secret from the backend cache at the

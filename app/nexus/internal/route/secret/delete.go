@@ -10,9 +10,10 @@ import (
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	"github.com/spiffe/spike-sdk-go/api/errors"
+	"github.com/spiffe/spike-sdk-go/log"
 
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
-	"github.com/spiffe/spike/internal/log"
+	journal "github.com/spiffe/spike/internal/log"
 	"github.com/spiffe/spike/internal/net"
 )
 
@@ -53,10 +54,10 @@ import (
 //   - "failed to parse request body": When request body is invalid
 //   - "failed to marshal response body": When response cannot be serialized
 func RouteDeleteSecret(
-	w http.ResponseWriter, r *http.Request, audit *log.AuditEntry,
+	w http.ResponseWriter, r *http.Request, audit *journal.AuditEntry,
 ) error {
 	const fName = "routeDeleteSecret"
-	log.AuditRequest(fName, r, audit, log.AuditDelete)
+	journal.AuditRequest(fName, r, audit, journal.AuditDelete)
 
 	requestBody := net.ReadRequestBody(w, r)
 	if requestBody == nil {

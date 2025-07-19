@@ -9,18 +9,18 @@ import (
 	"crypto/rand"
 	"errors"
 	"fmt"
+	"math/big"
 	"time"
 
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
+	"github.com/spiffe/spike-sdk-go/log"
 	"github.com/spiffe/spike-sdk-go/retry"
 	"github.com/spiffe/spike-sdk-go/security/mem"
 	"github.com/spiffe/spike-sdk-go/spiffe"
-	"math/big"
 
 	"github.com/spiffe/spike/app/nexus/internal/env"
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 	"github.com/spiffe/spike/app/nexus/internal/state/persist"
-	"github.com/spiffe/spike/internal/log"
 )
 
 var (
@@ -152,7 +152,7 @@ func HydrateMemoryFromBackingStore() {
 //   - Send the shards to the configured keepers
 //
 // It will return early with an error log if:
-//   - There are insufficient shards to meet the threshold
+//   - There are not enough shards to meet the threshold
 //   - The SPIFFE source cannot be created
 func RestoreBackingStoreUsingPilotShards(shards []ShamirShard) {
 	const fName = "RestoreBackingStoreUsingPilotShards"

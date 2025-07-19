@@ -7,17 +7,18 @@ import (
 	"net/http"
 
 	"github.com/spiffe/spike-sdk-go/api/errors"
+	"github.com/spiffe/spike-sdk-go/log"
 
 	"github.com/spiffe/spike/app/nexus/internal/state/persist"
-	"github.com/spiffe/spike/internal/log"
+	journal "github.com/spiffe/spike/internal/log"
 	"github.com/spiffe/spike/internal/net"
 )
 
 func RouteEncrypt(
-	w http.ResponseWriter, r *http.Request, audit *log.AuditEntry,
+	w http.ResponseWriter, r *http.Request, audit *journal.AuditEntry,
 ) error {
 	const fName = "routeEncrypt"
-	log.AuditRequest(fName, r, audit, log.AuditCreate)
+	journal.AuditRequest(fName, r, audit, journal.AuditCreate)
 
 	requestBody := net.ReadRequestBody(w, r)
 	if requestBody == nil {

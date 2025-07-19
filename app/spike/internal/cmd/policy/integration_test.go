@@ -10,16 +10,16 @@ import (
 	"testing"
 )
 
-// TestPolicySpecValidation tests the PolicySpec struct validation
+// TestPolicySpecValidation tests the Spec struct validation
 func TestPolicySpecValidation(t *testing.T) {
 	tests := []struct {
 		name   string
-		policy PolicySpec
+		policy Spec
 		valid  bool
 	}{
 		{
 			name: "valid_policy_spec",
-			policy: PolicySpec{
+			policy: Spec{
 				Name:        "test-policy",
 				SpiffeID:    "spiffe://example.org/test/*",
 				Path:        "/secrets/*",
@@ -29,7 +29,7 @@ func TestPolicySpecValidation(t *testing.T) {
 		},
 		{
 			name: "empty_name",
-			policy: PolicySpec{
+			policy: Spec{
 				Name:        "",
 				SpiffeID:    "spiffe://example.org/test/*",
 				Path:        "/secrets/*",
@@ -39,7 +39,7 @@ func TestPolicySpecValidation(t *testing.T) {
 		},
 		{
 			name: "empty_spiffe_id",
-			policy: PolicySpec{
+			policy: Spec{
 				Name:        "test-policy",
 				SpiffeID:    "",
 				Path:        "/secrets/*",
@@ -49,7 +49,7 @@ func TestPolicySpecValidation(t *testing.T) {
 		},
 		{
 			name: "empty_path",
-			policy: PolicySpec{
+			policy: Spec{
 				Name:        "test-policy",
 				SpiffeID:    "spiffe://example.org/test/*",
 				Path:        "",
@@ -59,7 +59,7 @@ func TestPolicySpecValidation(t *testing.T) {
 		},
 		{
 			name: "empty_permissions",
-			policy: PolicySpec{
+			policy: Spec{
 				Name:        "test-policy",
 				SpiffeID:    "spiffe://example.org/test/*",
 				Path:        "/secrets/*",
@@ -88,7 +88,12 @@ func TestPolicySpecValidation(t *testing.T) {
 			if err != nil {
 				t.Fatalf("Failed to create temp directory: %v", err)
 			}
-			defer os.RemoveAll(tempDir)
+			defer func(path string) {
+				err := os.RemoveAll(path)
+				if err != nil {
+					t.Logf("Failed to remove temp directory: %v", err)
+				}
+			}(tempDir)
 
 			yamlContent := "name: " + tt.policy.Name + "\n"
 			yamlContent += "spiffeid: " + tt.policy.SpiffeID + "\n"
@@ -123,13 +128,18 @@ func TestYAMLParsingEdgeCases(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to create temp directory: %v", err)
 	}
-	defer os.RemoveAll(tempDir)
+	defer func(path string) {
+		err := os.RemoveAll(path)
+		if err != nil {
+			t.Logf("Failed to remove temp directory: %v", err)
+		}
+	}(tempDir)
 
 	tests := []struct {
 		name        string
 		yamlContent string
 		expectError bool
-		expectValue PolicySpec
+		expectValue Spec
 	}{
 		{
 			name: "quoted_values",
@@ -140,7 +150,7 @@ permissions:
   - "read"
   - "write"`,
 			expectError: false,
-			expectValue: PolicySpec{
+			expectValue: Spec{
 				Name:        "my-policy",
 				SpiffeID:    "spiffe://example.org/quoted/*",
 				Path:        "/secrets/quoted/*",
@@ -154,7 +164,7 @@ spiffeid: spiffe://example.org/flow/*
 path: /secrets/flow/*
 permissions: [read, write, list]`,
 			expectError: false,
-			expectValue: PolicySpec{
+			expectValue: Spec{
 				Name:        "flow-policy",
 				SpiffeID:    "spiffe://example.org/flow/*",
 				Path:        "/secrets/flow/*",
@@ -170,7 +180,7 @@ path: /secrets/multiline/*
 permissions:
   - read`,
 			expectError: false,
-			expectValue: PolicySpec{
+			expectValue: Spec{
 				Name:        "multiline-policy",
 				SpiffeID:    "spiffe://example.org/multiline/*\n",
 				Path:        "/secrets/multiline/*",

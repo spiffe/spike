@@ -10,9 +10,10 @@ import (
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	"github.com/spiffe/spike-sdk-go/api/errors"
+	"github.com/spiffe/spike-sdk-go/log"
 
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
-	"github.com/spiffe/spike/internal/log"
+	journal "github.com/spiffe/spike/internal/log"
 	"github.com/spiffe/spike/internal/net"
 )
 
@@ -49,10 +50,10 @@ import (
 //
 // The function logs its progress at various stages using structured logging.
 func RouteUndeleteSecret(
-	w http.ResponseWriter, r *http.Request, audit *log.AuditEntry,
+	w http.ResponseWriter, r *http.Request, audit *journal.AuditEntry,
 ) error {
 	const fName = "routeUndeleteSecret"
-	log.AuditRequest(fName, r, audit, log.AuditUndelete)
+	journal.AuditRequest(fName, r, audit, journal.AuditUndelete)
 
 	requestBody := net.ReadRequestBody(w, r)
 	if requestBody == nil {

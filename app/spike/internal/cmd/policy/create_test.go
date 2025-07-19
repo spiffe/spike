@@ -15,18 +15,23 @@ import (
 )
 
 func TestReadPolicyFromFile(t *testing.T) {
-	// Create temporary directory for test files
+	// Create a temporary directory for test files:
 	tempDir, err := os.MkdirTemp("", "spike-policy-test")
 	if err != nil {
 		t.Fatalf("Failed to create temp directory: %v", err)
 	}
-	defer os.RemoveAll(tempDir)
+	defer func(path string) {
+		err := os.RemoveAll(path)
+		if err != nil {
+			t.Logf("Failed to remove temp directory: %v", err)
+		}
+	}(tempDir)
 
 	tests := []struct {
 		name        string
 		fileContent string
 		fileName    string
-		want        PolicySpec
+		want        Spec
 		wantErr     bool
 		errContains string
 	}{
@@ -39,7 +44,7 @@ permissions:
   - read
   - write`,
 			fileName: "valid-policy.yaml",
-			want: PolicySpec{
+			want: Spec{
 				Name:        "test-policy",
 				SpiffeID:    "spiffe://example.org/test/*",
 				Path:        "/secrets/*",
@@ -58,7 +63,7 @@ permissions:
   - list
   - super`,
 			fileName: "full-policy.yaml",
-			want: PolicySpec{
+			want: Spec{
 				Name:        "full-access-policy",
 				SpiffeID:    "spiffe://example.org/admin/*",
 				Path:        "/*",
@@ -131,7 +136,7 @@ permissions: [
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// Create test file
+			// Create a test file:
 			filePath := filepath.Join(tempDir, tt.fileName)
 			err := os.WriteFile(filePath, []byte(tt.fileContent), 0644)
 			if err != nil {
@@ -172,7 +177,7 @@ permissions: [
 				return
 			}
 
-			// Check success case
+			// Check the success case:
 			if err != nil {
 				t.Errorf("readPolicyFromFile() unexpected error: %v", err)
 				return
@@ -207,7 +212,7 @@ func TestReadPolicyFromFileNotFound(t *testing.T) {
 		t.Error("readPolicyFromFile() expected error for non-existent file but got none")
 	}
 	if err != nil && len(err.Error()) > 0 {
-		// Check if error contains "does not exist"
+		// Check if the error contains "does not exist":
 		errorStr := err.Error()
 		expected := "does not exist"
 		found := false
@@ -232,7 +237,7 @@ func TestGetPolicyFromFlags(t *testing.T) {
 		inputSpiffeID string
 		inputPath     string
 		inputPerms    string
-		want          PolicySpec
+		want          Spec
 		wantErr       bool
 		errContains   string
 	}{
@@ -242,7 +247,7 @@ func TestGetPolicyFromFlags(t *testing.T) {
 			inputSpiffeID: "spiffe://example.org/test/*",
 			inputPath:     "/secrets/*",
 			inputPerms:    "read,write",
-			want: PolicySpec{
+			want: Spec{
 				Name:        "test-policy",
 				SpiffeID:    "spiffe://example.org/test/*",
 				Path:        "/secrets/*",
@@ -256,7 +261,7 @@ func TestGetPolicyFromFlags(t *testing.T) {
 			inputSpiffeID: "spiffe://example.org/test/*",
 			inputPath:     "/secrets/*",
 			inputPerms:    "read, write, list",
-			want: PolicySpec{
+			want: Spec{
 				Name:        "test-policy",
 				SpiffeID:    "spiffe://example.org/test/*",
 				Path:        "/secrets/*",
@@ -270,7 +275,7 @@ func TestGetPolicyFromFlags(t *testing.T) {
 			inputSpiffeID: "spiffe://example.org/readonly/*",
 			inputPath:     "/secrets/readonly/*",
 			inputPerms:    "read",
-			want: PolicySpec{
+			want: Spec{
 				Name:        "read-only-policy",
 				SpiffeID:    "spiffe://example.org/readonly/*",
 				Path:        "/secrets/readonly/*",
@@ -284,7 +289,7 @@ func TestGetPolicyFromFlags(t *testing.T) {
 			inputSpiffeID: "spiffe://example.org/admin/*",
 			inputPath:     "/*",
 			inputPerms:    "read,write,list,super",
-			want: PolicySpec{
+			want: Spec{
 				Name:        "admin-policy",
 				SpiffeID:    "spiffe://example.org/admin/*",
 				Path:        "/*",
@@ -343,7 +348,7 @@ func TestGetPolicyFromFlags(t *testing.T) {
 			inputSpiffeID: "spiffe://example.org/test/*",
 			inputPath:     "/secrets/*",
 			inputPerms:    ",,,",
-			want: PolicySpec{
+			want: Spec{
 				Name:        "test-policy",
 				SpiffeID:    "spiffe://example.org/test/*",
 				Path:        "/secrets/*",
@@ -384,7 +389,7 @@ func TestGetPolicyFromFlags(t *testing.T) {
 				return
 			}
 
-			// Check success case
+			// Check the success case:
 			if err != nil {
 				t.Errorf("getPolicyFromFlags() unexpected error: %v", err)
 				return
@@ -542,15 +547,6 @@ func TestPolicyCreateCommandFlagValidation(t *testing.T) {
 		})
 	}
 }
-
-// TestPolicyCreateCommandFileInput removed - create command doesn't support file input
-// File input functionality is tested in apply_test.go for the apply command
-
-// TestPolicyCreateCommandFileInputErrors removed - create command doesn't support file input
-// File input error handling is tested in apply_test.go for the apply command
-
-// TestPolicyCreatePathNormalization removed - create command doesn't normalize paths
-// Path normalization is only used in the apply command and is tested in apply_test.go
 
 // Test that the create command is registered properly
 func TestPolicyCreateCommandRegistration(t *testing.T) {

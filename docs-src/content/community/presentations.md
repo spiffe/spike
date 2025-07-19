@@ -43,8 +43,13 @@ capabilities and showcase its innovative features.
   enhanced starter script, policy-based access control, and metadata support.
 * [Secrets Resiliency with SPIKE: Self-Healing and Doomsday Recovery][spike-doomsday]:<br>
   Secrets management is critical, but what happens when everything fails? In 
-  this video, we explore SPIKE’s disaster recovery mechanisms, covering both 
+  this video, we explore **SPIKE**’s disaster recovery mechanisms, covering both 
   self-healing capabilities and the manual break-the-glass recovery process.
+* [Federating Secrets with SPIFFE and SPIKE][spike-federated]<br>
+  In this demo, we show how you can deploy **SPIRE** and **SPIKE** from SPIFFE
+  Helm charts. We then establish a multi-cluster secret federation where 
+  the workload clusters can securely access secrets stored in the management
+  cluster.
 
 [spike]: https://vimeo.com/v0lkan/spike
 [spike-intro]: https://vimeo.com/v0lkan/spike-rocks
@@ -55,6 +60,7 @@ capabilities and showcase its innovative features.
 [spike-metadata]: https://vimeo.com/v0lkan/spike-metadata
 [spike-policies]: https://vimeo.com/v0lkan/spike-policies
 [spike-doomsday]: https://vimeo.com/v0lkan/spike-doomsday
+[spike-federated]: https://vimeo.com/v0lkan/spike-federation
 
 ----
 

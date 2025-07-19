@@ -9,10 +9,10 @@
 package trust
 
 import (
+	"github.com/spiffe/spike-sdk-go/log"
+
 	svid "github.com/spiffe/spike-sdk-go/spiffeid"
 	"github.com/spiffe/spike/app/spike/internal/env"
-
-	"github.com/spiffe/spike/internal/log"
 )
 
 // Authenticate verifies if the provided SPIFFE ID belongs to a pilot instance.

@@ -8,9 +8,9 @@ import (
 	"sync"
 
 	"github.com/spiffe/spike-sdk-go/kv"
+	"github.com/spiffe/spike-sdk-go/log"
 
 	"github.com/spiffe/spike/app/nexus/internal/env"
-	"github.com/spiffe/spike/internal/log"
 )
 
 // Global variables for storing secrets and policies with thread-safety.

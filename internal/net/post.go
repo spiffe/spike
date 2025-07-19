@@ -11,8 +11,7 @@ import (
 	"net/http"
 
 	apiErr "github.com/spiffe/spike-sdk-go/api/errors"
-
-	"github.com/spiffe/spike/internal/log"
+	"github.com/spiffe/spike-sdk-go/log"
 )
 
 func body(r *http.Response) (bod []byte, err error) {

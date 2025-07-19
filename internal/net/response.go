@@ -11,8 +11,9 @@ import (
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
+	"github.com/spiffe/spike-sdk-go/log"
 
-	"github.com/spiffe/spike/internal/log"
+	journal "github.com/spiffe/spike/internal/log"
 )
 
 // MarshalBody serializes a response object to JSON and handles error cases.
@@ -98,13 +99,13 @@ func Respond(statusCode int, body []byte, w http.ResponseWriter) {
 //   - Content-Type: application/json
 //   - Body: JSON object with an error field
 func Fallback(
-	w http.ResponseWriter, r *http.Request, audit *log.AuditEntry,
+	w http.ResponseWriter, r *http.Request, audit *journal.AuditEntry,
 ) error {
 	log.Log().Info("fallback",
 		"method", r.Method,
 		"path", r.URL.Path,
 		"query", r.URL.RawQuery)
-	audit.Action = log.AuditFallback
+	audit.Action = journal.AuditFallback
 
 	body := MarshalBody(reqres.FallbackResponse{Err: data.ErrBadInput}, w)
 	if body == nil {
@@ -144,13 +145,13 @@ func Fallback(
 //   - error: Returns nil on success, or an error if response marshaling or
 //     writing fails
 func NotReady(
-	w http.ResponseWriter, r *http.Request, audit *log.AuditEntry,
+	w http.ResponseWriter, r *http.Request, audit *journal.AuditEntry,
 ) error {
 	log.Log().Info("not-ready",
 		"method", r.Method,
 		"path", r.URL.Path,
 		"query", r.URL.RawQuery)
-	audit.Action = log.AuditBlocked
+	audit.Action = journal.AuditBlocked
 
 	body := MarshalBody(reqres.FallbackResponse{Err: data.ErrNotReady}, w)
 	if body == nil {

@@ -8,10 +8,10 @@ import (
 	"context"
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
+	"github.com/spiffe/spike-sdk-go/log"
 	"github.com/spiffe/spike-sdk-go/retry"
 
 	"github.com/spiffe/spike/app/nexus/internal/env"
-	"github.com/spiffe/spike/internal/log"
 )
 
 // StorePolicy caches a policy in the backend store.

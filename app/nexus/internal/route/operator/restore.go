@@ -11,11 +11,12 @@ import (
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	"github.com/spiffe/spike-sdk-go/api/errors"
+	"github.com/spiffe/spike-sdk-go/log"
 	"github.com/spiffe/spike-sdk-go/security/mem"
 
 	"github.com/spiffe/spike/app/nexus/internal/env"
 	"github.com/spiffe/spike/app/nexus/internal/initialization/recovery"
-	"github.com/spiffe/spike/internal/log"
+	journal "github.com/spiffe/spike/internal/log"
 	"github.com/spiffe/spike/internal/net"
 )
 
@@ -56,11 +57,11 @@ var (
 // When the last required shard is added, the function automatically triggers
 // the restoration process using RestoreBackingStoreUsingPilotShards.
 func RouteRestore(
-	w http.ResponseWriter, r *http.Request, audit *log.AuditEntry,
+	w http.ResponseWriter, r *http.Request, audit *journal.AuditEntry,
 ) error {
 	const fName = "routeRestore"
 
-	log.AuditRequest(fName, r, audit, log.AuditCreate)
+	journal.AuditRequest(fName, r, audit, journal.AuditCreate)
 
 	requestBody := net.ReadRequestBody(w, r)
 	if requestBody == nil {
@@ -135,7 +136,7 @@ func RouteRestore(
 
 	// Note: We cannot clear request.Shard because it's a pointer type,
 	// and we need it later in the "restore" operation.
-	// RouteRestore cleans this up, when it is no longer needed.
+	// RouteRestore cleans this up when it is no longer necessary.
 
 	// Trigger restoration if we have collected all shards
 	if currentShardCount == env.ShamirThreshold() {

@@ -6,11 +6,11 @@ package net
 
 import (
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
+	"github.com/spiffe/spike-sdk-go/log"
 	"github.com/spiffe/spike-sdk-go/net"
 
 	"github.com/spiffe/spike/app/nexus/internal/env"
 	http "github.com/spiffe/spike/app/nexus/internal/route/base"
-	"github.com/spiffe/spike/internal/log"
 	routing "github.com/spiffe/spike/internal/net"
 )
 

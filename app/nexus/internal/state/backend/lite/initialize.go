@@ -21,12 +21,6 @@ type DataStore struct {
 }
 
 func New(rootKey *[32]byte) (backend.Backend, error) {
-	if len(rootKey) != 32 {
-		return nil, fmt.Errorf(
-			"invalid encryption key length: must be 32 bytes",
-		)
-	}
-
 	block, err := aes.NewCipher(rootKey[:])
 	if err != nil {
 		return nil, fmt.Errorf("failed to create cipher: %w", err)

@@ -66,6 +66,7 @@ type Backend interface {
 	// Returns an error if the operation fails.
 	DeletePolicy(ctx context.Context, id string) error
 
+	// GetCipher retrieves the AEAD cipher used for encryption and decryption.
 	GetCipher() cipher.AEAD
 }
 
