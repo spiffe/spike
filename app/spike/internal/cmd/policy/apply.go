@@ -14,13 +14,13 @@ import (
 	"github.com/spiffe/spike/app/spike/internal/trust"
 )
 
-// normalizePath removes trailing slashes and ensures consistent path format
+// normalizePath removes trailing slashes and ensures a consistent path format.
 func normalizePath(path string) string {
 	if path == "" {
 		return path
 	}
 
-	// Remove all trailing slashes except for root path
+	// Remove all trailing slashes except for the root path:
 	if path != "/" {
 		path = strings.TrimRight(path, "/")
 	}
@@ -34,7 +34,7 @@ func normalizePath(path string) string {
 // through command line flags or by reading from a YAML file.
 //
 // The command uses upsert semantics - it will update an existing policy if one
-// exists with the same name, or create a new policy if it doesn't exist.
+// exists with the same name or create a new policy if it doesn't exist.
 //
 // The command requires an X509Source for SPIFFE authentication and validates
 // that the system is initialized before applying a policy.
@@ -126,7 +126,7 @@ func newPolicyApplyCommand(
         Valid permissions: read, write, list, super`,
 		Args: cobra.NoArgs,
 		Run: func(cmd *cobra.Command, args []string) {
-			var policy PolicySpec
+			var policy Spec
 			var err error
 
 			// Determine if we're using file-based or flag-based input

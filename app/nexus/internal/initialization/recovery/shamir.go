@@ -8,10 +8,10 @@ import (
 	"github.com/cloudflare/circl/group"
 	shamir "github.com/cloudflare/circl/secretsharing"
 	"github.com/spiffe/spike-sdk-go/crypto"
+	"github.com/spiffe/spike-sdk-go/log"
 
 	"github.com/spiffe/spike/app/nexus/internal/env"
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
-	"github.com/spiffe/spike/internal/log"
 )
 
 // sanityCheck verifies that a set of secret shares can correctly reconstruct

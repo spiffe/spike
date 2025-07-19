@@ -6,35 +6,36 @@ import (
 	"net/http"
 
 	"github.com/spiffe/spike-sdk-go/api/errors"
+	"github.com/spiffe/spike-sdk-go/log"
 
 	"github.com/spiffe/spike/app/nexus/internal/state/persist"
-	"github.com/spiffe/spike/internal/log"
+	journal "github.com/spiffe/spike/internal/log"
 	"github.com/spiffe/spike/internal/net"
 )
 
 func RouteDecrypt(
-	w http.ResponseWriter, r *http.Request, audit *log.AuditEntry,
+	w http.ResponseWriter, r *http.Request, audit *journal.AuditEntry,
 ) error {
 	const fName = "routeDecrypt"
 	c := persist.Backend().GetCipher()
-	log.AuditRequest(fName, r, audit, log.AuditCreate)
+	journal.AuditRequest(fName, r, audit, journal.AuditCreate)
 
 	ver := make([]byte, 1)
 	n, err := io.ReadFull(r.Body, ver)
 	if err != nil || n != 1 {
 		log.Log().Debug(fName, "msg", "Failed to read version")
-		return fmt.Errorf("Failed to read version")
+		return fmt.Errorf("failed to read version")
 	}
 	if ver[0] != byte('1') {
-		return fmt.Errorf("Unknown file type")
+		return fmt.Errorf("unknown file type")
 	}
 
-	nBytesToRead := c.NonceSize()
-	nonce := make([]byte, nBytesToRead)
+	bytesToRead := c.NonceSize()
+	nonce := make([]byte, bytesToRead)
 	n, err = io.ReadFull(r.Body, nonce)
-	if err != nil || n != nBytesToRead {
+	if err != nil || n != bytesToRead {
 		log.Log().Debug(fName, "msg", "Failed to read nonce")
-		return fmt.Errorf("Failed to read nonce")
+		return fmt.Errorf("failed to read nonce")
 	}
 
 	requestBody := net.ReadRequestBody(w, r)
@@ -42,7 +43,9 @@ func RouteDecrypt(
 		return errors.ErrReadFailure
 	}
 
-	log.Log().Info(fName, "msg", fmt.Sprintf("Decrypt %d %d", len(nonce), len(requestBody)))
+	log.Log().Info(fName, "msg",
+		fmt.Sprintf("Decrypt %d %d", len(nonce), len(requestBody)),
+	)
 
 	plaintext, err := c.Open(nil, nonce, requestBody, nil)
 	if err != nil {
@@ -50,6 +53,9 @@ func RouteDecrypt(
 		return err
 	}
 
-	fmt.Fprintf(w, "%s", plaintext)
+	_, err = fmt.Fprintf(w, "%s", plaintext)
+	if err != nil {
+		return err
+	}
 	return nil
 }

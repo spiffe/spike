@@ -10,9 +10,10 @@ import (
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	"github.com/spiffe/spike-sdk-go/api/errors"
+	"github.com/spiffe/spike-sdk-go/log"
 
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
-	"github.com/spiffe/spike/internal/log"
+	journal "github.com/spiffe/spike/internal/log"
 	"github.com/spiffe/spike/internal/net"
 )
 
@@ -63,10 +64,10 @@ import (
 //   - Failed to parse request body
 //   - Failed to marshal response body
 func RouteListPolicies(
-	w http.ResponseWriter, r *http.Request, audit *log.AuditEntry,
+	w http.ResponseWriter, r *http.Request, audit *journal.AuditEntry,
 ) error {
 	fName := "routeListPolicies"
-	log.AuditRequest(fName, r, audit, log.AuditList)
+	journal.AuditRequest(fName, r, audit, journal.AuditList)
 
 	requestBody := net.ReadRequestBody(w, r)
 	if requestBody == nil {

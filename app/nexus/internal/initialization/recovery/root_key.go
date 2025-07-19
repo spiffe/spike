@@ -7,10 +7,10 @@ package recovery
 import (
 	"github.com/cloudflare/circl/group"
 	"github.com/cloudflare/circl/secretsharing"
+	"github.com/spiffe/spike-sdk-go/log"
 	"github.com/spiffe/spike-sdk-go/security/mem"
 
 	"github.com/spiffe/spike/app/nexus/internal/env"
-	"github.com/spiffe/spike/internal/log"
 )
 
 type ShamirShard struct {

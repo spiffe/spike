@@ -12,8 +12,8 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// PolicySpec represents the YAML structure for policy configuration
-type PolicySpec struct {
+// Spec represents the YAML structure for policy configuration
+type Spec struct {
 	Name        string   `yaml:"name"`
 	SpiffeID    string   `yaml:"spiffeid"`
 	Path        string   `yaml:"path"`
@@ -21,10 +21,10 @@ type PolicySpec struct {
 }
 
 // readPolicyFromFile reads a policy configuration from a YAML file
-func readPolicyFromFile(filePath string) (PolicySpec, error) {
-	var policy PolicySpec
+func readPolicyFromFile(filePath string) (Spec, error) {
+	var policy Spec
 
-	// Check if file exists
+	// Check if the file exists:
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {
 		return policy, fmt.Errorf("file %s does not exist", filePath)
 	}
@@ -59,8 +59,8 @@ func readPolicyFromFile(filePath string) (PolicySpec, error) {
 }
 
 // getPolicyFromFlags extracts policy configuration from command line flags
-func getPolicyFromFlags(name, spiffeIdPattern, pathPattern, permsStr string) (PolicySpec, error) {
-	var policy PolicySpec
+func getPolicyFromFlags(name, spiffeIdPattern, pathPattern, permsStr string) (Spec, error) {
+	var policy Spec
 
 	// Check if all required flags are provided
 	var missingFlags []string
@@ -99,7 +99,7 @@ func getPolicyFromFlags(name, spiffeIdPattern, pathPattern, permsStr string) (Po
 		}
 	}
 
-	policy = PolicySpec{
+	policy = Spec{
 		Name:        name,
 		SpiffeID:    spiffeIdPattern,
 		Path:        pathPattern,

@@ -9,8 +9,8 @@ import (
 	"strings"
 )
 
-// BannerEnabled returns whether to show initial banner on app start based on
-// the SPIKE_BANNER_ENABLED environment variable.
+// BannerEnabled returns whether to show the initial banner on app start based
+// on the SPIKE_BANNER_ENABLED environment variable.
 //
 // The function reads the SPIKE_BANNER_ENABLED environment variable and returns:
 //   - true if the variable is not set (default behavior)

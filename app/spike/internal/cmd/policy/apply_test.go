@@ -89,12 +89,17 @@ func TestNormalizePath(t *testing.T) {
 }
 
 func TestApplyPolicyFromFile(t *testing.T) {
-	// Create temporary directory for test files
+	// Create a temporary directory for test files
 	tempDir, err := os.MkdirTemp("", "spike-apply-test")
 	if err != nil {
 		t.Fatalf("Failed to create temp directory: %v", err)
 	}
-	defer os.RemoveAll(tempDir)
+	defer func(path string) {
+		err := os.RemoveAll(path)
+		if err != nil {
+			t.Errorf("Failed to remove temp directory: %v", err)
+		}
+	}(tempDir)
 
 	tests := []struct {
 		name         string
@@ -153,7 +158,7 @@ permissions:
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// Create test file
+			// Create a test file:
 			filePath := filepath.Join(tempDir, tt.fileName)
 			err := os.WriteFile(filePath, []byte(tt.fileContent), 0644)
 			if err != nil {

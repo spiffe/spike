@@ -230,7 +230,7 @@ loopback address, add the following entry to your `/etc/hosts` file:
 
 ## Starting SPIKE
 
-There is a starter script that combines and automates some of the steps in the
+There is a starter script that combines and automates some steps in the
 following sections. It configures and runs SPIRE Server, SPIRE Agent,
 SPIKE Nexus, and SPIKE Keeper.
 
@@ -423,7 +423,7 @@ are compact, consuming minimal disk space and no resources when inactive. As
 simple executable files, they have no impact on your system's performance when
 not in use. Therefore, keeping them installed is completely harmless.
 
-However, if you want to wipe everything out, you can just remove the binaries
+However, if you want to wipe everything out, you can remove the binaries
 and **SPIKE**'s data folder, and that would be it:
 
 ```bash

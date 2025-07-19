@@ -12,8 +12,8 @@ import (
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	apiErr "github.com/spiffe/spike-sdk-go/api/errors"
 	"github.com/spiffe/spike-sdk-go/kv"
+	"github.com/spiffe/spike-sdk-go/log"
 
-	"github.com/spiffe/spike/internal/log"
 	"github.com/spiffe/spike/internal/net"
 )
 

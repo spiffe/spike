@@ -5,7 +5,6 @@
 package operator
 
 import (
-	"github.com/spiffe/spike/app/nexus/internal/env"
 	"net/http"
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
@@ -14,6 +13,7 @@ import (
 	"github.com/spiffe/spike-sdk-go/spiffe"
 	"github.com/spiffe/spike-sdk-go/spiffeid"
 
+	"github.com/spiffe/spike/app/nexus/internal/env"
 	"github.com/spiffe/spike/internal/net"
 )
 

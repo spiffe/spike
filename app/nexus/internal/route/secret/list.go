@@ -10,9 +10,10 @@ import (
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	"github.com/spiffe/spike-sdk-go/api/errors"
+	"github.com/spiffe/spike-sdk-go/log"
 
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
-	"github.com/spiffe/spike/internal/log"
+	journal "github.com/spiffe/spike/internal/log"
 	"github.com/spiffe/spike/internal/net"
 )
 
@@ -54,10 +55,10 @@ import (
 // returns the paths to secrets and not their contents; use RouteGetSecret to
 // retrieve actual secret values.
 func RouteListPaths(
-	w http.ResponseWriter, r *http.Request, audit *log.AuditEntry,
+	w http.ResponseWriter, r *http.Request, audit *journal.AuditEntry,
 ) error {
 	const fName = "routeListPaths"
-	log.AuditRequest(fName, r, audit, log.AuditList)
+	journal.AuditRequest(fName, r, audit, journal.AuditList)
 
 	requestBody := net.ReadRequestBody(w, r)
 	if requestBody == nil {

@@ -8,6 +8,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/spiffe/spike-sdk-go/log"
 	"github.com/spiffe/spike-sdk-go/security/mem"
 	"github.com/spiffe/spike-sdk-go/spiffe"
 	"github.com/spiffe/spike-sdk-go/spiffeid"
@@ -16,7 +17,6 @@ import (
 	"github.com/spiffe/spike/app/nexus/internal/initialization"
 	"github.com/spiffe/spike/app/nexus/internal/net"
 	"github.com/spiffe/spike/internal/config"
-	"github.com/spiffe/spike/internal/log"
 )
 
 const appName = "SPIKE Nexus"

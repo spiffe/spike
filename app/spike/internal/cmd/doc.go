@@ -12,6 +12,6 @@
 //     related operations
 //   - Execution of the root command with error handling
 //
-// Each command utilizes SPIFFE's X.509 source for authentication and builds
+// Each command uses SPIFFE's X.509 source for authentication and builds
 // a secure environment for managing secrets and policies.
 package cmd

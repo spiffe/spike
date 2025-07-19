@@ -152,7 +152,7 @@ func HydrateMemoryFromBackingStore() {
 //   - Send the shards to the configured keepers
 //
 // It will return early with an error log if:
-//   - There are insufficient shards to meet the threshold
+//   - There are not enough shards to meet the threshold
 //   - The SPIFFE source cannot be created
 func RestoreBackingStoreUsingPilotShards(shards []ShamirShard) {
 	const fName = "RestoreBackingStoreUsingPilotShards"

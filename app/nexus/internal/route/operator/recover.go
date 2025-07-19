@@ -10,11 +10,12 @@ import (
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	"github.com/spiffe/spike-sdk-go/api/errors"
+	"github.com/spiffe/spike-sdk-go/log"
 	"github.com/spiffe/spike-sdk-go/security/mem"
 
 	"github.com/spiffe/spike/app/nexus/internal/env"
 	"github.com/spiffe/spike/app/nexus/internal/initialization/recovery"
-	"github.com/spiffe/spike/internal/log"
+	journal "github.com/spiffe/spike/internal/log"
 	"github.com/spiffe/spike/internal/net"
 )
 
@@ -43,10 +44,10 @@ import (
 // On success, the function responds with HTTP 200 OK and the first two recovery
 // shards in the response body.
 func RouteRecover(
-	w http.ResponseWriter, r *http.Request, audit *log.AuditEntry,
+	w http.ResponseWriter, r *http.Request, audit *journal.AuditEntry,
 ) error {
 	const fName = "routeRecover"
-	log.AuditRequest(fName, r, audit, log.AuditCreate)
+	journal.AuditRequest(fName, r, audit, journal.AuditCreate)
 
 	requestBody := net.ReadRequestBody(w, r)
 	if requestBody == nil {

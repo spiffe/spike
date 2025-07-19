@@ -57,7 +57,7 @@ func InitializeSqliteBackend(rootKey *[32]byte) backend.Backend {
 	// Create SQLite backend configuration
 	cfg := backend.Config{
 		// Use a copy of the root key as the encryption key.
-		// The original root key will be securely zeroed out by the caller.
+		// The caller will securely zero out the original root key.
 		EncryptionKey: hex.EncodeToString(rootKey[:]),
 		Options:       opts,
 	}

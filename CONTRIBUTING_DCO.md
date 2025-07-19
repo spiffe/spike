@@ -31,7 +31,7 @@ contributors to adhere to it in all interactions with the project.
 
 ## Ways to contribute
 
-We welcome many different types of contributions and not all of them need a
+We welcome many different types of contributions, and not all of them need a
 Pull request. Contributions may include:
 
 * New features and proposals
@@ -60,7 +60,7 @@ This is a rough outline of what a contributor's workflow looks like:
 * Create a topic branch in your fork from where you want to base your work
 * Make commits of logical units.
 * Make sure your commit messages are with the proper format,
-  quality and descriptiveness (*see below*)
+  quality, and descriptiveness (*see below*)
 * Adhere to the code standards described below.
 * Push your changes to the topic branch in your fork
 * Ensure all components build and function properly.
@@ -81,7 +81,7 @@ Before submitting your pull request, we advise you to use the following:
    Be sure to include any related GitHub issue references in the commit message.
    See [GFM syntax](https://guides.github.com/features/mastering-markdown/#GitHub-flavored-markdown)
    for referencing issues and commits.
-3. Check the commits and commits messages and ensure they are free from typos.
+3. Check the commits and commit messages and ensure they are free from typos.
 
 ## Reporting Bugs and Creating Issues
 
@@ -109,6 +109,6 @@ request to ensure consistent formatting.
 ### Testing
 
 Before submitting your pull request, make sure your changes pass all the
-existing tests, and add new ones if necessary.
+existing tests and add new ones if necessary.
 
 [slack-invite]: https://slack.spiffe.io/ "Join SPIFFE Slack"

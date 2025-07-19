@@ -260,7 +260,7 @@ including **SPIKE Nexus**, **SPIKE Keeper**, and **SPIKE Pilot**.
 This reduces the risk that another process running on the same
 machine is compromised and can interact with **SPIKE Nexus**.
 
-In a Kubernetes deployment, you can achieve this with setting up appropriate 
+In a Kubernetes deployment, you can achieve this by setting up appropriate 
 Node affinity rules.
 
 ### User Privileges
@@ -546,7 +546,7 @@ as a continuous process rather than a one-time setup.
 
 ## Conclusion
 
-Although **SPIKE** is designed with security best-practices in mind, a 
+Although **SPIKE** is designed with security best practices in mind, a 
 multi-layer approach focusing on system, process, and network security is 
 important when configuring **SPIKE** for production.
 

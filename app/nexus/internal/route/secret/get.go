@@ -10,9 +10,10 @@ import (
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	apiErr "github.com/spiffe/spike-sdk-go/api/errors"
+	"github.com/spiffe/spike-sdk-go/log"
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 
-	"github.com/spiffe/spike/internal/log"
+	journal "github.com/spiffe/spike/internal/log"
 	"github.com/spiffe/spike/internal/net"
 )
 
@@ -59,10 +60,10 @@ import (
 //
 // All operations are logged using structured logging.
 func RouteGetSecret(
-	w http.ResponseWriter, r *http.Request, audit *log.AuditEntry,
+	w http.ResponseWriter, r *http.Request, audit *journal.AuditEntry,
 ) error {
 	const fName = "routeGetSecret"
-	log.AuditRequest(fName, r, audit, log.AuditRead)
+	journal.AuditRequest(fName, r, audit, journal.AuditRead)
 
 	requestBody := net.ReadRequestBody(w, r)
 	if requestBody == nil {

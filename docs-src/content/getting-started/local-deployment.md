@@ -98,7 +98,7 @@ make docker-forward-registry
 # Forwarding from [::1]:5000 -> 5000
 ```
 
-Leave this terminal open. We will execute the rest of the commands on 
+Leave this terminal open. We will execute the rest of the commands in  
 a separate terminal window.
 
 ## Build Container Images Locally
@@ -185,7 +185,7 @@ about **SPIKE**'s internals, or [learn more about **SPIKE**'s
 architecture][architecture] or [security model][security-model].
 
 You might also want to try [building **SPIKE** on a bare metal 
-Linux][bare-metal], if you want to see how **SPIKE** can be used on a bare
+Linux][bare-metal] if you want to see how **SPIKE** can be used on a bare
 metal Linux machine without using container orchestration such as *Kubernetes*
 
 

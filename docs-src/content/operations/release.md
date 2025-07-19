@@ -77,7 +77,7 @@ Release process:
 
 Note that these are instructions for a manual smoke test, and it's not a
 replacement for a full integration test. We may add more steps, but we'll
-keep it lightweight. --- Passing the smoke test means that the core components
+keep it lightweight---Passing the smoke test means that the core components
 and the features of the system are reliably functional.
 
 Here is a list of manual tests that can be done before every release:
