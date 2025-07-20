@@ -87,6 +87,10 @@ jobs:
       - name: Create kind ${{ matrix.k8s }} cluster
         run: |
           set -xe
+          teardown() {
+            kubectl get pods -A
+          }
+          trap 'EC=$? && trap - SIGTERM && teardown $EC' SIGINT SIGTERM EXIT
           make docker-build
           docker images
           docker tag spike-pilot:dev quay.io/spiffe/spike-pilot:dev
