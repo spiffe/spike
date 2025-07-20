@@ -75,14 +75,16 @@ jobs:
         with:
           version: v3.16.2
 
-      - name: Create kind v1.31.2 cluster
+      - name: Create kind v1.33.2 cluster
         uses: helm/kind-action@v1.9.0
         # Only build a kind cluster if there are chart changes to test.
         with:
           version: v0.24.0
-          node_image: kindest/node:v1.31.2
+          node_image: kindest/node:v1.33.2
           config: .github/kind/conf/kind-config.yaml
           verbosity: 1
 
       - name: Create kind ${{ matrix.k8s }} cluster
-        run: kubectl get nodes
+        run: |
+          make docker-build
+          docker images
