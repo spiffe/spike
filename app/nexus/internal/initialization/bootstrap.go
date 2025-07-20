@@ -66,7 +66,7 @@ func bootstrap(source *workloadapi.X509Source) {
 	nexusAlreadyBootstrapped := err == nil
 	if nexusAlreadyBootstrapped {
 		log.Log().Info(fName,
-			"msg", "Tombstone file exists, "+
+			"message", "Tombstone file exists, "+
 				"SPIKE Nexus is bootstrapped. Will try keeper recovery",
 		)
 
@@ -82,7 +82,7 @@ func bootstrap(source *workloadapi.X509Source) {
 		// This should not typically happen.
 
 		log.Log().Warn(fName,
-			"msg", "Failed to check tombstone file. Will try keeper recovery",
+			"message", "Failed to check tombstone file. Will try keeper recovery",
 			"err", err,
 		)
 

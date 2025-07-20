@@ -45,7 +45,7 @@ func StorePolicy(policy data.Policy) {
 	if err := be.StorePolicy(ctx, policy); err != nil {
 		// Log error but continue - memory is the source of truth
 		log.Log().Warn(fName,
-			"msg", "Failed to cache policy",
+			"message", "Failed to cache policy",
 			"id", policy.Id,
 			"err", err.Error(),
 		)
@@ -69,15 +69,15 @@ func ReadAllPolicies() map[string]*data.Policy {
 	)
 	defer cancel()
 
-	log.Log().Info(fName, "msg", "Loading policies from cache")
+	log.Log().Info(fName, "message", "Loading policies from cache")
 	cachedPolicies, err := retry.Do(ctx, func() (map[string]*data.Policy, error) {
-		log.Log().Info(fName, "msg", "Trying to load policies from cache")
+		log.Log().Info(fName, "message", "Trying to load policies from cache")
 		return be.LoadAllPolicies(ctx)
 	})
 
 	if err != nil {
 		log.Log().Warn(fName,
-			"msg", "Failed to load policies from cache after retries",
+			"message", "Failed to load policies from cache after retries",
 			"err", err.Error(),
 		)
 		return nil
@@ -117,7 +117,7 @@ func DeletePolicy(id string) {
 	if err := be.DeletePolicy(ctx, id); err != nil {
 		// Log error but continue - memory is the source of truth
 		log.Log().Warn(fName,
-			"msg", "Failed to delete policy from cache",
+			"message", "Failed to delete policy from cache",
 			"id", id,
 			"err", err.Error(),
 		)
@@ -157,7 +157,7 @@ func ReadPolicy(id string) *data.Policy {
 
 	if err != nil {
 		log.Log().Warn(fName,
-			"msg", "Failed to load policy from cache after retries",
+			"message", "Failed to load policy from cache after retries",
 			"id", id,
 			"err", err.Error(),
 		)

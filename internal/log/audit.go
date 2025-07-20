@@ -86,7 +86,7 @@ func Audit(entry AuditEntry) {
 	if err != nil {
 		// If you cannot audit, crashing is the best option.
 		logger.FatalLn("Audit",
-			"msg", "Problem marshalling audit entry",
+			"message", "Problem marshalling audit entry",
 			"err", err.Error())
 		return
 	}

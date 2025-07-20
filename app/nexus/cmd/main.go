@@ -33,15 +33,15 @@ func main() {
 	}
 
 	if mem.Lock() {
-		log.Log().Info(appName, "msg", "Successfully locked memory.")
+		log.Log().Info(appName, "message", "Successfully locked memory.")
 	} else {
-		log.Log().Info(appName, "msg", "Memory is not locked. Please disable swap.")
+		log.Log().Info(appName, "message", "Memory is not locked. Please disable swap.")
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	log.Log().Info(appName, "msg", "SPIFFE Trust Domain: "+env.TrustRoot())
+	log.Log().Info(appName, "message", "SPIFFE Trust Domain: "+env.TrustRoot())
 
 	fmt.Println("before trying to get source...")
 	source, selfSpiffeid, err := spiffe.Source(ctx, spiffe.EndpointSocket())
@@ -50,7 +50,7 @@ func main() {
 	}
 	defer spiffe.CloseSource(source)
 
-	log.Log().Info(appName, "msg", "self.spiffeid: "+selfSpiffeid)
+	log.Log().Info(appName, "message", "self.spiffeid: "+selfSpiffeid)
 
 	// I should be Nexus.
 	if !spiffeid.IsNexus(env.TrustRoot(), selfSpiffeid) {
@@ -59,7 +59,7 @@ func main() {
 
 	initialization.Initialize(source)
 
-	log.Log().Info(appName, "msg", fmt.Sprintf(
+	log.Log().Info(appName, "message", fmt.Sprintf(
 		"Started service: %s v%s",
 		appName, config.SpikeNexusVersion),
 	)

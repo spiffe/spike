@@ -87,9 +87,9 @@ func RouteDeleteSecret(
 
 	err = state.DeleteSecret(path, versions)
 	if err != nil {
-		log.Log().Error(fName, "msg", "Failed to delete secret", "err", err)
+		log.Log().Error(fName, "message", "Failed to delete secret", "err", err)
 	} else {
-		log.Log().Info(fName, "msg", "Secret deleted")
+		log.Log().Info(fName, "message", "Secret deleted")
 	}
 
 	responseBody := net.MarshalBody(reqres.SecretDeleteResponse{}, w)
@@ -98,6 +98,6 @@ func RouteDeleteSecret(
 	}
 
 	net.Respond(http.StatusOK, responseBody, w)
-	log.Log().Info(fName, "msg", data.ErrSuccess)
+	log.Log().Info(fName, "message", data.ErrSuccess)
 	return nil
 }

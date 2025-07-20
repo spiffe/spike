@@ -98,6 +98,6 @@ func RouteListPolicies(
 	}
 
 	net.Respond(http.StatusOK, responseBody, w)
-	log.Log().Info(fName, "msg", data.ErrSuccess)
+	log.Log().Info(fName, "message", data.ErrSuccess)
 	return nil
 }

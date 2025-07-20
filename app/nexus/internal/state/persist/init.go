@@ -68,7 +68,7 @@ func InitializeSqliteBackend(rootKey *[32]byte) backend.Backend {
 		// Log error but don't fail initialization
 		// The system can still work with just in-memory state
 		log.Log().Warn(fName,
-			"msg", "Failed to create SQLite backend",
+			"message", "Failed to create SQLite backend",
 			"err", err.Error(),
 		)
 		return nil
@@ -81,7 +81,7 @@ func InitializeSqliteBackend(rootKey *[32]byte) backend.Backend {
 
 	if err := dbBackend.Initialize(ctxC); err != nil {
 		log.Log().Warn(fName,
-			"msg", "Failed to initialize SQLite backend",
+			"message", "Failed to initialize SQLite backend",
 			"err", err.Error(),
 		)
 		return nil
@@ -97,7 +97,7 @@ func InitializeLiteBackend(rootKey *[32]byte) backend.Backend {
 		// Log error but don't fail initialization
 		// The system can still work with just in-memory state
 		log.Log().Warn(fName,
-			"msg", "Failed to create SQLite backend",
+			"message", "Failed to create SQLite backend",
 			"err", err.Error(),
 		)
 		return nil
@@ -131,7 +131,7 @@ func InitializeBackend(rootKey *[32]byte) {
 	const fName = "initializeBackend"
 
 	log.Log().Info(fName,
-		"msg", "Initializing backend", "storeType", env.BackendStoreType())
+		"message", "Initializing backend", "storeType", env.BackendStoreType())
 
 	backendMu.Lock()
 	defer backendMu.Unlock()
@@ -149,5 +149,5 @@ func InitializeBackend(rootKey *[32]byte) {
 		be = &memory.NoopStore{}
 	}
 
-	log.Log().Info(fName, "msg", "Backend initialized", "storeType", storeType)
+	log.Log().Info(fName, "message", "Backend initialized", "storeType", storeType)
 }

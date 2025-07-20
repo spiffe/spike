@@ -75,7 +75,7 @@ func RoutePutSecret(
 	path := request.Path
 
 	state.UpsertSecret(path, values)
-	log.Log().Info(fName, "msg", "Secret upserted")
+	log.Log().Info(fName, "message", "Secret upserted")
 
 	responseBody := net.MarshalBody(reqres.SecretPutResponse{}, w)
 	if responseBody == nil {
@@ -83,6 +83,6 @@ func RoutePutSecret(
 	}
 
 	net.Respond(http.StatusOK, responseBody, w)
-	log.Log().Info(fName, "msg", data.ErrSuccess)
+	log.Log().Info(fName, "message", data.ErrSuccess)
 	return nil
 }

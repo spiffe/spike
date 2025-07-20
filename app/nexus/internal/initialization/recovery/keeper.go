@@ -35,7 +35,7 @@ func iterateKeepersToBootstrap(
 		)
 		if err != nil {
 			log.Log().Warn(
-				fName, "msg", "Failed to join path", "url", keeperApiRoot,
+				fName, "message", "Failed to join path", "url", keeperApiRoot,
 			)
 			continue
 		}
@@ -46,7 +46,7 @@ func iterateKeepersToBootstrap(
 			kid, err := strconv.Atoi(keeperId)
 			if err != nil {
 				log.Log().Warn(
-					fName, "msg", "Failed to convert keeper id to int", "err", err)
+					fName, "message", "Failed to convert keeper id to int", "err", err)
 				continue
 			}
 
@@ -58,14 +58,14 @@ func iterateKeepersToBootstrap(
 
 		// If initialized, IDs start from 1. Zero means there is no match.
 		if share.ID.IsZero() {
-			log.Log().Info(fName, "msg",
+			log.Log().Info(fName, "message",
 				"Failed to find share for keeper", "keeper_id", keeperId)
 			continue
 		}
 
 		contribution, err := share.Value.MarshalBinary()
 		if err != nil {
-			log.Log().Info(fName, "msg",
+			log.Log().Info(fName, "message",
 				"Failed to marshal share", "err", err, "keeper_id", keeperId)
 			continue
 		}
@@ -76,7 +76,7 @@ func iterateKeepersToBootstrap(
 			// before the function returns.
 			mem.ClearBytes(contribution)
 
-			log.Log().Info(fName, "msg", "No data; moving on...")
+			log.Log().Info(fName, "message", "No data; moving on...")
 			continue
 		}
 
@@ -87,15 +87,15 @@ func iterateKeepersToBootstrap(
 		var res reqres.ShardContributionResponse
 		err = json.Unmarshal(data, &res)
 		if err != nil {
-			log.Log().Info(fName, "msg", "Failed to unmarshal response", "err", err)
+			log.Log().Info(fName, "message", "Failed to unmarshal response", "err", err)
 			continue
 		}
 
 		successfulKeepers[keeperId] = true
-		log.Log().Info(fName, "msg", "Success", "keeper_id", keeperId)
+		log.Log().Info(fName, "message", "Success", "keeper_id", keeperId)
 
 		if len(successfulKeepers) == env.ShamirShares() {
-			log.Log().Info(fName, "msg", "All keepers initialized")
+			log.Log().Info(fName, "message", "All keepers initialized")
 
 			tombstone := config.SpikeNexusTombstonePath()
 
@@ -117,7 +117,7 @@ func iterateKeepersToBootstrap(
 				log.FatalLn(fName + ": failed to create tombstone file: " + err.Error())
 			}
 
-			log.Log().Info(fName, "msg", "Tombstone file created successfully")
+			log.Log().Info(fName, "message", "Tombstone file created successfully")
 			return true
 		}
 	}
@@ -153,7 +153,7 @@ func iterateKeepersAndTryRecovery(
 		}
 
 		if mem.Zeroed32(res.Shard) {
-			log.Log().Info(fName, "msg", "Shard is zeroed")
+			log.Log().Info(fName, "message", "Shard is zeroed")
 			continue
 		}
 
@@ -173,7 +173,7 @@ func iterateKeepersAndTryRecovery(
 				// This is a configuration error; we cannot recover from it,
 				// and it may cause further security issues. Crash immediately.
 				log.FatalLn(
-					fName, "msg", "Failed to convert keeper Id to int", "err", err,
+					fName, "message", "Failed to convert keeper Id to int", "err", err,
 				)
 				continue
 			}

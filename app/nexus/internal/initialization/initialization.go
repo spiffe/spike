@@ -33,7 +33,7 @@ func Initialize(source *workloadapi.X509Source) {
 	const fName = "Initialize"
 	requireBootstrapping := env.BackendStoreType() == env.Sqlite || env.BackendStoreType() == env.Lite
 	if requireBootstrapping {
-		log.Log().Info(fName, "msg", "Backend store requires bootstrapping")
+		log.Log().Info(fName, "message", "Backend store requires bootstrapping")
 
 		// Try bootstrapping in a loop.
 		go bootstrap(source)
@@ -46,7 +46,7 @@ func Initialize(source *workloadapi.X509Source) {
 		return
 	}
 
-	log.Log().Info(fName, "msg", "Backend store does not require bootstrapping")
+	log.Log().Info(fName, "message", "Backend store does not require bootstrapping")
 
 	// Security: Use a static byte array and pass it as a pointer to avoid
 	// inadvertent pass-by-value copying / memory allocation.

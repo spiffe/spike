@@ -23,14 +23,14 @@ func ReadRequestBody(w http.ResponseWriter, r *http.Request) []byte {
 	body, err := net.RequestBody(r)
 	if err != nil {
 		log.Log().Info("readRequestBody",
-			"msg", "Problem reading request body",
+			"message", "Problem reading request body",
 			"err", err.Error())
 
 		w.WriteHeader(http.StatusBadRequest)
 		_, err := io.WriteString(w, "")
 		if err != nil {
 			log.Log().Info("readRequestBody",
-				"msg", "Problem writing response",
+				"message", "Problem writing response",
 				"err", err.Error())
 		}
 
@@ -38,13 +38,13 @@ func ReadRequestBody(w http.ResponseWriter, r *http.Request) []byte {
 	}
 
 	if body == nil {
-		log.Log().Info("readRequestBody", "msg", "No request body.")
+		log.Log().Info("readRequestBody", "message", "No request body.")
 
 		w.WriteHeader(http.StatusBadRequest)
 		_, err := io.WriteString(w, "")
 		if err != nil {
 			log.Log().Info("readRequestBody",
-				"msg", "Problem writing response",
+				"message", "Problem writing response",
 				"err", err.Error())
 		}
 		return []byte{}
@@ -100,7 +100,7 @@ func HandleRequest[Req any, Res any](
 		w, json.Unmarshal(requestBody, &request),
 	); err != nil {
 		log.Log().Error("HandleRequest",
-			"msg", "Problem unmarshalling request",
+			"message", "Problem unmarshalling request",
 			"err", err.Error())
 
 		responseBody := MarshalBody(errorResponse, w)

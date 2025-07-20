@@ -26,7 +26,7 @@ func shardUrl(keeperApiRoot string) string {
 	u, err := url.JoinPath(keeperApiRoot, string(apiUrl.SpikeKeeperUrlShard))
 	if err != nil {
 		log.Log().Warn(
-			fName, "msg", "Failed to join path", "url", keeperApiRoot,
+			fName, "message", "Failed to join path", "url", keeperApiRoot,
 		)
 		return ""
 	}
@@ -40,7 +40,7 @@ func shardResponse(source *workloadapi.X509Source, u string) []byte {
 	md, err := json.Marshal(shardRequest)
 	if err != nil {
 		log.Log().Warn(fName,
-			"msg", "Failed to marshal request",
+			"message", "Failed to marshal request",
 			"err", err)
 		return []byte{}
 	}
@@ -54,7 +54,7 @@ func shardResponse(source *workloadapi.X509Source, u string) []byte {
 
 	if err != nil {
 		log.Log().Warn(fName,
-			"msg", "Failed to create mTLS client",
+			"message", "Failed to create mTLS client",
 			"err", err)
 		return []byte{}
 	}
@@ -62,12 +62,12 @@ func shardResponse(source *workloadapi.X509Source, u string) []byte {
 	data, err := net.Post(client, u, md)
 	if err != nil {
 		log.Log().Warn(fName,
-			"msg", "Failed to post",
+			"message", "Failed to post",
 			"err", err)
 	}
 
 	if len(data) == 0 {
-		log.Log().Info(fName, "msg", "No data")
+		log.Log().Info(fName, "message", "No data")
 		return []byte{}
 	}
 
@@ -80,7 +80,7 @@ func unmarshalShardResponse(data []byte) *reqres.ShardResponse {
 	var res reqres.ShardResponse
 	err := json.Unmarshal(data, &res)
 	if err != nil {
-		log.Log().Info(fName, "msg",
+		log.Log().Info(fName, "message",
 			"Failed to unmarshal response", "err", err)
 		return nil
 	}
@@ -100,7 +100,7 @@ func shardContributionResponse(
 
 	if err != nil {
 		log.Log().Warn(fName,
-			"msg", "Failed to create mTLS client",
+			"message", "Failed to create mTLS client",
 			"err", err)
 		return []byte{}
 	}
@@ -114,13 +114,13 @@ func shardContributionResponse(
 	}
 
 	if zeroed {
-		log.Log().Info(fName, "msg", "All zeros")
+		log.Log().Info(fName, "message", "All zeros")
 		return []byte{}
 	}
 
 	if len(*contribution) != 32 {
 		log.Log().Warn(fName,
-			"msg", "invalid contribution length",
+			"message", "invalid contribution length",
 			"len", len(*contribution))
 
 		// Do not reset `contribution` as this function does not "own" it.
@@ -148,7 +148,7 @@ func shardContributionResponse(
 	md, err := json.Marshal(scr)
 	if err != nil {
 		log.Log().Warn(fName,
-			"msg", "Failed to marshal request",
+			"message", "Failed to marshal request",
 			"err", err)
 		return []byte{}
 	}
@@ -159,13 +159,13 @@ func shardContributionResponse(
 
 	data, err := net.Post(client, u, md)
 	if err != nil {
-		log.Log().Warn(fName, "msg",
+		log.Log().Warn(fName, "message",
 			"Failed to post",
 			"err", err)
 	}
 
 	if len(data) == 0 {
-		log.Log().Info(fName, "msg", "No data")
+		log.Log().Info(fName, "message", "No data")
 		return []byte{}
 	}
 

@@ -51,7 +51,7 @@ func RouteRecover(
 
 	requestBody := net.ReadRequestBody(w, r)
 	if requestBody == nil {
-		log.Log().Warn(fName, "msg", "requestBody is nil")
+		log.Log().Warn(fName, "message", "requestBody is nil")
 		return errors.ErrReadFailure
 	}
 
@@ -61,7 +61,7 @@ func RouteRecover(
 		reqres.RecoverResponse{Err: data.ErrBadInput},
 	)
 	if request == nil {
-		log.Log().Warn(fName, "msg", "request is nil")
+		log.Log().Warn(fName, "message", "request is nil")
 		return errors.ErrParseFailure
 	}
 
@@ -70,7 +70,7 @@ func RouteRecover(
 		return err
 	}
 
-	log.Log().Info(fName, "msg", "request is valid. Recovery shards requested.")
+	log.Log().Info(fName, "message", "request is valid. Recovery shards requested.")
 	shards := recovery.NewPilotRecoveryShards()
 
 	// Security: reset shards before the function exits.
@@ -81,7 +81,7 @@ func RouteRecover(
 	}()
 
 	if len(shards) < env.ShamirThreshold() {
-		log.Log().Error(fName, "msg", "not enough shards. Exiting.")
+		log.Log().Error(fName, "message", "not enough shards. Exiting.")
 		return errors.ErrNotFound
 	}
 
@@ -90,7 +90,7 @@ func RouteRecover(
 
 	for idx, shard := range shards {
 		if seenIndices[idx] {
-			log.Log().Error(fName, "msg", "duplicate index. Exiting.")
+			log.Log().Error(fName, "message", "duplicate index. Exiting.")
 			// Duplicate index.
 			return errors.ErrInvalidInput
 		}
@@ -103,7 +103,7 @@ func RouteRecover(
 
 		// Check for nil pointers
 		if shard == nil {
-			log.Log().Error(fName, "msg", "nil shard. Exiting.")
+			log.Log().Error(fName, "message", "nil shard. Exiting.")
 			return errors.ErrInvalidInput
 		}
 
@@ -116,13 +116,13 @@ func RouteRecover(
 			}
 		}
 		if zeroed {
-			log.Log().Error(fName, "msg", "zeroed shard. Exiting.")
+			log.Log().Error(fName, "message", "zeroed shard. Exiting.")
 			return errors.ErrInvalidInput
 		}
 
 		// Verify shard index is within valid range:
 		if idx < 1 || idx > env.ShamirShares() {
-			log.Log().Error(fName, "msg", "invalid index. Exiting.")
+			log.Log().Error(fName, "message", "invalid index. Exiting.")
 			return errors.ErrInvalidInput
 		}
 	}
@@ -136,6 +136,6 @@ func RouteRecover(
 	}()
 
 	net.Respond(http.StatusOK, responseBody, w)
-	log.Log().Info(fName, "msg", data.ErrSuccess)
+	log.Log().Info(fName, "message", data.ErrSuccess)
 	return nil
 }

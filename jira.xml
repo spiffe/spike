@@ -684,7 +684,7 @@
     <issue>
       exponentially back off here
 
-      log.Log().Info("tick", "msg", "Waiting for keepers to initialize")
+      log.Log().Info("tick", "message", "Waiting for keepers to initialize")
       time.Sleep(5 * time.Second)
 
       or maybe not; I'm not sure if it's worth the effort.
@@ -700,7 +700,7 @@
       if err := be.StoreSecret(ctx, path, *secret); err != nil {
       // Log error but continue - memory is the source of truth
       log.Log().Warn(fName,
-      "msg", "Failed to cache secret",
+      "message", "Failed to cache secret",
       "path", path,
       "err", err.Error(),
       )
@@ -727,7 +727,7 @@
       return
       }
 
-      log.Log().Info(fName, "msg", "Waiting for keepers to initialize")
+      log.Log().Info(fName, "message", "Waiting for keepers to initialize")
       // TODO: make the time configurable.
       time.Sleep(5 * time.Second)
       }
@@ -751,13 +751,13 @@
       for {
       select {
       case lt-ctx.Done():
-      log.Log().Warn(fName, "msg", "Bootstrap timed out after waiting threshold")
+      log.Log().Warn(fName, "message", "Bootstrap timed out after waiting threshold")
       // Implement fallback strategy or escalate the issue
       return
       default:
       attempts++
       if maxAttempts > 0 ++ attempts > maxAttempts {
-      log.Log().Warn(fName, "msg", "Exceeded maximum bootstrap attempts")
+      log.Log().Warn(fName, "message", "Exceeded maximum bootstrap attempts")
       // Implement fallback strategy or escalate the issue
       return
       }
@@ -769,7 +769,7 @@
       return
       }
 
-      log.Log().Info(fName, "msg", "Waiting for keepers to initialize",
+      log.Log().Info(fName, "message", "Waiting for keepers to initialize",
       "attempt", attempts, "maxAttempts", maxAttempts)
       time.Sleep(5 * time.Second)
       }
@@ -862,8 +862,8 @@
       * in-memory -- in-memory mode should disregard any keeper config.
     </issue>
     <issue kind="performance,research" severity="low" priority="low" fun="high">
-      {"time":"2025-04-25T13:24:52.652299515-07:00","level":"INFO","msg":"HydrateMemoryFromBackingStore","msg":"HydrateMemoryFromBackingStore: secrets loaded"}
-      {"time":"2025-04-25T13:24:52.652368182-07:00","level":"INFO","msg":"HydrateMemoryFromBackingStore","msg":"HydrateMemoryFromBackingStore: policies loaded"}
+      {"time":"2025-04-25T13:24:52.652299515-07:00","level":"INFO","m":"HydrateMemoryFromBackingStore","m":"HydrateMemoryFromBackingStore: secrets loaded"}
+      {"time":"2025-04-25T13:24:52.652368182-07:00","level":"INFO","m":"HydrateMemoryFromBackingStore","m":"HydrateMemoryFromBackingStore: policies loaded"}
       ^
       how can we know that this data has already been pushed.
       a brute force way is to hash the last payloads and compare with the hashes of the current payloads.

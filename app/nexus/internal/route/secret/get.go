@@ -89,7 +89,7 @@ func RouteGetSecret(
 
 	secret, err := state.GetSecret(path, version)
 	if err == nil {
-		log.Log().Info(fName, "msg", "Secret found")
+		log.Log().Info(fName, "message", "Secret found")
 	}
 	if err != nil {
 		return handleGetSecretError(err, w)
@@ -103,6 +103,6 @@ func RouteGetSecret(
 	}
 
 	net.Respond(http.StatusOK, responseBody, w)
-	log.Log().Info("routeGetSecret", "msg", data.ErrSuccess)
+	log.Log().Info("routeGetSecret", "message", data.ErrSuccess)
 	return nil
 }

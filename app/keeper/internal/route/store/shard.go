@@ -68,7 +68,7 @@ func RouteShard(
 	sh := state.ShardNoSync()
 
 	if mem.Zeroed32(sh) {
-		log.Log().Error(fName, "msg", "No shard found")
+		log.Log().Error(fName, "message", "No shard found")
 
 		responseBody := net.MarshalBody(reqres.ShardResponse{
 			Err: data.ErrNotFound,
@@ -87,7 +87,7 @@ func RouteShard(
 	}()
 
 	net.Respond(http.StatusOK, responseBody, w)
-	log.Log().Info(fName, "msg", data.ErrSuccess)
+	log.Log().Info(fName, "message", data.ErrSuccess)
 
 	return nil
 }

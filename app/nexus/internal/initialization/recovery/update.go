@@ -41,7 +41,7 @@ import (
 //   - []secretsharing.Share: The computed shares for the root secret
 func mustUpdateRecoveryInfo(rk *[32]byte) []secretsharing.Share {
 	const fName = "mustUpdateRecoveryInfo"
-	log.Log().Info(fName, "msg", "Updating recovery info")
+	log.Log().Info(fName, "message", "Updating recovery info")
 
 	// Save recovery information.
 	state.SetRootKey(rk)
@@ -83,7 +83,7 @@ func sendShardsToKeepers(
 
 		if err != nil {
 			log.Log().Warn(
-				fName, "msg", "Failed to join path", "url", keeperApiRoot,
+				fName, "message", "Failed to join path", "url", keeperApiRoot,
 			)
 			continue
 		}
@@ -96,13 +96,13 @@ func sendShardsToKeepers(
 
 		if err != nil {
 			log.Log().Warn(fName,
-				"msg", "Failed to create mTLS client",
+				"message", "Failed to create mTLS client",
 				"err", err)
 			continue
 		}
 
 		if state.RootKeyZero() {
-			log.Log().Warn(fName, "msg", "rootKey is zero; moving on...")
+			log.Log().Warn(fName, "message", "rootKey is zero; moving on...")
 			continue
 		}
 
@@ -114,7 +114,7 @@ func sendShardsToKeepers(
 			kid, err := strconv.Atoi(keeperId)
 			if err != nil {
 				log.Log().Warn(
-					fName, "msg", "Failed to convert keeper id to int", "err", err)
+					fName, "message", "Failed to convert keeper id to int", "err", err)
 				continue
 			}
 
@@ -126,7 +126,7 @@ func sendShardsToKeepers(
 
 		if share.ID.IsZero() {
 			log.Log().Warn(fName,
-				"msg", "Failed to find share for keeper", "keeper_id", keeperId)
+				"message", "Failed to find share for keeper", "keeper_id", keeperId)
 			continue
 		}
 
@@ -134,7 +134,7 @@ func sendShardsToKeepers(
 
 		contribution, err := share.Value.MarshalBinary()
 		if err != nil {
-			log.Log().Warn(fName, "msg", "Failed to marshal share",
+			log.Log().Warn(fName, "message", "Failed to marshal share",
 				"err", err, "keeper_id", keeperId)
 
 			// Security: Ensure that the contribution is zeroed out before
@@ -152,7 +152,7 @@ func sendShardsToKeepers(
 			}
 
 			log.Log().Warn(fName,
-				"msg", "Failed to marshal share",
+				"message", "Failed to marshal share",
 				"err", err, "keeper_id", keeperId)
 			continue
 		}
@@ -177,7 +177,7 @@ func sendShardsToKeepers(
 			}
 
 			log.Log().Warn(fName,
-				"msg", "invalid contribution length",
+				"message", "invalid contribution length",
 				"len", len(contribution), "keeper_id", keeperId)
 			continue
 		}
@@ -211,7 +211,7 @@ func sendShardsToKeepers(
 
 		if err != nil {
 			log.Log().Warn(fName,
-				"msg", "Failed to marshal request",
+				"message", "Failed to marshal request",
 				"err", err, "keeper_id", keeperId)
 			continue
 		}
@@ -222,7 +222,7 @@ func sendShardsToKeepers(
 		mem.ClearBytes(md)
 
 		if err != nil {
-			log.Log().Warn(fName, "msg",
+			log.Log().Warn(fName, "message",
 				"Failed to post",
 				"err", err, "keeper_id", keeperId)
 			continue

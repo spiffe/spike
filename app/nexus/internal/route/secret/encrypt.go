@@ -30,9 +30,9 @@ func RouteEncrypt(
 	if _, err := io.ReadFull(rand.Reader, nonce); err != nil {
 		return fmt.Errorf("failed to generate nonce: %w", err)
 	}
-	log.Log().Info(fName, "msg", fmt.Sprintf("Encrypt %d %d", len(nonce), len(requestBody)))
+	log.Log().Info(fName, "message", fmt.Sprintf("Encrypt %d %d", len(nonce), len(requestBody)))
 	ciphertext := c.Seal(nil, nonce, requestBody, nil)
-	log.Log().Info(fName, "msg", fmt.Sprintf("len after %d %d", len(nonce), len(ciphertext)))
+	log.Log().Info(fName, "message", fmt.Sprintf("len after %d %d", len(nonce), len(ciphertext)))
 	v := byte('1')
 	_, err := w.Write([]byte{v})
 	if err != nil {
