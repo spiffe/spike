@@ -87,8 +87,10 @@ jobs:
         run: |
           set -xe
           teardown() {
-            kubectl get pods -A
-            kubectl describe pods -A
+            if [ $1 -ne 0 ]; then
+              kubectl get pods -A
+              kubectl describe pods -A
+            fi
           }
           trap 'EC=$? && trap - SIGTERM && teardown $EC' SIGINT SIGTERM EXIT
           make docker-build
