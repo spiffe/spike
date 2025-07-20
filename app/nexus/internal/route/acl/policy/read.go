@@ -110,9 +110,9 @@ func RouteGetPolicy(
 
 	policy, err := state.GetPolicy(policyId)
 	if err == nil {
-		log.Log().Info(fName, "msg", "Policy found")
+		log.Log().Info(fName, "message", "Policy found")
 	} else if errors.Is(err, state.ErrPolicyNotFound) {
-		log.Log().Info(fName, "msg", "Policy not found")
+		log.Log().Info(fName, "message", "Policy not found")
 
 		res := reqres.PolicyReadResponse{Err: data.ErrNotFound}
 		responseBody := net.MarshalBody(res, w)
@@ -121,12 +121,12 @@ func RouteGetPolicy(
 		}
 
 		net.Respond(http.StatusNotFound, responseBody, w)
-		log.Log().Info(fName, "msg", "Policy not found: returning nil")
+		log.Log().Info(fName, "message", "Policy not found: returning nil")
 		return nil
 	} else {
 		// I should not be here, normally.
 
-		log.Log().Info(fName, "msg", "Failed to retrieve policy", "err", err)
+		log.Log().Info(fName, "message", "Failed to retrieve policy", "err", err)
 
 		responseBody := net.MarshalBody(reqres.PolicyReadResponse{
 			Err: data.ErrInternal}, w,
@@ -136,7 +136,10 @@ func RouteGetPolicy(
 		}
 
 		net.Respond(http.StatusInternalServerError, responseBody, w)
-		log.Log().Warn(fName, "msg", data.ErrInternal)
+
+		// TODO: the first argument to an slog logger is called `msg`
+		// so the second `msg` parameter is confusing and needs rename.
+		log.Log().Warn(fName, "message", data.ErrInternal)
 		return err
 	}
 
@@ -148,7 +151,7 @@ func RouteGetPolicy(
 	}
 
 	net.Respond(http.StatusOK, responseBody, w)
-	log.Log().Info(fName, "msg", data.ErrSuccess)
+	log.Log().Info(fName, "message", data.ErrSuccess)
 
 	return nil
 }

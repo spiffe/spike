@@ -99,14 +99,14 @@ func RoutePutPolicy(
 		CreatedBy:       "",
 	})
 	if err != nil {
-		log.Log().Warn(fName, "msg", "Failed to create policy", "err", err)
+		log.Log().Warn(fName, "message", "Failed to create policy", "err", err)
 
 		responseBody := net.MarshalBody(reqres.PolicyCreateResponse{
 			Err: data.ErrInternal,
 		}, w)
 
 		net.Respond(http.StatusInternalServerError, responseBody, w)
-		log.Log().Error(fName, "msg", data.ErrInternal)
+		log.Log().Error(fName, "message", data.ErrInternal)
 
 		return err
 	}
@@ -116,7 +116,7 @@ func RoutePutPolicy(
 	}, w)
 
 	net.Respond(http.StatusOK, responseBody, w)
-	log.Log().Info(fName, "msg", data.ErrSuccess)
+	log.Log().Info(fName, "message", data.ErrSuccess)
 
 	return nil
 }

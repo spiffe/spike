@@ -34,7 +34,7 @@ func MarshalBody(res any, w http.ResponseWriter) []byte {
 
 	if err != nil {
 		log.Log().Error("marshalBody",
-			"msg", "Problem generating response",
+			"message", "Problem generating response",
 			"err", err.Error())
 
 		w.Header().Set("Content-Type", "application/json")
@@ -43,7 +43,7 @@ func MarshalBody(res any, w http.ResponseWriter) []byte {
 		_, err = w.Write([]byte(`{"error":"internal server error"}`))
 		if err != nil {
 			log.Log().Error("marshalBody",
-				"msg", "Problem writing response",
+				"message", "Problem writing response",
 				"err", err.Error())
 			return nil
 		}
@@ -78,7 +78,7 @@ func Respond(statusCode int, body []byte, w http.ResponseWriter) {
 	_, err := w.Write(body)
 	if err != nil {
 		log.Log().Error("routeKeep",
-			"msg", "Problem writing response",
+			"message", "Problem writing response",
 			"err", err.Error())
 	}
 }
@@ -117,7 +117,7 @@ func Fallback(
 
 	if _, err := w.Write(body); err != nil {
 		log.Log().Error("routeFallback",
-			"msg", "Problem writing response",
+			"message", "Problem writing response",
 			"err", err.Error())
 		return err
 	}
@@ -163,7 +163,7 @@ func NotReady(
 
 	if _, err := w.Write(body); err != nil {
 		log.Log().Error("routeNotReady",
-			"msg", "Problem writing response",
+			"message", "Problem writing response",
 			"err", err.Error())
 		return err
 	}

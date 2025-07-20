@@ -74,7 +74,7 @@ func sanityCheck(secret group.Scalar, shares []shamir.Share) {
 func computeShares() (group.Scalar, []shamir.Share) {
 	const fName = "computeShares"
 
-	log.Log().Info(fName, "msg", "Computing Shamir shares")
+	log.Log().Info(fName, "message", "Computing Shamir shares")
 
 	state.LockRootKey()
 	defer state.UnlockRootKey()
@@ -103,7 +103,7 @@ func computeShares() (group.Scalar, []shamir.Share) {
 	reader := crypto.NewDeterministicReader(rk[:])
 	ss := shamir.New(reader, t, secret)
 
-	log.Log().Info(fName, "msg", "Generated Shamir shares")
+	log.Log().Info(fName, "message", "Generated Shamir shares")
 
 	computedShares := ss.Share(n)
 

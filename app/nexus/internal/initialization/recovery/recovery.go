@@ -50,12 +50,12 @@ var (
 func RecoverBackingStoreUsingKeeperShards(source *workloadapi.X509Source) {
 	const fName = "RecoverBackingStoreUsingKeeperShards"
 
-	log.Log().Info(fName, "msg", "Recovering backing store using keeper shards")
+	log.Log().Info(fName, "message", "Recovering backing store using keeper shards")
 
 	successfulKeeperShards := make(map[string]*[32]byte)
 	// Security: Ensure the shards are zeroed out after use.
 	defer func() {
-		log.Log().Info(fName, "msg", "Resetting successfulKeeperShards")
+		log.Log().Info(fName, "message", "Resetting successfulKeeperShards")
 		for id := range successfulKeeperShards {
 			// Note: you cannot simply use `mem.ClearRawBytes(successfulKeeperShards)`
 			// because it will reset the pointer but not the data it points to.
@@ -69,24 +69,24 @@ func RecoverBackingStoreUsingKeeperShards(source *workloadapi.X509Source) {
 	defer cancel()
 
 	_, err := retry.Do(ctx, func() (bool, error) {
-		log.Log().Info(fName, "msg", "retry:"+time.Now().String())
+		log.Log().Info(fName, "message", "retry:"+time.Now().String())
 
 		recoverySuccessful := iterateKeepersAndTryRecovery(
 			source, successfulKeeperShards,
 		)
 		if recoverySuccessful {
-			log.Log().Info(fName, "msg", "Recovery successful")
+			log.Log().Info(fName, "message", "Recovery successful")
 			return true, nil
 		}
 
-		log.Log().Warn(fName, "msg", "Recovery unsuccessful. Will retry.")
-		log.Log().Warn(fName, "msg",
+		log.Log().Warn(fName, "message", "Recovery unsuccessful. Will retry.")
+		log.Log().Warn(fName, "message",
 			fmt.Sprintf(
 				"Successful keepers: %d", len(successfulKeeperShards),
 			),
 		)
-		log.Log().Warn(fName, "msg", "!!! YOU MAY NEED TO MANUALLY BOOSTRAP !!!")
-		log.Log().Info(fName, "msg", "Waiting for keepers to respond")
+		log.Log().Warn(fName, "message", "!!! YOU MAY NEED TO MANUALLY BOOSTRAP !!!")
+		log.Log().Info(fName, "message", "Waiting for keepers to respond")
 		return false, ErrRecoveryRetry
 	},
 		retry.WithBackOffOptions(
@@ -120,20 +120,20 @@ func RecoverBackingStoreUsingKeeperShards(source *workloadapi.X509Source) {
 func HydrateMemoryFromBackingStore() {
 	const fName = "HydrateMemoryFromBackingStore"
 
-	log.Log().Info(fName, "msg", "HydrateMemoryFromBackingStore")
+	log.Log().Info(fName, "message", "HydrateMemoryFromBackingStore")
 
 	secrets := persist.ReadAllSecrets()
 	if len(secrets) > 0 {
 		state.ImportSecrets(secrets)
 	}
-	log.Log().Info(fName, "msg", "HydrateMemoryFromBackingStore: secrets loaded")
+	log.Log().Info(fName, "message", "HydrateMemoryFromBackingStore: secrets loaded")
 
 	policies := persist.ReadAllPolicies()
 	if len(policies) > 0 {
 		state.ImportPolicies(policies)
 	}
 
-	log.Log().Info(fName, "msg", "HydrateMemoryFromBackingStore: policies loaded")
+	log.Log().Info(fName, "message", "HydrateMemoryFromBackingStore: policies loaded")
 }
 
 // RestoreBackingStoreUsingPilotShards restores the backing store using the
@@ -157,7 +157,7 @@ func HydrateMemoryFromBackingStore() {
 func RestoreBackingStoreUsingPilotShards(shards []ShamirShard) {
 	const fName = "RestoreBackingStoreUsingPilotShards"
 
-	log.Log().Info(fName, "msg", "Restoring backing store using pilot shards")
+	log.Log().Info(fName, "message", "Restoring backing store using pilot shards")
 
 	// Sanity check:
 	for shard := range shards {
@@ -167,26 +167,26 @@ func RestoreBackingStoreUsingPilotShards(shards []ShamirShard) {
 		if mem.Zeroed32(value) || id == 0 {
 			log.Log().Error(
 				fName,
-				"msg", "Bad input: ID or Value of a shard is zero. Exiting recovery",
+				"message", "Bad input: ID or Value of a shard is zero. Exiting recovery",
 			)
 			return
 		}
 	}
 
 	log.Log().Info(fName,
-		"msg", "Recovering backing store using pilot shards",
+		"message", "Recovering backing store using pilot shards",
 		"threshold", env.ShamirThreshold(),
 		"len", len(shards),
 	)
 
 	// Ensure we have at least the threshold number of shards
 	if len(shards) < env.ShamirThreshold() {
-		log.Log().Error(fName, "msg", "Insufficient shards for recovery",
+		log.Log().Error(fName, "message", "Insufficient shards for recovery",
 			"provided", len(shards), "required", env.ShamirThreshold())
 		return
 	}
 
-	log.Log().Info(fName, "msg", "Recovering backing store using pilot shards")
+	log.Log().Info(fName, "message", "Recovering backing store using pilot shards")
 
 	// Recover the root key using the threshold number of shards
 	binaryRec := RecoverRootKey(shards)
@@ -195,7 +195,7 @@ func RestoreBackingStoreUsingPilotShards(shards []ShamirShard) {
 		mem.ClearRawBytes(binaryRec)
 	}()
 
-	log.Log().Info(fName, "msg", "Initializing state and root key")
+	log.Log().Info(fName, "message", "Initializing state and root key")
 	state.Initialize(binaryRec)
 	state.SetRootKey(binaryRec)
 
@@ -203,7 +203,7 @@ func RestoreBackingStoreUsingPilotShards(shards []ShamirShard) {
 		context.Background(), spiffe.EndpointSocket(),
 	)
 	if err != nil {
-		log.Log().Info(fName, "msg", "Failed to create source", "err", err)
+		log.Log().Info(fName, "message", "Failed to create source", "err", err)
 		return
 	}
 	defer spiffe.CloseSource(source)
@@ -228,17 +228,17 @@ func RestoreBackingStoreUsingPilotShards(shards []ShamirShard) {
 func SendShardsPeriodically(source *workloadapi.X509Source) {
 	const fName = "SendShardsPeriodically"
 
-	log.Log().Info(fName, "msg", "Will send shards to keepers")
+	log.Log().Info(fName, "message", "Will send shards to keepers")
 
 	ticker := time.NewTicker(env.RecoveryKeeperUpdateInterval())
 	defer ticker.Stop()
 
 	for range ticker.C {
-		log.Log().Info(fName, "msg", "Sending shards to keepers")
+		log.Log().Info(fName, "message", "Sending shards to keepers")
 
 		// if no root key, then skip.
 		if state.RootKeyZero() {
-			log.Log().Warn(fName, "msg", "No root key; skipping")
+			log.Log().Warn(fName, "message", "No root key; skipping")
 			continue
 		}
 
@@ -278,10 +278,10 @@ func SendShardsPeriodically(source *workloadapi.X509Source) {
 //	}
 func NewPilotRecoveryShards() map[int]*[32]byte {
 	const fName = "NewPilotRecoveryShards"
-	log.Log().Info(fName, "msg", "Generating pilot recovery shards")
+	log.Log().Info(fName, "message", "Generating pilot recovery shards")
 
 	if state.RootKeyZero() {
-		log.Log().Warn(fName, "msg", "No root key; skipping")
+		log.Log().Warn(fName, "message", "No root key; skipping")
 		return nil
 	}
 
@@ -298,22 +298,22 @@ func NewPilotRecoveryShards() map[int]*[32]byte {
 	var result = make(map[int]*[32]byte)
 
 	for _, share := range rootShares {
-		log.Log().Info(fName, "msg", "Generating share", "share.id", share.ID)
+		log.Log().Info(fName, "message", "Generating share", "share.id", share.ID)
 
 		contribution, err := share.Value.MarshalBinary()
 		if err != nil {
-			log.Log().Error(fName, "msg", "Failed to marshal share")
+			log.Log().Error(fName, "message", "Failed to marshal share")
 			return nil
 		}
 
 		if len(contribution) != 32 {
-			log.Log().Error(fName, "msg", "Length of share is unexpected")
+			log.Log().Error(fName, "message", "Length of share is unexpected")
 			return nil
 		}
 
 		bb, err := share.ID.MarshalBinary()
 		if err != nil {
-			log.Log().Error(fName, "msg", "Failed to unmarshal share Id")
+			log.Log().Error(fName, "message", "Failed to unmarshal share Id")
 			return nil
 		}
 
@@ -321,19 +321,19 @@ func NewPilotRecoveryShards() map[int]*[32]byte {
 		ii := bigInt.Uint64()
 
 		if len(contribution) != 32 {
-			log.Log().Error(fName, "msg", "Length of share is unexpected")
+			log.Log().Error(fName, "message", "Length of share is unexpected")
 			return nil
 		}
 
 		var rs [32]byte
 		copy(rs[:], contribution)
 
-		log.Log().Info(fName, "msg", "Generated shares", "len", len(rs))
+		log.Log().Info(fName, "message", "Generated shares", "len", len(rs))
 
 		result[int(ii)] = &rs
 	}
 
-	log.Log().Info(fName, "msg", "Successfully generated pilot recovery shards.")
+	log.Log().Info(fName, "message", "Successfully generated pilot recovery shards.")
 	return result
 }
 
@@ -357,11 +357,11 @@ func NewPilotRecoveryShards() map[int]*[32]byte {
 func BootstrapBackingStoreWithNewRootKey(source *workloadapi.X509Source) {
 	const fName = "BootstrapBackingStoreWithNewRootKey"
 
-	log.Log().Info(fName, "msg",
+	log.Log().Info(fName, "message",
 		"Tombstone file does not exist. Bootstrapping SPIKE Nexus...")
 
 	if !state.RootKeyZero() {
-		log.Log().Info(fName, "msg",
+		log.Log().Info(fName, "message",
 			"Recovery info found. Backing store already bootstrapped.",
 		)
 		return
@@ -385,7 +385,7 @@ func BootstrapBackingStoreWithNewRootKey(source *workloadapi.X509Source) {
 	}
 
 	state.Initialize(&seed)
-	log.Log().Info(fName, "msg", "Initialized the backing store")
+	log.Log().Info(fName, "message", "Initialized the backing store")
 
 	// Compute Shamir shares out of the root key.
 	rootShares := mustUpdateRecoveryInfo(&seed)
@@ -416,7 +416,7 @@ func BootstrapBackingStoreWithNewRootKey(source *workloadapi.X509Source) {
 			return
 		}
 
-		log.Log().Info(fName, "msg", "Waiting for keepers to initialize")
+		log.Log().Info(fName, "message", "Waiting for keepers to initialize")
 		time.Sleep(env.RecoveryOperationPollInterval())
 	}
 }

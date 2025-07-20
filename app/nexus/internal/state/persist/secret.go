@@ -44,14 +44,14 @@ func ReadSecret(path string, version int) *kv.Value {
 	)
 	defer cancel()
 
-	log.Log().Info(fName, "msg", "Loading secret from cache")
+	log.Log().Info(fName, "message", "Loading secret from cache")
 	cachedSecret, err := retry.Do(ctx, func() (*kv.Value, error) {
 		return be.LoadSecret(ctx, path)
 	})
 
 	if err != nil {
 		log.Log().Warn("readSecret",
-			"msg", "Failed to load secret from cache after retries",
+			"message", "Failed to load secret from cache after retries",
 			"path", path,
 			"err", err.Error(),
 		)
@@ -96,15 +96,15 @@ func ReadAllSecrets() map[string]*kv.Value {
 	)
 	defer cancel()
 
-	log.Log().Info(fName, "msg", "Loading secrets from cache")
+	log.Log().Info(fName, "message", "Loading secrets from cache")
 	cachedSecrets, err := retry.Do(ctx, func() (map[string]*kv.Value, error) {
-		log.Log().Info(fName, "msg", "Trying to load secrets from cache")
+		log.Log().Info(fName, "message", "Trying to load secrets from cache")
 		return be.LoadAllSecrets(ctx)
 	})
 
 	if err != nil {
 		log.Log().Warn(fName,
-			"msg", "Failed to load secrets from cache after retries",
+			"message", "Failed to load secrets from cache after retries",
 			"err", err.Error(),
 		)
 		return nil
@@ -137,7 +137,7 @@ func StoreSecret(kv *kv.KV, path string) {
 	// Get the full secret for caching
 	secret, err := kv.GetRawSecret(path)
 	if err != nil {
-		log.Log().Info(fName, "msg", err.Error())
+		log.Log().Info(fName, "message", err.Error())
 	}
 
 	if secret == nil {
@@ -153,7 +153,7 @@ func StoreSecret(kv *kv.KV, path string) {
 	if err := be.StoreSecret(ctx, path, *secret); err != nil {
 		// Log error but continue - memory is the source of truth
 		log.Log().Warn(fName,
-			"msg", "Failed to cache secret",
+			"message", "Failed to cache secret",
 			"path", path,
 			"err", err.Error(),
 		)

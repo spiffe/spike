@@ -86,7 +86,7 @@ func RootKeyZero() bool {
 //   - rk: Pointer to a 32-byte array containing the new root key value
 func SetRootKey(rk *[32]byte) {
 	fName := "SetRootKey"
-	log.Log().Info(fName, "msg", "Setting root key")
+	log.Log().Info(fName, "message", "Setting root key")
 
 	rootKeyMu.Lock()
 	defer rootKeyMu.Unlock()
@@ -95,5 +95,5 @@ func SetRootKey(rk *[32]byte) {
 		rootKey[i] = rk[i]
 	}
 
-	log.Log().Info(fName, "msg", "Root key set")
+	log.Log().Info(fName, "message", "Root key set")
 }

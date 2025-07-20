@@ -120,6 +120,6 @@ func RouteGetSecretMetadata(
 	}
 
 	net.Respond(http.StatusOK, responseBody, w)
-	log.Log().Info("routeGetSecret", "msg", "OK")
+	log.Log().Info("routeGetSecret", "message", "OK")
 	return nil
 }

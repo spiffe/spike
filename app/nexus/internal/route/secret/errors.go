@@ -21,7 +21,7 @@ func handleGetSecretError(err error, w http.ResponseWriter) error {
 	fName := "handleGetSecretError"
 
 	if errors.Is(err, kv.ErrItemNotFound) {
-		log.Log().Info(fName, "msg", "Secret not found")
+		log.Log().Info(fName, "message", "Secret not found")
 
 		res := reqres.SecretReadResponse{Err: data.ErrNotFound}
 		responseBody := net.MarshalBody(res, w)
@@ -30,11 +30,11 @@ func handleGetSecretError(err error, w http.ResponseWriter) error {
 		}
 
 		net.Respond(http.StatusNotFound, responseBody, w)
-		log.Log().Info("routeGetSecret", "msg", "not found")
+		log.Log().Info("routeGetSecret", "message", "not found")
 		return nil
 	}
 
-	log.Log().Warn(fName, "msg", "Failed to retrieve secret", "err", err)
+	log.Log().Warn(fName, "message", "Failed to retrieve secret", "err", err)
 
 	responseBody := net.MarshalBody(reqres.SecretReadResponse{
 		Err: data.ErrInternal}, w,
@@ -44,7 +44,7 @@ func handleGetSecretError(err error, w http.ResponseWriter) error {
 	}
 
 	net.Respond(http.StatusInternalServerError, responseBody, w)
-	log.Log().Error(fName, "msg", data.ErrInternal)
+	log.Log().Error(fName, "message", data.ErrInternal)
 	return err
 }
 
@@ -52,7 +52,7 @@ func handleGetSecretMetadataError(err error, w http.ResponseWriter) error {
 	fName := "handleGetSecretMetadataError"
 
 	if errors.Is(err, kv.ErrItemNotFound) {
-		log.Log().Info(fName, "msg", "Secret not found")
+		log.Log().Info(fName, "message", "Secret not found")
 
 		res := reqres.SecretMetadataResponse{Err: data.ErrNotFound}
 		responseBody := net.MarshalBody(res, w)
@@ -64,7 +64,7 @@ func handleGetSecretMetadataError(err error, w http.ResponseWriter) error {
 		return nil
 	}
 
-	log.Log().Info(fName, "msg",
+	log.Log().Info(fName, "message",
 		"Failed to retrieve secret", "err", err)
 	responseBody := net.MarshalBody(reqres.SecretMetadataResponse{
 		Err: "Internal server error"}, w,

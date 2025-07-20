@@ -32,9 +32,9 @@ func main() {
 	}
 
 	if mem.Lock() {
-		log.Log().Info(appName, "msg", "Successfully locked memory.")
+		log.Log().Info(appName, "message", "Successfully locked memory.")
 	} else {
-		log.Log().Info(appName, "msg", "Memory is not locked. Please disable swap.")
+		log.Log().Info(appName, "message", "Memory is not locked. Please disable swap.")
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
@@ -52,7 +52,7 @@ func main() {
 	}
 
 	log.Log().Info(
-		appName, "msg",
+		appName, "message",
 		fmt.Sprintf("Started service: %s v%s", appName, config.SpikeKeeperVersion),
 	)
 
