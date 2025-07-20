@@ -21,7 +21,7 @@ spec:
           yum install -y tar gzip
           curl https://dl.min.io/client/mc/release/linux-amd64/mc -o /bin/mc
           curl -L https://github.com/spiffe/aws-spiffe-workload-helper/releases/download/v0.0.3/aws-spiffe-workload-helper_Linux_x86_64.tar.gz -o /tmp/aws-helper.tgz
-          curl -L https://github.com/spiffe/spire/releases/download/v1.12.4/spire-1.12.4-linux-amd64-musl.tar.gz -o spire.tgz
+          curl -L https://github.com/spiffe/spire/releases/download/v1.12.4/spire-1.12.4-linux-amd64-musl.tar.gz -o /tmp/spire.tgz
           cd /tmp
           tar -xvf aws-helper.tgz
           tar -xvf spire.tgz
