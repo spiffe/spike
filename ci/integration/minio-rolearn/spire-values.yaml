@@ -34,6 +34,9 @@ spiffe-oidc-discovery-provider:
 
 spike-pilot:
   enabled: true
+  image:
+    pullPolicy: Never
+    tag: dev
   shell:
     image:
       registry: quay.io
@@ -42,7 +45,13 @@ spike-pilot:
 
 spike-keeper:
   enabled: true
+  image:
+    pullPolicy: Never
+    tag: dev
 
 spike-nexus:
   enabled: true
+  image:
+    pullPolicy: Never
+    tag: dev
   backendStore: lite

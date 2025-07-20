@@ -86,5 +86,12 @@ jobs:
 
       - name: Create kind ${{ matrix.k8s }} cluster
         run: |
+          set -xe
           make docker-build
           docker images
+          docker tag spike-pilot:dev quay.io/spiffe/spike-pilot:dev
+          docker tag spike-nexus:dev quay.io/spiffe/spike-keeper:dev
+          docker tag spike-keeper:dev quay.io/spiffe/spike-keeper:dev
+          cd ci/integration/minio-rolearn
+          ./setup.sh
+          ./test.sh

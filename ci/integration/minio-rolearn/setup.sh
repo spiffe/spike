@@ -5,7 +5,19 @@ SCRIPTPATH="$(dirname "${SCRIPT}")"
 BASEPATH="${SCRIPTPATH}/../../../"
 
 helm upgrade --install -n spire-server spire-crds spire-crds --repo https://spiffe.github.io/helm-charts-hardened/ --create-namespace
-helm upgrade --install -n spire-server spire /home/kfox/git/helm-charts-hardened4/charts/spire -f "${SCRIPTPATH}/spire-values.yaml" --wait
+helm upgrade --install -n spire-server spire spire --repo https://spiffe.github.io/helm-charts-hardened/ -f "${SCRIPTPATH}/spire-values.yaml" --wait
+#FIXME remove once upstream chart supports this
+kubectl patch statefulset -n spire-server spire-spike-nexus --type='strategic' -p '
+spec:
+  template:
+    spec:
+      containers:
+      - name: spire-spike-nexus
+        env:
+        - name: SPIKE_NEXUS_BACKEND_STORE
+          value: lite
+'
+kubectl rollout status statefulset/spire-spike-nexus -n spire-server --watch --timeout=5m
 kubectl apply -f "${SCRIPTPATH}/test.yaml"
 helm upgrade --install minio -n minio --create-namespace oci://registry-1.docker.io/bitnamicharts/minio -f "${SCRIPTPATH}/minio-values.yaml"
 kubectl rollout restart -n minio deployment/minio
