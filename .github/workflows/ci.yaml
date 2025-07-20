@@ -94,7 +94,7 @@ jobs:
           make docker-build
           docker images
           docker tag spike-pilot:dev ghcr.io/spiffe/spike-pilot:dev
-          docker tag spike-nexus:dev ghcr.io/spiffe/spike-keeper:dev
+          docker tag spike-nexus:dev ghcr.io/spiffe/spike-nexus:dev
           docker tag spike-keeper:dev ghcr.io/spiffe/spike-keeper:dev
           cd ci/integration/minio-rolearn
           ./setup.sh
