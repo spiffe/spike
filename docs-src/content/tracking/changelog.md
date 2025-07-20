@@ -12,13 +12,30 @@ sort_by = "weight"
 
 ## Recent
 
+## [0.4.2] - 2025-07-19
+
+### Added
+
 * Ability to configure to not how SPIKE banner on startup.
 * Ability to configure to show a warning if memory locking is not
   available on the system.
 * SPIKE can now be deployed from SPIFFE helm charts. Tested and verified!
-* Moved logging to SPIKE SDK.
+* Documentation updates.
+* SPIKE can be now be installed from [SPIFFE Helm 
+  Charts](https://github.com/spiffe/helm-charts-hardened) and can 
+  [federate secrets across clusters](https://vimeo.com/v0lkan/spike-federation)
+
+### Changed
+
+* Moved logging to SPIKE SDK. VSecM v2 will share the same logging setup.
 * `spike policy` command now accepts file input; you can design your policies
   as `yaml` files and then `spike policy apply -f` them.
+
+### Security
+
+* Fixed [`GHSA-fv92-fjc5-jj9h`: `mapstructure` May Leak Sensitive Information 
+  in Logs When Processing Malformed 
+  Data](https://github.com/spiffe/spike/security/dependabot/6)
 
 ## [0.4.1] - 2025-06-01 (*prerelease*)
 
