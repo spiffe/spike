@@ -61,3 +61,28 @@ jobs:
         uses: golangci/golangci-lint-action@v6
         with:
           version: v1.64
+  integration:
+    name: Integration Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4.1.1
+        with:
+          fetch-depth: 0
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v3.5
+        with:
+          version: v3.16.2
+
+      - name: Create kind v1.31.2 cluster
+        uses: helm/kind-action@v1.9.0
+        # Only build a kind cluster if there are chart changes to test.
+        with:
+          version: v0.24.0
+          node_image: kindest/node:v1.31.2
+          config: .github/kind/conf/kind-config.yaml
+          verbosity: 1
+
+      - name: Create kind ${{ matrix.k8s }} cluster
+        run: kubectl get nodes
