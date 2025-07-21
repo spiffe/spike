@@ -20,6 +20,8 @@ type DataStore struct {
 	Cipher cipher.AEAD // Encryption Cipher for data protection
 }
 
+// New creates a new Backend with AES-GCM encryption using the provided key.
+// Returns an error if cipher initialization fails.
 func New(rootKey *[32]byte) (backend.Backend, error) {
 	block, err := aes.NewCipher(rootKey[:])
 	if err != nil {
@@ -36,6 +38,7 @@ func New(rootKey *[32]byte) (backend.Backend, error) {
 	}, nil
 }
 
+// GetCipher returns the encryption cipher used for data protection.
 func (ds *DataStore) GetCipher() cipher.AEAD {
 	return ds.Cipher
 }
