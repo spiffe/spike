@@ -61,3 +61,46 @@ jobs:
         uses: golangci/golangci-lint-action@v6
         with:
           version: v1.64
+  integration:
+    name: Integration Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4.1.1
+        with:
+          fetch-depth: 0
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v3.5
+        with:
+          version: v3.16.2
+
+      - name: Create kind v1.33.1 cluster
+        uses: helm/kind-action@v1.9.0
+        with:
+          version: v0.29.0
+          node_image: kindest/node:v1.33.1
+          config: .github/kind/conf/kind-config.yaml
+          verbosity: 1
+
+      - name: Create kind ${{ matrix.k8s }} cluster
+        run: |
+          set -xe
+          teardown() {
+            if [ $1 -ne 0 ]; then
+              kubectl get pods -A
+              kubectl describe pods -A
+            fi
+          }
+          trap 'EC=$? && trap - SIGTERM && teardown $EC' SIGINT SIGTERM EXIT
+          make docker-build
+          docker images
+          docker tag spike-pilot:dev ghcr.io/spiffe/spike-pilot:dev
+          docker tag spike-nexus:dev ghcr.io/spiffe/spike-nexus:dev
+          docker tag spike-keeper:dev ghcr.io/spiffe/spike-keeper:dev
+          kind load docker-image --name chart-testing ghcr.io/spiffe/spike-pilot:dev
+          kind load docker-image --name chart-testing ghcr.io/spiffe/spike-nexus:dev
+          kind load docker-image --name chart-testing ghcr.io/spiffe/spike-keeper:dev
+          cd ci/integration/minio-rolearn
+          ./setup.sh
+          ./test.sh
