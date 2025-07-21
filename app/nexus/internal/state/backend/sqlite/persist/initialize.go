@@ -90,6 +90,7 @@ func (s *DataStore) Close(_ context.Context) error {
 	return err
 }
 
+// GetCipher retrieves the AEAD cipher instance from the DataStore.
 func (s *DataStore) GetCipher() cipher.AEAD {
-	return nil
+	return s.Cipher
 }
