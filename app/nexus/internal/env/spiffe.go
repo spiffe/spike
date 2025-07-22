@@ -61,3 +61,22 @@ func TrustRootForPilot() string {
 	}
 	return tr
 }
+
+// TrustRootForLiteWorkload returns the trust root domain(s) specifically for
+// SPIKE Lite Workload.
+//
+// It retrieves the trust root from the SPIKE_TRUST_ROOT_LITE_WORKLOAD
+// environment variable. If the environment variable is not set, it returns
+// the default value "spike.ist". The return value can be a comma-delimited
+// string of multiple trust root domains.
+//
+// Returns:
+//   - A string containing one or more trust root domains for Lite Workload,
+//     comma-delimited if multiple
+func TrustRootForLiteWorkload() string {
+	tr := os.Getenv("SPIKE_TRUST_ROOT_LITE_WORKLOAD")
+	if tr == "" {
+		return "spike.ist"
+	}
+	return tr
+}
