@@ -18,7 +18,7 @@ import (
 )
 
 func guardEncryptSecretRequest(
-	request reqres.SecretEncryptRequest, w http.ResponseWriter, r *http.Request,
+	_ reqres.SecretEncryptRequest, w http.ResponseWriter, r *http.Request,
 ) error {
 	// TODO: some of these flows can be factored out if we keep the `request`
 	// a generic parameter. That will deduplicate some of the validation code.
