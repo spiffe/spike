@@ -5,8 +5,10 @@
 package operator
 
 import (
+	"fmt"
 	"github.com/spf13/cobra"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
+	"github.com/spiffe/spike/internal/lock"
 )
 
 // NewOperatorCommand creates a new cobra.Command for managing SPIKE admin
@@ -25,6 +27,12 @@ func NewOperatorCommand(
 	cmd := &cobra.Command{
 		Use:   "operator",
 		Short: "Manage admin operations",
+		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+        if lock.IsLocked() { 
+            return fmt.Errorf("SPIKE is locked — please unlock before running this command")
+        }
+        return nil
+    },
 	}
 
 	cmd.AddCommand(newOperatorRecoverCommand(source, spiffeId))

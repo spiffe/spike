@@ -5,8 +5,10 @@
 package secret
 
 import (
+	"fmt"
 	"github.com/spf13/cobra"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
+	"github.com/spiffe/spike/internal/lock"
 )
 
 // NewSecretCommand creates a new Cobra command for managing secrets.
@@ -18,6 +20,12 @@ func NewSecretCommand(
 	cmd := &cobra.Command{
 		Use:   "secret",
 		Short: "Manage secrets",
+		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+        if lock.IsLocked() { 
+            return fmt.Errorf("SPIKE is locked — please unlock before running this command")
+        }
+        return nil
+    },
 	}
 
 	// Add subcommands to the policy command
