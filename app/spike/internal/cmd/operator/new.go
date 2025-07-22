@@ -29,6 +29,8 @@ func NewOperatorCommand(
 
 	cmd.AddCommand(newOperatorRecoverCommand(source, spiffeId))
 	cmd.AddCommand(newOperatorRestoreCommand(source, spiffeId))
+	cmd.AddCommand(newOperatorLockCommand(spiffeId))
+cmd.AddCommand(newOperatorUnlockCommand(spiffeId))
 
 	return cmd
 }
