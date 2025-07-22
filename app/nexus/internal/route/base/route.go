@@ -17,6 +17,7 @@ import (
 
 	"github.com/spiffe/spike/app/nexus/internal/env"
 	"github.com/spiffe/spike/app/nexus/internal/route/acl/policy"
+	"github.com/spiffe/spike/app/nexus/internal/route/cipher"
 	"github.com/spiffe/spike/app/nexus/internal/route/operator"
 	"github.com/spiffe/spike/app/nexus/internal/route/secret"
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
@@ -78,10 +79,10 @@ func Route(
 			case a == url.ActionDefault && p == url.SpikeNexusUrlOperatorRecover:
 				return operator.RouteRecover
 			// FIXME move constant
-			case a == url.ActionDefault && p == "/v1/encrypt" && !fullMode:
-				return secret.RouteEncrypt
-			case a == url.ActionDefault && p == "/v1/decrypt" && !fullMode:
-				return secret.RouteDecrypt
+			case a == url.ActionDefault && p == "/v1/cipher/encrypt" && !fullMode:
+				return cipher.RouteEncrypt
+			case a == url.ActionDefault && p == "/v1/cipher/decrypt" && !fullMode:
+				return cipher.RouteDecrypt
 			default:
 				return net.Fallback
 			}
