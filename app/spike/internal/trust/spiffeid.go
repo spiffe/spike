@@ -56,3 +56,17 @@ func AuthenticateRestore(spiffeid string) {
 		)
 	}
 }
+
+// AuthenticateLock verifies if the given SPIFFE ID is valid for locking.
+// Logs a fatal error and exits if the SPIFFE ID validation fails.
+func AuthenticateLock(spiffeid string) {
+	if !svid.IsPilotLock(env.TrustRoot(), spiffeid) {
+		log.Log().Error(
+			"AuthenticateLock: You need a 'lock/unlock' SPIFFE ID to use this command.",
+		)
+		log.FatalF(
+			"AuthenticateLock: You are not authorized to use this command (%s).\n",
+			spiffeid,
+		)
+	}
+}
