@@ -19,19 +19,30 @@ spec:
         - -c
         - |
           yum install -y tar gzip
+          cd /tmp
           curl https://dl.min.io/client/mc/release/linux-amd64/mc -o /bin/mc
           curl -L https://github.com/spiffe/aws-spiffe-workload-helper/releases/download/v0.0.3/aws-spiffe-workload-helper_Linux_x86_64.tar.gz -o /tmp/aws-helper.tgz
-          curl -L https://github.com/spiffe/spire/releases/download/v1.12.4/spire-1.12.4-linux-amd64-musl.tar.gz -o /tmp/spire.tgz
-          cd /tmp
+          curl -L https://github.com/spiffe/spiffe-helper/releases/download/v0.10.0/spiffe-helper_v0.10.0_Linux-x86_64.tar.gz -o helper.tgz
           tar -xvf aws-helper.tgz
-          tar -xvf spire.tgz
-          cp -a /tmp/spire-1.12.4/bin/spire-agent /usr/bin
+          tar -xvf helper.tgz
           chmod +x /bin/mc
           mkdir -p /tmp/creds
           mkdir -p ~/.aws
           cat > ~/.aws/config <<EOF
           [default]
-          credential_process = /tmp/aws-spiffe-workload-helper jwt-credential-process --role-arn arn:minio:iam:::role/MHR2BeH2-q1dHO2yx5U9Mf-tP9Q --audience minio --endpoint http://minio.minio:9000 --workload-api-addr unix:/spiffe-workload-api/spire-agent.sock
+          credential_process = /tmp/aws-spiffe-workload-helper jwt-credential-process --role-arn arn:minio:iam:::role/MHR2BeH2-q1dHO2yx5U9Mf-tP9Q --audience minio --endpoint http://minio.minio:9000 --workload-api-addr unix:/spiffe-workload-api/spire-agent.sock --hint minio
+          EOF
+          cat > /tmp/helper.conf <<EOF
+          agent_address = "/spiffe-workload-api/spire-agent.sock"
+          cmd = ""
+          cmd_args = ""
+          cert_dir = "/tmp/creds"
+          renew_signal = ""
+          svid_file_name = "tls.crt"
+          svid_key_file_name = "tls.key"
+          svid_bundle_file_name = "ca.pem"
+          daemon_mode = false
+          hint = "spike"
           EOF
           while true; do sleep 1000; done
         name: main

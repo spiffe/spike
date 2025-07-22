@@ -4,13 +4,22 @@ spire-server:
     enabled: true
     identities:
       clusterSPIFFEIDs:
-        test:
+        test-spike-lite:
+          labels:
+            app.kubernetes.io/instance: test
+          namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: default
+          spiffeIDTemplate: spiffe://{{ .TrustDomain }}/spike/workload/role/lite
+          hint: spike
+        test-minio:
           labels:
             app.kubernetes.io/instance: test
           namespaceSelector:
             matchLabels:
               kubernetes.io/metadata.name: default
           spiffeIDTemplate: spiffe://{{ .TrustDomain }}/minio/data-test-rw
+          hint: minio
   credentialComposer:
     cel:
       enabled: true
