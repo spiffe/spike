@@ -50,7 +50,8 @@ var (
 func CheckAccess(
 	peerSpiffeId string, path string, wants []data.PolicyPermission,
 ) bool {
-	// Role:SpikePilot can always manage secrets and policies.
+	// Role:SpikePilot can always manage secrets and policies,
+	// and can call encryption and decryption API endpoints.
 	if spiffeid.IsPilot(env.TrustRootForPilot(), peerSpiffeId) {
 		return true
 	}
