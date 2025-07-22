@@ -1,0 +1,23 @@
+auth:
+  rootUser: admin
+  rootPassword: admin1234
+provisioning:
+  enabled: true
+  buckets:
+  - name: data
+  policies:
+  - name: spire
+    statements:
+    - resources:
+      - "arn:aws:s3:::data/test/*"
+      actions:
+      - "s3:PutObject"
+      - "s3:GetObject"
+      effect: "Allow"
+      condition:
+        "ForAnyValue:StringEquals":
+          "jwt:groups": data-test-rw
+  extraCommands:
+    #- mc idp openid remove provisioning "spire" || true
+    - mc idp openid add provisioning "other" role_policy=spire client_id=minio2 client_secret=doesntmatternotreal config_url="http://spire-spiffe-oidc-discovery-provider.spire-server/.well-known/openid-configuration" scopes="openid,groups" || mc idp openid update provisioning "other" role_policy=spire client_id=minio2 client_secret=doesntmatternotreal config_url="http://spire-spiffe-oidc-discovery-provider.spire-server/.well-known/openid-configuration" scopes="openid,groups"
+    - mc idp openid add provisioning "spire" role_policy=spire client_id=minio client_secret=doesntmatternotreal config_url="http://spire-spiffe-oidc-discovery-provider.spire-server/.well-known/openid-configuration" scopes="openid,groups" || mc idp openid update provisioning "spire" role_policy=spire client_id=minio client_secret=doesntmatternotreal config_url="http://spire-spiffe-oidc-discovery-provider.spire-server/.well-known/openid-configuration" scopes="openid,groups"

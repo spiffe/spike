@@ -1,0 +1,57 @@
+spire-server:
+  enabled: true
+  controllerManager:
+    enabled: true
+    identities:
+      clusterSPIFFEIDs:
+        test:
+          labels:
+            app.kubernetes.io/instance: test
+          namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: default
+          spiffeIDTemplate: spiffe://{{ .TrustDomain }}/minio/data-test-rw
+  credentialComposer:
+    cel:
+      enabled: true
+      jwt:
+        expression: |
+          spire.plugin.server.credentialcomposer.v1.ComposeWorkloadJWTSVIDResponse{
+            attributes: spire.plugin.server.credentialcomposer.v1.JWTSVIDAttributes{
+              claims: request.attributes.claims.mapOverrideEntries(
+                request.spiffe_id.startsWith(spiffe_trust_domain + "/minio/")?
+                  {'groups': [request.spiffe_id.substring(spiffe_trust_domain.size() + 7)]}:
+                  {}
+              )
+            }
+          }
+
+spiffe-oidc-discovery-provider:
+  enabled: true
+  tls:
+    spire:
+      enabled: false
+
+spike-pilot:
+  enabled: true
+  image:
+    pullPolicy: Never
+    tag: dev
+  shell:
+    image:
+      registry: quay.io
+      repository: almalinuxorg/almalinux
+      tag: "10"
+
+spike-keeper:
+  enabled: true
+  image:
+    pullPolicy: Never
+    tag: dev
+
+spike-nexus:
+  enabled: true
+  image:
+    pullPolicy: Never
+    tag: dev
+  backendStore: lite
