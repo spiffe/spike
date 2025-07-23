@@ -13,7 +13,8 @@ spec:
         app.kubernetes.io/instance: test
     spec:
       initContainers:
-      - command:
+      - name: spike
+        command:
         - /bin/sh
         args:
         - -c
@@ -66,7 +67,7 @@ spec:
           readOnly: true
         - name: pilot
           mountPath: /usr/local/bin/spike
-          subPath: /spike
+          subPath: spike
           readOnly: true
       volumes:
       - name: pilot
