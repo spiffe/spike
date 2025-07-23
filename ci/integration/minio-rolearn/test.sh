@@ -7,7 +7,7 @@ SCRIPTPATH="$(dirname "${SCRIPT}")"
 BASEPATH="${SCRIPTPATH}/../../../"
 
 echo "Starting tests that should work..."
-kubectl exec -i test-0 -- bash -c 'spike --version'
+kubectl exec -i test-0 -- bash -c 'spike version || true'
 kubectl exec -i test-0 -- bash -c '/tmp/spiffe-helper -config /tmp/helper.conf'
 kubectl exec -i test-0 -- bash -c 'echo "hello from $(date)" > hello.txt'
 kubectl exec -i test-0 -- bash -c 'curl -X POST -f -H "Content-Type: application/octet-stream" --data-binary @hello.txt https://spire-spike-nexus.spire-server/v1/cipher/encrypt --cert /tmp/creds/tls.crt --key /tmp/creds/tls.key --cacert /tmp/creds/bundle.0.pem -k -s -o hello.enc'

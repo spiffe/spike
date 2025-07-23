@@ -59,6 +59,17 @@ spec:
           EOF
           while true; do sleep 1000; done
         name: main
+        env:
+        - name: SPIKE_NEXUS_API_URL
+          value: https://spire-spike-nexus.spire-server:443
+        - name: SPIFFE_ENDPOINT_SOCKET
+          value: "unix:///spiffe-workload-api/spire-agent.sock"
+        - name: SPIKE_SYSTEM_LOG_LEVEL
+          value: debug
+        - name: SPIKE_TRUST_ROOT
+          value: example.org
+        - name: SPIKE_TRUST_ROOT_NEXUS
+          value: example.org
         image: amazon/aws-cli:latest
         imagePullPolicy: IfNotPresent
         volumeMounts:
