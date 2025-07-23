@@ -16,6 +16,8 @@ spec:
         env:
         - name: SPIKE_NEXUS_BACKEND_STORE
           value: lite
+        - name: SPIKE_TRUST_ROOT_LITE_WORKLOAD
+          value: example.org
 '
 kubectl rollout status statefulset/spire-spike-nexus -n spire-server --watch --timeout=5m
 kubectl apply -f "${SCRIPTPATH}/test.yaml"
