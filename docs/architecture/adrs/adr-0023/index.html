@@ -6,7 +6,7 @@
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <link rel="icon" href="https://spike.ist/assets/spike-favicon-16x16.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
-    <title> SPIKE | About SPIKE </title>
+    <title> SPIKE | ADR-0023: Decision Against Implementing Lock&#x2F;Unlock Mechanism in SPIKE Nexus </title>
 </head>
 <body>
 
@@ -107,32 +107,16 @@
     }
 </style> <div id="trees">
     <input class="tree-toggle" type="checkbox" id="getting-started"
-               checked/>
+               />
         <label class="tree-toggle-label "
                for="getting-started">Getting Started</label>
 
         <ul class="subtree">
-            <li class="active">
+            <li >
                     <a href="https://spike.ist/getting-started/about/">About SPIKE</a>
                 </li>
 
-                
-                        
-                        
-                            <ul id="toc">
-                                <li><a href="
-                                            https://spike.ist/getting-started/about/#a-brief-introduction-to-spike">A Brief Introduction to SPIKE</a>
-                                        <ul>
-                                                <li>
-                                                        <a href="https://spike.ist/getting-started/about/#about-spike">About SPIKE</a>
-                                                    </li>
-                                                <li>
-                                                        <a href="https://spike.ist/getting-started/about/#why-not-use-kubernetes-secrets">Why Not Use Kubernetes Secrets</a>
-                                                    </li>
-                                                </ul>
-                                        </li>
-                                </ul>
-                        <li >
+                <li >
                     <a href="https://spike.ist/getting-started/project-status/">Project Maturity</a>
                 </li>
 
@@ -177,7 +161,7 @@
 
                 </ul>
     <input class="tree-toggle" type="checkbox" id="spike-architecture"
-               />
+               checked/>
         <label class="tree-toggle-label "
                for="spike-architecture">SPIKE Architecture</label>
 
@@ -730,95 +714,133 @@
 
         <article>
             
-        <h1 id="a-brief-introduction-to-spike">A Brief Introduction to SPIKE</h1>
-<h2 id="about-spike">About SPIKE</h2>
-<p><strong>SPIKE</strong> is a lightweight secrets store that uses <a href="https://spiffe.io/" title="SPIFFE"><strong>SPIFFE</strong></a> as its
-identity control plane.</p>
-<p>Using <strong>SPIFFE</strong> as the identity layer ensures strong, verifiable workload
-identities without relying on static credentials like API keys or passwords.
-This enables <strong>SPIKE</strong> to authenticate and authorize workloads dynamically,
-reducing the attack surface and preventing key sprawl. Additionally,
-<strong>SPIFFE</strong>’s automatic identity rotation and short-lived cryptographic
-identities <strong>enhance security and resilience</strong>, making it an ideal foundation
-for a <strong>zero-trust secrets management system</strong>.</p>
-<h2 id="why-not-use-kubernetes-secrets">Why Not Use Kubernetes Secrets</h2>
-<p>One of the most misunderstood aspects of Kubernetes secrets is that
-<strong>Kubernetes secrets are not truly secrets</strong>. While Kubernetes provides a
-mechanism to store and manage sensitive information, it is not a dedicated
-secrets management solution.</p>
-<p>Here’s why relying on Kubernetes secrets can be problematic:</p>
-<h3 id="limited-scope-portability">Limited Scope &amp; Portability</h3>
-<p>If a service outside Kubernetes—or in another cluster—needs access to a
-Kubernetes secret, it introduces significant authentication and authorization
-challenges.</p>
-<p>Kubernetes Secrets are designed to work within a single cluster, making it
-difficult to share them securely across different environments
-(<em>e.g., multiple clusters, bare-metal infrastructure, or cloud-based services</em>).
-This limitation can lead to inconsistent security policies and fragmented secret
-management practices.</p>
-<p>A robust secrets management strategy should consider secrets’ scope beyond a
-single cluster.</p>
-<h3 id="static-nature-of-the-secrets">Static Nature of the Secrets</h3>
-<p>Kubernetes secrets are static once created. They are stored in <code>etcd</code> and
-injected into pods at startup, meaning updates require manual
-intervention—modifying the secret, redeploying affected applications, and
-ensuring no stale or expired secrets remain in use.</p>
-<p>Updating a Kubernetes Secret does not automatically notify or reload the
-workloads consuming it. Applications typically need to be restarted or
-re-deployed to pick up the new secret, adding operational complexity and
-potential downtime if not managed carefully.</p>
-<p>This lack of flexibility introduces security risks and operational overhead.</p>
-<h3 id="security-and-governance-limitations">Security and Governance Limitations</h3>
-<p>Kubernetes Secrets are governed by Kubernetes RBAC. Using Kubernetes Secrets, it
-can be tricky to enforce a platform-agnostic security policy that spans
-multiple environments. This often leads to fragmented governance and
-potential misconfigurations.</p>
-<p>A dedicated secrets manager offers dynamic cross-environment compatibility
-and stronger security controls—making it a better choice for modern,
-distributed architectures.</p>
-<h3 id="kubernetes-secrets-are-not-encrypted-by-default">Kubernetes Secrets Are Not Encrypted By Default</h3>
-<p>Kubernetes Secrets are stored in <code>etcd</code>, and unless encryption at rest is
-explicitly enabled, they are stored in plaintext. This means that anyone with
-access to etcd (<em>including certain privileged users or attackers who compromise
-the cluster</em>) can retrieve sensitive data without needing Kubernetes API access.</p>
-<p>Moreover, even with encryption at rest, the security model of Kubernetes Secrets
-remains weaker than a dedicated secrets store. While encryption prevents direct
-retrieval of plaintext secrets from <code>etcd</code> storage, an attacker with right
-privileges can get the encryption key. Additionally, the Kubernetes API must
-decrypt secrets when serving them to workloads, meaning any user or process
-with sufficient API permissions can still retrieve secrets in plaintext.</p>
-<p>So not only <code>etcd</code> itself, but also API-layer access is also a risk factor
-in enforcing the security of Kubernetes Secrets.</p>
-<h3 id="when-are-kubernetes-secrets-useful">When Are Kubernetes Secrets Useful?</h3>
-<p>Despite these challenges, Kubernetes Secrets can still be useful in simple,
-cluster-contained workloads where:</p>
+        <h1 id="adr-0023-decision-against-implementing-lock-unlock-mechanism-in-spike-nexus">ADR-0023: Decision Against Implementing Lock/Unlock Mechanism in SPIKE Nexus</h1>
 <ul>
-<li>Secrets do not need frequent rotation.</li>
-<li>All applications consuming the secrets reside in the same cluster.</li>
-<li>RBAC policies are well-configured to prevent accidental exposure.</li>
+<li>Status: accepted</li>
+<li>Date: 2025-07-22</li>
+<li>Tags: Security, Operations, HA, Simplicity, SPIRE</li>
 </ul>
-<p>However, for any multi-cluster, dynamic, or <strong>zero-trust</strong> architecture, a
-dedicated secrets management solution is a better approach—providing
-fine-grained access control, cross-environment compatibility, and stronger
-security guarantees.</p>
-<p>That part taken care of, <a href="https://spike.ist/getting-started/quickstart/">we can get our hands dirty with <strong>SPIKE</strong> in the
-<strong>SPIKE Quickstart Guide</strong></a>.</p>
+<h2 id="context-and-problem-statement">Context and Problem Statement</h2>
+<p>A proposal was made to add a lock/unlock mechanism to SPIKE Nexus, allowing
+operators to globally lock the system (<em>e.g., via a CLI or API</em>) to prevent all
+secret and policy operations except unlock/status. The lock state would be
+persisted in the backing store and enforced across all Nexus instances, with the
+root key zeroed out in memory. This was intended to provide a system-wide freeze
+for security or operational reasons.</p>
+<p>However, this approach introduces significant complexity, especially in
+high-availability (<em>HA</em>) and distributed deployments. It also creates new
+operational and security risks, and may not align with SPIFFE-native best
+practices.</p>
+<h2 id="decision-drivers">Decision Drivers</h2>
+<ul>
+<li>Simplicity and maintainability of the <strong>SPIKE</strong> architecture</li>
+<li>Security model alignment with SPIFFE/SPIRE</li>
+<li>Operational clarity and reliability in HA/distributed setups</li>
+<li>Avoiding unnecessary complexity and performance overhead</li>
+<li>Leveraging existing SPIRE mechanisms for system-level access control</li>
+</ul>
+<h2 id="considered-options">Considered Options</h2>
+<ol>
+<li>Implement a lock/unlock mechanism in SPIKE Nexus (<em>persisted in the backing
+store, enforced at API level</em>)</li>
+<li>Use SPIRE registration entry management (delete/disable Nexus entries to “lock” the system)</li>
+<li>Rely on infrastructure-level controls (e.g., scaling down Nexus, process management)</li>
+<li>Do nothing (status quo)</li>
+</ol>
+<h2 id="decision">Decision</h2>
+<p><strong>SPIKE Nexus will NOT implement a lock/unlock API or CLI feature.</strong></p>
+<p>Instead, operators are recommended to achieve system-level locking by either:</p>
+<ol>
+<li><strong>Managing SPIRE registration entries</strong>: Removing or disabling the relevant SPIRE registration entries for SPIKE Nexus will immediately block all authenticated API access, effectively freezing the system in a secure, auditable, and SPIFFE-native way.</li>
+<li><strong>Using infrastructure-level controls</strong>: Scaling down the Nexus deployment, stopping Nexus processes, or otherwise restricting access at the infrastructure level are also valid and supported approaches.</li>
+</ol>
+<p>These methods are the supported and recommended ways to “lock” the system. No additional lock/unlock API or CLI subcommand will be provided by SPIKE Nexus at this time.</p>
+<p>A sample script for SPIRE registration entry management:</p>
+<pre data-lang="sh" style="background-color:#2b303b;color:#c0c5ce;" class="language-sh "><code class="language-sh" data-lang="sh"><span style="color:#bf616a;">SPIFFE_ID</span><span>=&quot;</span><span style="color:#a3be8c;">spiffe://spike.ist/spike/nexus/etc/etc</span><span>&quot;
+</span><span style="color:#bf616a;">ENTRY_ID</span><span>=$</span><span style="color:#a3be8c;">(</span><span style="color:#bf616a;">spire-server</span><span style="color:#a3be8c;"> entry show</span><span style="color:#bf616a;"> --spiffeID </span><span>&quot;$</span><span style="color:#bf616a;">SPIFFE_ID</span><span>&quot; | </span><span style="color:#bf616a;">awk </span><span>&#39;</span><span style="color:#a3be8c;">/Entry ID/ {print $NF}</span><span>&#39;</span><span style="color:#a3be8c;">)
+</span><span style="color:#b48ead;">if </span><span style="color:#96b5b4;">[ </span><span style="color:#bf616a;">-z </span><span>&quot;$</span><span style="color:#bf616a;">ENTRY_ID</span><span>&quot; </span><span style="color:#96b5b4;">]</span><span>; </span><span style="color:#b48ead;">then
+</span><span>    </span><span style="color:#96b5b4;">echo </span><span>&quot;</span><span style="color:#a3be8c;">No entry found for SPIFFE ID: </span><span>$</span><span style="color:#bf616a;">SPIFFE_ID</span><span>&quot;
+</span><span>    </span><span style="color:#96b5b4;">exit</span><span> 1
+</span><span style="color:#b48ead;">fi
+</span><span style="color:#b48ead;">if </span><span style="color:#bf616a;">spire-server</span><span> entry delete</span><span style="color:#bf616a;"> --entryID </span><span>&quot;$</span><span style="color:#bf616a;">ENTRY_ID</span><span>&quot;; </span><span style="color:#b48ead;">then
+</span><span>    </span><span style="color:#96b5b4;">echo </span><span>&quot;</span><span style="color:#a3be8c;">Successfully deleted entry with SPIFFE ID: </span><span>$</span><span style="color:#bf616a;">SPIFFE_ID</span><span>&quot;
+</span><span style="color:#b48ead;">else
+</span><span>    </span><span style="color:#96b5b4;">echo </span><span>&quot;</span><span style="color:#a3be8c;">Failed to delete entry with SPIFFE ID: </span><span>$</span><span style="color:#bf616a;">SPIFFE_ID</span><span>&quot;
+</span><span>    </span><span style="color:#96b5b4;">exit</span><span> 1
+</span><span style="color:#b48ead;">fi
+</span></code></pre>
+<h2 id="rationale">Rationale</h2>
+<ul>
+<li><strong>Simplicity:</strong> Avoids introducing distributed consensus, state management, and API enforcement logic for a rarely used feature.</li>
+<li><strong>Security:</strong> SPIRE registration entries are the root of trust; removing them is the most secure and auditable way to block access. Infrastructure controls are also robust and well-understood.</li>
+<li><strong>Operational Clarity:</strong> The lock/unlock state is unambiguous and enforced at the trust boundary or infrastructure, not in application logic.</li>
+<li><strong>HA/Scaling:</strong> No need for all Nexus instances to coordinate or poll a shared lock state, avoiding performance and reliability issues.</li>
+<li><strong>SPIFFE-Native:</strong> Embraces the SPIFFE/SPIRE model for access control, rather than reinventing similar mechanisms in SPIKE.</li>
+<li><strong>Workarounds Remain Possible:</strong> Direct DB manipulation is always possible for those with privileged access, but is not an official or supported method.</li>
+</ul>
+<h2 id="consequences">Consequences</h2>
+<h3 id="positive">Positive</h3>
+<ul>
+<li>Simpler, more maintainable codebase</li>
+<li>No performance or reliability impact on Nexus API</li>
+<li>Locking is enforced at the trust boundary (SPIRE), not in application logic</li>
+<li>Immediate effect across all Nexus instances</li>
+<li>No risk of partial lock or split-brain scenarios</li>
+<li>Aligns with SPIFFE-native best practices</li>
+</ul>
+<h3 id="negative">Negative</h3>
+<ul>
+<li>Locking/unlocking requires SPIRE server access (not just SPIKE operator privileges)</li>
+<li>No fine-grained or temporary lock state within SPIKE Nexus itself</li>
+<li>Some operational scenarios (e.g., “pause but keep registration”) are not directly supported</li>
+</ul>
+<h2 id="alternatives-considered">Alternatives Considered</h2>
+<h3 id="implementing-lock-unlock-in-spike-nexus">Implementing Lock/Unlock in SPIKE Nexus</h3>
+<ul>
+<li><strong>Rejected</strong> due to complexity, risk of split-brain, performance overhead, and operational ambiguity in HA setups.</li>
+<li>Would require distributed consensus or polling, and add significant code and operational burden.</li>
+</ul>
+<h3 id="infrastructure-level-controls">Infrastructure-Level Controls</h3>
+<ul>
+<li>Scaling down Nexus or killing processes is effective but “nuclear” and may disrupt monitoring, logging, or other integrations.</li>
+</ul>
+<h3 id="direct-db-manipulation">Direct DB Manipulation</h3>
+<ul>
+<li>Not recommended or supported, but possible for those with privileged access. Not considered a safe or auditable approach.</li>
+</ul>
+<h2 id="decision-outcome">Decision Outcome</h2>
+<p>This ADR documents the decision to rely on SPIRE registration entry management or infrastructure-level controls for system-level “locking” of SPIKE Nexus, and to avoid implementing a separate lock/unlock API or CLI feature in SPIKE Nexus itself. This decision may be revisited if/when a true SPIKE Nexus HA topology is implemented and operational experience suggests a different approach is warranted.</p>
 <hr />
 <ul>
-<li><a href="https://spike.ist/getting-started/about/">About SPIKE</a></li>
-<li><a href="https://spike.ist/getting-started/quickstart/">SPIKE Quickstart Guide</a></li>
-<li><a href="https://spike.ist/getting-started/local-deployment/">Building SPIKE Locally</a></li>
-<li><a href="https://spike.ist/getting-started/project-status/">Early Access Notice</a></li>
-<li><a href="https://spike.ist/getting-started/configuration/">Configuring SPIKE</a></li>
-<li><a href="https://spike.ist/getting-started/cli/">SPIKE CLI</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0023/">ADR-0023: Decision Against Implementing Lock/Unlock Mechanism in SPIKE Nexus</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0022/">ADR-0022: Continuous Polling of SPIKE Keepers Despite 404 Response</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0021/">ADR-0021: SPIKE Keeper as a Stateless Shard Holder</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0020/">ADR-0020: Switch to Zola for Documentation System</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0019/">ADR-0019: Plugin-Based Storage Backend Architecture</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0018/">ADR-0018: Administrative Access to SPIKE</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0017/">ADR-0017: Synchronous Persistence for SPIKE Secrets Store</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0016/">ADR-0016: Memory-First Secrets Store</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0015/">ADR-0015: Use Singular Form for File and Package Naming</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0014/">ADR-0014: Maintaining SQLite as SPIKE’s Primary Storage Backend</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0013/">ADR-0013: S3-Compatible Storage as SPIKE’s Backing Store</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0012/">ADR-0012: HTTP Methods for SPIKE API</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0011/">ADR-0011: PostgreSQL as SPIKE’s Backing Store</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0010/">ADR-0010: Session Token Storage Strategy for SPIKE Nexus</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0009/">ADR-0009: Multi-Administrator Support System</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0008/">ADR-0008: Administrative Access Control System</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0007/">ADR-0007: Root Key Lifecycle and Management Strategy</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0006/">ADR-0006: Trust Boundary Definition and Security Assumptions</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0005/">ADR-0005: Use SPIFFE mTLS for Inter-Component Authentication and Communication</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0004/">ADR-0004: SPIKE Keeper Minimalist Design Approach</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0003/">ADR-0003: Root Key Management and Storage Strategy</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0002/">ADR-0002: Use Docsify for Documentation System</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0001/">ADR-0001: Display Secrets in Plain Text in SPIKE Pilot Admin CLI</a></li>
 </ul>
 <hr />
 <ul>
-<li><a href="https://spike.ist/getting-started/">Getting Started</a></li>
-<li><a href="https://spike.ist/community/">Community</a></li>
-<li><a href="https://spike.ist/architecture/">SPIKE Architecture</a></li>
-<li><a href="https://spike.ist/operations/">Operations</a></li>
-<li><a href="https://spike.ist/tracking/">Tracking</a></li>
+<li><a href="https://spike.ist/architecture/system-overview/"><strong>SPIKE</strong> System Overview</a></li>
+<li><a href="https://spike.ist/architecture/security-model/"><strong>SPIKE</strong> Security Model</a></li>
+<li><a href="https://spike.ist/architecture/architectural-decision-records/"><strong>SPIKE</strong> Architectural Decision Records</a></li>
 </ul>
 
     

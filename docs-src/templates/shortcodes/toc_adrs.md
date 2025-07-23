@@ -4,6 +4,7 @@
 # \\\\\\
 #}
 
+* [ADR-0023: Decision Against Implementing Lock/Unlock Mechanism in SPIKE Nexus](@/architecture/adrs/adr-0023.md)
 * [ADR-0022: Continuous Polling of SPIKE Keepers Despite 404 Response](@/architecture/adrs/adr-0022.md)
 * [ADR-0021: SPIKE Keeper as a Stateless Shard Holder](@/architecture/adrs/adr-0021.md)
 * [ADR-0020: Switch to Zola for Documentation System](@/architecture/adrs/adr-0020.md)

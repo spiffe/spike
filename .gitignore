@@ -53,6 +53,7 @@ go.work.sum
 # IDE
 .idea
 .code
+.vscode
 .history
 *.DS_Store
 *.iml
