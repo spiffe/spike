@@ -12,6 +12,18 @@ spec:
       labels:
         app.kubernetes.io/instance: test
     spec:
+      initContainers:
+      - command:
+        - /bin/sh
+        args:
+        - -c
+        - |
+          cp -a /usr/local/bin/spike /pilot
+        image: ghcr.io/spiffe/spike-pilot:dev
+        imagePullPolicy: Never
+        volumeMounts:
+        - name: pilot
+          mountPath: /pilot
       containers:
       - command:
         - /bin/bash
@@ -52,7 +64,13 @@ spec:
         - mountPath: /spiffe-workload-api
           name: spiffe-workload-api
           readOnly: true
+        - name: pilot
+          mountPath: /usr/local/bin/spike
+          subPath: /spike
+          readOnly: true
       volumes:
+      - name: pilot
+        emptydir: {}
       - csi:
           driver: csi.spiffe.io
           readOnly: true
