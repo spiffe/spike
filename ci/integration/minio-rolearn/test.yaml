@@ -70,7 +70,7 @@ spec:
           readOnly: true
       volumes:
       - name: pilot
-        emptydir: {}
+        emptyDir: {}
       - csi:
           driver: csi.spiffe.io
           readOnly: true
