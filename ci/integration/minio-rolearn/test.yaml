@@ -9,6 +9,8 @@ spec:
       app.kubernetes.io/instance: test
   template:
     metadata:
+      annotations:
+        kubectl.kubernetes.io/default-container: main
       labels:
         app.kubernetes.io/instance: test
     spec:
