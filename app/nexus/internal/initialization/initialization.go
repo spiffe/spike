@@ -31,7 +31,8 @@ import (
 // Panics if random seed generation fails for in-memory stores.
 func Initialize(source *workloadapi.X509Source) {
 	const fName = "Initialize"
-	requireBootstrapping := env.BackendStoreType() == env.Sqlite || env.BackendStoreType() == env.Lite
+	requireBootstrapping := env.BackendStoreType() == env.Sqlite ||
+		env.BackendStoreType() == env.Lite
 	if requireBootstrapping {
 		log.Log().Info(fName, "message", "Backend store requires bootstrapping")
 
@@ -46,7 +47,8 @@ func Initialize(source *workloadapi.X509Source) {
 		return
 	}
 
-	log.Log().Info(fName, "message", "Backend store does not require bootstrapping")
+	log.Log().Info(fName,
+		"message", "Backend store does not require bootstrapping")
 
 	// Security: Use a static byte array and pass it as a pointer to avoid
 	// inadvertent pass-by-value copying / memory allocation.

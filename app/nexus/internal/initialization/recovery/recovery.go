@@ -50,7 +50,8 @@ var (
 func RecoverBackingStoreUsingKeeperShards(source *workloadapi.X509Source) {
 	const fName = "RecoverBackingStoreUsingKeeperShards"
 
-	log.Log().Info(fName, "message", "Recovering backing store using keeper shards")
+	log.Log().Info(fName,
+		"message", "Recovering backing store using keeper shards")
 
 	successfulKeeperShards := make(map[string]*[32]byte)
 	// Security: Ensure the shards are zeroed out after use.
@@ -85,8 +86,10 @@ func RecoverBackingStoreUsingKeeperShards(source *workloadapi.X509Source) {
 				"Successful keepers: %d", len(successfulKeeperShards),
 			),
 		)
-		log.Log().Warn(fName, "message", "!!! YOU MAY NEED TO MANUALLY BOOSTRAP !!!")
-		log.Log().Info(fName, "message", "Waiting for keepers to respond")
+		log.Log().Warn(fName,
+			"message", "!!! YOU MAY NEED TO MANUALLY BOOSTRAP !!!")
+		log.Log().Info(fName,
+			"message", "Waiting for keepers to respond")
 		return false, ErrRecoveryRetry
 	},
 		retry.WithBackOffOptions(
@@ -126,14 +129,16 @@ func HydrateMemoryFromBackingStore() {
 	if len(secrets) > 0 {
 		state.ImportSecrets(secrets)
 	}
-	log.Log().Info(fName, "message", "HydrateMemoryFromBackingStore: secrets loaded")
+	log.Log().Info(fName,
+		"message", "HydrateMemoryFromBackingStore: secrets loaded")
 
 	policies := persist.ReadAllPolicies()
 	if len(policies) > 0 {
 		state.ImportPolicies(policies)
 	}
 
-	log.Log().Info(fName, "message", "HydrateMemoryFromBackingStore: policies loaded")
+	log.Log().Info(fName,
+		"message", "HydrateMemoryFromBackingStore: policies loaded")
 }
 
 // RestoreBackingStoreUsingPilotShards restores the backing store using the
@@ -143,7 +148,8 @@ func HydrateMemoryFromBackingStore() {
 // state and sends the shards to the keepers.
 //
 // Parameters:
-//   - shards []*[32]byte: A slice of byte array pointers representing the shards
+//   - shards []*[32]byte: A slice of byte array pointers representing the
+//     shards
 //
 // The function will:
 //   - Validate that enough shards are provided (at least the threshold amount)
@@ -167,7 +173,8 @@ func RestoreBackingStoreUsingPilotShards(shards []ShamirShard) {
 		if mem.Zeroed32(value) || id == 0 {
 			log.Log().Error(
 				fName,
-				"message", "Bad input: ID or Value of a shard is zero. Exiting recovery",
+				"message",
+				"Bad input: ID or Value of a shard is zero. Exiting recovery",
 			)
 			return
 		}
@@ -186,7 +193,8 @@ func RestoreBackingStoreUsingPilotShards(shards []ShamirShard) {
 		return
 	}
 
-	log.Log().Info(fName, "message", "Recovering backing store using pilot shards")
+	log.Log().Info(fName,
+		"message", "Recovering backing store using pilot shards")
 
 	// Recover the root key using the threshold number of shards
 	binaryRec := RecoverRootKey(shards)
@@ -217,10 +225,10 @@ func RestoreBackingStoreUsingPilotShards(shards []ShamirShard) {
 // them to each keeper using mTLS authentication. The function runs indefinitely
 // until stopped.
 //
-// The function sends shards every 5 minutes. It requires a minimum number of keepers
-// equal to the configured Shamir shares. If any operation fails for a keeper
-// (URL creation, mTLS setup, marshaling, or network request), it logs a warning
-// and continues with the next keeper.
+// The function sends shards every 5 minutes. It requires a minimum number of
+// keepers equal to the configured Shamir shares. If any operation fails for a
+// keeper (URL creation, mTLS setup, marshaling, or network request), it logs a
+// warning and continues with the next keeper.
 //
 // Parameters:
 //   - source *workloadapi.X509Source: An X509Source used for creating mTLS
@@ -333,7 +341,8 @@ func NewPilotRecoveryShards() map[int]*[32]byte {
 		result[int(ii)] = &rs
 	}
 
-	log.Log().Info(fName, "message", "Successfully generated pilot recovery shards.")
+	log.Log().Info(fName,
+		"message", "Successfully generated pilot recovery shards.")
 	return result
 }
 

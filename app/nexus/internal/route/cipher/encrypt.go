@@ -20,8 +20,9 @@ import (
 	"github.com/spiffe/spike/internal/net"
 )
 
-// RouteEncrypt handles HTTP requests to encrypt plaintext data using the system's cipher.
-// This endpoint provides encryption-as-a-service functionality without persisting any data.
+// RouteEncrypt handles HTTP requests to encrypt plaintext data using the
+// SPIKE Nexus's cipher. This endpoint provides encryption-as-a-service
+// functionality without persisting any data.
 //
 // The function supports two modes based on Content-Type:
 //
@@ -31,7 +32,8 @@ import (
 //
 // 2. JSON mode (any other Content-Type):
 //   - Input: JSON with { plaintext: []byte, algorithm: string (optional) }
-//   - Output: JSON with { version: byte, nonce: []byte, ciphertext: []byte, err: string }
+//   - Output: JSON with { version: byte, nonce: []byte,
+//     ciphertext: []byte, err: string }
 //
 // The encryption process:
 //  1. Determines mode based on Content-Type header

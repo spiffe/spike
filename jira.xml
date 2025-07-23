@@ -15,6 +15,58 @@
   </kubernetification>
   <immediate-backlog>
     <issue>
+      // TODO: this check should have been within state.CheckAccess
+      // maybe we can fork based on spike/system/secrets/encrypt.
+      //
+      // Lite Workloads are always allowed:
+      allowed := false
+      if spiffeid.IsLiteWorkload(
+      env.TrustRootForLiteWorkload(), sid.String()) {
+      allowed = true
+      }
+      // If not, do a policy check to determine if the request is allowed:
+      if !allowed {
+    </issue>
+    <issue>
+      func guardDecryptSecretRequest(
+      _ reqres.SecretDecryptRequest, w http.ResponseWriter, r *http.Request,
+      ) error {
+      // TODO: some of these flows can be factored out if we keep the `request`
+      // a generic parameter. That will deduplicate some of the validation code.
+
+      sid, err := spiffe.IdFromRequest(r)
+      if err != nil {
+      responseBody := net.MarshalBody(reqres.SecretDecryptResponse{
+      Err: data.ErrUnauthorized,
+      }, w)
+      net.Respond(http.StatusUnauthorized, responseBody, w)
+      return apiErr.ErrUnauthorized
+      }
+
+:w
+
+    </issue>
+    <issue>
+      verify lite mode.
+    </issue>
+    <issue>
+      verify kind scripts.
+    </issue>
+    <issue>
+      func bootstrap(source *workloadapi.X509Source) {
+      const fName = "bootstrap"
+
+      if source == nil {
+      // If `source` is nil, nobody is going to recreate the source,
+      // it's better to log and crash.
+      log.FatalLn(fName + ": source is nil. this should not happen.")
+      }
+
+      sqlBackend := env.BackendStoreType() == env.Sqlite
+
+      // FIXME Consider alternate tombstone mechanisms. Needed for HA SPIKE Nexus
+    </issue>
+    <issue>
       fips compliance and boringcrpto
 
       with new go you don’t need boring crypto for FIPS compliance; you still do need to change code, but not build parameters.

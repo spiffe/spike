@@ -15,8 +15,9 @@ import (
 	"github.com/spiffe/spike/internal/net"
 )
 
-// RouteDecrypt handles HTTP requests to decrypt ciphertext data using the system's cipher.
-// This endpoint provides decryption-as-a-service functionality without persisting any data.
+// RouteDecrypt handles HTTP requests to decrypt ciphertext data using the
+// SPIKE Nexus's cipher. This endpoint provides decryption-as-a-service
+// functionality without persisting any data.
 //
 // The function supports two modes based on Content-Type:
 //
@@ -25,7 +26,8 @@ import (
 //   - Output: raw decrypted binary data
 //
 // 2. JSON mode (any other Content-Type):
-//   - Input: JSON with { version: byte, nonce: []byte, ciphertext: []byte, algorithm: string (optional) }
+//   - Input: JSON with { version: byte, nonce: []byte,
+//     ciphertext: []byte, algorithm: string (optional) }
 //   - Output: JSON with { plaintext: []byte, err: string }
 //
 // The decryption process:
@@ -107,9 +109,6 @@ func RouteDecrypt(
 		if ciphertext == nil {
 			return apiErr.ErrReadFailure
 		}
-
-		// TODO: Add streaming-specific permission check here if needed
-
 	} else {
 		// JSON mode - parse request
 		requestBody := net.ReadRequestBody(w, r)

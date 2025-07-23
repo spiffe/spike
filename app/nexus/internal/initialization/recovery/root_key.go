@@ -18,8 +18,9 @@ type ShamirShard struct {
 	Value *[32]byte
 }
 
-// RecoverRootKey reconstructs the original root key from a slice of ShamirShard.
-// It uses Shamir's Secret Sharing scheme to recover the original secret.
+// RecoverRootKey reconstructs the original root key from a slice of
+// ShamirShard. It uses Shamir's Secret Sharing scheme to recover the original
+// secret.
 //
 // Parameters:
 //   - ss []ShamirShard: A slice of ShamirShard structures, each containing

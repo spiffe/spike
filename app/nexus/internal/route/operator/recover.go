@@ -70,7 +70,8 @@ func RouteRecover(
 		return err
 	}
 
-	log.Log().Info(fName, "message", "request is valid. Recovery shards requested.")
+	log.Log().Info(fName,
+		"message", "request is valid. Recovery shards requested.")
 	shards := recovery.NewPilotRecoveryShards()
 
 	// Security: reset shards before the function exits.

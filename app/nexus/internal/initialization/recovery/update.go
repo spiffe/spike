@@ -6,7 +6,6 @@ package recovery
 
 import (
 	"encoding/json"
-	"github.com/spiffe/spike/app/nexus/internal/env"
 	"net/url"
 	"strconv"
 
@@ -20,6 +19,7 @@ import (
 	"github.com/spiffe/spike-sdk-go/security/mem"
 	"github.com/spiffe/spike-sdk-go/spiffeid"
 
+	"github.com/spiffe/spike/app/nexus/internal/env"
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 	"github.com/spiffe/spike/internal/net"
 )

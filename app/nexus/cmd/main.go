@@ -35,7 +35,8 @@ func main() {
 	if mem.Lock() {
 		log.Log().Info(appName, "message", "Successfully locked memory.")
 	} else {
-		log.Log().Info(appName, "message", "Memory is not locked. Please disable swap.")
+		log.Log().Info(appName,
+			"message", "Memory is not locked. Please disable swap.")
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())

@@ -87,7 +87,8 @@ func iterateKeepersToBootstrap(
 		var res reqres.ShardContributionResponse
 		err = json.Unmarshal(data, &res)
 		if err != nil {
-			log.Log().Info(fName, "message", "Failed to unmarshal response", "err", err)
+			log.Log().Info(fName,
+				"message", "Failed to unmarshal response", "err", err)
 			continue
 		}
 

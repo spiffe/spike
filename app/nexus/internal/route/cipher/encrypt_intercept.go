@@ -22,9 +22,6 @@ import (
 func guardEncryptSecretRequest(
 	_ reqres.SecretEncryptRequest, w http.ResponseWriter, r *http.Request,
 ) error {
-	// TODO: some of these flows can be factored out if we keep the `request`
-	// a generic parameter. That will deduplicate some of the validation code.
-
 	sid, err := spiffe.IdFromRequest(r)
 	if err != nil {
 		responseBody := net.MarshalBody(reqres.SecretEncryptResponse{
@@ -43,9 +40,6 @@ func guardEncryptSecretRequest(
 		return apiErr.ErrUnauthorized
 	}
 
-	// TODO: this check should have been within state.CheckAccess
-	// maybe we can fork based on spike/system/secrets/encrypt.
-	//
 	// Lite Workloads are always allowed:
 	allowed := false
 	if spiffeid.IsLiteWorkload(

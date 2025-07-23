@@ -22,9 +22,6 @@ import (
 func guardDecryptSecretRequest(
 	_ reqres.SecretDecryptRequest, w http.ResponseWriter, r *http.Request,
 ) error {
-	// TODO: some of these flows can be factored out if we keep the `request`
-	// a generic parameter. That will deduplicate some of the validation code.
-
 	sid, err := spiffe.IdFromRequest(r)
 	if err != nil {
 		responseBody := net.MarshalBody(reqres.SecretDecryptResponse{

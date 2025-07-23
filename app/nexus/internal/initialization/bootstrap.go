@@ -26,8 +26,8 @@ import (
 // The function follows this decision flow:
 //  1. Check for a tombstone file as an indicator of previous bootstrapping
 //  2. If tombstone exists, perform recovery using keeper shards
-//  3. If the tombstone check fails for reasons other than non-existence, attempt
-//     recovery
+//  3. If the tombstone check fails for reasons other than non-existence,
+//     attempt recovery
 //  4. If no tombstone exists, assume first-time initialization and create a
 //     new root key
 //
@@ -50,8 +50,6 @@ func bootstrap(source *workloadapi.X509Source) {
 	}
 
 	sqlBackend := env.BackendStoreType() == env.Sqlite
-
-	// FIXME Consider alternate tombstone mechanisms. Needed for HA SPIKE Nexus
 
 	// The tombstone file is a fast heuristic to validate SPIKE Nexus bootstrap
 	// completion. However, it's not the ultimate criterion. If we cannot
