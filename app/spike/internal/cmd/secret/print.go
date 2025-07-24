@@ -21,14 +21,15 @@ func printSecretResponse(response *data.SecretMetadata) {
 	}
 
 	hasMetadata := response.Metadata != (data.SecretMetaDataContent{})
+	rmd := response.Metadata
 	if hasMetadata {
 		fmt.Println("\nMetadata:")
 		printSeparator()
-		fmt.Printf("Current Version    : %d\n", response.Metadata.CurrentVersion)
-		fmt.Printf("Oldest Version     : %d\n", response.Metadata.OldestVersion)
-		fmt.Printf("Created Time       : %s\n", formatTime(response.Metadata.CreatedTime))
-		fmt.Printf("Last Updated       : %s\n", formatTime(response.Metadata.UpdatedTime))
-		fmt.Printf("Max Versions       : %d\n", response.Metadata.MaxVersions)
+		fmt.Printf("Current Version : %d\n", rmd.CurrentVersion)
+		fmt.Printf("Oldest Version  : %d\n", rmd.OldestVersion)
+		fmt.Printf("Created Time    : %s\n", formatTime(rmd.CreatedTime))
+		fmt.Printf("Last Updated    : %s\n", formatTime(rmd.UpdatedTime))
+		fmt.Printf("Max Versions    : %d\n", rmd.MaxVersions)
 		printSeparator()
 	}
 

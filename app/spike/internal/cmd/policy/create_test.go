@@ -153,7 +153,9 @@ permissions: [
 					return
 				}
 				if tt.errContains != "" && err.Error() == "" {
-					t.Errorf("readPolicyFromFile() expected error containing '%s', got empty error", tt.errContains)
+					t.Errorf("readPolicyFromFile() "+
+						"expected error containing '%s', got empty error",
+						tt.errContains)
 					return
 				}
 				if tt.errContains != "" {
@@ -171,7 +173,9 @@ permissions: [
 						}
 					}
 					if !found {
-						t.Errorf("readPolicyFromFile() expected error containing '%s', got '%v'", tt.errContains, err)
+						t.Errorf("readPolicyFromFile() "+
+							"expected error containing '%s', got '%v'",
+							tt.errContains, err)
 					}
 				}
 				return
@@ -185,20 +189,27 @@ permissions: [
 
 			// Compare results
 			if got.Name != tt.want.Name {
-				t.Errorf("readPolicyFromFile() Name = %v, want %v", got.Name, tt.want.Name)
+				t.Errorf("readPolicyFromFile() Name = %v, want %v",
+					got.Name, tt.want.Name)
 			}
 			if got.SpiffeID != tt.want.SpiffeID {
-				t.Errorf("readPolicyFromFile() SpiffeID = %v, want %v", got.SpiffeID, tt.want.SpiffeID)
+				t.Errorf("readPolicyFromFile() SpiffeID = %v, want %v",
+					got.SpiffeID, tt.want.SpiffeID)
 			}
 			if got.Path != tt.want.Path {
-				t.Errorf("readPolicyFromFile() Path = %v, want %v", got.Path, tt.want.Path)
+				t.Errorf("readPolicyFromFile() Path = %v, want %v",
+					got.Path, tt.want.Path)
 			}
 			if len(got.Permissions) != len(tt.want.Permissions) {
-				t.Errorf("readPolicyFromFile() Permissions length = %v, want %v", len(got.Permissions), len(tt.want.Permissions))
+				t.Errorf("readPolicyFromFile() "+
+					"Permissions length = %v, want %v",
+					len(got.Permissions), len(tt.want.Permissions))
 			} else {
 				for i, perm := range got.Permissions {
 					if perm != tt.want.Permissions[i] {
-						t.Errorf("readPolicyFromFile() Permissions[%d] = %v, want %v", i, perm, tt.want.Permissions[i])
+						t.Errorf("readPolicyFromFile() "+
+							"Permissions[%d] = %v, want %v",
+							i, perm, tt.want.Permissions[i])
 					}
 				}
 			}
@@ -209,7 +220,8 @@ permissions: [
 func TestReadPolicyFromFileNotFound(t *testing.T) {
 	_, err := readPolicyFromFile("/nonexistent/file.yaml")
 	if err == nil {
-		t.Error("readPolicyFromFile() expected error for non-existent file but got none")
+		t.Error("readPolicyFromFile() " +
+			"expected error for non-existent file but got none")
 	}
 	if err != nil && len(err.Error()) > 0 {
 		// Check if the error contains "does not exist":
@@ -225,7 +237,8 @@ func TestReadPolicyFromFileNotFound(t *testing.T) {
 			}
 		}
 		if !found {
-			t.Errorf("readPolicyFromFile() expected error containing 'does not exist', got '%v'", err)
+			t.Errorf("readPolicyFromFile() expected error "+
+				"containing 'does not exist', got '%v'", err)
 		}
 	}
 }
@@ -360,7 +373,8 @@ func TestGetPolicyFromFlags(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := getPolicyFromFlags(tt.inputName, tt.inputSpiffeID, tt.inputPath, tt.inputPerms)
+			got, err := getPolicyFromFlags(tt.inputName,
+				tt.inputSpiffeID, tt.inputPath, tt.inputPerms)
 
 			// Check error expectations
 			if tt.wantErr {
@@ -383,7 +397,9 @@ func TestGetPolicyFromFlags(t *testing.T) {
 						}
 					}
 					if !found {
-						t.Errorf("getPolicyFromFlags() expected error containing '%s', got '%v'", tt.errContains, err)
+						t.Errorf("getPolicyFromFlags() "+
+							"expected error containing '%s', got '%v'",
+							tt.errContains, err)
 					}
 				}
 				return
@@ -397,20 +413,27 @@ func TestGetPolicyFromFlags(t *testing.T) {
 
 			// Compare results
 			if got.Name != tt.want.Name {
-				t.Errorf("getPolicyFromFlags() Name = %v, want %v", got.Name, tt.want.Name)
+				t.Errorf("getPolicyFromFlags() Name = %v, want %v",
+					got.Name, tt.want.Name)
 			}
 			if got.SpiffeID != tt.want.SpiffeID {
-				t.Errorf("getPolicyFromFlags() SpiffeID = %v, want %v", got.SpiffeID, tt.want.SpiffeID)
+				t.Errorf("getPolicyFromFlags() SpiffeID = %v, want %v",
+					got.SpiffeID, tt.want.SpiffeID)
 			}
 			if got.Path != tt.want.Path {
-				t.Errorf("getPolicyFromFlags() Path = %v, want %v", got.Path, tt.want.Path)
+				t.Errorf("getPolicyFromFlags() Path = %v, want %v",
+					got.Path, tt.want.Path)
 			}
 			if len(got.Permissions) != len(tt.want.Permissions) {
-				t.Errorf("getPolicyFromFlags() Permissions length = %v, want %v", len(got.Permissions), len(tt.want.Permissions))
+				t.Errorf("getPolicyFromFlags() "+
+					"Permissions length = %v, want %v",
+					len(got.Permissions), len(tt.want.Permissions))
 			} else {
 				for i, perm := range got.Permissions {
 					if perm != tt.want.Permissions[i] {
-						t.Errorf("getPolicyFromFlags() Permissions[%d] = %v, want %v", i, perm, tt.want.Permissions[i])
+						t.Errorf("getPolicyFromFlags() "+
+							"Permissions[%d] = %v, want %v",
+							i, perm, tt.want.Permissions[i])
 					}
 				}
 			}
@@ -433,10 +456,12 @@ func TestNewPolicyCreateCommand(t *testing.T) {
 	}
 
 	if cmd.Short != "Create a new policy" {
-		t.Errorf("Expected command short description to be 'Create a new policy', got '%s'", cmd.Short)
+		t.Errorf("Expected command short description to be "+
+			"'Create a new policy', got '%s'", cmd.Short)
 	}
 
-	// Check if all required flags are present (create command only has flag-based input)
+	// Check if all required flags are present (create command
+	// only has flag-based input)
 	expectedFlags := []string{"name", "path", "spiffeid", "permissions"}
 	for _, flagName := range expectedFlags {
 		flag := cmd.Flags().Lookup(flagName)
@@ -527,7 +552,8 @@ func TestPolicyCreateCommandFlagValidation(t *testing.T) {
 					return
 				}
 				if !strings.Contains(err.Error(), tt.errorMsg) {
-					t.Errorf("Expected error message to contain '%s', got '%s'", tt.errorMsg, err.Error())
+					t.Errorf("Expected error message "+
+						"to contain '%s', got '%s'", tt.errorMsg, err.Error())
 				}
 			} else {
 				if err != nil {
@@ -535,13 +561,16 @@ func TestPolicyCreateCommandFlagValidation(t *testing.T) {
 					return
 				}
 				if policy.Name != tt.flags["name"] {
-					t.Errorf("Expected policy name to be '%s', got '%s'", tt.flags["name"], policy.Name)
+					t.Errorf("Expected policy name to be '%s', got '%s'",
+						tt.flags["name"], policy.Name)
 				}
 				if policy.Path != tt.flags["path"] {
-					t.Errorf("Expected policy path to be '%s', got '%s'", tt.flags["path"], policy.Path)
+					t.Errorf("Expected policy path to be '%s', got '%s'",
+						tt.flags["path"], policy.Path)
 				}
 				if policy.SpiffeID != tt.flags["spiffeid"] {
-					t.Errorf("Expected policy spiffeid to be '%s', got '%s'", tt.flags["spiffeid"], policy.SpiffeID)
+					t.Errorf("Expected policy spiffeid to be '%s', got '%s'",
+						tt.flags["spiffeid"], policy.SpiffeID)
 				}
 			}
 		})

@@ -60,7 +60,8 @@ func newSecretGetCommand(
 			version, _ := cmd.Flags().GetInt("version")
 			format, _ := cmd.Flags().GetString("format")
 
-			if !slices.Contains([]string{"plain", "yaml", "json", "y", "p", "j"}, format) {
+			if !slices.Contains([]string{"plain",
+				"yaml", "json", "y", "p", "j"}, format) {
 				return fmt.Errorf("invalid format specified: %s", format)
 			}
 
@@ -137,7 +138,8 @@ func newSecretGetCommand(
 	}
 
 	getCmd.Flags().IntP("version", "v", 0, "Specific version to retrieve")
-	getCmd.Flags().StringP("format", "f", "plain", "Format to use. Valid options: plain, p, yaml, y, json, j")
+	getCmd.Flags().StringP("format", "f", "plain",
+		"Format to use. Valid options: plain, p, yaml, y, json, j")
 
 	return getCmd
 }

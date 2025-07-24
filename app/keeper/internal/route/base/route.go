@@ -15,7 +15,7 @@ import (
 	"github.com/spiffe/spike-sdk-go/api/url"
 
 	"github.com/spiffe/spike/app/keeper/internal/route/store"
-	"github.com/spiffe/spike/internal/log"
+	"github.com/spiffe/spike/internal/journal"
 	"github.com/spiffe/spike/internal/net"
 )
 
@@ -29,7 +29,7 @@ import (
 //   - r: The HTTP Request containing the client's request details
 //   - audit: The AuditEntry containing the client's audit information
 func Route(
-	w http.ResponseWriter, r *http.Request, audit *log.AuditEntry,
+	w http.ResponseWriter, r *http.Request, audit *journal.AuditEntry,
 ) error {
 	return net.RouteFactory[url.ApiAction](
 		url.ApiUrl(r.URL.Path),

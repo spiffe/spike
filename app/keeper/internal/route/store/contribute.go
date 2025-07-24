@@ -14,7 +14,7 @@ import (
 	"github.com/spiffe/spike-sdk-go/security/mem"
 
 	"github.com/spiffe/spike/app/keeper/internal/state"
-	journal "github.com/spiffe/spike/internal/log"
+	journal "github.com/spiffe/spike/internal/journal"
 	"github.com/spiffe/spike/internal/net"
 )
 
@@ -32,7 +32,7 @@ import (
 // Parameters:
 //   - w: http.ResponseWriter to write the HTTP response
 //   - r: *http.Request containing the incoming HTTP request
-//   - audit: *log.AuditEntry for tracking the request for auditing purposes
+//   - audit: *journal.AuditEntry for tracking the request for auditing purposes
 //
 // Returns:
 //   - error: nil if successful, otherwise one of:

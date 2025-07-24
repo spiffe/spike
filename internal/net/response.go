@@ -13,7 +13,7 @@ import (
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	"github.com/spiffe/spike-sdk-go/log"
 
-	journal "github.com/spiffe/spike/internal/log"
+	journal "github.com/spiffe/spike/internal/journal"
 )
 
 // MarshalBody serializes a response object to JSON and handles error cases.
@@ -134,7 +134,7 @@ func Fallback(
 // Parameters:
 //   - w: http.ResponseWriter - The response writer
 //   - r: *http.Request - The incoming request
-//   - audit: *log.AuditEntry - The audit log entry for this request
+//   - audit: *journal.AuditEntry - The audit log entry for this request
 //
 // The response always includes:
 //   - Status: 400 Bad Request

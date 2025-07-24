@@ -70,7 +70,8 @@ func newOperatorRestoreCommand(
 				fmt.Println(
 					"  You need to have a `restore` role to use this command.")
 				fmt.Println(
-					"  Please run `./hack/bare-metal/entry/spire-server-entry-restore-register.sh`")
+					"  Please run " +
+						"`./hack/bare-metal/entry/spire-server-entry-restore-register.sh`")
 				fmt.Println("  with necessary privileges to assign this role.")
 				fmt.Println("")
 				os.Exit(1)
@@ -178,7 +179,8 @@ func newOperatorRestoreCommand(
 				fmt.Println("")
 				fmt.Println("  SPIKE is now restored and ready to use.")
 				fmt.Println(
-					"  Please run `./hack/bare-metal/entry/spire-server-entry-su-register.sh`")
+					"  Please run " +
+						"`./hack/bare-metal/entry/spire-server-entry-su-register.sh`")
 				fmt.Println(
 					"  with necessary privileges to start using SPIKE as a superuser.")
 				fmt.Println("")

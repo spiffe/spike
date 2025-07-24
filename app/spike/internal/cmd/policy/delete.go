@@ -36,7 +36,8 @@ import (
 //	delete [policy-id] [flags]
 //
 // Arguments:
-//   - policy-id: The unique identifier of the policy to delete (optional if --name is provided)
+//   - policy-id: The unique identifier of the policy to delete (optional
+//     if --name is provided)
 //
 // Flags:
 //   - --name: Policy name to look up (alternative to policy ID)
@@ -73,7 +74,8 @@ func newPolicyDeleteCommand(
         
         You can provide either:
         - A policy ID as an argument: spike policy delete abc123
-        - A policy name with the --name flag: spike policy delete --name=my-policy`,
+        - A policy name with the --name flag: 
+          spike policy delete --name=my-policy`,
 		Run: func(cmd *cobra.Command, args []string) {
 			trust.Authenticate(spiffeId)
 			api := spike.NewWithSource(source)
@@ -85,7 +87,8 @@ func newPolicyDeleteCommand(
 			}
 
 			// Confirm deletion
-			fmt.Printf("Are you sure you want to delete policy with ID '%s'? (y/N): ", policyId)
+			fmt.Printf("Are you sure you want to "+
+				"delete policy with ID '%s'? (y/N): ", policyId)
 			reader := bufio.NewReader(os.Stdin)
 			confirm, _ := reader.ReadString('\n')
 			confirm = strings.TrimSpace(confirm)

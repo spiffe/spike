@@ -174,9 +174,12 @@ func (s *DataStore) LoadPolicy(
 //   - ctx: Context for the database operation
 //
 // Returns:
-//   - map[string]*data.Policy: Map of policy IDs to loaded policies with compiled patterns
+//   - map[string]*data.Policy: Map of policy IDs to loaded policies with
+//     compiled patterns
 //   - error: Database errors or pattern compilation errors
-func (s *DataStore) LoadAllPolicies(ctx context.Context) (map[string]*data.Policy, error) {
+func (s *DataStore) LoadAllPolicies(
+	ctx context.Context,
+) (map[string]*data.Policy, error) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
@@ -214,7 +217,8 @@ func (s *DataStore) LoadAllPolicies(ctx context.Context) (map[string]*data.Polic
 		if policy.SpiffeIdPattern != "*" {
 			idRegex, err := regexp.Compile(policy.SpiffeIdPattern)
 			if err != nil {
-				return nil, fmt.Errorf("invalid spiffeid pattern for policy %s: %w", policy.Id, err)
+				return nil,
+					fmt.Errorf("invalid spiffeid pattern for policy %s: %w", policy.Id, err)
 			}
 			policy.IdRegex = idRegex
 		}
@@ -222,7 +226,8 @@ func (s *DataStore) LoadAllPolicies(ctx context.Context) (map[string]*data.Polic
 		if policy.PathPattern != "*" {
 			pathRegex, err := regexp.Compile(policy.PathPattern)
 			if err != nil {
-				return nil, fmt.Errorf("invalid path pattern for policy %s: %w", policy.Id, err)
+				return nil,
+					fmt.Errorf("invalid path pattern for policy %s: %w", policy.Id, err)
 			}
 			policy.PathRegex = pathRegex
 		}

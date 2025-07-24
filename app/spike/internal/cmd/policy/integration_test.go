@@ -215,7 +215,8 @@ permissions:
 			if len(policy.SpiffeID) > 0 && policy.SpiffeID[len(policy.SpiffeID)-1] == '\n' {
 				policy.SpiffeID = policy.SpiffeID[:len(policy.SpiffeID)-1]
 			}
-			if len(tt.expectValue.SpiffeID) > 0 && tt.expectValue.SpiffeID[len(tt.expectValue.SpiffeID)-1] == '\n' {
+			if len(tt.expectValue.SpiffeID) > 0 &&
+				tt.expectValue.SpiffeID[len(tt.expectValue.SpiffeID)-1] == '\n' {
 				tt.expectValue.SpiffeID = tt.expectValue.SpiffeID[:len(tt.expectValue.SpiffeID)-1]
 			}
 
@@ -223,17 +224,20 @@ permissions:
 				t.Errorf("Name = %v, want %v", policy.Name, tt.expectValue.Name)
 			}
 			if policy.SpiffeID != tt.expectValue.SpiffeID {
-				t.Errorf("SpiffeID = %v, want %v", policy.SpiffeID, tt.expectValue.SpiffeID)
+				t.Errorf("SpiffeID = %v, want %v",
+					policy.SpiffeID, tt.expectValue.SpiffeID)
 			}
 			if policy.Path != tt.expectValue.Path {
 				t.Errorf("Path = %v, want %v", policy.Path, tt.expectValue.Path)
 			}
 			if len(policy.Permissions) != len(tt.expectValue.Permissions) {
-				t.Errorf("Permissions length = %d, want %d", len(policy.Permissions), len(tt.expectValue.Permissions))
+				t.Errorf("Permissions length = %d, want %d",
+					len(policy.Permissions), len(tt.expectValue.Permissions))
 			} else {
 				for i, perm := range policy.Permissions {
 					if perm != tt.expectValue.Permissions[i] {
-						t.Errorf("Permissions[%d] = %v, want %v", i, perm, tt.expectValue.Permissions[i])
+						t.Errorf("Permissions[%d] = %v, want %v",
+							i, perm, tt.expectValue.Permissions[i])
 					}
 				}
 			}

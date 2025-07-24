@@ -13,7 +13,7 @@ import (
 	"github.com/spiffe/spike-sdk-go/log"
 
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
-	journal "github.com/spiffe/spike/internal/log"
+	journal "github.com/spiffe/spike/internal/journal"
 	"github.com/spiffe/spike/internal/net"
 )
 
@@ -32,7 +32,7 @@ import (
 // Parameters:
 //   - w: http.ResponseWriter to write the HTTP response
 //   - r: *http.Request containing the incoming HTTP request
-//   - audit: *log.AuditEntry for logging audit information
+//   - audit: *journal.AuditEntry for logging audit information
 //
 // Returns:
 //   - error: if an error occurs during request processing.

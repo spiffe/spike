@@ -39,9 +39,9 @@ import (
 //
 // Example Usage:
 //
-//	spike secret undelete secret/ella           # Restores current version
-//	spike secret undelete secret/ella -v 1,2,3  # Restores specific versions
-//	spike secret undelete secret/ella -v 0,1,2  # Restores current version plus 1,2
+//	spike secret undelete db/pwd           # Restores current version
+//	spike secret undelete db/pwd -v 1,2,3  # Restores specific versions
+//	spike secret undelete db/pwd -v 0,1,2  # Restores current version plus 1,2
 //
 // The command performs trust to ensure:
 //   - Exactly one path argument is provided
@@ -64,7 +64,8 @@ If no version is specified, defaults to undeleting the current version.
 Examples:
   spike secret undelete secret/ella           # Undeletes current version
   spike secret undelete secret/ella -v 1,2,3  # Undeletes specific versions
-  spike secret undelete secret/ella -v 0,1,2  # Undeletes current version plus versions 1 and 2`,
+  spike secret undelete secret/ella -v 0,1,2  
+  # Undeletes current version plus versions 1 and 2`,
 		Args: cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			trust.Authenticate(spiffeId)

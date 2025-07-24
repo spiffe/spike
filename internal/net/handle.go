@@ -6,12 +6,12 @@ import (
 
 	"github.com/spiffe/spike-sdk-go/crypto"
 
-	"github.com/spiffe/spike/internal/log"
+	"github.com/spiffe/spike/internal/journal"
 )
 
 // Handler is a function type that processes HTTP requests with audit
 // logging support.
-type Handler func(http.ResponseWriter, *http.Request, *log.AuditEntry) error
+type Handler func(http.ResponseWriter, *http.Request, *journal.AuditEntry) error
 
 // HandleRoute wraps an HTTP handler with audit logging functionality.
 // It creates and manages audit log entries for the request lifecycle,
@@ -31,29 +31,29 @@ func HandleRoute(h Handler) {
 		writer http.ResponseWriter, request *http.Request,
 	) {
 		now := time.Now()
-		entry := log.AuditEntry{
+		entry := journal.AuditEntry{
 			TrailId:   crypto.Id(),
 			Timestamp: now,
 			UserId:    "",
-			Action:    log.AuditEnter,
+			Action:    journal.AuditEnter,
 			Path:      request.URL.Path,
 			Resource:  "",
 			SessionID: "",
-			State:     log.AuditEntryCreated,
+			State:     journal.AuditEntryCreated,
 		}
-		log.Audit(entry)
+		journal.Audit(entry)
 
 		err := h(writer, request, &entry)
 		if err == nil {
-			entry.Action = log.AuditExit
-			entry.State = log.AuditSuccess
+			entry.Action = journal.AuditExit
+			entry.State = journal.AuditSuccess
 		} else {
-			entry.Action = log.AuditExit
-			entry.State = log.AuditErrored
+			entry.Action = journal.AuditExit
+			entry.State = journal.AuditErrored
 			entry.Err = err.Error()
 		}
 
 		entry.Duration = time.Since(now)
-		log.Audit(entry)
+		journal.Audit(entry)
 	})
 }

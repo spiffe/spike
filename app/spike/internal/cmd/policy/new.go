@@ -6,7 +6,8 @@ import (
 )
 
 // NewPolicyCommand creates a new top-level command for working with policies.
-// It acts as a parent for all policy-related subcommands: create, list, get, and delete.
+// It acts as a parent for all policy-related subcommands: create, list, get,
+// and delete.
 //
 // The policy commands allow for managing access control policies that define
 // which workloads can access which resources based on SPIFFE ID patterns and
@@ -27,16 +28,19 @@ import (
 //
 // Example usage:
 //
-//	spike policy list
-//	spike policy get abc123
-//	spike policy get --name=my-policy
-//	spike policy create --name=new-policy --path="/secret/*" --spiffeid="spiffe://example.org/*" --permissions=read,write
-//	spike policy delete abc123
-//	spike policy delete --name=my-policy
+//		spike policy list
+//		spike policy get abc123
+//		spike policy get --name=my-policy
+//		spike policy create --name=new-policy --path="/secret/*" \
+//	 	--spiffeid="spiffe://example.org/*" --permissions=read,write
+//		spike policy delete abc123
+//		spike policy delete --name=my-policy
 //
 // Each subcommand has its own set of flags and arguments. See the individual
 // command documentation for details.
-func NewPolicyCommand(source *workloadapi.X509Source, spiffeId string) *cobra.Command {
+func NewPolicyCommand(
+	source *workloadapi.X509Source, spiffeId string,
+) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "policy",
 		Short: "Manage policies",

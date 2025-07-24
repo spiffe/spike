@@ -16,7 +16,7 @@ import (
 
 	"github.com/spiffe/spike/app/nexus/internal/env"
 	"github.com/spiffe/spike/app/nexus/internal/initialization/recovery"
-	journal "github.com/spiffe/spike/internal/log"
+	journal "github.com/spiffe/spike/internal/journal"
 	"github.com/spiffe/spike/internal/net"
 )
 
@@ -36,7 +36,7 @@ var (
 // Parameters:
 //   - w http.ResponseWriter: The HTTP response writer to write the response to.
 //   - r *http.Request: The incoming HTTP request.
-//   - audit *log.AuditEntry: An audit entry for logging the request.
+//   - audit *journal.AuditEntry: An audit entry for logging the request.
 //
 // Returns:
 //   - error: An error if one occurs during processing, nil otherwise.
@@ -166,5 +166,3 @@ func RouteRestore(
 	log.Log().Info(fName, "message", data.ErrSuccess)
 	return nil
 }
-
-// TODO: you are going over all files and moving stuff to jira.xml as needed.

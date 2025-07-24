@@ -21,7 +21,7 @@ import (
 	"github.com/spiffe/spike/app/nexus/internal/route/operator"
 	"github.com/spiffe/spike/app/nexus/internal/route/secret"
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
-	"github.com/spiffe/spike/internal/log"
+	"github.com/spiffe/spike/internal/journal"
 	"github.com/spiffe/spike/internal/net"
 )
 
@@ -34,7 +34,7 @@ import (
 //   - w: The HTTP ResponseWriter to write the response to
 //   - r: The HTTP Request containing the client's request details
 func Route(
-	w http.ResponseWriter, r *http.Request, a *log.AuditEntry,
+	w http.ResponseWriter, r *http.Request, a *journal.AuditEntry,
 ) error {
 	return net.RouteFactory[url.ApiAction](
 		url.ApiUrl(r.URL.Path),

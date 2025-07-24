@@ -13,7 +13,7 @@ import (
 	"github.com/spiffe/spike-sdk-go/log"
 
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
-	journal "github.com/spiffe/spike/internal/log"
+	journal "github.com/spiffe/spike/internal/journal"
 	"github.com/spiffe/spike/internal/net"
 )
 
@@ -33,7 +33,7 @@ import (
 // Parameters:
 //   - w: http.ResponseWriter to write the HTTP response
 //   - r: *http.Request containing the incoming HTTP request
-//   - audit: *log.AuditEntry for logging audit information
+//   - audit: *journal.AuditEntry for logging audit information
 //
 // Returns:
 //   - error: if an error occurs during request processing.
@@ -47,25 +47,25 @@ import (
 //
 // Response format on success (200 OK):
 //
-// "versions": {                       // map[int]SecretMetadataVersionResponse
+// "versions": {          // map[int]SecretMetadataVersionResponse
 //
-//	"version": {                       // SecretMetadataVersionResponse object
-//	  "createdTime": "",               // time.Time
-//	  "version": 0,                    // int
-//	  "deletedTime": null              // *time.Time (pointer, can be null)
+//	"version": {          // SecretMetadataVersionResponse object
+//	  "createdTime": "",  // time.Time
+//	  "version": 0,       // int
+//	  "deletedTime": null // *time.Time (pointer, can be null)
 //	 }
 //	},
 //
-// "metadata": {                        // SecretRawMetadataResponse object
+// "metadata": {          // SecretRawMetadataResponse object
 //
-//	 "currentVersion": 0,               // int
-//	 "oldestVersion": 0,                // int
-//	 "createdTime": "",                 // time.Time
-//	 "updatedTime": "",                 // time.Time
-//	 "maxVersions": 0                   // int
+//	 "currentVersion": 0, // int
+//	 "oldestVersion": 0,  // int
+//	 "createdTime": "",   // time.Time
+//	 "updatedTime": "",   // time.Time
+//	 "maxVersions": 0     // int
 //	},
 //
-// "err": null                          // ErrorCode
+// "err": null            // ErrorCode
 //
 // Error responses:
 //   - 401 Unauthorized: Invalid or missing JWT token

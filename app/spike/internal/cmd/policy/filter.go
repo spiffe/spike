@@ -48,7 +48,8 @@ func validUuid(uuid string) bool {
 	return r.MatchString(strings.ToLower(uuid))
 }
 
-// sendGetPolicyIdRequest gets the policy ID either from command arguments or the name flag.
+// sendGetPolicyIdRequest gets the policy ID either from command arguments or
+// the name flag.
 // If args contains a policy ID, it returns that. If the name flag is provided,
 // it looks up the policy by name and returns its ID. If neither is provided,
 // it returns an error.

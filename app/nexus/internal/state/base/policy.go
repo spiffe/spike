@@ -211,12 +211,14 @@ func DeletePolicy(id string) error {
 }
 
 // ListPolicies retrieves all policies from the policy store.
-// It iterates through the concurrent map of policies and returns them as a slice.
+// It iterates through the concurrent map of policies and returns them as a
+// slice.
 //
 // Returns:
 //   - []data.Policy: A slice containing all existing policies. Returns an empty
 //     slice if no policies exist. The order of policies in the returned slice
-//     is non-deterministic due to the concurrent nature of the underlying store.
+//     is non-deterministic due to the concurrent nature of the underlying
+//     store.
 func ListPolicies() []data.Policy {
 	var result []data.Policy
 
@@ -263,9 +265,9 @@ func ListPoliciesByPath(pathPattern string) []data.Policy {
 //
 // Returns:
 //   - []data.Policy: A slice of policies with matching SpiffeIdPattern. Returns
-//     an empty slice if no policies match. The order of policies in the returned
-//     slice is non-deterministic due to the concurrent nature of the underlying
-//     store.
+//     an empty slice if no policies match. The order of policies in the
+//     returned slice is non-deterministic due to the concurrent nature of the
+//     underlying store.
 func ListPoliciesBySpiffeId(spiffeIdPattern string) []data.Policy {
 	var result []data.Policy
 

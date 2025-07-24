@@ -47,9 +47,9 @@ func validSecretPath(path string) bool {
 //
 // Example Usage:
 //
-//	spike secret delete secret/apocalyptica           # Deletes current version
-//	spike secret delete secret/apocalyptica -v 1,2,3  # Deletes specific versions
-//	spike secret delete secret/apocalyptica -v 0,1,2  # Deletes current version plus 1,2
+//	spike secret delete secret/pass           # Deletes current version
+//	spike secret delete secret/pass -v 1,2,3  # Deletes specific versions
+//	spike secret delete secret/pass -v 0,1,2  # Deletes current version plus 1,2
 //
 // The command performs trust to ensure:
 //   - Exactly one path argument is provided
@@ -69,7 +69,8 @@ If no version is specified, defaults to deleting the current version.
 Examples:
   spike secret delete secret/apocalyptica          # Deletes current version
   spike secret delete secret/apocalyptica -v 1,2,3 # Deletes specific versions
-  spike secret delete secret/apocalyptica -v 0,1,2 # Deletes current version plus versions 1 and 2`,
+  spike secret delete secret/apocalyptica -v 0,1,2 
+  # Deletes current version plus versions 1 and 2`,
 		Args: cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			trust.Authenticate(spiffeId)

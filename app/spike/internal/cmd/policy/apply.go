@@ -48,9 +48,11 @@ func normalizePath(path string) string {
 //
 // Command flags:
 //   - --name: Name of the policy (required if not using --file)
-//   - --spiffeid: SPIFFE ID pattern for workload matching (required if not using --file)
+//   - --spiffeid: SPIFFE ID pattern for workload matching
+//     (required if not using --file)
 //   - --path: Path pattern for access control (required if not using --file)
-//   - --permissions: Comma-separated list of permissions (required if not using --file)
+//   - --permissions: Comma-separated list of permissions
+//     (required if not using --file)
 //   - --file: Path to YAML file containing policy configuration
 //
 // Valid permissions:
@@ -81,7 +83,8 @@ func normalizePath(path string) string {
 //	  - write
 //
 // The command will:
-//  1. Validate that all required parameters are provided (either via flags or file)
+//  1. Validate that all required parameters are provided (either via
+//     flags or file)
 //  2. Normalize the path pattern (remove trailing slashes)
 //  3. Check if the system is initialized
 //  4. Validate permissions and convert to the expected format
@@ -139,7 +142,8 @@ func newPolicyApplyCommand(
 				}
 			} else {
 				// Use flag-based input
-				policy, err = getPolicyFromFlags(name, spiffeIdPattern, pathPattern, permsStr)
+				policy, err = getPolicyFromFlags(name, spiffeIdPattern,
+					pathPattern, permsStr)
 				if err != nil {
 					fmt.Printf("Error: %v\n", err)
 					return
@@ -149,14 +153,15 @@ func newPolicyApplyCommand(
 			// Normalize the path pattern
 			policy.Path = normalizePath(policy.Path)
 
-			// Convert permissions slice to comma-separated string for validation
-			permsStr := ""
+			// Convert permissions slice to comma-separated string
+			// for validation
+			ps := ""
 			if len(policy.Permissions) > 0 {
 				for i, perm := range policy.Permissions {
 					if i > 0 {
-						permsStr += ","
+						ps += ","
 					}
-					permsStr += perm
+					ps += perm
 				}
 			}
 
@@ -164,14 +169,15 @@ func newPolicyApplyCommand(
 			api := spike.NewWithSource(source)
 
 			// Validate permissions
-			permissions, err := validatePermissions(permsStr)
+			permissions, err := validatePermissions(ps)
 			if err != nil {
 				fmt.Printf("Error: %v\n", err)
 				return
 			}
 
 			// Apply policy using upsert semantics
-			err = api.CreatePolicy(policy.Name, policy.SpiffeID, policy.Path, permissions)
+			err = api.CreatePolicy(policy.Name, policy.SpiffeID,
+				policy.Path, permissions)
 			if handleAPIError(err) {
 				return
 			}
@@ -181,13 +187,17 @@ func newPolicyApplyCommand(
 	}
 
 	// Define flags
-	cmd.Flags().StringVar(&name, "name", "", "Policy name (required if not using --file)")
+	cmd.Flags().StringVar(&name, "name", "",
+		"Policy name (required if not using --file)")
 	cmd.Flags().StringVar(&pathPattern, "path", "",
-		"Resource path pattern, e.g., 'secrets/database/production' (required if not using --file)")
+		"Resource path pattern, e.g., "+
+			"'secrets/database/production' (required if not using --file)")
 	cmd.Flags().StringVar(&spiffeIdPattern, "spiffeid", "",
-		"SPIFFE ID pattern, e.g., 'spiffe://example.org/service/*' (required if not using --file)")
+		"SPIFFE ID pattern, e.g., "+
+			"'spiffe://example.org/service/*' (required if not using --file)")
 	cmd.Flags().StringVar(&permsStr, "permissions", "",
-		"Comma-separated permissions: read, write, list, super (required if not using --file)")
+		"Comma-separated permissions: read, write, list, "+
+			"super (required if not using --file)")
 	cmd.Flags().StringVar(&filePath, "file", "",
 		"Path to YAML file containing policy configuration")
 

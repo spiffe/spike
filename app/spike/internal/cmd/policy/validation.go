@@ -12,10 +12,10 @@ import (
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 )
 
-// validatePermissions validates policy permissions from a comma-separated string
-// and returns a slice of PolicyPermission values. Only "read", "write", "list",
-// and "super" are valid permissions. It returns an error if any permission is
-// invalid or if the string contains no valid permissions.
+// validatePermissions validates policy permissions from a comma-separated
+// string and returns a slice of PolicyPermission values. Only "read", "write",
+// "list", and "super" are valid permissions. It returns an error if any
+// permission is invalid or if the string contains no valid permissions.
 //
 // Parameters:
 //   - permsStr: Comma-separated string of permissions (e.g., "read,write,list")

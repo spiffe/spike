@@ -82,7 +82,8 @@ func TestNormalizePath(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			result := normalizePath(tt.input)
 			if result != tt.expected {
-				t.Errorf("normalizePath(%q) = %q, want %q", tt.input, result, tt.expected)
+				t.Errorf("normalizePath(%q) = %q, want %q",
+					tt.input, result, tt.expected)
 			}
 		})
 	}
@@ -188,7 +189,9 @@ permissions:
 						}
 					}
 					if !found {
-						t.Errorf("readPolicyFromFile() expected error containing '%s', got '%v'", tt.errContains, err)
+						t.Errorf(
+							"readPolicyFromFile() expected error containing "+
+								"'%s', got '%v'", tt.errContains, err)
 					}
 				}
 				return
@@ -202,7 +205,8 @@ permissions:
 			// Test path normalization
 			normalizedPath := normalizePath(policy.Path)
 			if normalizedPath != tt.expectedPath {
-				t.Errorf("normalizePath(%q) = %q, want %q", policy.Path, normalizedPath, tt.expectedPath)
+				t.Errorf("normalizePath(%q) = %q, want %q",
+					policy.Path, normalizedPath, tt.expectedPath)
 			}
 		})
 	}
@@ -268,7 +272,8 @@ func TestApplyPolicyFromFlags(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			policy, err := getPolicyFromFlags(tt.inputName, tt.inputSpiffed, tt.inputPath, tt.inputPerms)
+			policy, err := getPolicyFromFlags(tt.inputName,
+				tt.inputSpiffed, tt.inputPath, tt.inputPerms)
 
 			if tt.wantErr {
 				if err == nil {
@@ -290,7 +295,9 @@ func TestApplyPolicyFromFlags(t *testing.T) {
 						}
 					}
 					if !found {
-						t.Errorf("getPolicyFromFlags() expected error containing '%s', got '%v'", tt.errContains, err)
+						t.Errorf("getPolicyFromFlags() "+
+							"expected error containing '%s', got '%v'",
+							tt.errContains, err)
 					}
 				}
 				return
@@ -304,7 +311,8 @@ func TestApplyPolicyFromFlags(t *testing.T) {
 			// Test path normalization
 			normalizedPath := normalizePath(policy.Path)
 			if normalizedPath != tt.expectedPath {
-				t.Errorf("normalizePath(%q) = %q, want %q", policy.Path, normalizedPath, tt.expectedPath)
+				t.Errorf("normalizePath(%q) = %q, want %q",
+					policy.Path, normalizedPath, tt.expectedPath)
 			}
 		})
 	}
@@ -330,7 +338,8 @@ func TestPathNormalizationIntegration(t *testing.T) {
 		t.Run("normalize_"+test.original, func(t *testing.T) {
 			result := normalizePath(test.original)
 			if result != test.normalized {
-				t.Errorf("normalizePath(%q) = %q, want %q", test.original, result, test.normalized)
+				t.Errorf("normalizePath(%q) = %q, want %q",
+					test.original, result, test.normalized)
 			}
 		})
 	}

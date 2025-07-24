@@ -109,10 +109,14 @@ func TestDeleteSecretVersions(t *testing.T) {
 					}
 					secret, getErr := secretStore.Get("test/path", version)
 					if !errors.Is(getErr, kv.ErrItemSoftDeleted) {
-						t.Errorf("Expected version %d to be soft deleted, got error: %v", version, getErr)
+						t.Errorf(
+							"Expected version %d to be soft deleted, got error: %v",
+							version, getErr)
 					}
 					if secret != nil {
-						t.Errorf("Expected nil secret for version %d after deletion, got: %v", version, secret)
+						t.Errorf(
+							"Expected nil secret for version %d after deletion, got: %v",
+							version, secret)
 					}
 				}
 			}

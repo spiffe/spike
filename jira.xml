@@ -15,6 +15,10 @@
   </kubernetification>
   <immediate-backlog>
     <issue>
+      func readPolicyFromFile(filePath string) (Spec, error) {
+      this function is in the wrong file!
+    </issue>
+    <issue>
       // TODO: this check should have been within state.CheckAccess
       // maybe we can fork based on spike/system/secrets/encrypt.
       //

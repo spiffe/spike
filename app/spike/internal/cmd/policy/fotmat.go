@@ -15,9 +15,9 @@ import (
 )
 
 // formatPoliciesOutput formats the output of policies based on the format flag.
-// It supports "human" (default) and "json" formats. For human format, it creates
-// a readable tabular representation. For JSON format, it marshals the policies
-// to indented JSON.
+// It supports "human" (default) and "json" formats. For human format, it
+// creates a readable tabular representation. For JSON format, it marshals the
+// policies to indented JSON.
 //
 // If the format flag is invalid, it returns an error message.
 // If the "policies" list is empty, it returns an appropriate message based on
@@ -80,7 +80,8 @@ func formatPoliciesOutput(cmd *cobra.Command, policies *[]data.Policy) string {
 		result.WriteString(fmt.Sprintf("Created At: %s\n",
 			policy.CreatedAt.Format(time.RFC3339)))
 		if policy.CreatedBy != "" {
-			result.WriteString(fmt.Sprintf("Created By: %s\n", policy.CreatedBy))
+			result.WriteString(fmt.Sprintf("Created By: %s\n",
+				policy.CreatedBy))
 		}
 		result.WriteString("--------\n\n")
 	}

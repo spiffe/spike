@@ -34,7 +34,8 @@ func Authenticate(spiffeid string) {
 func AuthenticateRecover(spiffeid string) {
 	if !svid.IsPilotRecover(env.TrustRoot(), spiffeid) {
 		log.Log().Error(
-			"AuthenticateRecover: You need a 'recover' SPIFFE ID to use this command.",
+			"AuthenticateRecover: You need a 'recover' " +
+				"SPIFFE ID to use this command.",
 		)
 		log.FatalF(
 			"AuthenticateRecover: You are not authorized to use this command (%s).\n",
@@ -48,7 +49,8 @@ func AuthenticateRecover(spiffeid string) {
 func AuthenticateRestore(spiffeid string) {
 	if !svid.IsPilotRestore(env.TrustRoot(), spiffeid) {
 		log.Log().Error(
-			"AuthenticateRestore: You need a 'restore' SPIFFE ID to use this command.",
+			"AuthenticateRestore: You need a 'restore' " +
+				"SPIFFE ID to use this command.",
 		)
 		log.FatalF(
 			"AuthenticateRecover: You are not authorized to use this command (%s).\n",
