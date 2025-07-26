@@ -24,3 +24,4 @@ kubectl apply -f "${SCRIPTPATH}/test.yaml"
 helm upgrade --install minio -n minio --create-namespace oci://registry-1.docker.io/bitnamicharts/minio -f "${SCRIPTPATH}/minio-values.yaml"
 kubectl rollout restart -n minio deployment/minio
 kubectl rollout status -n minio deployment/minio
+kubectl wait -l statefulset.kubernetes.io/pod-name=test-0 --for=condition=ready pod --timeout=-360s
