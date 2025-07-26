@@ -751,32 +751,47 @@ store, enforced at API level</em>)</li>
 <p><strong>SPIKE Nexus will NOT implement a lock/unlock API or CLI feature.</strong></p>
 <p>Instead, operators are recommended to achieve system-level locking by either:</p>
 <ol>
-<li><strong>Managing SPIRE registration entries</strong>: Removing or disabling the relevant SPIRE registration entries for SPIKE Nexus will immediately block all authenticated API access, effectively freezing the system in a secure, auditable, and SPIFFE-native way.</li>
-<li><strong>Using infrastructure-level controls</strong>: Scaling down the Nexus deployment, stopping Nexus processes, or otherwise restricting access at the infrastructure level are also valid and supported approaches.</li>
+<li><strong>Managing SPIRE registration entries</strong>: Removing or disabling the relevant
+SPIRE registration entries for SPIKE Nexus will immediately block all
+authenticated API access, effectively freezing the system in a secure,
+auditable, and SPIFFE-native way.</li>
+<li><strong>Using infrastructure-level controls</strong>: Scaling down the Nexus deployment,
+stopping Nexus processes, or otherwise restricting access at the
+infrastructure level are also valid and supported approaches.</li>
 </ol>
-<p>These methods are the supported and recommended ways to “lock” the system. No additional lock/unlock API or CLI subcommand will be provided by SPIKE Nexus at this time.</p>
+<p>These methods are the supported and recommended ways to “lock” the system.
+No additional lock/unlock API or CLI subcommand will be provided by
+<strong>SPIKE Nexus</strong> at this time.</p>
 <p>A sample script for SPIRE registration entry management:</p>
-<pre data-lang="sh" style="background-color:#2b303b;color:#c0c5ce;" class="language-sh "><code class="language-sh" data-lang="sh"><span style="color:#bf616a;">SPIFFE_ID</span><span>=&quot;</span><span style="color:#a3be8c;">spiffe://spike.ist/spike/nexus/etc/etc</span><span>&quot;
-</span><span style="color:#bf616a;">ENTRY_ID</span><span>=$</span><span style="color:#a3be8c;">(</span><span style="color:#bf616a;">spire-server</span><span style="color:#a3be8c;"> entry show</span><span style="color:#bf616a;"> --spiffeID </span><span>&quot;$</span><span style="color:#bf616a;">SPIFFE_ID</span><span>&quot; | </span><span style="color:#bf616a;">awk </span><span>&#39;</span><span style="color:#a3be8c;">/Entry ID/ {print $NF}</span><span>&#39;</span><span style="color:#a3be8c;">)
+<pre data-lang="sh" style="background-color:#2b303b;color:#c0c5ce;" class="language-sh "><code class="language-sh" data-lang="sh"><span style="color:#bf616a;">SPIFFE_ID</span><span>=&quot;</span><span style="color:#a3be8c;">spiffe://spike.ist/spike/nexus/...</span><span>&quot;
+</span><span style="color:#bf616a;">ENTRY_ID</span><span>=$</span><span style="color:#a3be8c;">(</span><span style="color:#bf616a;">spire-server</span><span style="color:#a3be8c;"> entry show</span><span style="color:#bf616a;"> --spiffeID </span><span>&quot;$</span><span style="color:#bf616a;">SPIFFE_ID</span><span>&quot; </span><span style="color:#a3be8c;">\
+</span><span style="color:#a3be8c;">  </span><span>| </span><span style="color:#bf616a;">awk </span><span>&#39;</span><span style="color:#a3be8c;">/Entry ID/ {print $NF}</span><span>&#39;</span><span style="color:#a3be8c;">)
 </span><span style="color:#b48ead;">if </span><span style="color:#96b5b4;">[ </span><span style="color:#bf616a;">-z </span><span>&quot;$</span><span style="color:#bf616a;">ENTRY_ID</span><span>&quot; </span><span style="color:#96b5b4;">]</span><span>; </span><span style="color:#b48ead;">then
-</span><span>    </span><span style="color:#96b5b4;">echo </span><span>&quot;</span><span style="color:#a3be8c;">No entry found for SPIFFE ID: </span><span>$</span><span style="color:#bf616a;">SPIFFE_ID</span><span>&quot;
-</span><span>    </span><span style="color:#96b5b4;">exit</span><span> 1
+</span><span>  </span><span style="color:#96b5b4;">echo </span><span>&quot;</span><span style="color:#a3be8c;">No entry found for SPIFFE ID: </span><span>$</span><span style="color:#bf616a;">SPIFFE_ID</span><span>&quot;
+</span><span>  </span><span style="color:#96b5b4;">exit</span><span> 1
 </span><span style="color:#b48ead;">fi
 </span><span style="color:#b48ead;">if </span><span style="color:#bf616a;">spire-server</span><span> entry delete</span><span style="color:#bf616a;"> --entryID </span><span>&quot;$</span><span style="color:#bf616a;">ENTRY_ID</span><span>&quot;; </span><span style="color:#b48ead;">then
-</span><span>    </span><span style="color:#96b5b4;">echo </span><span>&quot;</span><span style="color:#a3be8c;">Successfully deleted entry with SPIFFE ID: </span><span>$</span><span style="color:#bf616a;">SPIFFE_ID</span><span>&quot;
+</span><span>  </span><span style="color:#96b5b4;">echo </span><span>&quot;</span><span style="color:#a3be8c;">Successfully deleted entry with SPIFFE ID: </span><span>$</span><span style="color:#bf616a;">SPIFFE_ID</span><span>&quot;
 </span><span style="color:#b48ead;">else
-</span><span>    </span><span style="color:#96b5b4;">echo </span><span>&quot;</span><span style="color:#a3be8c;">Failed to delete entry with SPIFFE ID: </span><span>$</span><span style="color:#bf616a;">SPIFFE_ID</span><span>&quot;
-</span><span>    </span><span style="color:#96b5b4;">exit</span><span> 1
+</span><span>  </span><span style="color:#96b5b4;">echo </span><span>&quot;</span><span style="color:#a3be8c;">Failed to delete entry with SPIFFE ID: </span><span>$</span><span style="color:#bf616a;">SPIFFE_ID</span><span>&quot;
+</span><span>  </span><span style="color:#96b5b4;">exit</span><span> 1
 </span><span style="color:#b48ead;">fi
 </span></code></pre>
 <h2 id="rationale">Rationale</h2>
 <ul>
-<li><strong>Simplicity:</strong> Avoids introducing distributed consensus, state management, and API enforcement logic for a rarely used feature.</li>
-<li><strong>Security:</strong> SPIRE registration entries are the root of trust; removing them is the most secure and auditable way to block access. Infrastructure controls are also robust and well-understood.</li>
-<li><strong>Operational Clarity:</strong> The lock/unlock state is unambiguous and enforced at the trust boundary or infrastructure, not in application logic.</li>
-<li><strong>HA/Scaling:</strong> No need for all Nexus instances to coordinate or poll a shared lock state, avoiding performance and reliability issues.</li>
-<li><strong>SPIFFE-Native:</strong> Embraces the SPIFFE/SPIRE model for access control, rather than reinventing similar mechanisms in SPIKE.</li>
-<li><strong>Workarounds Remain Possible:</strong> Direct DB manipulation is always possible for those with privileged access, but is not an official or supported method.</li>
+<li><strong>Simplicity:</strong> Avoids introducing distributed consensus, state management,
+and API enforcement logic for a rarely used feature.</li>
+<li><strong>Security:</strong> SPIRE registration entries are the root of trust; removing them
+is the most secure and auditable way to block access. Infrastructure controls
+are also robust and well-understood.</li>
+<li><strong>Operational Clarity:</strong> The lock/unlock state is unambiguous and enforced
+at the trust boundary or infrastructure, not in application logic.</li>
+<li><strong>HA/Scaling:</strong> No need for all Nexus instances to coordinate or poll a
+shared lock state, avoiding performance and reliability issues.</li>
+<li><strong>SPIFFE-Native:</strong> Embraces the SPIFFE/SPIRE model for access control,
+rather than reinventing similar mechanisms in SPIKE.</li>
+<li><strong>Workarounds Remain Possible:</strong> Direct DB manipulation is always possible
+for those with privileged access, but is not an official or supported method.</li>
 </ul>
 <h2 id="consequences">Consequences</h2>
 <h3 id="positive">Positive</h3>
@@ -790,26 +805,39 @@ store, enforced at API level</em>)</li>
 </ul>
 <h3 id="negative">Negative</h3>
 <ul>
-<li>Locking/unlocking requires SPIRE server access (not just SPIKE operator privileges)</li>
+<li>Locking/unlocking requires SPIRE server access (<em>not just SPIKE operator
+privileges</em>)—This can be seen as a “positive” consequence, too, as it
+provides an additional level of isolation and security.</li>
 <li>No fine-grained or temporary lock state within SPIKE Nexus itself</li>
-<li>Some operational scenarios (e.g., “pause but keep registration”) are not directly supported</li>
+<li>Some operational scenarios (e.g., “pause but keep registration”) are not
+directly supported</li>
 </ul>
 <h2 id="alternatives-considered">Alternatives Considered</h2>
 <h3 id="implementing-lock-unlock-in-spike-nexus">Implementing Lock/Unlock in SPIKE Nexus</h3>
 <ul>
-<li><strong>Rejected</strong> due to complexity, risk of split-brain, performance overhead, and operational ambiguity in HA setups.</li>
-<li>Would require distributed consensus or polling, and add significant code and operational burden.</li>
+<li><strong>Rejected</strong> due to complexity, risk of split-brain, performance overhead,
+and operational ambiguity in HA setups.</li>
+<li>Would require distributed consensus or polling, and add significant code and
+operational burden.</li>
 </ul>
 <h3 id="infrastructure-level-controls">Infrastructure-Level Controls</h3>
 <ul>
-<li>Scaling down Nexus or killing processes is effective but “nuclear” and may disrupt monitoring, logging, or other integrations.</li>
+<li>Scaling down Nexus or killing processes is effective but “nuclear” and may
+disrupt monitoring, logging, or other integrations.</li>
 </ul>
 <h3 id="direct-db-manipulation">Direct DB Manipulation</h3>
 <ul>
-<li>Not recommended or supported, but possible for those with privileged access. Not considered a safe or auditable approach.</li>
+<li>Not recommended or supported, but possible for those with privileged access.
+Not considered a safe or auditable approach.</li>
 </ul>
 <h2 id="decision-outcome">Decision Outcome</h2>
-<p>This ADR documents the decision to rely on SPIRE registration entry management or infrastructure-level controls for system-level “locking” of SPIKE Nexus, and to avoid implementing a separate lock/unlock API or CLI feature in SPIKE Nexus itself. This decision may be revisited if/when a true SPIKE Nexus HA topology is implemented and operational experience suggests a different approach is warranted.</p>
+<p>This ADR documents the decision to rely on SPIRE registration entry management
+or infrastructure-level controls for system-level “locking” of <strong>SPIKE Nexus</strong>,
+and to avoid implementing a separate lock/unlock API or CLI feature in
+<strong>SPIKE Nexus</strong> itself.</p>
+<p>This decision may be revisited if/when a true <strong>SPIKE Nexus</strong> HA topology is
+implemented and operational experience suggests a different approach is
+warranted.</p>
 <hr />
 <ul>
 <li><a href="https://spike.ist/architecture/adrs/adr-0023/">ADR-0023: Decision Against Implementing Lock/Unlock Mechanism in SPIKE Nexus</a></li>

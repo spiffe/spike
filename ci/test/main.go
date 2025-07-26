@@ -93,7 +93,7 @@ func main() {
 
 	// Put a secret
 
-	child, _, err = expect.Spawn(spike+" put /tenants/acme/db username=root password=SPIKERocks", -1)
+	child, _, err = expect.Spawn(spike+" put tenants/acme/db username=root password=SPIKERocks", -1)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -105,7 +105,7 @@ func main() {
 
 	// Get the secret
 
-	child, _, err = expect.Spawn(spike+" get /tenants/acme/db", -1)
+	child, _, err = expect.Spawn(spike+" get tenants/acme/db", -1)
 	if err != nil {
 		log.Fatal(err)
 	}

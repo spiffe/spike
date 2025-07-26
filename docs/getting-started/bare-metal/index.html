@@ -1039,14 +1039,14 @@ it more flexible.</p>
 </span></code></pre>
 <h2 id="testing-out-spike">Testing Out SPIKE</h2>
 <p>Let’s test <strong>SPIKE</strong> by creating a secret:</p>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">spike</span><span> secret put /tenants/acme/credentials/db \
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">spike</span><span> secret put tenants/acme/credentials/db \
 </span><span>  username=root pass=SPIKERocks
 </span><span>
 </span><span style="color:#65737e;"># Output:
 </span><span style="color:#65737e;"># OK
 </span></code></pre>
 <p>Now, let’s read the secret back:</p>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">spike</span><span> secret get /tenants/acme/credentials/db
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">spike</span><span> secret get tenants/acme/credentials/db
 </span><span>
 </span><span style="color:#65737e;"># Output:
 </span><span style="color:#65737e;"># pass: SPIKERocks

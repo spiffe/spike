@@ -383,7 +383,7 @@ spike
 Let's test **SPIKE** by creating a secret:
 
 ```bash
-spike secret put /tenants/acme/credentials/db \
+spike secret put tenants/acme/credentials/db \
   username=root pass=SPIKERocks
 
 # Output:
@@ -393,7 +393,7 @@ spike secret put /tenants/acme/credentials/db \
 Now, let's read the secret back:
 
 ```bash
-spike secret get /tenants/acme/credentials/db
+spike secret get tenants/acme/credentials/db
 
 # Output:
 # pass: SPIKERocks

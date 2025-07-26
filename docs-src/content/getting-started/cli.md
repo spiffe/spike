@@ -116,7 +116,7 @@ Flags:
 Now that we know how to use the `spike secret get` command, let's try it.
 
 ```bash
-spike (main)$ spike secret get /tenants/acme/db/creds
+spike (main)$ spike secret get tenants/acme/db/creds
 pass: SPIKERocks
 ```
 

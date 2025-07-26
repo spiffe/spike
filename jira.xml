@@ -15,6 +15,10 @@
   </kubernetification>
   <immediate-backlog>
     <issue>
+      type ShardResponse struct {
+      error field should be optional.
+    </issue>
+    <issue>
       ability for nexus to return encrypted secrets.
       vsecm wants that.
     </issue>
@@ -769,6 +773,10 @@
     </issue>
     <issue>
       dev mode, single binary.
+    </issue>
+    <issue>
+      before trying to get source...
+      remove this log.
     </issue>
     <issue>
       // TDO: Yes memory is the source of truth; but at least
