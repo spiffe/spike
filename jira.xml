@@ -15,6 +15,26 @@
   </kubernetification>
   <immediate-backlog>
     <issue>
+      ability for nexus to return encrypted secrets.
+      vsecm wants that.
+    </issue>
+    <issue>
+      goes to spike sdk go
+      func Id() string {
+      id, err := crypto.RandomString(8)
+      if err != nil {
+      id = fmt.Sprintf("CRYPTO-ERR: %s", err.Error())
+      }
+      return id
+      }
+    </issue>
+    <issue>
+      VSecM should use spiffe.source too from SDK.
+      Also spiffe.source should have a timeout and err out if it cannot
+      acquire the source in a timely manner. The timeout should be
+      configurable from the environment options.
+    </issue>
+    <issue>
       func readPolicyFromFile(filePath string) (Spec, error) {
       this function is in the wrong file!
     </issue>
