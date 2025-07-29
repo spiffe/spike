@@ -17,12 +17,13 @@ import (
 	"github.com/spiffe/spike/internal/net"
 )
 
-// RouteListPolicies handles HTTP requests to retrieve all existing policies.
-// It returns a list of all policies in the system, including their IDs, names,
-// SPIFFE ID patterns, path patterns, and permissions.
+// RouteListPolicies handles HTTP requests to retrieve policies.
+// It can list all policies or filter them by a SPIFFE ID pattern or a path
+// pattern. The function returns a list of policies matching the criteria.
 //
-// The function expects an empty JSON request body ({}) and returns an array
-// of policy objects.
+// The request body can be empty to list all policies, or it can contain
+// `spiffe_id_pattern` or `path_pattern` for filtering. These two filter
+// parameters cannot be used together.
 //
 // Parameters:
 //   - w: HTTP response writer for sending the response
@@ -32,9 +33,21 @@ import (
 // Returns:
 //   - error: nil on successful retrieval, error otherwise
 //
-// Example request body:
+// Example request body (list all):
 //
 //	{}
+//
+// Example request body (filter by SPIFFE ID):
+//
+//	{
+//	    "spiffe_id_pattern": "spiffe://example.org/app"
+//	}
+//
+// Example request body (filter by path):
+//
+//	{
+//	    "path_pattern": "/api/v1/*"
+//	}
 //
 // Example success response:
 //
@@ -56,12 +69,13 @@ import (
 // Example error response:
 //
 //	{
-//	    "err": "Internal server error"
+//	    "err": "spiffe_id_pattern and path_pattern cannot be used together"
 //	}
 //
 // Possible errors:
 //   - Failed to read request body
 //   - Failed to parse request body
+//   - `spiffe_id_pattern` and `path_pattern` used together
 //   - Failed to marshal response body
 func RouteListPolicies(
 	w http.ResponseWriter, r *http.Request, audit *journal.AuditEntry,
@@ -88,7 +102,19 @@ func RouteListPolicies(
 		return err
 	}
 
-	policies := state.ListPolicies()
+	var policies []data.Policy
+
+	spiffeIdPattern := request.SpiffeIdPattern
+	pathPattern := request.PathPattern
+
+	switch {
+	case spiffeIdPattern != "":
+		policies = state.ListPoliciesBySpiffeId(spiffeIdPattern)
+	case pathPattern != "":
+		policies = state.ListPoliciesByPath(pathPattern)
+	default:
+		policies = state.ListPolicies()
+	}
 
 	responseBody := net.MarshalBody(reqres.PolicyListResponse{
 		Policies: policies,

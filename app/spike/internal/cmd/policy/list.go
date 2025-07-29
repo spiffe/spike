@@ -13,8 +13,9 @@ import (
 	"github.com/spiffe/spike/app/spike/internal/trust"
 )
 
-// newPolicyListCommand creates a new Cobra command for listing all policies.
-// It retrieves and displays all existing policies in the system.
+// newPolicyListCommand creates a new Cobra command for listing policies.
+// It retrieves and displays policies, optionally filtering by a resource path
+// pattern or a SPIFFE ID pattern.
 //
 // The command requires an X509Source for SPIFFE authentication and validates
 // that the system is initialized before listing policies.
@@ -28,15 +29,21 @@ import (
 //
 // Command usage:
 //
-//	list [--format=<format>]
+//	list [--format=<format>] [--path=<pattern> | --spiffeid=<pattern>]
 //
 // Flags:
 //   - --format: Output format ("human" or "json", default is "human")
+//   - --path: Filter policies by a resource path pattern (e.g., '/secrets/*')
+//   - --spiffeid: Filter policies by a SPIFFE ID pattern (e.g., 'spiffe://example.org/service/*')
+//
+// Note: --path and --spiffeid flags cannot be used together.
 //
 // Example usage:
 //
 //	spike policy list
 //	spike policy list --format=json
+//	spike policy list --path="/api/v1/*"
+//	spike policy list --spiffeid="spiffe://example.org/app"
 //
 // Example output for human format:
 //
@@ -68,13 +75,14 @@ import (
 //
 // The command will:
 //  1. Check if the system is initialized
-//  2. Retrieve all existing policies
+//  2. Retrieve existing policies based on filters
 //  3. Format the policies based on the format flag
 //  4. Display the formatted output
 //
 // Error conditions:
 //   - System not initialized (requires running 'spike init' first)
 //   - An invalid format specified
+//   - Using --path and --spiffeid flags together
 //   - Insufficient permissions
 //   - Policy retrieval failure
 //
@@ -83,24 +91,34 @@ import (
 func newPolicyListCommand(
 	source *workloadapi.X509Source, spiffeId string,
 ) *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   "list",
-		Short: "List all policies",
-		Args:  cobra.NoArgs,
-		Run: func(cmd *cobra.Command, args []string) {
-			trust.Authenticate(spiffeId)
-			api := spike.NewWithSource(source)
+	var (
+		pathPattern     string
+		spiffeIdPattern string
+    )
+    cmd := &cobra.Command{
+        Use:   "list",
+        Short: "List policies, optionally filtering by path or SPIFFE ID",
+        Args:  cobra.NoArgs,
+        Run: func(cmd *cobra.Command, args []string) {
+            trust.Authenticate(spiffeId)
+            api := spike.NewWithSource(source)
 
-			policies, err := api.ListPolicies()
-			if handleAPIError(err) {
-				return
-			}
+            policies, err := api.ListPolicies(spiffeIdPattern, pathPattern)
+            if handleAPIError(err) {
+                return
+            }
 
-			output := formatPoliciesOutput(cmd, policies)
-			fmt.Println(output)
-		},
-	}
+            output := formatPoliciesOutput(cmd, policies)
+            fmt.Println(output)
+        },
+    }
 
-	addFormatFlag(cmd)
-	return cmd
+    cmd.Flags().StringVar(&pathPattern, "path", "",
+        "Resource path pattern, e.g., '/secrets/*'")
+    cmd.Flags().StringVar(&spiffeIdPattern, "spiffeid", "",
+        "SPIFFE ID pattern, e.g., 'spiffe://example.org/service/*'")
+    cmd.MarkFlagsMutuallyExclusive("path", "spiffeid")
+
+    addFormatFlag(cmd)
+    return cmd
 }

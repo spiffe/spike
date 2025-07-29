@@ -25,7 +25,7 @@ import (
 //   - string: The policy ID if found
 //   - error: An error if the policy is not found or there's an API issue
 func findPolicyByName(api *spike.Api, name string) (string, error) {
-	policies, err := api.ListPolicies()
+	policies, err := api.ListPolicies("", "")
 	if err != nil {
 		return "", err
 	}
