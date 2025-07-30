@@ -81,11 +81,12 @@ When a workload attempts to access a resource in SPIKE:
 ### `spike policy list`
 
 ```bash
-spike policy list [--format=human|json]
+spike policy list [--format=human|json] [--path=<pattern> | --spiffeid=<pattern>]
 ```
 
-Lists all policies in the system. Use `--format=json` for 
-machine-readable output.
+Lists all policies in the system. Can be filtered by a resource path pattern or a SPIFFE ID pattern.
+
+**Note:** `--path` and `--spiffeid` flags cannot be used together.
 
 ### `spike policy create`
 

@@ -154,7 +154,7 @@ spike policy create --name=workload-can-read \
 ### Verify the Policy Creation
 
 ```bash
-spike policy list
+spike policy list --format=json
 
 # Sample output:
 # [
