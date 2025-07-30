@@ -59,8 +59,14 @@ spec:
           daemon_mode = false
           hint = "spike"
           EOF
+          touch /tmp/ready
           while true; do sleep 1000; done
         name: main
+        readinessProbe:
+          exec:
+            command:
+            - cat
+            - /tmp/ready
         env:
         - name: SPIKE_NEXUS_API_URL
           value: https://spire-spike-nexus.spire-server:443
