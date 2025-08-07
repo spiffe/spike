@@ -1,13 +1,13 @@
 module github.com/spiffe/spike
 
-go 1.24.1
+go 1.24.6
 
 require (
 	github.com/cloudflare/circl v1.6.1
 	github.com/golangci/golangci-lint v1.64.8
 	github.com/google/goexpect v0.0.0-20210430020637-ab937bf7fd6f
 	github.com/google/uuid v1.6.0
-	github.com/mattn/go-sqlite3 v1.14.28
+	github.com/mattn/go-sqlite3 v1.14.30
 	github.com/spf13/cobra v1.9.1
 	github.com/spiffe/go-spiffe/v2 v2.5.0
 	github.com/spiffe/spike-sdk-go v0.5.20

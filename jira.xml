@@ -386,7 +386,8 @@
       could be useful.
 
       SPIKE Lite:
-
+      # get pilot's pem and key to test things out.
+      # this can be part of documentation too. to test the API directly, 1. extract the pem and key, and then do regular curl.
       curl -s -X POST --header "Content-Type:application/octet-stream" --data-binary "This is a test encryption" https://spire-spike-nexus/v1/encrypt -k --cert /tmp/pem/svid.0.pem --key /tmp/pem/svid.0.key -o encrypted
       curl -s -X POST --header "Content-Type:application/octet-stream" --data-binary  @encrypted https://spire-spike-nexus/v1/decrypt -k --cert /tmp/pem/svid.0.pem --key /tmp/pem/svid.0.key -o decrypted
       cat decrypted; echo
