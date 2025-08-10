@@ -1,9 +1,0 @@
-# Admin policy configuration with all permissions
-name: "admin-policy"
-spiffeid: "spiffe://example.org/admin/*"
-path: "secrets"
-permissions:
-  - read
-  - write
-  - list
-  - super 
