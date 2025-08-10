@@ -94,31 +94,31 @@ func newPolicyListCommand(
 	var (
 		pathPattern     string
 		spiffeIdPattern string
-    )
-    cmd := &cobra.Command{
-        Use:   "list",
-        Short: "List policies, optionally filtering by path or SPIFFE ID",
-        Args:  cobra.NoArgs,
-        Run: func(cmd *cobra.Command, args []string) {
-            trust.Authenticate(spiffeId)
-            api := spike.NewWithSource(source)
+	)
+	cmd := &cobra.Command{
+		Use:   "list",
+		Short: "List policies, optionally filtering by path or SPIFFE ID",
+		Args:  cobra.NoArgs,
+		Run: func(cmd *cobra.Command, args []string) {
+			trust.Authenticate(spiffeId)
+			api := spike.NewWithSource(source)
 
-            policies, err := api.ListPolicies(spiffeIdPattern, pathPattern)
-            if handleAPIError(err) {
-                return
-            }
+			policies, err := api.ListPolicies(spiffeIdPattern, pathPattern)
+			if handleAPIError(err) {
+				return
+			}
 
-            output := formatPoliciesOutput(cmd, policies)
-            fmt.Println(output)
-        },
-    }
+			output := formatPoliciesOutput(cmd, policies)
+			fmt.Println(output)
+		},
+	}
 
-    cmd.Flags().StringVar(&pathPattern, "path", "",
-        "Resource path pattern, e.g., '/secrets/*'")
-    cmd.Flags().StringVar(&spiffeIdPattern, "spiffeid", "",
-        "SPIFFE ID pattern, e.g., 'spiffe://example.org/service/*'")
-    cmd.MarkFlagsMutuallyExclusive("path", "spiffeid")
+	cmd.Flags().StringVar(&pathPattern, "path", "",
+		"Resource path pattern, e.g., '/secrets/*'")
+	cmd.Flags().StringVar(&spiffeIdPattern, "spiffeid", "",
+		"SPIFFE ID pattern, e.g., 'spiffe://example.org/service/*'")
+	cmd.MarkFlagsMutuallyExclusive("path", "spiffeid")
 
-    addFormatFlag(cmd)
-    return cmd
+	addFormatFlag(cmd)
+	return cmd
 }

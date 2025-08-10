@@ -15,6 +15,12 @@
   </kubernetification>
   <immediate-backlog>
     <issue>
+        A `--dry run` feature for vsecm commands:
+        it will not create policies, secrets, etc, but just pass validations
+        and return success/failure responses instead.
+        useful for integration tests.
+    </issue>
+    <issue>
       type ShardResponse struct {
       error field should be optional.
     </issue>
