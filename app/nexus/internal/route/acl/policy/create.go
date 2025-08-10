@@ -43,8 +43,8 @@ import (
 //
 //	{
 //	    "name": "example-policy",
-//	    "spiffe_id_pattern": "spiffe://example.org/*/service",
-//	    "path_pattern": "/api/*",
+//	    "spiffe_id_pattern": "spiffe://example\.org/.*/service",
+//	    "path_pattern": "^/api/.*",
 //	    "permissions": ["read", "write"]
 //	}
 //

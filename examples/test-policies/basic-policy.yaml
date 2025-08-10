@@ -1,6 +1,0 @@
-# Basic policy configuration for testing
-name: "basic-test-policy"
-spiffeid: "spiffe://example.org/basic/*"
-path: "secrets/basic/config"
-permissions:
-  - read 

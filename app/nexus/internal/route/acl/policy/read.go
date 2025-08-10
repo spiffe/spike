@@ -50,8 +50,8 @@ import (
 //	    "policy": {
 //	        "id": "policy-123",
 //	        "name": "example-policy",
-//	        "spiffe_id_pattern": "spiffe://example.org/*/service",
-//	        "path_pattern": "/api/*",
+//	        "spiffe_id_pattern": "^spiffe://example\.org/.*/service",
+//	        "path_pattern": "^api/",
 //	        "permissions": ["read", "write"],
 //	        "created_at": "2024-01-01T00:00:00Z",
 //	        "created_by": "user-abc"

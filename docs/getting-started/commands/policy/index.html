@@ -719,11 +719,103 @@
 policies</strong> in SPIKE. It allows administrators to define, view, and manage rules
 that control access to secrets and resources based on workload identity
 (<strong>SPIFFE ID</strong>) and resource paths.</p>
+<p>SPIKE provides two commands for managing policies:</p>
+<ol>
+<li><strong><code>spike policy create</code></strong>—Traditional command-line interface
+(<em>backward compatibility</em>)</li>
+<li><strong><code>spike policy apply</code></strong>—Enhanced command with YAML file support
+(<em>recommended for new workflows</em>)</li>
+</ol>
+<p>While <code>spike policy create</code> checks for the existence of a policy, and
+errors out if we are overriding an existing policy, <code>spike policy apply</code> uses
+<strong>upsert semantics</strong>—it will create a new policy if one doesn’t exist, or
+update an existing policy if one with the same name already exists. This makes
+the <code>spike policy apply</code> command safe to use in automation and GitOps workflows.</p>
 <h2 id="quick-start">Quick Start</h2>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># Using YAML file (recommended)
+</span><span style="color:#bf616a;">spike</span><span> policy apply</span><span style="color:#bf616a;"> --file</span><span> policy.yaml
+</span></code></pre>
+<h2 id="yaml-file-format">YAML File Format</h2>
+<h3 id="basic-structure">Basic Structure</h3>
+<pre data-lang="yaml" style="background-color:#2b303b;color:#c0c5ce;" class="language-yaml "><code class="language-yaml" data-lang="yaml"><span style="color:#65737e;"># Policy name - must be unique within the system
+</span><span style="color:#bf616a;">name</span><span>: &quot;</span><span style="color:#a3be8c;">web-service-policy</span><span>&quot;
+</span><span>
+</span><span style="color:#65737e;"># SPIFFE ID pattern for workload matching
+</span><span style="color:#bf616a;">spiffeid</span><span>: &quot;</span><span style="color:#a3be8c;">spiffe://example.org/web-service/</span><span>&quot;
+</span><span>
+</span><span style="color:#65737e;"># Path pattern for access control
+</span><span style="color:#65737e;"># Note: Trailing slashes are automatically removed during normalization
+</span><span style="color:#bf616a;">path</span><span>: &quot;</span><span style="color:#a3be8c;">secrets/web-service/database</span><span>&quot;
+</span><span>
+</span><span style="color:#65737e;"># List of permissions to grant
+</span><span style="color:#bf616a;">permissions</span><span>:
+</span><span>  - </span><span style="color:#a3be8c;">read
+</span><span>  - </span><span style="color:#a3be8c;">write
+</span></code></pre>
+<h3 id="path-normalization">Path Normalization</h3>
+<p>The <code>apply</code> command automatically normalizes paths by removing trailing slashes:</p>
+<pre data-lang="yaml" style="background-color:#2b303b;color:#c0c5ce;" class="language-yaml "><code class="language-yaml" data-lang="yaml"><span style="color:#65737e;"># These paths are all normalized to the same value:
+</span><span style="color:#bf616a;">path</span><span>: &quot;</span><span style="color:#a3be8c;">secrets/database/production</span><span>&quot;    </span><span style="color:#65737e;"># ✓ Normalized form
+</span><span style="color:#bf616a;">path</span><span>: &quot;</span><span style="color:#a3be8c;">secrets/database/production/</span><span>&quot;   </span><span style="color:#65737e;"># → &quot;secrets/database/production&quot;
+</span><span style="color:#bf616a;">path</span><span>: &quot;</span><span style="color:#a3be8c;">secrets/database/production//</span><span>&quot;  </span><span style="color:#65737e;"># → &quot;secrets/database/production&quot;
+</span></code></pre>
+<h3 id="realistic-path-examples">Realistic Path Examples</h3>
+<pre data-lang="yaml" style="background-color:#2b303b;color:#c0c5ce;" class="language-yaml "><code class="language-yaml" data-lang="yaml"><span style="color:#65737e;"># Database secrets
+</span><span style="color:#bf616a;">name</span><span>: &quot;</span><span style="color:#a3be8c;">database-policy</span><span>&quot;
+</span><span style="color:#bf616a;">spiffeid</span><span>: &quot;</span><span style="color:#a3be8c;">spiffe://example.org/database/</span><span>&quot;
+</span><span style="color:#bf616a;">path</span><span>: &quot;</span><span style="color:#a3be8c;">secrets/database/production</span><span>&quot;
+</span><span style="color:#bf616a;">permissions</span><span>: [</span><span style="color:#a3be8c;">read</span><span>]
+</span><span>
+</span><span style="color:#65737e;"># Web service configuration
+</span><span style="color:#bf616a;">name</span><span>: &quot;</span><span style="color:#a3be8c;">web-service-policy</span><span>&quot;
+</span><span style="color:#bf616a;">spiffeid</span><span>: &quot;</span><span style="color:#a3be8c;">spiffe://example.org/web-service/</span><span>&quot;
+</span><span style="color:#bf616a;">path</span><span>: &quot;</span><span style="color:#a3be8c;">secrets/web-service/config</span><span>&quot;
+</span><span style="color:#bf616a;">permissions</span><span>: [</span><span style="color:#a3be8c;">read</span><span>, </span><span style="color:#a3be8c;">write</span><span>]
+</span><span>
+</span><span style="color:#65737e;"># Cache credentials
+</span><span style="color:#bf616a;">name</span><span>: &quot;</span><span style="color:#a3be8c;">cache-policy</span><span>&quot;
+</span><span style="color:#bf616a;">spiffeid</span><span>: &quot;</span><span style="color:#a3be8c;">spiffe://example.org/cache/</span><span>&quot;
+</span><span style="color:#bf616a;">path</span><span>: &quot;</span><span style="color:#a3be8c;">secrets/cache/redis/session</span><span>&quot;
+</span><span style="color:#bf616a;">permissions</span><span>: [</span><span style="color:#a3be8c;">read</span><span>]
+</span><span>
+</span><span style="color:#65737e;"># Application environment variables
+</span><span style="color:#bf616a;">name</span><span>: &quot;</span><span style="color:#a3be8c;">app-env-policy</span><span>&quot;
+</span><span style="color:#bf616a;">spiffeid</span><span>: &quot;</span><span style="color:#a3be8c;">spiffe://example.org/app/</span><span>&quot;
+</span><span style="color:#bf616a;">path</span><span>: &quot;</span><span style="color:#a3be8c;">secrets/app/env/production</span><span>&quot;
+</span><span style="color:#bf616a;">permissions</span><span>: [</span><span style="color:#a3be8c;">read</span><span>, </span><span style="color:#a3be8c;">list</span><span>]
+</span></code></pre>
+<h3 id="all-available-permissions">All Available Permissions</h3>
+<pre data-lang="yaml" style="background-color:#2b303b;color:#c0c5ce;" class="language-yaml "><code class="language-yaml" data-lang="yaml"><span style="color:#bf616a;">name</span><span>: &quot;</span><span style="color:#a3be8c;">admin-policy</span><span>&quot;
+</span><span style="color:#bf616a;">spiffeid</span><span>: &quot;</span><span style="color:#a3be8c;">spiffe://example.org/admin/</span><span>&quot;
+</span><span style="color:#bf616a;">path</span><span>: &quot;</span><span style="color:#a3be8c;">secrets</span><span>&quot;
+</span><span style="color:#bf616a;">permissions</span><span>:
+</span><span>  - </span><span style="color:#a3be8c;">read    </span><span style="color:#65737e;"># Permission to read secrets
+</span><span>  - </span><span style="color:#a3be8c;">write   </span><span style="color:#65737e;"># Permission to create, update, or delete secrets
+</span><span>  - </span><span style="color:#a3be8c;">list    </span><span style="color:#65737e;"># Permission to list resources
+</span><span>  - </span><span style="color:#a3be8c;">super   </span><span style="color:#65737e;"># Administrative permissions
+</span></code></pre>
+<h3 id="alternative-yaml-formats">Alternative YAML Formats</h3>
+<h4 id="flow-sequence-for-permissions">Flow Sequence for Permissions</h4>
+<pre data-lang="yaml" style="background-color:#2b303b;color:#c0c5ce;" class="language-yaml "><code class="language-yaml" data-lang="yaml"><span style="color:#bf616a;">name</span><span>: &quot;</span><span style="color:#a3be8c;">database-policy</span><span>&quot;
+</span><span style="color:#bf616a;">spiffeid</span><span>: &quot;</span><span style="color:#a3be8c;">spiffe://example.org/database/</span><span>&quot;
+</span><span style="color:#bf616a;">path</span><span>: &quot;</span><span style="color:#a3be8c;">secrets/database/production</span><span>&quot;
+</span><span style="color:#bf616a;">permissions</span><span>: [</span><span style="color:#a3be8c;">read</span><span>, </span><span style="color:#a3be8c;">write</span><span>, </span><span style="color:#a3be8c;">list</span><span>]
+</span></code></pre>
+<h4 id="quoted-values">Quoted Values</h4>
+<pre data-lang="yaml" style="background-color:#2b303b;color:#c0c5ce;" class="language-yaml "><code class="language-yaml" data-lang="yaml"><span style="color:#bf616a;">name</span><span>: &quot;</span><span style="color:#a3be8c;">cache-policy</span><span>&quot;
+</span><span style="color:#bf616a;">spiffeid</span><span>: &quot;</span><span style="color:#a3be8c;">spiffe://example.org/cache/</span><span>&quot;
+</span><span style="color:#bf616a;">path</span><span>: &quot;</span><span style="color:#a3be8c;">secrets/cache/redis</span><span>&quot;
+</span><span style="color:#bf616a;">permissions</span><span>:
+</span><span>  - &quot;</span><span style="color:#a3be8c;">read</span><span>&quot;
+</span><span>  - &quot;</span><span style="color:#a3be8c;">write</span><span>&quot;
+</span></code></pre>
+<h2 id="creating-policies-using-command-line-flags">Creating Policies Using Command-Line Flags</h2>
+<p>Instead of using a <code>yaml</code> file, you can provide command-line arguments
+to programmatically create your policies too:</p>
 <pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># Create your first policy
 </span><span style="color:#bf616a;">spike</span><span> policy create</span><span style="color:#bf616a;"> --name</span><span>=my-service \
-</span><span style="color:#bf616a;">  --path</span><span>=&quot;</span><span style="color:#a3be8c;">secrets/app/*</span><span>&quot; \
-</span><span style="color:#bf616a;">  --spiffeid</span><span>=&quot;</span><span style="color:#a3be8c;">spiffe://example.org/service/*</span><span>&quot; \
+</span><span style="color:#bf616a;">  --path</span><span>=&quot;</span><span style="color:#a3be8c;">secrets/app/</span><span>&quot; \
+</span><span style="color:#bf616a;">  --spiffeid</span><span>=&quot;</span><span style="color:#a3be8c;">spiffe://example.org/service/</span><span>&quot; \
 </span><span style="color:#bf616a;">  --permissions</span><span>=read
 </span><span>
 </span><span style="color:#65737e;"># Verify your policy was created
@@ -763,7 +855,8 @@ the policy’s <strong>permissions</strong></li>
 location</li>
 <li><strong>Least Privilege</strong>: Grant only the permissions needed for each workload</li>
 <li><strong>Auditability</strong>: All access is tied to specific policies and identities</li>
-<li><strong>Flexibility</strong>: Patterns support both exact matching and wildcards</li>
+<li><strong>Flexibility</strong>: Patterns support regular expression matching, which allows
+a more fine-grained control over which resources the policy applies to.</li>
 <li><strong>Scalability</strong>: Policies work consistently across any deployment size</li>
 </ul>
 <h2 id="features">Features</h2>
@@ -777,10 +870,11 @@ location</li>
 </ul>
 <h2 id="commands">Commands</h2>
 <h3 id="spike-policy-list"><code>spike policy list</code></h3>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">spike</span><span> policy list </span><span style="color:#b48ead;">[</span><span>--format=human|json</span><span style="color:#b48ead;">]
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">spike</span><span> policy list </span><span style="color:#b48ead;">[</span><span>--format=human|json</span><span style="color:#b48ead;">] [</span><span>--path=&lt;pattern&gt; | --spiffeid=&lt;pattern&gt;</span><span style="color:#b48ead;">]
 </span></code></pre>
-<p>Lists all policies in the system. Use <code>--format=json</code> for
-machine-readable output.</p>
+<p>Lists all policies in the system. Can be filtered by a resource path pattern or
+a SPIFFE ID pattern.</p>
+<p><strong>Note:</strong> <code>--path</code> and <code>--spiffeid</code> flags cannot be used together.</p>
 <h3 id="spike-policy-create"><code>spike policy create</code></h3>
 <pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">spike</span><span> policy create</span><span style="color:#bf616a;"> --name</span><span>=&lt;name&gt; \
 </span><span style="color:#bf616a;">  --path</span><span>=&lt;path-pattern&gt; \
@@ -789,19 +883,29 @@ machine-readable output.</p>
 </span></code></pre>
 <p>Creates a new policy with the specified parameters.</p>
 <h3 id="spike-policy-apply"><code>spike policy apply</code></h3>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span>
-</span><span style="color:#bf616a;">spike</span><span> policy apply</span><span style="color:#bf616a;"> --file</span><span>=&lt;policy-file.yaml&gt;
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">spike</span><span> policy apply</span><span style="color:#bf616a;"> --file</span><span>=&lt;policy-file.yaml&gt;
 </span></code></pre>
 <p>Creates a new policy with file-based input using YAML configuration.</p>
 <h4 id="yaml-configuration-format">YAML Configuration Format</h4>
 <p>When using the <code>--file</code> flag, the YAML file should follow this structure:</p>
 <pre data-lang="yaml" style="background-color:#2b303b;color:#c0c5ce;" class="language-yaml "><code class="language-yaml" data-lang="yaml"><span style="color:#bf616a;">name</span><span>: </span><span style="color:#a3be8c;">policy-name
-</span><span style="color:#bf616a;">spiffeid</span><span>: </span><span style="color:#a3be8c;">spiffe://example.org/service/*
+</span><span style="color:#bf616a;">spiffeid</span><span>: </span><span style="color:#a3be8c;">spiffe://example.org/service/
 </span><span style="color:#bf616a;">path</span><span>: </span><span style="color:#a3be8c;">secrets/database/production
 </span><span style="color:#bf616a;">permissions</span><span>:
 </span><span>  - </span><span style="color:#a3be8c;">read
 </span><span>  - </span><span style="color:#a3be8c;">write
 </span></code></pre>
+<h3 id="example-files">Example Files</h3>
+<p>SPIKE repository has the following example policies for your convenience:</p>
+<ul>
+<li><a href="https://github.com/spiffe/spike/blob/main/examples/policies/sample-policy.yaml"><code>./examples/policies/sample-policy.yaml</code></a>—Basic policy example</li>
+<li><a href="https://github.com/spiffe/spike/blob/main/examples/policies/test-policies/basic-policy.yaml"><code>./examples/policies/test-policies/basic-policy.yaml</code></a>—Minimal
+policy</li>
+<li><a href="https://github.com/spiffe/spike/blob/main/examples/policies/test-policies/admin-policy.yaml"><code>./examples/policies/test-policies/admin-policy.yaml</code></a>—Full
+permissions policy</li>
+<li><a href="https://github.com/spiffe/spike/blob/main/examples/policies/test-policies/invalid-permissions.yaml"><code>./examples/policies/test-policies/invalid-permissions.yaml</code></a>—Example
+with invalid permissions (for testing)</li>
+</ul>
 <h4 id="permission-types">Permission Types</h4>
 <table><thead><tr><th>Permission</th><th>Description</th></tr></thead><tbody>
 <tr><td><strong>read</strong></td><td>Allows reading secrets and resources</td></tr>
@@ -809,6 +913,53 @@ machine-readable output.</p>
 <tr><td><strong>list</strong></td><td>Allows listing resources and directories</td></tr>
 <tr><td><strong>super</strong></td><td>Full administrative permissions (<strong>use with caution</strong>)</td></tr>
 </tbody></table>
+<h4 id="validation">Validation</h4>
+<p>All policy configurations are validated to ensure:</p>
+<ol>
+<li><strong>Required fields</strong>: <code>name</code>, <code>spiffeid</code>, <code>path</code>, and <code>permissions</code> must be
+present</li>
+<li><strong>Valid permissions</strong>: Only <code>read</code>, <code>write</code>, <code>list</code>, and <code>super</code> are allowed</li>
+<li><strong>Valid YAML syntax</strong>: Proper YAML formatting is required (for YAML files)</li>
+<li><strong>Non-empty values</strong>: All fields must have non-empty values</li>
+</ol>
+<h4 id="gitops-integration">GitOps Integration</h4>
+<p>YAML files can be easily integrated into GitOps workflows:</p>
+<ol>
+<li>
+<p><strong>Store policy YAML files in a Git repository</strong></p>
+<pre data-lang="text" style="background-color:#2b303b;color:#c0c5ce;" class="language-text "><code class="language-text" data-lang="text"><span>policies/
+</span><span>├── web-service-policy.yaml
+</span><span>├── database-policy.yaml
+</span><span>└── admin-policy.yaml
+</span></code></pre>
+</li>
+<li>
+<p><strong>Use CI/CD pipelines to validate policies before deployment</strong></p>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># Validation step in CI
+</span><span style="color:#b48ead;">for</span><span> policy </span><span style="color:#b48ead;">in</span><span> policies/*.yaml; </span><span style="color:#b48ead;">do
+</span><span>  </span><span style="color:#bf616a;">spike</span><span> policy apply</span><span style="color:#bf616a;"> --file </span><span>&quot;$</span><span style="color:#bf616a;">policy</span><span>&quot;
+</span><span>  </span><span style="color:#65737e;"># - ensure that the policy is created
+</span><span>  </span><span style="color:#65737e;"># - delete the policy
+</span><span>  </span><span style="color:#65737e;"># - ensure that the policy is gone
+</span><span style="color:#b48ead;">done
+</span></code></pre>
+</li>
+<li>
+<p><strong>Apply policies using <code>spike policy apply --file</code> in deployment scripts</strong></p>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># Deployment script
+</span><span style="color:#b48ead;">for</span><span> policy </span><span style="color:#b48ead;">in</span><span> policies/*.yaml; </span><span style="color:#b48ead;">do
+</span><span>  </span><span style="color:#bf616a;">spike</span><span> policy apply</span><span style="color:#bf616a;"> --file </span><span>&quot;$</span><span style="color:#bf616a;">policy</span><span>&quot;
+</span><span style="color:#b48ead;">done
+</span></code></pre>
+</li>
+<li>
+<p><strong>Version control changes to policies alongside application code</strong></p>
+</li>
+<li>
+<p><strong>Use upsert semantics to safely apply policy changes without worrying
+about conflicts</strong></p>
+</li>
+</ol>
 <h3 id="spike-policy-get"><code>spike policy get</code></h3>
 <pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">spike</span><span> policy get &lt;id&gt; </span><span style="color:#b48ead;">[</span><span>--format=human|json</span><span style="color:#b48ead;">]
 </span><span style="color:#bf616a;">spike</span><span> policy get</span><span style="color:#bf616a;"> --name</span><span>=&lt;name&gt; </span><span style="color:#b48ead;">[</span><span>--format=human|json</span><span style="color:#b48ead;">]
@@ -824,15 +975,15 @@ for machine-readable output.</p>
 <pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># Create a policy for a web service with read and write access
 </span><span style="color:#bf616a;">spike</span><span> policy create \
 </span><span style="color:#bf616a;">  --name</span><span>=web-service \
-</span><span style="color:#bf616a;">  --path</span><span>=&quot;</span><span style="color:#a3be8c;">secrets/web/*</span><span>&quot; \
-</span><span style="color:#bf616a;">  --spiffeid</span><span>=&quot;</span><span style="color:#a3be8c;">spiffe://example.org/web/*</span><span>&quot; \
+</span><span style="color:#bf616a;">  --path</span><span>=&quot;</span><span style="color:#a3be8c;">secrets/web/</span><span>&quot; \
+</span><span style="color:#bf616a;">  --spiffeid</span><span>=&quot;</span><span style="color:#a3be8c;">spiffe://example.org/web/</span><span>&quot; \
 </span><span style="color:#bf616a;">  --permissions</span><span>=read,write
 </span><span>
 </span><span style="color:#65737e;"># Create a policy with multiple permissions
 </span><span style="color:#bf616a;">spike</span><span> policy create \
 </span><span style="color:#bf616a;">  --name</span><span>=admin-service \
-</span><span style="color:#bf616a;">  --path</span><span>=&quot;</span><span style="color:#a3be8c;">secrets/*</span><span>&quot; \
-</span><span style="color:#bf616a;">  --spiffeid</span><span>=&quot;</span><span style="color:#a3be8c;">spiffe://example.org/admin/*</span><span>&quot; \
+</span><span style="color:#bf616a;">  --path</span><span>=&quot;</span><span style="color:#a3be8c;">secrets/</span><span>&quot; \
+</span><span style="color:#bf616a;">  --spiffeid</span><span>=&quot;</span><span style="color:#a3be8c;">spiffe://example.org/admin/</span><span>&quot; \
 </span><span style="color:#bf616a;">  --permissions</span><span>=read,write,list
 </span><span>
 </span><span style="color:#65737e;"># Apply a policy using a YAML file
@@ -851,12 +1002,23 @@ for machine-readable output.</p>
 </span><span style="color:#bf616a;">spike</span><span> policy delete</span><span style="color:#bf616a;"> --name</span><span>=web-service
 </span></code></pre>
 <h2 id="pattern-syntax">Pattern Syntax</h2>
-<p><strong>SPIKE</strong> policies support pattern matching for both SPIFFE IDs and
-resource paths:</p>
+<p><strong>SPIKE</strong> policies support <strong>regular expression</strong> pattern matching for both
+SPIFFE IDs and resource paths:</p>
 <ul>
-<li><code>*</code> matches any sequence of characters within a segment</li>
-<li>Exact matches are also supported for precise control</li>
+<li>If the pattern is a single <code>"*"</code>, then it matches anything.</li>
+<li>For any other pattern, the pattern is compiled as a “<em>regular expression</em>”.</li>
 </ul>
+<p>This would mean, for an exact match, you would need to include <code>^</code> and <code>$</code> in
+your patterns as well.</p>
+<p>For example:</p>
+<ul>
+<li><code>secrets/db</code> matches <code>global/secrets/db</code> and <code>secrets/db/local</code></li>
+<li>Whereas, <code>^secrets/db$</code> only matches <code>secrets/db</code> and nothing else
+(<em><code>global/secrets/db</code> and <code>secrets/db/local</code> will not match</em>)</li>
+</ul>
+<p>Thus, for precise control, you might want to include <code>^</code> and <code>$</code> at the
+beginning and end of your patterns respectively for an exact match.</p>
+<h2 id="how-regular-expressions-are-used-for-policy-matching">How Regular Expressions are Used For Policy Matching</h2>
 <p>More specifically, <strong>SPIKE</strong> compiles <strong>SPIFFE ID patterns</strong> and
 <strong>path patterns</strong> defined in the policies into <strong>regular
 expressions</strong>.</p>
@@ -873,22 +1035,27 @@ create regular expression matchers. These patterns are compiled
 into Go’s built-in regex engine, ensuring that the matching process strictly
 adheres to the patterns defined in the policy, allowing for precise and flexible
 access control.</p>
-<p>Because of this, a <code>policy create</code> operation can define more flexible matching
-patterns. However, keeping patterns simple is both more secure and easier to
-manage and reason about. Creating a pattern that is too broad or that uses
-overly complex regular expressions may lead to unintended consequences and
-security risks. <strong>Simplicity</strong> is important to ensure patterns are clear,
-predictable, and effective.</p>
+<h2 id="simplicity-is-the-key">Simplicity Is the Key</h2>
+<p>Because of the regular expression usage in SPIKE policies, a <code>policy create</code>
+operation can define more flexible matching patterns. However, keeping patterns
+simple is both more secure and easier to manage and reason about. Creating a
+pattern that is too broad or that uses overly complex regular expressions may
+lead to unintended consequences and security risks. <strong>Simplicity</strong> is important
+to ensure patterns are clear, predictable, and effective.</p>
 <p>When a workload attempts to access a resource, its <strong>SPIFFE ID</strong> and the
 requested resource <strong>path</strong> are matched against these compiled <strong>regular
 expressions</strong>. This ensures that both identity and resource patterns follow the
 specified rules and allow for flexibility with wildcards or exact matches.</p>
 <h3 id="path-pattern-examples">Path Pattern Examples</h3>
-<pre style="background-color:#2b303b;color:#c0c5ce;"><code><span>secrets/*              # All resources in the secrets directory
-</span><span>secrets/database/*     # Only resources in the database subdirectory  
+<pre data-lang="text" style="background-color:#2b303b;color:#c0c5ce;" class="language-text "><code class="language-text" data-lang="text"><span>secrets/               # All resources in the secrets directory
+</span><span>secrets/database/      # Only resources in the database subdirectory  
 </span><span>secrets/database/creds # Only the specific creds resource
+</span><span>
+</span><span># You can provide regular expressions for a more fine-tuned
+</span><span># pattern match:
+</span><span>^secrets/db-[123]$ # Matches secrets/db-2, but not secrets/db-4.
 </span></code></pre>
-<h3 id="path-patterns-in-spike">Path Patterns in SPIKE</h3>
+<h2 id="path-patterns-in-spike">Path Patterns in SPIKE</h2>
 <p>Path patterns in <strong>SPIKE</strong> are designed to provide flexibility but also follow
 certain conventions for clarity and usability. While the path pattern is
 suggested (<em>but not mandated</em>) to look like a UNIX-style path for familiarity,
@@ -913,9 +1080,9 @@ in naming practices.</p>
 hierarchy.</li>
 </ol>
 <h3 id="spiffe-id-pattern-examples">SPIFFE ID Pattern Examples</h3>
-<pre style="background-color:#2b303b;color:#c0c5ce;"><code><span>spiffe://example.org/*           # All workloads in the example.org trust domain
-</span><span>spiffe://example.org/web/*       # Only web workloads
-</span><span>spiffe://example.org/web/server  # Only the specific web server workload
+<pre style="background-color:#2b303b;color:#c0c5ce;"><code><span>spiffe://example.org/              # Workloads in the example.org trust domain
+</span><span>spiffe://example.org/web/          # Only web workloads
+</span><span>^spiffe://example.org/web/server$  # Only the specific web server workload
 </span></code></pre>
 <h2 id="best-practices">Best Practices</h2>
 <ul>

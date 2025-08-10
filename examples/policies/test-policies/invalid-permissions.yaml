@@ -1,8 +1,12 @@
+#   \\
+#  \\\\ SPIKE: Secure your secrets with SPIFFE. — https://spike.ist/
+# \\\\\\
+
 # Policy with invalid permissions - should be rejected by validation
 name: "invalid-perms-policy"
-spiffeid: "spiffe://example.org/test/*"
+spiffeid: "spiffe://example.org/test/"
 path: "secrets/test/config"
 permissions:
   - read
   - invalid_permission
-  - write 
+  - write

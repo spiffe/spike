@@ -79,7 +79,7 @@ func newPolicyCreateCommand(
 
         Example:
         spike policy create --name=db-access 
-          --path="db/*" --spiffeid="spiffe://example.org/service/*" 
+          --path="^db/" --spiffeid="spiffe://example\.org/service/" 
           --permissions="read,write"
 
         Valid permissions: read, write, list, super`,
@@ -143,9 +143,9 @@ func newPolicyCreateCommand(
 	// Define flags
 	cmd.Flags().StringVar(&name, "name", "", "Policy name (required)")
 	cmd.Flags().StringVar(&pathPattern, "path", "",
-		"Resource path pattern, e.g., '/secrets/*' (required)")
+		"Resource path pattern, e.g., '^secrets/' (required)")
 	cmd.Flags().StringVar(&spiffeIdPattern, "spiffeid", "",
-		"SPIFFE ID pattern, e.g., 'spiffe://example.org/service/*' (required)")
+		"SPIFFE ID pattern, e.g., '^spiffe://example\\.org/service/' (required)")
 	cmd.Flags().StringVar(&permsStr, "permissions", "",
 		"Comma-separated permissions: read, write, list, super (required)")
 

@@ -1,12 +1,17 @@
+#   \\
+#  \\\\ SPIKE: Secure your secrets with SPIFFE. — https://spike.ist/
+# \\\\\\
+
 # Example policy configuration for spike policy apply --file
-# This demonstrates how to define a policy using YAML instead of command line flags
+# This demonstrates how to define a policy using YAML instead of command line
+# flags
 
 # Policy name - must be unique within the system
 name: "web-service-policy"
 
 # SPIFFE ID pattern for workload matching
 # This pattern determines which workloads this policy applies to
-spiffeid: "spiffe://example.org/web-service/*"
+spiffeid: "spiffe://example.org/web-service/"
 
 # Path pattern for access control
 # This pattern determines which resources this policy grants access to
@@ -16,4 +21,4 @@ path: "secrets/web-service/database"
 # Valid values: read, write, list, super
 permissions:
   - read
-  - write 
+  - write
