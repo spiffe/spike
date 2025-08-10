@@ -40,36 +40,13 @@ import (
 // Example request body (filter by SPIFFE ID):
 //
 //	{
-//	    "spiffe_id_pattern": "spiffe://example.org/app"
+//	    "spiffe_id_pattern": "spiffe://example\.org/app"
 //	}
 //
 // Example request body (filter by path):
 //
 //	{
-//	    "path_pattern": "/api/v1/*"
-//	}
-//
-// Example success response:
-//
-//	{
-//	    "policies": [
-//	        {
-//	            "id": "policy-123",
-//	            "name": "example-policy",
-//	            "spiffe_id_pattern": "spiffe://example.org/*/service",
-//	            "path_pattern": "/api/*",
-//	            "permissions": ["read", "write"],
-//	            "created_at": "2024-01-01T00:00:00Z",
-//	            "created_by": "user-abc"
-//	        }
-//	        // ... additional policies
-//	    ]
-//	}
-//
-// Example error response:
-//
-//	{
-//	    "err": "spiffe_id_pattern and path_pattern cannot be used together"
+//	    "path_pattern": "^api/v1/"
 //	}
 //
 // Possible errors:

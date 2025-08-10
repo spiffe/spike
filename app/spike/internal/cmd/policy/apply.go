@@ -76,8 +76,8 @@ func normalizePath(path string) string {
 // Example YAML file structure:
 //
 //	name: web-service-policy
-//	spiffeid: spiffe://example.org/web-service/*
-//	path: secrets/web/database
+//	spiffeid: ^spiffe://example\.org/web-service/
+//	path: ^secrets/web/database$
 //	permissions:
 //	  - read
 //	  - write
@@ -120,8 +120,8 @@ func newPolicyApplyCommand(
 
         Example YAML file structure:
         name: db-access
-        spiffeid: spiffe://example.org/service/*
-        path: secrets/database/production
+        spiffeid: spiffe://example\.org/service/
+        path: ^secrets/database/production
         permissions:
           - read
           - write
@@ -191,10 +191,10 @@ func newPolicyApplyCommand(
 		"Policy name (required if not using --file)")
 	cmd.Flags().StringVar(&pathPattern, "path", "",
 		"Resource path pattern, e.g., "+
-			"'secrets/database/production' (required if not using --file)")
+			"'^secrets/database/production' (required if not using --file)")
 	cmd.Flags().StringVar(&spiffeIdPattern, "spiffeid", "",
 		"SPIFFE ID pattern, e.g., "+
-			"'spiffe://example.org/service/*' (required if not using --file)")
+			"'^spiffe://example\\.org/service/' (required if not using --file)")
 	cmd.Flags().StringVar(&permsStr, "permissions", "",
 		"Comma-separated permissions: read, write, list, "+
 			"super (required if not using --file)")
