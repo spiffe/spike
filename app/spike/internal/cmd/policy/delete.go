@@ -65,7 +65,7 @@ import (
 // Note: This operation cannot be undone. The policy will be permanently removed
 // from the system. The command requires confirmation before proceeding.
 func newPolicyDeleteCommand(
-	source *workloadapi.X509Source, spiffeId string,
+	source *workloadapi.X509Source, SPIFFEID string,
 ) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "delete [policy-id]",
@@ -77,10 +77,10 @@ func newPolicyDeleteCommand(
         - A policy name with the --name flag: 
           spike policy delete --name=my-policy`,
 		Run: func(cmd *cobra.Command, args []string) {
-			trust.Authenticate(spiffeId)
+			trust.Authenticate(SPIFFEID)
 			api := spike.NewWithSource(source)
 
-			policyId, err := sendGetPolicyIdRequest(cmd, args, api)
+			policyID, err := sendGetPolicyIDRequest(cmd, args, api)
 			if err != nil {
 				fmt.Printf("Error: %v\n", err)
 				return
@@ -88,7 +88,7 @@ func newPolicyDeleteCommand(
 
 			// Confirm deletion
 			fmt.Printf("Are you sure you want to "+
-				"delete policy with ID '%s'? (y/N): ", policyId)
+				"delete policy with ID '%s'? (y/N): ", policyID)
 			reader := bufio.NewReader(os.Stdin)
 			confirm, _ := reader.ReadString('\n')
 			confirm = strings.TrimSpace(confirm)
@@ -98,7 +98,7 @@ func newPolicyDeleteCommand(
 				return
 			}
 
-			err = api.DeletePolicy(policyId)
+			err = api.DeletePolicy(policyID)
 			if handleAPIError(err) {
 				return
 			}

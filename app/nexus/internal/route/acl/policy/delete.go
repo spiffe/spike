@@ -21,7 +21,7 @@ import (
 // It processes the request body to delete a policy specified by its ID.
 //
 // The function expects a JSON request body containing:
-//   - Id: unique identifier of the policy to delete
+//   - ID: unique identifier of the policy to delete
 //
 // On success, it returns an empty JSON response with HTTP 200 status.
 // On failure, it returns an appropriate error response with status code.
@@ -75,14 +75,14 @@ func RouteDeletePolicy(
 		return errors.ErrParseFailure
 	}
 
-	policyId := request.Id
+	policyID := request.Id
 
 	err := guardDeletePolicyRequest(*request, w, r)
 	if err != nil {
 		return err
 	}
 
-	err = state.DeletePolicy(policyId)
+	err = state.DeletePolicy(policyID)
 	if err != nil {
 		log.Log().Warn(fName, "message", "Failed to delete policy", "err", err)
 

@@ -32,12 +32,12 @@ Consider disabling swap to enhance security.
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	source, spiffeId, err := spiffe.Source(ctx, spiffe.EndpointSocket())
+	source, SPIFFEID, err := spiffe.Source(ctx, spiffe.EndpointSocket())
 	if err != nil {
 		log.Fatal(err.Error())
 	}
 	defer spiffe.CloseSource(source)
 
-	cmd.Initialize(source, spiffeId)
+	cmd.Initialize(source, SPIFFEID)
 	cmd.Execute()
 }

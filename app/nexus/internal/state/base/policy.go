@@ -48,11 +48,11 @@ var (
 //  2. Its SPIFFE ID pattern matches the requestor's ID, and its path pattern
 //     matches the requested path
 func CheckAccess(
-	peerSpiffeId string, path string, wants []data.PolicyPermission,
+	peerSPIFFEID string, path string, wants []data.PolicyPermission,
 ) bool {
 	// Role:SpikePilot can always manage secrets and policies,
 	// and can call encryption and decryption API endpoints.
-	if spiffeid.IsPilot(env.TrustRootForPilot(), peerSpiffeId) {
+	if spiffeid.IsPilot(env.TrustRootForPilot(), peerSPIFFEID) {
 		return true
 	}
 
@@ -69,7 +69,7 @@ func CheckAccess(
 		// Check specific patterns using pre-compiled regexes
 
 		if policy.SpiffeIdPattern != "*" {
-			if !policy.IdRegex.MatchString(peerSpiffeId) {
+			if !policy.IdRegex.MatchString(peerSPIFFEID) {
 				continue
 			}
 		}
@@ -256,7 +256,7 @@ func ListPoliciesByPath(pathPattern string) []data.Policy {
 	return result
 }
 
-// ListPoliciesBySpiffeId returns all policies that match a specific SPIFFE ID
+// ListPoliciesBySPIFFEID returns all policies that match a specific SPIFFE ID
 // pattern. It filters the policy store and returns only policies where
 // SpiffeIdPattern exactly matches the provided pattern string.
 //
@@ -268,12 +268,12 @@ func ListPoliciesByPath(pathPattern string) []data.Policy {
 //     an empty slice if no policies match. The order of policies in the
 //     returned slice is non-deterministic due to the concurrent nature of the
 //     underlying store.
-func ListPoliciesBySpiffeId(spiffeIdPattern string) []data.Policy {
+func ListPoliciesBySPIFFEID(SPIFFEIDPattern string) []data.Policy {
 	var result []data.Policy
 
 	policies.Range(func(key, value interface{}) bool {
 		policy := value.(data.Policy)
-		if policy.SpiffeIdPattern == spiffeIdPattern {
+		if policy.SpiffeIdPattern == SPIFFEIDPattern {
 			result = append(result, policy)
 		}
 		return true

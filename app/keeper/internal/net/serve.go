@@ -37,7 +37,7 @@ func Serve(appName string, source *workloadapi.X509Source) {
 			// Only SPIKE Nexus can talk to SPIKE Keeper:
 			return spiffeid.PeerCanTalkToKeeper(env.TrustRootForNexus(), peerSpiffeId)
 		},
-		env.TlsPort(),
+		env.TLSPort(),
 	); err != nil {
 		log.FatalF("%s: Failed to serve: %s\n", appName, err.Error())
 	}

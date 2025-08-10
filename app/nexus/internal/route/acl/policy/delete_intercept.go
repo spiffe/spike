@@ -20,9 +20,9 @@ import (
 func guardDeletePolicyRequest(
 	request reqres.PolicyDeleteRequest, w http.ResponseWriter, r *http.Request,
 ) error {
-	policyId := request.Id
+	policyID := request.Id
 
-	spiffeid, err := spiffe.IdFromRequest(r)
+	SPIFFEID, err := spiffe.IdFromRequest(r)
 	if err != nil {
 		responseBody := net.MarshalBody(reqres.PolicyDeleteResponse{
 			Err: data.ErrUnauthorized,
@@ -31,7 +31,15 @@ func guardDeletePolicyRequest(
 		return apiErr.ErrUnauthorized
 	}
 
-	err = validation.ValidateSpiffeId(spiffeid.String())
+	if SPIFFEID == nil {
+		responseBody := net.MarshalBody(reqres.PolicyDeleteResponse{
+			Err: data.ErrUnauthorized,
+		}, w)
+		net.Respond(http.StatusUnauthorized, responseBody, w)
+		return apiErr.ErrUnauthorized
+	}
+
+	err = validation.ValidateSpiffeId(SPIFFEID.String())
 	if err != nil {
 		responseBody := net.MarshalBody(reqres.PolicyDeleteResponse{
 			Err: data.ErrUnauthorized,
@@ -40,7 +48,7 @@ func guardDeletePolicyRequest(
 		return apiErr.ErrUnauthorized
 	}
 
-	err = validation.ValidatePolicyId(policyId)
+	err = validation.ValidatePolicyId(policyID)
 	if err != nil {
 		responseBody := net.MarshalBody(reqres.PolicyDeleteResponse{
 			Err: data.ErrBadInput,
@@ -54,7 +62,7 @@ func guardDeletePolicyRequest(
 	}
 
 	allowed := state.CheckAccess(
-		spiffeid.String(), "spike/system/acl",
+		SPIFFEID.String(), "spike/system/acl",
 		[]data.PolicyPermission{data.PermissionWrite},
 	)
 	if !allowed {

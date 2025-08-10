@@ -32,9 +32,9 @@ func HandleRoute(h Handler) {
 	) {
 		now := time.Now()
 		entry := journal.AuditEntry{
-			TrailId:   crypto.Id(),
+			TrailID:   crypto.Id(),
 			Timestamp: now,
-			UserId:    "",
+			UserID:    "",
 			Action:    journal.AuditEnter,
 			Path:      request.URL.Path,
 			Resource:  "",

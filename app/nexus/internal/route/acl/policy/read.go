@@ -23,7 +23,7 @@ import (
 // policy.
 //
 // The function expects a JSON request body containing:
-//   - Id: unique identifier of the policy to retrieve
+//   - ID: unique identifier of the policy to retrieve
 //
 // On success, it returns the complete policy object. If the policy is not
 // found, it returns a "not found" error. For other errors, it returns an
@@ -106,9 +106,9 @@ func RouteGetPolicy(
 		return err
 	}
 
-	policyId := request.Id
+	policyID := request.Id
 
-	policy, err := state.GetPolicy(policyId)
+	policy, err := state.GetPolicy(policyID)
 	if err == nil {
 		log.Log().Info(fName, "message", "Policy found")
 	} else if errors.Is(err, state.ErrPolicyNotFound) {

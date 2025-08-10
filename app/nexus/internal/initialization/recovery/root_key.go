@@ -14,7 +14,7 @@ import (
 )
 
 type ShamirShard struct {
-	Id    uint64
+	ID    uint64
 	Value *[32]byte
 }
 
@@ -64,7 +64,7 @@ func RecoverRootKey(ss []ShamirShard) *[32]byte {
 		}
 
 		// Set ID
-		share.ID.SetUint64(shamirShard.Id)
+		share.ID.SetUint64(shamirShard.ID)
 
 		// Unmarshal the binary data
 		err := share.Value.UnmarshalBinary(shamirShard.Value[:])

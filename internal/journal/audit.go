@@ -37,14 +37,14 @@ type AuditEntry struct {
 	// Component is the name of the component that performed the action.
 	Component string
 
-	// TrailId is a unique identifier for the audit trail
-	TrailId string
+	// TrailID is a unique identifier for the audit trail
+	TrailID string
 
 	// Timestamp indicates when the audited action occurred
 	Timestamp time.Time
 
-	// UserId identifies the user who performed the action
-	UserId string
+	// UserID identifies the user who performed the action
+	UserID string
 
 	// Action describes what operation was performed
 	Action AuditAction

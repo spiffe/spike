@@ -42,7 +42,7 @@ import (
 //   - Secret not found: Displays an appropriate message
 //   - Read errors: Displays an error message
 func newSecretMetadataGetCommand(
-	source *workloadapi.X509Source, spiffeId string,
+	source *workloadapi.X509Source, SPIFFEID string,
 ) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "metadata",
@@ -54,7 +54,7 @@ func newSecretMetadataGetCommand(
 		Short: "Gets secret metadata from the specified path",
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
-			trust.Authenticate(spiffeId)
+			trust.Authenticate(SPIFFEID)
 
 			api := spike.NewWithSource(source)
 

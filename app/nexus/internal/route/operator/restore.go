@@ -105,7 +105,7 @@ func RouteRestore(
 	}
 
 	for _, shard := range shards {
-		if int(shard.Id) != request.Id {
+		if int(shard.ID) != request.Id {
 			continue
 		}
 
@@ -128,7 +128,7 @@ func RouteRestore(
 	}
 
 	shards = append(shards, recovery.ShamirShard{
-		Id:    uint64(request.Id),
+		ID:    uint64(request.Id),
 		Value: request.Shard,
 	})
 
@@ -144,7 +144,7 @@ func RouteRestore(
 		// Security: Zero out all shards since we have finished restoration:
 		for i := range shards {
 			mem.ClearRawBytes(shards[i].Value)
-			shards[i].Id = 0
+			shards[i].ID = 0
 		}
 
 		// Recover data since we now have the root key in memory:

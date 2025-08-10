@@ -63,12 +63,12 @@ import (
 //   - Policy creation failure
 
 func newPolicyCreateCommand(
-	source *workloadapi.X509Source, spiffeId string,
+	source *workloadapi.X509Source, SPIFFEID string,
 ) *cobra.Command {
 	var (
 		name            string
 		pathPattern     string
-		spiffeIdPattern string
+		SPIFFEIDPattern string
 		permsStr        string
 	)
 
@@ -94,7 +94,7 @@ func newPolicyCreateCommand(
 			if pathPattern == "" {
 				missingFlags = append(missingFlags, "path")
 			}
-			if spiffeIdPattern == "" {
+			if SPIFFEIDPattern == "" {
 				missingFlags = append(missingFlags, "spiffeid")
 			}
 			if permsStr == "" {
@@ -109,7 +109,7 @@ func newPolicyCreateCommand(
 				return
 			}
 
-			trust.Authenticate(spiffeId)
+			trust.Authenticate(SPIFFEID)
 			api := spike.NewWithSource(source)
 
 			// Validate permissions
@@ -131,7 +131,7 @@ func newPolicyCreateCommand(
 			}
 
 			// Create policy
-			err = api.CreatePolicy(name, spiffeIdPattern, pathPattern, permissions)
+			err = api.CreatePolicy(name, SPIFFEIDPattern, pathPattern, permissions)
 			if handleAPIError(err) {
 				return
 			}
@@ -144,7 +144,7 @@ func newPolicyCreateCommand(
 	cmd.Flags().StringVar(&name, "name", "", "Policy name (required)")
 	cmd.Flags().StringVar(&pathPattern, "path", "",
 		"Resource path pattern, e.g., '^secrets/' (required)")
-	cmd.Flags().StringVar(&spiffeIdPattern, "spiffeid", "",
+	cmd.Flags().StringVar(&SPIFFEIDPattern, "spiffeid", "",
 		"SPIFFE ID pattern, e.g., '^spiffe://example\\.org/service/' (required)")
 	cmd.Flags().StringVar(&permsStr, "permissions", "",
 		"Comma-separated permissions: read, write, list, super (required)")

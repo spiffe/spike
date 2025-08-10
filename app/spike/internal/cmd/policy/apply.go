@@ -100,12 +100,12 @@ func normalizePath(path string) string {
 //   - Invalid YAML format
 
 func newPolicyApplyCommand(
-	source *workloadapi.X509Source, spiffeId string,
+	source *workloadapi.X509Source, SPIFFEID string,
 ) *cobra.Command {
 	var (
 		name            string
 		pathPattern     string
-		spiffeIdPattern string
+		SPIFFEIDPattern string
 		permsStr        string
 		filePath        string
 	)
@@ -142,7 +142,7 @@ func newPolicyApplyCommand(
 				}
 			} else {
 				// Use flag-based input
-				policy, err = getPolicyFromFlags(name, spiffeIdPattern,
+				policy, err = getPolicyFromFlags(name, SPIFFEIDPattern,
 					pathPattern, permsStr)
 				if err != nil {
 					fmt.Printf("Error: %v\n", err)
@@ -165,7 +165,7 @@ func newPolicyApplyCommand(
 				}
 			}
 
-			trust.Authenticate(spiffeId)
+			trust.Authenticate(SPIFFEID)
 			api := spike.NewWithSource(source)
 
 			// Validate permissions
@@ -192,7 +192,7 @@ func newPolicyApplyCommand(
 	cmd.Flags().StringVar(&pathPattern, "path", "",
 		"Resource path pattern, e.g., "+
 			"'^secrets/database/production' (required if not using --file)")
-	cmd.Flags().StringVar(&spiffeIdPattern, "spiffeid", "",
+	cmd.Flags().StringVar(&SPIFFEIDPattern, "spiffeid", "",
 		"SPIFFE ID pattern, e.g., "+
 			"'^spiffe://example\\.org/service/' (required if not using --file)")
 	cmd.Flags().StringVar(&permsStr, "permissions", "",

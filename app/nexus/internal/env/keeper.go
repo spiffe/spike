@@ -12,13 +12,13 @@ import (
 	"strings"
 )
 
-// validUrl validates that a URL is properly formatted and uses HTTPS
-func validUrl(urlStr string) bool {
-	parsedUrl, err := url.Parse(urlStr)
+// validURL validates that a URL is properly formatted and uses HTTPS
+func validURL(urlStr string) bool {
+	pu, err := url.Parse(urlStr)
 	if err != nil {
 		return false
 	}
-	return parsedUrl.Scheme == "https" && parsedUrl.Host != ""
+	return pu.Scheme == "https" && pu.Host != ""
 }
 
 // Keepers retrieves and parses the keeper peer configurations from the
@@ -54,7 +54,7 @@ func Keepers() map[string]string {
 		}
 
 		// Validate URL format and security
-		if !validUrl(trimmedURL) {
+		if !validURL(trimmedURL) {
 			panic(
 				fmt.Sprintf(
 					"Invalid or insecure URL at position %d: %s", i+1,

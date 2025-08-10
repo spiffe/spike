@@ -168,7 +168,7 @@ func RestoreBackingStoreUsingPilotShards(shards []ShamirShard) {
 	// Sanity check:
 	for shard := range shards {
 		value := shards[shard].Value
-		id := shards[shard].Id
+		id := shards[shard].ID
 
 		if mem.Zeroed32(value) || id == 0 {
 			log.Log().Error(
@@ -321,7 +321,7 @@ func NewPilotRecoveryShards() map[int]*[32]byte {
 
 		bb, err := share.ID.MarshalBinary()
 		if err != nil {
-			log.Log().Error(fName, "message", "Failed to unmarshal share Id")
+			log.Log().Error(fName, "message", "Failed to unmarshal share ID")
 			return nil
 		}
 

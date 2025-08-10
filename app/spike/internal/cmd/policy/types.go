@@ -59,7 +59,7 @@ func readPolicyFromFile(filePath string) (Spec, error) {
 }
 
 // getPolicyFromFlags extracts policy configuration from command line flags
-func getPolicyFromFlags(name, spiffeIdPattern, pathPattern, permsStr string) (Spec, error) {
+func getPolicyFromFlags(name, SPIFFEIDPattern, pathPattern, permsStr string) (Spec, error) {
 	var policy Spec
 
 	// Check if all required flags are provided
@@ -70,7 +70,7 @@ func getPolicyFromFlags(name, spiffeIdPattern, pathPattern, permsStr string) (Sp
 	if pathPattern == "" {
 		missingFlags = append(missingFlags, "path")
 	}
-	if spiffeIdPattern == "" {
+	if SPIFFEIDPattern == "" {
 		missingFlags = append(missingFlags, "spiffeid")
 	}
 	if permsStr == "" {
@@ -101,7 +101,7 @@ func getPolicyFromFlags(name, spiffeIdPattern, pathPattern, permsStr string) (Sp
 
 	policy = Spec{
 		Name:        name,
-		SpiffeID:    spiffeIdPattern,
+		SpiffeID:    SPIFFEIDPattern,
 		Path:        pathPattern,
 		Permissions: permissions,
 	}

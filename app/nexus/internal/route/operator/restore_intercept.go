@@ -29,6 +29,14 @@ func guardRestoreRequest(
 		return apiErr.ErrUnauthorized
 	}
 
+	if peerSpiffeid == nil {
+		responseBody := net.MarshalBody(reqres.RestoreResponse{
+			Err: data.ErrUnauthorized,
+		}, w)
+		net.Respond(http.StatusUnauthorized, responseBody, w)
+		return apiErr.ErrUnauthorized
+	}
+
 	if !spiffeid.IsPilotRestore(env.TrustRootForPilot(), peerSpiffeid.String()) {
 		responseBody := net.MarshalBody(reqres.RestoreResponse{
 			Err: data.ErrUnauthorized,
@@ -39,9 +47,9 @@ func guardRestoreRequest(
 
 	// It's unlikely to have 1000 SPIKE Keepers across the board.
 	// The indexes start from 1 and increase one-by-one by design.
-	const maxShardId = 1000
+	const maxShardID = 1000
 
-	if request.Id < 1 || request.Id > maxShardId {
+	if request.Id < 1 || request.Id > maxShardID {
 		responseBody := net.MarshalBody(reqres.RestoreResponse{
 			Err: data.ErrBadInput,
 		}, w)

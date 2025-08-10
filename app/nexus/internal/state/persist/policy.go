@@ -95,7 +95,7 @@ func ReadAllPolicies() map[string]*data.Policy {
 //
 // Skips operation if:
 //   - Backend is unavailable
-//   - Id is empty
+//   - ID is empty
 func DeletePolicy(id string) {
 	const fName = "deletePolicy"
 
