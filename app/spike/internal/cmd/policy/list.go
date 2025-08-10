@@ -66,7 +66,7 @@ import (
 //	    "id": "policy-123",
 //	    "name": "web-service-policy",
 //	    "spiffeIdPattern": "spiffe://example.org/web-service/*",
-//	    "pathPattern": "/api/v1/*",
+//	    "pathPattern": "^tenants/demo/db",
 //	    "permissions": ["read", "write"],
 //	    "createdAt": "2024-01-01T00:00:00Z",
 //	    "createdBy": "user-abc"
@@ -114,9 +114,9 @@ func newPolicyListCommand(
 	}
 
 	cmd.Flags().StringVar(&pathPattern, "path", "",
-		"Resource path pattern, e.g., '/secrets/*'")
+		"Resource path pattern, e.g., '^secrets/web/db'")
 	cmd.Flags().StringVar(&SPIFFEIDPattern, "spiffeid", "",
-		"SPIFFE ID pattern, e.g., 'spiffe://example.org/service/*'")
+		"SPIFFE ID pattern, e.g., 'spiffe://example.org/service/finance'")
 	cmd.MarkFlagsMutuallyExclusive("path", "spiffeid")
 
 	addFormatFlag(cmd)

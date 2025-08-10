@@ -65,7 +65,7 @@ import (
 //	  "id": "policy-123",
 //	  "name": "web-service-policy",
 //	  "spiffeIdPattern": "spiffe://example.org/web-service/*",
-//	  "pathPattern": "/api/v1/*",
+//	  "pathPattern": "^tenants/demo/db",
 //	  "permissions": ["read", "write"],
 //	  "createdAt": "2024-01-01T00:00:00Z",
 //	  "createdBy": "user-abc"
