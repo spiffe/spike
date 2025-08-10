@@ -20,13 +20,13 @@ import (
 	"github.com/spiffe/spike/internal/net"
 )
 
-func shardUrl(keeperApiRoot string) string {
-	const fName = "shardUrl"
+func shardURL(keeperAPIRoot string) string {
+	const fName = "shardURL"
 
-	u, err := url.JoinPath(keeperApiRoot, string(apiUrl.SpikeKeeperUrlShard))
+	u, err := url.JoinPath(keeperAPIRoot, string(apiUrl.SpikeKeeperUrlShard))
 	if err != nil {
 		log.Log().Warn(
-			fName, "message", "Failed to join path", "url", keeperApiRoot,
+			fName, "message", "Failed to join path", "url", keeperAPIRoot,
 		)
 		return ""
 	}

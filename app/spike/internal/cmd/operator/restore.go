@@ -59,13 +59,13 @@ import (
 // the current count of collected shards and instructs the user to run the
 // command again to provide additional shards.
 func newOperatorRestoreCommand(
-	source *workloadapi.X509Source, spiffeId string,
+	source *workloadapi.X509Source, SPIFFEID string,
 ) *cobra.Command {
 	var restoreCmd = &cobra.Command{
 		Use:   "restore",
 		Short: "Restore SPIKE Nexus (do this if SPIKE Nexus cannot auto-recover)",
 		Run: func(cmd *cobra.Command, args []string) {
-			if !spiffeid.IsPilotRestore(env.TrustRoot(), spiffeId) {
+			if !spiffeid.IsPilotRestore(env.TrustRoot(), SPIFFEID) {
 				fmt.Println("")
 				fmt.Println(
 					"  You need to have a `restore` role to use this command.")
@@ -77,7 +77,7 @@ func newOperatorRestoreCommand(
 				os.Exit(1)
 			}
 
-			trust.AuthenticateRestore(spiffeId)
+			trust.AuthenticateRestore(SPIFFEID)
 
 			fmt.Println("(your input will be hidden as you paste/type it)")
 			fmt.Print("Enter recovery shard: ")

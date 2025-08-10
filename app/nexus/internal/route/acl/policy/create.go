@@ -85,14 +85,14 @@ func RoutePutPolicy(
 	}
 
 	name := request.Name
-	spiffeIdPattern := request.SpiffeIdPattern
+	SPIFFEIDPattern := request.SpiffeIdPattern
 	pathPattern := request.PathPattern
 	permissions := request.Permissions
 
 	policy, err := state.CreatePolicy(data.Policy{
 		Id:              "",
 		Name:            name,
-		SpiffeIdPattern: spiffeIdPattern,
+		SpiffeIdPattern: SPIFFEIDPattern,
 		PathPattern:     pathPattern,
 		Permissions:     permissions,
 		CreatedAt:       time.Time{},

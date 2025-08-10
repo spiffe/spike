@@ -56,13 +56,13 @@ import (
 //   - Fewer than 2 shards are retrieved.
 //   - It fails to read or clean the recovery directory.
 func newOperatorRecoverCommand(
-	source *workloadapi.X509Source, spiffeId string,
+	source *workloadapi.X509Source, SPIFFEID string,
 ) *cobra.Command {
 	var recoverCmd = &cobra.Command{
 		Use:   "recover",
 		Short: "Recover SPIKE Nexus (do this while SPIKE Nexus is healthy)",
 		Run: func(cmd *cobra.Command, args []string) {
-			if !spiffeid.IsPilotRecover(env.TrustRoot(), spiffeId) {
+			if !spiffeid.IsPilotRecover(env.TrustRoot(), SPIFFEID) {
 				fmt.Println("")
 				fmt.Println("  You need to have a `recover` role to use this command.")
 				fmt.Println(
@@ -72,7 +72,7 @@ func newOperatorRecoverCommand(
 				log.FatalLn("Aborting.")
 			}
 
-			trust.AuthenticateRecover(spiffeId)
+			trust.AuthenticateRecover(SPIFFEID)
 
 			api := spike.NewWithSource(source)
 

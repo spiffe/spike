@@ -56,7 +56,7 @@ func validSecretPath(path string) bool {
 //   - Version numbers are valid non-negative integers
 //   - Version strings are properly formatted
 func newSecretDeleteCommand(
-	source *workloadapi.X509Source, spiffeId string,
+	source *workloadapi.X509Source, SPIFFEID string,
 ) *cobra.Command {
 	var deleteCmd = &cobra.Command{
 		Use:   "delete <path>",
@@ -73,7 +73,7 @@ Examples:
   # Deletes current version plus versions 1 and 2`,
 		Args: cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
-			trust.Authenticate(spiffeId)
+			trust.Authenticate(SPIFFEID)
 
 			api := spike.NewWithSource(source)
 

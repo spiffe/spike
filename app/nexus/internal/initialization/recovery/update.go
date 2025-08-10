@@ -76,14 +76,14 @@ func sendShardsToKeepers(
 ) {
 	const fName = "sendShardsToKeepers"
 
-	for keeperId, keeperApiRoot := range keepers {
+	for keeperID, keeperAPIRoot := range keepers {
 		u, err := url.JoinPath(
-			keeperApiRoot, string(apiUrl.SpikeKeeperUrlContribute),
+			keeperAPIRoot, string(apiUrl.SpikeKeeperUrlContribute),
 		)
 
 		if err != nil {
 			log.Log().Warn(
-				fName, "message", "Failed to join path", "url", keeperApiRoot,
+				fName, "message", "Failed to join path", "url", keeperAPIRoot,
 			)
 			continue
 		}
@@ -111,7 +111,7 @@ func sendShardsToKeepers(
 
 		var share secretsharing.Share
 		for _, sr := range rootShares {
-			kid, err := strconv.Atoi(keeperId)
+			kid, err := strconv.Atoi(keeperID)
 			if err != nil {
 				log.Log().Warn(
 					fName, "message", "Failed to convert keeper id to int", "err", err)
@@ -126,7 +126,7 @@ func sendShardsToKeepers(
 
 		if share.ID.IsZero() {
 			log.Log().Warn(fName,
-				"message", "Failed to find share for keeper", "keeper_id", keeperId)
+				"message", "Failed to find share for keeper", "keeper_id", keeperID)
 			continue
 		}
 
@@ -135,7 +135,7 @@ func sendShardsToKeepers(
 		contribution, err := share.Value.MarshalBinary()
 		if err != nil {
 			log.Log().Warn(fName, "message", "Failed to marshal share",
-				"err", err, "keeper_id", keeperId)
+				"err", err, "keeper_id", keeperID)
 
 			// Security: Ensure that the contribution is zeroed out before
 			// the next iteration.
@@ -153,7 +153,7 @@ func sendShardsToKeepers(
 
 			log.Log().Warn(fName,
 				"message", "Failed to marshal share",
-				"err", err, "keeper_id", keeperId)
+				"err", err, "keeper_id", keeperID)
 			continue
 		}
 
@@ -178,7 +178,7 @@ func sendShardsToKeepers(
 
 			log.Log().Warn(fName,
 				"message", "invalid contribution length",
-				"len", len(contribution), "keeper_id", keeperId)
+				"len", len(contribution), "keeper_id", keeperID)
 			continue
 		}
 
@@ -212,7 +212,7 @@ func sendShardsToKeepers(
 		if err != nil {
 			log.Log().Warn(fName,
 				"message", "Failed to marshal request",
-				"err", err, "keeper_id", keeperId)
+				"err", err, "keeper_id", keeperID)
 			continue
 		}
 
@@ -224,7 +224,7 @@ func sendShardsToKeepers(
 		if err != nil {
 			log.Log().Warn(fName, "message",
 				"Failed to post",
-				"err", err, "keeper_id", keeperId)
+				"err", err, "keeper_id", keeperID)
 			continue
 		}
 	}

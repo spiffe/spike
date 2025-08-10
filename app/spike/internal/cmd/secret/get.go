@@ -45,14 +45,14 @@ import (
 //   - Secret not found: Displays an appropriate message
 //   - Read errors: Displays an error message
 func newSecretGetCommand(
-	source *workloadapi.X509Source, spiffeId string,
+	source *workloadapi.X509Source, SPIFFEID string,
 ) *cobra.Command {
 	var getCmd = &cobra.Command{
 		Use:   "get <path> [key]",
 		Short: "Get secrets from the specified path",
 		Args:  cobra.RangeArgs(1, 2),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			trust.Authenticate(spiffeId)
+			trust.Authenticate(SPIFFEID)
 
 			api := spike.NewWithSource(source)
 

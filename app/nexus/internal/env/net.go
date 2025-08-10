@@ -6,10 +6,10 @@ package env
 
 import "os"
 
-// TlsPort returns the TLS port for the Spike Nexus service.
+// TLSPort returns the TLS port for the Spike Nexus service.
 // It reads from the SPIKE_NEXUS_TLS_PORT environment variable.
 // If the environment variable is not set, it returns the default port ":8553".
-func TlsPort() string {
+func TLSPort() string {
 	p := os.Getenv("SPIKE_NEXUS_TLS_PORT")
 	if p != "" {
 		return p

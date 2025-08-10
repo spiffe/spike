@@ -41,13 +41,13 @@ const notFoundMessage = "No secrets found."
 //
 // Note: Requires an initialized SPIKE system and valid authentication
 func newSecretListCommand(
-	source *workloadapi.X509Source, spiffeId string,
+	source *workloadapi.X509Source, SPIFFEID string,
 ) *cobra.Command {
 	var listCmd = &cobra.Command{
 		Use:   "list",
 		Short: "List all secret paths",
 		Run: func(cmd *cobra.Command, args []string) {
-			trust.Authenticate(spiffeId)
+			trust.Authenticate(SPIFFEID)
 
 			api := spike.NewWithSource(source)
 

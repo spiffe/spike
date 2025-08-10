@@ -48,14 +48,14 @@ import (
 // Note: Current admin token verification will be replaced with
 // temporary token authentication in future versions
 func newSecretPutCommand(
-	source *workloadapi.X509Source, spiffeId string,
+	source *workloadapi.X509Source, SPIFFEID string,
 ) *cobra.Command {
 	var putCmd = &cobra.Command{
 		Use:   "put <path> <key=value>...",
 		Short: "Put secrets at the specified path",
 		Args:  cobra.MinimumNArgs(2),
 		Run: func(cmd *cobra.Command, args []string) {
-			trust.Authenticate(spiffeId)
+			trust.Authenticate(SPIFFEID)
 
 			api := spike.NewWithSource(source)
 

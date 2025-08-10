@@ -20,15 +20,15 @@ import (
 // Returns:
 //   - *cobra.Command: A configured cobra command for operator management
 func NewOperatorCommand(
-	source *workloadapi.X509Source, spiffeId string,
+	source *workloadapi.X509Source, SPIFFEID string,
 ) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "operator",
 		Short: "Manage admin operations",
 	}
 
-	cmd.AddCommand(newOperatorRecoverCommand(source, spiffeId))
-	cmd.AddCommand(newOperatorRestoreCommand(source, spiffeId))
+	cmd.AddCommand(newOperatorRecoverCommand(source, SPIFFEID))
+	cmd.AddCommand(newOperatorRestoreCommand(source, SPIFFEID))
 
 	return cmd
 }

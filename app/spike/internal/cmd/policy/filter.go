@@ -43,12 +43,12 @@ func findPolicyByName(api *spike.Api, name string) (string, error) {
 
 const uuidRegex = `^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$`
 
-func validUuid(uuid string) bool {
+func validUUID(uuid string) bool {
 	r := regexp.MustCompile(uuidRegex)
 	return r.MatchString(strings.ToLower(uuid))
 }
 
-// sendGetPolicyIdRequest gets the policy ID either from command arguments or
+// sendGetPolicyIDRequest gets the policy ID either from command arguments or
 // the name flag.
 // If args contains a policy ID, it returns that. If the name flag is provided,
 // it looks up the policy by name and returns its ID. If neither is provided,
@@ -63,18 +63,18 @@ func validUuid(uuid string) bool {
 //   - string: The policy ID
 //   - error: An error if the policy cannot be found or if neither ID nor name
 //     is provided
-func sendGetPolicyIdRequest(cmd *cobra.Command,
+func sendGetPolicyIDRequest(cmd *cobra.Command,
 	args []string, api *spike.Api,
 ) (string, error) {
-	var policyId string
+	var policyID string
 
 	name, _ := cmd.Flags().GetString("name")
 
 	if len(args) > 0 {
-		policyId = args[0]
+		policyID = args[0]
 
-		if !validUuid(policyId) {
-			return "", fmt.Errorf("invalid policy ID '%s'", policyId)
+		if !validUUID(policyID) {
+			return "", fmt.Errorf("invalid policy ID '%s'", policyID)
 		}
 
 	} else if name != "" {
@@ -82,12 +82,12 @@ func sendGetPolicyIdRequest(cmd *cobra.Command,
 		if err != nil {
 			return "", err
 		}
-		policyId = id
+		policyID = id
 	} else {
 		return "", fmt.Errorf(
 			"either policy ID as argument or --name flag is required",
 		)
 	}
 
-	return policyId, nil
+	return policyID, nil
 }

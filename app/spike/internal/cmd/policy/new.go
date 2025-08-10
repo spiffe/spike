@@ -39,7 +39,7 @@ import (
 // Each subcommand has its own set of flags and arguments. See the individual
 // command documentation for details.
 func NewPolicyCommand(
-	source *workloadapi.X509Source, spiffeId string,
+	source *workloadapi.X509Source, SPIFFEID string,
 ) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "policy",
@@ -58,11 +58,11 @@ func NewPolicyCommand(
 	}
 
 	// Add subcommands
-	cmd.AddCommand(newPolicyListCommand(source, spiffeId))
-	cmd.AddCommand(newPolicyGetCommand(source, spiffeId))
-	cmd.AddCommand(newPolicyCreateCommand(source, spiffeId))
-	cmd.AddCommand(newPolicyDeleteCommand(source, spiffeId))
-	cmd.AddCommand(newPolicyApplyCommand(source, spiffeId))
+	cmd.AddCommand(newPolicyListCommand(source, SPIFFEID))
+	cmd.AddCommand(newPolicyGetCommand(source, SPIFFEID))
+	cmd.AddCommand(newPolicyCreateCommand(source, SPIFFEID))
+	cmd.AddCommand(newPolicyDeleteCommand(source, SPIFFEID))
+	cmd.AddCommand(newPolicyApplyCommand(source, SPIFFEID))
 
 	return cmd
 }

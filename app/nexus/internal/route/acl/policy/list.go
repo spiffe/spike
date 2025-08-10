@@ -81,12 +81,12 @@ func RouteListPolicies(
 
 	var policies []data.Policy
 
-	spiffeIdPattern := request.SpiffeIdPattern
+	SPIFFEIDPattern := request.SpiffeIdPattern
 	pathPattern := request.PathPattern
 
 	switch {
-	case spiffeIdPattern != "":
-		policies = state.ListPoliciesBySpiffeId(spiffeIdPattern)
+	case SPIFFEIDPattern != "":
+		policies = state.ListPoliciesBySPIFFEID(SPIFFEIDPattern)
 	case pathPattern != "":
 		policies = state.ListPoliciesByPath(pathPattern)
 	default:

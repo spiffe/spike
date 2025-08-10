@@ -6,6 +6,10 @@
 lint-go:
 	./hack/qa/lint-go.sh
 
+test/cover:
+	go test -v -race -buildvcs -coverprofile=/tmp/coverage.out ./...
+	go tool cover -html=/tmp/coverage.out
+
 test:
 	go test -v -race -buildvcs ./...
 

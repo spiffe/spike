@@ -85,7 +85,7 @@ import (
 //   - System not initialized (requires running 'spike init' first)
 //   - Insufficient permissions
 func newPolicyGetCommand(
-	source *workloadapi.X509Source, spiffeId string,
+	source *workloadapi.X509Source, SPIFFEID string,
 ) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "get [policy-id]",
@@ -98,7 +98,7 @@ func newPolicyGetCommand(
 
         Use --format=json to get the output in JSON format.`,
 		Run: func(cmd *cobra.Command, args []string) {
-			trust.Authenticate(spiffeId)
+			trust.Authenticate(SPIFFEID)
 			api := spike.NewWithSource(source)
 
 			// If the first argument is provided without `--name` flag, it could be
@@ -109,13 +109,13 @@ func newPolicyGetCommand(
 				fmt.Printf("Attempting to use '%s' as policy ID...\n", args[0])
 			}
 
-			policyId, err := sendGetPolicyIdRequest(cmd, args, api)
+			policyID, err := sendGetPolicyIDRequest(cmd, args, api)
 			if err != nil {
 				fmt.Printf("Error: %v\n", err)
 				return
 			}
 
-			policy, err := api.GetPolicy(policyId)
+			policy, err := api.GetPolicy(policyID)
 			if handleAPIError(err) {
 				return
 			}

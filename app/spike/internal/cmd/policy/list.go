@@ -89,21 +89,21 @@ import (
 // Note: If no policies exist, it returns "No policies found" for human format
 // or "[]" for JSON format.
 func newPolicyListCommand(
-	source *workloadapi.X509Source, spiffeId string,
+	source *workloadapi.X509Source, SPIFFEID string,
 ) *cobra.Command {
 	var (
 		pathPattern     string
-		spiffeIdPattern string
+		SPIFFEIDPattern string
 	)
 	cmd := &cobra.Command{
 		Use:   "list",
 		Short: "List policies, optionally filtering by path or SPIFFE ID",
 		Args:  cobra.NoArgs,
 		Run: func(cmd *cobra.Command, args []string) {
-			trust.Authenticate(spiffeId)
+			trust.Authenticate(SPIFFEID)
 			api := spike.NewWithSource(source)
 
-			policies, err := api.ListPolicies(spiffeIdPattern, pathPattern)
+			policies, err := api.ListPolicies(SPIFFEIDPattern, pathPattern)
 			if handleAPIError(err) {
 				return
 			}
@@ -115,7 +115,7 @@ func newPolicyListCommand(
 
 	cmd.Flags().StringVar(&pathPattern, "path", "",
 		"Resource path pattern, e.g., '/secrets/*'")
-	cmd.Flags().StringVar(&spiffeIdPattern, "spiffeid", "",
+	cmd.Flags().StringVar(&SPIFFEIDPattern, "spiffeid", "",
 		"SPIFFE ID pattern, e.g., 'spiffe://example.org/service/*'")
 	cmd.MarkFlagsMutuallyExclusive("path", "spiffeid")
 

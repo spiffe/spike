@@ -29,13 +29,13 @@ func iterateKeepersToBootstrap(
 ) bool {
 	const fName = "iterateKeepersToBootstrap"
 
-	for keeperId, keeperApiRoot := range keepers {
+	for keeperID, keeperAPIRoot := range keepers {
 		u, err := url.JoinPath(
-			keeperApiRoot, string(apiUrl.SpikeKeeperUrlContribute),
+			keeperAPIRoot, string(apiUrl.SpikeKeeperUrlContribute),
 		)
 		if err != nil {
 			log.Log().Warn(
-				fName, "message", "Failed to join path", "url", keeperApiRoot,
+				fName, "message", "Failed to join path", "url", keeperAPIRoot,
 			)
 			continue
 		}
@@ -43,7 +43,7 @@ func iterateKeepersToBootstrap(
 		var share secretsharing.Share
 
 		for _, sr := range rootShares {
-			kid, err := strconv.Atoi(keeperId)
+			kid, err := strconv.Atoi(keeperID)
 			if err != nil {
 				log.Log().Warn(
 					fName, "message", "Failed to convert keeper id to int", "err", err)
@@ -59,14 +59,14 @@ func iterateKeepersToBootstrap(
 		// If initialized, IDs start from 1. Zero means there is no match.
 		if share.ID.IsZero() {
 			log.Log().Info(fName, "message",
-				"Failed to find share for keeper", "keeper_id", keeperId)
+				"Failed to find share for keeper", "keeper_id", keeperID)
 			continue
 		}
 
 		contribution, err := share.Value.MarshalBinary()
 		if err != nil {
 			log.Log().Info(fName, "message",
-				"Failed to marshal share", "err", err, "keeper_id", keeperId)
+				"Failed to marshal share", "err", err, "keeper_id", keeperID)
 			continue
 		}
 
@@ -92,8 +92,8 @@ func iterateKeepersToBootstrap(
 			continue
 		}
 
-		successfulKeepers[keeperId] = true
-		log.Log().Info(fName, "message", "Success", "keeper_id", keeperId)
+		successfulKeepers[keeperID] = true
+		log.Log().Info(fName, "message", "Success", "keeper_id", keeperID)
 
 		if len(successfulKeepers) == env.ShamirShares() {
 			log.Log().Info(fName, "message", "All keepers initialized")
@@ -132,10 +132,10 @@ func iterateKeepersAndTryRecovery(
 ) bool {
 	const fName = "iterateKeepersAndTryRecovery"
 
-	for keeperId, keeperApiRoot := range env.Keepers() {
-		log.Log().Info(fName, "id", keeperId, "url", keeperApiRoot)
+	for keeperID, keeperAPIRoot := range env.Keepers() {
+		log.Log().Info(fName, "id", keeperID, "url", keeperAPIRoot)
 
-		u := shardUrl(keeperApiRoot)
+		u := shardURL(keeperAPIRoot)
 		if u == "" {
 			continue
 		}
@@ -158,7 +158,7 @@ func iterateKeepersAndTryRecovery(
 			continue
 		}
 
-		successfulKeeperShards[keeperId] = res.Shard
+		successfulKeeperShards[keeperID] = res.Shard
 		if len(successfulKeeperShards) != env.ShamirThreshold() {
 			continue
 		}
@@ -174,13 +174,13 @@ func iterateKeepersAndTryRecovery(
 				// This is a configuration error; we cannot recover from it,
 				// and it may cause further security issues. Crash immediately.
 				log.FatalLn(
-					fName, "message", "Failed to convert keeper Id to int", "err", err,
+					fName, "message", "Failed to convert keeper ID to int", "err", err,
 				)
 				continue
 			}
 
 			ss = append(ss, ShamirShard{
-				Id:    uint64(id),
+				ID:    uint64(id),
 				Value: shard,
 			})
 		}

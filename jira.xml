@@ -15,6 +15,17 @@
   </kubernetification>
   <immediate-backlog>
     <issue>
+        add `make audit` to the CI pipeline
+        ci does its own verifications, so does `make audit`
+        these should be merged together.
+    </issue>
+    <issue>
+        add make audit to spike-sdk-go too.
+
+        also add `make audit` to user-facing documentation
+        as in "run `make audit` before your commit" etc.
+    </issue>
+    <issue>
         A `--dry run` feature for vsecm commands:
         it will not create policies, secrets, etc, but just pass validations
         and return success/failure responses instead.

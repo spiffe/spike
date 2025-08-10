@@ -443,9 +443,9 @@ func TestGetPolicyFromFlags(t *testing.T) {
 
 func TestNewPolicyCreateCommand(t *testing.T) {
 	source := &workloadapi.X509Source{}
-	spiffeId := "spiffe://example.org/spike"
+	SPIFFEID := "spiffe://example.org/spike"
 
-	cmd := newPolicyCreateCommand(source, spiffeId)
+	cmd := newPolicyCreateCommand(source, SPIFFEID)
 
 	if cmd == nil {
 		t.Fatal("Expected command to be created, got nil")
@@ -580,9 +580,9 @@ func TestPolicyCreateCommandFlagValidation(t *testing.T) {
 // Test that the create command is registered properly
 func TestPolicyCreateCommandRegistration(t *testing.T) {
 	source := &workloadapi.X509Source{}
-	spiffeId := "spiffe://example.org/spike"
+	SPIFFEID := "spiffe://example.org/spike"
 
-	policyCmd := NewPolicyCommand(source, spiffeId)
+	policyCmd := NewPolicyCommand(source, SPIFFEID)
 
 	var createCmd *cobra.Command
 	for _, cmd := range policyCmd.Commands() {

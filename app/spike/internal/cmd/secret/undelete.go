@@ -51,7 +51,7 @@ import (
 // Note: Command currently provides feedback about intended operations
 // but actual restoration functionality is pending implementation
 func newSecretUndeleteCommand(
-	source *workloadapi.X509Source, spiffeId string,
+	source *workloadapi.X509Source, SPIFFEID string,
 ) *cobra.Command {
 	var undeleteCmd = &cobra.Command{
 		Use:   "undelete <path>",
@@ -68,7 +68,7 @@ Examples:
   # Undeletes current version plus versions 1 and 2`,
 		Args: cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
-			trust.Authenticate(spiffeId)
+			trust.Authenticate(SPIFFEID)
 
 			api := spike.NewWithSource(source)
 

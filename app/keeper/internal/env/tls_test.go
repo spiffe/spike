@@ -35,8 +35,8 @@ func TestTlsPort(t *testing.T) {
 			if tt.beforeTest != nil {
 				tt.beforeTest()
 			}
-			if got := TlsPort(); got != tt.want {
-				t.Errorf("TlsPort() = %v, want %v", got, tt.want)
+			if got := TLSPort(); got != tt.want {
+				t.Errorf("TLSPort() = %v, want %v", got, tt.want)
 			}
 		})
 		if err := os.Unsetenv("SPIKE_KEEPER_TLS_PORT"); err != nil {
