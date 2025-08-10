@@ -20,7 +20,7 @@ import (
 func guardListPolicyRequest(
 	_ reqres.PolicyListRequest, w http.ResponseWriter, r *http.Request,
 ) error {
-	spiffeid, err := spiffe.IdFromRequest(r)
+	sid, err := spiffe.IDFromRequest(r)
 	if err != nil {
 		responseBody := net.MarshalBody(reqres.PolicyListResponse{
 			Err: data.ErrUnauthorized,
@@ -29,7 +29,15 @@ func guardListPolicyRequest(
 		return apiErr.ErrUnauthorized
 	}
 
-	err = validation.ValidateSpiffeId(spiffeid.String())
+	if sid == nil {
+		responseBody := net.MarshalBody(reqres.PolicyListResponse{
+			Err: data.ErrUnauthorized,
+		}, w)
+		net.Respond(http.StatusUnauthorized, responseBody, w)
+		return apiErr.ErrUnauthorized
+	}
+
+	err = validation.ValidateSPIFFEID(sid.String())
 	if err != nil {
 		responseBody := net.MarshalBody(reqres.PolicyListResponse{
 			Err: data.ErrUnauthorized,
@@ -39,7 +47,7 @@ func guardListPolicyRequest(
 	}
 
 	allowed := state.CheckAccess(
-		spiffeid.String(), "spike/system/acl",
+		sid.String(), "spike/system/acl",
 		[]data.PolicyPermission{data.PermissionList},
 	)
 	if !allowed {

@@ -20,9 +20,9 @@ import (
 func guardReadPolicyRequest(
 	request reqres.PolicyReadRequest, w http.ResponseWriter, r *http.Request,
 ) error {
-	policyID := request.Id
+	policyID := request.ID
 
-	spiffeid, err := spiffe.IdFromRequest(r)
+	sid, err := spiffe.IDFromRequest(r)
 	if err != nil {
 		responseBody := net.MarshalBody(reqres.PolicyReadResponse{
 			Err: data.ErrUnauthorized,
@@ -31,7 +31,7 @@ func guardReadPolicyRequest(
 		return apiErr.ErrUnauthorized
 	}
 
-	if spiffeid == nil {
+	if sid == nil {
 		responseBody := net.MarshalBody(reqres.PolicyReadResponse{
 			Err: data.ErrUnauthorized,
 		}, w)
@@ -39,7 +39,7 @@ func guardReadPolicyRequest(
 		return apiErr.ErrUnauthorized
 	}
 
-	err = validation.ValidateSpiffeId(spiffeid.String())
+	err = validation.ValidateSPIFFEID(sid.String())
 	if err != nil {
 		responseBody := net.MarshalBody(reqres.PolicyReadResponse{
 			Err: data.ErrUnauthorized,
@@ -48,7 +48,7 @@ func guardReadPolicyRequest(
 		return apiErr.ErrUnauthorized
 	}
 
-	err = validation.ValidatePolicyId(policyID)
+	err = validation.ValidatePolicyID(policyID)
 	if err != nil {
 		responseBody := net.MarshalBody(reqres.PolicyReadResponse{
 			Err: data.ErrBadInput,
@@ -60,7 +60,7 @@ func guardReadPolicyRequest(
 	}
 
 	allowed := state.CheckAccess(
-		spiffeid.String(), "spike/system/acl",
+		sid.String(), "spike/system/acl",
 		[]data.PolicyPermission{data.PermissionRead},
 	)
 	if !allowed {

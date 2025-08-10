@@ -1,6 +1,6 @@
-#   \\
-#  \\\\ SPIKE: Secure your secrets with SPIFFE. — https://spike.ist/
-# \\\\\\
+#    \\ SPIKE: Secure your secrets with SPIFFE. — https://spike.ist/
+#  \\\\\ Copyright 2024-present SPIKE contributors.
+# \\\\\\\ SPDX-License-Identifier: Apache-2.0
 
 # 0. Prune docker file system to save resources.
 docker-cleanup:

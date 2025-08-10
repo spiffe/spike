@@ -31,17 +31,17 @@ import (
 func Route(
 	w http.ResponseWriter, r *http.Request, audit *journal.AuditEntry,
 ) error {
-	return net.RouteFactory[url.ApiAction](
-		url.ApiUrl(r.URL.Path),
-		url.ApiAction(r.URL.Query().Get(url.KeyApiAction)),
+	return net.RouteFactory[url.APIAction](
+		url.APIURL(r.URL.Path),
+		url.APIAction(r.URL.Query().Get(url.KeyAPIAction)),
 		r.Method,
-		func(a url.ApiAction, p url.ApiUrl) net.Handler {
+		func(a url.APIAction, p url.APIURL) net.Handler {
 			switch {
 			// Get a contribution from SPIKE Nexus:
-			case a == url.ActionDefault && p == url.SpikeKeeperUrlContribute:
+			case a == url.ActionDefault && p == url.KeeperContribute:
 				return store.RouteContribute
 			// Provide your shard to SPIKE Nexus:
-			case a == url.ActionDefault && p == url.SpikeKeeperUrlShard:
+			case a == url.ActionDefault && p == url.KeeperShard:
 				return store.RouteShard
 			default:
 				return net.Fallback

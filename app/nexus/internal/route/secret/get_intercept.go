@@ -22,7 +22,7 @@ func guardGetSecretRequest(
 ) error {
 	path := request.Path
 
-	spiffeid, err := spiffe.IdFromRequest(r)
+	sid, err := spiffe.IDFromRequest(r)
 	if err != nil {
 		responseBody := net.MarshalBody(reqres.SecretReadResponse{
 			Err: data.ErrUnauthorized,
@@ -31,7 +31,15 @@ func guardGetSecretRequest(
 		return apiErr.ErrUnauthorized
 	}
 
-	err = validation.ValidateSpiffeId(spiffeid.String())
+	if sid == nil {
+		responseBody := net.MarshalBody(reqres.SecretReadResponse{
+			Err: data.ErrUnauthorized,
+		}, w)
+		net.Respond(http.StatusUnauthorized, responseBody, w)
+		return apiErr.ErrUnauthorized
+	}
+
+	err = validation.ValidateSPIFFEID(sid.String())
 	if err != nil {
 		responseBody := net.MarshalBody(reqres.SecretReadResponse{
 			Err: data.ErrUnauthorized,
@@ -50,7 +58,7 @@ func guardGetSecretRequest(
 	}
 
 	allowed := state.CheckAccess(
-		spiffeid.String(),
+		sid.String(),
 		path,
 		[]data.PolicyPermission{data.PermissionRead},
 	)

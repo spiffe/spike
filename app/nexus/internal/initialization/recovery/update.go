@@ -78,7 +78,7 @@ func sendShardsToKeepers(
 
 	for keeperID, keeperAPIRoot := range keepers {
 		u, err := url.JoinPath(
-			keeperAPIRoot, string(apiUrl.SpikeKeeperUrlContribute),
+			keeperAPIRoot, string(apiUrl.KeeperContribute),
 		)
 
 		if err != nil {
@@ -88,7 +88,7 @@ func sendShardsToKeepers(
 			continue
 		}
 
-		client, err := network.CreateMtlsClientWithPredicate(
+		client, err := network.CreateMTLSClientWithPredicate(
 			source, func(peerId string) bool {
 				return spiffeid.IsKeeper(env.TrustRootForKeeper(), peerId)
 			},

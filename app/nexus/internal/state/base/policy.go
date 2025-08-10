@@ -59,7 +59,7 @@ func CheckAccess(
 	policies := ListPolicies()
 	for _, policy := range policies {
 		// Check the wildcard pattern first
-		if policy.SpiffeIdPattern == "*" && policy.PathPattern == "*" {
+		if policy.SPIFFEIDPattern == "*" && policy.PathPattern == "*" {
 			if hasAllPermissions(policy.Permissions, wants) {
 				return true
 			}
@@ -68,8 +68,8 @@ func CheckAccess(
 
 		// Check specific patterns using pre-compiled regexes
 
-		if policy.SpiffeIdPattern != "*" {
-			if !policy.IdRegex.MatchString(peerSPIFFEID) {
+		if policy.SPIFFEIDPattern != "*" {
+			if !policy.IDRegex.MatchString(peerSPIFFEID) {
 				continue
 			}
 		}
@@ -131,8 +131,8 @@ func CreatePolicy(policy data.Policy) (data.Policy, error) {
 	}
 
 	// Compile and validate patterns
-	if policy.SpiffeIdPattern != "*" {
-		idRegex, err := regexp.Compile(policy.SpiffeIdPattern)
+	if policy.SPIFFEIDPattern != "*" {
+		idRegex, err := regexp.Compile(policy.SPIFFEIDPattern)
 		if err != nil {
 			return data.Policy{},
 				errors.Join(
@@ -140,7 +140,7 @@ func CreatePolicy(policy data.Policy) (data.Policy, error) {
 					fmt.Errorf("%s: %v", "invalid spiffeid pattern", err),
 				)
 		}
-		policy.IdRegex = idRegex
+		policy.IDRegex = idRegex
 	}
 
 	if policy.PathPattern != "*" {
@@ -156,12 +156,12 @@ func CreatePolicy(policy data.Policy) (data.Policy, error) {
 	}
 
 	// Generate ID and set creation time
-	policy.Id = uuid.New().String()
+	policy.ID = uuid.New().String()
 	if policy.CreatedAt.IsZero() {
 		policy.CreatedAt = time.Now()
 	}
 
-	policies.Store(policy.Id, policy)
+	policies.Store(policy.ID, policy)
 	persist.StorePolicy(policy)
 
 	return policy, nil
@@ -273,7 +273,7 @@ func ListPoliciesBySPIFFEID(SPIFFEIDPattern string) []data.Policy {
 
 	policies.Range(func(key, value interface{}) bool {
 		policy := value.(data.Policy)
-		if policy.SpiffeIdPattern == SPIFFEIDPattern {
+		if policy.SPIFFEIDPattern == SPIFFEIDPattern {
 			result = append(result, policy)
 		}
 		return true
@@ -299,18 +299,18 @@ func ImportPolicies(importedPolicies map[string]*data.Policy) {
 		}
 
 		// Skip if ID does not match.
-		if policy.Id != id {
+		if policy.ID != id {
 			continue
 		}
 
 		// Compile patterns if they aren't already compiled
-		if policy.SpiffeIdPattern != "*" && policy.IdRegex == nil {
-			idRegex, err := regexp.Compile(policy.SpiffeIdPattern)
+		if policy.SPIFFEIDPattern != "*" && policy.IDRegex == nil {
+			idRegex, err := regexp.Compile(policy.SPIFFEIDPattern)
 			if err != nil {
 				// Skip invalid policies.
 				continue
 			}
-			policy.IdRegex = idRegex
+			policy.IDRegex = idRegex
 		}
 
 		if policy.PathPattern != "*" && policy.PathRegex == nil {
@@ -323,6 +323,6 @@ func ImportPolicies(importedPolicies map[string]*data.Policy) {
 		}
 
 		// Store the policy in the global map
-		policies.Store(policy.Id, *policy)
+		policies.Store(policy.ID, *policy)
 	}
 }

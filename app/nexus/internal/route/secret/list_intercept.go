@@ -21,7 +21,7 @@ func guardListSecretRequest(
 	_ reqres.SecretListRequest, w http.ResponseWriter, r *http.Request,
 ) error {
 
-	spiffeid, err := spiffe.IdFromRequest(r)
+	sid, err := spiffe.IDFromRequest(r)
 	if err != nil {
 		responseBody := net.MarshalBody(reqres.SecretListResponse{
 			Err: data.ErrUnauthorized,
@@ -30,7 +30,15 @@ func guardListSecretRequest(
 		return apiErr.ErrUnauthorized
 	}
 
-	err = validation.ValidateSpiffeId(spiffeid.String())
+	if sid == nil {
+		responseBody := net.MarshalBody(reqres.SecretListResponse{
+			Err: data.ErrUnauthorized,
+		}, w)
+		net.Respond(http.StatusUnauthorized, responseBody, w)
+		return apiErr.ErrUnauthorized
+	}
+
+	err = validation.ValidateSPIFFEID(sid.String())
 	if err != nil {
 		responseBody := net.MarshalBody(reqres.SecretListResponse{
 			Err: data.ErrUnauthorized,
@@ -40,7 +48,7 @@ func guardListSecretRequest(
 	}
 
 	allowed := state.CheckAccess(
-		spiffeid.String(), "spike/system/secrets",
+		sid.String(), "spike/system/secrets",
 		[]data.PolicyPermission{data.PermissionList},
 	)
 	if !allowed {

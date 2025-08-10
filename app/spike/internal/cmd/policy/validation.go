@@ -68,7 +68,7 @@ func validatePermissions(permsStr string) ([]data.PolicyPermission, error) {
 // Returns:
 //   - bool: true if a policy with the name exists, false otherwise
 //   - error: An error if there's an issue with the API call
-func checkPolicyNameExists(api *spike.Api, name string) (bool, error) {
+func checkPolicyNameExists(api *spike.API, name string) (bool, error) {
 	policies, err := api.ListPolicies("", "")
 	if err != nil {
 		return false, err

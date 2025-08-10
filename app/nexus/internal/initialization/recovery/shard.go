@@ -23,7 +23,7 @@ import (
 func shardURL(keeperAPIRoot string) string {
 	const fName = "shardURL"
 
-	u, err := url.JoinPath(keeperAPIRoot, string(apiUrl.SpikeKeeperUrlShard))
+	u, err := url.JoinPath(keeperAPIRoot, string(apiUrl.KeeperShard))
 	if err != nil {
 		log.Log().Warn(
 			fName, "message", "Failed to join path", "url", keeperAPIRoot,
@@ -45,7 +45,7 @@ func shardResponse(source *workloadapi.X509Source, u string) []byte {
 		return []byte{}
 	}
 
-	client, err := network.CreateMtlsClientWithPredicate(
+	client, err := network.CreateMTLSClientWithPredicate(
 		source,
 		func(peerId string) bool {
 			return spiffeid.IsKeeper(env.TrustRootForKeeper(), peerId)
@@ -92,7 +92,7 @@ func shardContributionResponse(
 ) []byte {
 	const fName = "shardContributionResponse"
 
-	client, err := network.CreateMtlsClientWithPredicate(source,
+	client, err := network.CreateMTLSClientWithPredicate(source,
 		func(peerId string) bool {
 			return spiffeid.IsKeeper(env.TrustRootForKeeper(), peerId)
 		},

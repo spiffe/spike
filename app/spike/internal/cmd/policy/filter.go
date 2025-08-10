@@ -24,7 +24,7 @@ import (
 // Returns:
 //   - string: The policy ID if found
 //   - error: An error if the policy is not found or there's an API issue
-func findPolicyByName(api *spike.Api, name string) (string, error) {
+func findPolicyByName(api *spike.API, name string) (string, error) {
 	policies, err := api.ListPolicies("", "")
 	if err != nil {
 		return "", err
@@ -33,7 +33,7 @@ func findPolicyByName(api *spike.Api, name string) (string, error) {
 	if policies != nil {
 		for _, policy := range *policies {
 			if policy.Name == name {
-				return policy.Id, nil
+				return policy.ID, nil
 			}
 		}
 	}
@@ -64,7 +64,7 @@ func validUUID(uuid string) bool {
 //   - error: An error if the policy cannot be found or if neither ID nor name
 //     is provided
 func sendGetPolicyIDRequest(cmd *cobra.Command,
-	args []string, api *spike.Api,
+	args []string, api *spike.API,
 ) (string, error) {
 	var policyID string
 

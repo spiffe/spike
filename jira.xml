@@ -25,6 +25,24 @@
         also add `make audit` to user-facing documentation
         as in "run `make audit` before your commit" etc.
     </issue>
+      <issue>
+          // FIXME move constant
+          case a == url.ActionDefault && p == "/v1/cipher/encrypt" && !fullMode:
+          return cipher.RouteEncrypt
+          case a == url.ActionDefault && p == "/v1/cipher/decrypt" && !fullMode:
+          return cipher.RouteDecrypt
+      </issue>
+      <issue>
+          u, err := url.JoinPath(
+          keeperAPIRoot, string(apiUrl.KeeperContribute),
+          )
+
+          these should be methods of SDK instead.
+      </issue>
+      <issue>
+          make sure we check Spike.LiteWorkload spiffe id in policies.
+          also make sure the encryption as a service works.
+      </issue>
     <issue>
         A `--dry run` feature for vsecm commands:
         it will not create policies, secrets, etc, but just pass validations
