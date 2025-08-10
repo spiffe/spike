@@ -7,3 +7,10 @@ confirm:
 
 no-dirty:
 	@test -z "$(shell git status --porcelain)"
+
+upgradeable:
+	@go run github.com/oligot/go-mod-upgrade@latest
+
+tidy:
+	go mod tidy -v
+	go fmt ./...
