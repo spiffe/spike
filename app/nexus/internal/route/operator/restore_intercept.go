@@ -20,7 +20,7 @@ import (
 func guardRestoreRequest(
 	request reqres.RestoreRequest, w http.ResponseWriter, r *http.Request,
 ) error {
-	peerSpiffeid, err := spiffe.IdFromRequest(r)
+	peerSpiffeid, err := spiffe.IDFromRequest(r)
 	if err != nil {
 		responseBody := net.MarshalBody(reqres.RestoreResponse{
 			Err: data.ErrUnauthorized,
@@ -49,7 +49,7 @@ func guardRestoreRequest(
 	// The indexes start from 1 and increase one-by-one by design.
 	const maxShardID = 1000
 
-	if request.Id < 1 || request.Id > maxShardID {
+	if request.ID < 1 || request.ID > maxShardID {
 		responseBody := net.MarshalBody(reqres.RestoreResponse{
 			Err: data.ErrBadInput,
 		}, w)

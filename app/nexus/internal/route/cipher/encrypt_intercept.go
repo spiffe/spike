@@ -22,7 +22,7 @@ import (
 func guardEncryptSecretRequest(
 	_ reqres.SecretEncryptRequest, w http.ResponseWriter, r *http.Request,
 ) error {
-	sid, err := spiffe.IdFromRequest(r)
+	sid, err := spiffe.IDFromRequest(r)
 	if err != nil {
 		responseBody := net.MarshalBody(reqres.SecretEncryptResponse{
 			Err: data.ErrUnauthorized,
@@ -31,7 +31,15 @@ func guardEncryptSecretRequest(
 		return apiErr.ErrUnauthorized
 	}
 
-	err = validation.ValidateSpiffeId(sid.String())
+	if sid == nil {
+		responseBody := net.MarshalBody(reqres.SecretEncryptResponse{
+			Err: data.ErrUnauthorized,
+		}, w)
+		net.Respond(http.StatusUnauthorized, responseBody, w)
+		return apiErr.ErrUnauthorized
+	}
+
+	err = validation.ValidateSPIFFEID(sid.String())
 	if err != nil {
 		responseBody := net.MarshalBody(reqres.SecretEncryptResponse{
 			Err: data.ErrUnauthorized,

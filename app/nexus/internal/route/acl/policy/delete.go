@@ -75,7 +75,7 @@ func RouteDeletePolicy(
 		return errors.ErrParseFailure
 	}
 
-	policyID := request.Id
+	policyID := request.ID
 
 	err := guardDeletePolicyRequest(*request, w, r)
 	if err != nil {

@@ -23,7 +23,7 @@ func guardPutSecretMetadataRequest(
 	values := request.Values
 	path := request.Path
 
-	spiffeid, err := spiffe.IdFromRequest(r)
+	spiffeid, err := spiffe.IDFromRequest(r)
 	if err != nil {
 		responseBody := net.MarshalBody(reqres.SecretPutResponse{
 			Err: data.ErrUnauthorized,
@@ -31,7 +31,16 @@ func guardPutSecretMetadataRequest(
 		net.Respond(http.StatusUnauthorized, responseBody, w)
 		return apiErr.ErrUnauthorized
 	}
-	err = validation.ValidateSpiffeId(spiffeid.String())
+
+	if spiffeid == nil {
+		responseBody := net.MarshalBody(reqres.SecretPutResponse{
+			Err: data.ErrUnauthorized,
+		}, w)
+		net.Respond(http.StatusUnauthorized, responseBody, w)
+		return apiErr.ErrUnauthorized
+	}
+
+	err = validation.ValidateSPIFFEID(spiffeid.String())
 	if err != nil {
 		responseBody := net.MarshalBody(reqres.SecretPutResponse{
 			Err: data.ErrUnauthorized,

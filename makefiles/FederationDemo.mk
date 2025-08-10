@@ -1,6 +1,6 @@
-#   \\
-#  \\\\ SPIKE: Secure your secrets with SPIFFE. — https://spike.ist/
-# \\\\\\
+#    \\ SPIKE: Secure your secrets with SPIFFE. — https://spike.ist/
+#  \\\\\ Copyright 2024-present SPIKE contributors.
+# \\\\\\\ SPDX-License-Identifier: Apache-2.0
 
 # 6. Deploy SPIRE and SPIKE (based on the hostname)
 demo-deploy:

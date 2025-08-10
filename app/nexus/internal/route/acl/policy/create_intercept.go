@@ -21,11 +21,11 @@ func guardPutPolicyRequest(
 	request reqres.PolicyCreateRequest, w http.ResponseWriter, r *http.Request,
 ) error {
 	name := request.Name
-	SPIFFEIDPattern := request.SpiffeIdPattern
+	SPIFFEIDPattern := request.SPIFFEIDPattern
 	pathPattern := request.PathPattern
 	permissions := request.Permissions
 
-	SPIFFEID, err := spiffe.IdFromRequest(r)
+	sid, err := spiffe.IDFromRequest(r)
 	if err != nil {
 		responseBody := net.MarshalBody(reqres.PolicyCreateResponse{
 			Err: data.ErrUnauthorized,
@@ -34,7 +34,7 @@ func guardPutPolicyRequest(
 		return apiErr.ErrUnauthorized
 	}
 
-	if SPIFFEID == nil {
+	if sid == nil {
 		responseBody := net.MarshalBody(reqres.PolicyCreateResponse{
 			Err: data.ErrUnauthorized,
 		}, w)
@@ -42,7 +42,7 @@ func guardPutPolicyRequest(
 		return apiErr.ErrUnauthorized
 	}
 
-	err = validation.ValidateSpiffeId(SPIFFEID.String())
+	err = validation.ValidateSPIFFEID(sid.String())
 	if err != nil {
 		responseBody := net.MarshalBody(reqres.PolicyCreateResponse{
 			Err: data.ErrUnauthorized,
@@ -53,7 +53,7 @@ func guardPutPolicyRequest(
 
 	// Request "write" access to the ACL system for the SPIFFE ID.
 	allowed := state.CheckAccess(
-		SPIFFEID.String(), "spike/system/acl",
+		sid.String(), "spike/system/acl",
 		[]data.PolicyPermission{data.PermissionWrite},
 	)
 	if !allowed {
@@ -73,7 +73,7 @@ func guardPutPolicyRequest(
 		return apiErr.ErrInvalidInput
 	}
 
-	err = validation.ValidateSpiffeIdPattern(SPIFFEIDPattern)
+	err = validation.ValidateSPIFFEIDPattern(SPIFFEIDPattern)
 	if err != nil {
 		responseBody := net.MarshalBody(reqres.PolicyCreateResponse{
 			Err: data.ErrBadInput,

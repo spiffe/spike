@@ -106,7 +106,7 @@ func RouteGetPolicy(
 		return err
 	}
 
-	policyID := request.Id
+	policyID := request.ID
 
 	policy, err := state.GetPolicy(policyID)
 	if err == nil {

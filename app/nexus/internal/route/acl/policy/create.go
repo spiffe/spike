@@ -85,14 +85,14 @@ func RoutePutPolicy(
 	}
 
 	name := request.Name
-	SPIFFEIDPattern := request.SpiffeIdPattern
+	SPIFFEIDPattern := request.SPIFFEIDPattern
 	pathPattern := request.PathPattern
 	permissions := request.Permissions
 
 	policy, err := state.CreatePolicy(data.Policy{
-		Id:              "",
+		ID:              "",
 		Name:            name,
-		SpiffeIdPattern: SPIFFEIDPattern,
+		SPIFFEIDPattern: SPIFFEIDPattern,
 		PathPattern:     pathPattern,
 		Permissions:     permissions,
 		CreatedAt:       time.Time{},
@@ -112,7 +112,7 @@ func RoutePutPolicy(
 	}
 
 	responseBody := net.MarshalBody(reqres.PolicyCreateResponse{
-		Id: policy.Id,
+		ID: policy.ID,
 	}, w)
 
 	net.Respond(http.StatusOK, responseBody, w)

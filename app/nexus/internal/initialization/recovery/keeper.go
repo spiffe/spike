@@ -31,7 +31,7 @@ func iterateKeepersToBootstrap(
 
 	for keeperID, keeperAPIRoot := range keepers {
 		u, err := url.JoinPath(
-			keeperAPIRoot, string(apiUrl.SpikeKeeperUrlContribute),
+			keeperAPIRoot, string(apiUrl.KeeperContribute),
 		)
 		if err != nil {
 			log.Log().Warn(

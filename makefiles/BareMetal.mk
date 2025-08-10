@@ -1,6 +1,6 @@
-#   \\
-#  \\\\ SPIKE: Secure your secrets with SPIFFE. — https://spike.ist/
-# \\\\\\
+#    \\ SPIKE: Secure your secrets with SPIFFE. — https://spike.ist/
+#  \\\\\ Copyright 2024-present SPIKE contributors.
+# \\\\\\\ SPDX-License-Identifier: Apache-2.0
 
 # Start a local development environment to test SPIKE.
 # By default, SPIRE Agent will have the same privileges as the user.

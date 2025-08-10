@@ -105,7 +105,7 @@ func RouteRestore(
 	}
 
 	for _, shard := range shards {
-		if int(shard.ID) != request.Id {
+		if int(shard.ID) != request.ID {
 			continue
 		}
 
@@ -128,7 +128,7 @@ func RouteRestore(
 	}
 
 	shards = append(shards, recovery.ShamirShard{
-		ID:    uint64(request.Id),
+		ID:    uint64(request.ID),
 		Value: request.Shard,
 	})
 

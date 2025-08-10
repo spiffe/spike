@@ -32,7 +32,7 @@ func StorePolicy(policy data.Policy) {
 		return // No cache available
 	}
 
-	if policy.Id == "" {
+	if policy.ID == "" {
 		return
 	}
 
@@ -46,7 +46,7 @@ func StorePolicy(policy data.Policy) {
 		// Log error but continue - memory is the source of truth
 		log.Log().Warn(fName,
 			"message", "Failed to cache policy",
-			"id", policy.Id,
+			"id", policy.ID,
 			"err", err.Error(),
 		)
 	}

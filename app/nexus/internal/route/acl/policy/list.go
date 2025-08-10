@@ -81,7 +81,7 @@ func RouteListPolicies(
 
 	var policies []data.Policy
 
-	SPIFFEIDPattern := request.SpiffeIdPattern
+	SPIFFEIDPattern := request.SPIFFEIDPattern
 	pathPattern := request.PathPattern
 
 	switch {

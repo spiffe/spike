@@ -5,9 +5,10 @@
 package secret
 
 import (
+	"net/http"
+
 	"github.com/spiffe/spike-sdk-go/api/errors"
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
-	"net/http"
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
@@ -22,20 +23,30 @@ func guardSecretUndeleteRequest(
 ) error {
 	path := request.Path
 
-	spiffeid, err := spiffe.IdFromRequest(r)
+	sid, err := spiffe.IDFromRequest(r)
 	if err != nil {
 		responseBody := net.MarshalBody(reqres.SecretUndeleteResponse{
 			Err: data.ErrUnauthorized,
 		}, w)
 		net.Respond(http.StatusUnauthorized, responseBody, w)
-		return err
+		return errors.ErrUnauthorized
 	}
-	err = validation.ValidateSpiffeId(spiffeid.String())
+
+	if sid == nil {
+		responseBody := net.MarshalBody(reqres.SecretUndeleteResponse{
+			Err: data.ErrUnauthorized,
+		}, w)
+		net.Respond(http.StatusUnauthorized, responseBody, w)
+		return errors.ErrUnauthorized
+	}
+
+	err = validation.ValidateSPIFFEID(sid.String())
 	if err != nil {
 		responseBody := net.MarshalBody(reqres.SecretUndeleteResponse{
 			Err: data.ErrUnauthorized,
 		}, w)
 		net.Respond(http.StatusUnauthorized, responseBody, w)
+		return errors.ErrUnauthorized
 	}
 
 	err = validation.ValidatePath(path)
@@ -44,11 +55,11 @@ func guardSecretUndeleteRequest(
 			Err: data.ErrBadInput,
 		}, w)
 		net.Respond(http.StatusBadRequest, responseBody, w)
-		return err
+		return errors.ErrInvalidInput
 	}
 
 	allowed := state.CheckAccess(
-		spiffeid.String(),
+		sid.String(),
 		path,
 		[]data.PolicyPermission{data.PermissionWrite},
 	)

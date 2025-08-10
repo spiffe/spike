@@ -21,7 +21,7 @@ import (
 func guardRecoverRequest(
 	_ reqres.RecoverRequest, w http.ResponseWriter, r *http.Request,
 ) error {
-	peerSPIFFEID, err := spiffe.IdFromRequest(r)
+	peerSPIFFEID, err := spiffe.IDFromRequest(r)
 	if err != nil {
 		responseBody := net.MarshalBody(reqres.RestoreResponse{
 			Err: data.ErrUnauthorized,

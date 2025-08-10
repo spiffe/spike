@@ -93,9 +93,9 @@ func (s *DataStore) StorePolicy(ctx context.Context, policy data.Policy) error {
 	}(tx)
 
 	_, err = tx.ExecContext(ctx, ddl.QueryUpsertPolicy,
-		policy.Id,
+		policy.ID,
 		policy.Name,
-		policy.SpiffeIdPattern,
+		policy.SPIFFEIDPattern,
 		policy.PathPattern,
 		policy.CreatedAt,
 	)
@@ -130,11 +130,11 @@ func (s *DataStore) LoadPolicy(
 	defer s.mu.RUnlock()
 
 	var policy data.Policy
-	policy.Id = id // Set the ID since we queried with it
+	policy.ID = id // Set the ID since we queried with it
 
 	err := s.db.QueryRowContext(ctx, ddl.QueryLoadPolicy, id).Scan(
 		&policy.Name,
-		&policy.SpiffeIdPattern,
+		&policy.SPIFFEIDPattern,
 		&policy.PathPattern,
 		&policy.CreatedAt,
 	)
@@ -146,12 +146,12 @@ func (s *DataStore) LoadPolicy(
 	}
 
 	// Compile the patterns just like in CreatePolicy
-	if policy.SpiffeIdPattern != "*" {
-		idRegex, err := regexp.Compile(policy.SpiffeIdPattern)
+	if policy.SPIFFEIDPattern != "*" {
+		idRegex, err := regexp.Compile(policy.SPIFFEIDPattern)
 		if err != nil {
 			return nil, fmt.Errorf("invalid spiffeid pattern: %w", err)
 		}
-		policy.IdRegex = idRegex
+		policy.IDRegex = idRegex
 	}
 
 	if policy.PathPattern != "*" {
@@ -204,9 +204,9 @@ func (s *DataStore) LoadAllPolicies(
 		var policy data.Policy
 
 		if err := rows.Scan(
-			&policy.Id,
+			&policy.ID,
 			&policy.Name,
-			&policy.SpiffeIdPattern,
+			&policy.SPIFFEIDPattern,
 			&policy.PathPattern,
 			&policy.CreatedAt,
 		); err != nil {
@@ -214,25 +214,25 @@ func (s *DataStore) LoadAllPolicies(
 		}
 
 		// Compile the patterns just like in LoadPolicy
-		if policy.SpiffeIdPattern != "*" {
-			idRegex, err := regexp.Compile(policy.SpiffeIdPattern)
+		if policy.SPIFFEIDPattern != "*" {
+			idRegex, err := regexp.Compile(policy.SPIFFEIDPattern)
 			if err != nil {
 				return nil,
-					fmt.Errorf("invalid spiffeid pattern for policy %s: %w", policy.Id, err)
+					fmt.Errorf("invalid spiffeid pattern for policy %s: %w", policy.ID, err)
 			}
-			policy.IdRegex = idRegex
+			policy.IDRegex = idRegex
 		}
 
 		if policy.PathPattern != "*" {
 			pathRegex, err := regexp.Compile(policy.PathPattern)
 			if err != nil {
 				return nil,
-					fmt.Errorf("invalid path pattern for policy %s: %w", policy.Id, err)
+					fmt.Errorf("invalid path pattern for policy %s: %w", policy.ID, err)
 			}
 			policy.PathRegex = pathRegex
 		}
 
-		policies[policy.Id] = &policy
+		policies[policy.ID] = &policy
 	}
 
 	if err := rows.Err(); err != nil {

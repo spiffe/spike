@@ -64,10 +64,10 @@ func formatPoliciesOutput(cmd *cobra.Command, policies *[]data.Policy) string {
 	result.WriteString("POLICIES\n========\n\n")
 
 	for _, policy := range *policies {
-		result.WriteString(fmt.Sprintf("ID: %s\n", policy.Id))
+		result.WriteString(fmt.Sprintf("ID: %s\n", policy.ID))
 		result.WriteString(fmt.Sprintf("Name: %s\n", policy.Name))
 		result.WriteString(fmt.Sprintf("SPIFFE ID Pattern: %s\n",
-			policy.SpiffeIdPattern))
+			policy.SPIFFEIDPattern))
 		result.WriteString(fmt.Sprintf("Path Pattern: %s\n",
 			policy.PathPattern))
 
@@ -124,10 +124,10 @@ func formatPolicy(cmd *cobra.Command, policy *data.Policy) string {
 	var result strings.Builder
 	result.WriteString("POLICY DETAILS\n=============\n\n")
 
-	result.WriteString(fmt.Sprintf("ID: %s\n", policy.Id))
+	result.WriteString(fmt.Sprintf("ID: %s\n", policy.ID))
 	result.WriteString(fmt.Sprintf("Name: %s\n", policy.Name))
 	result.WriteString(fmt.Sprintf("SPIFFE ID Pattern: %s\n",
-		policy.SpiffeIdPattern))
+		policy.SPIFFEIDPattern))
 	result.WriteString(fmt.Sprintf("Path Pattern: %s\n",
 		policy.PathPattern))
 
