@@ -120,7 +120,7 @@ func newPolicyApplyCommand(
 
         Example YAML file structure:
         name: db-access
-        spiffeid: spiffe://example\.org/service/
+        spiffeid: ^spiffe://example\.org/service/
         path: ^secrets/database/production
         permissions:
           - read
