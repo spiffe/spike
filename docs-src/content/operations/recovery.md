@@ -124,6 +124,8 @@ How to proceed:
 * This is a complete system reset; you'll lose all data and all former
   configuration, including secret access policies.
 
+<p>&nbsp;</p>
+
 ----
 
 {{ toc_operations() }}

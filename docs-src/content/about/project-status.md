@@ -36,6 +36,8 @@ We'll announce when the project is ready for production adoption.
 
 [lifecycle]: https://github.com/spiffe/spiffe/blob/main/NEW_PROJECTS.md
 
+<p>&nbsp;</p>
+
 ----
 
 {{ toc_getting_started() }}

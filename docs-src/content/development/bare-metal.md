@@ -21,7 +21,7 @@ ensure a smooth experience. In case you encounter issues, please discuss
 them on the [SPIFFE community Slack][slack].
 
 [slack]: https://slack.spiffe.io/ "SPIFFE Slack"
-[spike]: @/getting-started/about.md "About SPIKE"
+[spike]: @/about/intro.md "About SPIKE"
 
 ## Prerequisites
 
@@ -446,6 +446,8 @@ rm spire-agent
 That's about it.
 
 Enjoy.
+
+<p>&nbsp;</p>
 
 ----
 

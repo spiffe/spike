@@ -216,9 +216,11 @@ These scripts must be run with appropriate privileges.
 
 {{ toc_commands() }}
 
+<p>&nbsp;</p>
+
 ----
 
-{{ toc_getting_started() }}
+{{ toc_usage() }}
 
 ----
 

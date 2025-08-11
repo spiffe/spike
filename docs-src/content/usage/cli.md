@@ -26,7 +26,7 @@ examples and common scenarios. Please note that it is not a normative or
 exhaustive reference; for that, refer to the 
 [**SPIKE CLI Reference**][cli-list].
 
-[cli-list]: @/getting-started/commands/_index.md "SPIKE Command Index"
+[cli-list]: @/usage/commands/_index.md "SPIKE Command Index"
 
 ## How to Get Help
 
@@ -123,3 +123,13 @@ pass: SPIKERocks
 That's about it. You can use other **SPIKE** commands similarly.
 
 [demos]: @/community/presentations.md
+
+<p>&nbsp;</p>
+
+----
+
+{{ toc_usage() }}
+
+----
+
+{{ toc_top() }}

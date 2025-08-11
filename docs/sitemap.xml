@@ -4,6 +4,15 @@
         <loc>https://spike.ist/</loc>
     </url>
     <url>
+        <loc>https://spike.ist/about/</loc>
+    </url>
+    <url>
+        <loc>https://spike.ist/about/intro/</loc>
+    </url>
+    <url>
+        <loc>https://spike.ist/about/project-status/</loc>
+    </url>
+    <url>
         <loc>https://spike.ist/architecture/</loc>
     </url>
     <url>
@@ -100,37 +109,16 @@
         <loc>https://spike.ist/community/presentations/</loc>
     </url>
     <url>
+        <loc>https://spike.ist/development/</loc>
+    </url>
+    <url>
+        <loc>https://spike.ist/development/bare-metal/</loc>
+    </url>
+    <url>
+        <loc>https://spike.ist/development/local-deployment/</loc>
+    </url>
+    <url>
         <loc>https://spike.ist/getting-started/</loc>
-    </url>
-    <url>
-        <loc>https://spike.ist/getting-started/about/</loc>
-    </url>
-    <url>
-        <loc>https://spike.ist/getting-started/bare-metal/</loc>
-    </url>
-    <url>
-        <loc>https://spike.ist/getting-started/cli/</loc>
-    </url>
-    <url>
-        <loc>https://spike.ist/getting-started/commands/</loc>
-    </url>
-    <url>
-        <loc>https://spike.ist/getting-started/commands/operator/</loc>
-    </url>
-    <url>
-        <loc>https://spike.ist/getting-started/commands/policy/</loc>
-    </url>
-    <url>
-        <loc>https://spike.ist/getting-started/commands/secret/</loc>
-    </url>
-    <url>
-        <loc>https://spike.ist/getting-started/configuration/</loc>
-    </url>
-    <url>
-        <loc>https://spike.ist/getting-started/local-deployment/</loc>
-    </url>
-    <url>
-        <loc>https://spike.ist/getting-started/project-status/</loc>
     </url>
     <url>
         <loc>https://spike.ist/getting-started/quickstart/</loc>
@@ -161,5 +149,26 @@
     </url>
     <url>
         <loc>https://spike.ist/tracking/snapshots/</loc>
+    </url>
+    <url>
+        <loc>https://spike.ist/usage/</loc>
+    </url>
+    <url>
+        <loc>https://spike.ist/usage/cli/</loc>
+    </url>
+    <url>
+        <loc>https://spike.ist/usage/commands/</loc>
+    </url>
+    <url>
+        <loc>https://spike.ist/usage/commands/operator/</loc>
+    </url>
+    <url>
+        <loc>https://spike.ist/usage/commands/policy/</loc>
+    </url>
+    <url>
+        <loc>https://spike.ist/usage/commands/secret/</loc>
+    </url>
+    <url>
+        <loc>https://spike.ist/usage/configuration/</loc>
     </url>
 </urlset>

@@ -22,6 +22,8 @@ entry to read more details.
 
 {{ toc_adrs() }}
 
+<p>&nbsp;</p>
+
 ----
 
 {{ toc_architecture() }}

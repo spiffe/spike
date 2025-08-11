@@ -4,7 +4,7 @@
 # // \\\\\\\ SPDX-License-Identifier: Apache-2.
 
 title = "Getting Started"
-weight = 1
+weight = 3
 sort_by = "weight"
 +++
 

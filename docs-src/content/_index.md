@@ -39,5 +39,5 @@ Here are a few pointers to learn more about **SPIKE**:
 [architecture]: @/architecture/system-overview.md "SPIKE Architecture"
 [quickstart]: @/getting-started/quickstart.md "SPIKE Quickstart"
 [community]: @/community/hello.md "Open Source is better together."
-[cli]: @/getting-started/commands/_index.md
+[cli]: @/usage/commands/_index.md
 [github]: https://github.com/spiffe/spike

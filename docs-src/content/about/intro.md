@@ -108,6 +108,8 @@ security guarantees.
 That part taken care of, [we can get our hands dirty with **SPIKE** in the
 **SPIKE Quickstart Guide**](@/getting-started/quickstart.md).
 
+<p>&nbsp;</p>
+
 ----
 
 {{ toc_getting_started() }}

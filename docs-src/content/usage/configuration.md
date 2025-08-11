@@ -49,9 +49,11 @@ configure the SPIKE components:
 
 We'll add more configuration options in the future. Stay tuned.
 
+<p>&nbsp;</p>
+
 ----
 
-{{ toc_getting_started() }}
+{{ toc_usage() }}
 
 ----
 

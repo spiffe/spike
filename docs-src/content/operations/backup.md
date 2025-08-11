@@ -253,3 +253,14 @@ Remember these key principles:
 By implementing these practices, your DevOps team will be prepared to handle 
 any recovery scenario while maintaining the security guarantees that make 
 **SPIKE** an effective secrets management solution.
+
+<p>&nbsp;</p>
+
+----
+
+{{ toc_operations() }}
+
+----
+
+{{ toc_top() }}
+

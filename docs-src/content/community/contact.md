@@ -39,6 +39,8 @@ issue](https://github.com/spiffe/spike/issues/new); however, we recommend
 using the [**SPIFFE** Slack Workspace](https://slack.spiffe.io) to initiate
 a discussion first, before creating an issue.
 
+<p>&nbsp;</p>
+
 ----
 
 {{ toc_community() }}

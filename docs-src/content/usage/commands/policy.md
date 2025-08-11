@@ -477,9 +477,11 @@ spiffe://example.org/web/          # Only web workloads
 
 {{ toc_commands() }}
 
+<p>&nbsp;</p>
+
 ----
 
-{{ toc_getting_started() }}
+{{ toc_usage() }}
 
 ----
 

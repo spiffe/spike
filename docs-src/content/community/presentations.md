@@ -62,6 +62,8 @@ capabilities and showcase its innovative features.
 [spike-doomsday]: https://vimeo.com/v0lkan/spike-doomsday
 [spike-federated]: https://vimeo.com/v0lkan/spike-federation
 
+<p>&nbsp;</p>
+
 ----
 
 {{ toc_community() }}

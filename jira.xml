@@ -14,10 +14,15 @@
     </issue>
   </kubernetification>
   <immediate-backlog>
+      <issue>
+          maybe for vsecm: plugin-based dynamic secrets to access third-party
+          services:
+          https://developer.hashicorp.com/vault/tutorials/get-started/understand-static-dynamic-secrets
+        </issue>
     <issue>
         add `make audit` to the CI pipeline
         ci does its own verifications, so does `make audit`
-        these should be merged together.
+        these should be merged.
     </issue>
     <issue>
         add make audit to spike-sdk-go too.

@@ -319,9 +319,11 @@ secrets/certificates/tls          # TLS certificates
 
 {{ toc_commands() }}
 
+<p>&nbsp;</p>
+
 ----
 
-{{ toc_getting_started() }}
+{{ toc_usage() }}
 
 ----
 

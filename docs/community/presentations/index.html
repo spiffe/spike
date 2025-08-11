@@ -106,38 +106,18 @@
         background-color: var(--spike-blue);
     }
 </style> <div id="trees">
-    <input class="tree-toggle" type="checkbox" id="getting-started"
+    <input class="tree-toggle" type="checkbox" id="about"
                />
         <label class="tree-toggle-label "
-               for="getting-started">Getting Started</label>
+               for="about">About</label>
 
         <ul class="subtree">
             <li >
-                    <a href="https://spike.ist/getting-started/about/">About SPIKE</a>
+                    <a href="https://spike.ist/about/intro/">About SPIKE</a>
                 </li>
 
                 <li >
-                    <a href="https://spike.ist/getting-started/project-status/">Project Maturity</a>
-                </li>
-
-                <li >
-                    <a href="https://spike.ist/getting-started/quickstart/">SPIKE Quickstart Guide</a>
-                </li>
-
-                <li >
-                    <a href="https://spike.ist/getting-started/local-deployment/">Building SPIKE Locally</a>
-                </li>
-
-                <li >
-                    <a href="https://spike.ist/getting-started/bare-metal/">SPIKE on Linux</a>
-                </li>
-
-                <li >
-                    <a href="https://spike.ist/getting-started/configuration/">Configuring SPIKE</a>
-                </li>
-
-                <li >
-                    <a href="https://spike.ist/getting-started/cli/">SPIKE CLI</a>
+                    <a href="https://spike.ist/about/project-status/">Project Maturity</a>
                 </li>
 
                 </ul>
@@ -163,6 +143,47 @@
                         
                         
                             </ul>
+    <input class="tree-toggle" type="checkbox" id="getting-started"
+               />
+        <label class="tree-toggle-label "
+               for="getting-started">Getting Started</label>
+
+        <ul class="subtree">
+            <li >
+                    <a href="https://spike.ist/getting-started/quickstart/">SPIKE Quickstart Guide</a>
+                </li>
+
+                </ul>
+    <input class="tree-toggle" type="checkbox" id="using-spike"
+               />
+        <label class="tree-toggle-label "
+               for="using-spike">Using SPIKE</label>
+
+        <ul class="subtree">
+            <li >
+                    <a href="https://spike.ist/usage/configuration/">Configuring SPIKE</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/usage/cli/">SPIKE CLI</a>
+                </li>
+
+                </ul>
+    <input class="tree-toggle" type="checkbox" id="developing-spike"
+               />
+        <label class="tree-toggle-label "
+               for="developing-spike">Developing SPIKE</label>
+
+        <ul class="subtree">
+            <li >
+                    <a href="https://spike.ist/development/local-deployment/">Building SPIKE Locally</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/development/bare-metal/">SPIKE on Linux</a>
+                </li>
+
+                </ul>
     <input class="tree-toggle" type="checkbox" id="spike-architecture"
                />
         <label class="tree-toggle-label "
@@ -179,6 +200,21 @@
 
                 <li >
                     <a href="https://spike.ist/architecture/architectural-decision-records/">ADRs</a>
+                </li>
+
+                </ul>
+    <input class="tree-toggle" type="checkbox" id="tracking"
+               />
+        <label class="tree-toggle-label "
+               for="tracking">Tracking</label>
+
+        <ul class="subtree">
+            <li >
+                    <a href="https://spike.ist/tracking/changelog/">Changelog</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/tracking/snapshots/">Documentation Snapshots</a>
                 </li>
 
                 </ul>
@@ -206,21 +242,6 @@
 
                 <li >
                     <a href="https://spike.ist/operations/release/">SPIKE Relase Management</a>
-                </li>
-
-                </ul>
-    <input class="tree-toggle" type="checkbox" id="tracking"
-               />
-        <label class="tree-toggle-label "
-               for="tracking">Tracking</label>
-
-        <ul class="subtree">
-            <li >
-                    <a href="https://spike.ist/tracking/changelog/">Changelog</a>
-                </li>
-
-                <li >
-                    <a href="https://spike.ist/tracking/snapshots/">Documentation Snapshots</a>
                 </li>
 
                 </ul>
@@ -759,6 +780,7 @@ Helm charts. We then establish a multi-cluster secret federation where
 the workload clusters can securely access secrets stored in the management
 cluster.</li>
 </ul>
+<p>&nbsp;</p>
 <hr />
 <ul>
 <li><a href="https://spike.ist/community/hello/">Hello Universe</a></li>
@@ -767,11 +789,14 @@ cluster.</li>
 </ul>
 <hr />
 <ul>
-<li><a href="https://spike.ist/getting-started/">Getting Started</a></li>
+<li><a href="https://spike.ist/about/">About</a></li>
 <li><a href="https://spike.ist/community/">Community</a></li>
+<li><a href="https://spike.ist/getting-started/">Getting Started</a></li>
+<li><a href="https://spike.ist/usage/">Using SPIKE</a></li>
+<li><a href="https://spike.ist/development/">Developing SPIKE</a></li>
 <li><a href="https://spike.ist/architecture/">SPIKE Architecture</a></li>
-<li><a href="https://spike.ist/operations/">Operations</a></li>
 <li><a href="https://spike.ist/tracking/">Tracking</a></li>
+<li><a href="https://spike.ist/operations/">Operations</a></li>
 </ul>
 
     

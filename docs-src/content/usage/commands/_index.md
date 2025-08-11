@@ -11,3 +11,9 @@ sort_by = "weight"
 # SPIKE CLI Commands
 
 {{ toc_commands() }}
+
+<p>&nbsp;</p>
+
+----
+
+{{ toc_usage() }}

@@ -375,6 +375,8 @@ You can check out the [**Administrative Access section of SPIKE security
 model](@/architecture/security-model.md#administrative-access) for more
 information about these roles.
 
+<p>&nbsp;</p>
+
 ----
 
 {{ toc_architecture() }}

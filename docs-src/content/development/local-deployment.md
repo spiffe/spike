@@ -24,7 +24,7 @@ In this guide we will follow a similar approach to
 3. Use a customized `values.yaml` for the helm charts to create a more
    production-like namespace structure.
 
-[spike-on-linux]: @/getting-started/bare-metal.md "SPIKE on Linux"
+[spike-on-linux]: @/development/bare-metal.md "SPIKE on Linux"
 [quickstart]: @/getting-started/quickstart.md "Getting Started with SPIKE"
 
 Without further ado, let's begin with the prerequisites.
@@ -192,7 +192,9 @@ metal Linux machine without using container orchestration such as *Kubernetes*
 [github]: https://github.com/spiffe/spike "SPIKE on GitHub"
 [architecture]: @/architecture/_index.md "SPIKE Architecture"
 [security-model]: @/architecture/security-model.md "SPIKE Security Model"
-[bare-metal]: @/getting-started/bare-metal.md "SPIKE on Linux"
+[bare-metal]: @/development/bare-metal.md "SPIKE on Linux"
+
+<p>&nbsp;</p>
 
 ----
 

@@ -158,11 +158,13 @@ using SPIKE.
 
 Here are a few links to get you started:
 
-* [Building SPIKE Locally and Deploying to Minikube](@/getting-started/local-deployment.md)
-* [Bare Metal SPIKE Installation](@/getting-started/bare-metal.md)
-* [Configuring SPIKE](@/getting-started/configuration.md)
+* [Building SPIKE Locally and Deploying to Minikube](@/development/local-deployment.md)
+* [Bare Metal SPIKE Installation](@/development/bare-metal.md)
+* [Configuring SPIKE](@/usage/configuration.md)
 * [SPIKE Architecture](@/architecture/_index.md)
 * [SPIKE Production Hardening Guide](@/operations/production.md)
+
+<p>&nbsp;</p>
 
 ----
 
