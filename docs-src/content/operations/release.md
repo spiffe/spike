@@ -189,6 +189,8 @@ spike policy list --format=json
 If everything went well so far, we can assume that the current **SPIKE** release
 is in a good enough shape.
 
+<p>&nbsp;</p>
+
 ----
 
 {{ toc_operations() }}
