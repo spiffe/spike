@@ -10,7 +10,6 @@ import (
 	"os"
 	"strconv"
 	"strings"
-	"syscall"
 
 	"github.com/spf13/cobra"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
@@ -81,7 +80,7 @@ func newOperatorRestoreCommand(
 
 			fmt.Println("(your input will be hidden as you paste/type it)")
 			fmt.Print("Enter recovery shard: ")
-			shard, err := term.ReadPassword(syscall.Stdin)
+			shard, err := term.ReadPassword(int(os.Stdin.Fd()))
 			if err != nil {
 				_, e := fmt.Fprintf(os.Stderr, "Error reading shard: %v\n", err)
 				if e != nil {
