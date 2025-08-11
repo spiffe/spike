@@ -96,8 +96,11 @@ Here are the important folders and files in this repository:
   * `./app/spike`: **SPIKE** Pilot
 * `./config`: Contains configuration files to run SPIRE in a development
   environment.
-* `./docs`: Public documentation.
+* `./docs-src`: Public documentation.
+  * `./docs`: Generated documentation.
 * `./hack`: Useful scripts to build and test the project.
+* `./examples`: Examples of how to use **SPIKE**.
+* `./makefiles`: Makefiles for building and testing **SPIKE**.
 * `./internal`: Internal modules shared among **SPIKE** components.
 
 ## Code Of Conduct
