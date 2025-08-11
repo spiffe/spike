@@ -19,6 +19,29 @@
           services:
           https://developer.hashicorp.com/vault/tutorials/get-started/understand-static-dynamic-secrets
         </issue>
+      <issue>
+          if spike nexus had a prometheus endpoint, what kinds of metrics
+          would it expose?
+      </issue>
+      <issue>
+          vsecm:
+          Integration with Key Vault providers
+          - e.g. AWS Secrets Manager, CyberArk
+      </issue>
+      <issue>
+          SPIKE OPA Integration
+          ---
+          webhooks for external policies, and maybe ValidatingAdmissionPolicies (CEL based)
+      </issue>
+      <issue>
+        Kubernetes secrets as a backing store for SPIKE.
+          The secrets are stored in k8s secrets in encrypted form.
+          the workloads have to decrypt the secrets using the lite API.
+      </issue>
+      <issue>
+          Audit Logging: SOC 2 Type II compliance
+          Records of creation, modification, and deletion, including the user who performed the action and a timestamp.
+      </issue>
     <issue>
         add `make audit` to the CI pipeline
         ci does its own verifications, so does `make audit`
