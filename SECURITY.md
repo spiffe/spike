@@ -13,7 +13,7 @@ security updates.
 Note that **SPIKE** consists of more than a single component, and during a 
 release cut, all components are signed and tagged with the same version.
 
-After **SPIKE** hits a major 1.0.0. Version, this will change,
+After **SPIKE** hits a major **1.0.0** Version, this will change,
 and we will also have a support plan for various major versions.
 
 ## Reporting a Vulnerability
