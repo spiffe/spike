@@ -12,6 +12,13 @@ sort_by = "weight"
 
 ## Recent
 
+* SPIKE Nexus, SPIKE Pilot, and SPIKE Keeper can now be built as Windows
+  binaries too.
+* SPIKE and SPIKE Go SDK code has been refactored to better align with common
+  Go idioms and conventions.
+* Added stricter linting.
+* Added vulnerability checks to SPIKE and SPIKE Go SDK.
+
 ## [0.4.2] - 2025-07-19
 
 ### Added
