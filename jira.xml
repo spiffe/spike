@@ -47,6 +47,9 @@
         ci does its own verifications, so does `make audit`
         these should be merged.
     </issue>
+      <issue>
+          design a dedicated landing page.
+      </issue>
     <issue>
         add make audit to spike-sdk-go too.
 
