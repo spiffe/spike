@@ -198,7 +198,7 @@ metal Linux machine without using container orchestration such as *Kubernetes*
 
 ----
 
-{{ toc_getting_started() }}
+{{ toc_development() }}
 
 ----
 

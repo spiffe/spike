@@ -451,7 +451,7 @@ Enjoy.
 
 ----
 
-{{ toc_getting_started() }}
+{{ toc_development() }}
 
 ----
 
