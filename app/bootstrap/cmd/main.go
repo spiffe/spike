@@ -1,79 +1,138 @@
 package main
 
 import (
+	"context"
 	"crypto/rand"
-	"fmt"
-	"math/big"
+	"encoding/json"
+	"net/http"
+	"os"
+
+	"github.com/cloudflare/circl/secretsharing"
+	"github.com/spiffe/go-spiffe/v2/workloadapi"
+	"github.com/spiffe/spike/app/bootstrap/internal/validation"
+
+	"net/url"
+	"strconv"
 
 	"github.com/cloudflare/circl/group"
 	shamir "github.com/cloudflare/circl/secretsharing"
+	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
+	apiUrl "github.com/spiffe/spike-sdk-go/api/url"
 	"github.com/spiffe/spike-sdk-go/crypto"
 	"github.com/spiffe/spike-sdk-go/log"
-	"github.com/spiffe/spike-sdk-go/security/mem"
+	network "github.com/spiffe/spike-sdk-go/net"
+	"github.com/spiffe/spike-sdk-go/spiffe"
+	"github.com/spiffe/spike-sdk-go/spiffeid"
 	"github.com/spiffe/spike/app/bootstrap/internal/env"
+	"github.com/spiffe/spike/internal/net"
 )
 
-// sanityCheck verifies that a set of secret shares can correctly reconstruct
-// the original secret. It performs this verification by attempting to recover
-// the secret using the minimum required number of shares and comparing the
-// result with the original secret.
-//
-// Parameters:
-//   - secret group.Scalar: The original secret to verify against
-//   - shares []shamir.Share: The generated secret shares to verify
-//
-// The function will:
-//   - Calculate the threshold (t) from the environment configuration
-//   - Attempt to reconstruct the secret using exactly t+1 shares
-//   - Compare the reconstructed secret with the original
-//   - Zero out the reconstructed secret regardless of success or failure
-//
-// If the verification fails, the function will:
-//   - Log a fatal error and exit if recovery fails
-//   - Log a fatal error and exit if the recovered secret doesn't match the
-//     original
-//
-// Security:
-//   - The reconstructed secret is always zeroed out to prevent memory leaks
-//   - In case of fatal errors, the reconstructed secret is explicitly zeroed
-//     before logging since deferred functions won't run after log.FatalLn
-func sanityCheck(secret group.Scalar, shares []shamir.Share) {
-	const fName = "sanityCheck"
+func keeperShare(rootShares []secretsharing.Share, keeperID string) secretsharing.Share {
+	const fName = "keeperShare"
 
-	t := uint(env.ShamirThreshold() - 1) // Need t+1 shares to reconstruct
-
-	reconstructed, err := shamir.Recover(t, shares[:env.ShamirThreshold()])
-	// Security: Ensure that the secret is zeroed out if the check fails.
-	defer func() {
-		if reconstructed == nil {
-			return
+	var share secretsharing.Share
+	for _, sr := range rootShares {
+		kid, err := strconv.Atoi(keeperID)
+		if err != nil {
+			log.Log().Warn(
+				fName, "message", "Failed to convert keeper id to int", "err", err)
+			os.Exit(1)
 		}
-		reconstructed.SetUint64(0)
-	}()
 
-	if err != nil {
-		// deferred will not run in a fatal crash.
-		reconstructed.SetUint64(0)
-
-		log.FatalLn(fName + ": Failed to recover: " + err.Error())
+		if sr.ID.IsEqual(group.P256.NewScalar().SetUint64(uint64(kid))) {
+			share = sr
+			break
+		}
 	}
-	if !secret.IsEqual(reconstructed) {
-		// deferred will not run in a fatal crash.
-		reconstructed.SetUint64(0)
 
-		log.FatalLn(fName + ": Recovered secret does not match original")
+	if share.ID.IsZero() {
+		log.Log().Warn(fName,
+			"message", "Failed to find share for keeper", "keeper_id", keeperID)
+		os.Exit(1)
+	}
+
+	return share
+}
+
+func payload(share secretsharing.Share, keeperID string) []byte {
+	const fName = "payload"
+
+	contribution, err := share.Value.MarshalBinary()
+	if err != nil {
+		log.Log().Warn(fName, "message", "Failed to marshal share",
+			"err", err, "keeper_id", keeperID)
+		os.Exit(1)
+	}
+
+	if len(contribution) != 32 {
+		log.Log().Warn(fName,
+			"message", "invalid contribution length",
+			"len", len(contribution), "keeper_id", keeperID)
+		os.Exit(1)
+	}
+
+	scr := reqres.ShardContributionRequest{}
+	shard := new([32]byte)
+	copy(shard[:], contribution)
+	scr.Shard = shard
+
+	md, err := json.Marshal(scr)
+	if err != nil {
+		log.Log().Warn(fName,
+			"message", "Failed to marshal request",
+			"err", err, "keeper_id", keeperID)
+		os.Exit(1)
+	}
+
+	return md
+}
+
+func keeperEndpoint(keeperAPIRoot string) string {
+	const fName = "keeperEndpoint"
+
+	u, err := url.JoinPath(
+		keeperAPIRoot, string(apiUrl.KeeperContribute),
+	)
+	if err != nil {
+		log.Log().Warn(
+			fName, "message", "Failed to join path", "url", keeperAPIRoot,
+		)
+		os.Exit(1)
+	}
+	return u
+}
+
+func post(client *http.Client, u string, md []byte, keeperID string) {
+	const fName = "post"
+	_, err := net.Post(client, u, md)
+	if err != nil {
+		log.Log().Warn(fName, "message",
+			"Failed to post",
+			"err", err, "keeper_id", keeperID)
+		os.Exit(1)
 	}
 }
 
-func main() {
-	const fName = "bootstrap.main"
+func MTLSClient(source *workloadapi.X509Source) *http.Client {
+	const fName = "MTLSClient"
+	client, err := network.CreateMTLSClientWithPredicate(
+		source, func(peerId string) bool {
+			return spiffeid.IsKeeper(env.TrustRootForKeeper(), peerId)
+		},
+	)
+	if err != nil {
+		log.Log().Warn(fName,
+			"message", "Failed to create mTLS client",
+			"err", err)
+		os.Exit(1)
+	}
+	return client
+}
+
+func rootShares() []secretsharing.Share {
+	const fName = "rootShares"
 
 	var rootKeySeed [32]byte
-	// Security: Ensure the rootKeySeed is zeroed out after use.
-	defer func() {
-		mem.ClearRawBytes(&rootKeySeed)
-	}()
-
 	if _, err := rand.Read(rootKeySeed[:]); err != nil {
 		log.Fatal(err.Error())
 	}
@@ -90,6 +149,7 @@ func main() {
 
 	if err := rootSecret.UnmarshalBinary(rootKeySeed[:]); err != nil {
 		log.FatalLn(fName + ": Failed to unmarshal key: %v" + err.Error())
+		os.Exit(1)
 	}
 
 	// To compute identical shares, we need an identical seed for the random
@@ -103,57 +163,37 @@ func main() {
 
 	log.Log().Info(fName, "message", "Generated Shamir shares")
 
-	rootShares := ss.Share(n)
+	rs := ss.Share(n)
 
 	// Security: Ensure the root key and shares are zeroed out after use.
-	sanityCheck(rootSecret, rootShares)
-	defer func() {
-		rootSecret.SetUint64(0)
-		for i := range rootShares {
-			rootShares[i].Value.SetUint64(0)
-		}
-	}()
+	validation.SanityCheck(rootSecret, rs)
 
-	var result = make(map[int]*[32]byte)
+	log.Log().Info(fName, "message", "Successfully generated shards.")
+	return rs
+}
 
-	for _, share := range rootShares {
-		log.Log().Info(fName, "message", "Generating share", "share.id", share.ID)
-
-		contribution, err := share.Value.MarshalBinary()
-		if err != nil {
-			log.Log().Error(fName, "message", "Failed to marshal share")
-			return
-		}
-
-		if len(contribution) != 32 {
-			log.Log().Error(fName, "message", "Length of share is unexpected")
-			return
-		}
-
-		bb, err := share.ID.MarshalBinary()
-		if err != nil {
-			log.Log().Error(fName, "message", "Failed to unmarshal share ID")
-			return
-		}
-
-		bigInt := new(big.Int).SetBytes(bb)
-		ii := bigInt.Uint64()
-
-		if len(contribution) != 32 {
-			log.Log().Error(fName, "message", "Length of share is unexpected")
-			return
-		}
-
-		var rs [32]byte
-		copy(rs[:], contribution)
-
-		log.Log().Info(fName, "message", "Generated shares", "len", len(rs))
-
-		result[int(ii)] = &rs
+func source() *workloadapi.X509Source {
+	const fName = "source"
+	source, _, err := spiffe.Source(
+		context.Background(), spiffe.EndpointSocket(),
+	)
+	if err != nil {
+		log.Log().Info(fName, "message", "Failed to create source", "err", err)
+		os.Exit(1)
 	}
+	return source
+}
 
-	log.Log().Info(fName,
-		"message", "Successfully generated pilot recovery shards.")
+func main() {
+	src := source()
+	defer spiffe.CloseSource(src)
 
-	fmt.Println("result", result)
+	for keeperID, keeperAPIRoot := range env.Keepers() {
+		post(
+			MTLSClient(src),
+			keeperEndpoint(keeperAPIRoot),
+			payload(keeperShare(rootShares(), keeperID), keeperID),
+			keeperID,
+		)
+	}
 }
