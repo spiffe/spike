@@ -10,7 +10,60 @@ import (
 	"github.com/spiffe/spike-sdk-go/crypto"
 	"github.com/spiffe/spike-sdk-go/log"
 	"github.com/spiffe/spike-sdk-go/security/mem"
+	"github.com/spiffe/spike/app/bootstrap/internal/env"
 )
+
+// sanityCheck verifies that a set of secret shares can correctly reconstruct
+// the original secret. It performs this verification by attempting to recover
+// the secret using the minimum required number of shares and comparing the
+// result with the original secret.
+//
+// Parameters:
+//   - secret group.Scalar: The original secret to verify against
+//   - shares []shamir.Share: The generated secret shares to verify
+//
+// The function will:
+//   - Calculate the threshold (t) from the environment configuration
+//   - Attempt to reconstruct the secret using exactly t+1 shares
+//   - Compare the reconstructed secret with the original
+//   - Zero out the reconstructed secret regardless of success or failure
+//
+// If the verification fails, the function will:
+//   - Log a fatal error and exit if recovery fails
+//   - Log a fatal error and exit if the recovered secret doesn't match the
+//     original
+//
+// Security:
+//   - The reconstructed secret is always zeroed out to prevent memory leaks
+//   - In case of fatal errors, the reconstructed secret is explicitly zeroed
+//     before logging since deferred functions won't run after log.FatalLn
+func sanityCheck(secret group.Scalar, shares []shamir.Share) {
+	const fName = "sanityCheck"
+
+	t := uint(env.ShamirThreshold() - 1) // Need t+1 shares to reconstruct
+
+	reconstructed, err := shamir.Recover(t, shares[:env.ShamirThreshold()])
+	// Security: Ensure that the secret is zeroed out if the check fails.
+	defer func() {
+		if reconstructed == nil {
+			return
+		}
+		reconstructed.SetUint64(0)
+	}()
+
+	if err != nil {
+		// deferred will not run in a fatal crash.
+		reconstructed.SetUint64(0)
+
+		log.FatalLn(fName + ": Failed to recover: " + err.Error())
+	}
+	if !secret.IsEqual(reconstructed) {
+		// deferred will not run in a fatal crash.
+		reconstructed.SetUint64(0)
+
+		log.FatalLn(fName + ": Recovered secret does not match original")
+	}
+}
 
 func main() {
 	const fName = "bootstrap.main"
@@ -33,9 +86,9 @@ func main() {
 	log.Log().Info(fName, "t", t, "n", n)
 
 	// Create a secret from our 32-byte key:
-	secret := g.NewScalar()
+	rootSecret := g.NewScalar()
 
-	if err := secret.UnmarshalBinary(rootKeySeed[:]); err != nil {
+	if err := rootSecret.UnmarshalBinary(rootKeySeed[:]); err != nil {
 		log.FatalLn(fName + ": Failed to unmarshal key: %v" + err.Error())
 	}
 
@@ -46,23 +99,20 @@ func main() {
 	// If we use `random.Read` instead, then synchronizing shards after Nexus
 	// crashes will be cumbersome and prone to edge-case failures.
 	reader := crypto.NewDeterministicReader(rootKeySeed[:])
-	ss := shamir.New(reader, t, secret)
+	ss := shamir.New(reader, t, rootSecret)
 
 	log.Log().Info(fName, "message", "Generated Shamir shares")
 
-	computedShares := ss.Share(n)
-
-	// secret, computedShares
-	// rootSecret, rootShares
+	rootShares := ss.Share(n)
 
 	// Security: Ensure the root key and shares are zeroed out after use.
-	//sanityCheck(rootSecret, rootShares)
-	//defer func() {
-	//	rootSecret.SetUint64(0)
-	//	for i := range rootShares {
-	//		rootShares[i].Value.SetUint64(0)
-	//	}
-	//}()
+	sanityCheck(rootSecret, rootShares)
+	defer func() {
+		rootSecret.SetUint64(0)
+		for i := range rootShares {
+			rootShares[i].Value.SetUint64(0)
+		}
+	}()
 
 	var result = make(map[int]*[32]byte)
 
@@ -72,18 +122,18 @@ func main() {
 		contribution, err := share.Value.MarshalBinary()
 		if err != nil {
 			log.Log().Error(fName, "message", "Failed to marshal share")
-			return nil
+			return
 		}
 
 		if len(contribution) != 32 {
 			log.Log().Error(fName, "message", "Length of share is unexpected")
-			return nil
+			return
 		}
 
 		bb, err := share.ID.MarshalBinary()
 		if err != nil {
 			log.Log().Error(fName, "message", "Failed to unmarshal share ID")
-			return nil
+			return
 		}
 
 		bigInt := new(big.Int).SetBytes(bb)
@@ -91,7 +141,7 @@ func main() {
 
 		if len(contribution) != 32 {
 			log.Log().Error(fName, "message", "Length of share is unexpected")
-			return nil
+			return
 		}
 
 		var rs [32]byte
