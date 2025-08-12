@@ -1,9 +1,14 @@
+//    \\ SPIKE: Secure your secrets with SPIFFE. — https://spike.ist/
+//  \\\\\ Copyright 2024-present SPIKE contributors.
+// \\\\\\\ SPDX-License-Identifier: Apache-2.0
+
 package validation
 
 import (
 	"github.com/cloudflare/circl/group"
 	shamir "github.com/cloudflare/circl/secretsharing"
 	"github.com/spiffe/spike-sdk-go/log"
+
 	"github.com/spiffe/spike/app/bootstrap/internal/env"
 )
 
