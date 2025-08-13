@@ -18,6 +18,8 @@ sort_by = "weight"
   Go idioms and conventions.
 * Added stricter linting.
 * Added vulnerability checks to SPIKE and SPIKE Go SDK.
+* enabled `GOFIPS140=v1.0.0`, the modern way of enabling FIPS. We 
+  are not using `boringcrypto` anymore.
 
 ## [0.4.2] - 2025-07-19
 
