@@ -34,20 +34,20 @@ RUN go mod download
 COPY . .
 
 # Build the app for the target architecture
-RUN echo "Building SPIKE Keeper on $BUILDPLATFORM targeting $TARGETPLATFORM"
+RUN echo "Building SPIKE Bootstrap on $BUILDPLATFORM targeting $TARGETPLATFORM"
 # buildx.sh requires ./app/$appName/cmd/main.go to exist.
-# Here, $appName is "keeper":
-RUN ./hack/docker/buildx.sh ${TARGETARCH} keeper
+# Here, $appName is "bootstrap":
+RUN ./hack/docker/buildx.sh ${TARGETARCH} bootstrap
 
 # Target distroless base image for CGO_ENABLED apps
 # This image includes a basic runtime environment with libc and
 # other minimal dependencies
-FROM gcr.io/distroless/static AS keeper
+FROM gcr.io/distroless/static AS bootstrap
 # Redefine the ARG in this stage to make it available
 ARG APPVERSION
 
 # Copy with numeric UID ownership
-COPY --from=builder --chown=1000:1000 /workspace/keeper /keeper
+COPY --from=builder --chown=1000:1000 /workspace/bootstrap /bootstrap
 
 # Run as non-root.
 USER 1000
@@ -62,4 +62,4 @@ LABEL maintainers="SPIKE Maintainers <maintainers@spike.ist>" \
       community="https://spike.ist/community/hello/" \
       changelog="https://spike.ist/tracking/changelog/"
 
-ENTRYPOINT ["/keeper"]
+ENTRYPOINT ["/bootstrap"]

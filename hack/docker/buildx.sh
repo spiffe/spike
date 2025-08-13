@@ -43,7 +43,7 @@ case $APP in
   nexus)
     NEEDS_CGO=true
     ;;
-  pilot|keeper)
+  pilot|keeper|bootstrap)
     NEEDS_CGO=false
     ;;
 esac
@@ -58,7 +58,8 @@ else
 fi
 
 # Build with proper flags
-go build -ldflags="-s -w" -o "$APP" /workspace/app/"$APP"/cmd/main.go
+GOFIPS140=v1.0.0 go build -ldflags="-s -w" -o "$APP" \
+  /workspace/app/"$APP"/cmd/main.go
 
 # Verify the binary was created
 if [ -f "$APP" ]; then

@@ -11,18 +11,13 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+
+	"github.com/spiffe/spike/app"
 )
 
-// #region spike:build
-
-// These constants are automatically updated during the release process.
-// Please do not modify them manually.
-
-const SpikeNexusVersion = "0.4.2"
-const SpikePilotVersion = "0.4.2"
-const SpikeKeeperVersion = "0.4.2"
-
-// #endregion
+var SpikeNexusVersion = app.Version
+var SpikePilotVersion = app.Version
+var SpikeKeeperVersion = app.Version
 
 const spikeNexusTombstoneFile = "spike.nexus.bootstrap.tombstone"
 

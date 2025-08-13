@@ -20,6 +20,9 @@ sort_by = "weight"
 * Added vulnerability checks to SPIKE and SPIKE Go SDK.
 * enabled `GOFIPS140=v1.0.0`, the modern way of enabling FIPS. We 
   are not using `boringcrypto` anymore.
+* Separated bootstrap logic into its own app to enable a more deterministic
+  initialization flow. This change will also unlock the ability to run SPIKE
+  Nexus in HA mode.
 
 ## [0.4.2] - 2025-07-19
 

@@ -5,6 +5,10 @@
 package main
 
 import (
+	"flag"
+	"fmt"
+	"os"
+
 	"github.com/spiffe/spike-sdk-go/spiffe"
 
 	"github.com/spiffe/spike/app/bootstrap/internal/env"
@@ -14,6 +18,15 @@ import (
 )
 
 func main() {
+	init := flag.Bool("init", false, "Initialize the bootstrap module")
+	flag.Parse()
+	if !*init {
+		fmt.Println("")
+		fmt.Println("Usage: bootstrap -init")
+		fmt.Println("")
+		os.Exit(1)
+	}
+
 	src := net.Source()
 	defer spiffe.CloseSource(src)
 

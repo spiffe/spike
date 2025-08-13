@@ -7,6 +7,8 @@
 rm keeper
 rm nexus
 rm spike
+rm demo
+rm bootstrap
 
 # Build for the current platform.
 echo "Building SPIKE binaries..."
