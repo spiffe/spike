@@ -78,10 +78,9 @@ func Route(
 				return operator.RouteRestore
 			case a == url.ActionDefault && p == url.NexusOperatorRecover:
 				return operator.RouteRecover
-			// FIXME move constant
-			case a == url.ActionDefault && p == "/v1/cipher/encrypt" && !fullMode:
+			case a == url.ActionDefault && p == url.NexusCipherEncrypt && !fullMode:
 				return cipher.RouteEncrypt
-			case a == url.ActionDefault && p == "/v1/cipher/decrypt" && !fullMode:
+			case a == url.ActionDefault && p == url.NexusCipherDecrypt && !fullMode:
 				return cipher.RouteDecrypt
 			default:
 				return net.Fallback
