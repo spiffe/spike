@@ -16,7 +16,7 @@ import (
 	"github.com/spiffe/spike-sdk-go/log"
 
 	"github.com/spiffe/spike/app/nexus/internal/state/persist"
-	journal "github.com/spiffe/spike/internal/journal"
+	"github.com/spiffe/spike/internal/journal"
 	"github.com/spiffe/spike/internal/net"
 )
 
