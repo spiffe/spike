@@ -126,11 +126,11 @@ func iterateKeepersToBootstrap(
 	return false
 }
 
-func iterateKeepersAndTryRecovery(
+func iterateKeepersAndInitializeState(
 	source *workloadapi.X509Source,
 	successfulKeeperShards map[string]*[32]byte,
 ) bool {
-	const fName = "iterateKeepersAndTryRecovery"
+	const fName = "iterateKeepersAndInitializeState"
 
 	for keeperID, keeperAPIRoot := range env.Keepers() {
 		log.Log().Info(fName, "id", keeperID, "url", keeperAPIRoot)
@@ -164,7 +164,7 @@ func iterateKeepersAndTryRecovery(
 		}
 
 		// No need to erase `ss` because upon successful recovery,
-		// `RecoverBackingStoreUsingKeeperShards()` resets `successfulKeeperShards`
+		// `InitializeBackingStoreFromKeepers()` resets `successfulKeeperShards`
 		// which points to the same shards here. And until recovery, we will keep
 		// a threshold number of shards in memory.
 		ss := make([]ShamirShard, 0)

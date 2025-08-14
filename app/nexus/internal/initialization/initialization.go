@@ -5,65 +5,76 @@
 package initialization
 
 import (
+	"crypto/rand"
+
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
+	"github.com/spiffe/spike-sdk-go/log"
+	"github.com/spiffe/spike-sdk-go/security/mem"
+
+	"github.com/spiffe/spike/app/nexus/internal/env"
 	"github.com/spiffe/spike/app/nexus/internal/initialization/recovery"
+	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 )
 
-// Initialize sets up the system state based on the backend store type.
-// For SQLite backends, it performs bootstrapping and starts periodic shard
-// synchronization.  For in-memory stores, it initializes with a random seed.
+// Initialize initializes the SPIKE Nexus backing store based on the configured
+// backend store type. The function handles two initialization modes:
 //
-// Parameters:
-//   - source: *workloadapi.X509Source for SPIFFE workload API authentication
+// 1. Keeper-based initialization (for SQLite and Lite backend types):
+//   - Initializes the backing store from SPIKE Keeper instances
+//   - Starts a background process for periodic shard synchronization
 //
-// The function will:
-//   - Bootstrap from SQLite if using SQLite backend
-//   - Start periodic shard syncing for SQLite backend
-//   - Initialize with random seed for in-memory backend
+// 2. In-memory initialization (for other backend types):
+//   - Generates a cryptographically secure 32-byte root key
+//   - Initializes the internal state with the generated root key
+//   - Securely zeros out the root key from memory after use
 //
-// Panics if random seed generation fails for in-memory stores.
+// The source parameter provides the X.509 certificates and private keys
+// needed for SPIFFE-based authentication when communicating with SPIKE Keepers.
+//
+// Security considerations:
+//   - Root keys are generated using crypto/rand for cryptographic security
+//   - Memory is explicitly zeroed after use to prevent key material leakage
+//   - The root key is passed by reference to avoid inadvertent copying
+//
+// Note: This function will call log.Fatal and terminate the program if
+// cryptographically secure random number generation fails.
 func Initialize(source *workloadapi.X509Source) {
 	const fName = "Initialize"
 
-	recovery.RecoverBackingStoreUsingKeeperShards(source)
+	requireKeepersToBootstrap := env.BackendStoreType() == env.Sqlite ||
+		env.BackendStoreType() == env.Lite
 
-	//requireBootstrapping := env.BackendStoreType() == env.Sqlite ||
-	//	env.BackendStoreType() == env.Lite
-	//if requireBootstrapping {
-	//	log.Log().Info(fName, "message", "Backend store requires bootstrapping")
-	//
-	//	// Try bootstrapping in a loop.
-	//	// go bootstrap(source)
-	//
-	//	// Lazy evaluation in a loop:
-	//	// If bootstrapping is successful, start a background process to
-	//	// periodically sync shards.
-	//	go recovery.SendShardsPeriodically(source)
-	//
-	//	return
-	//}
+	if requireKeepersToBootstrap {
+		// Initialize the backing store from SPIKE Keeper instances.
+		// This is only required when the SPIKE Nexus needs bootstrapping.
+		// For modes where bootstrapping is not required (such as in-memory mode),
+		//SPIKE Nexus should be initialized internally.
+		recovery.InitializeBackingStoreFromKeepers(source)
 
-	//log.Log().Info(fName,
-	//	"message", "Backend store does not require bootstrapping")
-	//
-	//// Security: Use a static byte array and pass it as a pointer to avoid
-	//// inadvertent pass-by-value copying / memory allocation.
-	//var seed [32]byte
-	//
-	//// Security: Zero-out seed after use.
-	//defer func() {
-	//	// Note: Each function must zero-out ONLY the items it has created.
-	//	// If it is borrowing an item by reference, it must not zero-out the item
-	//	// and let the owner zero-out the item.
-	//	//
-	//	// For example, `seed` should be reset here,
-	//	// but not in `state.Initialize()`.
-	//	mem.ClearRawBytes(&seed)
-	//}()
-	//
-	//if _, err := rand.Read(seed[:]); err != nil {
-	//	log.Fatal(err.Error())
-	//}
-	//
-	//state.Initialize(&seed)
+		// Lazy evaluation in a loop:
+		// If bootstrapping is successful, start a background process to
+		// periodically sync shards.
+		go recovery.SendShardsPeriodically(source)
+
+		return
+	}
+
+	log.Log().Info(fName, "message", "Will not use SPIKE Keepers.")
+
+	// Security: Use a static byte array and pass it as a pointer to avoid
+	// inadvertent pass-by-value copying / memory allocation.
+	var rootKey [32]byte
+	// Security: Zero-out rootKey after persisted internally.
+	defer func() {
+		// Note: Each function must zero-out ONLY the items it has created.
+		// If it is borrowing an item by reference, it must not zero-out the item
+		// and let the owner zero-out the item.
+		mem.ClearRawBytes(&rootKey)
+	}()
+
+	if _, err := rand.Read(rootKey[:]); err != nil {
+		log.Fatal(err.Error())
+	}
+
+	state.Initialize(&rootKey)
 }

@@ -8,7 +8,6 @@ import (
 	"context"
 	"crypto/rand"
 	"errors"
-	"fmt"
 	"math/big"
 	"time"
 
@@ -27,7 +26,7 @@ var (
 	ErrRecoveryRetry = errors.New("recovery failed; retrying")
 )
 
-// RecoverBackingStoreUsingKeeperShards iterates through keepers until
+// InitializeBackingStoreFromKeepers iterates through keepers until
 // you get two shards.
 //
 // Any 400 and 5xx response that a SPIKE Keeper gives is likely temporary.
@@ -47,10 +46,8 @@ var (
 // Parameters:
 //   - source *workloadapi.X509Source: An X509Source used for authenticating
 //     with SPIKE Keeper nodes
-//
-// TODO: the method name will likely need a rename; we are not recovering anymore; it's part of the core flow.
-func RecoverBackingStoreUsingKeeperShards(source *workloadapi.X509Source) {
-	const fName = "RecoverBackingStoreUsingKeeperShards"
+func InitializeBackingStoreFromKeepers(source *workloadapi.X509Source) {
+	const fName = "InitializeBackingStoreFromKeepers"
 
 	log.Log().Info(fName,
 		"message", "Recovering backing store using keeper shards")
@@ -74,34 +71,28 @@ func RecoverBackingStoreUsingKeeperShards(source *workloadapi.X509Source) {
 	_, err := retry.Do(ctx, func() (bool, error) {
 		log.Log().Info(fName, "message", "retry:"+time.Now().String())
 
-		recoverySuccessful := iterateKeepersAndTryRecovery(
+		initSuccessful := iterateKeepersAndInitializeState(
 			source, successfulKeeperShards,
 		)
-		if recoverySuccessful {
-			log.Log().Info(fName, "message", "Recovery successful")
+		if initSuccessful {
+			log.Log().Info(fName, "message", "Initialization successful.")
 			return true, nil
 		}
 
-		log.Log().Warn(fName, "message", "Recovery unsuccessful. Will retry.")
-		log.Log().Warn(fName, "message",
-			fmt.Sprintf(
-				"Successful keepers: %d", len(successfulKeeperShards),
-			),
-		)
 		log.Log().Warn(fName,
-			"message", "!!! YOU MAY NEED TO MANUALLY BOOSTRAP !!!")
-		log.Log().Info(fName,
-			"message", "Waiting for keepers to respond")
+			"message", "Initialization unsuccessful. Will retry.",
+			"keepersSoFar", len(successfulKeeperShards),
+		)
 		return false, ErrRecoveryRetry
 	},
 		retry.WithBackOffOptions(
 			retry.WithMaxInterval(env.RecoveryOperationMaxInterval()),
-			retry.WithMaxElapsedTime(env.RecoveryOperationTimeout()),
+			retry.WithMaxElapsedTime(0), // Retry forever.
 		),
 	)
 
 	if err != nil {
-		log.Log().Warn("Recovery failed; timed out")
+		log.Log().Warn("Initialization failed; timed out")
 		log.Log().Warn("You need to manually bootstrap SPIKE Nexus")
 	}
 }
