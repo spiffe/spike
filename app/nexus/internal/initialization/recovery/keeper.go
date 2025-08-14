@@ -7,7 +7,6 @@ package recovery
 import (
 	"encoding/json"
 	"net/url"
-	"os"
 	"strconv"
 
 	"github.com/cloudflare/circl/group"
@@ -20,7 +19,6 @@ import (
 
 	"github.com/spiffe/spike/app/nexus/internal/env"
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
-	"github.com/spiffe/spike/internal/config"
 )
 
 func iterateKeepersToBootstrap(
@@ -97,28 +95,6 @@ func iterateKeepersToBootstrap(
 
 		if len(successfulKeepers) == env.ShamirShares() {
 			log.Log().Info(fName, "message", "All keepers initialized")
-
-			tombstone := config.SpikeNexusTombstonePath()
-
-			// Create the tombstone file to mark SPIKE Nexus as bootstrapped.
-			// 0600 to align with the principle of least privilege. We can change the
-			// permission if it doesn't work out.
-			err = os.WriteFile(
-				tombstone,
-				[]byte("spike.nexus.bootstrapped=true"), 0600,
-			)
-			if err != nil {
-				// Although the tombstone file is just a marker, it's still important.
-				// If SPIKE Nexus cannot create the tombstone file, or if someone
-				// deletes it, this can slightly change system operations.
-				// To be on the safe side, we let SPIKE Nexus crash. If we don't let
-				// it crash, not being able to write to the data volume (where the
-				// tombstone file would be) can be a precursor of other problems that
-				// can affect the reliability of the backing store.
-				log.FatalLn(fName + ": failed to create tombstone file: " + err.Error())
-			}
-
-			log.Log().Info(fName, "message", "Tombstone file created successfully")
 			return true
 		}
 	}
