@@ -5,6 +5,7 @@
 package main
 
 import (
+	"crypto/fips140"
 	"flag"
 	"fmt"
 	"os"
@@ -32,6 +33,8 @@ func main() {
 
 	src := net.Source()
 	defer spiffe.CloseSource(src)
+
+	log.Log().Info(fName, "FIPS 140.3 enabled", fips140.Enabled())
 
 	log.Log().Info(
 		fName, "message", "Sending shards to SPIKE Keeper instances...",
