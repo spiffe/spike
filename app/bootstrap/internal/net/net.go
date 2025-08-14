@@ -107,7 +107,7 @@ func Payload(share secretsharing.Share, keeperID string) []byte {
 func Post(client *http.Client, u string, md []byte, keeperID string) {
 	const fName = "post"
 
-	fmt.Printf("POST: %x\n", sha256.Sum256(md))
+	log.Log().Info(fName, "payload", fmt.Sprintf("%x", sha256.Sum256(md)))
 
 	_, err := net.Post(client, u, md)
 	if err != nil {
@@ -117,5 +117,5 @@ func Post(client *http.Client, u string, md []byte, keeperID string) {
 		os.Exit(1)
 	}
 
-	fmt.Println("POST: done")
+	log.Log().Info(fName, "message", "done")
 }

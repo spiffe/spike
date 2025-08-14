@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/spiffe/spike-sdk-go/log"
 	"github.com/spiffe/spike-sdk-go/spiffe"
 
 	"github.com/spiffe/spike/app/bootstrap/internal/env"
@@ -18,6 +19,8 @@ import (
 )
 
 func main() {
+	const fName = "boostrap.main"
+
 	init := flag.Bool("init", false, "Initialize the bootstrap module")
 	flag.Parse()
 	if !*init {
@@ -30,17 +33,17 @@ func main() {
 	src := net.Source()
 	defer spiffe.CloseSource(src)
 
-	fmt.Println("Sending shards to SPIKE Keeper instances...")
-	fmt.Println()
+	log.Log().Info(
+		fName, "message", "Sending shards to SPIKE Keeper instances...",
+	)
 	for keeperID, keeperAPIRoot := range env.Keepers() {
-		fmt.Printf(">>>  %s\n", keeperID)
+		log.Log().Info(fName, "keeper ID", keeperID)
 		net.Post(
 			net.MTLSClient(src),
 			url.KeeperEndpoint(keeperAPIRoot),
 			net.Payload(state.KeeperShare(state.RootShares(), keeperID), keeperID),
 			keeperID,
 		)
-		fmt.Println("<<<")
 	}
-	fmt.Println("Everything is awesome.")
+	log.Log().Info(fName, "message", "Sent shards to SPIKE Keeper instances.")
 }
