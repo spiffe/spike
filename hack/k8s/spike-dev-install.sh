@@ -54,7 +54,7 @@ kubectl get namespaces | grep spike || echo "No spike namespaces found"
 
 helm upgrade --install -n spire-mgmt spire-crds spire-crds \
   --repo https://spiffe.github.io/helm-charts-hardened/ \
-  --version 0.26.1 --create-namespace
+  --version 0.5.0 --create-namespace
 
 echo "Sleeping for 15 secs before installing SPIRE and SPIKE..."
 sleep 15
@@ -62,7 +62,7 @@ sleep 15
 helm upgrade --install -n spire-mgmt spiffe spire \
   --repo https://spiffe.github.io/helm-charts-hardened/ \
   --version 0.26.1 \
-  -f ./spike/config/helm/values-dev.yaml
+  -f ./config/helm/values-dev.yaml
 
 echo "Sleeping for 15 secs..."
 sleep 15
