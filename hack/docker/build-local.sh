@@ -10,7 +10,7 @@
 set -e
 
 export SPIKE_VERSION="dev"
-COMPONENTS=("keeper" "nexus" "pilot" "demo")
+COMPONENTS=("keeper" "nexus" "pilot" "demo" "bootstrap")
 PLATFORMS="linux/amd64,linux/arm64"
 
 # Set up buildx with docker-container driver if not already set up

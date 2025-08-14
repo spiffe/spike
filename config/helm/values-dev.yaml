@@ -2,18 +2,16 @@
 #  \\\\\ Copyright 2024-present SPIKE contributors.
 # \\\\\\\ SPDX-License-Identifier: Apache-2.0
 
-# SPIRE Helm Charts
-# See https://github.com/spiffe/helm-charts-hardened for documentation
-# and configuration options.
-
-# This `values` file shows additional customization options that you can use
-# for your SPIKE deployment.
+# SPIRE Helm Charts for SPIKE development.
 #
-# If you want to "just test out" SPIKE without any configuration hurdles,
-# you might be better off trying out the `values.yaml` instead.
+# This `values` file contains customizations to align SPIRE helm charts settings
+# with the default environment variable and configurations that SPIKE
+# development environment expects. Additionally, we override the image
+# repositories to `localhost:5000` to enable testing local container images
+# that have not been published yet.
 
 global:
-  openshift: false # If running on openshift, set to true
+  openshift: false
   spire:
     recommendations:
       enabled: true
@@ -59,6 +57,19 @@ spire-server:
   controllerManager:
     identities:
       clusterSPIFFEIDs:
+        spike-bootstrap:
+          type: raw
+          enabled: true
+          spiffeIDTemplate: spiffe://{{ .TrustDomain }}/spike/bootstrap/{{ .PodMeta.Name }}
+          podSelector:
+            matchLabels:
+              component: spike-bootstrap
+          namespaceSelector:
+            matchExpressions:
+              - key: kubernetes.io/metadata.name
+                operator: In
+                values:
+                  - spike
         spike-keeper:
           type: raw
           enabled: true
