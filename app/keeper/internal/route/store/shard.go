@@ -47,6 +47,8 @@ func RouteShard(
 	const fName = "routeShard"
 	journal.AuditRequest(fName, r, audit, journal.AuditRead)
 
+	// TODO: only Nexus can read the shard, Bootstrap cannot read the shard.
+
 	requestBody := net.ReadRequestBody(w, r)
 	if requestBody == nil {
 		return errors.ErrReadFailure

@@ -30,12 +30,17 @@ func main() {
 	src := net.Source()
 	defer spiffe.CloseSource(src)
 
+	fmt.Println("Sending shards to Keepers...")
 	for keeperID, keeperAPIRoot := range env.Keepers() {
+		fmt.Printf(">>>>  %s\n", keeperID)
 		net.Post(
 			net.MTLSClient(src),
 			url.KeeperEndpoint(keeperAPIRoot),
 			net.Payload(state.KeeperShare(state.RootShares(), keeperID), keeperID),
 			keeperID,
 		)
+		fmt.Println("<<<<")
+		fmt.Println()
 	}
+	fmt.Println("Everything is awesome.")
 }

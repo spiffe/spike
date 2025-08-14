@@ -12,9 +12,9 @@ import (
 	"github.com/spiffe/spike-sdk-go/security/mem"
 	"github.com/spiffe/spike-sdk-go/spiffe"
 	"github.com/spiffe/spike-sdk-go/spiffeid"
+	"github.com/spiffe/spike/app/nexus/internal/initialization/recovery"
 
 	"github.com/spiffe/spike/app/nexus/internal/env"
-	"github.com/spiffe/spike/app/nexus/internal/initialization"
 	"github.com/spiffe/spike/app/nexus/internal/net"
 	"github.com/spiffe/spike/internal/config"
 )
@@ -58,7 +58,9 @@ func main() {
 		log.FatalF("Authenticate: SPIFFE ID %s is not valid.\n", selfSpiffeid)
 	}
 
-	initialization.Initialize(source)
+	// initialization.Initialize(source)
+	// TODO: this should run only when the mode requires shards.
+	recovery.RecoverBackingStoreUsingKeeperShards(source)
 
 	log.Log().Info(appName, "message", fmt.Sprintf(
 		"Started service: %s v%s",

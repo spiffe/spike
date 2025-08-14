@@ -47,6 +47,8 @@ var (
 // Parameters:
 //   - source *workloadapi.X509Source: An X509Source used for authenticating
 //     with SPIKE Keeper nodes
+//
+// TODO: the method name will likely need a rename; we are not recovering anymore; it's part of the core flow.
 func RecoverBackingStoreUsingKeeperShards(source *workloadapi.X509Source) {
 	const fName = "RecoverBackingStoreUsingKeeperShards"
 

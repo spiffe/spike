@@ -31,6 +31,7 @@ go.work.sum
 /nexus
 /pilot
 /spike
+/bootstrap
 /keeper-arm
 /keeper-darwin
 /keeper-x86
@@ -40,6 +41,9 @@ go.work.sum
 /spike-arm
 /spike-darwin
 /spike-x86
+/bootstrap-arm
+/bootstrap-darwin
+/bootstrap-x86
 /keeper-darwin-arm64
 /keeper-linux-amd64
 /nexus-linux-amd64
@@ -49,6 +53,9 @@ go.work.sum
 /spike-darwin-arm64
 /spike-linux-amd64
 /spike-linux-arm64
+/bootstrap-darwin-arm64
+/bootstrap-linux-amd64
+/bootstrap-linux-arm64
 
 # IDE
 .idea
@@ -75,6 +82,9 @@ nexus-linux-arm64.sum.txt
 spike-darwin-arm64.sum.txt
 spike-linux-amd64.sum.txt
 spike-linux-arm64.sum.txt
+bootstrap-darwin-arm64.sum.txt
+bootstrap-linux-amd64.sum.txt
+bootstrap-linux-arm64.sum.txt
 
 # logs
 *.log
