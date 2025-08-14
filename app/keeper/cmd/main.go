@@ -58,6 +58,6 @@ func main() {
 		fmt.Sprintf("Started service: %s v%s", appName, config.SpikeKeeperVersion),
 	)
 
-	// Serve the app:
+	// Serve the app.
 	net.Serve(appName, source)
 }
