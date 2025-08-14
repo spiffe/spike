@@ -38,6 +38,10 @@ docker-push:
 deploy-local:
 	./hack/k8s/spike-install.sh
 
+# 6.x. TODO: new target to test the bootstrapping in k8s.
+deploy-dev-local:
+	./hack/k8s/spike-dev-install.sh
+
 # Shell into SPIKE Pilot.
 exec-spike:
 	./hack/k8s/spike-sh.sh
