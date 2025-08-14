@@ -23,6 +23,7 @@ sort_by = "weight"
 * Separated bootstrap logic into its own app to enable a more deterministic
   initialization flow. This change will also unlock the ability to run SPIKE
   Nexus in HA mode.
+* **BREAKING**: SPIKE now requires a separate initializer to begin is lifecycle.
 
 ## [0.4.2] - 2025-07-19
 
