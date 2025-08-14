@@ -10,7 +10,6 @@ import (
 	"strconv"
 
 	"github.com/cloudflare/circl/group"
-	"github.com/cloudflare/circl/secretsharing"
 	shamir "github.com/cloudflare/circl/secretsharing"
 	"github.com/spiffe/spike-sdk-go/crypto"
 	"github.com/spiffe/spike-sdk-go/log"
@@ -28,7 +27,7 @@ import (
 // ensure identical share generation across restarts, which is critical for
 // synchronization after crashes. The function performs security validation and
 // zeroing of sensitive data after use.
-func RootShares() []secretsharing.Share {
+func RootShares() []shamir.Share {
 	const fName = "rootShares"
 
 	var rootKeySeed [32]byte
@@ -79,11 +78,11 @@ func RootShares() []secretsharing.Share {
 // Keeper ID cannot be converted to an integer or if no matching share is found
 // for the specified keeper.
 func KeeperShare(
-	rootShares []secretsharing.Share, keeperID string,
-) secretsharing.Share {
+	rootShares []shamir.Share, keeperID string,
+) shamir.Share {
 	const fName = "keeperShare"
 
-	var share secretsharing.Share
+	var share shamir.Share
 	for _, sr := range rootShares {
 		kid, err := strconv.Atoi(keeperID)
 		if err != nil {
