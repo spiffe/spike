@@ -6,7 +6,9 @@ package net
 
 import (
 	"context"
+	"crypto/sha256"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"os"
 
@@ -104,6 +106,9 @@ func Payload(share secretsharing.Share, keeperID string) []byte {
 // program with exit code 1 if the POST request fails.
 func Post(client *http.Client, u string, md []byte, keeperID string) {
 	const fName = "post"
+
+	fmt.Printf("POST: %x\n", sha256.Sum256(md))
+
 	_, err := net.Post(client, u, md)
 	if err != nil {
 		log.Log().Warn(fName, "message",
@@ -111,4 +116,6 @@ func Post(client *http.Client, u string, md []byte, keeperID string) {
 			"err", err, "keeper_id", keeperID)
 		os.Exit(1)
 	}
+
+	fmt.Println("POST: done")
 }
