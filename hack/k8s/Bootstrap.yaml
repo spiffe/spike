@@ -62,8 +62,6 @@ spec:
           value: "2"
         - name: SPIKE_NEXUS_KEEPER_PEERS
           value: "https://spiffe-spike-keeper-0.spiffe-spike-keeper-headless:8443,https://spiffe-spike-keeper-1.spiffe-spike-keeper-headless:8443,https://spiffe-spike-keeper-2.spiffe-spike-keeper-headless:8443"
-        - name: SPIKE_BOOTSTRAP_VERSION
-          value: "1.0.0"
         image: localhost:5000/spike-bootstrap:dev
         imagePullPolicy: IfNotPresent
         name: spiffe-spike-bootstrap
