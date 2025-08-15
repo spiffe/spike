@@ -778,12 +778,8 @@ and <code>KeeperVersion</code> in <code>$WORKSPACE/spike/internal/config/config.
 <li>Update the documentation snapshots page.</li>
 <li>Run <code>./hack/cover.sh</code> to update and send the coverage report to the public
 docs.</li>
-<li>Make sure version numbers in the code are updated to reflect the release:</li>
+<li>Make sure you update <code>./app/VERSION.txt</code> with the new version.</li>
 </ol>
-<pre data-lang="go" style="background-color:#2b303b;color:#c0c5ce;" class="language-go "><code class="language-go" data-lang="go"><span style="color:#b48ead;">const </span><span style="color:#bf616a;">SpikeNexusVersion </span><span>= &quot;</span><span style="color:#a3be8c;">0.4.2</span><span>&quot;
-</span><span style="color:#b48ead;">const </span><span style="color:#bf616a;">SpikePilotVersion </span><span>= &quot;</span><span style="color:#a3be8c;">0.4.2</span><span>&quot;
-</span><span style="color:#b48ead;">const </span><span style="color:#bf616a;">SpikeKeeperVersion </span><span>= &quot;</span><span style="color:#a3be8c;">0.4.2</span><span>&quot;
-</span></code></pre>
 <p>Release process:</p>
 <ul>
 <li>Publish documentation by running <code>zola build</code> in <code>./docs-src</code> and then
@@ -902,6 +898,7 @@ not that frequent, it’s okay to do these checks manually.</p>
 </span></code></pre>
 <p>If everything went well so far, we can assume that the current <strong>SPIKE</strong> release
 is in a good enough shape.</p>
+<p>&nbsp;</p>
 <hr />
 <ul>
 <li><a href="https://spike.ist/operations/build/">SPIKE Cross-Platform Build</a></li>

@@ -276,7 +276,7 @@ All policy configurations are validated to ensure:
 YAML files can be easily integrated into GitOps workflows:
 
 1. **Store policy YAML files in a Git repository**
-   ```text
+   ```txt
    policies/
    ├── web-service-policy.yaml
    ├── database-policy.yaml
@@ -417,7 +417,7 @@ specified rules and allow for flexibility with wildcards or exact matches.
 
 ### Path Pattern Examples
 
-```text
+```txt
 secrets/               # All resources in the secrets directory
 secrets/database/      # Only resources in the database subdirectory  
 secrets/database/creds # Only the specific creds resource
