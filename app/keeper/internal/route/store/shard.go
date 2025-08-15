@@ -14,7 +14,7 @@ import (
 	"github.com/spiffe/spike-sdk-go/security/mem"
 
 	"github.com/spiffe/spike/app/keeper/internal/state"
-	journal "github.com/spiffe/spike/internal/journal"
+	"github.com/spiffe/spike/internal/journal"
 	"github.com/spiffe/spike/internal/net"
 )
 
@@ -46,8 +46,6 @@ func RouteShard(
 ) error {
 	const fName = "routeShard"
 	journal.AuditRequest(fName, r, audit, journal.AuditRead)
-
-	// TODO: only Nexus can read the shard, Bootstrap cannot read the shard.
 
 	requestBody := net.ReadRequestBody(w, r)
 	if requestBody == nil {

@@ -48,7 +48,7 @@ func Initialize(source *workloadapi.X509Source) {
 		// Initialize the backing store from SPIKE Keeper instances.
 		// This is only required when the SPIKE Nexus needs bootstrapping.
 		// For modes where bootstrapping is not required (such as in-memory mode),
-		//SPIKE Nexus should be initialized internally.
+		// SPIKE Nexus should be initialized internally.
 		recovery.InitializeBackingStoreFromKeepers(source)
 
 		// Lazy evaluation in a loop:
@@ -58,6 +58,10 @@ func Initialize(source *workloadapi.X509Source) {
 
 		return
 	}
+
+	// Internal bootstrapping is required.
+	// Initialize the backing store with a cryptographically secure root key.
+	// Do not use SPIKE Keepers.
 
 	log.Log().Info(fName, "message", "Will not use SPIKE Keepers.")
 

@@ -92,8 +92,10 @@ func InitializeBackingStoreFromKeepers(source *workloadapi.X509Source) {
 	)
 
 	if err != nil {
-		log.Log().Warn("Initialization failed; timed out")
-		log.Log().Warn("You need to manually bootstrap SPIKE Nexus")
+		log.Log().Error(fName,
+			"message", "Initialization failed",
+			"err", err.Error(),
+		)
 	}
 }
 
