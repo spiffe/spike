@@ -8,6 +8,7 @@ import (
 	"crypto/fips140"
 	"flag"
 	"fmt"
+	"os"
 
 	"github.com/spiffe/spike-sdk-go/log"
 	"github.com/spiffe/spike-sdk-go/spiffe"
@@ -31,6 +32,14 @@ func main() {
 		fmt.Println("")
 		// os.Exit(1)
 		system.KeepAlive()
+		return
+	}
+
+	// Check if we should skip bootstrap (set by init container)
+	if _, err := os.Stat("/shared/skip-bootstrap"); err == nil {
+		log.Log().Info(fName, "message", "Bootstrap already completed previously. Skipping.")
+		fmt.Println("Bootstrap already completed previously. Exiting.")
+		system.KeepAlive() // Temporary.
 		return
 	}
 
@@ -74,7 +83,6 @@ func main() {
 	}
 	log.Log().Info(fName, "message", "Sent shards to SPIKE Keeper instances.")
 
-	fmt.Println("Keeping the process alive for debugging purposes")
-
-	system.KeepAlive()
+	fmt.Println("Bootstrap completed successfully!")
+	system.KeepAlive() // Temporary.
 }
