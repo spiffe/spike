@@ -13,8 +13,6 @@ import (
 	"github.com/spiffe/spike-sdk-go/log"
 	"github.com/spiffe/spike-sdk-go/spiffe"
 	svid "github.com/spiffe/spike-sdk-go/spiffeid"
-	"github.com/spiffe/spike-sdk-go/system"
-
 	"github.com/spiffe/spike/app/bootstrap/internal/env"
 	"github.com/spiffe/spike/app/bootstrap/internal/net"
 	"github.com/spiffe/spike/app/bootstrap/internal/state"
@@ -30,8 +28,7 @@ func main() {
 		fmt.Println("")
 		fmt.Println("Usage: bootstrap -init")
 		fmt.Println("")
-		// os.Exit(1)
-		system.KeepAlive()
+		os.Exit(1)
 		return
 	}
 
@@ -39,7 +36,7 @@ func main() {
 	if _, err := os.Stat("/shared/skip-bootstrap"); err == nil {
 		log.Log().Info(fName, "message", "Bootstrap already completed previously. Skipping.")
 		fmt.Println("Bootstrap already completed previously. Exiting.")
-		system.KeepAlive() // Temporary.
+		os.Exit(0)
 		return
 	}
 
@@ -47,10 +44,8 @@ func main() {
 	defer spiffe.CloseSource(src)
 	sv, err := src.GetX509SVID()
 	if err != nil {
-		//log.FatalF(fName, "Failed to get X.509 SVID: %s\n", err.Error())
-		//os.Exit(1)
-		fmt.Println("Failed to get X.509 SVID: ", err.Error())
-		system.KeepAlive()
+		log.FatalF(fName, "Failed to get X.509 SVID: %s\n", err.Error())
+		os.Exit(1)
 		return
 	}
 
@@ -58,17 +53,13 @@ func main() {
 		log.Log().Error(
 			"Authenticate: You need a 'boostrap' SPIFFE ID to use this command.",
 		)
-		//log.FatalF(
-		//	"Authenticate: You are not authorized to use this command (%s).\n",
-		//	sv.ID.String(),
-		//)
-		//os.Exit(1)
-		system.KeepAlive()
+		os.Exit(1)
 		return
 	}
 
-	log.Log().Info(fName, "FIPS 140.3 enabled", fips140.Enabled())
-
+	log.Log().Info(
+		fName, "FIPS 140.3 enabled", fips140.Enabled(),
+	)
 	log.Log().Info(
 		fName, "message", "Sending shards to SPIKE Keeper instances...",
 	)
@@ -81,8 +72,8 @@ func main() {
 			keeperID,
 		)
 	}
-	log.Log().Info(fName, "message", "Sent shards to SPIKE Keeper instances.")
 
+	log.Log().Info(fName, "message", "Sent shards to SPIKE Keeper instances.")
 	fmt.Println("Bootstrap completed successfully!")
-	system.KeepAlive() // Temporary.
+	os.Exit(0)
 }

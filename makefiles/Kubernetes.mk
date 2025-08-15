@@ -74,6 +74,7 @@ deploy-local:
 # 6.x. TODO: new target to test the bootstrapping in k8s.
 deploy-dev-local:
 	./hack/k8s/spike-dev-install.sh
+	./hack/k8s/spike-job-install.sh
 
 # Shell into SPIKE Pilot.
 exec-spike:
