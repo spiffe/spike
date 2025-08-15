@@ -1,0 +1,92 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app.kubernetes.io/instance: spiffe
+    app.kubernetes.io/name: spike-pilot
+    app.kubernetes.io/version: 0.4.2
+    helm.sh/chart: spike-pilot-0.1.0
+  name: spiffe-spike-pilot
+  namespace: spike
+  resourceVersion: "2891"
+  uid: d523d334-bbc1-40ac-8f88-27a38955a71a
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: spiffe
+      app.kubernetes.io/name: spike-pilot
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app.kubernetes.io/instance: spiffe
+        app.kubernetes.io/name: spike-pilot
+        component: spike-pilot
+        release: spiffe
+        release-namespace: spire-mgmt
+    spec:
+      containers:
+        - command:
+          - /bootstrap
+          - -init
+          env:
+          - name: SPIKE_NEXUS_API_URL
+            value: https://spiffe-spike-nexus:443
+          - name: SPIFFE_ENDPOINT_SOCKET
+            value: unix:///spiffe-workload-api/spire-agent.sock
+          - name: SPIKE_SYSTEM_LOG_LEVEL
+            value: DEBUG
+          - name: SPIKE_TRUST_ROOT
+            value: spike.ist
+          - name: SPIKE_NEXUS_SHAMIR_SHARES
+            value: "3"
+          - name: SPIKE_NEXUS_SHAMIR_THRESHOLD
+            value: "2"
+          - name: SPIKE_NEXUS_KEEPER_PEERS
+            value: "https://spiffe-spike-keeper-0.spiffe-spike-keeper-headless:8443,https://spiffe-spike-keeper-1.spiffe-spike-keeper-headless:8443,https://spiffe-spike-keeper-2.spiffe-spike-keeper-headless:8443"
+          image: localhost:5000/spike-bootstrap:dev
+          imagePullPolicy: IfNotPresent
+          name: spiffe-spike-bootstrap
+          resources: {}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            seccompProfile:
+              type: RuntimeDefault
+          volumeMounts:
+            - mountPath: /spiffe-workload-api
+              name: spiffe-workload-api
+              readOnly: true
+      dnsPolicy: ClusterFirst
+      securityContext:
+        fsGroup: 1000
+        fsGroupChangePolicy: OnRootMismatch
+        runAsGroup: 1000
+        runAsUser: 1000
+      serviceAccountName: spiffe-spike-bootstrap
+      volumes:
+        - csi:
+            driver: csi.spiffe.io
+            readOnly: true
+          name: spiffe-workload-api
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app.kubernetes.io/instance: spiffe
+    app.kubernetes.io/name: spike-bootstrap
+  name: spiffe-spike-bootstrap
+  namespace: spike

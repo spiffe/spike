@@ -12,6 +12,7 @@ import (
 
 	"github.com/spiffe/spike-sdk-go/log"
 	"github.com/spiffe/spike-sdk-go/spiffe"
+	svid "github.com/spiffe/spike-sdk-go/spiffeid"
 
 	"github.com/spiffe/spike/app/bootstrap/internal/env"
 	"github.com/spiffe/spike/app/bootstrap/internal/net"
@@ -33,6 +34,22 @@ func main() {
 
 	src := net.Source()
 	defer spiffe.CloseSource(src)
+	sv, err := src.GetX509SVID()
+	if err != nil {
+		log.FatalF(fName, "Failed to get X.509 SVID: %s\n", err.Error())
+		os.Exit(1)
+	}
+
+	if !svid.IsBootstrap(env.TrustRoot(), sv.ID.String()) {
+		log.Log().Error(
+			"Authenticate: You need a 'boostrap' SPIFFE ID to use this command.",
+		)
+		log.FatalF(
+			"Authenticate: You are not authorized to use this command (%s).\n",
+			sv.ID.String(),
+		)
+		os.Exit(1)
+	}
 
 	log.Log().Info(fName, "FIPS 140.3 enabled", fips140.Enabled())
 

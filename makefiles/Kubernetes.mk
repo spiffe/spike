@@ -27,6 +27,7 @@ docker-build:
 docker-forward-registry:
 	./hack/docker/minikube-forward-registry.sh
 
+# TODO: docs > SPIKE on Kubernetes
 # TODO: move the script and makefile
 # TODO: another attempt: directly load images (for WSL integration)
 # TODO: add some of these comments to the user-facing docs too.

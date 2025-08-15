@@ -15,6 +15,14 @@
   </kubernetification>
   <immediate-backlog>
       <issue>
+          // I should be Nexus.
+          if !spiffeid.IsNexus(env.TrustRoot(), selfSpiffeid) {
+          log.FatalF("Authenticate: SPIFFE ID %s is not valid.\n", selfSpiffeid)
+          }
+
+          use the similar trust.Authenticate(...) pattern instead of these if checks.
+      </issue>
+      <issue>
           maybe for vsecm: plugin-based dynamic secrets to access third-party
           services:
           https://developer.hashicorp.com/vault/tutorials/get-started/understand-static-dynamic-secrets
