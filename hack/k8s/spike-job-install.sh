@@ -8,8 +8,9 @@
 
 # Wait for the spike keeper statefulset to be ready
 echo "Waiting for spiffe-spike-keeper statefulset to be ready..."
-kubectl wait --for=condition=ready \
-  --timeout=300s statefulset/spiffe-spike-keeper -n spike
+kubectl wait --for=jsonpath='{.status.readyReplicas}'=3 \
+  statefulset/spiffe-spike-keeper -n spike \
+  --timeout=300s
 
 kubectl apply -f ./hack/k8s/Bootstrap.yaml
 
