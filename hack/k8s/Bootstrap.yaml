@@ -1,37 +1,29 @@
+#    \\ SPIKE: Secure your secrets with SPIFFE. — https://spike.ist/
+#  \\\\\ Copyright 2024-present SPIKE contributors.
+# \\\\\\\ SPDX-License-Identifier: Apache-2.0
+
+# TODO: temporary, until we add boostrap to helm-charts-hardened.
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
     app.kubernetes.io/instance: spiffe
-    app.kubernetes.io/name: spike-pilot
-    app.kubernetes.io/version: 0.4.2
-    helm.sh/chart: spike-pilot-0.1.0
-  name: spiffe-spike-pilot
+    app.kubernetes.io/name: spike-bootstrap
+  name: spiffe-spike-bootstrap
   namespace: spike
-  resourceVersion: "2891"
-  uid: d523d334-bbc1-40ac-8f88-27a38955a71a
 spec:
-  progressDeadlineSeconds: 600
   replicas: 1
-  revisionHistoryLimit: 10
   selector:
     matchLabels:
       app.kubernetes.io/instance: spiffe
-      app.kubernetes.io/name: spike-pilot
-  strategy:
-    rollingUpdate:
-      maxSurge: 25%
-      maxUnavailable: 25%
-    type: RollingUpdate
+      app.kubernetes.io/name: spike-bootstrap
   template:
     metadata:
-      creationTimestamp: null
       labels:
         app.kubernetes.io/instance: spiffe
-        app.kubernetes.io/name: spike-pilot
-        component: spike-pilot
-        release: spiffe
-        release-namespace: spire-mgmt
+        app.kubernetes.io/name: spike-bootstrap
+        component: spike-bootstrap
     spec:
       containers:
         - command:
@@ -60,15 +52,15 @@ spec:
             allowPrivilegeEscalation: false
             capabilities:
               drop:
-                - ALL
+              - ALL
             readOnlyRootFilesystem: true
             runAsNonRoot: true
             seccompProfile:
               type: RuntimeDefault
           volumeMounts:
-            - mountPath: /spiffe-workload-api
-              name: spiffe-workload-api
-              readOnly: true
+          - mountPath: /spiffe-workload-api
+            name: spiffe-workload-api
+            readOnly: true
       dnsPolicy: ClusterFirst
       securityContext:
         fsGroup: 1000
@@ -77,10 +69,10 @@ spec:
         runAsUser: 1000
       serviceAccountName: spiffe-spike-bootstrap
       volumes:
-        - csi:
-            driver: csi.spiffe.io
-            readOnly: true
-          name: spiffe-workload-api
+      - csi:
+          driver: csi.spiffe.io
+          readOnly: true
+        name: spiffe-workload-api
 ---
 apiVersion: v1
 kind: ServiceAccount
