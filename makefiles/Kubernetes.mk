@@ -25,25 +25,9 @@ docker-build:
 
 # 4. Forward registry.
 docker-forward-registry:
-	./hack/docker/minikube-forward-registry.sh
+	./hack/k8s/minikube-forward-registry.sh
 
-# TODO: docs > SPIKE on Kubernetes
-# TODO: move the script and makefile
-# TODO: another attempt: directly load images (for WSL integration)
-# TODO: add some of these comments to the user-facing docs too.
-
-# Troubleshooting to add to docs:
-#
-# eval $(minikube docker-env)
-# make docker-build
-# eval $(minikube docker-env --unset)
-#
-# For Mac OS and Linuxes where you get protocol-level errors, try creating
-# `/etc/docker/daemon.json` with the content
-# `{"insecure-registries": ["localhost:5000"]} and restart docker daemon
-# (`sudo systemctl restart docker`) for the changes to take effect and retry.
-
-# For minikube, instead of forwarding the registry, you can directly load
+# For Minikube, instead of forwarding the registry, you can directly load
 # the container images to the cluster's internal local registry.
 #
 # This is especially helpful when you are using Docker Desktop for Windows' WSL
@@ -58,7 +42,7 @@ docker-forward-registry:
 # `localhost:5000` (*where you likely did the `kubectl port-forward`). Those
 # are different network stacks. The result will: the push sits on "Waiting".
 k8s-load-images:
-	./hack/docker/minikube-load-images.sh
+	./hack/k8s/minikube-load-images.sh
 
 # 5. Push to the container registry.
 docker-push:
@@ -67,11 +51,11 @@ docker-push:
 # For Multi-Cluster Federation Demo, DO NOT run `deploy-local`
 # Instead, see FederationDemo.mk for the remaining steps.
 
-# 6. (Single Cluster) Deploy SPIRE and SPIKE to the cluster.
+# DEPRECATED
 deploy-local:
 	./hack/k8s/spike-install.sh
 
-# 6.x. TODO: new target to test the bootstrapping in k8s.
+# 6. Deploy SPIKE locally.
 deploy-dev-local:
 	./hack/k8s/spike-dev-install.sh
 	./hack/k8s/spike-job-install.sh

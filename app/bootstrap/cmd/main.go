@@ -13,6 +13,7 @@ import (
 	"github.com/spiffe/spike-sdk-go/log"
 	"github.com/spiffe/spike-sdk-go/spiffe"
 	svid "github.com/spiffe/spike-sdk-go/spiffeid"
+
 	"github.com/spiffe/spike/app/bootstrap/internal/env"
 	"github.com/spiffe/spike/app/bootstrap/internal/net"
 	"github.com/spiffe/spike/app/bootstrap/internal/state"
@@ -68,7 +69,11 @@ func main() {
 		net.Post(
 			net.MTLSClient(src),
 			url.KeeperEndpoint(keeperAPIRoot),
-			net.Payload(state.KeeperShare(state.RootShares(), keeperID), keeperID),
+			net.Payload(
+				state.KeeperShare(
+					state.RootShares(), keeperID),
+				keeperID,
+			),
 			keeperID,
 		)
 	}

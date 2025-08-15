@@ -11,6 +11,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	spike "github.com/spiffe/spike-sdk-go/api"
+
 	"github.com/spiffe/spike/app/spike/internal/trust"
 )
 
@@ -98,7 +99,6 @@ func normalizePath(path string) string {
 //   - Policy application failure
 //   - File reading errors (when using --file)
 //   - Invalid YAML format
-
 func newPolicyApplyCommand(
 	source *workloadapi.X509Source, SPIFFEID string,
 ) *cobra.Command {
@@ -134,7 +134,7 @@ func newPolicyApplyCommand(
 
 			// Determine if we're using file-based or flag-based input
 			if filePath != "" {
-				// Read policy from YAML file
+				// Read policy from the YAML file
 				policy, err = readPolicyFromFile(filePath)
 				if err != nil {
 					fmt.Printf("Error reading policy file: %v\n", err)

@@ -61,7 +61,6 @@ import (
 //   - System not initialized (requires running 'spike init' first)
 //   - Invalid SPIFFE ID pattern
 //   - Policy creation failure
-
 func newPolicyCreateCommand(
 	source *workloadapi.X509Source, SPIFFEID string,
 ) *cobra.Command {
