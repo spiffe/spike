@@ -23,17 +23,16 @@ k8s-reset:
 docker-build:
 	./hack/docker/build-local.sh
 
-# TODO: add this comment to user-facing docs too.
 # 4. Forward registry.
+docker-forward-registry:
+	./hack/docker/minikube-forward-registry.sh
+
+# TODO: move the script and makefile
+# TODO: another attempt: directly load images (for WSL integration)
+# TODO: add some of these comments to the user-facing docs too.
+
+# Troubleshooting to add to docs:
 #
-# For WSL that is integrated with Docker Desktop,
-# Make sure you have `"insecure-registries": ["localhost:5000"]`
-# added to your `Settings > Docker Engine` JSON.
-# Also make sure you are not running a separate Docker Registry at port 5000
-# on your host machine (*Docker for Windows can enable its own registry; we
-# want to use Minikube's registry instead, so you'll need to stop/pause that*).
-#
-# TODO: maybe this will work (for windozer)
 # eval $(minikube docker-env)
 # make docker-build
 # eval $(minikube docker-env --unset)
@@ -42,11 +41,22 @@ docker-build:
 # `/etc/docker/daemon.json` with the content
 # `{"insecure-registries": ["localhost:5000"]} and restart docker daemon
 # (`sudo systemctl restart docker`) for the changes to take effect and retry.
-docker-forward-registry:
-	./hack/docker/minikube-forward-registry.sh
 
-# TODO: another attempt: directly load images (for WSL integration)
-minikube-load-images:
+# For minikube, instead of forwarding the registry, you can directly load
+# the container images to the cluster's internal local registry.
+#
+# This is especially helpful when you are using Docker Desktop for Windows' WSL
+# Integration and `make docker-push` hangs up regardless of the
+# `insecure-registries` settings in `Settings > Docker Engine` of Docker
+# for Windows or `/etc/docker/daemon.json` of Docker on WSL.
+#
+# This can happen because in a typical WSL-Docker-for-Windows integration,
+# your Docker CLI is in WSL, but the daemon is Docker Desktop: So when you run
+# `docker push localhost:5000/...`, the Windows-side daemon tries to reach
+# Windows' `localhost:5000`; meanwhile your WSL `docker push` will hit WSL's
+# `localhost:5000` (*where you likely did the `kubectl port-forward`). Those
+# are different network stacks. The result will: the push sits on "Waiting".
+k8s-load-images:
 	./hack/docker/minikube-load-images.sh
 
 # 5. Push to the container registry.
