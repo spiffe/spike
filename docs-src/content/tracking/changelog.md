@@ -44,7 +44,7 @@ elaborate, and potentially error-prone, consensus algorithms.
   and use cases to allow users to understand the benefits and liabilities of 
   SPIKE Lite and why they might want to use one over the other.
 
-## Changed
+### Changed
 
 * Better alignment with idiomatic Go practices. SPIKE and SPIKE Go SDK code 
   has been refactored to better align with common Go idioms and conventions.
