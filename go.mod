@@ -10,7 +10,7 @@ require (
 	github.com/mattn/go-sqlite3 v1.14.30
 	github.com/spf13/cobra v1.9.1
 	github.com/spiffe/go-spiffe/v2 v2.5.0
-	github.com/spiffe/spike-sdk-go v0.6.2
+	github.com/spiffe/spike-sdk-go v0.6.5
 	golang.org/x/term v0.34.0
 	gopkg.in/yaml.v3 v3.0.1
 )

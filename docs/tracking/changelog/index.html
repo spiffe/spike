@@ -173,7 +173,7 @@
 
         <ul class="subtree">
             <li >
-                    <a href="https://spike.ist/development/local-deployment/">Building SPIKE Locally</a>
+                    <a href="https://spike.ist/development/local-deployment/">SPIKE on Kubernetes</a>
                 </li>
 
                 <li >
@@ -774,6 +774,21 @@
             
         <h1 id="spike-changelog">SPIKE Changelog</h1>
 <h2 id="recent">Recent</h2>
+<ul>
+<li>SPIKE Nexus, SPIKE Pilot, and SPIKE Keeper can now be built as Windows
+binaries too.</li>
+<li>SPIKE and SPIKE Go SDK code has been refactored to better align with common
+Go idioms and conventions.</li>
+<li>Added stricter linting.</li>
+<li>Added vulnerability checks to SPIKE and SPIKE Go SDK.</li>
+<li>enabled <code>GOFIPS140=v1.0.0</code>, the modern way of enabling FIPS. We
+are not using <code>boringcrypto</code> anymore.</li>
+<li>Separated bootstrap logic into its own app to enable a more deterministic
+initialization flow. This change will also unlock the ability to run SPIKE
+Nexus in HA mode.</li>
+<li><strong>BREAKING</strong>: SPIKE now requires a separate initializer to begin its lifecycle.</li>
+<li>FIPS 140.3 is enabled and enforced everywhere.</li>
+</ul>
 <h2 id="0-4-2-2025-07-19">[0.4.2] - 2025-07-19</h2>
 <h3 id="added">Added</h3>
 <ul>

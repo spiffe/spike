@@ -12,7 +12,6 @@ ARG APPVERSION
 ENV GOOS=$TARGETOS \
     GOARCH=$TARGETARCH \
     APPVERSION=$APPVERSION \
-    GOEXPERIMENT=boringcrypto \
     CGO_ENABLED=1
 
 WORKDIR /workspace
@@ -37,6 +36,8 @@ COPY . .
 
 # Build the app for the target architecture
 RUN echo "Building SPIKE Nexus on $BUILDPLATFORM targeting $TARGETPLATFORM"
+# buildx.sh requires ./app/$appName/cmd/main.go to exist.
+# Here, $appName is "nexus":
 RUN ./hack/docker/buildx.sh ${TARGETARCH} nexus
 
 # Target distroless base image for CGO_ENABLED apps

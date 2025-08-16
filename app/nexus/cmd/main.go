@@ -6,6 +6,7 @@ package main
 
 import (
 	"context"
+	"crypto/fips140"
 	"fmt"
 
 	"github.com/spiffe/spike-sdk-go/log"
@@ -27,8 +28,8 @@ func main() {
    \\ SPIKE: Secure your secrets with SPIFFE. — https://spike.ist/
  \\\\\ Copyright 2024-present SPIKE contributors.
 \\\\\\\ SPDX-License-Identifier: Apache-2.0`+"\n\n"+
-			"%s v%s. | LOG LEVEL: %s\n\n",
-			appName, config.SpikeNexusVersion, log.Level(),
+			"%s v%s. | LOG LEVEL: %s; FIPS 140.3 Enabled: %v\n\n",
+			appName, config.SpikeKeeperVersion, log.Level(), fips140.Enabled(),
 		)
 	}
 

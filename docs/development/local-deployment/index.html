@@ -6,7 +6,7 @@
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <link rel="icon" href="https://spike.ist/assets/spike-favicon-16x16.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
-    <title> SPIKE | Building SPIKE Locally </title>
+    <title> SPIKE | SPIKE on Kubernetes </title>
 </head>
 <body>
 
@@ -173,7 +173,7 @@
 
         <ul class="subtree">
             <li class="active">
-                    <a href="https://spike.ist/development/local-deployment/">Building SPIKE Locally</a>
+                    <a href="https://spike.ist/development/local-deployment/">SPIKE on Kubernetes</a>
                 </li>
 
                 
@@ -780,7 +780,7 @@ using any containerization solution, check out
 <ol>
 <li>Build container images locally from existing source code.</li>
 <li>Push the container images to a local container registry.</li>
-<li>Use a customized <code>values.yaml</code> for the helm charts to create a more
+<li>Use a customized <code>values-dev.yaml</code> for the helm charts to create a more
 production-like namespace structure.</li>
 </ol>
 <p>Without further ado, let’s begin with the prerequisites.</p>
@@ -828,7 +828,7 @@ necessary plugins enabled. You can verify that Minikube is running by executing:
 <p>Since Minikube contains its Kubernetes cluster in a virtual machine, accessing
 its container registry requires network mapping. There are several ways to
 achieve this. In this guide, we will use Kubernetes port forwarding.</p>
-<p>Open a terminal, change your directory to the project’s folder and execute
+<p>Open a terminal, change your directory to the project’s folder, and execute
 the following:</p>
 <pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">make</span><span> docker-forward-registry
 </span><span style="color:#65737e;"># Sample Output:
@@ -849,11 +849,23 @@ registry:</p>
 </span><span style="color:#65737e;"># before executing this command:
 </span><span style="color:#bf616a;">make</span><span> docker-push
 </span></code></pre>
+<blockquote>
+<p><strong>Having Docker for Windows WSL Integration Problems?</strong></p>
+<p>If <code>make docker-push</code> hangs up or gives a network error, it’s typically
+related to how Docker for Windows, Windows, and Windows Subsystem for Linux
+handle routing, DNS resolution, and networking.</p>
+<p>One way to push container images to the Minikube cluster without adding them
+to the local Minikube registry would be to run the following script:</p>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">make</span><span> k8s-load-images
+</span></code></pre>
+<p>This will effectively have the same end-result as pushing the images to
+the registry.</p>
+</blockquote>
 <h2 id="deploying-spire-and-spike-to-the-local-cluster">Deploying SPIRE and SPIKE to the Local Cluster</h2>
 <p>Once we push the container images to the registry, we can now deploy <strong>SPIRE</strong>
 and <strong>SPIKE</strong>.</p>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># Uses `./config/helm/values-custom.yaml`
-</span><span style="color:#bf616a;">make</span><span> deploy-local
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># Uses `./config/helm/values-dev.yaml`
+</span><span style="color:#bf616a;">make</span><span> deploy-dev-local
 </span></code></pre>
 <h2 id="verifying-spike-deployment">Verifying SPIKE Deployment</h2>
 <p>First, make sure that your components are up and running.</p>

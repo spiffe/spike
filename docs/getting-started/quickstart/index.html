@@ -167,6 +167,9 @@
                                                         <a href="https://spike.ist/getting-started/quickstart/#deploying-spike-to-minikube">Deploying SPIKE to Minikube</a>
                                                     </li>
                                                 <li>
+                                                        <a href="https://spike.ist/getting-started/quickstart/#bootstrapping-spike-nexus">Bootstrapping SPIKE Nexus</a>
+                                                    </li>
+                                                <li>
                                                         <a href="https://spike.ist/getting-started/quickstart/#verifying-spike-deployment">Verifying SPIKE Deployment</a>
                                                     </li>
                                                 <li>
@@ -198,7 +201,7 @@
 
         <ul class="subtree">
             <li >
-                    <a href="https://spike.ist/development/local-deployment/">Building SPIKE Locally</a>
+                    <a href="https://spike.ist/development/local-deployment/">SPIKE on Kubernetes</a>
                 </li>
 
                 <li >
@@ -760,7 +763,7 @@
 
         <article>
             
-        <h1 id="spike-quickstart-guide">SPIKE Quickstart Guide</h1>
+        <h1 id="spike-quickstart-guide"><strong>SPIKE</strong> Quickstart Guide</h1>
 <p>The fastest way to get started with <strong>SPIRE</strong> and <strong>SPIKE</strong> is to deploy them
 using the official <a href="https://github.com/spiffe/helm-charts-hardened" title="SPIFFE Helm charts (hardened)">SPIFFE Helm chart</a>.</p>
 <p>You can deploy SPIKE to any Kubernetes cluster, including a local one like
@@ -811,11 +814,40 @@ necessary plugins enabled. You can verify that Minikube is running by executing:
 </span><span style="color:#65737e;"># NAME       STATUS   ROLES           AGE   VERSION
 </span><span style="color:#65737e;"># minikube   Ready    control-plane   67s   v1.33.1
 </span></code></pre>
-<h2 id="deploying-spike-to-minikube">Deploying SPIKE to Minikube</h2>
-<p>Once you have Minikube running, you can deploy SPIKE to it from SPIFFE
-helm charts.</p>
+<h2 id="deploying-spike-to-minikube">Deploying <strong>SPIKE</strong> to Minikube</h2>
+<p>Once you have Minikube running, you can deploy <strong>SPIKE</strong> to it from
+<strong>SPIFFE helm charts</strong>.</p>
 <p>First create a <code>values.yaml</code> file to enable SPIKE components:</p>
-<pre data-lang="yaml" style="background-color:#2b303b;color:#c0c5ce;" class="language-yaml "><code class="language-yaml" data-lang="yaml"><span style="color:#bf616a;">spike-keeper</span><span>:
+<pre data-lang="yaml" style="background-color:#2b303b;color:#c0c5ce;" class="language-yaml "><code class="language-yaml" data-lang="yaml"><span style="color:#65737e;"># file: values.yaml
+</span><span>
+</span><span style="color:#bf616a;">spike-keeper</span><span>:
+</span><span>  </span><span style="color:#bf616a;">enabled</span><span>: </span><span style="color:#d08770;">true
+</span><span>  </span><span style="color:#bf616a;">namespaceOverride</span><span>: </span><span style="color:#a3be8c;">spike
+</span><span>  </span><span style="color:#bf616a;">image</span><span>:
+</span><span>    </span><span style="color:#bf616a;">registry</span><span>: </span><span style="color:#a3be8c;">ghcr.io
+</span><span>    </span><span style="color:#bf616a;">repository</span><span>: </span><span style="color:#a3be8c;">spiffe/spike-keeper
+</span><span>    </span><span style="color:#bf616a;">pullPolicy</span><span>: </span><span style="color:#a3be8c;">IfNotPresent
+</span><span>    </span><span style="color:#bf616a;">tag</span><span>: &quot;&quot;
+</span><span>
+</span><span style="color:#bf616a;">spike-nexus</span><span>:
+</span><span>  </span><span style="color:#bf616a;">enabled</span><span>: </span><span style="color:#d08770;">true
+</span><span>  </span><span style="color:#bf616a;">namespaceOverride</span><span>: </span><span style="color:#a3be8c;">spike
+</span><span>  </span><span style="color:#bf616a;">image</span><span>:
+</span><span>    </span><span style="color:#bf616a;">registry</span><span>: </span><span style="color:#a3be8c;">ghcr.io
+</span><span>    </span><span style="color:#bf616a;">repository</span><span>: </span><span style="color:#a3be8c;">spiffe/spike-nexus
+</span><span>    </span><span style="color:#bf616a;">pullPolicy</span><span>: </span><span style="color:#a3be8c;">IfNotPresent
+</span><span>    </span><span style="color:#bf616a;">tag</span><span>: &quot;&quot;
+</span><span>
+</span><span style="color:#bf616a;">spike-pilot</span><span>:
+</span><span>  </span><span style="color:#bf616a;">enabled</span><span>: </span><span style="color:#d08770;">true
+</span><span>  </span><span style="color:#bf616a;">namespaceOverride</span><span>: </span><span style="color:#a3be8c;">spike
+</span><span>  </span><span style="color:#bf616a;">image</span><span>:
+</span><span>    </span><span style="color:#bf616a;">registry</span><span>: </span><span style="color:#a3be8c;">ghcr.io
+</span><span>    </span><span style="color:#bf616a;">repository</span><span>: </span><span style="color:#a3be8c;">spike-pilot
+</span><span>    </span><span style="color:#bf616a;">pullPolicy</span><span>: </span><span style="color:#a3be8c;">IfNotPresent
+</span><span>    </span><span style="color:#bf616a;">tag</span><span>: &quot;&quot;
+</span><span>
+</span><span style="color:#bf616a;">spike-keeper</span><span>:
 </span><span>  </span><span style="color:#bf616a;">enabled</span><span>: </span><span style="color:#d08770;">true
 </span><span style="color:#bf616a;">spike-nexus</span><span>:
 </span><span>  </span><span style="color:#bf616a;">enabled</span><span>: </span><span style="color:#d08770;">true
@@ -830,21 +862,168 @@ helm charts.</p>
 </span><span style="color:#bf616a;">  --repo</span><span> https://spiffe.github.io/helm-charts-hardened \
 </span><span style="color:#bf616a;">  -f</span><span> ./values.yaml </span><span style="color:#65737e;"># The values.yaml file we created earlier
 </span></code></pre>
-<h2 id="verifying-spike-deployment">Verifying SPIKE Deployment</h2>
+<h2 id="bootstrapping-spike-nexus">Bootstrapping <strong>SPIKE Nexus</strong></h2>
+<p>To use <strong>SPIKE Nexus</strong>, we’ll need to run a bootstrapper job that will
+seed it with a secure random root key.</p>
+<p>At the time of this writing, there is an ongoing work to automate this at
+<strong>SPIFFE Helm Charts</strong> upstream repo; however, until that work is merged and
+published, you’ll need to create the following YAML file and apply it
+using <code>kubectl</code>.</p>
+<pre data-lang="yaml" style="background-color:#2b303b;color:#c0c5ce;" class="language-yaml "><code class="language-yaml" data-lang="yaml"><span style="color:#65737e;"># file: bootstrap.yaml
+</span><span>
+</span><span style="color:#bf616a;">apiVersion</span><span>: </span><span style="color:#a3be8c;">batch/v1
+</span><span style="color:#bf616a;">kind</span><span>: </span><span style="color:#a3be8c;">Job
+</span><span style="color:#bf616a;">metadata</span><span>:
+</span><span>  </span><span style="color:#bf616a;">labels</span><span>:
+</span><span>    </span><span style="color:#bf616a;">app.kubernetes.io/instance</span><span>: </span><span style="color:#a3be8c;">spiffe
+</span><span>    </span><span style="color:#bf616a;">app.kubernetes.io/name</span><span>: </span><span style="color:#a3be8c;">spike-bootstrap
+</span><span>  </span><span style="color:#bf616a;">name</span><span>: </span><span style="color:#a3be8c;">spiffe-spike-bootstrap
+</span><span>  </span><span style="color:#bf616a;">namespace</span><span>: </span><span style="color:#a3be8c;">spike
+</span><span style="color:#bf616a;">spec</span><span>:
+</span><span>  </span><span style="color:#bf616a;">template</span><span>:
+</span><span>    </span><span style="color:#bf616a;">metadata</span><span>:
+</span><span>      </span><span style="color:#bf616a;">labels</span><span>:
+</span><span>        </span><span style="color:#bf616a;">app.kubernetes.io/instance</span><span>: </span><span style="color:#a3be8c;">spiffe
+</span><span>        </span><span style="color:#bf616a;">app.kubernetes.io/name</span><span>: </span><span style="color:#a3be8c;">spike-bootstrap
+</span><span>        </span><span style="color:#bf616a;">component</span><span>: </span><span style="color:#a3be8c;">spike-bootstrap
+</span><span>    </span><span style="color:#bf616a;">spec</span><span>:
+</span><span>      </span><span style="color:#bf616a;">restartPolicy</span><span>: </span><span style="color:#a3be8c;">OnFailure
+</span><span>      </span><span style="color:#bf616a;">initContainers</span><span>:
+</span><span>      - </span><span style="color:#bf616a;">name</span><span>: </span><span style="color:#a3be8c;">check-bootstrap-state
+</span><span>        </span><span style="color:#bf616a;">image</span><span>: </span><span style="color:#a3be8c;">bitnami/kubectl:latest
+</span><span>        </span><span style="color:#bf616a;">command</span><span>:
+</span><span>        - </span><span style="color:#a3be8c;">/bin/sh
+</span><span>        - </span><span style="color:#a3be8c;">-c
+</span><span>        - </span><span style="color:#b48ead;">|
+</span><span style="color:#a3be8c;">          if [ &quot;$SPIKE_FORCE_BOOTSTRAP&quot; != &quot;true&quot; ]; then
+</span><span style="color:#a3be8c;">            if kubectl get jobs -l \
+</span><span style="color:#a3be8c;">              app.kubernetes.io/name=spike-bootstrap \ 
+</span><span style="color:#a3be8c;">              -o jsonpath=&#39;\
+</span><span style="color:#a3be8c;">              {.items[?(@.status.succeeded&gt;=1)]\
+</span><span style="color:#a3be8c;">              .metadata.name}&#39; | grep -q .; then
+</span><span style="color:#a3be8c;">              echo &quot;prev.&quot;
+</span><span style="color:#a3be8c;">              touch /shared/skip-bootstrap
+</span><span style="color:#a3be8c;">              exit 0
+</span><span style="color:#a3be8c;">            fi
+</span><span style="color:#a3be8c;">          fi
+</span><span>        </span><span style="color:#bf616a;">env</span><span>:
+</span><span>        - </span><span style="color:#bf616a;">name</span><span>: </span><span style="color:#a3be8c;">SPIKE_FORCE_BOOTSTRAP
+</span><span>          </span><span style="color:#bf616a;">value</span><span>: &quot;</span><span style="color:#a3be8c;">false</span><span>&quot;
+</span><span>        </span><span style="color:#bf616a;">volumeMounts</span><span>:
+</span><span>        - </span><span style="color:#bf616a;">mountPath</span><span>: </span><span style="color:#a3be8c;">/shared
+</span><span>          </span><span style="color:#bf616a;">name</span><span>: </span><span style="color:#a3be8c;">shared-data
+</span><span>      </span><span style="color:#bf616a;">containers</span><span>:
+</span><span>      - </span><span style="color:#bf616a;">command</span><span>:
+</span><span>        - </span><span style="color:#a3be8c;">/bootstrap
+</span><span>        - </span><span style="color:#a3be8c;">-init
+</span><span>        </span><span style="color:#bf616a;">env</span><span>:
+</span><span>        - </span><span style="color:#bf616a;">name</span><span>: </span><span style="color:#a3be8c;">SPIKE_NEXUS_API_URL
+</span><span>          </span><span style="color:#bf616a;">value</span><span>: </span><span style="color:#a3be8c;">https://spiffe-spike-nexus:443
+</span><span>        - </span><span style="color:#bf616a;">name</span><span>: </span><span style="color:#a3be8c;">SPIFFE_ENDPOINT_SOCKET
+</span><span>          </span><span style="color:#bf616a;">value</span><span>: </span><span style="color:#a3be8c;">unix:///spiffe-workload-api/spire-agent.sock
+</span><span>        - </span><span style="color:#bf616a;">name</span><span>: </span><span style="color:#a3be8c;">SPIKE_SYSTEM_LOG_LEVEL
+</span><span>          </span><span style="color:#bf616a;">value</span><span>: </span><span style="color:#a3be8c;">DEBUG
+</span><span>        - </span><span style="color:#bf616a;">name</span><span>: </span><span style="color:#a3be8c;">SPIKE_TRUST_ROOT
+</span><span>          </span><span style="color:#bf616a;">value</span><span>: </span><span style="color:#a3be8c;">spike.ist
+</span><span>        - </span><span style="color:#bf616a;">name</span><span>: </span><span style="color:#a3be8c;">SPIKE_NEXUS_SHAMIR_SHARES
+</span><span>          </span><span style="color:#bf616a;">value</span><span>: &quot;</span><span style="color:#a3be8c;">3</span><span>&quot;
+</span><span>        - </span><span style="color:#bf616a;">name</span><span>: </span><span style="color:#a3be8c;">SPIKE_NEXUS_SHAMIR_THRESHOLD
+</span><span>          </span><span style="color:#bf616a;">value</span><span>: &quot;</span><span style="color:#a3be8c;">2</span><span>&quot;
+</span><span>        - </span><span style="color:#bf616a;">name</span><span>: </span><span style="color:#a3be8c;">SPIKE_NEXUS_KEEPER_PEERS
+</span><span>          </span><span style="color:#bf616a;">value</span><span>: &quot;</span><span style="color:#a3be8c;">https://spiffe-spike-keeper-0…
+</span><span style="color:#a3be8c;">          .spiffe-spike-keeper-headless:8443,…
+</span><span style="color:#a3be8c;">          https://spiffe-spike-keeper-1…
+</span><span style="color:#a3be8c;">          .spiffe-spike-keeper-headless:8443,…
+</span><span style="color:#a3be8c;">          https://spiffe-spike-keeper-2.…
+</span><span style="color:#a3be8c;">          spiffe-spike-keeper-headless:8443</span><span>&quot;
+</span><span>        - </span><span style="color:#bf616a;">name</span><span>: </span><span style="color:#a3be8c;">SPIKE_BOOTSTRAP_VERSION
+</span><span>          </span><span style="color:#bf616a;">value</span><span>: &quot;</span><span style="color:#a3be8c;">1.0.0</span><span>&quot;
+</span><span>        </span><span style="color:#bf616a;">image</span><span>: </span><span style="color:#a3be8c;">localhost:5000/spike-bootstrap:dev
+</span><span>        </span><span style="color:#bf616a;">imagePullPolicy</span><span>: </span><span style="color:#a3be8c;">IfNotPresent
+</span><span>        </span><span style="color:#bf616a;">name</span><span>: </span><span style="color:#a3be8c;">spiffe-spike-bootstrap
+</span><span>        </span><span style="color:#bf616a;">resources</span><span>: {}
+</span><span>        </span><span style="color:#bf616a;">securityContext</span><span>:
+</span><span>          </span><span style="color:#bf616a;">allowPrivilegeEscalation</span><span>: </span><span style="color:#d08770;">false
+</span><span>          </span><span style="color:#bf616a;">capabilities</span><span>:
+</span><span>            </span><span style="color:#bf616a;">drop</span><span>:
+</span><span>              - </span><span style="color:#a3be8c;">ALL
+</span><span>          </span><span style="color:#bf616a;">readOnlyRootFilesystem</span><span>: </span><span style="color:#d08770;">true
+</span><span>          </span><span style="color:#bf616a;">runAsNonRoot</span><span>: </span><span style="color:#d08770;">true
+</span><span>          </span><span style="color:#bf616a;">seccompProfile</span><span>:
+</span><span>            </span><span style="color:#bf616a;">type</span><span>: </span><span style="color:#a3be8c;">RuntimeDefault
+</span><span>        </span><span style="color:#bf616a;">volumeMounts</span><span>:
+</span><span>        - </span><span style="color:#bf616a;">mountPath</span><span>: </span><span style="color:#a3be8c;">/spiffe-workload-api
+</span><span>          </span><span style="color:#bf616a;">name</span><span>: </span><span style="color:#a3be8c;">spiffe-workload-api
+</span><span>          </span><span style="color:#bf616a;">readOnly</span><span>: </span><span style="color:#d08770;">true
+</span><span>        - </span><span style="color:#bf616a;">mountPath</span><span>: </span><span style="color:#a3be8c;">/shared
+</span><span>          </span><span style="color:#bf616a;">name</span><span>: </span><span style="color:#a3be8c;">shared-data
+</span><span>      </span><span style="color:#bf616a;">dnsPolicy</span><span>: </span><span style="color:#a3be8c;">ClusterFirst
+</span><span>      </span><span style="color:#bf616a;">securityContext</span><span>:
+</span><span>        </span><span style="color:#bf616a;">fsGroup</span><span>: </span><span style="color:#d08770;">1000
+</span><span>        </span><span style="color:#bf616a;">fsGroupChangePolicy</span><span>: </span><span style="color:#a3be8c;">OnRootMismatch
+</span><span>        </span><span style="color:#bf616a;">runAsGroup</span><span>: </span><span style="color:#d08770;">1000
+</span><span>        </span><span style="color:#bf616a;">runAsUser</span><span>: </span><span style="color:#d08770;">1000
+</span><span>      </span><span style="color:#bf616a;">serviceAccountName</span><span>: </span><span style="color:#a3be8c;">spiffe-spike-bootstrap
+</span><span>      </span><span style="color:#bf616a;">volumes</span><span>:
+</span><span>      - </span><span style="color:#bf616a;">csi</span><span>:
+</span><span>          </span><span style="color:#bf616a;">driver</span><span>: </span><span style="color:#a3be8c;">csi.spiffe.io
+</span><span>          </span><span style="color:#bf616a;">readOnly</span><span>: </span><span style="color:#d08770;">true
+</span><span>        </span><span style="color:#bf616a;">name</span><span>: </span><span style="color:#a3be8c;">spiffe-workload-api
+</span><span>      - </span><span style="color:#bf616a;">emptyDir</span><span>: {}
+</span><span>        </span><span style="color:#bf616a;">name</span><span>: </span><span style="color:#a3be8c;">shared-data
+</span><span>---
+</span><span style="color:#bf616a;">apiVersion</span><span>: </span><span style="color:#a3be8c;">v1
+</span><span style="color:#bf616a;">kind</span><span>: </span><span style="color:#a3be8c;">ServiceAccount
+</span><span style="color:#bf616a;">metadata</span><span>:
+</span><span>  </span><span style="color:#bf616a;">labels</span><span>:
+</span><span>    </span><span style="color:#bf616a;">app.kubernetes.io/instance</span><span>: </span><span style="color:#a3be8c;">spiffe
+</span><span>    </span><span style="color:#bf616a;">app.kubernetes.io/name</span><span>: </span><span style="color:#a3be8c;">spike-bootstrap
+</span><span>  </span><span style="color:#bf616a;">name</span><span>: </span><span style="color:#a3be8c;">spiffe-spike-bootstrap
+</span><span>  </span><span style="color:#bf616a;">namespace</span><span>: </span><span style="color:#a3be8c;">spike
+</span><span>---
+</span><span style="color:#bf616a;">apiVersion</span><span>: </span><span style="color:#a3be8c;">rbac.authorization.k8s.io/v1
+</span><span style="color:#bf616a;">kind</span><span>: </span><span style="color:#a3be8c;">Role
+</span><span style="color:#bf616a;">metadata</span><span>:
+</span><span>  </span><span style="color:#bf616a;">namespace</span><span>: </span><span style="color:#a3be8c;">spike
+</span><span>  </span><span style="color:#bf616a;">name</span><span>: </span><span style="color:#a3be8c;">spiffe-bootstrap-role
+</span><span style="color:#bf616a;">rules</span><span>:
+</span><span>- </span><span style="color:#bf616a;">apiGroups</span><span>: [&quot;</span><span style="color:#a3be8c;">batch</span><span>&quot;]
+</span><span>  </span><span style="color:#bf616a;">resources</span><span>: [&quot;</span><span style="color:#a3be8c;">jobs</span><span>&quot;]
+</span><span>  </span><span style="color:#bf616a;">verbs</span><span>: [&quot;</span><span style="color:#a3be8c;">get</span><span>&quot;, &quot;</span><span style="color:#a3be8c;">list</span><span>&quot;]
+</span><span>---
+</span><span style="color:#bf616a;">apiVersion</span><span>: </span><span style="color:#a3be8c;">rbac.authorization.k8s.io/v1
+</span><span style="color:#bf616a;">kind</span><span>: </span><span style="color:#a3be8c;">RoleBinding
+</span><span style="color:#bf616a;">metadata</span><span>:
+</span><span>  </span><span style="color:#bf616a;">name</span><span>: </span><span style="color:#a3be8c;">spiffe-bootstrap-rolebinding
+</span><span>  </span><span style="color:#bf616a;">namespace</span><span>: </span><span style="color:#a3be8c;">spike
+</span><span style="color:#bf616a;">subjects</span><span>:
+</span><span>- </span><span style="color:#bf616a;">kind</span><span>: </span><span style="color:#a3be8c;">ServiceAccount
+</span><span>  </span><span style="color:#bf616a;">name</span><span>: </span><span style="color:#a3be8c;">spiffe-spike-bootstrap
+</span><span>  </span><span style="color:#bf616a;">namespace</span><span>: </span><span style="color:#a3be8c;">spike
+</span><span style="color:#bf616a;">roleRef</span><span>:
+</span><span>  </span><span style="color:#bf616a;">kind</span><span>: </span><span style="color:#a3be8c;">Role
+</span><span>  </span><span style="color:#bf616a;">name</span><span>: </span><span style="color:#a3be8c;">spiffe-bootstrap-role
+</span><span>  </span><span style="color:#bf616a;">apiGroup</span><span>: </span><span style="color:#a3be8c;">rbac.authorization.k8s.io
+</span></code></pre>
+<p>With the above YAML file, execute the following:</p>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">kubectl</span><span> apply</span><span style="color:#bf616a;"> -f</span><span> bootstrap.yaml
+</span></code></pre>
+<h2 id="verifying-spike-deployment">Verifying <strong>SPIKE</strong> Deployment</h2>
 <p>First, make sure that your components are up and running.</p>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">kubectl</span><span> get po 
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">kubectl</span><span> get po</span><span style="color:#bf616a;"> -A
 </span><span style="color:#65737e;"># Sample Output:
 </span><span style="color:#65737e;">#
-</span><span style="color:#65737e;"># NAME                                      READY  STATUS 
-</span><span style="color:#65737e;"># spiffe-agent-j6448                        1/1    Running
-</span><span style="color:#65737e;"># spiffe-server-0                           2/2    Running
-</span><span style="color:#65737e;"># spiffe-spiffe-csi-driver-ngqnk            2/2    Running
-</span><span style="color:#65737e;"># spiffe-spiffe-oidc-discovery-provider-78  2/2    Running
-</span><span style="color:#65737e;"># spiffe-spike-keeper-0                     1/1    Running
-</span><span style="color:#65737e;"># spiffe-spike-keeper-1                     1/1    Running
-</span><span style="color:#65737e;"># spiffe-spike-keeper-2                     1/1    Running
-</span><span style="color:#65737e;"># spiffe-spike-nexus-0                      1/1    Running
-</span><span style="color:#65737e;"># spiffe-spike-pilot-6997997fcb-nlqk8       1/1    Running
+</span><span style="color:#65737e;"># NAME                                              READY  STATUS 
+</span><span style="color:#65737e;"># spike          spiffe-spike-bootstrap-x9nlr       1/1    Completed
+</span><span style="color:#65737e;"># spike          spiffe-spike-keeper-0              1/1    Running
+</span><span style="color:#65737e;"># spike          spiffe-spike-keeper-1              1/1    Running
+</span><span style="color:#65737e;"># spike          spiffe-spike-keeper-2              1/1    Running
+</span><span style="color:#65737e;"># spike          spiffe-spike-nexus-0               1/1    Running
+</span><span style="color:#65737e;"># spike          spiffe-spike-pilot-5ddb88f-jsv9q   1/1    Running
+</span><span style="color:#65737e;"># spire-server   spiffe-server-0                    2/2    Running
+</span><span style="color:#65737e;"># spire-server   spiffe-oidc-provider-b4b9d-vn2zj   2/2    Running
+</span><span style="color:#65737e;"># spire-system   spiffe-agent-lllsv                 1/1    Running
+</span><span style="color:#65737e;"># spire-system   spiffe-spiffe-csi-driver-dkbwf     2/2    Running
 </span></code></pre>
 <p>Once the deployment is complete, you can verify SPIKE is running by
 creating a sample secret and reading its value back.</p>

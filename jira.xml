@@ -15,6 +15,41 @@
   </kubernetification>
   <immediate-backlog>
       <issue>
+          maybe we can add a configurable "bootsrap time out" as an env var later. For now, the bootsrap app will try to bootstrap the thing in an exponentially-backing-off loop until it succeeds.
+      </issue>
+      <issue>
+          isolate this into a function
+
+          // Security: Use a static byte array and pass it as a pointer to avoid
+          // inadvertent pass-by-value copying / memory allocation.
+          var rootKey [32]byte
+          // Security: Zero-out rootKey after persisted internally.
+          defer func() {
+          // Note: Each function must zero-out ONLY the items it has created.
+          // If it is borrowing an item by reference, it must not zero-out the item
+          // and let the owner zero-out the item.
+          mem.ClearRawBytes(&rootKey)
+          }()
+
+          if _, err := rand.Read(rootKey[:]); err != nil {
+          log.Fatal(err.Error())
+          }
+
+          state.Initialize(&rootKey)
+      </issue>
+      <issue>
+          bootstrap: only Nexus can read the shard, Bootstrap cannot read the shard
+          RouteShard of keeper should reject of bootstrap tries to "read" a shard.
+      </issue>
+      <issue>
+          // I should be Nexus.
+          if !spiffeid.IsNexus(env.TrustRoot(), selfSpiffeid) {
+          log.FatalF("Authenticate: SPIFFE ID %s is not valid.\n", selfSpiffeid)
+          }
+
+          use the similar trust.Authenticate(...) pattern instead of these if checks.
+      </issue>
+      <issue>
           maybe for vsecm: plugin-based dynamic secrets to access third-party
           services:
           https://developer.hashicorp.com/vault/tutorials/get-started/understand-static-dynamic-secrets

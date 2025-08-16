@@ -1,7 +1,7 @@
 +++
-# //    \\ SPIKE: Secure your secrets with SPIFFE. — https://spike.ist/
-# //  \\\\\ Copyright 2024-present SPIKE contributors.
-# // \\\\\\\ SPDX-License-Identifier: Apache-2.
+#    \\ SPIKE: Secure your secrets with SPIFFE. — https://spike.ist/
+#  \\\\\ Copyright 2024-present SPIKE contributors.
+# \\\\\\\ SPDX-License-Identifier: Apache-2.
 
 title = "SPIKE Relase Management"
 weight = 5
@@ -40,13 +40,8 @@ Before every release:
 6. Update the documentation snapshots page.
 7. Run `./hack/cover.sh` to update and send the coverage report to the public 
    docs.
-8. Make sure version numbers in the code are updated to reflect the release:
-
-```go
-const SpikeNexusVersion = "0.4.2"
-const SpikePilotVersion = "0.4.2"
-const SpikeKeeperVersion = "0.4.2"
-````
+8. Make sure you update `./app/VERSION.txt` with the new version.
+9. Make sure you run `make audit` and the process cleanly exits with no errors.
 
 Release process:
 

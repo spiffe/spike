@@ -1,14 +1,14 @@
 +++
-# //    \\ SPIKE: Secure your secrets with SPIFFE. — https://spike.ist/
-# //  \\\\\ Copyright 2024-present SPIKE contributors.
-# // \\\\\\\ SPDX-License-Identifier: Apache-2.
+#    \\ SPIKE: Secure your secrets with SPIFFE. — https://spike.ist/
+#  \\\\\ Copyright 2024-present SPIKE contributors.
+# \\\\\\\ SPDX-License-Identifier: Apache-2.
 
 title = "SPIKE Quickstart Guide"
 weight = 2
 sort_by = "weight"
 +++
 
-# SPIKE Quickstart Guide
+# **SPIKE** Quickstart Guide
 
 The fastest way to get started with **SPIRE** and **SPIKE** is to deploy them 
 using the official [SPIFFE Helm chart][helm-charts-hardened].
@@ -82,14 +82,43 @@ kubectl get node
 # minikube   Ready    control-plane   67s   v1.33.1
 ```
 
-## Deploying SPIKE to Minikube
+## Deploying **SPIKE** to Minikube
 
-Once you have Minikube running, you can deploy SPIKE to it from SPIFFE
-helm charts.
+Once you have Minikube running, you can deploy **SPIKE** to it from 
+**SPIFFE helm charts**.
 
 First create a `values.yaml` file to enable SPIKE components:
 
 ```yaml
+# file: values.yaml
+
+spike-keeper:
+  enabled: true
+  namespaceOverride: spike
+  image:
+    registry: ghcr.io
+    repository: spiffe/spike-keeper
+    pullPolicy: IfNotPresent
+    tag: ""
+
+spike-nexus:
+  enabled: true
+  namespaceOverride: spike
+  image:
+    registry: ghcr.io
+    repository: spiffe/spike-nexus
+    pullPolicy: IfNotPresent
+    tag: ""
+
+spike-pilot:
+  enabled: true
+  namespaceOverride: spike
+  image:
+    registry: ghcr.io
+    repository: spike-pilot
+    pullPolicy: IfNotPresent
+    tag: ""
+
 spike-keeper:
   enabled: true
 spike-nexus:
@@ -109,24 +138,179 @@ helm upgrade --install spiffe spire \
   -f ./values.yaml # The values.yaml file we created earlier
 ```
 
-## Verifying SPIKE Deployment
+## Bootstrapping **SPIKE Nexus**
+
+To use **SPIKE Nexus**, we'll need to run a bootstrapper job that will
+seed it with a secure random root key.
+
+At the time of this writing, there is an ongoing work to automate this at
+**SPIFFE Helm Charts** upstream repo; however, until that work is merged and
+published, you'll need to create the following YAML file and apply it
+using `kubectl`.
+
+```yaml
+# file: bootstrap.yaml
+
+apiVersion: batch/v1
+kind: Job
+metadata:
+  labels:
+    app.kubernetes.io/instance: spiffe
+    app.kubernetes.io/name: spike-bootstrap
+  name: spiffe-spike-bootstrap
+  namespace: spike
+spec:
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/instance: spiffe
+        app.kubernetes.io/name: spike-bootstrap
+        component: spike-bootstrap
+    spec:
+      restartPolicy: OnFailure
+      initContainers:
+      - name: check-bootstrap-state
+        image: bitnami/kubectl:latest
+        command:
+        - /bin/sh
+        - -c
+        - |
+          if [ "$SPIKE_FORCE_BOOTSTRAP" != "true" ]; then
+            if kubectl get jobs -l \
+              app.kubernetes.io/name=spike-bootstrap \ 
+              -o jsonpath='\
+              {.items[?(@.status.succeeded>=1)]\
+              .metadata.name}' | grep -q .; then
+              echo "prev."
+              touch /shared/skip-bootstrap
+              exit 0
+            fi
+          fi
+        env:
+        - name: SPIKE_FORCE_BOOTSTRAP
+          value: "false"
+        volumeMounts:
+        - mountPath: /shared
+          name: shared-data
+      containers:
+      - command:
+        - /bootstrap
+        - -init
+        env:
+        - name: SPIKE_NEXUS_API_URL
+          value: https://spiffe-spike-nexus:443
+        - name: SPIFFE_ENDPOINT_SOCKET
+          value: unix:///spiffe-workload-api/spire-agent.sock
+        - name: SPIKE_SYSTEM_LOG_LEVEL
+          value: DEBUG
+        - name: SPIKE_TRUST_ROOT
+          value: spike.ist
+        - name: SPIKE_NEXUS_SHAMIR_SHARES
+          value: "3"
+        - name: SPIKE_NEXUS_SHAMIR_THRESHOLD
+          value: "2"
+        - name: SPIKE_NEXUS_KEEPER_PEERS
+          value: "https://spiffe-spike-keeper-0…
+          .spiffe-spike-keeper-headless:8443,…
+          https://spiffe-spike-keeper-1…
+          .spiffe-spike-keeper-headless:8443,…
+          https://spiffe-spike-keeper-2.…
+          spiffe-spike-keeper-headless:8443"
+        - name: SPIKE_BOOTSTRAP_VERSION
+          value: "1.0.0"
+        image: localhost:5000/spike-bootstrap:dev
+        imagePullPolicy: IfNotPresent
+        name: spiffe-spike-bootstrap
+        resources: {}
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - ALL
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+          seccompProfile:
+            type: RuntimeDefault
+        volumeMounts:
+        - mountPath: /spiffe-workload-api
+          name: spiffe-workload-api
+          readOnly: true
+        - mountPath: /shared
+          name: shared-data
+      dnsPolicy: ClusterFirst
+      securityContext:
+        fsGroup: 1000
+        fsGroupChangePolicy: OnRootMismatch
+        runAsGroup: 1000
+        runAsUser: 1000
+      serviceAccountName: spiffe-spike-bootstrap
+      volumes:
+      - csi:
+          driver: csi.spiffe.io
+          readOnly: true
+        name: spiffe-workload-api
+      - emptyDir: {}
+        name: shared-data
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app.kubernetes.io/instance: spiffe
+    app.kubernetes.io/name: spike-bootstrap
+  name: spiffe-spike-bootstrap
+  namespace: spike
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  namespace: spike
+  name: spiffe-bootstrap-role
+rules:
+- apiGroups: ["batch"]
+  resources: ["jobs"]
+  verbs: ["get", "list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: spiffe-bootstrap-rolebinding
+  namespace: spike
+subjects:
+- kind: ServiceAccount
+  name: spiffe-spike-bootstrap
+  namespace: spike
+roleRef:
+  kind: Role
+  name: spiffe-bootstrap-role
+  apiGroup: rbac.authorization.k8s.io
+```
+
+With the above YAML file, execute the following:
+
+```bash
+kubectl apply -f bootstrap.yaml
+```
+
+## Verifying **SPIKE** Deployment
 
 First, make sure that your components are up and running.
 
 ```bash
-kubectl get po 
+kubectl get po -A
 # Sample Output:
 #
-# NAME                                      READY  STATUS 
-# spiffe-agent-j6448                        1/1    Running
-# spiffe-server-0                           2/2    Running
-# spiffe-spiffe-csi-driver-ngqnk            2/2    Running
-# spiffe-spiffe-oidc-discovery-provider-78  2/2    Running
-# spiffe-spike-keeper-0                     1/1    Running
-# spiffe-spike-keeper-1                     1/1    Running
-# spiffe-spike-keeper-2                     1/1    Running
-# spiffe-spike-nexus-0                      1/1    Running
-# spiffe-spike-pilot-6997997fcb-nlqk8       1/1    Running
+# NAME                                              READY  STATUS 
+# spike          spiffe-spike-bootstrap-x9nlr       1/1    Completed
+# spike          spiffe-spike-keeper-0              1/1    Running
+# spike          spiffe-spike-keeper-1              1/1    Running
+# spike          spiffe-spike-keeper-2              1/1    Running
+# spike          spiffe-spike-nexus-0               1/1    Running
+# spike          spiffe-spike-pilot-5ddb88f-jsv9q   1/1    Running
+# spire-server   spiffe-server-0                    2/2    Running
+# spire-server   spiffe-oidc-provider-b4b9d-vn2zj   2/2    Running
+# spire-system   spiffe-agent-lllsv                 1/1    Running
+# spire-system   spiffe-spiffe-csi-driver-dkbwf     2/2    Running
 ```
 
 Once the deployment is complete, you can verify SPIKE is running by 

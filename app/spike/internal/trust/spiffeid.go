@@ -17,44 +17,44 @@ import (
 
 // Authenticate verifies if the provided SPIFFE ID belongs to a pilot instance.
 // Logs a fatal error and exits if verification fails.
-func Authenticate(spiffeid string) {
-	if !svid.IsPilot(env.TrustRoot(), spiffeid) {
+func Authenticate(SPIFFEID string) {
+	if !svid.IsPilot(env.TrustRoot(), SPIFFEID) {
 		log.Log().Error(
 			"Authenticate: You need a 'super user' SPIFFE ID to use this command.",
 		)
 		log.FatalF(
 			"Authenticate: You are not authorized to use this command (%s).\n",
-			spiffeid,
+			SPIFFEID,
 		)
 	}
 }
 
 // AuthenticateRecover validates the SPIFFE ID for the recover role and exits
 // the application if it does not match the recover SPIFFE ID.
-func AuthenticateRecover(spiffeid string) {
-	if !svid.IsPilotRecover(env.TrustRoot(), spiffeid) {
+func AuthenticateRecover(SPIFFEID string) {
+	if !svid.IsPilotRecover(env.TrustRoot(), SPIFFEID) {
 		log.Log().Error(
 			"AuthenticateRecover: You need a 'recover' " +
 				"SPIFFE ID to use this command.",
 		)
 		log.FatalF(
 			"AuthenticateRecover: You are not authorized to use this command (%s).\n",
-			spiffeid,
+			SPIFFEID,
 		)
 	}
 }
 
 // AuthenticateRestore verifies if the given SPIFFE ID is valid for restoration.
 // Logs a fatal error and exits if the SPIFFE ID validation fails.
-func AuthenticateRestore(spiffeid string) {
-	if !svid.IsPilotRestore(env.TrustRoot(), spiffeid) {
+func AuthenticateRestore(SPIFFEID string) {
+	if !svid.IsPilotRestore(env.TrustRoot(), SPIFFEID) {
 		log.Log().Error(
 			"AuthenticateRestore: You need a 'restore' " +
 				"SPIFFE ID to use this command.",
 		)
 		log.FatalF(
 			"AuthenticateRecover: You are not authorized to use this command (%s).\n",
-			spiffeid,
+			SPIFFEID,
 		)
 	}
 }

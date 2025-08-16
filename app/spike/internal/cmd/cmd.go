@@ -48,10 +48,14 @@ func Initialize(source *workloadapi.X509Source, SPIFFEID string) {
 // If an error occurs during execution, it prints the error and exits
 // with status code 1.
 func Execute() {
-	if err := rootCmd.Execute(); err != nil {
-		if _, err2 := fmt.Fprintf(os.Stderr, "%v\n", err); err2 != nil {
-			fmt.Println("failed to write to stderr: ", err2.Error())
-		}
-		os.Exit(1)
+	var cmdErr error
+	if cmdErr = rootCmd.Execute(); cmdErr == nil {
+		return
 	}
+
+	if _, err := fmt.Fprintf(os.Stderr, "%v\n", cmdErr); err != nil {
+		fmt.Println("failed to write to stderr: ", err.Error())
+	}
+	os.Exit(1)
+
 }

@@ -1,7 +1,7 @@
 +++
-# //    \\ SPIKE: Secure your secrets with SPIFFE. — https://spike.ist/
-# //  \\\\\ Copyright 2024-present SPIKE contributors.
-# // \\\\\\\ SPDX-License-Identifier: Apache-2.
+#    \\ SPIKE: Secure your secrets with SPIFFE. — https://spike.ist/
+#  \\\\\ Copyright 2024-present SPIKE contributors.
+# \\\\\\\ SPDX-License-Identifier: Apache-2.
 
 title = "Changelog"
 weight = 2
@@ -18,6 +18,13 @@ sort_by = "weight"
   Go idioms and conventions.
 * Added stricter linting.
 * Added vulnerability checks to SPIKE and SPIKE Go SDK.
+* enabled `GOFIPS140=v1.0.0`, the modern way of enabling FIPS. We 
+  are not using `boringcrypto` anymore.
+* Separated bootstrap logic into its own app to enable a more deterministic
+  initialization flow. This change will also unlock the ability to run SPIKE
+  Nexus in HA mode.
+* **BREAKING**: SPIKE now requires a separate initializer to begin its lifecycle.
+* FIPS 140.3 is enabled and enforced everywhere.
 
 ## [0.4.2] - 2025-07-19
 

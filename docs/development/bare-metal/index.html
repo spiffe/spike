@@ -173,7 +173,7 @@
 
         <ul class="subtree">
             <li >
-                    <a href="https://spike.ist/development/local-deployment/">Building SPIKE Locally</a>
+                    <a href="https://spike.ist/development/local-deployment/">SPIKE on Kubernetes</a>
                 </li>
 
                 <li class="active">
@@ -225,6 +225,9 @@
                                                     </li>
                                                 <li>
                                                         <a href="https://spike.ist/development/bare-metal/#start-spike-components">Start SPIKE Components</a>
+                                                    </li>
+                                                <li>
+                                                        <a href="https://spike.ist/development/bare-metal/#bootstrap-spike">Bootstrap SPIKE</a>
                                                     </li>
                                                 <li>
                                                         <a href="https://spike.ist/development/bare-metal/#using-spike-pilot">Using SPIKE Pilot</a>
@@ -957,8 +960,10 @@ loopback address, add the following entry to your <code>/etc/hosts</code> file:<
 following sections. It configures and runs SPIRE Server, SPIRE Agent,
 SPIKE Nexus, and SPIKE Keeper.</p>
 <p>You can run this to start all the required components:</p>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># Start everything.
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># Start everything:
 </span><span style="color:#bf616a;">make</span><span> start
+</span><span style="color:#65737e;"># Then, boostrap everything:
+</span><span style="color:#bf616a;">make</span><span> bootstrap
 </span></code></pre>
 <p>And then, on a separate terminal, you can run <code>spike</code>:</p>
 <pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># Make sure you have the `spike` binary in your PATH.
@@ -983,8 +988,8 @@ SPIKE Nexus, and SPIKE Keeper.</p>
 </span><span style="color:#65737e;"># 
 </span><span style="color:#65737e;"># Use &quot;spike [command] --help&quot; for help.
 </span></code></pre>
-<p>Although the <code>make start</code> script is convenient, it might be useful
-to run the components individually to understand the process better and
+<p>Although the <code>make start;make bootstrap</code> script is convenient, it might be
+useful to run the components individually to understand the process better and
 debug any issues that might arise.</p>
 <p>The following sections will guide you through the individual steps.</p>
 <blockquote>
@@ -1039,15 +1044,26 @@ window.</p>
 </span><span style="color:#a3be8c;">https://localhost:8543,https://localhost:8643</span><span>&#39;
 </span><span style="color:#bf616a;">./nexus
 </span></code></pre>
-<blockquote>
-<p><strong>Sequential SPIKE Keeper IDs</strong></p>
-<p>The mapping in <code>SPIKE_NEXUS_KEEPER_PEERS</code> should start from <code>"1"</code>
-and increase monotonically without any gaps in the sequence as shown
-in the sample code above. This is because of the way SPIKE Nexus internally
-computes and distributes the Shamir Shards. Not following this sequence
-will lead to errors—We may improve this behavior in the future and make
-it more flexible.</p>
-</blockquote>
+<h2 id="bootstrap-spike">Bootstrap SPIKE</h2>
+<p>Before using <strong>SPIKE</strong> you need to bootstrap it with a root key.
+For that, execute the following:</p>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#96b5b4;">cd </span><span>$</span><span style="color:#bf616a;">WORKSPACE</span><span>/spike
+</span><span style="color:#bf616a;">./hack/bare-metal/startup/bootstrap.sh
+</span><span style="color:#65737e;"># Sample Output:
+</span><span style="color:#65737e;"># {&quot;msg&quot;:&quot;boostrap.main&quot;,&quot;message&quot;:&quot;Send shards to SPIKE Keeper instances...&quot;}
+</span><span style="color:#65737e;"># {&quot;msg&quot;:&quot;boostrap.main&quot;,&quot;keeper ID&quot;:&quot;3&quot;}
+</span><span style="color:#65737e;"># {&quot;msg&quot;:&quot;rootShares&quot;,&quot;t&quot;:1,&quot;n&quot;:3}
+</span><span style="color:#65737e;"># {&quot;msg&quot;:&quot;rootShares&quot;,&quot;message&quot;:&quot;Generated Shamir shares&quot;}
+</span><span style="color:#65737e;"># {&quot;msg&quot;:&quot;rootShares&quot;,&quot;message&quot;:&quot;Successfully generated shards.&quot;}
+</span><span style="color:#65737e;"># {&quot;msg&quot;:&quot;post&quot;,&quot;payload&quot;:&quot;2522804946c6b844cecdabb32d&quot;}
+</span><span style="color:#65737e;"># {&quot;msg&quot;:&quot;post&quot;,&quot;path&quot;:&quot;https://localhost:8643/v1/store/contribute&quot;}
+</span><span style="color:#65737e;"># {&quot;msg&quot;:&quot;post&quot;,&quot;message&quot;:&quot;done&quot;}
+</span><span style="color:#65737e;"># {&quot;boostrap.main&quot;,&quot;keeper ID&quot;:&quot;1&quot;}
+</span><span style="color:#65737e;"># {&quot;msg&quot;:&quot;rootShares&quot;,&quot;t&quot;:1,&quot;n&quot;:3}
+</span><span style="color:#65737e;"># ... truncated ...
+</span><span style="color:#65737e;"># {&quot;msg&quot;:&quot;post&quot;,&quot;message&quot;:&quot;done&quot;}
+</span><span style="color:#65737e;"># {&quot;msg&quot;:&quot;boostrap.main&quot;,&quot;message&quot;:&quot;Sent shards to SPIKE Keeper instances.&quot;}
+</span></code></pre>
 <h2 id="using-spike-pilot">Using SPIKE Pilot</h2>
 <p>Define an alias to <strong>SPIKE</strong> Pilot:</p>
 <pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># ~/.bashrc

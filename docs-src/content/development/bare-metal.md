@@ -1,7 +1,7 @@
 +++
-# //    \\ SPIKE: Secure your secrets with SPIFFE. — https://spike.ist/
-# //  \\\\\ Copyright 2024-present SPIKE contributors.
-# // \\\\\\\ SPDX-License-Identifier: Apache-2.
+#    \\ SPIKE: Secure your secrets with SPIFFE. — https://spike.ist/
+#  \\\\\ Copyright 2024-present SPIKE contributors.
+# \\\\\\\ SPDX-License-Identifier: Apache-2.
 
 title = "SPIKE on Linux"
 weight = 4
@@ -237,8 +237,10 @@ SPIKE Nexus, and SPIKE Keeper.
 You can run this to start all the required components:
 
 ```bash
-# Start everything.
+# Start everything:
 make start
+# Then, boostrap everything:
+make bootstrap
 ```
 
 And then, on a separate terminal, you can run `spike`:
@@ -267,8 +269,8 @@ spike
 # Use "spike [command] --help" for help.
 ```
 
-Although the `make start` script is convenient, it might be useful
-to run the components individually to understand the process better and
+Although the `make start;make bootstrap` script is convenient, it might be 
+useful to run the components individually to understand the process better and
 debug any issues that might arise.
 
 The following sections will guide you through the individual steps.
@@ -352,14 +354,29 @@ https://localhost:8543,https://localhost:8643'
 ./nexus
 ```
 
-> **Sequential SPIKE Keeper IDs**
->
-> The mapping in `SPIKE_NEXUS_KEEPER_PEERS` should start from `"1"`
-> and increase monotonically without any gaps in the sequence as shown
-> in the sample code above. This is because of the way SPIKE Nexus internally
-> computes and distributes the Shamir Shards. Not following this sequence
-> will lead to errors---We may improve this behavior in the future and make
-> it more flexible.
+## Bootstrap SPIKE
+
+Before using **SPIKE** you need to bootstrap it with a root key.
+For that, execute the following:
+
+```bash
+cd $WORKSPACE/spike
+./hack/bare-metal/startup/bootstrap.sh
+# Sample Output:
+# {"msg":"boostrap.main","message":"Send shards to SPIKE Keeper instances..."}
+# {"msg":"boostrap.main","keeper ID":"3"}
+# {"msg":"rootShares","t":1,"n":3}
+# {"msg":"rootShares","message":"Generated Shamir shares"}
+# {"msg":"rootShares","message":"Successfully generated shards."}
+# {"msg":"post","payload":"2522804946c6b844cecdabb32d"}
+# {"msg":"post","path":"https://localhost:8643/v1/store/contribute"}
+# {"msg":"post","message":"done"}
+# {"boostrap.main","keeper ID":"1"}
+# {"msg":"rootShares","t":1,"n":3}
+# ... truncated ...
+# {"msg":"post","message":"done"}
+# {"msg":"boostrap.main","message":"Sent shards to SPIKE Keeper instances."}
+```
 
 ## Using SPIKE Pilot
 

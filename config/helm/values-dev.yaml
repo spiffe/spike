@@ -1,0 +1,120 @@
+#    \\ SPIKE: Secure your secrets with SPIFFE. — https://spike.ist/
+#  \\\\\ Copyright 2024-present SPIKE contributors.
+# \\\\\\\ SPDX-License-Identifier: Apache-2.0
+
+# SPIRE Helm Charts for SPIKE development.
+#
+# This `values` file contains customizations to align SPIRE helm charts settings
+# with the default environment variable and configurations that SPIKE
+# development environment expects. Additionally, we override the image
+# repositories to `localhost:5000` to enable testing local container images
+# that have not been published yet.
+
+global:
+  openshift: false
+  spire:
+    recommendations:
+      enabled: true
+    namespaces:
+      create: true
+    clusterName: spiffe
+    trustDomain: spike.ist
+    caSubject:
+      country: US
+      organization: SPIKE
+      commonName: spike.ist
+
+spike-keeper:
+  enabled: true
+  namespaceOverride: spike
+  image:
+    registry: localhost:5000
+    repository: spike-keeper
+    pullPolicy: IfNotPresent
+    tag: "dev"
+
+spike-nexus:
+  enabled: true
+  namespaceOverride: spike
+  image:
+    registry: localhost:5000
+    repository: spike-nexus
+    pullPolicy: IfNotPresent
+    tag: "dev"
+
+spike-pilot:
+  enabled: true
+  namespaceOverride: spike
+  image:
+    registry: localhost:5000
+    repository: spike-pilot
+    pullPolicy: IfNotPresent
+    tag: "dev"
+
+spire-server:
+  enabled: true
+
+  controllerManager:
+    identities:
+      clusterSPIFFEIDs:
+        spike-bootstrap:
+          type: raw
+          enabled: true
+          spiffeIDTemplate: spiffe://{{ .TrustDomain }}/spike/bootstrap/{{ .PodMeta.Name }}
+          podSelector:
+            matchLabels:
+              component: spike-bootstrap
+          namespaceSelector:
+            matchExpressions:
+              - key: kubernetes.io/metadata.name
+                operator: In
+                values:
+                  - spike
+        spike-keeper:
+          type: raw
+          enabled: true
+          spiffeIDTemplate: spiffe://{{ .TrustDomain }}/spike/keeper/{{ .PodMeta.Name }}
+          podSelector:
+            matchLabels:
+              component: spike-keeper
+          namespaceSelector:
+            matchExpressions:
+              - key: kubernetes.io/metadata.name
+                operator: In
+                values:
+                  - spike
+        spike-nexus:
+          type: raw
+          enabled: true
+          spiffeIDTemplate: spiffe://{{ .TrustDomain }}/spike/nexus/{{ .PodMeta.Name }}
+          podSelector:
+            matchLabels:
+              component: spike-nexus
+          namespaceSelector:
+            matchExpressions:
+              - key: kubernetes.io/metadata.name
+                operator: In
+                values:
+                  - spike
+        spike-pilot:
+          type: raw
+          enabled: true
+          spiffeIDTemplate: spiffe://{{ .TrustDomain }}/spike/pilot/role/superuser
+          podSelector:
+            matchLabels:
+              component: spike-pilot
+          namespaceSelector:
+            matchExpressions:
+              - key: kubernetes.io/metadata.name
+                operator: In
+                values:
+                  - spike
+
+spire-agent:
+  enabled: true
+
+spiffe-csi-driver:
+  enabled: true
+
+spiffe-oidc-discovery-provider:
+  enabled: true

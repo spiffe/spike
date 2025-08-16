@@ -6,7 +6,7 @@
 # See https://github.com/spiffe/helm-charts-hardened for documentation
 # and configuration options.
 
-# This values file shows additional customization options that you can use
+# This `values` file shows additional customization options that you can use
 # for your SPIKE deployment.
 #
 # If you want to "just test out" SPIKE without any configuration hurdles,
