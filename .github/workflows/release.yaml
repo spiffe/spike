@@ -70,7 +70,7 @@ jobs:
     needs: docker
     strategy:
       matrix:
-        app: [pilot, keeper, nexus]
+        app: [pilot, keeper, nexus, demo, bootstrap]
     steps:
       - name: Log in to the Container registry
         uses: docker/login-action@v3.3.0
