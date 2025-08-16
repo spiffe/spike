@@ -9,31 +9,14 @@ package config
 
 import (
 	"os"
-	"path"
 	"path/filepath"
+
+	"github.com/spiffe/spike/app"
 )
 
-// #region spike:build
-
-// These constants are automatically updated during the release process.
-// Please do not modify them manually.
-
-const SpikeNexusVersion = "0.4.2"
-const SpikePilotVersion = "0.4.2"
-const SpikeKeeperVersion = "0.4.2"
-
-// #endregion
-
-const spikeNexusTombstoneFile = "spike.nexus.bootstrap.tombstone"
-
-// SpikeNexusTombstonePath returns the full file path for the tombstone file.
-// This file is used to indicate the bootstrap status of SPIKE Nexus.
-// It combines the data folder path with the tombstone file name.
-func SpikeNexusTombstonePath() string {
-	return path.Join(
-		SpikeNexusDataFolder(), spikeNexusTombstoneFile,
-	)
-}
+var SpikeNexusVersion = app.Version
+var SpikePilotVersion = app.Version
+var SpikeKeeperVersion = app.Version
 
 // SpikeNexusDataFolder returns the path to the directory where Nexus stores
 // its encrypted backup for its secrets and other data.

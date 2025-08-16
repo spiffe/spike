@@ -12,7 +12,6 @@ ARG APPVERSION
 ENV GOOS=$TARGETOS \
     GOARCH=$TARGETARCH \
     APPVERSION=$APPVERSION \
-    GOEXPERIMENT=boringcrypto \
     CGO_ENABLED=1
 
 WORKDIR /workspace
@@ -37,10 +36,16 @@ COPY . .
 
 # Build the app for the target architecture
 RUN echo "Building SPIKE Pilot on $BUILDPLATFORM targeting $TARGETPLATFORM"
+# buildx.sh requires ./app/$appName/cmd/main.go to exist.
+# Here, $appName is "pilot":
 RUN ./hack/docker/buildx.sh ${TARGETARCH} spike
 
 # Use BusyBox as the base image
-# FROM busybox:1.36-musl AS spike
+# While using a distroless base reduces the attack surface,
+# SPIKE Pilot is an operational tool that does not actively run
+# in a production network, and does not expose any outbound network
+# endpoints. Therefore, including a minimal base image that has
+# a shell is the right trade-off between security and convenience.
 FROM busybox:1.36 AS spike
 # Redefine the ARG in this stage to make it available
 ARG APPVERSION

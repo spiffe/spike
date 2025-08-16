@@ -1,5 +1,9 @@
 name: Build and Push to Docker Hub
 
+#    \\ SPIKE: Secure your secrets with SPIFFE. — https://spike.ist/
+#  \\\\\ Copyright 2024-present SPIKE contributors.
+# \\\\\\\ SPDX-License-Identifier: Apache-2.0
+
 on:
   release:
     types: [published]
@@ -16,9 +20,12 @@ jobs:
     runs-on: ${{ matrix.archmap[matrix.arch] }}
     strategy:
       matrix:
-        app: [pilot, keeper, nexus]
+        app: [pilot, keeper, nexus, demo, bootstrap]
         arch: [linux/amd64, linux/arm64]
-        archmap: [{ "linux/amd64": "ubuntu-24.04", "linux/arm64": "ubuntu-24.04-arm" }]
+        archmap: [{
+          "linux/amd64": "ubuntu-24.04",
+          "linux/arm64": "ubuntu-24.04-arm"
+        }]
     permissions:
       contents: read
       packages: write
@@ -54,23 +61,16 @@ jobs:
           VERSION=${VERSION#v}  # Remove 'v' prefix if present
           export PUSH=true
           
-          ./hack/docker/build-push-sign.sh ${{ matrix.app }} ${{ matrix.arch }} ${VERSION} ${{ env.REGISTRY }} ${{ env.REPOSITORY }}
-
-#      - name: Sign the images with GitHub OIDC (Cosign)
-#        env:
-#          DIGEST: ${{ steps.build-and-load.outputs.digest }}
-#          TAGS: ${{ steps.meta.outputs.tags }}
-#        run: |
-#          echo "${TAGS}" | tr ',' '\n' | while read -r tag; do
-#            cosign sign --yes "${tag}@${DIGEST}"
-#          done
+          ./hack/docker/build-push-sign.sh \
+            ${{ matrix.app }} ${{ matrix.arch }} \
+            ${VERSION} ${{ env.REGISTRY }} ${{ env.REPOSITORY }}
 
   manifest:
     runs-on: ubuntu-24.04
     needs: docker
     strategy:
       matrix:
-        app: [pilot, keeper, nexus]
+        app: [pilot, keeper, nexus, demo, bootstrap]
     steps:
       - name: Log in to the Container registry
         uses: docker/login-action@v3.3.0

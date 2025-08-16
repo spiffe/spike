@@ -1,5 +1,9 @@
 name: Build Containers
 
+#    \\ SPIKE: Secure your secrets with SPIFFE. — https://spike.ist/
+#  \\\\\ Copyright 2024-present SPIKE contributors.
+# \\\\\\\ SPDX-License-Identifier: Apache-2.0
+
 on:
   pull_request: {}
 
@@ -13,29 +17,33 @@ jobs:
     runs-on: ${{ matrix.archmap[matrix.arch] }}
     strategy:
       matrix:
-        app: [pilot, keeper, nexus]
+        app: [pilot, keeper, nexus, demo, bootstrap]
         arch: [linux/amd64, linux/arm64]
-        archmap: [{ "linux/amd64": "ubuntu-24.04", "linux/arm64": "ubuntu-24.04-arm" }]
+        archmap: [{
+          "linux/amd64": "ubuntu-24.04",
+          "linux/arm64": "ubuntu-24.04-arm"
+        }]
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
 
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v3
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
 
-      - name: Install cosign
-        uses: sigstore/cosign-installer@v3.3.0
+    - name: Install cosign
+      uses: sigstore/cosign-installer@v3.3.0
 
-      # Build and push images using the script
-      - name: Build and push images
-        run: |
-          # Extract version from release tag
-          VERSION="${{ github.sha }}"
-          
-          ./hack/docker/build-push-sign.sh ${{ matrix.app }} ${{ matrix.arch }} ${VERSION} ${{ env.REGISTRY }} ${{ env.REPOSITORY }}
+    # Build and push images using the script
+    - name: Build and push images
+      run: |
+        # Set version as GitHub SHA hash.
+        VERSION="${{ github.sha }}"
+        ./hack/docker/build-push-sign.sh \
+          ${{ matrix.app }} ${{ matrix.arch }} \
+          ${VERSION} ${{ env.REGISTRY }} ${{ env.REPOSITORY }}

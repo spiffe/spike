@@ -1,9 +1,9 @@
 +++
-# //    \\ SPIKE: Secure your secrets with SPIFFE. — https://spike.ist/
-# //  \\\\\ Copyright 2024-present SPIKE contributors.
-# // \\\\\\\ SPDX-License-Identifier: Apache-2.
+#    \\ SPIKE: Secure your secrets with SPIFFE. — https://spike.ist/
+#  \\\\\ Copyright 2024-present SPIKE contributors.
+# \\\\\\\ SPDX-License-Identifier: Apache-2.
 
-title = "Building SPIKE Locally"
+title = "SPIKE on Kubernetes"
 weight = 3
 sort_by = "weight"
 +++
@@ -21,7 +21,7 @@ In this guide we will follow a similar approach to
 
 1. Build container images locally from existing source code.
 2. Push the container images to a local container registry. 
-3. Use a customized `values.yaml` for the helm charts to create a more
+3. Use a customized `values-dev.yaml` for the helm charts to create a more
    production-like namespace structure.
 
 [spike-on-linux]: @/development/bare-metal.md "SPIKE on Linux"
@@ -88,7 +88,7 @@ Since Minikube contains its Kubernetes cluster in a virtual machine, accessing
 its container registry requires network mapping. There are several ways to 
 achieve this. In this guide, we will use Kubernetes port forwarding.
 
-Open a terminal, change your directory to the project's folder and execute
+Open a terminal, change your directory to the project's folder, and execute
 the following:
 
 ```bash 
@@ -121,14 +121,77 @@ registry:
 make docker-push
 ```
 
+## Docker Windows Subsystem for Linux Integration Issues
+
+If `make docker-push` hangs up or gives a network error, it's typically
+related to how Docker for Windows, Windows, and Windows Subsystem for Linux
+handle routing, DNS resolution, and networking.
+ 
+One way to push container images to the Minikube cluster without adding them
+to the local Minikube registry would be to run the following script:
+
+```bash
+make k8s-load-images
+```
+
+This will effectively have the same end-result as pushing the images to
+the registry.
+
+Alternatively, you might try pointing your terminal's Docker CLI to the 
+Docker engine inside Minikube:
+
+```bash
+# Set Minikube Docker environment
+eval $(minikube docker-env)
+# Interact with Minikube's Docker Engine
+make docker-build
+# Unset Minikube Docker environment when you're done
+eval $(minikube docker-env --unset)
+```
+
+For Mac OS and Linuxes, where if you get registry-access-related errors, adding
+the following to `/etc/docker/daemon.json` can help:
+
+```json
+{
+  "insecure-registries": ["localhost:5000"]
+}
+```
+
+For Docker for Mac, or Docker for Windows, you will need to update
+the Docker Engine settings from the "*Settings > Docker Engine*" menu as
+follows:
+
+```json
+{
+  "builder": {
+    "gc": {
+      "defaultKeepStorage": "20GB",
+      "enabled": true
+    }
+  },
+  "experimental": false,
+  "insecure-registries": [
+    "localhost:5000"
+  ]
+}
+```
+
+Once the change is done, don't forget to restart the Docker Engine.
+
+That said, `make k8s-load-images` is the safest and simplest way to push
+the images into Minikube without having to deal with Docker networking,
+port forwarding, and Docker registry, making it the preferred method, and
+it is what we recommend.
+
 ## Deploying SPIRE and SPIKE to the Local Cluster
 
 Once we push the container images to the registry, we can now deploy **SPIRE**
 and **SPIKE**.
 
 ```bash
-# Uses `./config/helm/values-custom.yaml`
-make deploy-local
+# Uses `./config/helm/values-dev.yaml`
+make deploy-dev-local
 ```
 
 ## Verifying SPIKE Deployment

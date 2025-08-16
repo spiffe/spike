@@ -173,7 +173,7 @@
 
         <ul class="subtree">
             <li >
-                    <a href="https://spike.ist/development/local-deployment/">Building SPIKE Locally</a>
+                    <a href="https://spike.ist/development/local-deployment/">SPIKE on Kubernetes</a>
                 </li>
 
                 <li >
@@ -750,7 +750,7 @@ root key zeroed out in memory. This was intended to provide a system-wide freeze
 for security or operational reasons.</p>
 <p>However, this approach introduces significant complexity, especially in
 high-availability (<em>HA</em>) and distributed deployments. It also creates new
-operational and security risks, and may not align with SPIFFE-native best
+operational and security risks and may not align with SPIFFE-native best
 practices.</p>
 <h2 id="decision-drivers">Decision Drivers</h2>
 <ul>
@@ -811,8 +811,6 @@ at the trust boundary or infrastructure, not in application logic.</li>
 shared lock state, avoiding performance and reliability issues.</li>
 <li><strong>SPIFFE-Native:</strong> Embraces the SPIFFE/SPIRE model for access control,
 rather than reinventing similar mechanisms in SPIKE.</li>
-<li><strong>Workarounds Remain Possible:</strong> Direct DB manipulation is always possible
-for those with privileged access, but is not an official or supported method.</li>
 </ul>
 <h2 id="consequences">Consequences</h2>
 <h3 id="positive">Positive</h3>
@@ -838,7 +836,7 @@ directly supported</li>
 <ul>
 <li><strong>Rejected</strong> due to complexity, risk of split-brain, performance overhead,
 and operational ambiguity in HA setups.</li>
-<li>Would require distributed consensus or polling, and add significant code and
+<li>Would require distributed consensus or polling and add significant code and
 operational burden.</li>
 </ul>
 <h3 id="infrastructure-level-controls">Infrastructure-Level Controls</h3>

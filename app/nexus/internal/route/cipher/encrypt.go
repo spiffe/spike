@@ -16,7 +16,7 @@ import (
 	"github.com/spiffe/spike-sdk-go/log"
 
 	"github.com/spiffe/spike/app/nexus/internal/state/persist"
-	journal "github.com/spiffe/spike/internal/journal"
+	"github.com/spiffe/spike/internal/journal"
 	"github.com/spiffe/spike/internal/net"
 )
 
@@ -47,7 +47,7 @@ import (
 // Streaming mode may have different permission requirements.
 //
 // Errors:
-//   - Returns ErrReadFailure if request body cannot be read
+//   - Returns ErrReadFailure if the request body cannot be read
 //   - Returns ErrParseFailure if JSON request cannot be parsed
 //   - Returns ErrInternal if cipher is unavailable or nonce generation fails
 //   - Returns appropriate HTTP status codes for different error conditions

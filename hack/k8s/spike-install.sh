@@ -53,24 +53,15 @@ echo "SPIKE namespaces:"
 kubectl get namespaces | grep spike || echo "No spike namespaces found"
 
 helm upgrade --install -n spire-mgmt spire-crds spire-crds \
-  --repo https://spiffe.github.io/helm-charts-hardened/ --create-namespace
+  --repo https://spiffe.github.io/helm-charts-hardened/ \
+  --version 0.26.1 --create-namespace
 
 echo "Sleeping for 15 secs before installing SPIRE and SPIKE..."
 sleep 15
 
-##helm upgrade --install -n spire-mgmt spire spire \
-##  --repo https://spiffe.github.io/helm-charts-hardened/ \
-##  -f ./config/helm/values.yaml
-#
-## Install SPIKE from feature branch until it gets merged to upstream:
-## See: https://github.com/spiffe/helm-charts-hardened/pull/591
-#cd ..
-#
-##helm upgrade --install -n spire-mgmt spiffe ./helm-charts-hardened/charts/spire \
-##  -f ./spike/config/helm/values.yaml
-
 helm upgrade --install -n spire-mgmt spiffe spire \
   --repo https://spiffe.github.io/helm-charts-hardened/ \
+  --version 0.26.1 \
   -f ./spike/config/helm/values-custom.yaml
 
 echo "Sleeping for 15 secs..."

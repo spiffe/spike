@@ -23,17 +23,15 @@ if [ -z "$APP" ] || [ -z "$ARCH" ] || [ -z "$VERSION" ]; then
   echo "  <app>: pilot, keeper, or nexus"
   echo "  <arch>: linux/amd64 or linux/arm64"
   echo "  <version>: version tag (e.g., 1.2.3)"
-  echo "  [registry]: Docker registry (default: docker.io)"
-  echo "  [repository]: Docker repository (default: getspike)"
   exit 1
 fi
 
 # Convert architecture format for tags (replace / with -)
-ARCH_TAG=$(echo $ARCH | sed 's/\//-/g')
+ARCH_TAG=$(echo "$ARCH" | sed 's/\//-/g')
 
 # Generate tags
 GIT_SHA=$(git rev-parse --short HEAD)
-MAJOR_MINOR=$(echo $VERSION | cut -d. -f1,2)
+MAJOR_MINOR=$(echo "$VERSION" | cut -d. -f1,2)
 TAGS=(
   "$IMAGE_URL:${VERSION}-${ARCH_TAG}"
   "$IMAGE_URL:${MAJOR_MINOR}-${ARCH_TAG}"

@@ -1,4 +1,9 @@
 name: CI
+
+#    \\ SPIKE: Secure your secrets with SPIFFE. — https://spike.ist/
+#  \\\\\ Copyright 2024-present SPIKE contributors.
+# \\\\\\\ SPDX-License-Identifier: Apache-2.0
+
 on:
   pull_request: {}
   push:
@@ -98,9 +103,13 @@ jobs:
           docker tag spike-pilot:dev ghcr.io/spiffe/spike-pilot:dev
           docker tag spike-nexus:dev ghcr.io/spiffe/spike-nexus:dev
           docker tag spike-keeper:dev ghcr.io/spiffe/spike-keeper:dev
+          docker tag spike-demo:dev ghcr.io/spiffe/spike-demo:dev
+          docker tag spike-bootstrap:dev ghcr.io/spiffe/spike-bootstrap:dev
           kind load docker-image --name chart-testing ghcr.io/spiffe/spike-pilot:dev
           kind load docker-image --name chart-testing ghcr.io/spiffe/spike-nexus:dev
           kind load docker-image --name chart-testing ghcr.io/spiffe/spike-keeper:dev
+          kind load docker-image --name chart-testing ghcr.io/spiffe/spike-demo:dev
+          kind load docker-image --name chart-testing ghcr.io/spiffe/spike-bootstrap:dev
           cd ci/integration/minio-rolearn
           ./setup.sh
           ./test.sh

@@ -17,12 +17,14 @@ docker tag spike-keeper:$SPIKE_VERSION localhost:$REGISTRY_PORT/spike-keeper:$SP
 docker tag spike-nexus:$SPIKE_VERSION localhost:$REGISTRY_PORT/spike-nexus:$SPIKE_VERSION
 docker tag spike-pilot:$SPIKE_VERSION localhost:$REGISTRY_PORT/spike-pilot:$SPIKE_VERSION
 docker tag spike-demo:$SPIKE_VERSION localhost:$REGISTRY_PORT/spike-demo:$SPIKE_VERSION
+docker tag spike-bootstrap:$SPIKE_VERSION localhost:$REGISTRY_PORT/spike-bootstrap:$SPIKE_VERSION
 
 # Push the images to the MicroK8s registry
 docker push localhost:$REGISTRY_PORT/spike-keeper:$SPIKE_VERSION
 docker push localhost:$REGISTRY_PORT/spike-nexus:$SPIKE_VERSION
 docker push localhost:$REGISTRY_PORT/spike-pilot:$SPIKE_VERSION
 docker push localhost:$REGISTRY_PORT/spike-demo:$SPIKE_VERSION
+docker push localhost:$REGISTRY_PORT/spike-bootstrap:$SPIKE_VERSION
 
 # Verify the images are in the registry
 # The registry API can be queried to list available images
@@ -33,3 +35,4 @@ curl http://localhost:$REGISTRY_PORT/v2/spike-keeper/tags/list
 curl http://localhost:$REGISTRY_PORT/v2/spike-nexus/tags/list
 curl http://localhost:$REGISTRY_PORT/v2/spike-pilot/tags/list
 curl http://localhost:$REGISTRY_PORT/v2/spike-demo/tags/list
+curl http://localhost:$REGISTRY_PORT/v2/spike-bootstrap/tags/list

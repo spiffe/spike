@@ -14,7 +14,7 @@ import (
 	"github.com/spiffe/spike-sdk-go/security/mem"
 
 	"github.com/spiffe/spike/app/keeper/internal/state"
-	journal "github.com/spiffe/spike/internal/journal"
+	"github.com/spiffe/spike/internal/journal"
 	"github.com/spiffe/spike/internal/net"
 )
 

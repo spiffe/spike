@@ -173,7 +173,7 @@
 
         <ul class="subtree">
             <li >
-                    <a href="https://spike.ist/development/local-deployment/">Building SPIKE Locally</a>
+                    <a href="https://spike.ist/development/local-deployment/">SPIKE on Kubernetes</a>
                 </li>
 
                 <li >
@@ -948,7 +948,7 @@ present</li>
 <ol>
 <li>
 <p><strong>Store policy YAML files in a Git repository</strong></p>
-<pre data-lang="text" style="background-color:#2b303b;color:#c0c5ce;" class="language-text "><code class="language-text" data-lang="text"><span>policies/
+<pre data-lang="txt" style="background-color:#2b303b;color:#c0c5ce;" class="language-txt "><code class="language-txt" data-lang="txt"><span>policies/
 </span><span>├── web-service-policy.yaml
 </span><span>├── database-policy.yaml
 </span><span>└── admin-policy.yaml
@@ -1068,7 +1068,7 @@ requested resource <strong>path</strong> are matched against these compiled <str
 expressions</strong>. This ensures that both identity and resource patterns follow the
 specified rules and allow for flexibility with wildcards or exact matches.</p>
 <h3 id="path-pattern-examples">Path Pattern Examples</h3>
-<pre data-lang="text" style="background-color:#2b303b;color:#c0c5ce;" class="language-text "><code class="language-text" data-lang="text"><span>secrets/               # All resources in the secrets directory
+<pre data-lang="txt" style="background-color:#2b303b;color:#c0c5ce;" class="language-txt "><code class="language-txt" data-lang="txt"><span>secrets/               # All resources in the secrets directory
 </span><span>secrets/database/      # Only resources in the database subdirectory  
 </span><span>secrets/database/creds # Only the specific creds resource
 </span><span>
