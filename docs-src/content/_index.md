@@ -22,22 +22,3 @@ as its identity control plane.
 
 **SPIKE** protects your secrets and helps your ops, SREs, and sysadmins
 `#sleepmore`.
-
-## Getting Started
-
-Here are a few pointers to learn more about **SPIKE**:
-
-* [**See the Architectural Design Document**][architecture] to learn more
-  about **SPIKE**,
-* [**Take a look at the quickstart guide**][quickstart] to get your hands
-  dirty.
-* [Check out **SPIKE** CLI Reference][cli]
-* [**Join the SPIKE community**][community] to ask your questions and 
-  learn from the subject-matter experts.
-
-[spiffe]: https://spiffe.io/ "Turtle Power"
-[architecture]: @/architecture/system-overview.md "SPIKE Architecture"
-[quickstart]: @/getting-started/quickstart.md "SPIKE Quickstart"
-[community]: @/community/hello.md "Open Source is better together."
-[cli]: @/usage/commands/_index.md
-[github]: https://github.com/spiffe/spike

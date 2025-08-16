@@ -347,11 +347,29 @@ using SPIKE.
 
 Here are a few links to get you started:
 
-* [Building SPIKE Locally and Deploying to Minikube](@/development/local-deployment.md)
-* [Bare Metal SPIKE Installation](@/development/bare-metal.md)
-* [Configuring SPIKE](@/usage/configuration.md)
-* [SPIKE Architecture](@/architecture/_index.md)
-* [SPIKE Production Hardening Guide](@/operations/production.md)
+* [Building **SPIKE** Locally and Deploying to Minikube][local-deployment]
+* [Bare Metal **SPIKE** Installation][bare-metal]
+* [Configuring **SPIKE**][configuration]
+* [**SPIKE** Architecture][architecture]
+* [*8SPIKE** Production Hardening Guide][hardening]
+* [**SPIKE** CLI Reference][cli]
+
+## Open Source Is Better Together
+
+[**Join the SPIKE community**][community] to ask your questions and
+learn from the subject-matter experts.
+
+[hardening]: @/operations/production.md "SPIKE Production Hardening Guide"
+[architecture]: @/architecture/_index.md "SPIKE Architecture"
+[configuration]: @/usage/configuration.md "Configuring SPIKE"
+[local-deployment]: @/development/local-deployment.md "Building SPIKE Locally and Deploying to Minikube"
+[bare-metal]: @/development/bare-metal.md "Bare Metal SPIKE Installation"
+[spiffe]: https://spiffe.io/ "Turtle Power"
+[architecture]: @/architecture/system-overview.md "SPIKE Architecture"
+[quickstart]: @/getting-started/quickstart.md "SPIKE Quickstart"
+[community]: @/community/hello.md "Open Source is better together."
+[cli]: @/usage/commands/_index.md
+[github]: https://github.com/spiffe/spike
 
 <p>&nbsp;</p>
 
