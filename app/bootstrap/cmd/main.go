@@ -47,7 +47,7 @@ func main() {
 	defer spiffe.CloseSource(src)
 	sv, err := src.GetX509SVID()
 	if err != nil {
-		log.FatalF(fName,
+		log.FatalLn(fName,
 			"message", "Failed to get X.509 SVID",
 			"err", err.Error())
 		os.Exit(1)
