@@ -221,6 +221,12 @@
                                                         <a href="https://spike.ist/tracking/changelog/#recent">Recent</a>
                                                     </li>
                                                 <li>
+                                                        <a href="https://spike.ist/tracking/changelog/#0-4-3-2025-08-16-prerelease">[0.4.3] - 2025-08-16 (prerelease)</a>
+                                                    </li>
+                                                <li>
+                                                        <a href="https://spike.ist/tracking/changelog/#changed">Changed</a>
+                                                    </li>
+                                                <li>
                                                         <a href="https://spike.ist/tracking/changelog/#0-4-2-2025-07-19">[0.4.2] - 2025-07-19</a>
                                                     </li>
                                                 <li>
@@ -774,34 +780,65 @@
             
         <h1 id="spike-changelog">SPIKE Changelog</h1>
 <h2 id="recent">Recent</h2>
+<p>TBD</p>
+<h2 id="0-4-3-2025-08-16-prerelease">[0.4.3] - 2025-08-16 (<em>prerelease</em>)</h2>
+<p>This is a “<em>prerelease</em>” version to enable upstream SPIFFE Helm Charts
+integration initiatives. The most significant change is the introduction of a
+<a href="https://github.com/spiffe/spike/blob/main/app/bootstrap/README.md" title="SPIKE Bootstrap"><strong>SPIKE Bootstrap</strong> app</a> that is responsible for initializing
+<strong>SPIKE Nexus</strong>. This new approach separates the bootstrapping workflow that
+had been inside <strong>SPIKE Nexus</strong>’ initialization workflow before. And that
+enables us an opportunity to run <strong>SPIKE Nexus</strong> in HA mode without designing
+elaborate, and potentially error-prone, consensus algorithms.</p>
+<h3 id="added">Added</h3>
 <ul>
-<li>SPIKE Nexus, SPIKE Pilot, and SPIKE Keeper can now be built as Windows
-binaries too.</li>
-<li>SPIKE and SPIKE Go SDK code has been refactored to better align with common
-Go idioms and conventions.</li>
-<li>Added stricter linting.</li>
-<li>Added vulnerability checks to SPIKE and SPIKE Go SDK.</li>
-<li>enabled <code>GOFIPS140=v1.0.0</code>, the modern way of enabling FIPS. We
-are not using <code>boringcrypto</code> anymore.</li>
-<li>Separated bootstrap logic into its own app to enable a more deterministic
-initialization flow. This change will also unlock the ability to run SPIKE
-Nexus in HA mode.</li>
-<li><strong>BREAKING</strong>: SPIKE now requires a separate initializer to begin its lifecycle.</li>
-<li>FIPS 140.3 is enabled and enforced everywhere.</li>
+<li><strong>FIPS 140.3 Compliance</strong>: FIPS is now enabled at <strong>build time</strong>, and it’s
+enforced everywhere. We are using <code>GOFIPS140=v1.0.0</code>, the modern way of
+enabling FIPS, retiring our older <code>boringcrypto</code> implementation.</li>
+<li><code>spike policy list</code> command can now filter by SPIFFE ID pattern and path
+pattern.</li>
+<li><code>spike policy</code> command cano now accept a YAML file as input, instead of
+requiring command-line parameters.</li>
+<li>SPIKE Go SDK now has a generator that creates pattern-based, secure,
+randomized secrets.</li>
+<li>Implemented a (currently experimental) “SPIKE Lite” mode where SPIKE Nexus
+would not need a backing store, or policies, and can leverage the storage
+and policy mechanism of S3-compatible object stores (such as Minio). Once
+we fully implement and polish SPIKE Lite, we will also update documentation
+and use cases to allow users to understand the benefits and liabilities of
+SPIKE Lite and why they might want to use one over the other.</li>
+</ul>
+<h2 id="changed">Changed</h2>
+<ul>
+<li>Better alignment with idiomatic Go practices. SPIKE and SPIKE Go SDK code
+has been refactored to better align with common Go idioms and conventions.
+We also created a <code>make audit</code> target to run style checks and linters that
+enforce a consistent code style and some of these guidelines. <code>make audit</code>
+is also a part of the CI pipeline to ensure that the code is always compliant
+at every commit. In addition <code>make audit</code> also does vulnerability checks.</li>
+<li><strong>BREAKING</strong>: SPIKE Nexus now requires a separate initializer (SPIKE Bootstrap)
+to begin its lifecycle. The user guides and relevant documentation have been
+updated to reflect this change.</li>
+<li>Updated Go to the latest version (<code>1.24.6</code>).</li>
+</ul>
+<h3 id="fixed">Fixed</h3>
+<ul>
+<li>Fixed a bug related to Windows builds. SPIKE Nexus, SPIKE Pilot, and SPIKE
+Keeper can now be built as Windows binaries too.</li>
+<li>Various refactorings, improvements, code cleanup, and bug fixes.</li>
 </ul>
 <h2 id="0-4-2-2025-07-19">[0.4.2] - 2025-07-19</h2>
-<h3 id="added">Added</h3>
+<h3 id="added-1">Added</h3>
 <ul>
 <li>Ability to configure to not how SPIKE banner on startup.</li>
 <li>Ability to configure to show a warning if memory locking is not
 available on the system.</li>
 <li>SPIKE can now be deployed from SPIFFE helm charts. Tested and verified!</li>
 <li>Documentation updates.</li>
-<li>SPIKE can be now be installed from <a href="https://github.com/spiffe/helm-charts-hardened">SPIFFE Helm
+<li>SPIKE can now be installed from <a href="https://github.com/spiffe/helm-charts-hardened">SPIFFE Helm
 Charts</a> and can
 <a href="https://vimeo.com/v0lkan/spike-federation">federate secrets across clusters</a></li>
 </ul>
-<h3 id="changed">Changed</h3>
+<h3 id="changed-1">Changed</h3>
 <ul>
 <li>Moved logging to SPIKE SDK. VSecM v2 will share the same logging setup.</li>
 <li><code>spike policy</code> command now accepts file input; you can design your policies
@@ -814,7 +851,7 @@ in Logs When Processing Malformed
 Data</a></li>
 </ul>
 <h2 id="0-4-1-2025-06-01-prerelease">[0.4.1] - 2025-06-01 (<em>prerelease</em>)</h2>
-<h3 id="added-1">Added</h3>
+<h3 id="added-2">Added</h3>
 <ul>
 <li>Initial support for Kubernetes deployments.</li>
 <li>Better shard sanitization during recovery procedures.</li>
@@ -823,7 +860,7 @@ Data</a></li>
 <li>Added the ability to optionally skip database schema creation during SPIKE
 initialization.</li>
 </ul>
-<h3 id="changed-1">Changed</h3>
+<h3 id="changed-2">Changed</h3>
 <ul>
 <li><strong>BREAKING</strong>: SDK validation methods now take trust root as an argument.</li>
 <li><strong>BREAKING</strong>: <code>SPIKE_NEXUS_KEEPER_URL</code> is now a comma-delimited list of URLs
@@ -834,13 +871,13 @@ deployment scenarios.</li>
 <li>SPIKE now uses GitHub Container Registry to store its container image
 (instead of Docker Hub).</li>
 </ul>
-<h3 id="fixed">Fixed</h3>
+<h3 id="fixed-1">Fixed</h3>
 <ul>
 <li>Fixed a bug where the doomsday recovery procedure was not immediately
 restoring the data.</li>
 </ul>
 <h2 id="0-4-0-2025-04-16">[0.4.0] - 2025-04-16</h2>
-<h3 id="added-2">Added</h3>
+<h3 id="added-3">Added</h3>
 <ul>
 <li>Added more configuration options to SPIKE Nexus.</li>
 <li>Updated documentation around security and production hardening.</li>
@@ -848,7 +885,7 @@ restoring the data.</li>
 a release only after all tests pass. These tests are manual for now but
 can be automated later down the line.</li>
 </ul>
-<h3 id="fixed-1">Fixed</h3>
+<h3 id="fixed-2">Fixed</h3>
 <ul>
 <li>Fixed a bug related to policies not recovering after a SPIKE Nexus crash.
 Now, both secrets and policies recover without an issue.</li>
@@ -860,7 +897,7 @@ and secrets.</li>
 up when no longer needed (but not before).</li>
 <li>Various bug fixes and improvements.</li>
 </ul>
-<h3 id="changed-2">Changed</h3>
+<h3 id="changed-3">Changed</h3>
 <ul>
 <li>Moved some common reusable code to <code>spike-sdk-go</code>.</li>
 <li>Various changes and improvements in SPIKE Go SDK.</li>
@@ -881,7 +918,7 @@ the start of an audit trail).</li>
 <li><a href="https://github.com/spiffe/spike/security/dependabot/4">Fixed <code>CVE-2025-22870</code>: HTTP Proxy bypass using IPv6 Zone IDs in golang.org/x/net</a></li>
 </ul>
 <h2 id="0-3-1-2025-03-04">[0.3.1] - 2025-03-04</h2>
-<h3 id="added-3">Added</h3>
+<h3 id="added-4">Added</h3>
 <ul>
 <li>SPIKE Nexus now accepts a dynamic number of SPIKE Keepers and Shamir share
 threshold (defaults to 3 keepers, and minimum 2 shares (out of 3) to
@@ -891,7 +928,7 @@ complete: We will work on that.</li>
 <li>Various documentation updates.</li>
 <li>Minor bug fixes in initialization scripts.</li>
 </ul>
-<h3 id="changed-3">Changed</h3>
+<h3 id="changed-4">Changed</h3>
 <ul>
 <li>Secrets now rehydrate from the backing store immediately after SPIKE
 Nexus crashes. Former implementation was using an optimistic algorithm
@@ -911,7 +948,7 @@ memory protection.</li>
 <h2 id="0-3-0-2025-02-20">[0.3.0] - 2025-02-20</h2>
 <p>This release was focused around bugfixes, stability, documentation, and
 disaster recovery.</p>
-<h3 id="added-4">Added</h3>
+<h3 id="added-5">Added</h3>
 <ul>
 <li>Documentation: SPIKE Production Hardening Guide is complete and ready for
 consumption (<em>it was in draft mode before</em>).</li>
@@ -926,7 +963,7 @@ we would like to be; yet we have to start somewhere :).</li>
 and design decisions transparently.</li>
 <li>Started working on containerization (<em>though it’s still a work in progress</em>).</li>
 </ul>
-<h3 id="changed-4">Changed</h3>
+<h3 id="changed-5">Changed</h3>
 <ul>
 <li>SPIKE Website has undergone a major overhaul.</li>
 <li>Documentation updates, especially around security and disaster recovery.</li>
@@ -937,7 +974,7 @@ templateability, and consistency to the overall documentation.</li>
 <li>Significant updates in <a href="https://github.com/spiffe/spike-sdk-go">SPIKE go SDK</a>.</li>
 </ul>
 <h2 id="0-2-1-2025-01-23">[0.2.1] - 2025-01-23</h2>
-<h3 id="added-5">Added</h3>
+<h3 id="added-6">Added</h3>
 <ul>
 <li>Enabled policy-based access control.</li>
 <li>The root key that SPIKE Nexus generates is now split into several Shamir
@@ -955,7 +992,7 @@ updating and improving it along the way.</li>
 <li>Implemented a Secret Metadata API.</li>
 <li>Implemented exponential retries across several API-consuming methods.</li>
 </ul>
-<h3 id="changed-5">Changed</h3>
+<h3 id="changed-6">Changed</h3>
 <ul>
 <li><strong>BREAKING</strong>: changed the CLI usage. Instead of <code>spike get</code>, for example, we
 now use <code>spike secret get</code>. The reason for this change is that we introduced
@@ -969,7 +1006,7 @@ authorization bypass in golang.org/x/crypto</a></li>
 <code>golang.org/x/net/htm</code></a></li>
 </ul>
 <h2 id="0-2-0-2024-11-22">[0.2.0] - 2024-11-22</h2>
-<h3 id="added-6">Added</h3>
+<h3 id="added-7">Added</h3>
 <ul>
 <li>Added configuration options for SPIKE Nexus and SPIKE Keeper.</li>
 <li>Documentation updates.</li>
@@ -981,7 +1018,7 @@ authorization bypass in golang.org/x/crypto</a></li>
 <li>Created initial smoke/integration tests.</li>
 <li>Stability improvements.</li>
 </ul>
-<h3 id="changed-6">Changed</h3>
+<h3 id="changed-7">Changed</h3>
 <ul>
 <li>Removed password authentication for admin users. Admin users’ SVIDs
 are good enough to authenticate them.</li>
@@ -989,7 +1026,7 @@ are good enough to authenticate them.</li>
 (<em>the neat thing about passwords is: you don’t need them</em>).</li>
 </ul>
 <h2 id="0-1-0-2024-11-06">[0.1.0] - 2024-11-06</h2>
-<h3 id="added-7">Added</h3>
+<h3 id="added-8">Added</h3>
 <ul>
 <li>Implemented <code>put</code>, <code>read</code>, <code>delete</code>, <code>undelete</code>, and <code>list</code> functionalities.</li>
 <li>Created initial documentation, README, and related files.</li>

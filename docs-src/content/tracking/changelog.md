@@ -12,19 +12,56 @@ sort_by = "weight"
 
 ## Recent
 
-* SPIKE Nexus, SPIKE Pilot, and SPIKE Keeper can now be built as Windows
-  binaries too.
-* SPIKE and SPIKE Go SDK code has been refactored to better align with common
-  Go idioms and conventions.
-* Added stricter linting.
-* Added vulnerability checks to SPIKE and SPIKE Go SDK.
-* enabled `GOFIPS140=v1.0.0`, the modern way of enabling FIPS. We 
-  are not using `boringcrypto` anymore.
-* Separated bootstrap logic into its own app to enable a more deterministic
-  initialization flow. This change will also unlock the ability to run SPIKE
-  Nexus in HA mode.
-* **BREAKING**: SPIKE now requires a separate initializer to begin its lifecycle.
-* FIPS 140.3 is enabled and enforced everywhere.
+TBD
+
+## [0.4.3] - 2025-08-16 (*prerelease*)
+
+This is a "*prerelease*" version to enable upstream SPIFFE Helm Charts
+integration initiatives. The most significant change is the introduction of a 
+[**SPIKE Bootstrap** app][bootstrap] that is responsible for initializing 
+**SPIKE Nexus**. This new approach separates the bootstrapping workflow that 
+had been inside **SPIKE Nexus**' initialization workflow before. And that
+enables us an opportunity to run **SPIKE Nexus** in HA mode without designing
+elaborate, and potentially error-prone, consensus algorithms.
+
+[bootstrap]: https://github.com/spiffe/spike/blob/main/app/bootstrap/README.md "SPIKE Bootstrap"
+
+### Added
+
+* **FIPS 140.3 Compliance**: FIPS is now enabled at **build time**, and it's 
+  enforced everywhere. We are using `GOFIPS140=v1.0.0`, the modern way of 
+  enabling FIPS, retiring our older `boringcrypto` implementation.
+* `spike policy list` command can now filter by SPIFFE ID pattern and path
+  pattern.
+* `spike policy` command cano now accept a YAML file as input, instead of
+  requiring command-line parameters.
+* SPIKE Go SDK now has a generator that creates pattern-based, secure, 
+  randomized secrets.
+* Implemented a (currently experimental) "SPIKE Lite" mode where SPIKE Nexus
+  would not need a backing store, or policies, and can leverage the storage
+  and policy mechanism of S3-compatible object stores (such as Minio). Once
+  we fully implement and polish SPIKE Lite, we will also update documentation
+  and use cases to allow users to understand the benefits and liabilities of 
+  SPIKE Lite and why they might want to use one over the other.
+
+## Changed
+
+* Better alignment with idiomatic Go practices. SPIKE and SPIKE Go SDK code 
+  has been refactored to better align with common Go idioms and conventions.
+  We also created a `make audit` target to run style checks and linters that
+  enforce a consistent code style and some of these guidelines. `make audit`
+  is also a part of the CI pipeline to ensure that the code is always compliant
+  at every commit. In addition `make audit` also does vulnerability checks.
+* **BREAKING**: SPIKE Nexus now requires a separate initializer (SPIKE Bootstrap)
+  to begin its lifecycle. The user guides and relevant documentation have been
+  updated to reflect this change.
+* Updated Go to the latest version (`1.24.6`).
+
+### Fixed
+
+* Fixed a bug related to Windows builds. SPIKE Nexus, SPIKE Pilot, and SPIKE 
+  Keeper can now be built as Windows binaries too.
+* Various refactorings, improvements, code cleanup, and bug fixes.
 
 ## [0.4.2] - 2025-07-19
 
@@ -35,7 +72,7 @@ sort_by = "weight"
   available on the system.
 * SPIKE can now be deployed from SPIFFE helm charts. Tested and verified!
 * Documentation updates.
-* SPIKE can be now be installed from [SPIFFE Helm 
+* SPIKE can now be installed from [SPIFFE Helm 
   Charts](https://github.com/spiffe/helm-charts-hardened) and can 
   [federate secrets across clusters](https://vimeo.com/v0lkan/spike-federation)
 
