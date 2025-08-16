@@ -6,4 +6,5 @@
 
 # Requires a recent version of go runtime.
 # Requires `sudo apt-get install binutils-gold gcc`
-go run github.com/golangci/golangci-lint/cmd/golangci-lint run -v
+go run github.com/golangci/golangci-lint/cmd/golangci-lint@latest run -v
+# '-v' flag is used for verbose output
