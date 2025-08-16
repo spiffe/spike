@@ -238,6 +238,9 @@
                                                 <li>
                                                         <a href="https://spike.ist/architecture/security-model/#security-of-spike-binaries">Security of SPIKE Binaries</a>
                                                     </li>
+                                                <li>
+                                                        <a href="https://spike.ist/architecture/security-model/#fips-compliance">FIPS Compliance</a>
+                                                    </li>
                                                 </ul>
                                         </li>
                                 </ul>
@@ -1016,6 +1019,19 @@ Or, on macOS: <code>shasum -a 256 -c spike-v0.4.0.sha256</code>.</li>
 publicly available on <a href="https://github.com/spiffe/spike/releases" title="SPIKE Releases">the official GitHub releases page</a>,
 allowing for community verification and trust.</li>
 </ul>
+<h2 id="fips-compliance">FIPS Compliance</h2>
+<p><strong>FIPS</strong> stands for <a href="https://csrc.nist.gov/pubs/fips/140-3/final" title="FIPS">Federal Information Processing Standards</a>. FIPS
+are publicly announced standards developed by the <a href="https://www.nist.gov/" title="NIST"><em>U.S. National Institute of
+Standards and Technology (<strong>NIST</strong>)</em></a> for use in computer systems by
+non-military American government agencies and government contractors.</p>
+<p><strong>FIPS</strong> standards cover various aspects of information technology.
+<a href="https://csrc.nist.gov/pubs/fips/140-3/final" title="FIPS">FIPS 140-3</a>, in particular, defines standards of security for hardware
+and software cryptographic modules used to protect sensitive information.</p>
+<p>All <strong>SPIKE</strong> binaries are configured to be <strong>FIPS 140-3</strong>-enabled at <strong>compile
+time</strong>.</p>
+<p>We use <code>GOFIPS140=v1.0.0</code> build time settings, that sets the
+<code>GODEBUG=fips140=on</code> flag which ensures that the Go runtime is in <strong>FIPS 140-3</strong>
+mode.</p>
 <p>&nbsp;</p>
 <hr />
 <ul>

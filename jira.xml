@@ -15,7 +15,26 @@
   </kubernetification>
   <immediate-backlog>
       <issue>
+          add unit tests.
+          we are adding more and more features, and we don't have sufficient
+          coverage.
+      </issue>
+      <issue>
+          create a demo video about the new bootstrap flow
+          - for bare metal
+          - for kubernetes/minikube
+      </issue>
+      <issue>
+          Test SPIKE Lite setup.
+      </issue>
+      <issue>
           maybe we can add a configurable "bootsrap time out" as an env var later. For now, the bootsrap app will try to bootstrap the thing in an exponentially-backing-off loop until it succeeds.
+      </issue>
+      <issue>
+          create a /status endpoint for SPIKE Nexus and use that for the
+          Bootstrap job instead of querying the jobs k8s api.
+          that will also mean, the Bootstrap job will be more secure since
+          its ServiceAccount will not need kube api access.
       </issue>
       <issue>
           isolate this into a function

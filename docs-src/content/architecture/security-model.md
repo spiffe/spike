@@ -258,6 +258,27 @@ distributions:
 
 [releases]: https://github.com/spiffe/spike/releases "SPIKE Releases"
 
+## FIPS Compliance
+
+**FIPS** stands for [Federal Information Processing Standards][fips]. FIPS 
+are publicly announced standards developed by the [*U.S. National Institute of 
+Standards and Technology (**NIST**)*][nist] for use in computer systems by 
+non-military American government agencies and government contractors.
+
+**FIPS** standards cover various aspects of information technology. 
+[FIPS 140-3][fips], in particular, defines standards of security for hardware 
+and software cryptographic modules used to protect sensitive information.
+
+[fips]: https://csrc.nist.gov/pubs/fips/140-3/final "FIPS"
+[nist]: https://www.nist.gov/ "NIST"
+
+All **SPIKE** binaries are configured to be **FIPS 140-3**-enabled at **compile
+time**. 
+
+We use `GOFIPS140=v1.0.0` build time settings, that sets the 
+`GODEBUG=fips140=on` flag which ensures that the Go runtime is in **FIPS 140-3**
+mode.
+
 <p>&nbsp;</p>
 
 ----

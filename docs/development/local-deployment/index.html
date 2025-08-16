@@ -199,6 +199,9 @@
                                                         <a href="https://spike.ist/development/local-deployment/#pushing-container-images-to-the-local-registry">Pushing Container Images to the Local Registry</a>
                                                     </li>
                                                 <li>
+                                                        <a href="https://spike.ist/development/local-deployment/#docker-windows-subsystem-for-linux-integration-issues">Docker Windows Subsystem for Linux Integration Issues</a>
+                                                    </li>
+                                                <li>
                                                         <a href="https://spike.ist/development/local-deployment/#deploying-spire-and-spike-to-the-local-cluster">Deploying SPIRE and SPIKE to the Local Cluster</a>
                                                     </li>
                                                 <li>
@@ -849,8 +852,7 @@ registry:</p>
 </span><span style="color:#65737e;"># before executing this command:
 </span><span style="color:#bf616a;">make</span><span> docker-push
 </span></code></pre>
-<blockquote>
-<p><strong>Having Docker for Windows WSL Integration Problems?</strong></p>
+<h2 id="docker-windows-subsystem-for-linux-integration-issues">Docker Windows Subsystem for Linux Integration Issues</h2>
 <p>If <code>make docker-push</code> hangs up or gives a network error, it’s typically
 related to how Docker for Windows, Windows, and Windows Subsystem for Linux
 handle routing, DNS resolution, and networking.</p>
@@ -860,7 +862,42 @@ to the local Minikube registry would be to run the following script:</p>
 </span></code></pre>
 <p>This will effectively have the same end-result as pushing the images to
 the registry.</p>
-</blockquote>
+<p>Alternatively, you might try pointing your terminal’s Docker CLI to the
+Docker engine inside Minikube:</p>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># Set Minikube Docker environment
+</span><span style="color:#96b5b4;">eval </span><span>$(</span><span style="color:#bf616a;">minikube</span><span> docker-env)
+</span><span style="color:#65737e;"># Interact with Minikube&#39;s Docker Engine
+</span><span style="color:#bf616a;">make</span><span> docker-build
+</span><span style="color:#65737e;"># Unset Minikube Docker environment when you&#39;re done
+</span><span style="color:#96b5b4;">eval </span><span>$(</span><span style="color:#bf616a;">minikube</span><span> docker-env</span><span style="color:#bf616a;"> --unset</span><span>)
+</span></code></pre>
+<p>For Mac OS and Linuxes, where if you get registry-access-related errors, adding
+the following to <code>/etc/docker/daemon.json</code> can help:</p>
+<pre data-lang="json" style="background-color:#2b303b;color:#c0c5ce;" class="language-json "><code class="language-json" data-lang="json"><span>{
+</span><span>  &quot;</span><span style="color:#a3be8c;">insecure-registries</span><span>&quot;: [&quot;</span><span style="color:#a3be8c;">localhost:5000</span><span>&quot;]
+</span><span>}
+</span></code></pre>
+<p>For Docker for Mac, or Docker for Windows, you will need to update
+the Docker Engine settings from the “<em>Settings &gt; Docker Engine</em>” menu as
+follows:</p>
+<pre data-lang="json" style="background-color:#2b303b;color:#c0c5ce;" class="language-json "><code class="language-json" data-lang="json"><span>{
+</span><span>  &quot;</span><span style="color:#a3be8c;">builder</span><span>&quot;: {
+</span><span>    &quot;</span><span style="color:#a3be8c;">gc</span><span>&quot;: {
+</span><span>      &quot;</span><span style="color:#a3be8c;">defaultKeepStorage</span><span>&quot;: &quot;</span><span style="color:#a3be8c;">20GB</span><span>&quot;,
+</span><span>      &quot;</span><span style="color:#a3be8c;">enabled</span><span>&quot;: </span><span style="color:#d08770;">true
+</span><span>    }
+</span><span>  },
+</span><span>  &quot;</span><span style="color:#a3be8c;">experimental</span><span>&quot;: </span><span style="color:#d08770;">false</span><span>,
+</span><span>  &quot;</span><span style="color:#a3be8c;">insecure-registries</span><span>&quot;: [
+</span><span>    &quot;</span><span style="color:#a3be8c;">localhost:5000</span><span>&quot;
+</span><span>  ]
+</span><span>}
+</span></code></pre>
+<p>Once the change is done, don’t forget to restart the Docker Engine.</p>
+<p>That said, <code>make k8s-load-images</code> is the safest and simplest way to push
+the images into Minikube without having to deal with Docker networking,
+port forwarding, and Docker registry, making it the preferred method, and
+it is what we recommend.</p>
 <h2 id="deploying-spire-and-spike-to-the-local-cluster">Deploying SPIRE and SPIKE to the Local Cluster</h2>
 <p>Once we push the container images to the registry, we can now deploy <strong>SPIRE</strong>
 and <strong>SPIKE</strong>.</p>

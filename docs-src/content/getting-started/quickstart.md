@@ -145,8 +145,15 @@ seed it with a secure random root key.
 
 At the time of this writing, there is an ongoing work to automate this at
 **SPIFFE Helm Charts** upstream repo; however, until that work is merged and
-published, you'll need to create the following YAML file and apply it
-using `kubectl`.
+published, you'll need to create [the following `bootrsap.yaml` 
+file][bootstrap-yaml] and apply it using `kubectl`.
+
+The following YAML snippet has been slightly altered to fit into the 
+documentation. This may cause parsing issues if you directly copy it from this 
+page. If you want to use it, [check out `bootstrap.yaml` at 
+GitHub][bootstrap-yaml] instead.
+
+[bootstrap-yaml]: https://github.com/spiffe/spike/blob/main/hack/k8s/Bootstrap.yaml "Bootstrap.yaml"
 
 ```yaml
 # file: bootstrap.yaml
@@ -216,8 +223,6 @@ spec:
           .spiffe-spike-keeper-headless:8443,…
           https://spiffe-spike-keeper-2.…
           spiffe-spike-keeper-headless:8443"
-        - name: SPIKE_BOOTSTRAP_VERSION
-          value: "1.0.0"
         image: localhost:5000/spike-bootstrap:dev
         imagePullPolicy: IfNotPresent
         name: spiffe-spike-bootstrap

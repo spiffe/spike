@@ -867,8 +867,12 @@ necessary plugins enabled. You can verify that Minikube is running by executing:
 seed it with a secure random root key.</p>
 <p>At the time of this writing, there is an ongoing work to automate this at
 <strong>SPIFFE Helm Charts</strong> upstream repo; however, until that work is merged and
-published, you’ll need to create the following YAML file and apply it
-using <code>kubectl</code>.</p>
+published, you’ll need to create <a href="https://github.com/spiffe/spike/blob/main/hack/k8s/Bootstrap.yaml" title="Bootstrap.yaml">the following <code>bootrsap.yaml</code>
+file</a> and apply it using <code>kubectl</code>.</p>
+<p>The following YAML snippet has been slightly altered to fit into the
+documentation. This may cause parsing issues if you directly copy it from this
+page. If you want to use it, <a href="https://github.com/spiffe/spike/blob/main/hack/k8s/Bootstrap.yaml" title="Bootstrap.yaml">check out <code>bootstrap.yaml</code> at
+GitHub</a> instead.</p>
 <pre data-lang="yaml" style="background-color:#2b303b;color:#c0c5ce;" class="language-yaml "><code class="language-yaml" data-lang="yaml"><span style="color:#65737e;"># file: bootstrap.yaml
 </span><span>
 </span><span style="color:#bf616a;">apiVersion</span><span>: </span><span style="color:#a3be8c;">batch/v1
@@ -936,8 +940,6 @@ using <code>kubectl</code>.</p>
 </span><span style="color:#a3be8c;">          .spiffe-spike-keeper-headless:8443,…
 </span><span style="color:#a3be8c;">          https://spiffe-spike-keeper-2.…
 </span><span style="color:#a3be8c;">          spiffe-spike-keeper-headless:8443</span><span>&quot;
-</span><span>        - </span><span style="color:#bf616a;">name</span><span>: </span><span style="color:#a3be8c;">SPIKE_BOOTSTRAP_VERSION
-</span><span>          </span><span style="color:#bf616a;">value</span><span>: &quot;</span><span style="color:#a3be8c;">1.0.0</span><span>&quot;
 </span><span>        </span><span style="color:#bf616a;">image</span><span>: </span><span style="color:#a3be8c;">localhost:5000/spike-bootstrap:dev
 </span><span>        </span><span style="color:#bf616a;">imagePullPolicy</span><span>: </span><span style="color:#a3be8c;">IfNotPresent
 </span><span>        </span><span style="color:#bf616a;">name</span><span>: </span><span style="color:#a3be8c;">spiffe-spike-bootstrap
