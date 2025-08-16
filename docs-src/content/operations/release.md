@@ -41,6 +41,7 @@ Before every release:
 7. Run `./hack/cover.sh` to update and send the coverage report to the public 
    docs.
 8. Make sure you update `./app/VERSION.txt` with the new version.
+9. Make sure you run `make audit` and the process cleanly exits with no errors.
 
 Release process:
 

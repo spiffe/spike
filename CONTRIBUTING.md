@@ -24,8 +24,17 @@ Also, make sure you read, understand and accept
 as it is a requirement to contribute to this project and contains more details
 about the contribution process.
 
+## Audit Your Code Before You Submit
+
+Before submitting a pull request run `make audit` and ensure that there are no
+issues. Running `make audit` will find issues with the code that would trigger
+CI failures and prevent it from being merged.
+
 ## How To Run Tests
+
+`make audit` already runs the tests for you; however, running the tests
+separately is still useful.
 
 Before merging your changes, make sure all tests pass.
 
-Turn test the SDK locally, run `go test ./...` on the project root.
+To run the unit tests locally, run `go test ./...` on the project root.

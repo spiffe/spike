@@ -35,7 +35,9 @@ func main() {
 
 	// Check if we should skip bootstrap (set by init container)
 	if _, err := os.Stat("/shared/skip-bootstrap"); err == nil {
-		log.Log().Info(fName, "message", "Bootstrap already completed previously. Skipping.")
+		log.Log().Info(fName,
+			"message", "Bootstrap already completed previously. Skipping.",
+		)
 		fmt.Println("Bootstrap already completed previously. Exiting.")
 		os.Exit(0)
 		return
@@ -45,7 +47,9 @@ func main() {
 	defer spiffe.CloseSource(src)
 	sv, err := src.GetX509SVID()
 	if err != nil {
-		log.FatalF(fName, "Failed to get X.509 SVID: %s\n", err.Error())
+		log.FatalF(fName,
+			"message", "Failed to get X.509 SVID",
+			"err", err.Error())
 		os.Exit(1)
 		return
 	}
