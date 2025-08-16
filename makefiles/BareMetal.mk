@@ -8,8 +8,8 @@ start:
 	./hack/bare-metal/startup/start.sh
 
 # Initialize the SPIKE setup with a brand new, secure, random root key.
-boostrap:
-	./hack/bare-metal/startup/boostrap.sh
+bootstrap:
+	./hack/bare-metal/startup/bootstrap.sh
 
 # Start a local SPIKE development environment.
 # In this case, SPIRE Agent will use privileged mode.
