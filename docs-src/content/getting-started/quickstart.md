@@ -341,9 +341,9 @@ spike secret get test/creds
 
 ## Next Up
 
-You are all set. You have successfully deployed SPIKE to your local Minikube
-cluster. Explore other parts of the documentation to learn more about
-using SPIKE.
+You are all set. You have successfully deployed **SPIKE** to your local 
+Minikube cluster. Explore other parts of the documentation to learn more about
+using **SPIKE**.
 
 Here are a few links to get you started:
 
