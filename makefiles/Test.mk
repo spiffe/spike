@@ -16,6 +16,7 @@ lint-go:
 # Generates an HTML coverage report and opens it in the default browser
 # Coverage data is temporarily stored in /tmp/coverage.out
 # Flags: -v (verbose), -race (race detection), -buildvcs (include VCS info)
+.PHONY: test/cover
 test/cover:
 	go test -v -race -buildvcs -coverprofile=/tmp/coverage.out ./...
 	go tool cover -html=/tmp/coverage.out
@@ -25,6 +26,7 @@ test/cover:
 # Executes all tests in the project with verbose output and race detection
 # Does not generate coverage reports (use test/cover for that)
 # Flags: -v (verbose), -race (race detection), -buildvcs (include VCS info)
+.PHONY: test
 test:
 	go test -v -race -buildvcs ./...
 
@@ -40,11 +42,22 @@ test:
 #   5. staticcheck: runs advanced static analysis
 #      (excluding ST1000, U1000 checks)
 #   6. govulncheck: scans for known security vulnerabilities
-# Designed for CI/CD pipelines to ensure code quality and security
-audit: test
+#   7. golangci-lint: runs a comprehensive set of linters
+#      (follows the configuration in .golangci.yml)
+.PHONY: audit
+audit:
 	go mod tidy -diff
 	go mod verify
 	test -z "$(shell gofmt -l .)"
 	go vet ./...
 	go run honnef.co/go/tools/cmd/staticcheck@latest -checks=all,-ST1000,-U1000 ./...
 	go run golang.org/x/vuln/cmd/govulncheck@latest ./...
+	go run github.com/golangci/golangci-lint/cmd/golangci-lint@latest run
+
+# Comprehensive set of checks to simulate a CI environment
+# Usage: make ci
+# Prerequisites:
+#   1. runs 'test' target first to ensure tests pass
+#   2. runs 'audit' target to perform code quality checks
+.PHONY: ci
+ci: test audit
