@@ -13,6 +13,11 @@ echo "Starting tests..."
 go build -ldflags="-s -w" -o ci-test ./ci/test/main.go
 ./ci-test
 
+if [[ -x ./hack/test/cipher.sh ]]; then
+  echo "Running cipher CLI tests..."
+  ./hack/test/cipher.sh
+fi
+
 echo "Tests completed successfully!"
 echo "Cleaning up background processes..."
 
