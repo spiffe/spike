@@ -14,6 +14,8 @@ import (
 	"github.com/spiffe/spike-sdk-go/kv"
 )
 
+// TODO: this is a fairly-invasive refactoring; write as much tests as you can.
+
 // InMemoryStore provides an in-memory implementation of a storage backend.
 // This implementation actually stores data in memory using the kv package,
 // suitable for development, testing, or scenarios where persistence isn't needed.
