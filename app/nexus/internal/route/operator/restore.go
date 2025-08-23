@@ -25,7 +25,7 @@ var (
 	shardsMutex sync.RWMutex
 )
 
-// RouteRestore handles HTTP requests for restoring a system using recovery
+// RouteRestore handles HTTP requests for restoring SPIKE Nexus using recovery
 // shards.
 //
 // This function processes requests to contribute a recovery shard to the
@@ -60,6 +60,8 @@ func RouteRestore(
 	w http.ResponseWriter, r *http.Request, audit *journal.AuditEntry,
 ) error {
 	const fName = "routeRestore"
+
+	// TODO: restoration should be a no-op for in-memory mode.
 
 	journal.AuditRequest(fName, r, audit, journal.AuditCreate)
 

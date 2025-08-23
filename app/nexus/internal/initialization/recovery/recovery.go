@@ -6,7 +6,6 @@ package recovery
 
 import (
 	"context"
-	"crypto/rand"
 	"errors"
 	"math/big"
 	"time"
@@ -51,7 +50,7 @@ func InitializeBackingStoreFromKeepers(source *workloadapi.X509Source) {
 	log.Log().Info(fName,
 		"message", "Recovering backing store using keeper shards")
 
-	successfulKeeperShards := make(map[string]*[32]byte)
+	successfulKeeperShards := make(map[string]*[shardSize]byte)
 	// Security: Ensure the shards are zeroed out after use.
 	defer func() {
 		log.Log().Info(fName, "message", "Resetting successfulKeeperShards")
@@ -90,11 +89,9 @@ func InitializeBackingStoreFromKeepers(source *workloadapi.X509Source) {
 		),
 	)
 
+	// This should never happen since the above loop retries forever:
 	if err != nil {
-		log.Log().Error(fName,
-			"message", "Initialization failed",
-			"err", err.Error(),
-		)
+		log.FatalLn(fName, "message", "Initialization failed", "err", err)
 	}
 }
 
@@ -127,6 +124,8 @@ func RestoreBackingStoreUsingPilotShards(shards []ShamirShard) {
 		value := shards[shard].Value
 		id := shards[shard].ID
 
+		// TODO: panic if size of value is not 32.
+
 		if mem.Zeroed32(value) || id == 0 {
 			log.Log().Error(
 				fName,
@@ -154,15 +153,14 @@ func RestoreBackingStoreUsingPilotShards(shards []ShamirShard) {
 		"message", "Recovering backing store using pilot shards")
 
 	// Recover the root key using the threshold number of shards
-	binaryRec := RecoverRootKey(shards)
+	rk := RecoverRootKey(shards)
 	// Security: Ensure the root key is zeroed out after use.
 	defer func() {
-		mem.ClearRawBytes(binaryRec)
+		mem.ClearRawBytes(rk)
 	}()
 
 	log.Log().Info(fName, "message", "Initializing state and root key")
-	state.Initialize(binaryRec)
-	state.SetRootKey(binaryRec)
+	state.Initialize(rk)
 
 	source, _, err := spiffe.Source(
 		context.Background(), spiffe.EndpointSocket(),
@@ -173,7 +171,8 @@ func RestoreBackingStoreUsingPilotShards(shards []ShamirShard) {
 	}
 	defer spiffe.CloseSource(source)
 
-	// Don't wait for the next cycle. Send the shards asap.
+	// Don't wait for the next cycle in `SendShardsPeriodically`.
+	// Send the shards asap.
 	sendShardsToKeepers(source, env.Keepers())
 }
 
@@ -216,6 +215,8 @@ func SendShardsPeriodically(source *workloadapi.X509Source) {
 	}
 }
 
+const shardSize = 32
+
 // NewPilotRecoveryShards generates a set of recovery shards from the root key
 // using Shamir's Secret Sharing scheme. These shards can be used to reconstruct
 // the root key in a recovery scenario.
@@ -241,7 +242,7 @@ func SendShardsPeriodically(source *workloadapi.X509Source) {
 //	    // Store each shard securely
 //	    storeShard(shard)
 //	}
-func NewPilotRecoveryShards() map[int]*[32]byte {
+func NewPilotRecoveryShards() map[int]*[shardSize]byte {
 	const fName = "NewPilotRecoveryShards"
 	log.Log().Info(fName, "message", "Generating pilot recovery shards")
 
@@ -260,7 +261,7 @@ func NewPilotRecoveryShards() map[int]*[32]byte {
 		}
 	}()
 
-	var result = make(map[int]*[32]byte)
+	var result = make(map[int]*[shardSize]byte)
 
 	for _, share := range rootShares {
 		log.Log().Info(fName, "message", "Generating share", "share.id", share.ID)
@@ -271,7 +272,7 @@ func NewPilotRecoveryShards() map[int]*[32]byte {
 			return nil
 		}
 
-		if len(contribution) != 32 {
+		if len(contribution) != shardSize {
 			log.Log().Error(fName, "message", "Length of share is unexpected")
 			return nil
 		}
@@ -285,12 +286,12 @@ func NewPilotRecoveryShards() map[int]*[32]byte {
 		bigInt := new(big.Int).SetBytes(bb)
 		ii := bigInt.Uint64()
 
-		if len(contribution) != 32 {
+		if len(contribution) != shardSize {
 			log.Log().Error(fName, "message", "Length of share is unexpected")
 			return nil
 		}
 
-		var rs [32]byte
+		var rs [shardSize]byte
 		copy(rs[:], contribution)
 
 		log.Log().Info(fName, "message", "Generated shares", "len", len(rs))
@@ -301,89 +302,4 @@ func NewPilotRecoveryShards() map[int]*[32]byte {
 	log.Log().Info(fName,
 		"message", "Successfully generated pilot recovery shards.")
 	return result
-}
-
-// BootstrapBackingStoreWithNewRootKey initializes the backing store with a new
-// root key if it hasn't been bootstrapped already. It generates a new AES-256
-// root key, initializes the state with this key, and distributes key shards
-// to all configured keepers.
-//
-// The function requires the number of keepers to match the configured Shamir
-// shares. It continuously attempts to distribute shards to all keepers until
-// successful, waiting 5 seconds between retry attempts. The backing store is
-// initialized before keeper distribution to allow immediate operation.
-//
-// Parameters:
-//   - source *workloadapi.X509Source: An X509Source used for authenticating
-//     with keeper nodes
-//
-// The function will crash fatally if:
-//   - Root key creation fails
-//   - The number of keepers doesn't match the configured Shamir shares
-func BootstrapBackingStoreWithNewRootKey(source *workloadapi.X509Source) {
-	// TODO: we should no longer need this function.
-	const fName = "BootstrapBackingStoreWithNewRootKey"
-
-	log.Log().Info(fName, "message",
-		"Tombstone file does not exist. Bootstrapping SPIKE Nexus...")
-
-	if !state.RootKeyZero() {
-		log.Log().Info(fName, "message",
-			"Recovery info found. Backing store already bootstrapped.",
-		)
-		return
-	}
-
-	// Initialize the backend store before sending shards to the keepers.
-	// SPIKE Keepers are our backup system, and they are not critical for system
-	// operations. Initializing early allows SPIKE Nexus to serve before
-	// keepers are hydrated.
-	//
-	// Security: Use a static byte array and pass it as a pointer to avoid
-	// inadvertent copying / pass-by-value / memory allocation.
-	var seed [32]byte
-	// Security: Ensure the seed is zeroed out after use.
-	defer func() {
-		mem.ClearRawBytes(&seed)
-	}()
-
-	if _, err := rand.Read(seed[:]); err != nil {
-		log.Fatal(err.Error())
-	}
-
-	state.Initialize(&seed)
-	log.Log().Info(fName, "message", "Initialized the backing store")
-
-	// Compute Shamir shares out of the root key.
-	rootShares := mustUpdateRecoveryInfo(&seed)
-	// Security: Ensure the seed is zeroed out after use.
-	defer func() {
-		for _, share := range rootShares {
-			share.Value.SetUint64(0)
-		}
-	}()
-
-	successfulKeepers := make(map[string]bool)
-	keepers := env.Keepers()
-
-	shamirShareCount := env.ShamirShares()
-	if len(keepers) != shamirShareCount {
-		log.FatalLn(
-			fName+": Keepers not configured correctly.",
-			"Share count:", shamirShareCount, "Keepers:", len(keepers),
-		)
-	}
-
-	for {
-		// Ensure to get a success response from ALL keepers eventually.
-		exit := iterateKeepersToBootstrap(
-			keepers, rootShares, successfulKeepers, source,
-		)
-		if exit {
-			return
-		}
-
-		log.Log().Info(fName, "message", "Waiting for keepers to initialize")
-		time.Sleep(env.RecoveryOperationPollInterval())
-	}
 }

@@ -15,7 +15,7 @@ import (
 
 type ShamirShard struct {
 	ID    uint64
-	Value *[32]byte
+	Value *[shardSize]byte
 }
 
 // RecoverRootKey reconstructs the original root key from a slice of
@@ -42,7 +42,7 @@ type ShamirShard struct {
 //   - The recovery process fails
 //   - The reconstructed key is nil
 //   - The binary representation has an incorrect length
-func RecoverRootKey(ss []ShamirShard) *[32]byte {
+func RecoverRootKey(ss []ShamirShard) *[shardSize]byte {
 	const fName = "RecoverRootKey"
 
 	g := group.P256
@@ -109,15 +109,15 @@ func RecoverRootKey(ss []ShamirShard) *[32]byte {
 			reconstructed.SetUint64(0)
 
 			log.FatalLn(fName + ": Failed to marshal: " + err.Error())
-			return &[32]byte{}
+			return &[shardSize]byte{}
 		}
 
-		if len(binaryRec) != 32 {
+		if len(binaryRec) != shardSize {
 			log.FatalLn(fName + ": Reconstructed root key has incorrect length")
-			return &[32]byte{}
+			return &[shardSize]byte{}
 		}
 
-		var result [32]byte
+		var result [shardSize]byte
 		copy(result[:], binaryRec)
 		// Security: Zero out temporary variables before the function exits.
 		mem.ClearBytes(binaryRec)
@@ -125,5 +125,5 @@ func RecoverRootKey(ss []ShamirShard) *[32]byte {
 		return &result
 	}
 
-	return &[32]byte{}
+	return &[shardSize]byte{}
 }

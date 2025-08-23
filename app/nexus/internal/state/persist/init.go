@@ -90,6 +90,8 @@ func InitializeSqliteBackend(rootKey *[32]byte) backend.Backend {
 	return dbBackend
 }
 
+const shardSize = 32
+
 // InitializeLiteBackend creates and initializes a Lite backend instance
 // using the provided root key for encryption. The Lite backend is a
 // lightweight alternative to SQLite for persistent storage. The Lite mode
@@ -120,7 +122,7 @@ func InitializeSqliteBackend(rootKey *[32]byte) backend.Backend {
 //
 // Note: Unlike the SQLite backend, the Lite backend does not require a
 // separate Initialize() call or timeout configuration.
-func InitializeLiteBackend(rootKey *[32]byte) backend.Backend {
+func InitializeLiteBackend(rootKey *[shardSize]byte) backend.Backend {
 	const fName = "initializeLiteBackend"
 	dbBackend, err := lite.New(rootKey)
 	if err != nil {
@@ -160,7 +162,7 @@ var be backend.Backend
 //
 // Note: This function modifies the package-level be variable. Subsequent calls
 // will reinitialize the backend, potentially losing any existing state.
-func InitializeBackend(rootKey *[32]byte) {
+func InitializeBackend(rootKey *[shardSize]byte) {
 	const fName = "initializeBackend"
 
 	log.Log().Info(fName,

@@ -61,6 +61,8 @@ func MTLSClient(source *workloadapi.X509Source) *http.Client {
 	return client
 }
 
+const shardSize = 32
+
 // Payload marshals a secret sharing contribution into a JSON payload for
 // transmission to a Keeper. It takes a secret sharing share and the target
 // Keeper ID, validates the contribution is exactly 32 bytes, and returns the
@@ -77,7 +79,7 @@ func Payload(share secretsharing.Share, keeperID string) []byte {
 		os.Exit(1)
 	}
 
-	if len(contribution) != 32 {
+	if len(contribution) != shardSize {
 		log.Log().Warn(fName,
 			"message", "invalid contribution length",
 			"len", len(contribution), "keeper_id", keeperID)
@@ -85,7 +87,7 @@ func Payload(share secretsharing.Share, keeperID string) []byte {
 	}
 
 	scr := reqres.ShardContributionRequest{}
-	shard := new([32]byte)
+	shard := new([shardSize]byte)
 	copy(shard[:], contribution)
 	scr.Shard = shard
 

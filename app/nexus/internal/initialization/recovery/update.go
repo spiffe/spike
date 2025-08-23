@@ -24,7 +24,7 @@ import (
 	"github.com/spiffe/spike/internal/net"
 )
 
-// mustUpdateRecoveryInfo updates the recovery information by setting a new root
+// mustComputeSharesFromRootKey updates the recovery information by setting a new root
 // key and computing new shares. It returns the computed shares.
 //
 // The function sets the provided root key in the state, computes shares from
@@ -39,12 +39,9 @@ import (
 //
 // Returns:
 //   - []secretsharing.Share: The computed shares for the root secret
-func mustUpdateRecoveryInfo(rk *[32]byte) []secretsharing.Share {
-	const fName = "mustUpdateRecoveryInfo"
+func mustComputeSharesFromRootKey() []secretsharing.Share {
+	const fName = "mustComputeSharesFromRootKey"
 	log.Log().Info(fName, "message", "Updating recovery info")
-
-	// Save recovery information.
-	state.SetRootKey(rk)
 
 	rootSecret, rootShares := computeShares()
 	sanityCheck(rootSecret, rootShares)
@@ -157,7 +154,7 @@ func sendShardsToKeepers(
 			continue
 		}
 
-		if len(contribution) != 32 {
+		if len(contribution) != shardSize {
 			// Security: Ensure that the contribution is zeroed out before
 			// the next iteration.
 			//
@@ -184,7 +181,7 @@ func sendShardsToKeepers(
 
 		scr := reqres.ShardContributionRequest{}
 
-		shard := new([32]byte)
+		shard := new([shardSize]byte)
 		// Security: shard is intentionally binary (instead of string) for
 		// better memory management. Do not change its data type.
 		copy(shard[:], contribution)

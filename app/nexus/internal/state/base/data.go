@@ -26,11 +26,13 @@ var (
 // policies is a thread-safe map used to store policy information.
 // var policies sync.Map
 
+const shardSize = 32
+
 // Global variables related to the root key with thread-safety protection.
 var (
 	// rootKey is a 32-byte array that stores the cryptographic root key.
 	// It is initialized to zeroes by default.
-	rootKey [32]byte
+	rootKey [shardSize]byte
 	// rootKeyMu provides mutual exclusion for access to the root key.
 	rootKeyMu sync.RWMutex
 )
@@ -41,7 +43,7 @@ var (
 //
 // Returns:
 //   - *[32]byte: Pointer to the root key
-func RootKeyNoLock() *[32]byte {
+func RootKeyNoLock() *[shardSize]byte {
 	return &rootKey
 }
 
@@ -84,7 +86,7 @@ func RootKeyZero() bool {
 //
 // Parameters:
 //   - rk: Pointer to a 32-byte array containing the new root key value
-func SetRootKey(rk *[32]byte) {
+func SetRootKey(rk *[shardSize]byte) {
 	fName := "SetRootKey"
 	log.Log().Info(fName, "message", "Setting root key")
 

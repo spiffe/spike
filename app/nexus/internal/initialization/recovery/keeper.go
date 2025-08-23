@@ -104,7 +104,7 @@ func iterateKeepersToBootstrap(
 
 func iterateKeepersAndInitializeState(
 	source *workloadapi.X509Source,
-	successfulKeeperShards map[string]*[32]byte,
+	successfulKeeperShards map[string]*[shardSize]byte,
 ) bool {
 	const fName = "iterateKeepersAndInitializeState"
 
@@ -166,7 +166,6 @@ func iterateKeepersAndInitializeState(
 		// Both of these methods directly or indirectly make a copy of `binaryRec`
 		// It is okay to zero out `binaryRec` after calling these two functions.
 		state.Initialize(binaryRec)
-		state.SetRootKey(binaryRec)
 
 		// Security: Zero out temporary variables before the function exits.
 		mem.ClearRawBytes(binaryRec)
