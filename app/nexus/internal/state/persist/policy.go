@@ -69,6 +69,7 @@ func ReadAllPolicies() map[string]*data.Policy {
 	)
 	defer cancel()
 
+	// TODO: policies should not be cached either.
 	log.Log().Info(fName, "message", "Loading policies from cache")
 	cachedPolicies, err := retry.Do(ctx, func() (map[string]*data.Policy, error) {
 		log.Log().Info(fName, "message", "Trying to load policies from cache")

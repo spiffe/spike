@@ -120,10 +120,10 @@ func HydrateMemoryFromBackingStore() {
 
 	log.Log().Info(fName, "message", "HydrateMemoryFromBackingStore")
 
-	secrets := persist.ReadAllSecrets()
-	if len(secrets) > 0 {
-		state.ImportSecrets(secrets)
-	}
+	//secrets := persist.ReadAllSecrets()
+	//if len(secrets) > 0 {
+	//	state.ImportSecrets(secrets)
+	//}
 	log.Log().Info(fName,
 		"message", "HydrateMemoryFromBackingStore: secrets loaded")
 

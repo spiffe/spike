@@ -15,6 +15,14 @@
   </kubernetification>
   <immediate-backlog>
       <issue>
+          do not cache secrets and policies in nexus:
+          https://github.com/spiffe/spike/issues/213
+
+          create an ADR about "not caching secrets locally and directly
+          querying the backing store" (will make HA simpler/easier and will
+          make SPIKE Nexus "mostly" stateless).
+      </issue>
+      <issue>
           add unit tests.
           we are adding more and more features, and we don't have sufficient
           coverage.
