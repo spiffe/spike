@@ -15,6 +15,8 @@ import (
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 )
 
+// TODO: move ShardSize const to SDK so we can refer it from a central location.
+
 // iterateKeepersAndInitializeState retrieves Shamir secret shards from multiple
 // SPIKE Keeper instances and attempts to reconstruct the root key when a
 // threshold number of shards is collected.
@@ -56,6 +58,8 @@ func iterateKeepersAndInitializeState(
 	successfulKeeperShards map[string]*[shardSize]byte,
 ) bool {
 	const fName = "iterateKeepersAndInitializeState"
+
+	// TODO: log and exit if "in memory" mode.
 
 	for keeperID, keeperAPIRoot := range env.Keepers() {
 		log.Log().Info(fName, "id", keeperID, "url", keeperAPIRoot)
@@ -111,6 +115,8 @@ func iterateKeepersAndInitializeState(
 		}
 
 		rk := RecoverRootKey(ss)
+
+		// TODO: bail if rk is nil or empty.
 
 		// Both of these methods directly or indirectly make a copy of `rk`
 		// It is okay to zero out `rk` after calling these two functions.

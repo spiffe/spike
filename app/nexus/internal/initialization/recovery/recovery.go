@@ -159,6 +159,8 @@ func RestoreBackingStoreUsingPilotShards(shards []ShamirShard) {
 		mem.ClearRawBytes(rk)
 	}()
 
+	// TODO: bail if rootkey is nil or empty.
+
 	log.Log().Info(fName, "message", "Initializing state and root key")
 	state.Initialize(rk)
 

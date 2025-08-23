@@ -4,15 +4,22 @@
 
 package base
 
-import (
-	"github.com/spiffe/spike/app/nexus/internal/state/persist"
-)
+import "github.com/spiffe/spike/app/nexus/internal/state/persist"
 
 // Initialize initializes the backend storage with the provided root key.
+//
+// For non "in-memory" backing stores, if the root key is nil or empty,
+// the application will crash for security.
+//
+// Parameters:
+//   - r [32]byte: The root key to initialize the crypto state.
 func Initialize(r *[shardSize]byte) {
-	// No need for a lock:
-	// This method is called only once during initial bootstrapping.
+	// TODO: bail if mode is not in-memory and root key is nil or empty.
+
+	// Locks on a mutex; so only a single process can access it.
 	persist.InitializeBackend(r)
-	// Update internal root key.
+
+	// Update the internal root key.
+	// Locks on a mutex; so only a single process can modify the root key.
 	SetRootKey(r)
 }
