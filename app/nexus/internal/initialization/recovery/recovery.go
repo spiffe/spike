@@ -358,6 +358,7 @@ func NewPilotRecoveryShards() map[int]*[32]byte {
 //   - Root key creation fails
 //   - The number of keepers doesn't match the configured Shamir shares
 func BootstrapBackingStoreWithNewRootKey(source *workloadapi.X509Source) {
+	// TODO: we should no longer need this function.
 	const fName = "BootstrapBackingStoreWithNewRootKey"
 
 	log.Log().Info(fName, "message",

@@ -5,12 +5,8 @@
 package initialization
 
 import (
-	"crypto/rand"
-
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	"github.com/spiffe/spike-sdk-go/log"
-	"github.com/spiffe/spike-sdk-go/security/mem"
-
 	"github.com/spiffe/spike/app/nexus/internal/env"
 	"github.com/spiffe/spike/app/nexus/internal/initialization/recovery"
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
@@ -59,26 +55,19 @@ func Initialize(source *workloadapi.X509Source) {
 		return
 	}
 
-	// Internal bootstrapping is required.
-	// Initialize the backing store with a cryptographically secure root key.
-	// Do not use SPIKE Keepers.
+	if env.BackendStoreType() == env.Memory {
+		log.Log().Warn(fName, "message", "In-memory store will be used.")
+		log.Log().Warn(fName, "message", "Will not use SPIKE Keepers.")
+		log.Log().Warn(fName,
+			"message",
+			"This mode is NOT recommended for production use.")
 
-	log.Log().Info(fName, "message", "Will not use SPIKE Keepers.")
-
-	// Security: Use a static byte array and pass it as a pointer to avoid
-	// inadvertent pass-by-value copying / memory allocation.
-	var rootKey [32]byte
-	// Security: Zero-out rootKey after persisted internally.
-	defer func() {
-		// Note: Each function must zero-out ONLY the items it has created.
-		// If it is borrowing an item by reference, it must not zero-out the item
-		// and let the owner zero-out the item.
-		mem.ClearRawBytes(&rootKey)
-	}()
-
-	if _, err := rand.Read(rootKey[:]); err != nil {
-		log.Fatal(err.Error())
+		state.Initialize(nil)
+		return
 	}
 
-	state.Initialize(&rootKey)
+	log.FatalLn(
+		fName + ": Invalid backend store type: '" + env.BackendStoreType() + "'." +
+			" Please set SPIKE_BACKEND_STORE_TYPE to 'sqlite', 'lite', or 'memory'.",
+	)
 }

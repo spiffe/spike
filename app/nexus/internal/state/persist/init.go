@@ -175,11 +175,11 @@ func InitializeBackend(rootKey *[32]byte) {
 	case env.Lite:
 		be = InitializeLiteBackend(rootKey)
 	case env.Memory:
-		be = &memory.NoopStore{}
+		be = &memory.InMemoryStore{}
 	case env.Sqlite:
 		be = InitializeSqliteBackend(rootKey)
 	default:
-		be = &memory.NoopStore{}
+		be = &memory.InMemoryStore{}
 	}
 
 	log.Log().Info(fName, "message", "Backend initialized", "storeType", storeType)
