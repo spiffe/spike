@@ -86,11 +86,20 @@ func RouteListPolicies(
 
 	switch {
 	case SPIFFEIDPattern != "":
-		policies = state.ListPoliciesBySPIFFEID(SPIFFEIDPattern)
+		policies, err = state.ListPoliciesBySPIFFEID(SPIFFEIDPattern)
+		if err != nil {
+			return err
+		}
 	case pathPattern != "":
-		policies = state.ListPoliciesByPath(pathPattern)
+		policies, err = state.ListPoliciesByPath(pathPattern)
+		if err != nil {
+			return err
+		}
 	default:
-		policies = state.ListPolicies()
+		policies, err = state.ListPolicies()
+		if err != nil {
+			return err
+		}
 	}
 
 	responseBody := net.MarshalBody(reqres.PolicyListResponse{

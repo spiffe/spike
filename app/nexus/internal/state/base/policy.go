@@ -57,7 +57,12 @@ func CheckAccess(
 		return true
 	}
 
-	policies := ListPolicies()
+	policies, err := ListPolicies()
+	if err != nil {
+		// TODO: log maybe.
+		return false
+	}
+
 	for _, policy := range policies {
 		// Check the wildcard pattern first
 		if policy.SPIFFEIDPattern == "*" && policy.PathPattern == "*" {
@@ -180,19 +185,19 @@ func CreatePolicy(policy data.Policy) (data.Policy, error) {
 //   - data.Policy: The retrieved policy if found
 //   - error: ErrPolicyNotFound if no policy exists with the given ID.
 func GetPolicy(id string) (data.Policy, error) {
-	if value, exists := policies.Load(id); exists {
-		return value.(data.Policy), nil
+	ctx := context.Background()
+
+	// Load directly from backend
+	policy, err := persist.Backend().LoadPolicy(ctx, id)
+	if err != nil {
+		return data.Policy{}, fmt.Errorf("failed to load policy: %w", err)
 	}
 
-	// Try loading from the cache:
-	cachedPolicy := persist.ReadPolicy(id)
-	if cachedPolicy == nil {
+	if policy == nil {
 		return data.Policy{}, ErrPolicyNotFound
 	}
 
-	// Store in memory for future use
-	policies.Store(id, *cachedPolicy)
-	return *cachedPolicy, nil
+	return *policy, nil
 }
 
 // DeletePolicy removes a policy from the system by its ID.
@@ -204,12 +209,22 @@ func GetPolicy(id string) (data.Policy, error) {
 //   - error: ErrPolicyNotFound if no policy exists with the given ID,
 //     nil if the deletion was successful
 func DeletePolicy(id string) error {
-	if _, exists := policies.Load(id); !exists {
+	ctx := context.Background()
+
+	// Check if policy exists first (to maintain the same error behavior)
+	policy, err := persist.Backend().LoadPolicy(ctx, id)
+	if err != nil {
+		return fmt.Errorf("failed to load policy: %w", err)
+	}
+	if policy == nil {
 		return ErrPolicyNotFound
 	}
 
-	policies.Delete(id)
-	persist.DeletePolicy(id)
+	// Delete from backend
+	err = persist.Backend().DeletePolicy(ctx, id)
+	if err != nil {
+		return fmt.Errorf("failed to delete policy: %w", err)
+	}
 
 	return nil
 }
@@ -223,15 +238,24 @@ func DeletePolicy(id string) error {
 //     slice if no policies exist. The order of policies in the returned slice
 //     is non-deterministic due to the concurrent nature of the underlying
 //     store.
-func ListPolicies() []data.Policy {
-	var result []data.Policy
+func ListPolicies() ([]data.Policy, error) {
+	ctx := context.Background()
 
-	policies.Range(func(key, value interface{}) bool {
-		result = append(result, value.(data.Policy))
-		return true
-	})
+	// Load all policies from backend
+	allPolicies, err := persist.Backend().LoadAllPolicies(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load policies: %w", err)
+	}
 
-	return result
+	// Convert map to slice
+	result := make([]data.Policy, 0, len(allPolicies))
+	for _, policy := range allPolicies {
+		if policy != nil {
+			result = append(result, *policy)
+		}
+	}
+
+	return result, nil
 }
 
 // ListPoliciesByPath returns all policies that match a specific path pattern.
@@ -246,18 +270,24 @@ func ListPolicies() []data.Policy {
 //     empty slice if no policies match. The order of policies in the returned
 //     slice is non-deterministic due to the concurrent nature of the underlying
 //     store.
-func ListPoliciesByPath(pathPattern string) []data.Policy {
+func ListPoliciesByPath(pathPattern string) ([]data.Policy, error) {
+	ctx := context.Background()
+
+	// Load all policies from backend
+	allPolicies, err := persist.Backend().LoadAllPolicies(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load policies: %w", err)
+	}
+
+	// Filter by path pattern
 	var result []data.Policy
-
-	policies.Range(func(key, value interface{}) bool {
-		policy := value.(data.Policy)
-		if policy.PathPattern == pathPattern {
-			result = append(result, policy)
+	for _, policy := range allPolicies {
+		if policy != nil && policy.PathPattern == pathPattern {
+			result = append(result, *policy)
 		}
-		return true
-	})
+	}
 
-	return result
+	return result, nil
 }
 
 // ListPoliciesBySPIFFEID returns all policies that match a specific SPIFFE ID
@@ -272,61 +302,67 @@ func ListPoliciesByPath(pathPattern string) []data.Policy {
 //     an empty slice if no policies match. The order of policies in the
 //     returned slice is non-deterministic due to the concurrent nature of the
 //     underlying store.
-func ListPoliciesBySPIFFEID(SPIFFEIDPattern string) []data.Policy {
-	var result []data.Policy
+func ListPoliciesBySPIFFEID(SPIFFEIDPattern string) ([]data.Policy, error) {
+	ctx := context.Background()
 
-	policies.Range(func(key, value interface{}) bool {
-		policy := value.(data.Policy)
-		if policy.SPIFFEIDPattern == SPIFFEIDPattern {
-			result = append(result, policy)
-		}
-		return true
-	})
-
-	return result
-}
-
-// ImportPolicies imports a set of policies into the application's memory state.
-// It validates each policy, ensuring it has compiled regex patterns before
-// storing.
-//
-// Parameters:
-//   - importedPolicies: A map of policy IDs to policy objects
-//
-// Returns:
-//   - error: An error if any policy fails validation
-func ImportPolicies(importedPolicies map[string]*data.Policy) {
-	for id, policy := range importedPolicies {
-		// Skip nil policies.
-		if policy == nil {
-			continue
-		}
-
-		// Skip if ID does not match.
-		if policy.ID != id {
-			continue
-		}
-
-		// Compile patterns if they aren't already compiled
-		if policy.SPIFFEIDPattern != "*" && policy.IDRegex == nil {
-			idRegex, err := regexp.Compile(policy.SPIFFEIDPattern)
-			if err != nil {
-				// Skip invalid policies.
-				continue
-			}
-			policy.IDRegex = idRegex
-		}
-
-		if policy.PathPattern != "*" && policy.PathRegex == nil {
-			pathRegex, err := regexp.Compile(policy.PathPattern)
-			if err != nil {
-				// Skip invalid policies.
-				continue
-			}
-			policy.PathRegex = pathRegex
-		}
-
-		// Store the policy in the global map
-		policies.Store(policy.ID, *policy)
+	// Load all policies from backend
+	allPolicies, err := persist.Backend().LoadAllPolicies(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load policies: %w", err)
 	}
+
+	// Filter by SPIFFE ID pattern
+	var result []data.Policy
+	for _, policy := range allPolicies {
+		if policy != nil && policy.SPIFFEIDPattern == SPIFFEIDPattern {
+			result = append(result, *policy)
+		}
+	}
+
+	return result, nil
 }
+
+//// ImportPolicies imports a set of policies into the application's memory state.
+//// It validates each policy, ensuring it has compiled regex patterns before
+//// storing.
+////
+//// Parameters:
+////   - importedPolicies: A map of policy IDs to policy objects
+////
+//// Returns:
+////   - error: An error if any policy fails validation
+//func ImportPolicies(importedPolicies map[string]*data.Policy) {
+//	for id, policy := range importedPolicies {
+//		// Skip nil policies.
+//		if policy == nil {
+//			continue
+//		}
+//
+//		// Skip if ID does not match.
+//		if policy.ID != id {
+//			continue
+//		}
+//
+//		// Compile patterns if they aren't already compiled
+//		if policy.SPIFFEIDPattern != "*" && policy.IDRegex == nil {
+//			idRegex, err := regexp.Compile(policy.SPIFFEIDPattern)
+//			if err != nil {
+//				// Skip invalid policies.
+//				continue
+//			}
+//			policy.IDRegex = idRegex
+//		}
+//
+//		if policy.PathPattern != "*" && policy.PathRegex == nil {
+//			pathRegex, err := regexp.Compile(policy.PathPattern)
+//			if err != nil {
+//				// Skip invalid policies.
+//				continue
+//			}
+//			policy.PathRegex = pathRegex
+//		}
+//
+//		// Store the policy in the global map
+//		policies.Store(policy.ID, *policy)
+//	}
+///}

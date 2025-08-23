@@ -19,7 +19,6 @@ import (
 
 	"github.com/spiffe/spike/app/nexus/internal/env"
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
-	"github.com/spiffe/spike/app/nexus/internal/state/persist"
 )
 
 var (
@@ -115,26 +114,26 @@ func InitializeBackingStoreFromKeepers(source *workloadapi.X509Source) {
 //		memory.HydrateMemoryFromBackingStore()
 //		// Continue with application startup
 //	}
-func HydrateMemoryFromBackingStore() {
-	const fName = "HydrateMemoryFromBackingStore"
-
-	log.Log().Info(fName, "message", "HydrateMemoryFromBackingStore")
-
-	//secrets := persist.ReadAllSecrets()
-	//if len(secrets) > 0 {
-	//	state.ImportSecrets(secrets)
-	//}
-	log.Log().Info(fName,
-		"message", "HydrateMemoryFromBackingStore: secrets loaded")
-
-	policies := persist.ReadAllPolicies()
-	if len(policies) > 0 {
-		state.ImportPolicies(policies)
-	}
-
-	log.Log().Info(fName,
-		"message", "HydrateMemoryFromBackingStore: policies loaded")
-}
+//func HydrateMemoryFromBackingStore() {
+//	const fName = "HydrateMemoryFromBackingStore"
+//
+//	log.Log().Info(fName, "message", "HydrateMemoryFromBackingStore")
+//
+//	//secrets := persist.ReadAllSecrets()
+//	//if len(secrets) > 0 {
+//	//	state.ImportSecrets(secrets)
+//	//}
+//	log.Log().Info(fName,
+//		"message", "HydrateMemoryFromBackingStore: secrets loaded")
+//
+//	policies := persist.ReadAllPolicies()
+//	//if len(policies) > 0 {
+//	//	state.ImportPolicies(policies)
+//	//}
+//
+//	log.Log().Info(fName,
+//		"message", "HydrateMemoryFromBackingStore: policies loaded")
+//}
 
 // RestoreBackingStoreUsingPilotShards restores the backing store using the
 // provided Shamir secret sharing shards. It requires at least the threshold
