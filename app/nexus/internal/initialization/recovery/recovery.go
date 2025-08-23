@@ -98,43 +98,6 @@ func InitializeBackingStoreFromKeepers(source *workloadapi.X509Source) {
 	}
 }
 
-// HydrateMemoryFromBackingStore loads all secrets from the persistent storage
-// into the application's memory state. This function is typically called during
-// application startup to restore the secret state from the previous session.
-//
-// The function reads all secrets from the backing store using
-// persist.ReadAllSecrets() and imports them into the application state using
-// state.ImportSecrets(). If no secrets are found in the backing store, the
-// function returns without making any changes to the application state.
-//
-// Example usage:
-//
-//	func initializeApp() {
-//		// Other initialization code...
-//		memory.HydrateMemoryFromBackingStore()
-//		// Continue with application startup
-//	}
-//func HydrateMemoryFromBackingStore() {
-//	const fName = "HydrateMemoryFromBackingStore"
-//
-//	log.Log().Info(fName, "message", "HydrateMemoryFromBackingStore")
-//
-//	//secrets := persist.ReadAllSecrets()
-//	//if len(secrets) > 0 {
-//	//	state.ImportSecrets(secrets)
-//	//}
-//	log.Log().Info(fName,
-//		"message", "HydrateMemoryFromBackingStore: secrets loaded")
-//
-//	policies := persist.ReadAllPolicies()
-//	//if len(policies) > 0 {
-//	//	state.ImportPolicies(policies)
-//	//}
-//
-//	log.Log().Info(fName,
-//		"message", "HydrateMemoryFromBackingStore: policies loaded")
-//}
-
 // RestoreBackingStoreUsingPilotShards restores the backing store using the
 // provided Shamir secret sharing shards. It requires at least the threshold
 // number of shards (as configured in the environment) to successfully

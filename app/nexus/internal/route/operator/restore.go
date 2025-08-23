@@ -146,9 +146,6 @@ func RouteRestore(
 			mem.ClearRawBytes(shards[i].Value)
 			shards[i].ID = 0
 		}
-
-		// Recover data since we now have the root key in memory:
-		// recovery.HydrateMemoryFromBackingStore()
 	}
 
 	responseBody := net.MarshalBody(reqres.RestoreResponse{
