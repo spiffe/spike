@@ -24,7 +24,7 @@ var (
 
 // TODO: these need to go too. Don't store policies in-memory.
 // policies is a thread-safe map used to store policy information.
-var policies sync.Map
+// var policies sync.Map
 
 // Global variables related to the root key with thread-safety protection.
 var (

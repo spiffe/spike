@@ -5,6 +5,7 @@
 package base
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"regexp"
@@ -116,18 +117,18 @@ func CreatePolicy(policy data.Policy) (data.Policy, error) {
 		return data.Policy{}, ErrInvalidPolicy
 	}
 
-	var err error
+	ctx := context.Background()
 
 	// Check for duplicate policy name
-	policies.Range(func(key, value interface{}) bool {
-		if value.(data.Policy).Name == policy.Name {
-			err = ErrPolicyExists
-			return false // stop the iteration
-		}
-		return true
-	})
+	allPolicies, err := persist.Backend().LoadAllPolicies(ctx)
 	if err != nil {
-		return data.Policy{}, err
+		return data.Policy{}, fmt.Errorf("failed to load policies: %w", err)
+	}
+
+	for _, existingPolicy := range allPolicies {
+		if existingPolicy.Name == policy.Name {
+			return data.Policy{}, ErrPolicyExists
+		}
 	}
 
 	// Compile and validate patterns
@@ -161,8 +162,11 @@ func CreatePolicy(policy data.Policy) (data.Policy, error) {
 		policy.CreatedAt = time.Now()
 	}
 
-	policies.Store(policy.ID, policy)
-	persist.StorePolicy(policy)
+	// Store directly to backend
+	err = persist.Backend().StorePolicy(ctx, policy)
+	if err != nil {
+		return data.Policy{}, fmt.Errorf("failed to store policy: %w", err)
+	}
 
 	return policy, nil
 }
