@@ -4,7 +4,11 @@
 
 package base
 
-import "github.com/spiffe/spike/app/nexus/internal/state/persist"
+import (
+	"github.com/spiffe/spike-sdk-go/crypto"
+
+	"github.com/spiffe/spike/app/nexus/internal/state/persist"
+)
 
 // Initialize initializes the backend storage with the provided root key.
 //
@@ -13,7 +17,7 @@ import "github.com/spiffe/spike/app/nexus/internal/state/persist"
 //
 // Parameters:
 //   - r [32]byte: The root key to initialize the crypto state.
-func Initialize(r *[shardSize]byte) {
+func Initialize(r *[crypto.AES256KeySize]byte) {
 	// TODO: bail if mode is not in-memory and root key is nil or empty.
 
 	// Locks on a mutex; so only a single process can access it.

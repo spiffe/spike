@@ -7,6 +7,7 @@ package operator
 import (
 	"encoding/hex"
 	"fmt"
+	"github.com/spiffe/spike-sdk-go/crypto"
 	"os"
 	"strconv"
 	"strings"
@@ -22,8 +23,6 @@ import (
 	"github.com/spiffe/spike/app/spike/internal/env"
 	"github.com/spiffe/spike/app/spike/internal/trust"
 )
-
-const shardSize = 32
 
 // newOperatorRestoreCommand creates a new cobra command for restoration
 // operations on SPIKE Nexus.
@@ -93,7 +92,7 @@ func newOperatorRestoreCommand(
 
 			api := spike.NewWithSource(source)
 
-			var shardToRestore [shardSize]byte
+			var shardToRestore [crypto.AES256KeySize]byte
 
 			// shard is in `spike:$id:$base64` format
 			shardParts := strings.SplitN(string(shard), ":", 3)
@@ -138,7 +137,7 @@ func newOperatorRestoreCommand(
 				os.Exit(1)
 			}
 
-			if len(decodedShard) != shardSize {
+			if len(decodedShard) != crypto.AES256KeySize {
 				// Security: reset decodedShard immediately after use.
 				mem.ClearBytes(decodedShard)
 
@@ -147,7 +146,7 @@ func newOperatorRestoreCommand(
 				os.Exit(1)
 			}
 
-			for i := 0; i < shardSize; i++ {
+			for i := 0; i < crypto.AES256KeySize; i++ {
 				shardToRestore[i] = decodedShard[i]
 			}
 

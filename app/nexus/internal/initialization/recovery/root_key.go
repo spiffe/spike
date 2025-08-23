@@ -7,6 +7,7 @@ package recovery
 import (
 	"github.com/cloudflare/circl/group"
 	"github.com/cloudflare/circl/secretsharing"
+	"github.com/spiffe/spike-sdk-go/crypto"
 	"github.com/spiffe/spike-sdk-go/log"
 	"github.com/spiffe/spike-sdk-go/security/mem"
 
@@ -15,7 +16,7 @@ import (
 
 type ShamirShard struct {
 	ID    uint64
-	Value *[shardSize]byte
+	Value *[crypto.AES256KeySize]byte
 }
 
 // RecoverRootKey reconstructs the original root key from a slice of
@@ -42,7 +43,7 @@ type ShamirShard struct {
 //   - The recovery process fails
 //   - The reconstructed key is nil
 //   - The binary representation has an incorrect length
-func RecoverRootKey(ss []ShamirShard) *[shardSize]byte {
+func RecoverRootKey(ss []ShamirShard) *[crypto.AES256KeySize]byte {
 	const fName = "RecoverRootKey"
 
 	g := group.P256
@@ -109,15 +110,15 @@ func RecoverRootKey(ss []ShamirShard) *[shardSize]byte {
 			reconstructed.SetUint64(0)
 
 			log.FatalLn(fName + ": Failed to marshal: " + err.Error())
-			return &[shardSize]byte{}
+			return &[crypto.AES256KeySize]byte{}
 		}
 
-		if len(binaryRec) != shardSize {
+		if len(binaryRec) != crypto.AES256KeySize {
 			log.FatalLn(fName + ": Reconstructed root key has incorrect length")
-			return &[shardSize]byte{}
+			return &[crypto.AES256KeySize]byte{}
 		}
 
-		var result [shardSize]byte
+		var result [crypto.AES256KeySize]byte
 		copy(result[:], binaryRec)
 		// Security: Zero out temporary variables before the function exits.
 		mem.ClearBytes(binaryRec)
@@ -125,5 +126,5 @@ func RecoverRootKey(ss []ShamirShard) *[shardSize]byte {
 		return &result
 	}
 
-	return &[shardSize]byte{}
+	return &[crypto.AES256KeySize]byte{}
 }

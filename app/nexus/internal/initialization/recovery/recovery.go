@@ -7,6 +7,7 @@ package recovery
 import (
 	"context"
 	"errors"
+	"github.com/spiffe/spike-sdk-go/crypto"
 	"math/big"
 	"time"
 
@@ -50,7 +51,7 @@ func InitializeBackingStoreFromKeepers(source *workloadapi.X509Source) {
 	log.Log().Info(fName,
 		"message", "Recovering backing store using keeper shards")
 
-	successfulKeeperShards := make(map[string]*[shardSize]byte)
+	successfulKeeperShards := make(map[string]*[crypto.AES256KeySize]byte)
 	// Security: Ensure the shards are zeroed out after use.
 	defer func() {
 		log.Log().Info(fName, "message", "Resetting successfulKeeperShards")
@@ -217,8 +218,6 @@ func SendShardsPeriodically(source *workloadapi.X509Source) {
 	}
 }
 
-const shardSize = 32
-
 // NewPilotRecoveryShards generates a set of recovery shards from the root key
 // using Shamir's Secret Sharing scheme. These shards can be used to reconstruct
 // the root key in a recovery scenario.
@@ -244,7 +243,7 @@ const shardSize = 32
 //	    // Store each shard securely
 //	    storeShard(shard)
 //	}
-func NewPilotRecoveryShards() map[int]*[shardSize]byte {
+func NewPilotRecoveryShards() map[int]*[crypto.AES256KeySize]byte {
 	const fName = "NewPilotRecoveryShards"
 	log.Log().Info(fName, "message", "Generating pilot recovery shards")
 
@@ -263,7 +262,7 @@ func NewPilotRecoveryShards() map[int]*[shardSize]byte {
 		}
 	}()
 
-	var result = make(map[int]*[shardSize]byte)
+	var result = make(map[int]*[crypto.AES256KeySize]byte)
 
 	for _, share := range rootShares {
 		log.Log().Info(fName, "message", "Generating share", "share.id", share.ID)
@@ -274,7 +273,7 @@ func NewPilotRecoveryShards() map[int]*[shardSize]byte {
 			return nil
 		}
 
-		if len(contribution) != shardSize {
+		if len(contribution) != crypto.AES256KeySize {
 			log.Log().Error(fName, "message", "Length of share is unexpected")
 			return nil
 		}
@@ -288,12 +287,12 @@ func NewPilotRecoveryShards() map[int]*[shardSize]byte {
 		bigInt := new(big.Int).SetBytes(bb)
 		ii := bigInt.Uint64()
 
-		if len(contribution) != shardSize {
+		if len(contribution) != crypto.AES256KeySize {
 			log.Log().Error(fName, "message", "Length of share is unexpected")
 			return nil
 		}
 
-		var rs [shardSize]byte
+		var rs [crypto.AES256KeySize]byte
 		copy(rs[:], contribution)
 
 		log.Log().Info(fName, "message", "Generated shares", "len", len(rs))

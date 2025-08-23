@@ -6,6 +6,7 @@ package recovery
 
 import (
 	"encoding/json"
+	"github.com/spiffe/spike-sdk-go/crypto"
 	"net/url"
 	"strconv"
 
@@ -154,7 +155,7 @@ func sendShardsToKeepers(
 			continue
 		}
 
-		if len(contribution) != shardSize {
+		if len(contribution) != crypto.AES256KeySize {
 			// Security: Ensure that the contribution is zeroed out before
 			// the next iteration.
 			//
@@ -181,7 +182,7 @@ func sendShardsToKeepers(
 
 		scr := reqres.ShardContributionRequest{}
 
-		shard := new([shardSize]byte)
+		shard := new([crypto.AES256KeySize]byte)
 		// Security: shard is intentionally binary (instead of string) for
 		// better memory management. Do not change its data type.
 		copy(shard[:], contribution)

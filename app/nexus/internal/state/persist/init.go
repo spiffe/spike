@@ -7,6 +7,7 @@ package persist
 import (
 	"context"
 	"encoding/hex"
+	"github.com/spiffe/spike-sdk-go/crypto"
 
 	"github.com/spiffe/spike-sdk-go/log"
 
@@ -90,8 +91,6 @@ func InitializeSqliteBackend(rootKey *[32]byte) backend.Backend {
 	return dbBackend
 }
 
-const shardSize = 32
-
 // InitializeLiteBackend creates and initializes a Lite backend instance
 // using the provided root key for encryption. The Lite backend is a
 // lightweight alternative to SQLite for persistent storage. The Lite mode
@@ -122,7 +121,7 @@ const shardSize = 32
 //
 // Note: Unlike the SQLite backend, the Lite backend does not require a
 // separate Initialize() call or timeout configuration.
-func InitializeLiteBackend(rootKey *[shardSize]byte) backend.Backend {
+func InitializeLiteBackend(rootKey *[crypto.AES256KeySize]byte) backend.Backend {
 	const fName = "initializeLiteBackend"
 	dbBackend, err := lite.New(rootKey)
 	if err != nil {
@@ -162,7 +161,7 @@ var be backend.Backend
 //
 // Note: This function modifies the package-level be variable. Subsequent calls
 // will reinitialize the backend, potentially losing any existing state.
-func InitializeBackend(rootKey *[shardSize]byte) {
+func InitializeBackend(rootKey *[crypto.AES256KeySize]byte) {
 	const fName = "initializeBackend"
 
 	log.Log().Info(fName,

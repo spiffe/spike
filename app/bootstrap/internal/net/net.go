@@ -9,6 +9,7 @@ import (
 	"crypto/sha256"
 	"encoding/json"
 	"fmt"
+	"github.com/spiffe/spike-sdk-go/crypto"
 	"net/http"
 	"os"
 
@@ -61,8 +62,6 @@ func MTLSClient(source *workloadapi.X509Source) *http.Client {
 	return client
 }
 
-const shardSize = 32
-
 // Payload marshals a secret sharing contribution into a JSON payload for
 // transmission to a Keeper. It takes a secret sharing share and the target
 // Keeper ID, validates the contribution is exactly 32 bytes, and returns the
@@ -79,7 +78,7 @@ func Payload(share secretsharing.Share, keeperID string) []byte {
 		os.Exit(1)
 	}
 
-	if len(contribution) != shardSize {
+	if len(contribution) != crypto.AES256KeySize {
 		log.Log().Warn(fName,
 			"message", "invalid contribution length",
 			"len", len(contribution), "keeper_id", keeperID)
@@ -87,7 +86,7 @@ func Payload(share secretsharing.Share, keeperID string) []byte {
 	}
 
 	scr := reqres.ShardContributionRequest{}
-	shard := new([shardSize]byte)
+	shard := new([crypto.AES256KeySize]byte)
 	copy(shard[:], contribution)
 	scr.Shard = shard
 

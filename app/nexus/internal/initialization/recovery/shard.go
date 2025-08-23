@@ -6,6 +6,7 @@ package recovery
 
 import (
 	"encoding/json"
+	"github.com/spiffe/spike-sdk-go/crypto"
 	"net/url"
 
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
@@ -118,7 +119,7 @@ func shardContributionResponse(
 		return []byte{}
 	}
 
-	if len(*contribution) != shardSize {
+	if len(*contribution) != crypto.AES256KeySize {
 		log.Log().Warn(fName,
 			"message", "invalid contribution length",
 			"len", len(*contribution))
@@ -128,7 +129,7 @@ func shardContributionResponse(
 		return []byte{}
 	}
 
-	var c [shardSize]byte
+	var c [crypto.AES256KeySize]byte
 	copy(c[:], *contribution)
 	// Security: Ensure that the temporary variable is zeroed out before
 	// the function exits.

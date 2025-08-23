@@ -5,18 +5,17 @@
 package base
 
 import (
+	"github.com/spiffe/spike-sdk-go/crypto"
 	"sync"
 
 	"github.com/spiffe/spike-sdk-go/log"
 )
 
-const shardSize = 32
-
 // Global variables related to the root key with thread-safety protection.
 var (
 	// rootKey is a 32-byte array that stores the cryptographic root key.
 	// It is initialized to zeroes by default.
-	rootKey [shardSize]byte
+	rootKey [crypto.AES256KeySize]byte
 	// rootKeyMu provides mutual exclusion for access to the root key.
 	rootKeyMu sync.RWMutex
 )
@@ -27,7 +26,7 @@ var (
 //
 // Returns:
 //   - *[32]byte: Pointer to the root key
-func RootKeyNoLock() *[shardSize]byte {
+func RootKeyNoLock() *[crypto.AES256KeySize]byte {
 	return &rootKey
 }
 
@@ -70,7 +69,7 @@ func RootKeyZero() bool {
 //
 // Parameters:
 //   - rk: Pointer to a 32-byte array containing the new root key value
-func SetRootKey(rk *[shardSize]byte) {
+func SetRootKey(rk *[crypto.AES256KeySize]byte) {
 	fName := "SetRootKey"
 	log.Log().Info(fName, "message", "Setting root key")
 

@@ -9,13 +9,12 @@ import (
 	"crypto/cipher"
 	"encoding/hex"
 	"fmt"
+	"github.com/spiffe/spike-sdk-go/crypto"
 
 	"github.com/spiffe/spike/app/nexus/internal/state/backend/sqlite/persist"
 
 	"github.com/spiffe/spike/app/nexus/internal/state/backend"
 )
-
-const shardSize = 32
 
 // New creates a new DataStore instance with the provided configuration.
 // It validates the encryption key and initializes the AES-GCM cipher.
@@ -39,7 +38,7 @@ func New(cfg backend.Config) (backend.Backend, error) {
 	}
 
 	// Validate key length
-	if len(key) != shardSize {
+	if len(key) != crypto.AES256KeySize {
 		return nil, fmt.Errorf(
 			"invalid encryption key length: must be 32 bytes",
 		)

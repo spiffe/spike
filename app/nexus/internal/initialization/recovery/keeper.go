@@ -5,6 +5,7 @@
 package recovery
 
 import (
+	"github.com/spiffe/spike-sdk-go/crypto"
 	"strconv"
 
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
@@ -14,8 +15,6 @@ import (
 	"github.com/spiffe/spike/app/nexus/internal/env"
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 )
-
-// TODO: move ShardSize const to SDK so we can refer it from a central location.
 
 // iterateKeepersAndInitializeState retrieves Shamir secret shards from multiple
 // SPIKE Keeper instances and attempts to reconstruct the root key when a
@@ -31,7 +30,7 @@ import (
 //     keeper services
 //   - successfulKeeperShards: A map storing successfully retrieved shards
 //     indexed by keeper ID. Each shard is a fixed-size byte array of size
-//     shardSize
+//     32.
 //
 // Returns:
 //   - bool: true if the system was successfully initialized with the
@@ -55,7 +54,7 @@ import (
 //  6. Securely clears all sensitive data from memory
 func iterateKeepersAndInitializeState(
 	source *workloadapi.X509Source,
-	successfulKeeperShards map[string]*[shardSize]byte,
+	successfulKeeperShards map[string]*[crypto.AES256KeySize]byte,
 ) bool {
 	const fName = "iterateKeepersAndInitializeState"
 
