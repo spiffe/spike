@@ -10,22 +10,6 @@ import (
 	"github.com/spiffe/spike-sdk-go/log"
 )
 
-// Global variables for storing secrets and policies with thread-safety.
-var (
-// // secretStore is a key-value store for managing secrets with version control.
-//
-//	secretStore = kv.New(kv.Config{
-//		MaxSecretVersions: env.MaxSecretVersions(),
-//	})
-//
-// // secretStoreMu provides mutual exclusion for access to the secret store.
-// secretStoreMu sync.RWMutex
-)
-
-// TODO: these need to go too. Don't store policies in-memory.
-// policies is a thread-safe map used to store policy information.
-// var policies sync.Map
-
 const shardSize = 32
 
 // Global variables related to the root key with thread-safety protection.
@@ -89,6 +73,8 @@ func RootKeyZero() bool {
 func SetRootKey(rk *[shardSize]byte) {
 	fName := "SetRootKey"
 	log.Log().Info(fName, "message", "Setting root key")
+
+	// TODO: bail if rk is nil.
 
 	rootKeyMu.Lock()
 	defer rootKeyMu.Unlock()

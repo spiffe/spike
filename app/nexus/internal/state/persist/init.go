@@ -168,6 +168,8 @@ func InitializeBackend(rootKey *[shardSize]byte) {
 	log.Log().Info(fName,
 		"message", "Initializing backend", "storeType", env.BackendStoreType())
 
+	// TODO: for non-in-memory stores; bail if root key is nil or all zeroes.
+
 	backendMu.Lock()
 	defer backendMu.Unlock()
 
