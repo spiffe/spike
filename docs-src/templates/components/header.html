@@ -172,11 +172,12 @@
 
     // Initialize theme
     const savedTheme = localStorage.getItem("theme");
-    if (savedTheme) {
-      setTheme(savedTheme);
-    } else if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
-      setTheme("dark");
-    }
+    setTheme(savedTheme ? savedTheme : "dark");
+    // Discard system theme changes; the landing page is always dark, so
+    // it's better to transition to a dark-by-default theme.
+    // } else if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+    //   setTheme("dark");
+    // }
 
     // Toggle theme on button click
     themeToggle.addEventListener("click", () => {
@@ -185,13 +186,13 @@
       setTheme(newTheme);
     });
 
-    // Listen for system theme changes
-    window
-      .matchMedia("(prefers-color-scheme: dark)")
-      .addEventListener("change", (e) => {
-        if (!localStorage.getItem("theme")) {
-          setTheme(e.matches ? "dark" : "light");
-        }
-      });
+    // Discard system-theme changes.
+    // window
+    //   .matchMedia("(prefers-color-scheme: dark)")
+    //   .addEventListener("change", (e) => {
+    //     if (!localStorage.getItem("theme")) {
+    //       setTheme(e.matches ? "dark" : "light");
+    //     }
+    //   });
   });
 </script>

@@ -4,6 +4,12 @@
 
 package base
 
+import (
+	"context"
+	"github.com/spiffe/spike/app/nexus/internal/state/persist"
+	"sort"
+)
+
 // ListKeys returns a slice of strings containing all keys currently stored
 // in the key-value store. The function acquires a lock on the store to ensure
 // a consistent view of the keys during enumeration.
@@ -22,7 +28,21 @@ package base
 //	    fmt.Printf("Found key: %s\n", key)
 //	}
 func ListKeys() []string {
-	secretStoreMu.Lock()
-	defer secretStoreMu.Unlock()
-	return secretStore.List()
+	ctx := context.Background()
+
+	secrets, err := persist.Backend().LoadAllSecrets(ctx)
+	if err != nil {
+		return []string{}
+	}
+
+	// Extract just the keys
+	keys := make([]string, 0, len(secrets))
+	for path := range secrets {
+		keys = append(keys, path)
+	}
+
+	// Sort for consistent ordering (lexicographical)
+	sort.Strings(keys)
+
+	return keys
 }

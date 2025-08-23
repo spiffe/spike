@@ -18,6 +18,8 @@ import (
 	"github.com/spiffe/spike/app/bootstrap/internal/validation"
 )
 
+const shardSize = 32
+
 // RootShares generates a set of Shamir secret shares from a cryptographically
 // secure random root key. It creates a 32-byte random seed, uses it to generate
 // a root secret on the P256 elliptic curve group, and splits it into n shares
@@ -30,7 +32,7 @@ import (
 func RootShares() []shamir.Share {
 	const fName = "rootShares"
 
-	var rootKeySeed [32]byte
+	var rootKeySeed [shardSize]byte
 	if _, err := rand.Read(rootKeySeed[:]); err != nil {
 		log.Fatal(err.Error())
 	}

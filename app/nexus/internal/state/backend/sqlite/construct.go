@@ -15,6 +15,8 @@ import (
 	"github.com/spiffe/spike/app/nexus/internal/state/backend"
 )
 
+const shardSize = 32
+
 // New creates a new DataStore instance with the provided configuration.
 // It validates the encryption key and initializes the AES-GCM cipher.
 //
@@ -37,7 +39,7 @@ func New(cfg backend.Config) (backend.Backend, error) {
 	}
 
 	// Validate key length
-	if len(key) != 32 {
+	if len(key) != shardSize {
 		return nil, fmt.Errorf(
 			"invalid encryption key length: must be 32 bytes",
 		)

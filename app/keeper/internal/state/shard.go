@@ -11,7 +11,9 @@ import (
 	"sync"
 )
 
-var shard [32]byte
+const shardSize = 32
+
+var shard [shardSize]byte
 var shardMutex sync.RWMutex
 
 // SetShard safely updates the global shard value under a write lock.
@@ -22,7 +24,7 @@ var shardMutex sync.RWMutex
 //   - s *[32]byte: Pointer to the new shard value to store
 //
 // Thread-safe through shardMutex.
-func SetShard(s *[32]byte) {
+func SetShard(s *[shardSize]byte) {
 	shardMutex.Lock()
 	defer shardMutex.Unlock()
 
@@ -45,7 +47,7 @@ func SetShard(s *[32]byte) {
 // ShardNoSync returns a pointer to the shard without acquiring any locks.
 // Callers must ensure proper synchronization by using RLockShard and
 // RUnlockShard when accessing the returned pointer.
-func ShardNoSync() *[32]byte {
+func ShardNoSync() *[shardSize]byte {
 	return &shard
 }
 

@@ -118,7 +118,7 @@ func shardContributionResponse(
 		return []byte{}
 	}
 
-	if len(*contribution) != 32 {
+	if len(*contribution) != shardSize {
 		log.Log().Warn(fName,
 			"message", "invalid contribution length",
 			"len", len(*contribution))
@@ -128,7 +128,7 @@ func shardContributionResponse(
 		return []byte{}
 	}
 
-	var c [32]byte
+	var c [shardSize]byte
 	copy(c[:], *contribution)
 	// Security: Ensure that the temporary variable is zeroed out before
 	// the function exits.

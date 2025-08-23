@@ -11,9 +11,9 @@ import (
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	apiErr "github.com/spiffe/spike-sdk-go/api/errors"
 	"github.com/spiffe/spike-sdk-go/log"
-	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 
-	journal "github.com/spiffe/spike/internal/journal"
+	state "github.com/spiffe/spike/app/nexus/internal/state/base"
+	"github.com/spiffe/spike/internal/journal"
 	"github.com/spiffe/spike/internal/net"
 )
 

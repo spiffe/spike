@@ -32,7 +32,7 @@
 
 /* Dark theme */
 [data-theme="dark"] {
-  --bg-primary: #1a1a1a;
+  --bg-primary: #101828;
   --bg-primary-rgb: 26, 26, 26;
   --bg-secondary: #2d2d2d;
   --bg-interactive: rgba(255, 255, 255, 0.05);
@@ -51,7 +51,7 @@
 /* System preference based theme */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg-primary: #1a1a1a;
+    --bg-primary: #101828;
     --bg-primary-rgb: 26, 26, 26;
     --bg-secondary: #2d2d2d;
     --bg-interactive: rgba(255, 255, 255, 0.05);

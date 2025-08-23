@@ -15,7 +15,7 @@ import (
 
 	"github.com/spiffe/spike/app/nexus/internal/env"
 	"github.com/spiffe/spike/app/nexus/internal/initialization/recovery"
-	journal "github.com/spiffe/spike/internal/journal"
+	"github.com/spiffe/spike/internal/journal"
 	"github.com/spiffe/spike/internal/net"
 )
 

@@ -23,6 +23,8 @@ import (
 	"github.com/spiffe/spike/app/spike/internal/trust"
 )
 
+const shardSize = 32
+
 // newOperatorRestoreCommand creates a new cobra command for restoration
 // operations on SPIKE Nexus.
 //
@@ -91,7 +93,7 @@ func newOperatorRestoreCommand(
 
 			api := spike.NewWithSource(source)
 
-			var shardToRestore [32]byte
+			var shardToRestore [shardSize]byte
 
 			// shard is in `spike:$id:$base64` format
 			shardParts := strings.SplitN(string(shard), ":", 3)
@@ -136,7 +138,7 @@ func newOperatorRestoreCommand(
 				os.Exit(1)
 			}
 
-			if len(decodedShard) != 32 {
+			if len(decodedShard) != shardSize {
 				// Security: reset decodedShard immediately after use.
 				mem.ClearBytes(decodedShard)
 
@@ -145,7 +147,7 @@ func newOperatorRestoreCommand(
 				os.Exit(1)
 			}
 
-			for i := 0; i < 32; i++ {
+			for i := 0; i < shardSize; i++ {
 				shardToRestore[i] = decodedShard[i]
 			}
 

@@ -13,10 +13,12 @@ import (
 type StoreType string
 
 const (
-	// S3 indicates an Amazon S3 (or compatible) storage backend
-	S3 StoreType = "s3"
-
 	// Lite mode
+	// This mode converts SPIKE to an encryption-as-a-service app.
+	// It is used to store secrets in S3-compatible mediums (such as Minio)
+	// without actually persisting them to a backing store.
+	// In this mode SPIKE policies are "minimally" enforced, and the recommended
+	// way to manage RBAC is to use the object storage's policy rules instead.
 	Lite StoreType = "lite"
 
 	// Sqlite indicates a SQLite database storage backend
@@ -25,6 +27,8 @@ const (
 	Sqlite StoreType = "sqlite"
 
 	// Memory indicates an in-memory storage backend
+	// This mode is not recommended for production use as SPIKE will NOT rely on
+	// SPIKE Keeper instances for Disaster Recovery and Redundancy.
 	Memory StoreType = "memory"
 )
 
@@ -43,8 +47,6 @@ func BackendStoreType() StoreType {
 	st := os.Getenv("SPIKE_NEXUS_BACKEND_STORE")
 
 	switch strings.ToLower(st) {
-	case string(S3):
-		panic("SPIKE_NEXUS_BACKEND_STORE=s3 is not implemented yet")
 	case string(Lite):
 		return Lite
 	case string(Sqlite):

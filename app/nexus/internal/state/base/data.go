@@ -7,30 +7,16 @@ package base
 import (
 	"sync"
 
-	"github.com/spiffe/spike-sdk-go/kv"
 	"github.com/spiffe/spike-sdk-go/log"
-
-	"github.com/spiffe/spike/app/nexus/internal/env"
 )
 
-// Global variables for storing secrets and policies with thread-safety.
-var (
-	// secretStore is a key-value store for managing secrets with version control.
-	secretStore = kv.New(kv.Config{
-		MaxSecretVersions: env.MaxSecretVersions(),
-	})
-	// secretStoreMu provides mutual exclusion for access to the secret store.
-	secretStoreMu sync.RWMutex
-)
-
-// policies is a thread-safe map used to store policy information.
-var policies sync.Map
+const shardSize = 32
 
 // Global variables related to the root key with thread-safety protection.
 var (
 	// rootKey is a 32-byte array that stores the cryptographic root key.
 	// It is initialized to zeroes by default.
-	rootKey [32]byte
+	rootKey [shardSize]byte
 	// rootKeyMu provides mutual exclusion for access to the root key.
 	rootKeyMu sync.RWMutex
 )
@@ -41,7 +27,7 @@ var (
 //
 // Returns:
 //   - *[32]byte: Pointer to the root key
-func RootKeyNoLock() *[32]byte {
+func RootKeyNoLock() *[shardSize]byte {
 	return &rootKey
 }
 
@@ -84,9 +70,11 @@ func RootKeyZero() bool {
 //
 // Parameters:
 //   - rk: Pointer to a 32-byte array containing the new root key value
-func SetRootKey(rk *[32]byte) {
+func SetRootKey(rk *[shardSize]byte) {
 	fName := "SetRootKey"
 	log.Log().Info(fName, "message", "Setting root key")
+
+	// TODO: bail if rk is nil.
 
 	rootKeyMu.Lock()
 	defer rootKeyMu.Unlock()
