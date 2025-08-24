@@ -305,7 +305,7 @@ func ListPoliciesByPath(pathPattern string) ([]data.Policy, error) {
 func ListPoliciesBySPIFFEID(SPIFFEIDPattern string) ([]data.Policy, error) {
 	ctx := context.Background()
 
-	// Load all policies from backend
+	// Load all policies from the backend.
 	allPolicies, err := persist.Backend().LoadAllPolicies(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load policies: %w", err)

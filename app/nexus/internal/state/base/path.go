@@ -6,8 +6,9 @@ package base
 
 import (
 	"context"
-	"github.com/spiffe/spike/app/nexus/internal/state/persist"
 	"sort"
+
+	"github.com/spiffe/spike/app/nexus/internal/state/persist"
 )
 
 // ListKeys returns a slice of strings containing all secret paths currently
