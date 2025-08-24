@@ -264,23 +264,23 @@ func NewPilotRecoveryShards() map[int]*[crypto.AES256KeySize]byte {
 
 	var result = make(map[int]*[crypto.AES256KeySize]byte)
 
-	for _, share := range rootShards {
-		log.Log().Info(fName, "message", "Generating share", "share.id", share.ID)
+	for _, shard := range rootShards {
+		log.Log().Info(fName, "message", "Generating shard", "shard.id", shard.ID)
 
-		contribution, err := share.Value.MarshalBinary()
+		contribution, err := shard.Value.MarshalBinary()
 		if err != nil {
-			log.Log().Error(fName, "message", "Failed to marshal share")
+			log.Log().Error(fName, "message", "Failed to marshal shard")
 			return nil
 		}
 
 		if len(contribution) != crypto.AES256KeySize {
-			log.Log().Error(fName, "message", "Length of share is unexpected")
+			log.Log().Error(fName, "message", "Length of shard is unexpected")
 			return nil
 		}
 
-		bb, err := share.ID.MarshalBinary()
+		bb, err := shard.ID.MarshalBinary()
 		if err != nil {
-			log.Log().Error(fName, "message", "Failed to unmarshal share ID")
+			log.Log().Error(fName, "message", "Failed to unmarshal shard ID")
 			return nil
 		}
 
@@ -288,7 +288,7 @@ func NewPilotRecoveryShards() map[int]*[crypto.AES256KeySize]byte {
 		ii := bigInt.Uint64()
 
 		if len(contribution) != crypto.AES256KeySize {
-			log.Log().Error(fName, "message", "Length of share is unexpected")
+			log.Log().Error(fName, "message", "Length of shard is unexpected")
 			return nil
 		}
 
