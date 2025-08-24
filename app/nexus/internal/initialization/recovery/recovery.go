@@ -252,19 +252,19 @@ func NewPilotRecoveryShards() map[int]*[crypto.AES256KeySize]byte {
 		return nil
 	}
 
-	rootSecret, rootShares := computeShares()
+	rootSecret, rootShards := computeShares()
 	// Security: Ensure the root key and shards are zeroed out after use.
-	sanityCheck(rootSecret, rootShares)
+	sanityCheck(rootSecret, rootShards)
 	defer func() {
 		rootSecret.SetUint64(0)
-		for i := range rootShares {
-			rootShares[i].Value.SetUint64(0)
+		for i := range rootShards {
+			rootShards[i].Value.SetUint64(0)
 		}
 	}()
 
 	var result = make(map[int]*[crypto.AES256KeySize]byte)
 
-	for _, share := range rootShares {
+	for _, share := range rootShards {
 		log.Log().Info(fName, "message", "Generating share", "share.id", share.ID)
 
 		contribution, err := share.Value.MarshalBinary()
