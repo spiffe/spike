@@ -224,7 +224,7 @@ func SendShardsPeriodically(source *workloadapi.X509Source) {
 //
 // The function first retrieves the root key from the system state. If no root
 // key exists, it returns an empty slice. Otherwise, it splits the root key into
-// shares using a secret sharing scheme, performs validation checks, and
+// shards using a secret sharing scheme, performs validation checks, and
 // converts the shares into byte arrays.
 //
 // Each shard in the returned slice represents a portion of the secret needed to
