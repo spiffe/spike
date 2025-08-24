@@ -7,26 +7,125 @@ package base
 import (
 	"context"
 	"fmt"
-	"github.com/spiffe/spike-sdk-go/kv"
+	"sort"
 	"time"
 
+	"github.com/spiffe/spike-sdk-go/kv"
+
+	"github.com/spiffe/spike/app/nexus/internal/env"
 	"github.com/spiffe/spike/app/nexus/internal/state/persist"
 )
 
 // UpsertSecret stores or updates a secret at the specified path with the
-// provided values. It provides thread-safe access to the underlying key-value
-// kv.
+// provided values. It handles version management, maintaining a history of
+// secret values up to the configured maximum number of versions.
+//
+// For new secrets, it creates the initial version (version 1). For existing
+// secrets, it increments the version number and adds the new values while
+// preserving history. Old versions are automatically pruned when the total
+// number of versions exceeds the configured maximum.
+//
+// All operations are performed directly against the backing store without
+// caching, ensuring consistency across multiple instances in high-availability
+// deployments.
 //
 // Parameters:
 //   - path: The location where the secret should be stored
 //   - values: A map containing the secret key-value pairs to be stored
-func UpsertSecret(path string, values map[string]string) {
-	//secretStoreMu.Lock()
-	//secretStore.Put(path, values)
-	//secretStoreMu.Unlock()
-	//
-	//persist.StoreSecret(secretStore, path)
+//
+// Returns:
+//   - error: An error if the operation fails, nil on success
+//
+// Example:
+//
+//	err := UpsertSecret("app/database/credential", map[string]string{
+//	    "username": "admin",
+//	    "password": "SPIKE_Rocks",
+//	})
+//	if err != nil {
+//	    log.Printf("Failed to store secret: %v", err)
+//	}
+func UpsertSecret(path string, values map[string]string) error {
+	ctx := context.Background()
 
+	// Load the current secret (if it exists) to handle versioning
+	// Backend does NOT return an error if the secret is not found and returns
+	// `nil` instead. Any other error means there is a problem with the
+	// backing store, so it's better to return it and exit the function.
+	currentSecret, err := persist.Backend().LoadSecret(ctx, path)
+	if err != nil {
+		return fmt.Errorf("failed to load current secret: %w", err)
+	}
+
+	now := time.Now()
+
+	// Build the secret structure
+	var secret *kv.Value
+	if currentSecret == nil {
+		// New secret - create from scratch
+		secret = &kv.Value{
+			Versions: map[int]kv.Version{
+				1: {
+					Data:        values,
+					CreatedTime: now,
+					Version:     1,
+					DeletedTime: nil,
+				},
+			},
+			Metadata: kv.Metadata{
+				CreatedTime:    now,
+				UpdatedTime:    now,
+				CurrentVersion: 1,
+				OldestVersion:  1,
+				MaxVersions:    env.MaxSecretVersions(), // Get from the environment
+			},
+		}
+	} else {
+		// Existing secret - increment version
+		newVersion := currentSecret.Metadata.CurrentVersion + 1
+
+		// Add the new version
+		currentSecret.Versions[newVersion] = kv.Version{
+			Data:        values,
+			CreatedTime: now,
+			Version:     newVersion,
+			DeletedTime: nil,
+		}
+
+		// Update metadata
+		currentSecret.Metadata.CurrentVersion = newVersion
+		currentSecret.Metadata.UpdatedTime = now
+
+		// Clean up old versions if exceeding MaxVersions
+		if len(currentSecret.Versions) > currentSecret.Metadata.MaxVersions {
+			// Find and remove oldest versions
+			versionsToDelete := len(currentSecret.Versions) - currentSecret.Metadata.MaxVersions
+			sortedVersions := make([]int, 0, len(currentSecret.Versions))
+			for v := range currentSecret.Versions {
+				sortedVersions = append(sortedVersions, v)
+			}
+			sort.Ints(sortedVersions)
+
+			for i := 0; i < versionsToDelete; i++ {
+				delete(currentSecret.Versions, sortedVersions[i])
+			}
+
+			// Update OldestVersion
+			if len(sortedVersions) > versionsToDelete {
+				currentSecret.Metadata.OldestVersion = sortedVersions[versionsToDelete]
+			}
+		}
+
+		secret = currentSecret
+	}
+
+	// Store to the backend
+	err = persist.Backend().StoreSecret(ctx, path, *secret)
+	if err != nil {
+		return fmt.Errorf("failed to store secret: %w", err)
+	}
+
+	return nil
 }
 
 // DeleteSecret deletes one or more versions of a secret at the specified path.
