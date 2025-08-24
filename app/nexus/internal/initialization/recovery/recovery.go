@@ -253,7 +253,7 @@ func NewPilotRecoveryShards() map[int]*[crypto.AES256KeySize]byte {
 	}
 
 	rootSecret, rootShares := computeShares()
-	// Security: Ensure the root key and shares are zeroed out after use.
+	// Security: Ensure the root key and shards are zeroed out after use.
 	sanityCheck(rootSecret, rootShares)
 	defer func() {
 		rootSecret.SetUint64(0)
