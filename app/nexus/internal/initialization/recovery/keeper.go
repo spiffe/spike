@@ -58,7 +58,11 @@ func iterateKeepersAndInitializeState(
 ) bool {
 	const fName = "iterateKeepersAndInitializeState"
 
-	// TODO: log and exit if "in memory" mode.
+	if env.BackendStoreType() == env.Memory {
+		log.Log().Warn(fName, "message", "In memory mode; skipping recovery")
+		// Assume successful initialization, since initialization is not needed.
+		return true
+	}
 
 	for keeperID, keeperAPIRoot := range env.Keepers() {
 		log.Log().Info(fName, "id", keeperID, "url", keeperAPIRoot)
@@ -104,7 +108,7 @@ func iterateKeepersAndInitializeState(
 				log.FatalLn(
 					fName, "message", "Failed to convert keeper ID to int", "err", err,
 				)
-				continue
+				return false
 			}
 
 			ss = append(ss, ShamirShard{
@@ -115,7 +119,10 @@ func iterateKeepersAndInitializeState(
 
 		rk := RecoverRootKey(ss)
 
-		// TODO: bail if rk is nil or empty.
+		// Security: Crash if there is a problem with root key recovery.
+		if rk == nil || mem.Zeroed32(rk) {
+			log.FatalLn(fName, "message", "Failed to recover root key")
+		}
 
 		// Both of these methods directly or indirectly make a copy of `rk`
 		// It is okay to zero out `rk` after calling these two functions.
@@ -127,9 +134,10 @@ func iterateKeepersAndInitializeState(
 		// Note that `successfulKeeperShards` will be reset elsewhere.
 		mem.ClearRawBytes(res.Shard)
 
-		// System initialized: Exit infinite loop.
+		// System initialized: Exit loop.
 		return true
 	}
 
+	// Failed to initialize.
 	return false
 }
