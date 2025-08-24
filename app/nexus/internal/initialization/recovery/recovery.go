@@ -234,7 +234,7 @@ func SendShardsPeriodically(source *workloadapi.X509Source) {
 // Returns:
 //   - []*[32]byte: A slice of byte array pointers representing the recovery
 //     shards. Returns an empty slice if the root key is not available or if
-//     share generation fails.
+//     shard generation fails.
 //
 // Example:
 //
