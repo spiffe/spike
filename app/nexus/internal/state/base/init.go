@@ -8,13 +8,14 @@ import (
 	"github.com/spiffe/spike-sdk-go/crypto"
 	"github.com/spiffe/spike-sdk-go/log"
 	"github.com/spiffe/spike-sdk-go/security/mem"
+
 	"github.com/spiffe/spike/app/nexus/internal/env"
 	"github.com/spiffe/spike/app/nexus/internal/state/persist"
 )
 
 // Initialize initializes the backend storage with the provided root key.
 //
-// For non "in-memory" backing stores, if the root key is nil or empty,
+// For non-"in-memory" backing stores, if the root key is nil or empty,
 // the application will crash for security.
 //
 // Parameters:

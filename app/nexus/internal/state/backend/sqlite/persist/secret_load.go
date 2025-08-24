@@ -13,9 +13,40 @@ import (
 	"time"
 
 	"github.com/spiffe/spike-sdk-go/kv"
+
 	"github.com/spiffe/spike/app/nexus/internal/state/backend/sqlite/ddl"
 )
 
+// loadSecretInternal retrieves a secret and all its versions from the database
+// for the specified path. It performs the actual database operations including
+// loading metadata, fetching all versions, and decrypting the secret data.
+//
+// The function first queries for secret metadata (current version, timestamps),
+// then retrieves all versions of the secret, decrypts each version, and
+// reconstructs the complete secret structure.
+//
+// Parameters:
+//   - ctx: Context for cancellation and timeout control
+//   - path: The secret path to load
+//
+// Returns:
+//   - *kv.Value: The complete secret with all versions and metadata.
+//     Returns nil if the secret does not exist.
+//   - error: An error if any database or decryption operation fails.
+//     Returns nil error with nil secret for non-existent paths.
+//
+// Special behavior:
+//   - Returns (nil, nil) when the secret doesn't exist (sql.ErrNoRows)
+//   - Returns (nil, error) for actual errors (database, decryption,
+//     unmarshaling)
+//   - Automatically handles deleted versions by setting DeletedTime when present
+//
+// The function handles the following operations:
+//  1. Queries secret metadata from the `secret_metadata` table
+//  2. Fetches all versions from the `secrets` table
+//  3. Decrypts each version using the DataStore's cipher
+//  4. Unmarshals JSON data into map[string]string format
+//  5. Assembles the complete kv.Value structure
 func (s *DataStore) loadSecretInternal(
 	ctx context.Context, path string,
 ) (*kv.Value, error) {

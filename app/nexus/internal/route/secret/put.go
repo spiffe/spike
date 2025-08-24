@@ -74,7 +74,11 @@ func RoutePutSecret(
 	values := request.Values
 	path := request.Path
 
-	state.UpsertSecret(path, values)
+	err = state.UpsertSecret(path, values)
+	if err != nil {
+		return err
+	}
+
 	log.Log().Info(fName, "message", "Secret upserted")
 
 	responseBody := net.MarshalBody(reqres.SecretPutResponse{}, w)

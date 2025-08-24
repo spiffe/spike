@@ -46,10 +46,7 @@ func initializeLiteBackend(rootKey *[crypto.AES256KeySize]byte) backend.Backend 
 	const fName = "initializeLiteBackend"
 	dbBackend, err := lite.New(rootKey)
 	if err != nil {
-		// Log error but don't fail initialization
-		// The system can still work with just in-memory state
-		log.Log().Warn(fName,
-			"message", "Failed to create SQLite backend",
+		log.FatalLn(fName, "message", "Failed to create Lite backend",
 			"err", err.Error(),
 		)
 		return nil

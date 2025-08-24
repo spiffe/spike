@@ -55,15 +55,18 @@ var (
 //     information about the restoration progress.
 //
 // When the last required shard is added, the function automatically triggers
-// the restoration process using RestoreBackingStoreUsingPilotShards.
+// the restoration process using RestoreBackingStoreFromPilotShards.
 func RouteRestore(
 	w http.ResponseWriter, r *http.Request, audit *journal.AuditEntry,
 ) error {
 	const fName = "routeRestore"
 
-	// TODO: restoration should be a no-op for in-memory mode.
-
 	journal.AuditRequest(fName, r, audit, journal.AuditCreate)
+
+	if env.BackendStoreType() == env.Memory {
+		log.Log().Info(fName, "message", "skipping restoration in memory mode")
+		return nil
+	}
 
 	requestBody := net.ReadRequestBody(w, r)
 	if requestBody == nil {
@@ -142,7 +145,7 @@ func RouteRestore(
 
 	// Trigger restoration if we have collected all shards
 	if currentShardCount == env.ShamirThreshold() {
-		recovery.RestoreBackingStoreUsingPilotShards(shards)
+		recovery.RestoreBackingStoreFromPilotShards(shards)
 		// Security: Zero out all shards since we have finished restoration:
 		for i := range shards {
 			mem.ClearRawBytes(shards[i].Value)

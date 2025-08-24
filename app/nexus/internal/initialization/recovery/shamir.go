@@ -9,6 +9,7 @@ import (
 	shamir "github.com/cloudflare/circl/secretsharing"
 	"github.com/spiffe/spike-sdk-go/crypto"
 	"github.com/spiffe/spike-sdk-go/log"
+	"github.com/spiffe/spike-sdk-go/security/mem"
 
 	"github.com/spiffe/spike/app/nexus/internal/env"
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
@@ -79,6 +80,10 @@ func computeShares() (group.Scalar, []shamir.Share) {
 	state.LockRootKey()
 	defer state.UnlockRootKey()
 	rk := state.RootKeyNoLock()
+
+	if rk == nil || mem.Zeroed32(rk) {
+		log.FatalLn(fName, "message", "root key is nil or zeroed")
+	}
 
 	// Initialize parameters
 	g := group.P256

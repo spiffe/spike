@@ -6,9 +6,8 @@ package persist
 
 import (
 	"github.com/spiffe/spike-sdk-go/crypto"
-	"github.com/spiffe/spike-sdk-go/security/mem"
-
 	"github.com/spiffe/spike-sdk-go/log"
+	"github.com/spiffe/spike-sdk-go/security/mem"
 
 	"github.com/spiffe/spike/app/nexus/internal/env"
 	"github.com/spiffe/spike/app/nexus/internal/state/backend"

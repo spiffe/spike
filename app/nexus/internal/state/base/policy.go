@@ -13,6 +13,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
+	"github.com/spiffe/spike-sdk-go/log"
 	"github.com/spiffe/spike-sdk-go/spiffeid"
 
 	"github.com/spiffe/spike/app/nexus/internal/env"
@@ -51,6 +52,7 @@ var (
 func CheckAccess(
 	peerSPIFFEID string, path string, wants []data.PolicyPermission,
 ) bool {
+	const fName = "CheckAccess"
 	// Role:SpikePilot can always manage secrets and policies,
 	// and can call encryption and decryption API endpoints.
 	if spiffeid.IsPilot(env.TrustRootForPilot(), peerSPIFFEID) {
@@ -59,7 +61,10 @@ func CheckAccess(
 
 	policies, err := ListPolicies()
 	if err != nil {
-		// TODO: log maybe.
+		log.Log().Warn(fName,
+			"message", "failed to load policies",
+			"err", err.Error(),
+		)
 		return false
 	}
 
@@ -167,7 +172,7 @@ func CreatePolicy(policy data.Policy) (data.Policy, error) {
 		policy.CreatedAt = time.Now()
 	}
 
-	// Store directly to backend
+	// Store directly to the backend
 	err = persist.Backend().StorePolicy(ctx, policy)
 	if err != nil {
 		return data.Policy{}, fmt.Errorf("failed to store policy: %w", err)
@@ -187,7 +192,7 @@ func CreatePolicy(policy data.Policy) (data.Policy, error) {
 func GetPolicy(id string) (data.Policy, error) {
 	ctx := context.Background()
 
-	// Load directly from backend
+	// Load directly from the backend
 	policy, err := persist.Backend().LoadPolicy(ctx, id)
 	if err != nil {
 		return data.Policy{}, fmt.Errorf("failed to load policy: %w", err)
@@ -211,7 +216,7 @@ func GetPolicy(id string) (data.Policy, error) {
 func DeletePolicy(id string) error {
 	ctx := context.Background()
 
-	// Check if policy exists first (to maintain the same error behavior)
+	// Check if the policy exists first (to maintain the same error behavior)
 	policy, err := persist.Backend().LoadPolicy(ctx, id)
 	if err != nil {
 		return fmt.Errorf("failed to load policy: %w", err)
@@ -220,7 +225,7 @@ func DeletePolicy(id string) error {
 		return ErrPolicyNotFound
 	}
 
-	// Delete from backend
+	// Delete the policy from the backend
 	err = persist.Backend().DeletePolicy(ctx, id)
 	if err != nil {
 		return fmt.Errorf("failed to delete policy: %w", err)
@@ -241,7 +246,7 @@ func DeletePolicy(id string) error {
 func ListPolicies() ([]data.Policy, error) {
 	ctx := context.Background()
 
-	// Load all policies from backend
+	// Load all policies from the backend
 	allPolicies, err := persist.Backend().LoadAllPolicies(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load policies: %w", err)
@@ -273,7 +278,7 @@ func ListPolicies() ([]data.Policy, error) {
 func ListPoliciesByPath(pathPattern string) ([]data.Policy, error) {
 	ctx := context.Background()
 
-	// Load all policies from backend
+	// Load all policies from the backend
 	allPolicies, err := persist.Backend().LoadAllPolicies(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load policies: %w", err)
@@ -321,48 +326,3 @@ func ListPoliciesBySPIFFEID(SPIFFEIDPattern string) ([]data.Policy, error) {
 
 	return result, nil
 }
-
-//// ImportPolicies imports a set of policies into the application's memory state.
-//// It validates each policy, ensuring it has compiled regex patterns before
-//// storing.
-////
-//// Parameters:
-////   - importedPolicies: A map of policy IDs to policy objects
-////
-//// Returns:
-////   - error: An error if any policy fails validation
-//func ImportPolicies(importedPolicies map[string]*data.Policy) {
-//	for id, policy := range importedPolicies {
-//		// Skip nil policies.
-//		if policy == nil {
-//			continue
-//		}
-//
-//		// Skip if ID does not match.
-//		if policy.ID != id {
-//			continue
-//		}
-//
-//		// Compile patterns if they aren't already compiled
-//		if policy.SPIFFEIDPattern != "*" && policy.IDRegex == nil {
-//			idRegex, err := regexp.Compile(policy.SPIFFEIDPattern)
-//			if err != nil {
-//				// Skip invalid policies.
-//				continue
-//			}
-//			policy.IDRegex = idRegex
-//		}
-//
-//		if policy.PathPattern != "*" && policy.PathRegex == nil {
-//			pathRegex, err := regexp.Compile(policy.PathPattern)
-//			if err != nil {
-//				// Skip invalid policies.
-//				continue
-//			}
-//			policy.PathRegex = pathRegex
-//		}
-//
-//		// Store the policy in the global map
-//		policies.Store(policy.ID, *policy)
-//	}
-///}

@@ -96,7 +96,7 @@ func InitializeBackingStoreFromKeepers(source *workloadapi.X509Source) {
 	}
 }
 
-// RestoreBackingStoreUsingPilotShards restores the backing store using the
+// RestoreBackingStoreFromPilotShards restores the backing store using the
 // provided Shamir secret sharing shards. It requires at least the threshold
 // number of shards (as configured in the environment) to successfully
 // recover the root key. Once the root key is recovered, it initializes the
@@ -115,8 +115,8 @@ func InitializeBackingStoreFromKeepers(source *workloadapi.X509Source) {
 // It will return early with an error log if:
 //   - There are not enough shards to meet the threshold
 //   - The SPIFFE source cannot be created
-func RestoreBackingStoreUsingPilotShards(shards []ShamirShard) {
-	const fName = "RestoreBackingStoreUsingPilotShards"
+func RestoreBackingStoreFromPilotShards(shards []ShamirShard) {
+	const fName = "RestoreBackingStoreFromPilotShards"
 
 	log.Log().Info(fName, "message", "Restoring backing store using pilot shards")
 

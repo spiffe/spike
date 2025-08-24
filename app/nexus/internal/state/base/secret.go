@@ -139,7 +139,7 @@ func UpsertSecret(path string, values map[string]string) error {
 func DeleteSecret(path string, versions []int) error {
 	ctx := context.Background()
 
-	// Load the current secret from backing store
+	// Load the current secret from the backing store
 	secret, err := persist.Backend().LoadSecret(ctx, path)
 	if err != nil {
 		return fmt.Errorf("failed to load secret: %w", err)
@@ -178,7 +178,8 @@ func DeleteSecret(path string, versions []int) error {
 	if deletingCurrent {
 		newCurrent := 0 // Start at 0 (meaning "no valid version")
 		for version, v := range secret.Versions {
-			if v.DeletedTime == nil && version > newCurrent && version < secret.Metadata.CurrentVersion {
+			if v.DeletedTime == nil &&
+				version > newCurrent && version < secret.Metadata.CurrentVersion {
 				newCurrent = version
 			}
 		}
@@ -223,11 +224,11 @@ func DeleteSecret(path string, versions []int) error {
 // Example:
 //
 //	// Restore versions 1 and 3 of a secret
-//	UndeleteSecret("/app/secrets/api-key", []int{1, 3})
+//	UndeleteSecret("app/secrets/api-key", []int{1, 3})
 func UndeleteSecret(path string, versions []int) error {
 	ctx := context.Background()
 
-	// Load the current secret from backing store
+	// Load the current secret from the backing store
 	secret, err := persist.Backend().LoadSecret(ctx, path)
 	if err != nil {
 		return fmt.Errorf("failed to load secret: %w", err)
@@ -238,7 +239,8 @@ func UndeleteSecret(path string, versions []int) error {
 
 	currentVersion := secret.Metadata.CurrentVersion
 
-	// If no versions specified, undelete the current version (or latest if current is 0)
+	// If no versions specified,
+	// undelete the current version (or latest if current is 0)
 	if len(versions) == 0 {
 		// If CurrentVersion is 0 (all deleted), find the highest deleted version
 		if currentVersion == 0 {
@@ -287,7 +289,8 @@ func UndeleteSecret(path string, versions []int) error {
 		return fmt.Errorf("no versions were undeleted at path: %s", path)
 	}
 
-	// If CurrentVersion was 0 (all deleted), set it to the highest undeleted version
+	// If CurrentVersion was 0 (all deleted), set it to
+	// the highest undeleted version
 	if secret.Metadata.CurrentVersion == 0 && highestUndeleted > 0 {
 		secret.Metadata.CurrentVersion = highestUndeleted
 		secret.Metadata.UpdatedTime = time.Now()
@@ -315,7 +318,7 @@ func UndeleteSecret(path string, versions []int) error {
 func GetSecret(path string, version int) (map[string]string, error) {
 	ctx := context.Background()
 
-	// Load secret from backing store
+	// Load secret from the backing store
 	secret, err := persist.Backend().LoadSecret(ctx, path)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load secret: %w", err)
@@ -335,27 +338,21 @@ func GetSecret(path string, version int) (map[string]string, error) {
 	// Get the specific version
 	v, exists := secret.Versions[version]
 	if !exists {
-		return nil, fmt.Errorf("version %d not found for secret at path: %s", version, path)
+		return nil, fmt.Errorf(
+			"version %d not found for secret at path: %s", version, path)
 	}
 
-	// Check if version is deleted
+	// Check if the version is deleted
 	if v.DeletedTime != nil {
-		return nil, fmt.Errorf("version %d is deleted for secret at path: %s", version, path)
+		return nil, fmt.Errorf(
+			"version %d is deleted for secret at path: %s", version, path)
 	}
 
 	return v.Data, nil
 }
 
-//// ImportSecrets imports a set of secrets into the application's memory state.
-//// Locks the secret store mutex during the operation to ensure thread safety.
-//func ImportSecrets(secrets map[string]*kv.Value) {
-//	secretStoreMu.Lock()
-//	defer secretStoreMu.Unlock()
-//	secretStore.ImportSecrets(secrets)
-//}
-
 // GetRawSecret retrieves a secret with metadata from the specified path and
-// version. It provides thread-safe read access to the secret kv.
+// version. It provides thread-safe read access to the backing store.
 //
 // Parameters:
 //   - path: The location of the secret to retrieve
@@ -367,7 +364,7 @@ func GetSecret(path string, version int) (map[string]string, error) {
 func GetRawSecret(path string, version int) (*kv.Value, error) {
 	ctx := context.Background()
 
-	// Load secret from backing store
+	// Load secret from the backing store
 	secret, err := persist.Backend().LoadSecret(ctx, path)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load secret: %w", err)

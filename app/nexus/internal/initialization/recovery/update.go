@@ -6,7 +6,6 @@ package recovery
 
 import (
 	"encoding/json"
-	"github.com/spiffe/spike-sdk-go/crypto"
 	"net/url"
 	"strconv"
 
@@ -15,6 +14,7 @@ import (
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	apiUrl "github.com/spiffe/spike-sdk-go/api/url"
+	"github.com/spiffe/spike-sdk-go/crypto"
 	"github.com/spiffe/spike-sdk-go/log"
 	network "github.com/spiffe/spike-sdk-go/net"
 	"github.com/spiffe/spike-sdk-go/security/mem"
@@ -24,35 +24,6 @@ import (
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 	"github.com/spiffe/spike/internal/net"
 )
-
-// mustComputeSharesFromRootKey updates the recovery information by setting a new root
-// key and computing new shares. It returns the computed shares.
-//
-// The function sets the provided root key in the state, computes shares from
-// the root secret, performs a sanity check on the computed shares, and ensures
-// that temporary variables containing sensitive information are zeroed out
-// after use.
-//
-// This is a critical security function that handles sensitive key material.
-//
-// Parameters:
-//   - rk: A pointer to a 32-byte array containing the new root key
-//
-// Returns:
-//   - []secretsharing.Share: The computed shares for the root secret
-func mustComputeSharesFromRootKey() []secretsharing.Share {
-	const fName = "mustComputeSharesFromRootKey"
-	log.Log().Info(fName, "message", "Updating recovery info")
-
-	rootSecret, rootShares := computeShares()
-	sanityCheck(rootSecret, rootShares)
-	// Security: Ensure that temporary variables are zeroed out.
-	defer func() {
-		rootSecret.SetUint64(0)
-	}()
-
-	return rootShares
-}
 
 // sendShardsToKeepers distributes shares of the root key to all keeper nodes.
 // Note that we recompute shares for each keeper rather than computing them once
