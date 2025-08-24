@@ -37,7 +37,7 @@ const (
 // case-insensitive.
 //
 // Valid values are:
-//   - "s3": Uses an AWS S3-compatible medium as a backing store.
+//   - "lite": Lite mode that does not use any backing store
 //   - "sqlite": Uses SQLite database storage
 //   - "memory": Uses in-memory storage
 //

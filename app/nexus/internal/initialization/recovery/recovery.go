@@ -132,6 +132,7 @@ func RestoreBackingStoreFromPilotShards(shards []ShamirShard) {
 				"message",
 				"Bad input: ID or Value of a shard is zero. Exiting recovery",
 			)
+			return
 		}
 	}
 
