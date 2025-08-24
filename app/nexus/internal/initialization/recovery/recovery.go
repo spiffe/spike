@@ -7,11 +7,11 @@ package recovery
 import (
 	"context"
 	"errors"
-	"github.com/spiffe/spike-sdk-go/crypto"
 	"math/big"
 	"time"
 
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
+	"github.com/spiffe/spike-sdk-go/crypto"
 	"github.com/spiffe/spike-sdk-go/log"
 	"github.com/spiffe/spike-sdk-go/retry"
 	"github.com/spiffe/spike-sdk-go/security/mem"
@@ -125,15 +125,13 @@ func RestoreBackingStoreUsingPilotShards(shards []ShamirShard) {
 		value := shards[shard].Value
 		id := shards[shard].ID
 
-		// TODO: panic if size of value is not 32.
-
-		if mem.Zeroed32(value) || id == 0 {
-			log.Log().Error(
+		// Security: Crash immediately if data is corrupt.
+		if value == nil || mem.Zeroed32(value) || id == 0 {
+			log.FatalLn(
 				fName,
 				"message",
 				"Bad input: ID or Value of a shard is zero. Exiting recovery",
 			)
-			return
 		}
 	}
 
@@ -155,12 +153,15 @@ func RestoreBackingStoreUsingPilotShards(shards []ShamirShard) {
 
 	// Recover the root key using the threshold number of shards
 	rk := RecoverRootKey(shards)
+
+	if rk == nil || mem.Zeroed32(rk) {
+		log.FatalLn(fName, "message", "Failed to recover root key")
+	}
+
 	// Security: Ensure the root key is zeroed out after use.
 	defer func() {
 		mem.ClearRawBytes(rk)
 	}()
-
-	// TODO: bail if rootkey is nil or empty.
 
 	log.Log().Info(fName, "message", "Initializing state and root key")
 	state.Initialize(rk)
@@ -253,8 +254,9 @@ func NewPilotRecoveryShards() map[int]*[crypto.AES256KeySize]byte {
 	}
 
 	rootSecret, rootShards := computeShares()
-	// Security: Ensure the root key and shards are zeroed out after use.
+	// sanityCheck crashes the app if shards are corrupted.
 	sanityCheck(rootSecret, rootShards)
+	// Security: Ensure the root key and shards are zeroed out after use.
 	defer func() {
 		rootSecret.SetUint64(0)
 		for i := range rootShards {

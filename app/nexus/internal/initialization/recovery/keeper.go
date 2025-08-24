@@ -5,10 +5,10 @@
 package recovery
 
 import (
-	"github.com/spiffe/spike-sdk-go/crypto"
 	"strconv"
 
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
+	"github.com/spiffe/spike-sdk-go/crypto"
 	"github.com/spiffe/spike-sdk-go/log"
 	"github.com/spiffe/spike-sdk-go/security/mem"
 
