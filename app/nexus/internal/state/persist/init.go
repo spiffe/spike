@@ -8,6 +8,7 @@ import (
 	"context"
 	"encoding/hex"
 	"github.com/spiffe/spike-sdk-go/crypto"
+	"github.com/spiffe/spike-sdk-go/security/mem"
 
 	"github.com/spiffe/spike-sdk-go/log"
 
@@ -167,7 +168,19 @@ func InitializeBackend(rootKey *[crypto.AES256KeySize]byte) {
 	log.Log().Info(fName,
 		"message", "Initializing backend", "storeType", env.BackendStoreType())
 
-	// TODO: for non-in-memory stores; bail if root key is nil or all zeroes.
+	if rootKey == nil {
+		log.FatalLn(fName,
+			"message", "Failed to initialize backend",
+			"err", "root key is nil",
+		)
+	}
+
+	if mem.Zeroed32(rootKey) {
+		log.FatalLn(fName,
+			"message", "Failed to initialize backend",
+			"err", "root key is all zeroes",
+		)
+	}
 
 	backendMu.Lock()
 	defer backendMu.Unlock()
@@ -185,5 +198,7 @@ func InitializeBackend(rootKey *[crypto.AES256KeySize]byte) {
 		be = &memory.InMemoryStore{}
 	}
 
-	log.Log().Info(fName, "message", "Backend initialized", "storeType", storeType)
+	log.Log().Info(
+		fName, "message", "Backend initialized", "storeType", storeType,
+	)
 }

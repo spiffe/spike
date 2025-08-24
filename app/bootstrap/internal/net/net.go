@@ -9,13 +9,13 @@ import (
 	"crypto/sha256"
 	"encoding/json"
 	"fmt"
-	"github.com/spiffe/spike-sdk-go/crypto"
 	"net/http"
 	"os"
 
 	"github.com/cloudflare/circl/secretsharing"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
+	"github.com/spiffe/spike-sdk-go/crypto"
 	"github.com/spiffe/spike-sdk-go/log"
 	network "github.com/spiffe/spike-sdk-go/net"
 	"github.com/spiffe/spike-sdk-go/spiffe"
@@ -30,7 +30,7 @@ import (
 // the default endpoint socket. The function will terminate the program with
 // exit code 1 if the source creation fails.
 func Source() *workloadapi.X509Source {
-	const fName = "source"
+	const fName = "Source"
 	source, _, err := spiffe.Source(
 		context.Background(), spiffe.EndpointSocket(),
 	)

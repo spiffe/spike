@@ -117,7 +117,7 @@ func iterateKeepersAndInitializeState(
 			})
 		}
 
-		rk := RecoverRootKey(ss)
+		rk := ComputeRootKeyFromShards(ss)
 
 		// Security: Crash if there is a problem with root key recovery.
 		if rk == nil || mem.Zeroed32(rk) {

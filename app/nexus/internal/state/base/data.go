@@ -6,6 +6,7 @@ package base
 
 import (
 	"github.com/spiffe/spike-sdk-go/crypto"
+	"github.com/spiffe/spike-sdk-go/security/mem"
 	"sync"
 
 	"github.com/spiffe/spike-sdk-go/log"
@@ -67,13 +68,25 @@ func RootKeyZero() bool {
 // be (and should be) cleaned up after calling this function without
 // impacting the saved root key.
 //
+// To ensure the system always has a legitimate root key, the operation is a
+// no-op if rk is nil or zeroed out. When that happens, the function logs
+// a warning.
+//
 // Parameters:
 //   - rk: Pointer to a 32-byte array containing the new root key value
 func SetRootKey(rk *[crypto.AES256KeySize]byte) {
 	fName := "SetRootKey"
 	log.Log().Info(fName, "message", "Setting root key")
 
-	// TODO: bail if rk is nil.
+	if rk == nil {
+		log.Log().Warn(fName, "message", "Root key is nil. Skipping update.")
+		return
+	}
+
+	if mem.Zeroed32(rk) {
+		log.Log().Warn(fName, "message", "Root key is zeroed. Skipping update.")
+		return
+	}
 
 	rootKeyMu.Lock()
 	defer rootKeyMu.Unlock()

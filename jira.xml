@@ -15,6 +15,13 @@
   </kubernetification>
   <immediate-backlog>
       <issue>
+          func Fatal(msg string) {
+          func FatalF(format string, args ...any) {
+          func FatalLn(args ...any) {
+          ^ these should use structured logs (log.Log().Error() to log
+          almost always when things crash.
+      </issue>
+      <issue>
           do not cache secrets and policies in nexus:
           https://github.com/spiffe/spike/issues/213
 

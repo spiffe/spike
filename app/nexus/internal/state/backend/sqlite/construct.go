@@ -9,11 +9,11 @@ import (
 	"crypto/cipher"
 	"encoding/hex"
 	"fmt"
+
 	"github.com/spiffe/spike-sdk-go/crypto"
 
-	"github.com/spiffe/spike/app/nexus/internal/state/backend/sqlite/persist"
-
 	"github.com/spiffe/spike/app/nexus/internal/state/backend"
+	"github.com/spiffe/spike/app/nexus/internal/state/backend/sqlite/persist"
 )
 
 // New creates a new DataStore instance with the provided configuration.

@@ -152,7 +152,7 @@ func RestoreBackingStoreUsingPilotShards(shards []ShamirShard) {
 		"message", "Recovering backing store using pilot shards")
 
 	// Recover the root key using the threshold number of shards
-	rk := RecoverRootKey(shards)
+	rk := ComputeRootKeyFromShards(shards)
 
 	if rk == nil || mem.Zeroed32(rk) {
 		log.FatalLn(fName, "message", "Failed to recover root key")

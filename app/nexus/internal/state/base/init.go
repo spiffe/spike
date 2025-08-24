@@ -6,7 +6,9 @@ package base
 
 import (
 	"github.com/spiffe/spike-sdk-go/crypto"
-
+	"github.com/spiffe/spike-sdk-go/log"
+	"github.com/spiffe/spike-sdk-go/security/mem"
+	"github.com/spiffe/spike/app/nexus/internal/env"
 	"github.com/spiffe/spike/app/nexus/internal/state/persist"
 )
 
@@ -18,10 +20,19 @@ import (
 // Parameters:
 //   - r [32]byte: The root key to initialize the crypto state.
 func Initialize(r *[crypto.AES256KeySize]byte) {
-	// TODO: bail if mode is not in-memory and root key is nil or empty.
+	const fName = "Initialize"
 
 	// Locks on a mutex; so only a single process can access it.
 	persist.InitializeBackend(r)
+
+	// The in-memory store does not use a root key to operate.
+	if env.BackendStoreType() == env.Memory {
+		return
+	}
+
+	if r == nil || mem.Zeroed32(r) {
+		log.FatalLn(fName, "message", "root key is nil or zeroed")
+	}
 
 	// Update the internal root key.
 	// Locks on a mutex; so only a single process can modify the root key.

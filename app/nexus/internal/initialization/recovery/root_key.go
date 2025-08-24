@@ -19,7 +19,7 @@ type ShamirShard struct {
 	Value *[crypto.AES256KeySize]byte
 }
 
-// RecoverRootKey reconstructs the original root key from a slice of
+// ComputeRootKeyFromShards reconstructs the original root key from a slice of
 // ShamirShard. It uses Shamir's Secret Sharing scheme to recover the original
 // secret.
 //
@@ -43,8 +43,8 @@ type ShamirShard struct {
 //   - The recovery process fails
 //   - The reconstructed key is nil
 //   - The binary representation has an incorrect length
-func RecoverRootKey(ss []ShamirShard) *[crypto.AES256KeySize]byte {
-	const fName = "RecoverRootKey"
+func ComputeRootKeyFromShards(ss []ShamirShard) *[crypto.AES256KeySize]byte {
+	const fName = "ComputeRootKeyFromShards"
 
 	g := group.P256
 	shares := make([]secretsharing.Share, 0, len(ss))

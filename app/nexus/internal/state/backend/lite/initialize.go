@@ -8,6 +8,7 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"fmt"
+
 	"github.com/spiffe/spike-sdk-go/crypto"
 	"github.com/spiffe/spike/app/nexus/internal/state/backend/noop"
 
