@@ -22,17 +22,17 @@ var be backend.Backend
 func createCipher() cipher.AEAD {
 	key := make([]byte, crypto.AES256KeySize) // AES-256 key
 	if _, err := rand.Read(key); err != nil {
-		log.FatalLn("Failed to generate test key: %v", err)
+		log.FatalLn("createCipher", "message", "Failed to generate test key", "err", err)
 	}
 
 	block, err := aes.NewCipher(key)
 	if err != nil {
-		log.FatalLn("Failed to create cipher: %v", err)
+		log.FatalLn("createCipher", "message", "Failed to create cipher", "err", err)
 	}
 
 	gcm, err := cipher.NewGCM(block)
 	if err != nil {
-		log.FatalLn("Failed to create GCM: %v", err)
+		log.FatalLn("createCipher", "message", "Failed to create GCM", "err", err)
 	}
 
 	return gcm
