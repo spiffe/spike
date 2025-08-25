@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS policies (
     name TEXT NOT NULL UNIQUE,
     spiffe_id_pattern TEXT NOT NULL,
     path_pattern TEXT NOT NULL,
+    permissions TEXT NOT NULL,
     created_time DATETIME NOT NULL
 );
 
@@ -81,12 +82,13 @@ ORDER BY version
 
 // QueryUpsertPolicy defines an SQL query to insert or update a policy record.
 const QueryUpsertPolicy = `
-INSERT INTO policies (id, name, spiffe_id_pattern, path_pattern, created_time)
-VALUES (?, ?, ?, ?, ?)
+INSERT INTO policies (id, name, spiffe_id_pattern, path_pattern, permissions, created_time)
+VALUES (?, ?, ?, ?, ?, ?)
 ON CONFLICT(id) DO UPDATE SET
     name = excluded.name,
     spiffe_id_pattern = excluded.spiffe_id_pattern,
-    path_pattern = excluded.path_pattern
+    path_pattern = excluded.path_pattern,
+    permissions = excluded.permissions
 `
 
 // QueryDeletePolicy defines the SQL statement to delete a policy by its ID.
@@ -97,13 +99,13 @@ WHERE id = ?
 
 // QueryLoadPolicy is a SQL query to select policy details by ID
 const QueryLoadPolicy = `
-SELECT name, spiffe_id_pattern, path_pattern, created_time 
+SELECT name, spiffe_id_pattern, path_pattern, permissions, created_time 
 FROM policies 
 WHERE id = ?
 `
 
 const QueryAllPolicies = `
-SELECT id, name, spiffe_id_pattern, path_pattern, created_time 
+SELECT id, name, spiffe_id_pattern, path_pattern, permissions, created_time 
 FROM policies
 `
 

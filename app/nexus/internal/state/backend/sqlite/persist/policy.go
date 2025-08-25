@@ -10,6 +10,7 @@ import (
 	"errors"
 	"fmt"
 	"regexp"
+	"strings"
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 
@@ -92,11 +93,22 @@ func (s *DataStore) StorePolicy(ctx context.Context, policy data.Policy) error {
 		}
 	}(tx)
 
+	// Serialize permissions to comma-separated string
+	permissionsStr := ""
+	if len(policy.Permissions) > 0 {
+		permissions := make([]string, len(policy.Permissions))
+		for i, perm := range policy.Permissions {
+			permissions[i] = string(perm)
+		}
+		permissionsStr = strings.Join(permissions, ",")
+	}
+
 	_, err = tx.ExecContext(ctx, ddl.QueryUpsertPolicy,
 		policy.ID,
 		policy.Name,
 		policy.SPIFFEIDPattern,
 		policy.PathPattern,
+		permissionsStr,
 		policy.CreatedAt,
 	)
 	if err != nil {
@@ -132,10 +144,12 @@ func (s *DataStore) LoadPolicy(
 	var policy data.Policy
 	policy.ID = id // Set the ID since we queried with it
 
+	var permissionsStr string
 	err := s.db.QueryRowContext(ctx, ddl.QueryLoadPolicy, id).Scan(
 		&policy.Name,
 		&policy.SPIFFEIDPattern,
 		&policy.PathPattern,
+		&permissionsStr,
 		&policy.CreatedAt,
 	)
 	if err != nil {
@@ -143,6 +157,15 @@ func (s *DataStore) LoadPolicy(
 			return nil, nil
 		}
 		return nil, fmt.Errorf("failed to load policy: %w", err)
+	}
+
+	// Deserialize permissions from comma-separated string
+	if permissionsStr != "" {
+		permissionStrs := strings.Split(permissionsStr, ",")
+		policy.Permissions = make([]data.PolicyPermission, len(permissionStrs))
+		for i, permStr := range permissionStrs {
+			policy.Permissions[i] = data.PolicyPermission(strings.TrimSpace(permStr))
+		}
 	}
 
 	// Compile the patterns just like in CreatePolicy
@@ -202,15 +225,26 @@ func (s *DataStore) LoadAllPolicies(
 	// Iterate over policy rows
 	for rows.Next() {
 		var policy data.Policy
+		var permissionsStr string
 
 		if err := rows.Scan(
 			&policy.ID,
 			&policy.Name,
 			&policy.SPIFFEIDPattern,
 			&policy.PathPattern,
+			&permissionsStr,
 			&policy.CreatedAt,
 		); err != nil {
 			return nil, fmt.Errorf("failed to scan policy: %w", err)
+		}
+
+		// Deserialize permissions from comma-separated string
+		if permissionsStr != "" {
+			permissionStrs := strings.Split(permissionsStr, ",")
+			policy.Permissions = make([]data.PolicyPermission, len(permissionStrs))
+			for i, permStr := range permissionStrs {
+				policy.Permissions[i] = data.PolicyPermission(strings.TrimSpace(permStr))
+			}
 		}
 
 		// Compile the patterns just like in LoadPolicy
