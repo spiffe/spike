@@ -55,8 +55,10 @@ func (s *DataStore) loadSecretInternal(
 	// Load metadata
 	err := s.db.QueryRowContext(ctx, ddl.QuerySecretMetadata, path).Scan(
 		&secret.Metadata.CurrentVersion,
+		&secret.Metadata.OldestVersion,
 		&secret.Metadata.CreatedTime,
-		&secret.Metadata.UpdatedTime)
+		&secret.Metadata.UpdatedTime,
+		&secret.Metadata.MaxVersions)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil

@@ -30,8 +30,10 @@ CREATE TABLE IF NOT EXISTS secrets (
 CREATE TABLE IF NOT EXISTS secret_metadata (
 	path TEXT PRIMARY KEY,
 	current_version INTEGER NOT NULL,
+	oldest_version INTEGER NOT NULL,
 	created_time DATETIME NOT NULL,
-	updated_time DATETIME NOT NULL
+	updated_time DATETIME NOT NULL,
+	max_versions INTEGER NOT NULL
 );
 
 CREATE INDEX IF NOT EXISTS idx_secrets_path ON secrets(path);
@@ -39,14 +41,16 @@ CREATE INDEX IF NOT EXISTS idx_secrets_created_time ON secrets(created_time);
 `
 
 // QueryUpdateSecretMetadata is a SQL query for inserting or updating secret
-// metadata. It updates the current version and updated time in conflict with
+// metadata. It updates the current version, oldest version, max versions, and updated time in conflict with
 // the existing path.
 const QueryUpdateSecretMetadata = `
-INSERT INTO secret_metadata (path, current_version, created_time, updated_time)
-VALUES (?, ?, ?, ?)
+INSERT INTO secret_metadata (path, current_version, oldest_version, created_time, updated_time, max_versions)
+VALUES (?, ?, ?, ?, ?, ?)
 ON CONFLICT(path) DO UPDATE SET
 	current_version = excluded.current_version,
-	updated_time = excluded.updated_time
+	oldest_version = excluded.oldest_version,
+	updated_time = excluded.updated_time,
+	max_versions = excluded.max_versions
 `
 
 // QueryUpsertSecret is a SQL query for inserting or updating the `secrets`
@@ -62,7 +66,7 @@ ON CONFLICT(path, version) DO UPDATE SET
 
 // QuerySecretMetadata is a SQL query to fetch metadata of a secret by its path.
 const QuerySecretMetadata = `
-SELECT current_version, created_time, updated_time 
+SELECT current_version, oldest_version, created_time, updated_time, max_versions
 FROM secret_metadata 
 WHERE path = ?
 `
