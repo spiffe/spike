@@ -17,6 +17,8 @@ import (
 	"github.com/spiffe/spike/app/nexus/internal/state/backend/sqlite/ddl"
 )
 
+// TODO: regenerate docs, also update changelog.
+
 // DeletePolicy removes a policy from the database by its ID.
 //
 // Uses serializable transaction isolation to ensure consistency.
