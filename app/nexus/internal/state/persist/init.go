@@ -5,6 +5,9 @@
 package persist
 
 import (
+	"crypto/aes"
+	"crypto/cipher"
+	"crypto/rand"
 	"github.com/spiffe/spike-sdk-go/crypto"
 	"github.com/spiffe/spike-sdk-go/log"
 	"github.com/spiffe/spike-sdk-go/security/mem"
@@ -15,6 +18,25 @@ import (
 )
 
 var be backend.Backend
+
+func createCipher() cipher.AEAD {
+	key := make([]byte, crypto.AES256KeySize) // AES-256 key
+	if _, err := rand.Read(key); err != nil {
+		log.FatalLn("Failed to generate test key: %v", err)
+	}
+
+	block, err := aes.NewCipher(key)
+	if err != nil {
+		log.FatalLn("Failed to create cipher: %v", err)
+	}
+
+	gcm, err := cipher.NewGCM(block)
+	if err != nil {
+		log.FatalLn("Failed to create GCM: %v", err)
+	}
+
+	return gcm
+}
 
 // InitializeBackend creates and returns a backend storage implementation based
 // on the configured store type in the environment. The function is thread-safe
@@ -45,18 +67,32 @@ func InitializeBackend(rootKey *[crypto.AES256KeySize]byte) {
 	log.Log().Info(fName,
 		"message", "Initializing backend", "storeType", env.BackendStoreType())
 
-	if rootKey == nil {
-		log.FatalLn(fName,
-			"message", "Failed to initialize backend",
-			"err", "root key is nil",
-		)
-	}
+	// Root key is not needed, nor used in in-memory stores.
+	// For in-memory stores, ensure that it is always nil, as the alternative
+	// might mean a logic, or initialization-flow bug, and an unnecessary
+	// crypto material in the memory.
+	// In other store types, ensure it is set for security.
+	if env.BackendStoreType() == env.Memory {
+		if rootKey != nil {
+			log.FatalLn(fName,
+				"message", "In-memory store can only be initialized with nil root key",
+				"err", "root key is not nil",
+			)
+		}
+	} else {
+		if rootKey == nil {
+			log.FatalLn(fName,
+				"message", "Failed to initialize backend",
+				"err", "root key is nil",
+			)
+		}
 
-	if mem.Zeroed32(rootKey) {
-		log.FatalLn(fName,
-			"message", "Failed to initialize backend",
-			"err", "root key is all zeroes",
-		)
+		if mem.Zeroed32(rootKey) {
+			log.FatalLn(fName,
+				"message", "Failed to initialize backend",
+				"err", "root key is all zeroes",
+			)
+		}
 	}
 
 	backendMu.Lock()
@@ -68,11 +104,12 @@ func InitializeBackend(rootKey *[crypto.AES256KeySize]byte) {
 	case env.Lite:
 		be = initializeLiteBackend(rootKey)
 	case env.Memory:
-		be = &memory.InMemoryStore{}
+		// TODO: create an initializeMemoryBackend function for consistency.
+		be = memory.NewInMemoryStore(createCipher(), env.MaxSecretVersions())
 	case env.Sqlite:
 		be = initializeSqliteBackend(rootKey)
 	default:
-		be = &memory.InMemoryStore{}
+		be = memory.NewInMemoryStore(createCipher(), env.MaxSecretVersions())
 	}
 
 	log.Log().Info(

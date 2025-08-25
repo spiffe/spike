@@ -3,6 +3,7 @@ module github.com/spiffe/spike
 go 1.24.6
 
 require (
+	github.com/DATA-DOG/go-sqlmock v1.5.2
 	github.com/cloudflare/circl v1.6.1
 	github.com/golangci/golangci-lint v1.64.8
 	github.com/google/goexpect v0.0.0-20210430020637-ab937bf7fd6f
