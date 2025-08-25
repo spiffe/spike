@@ -22,6 +22,11 @@ func hasAllPermissions(
 	haves []data.PolicyPermission,
 	wants []data.PolicyPermission,
 ) bool {
+	// Super permission acts as a joker - grants all permissions
+	if contains(haves, data.PermissionSuper) {
+		return true
+	}
+
 	for _, want := range wants {
 		if !contains(haves, want) {
 			return false

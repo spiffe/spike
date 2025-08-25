@@ -7,6 +7,7 @@ package memory
 import (
 	"context"
 	"crypto/cipher"
+	"errors"
 	"fmt"
 	"sync"
 
@@ -15,6 +16,8 @@ import (
 )
 
 // TODO: this is a fairly-invasive refactoring; write as much tests as you can.
+
+// TODO: update changelog and cut a version when everything looks fine -- this is a big change.
 
 // InMemoryStore provides an in-memory implementation of a storage backend.
 // This implementation actually stores data in memory using the kv package,
@@ -75,7 +78,11 @@ func (s *InMemoryStore) LoadSecret(
 	defer s.secretMu.RUnlock()
 
 	rawSecret, err := s.secretStore.GetRawSecret(path)
-	if err != nil {
+	if err != nil && errors.Is(err, kv.ErrItemNotFound) {
+		// To align with the SQLite implementation, don't return an error for
+		// "not found" items and just return a `nil` secret.
+		return nil, nil
+	} else if err != nil {
 		return nil, err
 	}
 
