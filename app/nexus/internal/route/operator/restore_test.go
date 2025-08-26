@@ -26,21 +26,21 @@ func TestRouteRestore_MemoryMode(t *testing.T) {
 	originalStore := os.Getenv("SPIKE_NEXUS_BACKEND_STORE")
 	defer func() {
 		if originalStore != "" {
-			os.Setenv("SPIKE_NEXUS_BACKEND_STORE", originalStore)
+			_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", originalStore)
 		} else {
-			os.Unsetenv("SPIKE_NEXUS_BACKEND_STORE")
+			_ = os.Unsetenv("SPIKE_NEXUS_BACKEND_STORE")
 		}
 	}()
 
 	// Set to memory mode
-	os.Setenv("SPIKE_NEXUS_BACKEND_STORE", "memory")
+	_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", "memory")
 
-	// Verify environment is set correctly
+	// Verify the environment is set correctly
 	if env.BackendStoreType() != env.Memory {
 		t.Fatal("Expected Memory backend store type")
 	}
 
-	// Create test request
+	// Create a test request
 	req := httptest.NewRequest(http.MethodPost, "/restore", nil)
 	w := httptest.NewRecorder()
 	audit := &journal.AuditEntry{}
@@ -59,21 +59,21 @@ func TestRouteRestore_InvalidRequestBody(t *testing.T) {
 	originalStore := os.Getenv("SPIKE_NEXUS_BACKEND_STORE")
 	defer func() {
 		if originalStore != "" {
-			os.Setenv("SPIKE_NEXUS_BACKEND_STORE", originalStore)
+			_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", originalStore)
 		} else {
-			os.Unsetenv("SPIKE_NEXUS_BACKEND_STORE")
+			_ = os.Unsetenv("SPIKE_NEXUS_BACKEND_STORE")
 		}
 	}()
 
 	// Set to non-memory mode
-	os.Setenv("SPIKE_NEXUS_BACKEND_STORE", "sqlite")
+	_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", "sqlite")
 
 	// Create request with invalid/empty body
 	req := httptest.NewRequest(http.MethodPost, "/restore", bytes.NewReader([]byte("")))
 	w := httptest.NewRecorder()
 	audit := &journal.AuditEntry{}
 
-	// Reset shards for clean test
+	// Reset shards for a clean test
 	resetShards()
 
 	// Call function - should fail due to read failure
@@ -90,22 +90,22 @@ func TestRouteRestore_InvalidJSONBody(t *testing.T) {
 	originalStore := os.Getenv("SPIKE_NEXUS_BACKEND_STORE")
 	defer func() {
 		if originalStore != "" {
-			os.Setenv("SPIKE_NEXUS_BACKEND_STORE", originalStore)
+			_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", originalStore)
 		} else {
-			os.Unsetenv("SPIKE_NEXUS_BACKEND_STORE")
+			_ = os.Unsetenv("SPIKE_NEXUS_BACKEND_STORE")
 		}
 	}()
 
 	// Set to non-memory mode
-	os.Setenv("SPIKE_NEXUS_BACKEND_STORE", "sqlite")
+	_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", "sqlite")
 
-	// Create request with invalid JSON
+	// Create a request with invalid JSON
 	invalidJSON := []byte("{invalid json}")
 	req := httptest.NewRequest(http.MethodPost, "/restore", bytes.NewReader(invalidJSON))
 	w := httptest.NewRecorder()
 	audit := &journal.AuditEntry{}
 
-	// Reset shards for clean test
+	// Reset shards for a clean test
 	resetShards()
 
 	// Call function - should fail due to parse failure
@@ -135,25 +135,25 @@ func TestRouteRestore_TooManyShards(t *testing.T) {
 	originalThreshold := os.Getenv("SPIKE_NEXUS_SHAMIR_THRESHOLD")
 	defer func() {
 		if originalStore != "" {
-			os.Setenv("SPIKE_NEXUS_BACKEND_STORE", originalStore)
+			_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", originalStore)
 		} else {
-			os.Unsetenv("SPIKE_NEXUS_BACKEND_STORE")
+			_ = os.Unsetenv("SPIKE_NEXUS_BACKEND_STORE")
 		}
 		if originalThreshold != "" {
-			os.Setenv("SPIKE_NEXUS_SHAMIR_THRESHOLD", originalThreshold)
+			_ = os.Setenv("SPIKE_NEXUS_SHAMIR_THRESHOLD", originalThreshold)
 		} else {
-			os.Unsetenv("SPIKE_NEXUS_SHAMIR_THRESHOLD")
+			_ = os.Unsetenv("SPIKE_NEXUS_SHAMIR_THRESHOLD")
 		}
 	}()
 
 	// Set environment
-	os.Setenv("SPIKE_NEXUS_BACKEND_STORE", "sqlite")
-	os.Setenv("SPIKE_NEXUS_SHAMIR_THRESHOLD", "2")
+	_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", "sqlite")
+	_ = os.Setenv("SPIKE_NEXUS_SHAMIR_THRESHOLD", "2")
 
-	// Reset and pre-fill shards to exceed threshold
+	// Reset and pre-fill shards to exceed the threshold
 	resetShards()
 	shardsMutex.Lock()
-	for i := 1; i <= 3; i++ { // Exceed threshold of 2
+	for i := 1; i <= 3; i++ { // Exceed the threshold of 2
 		testData := &[crypto.AES256KeySize]byte{}
 		testData[0] = byte(i) // Make each shard unique and non-zero
 		shards = append(shards, recovery.ShamirShard{
@@ -163,7 +163,7 @@ func TestRouteRestore_TooManyShards(t *testing.T) {
 	}
 	shardsMutex.Unlock()
 
-	// Create new shard request
+	// Create a new shard request
 	testShard := &[crypto.AES256KeySize]byte{}
 	testShard[0] = 4 // Non-zero
 	request := reqres.RestoreRequest{
@@ -179,8 +179,8 @@ func TestRouteRestore_TooManyShards(t *testing.T) {
 	//req := httptest.NewRequest(http.MethodPost, "/restore", bytes.NewReader(requestBody))
 	// Note: This test will fail guard validation due to missing SPIFFE context
 	// We're testing the logic path, not the actual HTTP processing
-	//w := httptest.NewRecorder()
-	//audit := &journal.AuditEntry{}
+	// w := httptest.NewRecorder()
+	// audit := &journal.AuditEntry{}
 
 	// This test focuses on the shards collection logic, not the full HTTP flow
 	t.Skip("Skipping test that requires SPIFFE infrastructure for guard validation")
@@ -192,20 +192,20 @@ func TestRouteRestore_DuplicateShard(t *testing.T) {
 	originalThreshold := os.Getenv("SPIKE_NEXUS_SHAMIR_THRESHOLD")
 	defer func() {
 		if originalStore != "" {
-			os.Setenv("SPIKE_NEXUS_BACKEND_STORE", originalStore)
+			_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", originalStore)
 		} else {
-			os.Unsetenv("SPIKE_NEXUS_BACKEND_STORE")
+			_ = os.Unsetenv("SPIKE_NEXUS_BACKEND_STORE")
 		}
 		if originalThreshold != "" {
-			os.Setenv("SPIKE_NEXUS_SHAMIR_THRESHOLD", originalThreshold)
+			_ = os.Setenv("SPIKE_NEXUS_SHAMIR_THRESHOLD", originalThreshold)
 		} else {
-			os.Unsetenv("SPIKE_NEXUS_SHAMIR_THRESHOLD")
+			_ = os.Unsetenv("SPIKE_NEXUS_SHAMIR_THRESHOLD")
 		}
 	}()
 
 	// Set environment
-	os.Setenv("SPIKE_NEXUS_BACKEND_STORE", "sqlite")
-	os.Setenv("SPIKE_NEXUS_SHAMIR_THRESHOLD", "3")
+	_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", "sqlite")
+	_ = os.Setenv("SPIKE_NEXUS_SHAMIR_THRESHOLD", "3")
 
 	// Reset and add one shard
 	resetShards()
@@ -240,7 +240,7 @@ func TestRouteRestore_DuplicateShard(t *testing.T) {
 }
 
 func TestRouteRestore_SuccessfulShardAddition(t *testing.T) {
-	// This test would require mocking the entire HTTP infrastructure including:
+	// This test would require mocking the entire HTTP infrastructure, including
 	// 1. SPIFFE context for guard validation
 	// 2. Network request/response handling
 	// 3. State management
@@ -254,13 +254,13 @@ func TestShardCollectionLogic(t *testing.T) {
 	originalThreshold := os.Getenv("SPIKE_NEXUS_SHAMIR_THRESHOLD")
 	defer func() {
 		if originalThreshold != "" {
-			os.Setenv("SPIKE_NEXUS_SHAMIR_THRESHOLD", originalThreshold)
+			_ = os.Setenv("SPIKE_NEXUS_SHAMIR_THRESHOLD", originalThreshold)
 		} else {
-			os.Unsetenv("SPIKE_NEXUS_SHAMIR_THRESHOLD")
+			_ = os.Unsetenv("SPIKE_NEXUS_SHAMIR_THRESHOLD")
 		}
 	}()
 
-	os.Setenv("SPIKE_NEXUS_SHAMIR_THRESHOLD", "3")
+	_ = os.Setenv("SPIKE_NEXUS_SHAMIR_THRESHOLD", "3")
 
 	tests := []struct {
 		name            string
@@ -311,7 +311,7 @@ func TestShardCollectionLogic(t *testing.T) {
 			threshold := env.ShamirThreshold()
 			shardsMutex.RUnlock()
 
-			// Simulate adding new shard
+			// Simulate adding a new shard
 			if currentCount < threshold {
 				shardsMutex.Lock()
 				shards = append(shards, recovery.ShamirShard{
@@ -386,13 +386,13 @@ func TestShardSecurityCleanup(t *testing.T) {
 	originalThreshold := os.Getenv("SPIKE_NEXUS_SHAMIR_THRESHOLD")
 	defer func() {
 		if originalThreshold != "" {
-			os.Setenv("SPIKE_NEXUS_SHAMIR_THRESHOLD", originalThreshold)
+			_ = os.Setenv("SPIKE_NEXUS_SHAMIR_THRESHOLD", originalThreshold)
 		} else {
-			os.Unsetenv("SPIKE_NEXUS_SHAMIR_THRESHOLD")
+			_ = os.Unsetenv("SPIKE_NEXUS_SHAMIR_THRESHOLD")
 		}
 	}()
 
-	os.Setenv("SPIKE_NEXUS_SHAMIR_THRESHOLD", "2")
+	_ = os.Setenv("SPIKE_NEXUS_SHAMIR_THRESHOLD", "2")
 
 	// Reset and add shards that would trigger restoration
 	resetShards()
@@ -455,13 +455,13 @@ func TestConcurrentShardAccess(t *testing.T) {
 	originalThreshold := os.Getenv("SPIKE_NEXUS_SHAMIR_THRESHOLD")
 	defer func() {
 		if originalThreshold != "" {
-			os.Setenv("SPIKE_NEXUS_SHAMIR_THRESHOLD", originalThreshold)
+			_ = os.Setenv("SPIKE_NEXUS_SHAMIR_THRESHOLD", originalThreshold)
 		} else {
-			os.Unsetenv("SPIKE_NEXUS_SHAMIR_THRESHOLD")
+			_ = os.Unsetenv("SPIKE_NEXUS_SHAMIR_THRESHOLD")
 		}
 	}()
 
-	os.Setenv("SPIKE_NEXUS_SHAMIR_THRESHOLD", "10")
+	_ = os.Setenv("SPIKE_NEXUS_SHAMIR_THRESHOLD", "10")
 
 	var wg sync.WaitGroup
 	numGoroutines := 5
@@ -515,13 +515,13 @@ func TestRestorationStatusCalculation(t *testing.T) {
 	originalThreshold := os.Getenv("SPIKE_NEXUS_SHAMIR_THRESHOLD")
 	defer func() {
 		if originalThreshold != "" {
-			os.Setenv("SPIKE_NEXUS_SHAMIR_THRESHOLD", originalThreshold)
+			_ = os.Setenv("SPIKE_NEXUS_SHAMIR_THRESHOLD", originalThreshold)
 		} else {
-			os.Unsetenv("SPIKE_NEXUS_SHAMIR_THRESHOLD")
+			_ = os.Unsetenv("SPIKE_NEXUS_SHAMIR_THRESHOLD")
 		}
 	}()
 
-	os.Setenv("SPIKE_NEXUS_SHAMIR_THRESHOLD", "5")
+	_ = os.Setenv("SPIKE_NEXUS_SHAMIR_THRESHOLD", "5")
 
 	tests := []struct {
 		name              string
@@ -563,14 +563,14 @@ func TestEnvironmentDependencies(t *testing.T) {
 	originalThreshold := os.Getenv("SPIKE_NEXUS_SHAMIR_THRESHOLD")
 	defer func() {
 		if originalStore != "" {
-			os.Setenv("SPIKE_NEXUS_BACKEND_STORE", originalStore)
+			_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", originalStore)
 		} else {
-			os.Unsetenv("SPIKE_NEXUS_BACKEND_STORE")
+			_ = os.Unsetenv("SPIKE_NEXUS_BACKEND_STORE")
 		}
 		if originalThreshold != "" {
-			os.Setenv("SPIKE_NEXUS_SHAMIR_THRESHOLD", originalThreshold)
+			_ = os.Setenv("SPIKE_NEXUS_SHAMIR_THRESHOLD", originalThreshold)
 		} else {
-			os.Unsetenv("SPIKE_NEXUS_SHAMIR_THRESHOLD")
+			_ = os.Unsetenv("SPIKE_NEXUS_SHAMIR_THRESHOLD")
 		}
 	}()
 
@@ -585,7 +585,7 @@ func TestEnvironmentDependencies(t *testing.T) {
 	}
 
 	for _, backend := range testBackends {
-		os.Setenv("SPIKE_NEXUS_BACKEND_STORE", backend.value)
+		_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", backend.value)
 		actual := env.BackendStoreType()
 		if actual != backend.expected {
 			t.Errorf("Expected backend type %s, got %s", backend.expected, actual)
@@ -603,29 +603,10 @@ func TestEnvironmentDependencies(t *testing.T) {
 	}
 
 	for _, threshold := range testThresholds {
-		os.Setenv("SPIKE_NEXUS_SHAMIR_THRESHOLD", threshold.value)
+		_ = os.Setenv("SPIKE_NEXUS_SHAMIR_THRESHOLD", threshold.value)
 		actual := env.ShamirThreshold()
 		if actual != threshold.expected {
 			t.Errorf("Expected threshold %d, got %d", threshold.expected, actual)
 		}
 	}
-}
-
-// Helper functions
-
-func resetShards() {
-	shardsMutex.Lock()
-	defer shardsMutex.Unlock()
-	shards = []recovery.ShamirShard{}
-}
-
-func createTestShardValue(id int) *[crypto.AES256KeySize]byte {
-	value := &[crypto.AES256KeySize]byte{}
-	// Fill with deterministic test data
-	for i := range value {
-		value[i] = byte((id*100 + i) % 256)
-	}
-	// Ensure first byte is non-zero for validation
-	value[0] = byte(id)
-	return value
 }
