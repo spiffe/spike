@@ -33,6 +33,7 @@ func TestNew_ValidKey(t *testing.T) {
 	}
 
 	// Verify it implements the Backend interface
+	// noinspection ALL
 	var _ backend.Backend = ds
 
 	// Verify the DataStore has a cipher
@@ -97,7 +98,7 @@ func TestNew_InvalidKey(t *testing.T) {
 }
 
 func TestNew_ZeroKey(t *testing.T) {
-	// Test with all-zero key
+	// Test with an all-zero key
 	zeroKey := &[crypto.AES256KeySize]byte{} // All zeros
 
 	ds, err := New(zeroKey)
@@ -109,7 +110,7 @@ func TestNew_ZeroKey(t *testing.T) {
 		t.Error("Expected non-nil DataStore even with zero key")
 	}
 
-	// Verify cipher is created even with zero key
+	// Verify cipher is created even with a zero key
 	if ds != nil {
 		liteStore := ds.(*DataStore)
 		if liteStore.Cipher == nil {
@@ -446,6 +447,9 @@ func TestDataStore_MemoryManagement(t *testing.T) {
 			t.Errorf("DataStore %d should not be nil", i)
 		}
 
+		if ds == nil {
+			continue
+		}
 		cipher := ds.GetCipher()
 		if cipher == nil {
 			t.Errorf("Cipher %d should not be nil", i)
