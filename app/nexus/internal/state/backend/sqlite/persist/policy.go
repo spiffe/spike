@@ -161,6 +161,9 @@ func (s *DataStore) LoadPolicy(
 		return nil, fmt.Errorf("failed to load policy: %w", err)
 	}
 
+	// TODO: these serialization stuff can go to their own methods.
+	// They can even be part of the SDK.
+
 	// Deserialize permissions from comma-separated string
 	if permissionsStr != "" {
 		permissionStrs := strings.Split(permissionsStr, ",")
