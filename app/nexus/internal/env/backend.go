@@ -42,7 +42,7 @@ const (
 //   - "memory": Uses in-memory storage
 //
 // If the environment variable is not set or contains an invalid value,
-// it defaults to Memory.
+// it defaults to SQLite.
 func BackendStoreType() StoreType {
 	st := os.Getenv("SPIKE_NEXUS_BACKEND_STORE")
 

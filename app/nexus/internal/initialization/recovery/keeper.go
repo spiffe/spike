@@ -124,8 +124,8 @@ func iterateKeepersAndInitializeState(
 			log.FatalLn(fName, "message", "Failed to recover root key")
 		}
 
-		// Both of these methods directly or indirectly make a copy of `rk`
-		// It is okay to zero out `rk` after calling these two functions.
+		// It is okay to zero out `rk` after calling this function because we
+		// make a copy of rk.
 		state.Initialize(rk)
 
 		// Security: Zero out temporary variables before the function exits.

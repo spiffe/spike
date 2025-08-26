@@ -74,9 +74,9 @@ func TestSetShardPartialZeroData(t *testing.T) {
 
 	// Create data that has some zero bytes but is not all zeros
 	testData := [crypto.AES256KeySize]byte{}
-	testData[0] = 0   // First byte is zero
-	testData[1] = 0   // Second byte is zero
-	testData[31] = 42 // Last byte is non-zero
+	testData[0] = 0   // The first byte is zero
+	testData[1] = 0   // The second byte is zero
+	testData[31] = 42 // The last byte is non-zero
 
 	// This should be accepted since it's not all zeros
 	SetShard(&testData)
@@ -101,7 +101,7 @@ func TestShardNoSyncReturnsPointer(t *testing.T) {
 	}
 	SetShard(&testData)
 
-	// Get pointer without sync
+	// Get a pointer without sync
 	shardPtr := ShardNoSync()
 
 	// Verify it's the same data
@@ -153,7 +153,7 @@ func TestConcurrentSetShard(t *testing.T) {
 
 			for j := 0; j < numOperations; j++ {
 				testData := [crypto.AES256KeySize]byte{}
-				// Create unique pattern for each goroutine
+				// Create a unique pattern for each goroutine
 				for k := range testData {
 					testData[k] = byte((id + j + k) % 256)
 				}
@@ -162,7 +162,7 @@ func TestConcurrentSetShard(t *testing.T) {
 
 				SetShard(&testData)
 
-				// Small delay to increase chance of race conditions
+				// Small delay to increase the chance of race conditions
 				time.Sleep(time.Microsecond)
 			}
 		}(i)
@@ -363,20 +363,13 @@ func TestShardSize(t *testing.T) {
 	shardPtr := ShardNoSync()
 	RUnlockShard()
 
+	// noinspection GoBoolExpressions
 	if len(shardPtr) != crypto.AES256KeySize {
 		t.Errorf("Shard size should be %d, got %d", crypto.AES256KeySize, len(shardPtr))
 	}
 
+	// noinspection GoBoolExpressions
 	if crypto.AES256KeySize != 32 {
 		t.Errorf("Expected AES256KeySize to be 32, got %d", crypto.AES256KeySize)
-	}
-}
-
-// Helper function to reset shard to zero state for testing
-func resetShard() {
-	shardMutex.Lock()
-	defer shardMutex.Unlock()
-	for i := range shard {
-		shard[i] = 0
 	}
 }

@@ -73,7 +73,7 @@ func TestPostHTTPInteraction(t *testing.T) {
 					return
 				}
 
-				// Verify Content-Type header if needed
+				// Verify the Content-Type header if needed
 				contentType := r.Header.Get("Content-Type")
 				if contentType != "application/json" && contentType != "" {
 					// Content-Type might not be set, which is okay for this test
@@ -94,7 +94,7 @@ func TestPostHTTPInteraction(t *testing.T) {
 				}
 
 				w.WriteHeader(http.StatusOK)
-				w.Write([]byte("success"))
+				_, _ = w.Write([]byte("success"))
 			},
 			payload:     []byte("test payload"),
 			expectError: false,
@@ -103,7 +103,7 @@ func TestPostHTTPInteraction(t *testing.T) {
 			name: "server returns 500 error",
 			serverResponse: func(w http.ResponseWriter, r *http.Request) {
 				w.WriteHeader(http.StatusInternalServerError)
-				w.Write([]byte("internal server error"))
+				_, _ = w.Write([]byte("internal server error"))
 			},
 			payload:     []byte("test payload"),
 			expectError: true,
@@ -112,7 +112,7 @@ func TestPostHTTPInteraction(t *testing.T) {
 			name: "server returns 404 error",
 			serverResponse: func(w http.ResponseWriter, r *http.Request) {
 				w.WriteHeader(http.StatusNotFound)
-				w.Write([]byte("not found"))
+				_, _ = w.Write([]byte("not found"))
 			},
 			payload:     []byte("test payload"),
 			expectError: true,
@@ -125,6 +125,7 @@ func TestPostHTTPInteraction(t *testing.T) {
 			defer server.Close()
 
 			if tt.expectError {
+				// TODO: fixme after fixing Log.FatalLn and friends to panic
 				// The Post function calls os.Exit(1) on error, which we can't easily test
 				// without significant refactoring. In a real scenario, you'd want to
 				// refactor the function to return errors instead of calling os.Exit.
@@ -173,67 +174,20 @@ func TestShardContributionRequestStructure(t *testing.T) {
 	if unmarshaled.Shard == nil {
 		t.Fatal("Expected non-nil shard after unmarshal")
 	}
-
-	if len(unmarshaled.Shard) != crypto.AES256KeySize {
-		t.Errorf("Expected shard length %d, got %d", crypto.AES256KeySize, len(unmarshaled.Shard))
-	}
 }
 
 func TestCryptoConstants(t *testing.T) {
 	// Verify the crypto constant we depend on
+	// noinspection GoBoolExpressions
 	if crypto.AES256KeySize != 32 {
 		t.Errorf("Expected AES256KeySize to be 32 bytes, got %d", crypto.AES256KeySize)
 	}
 
 	// Test that our shard array type has the correct size
 	var shard [crypto.AES256KeySize]byte
+	// noinspection GoBoolExpressions
 	if len(shard) != 32 {
 		t.Errorf("Expected shard array length to be 32, got %d", len(shard))
-	}
-}
-
-func TestPayloadStructureRequirements(t *testing.T) {
-	// Test the structure that Payload() creates without actually calling Payload()
-	// since that would require complex mocking
-
-	// This tests the same logic that Payload() uses internally
-	testData := make([]byte, crypto.AES256KeySize)
-	for i := range testData {
-		testData[i] = byte(i % 256)
-	}
-
-	// Simulate what Payload() does after getting the contribution
-	scr := reqres.ShardContributionRequest{}
-	shard := new([crypto.AES256KeySize]byte)
-	copy(shard[:], testData)
-	scr.Shard = shard
-
-	// This is the marshaling step that Payload() does
-	md, err := json.Marshal(scr)
-	if err != nil {
-		t.Fatalf("Failed to marshal request: %v", err)
-	}
-
-	if len(md) == 0 {
-		t.Error("Expected non-empty marshaled data")
-	}
-
-	// Verify we can unmarshal it back
-	var unmarshaled reqres.ShardContributionRequest
-	err = json.Unmarshal(md, &unmarshaled)
-	if err != nil {
-		t.Fatalf("Failed to unmarshal: %v", err)
-	}
-
-	if unmarshaled.Shard == nil {
-		t.Fatal("Shard should not be nil")
-	}
-
-	// Verify the data integrity
-	for i, b := range unmarshaled.Shard {
-		if b != testData[i] {
-			t.Errorf("Data mismatch at index %d: expected %d, got %d", i, testData[i], b)
-		}
 	}
 }
 
@@ -258,11 +212,11 @@ func TestHTTPClientInteraction(t *testing.T) {
 		}
 
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("OK"))
+		_, _ = w.Write([]byte("OK"))
 	}))
 	defer server.Close()
 
-	// Test successful HTTP POST (this mimics what Post() does internally)
+	// Test the successful HTTP POST (this mimics what Post() does internally)
 	client := server.Client()
 	req, err := http.NewRequest(http.MethodPost, server.URL, bytes.NewReader(testPayload))
 	if err != nil {
@@ -273,7 +227,9 @@ func TestHTTPClientInteraction(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to send request: %v", err)
 	}
-	defer resp.Body.Close()
+	defer func(Body io.ReadCloser) {
+		_ = Body.Close()
+	}(resp.Body)
 
 	if resp.StatusCode != http.StatusOK {
 		t.Errorf("Expected status 200, got %d", resp.StatusCode)

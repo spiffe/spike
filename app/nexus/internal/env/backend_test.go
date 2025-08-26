@@ -31,18 +31,18 @@ func TestStoreTypeConstants(t *testing.T) {
 }
 
 func TestBackendStoreTypeDefault(t *testing.T) {
-	// Save original environment variable
+	// Save the original environment variable
 	originalValue := os.Getenv("SPIKE_NEXUS_BACKEND_STORE")
 	defer func() {
 		if originalValue != "" {
-			os.Setenv("SPIKE_NEXUS_BACKEND_STORE", originalValue)
+			_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", originalValue)
 		} else {
-			os.Unsetenv("SPIKE_NEXUS_BACKEND_STORE")
+			_ = os.Unsetenv("SPIKE_NEXUS_BACKEND_STORE")
 		}
 	}()
 
 	// Unset the environment variable
-	os.Unsetenv("SPIKE_NEXUS_BACKEND_STORE")
+	_ = os.Unsetenv("SPIKE_NEXUS_BACKEND_STORE")
 
 	result := BackendStoreType()
 	if result != Sqlite {
@@ -51,13 +51,13 @@ func TestBackendStoreTypeDefault(t *testing.T) {
 }
 
 func TestBackendStoreTypeValidValues(t *testing.T) {
-	// Save original environment variable
+	// Save the original environment variable
 	originalValue := os.Getenv("SPIKE_NEXUS_BACKEND_STORE")
 	defer func() {
 		if originalValue != "" {
-			os.Setenv("SPIKE_NEXUS_BACKEND_STORE", originalValue)
+			_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", originalValue)
 		} else {
-			os.Unsetenv("SPIKE_NEXUS_BACKEND_STORE")
+			_ = os.Unsetenv("SPIKE_NEXUS_BACKEND_STORE")
 		}
 	}()
 
@@ -73,7 +73,7 @@ func TestBackendStoreTypeValidValues(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			os.Setenv("SPIKE_NEXUS_BACKEND_STORE", tt.envValue)
+			_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", tt.envValue)
 			result := BackendStoreType()
 			if result != tt.expected {
 				t.Errorf("Expected %s, got %s", string(tt.expected), string(result))
@@ -83,13 +83,13 @@ func TestBackendStoreTypeValidValues(t *testing.T) {
 }
 
 func TestBackendStoreTypeCaseInsensitive(t *testing.T) {
-	// Save original environment variable
+	// Save the original environment variable
 	originalValue := os.Getenv("SPIKE_NEXUS_BACKEND_STORE")
 	defer func() {
 		if originalValue != "" {
-			os.Setenv("SPIKE_NEXUS_BACKEND_STORE", originalValue)
+			_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", originalValue)
 		} else {
-			os.Unsetenv("SPIKE_NEXUS_BACKEND_STORE")
+			_ = os.Unsetenv("SPIKE_NEXUS_BACKEND_STORE")
 		}
 	}()
 
@@ -116,7 +116,7 @@ func TestBackendStoreTypeCaseInsensitive(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			os.Setenv("SPIKE_NEXUS_BACKEND_STORE", tt.envValue)
+			_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", tt.envValue)
 			result := BackendStoreType()
 			if result != tt.expected {
 				t.Errorf("For env value '%s', expected %s, got %s",
@@ -127,20 +127,20 @@ func TestBackendStoreTypeCaseInsensitive(t *testing.T) {
 }
 
 func TestBackendStoreTypeInvalidValues(t *testing.T) {
-	// Save original environment variable
+	// Save the original environment variable
 	originalValue := os.Getenv("SPIKE_NEXUS_BACKEND_STORE")
 	defer func() {
 		if originalValue != "" {
-			os.Setenv("SPIKE_NEXUS_BACKEND_STORE", originalValue)
+			_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", originalValue)
 		} else {
-			os.Unsetenv("SPIKE_NEXUS_BACKEND_STORE")
+			_ = os.Unsetenv("SPIKE_NEXUS_BACKEND_STORE")
 		}
 	}()
 
 	// Test invalid values that should default to Sqlite
 	invalidValues := []string{
 		"invalid",
-		"s3", // This was mentioned in comments but not implemented
+		"s3", // TODO: This was mentioned in comments but not implemented
 		"postgres",
 		"redis",
 		"",
@@ -154,7 +154,7 @@ func TestBackendStoreTypeInvalidValues(t *testing.T) {
 
 	for _, invalidValue := range invalidValues {
 		t.Run("invalid_value_"+invalidValue, func(t *testing.T) {
-			os.Setenv("SPIKE_NEXUS_BACKEND_STORE", invalidValue)
+			_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", invalidValue)
 			result := BackendStoreType()
 			if result != Sqlite {
 				t.Errorf("Invalid value '%s' should default to Sqlite, got %s",
@@ -165,18 +165,18 @@ func TestBackendStoreTypeInvalidValues(t *testing.T) {
 }
 
 func TestBackendStoreTypeEmptyString(t *testing.T) {
-	// Save original environment variable
+	// Save the original environment variable
 	originalValue := os.Getenv("SPIKE_NEXUS_BACKEND_STORE")
 	defer func() {
 		if originalValue != "" {
-			os.Setenv("SPIKE_NEXUS_BACKEND_STORE", originalValue)
+			_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", originalValue)
 		} else {
-			os.Unsetenv("SPIKE_NEXUS_BACKEND_STORE")
+			_ = os.Unsetenv("SPIKE_NEXUS_BACKEND_STORE")
 		}
 	}()
 
-	// Test with empty string
-	os.Setenv("SPIKE_NEXUS_BACKEND_STORE", "")
+	// Test with an empty string
+	_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", "")
 	result := BackendStoreType()
 	if result != Sqlite {
 		t.Errorf("Empty string should default to Sqlite, got %s", string(result))
@@ -211,13 +211,13 @@ func TestStoreTypeStringConversion(t *testing.T) {
 }
 
 func TestBackendStoreTypeConsistency(t *testing.T) {
-	// Test that multiple calls with same environment return same result
+	// Test that multiple calls with same environment return the same result
 	originalValue := os.Getenv("SPIKE_NEXUS_BACKEND_STORE")
 	defer func() {
 		if originalValue != "" {
-			os.Setenv("SPIKE_NEXUS_BACKEND_STORE", originalValue)
+			_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", originalValue)
 		} else {
-			os.Unsetenv("SPIKE_NEXUS_BACKEND_STORE")
+			_ = os.Unsetenv("SPIKE_NEXUS_BACKEND_STORE")
 		}
 	}()
 
@@ -225,7 +225,7 @@ func TestBackendStoreTypeConsistency(t *testing.T) {
 
 	for _, testValue := range testValues {
 		t.Run("consistency_"+testValue, func(t *testing.T) {
-			os.Setenv("SPIKE_NEXUS_BACKEND_STORE", testValue)
+			_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", testValue)
 
 			// Call multiple times
 			result1 := BackendStoreType()
@@ -245,14 +245,14 @@ func TestBackendStoreTypeDocumentedBehavior(t *testing.T) {
 	originalValue := os.Getenv("SPIKE_NEXUS_BACKEND_STORE")
 	defer func() {
 		if originalValue != "" {
-			os.Setenv("SPIKE_NEXUS_BACKEND_STORE", originalValue)
+			_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", originalValue)
 		} else {
-			os.Unsetenv("SPIKE_NEXUS_BACKEND_STORE")
+			_ = os.Unsetenv("SPIKE_NEXUS_BACKEND_STORE")
 		}
 	}()
 
 	// Test that "s3" mentioned in comments defaults to Sqlite (not implemented as Lite)
-	os.Setenv("SPIKE_NEXUS_BACKEND_STORE", "s3")
+	_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", "s3")
 	result := BackendStoreType()
 	if result != Sqlite {
 		t.Errorf("'s3' value should default to Sqlite (as it's not implemented), got %s",
@@ -260,7 +260,7 @@ func TestBackendStoreTypeDocumentedBehavior(t *testing.T) {
 	}
 
 	// Test that case-insensitive matching works as documented
-	os.Setenv("SPIKE_NEXUS_BACKEND_STORE", "LITE")
+	_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", "LITE")
 	result = BackendStoreType()
 	if result != Lite {
 		t.Errorf("Case-insensitive 'LITE' should return Lite, got %s", string(result))
@@ -269,27 +269,35 @@ func TestBackendStoreTypeDocumentedBehavior(t *testing.T) {
 
 func TestStoreTypeComparison(t *testing.T) {
 	// Test that StoreType values can be compared correctly
+
+	// noinspection GoBoolExpressions
 	if Lite == Sqlite {
 		t.Error("Lite should not equal Sqlite")
 	}
 
+	// noinspection GoBoolExpressions
 	if Sqlite == Memory {
 		t.Error("Sqlite should not equal Memory")
 	}
 
+	// noinspection GoBoolExpressions
 	if Memory == Lite {
 		t.Error("Memory should not equal Lite")
 	}
 
 	// Test self-equality
+
+	// noinspection GoBoolExpressions
 	if Lite != Lite {
 		t.Error("Lite should equal itself")
 	}
 
+	// noinspection GoBoolExpressions
 	if Sqlite != Sqlite {
 		t.Error("Sqlite should equal itself")
 	}
 
+	// noinspection GoBoolExpressions
 	if Memory != Memory {
 		t.Error("Memory should equal itself")
 	}

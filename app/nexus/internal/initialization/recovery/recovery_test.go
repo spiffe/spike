@@ -26,12 +26,6 @@ func TestErrRecoveryRetry(t *testing.T) {
 		t.Errorf("Expected error message '%s', got '%s'", expectedMsg, ErrRecoveryRetry.Error())
 	}
 
-	// Test that it implements error interface
-	var err error = ErrRecoveryRetry
-	if err == nil {
-		t.Error("ErrRecoveryRetry should implement error interface")
-	}
-
 	// Test error comparison
 	testErr := errors.New("recovery failed; retrying")
 	if ErrRecoveryRetry.Error() != testErr.Error() {
@@ -44,16 +38,16 @@ func TestRestoreBackingStoreFromPilotShards_InsufficientShards(t *testing.T) {
 	originalThreshold := os.Getenv("SPIKE_NEXUS_SHAMIR_THRESHOLD")
 	defer func() {
 		if originalThreshold != "" {
-			os.Setenv("SPIKE_NEXUS_SHAMIR_THRESHOLD", originalThreshold)
+			_ = os.Setenv("SPIKE_NEXUS_SHAMIR_THRESHOLD", originalThreshold)
 		} else {
-			os.Unsetenv("SPIKE_NEXUS_SHAMIR_THRESHOLD")
+			_ = os.Unsetenv("SPIKE_NEXUS_SHAMIR_THRESHOLD")
 		}
 	}()
 
-	// Set threshold to 3
-	os.Setenv("SPIKE_NEXUS_SHAMIR_THRESHOLD", "3")
+	// Set the threshold to 3
+	_ = os.Setenv("SPIKE_NEXUS_SHAMIR_THRESHOLD", "3")
 
-	// Create insufficient shards (only 2, but threshold is 3)
+	// Create insufficient shards (only 2, but the threshold is 3)
 	shards := make([]ShamirShard, 2)
 	for i := range shards {
 		testData := &[crypto.AES256KeySize]byte{}
@@ -216,7 +210,7 @@ func TestShamirShardValidation(t *testing.T) {
 			} else if shard.ID == 0 {
 				isValid = false
 			} else {
-				// Check if value is all zeros (simulating mem.Zeroed32)
+				// Check if the value is all zeros (simulating mem.Zeroed32)
 				allZero := true
 				for _, b := range shard.Value {
 					if b != 0 {
@@ -283,32 +277,32 @@ func TestEnvironmentDependencies(t *testing.T) {
 
 	defer func() {
 		if originalThreshold != "" {
-			os.Setenv("SPIKE_NEXUS_SHAMIR_THRESHOLD", originalThreshold)
+			_ = os.Setenv("SPIKE_NEXUS_SHAMIR_THRESHOLD", originalThreshold)
 		} else {
-			os.Unsetenv("SPIKE_NEXUS_SHAMIR_THRESHOLD")
+			_ = os.Unsetenv("SPIKE_NEXUS_SHAMIR_THRESHOLD")
 		}
 		if originalShares != "" {
-			os.Setenv("SPIKE_NEXUS_SHAMIR_SHARES", originalShares)
+			_ = os.Setenv("SPIKE_NEXUS_SHAMIR_SHARES", originalShares)
 		} else {
-			os.Unsetenv("SPIKE_NEXUS_SHAMIR_SHARES")
+			_ = os.Unsetenv("SPIKE_NEXUS_SHAMIR_SHARES")
 		}
 	}()
 
 	// Test ShamirThreshold
-	os.Setenv("SPIKE_NEXUS_SHAMIR_THRESHOLD", "3")
+	_ = os.Setenv("SPIKE_NEXUS_SHAMIR_THRESHOLD", "3")
 	threshold := env.ShamirThreshold()
 	if threshold != 3 {
 		t.Errorf("Expected threshold 3, got %d", threshold)
 	}
 
 	// Test ShamirShares
-	os.Setenv("SPIKE_NEXUS_SHAMIR_SHARES", "5")
+	_ = os.Setenv("SPIKE_NEXUS_SHAMIR_SHARES", "5")
 	shares := env.ShamirShares()
 	if shares != 5 {
 		t.Errorf("Expected shares 5, got %d", shares)
 	}
 
-	// Test that threshold <= shares (common validation)
+	// Test `threshold <= shares` (common validation)
 	if threshold > shares {
 		t.Errorf("Threshold (%d) should not be greater than shares (%d)", threshold, shares)
 	}
@@ -316,12 +310,14 @@ func TestEnvironmentDependencies(t *testing.T) {
 
 func TestCryptoConstantsShard(t *testing.T) {
 	// Test that the crypto constants are as expected
+	//noinspection GoBoolExpressions
 	if crypto.AES256KeySize != 32 {
 		t.Errorf("Expected AES256KeySize to be 32, got %d", crypto.AES256KeySize)
 	}
 
 	// Test creating arrays with the constant
 	var testArray [crypto.AES256KeySize]byte
+	//noinspection GoBoolExpressions
 	if len(testArray) != 32 {
 		t.Errorf("Expected array length 32, got %d", len(testArray))
 	}

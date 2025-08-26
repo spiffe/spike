@@ -17,11 +17,11 @@ import (
 
 func TestRootSharesGeneration(t *testing.T) {
 	// Set environment variables for consistent testing
-	os.Setenv("SPIKE_NEXUS_SHAMIR_SHARES", "5")
-	os.Setenv("SPIKE_NEXUS_SHAMIR_THRESHOLD", "3")
+	_ = os.Setenv("SPIKE_NEXUS_SHAMIR_SHARES", "5")
+	_ = os.Setenv("SPIKE_NEXUS_SHAMIR_THRESHOLD", "3")
 	defer func() {
-		os.Unsetenv("SPIKE_NEXUS_SHAMIR_SHARES")
-		os.Unsetenv("SPIKE_NEXUS_SHAMIR_THRESHOLD")
+		_ = os.Unsetenv("SPIKE_NEXUS_SHAMIR_SHARES")
+		_ = os.Unsetenv("SPIKE_NEXUS_SHAMIR_THRESHOLD")
 	}()
 
 	shares := RootShares()
@@ -63,11 +63,11 @@ func TestRootSharesGeneration(t *testing.T) {
 
 func TestRootSharesConsistency(t *testing.T) {
 	// Set environment variables
-	os.Setenv("SPIKE_NEXUS_SHAMIR_SHARES", "3")
-	os.Setenv("SPIKE_NEXUS_SHAMIR_THRESHOLD", "2")
+	_ = os.Setenv("SPIKE_NEXUS_SHAMIR_SHARES", "3")
+	_ = os.Setenv("SPIKE_NEXUS_SHAMIR_THRESHOLD", "2")
 	defer func() {
-		os.Unsetenv("SPIKE_NEXUS_SHAMIR_SHARES")
-		os.Unsetenv("SPIKE_NEXUS_SHAMIR_THRESHOLD")
+		_ = os.Unsetenv("SPIKE_NEXUS_SHAMIR_SHARES")
+		_ = os.Unsetenv("SPIKE_NEXUS_SHAMIR_THRESHOLD")
 	}()
 
 	// Generate shares multiple times - they should be different each time
@@ -97,11 +97,11 @@ func TestRootSharesConsistency(t *testing.T) {
 
 func TestKeeperShareValidID(t *testing.T) {
 	// Set environment variables
-	os.Setenv("SPIKE_NEXUS_SHAMIR_SHARES", "5")
-	os.Setenv("SPIKE_NEXUS_SHAMIR_THRESHOLD", "3")
+	_ = os.Setenv("SPIKE_NEXUS_SHAMIR_SHARES", "5")
+	_ = os.Setenv("SPIKE_NEXUS_SHAMIR_THRESHOLD", "3")
 	defer func() {
-		os.Unsetenv("SPIKE_NEXUS_SHAMIR_SHARES")
-		os.Unsetenv("SPIKE_NEXUS_SHAMIR_THRESHOLD")
+		_ = os.Unsetenv("SPIKE_NEXUS_SHAMIR_SHARES")
+		_ = os.Unsetenv("SPIKE_NEXUS_SHAMIR_THRESHOLD")
 	}()
 
 	// Create test shares with known IDs
@@ -128,11 +128,11 @@ func TestKeeperShareValidID(t *testing.T) {
 
 func TestKeeperShareInvalidID(t *testing.T) {
 	// Set environment variables
-	os.Setenv("SPIKE_NEXUS_SHAMIR_SHARES", "3")
-	os.Setenv("SPIKE_NEXUS_SHAMIR_THRESHOLD", "2")
+	_ = os.Setenv("SPIKE_NEXUS_SHAMIR_SHARES", "3")
+	_ = os.Setenv("SPIKE_NEXUS_SHAMIR_THRESHOLD", "2")
 	defer func() {
-		os.Unsetenv("SPIKE_NEXUS_SHAMIR_SHARES")
-		os.Unsetenv("SPIKE_NEXUS_SHAMIR_THRESHOLD")
+		_ = os.Unsetenv("SPIKE_NEXUS_SHAMIR_SHARES")
+		_ = os.Unsetenv("SPIKE_NEXUS_SHAMIR_THRESHOLD")
 	}()
 
 	tests := []struct {
@@ -198,7 +198,7 @@ func TestShamirSecretSharingBasics(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// Create deterministic reader for consistent results
+			// Create a deterministic reader for consistent results
 			reader := crypto.NewDeterministicReader(testKey)
 			ss := shamir.New(reader, tt.threshold, secret)
 
@@ -231,21 +231,21 @@ func TestEnvironmentVariableHandling(t *testing.T) {
 	originalThreshold := os.Getenv("SPIKE_NEXUS_SHAMIR_THRESHOLD")
 	defer func() {
 		if originalShares != "" {
-			os.Setenv("SPIKE_NEXUS_SHAMIR_SHARES", originalShares)
+			_ = os.Setenv("SPIKE_NEXUS_SHAMIR_SHARES", originalShares)
 		}
 		if originalThreshold != "" {
-			os.Setenv("SPIKE_NEXUS_SHAMIR_THRESHOLD", originalThreshold)
+			_ = os.Setenv("SPIKE_NEXUS_SHAMIR_THRESHOLD", originalThreshold)
 		}
 	}()
 
 	// Clear environment variables
-	os.Unsetenv("SPIKE_NEXUS_SHAMIR_SHARES")
-	os.Unsetenv("SPIKE_NEXUS_SHAMIR_THRESHOLD")
+	_ = os.Unsetenv("SPIKE_NEXUS_SHAMIR_SHARES")
+	_ = os.Unsetenv("SPIKE_NEXUS_SHAMIR_THRESHOLD")
 
 	// This should use default values (defined in env package)
 	shares := RootShares()
 
-	// We can't predict the exact default values without reading the env package
+	// We can't predict the exact default values without reading the env package,
 	// but we can test that it doesn't crash and produces valid shares
 	if len(shares) == 0 {
 		t.Error("Should generate at least one share with default configuration")
@@ -291,30 +291,6 @@ func TestShareIDConversion(t *testing.T) {
 			}
 		})
 	}
-}
-
-// Helper function to create test shares with known structure
-func createTestShares(t *testing.T, numShares int) []shamir.Share {
-	g := group.P256
-
-	// Create a test secret
-	secret := g.NewScalar()
-	testKey := make([]byte, crypto.AES256KeySize)
-	for i := range testKey {
-		testKey[i] = byte(i % 256)
-	}
-
-	err := secret.UnmarshalBinary(testKey)
-	if err != nil {
-		t.Fatalf("Failed to create test secret: %v", err)
-	}
-
-	// Create shares with threshold = numShares - 1
-	threshold := uint(numShares - 1)
-	reader := crypto.NewDeterministicReader(testKey)
-	ss := shamir.New(reader, threshold, secret)
-
-	return ss.Share(uint(numShares))
 }
 
 func TestShareValidation(t *testing.T) {

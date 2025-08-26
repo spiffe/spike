@@ -15,6 +15,43 @@
   </kubernetification>
   <immediate-backlog>
       <issue>
+          we removed s3 store type; remove it from docs if any too.
+      </issue>
+      <issue>
+          fix all `t.Skip()` skipped tests.
+      </issue>
+      <issue>
+          address TODO:s in the source code.
+      </issue>
+      <issue>
+          CLI should call log.FatalLn and log.FatalLn should panic for better
+          testability.
+
+
+          // CLI app tests
+          func TestRun_InvalidConfig(t *testing.T) {
+          defer func() {
+          if r := recover(); r == nil {
+          t.Error("Expected panic with invalid config")
+          }
+          }()
+
+          run() // This can now be tested!
+          }
+
+          // Library tests
+          func TestInitializeBackend_NilKey(t *testing.T) {
+          defer func() {
+          if r := recover(); r == nil {
+          t.Error("Expected panic with nil key")
+          }
+          }()
+
+          InitializeBackend(nil)
+          }
+
+      </issue>
+      <issue>
           func Fatal(msg string) {
           func FatalF(format string, args ...any) {
           func FatalLn(args ...any) {
