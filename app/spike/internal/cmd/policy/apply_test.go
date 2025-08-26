@@ -53,13 +53,13 @@ func TestNormalizePath(t *testing.T) {
 		},
 		{
 			name:     "absolute_path_with_trailing_slash",
-			input:    "/secrets/database/",
-			expected: "/secrets/database",
+			input:    "secrets/database/",
+			expected: "secrets/database",
 		},
 		{
 			name:     "absolute_path_no_trailing_slash",
-			input:    "/secrets/database",
-			expected: "/secrets/database",
+			input:    "secrets/database",
+			expected: "secrets/database",
 		},
 		{
 			name:     "single_segment_with_trailing_slash",
@@ -328,7 +328,7 @@ func TestPathNormalizationIntegration(t *testing.T) {
 		{"secrets/database/password/", "secrets/database/password"},
 		{"secrets/web-service/config/", "secrets/web-service/config"},
 		{"secrets/", "secrets"},
-		{"/secrets/", "/secrets"},
+		{"secrets/", "secrets"},
 		{"/", "/"},
 		{"app/env/production/db/", "app/env/production/db"},
 		{"cache/redis/session///", "cache/redis/session"},

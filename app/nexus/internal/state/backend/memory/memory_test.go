@@ -368,7 +368,7 @@ func TestInMemoryStore_LoadAllPolicies(t *testing.T) {
 			ID:              "policy-3",
 			Name:            "Admin Policy",
 			SPIFFEIDPattern: "spiffe://example.org/admin/*",
-			PathPattern:     "/*",
+			PathPattern:     "secrets/*",
 			Permissions:     []data.PolicyPermission{data.PermissionRead, data.PermissionWrite, data.PermissionList},
 		},
 	}

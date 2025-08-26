@@ -56,14 +56,14 @@ func TestListKeys_SingleSecret(t *testing.T) {
 			},
 		}
 
-		err := backend.StoreSecret(ctx, "/test/secret1", testSecret)
+		err := backend.StoreSecret(ctx, "test/secret1", testSecret)
 		if err != nil {
 			t.Fatalf("Failed to store test secret: %v", err)
 		}
 
 		keys := ListKeys()
 
-		expected := []string{"/test/secret1"}
+		expected := []string{"test/secret1"}
 		if !reflect.DeepEqual(keys, expected) {
 			t.Errorf("Expected keys %v, got %v", expected, keys)
 		}
@@ -89,10 +89,10 @@ func TestListKeys_MultipleSecrets(t *testing.T) {
 
 		// Store multiple secrets with different paths
 		testPaths := []string{
-			"/app/db/password",
-			"/app/api/key",
-			"/service/token",
-			"/admin/credentials",
+			"app/db/password",
+			"app/api/key",
+			"service/token",
+			"admin/credentials",
 		}
 
 		for _, path := range testPaths {
@@ -134,12 +134,12 @@ func TestListKeys_SortingBehavior(t *testing.T) {
 
 		// Store secrets in non-alphabetical order
 		unsortedPaths := []string{
-			"/zebra",
-			"/apple",
-			"/banana",
-			"/cherry",
-			"/dog",
-			"/ant",
+			"zebra",
+			"apple",
+			"banana",
+			"cherry",
+			"dog",
+			"ant",
 		}
 
 		for _, path := range unsortedPaths {
@@ -152,7 +152,7 @@ func TestListKeys_SortingBehavior(t *testing.T) {
 		keys := ListKeys()
 
 		// Verify they come back sorted
-		expected := []string{"/ant", "/apple", "/banana", "/cherry", "/dog", "/zebra"}
+		expected := []string{"ant", "apple", "banana", "cherry", "dog", "zebra"}
 
 		if !reflect.DeepEqual(keys, expected) {
 			t.Errorf("Expected sorted keys %v, got %v", expected, keys)
@@ -184,11 +184,11 @@ func TestListKeys_SpecialCharacters(t *testing.T) {
 
 		// Test paths with special characters
 		specialPaths := []string{
-			"/app/db-prod/password",
-			"/app/db_test/password",
-			"/service/api.key",
-			"/service/config/app-name",
-			"/service/config/app_name",
+			"app/db-prod/password",
+			"app/db_test/password",
+			"service/api.key",
+			"service/config/app-name",
+			"service/config/app_name",
 		}
 
 		for _, path := range specialPaths {

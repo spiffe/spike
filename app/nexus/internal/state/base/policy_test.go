@@ -28,11 +28,11 @@ func TestCheckAccess_PilotAccess(t *testing.T) {
 		// Note: The actual IsPilot function behavior would need to be mocked
 		// For now, we'll test the policy matching logic
 		pilotSPIFFEID := "spiffe://example.org/pilot"
-		path := "/test/secret"
+		path := "test/secret"
 		wants := []data.PolicyPermission{data.PermissionRead}
 
-		// This will return false in practice because we don't have actual pilot setup
-		// but the code path will be tested
+		// This will return false in practice because we don't have the actual
+		// SPIKE Pilot setup, but the code path will be tested
 		result := CheckAccess(pilotSPIFFEID, path, wants)
 
 		// Since we don't have actual pilot setup, this will test the policy matching path
@@ -60,16 +60,16 @@ func TestCheckAccess_WildcardPolicies(t *testing.T) {
 			t.Fatalf("Failed to create wildcard policy: %v", err)
 		}
 
-		// Test access with wildcard policy
-		result := CheckAccess("spiffe://example.org/test", "/any/path", []data.PolicyPermission{data.PermissionRead})
+		// Test access with a wildcard policy
+		result := CheckAccess("spiffe://example.org/test", "any/path", []data.PolicyPermission{data.PermissionRead})
 		if !result {
 			t.Error("Expected wildcard policy to grant read access")
 		}
 
 		// Test access without required permission
-		result = CheckAccess("spiffe://example.org/test", "/any/path", []data.PolicyPermission{data.PermissionWrite})
+		result = CheckAccess("spiffe://example.org/test", "any/path", []data.PolicyPermission{data.PermissionWrite})
 		if result {
-			t.Error("Expected wildcard policy to deny write access")
+			t.Error("Expected wildcard policy to grant write access")
 		}
 
 		// Clean up
@@ -106,7 +106,7 @@ func TestCheckAccess_SuperPermission(t *testing.T) {
 		}
 
 		for _, perm := range permissions {
-			result := CheckAccess("spiffe://example.org/test", "/any/path", []data.PolicyPermission{perm})
+			result := CheckAccess("spiffe://example.org/test", "any/path", []data.PolicyPermission{perm})
 			if !result {
 				t.Errorf("Expected super permission to grant %v access", perm)
 			}
@@ -148,35 +148,35 @@ func TestCheckAccess_SpecificPatterns(t *testing.T) {
 			{
 				name:        "matching spiffeid and path",
 				spiffeID:    "spiffe://example.org/service-a",
-				path:        "/app/secrets",
+				path:        "app/secrets",
 				wants:       []data.PolicyPermission{data.PermissionRead},
 				expectGrant: true,
 			},
 			{
 				name:        "matching spiffeid and path, multiple permissions",
 				spiffeID:    "spiffe://example.org/service-b",
-				path:        "/app/config",
+				path:        "app/config",
 				wants:       []data.PolicyPermission{data.PermissionRead, data.PermissionWrite},
 				expectGrant: true,
 			},
 			{
 				name:        "non-matching spiffeid",
 				spiffeID:    "spiffe://other.org/service-a",
-				path:        "/app/secrets",
+				path:        "app/secrets",
 				wants:       []data.PolicyPermission{data.PermissionRead},
 				expectGrant: false,
 			},
 			{
 				name:        "non-matching path",
 				spiffeID:    "spiffe://example.org/service-a",
-				path:        "/other/secrets",
+				path:        "other/secrets",
 				wants:       []data.PolicyPermission{data.PermissionRead},
 				expectGrant: false,
 			},
 			{
 				name:        "requesting permission not granted",
 				spiffeID:    "spiffe://example.org/service-a",
-				path:        "/app/secrets",
+				path:        "app/secrets",
 				wants:       []data.PolicyPermission{data.PermissionList},
 				expectGrant: false,
 			},
@@ -208,7 +208,7 @@ func TestCheckAccess_LoadPoliciesError(t *testing.T) {
 		persist.InitializeBackend(nil)
 
 		// Normal case should work
-		result := CheckAccess("spiffe://example.org/test", "/path", []data.PolicyPermission{data.PermissionRead})
+		result := CheckAccess("spiffe://example.org/test", "some/path", []data.PolicyPermission{data.PermissionRead})
 		// Should be false since no policies exist
 		if result {
 			t.Error("Expected false when no policies exist")
@@ -316,7 +316,7 @@ func TestCreatePolicy_InvalidName(t *testing.T) {
 		if err == nil {
 			t.Error("Expected error for empty policy name")
 		}
-		if err != ErrInvalidPolicy {
+		if !errors.Is(err, ErrInvalidPolicy) {
 			t.Errorf("Expected ErrInvalidPolicy, got %v", err)
 		}
 	})
@@ -345,7 +345,7 @@ func TestCreatePolicy_DuplicateName(t *testing.T) {
 		if err == nil {
 			t.Error("Expected error for duplicate policy name")
 		}
-		if err != ErrPolicyExists {
+		if !errors.Is(err, ErrPolicyExists) {
 			t.Errorf("Expected ErrPolicyExists, got %v", err)
 		}
 
@@ -410,7 +410,7 @@ func TestCreatePolicy_InvalidRegexPatterns(t *testing.T) {
 						t.Errorf("Unexpected error for valid patterns: %v", err)
 					} else {
 						// Clean up successful creation
-						DeletePolicy(createdPolicy.ID)
+						_ = DeletePolicy(createdPolicy.ID)
 					}
 				}
 			})
@@ -499,7 +499,7 @@ func TestGetPolicy_NonExistentPolicy(t *testing.T) {
 		if err == nil {
 			t.Error("Expected error for non-existent policy")
 		}
-		if err != ErrPolicyNotFound {
+		if !errors.Is(err, ErrPolicyNotFound) {
 			t.Errorf("Expected ErrPolicyNotFound, got %v", err)
 		}
 	})
@@ -531,7 +531,7 @@ func TestDeletePolicy_ExistingPolicy(t *testing.T) {
 
 		// Verify the policy is gone
 		_, err = GetPolicy(createdPolicy.ID)
-		if err != ErrPolicyNotFound {
+		if !errors.Is(err, ErrPolicyNotFound) {
 			t.Errorf("Expected ErrPolicyNotFound after deletion, got %v", err)
 		}
 	})
@@ -547,7 +547,7 @@ func TestDeletePolicy_NonExistentPolicy(t *testing.T) {
 		if err == nil {
 			t.Error("Expected error for non-existent policy")
 		}
-		if err != ErrPolicyNotFound {
+		if !errors.Is(err, ErrPolicyNotFound) {
 			t.Errorf("Expected ErrPolicyNotFound, got %v", err)
 		}
 	})
@@ -630,7 +630,7 @@ func TestListPoliciesByPath_MatchingPolicies(t *testing.T) {
 		resetBackendForTest()
 		persist.InitializeBackend(nil)
 
-		pathPattern := "/app/.*"
+		pathPattern := "app/.*"
 
 		// Create policies with different path patterns
 		policies := []data.Policy{
@@ -877,10 +877,10 @@ func TestPolicyRegexCompilation(t *testing.T) {
 			path        string
 			shouldMatch bool
 		}{
-			{"spiffe://example.org/service-123", "/app/service-test/config", true},
-			{"spiffe://example.org/service-abc", "/app/service-test/config", false}, // invalid spiffeid
-			{"spiffe://example.org/service-123", "/app/service-123/config", false},  // invalid path (numbers instead of letters)
-			{"spiffe://other.org/service-123", "/app/service-test/config", false},   // wrong domain
+			{"spiffe://example.org/service-123", "app/service-test/config", true},
+			{"spiffe://example.org/service-abc", "app/service-test/config", false}, // invalid spiffeid
+			{"spiffe://example.org/service-123", "app/service-123/config", false},  // invalid path (numbers instead of letters)
+			{"spiffe://other.org/service-123", "app/service-test/config", false},   // wrong domain
 		}
 
 		for i, tc := range testCases {
@@ -903,12 +903,12 @@ func TestPolicyRegexCompilation(t *testing.T) {
 // Benchmark tests
 func BenchmarkCheckAccess_WildcardPolicy(b *testing.B) {
 	original := os.Getenv("SPIKE_NEXUS_BACKEND_STORE")
-	os.Setenv("SPIKE_NEXUS_BACKEND_STORE", "memory")
+	_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", "memory")
 	defer func() {
 		if original != "" {
-			os.Setenv("SPIKE_NEXUS_BACKEND_STORE", original)
+			_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", original)
 		} else {
-			os.Unsetenv("SPIKE_NEXUS_BACKEND_STORE")
+			_ = os.Unsetenv("SPIKE_NEXUS_BACKEND_STORE")
 		}
 	}()
 
@@ -927,20 +927,20 @@ func BenchmarkCheckAccess_WildcardPolicy(b *testing.B) {
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		CheckAccess("spiffe://example.org/test", "/test/path", []data.PolicyPermission{data.PermissionRead})
+		CheckAccess("spiffe://example.org/test", "test/path", []data.PolicyPermission{data.PermissionRead})
 	}
 
-	DeletePolicy(createdPolicy.ID)
+	_ = DeletePolicy(createdPolicy.ID)
 }
 
 func BenchmarkCreatePolicy(b *testing.B) {
 	original := os.Getenv("SPIKE_NEXUS_BACKEND_STORE")
-	os.Setenv("SPIKE_NEXUS_BACKEND_STORE", "memory")
+	_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", "memory")
 	defer func() {
 		if original != "" {
-			os.Setenv("SPIKE_NEXUS_BACKEND_STORE", original)
+			_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", original)
 		} else {
-			os.Unsetenv("SPIKE_NEXUS_BACKEND_STORE")
+			_ = os.Unsetenv("SPIKE_NEXUS_BACKEND_STORE")
 		}
 	}()
 
@@ -965,18 +965,21 @@ func BenchmarkCreatePolicy(b *testing.B) {
 
 	// Clean up
 	for _, id := range createdPolicies {
-		DeletePolicy(id)
+		_ = DeletePolicy(id)
 	}
+
+	// TODO: methods for delete all policies; delete all secrets; and delete
+	// a range of policies or secrets.
 }
 
 func BenchmarkListPolicies(b *testing.B) {
 	original := os.Getenv("SPIKE_NEXUS_BACKEND_STORE")
-	os.Setenv("SPIKE_NEXUS_BACKEND_STORE", "memory")
+	_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", "memory")
 	defer func() {
 		if original != "" {
-			os.Setenv("SPIKE_NEXUS_BACKEND_STORE", original)
+			_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", original)
 		} else {
-			os.Unsetenv("SPIKE_NEXUS_BACKEND_STORE")
+			_ = os.Unsetenv("SPIKE_NEXUS_BACKEND_STORE")
 		}
 	}()
 
@@ -998,38 +1001,17 @@ func BenchmarkListPolicies(b *testing.B) {
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		ListPolicies()
+		_, _ = ListPolicies()
 	}
 	b.StopTimer()
 
 	// Clean up
 	for _, id := range createdPolicies {
-		DeletePolicy(id)
+		_ = DeletePolicy(id)
 	}
 }
 
 // Helper function to check if an error contains a specific error in its chain
 func ErrorIs(err, target error) bool {
 	return err != nil && (errors.Is(err, target) || (err.Error() != "" && target.Error() != "" && err.Error() == target.Error()))
-}
-
-// Helper function to manage environment variables in tests (reuse from path_test.go)
-// TODO: this can go to the SDK too.
-func withEnvironment3(t *testing.T, key, value string, testFunc func()) {
-	original := os.Getenv(key)
-	os.Setenv(key, value)
-	defer func() {
-		if original != "" {
-			os.Setenv(key, original)
-		} else {
-			os.Unsetenv(key)
-		}
-	}()
-	testFunc()
-}
-
-// Helper function to reset backend state for testing (reuse from path_test.go)
-func resetBackendForTest3() {
-	// This will be implemented to ensure clean state between tests
-	// For now, we rely on initializing a fresh memory backend
 }

@@ -353,7 +353,7 @@ func TestURLJoinPath(t *testing.T) {
 		{
 			name:        "path with leading slash",
 			base:        "https://example.com",
-			path:        "/api/shard",
+			path:        "api/shard",
 			expectError: false,
 		},
 		//{

@@ -114,7 +114,7 @@ func TestSQLiteSecret_NewSecret(t *testing.T) {
 			}
 		}
 
-		path := "/test/sqlite-new-secret"
+		path := "test/sqlite-new-secret"
 		values := map[string]string{
 			"username": "admin",
 			"password": "secret123",
@@ -154,7 +154,7 @@ func TestSQLiteSecret_NewSecret(t *testing.T) {
 }
 
 func TestSQLiteSecret_Persistence(t *testing.T) {
-	path := "/test/sqlite-persistence"
+	path := "test/sqlite-persistence"
 	values := map[string]string{
 		"persistent": "data",
 		"should":     "survive restart",
@@ -219,9 +219,9 @@ func TestSQLiteSecret_SimpleVersioning(t *testing.T) {
 			_ = persist.Backend().Close(ctx)
 		}()
 
-		path := "/test/simple-versioning"
+		path := "test/simple-versioning"
 
-		// Create first version
+		// Create the first version
 		t.Log("Creating first version...")
 		values1 := map[string]string{"data": "version1"}
 		err := UpsertSecret(path, values1)
@@ -296,7 +296,7 @@ func getVersionNumbers(secret *kv.Value) []int {
 }
 
 func TestSQLiteSecret_VersionPersistence(t *testing.T) {
-	path := "/test/sqlite-versions"
+	path := "test/sqlite-versions"
 
 	// Create multiple versions in first session
 	withSQLiteEnvironment(t, func() {
@@ -386,7 +386,7 @@ func TestSQLiteSecret_VersionPersistence(t *testing.T) {
 }
 
 func TestSQLiteSecret_EncryptionWithDifferentKeys(t *testing.T) {
-	path := "/test/sqlite-encryption"
+	path := "test/sqlite-encryption"
 	values := map[string]string{
 		"sensitive": "secret_data",
 		"api_key":   "abc123xyz",
@@ -508,7 +508,7 @@ func BenchmarkSQLiteUpsertSecret(b *testing.B) {
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		path := fmt.Sprintf("/bench/secret-%d", i)
+		path := fmt.Sprintf("bench/secret-%d", i)
 		err := UpsertSecret(path, values)
 		if err != nil {
 			b.Fatalf("Benchmark failed: %v", err)
@@ -554,7 +554,7 @@ func BenchmarkSQLiteGetSecret(b *testing.B) {
 	Initialize(rootKey)
 
 	// Create a secret to benchmark against
-	path := "/bench/get-secret"
+	path := "bench/get-secret"
 	values := map[string]string{
 		"username": "admin",
 		"password": "secret123",

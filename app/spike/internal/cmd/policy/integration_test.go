@@ -22,7 +22,7 @@ func TestPolicySpecValidation(t *testing.T) {
 			policy: Spec{
 				Name:        "test-policy",
 				SpiffeID:    "spiffe://example.org/test/*",
-				Path:        "/secrets/*",
+				Path:        "secrets/*",
 				Permissions: []string{"read", "write"},
 			},
 			valid: true,
@@ -32,7 +32,7 @@ func TestPolicySpecValidation(t *testing.T) {
 			policy: Spec{
 				Name:        "",
 				SpiffeID:    "spiffe://example.org/test/*",
-				Path:        "/secrets/*",
+				Path:        "secrets/*",
 				Permissions: []string{"read"},
 			},
 			valid: false,
@@ -42,7 +42,7 @@ func TestPolicySpecValidation(t *testing.T) {
 			policy: Spec{
 				Name:        "test-policy",
 				SpiffeID:    "",
-				Path:        "/secrets/*",
+				Path:        "secrets/*",
 				Permissions: []string{"read"},
 			},
 			valid: false,
@@ -62,7 +62,7 @@ func TestPolicySpecValidation(t *testing.T) {
 			policy: Spec{
 				Name:        "test-policy",
 				SpiffeID:    "spiffe://example.org/test/*",
-				Path:        "/secrets/*",
+				Path:        "secrets/*",
 				Permissions: []string{},
 			},
 			valid: false,
@@ -167,7 +167,7 @@ permissions: [read, write, list]`,
 			expectValue: Spec{
 				Name:        "flow-policy",
 				SpiffeID:    "spiffe://example.org/flow/*",
-				Path:        "/secrets/flow/*",
+				Path:        "secrets/flow/*",
 				Permissions: []string{"read", "write", "list"},
 			},
 		},
@@ -183,7 +183,7 @@ permissions:
 			expectValue: Spec{
 				Name:        "multiline-policy",
 				SpiffeID:    "spiffe://example.org/multiline/*\n",
-				Path:        "/secrets/multiline/*",
+				Path:        "secrets/multiline/*",
 				Permissions: []string{"read"},
 			},
 		},

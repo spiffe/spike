@@ -18,7 +18,7 @@ func TestUpsertSecret_NewSecret(t *testing.T) {
 		resetBackendForTest()
 		persist.InitializeBackend(nil)
 
-		path := "/test/new-secret"
+		path := "test/new-secret"
 		values := map[string]string{
 			"username": "admin",
 			"password": "secret123",
@@ -62,7 +62,7 @@ func TestUpsertSecret_ExistingSecret(t *testing.T) {
 		resetBackendForTest()
 		persist.InitializeBackend(nil)
 
-		path := "/test/existing-secret"
+		path := "test/existing-secret"
 
 		// Create initial version
 		initialValues := map[string]string{
@@ -124,7 +124,7 @@ func TestUpsertSecret_VersionPruning(t *testing.T) {
 			resetBackendForTest()
 			persist.InitializeBackend(nil)
 
-			path := "/test/version-pruning"
+			path := "test/version-pruning"
 
 			// Create 5 versions (more than max of 3)
 			for i := 1; i <= 5; i++ {
@@ -185,7 +185,7 @@ func TestDeleteSecret_CurrentVersion(t *testing.T) {
 		resetBackendForTest()
 		persist.InitializeBackend(nil)
 
-		path := "/test/delete-current"
+		path := "test/delete-current"
 
 		// Create multiple versions
 		for i := 1; i <= 3; i++ {
@@ -239,7 +239,7 @@ func TestDeleteSecret_SpecificVersions(t *testing.T) {
 		resetBackendForTest()
 		persist.InitializeBackend(nil)
 
-		path := "/test/delete-specific"
+		path := "test/delete-specific"
 
 		// Create multiple versions
 		for i := 1; i <= 4; i++ {
@@ -298,7 +298,7 @@ func TestDeleteSecret_AllVersions(t *testing.T) {
 		resetBackendForTest()
 		persist.InitializeBackend(nil)
 
-		path := "/test/delete-all"
+		path := "test/delete-all"
 
 		// Create multiple versions
 		for i := 1; i <= 3; i++ {
@@ -352,7 +352,7 @@ func TestDeleteSecret_NonExistentSecret(t *testing.T) {
 		resetBackendForTest()
 		persist.InitializeBackend(nil)
 
-		err := DeleteSecret("/test/nonexistent", []int{1})
+		err := DeleteSecret("test/nonexistent", []int{1})
 		if err == nil {
 			t.Error("Expected error when deleting non-existent secret")
 		}
@@ -364,7 +364,7 @@ func TestUndeleteSecret_SpecificVersions(t *testing.T) {
 		resetBackendForTest()
 		persist.InitializeBackend(nil)
 
-		path := "/test/undelete-specific"
+		path := "test/undelete-specific"
 
 		// Create and then delete multiple versions
 		for i := 1; i <= 3; i++ {
@@ -420,7 +420,7 @@ func TestUndeleteSecret_AllDeleted(t *testing.T) {
 		resetBackendForTest()
 		persist.InitializeBackend(nil)
 
-		path := "/test/undelete-all-deleted"
+		path := "test/undelete-all-deleted"
 
 		// Create multiple versions
 		for i := 1; i <= 3; i++ {
@@ -482,7 +482,7 @@ func TestGetSecret_CurrentVersion(t *testing.T) {
 		resetBackendForTest()
 		persist.InitializeBackend(nil)
 
-		path := "/test/get-current"
+		path := "test/get-current"
 		values := map[string]string{
 			"key": "value",
 		}
@@ -509,7 +509,7 @@ func TestGetSecret_SpecificVersion(t *testing.T) {
 		resetBackendForTest()
 		persist.InitializeBackend(nil)
 
-		path := "/test/get-specific"
+		path := "test/get-specific"
 
 		// Create multiple versions
 		expectedValues := make(map[int]map[string]string)
@@ -546,7 +546,7 @@ func TestGetSecret_NonExistentSecret(t *testing.T) {
 		resetBackendForTest()
 		persist.InitializeBackend(nil)
 
-		_, err := GetSecret("/test/nonexistent", 1)
+		_, err := GetSecret("test/nonexistent", 1)
 		if err == nil {
 			t.Error("Expected error when getting non-existent secret")
 		}
@@ -558,7 +558,7 @@ func TestGetSecret_NonExistentVersion(t *testing.T) {
 		resetBackendForTest()
 		persist.InitializeBackend(nil)
 
-		path := "/test/nonexistent-version"
+		path := "test/nonexistent-version"
 		values := map[string]string{
 			"key": "value",
 		}
@@ -581,7 +581,7 @@ func TestGetSecret_DeletedVersion(t *testing.T) {
 		resetBackendForTest()
 		persist.InitializeBackend(nil)
 
-		path := "/test/deleted-version"
+		path := "test/deleted-version"
 		values := map[string]string{
 			"key": "value",
 		}
@@ -610,7 +610,7 @@ func TestGetRawSecret_WithMetadata(t *testing.T) {
 		resetBackendForTest()
 		persist.InitializeBackend(nil)
 
-		path := "/test/raw-secret"
+		path := "test/raw-secret"
 
 		// Create multiple versions
 		for i := 1; i <= 2; i++ {
@@ -662,7 +662,7 @@ func TestGetRawSecret_AllVersionsDeleted(t *testing.T) {
 		resetBackendForTest()
 		persist.InitializeBackend(nil)
 
-		path := "/test/all-deleted"
+		path := "test/all-deleted"
 		values := map[string]string{
 			"key": "value",
 		}
