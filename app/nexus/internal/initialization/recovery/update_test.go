@@ -139,7 +139,7 @@ func TestURLJoinPathForKeepers(t *testing.T) {
 					t.Errorf("Result should be valid URL: %v", parseErr)
 				}
 
-				// Verify result contains the expected path
+				// Verify the result contains the expected path
 				if !containsPathUpdate(result, tt.expectedPath) {
 					t.Errorf("Result %s should contain path %s", result, tt.expectedPath)
 				}
@@ -222,6 +222,7 @@ func TestShardContributionRequestStructure(t *testing.T) {
 
 				// Verify data integrity
 				if request.Shard != nil && unmarshaled.Shard != nil {
+					// noinspection GoBoolExpressions
 					if len(request.Shard) != len(unmarshaled.Shard) {
 						t.Error("Shard lengths should match after marshal/unmarshal")
 					}
@@ -321,7 +322,7 @@ func TestKeeperMapOperations(t *testing.T) {
 			t.Errorf("Keeper ID '%s' should be convertible to int: %v", keeperID, err)
 		}
 
-		// Test that keeper API root is a valid URL
+		// Test that the SPIKE Keeper API root is a valid URL
 		_, err = url.Parse(keeperAPIRoot)
 		if err != nil {
 			t.Errorf("Keeper API root '%s' should be valid URL: %v", keeperAPIRoot, err)
@@ -339,7 +340,7 @@ func TestKeeperMapOperations(t *testing.T) {
 		t.Errorf("Expected keeper1 URL to be 'https://keeper1.example.com', got '%s'", keeper1URL)
 	}
 
-	// Test non-existent key
+	// Test a non-existent key
 	nonExistent := keepers["999"]
 	if nonExistent != "" {
 		t.Error("Non-existent key should return empty string")
@@ -350,6 +351,7 @@ func TestAPIUrlKeeperContribute(t *testing.T) {
 	// Test the API URL constant used in sendShardsToKeepers
 	contributeURL := string(apiUrl.KeeperContribute)
 
+	// noinspection GoBoolExpressions
 	if contributeURL == "" {
 		t.Error("KeeperContribute URL should not be empty")
 	}
@@ -420,12 +422,13 @@ func TestContributionLengthValidation(t *testing.T) {
 func TestShardArrayOperations(t *testing.T) {
 	// Test shard array operations used in sendShardsToKeepers
 
-	// Test creating new shard array (as done in the function)
+	// Test creating a new shard array (as done in the function)
 	shard := new([crypto.AES256KeySize]byte)
 	if shard == nil {
 		t.Fatal("New shard array should not be nil")
 	}
 
+	// noinspection GoBoolExpressions
 	if len(shard) != crypto.AES256KeySize {
 		t.Errorf("Shard array length should be %d, got %d", crypto.AES256KeySize, len(shard))
 	}
@@ -450,22 +453,4 @@ func TestShardArrayOperations(t *testing.T) {
 	if cap(shard[:]) != crypto.AES256KeySize {
 		t.Errorf("Shard capacity should be %d, got %d", crypto.AES256KeySize, cap(shard[:]))
 	}
-}
-
-// Helper function for URL path checking
-func containsPathUpdate(fullURL, path string) bool {
-	parsedURL, err := url.Parse(fullURL)
-	if err != nil {
-		return false
-	}
-
-	// Clean the path from leading/trailing slashes for comparison
-	cleanPath := path
-	if len(cleanPath) > 0 && cleanPath[0] == '/' {
-		cleanPath = cleanPath[1:]
-	}
-
-	return len(parsedURL.Path) > 0 &&
-		(parsedURL.Path[len(parsedURL.Path)-len(cleanPath):] == cleanPath ||
-			parsedURL.Path == "/"+cleanPath)
 }

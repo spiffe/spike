@@ -111,7 +111,7 @@ func TestShardURL_InvalidInput(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			result := shardURL(tt.keeperAPIRoot)
 
-			// Invalid inputs should return empty string
+			// Invalid inputs should return an empty string
 			if result != "" {
 				t.Errorf("Expected empty result for invalid input, got %s", result)
 			}
@@ -300,6 +300,7 @@ func TestShardResponseStructure(t *testing.T) {
 
 				// Compare shard pointers (they won't be the same after marshal/unmarshal)
 				if response.Shard != nil && unmarshaled.Shard != nil {
+					// noinspection GoBoolExpressions
 					if len(response.Shard) != len(unmarshaled.Shard) {
 						t.Error("Shard lengths should match after marshal/unmarshal")
 					}
@@ -389,7 +390,7 @@ func TestURLJoinPath(t *testing.T) {
 					t.Errorf("Result should be valid URL: %v", parseErr)
 				}
 
-				// Verify result contains the path
+				// Verify the result contains the path
 				if !containsPath(result, tt.path) {
 					t.Errorf("Result %s should contain path %s", result, tt.path)
 				}
@@ -402,6 +403,7 @@ func TestAPIUrlConstant(t *testing.T) {
 	// Test that the API URL constant is properly defined
 	keeperShard := string(apiUrl.KeeperShard)
 
+	// noinspection GoBoolExpressions
 	if keeperShard == "" {
 		t.Error("KeeperShard API URL should not be empty")
 	}
@@ -418,18 +420,21 @@ func TestAPIUrlConstant(t *testing.T) {
 
 func TestCryptoConstants(t *testing.T) {
 	// Test that crypto constants are as expected
+	// noinspection GoBoolExpressions
 	if crypto.AES256KeySize != 32 {
 		t.Errorf("Expected AES256KeySize to be 32, got %d", crypto.AES256KeySize)
 	}
 
 	// Test creating shard arrays
 	var shard [crypto.AES256KeySize]byte
+	// noinspection GoBoolExpressions
 	if len(shard) != 32 {
 		t.Errorf("Expected shard array length 32, got %d", len(shard))
 	}
 
-	// Test pointer to shard array
+	// Test pointer to the shard array
 	shardPtr := &shard
+	// noinspection GoBoolExpressions
 	if len(shardPtr) != 32 {
 		t.Errorf("Expected shard pointer length 32, got %d", len(shardPtr))
 	}

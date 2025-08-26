@@ -145,7 +145,7 @@ func TestYAMLParsingEdgeCases(t *testing.T) {
 			name: "quoted_values",
 			yamlContent: `name: "my-policy"
 spiffeid: "spiffe://example.org/quoted/*"
-path: "/secrets/quoted/*"
+path: "secrets/quoted/*"
 permissions:
   - "read"
   - "write"`,
@@ -153,7 +153,7 @@ permissions:
 			expectValue: Spec{
 				Name:        "my-policy",
 				SpiffeID:    "spiffe://example.org/quoted/*",
-				Path:        "/secrets/quoted/*",
+				Path:        "secrets/quoted/*",
 				Permissions: []string{"read", "write"},
 			},
 		},

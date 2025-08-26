@@ -35,6 +35,7 @@ func TestShamirShardStruct(t *testing.T) {
 	}
 
 	// Test Value length
+	// noinspection GoBoolExpressions
 	if len(shard.Value) != crypto.AES256KeySize {
 		t.Errorf("Expected value length %d, got %d", crypto.AES256KeySize, len(shard.Value))
 	}
@@ -47,7 +48,7 @@ func TestShamirShardStruct(t *testing.T) {
 		}
 	}
 
-	// Test that it's actually a pointer (modifying shard affects original)
+	// Test that it's actually a pointer (modifying shard affects the original)
 	originalByte := testData[0]
 	shard.Value[0] = 255
 	if testData[0] != 255 {
@@ -112,18 +113,18 @@ func TestShamirShardSliceOperationsRootKey(t *testing.T) {
 }
 
 func TestComputeRootKeyFromShards_InvalidInput(t *testing.T) {
-	// Save original environment
+	// Save the original environment
 	originalThreshold := os.Getenv("SPIKE_NEXUS_SHAMIR_THRESHOLD")
 	defer func() {
 		if originalThreshold != "" {
-			os.Setenv("SPIKE_NEXUS_SHAMIR_THRESHOLD", originalThreshold)
+			_ = os.Setenv("SPIKE_NEXUS_SHAMIR_THRESHOLD", originalThreshold)
 		} else {
-			os.Unsetenv("SPIKE_NEXUS_SHAMIR_THRESHOLD")
+			_ = os.Unsetenv("SPIKE_NEXUS_SHAMIR_THRESHOLD")
 		}
 	}()
 
 	// Set a valid threshold
-	os.Setenv("SPIKE_NEXUS_SHAMIR_THRESHOLD", "2")
+	_ = os.Setenv("SPIKE_NEXUS_SHAMIR_THRESHOLD", "2")
 
 	tests := []struct {
 		name        string
@@ -186,10 +187,11 @@ func TestComputeRootKeyFromShards_InvalidInput(t *testing.T) {
 
 			result := ComputeRootKeyFromShards(shards)
 
-			// If we get here, check result
+			// If we get here, check the result
 			if result == nil {
 				t.Error("Expected non-nil result")
 			}
+			// noinspection GoBoolExpressions
 			if len(result) != crypto.AES256KeySize {
 				t.Errorf("Expected result length %d, got %d", crypto.AES256KeySize, len(result))
 			}
@@ -198,18 +200,18 @@ func TestComputeRootKeyFromShards_InvalidInput(t *testing.T) {
 }
 
 func TestComputeRootKeyFromShards_ValidInput(t *testing.T) {
-	// Save original environment
+	// Save the original environment
 	originalThreshold := os.Getenv("SPIKE_NEXUS_SHAMIR_THRESHOLD")
 	defer func() {
 		if originalThreshold != "" {
-			os.Setenv("SPIKE_NEXUS_SHAMIR_THRESHOLD", originalThreshold)
+			_ = os.Setenv("SPIKE_NEXUS_SHAMIR_THRESHOLD", originalThreshold)
 		} else {
-			os.Unsetenv("SPIKE_NEXUS_SHAMIR_THRESHOLD")
+			_ = os.Unsetenv("SPIKE_NEXUS_SHAMIR_THRESHOLD")
 		}
 	}()
 
-	// Set threshold to 2
-	os.Setenv("SPIKE_NEXUS_SHAMIR_THRESHOLD", "2")
+	// Set the threshold to 2
+	_ = os.Setenv("SPIKE_NEXUS_SHAMIR_THRESHOLD", "2")
 
 	// This test will likely fail because we need actual valid Shamir shares
 	// that were generated from the same secret. Here we test the structure
@@ -240,10 +242,11 @@ func TestComputeRootKeyFromShards_ValidInput(t *testing.T) {
 
 	result := ComputeRootKeyFromShards(shards)
 
-	// If we get here without panic, validate result
+	// If we get here without `panic`, validate `result`
 	if result == nil {
 		t.Error("Expected non-nil result")
 	}
+	// noinspection GoBoolExpressions
 	if len(result) != crypto.AES256KeySize {
 		t.Errorf("Expected result length %d, got %d", crypto.AES256KeySize, len(result))
 	}
@@ -267,11 +270,13 @@ func TestShamirShardDataTypes(t *testing.T) {
 	}
 
 	// Test Value array size
+	// noinspection GoBoolExpressions
 	if len(shard.Value) != 32 {
 		t.Errorf("Value array should be 32 bytes, got %d", len(shard.Value))
 	}
 
 	// Test crypto constant
+	// noinspection GoBoolExpressions
 	if crypto.AES256KeySize != 32 {
 		t.Errorf("Expected AES256KeySize to be 32, got %d", crypto.AES256KeySize)
 	}
@@ -296,7 +301,7 @@ func TestShamirShardComparison(t *testing.T) {
 		t.Error("Shards with different IDs should not have equal IDs")
 	}
 
-	// Test pointer comparison (different pointers even with same content)
+	// Test pointer comparison (different pointers even with the same content)
 	if shard1.Value == shard2.Value {
 		t.Error("Different pointers should not be equal")
 	}
@@ -311,7 +316,7 @@ func TestShamirShardComparison(t *testing.T) {
 }
 
 func TestGroupP256Operations(t *testing.T) {
-	// Test operations with group.P256 (as used in ComputeRootKeyFromShards)
+	// Test operations with `group.P256` (as used in ComputeRootKeyFromShards)
 	g := group.P256
 
 	// Test creating scalars
@@ -326,24 +331,30 @@ func TestGroupP256Operations(t *testing.T) {
 	}
 
 	// Test setting values
-	scalar1.SetUint64(123)
-	scalar2.SetUint64(456)
+	if scalar1 != nil {
+		scalar1.SetUint64(123)
+	}
+	if scalar2 != nil {
+		scalar2.SetUint64(456)
+	}
 
 	// Test that they can be marshaled/unmarshaled
-	data1, err := scalar1.MarshalBinary()
-	if err != nil {
-		t.Errorf("MarshalBinary failed: %v", err)
-	}
+	if scalar1 != nil {
+		data1, err := scalar1.MarshalBinary()
+		if err != nil {
+			t.Errorf("MarshalBinary failed: %v", err)
+		}
 
-	scalar3 := g.NewScalar()
-	err = scalar3.UnmarshalBinary(data1)
-	if err != nil {
-		t.Errorf("UnmarshalBinary failed: %v", err)
-	}
+		scalar3 := g.NewScalar()
+		err = scalar3.UnmarshalBinary(data1)
+		if err != nil {
+			t.Errorf("UnmarshalBinary failed: %v", err)
+		}
 
-	// Test that unmarshaled scalar equals original
-	if !scalar1.IsEqual(scalar3) {
-		t.Error("Unmarshaled scalar should equal original")
+		// Test that unmarshaled scalar equals to the original
+		if !scalar1.IsEqual(scalar3) {
+			t.Error("Unmarshaled scalar should equal original")
+		}
 	}
 }
 
@@ -354,9 +365,11 @@ func TestArrayOperations(t *testing.T) {
 	var arr1 [crypto.AES256KeySize]byte
 	arr2 := [crypto.AES256KeySize]byte{}
 
+	// noinspection GoBoolExpressions
 	if len(arr1) != crypto.AES256KeySize {
 		t.Errorf("Array length should be %d, got %d", crypto.AES256KeySize, len(arr1))
 	}
+	// noinspection GoBoolExpressions
 	if len(arr2) != crypto.AES256KeySize {
 		t.Errorf("Array length should be %d, got %d", crypto.AES256KeySize, len(arr2))
 	}
@@ -380,11 +393,12 @@ func TestArrayOperations(t *testing.T) {
 	if ptr == nil {
 		t.Error("Pointer should not be nil")
 	}
+	// noinspection GoBoolExpressions
 	if len(ptr) != crypto.AES256KeySize {
 		t.Errorf("Pointer array length should be %d, got %d", crypto.AES256KeySize, len(ptr))
 	}
 
-	// Test modification through pointer
+	// Test modification through a pointer
 	ptr[0] = 255
 	if arr1[0] != 255 {
 		t.Error("Modification through pointer should affect original array")
@@ -396,9 +410,9 @@ func TestEnvironmentThresholdHandling(t *testing.T) {
 	originalThreshold := os.Getenv("SPIKE_NEXUS_SHAMIR_THRESHOLD")
 	defer func() {
 		if originalThreshold != "" {
-			os.Setenv("SPIKE_NEXUS_SHAMIR_THRESHOLD", originalThreshold)
+			_ = os.Setenv("SPIKE_NEXUS_SHAMIR_THRESHOLD", originalThreshold)
 		} else {
-			os.Unsetenv("SPIKE_NEXUS_SHAMIR_THRESHOLD")
+			_ = os.Unsetenv("SPIKE_NEXUS_SHAMIR_THRESHOLD")
 		}
 	}()
 
@@ -406,17 +420,17 @@ func TestEnvironmentThresholdHandling(t *testing.T) {
 
 	for _, threshold := range testThresholds {
 		t.Run("threshold_"+threshold, func(t *testing.T) {
-			os.Setenv("SPIKE_NEXUS_SHAMIR_THRESHOLD", threshold)
+			_ = os.Setenv("SPIKE_NEXUS_SHAMIR_THRESHOLD", threshold)
 
 			// Test that threshold-1 calculation works
 			// (This is used in ComputeRootKeyFromShards)
 			// We can't easily test the actual function due to complexity,
 			// but we can verify the environment setup
 
-			// The function would use: threshold := env.ShamirThreshold()
+			// The function would use: `threshold := env.ShamirThreshold()`
 			// Then: secretsharing.Recover(uint(threshold-1), shares)
 
-			// Just verify environment is set correctly
+			// Just verify the environment is set correctly
 			envValue := os.Getenv("SPIKE_NEXUS_SHAMIR_THRESHOLD")
 			if envValue != threshold {
 				t.Errorf("Expected threshold %s, got %s", threshold, envValue)
@@ -430,7 +444,7 @@ func TestMemoryLayout(t *testing.T) {
 	var arr [crypto.AES256KeySize]byte
 	ptr := &arr
 
-	// Test that pointer and array have same underlying data
+	// Test that pointer and array have the same underlying data
 	arr[10] = 42
 	if ptr[10] != 42 {
 		t.Error("Pointer should access same memory as array")
@@ -441,7 +455,7 @@ func TestMemoryLayout(t *testing.T) {
 		t.Error("Array should reflect changes through pointer")
 	}
 
-	// Test slice from array
+	// Test slice from an array
 	slice := arr[:]
 	slice[5] = 99
 	if arr[5] != 99 {

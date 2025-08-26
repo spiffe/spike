@@ -12,18 +12,18 @@ import (
 )
 
 func TestInitialize_SQLiteBackend(t *testing.T) {
-	// Save original environment variable
+	// Save the original environment variable
 	originalStore := os.Getenv("SPIKE_NEXUS_BACKEND_STORE")
 	defer func() {
 		if originalStore != "" {
-			os.Setenv("SPIKE_NEXUS_BACKEND_STORE", originalStore)
+			_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", originalStore)
 		} else {
-			os.Unsetenv("SPIKE_NEXUS_BACKEND_STORE")
+			_ = os.Unsetenv("SPIKE_NEXUS_BACKEND_STORE")
 		}
 	}()
 
 	// Set to SQLite backend
-	os.Setenv("SPIKE_NEXUS_BACKEND_STORE", "sqlite")
+	_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", "sqlite")
 
 	// Verify the environment is set correctly
 	if env.BackendStoreType() != env.Sqlite {
@@ -40,18 +40,18 @@ func TestInitialize_SQLiteBackend(t *testing.T) {
 }
 
 func TestInitialize_LiteBackend(t *testing.T) {
-	// Save original environment variable
+	// Save the original environment variable
 	originalStore := os.Getenv("SPIKE_NEXUS_BACKEND_STORE")
 	defer func() {
 		if originalStore != "" {
-			os.Setenv("SPIKE_NEXUS_BACKEND_STORE", originalStore)
+			_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", originalStore)
 		} else {
-			os.Unsetenv("SPIKE_NEXUS_BACKEND_STORE")
+			_ = os.Unsetenv("SPIKE_NEXUS_BACKEND_STORE")
 		}
 	}()
 
 	// Set to Lite backend
-	os.Setenv("SPIKE_NEXUS_BACKEND_STORE", "lite")
+	_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", "lite")
 
 	// Verify the environment is set correctly
 	if env.BackendStoreType() != env.Lite {
@@ -68,18 +68,18 @@ func TestInitialize_LiteBackend(t *testing.T) {
 }
 
 func TestInitialize_MemoryBackend(t *testing.T) {
-	// Save original environment variable
+	// Save the original environment variable
 	originalStore := os.Getenv("SPIKE_NEXUS_BACKEND_STORE")
 	defer func() {
 		if originalStore != "" {
-			os.Setenv("SPIKE_NEXUS_BACKEND_STORE", originalStore)
+			_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", originalStore)
 		} else {
-			os.Unsetenv("SPIKE_NEXUS_BACKEND_STORE")
+			_ = os.Unsetenv("SPIKE_NEXUS_BACKEND_STORE")
 		}
 	}()
 
 	// Set to Memory backend
-	os.Setenv("SPIKE_NEXUS_BACKEND_STORE", "memory")
+	_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", "memory")
 
 	// Verify the environment is set correctly
 	if env.BackendStoreType() != env.Memory {
@@ -91,25 +91,25 @@ func TestInitialize_MemoryBackend(t *testing.T) {
 	// 2. Call state.Initialize(nil)
 	//
 	// This depends on state management which we can't easily test without mocking
-	// We skip this test since it would depend on internal state
+	// We skip this test since it would depend on the internal state
 	t.Skip("Skipping Memory backend test - requires state management mocking")
 }
 
 func TestInitialize_InvalidBackend(t *testing.T) {
-	// Save original environment variable
+	// Save the original environment variable
 	originalStore := os.Getenv("SPIKE_NEXUS_BACKEND_STORE")
 	defer func() {
 		if originalStore != "" {
-			os.Setenv("SPIKE_NEXUS_BACKEND_STORE", originalStore)
+			_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", originalStore)
 		} else {
-			os.Unsetenv("SPIKE_NEXUS_BACKEND_STORE")
+			_ = os.Unsetenv("SPIKE_NEXUS_BACKEND_STORE")
 		}
 	}()
 
 	// Set to invalid backend
-	os.Setenv("SPIKE_NEXUS_BACKEND_STORE", "invalid")
+	_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", "invalid")
 
-	// The Initialize function with invalid backend would call log.FatalLn
+	// The Initialize function with an invalid backend would call log.FatalLn
 	// which calls os.Exit() and terminates the process
 	// We skip this test since it would terminate the test runner
 	t.Skip("Skipping invalid backend test - would call os.Exit() via log.FatalLn")
@@ -118,13 +118,13 @@ func TestInitialize_InvalidBackend(t *testing.T) {
 func TestBackendStoreTypeDetection(t *testing.T) {
 	// Test the backend store type detection logic used in Initialize()
 
-	// Save original environment variable
+	// Save the original environment variable
 	originalStore := os.Getenv("SPIKE_NEXUS_BACKEND_STORE")
 	defer func() {
 		if originalStore != "" {
-			os.Setenv("SPIKE_NEXUS_BACKEND_STORE", originalStore)
+			_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", originalStore)
 		} else {
-			os.Unsetenv("SPIKE_NEXUS_BACKEND_STORE")
+			_ = os.Unsetenv("SPIKE_NEXUS_BACKEND_STORE")
 		}
 	}()
 
@@ -160,7 +160,7 @@ func TestBackendStoreTypeDetection(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			os.Setenv("SPIKE_NEXUS_BACKEND_STORE", tt.backendStore)
+			_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", tt.backendStore)
 
 			// Test backend type detection
 			backendType := env.BackendStoreType()
@@ -210,21 +210,21 @@ func TestEnvironmentVariableHandling(t *testing.T) {
 	originalStore := os.Getenv("SPIKE_NEXUS_BACKEND_STORE")
 	defer func() {
 		if originalStore != "" {
-			os.Setenv("SPIKE_NEXUS_BACKEND_STORE", originalStore)
+			_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", originalStore)
 		} else {
-			os.Unsetenv("SPIKE_NEXUS_BACKEND_STORE")
+			_ = os.Unsetenv("SPIKE_NEXUS_BACKEND_STORE")
 		}
 	}()
 
-	// Test with unset environment variable (should have default behavior)
-	os.Unsetenv("SPIKE_NEXUS_BACKEND_STORE")
+	// Test with unset environment variable (should have the default behavior)
+	_ = os.Unsetenv("SPIKE_NEXUS_BACKEND_STORE")
 	defaultType := env.BackendStoreType()
 	t.Logf("Default backend store type: %s", string(defaultType))
 
 	// Test with valid values
 	validValues := []string{"sqlite", "lite", "memory"}
 	for _, value := range validValues {
-		os.Setenv("SPIKE_NEXUS_BACKEND_STORE", value)
+		_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", value)
 		resultType := env.BackendStoreType()
 		if string(resultType) != value {
 			t.Errorf("Expected backend type %s, got %s", value, string(resultType))
@@ -232,7 +232,7 @@ func TestEnvironmentVariableHandling(t *testing.T) {
 	}
 
 	// Test with invalid value
-	os.Setenv("SPIKE_NEXUS_BACKEND_STORE", "invalid")
+	_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", "invalid")
 	invalidType := env.BackendStoreType()
 	t.Logf("Invalid backend store type returns: %s", string(invalidType))
 }
@@ -297,23 +297,29 @@ func TestStoreTypeComparison(t *testing.T) {
 	// Test store type comparison operations used in Initialize()
 
 	// Test equality comparisons
+	// noinspection GoBoolExpressions
 	if env.Sqlite == env.Lite {
 		t.Error("Sqlite should not equal Lite")
 	}
+	// noinspection GoBoolExpressions
 	if env.Sqlite == env.Memory {
 		t.Error("Sqlite should not equal Memory")
 	}
+	// noinspection GoBoolExpressions
 	if env.Lite == env.Memory {
 		t.Error("Lite should not equal Memory")
 	}
 
 	// Test self-equality
+	// noinspection GoBoolExpressions
 	if env.Sqlite != env.Sqlite {
 		t.Error("Sqlite should equal itself")
 	}
+	// noinspection GoBoolExpressions
 	if env.Lite != env.Lite {
 		t.Error("Lite should equal itself")
 	}
+	// noinspection GoBoolExpressions
 	if env.Memory != env.Memory {
 		t.Error("Memory should equal itself")
 	}

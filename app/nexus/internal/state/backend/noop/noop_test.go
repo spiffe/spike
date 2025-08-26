@@ -340,7 +340,7 @@ func TestNoopStore_StorePolicy(t *testing.T) {
 				ID:              "read-policy",
 				Name:            "Read Policy",
 				SPIFFEIDPattern: "spiffe://example.org/reader/*",
-				PathPattern:     "/secrets/*",
+				PathPattern:     "secrets/*",
 				Permissions:     []data.PolicyPermission{data.PermissionRead},
 			},
 		},
@@ -376,7 +376,7 @@ func TestNoopStore_StorePolicyWithTimeout(t *testing.T) {
 		ID:              "test-policy",
 		Name:            "Test Policy",
 		SPIFFEIDPattern: "spiffe://example.org/test/*",
-		PathPattern:     "/test/*",
+		PathPattern:     "test/*",
 		Permissions:     []data.PolicyPermission{data.PermissionRead},
 	}
 
@@ -472,7 +472,7 @@ func TestNoopStore_ConcurrentOperations(t *testing.T) {
 				ID:              "concurrent-policy",
 				Name:            "Concurrent Policy",
 				SPIFFEIDPattern: "spiffe://example.org/concurrent/*",
-				PathPattern:     "/concurrent/*",
+				PathPattern:     "concurrent/*",
 				Permissions:     []data.PolicyPermission{data.PermissionRead},
 			}
 			store.StorePolicy(ctx, policy)
@@ -544,7 +544,7 @@ func TestNoopStore_MultipleInstances(t *testing.T) {
 				ID:              "test-policy",
 				Name:            "Test Policy",
 				SPIFFEIDPattern: "spiffe://example.org/test/*",
-				PathPattern:     "/test/*",
+				PathPattern:     "test/*",
 				Permissions:     []data.PolicyPermission{data.PermissionRead},
 			}
 			err = store.StorePolicy(ctx, testPolicy)

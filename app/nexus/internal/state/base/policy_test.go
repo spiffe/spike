@@ -129,7 +129,7 @@ func TestCheckAccess_SpecificPatterns(t *testing.T) {
 		specificPolicy := data.Policy{
 			Name:            "specific-access",
 			SPIFFEIDPattern: "spiffe://example.org/service.*",
-			PathPattern:     "/app/.*",
+			PathPattern:     "app/.*",
 			Permissions:     []data.PolicyPermission{data.PermissionRead, data.PermissionWrite},
 		}
 
@@ -224,7 +224,7 @@ func TestCreatePolicy_ValidPolicy(t *testing.T) {
 		policy := data.Policy{
 			Name:            "test-policy",
 			SPIFFEIDPattern: "spiffe://example.org/.*",
-			PathPattern:     "/test/.*",
+			PathPattern:     "test/.*",
 			Permissions:     []data.PolicyPermission{data.PermissionRead, data.PermissionWrite},
 		}
 
@@ -371,7 +371,7 @@ func TestCreatePolicy_InvalidRegexPatterns(t *testing.T) {
 			{
 				name:            "invalid spiffeid regex",
 				spiffeIDPattern: "[invalid-regex",
-				pathPattern:     "/valid/.*",
+				pathPattern:     "valid/.*",
 				expectError:     true,
 			},
 			{
@@ -383,7 +383,7 @@ func TestCreatePolicy_InvalidRegexPatterns(t *testing.T) {
 			{
 				name:            "valid patterns",
 				spiffeIDPattern: "spiffe://example.org/.*",
-				pathPattern:     "/test/.*",
+				pathPattern:     "test/.*",
 				expectError:     false,
 			},
 		}
@@ -649,7 +649,7 @@ func TestListPoliciesByPath_MatchingPolicies(t *testing.T) {
 			{
 				Name:            "non-matching-policy",
 				SPIFFEIDPattern: "*",
-				PathPattern:     "/other/.*",
+				PathPattern:     "other/.*",
 				Permissions:     []data.PolicyPermission{data.PermissionRead},
 			},
 		}
@@ -712,7 +712,7 @@ func TestListPoliciesByPath_NoMatches(t *testing.T) {
 		policy := data.Policy{
 			Name:            "different-path-policy",
 			SPIFFEIDPattern: "*",
-			PathPattern:     "/app/.*",
+			PathPattern:     "app/.*",
 			Permissions:     []data.PolicyPermission{data.PermissionRead},
 		}
 
@@ -751,19 +751,19 @@ func TestListPoliciesBySPIFFEID_MatchingPolicies(t *testing.T) {
 			{
 				Name:            "matching-spiffeid-policy-1",
 				SPIFFEIDPattern: spiffeIDPattern,
-				PathPattern:     "/app/.*",
+				PathPattern:     "app/.*",
 				Permissions:     []data.PolicyPermission{data.PermissionRead},
 			},
 			{
 				Name:            "matching-spiffeid-policy-2",
 				SPIFFEIDPattern: spiffeIDPattern,
-				PathPattern:     "/other/.*",
+				PathPattern:     "other/.*",
 				Permissions:     []data.PolicyPermission{data.PermissionWrite},
 			},
 			{
 				Name:            "non-matching-spiffeid-policy",
 				SPIFFEIDPattern: "spiffe://other.org/.*",
-				PathPattern:     "/app/.*",
+				PathPattern:     "app/.*",
 				Permissions:     []data.PolicyPermission{data.PermissionRead},
 			},
 		}
@@ -862,7 +862,7 @@ func TestPolicyRegexCompilation(t *testing.T) {
 		policy := data.Policy{
 			Name:            "regex-test-policy",
 			SPIFFEIDPattern: "spiffe://example\\.org/service-[0-9]+",
-			PathPattern:     "/app/service-[a-z]+/.*",
+			PathPattern:     "app/service-[a-z]+/.*",
 			Permissions:     []data.PolicyPermission{data.PermissionRead},
 		}
 
@@ -954,7 +954,7 @@ func BenchmarkCreatePolicy(b *testing.B) {
 		policy := data.Policy{
 			Name:            fmt.Sprintf("benchmark-policy-%d", i),
 			SPIFFEIDPattern: "spiffe://example.org/.*",
-			PathPattern:     "/test/.*",
+			PathPattern:     "test/.*",
 			Permissions:     []data.PolicyPermission{data.PermissionRead},
 		}
 

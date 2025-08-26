@@ -31,7 +31,7 @@ import (
 //		spike policy list
 //		spike policy get abc123
 //		spike policy get --name=my-policy
-//		spike policy create --name=new-policy --path="/secret/*" \
+//		spike policy create --name=new-policy --path="secret/*" \
 //	 	--spiffeid="spiffe://example.org/*" --permissions=read,write
 //		spike policy delete abc123
 //		spike policy delete --name=my-policy

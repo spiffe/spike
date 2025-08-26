@@ -224,7 +224,7 @@ func TestDataStore_Implements_Backend_Interface(t *testing.T) {
 		ID:              "test-policy",
 		Name:            "test policy",
 		SPIFFEIDPattern: "spiffe://example.org/test",
-		PathPattern:     "/test/*",
+		PathPattern:     "test/*",
 		Permissions:     []data.PolicyPermission{data.PermissionRead},
 	}
 	err = ds.StorePolicy(ctx, testPolicy)
@@ -375,7 +375,7 @@ func TestDataStore_EmbeddedNoopStore(t *testing.T) {
 		ID:              "test-policy",
 		Name:            "test policy",
 		SPIFFEIDPattern: "spiffe://example.org/test",
-		PathPattern:     "/test/*",
+		PathPattern:     "test/*",
 		Permissions:     []data.PolicyPermission{data.PermissionRead},
 	}
 

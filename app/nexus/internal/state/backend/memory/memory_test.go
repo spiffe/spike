@@ -278,7 +278,7 @@ func TestInMemoryStore_StoreAndLoadPolicy(t *testing.T) {
 		ID:              "test-policy-1",
 		Name:            "Test Policy",
 		SPIFFEIDPattern: "spiffe://example.org/app/*",
-		PathPattern:     "/app/secrets/*",
+		PathPattern:     "app/secrets/*",
 		Permissions:     []data.PolicyPermission{data.PermissionRead, data.PermissionWrite},
 	}
 
@@ -333,7 +333,7 @@ func TestInMemoryStore_StorePolicyEmptyID(t *testing.T) {
 		ID:              "", // Empty ID
 		Name:            "Test Policy",
 		SPIFFEIDPattern: "spiffe://example.org/app/*",
-		PathPattern:     "/app/secrets/*",
+		PathPattern:     "app/secrets/*",
 		Permissions:     []data.PolicyPermission{data.PermissionRead},
 	}
 
@@ -376,14 +376,14 @@ func TestInMemoryStore_LoadAllPolicies(t *testing.T) {
 			ID:              "policy-1",
 			Name:            "Read Policy",
 			SPIFFEIDPattern: "spiffe://example.org/reader/*",
-			PathPattern:     "/read/*",
+			PathPattern:     "read/*",
 			Permissions:     []data.PolicyPermission{data.PermissionRead},
 		},
 		"policy-2": {
 			ID:              "policy-2",
 			Name:            "Write Policy",
 			SPIFFEIDPattern: "spiffe://example.org/writer/*",
-			PathPattern:     "/write/*",
+			PathPattern:     "write/*",
 			Permissions:     []data.PolicyPermission{data.PermissionWrite},
 		},
 		"policy-3": {
@@ -464,7 +464,7 @@ func TestInMemoryStore_DeletePolicy(t *testing.T) {
 		ID:              "deletable-policy",
 		Name:            "Deletable Policy",
 		SPIFFEIDPattern: "spiffe://example.org/temp/*",
-		PathPattern:     "/temp/*",
+		PathPattern:     "secrets/temp/*",
 		Permissions:     []data.PolicyPermission{data.PermissionRead},
 	}
 
@@ -578,7 +578,7 @@ func TestInMemoryStore_ConcurrentPolicyOperations(t *testing.T) {
 					ID:              policyID,
 					Name:            fmt.Sprintf("Concurrent Policy %d-%d", goroutineID, j),
 					SPIFFEIDPattern: fmt.Sprintf("spiffe://example.org/goroutine-%d/*", goroutineID),
-					PathPattern:     fmt.Sprintf("/concurrent/%d/*", goroutineID),
+					PathPattern:     fmt.Sprintf("concurrent/%d/*", goroutineID),
 					Permissions:     []data.PolicyPermission{data.PermissionRead},
 				}
 
@@ -639,7 +639,7 @@ func TestInMemoryStore_MixedConcurrentOperations(t *testing.T) {
 				ID:              fmt.Sprintf("mixed-policy-%d", i),
 				Name:            fmt.Sprintf("Mixed Policy %d", i),
 				SPIFFEIDPattern: "spiffe://example.org/mixed/*",
-				PathPattern:     fmt.Sprintf("/mixed/%d/*", i),
+				PathPattern:     fmt.Sprintf("mixed/%d/*", i),
 				Permissions:     []data.PolicyPermission{data.PermissionRead},
 			}
 			store.StorePolicy(ctx, policy)
