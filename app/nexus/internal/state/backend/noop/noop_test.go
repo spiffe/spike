@@ -448,13 +448,13 @@ func TestNoopStore_ConcurrentOperations(t *testing.T) {
 			defer wg.Done()
 
 			// Test all methods concurrently
-			store.Initialize(ctx)
-			store.Close(ctx)
-			store.LoadSecret(ctx, "concurrent/secret")
-			store.LoadAllSecrets(ctx)
-			store.LoadPolicy(ctx, "concurrent-policy")
-			store.LoadAllPolicies(ctx)
-			store.DeletePolicy(ctx, "concurrent-delete")
+			_ = store.Initialize(ctx)
+			_ = store.Close(ctx)
+			_, _ = store.LoadSecret(ctx, "concurrent/secret")
+			_, _ = store.LoadAllSecrets(ctx)
+			_, _ = store.LoadPolicy(ctx, "concurrent-policy")
+			_, _ = store.LoadAllPolicies(ctx)
+			_ = store.DeletePolicy(ctx, "concurrent-delete")
 			store.GetCipher()
 
 			// Store operations
@@ -466,7 +466,7 @@ func TestNoopStore_ConcurrentOperations(t *testing.T) {
 					},
 				},
 			}
-			store.StoreSecret(ctx, "concurrent/test", secret)
+			_ = store.StoreSecret(ctx, "concurrent/test", secret)
 
 			policy := data.Policy{
 				ID:              "concurrent-policy",
@@ -475,7 +475,7 @@ func TestNoopStore_ConcurrentOperations(t *testing.T) {
 				PathPattern:     "concurrent/*",
 				Permissions:     []data.PolicyPermission{data.PermissionRead},
 			}
-			store.StorePolicy(ctx, policy)
+			_ = store.StorePolicy(ctx, policy)
 		}(i)
 	}
 
@@ -587,22 +587,22 @@ func TestNoopStore_StressTest(t *testing.T) {
 		// Mix of all operations
 		switch i % 8 {
 		case 0:
-			store.Initialize(ctx)
+			_ = store.Initialize(ctx)
 		case 1:
-			store.LoadSecret(ctx, "stress/test")
+			_, _ = store.LoadSecret(ctx, "stress/test")
 		case 2:
-			store.LoadAllSecrets(ctx)
+			_, _ = store.LoadAllSecrets(ctx)
 		case 3:
 			secret := kv.Value{
 				Versions: map[int]kv.Version{
 					1: {Data: map[string]string{"stress": "test"}, Version: 1},
 				},
 			}
-			store.StoreSecret(ctx, "stress/test", secret)
+			_ = store.StoreSecret(ctx, "stress/test", secret)
 		case 4:
-			store.LoadPolicy(ctx, "stress-policy")
+			_, _ = store.LoadPolicy(ctx, "stress-policy")
 		case 5:
-			store.LoadAllPolicies(ctx)
+			_, _ = store.LoadAllPolicies(ctx)
 		case 6:
 			policy := data.Policy{
 				ID:              "stress-policy",
@@ -611,15 +611,15 @@ func TestNoopStore_StressTest(t *testing.T) {
 				PathPattern:     "/stress/*",
 				Permissions:     []data.PolicyPermission{data.PermissionRead},
 			}
-			store.StorePolicy(ctx, policy)
+			_ = store.StorePolicy(ctx, policy)
 		case 7:
-			store.DeletePolicy(ctx, "stress-policy")
+			_ = store.DeletePolicy(ctx, "stress-policy")
 		}
 	}
 
 	// Final operations
 	store.GetCipher()
-	store.Close(ctx)
+	_ = store.Close(ctx)
 
 	t.Logf("Completed %d stress test operations successfully", numOperations)
 }
