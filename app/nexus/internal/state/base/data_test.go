@@ -5,7 +5,6 @@
 package base
 
 import (
-	"crypto/rand"
 	"sync"
 	"testing"
 	"time"
@@ -14,44 +13,8 @@ import (
 	"github.com/spiffe/spike-sdk-go/security/mem"
 )
 
-// Helper function to reset the root key to zero state for tests
-func resetRootKey() {
-	rootKeyMu.Lock()
-	defer rootKeyMu.Unlock()
-	for i := range rootKey {
-		rootKey[i] = 0
-	}
-}
-
-// Helper function to set root key directly for testing (bypasses validation)
-func setRootKeyDirect(key *[crypto.AES256KeySize]byte) {
-	rootKeyMu.Lock()
-	defer rootKeyMu.Unlock()
-	if key != nil {
-		copy(rootKey[:], key[:])
-	}
-}
-
-// Helper function to create a test key with random data
-func createTestKey(t *testing.T) *[crypto.AES256KeySize]byte {
-	key := &[crypto.AES256KeySize]byte{}
-	if _, err := rand.Read(key[:]); err != nil {
-		t.Fatalf("Failed to generate test key: %v", err)
-	}
-	return key
-}
-
-// Helper function to create a test key with specific pattern
-func createPatternKey(pattern byte) *[crypto.AES256KeySize]byte {
-	key := &[crypto.AES256KeySize]byte{}
-	for i := range key {
-		key[i] = pattern
-	}
-	return key
-}
-
 func TestRootKeyZero_InitiallyZero(t *testing.T) {
-	// Reset to ensure clean state
+	// Reset to ensure a clean state
 	resetRootKey()
 
 	// Check initial state - should be zero
@@ -61,7 +24,7 @@ func TestRootKeyZero_InitiallyZero(t *testing.T) {
 }
 
 func TestRootKeyZero_NonZeroKey(t *testing.T) {
-	// Reset to clean state
+	// Reset to a clean state
 	resetRootKey()
 
 	// Set a non-zero key
@@ -78,7 +41,7 @@ func TestRootKeyZero_NonZeroKey(t *testing.T) {
 }
 
 func TestRootKeyZero_PartiallyZeroKey(t *testing.T) {
-	// Reset to clean state
+	// Reset to a clean state
 	resetRootKey()
 
 	// Create key with only first byte non-zero
@@ -96,7 +59,7 @@ func TestRootKeyZero_PartiallyZeroKey(t *testing.T) {
 }
 
 func TestRootKeyZero_LastByteNonZero(t *testing.T) {
-	// Reset to clean state
+	// Reset to a clean state
 	resetRootKey()
 
 	// Create key with only last byte non-zero
@@ -114,7 +77,7 @@ func TestRootKeyZero_LastByteNonZero(t *testing.T) {
 }
 
 func TestSetRootKey_ValidKey(t *testing.T) {
-	// Reset to clean state
+	// Reset to a clean state
 	resetRootKey()
 
 	// Create a valid test key
@@ -123,7 +86,7 @@ func TestSetRootKey_ValidKey(t *testing.T) {
 	// Set the key
 	SetRootKey(testKey)
 
-	// Verify key was set
+	// Verify the key was set
 	if RootKeyZero() {
 		t.Error("Root key should not be zero after setting valid key")
 	}
@@ -142,48 +105,48 @@ func TestSetRootKey_ValidKey(t *testing.T) {
 }
 
 func TestSetRootKey_NilKey(t *testing.T) {
-	// Reset to clean state
+	// Reset to a clean state
 	resetRootKey()
 
 	// Attempt to set nil key
 	SetRootKey(nil)
 
-	// Verify key remains zero (operation should be no-op)
+	// Verify the key remains zero (operation should be no-op)
 	if !RootKeyZero() {
 		t.Error("Root key should remain zero when setting nil key")
 	}
 }
 
 func TestSetRootKey_ZeroKey(t *testing.T) {
-	// Reset to clean state
+	// Reset to a clean state
 	resetRootKey()
 
-	// Create zero key
+	// Create a zero key
 	zeroKey := &[crypto.AES256KeySize]byte{} // All zeros
 
-	// Attempt to set zero key
+	// Attempt to set a zero key
 	SetRootKey(zeroKey)
 
-	// Verify key remains zero (operation should be no-op)
+	// Verify the key remains zero (operation should be no-op)
 	if !RootKeyZero() {
 		t.Error("Root key should remain zero when setting zero key")
 	}
 }
 
 func TestSetRootKey_OverwriteExistingKey(t *testing.T) {
-	// Reset to clean state
+	// Reset to a clean state
 	resetRootKey()
 
-	// Set initial key
+	// Set the initial key
 	firstKey := createPatternKey(0xAA)
 	SetRootKey(firstKey)
 
-	// Verify first key was set
+	// Verify the first key was set
 	if RootKeyZero() {
 		t.Fatal("First key should have been set")
 	}
 
-	// Set second key
+	// Set the second key
 	secondKey := createPatternKey(0x55)
 	SetRootKey(secondKey)
 
@@ -201,10 +164,10 @@ func TestSetRootKey_OverwriteExistingKey(t *testing.T) {
 }
 
 func TestSetRootKey_KeyIndependence(t *testing.T) {
-	// Reset to clean state
+	// Reset to a clean state
 	resetRootKey()
 
-	// Create test key
+	// Create the test key
 	testKey := createPatternKey(0x42)
 	originalValue := testKey[0]
 
@@ -214,7 +177,7 @@ func TestSetRootKey_KeyIndependence(t *testing.T) {
 	// Modify the original key after setting
 	testKey[0] = 0x99
 
-	// Verify internal root key wasn't affected
+	// Verify the internal root key wasn't affected
 	rootKeyMu.RLock()
 	if rootKey[0] != originalValue {
 		t.Errorf("Root key should not be affected by changes to source key: expected 0x%02X, got 0x%02X",
@@ -227,14 +190,14 @@ func TestSetRootKey_KeyIndependence(t *testing.T) {
 }
 
 func TestRootKeyNoLock_ReturnsPointer(t *testing.T) {
-	// Reset to clean state
+	// Reset to a clean state
 	resetRootKey()
 
 	// Set a test key
 	testKey := createPatternKey(0x33)
 	setRootKeyDirect(testKey)
 
-	// Get pointer without lock
+	// Get the pointer without a lock
 	ptr := RootKeyNoLock()
 
 	// Verify pointer is not nil
@@ -277,7 +240,7 @@ func TestLockUnlockRootKey_BasicOperation(t *testing.T) {
 }
 
 func TestConcurrentRootKeyAccess(t *testing.T) {
-	// Reset to clean state
+	// Reset to a clean state
 	resetRootKey()
 
 	var wg sync.WaitGroup
@@ -328,7 +291,7 @@ func TestConcurrentLockOperations(t *testing.T) {
 			defer wg.Done()
 			for j := 0; j < 50; j++ {
 				LockRootKey()
-				// Access root key while holding lock
+				// Access the root key while holding the lock
 				_ = RootKeyNoLock()
 				UnlockRootKey()
 			}
@@ -338,7 +301,7 @@ func TestConcurrentLockOperations(t *testing.T) {
 }
 
 func TestMixedConcurrentOperations(t *testing.T) {
-	// Reset to clean state
+	// Reset to a clean state
 	resetRootKey()
 
 	var wg sync.WaitGroup
@@ -379,7 +342,7 @@ func TestMixedConcurrentOperations(t *testing.T) {
 
 	wg.Wait()
 
-	// Verify system is still functional
+	// Verify the system is still functional
 	finalIsZero := RootKeyZero()
 	t.Logf("Final root key state - is zero: %v", finalIsZero)
 
@@ -388,10 +351,10 @@ func TestMixedConcurrentOperations(t *testing.T) {
 }
 
 func TestRootKeyStateTransitions(t *testing.T) {
-	// Reset to clean state
+	// Reset to a clean state
 	resetRootKey()
 
-	// Initial state should be zero
+	// The initial state should be zero
 	if !RootKeyZero() {
 		t.Error("Initial state should be zero")
 	}
@@ -409,7 +372,7 @@ func TestRootKeyStateTransitions(t *testing.T) {
 		t.Error("Setting nil should not change existing valid key to zero")
 	}
 
-	// Try to set zero key - should remain non-zero
+	// Try to set a zero key - should remain non-zero
 	zeroKey := &[crypto.AES256KeySize]byte{}
 	SetRootKey(zeroKey)
 	if RootKeyZero() {
@@ -435,13 +398,13 @@ func TestRootKeyStateTransitions(t *testing.T) {
 }
 
 func TestRootKeyMemoryOperations(t *testing.T) {
-	// Reset to clean state
+	// Reset to a clean state
 	resetRootKey()
 
 	// Test mem.Zeroed32 integration
 	testKey := &[crypto.AES256KeySize]byte{}
 
-	// All zero key should be detected as zeroed
+	// All zero keys should be detected as zeroed
 	if !mem.Zeroed32(testKey) {
 		t.Error("All-zero key should be detected as zeroed")
 	}
@@ -464,10 +427,10 @@ func TestRootKeyMemoryOperations(t *testing.T) {
 }
 
 func TestRootKeyDataIntegrity(t *testing.T) {
-	// Reset to clean state
+	// Reset to a clean state
 	resetRootKey()
 
-	// Create test key with known pattern
+	// Create a test key with a known pattern
 	testKey := &[crypto.AES256KeySize]byte{}
 	for i := range testKey {
 		testKey[i] = byte(i % 256)
