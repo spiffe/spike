@@ -6,9 +6,25 @@ package base
 
 import (
 	"crypto/rand"
-	"github.com/spiffe/spike-sdk-go/crypto"
+	"os"
 	"testing"
+
+	"github.com/spiffe/spike-sdk-go/crypto"
 )
+
+// Helper function to manage environment variables in tests
+func withEnvironment(t *testing.T, key, value string, testFunc func()) {
+	original := os.Getenv(key)
+	_ = os.Setenv(key, value)
+	defer func() {
+		if original != "" {
+			_ = os.Setenv(key, original)
+		} else {
+			_ = os.Unsetenv(key)
+		}
+	}()
+	testFunc()
+}
 
 // Helper function to create a test key with a specific pattern
 func createTestKeyWithPattern(pattern byte) *[crypto.AES256KeySize]byte {

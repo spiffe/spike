@@ -17,9 +17,9 @@ import (
 )
 
 func TestListKeys_EmptyBackend(t *testing.T) {
-	// Test with memory backend that has no secrets
+	// Test with a memory backend that has no secrets
 	withEnvironment(t, "SPIKE_NEXUS_BACKEND_STORE", "memory", func() {
-		// Reset and initialize with memory backend
+		// Reset and initialize with a memory backend
 		resetBackendForTest()
 		persist.InitializeBackend(nil)
 
@@ -31,9 +31,9 @@ func TestListKeys_EmptyBackend(t *testing.T) {
 	})
 }
 
-// Helper function to reset backend state for testing
+// Helper function to reset the backend state for testing
 func resetBackendForTest() {
-	// This will be implemented to ensure clean state between tests
+	// This will be implemented to ensure a clean state between tests
 	// For now, we rely on initializing a fresh memory backend
 }
 
@@ -309,7 +309,7 @@ func TestListKeys_DuplicatePaths(t *testing.T) {
 			t.Fatalf("Failed to store first secret: %v", err)
 		}
 
-		// Overwrite with second version
+		// Overwrite with the second version
 		err = backend.StoreSecret(ctx, path, secret2)
 		if err != nil {
 			t.Fatalf("Failed to store second secret: %v", err)
@@ -423,12 +423,12 @@ func TestListKeys_MemoryReuse(t *testing.T) {
 func BenchmarkListKeys_Empty(b *testing.B) {
 	// Save and restore environment variable
 	original := os.Getenv("SPIKE_NEXUS_BACKEND_STORE")
-	os.Setenv("SPIKE_NEXUS_BACKEND_STORE", "memory")
+	_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", "memory")
 	defer func() {
 		if original != "" {
-			os.Setenv("SPIKE_NEXUS_BACKEND_STORE", original)
+			_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", original)
 		} else {
-			os.Unsetenv("SPIKE_NEXUS_BACKEND_STORE")
+			_ = os.Unsetenv("SPIKE_NEXUS_BACKEND_STORE")
 		}
 	}()
 
@@ -443,12 +443,13 @@ func BenchmarkListKeys_Empty(b *testing.B) {
 
 func BenchmarkListKeys_SmallSet(b *testing.B) {
 	original := os.Getenv("SPIKE_NEXUS_BACKEND_STORE")
-	os.Setenv("SPIKE_NEXUS_BACKEND_STORE", "memory")
+	// TODO: this pattern is repeated a lot; move to a helper function.
+	_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", "memory")
 	defer func() {
 		if original != "" {
-			os.Setenv("SPIKE_NEXUS_BACKEND_STORE", original)
+			_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", original)
 		} else {
-			os.Unsetenv("SPIKE_NEXUS_BACKEND_STORE")
+			_ = os.Unsetenv("SPIKE_NEXUS_BACKEND_STORE")
 		}
 	}()
 
@@ -466,10 +467,10 @@ func BenchmarkListKeys_SmallSet(b *testing.B) {
 		},
 	}
 
-	// Setup small set of secrets
+	// Set up a small set of secrets
 	for i := 0; i < 10; i++ {
 		path := fmt.Sprintf("/bench/secret-%d", i)
-		backend.StoreSecret(ctx, path, testSecret)
+		_ = backend.StoreSecret(ctx, path, testSecret)
 	}
 
 	b.ResetTimer()
@@ -480,12 +481,12 @@ func BenchmarkListKeys_SmallSet(b *testing.B) {
 
 func BenchmarkListKeys_LargeSet(b *testing.B) {
 	original := os.Getenv("SPIKE_NEXUS_BACKEND_STORE")
-	os.Setenv("SPIKE_NEXUS_BACKEND_STORE", "memory")
+	_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", "memory")
 	defer func() {
 		if original != "" {
-			os.Setenv("SPIKE_NEXUS_BACKEND_STORE", original)
+			_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", original)
 		} else {
-			os.Unsetenv("SPIKE_NEXUS_BACKEND_STORE")
+			_ = os.Unsetenv("SPIKE_NEXUS_BACKEND_STORE")
 		}
 	}()
 
@@ -503,28 +504,14 @@ func BenchmarkListKeys_LargeSet(b *testing.B) {
 		},
 	}
 
-	// Setup large set of secrets
+	// Set up a large set of secrets
 	for i := 0; i < 1000; i++ {
 		path := fmt.Sprintf("/bench/large/secret-%04d", i)
-		backend.StoreSecret(ctx, path, testSecret)
+		_ = backend.StoreSecret(ctx, path, testSecret)
 	}
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		ListKeys()
 	}
-}
-
-// Helper function to manage environment variables in tests
-func withEnvironment(t *testing.T, key, value string, testFunc func()) {
-	original := os.Getenv(key)
-	os.Setenv(key, value)
-	defer func() {
-		if original != "" {
-			os.Setenv(key, original)
-		} else {
-			os.Unsetenv(key)
-		}
-	}()
-	testFunc()
 }
