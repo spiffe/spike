@@ -6,9 +6,6 @@ package memory
 
 import (
 	"context"
-	"crypto/aes"
-	"crypto/cipher"
-	"crypto/rand"
 	"fmt"
 	"reflect"
 	"sync"
@@ -19,25 +16,6 @@ import (
 	"github.com/spiffe/spike-sdk-go/kv"
 	"github.com/spiffe/spike/app/nexus/internal/state/backend"
 )
-
-func createTestCipher(t *testing.T) cipher.AEAD {
-	key := make([]byte, 32) // AES-256 key
-	if _, err := rand.Read(key); err != nil {
-		t.Fatalf("Failed to generate test key: %v", err)
-	}
-
-	block, err := aes.NewCipher(key)
-	if err != nil {
-		t.Fatalf("Failed to create cipher: %v", err)
-	}
-
-	gcm, err := cipher.NewGCM(block)
-	if err != nil {
-		t.Fatalf("Failed to create GCM: %v", err)
-	}
-
-	return gcm
-}
 
 func TestNewInMemoryStore(t *testing.T) {
 	testCipher := createTestCipher(t)
@@ -110,7 +88,7 @@ func TestInMemoryStore_StoreAndLoadSecret(t *testing.T) {
 	store := NewInMemoryStore(testCipher, 10)
 	ctx := context.Background()
 
-	// Create test secret
+	// Create a test secret
 	secret := kv.Value{
 		Versions: map[int]kv.Version{
 			1: {
@@ -166,7 +144,7 @@ func TestInMemoryStore_LoadNonExistentSecret(t *testing.T) {
 	// Try to load a secret that doesn't exist
 	loadedSecret, err := store.LoadSecret(ctx, "nonexistent/path")
 
-	// Should not return error for non-existent secret
+	// Should not return error for a non-existent secret
 	if err == nil {
 		t.Log("LoadSecret returned nil error for non-existent secret (expected behavior)")
 	}
@@ -257,7 +235,7 @@ func TestInMemoryStore_LoadAllSecretsEmpty(t *testing.T) {
 	store := NewInMemoryStore(testCipher, 10)
 	ctx := context.Background()
 
-	// Load all secrets from empty store
+	// Load all secrets from the empty store
 	allSecrets, err := store.LoadAllSecrets(ctx)
 	if err != nil {
 		t.Errorf("LoadAllSecrets failed: %v", err)
@@ -273,7 +251,7 @@ func TestInMemoryStore_StoreAndLoadPolicy(t *testing.T) {
 	store := NewInMemoryStore(testCipher, 10)
 	ctx := context.Background()
 
-	// Create test policy
+	// Create a test policy
 	policy := data.Policy{
 		ID:              "test-policy-1",
 		Name:            "Test Policy",
@@ -328,7 +306,7 @@ func TestInMemoryStore_StorePolicyEmptyID(t *testing.T) {
 	store := NewInMemoryStore(testCipher, 10)
 	ctx := context.Background()
 
-	// Create policy with empty ID
+	// Create a policy with empty ID
 	policy := data.Policy{
 		ID:              "", // Empty ID
 		Name:            "Test Policy",
@@ -343,7 +321,7 @@ func TestInMemoryStore_StorePolicyEmptyID(t *testing.T) {
 		t.Error("Expected error when storing policy with empty ID")
 	}
 
-	if err.Error() != "policy ID cannot be empty" {
+	if err != nil && err.Error() != "policy ID cannot be empty" {
 		t.Errorf("Expected specific error message, got: %v", err)
 	}
 }
@@ -443,7 +421,7 @@ func TestInMemoryStore_LoadAllPoliciesEmpty(t *testing.T) {
 	store := NewInMemoryStore(testCipher, 10)
 	ctx := context.Background()
 
-	// Load all policies from empty store
+	// Load all policies from the empty store
 	allPolicies, err := store.LoadAllPolicies(ctx)
 	if err != nil {
 		t.Errorf("LoadAllPolicies failed: %v", err)
@@ -626,7 +604,7 @@ func TestInMemoryStore_MixedConcurrentOperations(t *testing.T) {
 					},
 				},
 			}
-			store.StoreSecret(ctx, path, secret)
+			_ = store.StoreSecret(ctx, path, secret)
 		}
 	}()
 
@@ -642,7 +620,7 @@ func TestInMemoryStore_MixedConcurrentOperations(t *testing.T) {
 				PathPattern:     fmt.Sprintf("mixed/%d/*", i),
 				Permissions:     []data.PolicyPermission{data.PermissionRead},
 			}
-			store.StorePolicy(ctx, policy)
+			_ = store.StorePolicy(ctx, policy)
 		}
 	}()
 
@@ -651,14 +629,14 @@ func TestInMemoryStore_MixedConcurrentOperations(t *testing.T) {
 	go func() {
 		defer wg.Done()
 		for i := 0; i < 10; i++ {
-			store.LoadAllSecrets(ctx)
-			store.LoadAllPolicies(ctx)
+			_, _ = store.LoadAllSecrets(ctx)
+			_, _ = store.LoadAllPolicies(ctx)
 		}
 	}()
 
 	wg.Wait()
 
-	// Verify final state
+	// Verify the final state
 	secrets, err := store.LoadAllSecrets(ctx)
 	if err != nil {
 		t.Errorf("Final LoadAllSecrets failed: %v", err)

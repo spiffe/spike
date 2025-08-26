@@ -2,6 +2,8 @@
 //  \\\\\ Copyright 2024-present SPIKE contributors.
 // \\\\\\\ SPDX-License-Identifier: Apache-2.0
 
+// TODO: add package documentation.
+
 package memory
 
 import (
