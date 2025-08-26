@@ -28,6 +28,7 @@ func Initialize(r *[crypto.AES256KeySize]byte) {
 
 	// The in-memory store does not use a root key to operate.
 	if env.BackendStoreType() == env.Memory {
+		log.Log().Info(fName, "message", "in-memory store. will not create root key")
 		return
 	}
 

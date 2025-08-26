@@ -10,6 +10,15 @@ import (
 	"testing"
 )
 
+// Helper function to create a test key with a specific pattern
+func createTestKeyWithPattern(pattern byte) *[crypto.AES256KeySize]byte {
+	key := &[crypto.AES256KeySize]byte{}
+	for i := range key {
+		key[i] = pattern
+	}
+	return key
+}
+
 // Helper function to reset the root key to zero state for tests
 func resetRootKey() {
 	rootKeyMu.Lock()

@@ -5,7 +5,6 @@
 package base
 
 import (
-	"crypto/rand"
 	"os"
 	"testing"
 
@@ -14,41 +13,19 @@ import (
 	"github.com/spiffe/spike/app/nexus/internal/env"
 )
 
-// Helper function to create a random test key
-func createRandomTestKey(t *testing.T) *[crypto.AES256KeySize]byte {
-	key := &[crypto.AES256KeySize]byte{}
-	if _, err := rand.Read(key[:]); err != nil {
-		t.Fatalf("Failed to generate random test key: %v", err)
-	}
-	return key
-}
-
-// Helper function to create a test key with specific pattern
-func createTestKeyWithPattern(pattern byte) *[crypto.AES256KeySize]byte {
-	key := &[crypto.AES256KeySize]byte{}
-	for i := range key {
-		key[i] = pattern
-	}
-	return key
-}
-
-// Helper function to save and restore environment variables
-func withEnvironment2(t *testing.T, key, value string, testFunc func()) {
-	original := os.Getenv(key)
-	os.Setenv(key, value)
-	defer func() {
-		if original != "" {
-			os.Setenv(key, original)
-		} else {
-			os.Unsetenv(key)
-		}
-	}()
-	testFunc()
-}
+// TODO: to SDK
+//// Helper function to create a random test key
+//func createRandomTestKey(t *testing.T) *[crypto.AES256KeySize]byte {
+//	key := &[crypto.AES256KeySize]byte{}
+//	if _, err := rand.Read(key[:]); err != nil {
+//		t.Fatalf("Failed to generate random test key: %v", err)
+//	}
+//	return key
+//}
 
 func TestInitialize_MemoryBackend_ValidKey(t *testing.T) {
 	withEnvironment(t, "SPIKE_NEXUS_BACKEND_STORE", "memory", func() {
-		// Verify environment is set correctly
+		// Verify the environment is set correctly
 		if env.BackendStoreType() != env.Memory {
 			t.Fatal("Expected Memory backend store type")
 		}
@@ -68,7 +45,7 @@ func TestInitialize_MemoryBackend_NilKey(t *testing.T) {
 	defer resetRootKey()
 
 	withEnvironment(t, "SPIKE_NEXUS_BACKEND_STORE", "memory", func() {
-		// Verify environment is set correctly
+		// Verify the environment is set correctly
 		if env.BackendStoreType() != env.Memory {
 			t.Fatal("Expected Memory backend store type")
 		}
@@ -86,7 +63,7 @@ func TestInitialize_MemoryBackend_NilKey(t *testing.T) {
 
 func TestInitialize_MemoryBackend_ZeroKey(t *testing.T) {
 	withEnvironment(t, "SPIKE_NEXUS_BACKEND_STORE", "memory", func() {
-		// Verify environment is set correctly
+		// Verify the environment is set correctly
 		if env.BackendStoreType() != env.Memory {
 			t.Fatal("Expected Memory backend store type")
 		}
@@ -95,7 +72,7 @@ func TestInitialize_MemoryBackend_ZeroKey(t *testing.T) {
 		// zeroKey := &[crypto.AES256KeySize]byte{} // All zeros
 
 		// With the new defensive approach, memory backends MUST be initialized with nil keys
-		// Passing any non-nil key (including zero key) to memory backend should cause log.FatalLn
+		// Passing any non-nil key (including the zero key) to memory backend should cause log.FatalLn
 		t.Skip("Skipping test that would call log.FatalLn - memory backend must use nil key")
 	})
 }
@@ -106,7 +83,7 @@ func TestInitialize_NonMemoryBackend_ValidKey(t *testing.T) {
 	defer resetRootKey()
 
 	withEnvironment(t, "SPIKE_NEXUS_BACKEND_STORE", "sqlite", func() {
-		// Verify environment is set correctly
+		// Verify the environment is set correctly
 		if env.BackendStoreType() != env.Sqlite {
 			t.Fatal("Expected SQLite backend store type")
 		}
@@ -114,7 +91,7 @@ func TestInitialize_NonMemoryBackend_ValidKey(t *testing.T) {
 		// Create a valid test key
 		testKey := createTestKeyWithPattern(0x42)
 
-		// Initialize with non-memory backend and valid key
+		// Initialize with a non-memory backend and valid key
 		Initialize(testKey)
 
 		// Root key should be set for non-memory backend
@@ -133,7 +110,7 @@ func TestInitialize_NonMemoryBackend_ValidKey(t *testing.T) {
 
 func TestInitialize_NonMemoryBackend_NilKey(t *testing.T) {
 	withEnvironment(t, "SPIKE_NEXUS_BACKEND_STORE", "sqlite", func() {
-		// Verify environment is set correctly
+		// Verify the environment is set correctly
 		if env.BackendStoreType() != env.Sqlite {
 			t.Fatal("Expected SQLite backend store type")
 		}
@@ -146,7 +123,7 @@ func TestInitialize_NonMemoryBackend_NilKey(t *testing.T) {
 
 func TestInitialize_NonMemoryBackend_ZeroKey(t *testing.T) {
 	withEnvironment(t, "SPIKE_NEXUS_BACKEND_STORE", "lite", func() {
-		// Verify environment is set correctly
+		// Verify the environment is set correctly
 		if env.BackendStoreType() != env.Lite {
 			t.Fatal("Expected Lite backend store type")
 		}
@@ -238,13 +215,13 @@ func TestInitialize_DifferentBackendTypes(t *testing.T) {
 			defer resetRootKey()
 
 			withEnvironment(t, "SPIKE_NEXUS_BACKEND_STORE", bt.backendType, func() {
-				// Verify environment is set correctly
+				// Verify the environment is set correctly
 				if env.BackendStoreType() != bt.envType {
 					t.Fatalf("Expected %s backend store type", bt.name)
 				}
 
 				if bt.isMemory {
-					// Memory backend MUST use nil key with new defensive approach
+					// Memory backend MUST use nil key with the new defensive approach
 					Initialize(nil)
 					// Root key should remain zero for memory backend
 					if !RootKeyZero() {
@@ -306,7 +283,7 @@ func TestInitialize_KeyIndependence(t *testing.T) {
 	defer resetRootKey()
 
 	withEnvironment(t, "SPIKE_NEXUS_BACKEND_STORE", "sqlite", func() {
-		// Create test key
+		// Create a test key
 		testKey := createTestKeyWithPattern(0x12)
 		originalFirstByte := testKey[0]
 
@@ -316,7 +293,7 @@ func TestInitialize_KeyIndependence(t *testing.T) {
 		// Modify the original key after initialization
 		testKey[0] = 0x99
 
-		// Verify internal root key wasn't affected
+		// Verify the internal root key wasn't affected
 		rootKeyMu.RLock()
 		if rootKey[0] != originalFirstByte {
 			t.Errorf("Root key should not be affected by changes to source key: expected 0x%02X, got 0x%02X",
@@ -333,7 +310,7 @@ func TestInitialize_MemoryVersusNonMemoryBehavior(t *testing.T) {
 	// Test memory backend
 	resetRootKey()
 	withEnvironment(t, "SPIKE_NEXUS_BACKEND_STORE", "memory", func() {
-		Initialize(nil) // Memory backend MUST use nil key with new defensive approach
+		Initialize(nil) // Memory backend MUST use nil key with the new defensive approach
 		memoryResult := RootKeyZero()
 		if !memoryResult {
 			t.Error("Memory backend should leave root key as zero")
@@ -359,9 +336,9 @@ func TestInitialize_EnvironmentVariableHandling(t *testing.T) {
 	originalValue := os.Getenv("SPIKE_NEXUS_BACKEND_STORE")
 	defer func() {
 		if originalValue != "" {
-			os.Setenv("SPIKE_NEXUS_BACKEND_STORE", originalValue)
+			_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", originalValue)
 		} else {
-			os.Unsetenv("SPIKE_NEXUS_BACKEND_STORE")
+			_ = os.Unsetenv("SPIKE_NEXUS_BACKEND_STORE")
 		}
 	}()
 
@@ -372,7 +349,7 @@ func TestInitialize_EnvironmentVariableHandling(t *testing.T) {
 			resetRootKey()
 			defer resetRootKey()
 
-			os.Setenv("SPIKE_NEXUS_BACKEND_STORE", backendType)
+			_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", backendType)
 
 			// Verify the environment variable is read correctly
 			actualType := env.BackendStoreType()
@@ -384,7 +361,7 @@ func TestInitialize_EnvironmentVariableHandling(t *testing.T) {
 
 			// Test initialization behavior
 			if backendType == "memory" {
-				// Memory backend MUST use nil key with new defensive approach
+				// Memory backend MUST use nil key with the internal defensive approach
 				Initialize(nil)
 			} else {
 				// Non-memory backends require valid keys
@@ -392,9 +369,9 @@ func TestInitialize_EnvironmentVariableHandling(t *testing.T) {
 				Initialize(testKey)
 			}
 
-			// Verify expected behavior based on backend type
+			// Verify expected behavior based on the backend type
 			isRootKeyZero := RootKeyZero()
-			shouldBeZero := (backendType == "memory")
+			shouldBeZero := backendType == "memory"
 
 			if isRootKeyZero != shouldBeZero {
 				t.Errorf("For backend %s, expected root key zero: %v, got: %v",
@@ -408,12 +385,12 @@ func TestInitialize_EnvironmentVariableHandling(t *testing.T) {
 func BenchmarkInitialize_MemoryBackend(b *testing.B) {
 	// Save and restore environment variable
 	original := os.Getenv("SPIKE_NEXUS_BACKEND_STORE")
-	os.Setenv("SPIKE_NEXUS_BACKEND_STORE", "memory")
+	_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", "memory")
 	defer func() {
 		if original != "" {
-			os.Setenv("SPIKE_NEXUS_BACKEND_STORE", original)
+			_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", original)
 		} else {
-			os.Unsetenv("SPIKE_NEXUS_BACKEND_STORE")
+			_ = os.Unsetenv("SPIKE_NEXUS_BACKEND_STORE")
 		}
 	}()
 
@@ -427,12 +404,12 @@ func BenchmarkInitialize_MemoryBackend(b *testing.B) {
 func BenchmarkInitialize_NonMemoryBackend(b *testing.B) {
 	// Save and restore environment variable
 	original := os.Getenv("SPIKE_NEXUS_BACKEND_STORE")
-	os.Setenv("SPIKE_NEXUS_BACKEND_STORE", "sqlite")
+	_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", "sqlite")
 	defer func() {
 		if original != "" {
-			os.Setenv("SPIKE_NEXUS_BACKEND_STORE", original)
+			_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", original)
 		} else {
-			os.Unsetenv("SPIKE_NEXUS_BACKEND_STORE")
+			_ = os.Unsetenv("SPIKE_NEXUS_BACKEND_STORE")
 		}
 	}()
 
