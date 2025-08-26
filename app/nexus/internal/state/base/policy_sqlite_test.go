@@ -19,6 +19,9 @@ import (
 	"github.com/spiffe/spike/internal/config"
 )
 
+// TODO: review every single file in the codebase and make sure they are (still)
+// in good shape.
+
 func TestSQLitePolicy_CreateAndGet(t *testing.T) {
 	withSQLiteEnvironment(t, func() {
 		ctx := context.Background()
@@ -103,7 +106,7 @@ func TestSQLitePolicy_Persistence(t *testing.T) {
 	withSQLiteEnvironment(t, func() {
 		ctx := context.Background()
 
-		rootKey := createTestRootKey(t) // Same key as first session
+		rootKey := createTestRootKey(t) // Same key as the first session
 		resetRootKey()
 		persist.InitializeBackend(rootKey)
 		Initialize(rootKey)
@@ -112,7 +115,7 @@ func TestSQLitePolicy_Persistence(t *testing.T) {
 			_ = persist.Backend().Close(ctx)
 		}()
 
-		// First we need to get the policy ID by listing policies and finding our policy
+		// First, we need to get the policy ID by listing policies and finding our policy
 		allPolicies, err := ListPolicies()
 		if err != nil {
 			t.Fatalf("Failed to list policies in second session: %v", err)
@@ -244,7 +247,7 @@ func TestSQLitePolicy_DeletePolicy(t *testing.T) {
 			}
 		}
 
-		// Verify all policies exist
+		// Verify that all policies exist
 		allPolicies, err := ListPolicies()
 		if err != nil {
 			t.Fatalf("Failed to list policies: %v", err)
@@ -339,7 +342,7 @@ func TestSQLitePolicy_CreateMultiplePolicies(t *testing.T) {
 			t.Fatalf("Failed to create second policy: %v", err)
 		}
 
-		// Verify first policy is still intact
+		// Verify the first policy is still intact
 		retrievedFirst, err := GetPolicy(createdFirst.ID)
 		if err != nil {
 			t.Fatalf("Failed to retrieve first policy: %v", err)
@@ -352,7 +355,7 @@ func TestSQLitePolicy_CreateMultiplePolicies(t *testing.T) {
 			t.Errorf("Expected first policy SPIFFE ID pattern %s, got %s", firstPolicy.SPIFFEIDPattern, retrievedFirst.SPIFFEIDPattern)
 		}
 
-		// Verify second policy was created correctly
+		// Verify the second policy was created correctly
 		retrievedSecond, err := GetPolicy(createdSecond.ID)
 		if err != nil {
 			t.Fatalf("Failed to retrieve second policy: %v", err)
@@ -442,7 +445,7 @@ func TestSQLitePolicy_EncryptionWithDifferentKeys(t *testing.T) {
 	// Variable to store the created policy ID across test blocks
 	var createdPolicyID string
 
-	// Create policy with first key
+	// Create a policy with the first key
 	key1 := createTestRootKey(t)
 	withSQLiteEnvironment(t, func() {
 		ctx := context.Background()
@@ -463,7 +466,7 @@ func TestSQLitePolicy_EncryptionWithDifferentKeys(t *testing.T) {
 		createdPolicyID = createdPolicy.ID
 	})
 
-	// Try to read with different key (should fail)
+	// Try to read with a different key (should fail)
 	key2 := &[crypto.AES256KeySize]byte{}
 	for i := range key2 {
 		key2[i] = byte(255 - i) // Different pattern
@@ -480,7 +483,7 @@ func TestSQLitePolicy_EncryptionWithDifferentKeys(t *testing.T) {
 			_ = persist.Backend().Close(ctx)
 		}()
 
-		// This should fail with wrong key
+		// This should fail with the wrong key
 		_, err := GetPolicy(createdPolicyID)
 		if err == nil {
 			t.Log("Note: GetPolicy succeeded with wrong key - this might indicate encryption issue")
@@ -489,7 +492,7 @@ func TestSQLitePolicy_EncryptionWithDifferentKeys(t *testing.T) {
 		}
 	})
 
-	// Verify original key still works
+	// Verify the original key still works
 	withSQLiteEnvironment(t, func() {
 		ctx := context.Background()
 
@@ -548,7 +551,7 @@ func TestSQLitePolicy_ErrorHandling(t *testing.T) {
 			t.Error("Expected error when deleting non-existent policy, got nil")
 		}
 
-		// Test creating policy with empty name
+		// Test creating policy with an empty name
 		emptyNamePolicy := data.Policy{
 			Name:            "",
 			SPIFFEIDPattern: "spiffe://example.org/test",
@@ -569,27 +572,27 @@ func BenchmarkSQLiteCreatePolicy(b *testing.B) {
 	originalBackend := os.Getenv("SPIKE_NEXUS_BACKEND_STORE")
 	originalSkipSchema := os.Getenv("SPIKE_NEXUS_DB_SKIP_SCHEMA_CREATION")
 
-	os.Setenv("SPIKE_NEXUS_BACKEND_STORE", "sqlite")
-	os.Unsetenv("SPIKE_NEXUS_DB_SKIP_SCHEMA_CREATION")
+	_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", "sqlite")
+	_ = os.Unsetenv("SPIKE_NEXUS_DB_SKIP_SCHEMA_CREATION")
 
 	defer func() {
 		if originalBackend != "" {
-			os.Setenv("SPIKE_NEXUS_BACKEND_STORE", originalBackend)
+			_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", originalBackend)
 		} else {
-			os.Unsetenv("SPIKE_NEXUS_BACKEND_STORE")
+			_ = os.Unsetenv("SPIKE_NEXUS_BACKEND_STORE")
 		}
 		if originalSkipSchema != "" {
-			os.Setenv("SPIKE_NEXUS_DB_SKIP_SCHEMA_CREATION", originalSkipSchema)
+			_ = os.Setenv("SPIKE_NEXUS_DB_SKIP_SCHEMA_CREATION", originalSkipSchema)
 		} else {
-			os.Unsetenv("SPIKE_NEXUS_DB_SKIP_SCHEMA_CREATION")
+			_ = os.Unsetenv("SPIKE_NEXUS_DB_SKIP_SCHEMA_CREATION")
 		}
 	}()
 
-	// Clean up database
+	// Clean up the database
 	dataDir := config.SpikeNexusDataFolder()
 	dbPath := filepath.Join(dataDir, "spike.db")
 	if _, err := os.Stat(dbPath); err == nil {
-		os.Remove(dbPath)
+		_ = os.Remove(dbPath)
 	}
 
 	rootKey := &[crypto.AES256KeySize]byte{}
@@ -622,27 +625,29 @@ func BenchmarkSQLiteGetPolicy(b *testing.B) {
 	originalBackend := os.Getenv("SPIKE_NEXUS_BACKEND_STORE")
 	originalSkipSchema := os.Getenv("SPIKE_NEXUS_DB_SKIP_SCHEMA_CREATION")
 
-	os.Setenv("SPIKE_NEXUS_BACKEND_STORE", "sqlite")
-	os.Unsetenv("SPIKE_NEXUS_DB_SKIP_SCHEMA_CREATION")
+	_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", "sqlite")
+	_ = os.Unsetenv("SPIKE_NEXUS_DB_SKIP_SCHEMA_CREATION")
 
 	defer func() {
 		if originalBackend != "" {
-			os.Setenv("SPIKE_NEXUS_BACKEND_STORE", originalBackend)
+			_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", originalBackend)
 		} else {
-			os.Unsetenv("SPIKE_NEXUS_BACKEND_STORE")
+			_ = os.Unsetenv("SPIKE_NEXUS_BACKEND_STORE")
 		}
 		if originalSkipSchema != "" {
-			os.Setenv("SPIKE_NEXUS_DB_SKIP_SCHEMA_CREATION", originalSkipSchema)
+			_ = os.Setenv("SPIKE_NEXUS_DB_SKIP_SCHEMA_CREATION", originalSkipSchema)
 		} else {
-			os.Unsetenv("SPIKE_NEXUS_DB_SKIP_SCHEMA_CREATION")
+			_ = os.Unsetenv("SPIKE_NEXUS_DB_SKIP_SCHEMA_CREATION")
 		}
 	}()
 
-	// Clean up database
+	// TODO: there are a lof of patterns that repeat; move them to helpers.
+
+	// Clean up the database
 	dataDir := config.SpikeNexusDataFolder()
 	dbPath := filepath.Join(dataDir, "spike.db")
 	if _, err := os.Stat(dbPath); err == nil {
-		os.Remove(dbPath)
+		_ = os.Remove(dbPath)
 	}
 
 	rootKey := &[crypto.AES256KeySize]byte{}
@@ -662,7 +667,7 @@ func BenchmarkSQLiteGetPolicy(b *testing.B) {
 		PathPattern:     "benchmark/*",
 		Permissions:     []data.PolicyPermission{data.PermissionRead},
 	}
-	CreatePolicy(policy)
+	_, _ = CreatePolicy(policy)
 
 	// Get the policy ID before starting benchmark
 	allPolicies, err := ListPolicies()
