@@ -64,7 +64,7 @@ func TestUpsertSecret_ExistingSecret(t *testing.T) {
 
 		path := "test/existing-secret"
 
-		// Create initial version
+		// Create the initial version
 		initialValues := map[string]string{
 			"key1": "value1",
 		}
@@ -83,7 +83,7 @@ func TestUpsertSecret_ExistingSecret(t *testing.T) {
 			t.Fatalf("Failed to update secret: %v", err)
 		}
 
-		// Verify current version has updated values
+		// Verify the current version has updated values
 		currentValues, err := GetSecret(path, 0)
 		if err != nil {
 			t.Fatalf("Failed to retrieve current version: %v", err)
@@ -93,7 +93,7 @@ func TestUpsertSecret_ExistingSecret(t *testing.T) {
 			t.Errorf("Expected current values %v, got %v", updatedValues, currentValues)
 		}
 
-		// Verify previous version still exists
+		// Verify the previous version still exists
 		previousValues, err := GetSecret(path, 1)
 		if err != nil {
 			t.Fatalf("Failed to retrieve previous version: %v", err)
@@ -147,12 +147,12 @@ func TestUpsertSecret_VersionPruning(t *testing.T) {
 				t.Errorf("Expected 3 versions after pruning, got %d", len(rawSecret.Versions))
 			}
 
-			// Verify oldest version is correct (should be version 3)
+			// Verify the oldest version is correct (should be version 3)
 			if rawSecret.Metadata.OldestVersion != 3 {
 				t.Errorf("Expected oldest version 3, got %d", rawSecret.Metadata.OldestVersion)
 			}
 
-			// Verify current version is correct (should be version 5)
+			// Verify the current version is correct (should be version 5)
 			if rawSecret.Metadata.CurrentVersion != 5 {
 				t.Errorf("Expected current version 5, got %d", rawSecret.Metadata.CurrentVersion)
 			}
@@ -198,7 +198,7 @@ func TestDeleteSecret_CurrentVersion(t *testing.T) {
 			}
 		}
 
-		// Delete current version (should be version 3)
+		// Delete the current version (should be version 3)
 		err := DeleteSecret(path, []int{0}) // 0 = current version
 		if err != nil {
 			t.Fatalf("Failed to delete current version: %v", err)
@@ -258,7 +258,7 @@ func TestDeleteSecret_SpecificVersions(t *testing.T) {
 			t.Fatalf("Failed to delete specific versions: %v", err)
 		}
 
-		// Verify current version is still 4
+		// Verify the current version is still 4
 		rawSecret, err := GetRawSecret(path, 0)
 		if err != nil {
 			t.Fatalf("Failed to retrieve raw secret: %v", err)
@@ -317,7 +317,7 @@ func TestDeleteSecret_AllVersions(t *testing.T) {
 			t.Fatalf("Failed to delete all versions: %v", err)
 		}
 
-		// Verify current version is 0 (no active versions)
+		// Verify the current version is 0 (no active versions)
 		_, err = GetRawSecret(path, 0)
 		if err == nil {
 			t.Error("Expected error when trying to get current version of fully deleted secret")
@@ -404,7 +404,7 @@ func TestUndeleteSecret_SpecificVersions(t *testing.T) {
 			t.Error("Version 2 should still be deleted")
 		}
 
-		// Verify current version is still 3
+		// Verify the current version is still 3
 		currentValues, err := GetSecret(path, 0)
 		if err != nil {
 			t.Fatalf("Failed to get current version: %v", err)
@@ -568,7 +568,7 @@ func TestGetSecret_NonExistentVersion(t *testing.T) {
 			t.Fatalf("Failed to create secret: %v", err)
 		}
 
-		// Try to get non-existent version
+		// Try to get a non-existent version
 		_, err = GetSecret(path, 999)
 		if err == nil {
 			t.Error("Expected error when getting non-existent version")
@@ -597,7 +597,7 @@ func TestGetSecret_DeletedVersion(t *testing.T) {
 			t.Fatalf("Failed to delete version 1: %v", err)
 		}
 
-		// Try to get deleted version
+		// Try to get a deleted version
 		_, err = GetSecret(path, 1)
 		if err == nil {
 			t.Error("Expected error when getting deleted version")
@@ -693,14 +693,14 @@ func TestSecretOperations_ConcurrentAccess(t *testing.T) {
 
 		path := "/test/concurrent"
 
-		// Create initial secret
+		// Create the initial secret
 		err := UpsertSecret(path, map[string]string{"counter": "0"})
 		if err != nil {
 			t.Fatalf("Failed to create initial secret: %v", err)
 		}
 
 		// Test that multiple operations work correctly
-		// Note: This is a simple test since the memory backend is not truly concurrent-safe
+		// Note: This is a simple test since the memory backend is not truly concurrent-safe,
 		// But it tests the API works correctly in sequence
 
 		operations := []func() error{
@@ -738,7 +738,7 @@ func TestSecretOperations_EmptyValues(t *testing.T) {
 
 		path := "/test/empty-values"
 
-		// Test with empty map
+		// Test with an empty map
 		err := UpsertSecret(path, map[string]string{})
 		if err != nil {
 			t.Fatalf("Failed to create secret with empty values: %v", err)
@@ -754,7 +754,7 @@ func TestSecretOperations_EmptyValues(t *testing.T) {
 			t.Errorf("Expected empty values map, got %v", values)
 		}
 
-		// Test with nil map
+		// Test with a nil map
 		err = UpsertSecret(path, nil)
 		if err != nil {
 			t.Fatalf("Failed to create secret with nil values: %v", err)
@@ -781,7 +781,7 @@ func TestSecretOperations_LargeValues(t *testing.T) {
 
 		path := "/test/large-values"
 
-		// Create large secret with many keys
+		// Create a large secret with many keys
 		largeValues := make(map[string]string)
 		for i := 0; i < 100; i++ {
 			key := fmt.Sprintf("key_%03d", i)
@@ -856,12 +856,12 @@ func TestSecretOperations_SpecialCharacters(t *testing.T) {
 // Benchmark tests
 func BenchmarkUpsertSecret_NewSecret(b *testing.B) {
 	original := os.Getenv("SPIKE_NEXUS_BACKEND_STORE")
-	os.Setenv("SPIKE_NEXUS_BACKEND_STORE", "memory")
+	_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", "memory")
 	defer func() {
 		if original != "" {
-			os.Setenv("SPIKE_NEXUS_BACKEND_STORE", original)
+			_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", original)
 		} else {
-			os.Unsetenv("SPIKE_NEXUS_BACKEND_STORE")
+			_ = os.Unsetenv("SPIKE_NEXUS_BACKEND_STORE")
 		}
 	}()
 
@@ -876,18 +876,18 @@ func BenchmarkUpsertSecret_NewSecret(b *testing.B) {
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		path := fmt.Sprintf("/bench/secret-%d", i)
-		UpsertSecret(path, values)
+		_ = UpsertSecret(path, values)
 	}
 }
 
 func BenchmarkUpsertSecret_UpdateExisting(b *testing.B) {
 	original := os.Getenv("SPIKE_NEXUS_BACKEND_STORE")
-	os.Setenv("SPIKE_NEXUS_BACKEND_STORE", "memory")
+	_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", "memory")
 	defer func() {
 		if original != "" {
-			os.Setenv("SPIKE_NEXUS_BACKEND_STORE", original)
+			_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", original)
 		} else {
-			os.Unsetenv("SPIKE_NEXUS_BACKEND_STORE")
+			_ = os.Unsetenv("SPIKE_NEXUS_BACKEND_STORE")
 		}
 	}()
 
@@ -900,8 +900,8 @@ func BenchmarkUpsertSecret_UpdateExisting(b *testing.B) {
 		"password": "initial",
 	}
 
-	// Create initial secret
-	UpsertSecret(path, initialValues)
+	// Create the initial secret
+	_ = UpsertSecret(path, initialValues)
 
 	updatedValues := map[string]string{
 		"username": "admin",
@@ -911,18 +911,18 @@ func BenchmarkUpsertSecret_UpdateExisting(b *testing.B) {
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		updatedValues["counter"] = fmt.Sprintf("%d", i)
-		UpsertSecret(path, updatedValues)
+		_ = UpsertSecret(path, updatedValues)
 	}
 }
 
 func BenchmarkGetSecret(b *testing.B) {
 	original := os.Getenv("SPIKE_NEXUS_BACKEND_STORE")
-	os.Setenv("SPIKE_NEXUS_BACKEND_STORE", "memory")
+	_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", "memory")
 	defer func() {
 		if original != "" {
-			os.Setenv("SPIKE_NEXUS_BACKEND_STORE", original)
+			_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", original)
 		} else {
-			os.Unsetenv("SPIKE_NEXUS_BACKEND_STORE")
+			_ = os.Unsetenv("SPIKE_NEXUS_BACKEND_STORE")
 		}
 	}()
 
@@ -935,22 +935,22 @@ func BenchmarkGetSecret(b *testing.B) {
 		"password": "secret123",
 	}
 
-	UpsertSecret(path, values)
+	_ = UpsertSecret(path, values)
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		GetSecret(path, 0)
+		_, _ = GetSecret(path, 0)
 	}
 }
 
 func BenchmarkGetRawSecret(b *testing.B) {
 	original := os.Getenv("SPIKE_NEXUS_BACKEND_STORE")
-	os.Setenv("SPIKE_NEXUS_BACKEND_STORE", "memory")
+	_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", "memory")
 	defer func() {
 		if original != "" {
-			os.Setenv("SPIKE_NEXUS_BACKEND_STORE", original)
+			_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", original)
 		} else {
-			os.Unsetenv("SPIKE_NEXUS_BACKEND_STORE")
+			_ = os.Unsetenv("SPIKE_NEXUS_BACKEND_STORE")
 		}
 	}()
 
@@ -963,30 +963,10 @@ func BenchmarkGetRawSecret(b *testing.B) {
 		"password": "secret123",
 	}
 
-	UpsertSecret(path, values)
+	_ = UpsertSecret(path, values)
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		GetRawSecret(path, 0)
+		_, _ = GetRawSecret(path, 0)
 	}
-}
-
-// Helper function to manage environment variables in tests
-func withEnvironment32(t *testing.T, key, value string, testFunc func()) {
-	original := os.Getenv(key)
-	os.Setenv(key, value)
-	defer func() {
-		if original != "" {
-			os.Setenv(key, original)
-		} else {
-			os.Unsetenv(key)
-		}
-	}()
-	testFunc()
-}
-
-// Helper function to reset backend state for testing
-func resetBackendForTest44() {
-	// This will be implemented to ensure clean state between tests
-	// For now, we rely on initializing a fresh memory backend
 }

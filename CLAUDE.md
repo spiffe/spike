@@ -99,6 +99,26 @@ app/
 internal/config/    # Configuration helpers
 ```
 
+## Coding Conventions
+
+### Use Proper English
+
+During generating documentation, you often forget articles and prepositions,
+and sometimes make basic grammatical errors.
+
+For example `// Test with empty map` should better have been
+`// Test with an empty map`.
+
+Pay attention to punctuation and grammar.
+
+### Line Length
+
+The code has 80-character line length (including tests, and markdown files).
+Tabs are counted as two characters.
+
+When it's not possible, it's okay to make exceptions, but try your best to keep
+the code within 80 chars.
+
 ## When in Doubt
 - Look at existing similar files for patterns
 - Check imports to see what's actually available
