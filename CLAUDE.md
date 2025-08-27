@@ -116,6 +116,9 @@ before and after em-dash).
 While at it, you can tone down your em-dash usage. Yes, it is good grammar,
  but you tend to overuse it and liberally sprinkle it everywhere.
 
+The same goes with emoji usage: This is a security-focused codebase, 
+NOT a preteen's playground.
+
 In short, pay extra attention to punctuation and grammar.
 
 ### Line Length
