@@ -5,6 +5,7 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
+	"fmt"
 	"github.com/spiffe/spike/app/nexus/internal/state/backend/sqlite/ddl"
 	"os"
 	"path/filepath"
@@ -100,6 +101,9 @@ func createTestDataStore(t TestingInterface) *DataStore {
 	// Use DefaultOptions and override the data directory for testing
 	opts := DefaultOptions()
 	opts.DataDir = config.SpikeNexusDataFolder()
+
+	// Create a unique database filename to avoid race conditions
+	opts.DatabaseFile = fmt.Sprintf("spike_test_%d.db", time.Now().UnixNano())
 
 	store := &DataStore{
 		Opts:   opts,

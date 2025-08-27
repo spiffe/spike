@@ -39,7 +39,7 @@ func TestReadPolicyFromFile(t *testing.T) {
 			name: "valid_policy_file",
 			fileContent: `name: test-policy
 spiffeid: spiffe://example.org/test/*
-path: /secrets/*
+path: secrets/*
 permissions:
   - read
   - write`,
@@ -74,7 +74,7 @@ permissions:
 		{
 			name: "missing_name",
 			fileContent: `spiffeid: spiffe://example.org/test/*
-path: /secrets/*
+path: secrets/*
 permissions:
   - read`,
 			fileName:    "missing-name.yaml",
@@ -84,7 +84,7 @@ permissions:
 		{
 			name: "missing_spiffeid",
 			fileContent: `name: test-policy
-path: /secrets/*
+path: secrets/*
 permissions:
   - read`,
 			fileName:    "missing-spiffeid.yaml",
@@ -105,7 +105,7 @@ permissions:
 			name: "missing_permissions",
 			fileContent: `name: test-policy
 spiffeid: spiffe://example.org/test/*
-path: /secrets/*`,
+path: secrets/*`,
 			fileName:    "missing-permissions.yaml",
 			wantErr:     true,
 			errContains: "permissions are required",
@@ -114,7 +114,7 @@ path: /secrets/*`,
 			name: "empty_permissions_list",
 			fileContent: `name: test-policy
 spiffeid: spiffe://example.org/test/*
-path: /secrets/*
+path: secrets/*
 permissions: []`,
 			fileName:    "empty-permissions.yaml",
 			wantErr:     true,
@@ -124,7 +124,7 @@ permissions: []`,
 			name: "invalid_yaml",
 			fileContent: `name: test-policy
 spiffeid: spiffe://example.org/test/*
-path: /secrets/*
+path: secrets/*
 permissions: [
   - read
   - write`, // Invalid YAML - missing closing bracket

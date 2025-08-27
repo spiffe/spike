@@ -6,6 +6,7 @@ package state
 
 import (
 	"encoding/hex"
+	"fmt"
 	"os"
 	"strconv"
 	"testing"
@@ -85,7 +86,8 @@ func TestRootSharesConsistency(t *testing.T) {
 		// IDs should be consistent (1, 2, 3)
 		if !shares1[i].ID.IsEqual(shares2[i].ID) {
 			// This might actually fail depending on how the ID assignment works
-			// In Shamir sharing, IDs are typically sequential starting from 1
+			// In Shamir sharing, IDs are typically sequential starting from 1\
+			fmt.Printf("Share IDs should be consistent, but got %s and %s\n", shares1[i].ID, shares2[i].ID)
 		}
 
 		// Values should be different due to different root keys

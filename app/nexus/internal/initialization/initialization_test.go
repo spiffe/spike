@@ -309,20 +309,6 @@ func TestStoreTypeComparison(t *testing.T) {
 	if env.Lite == env.Memory {
 		t.Error("Lite should not equal Memory")
 	}
-
-	// Test self-equality
-	// noinspection GoBoolExpressions
-	if env.Sqlite != env.Sqlite {
-		t.Error("Sqlite should equal itself")
-	}
-	// noinspection GoBoolExpressions
-	if env.Lite != env.Lite {
-		t.Error("Lite should equal itself")
-	}
-	// noinspection GoBoolExpressions
-	if env.Memory != env.Memory {
-		t.Error("Memory should equal itself")
-	}
 }
 
 func TestBackendStoreTypeValidation(t *testing.T) {

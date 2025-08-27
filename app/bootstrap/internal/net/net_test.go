@@ -7,6 +7,7 @@ package net
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -77,6 +78,7 @@ func TestPostHTTPInteraction(t *testing.T) {
 				contentType := r.Header.Get("Content-Type")
 				if contentType != "application/json" && contentType != "" {
 					// Content-Type might not be set, which is okay for this test
+					fmt.Println("Content-Type header:", contentType)
 				}
 
 				body, err := io.ReadAll(r.Body)

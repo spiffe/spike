@@ -390,9 +390,6 @@ func TestArrayOperations(t *testing.T) {
 
 	// Test pointer to array
 	ptr := &arr1
-	if ptr == nil {
-		t.Error("Pointer should not be nil")
-	}
 	// noinspection GoBoolExpressions
 	if len(ptr) != crypto.AES256KeySize {
 		t.Errorf("Pointer array length should be %d, got %d", crypto.AES256KeySize, len(ptr))

@@ -284,23 +284,6 @@ func TestStoreTypeComparison(t *testing.T) {
 	if Memory == Lite {
 		t.Error("Memory should not equal Lite")
 	}
-
-	// Test self-equality
-
-	// noinspection GoBoolExpressions
-	if Lite != Lite {
-		t.Error("Lite should equal itself")
-	}
-
-	// noinspection GoBoolExpressions
-	if Sqlite != Sqlite {
-		t.Error("Sqlite should equal itself")
-	}
-
-	// noinspection GoBoolExpressions
-	if Memory != Memory {
-		t.Error("Memory should equal itself")
-	}
 }
 
 func TestStoreTypeInSwitch(t *testing.T) {

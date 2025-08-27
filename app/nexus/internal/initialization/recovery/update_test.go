@@ -424,9 +424,6 @@ func TestShardArrayOperations(t *testing.T) {
 
 	// Test creating a new shard array (as done in the function)
 	shard := new([crypto.AES256KeySize]byte)
-	if shard == nil {
-		t.Fatal("New shard array should not be nil")
-	}
 
 	// noinspection GoBoolExpressions
 	if len(shard) != crypto.AES256KeySize {

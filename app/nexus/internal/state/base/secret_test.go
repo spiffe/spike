@@ -5,6 +5,7 @@
 package base
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"reflect"
@@ -325,7 +326,8 @@ func TestDeleteSecret_AllVersions(t *testing.T) {
 
 		// Try to get the raw secret without version validation
 		ctx := persist.Backend()
-		secret, err := ctx.LoadSecret(nil, path)
+		// Do not pass a nil context even if the function allows it.
+		secret, err := ctx.LoadSecret(context.TODO(), path)
 		if err != nil {
 			t.Fatalf("Failed to load raw secret: %v", err)
 		}

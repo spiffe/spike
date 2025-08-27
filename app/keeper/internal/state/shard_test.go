@@ -6,6 +6,7 @@ package state
 
 import (
 	"bytes"
+	"fmt"
 	"sync"
 	"testing"
 	"time"
@@ -362,6 +363,8 @@ func TestShardSize(t *testing.T) {
 	RLockShard()
 	shardPtr := ShardNoSync()
 	RUnlockShard()
+
+	fmt.Println(*(shardPtr))
 
 	// noinspection GoBoolExpressions
 	if len(shardPtr) != crypto.AES256KeySize {

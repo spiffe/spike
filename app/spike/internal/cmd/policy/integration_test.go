@@ -161,7 +161,7 @@ permissions:
 			name: "permissions_as_flow_sequence",
 			yamlContent: `name: flow-policy
 spiffeid: spiffe://example.org/flow/*
-path: /secrets/flow/*
+path: secrets/flow/*
 permissions: [read, write, list]`,
 			expectError: false,
 			expectValue: Spec{
@@ -176,7 +176,7 @@ permissions: [read, write, list]`,
 			yamlContent: `name: multiline-policy
 spiffeid: >
   spiffe://example.org/multiline/*
-path: /secrets/multiline/*
+path: secrets/multiline/*
 permissions:
   - read`,
 			expectError: false,

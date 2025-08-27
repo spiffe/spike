@@ -5,7 +5,6 @@
 package persist
 
 import (
-	"crypto/cipher"
 	"os"
 	"reflect"
 	"testing"
@@ -20,11 +19,6 @@ func TestCreateCipher(t *testing.T) {
 	// Verify that a cipher was created
 	if aead == nil {
 		t.Fatal("createCipher returned nil")
-	}
-
-	// Verify it's an AEAD interface
-	if _, ok := aead.(cipher.AEAD); !ok {
-		t.Error("createCipher did not return a cipher.AEAD interface")
 	}
 
 	// Verify nonce size is reasonable (GCM typically has 12 bytes)
