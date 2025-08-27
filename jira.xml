@@ -4,14 +4,57 @@
 #  \\\\\ Copyright 2024-present SPIKE contributors.
 # \\\\\\\ SPDX-License-Identifier: Apache-2.0
 -->
+<!--
+ ABOUT THIS FILE
+
+ This is a place where we dump ideas and issue templates.
+ It helps us have a free-form environment where we can "think out loud" can ideate issue templates
+ without overpopulating the active GitHub issues.
+ -->
 <stuff>
   <after-mergin-no-cache-feature>
     <issue>
-      The code need some cleanup; so here are things to do after merging the "good enough" version.
+      The code needs some cleanup; so here are things to do after merging the "good enough" version.
 
-        TODO: edit this list.
+      * Scan all TOD0s in the codebase and come up with action plans (ie. candidate for next release
+        or shall wait for some time later.
+      * Read every file and check for consistency / conventions / AI slop etc.
     </issue>
   </after-mergin-no-cache-feature>
+  <task-group for="v0.5.0">
+    <issue>
+        SDK should panic for Log.FatalXXX for easier testing.
+
+        SDK should have a wrapper for os.Exit (for testing).
+
+        Add "generate coverage report" to the release instructions.
+        Coverage report shall be published on the website, and linked
+        somewhere in the docs too (find a suitable place)
+    </issue>
+
+  </task-group>
+  <task-group for=">v0.5.0">
+      <issue>
+          Fix LogFatalXXX-related tests.
+          * func TestPostHTTPInteraction(t *testing.T) {
+      </issue>
+      <issue>
+          Make this testable:
+
+          fmt.Println("")
+          fmt.Println("Usage: bootstrap -init")
+          fmt.Println("")
+          os.Exit(1) // define a global osExit function or maybe in SDK, to be able to test stuff.
+      </issue>
+      <issue>
+          func TestKeeperIDConversion(t *testing.T) {
+          keeper ids need to be stricter. add validation logic to the code.
+      </issue>
+      <issue>
+          func TestShardURL_InvalidInput(t *testing.T) {
+          Keeper API root shall not be empty.
+      </issue>
+  </task-group>
   <immediate-backlog>
       <issue>
           add to docs:

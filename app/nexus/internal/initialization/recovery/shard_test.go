@@ -104,7 +104,7 @@ func TestShardURL_InvalidInput(t *testing.T) {
 		//	name:          "empty string",
 		//	keeperAPIRoot: "",
 		//},
-		// TODO: keeper API root should not be empty; handle that case.
+		// FIX-ME: keeper API root should not be empty; handle that case.
 	}
 
 	for _, tt := range tests {

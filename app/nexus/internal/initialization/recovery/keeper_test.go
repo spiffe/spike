@@ -258,7 +258,7 @@ func TestKeeperIDConversion(t *testing.T) {
 		{"empty string", "", true, 0},
 		{"mixed alphanumeric", "123abc", true, 0},
 		// {"negative number", "-1", true, 0}, // strconv.Atoi would handle this, but depends on requirements
-		// TODO: keeper ids need to be stricter. add validation logic to the code.
+		// FIX-ME: keeper ids need to be stricter. add validation logic to the code.
 		// Maybe a better sanitization before the code even gets there.
 	}
 
@@ -369,8 +369,6 @@ func TestEnvironmentDependenciesKeeper(t *testing.T) {
 			_ = os.Unsetenv("SPIKE_NEXUS_SHAMIR_THRESHOLD")
 		}
 	}()
-
-	// TODO: add "generate coverage report" to release instructions.
 
 	// Test BackendStoreType detection
 	_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", "memory")
