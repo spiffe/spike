@@ -5,15 +5,23 @@
 # \\\\\\\ SPDX-License-Identifier: Apache-2.0
 -->
 <stuff>
-  <kubernetification>
+  <after-mergin-no-cache-feature>
     <issue>
-      Demo update:
-      4/9 setup with 3 edge servers instead of 2;
-      this will mean a single edge server will never have enough shards
-      to recompute the root key, which will be an added level of security.
+      The code need some cleanup; so here are things to do after merging the "good enough" version.
+
+        TODO: edit this list.
     </issue>
-  </kubernetification>
+  </after-mergin-no-cache-feature>
   <immediate-backlog>
+      <issue>
+          add to docs:
+          sourcing
+          source /home/volkan/WORKSPACE/spike/hack/lib/env.sh
+          in your profile file can be helpful for development
+          it has predefined environment variables for bare-metal local
+          development.
+          `make start` already does that for the apps that it launches.
+      </issue>
 	  <issue>
 		  nexus should have a status endpoint and pilot should warn the user if
 		  nexus is not ready
