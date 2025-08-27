@@ -14,6 +14,17 @@
     </issue>
   </kubernetification>
   <immediate-backlog>
+	  <issue>
+		  nexus should have a status endpoint and pilot should warn the user if
+		  nexus is not ready
+
+		  Bootstrap completed successfully!
+➜  spike git:(feature/no-cache) ✗ spike secret list
+Error listing secret keys: post: Problem connecting to peer
+Post "https://localhost:8553/v1/store/secrets?action=list": dial tcp 127.0.0.1:8553: connect: connection refused
+➜  spike git:(feature/no-cache) ✗ spike secret list
+
+     </issue>
       <issue>
           we removed s3 store type; remove it from docs if any too.
       </issue>

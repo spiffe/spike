@@ -7,6 +7,7 @@
 start:
 	./hack/bare-metal/startup/start.sh
 
+.PHONY: bootstrap
 # Initialize the SPIKE setup with a brand new, secure, random root key.
 bootstrap:
 	./hack/bare-metal/startup/bootstrap.sh
