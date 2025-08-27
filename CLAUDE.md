@@ -7,7 +7,7 @@
 SPIKE Policies use `SPIFFEIDPattern` and `PathPattern` fields. Those fields
 are regular expression Strings; NOT globs.
 
-- **ALWAYS use regex patterns, NOT globs**
+- **For Policy SPIFFEID and Path patterns, ALWAYS use regex patterns, NOT globs**
 - ✅ Correct: `/path/to/.*`, `spiffe://example\.com/workload/.*`
 - ❌ Wrong: `/path/to/*`, `spiffe://example.com/workload/*`
 
