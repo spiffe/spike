@@ -22,7 +22,7 @@ import (
 // TODO: create a similar suite for policy persistence too.
 
 // createTestRootKey creates a test root key for SQLite backend
-func createTestRootKey(t *testing.T) *[crypto.AES256KeySize]byte {
+func createTestRootKey(_ *testing.T) *[crypto.AES256KeySize]byte {
 	key := &[crypto.AES256KeySize]byte{}
 	// Use a predictable pattern for testing
 	for i := range key {
@@ -31,7 +31,7 @@ func createTestRootKey(t *testing.T) *[crypto.AES256KeySize]byte {
 	return key
 }
 
-// cleanupSQLiteDatabase removes the existing SQLite database to ensure clean test state
+// cleanupSQLiteDatabase removes the existing SQLite database to ensure a clean test state
 func cleanupSQLiteDatabase(t *testing.T) {
 	dataDir := config.SpikeNexusDataFolder()
 	dbPath := filepath.Join(dataDir, "spike.db")
@@ -46,7 +46,7 @@ func cleanupSQLiteDatabase(t *testing.T) {
 }
 
 // withSQLiteEnvironment sets up environment for SQLite testing
-func withSQLiteEnvironment(t *testing.T, testFunc func()) {
+func withSQLiteEnvironment(_ *testing.T, testFunc func()) {
 	// Save original environment variables
 	originalStore := os.Getenv("SPIKE_NEXUS_BACKEND_STORE")
 	originalSkipSchema := os.Getenv("SPIKE_NEXUS_DB_SKIP_SCHEMA_CREATION")
@@ -54,20 +54,20 @@ func withSQLiteEnvironment(t *testing.T, testFunc func()) {
 	// Ensure cleanup happens
 	defer func() {
 		if originalStore != "" {
-			os.Setenv("SPIKE_NEXUS_BACKEND_STORE", originalStore)
+			_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", originalStore)
 		} else {
-			os.Unsetenv("SPIKE_NEXUS_BACKEND_STORE")
+			_ = os.Unsetenv("SPIKE_NEXUS_BACKEND_STORE")
 		}
 		if originalSkipSchema != "" {
-			os.Setenv("SPIKE_NEXUS_DB_SKIP_SCHEMA_CREATION", originalSkipSchema)
+			_ = os.Setenv("SPIKE_NEXUS_DB_SKIP_SCHEMA_CREATION", originalSkipSchema)
 		} else {
-			os.Unsetenv("SPIKE_NEXUS_DB_SKIP_SCHEMA_CREATION")
+			_ = os.Unsetenv("SPIKE_NEXUS_DB_SKIP_SCHEMA_CREATION")
 		}
 	}()
 
 	// Set to SQLite backend and ensure schema creation
-	os.Setenv("SPIKE_NEXUS_BACKEND_STORE", "sqlite")
-	os.Unsetenv("SPIKE_NEXUS_DB_SKIP_SCHEMA_CREATION")
+	_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", "sqlite")
+	_ = os.Unsetenv("SPIKE_NEXUS_DB_SKIP_SCHEMA_CREATION")
 
 	testFunc()
 }
@@ -76,7 +76,7 @@ func TestSQLiteSecret_NewSecret(t *testing.T) {
 	withSQLiteEnvironment(t, func() {
 		ctx := context.Background()
 
-		// Verify environment is set correctly
+		// Verify the environment is set correctly
 		if env.BackendStoreType() != env.Sqlite {
 			t.Fatalf("Expected env.BackendStoreType()=Sqlite, got %v", env.BackendStoreType())
 		}
@@ -184,7 +184,7 @@ func TestSQLiteSecret_Persistence(t *testing.T) {
 	withSQLiteEnvironment(t, func() {
 		ctx := context.Background()
 
-		rootKey := createTestRootKey(t) // Same key as first session
+		rootKey := createTestRootKey(t) // Same key as the first session
 		resetRootKey()
 		persist.InitializeBackend(rootKey)
 		Initialize(rootKey)
@@ -229,7 +229,7 @@ func TestSQLiteSecret_SimpleVersioning(t *testing.T) {
 			t.Fatalf("Failed to create first version: %v", err)
 		}
 
-		// Verify first version using backend directly
+		// Verify the first version using backend directly
 		secret1, err := persist.Backend().LoadSecret(ctx, path)
 		if err != nil {
 			t.Fatalf("Failed to load secret from backend: %v", err)
@@ -239,7 +239,7 @@ func TestSQLiteSecret_SimpleVersioning(t *testing.T) {
 		}
 		t.Logf("After first upsert - CurrentVersion: %d, Versions: %v", secret1.Metadata.CurrentVersion, getVersionNumbers(secret1))
 
-		// Create second version
+		// Create a second version
 		t.Log("Creating second version...")
 		values2 := map[string]string{"data": "version2"}
 		err = UpsertSecret(path, values2)
@@ -247,7 +247,7 @@ func TestSQLiteSecret_SimpleVersioning(t *testing.T) {
 			t.Fatalf("Failed to create second version: %v", err)
 		}
 
-		// Verify second version using backend directly
+		// Verify the second version using backend directly
 		secret2, err := persist.Backend().LoadSecret(ctx, path)
 		if err != nil {
 			t.Fatalf("Failed to load secret from backend after second upsert: %v", err)
@@ -298,7 +298,7 @@ func getVersionNumbers(secret *kv.Value) []int {
 func TestSQLiteSecret_VersionPersistence(t *testing.T) {
 	path := "test/sqlite-versions"
 
-	// Create multiple versions in first session
+	// Create multiple versions in the first session
 	withSQLiteEnvironment(t, func() {
 		ctx := context.Background()
 		cleanupSQLiteDatabase(t)
@@ -336,7 +336,7 @@ func TestSQLiteSecret_VersionPersistence(t *testing.T) {
 		}
 	})
 
-	// Verify all versions persist in second session
+	// Verify all versions persist in the second session
 	withSQLiteEnvironment(t, func() {
 		ctx := context.Background()
 
@@ -349,7 +349,7 @@ func TestSQLiteSecret_VersionPersistence(t *testing.T) {
 			_ = persist.Backend().Close(ctx)
 		}()
 
-		// First get the raw secret to understand what versions exist
+		// First, get the raw secret to understand what versions exist
 		rawSecret, err := GetRawSecret(path, 0)
 		if err != nil {
 			t.Fatalf("Failed to get raw secret: %v", err)
@@ -392,7 +392,7 @@ func TestSQLiteSecret_EncryptionWithDifferentKeys(t *testing.T) {
 		"api_key":   "abc123xyz",
 	}
 
-	// Create secret with first key
+	// Create the secret with the first key
 	key1 := createTestRootKey(t)
 	withSQLiteEnvironment(t, func() {
 		ctx := context.Background()
@@ -412,7 +412,7 @@ func TestSQLiteSecret_EncryptionWithDifferentKeys(t *testing.T) {
 		}
 	})
 
-	// Try to read with different key (should fail or return garbage)
+	// Try to read with a different key (should fail or return garbage)
 	key2 := &[crypto.AES256KeySize]byte{}
 	for i := range key2 {
 		key2[i] = byte(255 - i) // Different pattern
@@ -431,7 +431,7 @@ func TestSQLiteSecret_EncryptionWithDifferentKeys(t *testing.T) {
 
 		// This should either fail or return decrypted garbage (depending on implementation)
 		_, err := GetSecret(path, 0)
-		// We expect this to fail with wrong key, but exact behavior depends on implementation
+		// We expect this to fail with the wrong key, but exact behavior depends on implementation
 		if err == nil {
 			t.Log("Note: GetSecret succeeded with wrong key - this might indicate encryption issue")
 		} else {
@@ -439,7 +439,7 @@ func TestSQLiteSecret_EncryptionWithDifferentKeys(t *testing.T) {
 		}
 	})
 
-	// Verify original key still works
+	// Verify the original key still works
 	withSQLiteEnvironment(t, func() {
 		ctx := context.Background()
 
@@ -468,27 +468,27 @@ func BenchmarkSQLiteUpsertSecret(b *testing.B) {
 	originalBackend := os.Getenv("SPIKE_NEXUS_BACKEND_STORE")
 	originalSkipSchema := os.Getenv("SPIKE_NEXUS_DB_SKIP_SCHEMA_CREATION")
 
-	os.Setenv("SPIKE_NEXUS_BACKEND_STORE", "sqlite")
-	os.Unsetenv("SPIKE_NEXUS_DB_SKIP_SCHEMA_CREATION")
+	_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", "sqlite")
+	_ = os.Unsetenv("SPIKE_NEXUS_DB_SKIP_SCHEMA_CREATION")
 
 	defer func() {
 		if originalBackend != "" {
-			os.Setenv("SPIKE_NEXUS_BACKEND_STORE", originalBackend)
+			_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", originalBackend)
 		} else {
-			os.Unsetenv("SPIKE_NEXUS_BACKEND_STORE")
+			_ = os.Unsetenv("SPIKE_NEXUS_BACKEND_STORE")
 		}
 		if originalSkipSchema != "" {
-			os.Setenv("SPIKE_NEXUS_DB_SKIP_SCHEMA_CREATION", originalSkipSchema)
+			_ = os.Setenv("SPIKE_NEXUS_DB_SKIP_SCHEMA_CREATION", originalSkipSchema)
 		} else {
-			os.Unsetenv("SPIKE_NEXUS_DB_SKIP_SCHEMA_CREATION")
+			_ = os.Unsetenv("SPIKE_NEXUS_DB_SKIP_SCHEMA_CREATION")
 		}
 	}()
 
-	// Clean up database
+	// Clean up the database
 	dataDir := config.SpikeNexusDataFolder()
 	dbPath := filepath.Join(dataDir, "spike.db")
 	if _, err := os.Stat(dbPath); err == nil {
-		os.Remove(dbPath)
+		_ = os.Remove(dbPath)
 	}
 
 	rootKey := &[crypto.AES256KeySize]byte{}
@@ -521,27 +521,27 @@ func BenchmarkSQLiteGetSecret(b *testing.B) {
 	originalBackend := os.Getenv("SPIKE_NEXUS_BACKEND_STORE")
 	originalSkipSchema := os.Getenv("SPIKE_NEXUS_DB_SKIP_SCHEMA_CREATION")
 
-	os.Setenv("SPIKE_NEXUS_BACKEND_STORE", "sqlite")
-	os.Unsetenv("SPIKE_NEXUS_DB_SKIP_SCHEMA_CREATION")
+	_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", "sqlite")
+	_ = os.Unsetenv("SPIKE_NEXUS_DB_SKIP_SCHEMA_CREATION")
 
 	defer func() {
 		if originalBackend != "" {
-			os.Setenv("SPIKE_NEXUS_BACKEND_STORE", originalBackend)
+			_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", originalBackend)
 		} else {
-			os.Unsetenv("SPIKE_NEXUS_BACKEND_STORE")
+			_ = os.Unsetenv("SPIKE_NEXUS_BACKEND_STORE")
 		}
 		if originalSkipSchema != "" {
-			os.Setenv("SPIKE_NEXUS_DB_SKIP_SCHEMA_CREATION", originalSkipSchema)
+			_ = os.Setenv("SPIKE_NEXUS_DB_SKIP_SCHEMA_CREATION", originalSkipSchema)
 		} else {
-			os.Unsetenv("SPIKE_NEXUS_DB_SKIP_SCHEMA_CREATION")
+			_ = os.Unsetenv("SPIKE_NEXUS_DB_SKIP_SCHEMA_CREATION")
 		}
 	}()
 
-	// Clean up database
+	// Clean up the database
 	dataDir := config.SpikeNexusDataFolder()
 	dbPath := filepath.Join(dataDir, "spike.db")
 	if _, err := os.Stat(dbPath); err == nil {
-		os.Remove(dbPath)
+		_ = os.Remove(dbPath)
 	}
 
 	rootKey := &[crypto.AES256KeySize]byte{}
@@ -559,7 +559,7 @@ func BenchmarkSQLiteGetSecret(b *testing.B) {
 		"username": "admin",
 		"password": "secret123",
 	}
-	UpsertSecret(path, values)
+	_ = UpsertSecret(path, values)
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
