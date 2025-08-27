@@ -14,48 +14,6 @@ import (
 	"github.com/spiffe/spike/app/nexus/internal/state/backend/memory"
 )
 
-// Helper function to create a test root key with a specific pattern
-func createTestKey(t *testing.T) *[crypto.AES256KeySize]byte {
-	key := &[crypto.AES256KeySize]byte{}
-	for i := range key {
-		key[i] = byte(i % 256) // Predictable pattern for testing
-	}
-	return key
-}
-
-// Helper function to create a zero key
-func createZeroKey() *[crypto.AES256KeySize]byte {
-	return &[crypto.AES256KeySize]byte{} // All zeros
-}
-
-// TestingInterface allows both *testing.T and *testing.B to be used
-type TestingInterface interface {
-	Fatalf(format string, args ...interface{})
-	Errorf(format string, args ...interface{})
-	Error(args ...interface{})
-	Fatal(args ...interface{})
-}
-
-// Helper function to set environment variable and restore it after test
-func withEnvironment(t TestingInterface, key, value string, testFunc func()) {
-	original := os.Getenv(key)
-	defer func() {
-		if original != "" {
-			os.Setenv(key, original)
-		} else {
-			os.Unsetenv(key)
-		}
-	}()
-
-	if value != "" {
-		os.Setenv(key, value)
-	} else {
-		os.Unsetenv(key)
-	}
-
-	testFunc()
-}
-
 func TestCreateCipher(t *testing.T) {
 	aead := createCipher()
 
@@ -136,7 +94,7 @@ func TestInitializeBackend_Memory_WithNonNilKey_ShouldFatal(t *testing.T) {
 	// or integration tests that can handle process termination.
 	//
 	// Expected behavior: InitializeBackend panics/exits when memory backend
-	// is initialized with non-nil key
+	// is initialized with a non-nil key
 }
 
 func TestInitializeBackend_SQLite_WithValidKey(t *testing.T) {
@@ -166,7 +124,7 @@ func TestInitializeBackend_SQLite_WithNilKey_ShouldPanic(t *testing.T) {
 	// or integration tests that can handle process termination.
 	//
 	// Expected behavior: InitializeBackend panics/exits when sqlite backend
-	// is initialized with nil key
+	// is initialized with a nil key
 }
 
 func TestInitializeBackend_SQLite_WithZeroKey_ShouldPanic(t *testing.T) {
@@ -177,7 +135,7 @@ func TestInitializeBackend_SQLite_WithZeroKey_ShouldPanic(t *testing.T) {
 	// or integration tests that can handle process termination.
 	//
 	// Expected behavior: InitializeBackend panics/exits when sqlite backend
-	// is initialized with zero key
+	// is initialized with a zero key
 }
 
 func TestInitializeBackend_Lite_WithValidKey(t *testing.T) {
@@ -207,7 +165,7 @@ func TestInitializeBackend_Lite_WithNilKey_ShouldPanic(t *testing.T) {
 	// or integration tests that can handle process termination.
 	//
 	// Expected behavior: InitializeBackend panics/exits when lite backend
-	// is initialized with nil key
+	// is initialized with a nil key
 }
 
 func TestInitializeBackend_UnknownType_DefaultsToMemory(t *testing.T) {
@@ -242,7 +200,7 @@ func TestInitializeBackend_MultipleInitializations(t *testing.T) {
 		InitializeBackend(nil)
 		firstBackend := Backend()
 
-		// Initialize second time
+		// Initialize the second time
 		InitializeBackend(nil)
 		secondBackend := Backend()
 
@@ -288,7 +246,7 @@ func TestInitializeBackend_KeyValidation_PartiallyZero(t *testing.T) {
 	withEnvironment(t, "SPIKE_NEXUS_BACKEND_STORE", "sqlite", func() {
 		// Create a key that's mostly zero but has one non-zero byte
 		partialKey := &[crypto.AES256KeySize]byte{}
-		partialKey[0] = 1 // Only first byte is non-zero
+		partialKey[0] = 1 // Only the first byte is non-zero
 
 		// This should succeed - it's not all zeros
 		InitializeBackend(partialKey)
@@ -302,9 +260,9 @@ func TestInitializeBackend_KeyValidation_PartiallyZero(t *testing.T) {
 
 func TestInitializeBackend_KeyValidation_LastByteNonZero(t *testing.T) {
 	withEnvironment(t, "SPIKE_NEXUS_BACKEND_STORE", "sqlite", func() {
-		// Create a key that's mostly zero but has last byte non-zero
+		// Create a key that's mostly zero but has the last byte non-zero
 		partialKey := &[crypto.AES256KeySize]byte{}
-		partialKey[crypto.AES256KeySize-1] = 255 // Only last byte is non-zero
+		partialKey[crypto.AES256KeySize-1] = 255 // Only the last byte is non-zero
 
 		// This should succeed - it's not all zeros
 		InitializeBackend(partialKey)
@@ -409,7 +367,7 @@ func TestMain(m *testing.M) {
 	code := m.Run()
 
 	// Cleanup - reset to memory backend to avoid affecting other tests
-	os.Setenv("SPIKE_NEXUS_BACKEND_STORE", "memory")
+	_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", "memory")
 	InitializeBackend(nil)
 
 	os.Exit(code)
