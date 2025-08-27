@@ -13,7 +13,7 @@ import (
 	"github.com/spiffe/spike/internal/config"
 )
 
-// cleanupSQLiteDatabase removes the existing SQLite database to ensure clean test state
+// cleanupSQLiteDatabase removes the existing SQLite database to ensure a clean test state
 func cleanupSQLiteDatabase(t *testing.T) {
 	dataDir := config.SpikeNexusDataFolder()
 	dbPath := filepath.Join(dataDir, "spike.db")
@@ -31,7 +31,7 @@ func TestInitializeSqliteBackend_Success(t *testing.T) {
 	cleanupSQLiteDatabase(t)
 	defer cleanupSQLiteDatabase(t)
 
-	// Create test key
+	// Create the test key
 	key := createTestKey(t)
 
 	// Test initialization
@@ -42,7 +42,7 @@ func TestInitializeSqliteBackend_Success(t *testing.T) {
 		t.Fatal("initializeSqliteBackend returned nil")
 	}
 
-	// Verify database file was created
+	// Verify the database file was created
 	dataDir := config.SpikeNexusDataFolder()
 	dbPath := filepath.Join(dataDir, "spike.db")
 	if _, err := os.Stat(dbPath); os.IsNotExist(err) {
@@ -68,10 +68,10 @@ func TestInitializeSqliteBackend_ZeroKey(t *testing.T) {
 	cleanupSQLiteDatabase(t)
 	defer cleanupSQLiteDatabase(t)
 
-	// Create zero key
+	// Create a zero key
 	zeroKey := createZeroKey()
 
-	// Test with zero key - this should work (unlike the general validation in InitializeBackend)
+	// Test with a zero key - this should work (unlike the general validation in InitializeBackend)
 	backend := initializeSqliteBackend(zeroKey)
 
 	// Should succeed - zero key is valid for SQLite backend creation itself
@@ -84,7 +84,7 @@ func TestInitializeSqliteBackend_MultipleInitializations(t *testing.T) {
 	cleanupSQLiteDatabase(t)
 	defer cleanupSQLiteDatabase(t)
 
-	// Create test key
+	// Create a test key
 	key := createTestKey(t)
 
 	// Initialize first time
@@ -93,7 +93,7 @@ func TestInitializeSqliteBackend_MultipleInitializations(t *testing.T) {
 		t.Fatal("First initialization failed")
 	}
 
-	// Initialize second time (should also work)
+	// Initialize the second time (should also work)
 	backend2 := initializeSqliteBackend(key)
 	if backend2 == nil {
 		t.Fatal("Second initialization failed")
@@ -107,7 +107,7 @@ func TestInitializeSqliteBackend_MultipleInitializations(t *testing.T) {
 
 // Benchmark tests
 func BenchmarkInitializeSqliteBackend(b *testing.B) {
-	// Create test key
+	// Create a test key
 	key := &[crypto.AES256KeySize]byte{}
 	for i := range key {
 		key[i] = byte(i % 256)
@@ -117,11 +117,11 @@ func BenchmarkInitializeSqliteBackend(b *testing.B) {
 	dataDir := config.SpikeNexusDataFolder()
 	dbPath := filepath.Join(dataDir, "spike.db")
 	if _, err := os.Stat(dbPath); err == nil {
-		os.Remove(dbPath)
+		_ = os.Remove(dbPath)
 	}
 	defer func() {
 		if _, err := os.Stat(dbPath); err == nil {
-			os.Remove(dbPath)
+			_ = os.Remove(dbPath)
 		}
 	}()
 

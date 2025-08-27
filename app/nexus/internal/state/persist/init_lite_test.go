@@ -11,7 +11,7 @@ import (
 )
 
 func TestInitializeLiteBackend_Success(t *testing.T) {
-	// Create test key
+	// Create a test key
 	key := createTestKey(t)
 
 	// Test initialization
@@ -30,18 +30,18 @@ func TestInitializeLiteBackend_NilKey_ShouldFatal(t *testing.T) {
 	// terminate the entire test process. The behavior is verified by manual testing
 	// or integration tests that can handle process termination.
 	//
-	// Expected behavior: initializeLiteBackend panics/exits when called with nil key
+	// Expected behavior: initializeLiteBackend panics/exits when called with a nil key
 }
 
 func TestInitializeLiteBackend_ZeroKey(t *testing.T) {
-	// Create zero key
+	// Create a zero key
 	zeroKey := createZeroKey()
 
-	// Test with zero key - this should work at the initializeLiteBackend level
+	// Test with the zero key - this should work at the initializeLiteBackend level
 	// (the validation happens in InitializeBackend, not here)
 	backend := initializeLiteBackend(zeroKey)
 
-	// Should succeed - zero key validation happens at higher level
+	// Should succeed - zero key validation happens at a higher level
 	if backend == nil {
 		t.Error("Expected initializeLiteBackend to succeed with zero key")
 	}
@@ -117,7 +117,7 @@ func TestInitializeLiteBackend_ValidKey_DifferentPatterns(t *testing.T) {
 }
 
 func TestInitializeLiteBackend_MultipleInitializations(t *testing.T) {
-	// Create test key
+	// Create the test key
 	key := createTestKey(t)
 
 	// Initialize multiple times
@@ -187,7 +187,7 @@ func TestInitializeLiteBackend_ConcurrentAccess(t *testing.T) {
 
 // Benchmark tests
 func BenchmarkInitializeLiteBackend(b *testing.B) {
-	// Create test key
+	// Create a test key
 	key := &[crypto.AES256KeySize]byte{}
 	for i := range key {
 		key[i] = byte(i % 256)
