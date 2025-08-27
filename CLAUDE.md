@@ -8,8 +8,8 @@ SPIKE Policies use `SPIFFEIDPattern` and `PathPattern` fields. Those fields
 are regular expression Strings; NOT globs.
 
 - **ALWAYS use regex patterns, NOT globs**
-- ✅ Correct: `/path/to/.*`, `/spiffe://example.com/workload/.*`
-- ❌ Wrong: `/path/to/*`, `/spiffe://example.com/workload/*`
+- ✅ Correct: `/path/to/.*`, `spiffe://example\.com/workload/.*`
+- ❌ Wrong: `/path/to/*`, `spiffe://example.com/workload/*`
 
 ### Paths used in Secrets and Policies are NOT Unix-like paths; they are Namespaces
 
