@@ -109,7 +109,14 @@ and sometimes make basic grammatical errors.
 For example `// Test with empty map` should better have been
 `// Test with an empty map`.
 
-Pay attention to punctuation and grammar.
+`Super permission acts as a joker — grants all permissions` should have been
+`The "Super" permission acts as a joker—grants all permissions.` (no space
+before and after em-dash).
+
+While at it, you can tone down your em-dash usage. Yes, it is good grammar,
+ but you tend to overuse it and liberally sprinkle it everywhere.
+
+In short, pay extra attention to punctuation and grammar.
 
 ### Line Length
 
