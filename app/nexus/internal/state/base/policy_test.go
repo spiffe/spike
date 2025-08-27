@@ -708,7 +708,7 @@ func TestListPoliciesByPath_NoMatches(t *testing.T) {
 		resetBackendForTest()
 		persist.InitializeBackend(nil)
 
-		// Create a policy with different path pattern
+		// Create a policy with a different path pattern
 		policy := data.Policy{
 			Name:            "different-path-policy",
 			SPIFFEIDPattern: "*",
@@ -721,8 +721,8 @@ func TestListPoliciesByPath_NoMatches(t *testing.T) {
 			t.Fatalf("Failed to create policy: %v", err)
 		}
 
-		// List policies with non-matching path
-		matchingPolicies, err := ListPoliciesByPath("/other/.*")
+		// List policies with a non-matching path
+		matchingPolicies, err := ListPoliciesByPath("other/.*")
 		if err != nil {
 			t.Fatalf("Failed to list policies by path: %v", err)
 		}
@@ -822,7 +822,7 @@ func TestListPoliciesBySPIFFEID_NoMatches(t *testing.T) {
 		resetBackendForTest()
 		persist.InitializeBackend(nil)
 
-		// Create a policy with different SPIFFE ID pattern
+		// Create a policy with a different SPIFFE ID pattern
 		policy := data.Policy{
 			Name:            "different-spiffeid-policy",
 			SPIFFEIDPattern: "spiffe://example.org/.*",
@@ -852,6 +852,8 @@ func TestListPoliciesBySPIFFEID_NoMatches(t *testing.T) {
 		}
 	})
 }
+
+// TODO: scan the codebase for environment variables and update configuration.md and claude.md.
 
 func TestPolicyRegexCompilation(t *testing.T) {
 	withEnvironment(t, "SPIKE_NEXUS_BACKEND_STORE", "memory", func() {
