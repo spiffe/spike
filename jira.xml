@@ -5,15 +5,98 @@
 # \\\\\\\ SPDX-License-Identifier: Apache-2.0
 -->
 <stuff>
-  <kubernetification>
+  <after-mergin-no-cache-feature>
     <issue>
-      Demo update:
-      4/9 setup with 3 edge servers instead of 2;
-      this will mean a single edge server will never have enough shards
-      to recompute the root key, which will be an added level of security.
+      The code need some cleanup; so here are things to do after merging the "good enough" version.
+
+        TODO: edit this list.
     </issue>
-  </kubernetification>
+  </after-mergin-no-cache-feature>
   <immediate-backlog>
+      <issue>
+          add to docs:
+          sourcing
+          source /home/volkan/WORKSPACE/spike/hack/lib/env.sh
+          in your profile file can be helpful for development
+          it has predefined environment variables for bare-metal local
+          development.
+          `make start` already does that for the apps that it launches.
+      </issue>
+      <issue>
+          consider adding an "s3" backing store.
+
+          this will be different from the Lite option. It will support policies, and other utilities,
+          it will essentially act as a file-based databased stored in an object store.
+
+          policy management will be done via standard SPIKE policies.
+
+          will be able to connect s3 and anything s3-compatible.
+
+          s3 connection can be established by SPIFFE OIDC, or some other way.
+      </issue>
+	  <issue>
+		  nexus should have a status endpoint and pilot should warn the user if
+		  nexus is not ready
+
+		  Bootstrap completed successfully!
+➜  spike git:(feature/no-cache) ✗ spike secret list
+Error listing secret keys: post: Problem connecting to peer
+Post "https://localhost:8553/v1/store/secrets?action=list": dial tcp 127.0.0.1:8553: connect: connection refused
+➜  spike git:(feature/no-cache) ✗ spike secret list
+
+     </issue>
+      <issue>
+          we removed s3 store type; remove it from docs if any too.
+      </issue>
+      <issue>
+          fix all `t.Skip()` skipped tests.
+      </issue>
+      <issue>
+          address TODO:s in the source code.
+      </issue>
+      <issue>
+          CLI should call log.FatalLn and log.FatalLn should panic for better
+          testability.
+
+
+          // CLI app tests
+          func TestRun_InvalidConfig(t *testing.T) {
+          defer func() {
+          if r := recover(); r == nil {
+          t.Error("Expected panic with invalid config")
+          }
+          }()
+
+          run() // This can now be tested!
+          }
+
+          // Library tests
+          func TestInitializeBackend_NilKey(t *testing.T) {
+          defer func() {
+          if r := recover(); r == nil {
+          t.Error("Expected panic with nil key")
+          }
+          }()
+
+          InitializeBackend(nil)
+          }
+
+      </issue>
+      <issue>
+          func Fatal(msg string) {
+          func FatalF(format string, args ...any) {
+          func FatalLn(args ...any) {
+          ^ these should use structured logs (log.Log().Error() to log
+          almost always when things crash.
+      </issue>
+      <issue>
+          do not cache secrets and policies in nexus:
+          https://github.com/spiffe/spike/issues/213
+
+          create an ADR about "not caching secrets locally and directly
+          querying the backing store" (will make HA simpler/easier and will
+          make SPIKE Nexus "mostly" stateless).
+      </issue>
       <issue>
           add unit tests.
           we are adding more and more features, and we don't have sufficient

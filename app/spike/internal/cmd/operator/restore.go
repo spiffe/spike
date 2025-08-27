@@ -14,6 +14,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	spike "github.com/spiffe/spike-sdk-go/api"
+	"github.com/spiffe/spike-sdk-go/crypto"
 	"github.com/spiffe/spike-sdk-go/log"
 	"github.com/spiffe/spike-sdk-go/security/mem"
 	"github.com/spiffe/spike-sdk-go/spiffeid"
@@ -91,7 +92,7 @@ func newOperatorRestoreCommand(
 
 			api := spike.NewWithSource(source)
 
-			var shardToRestore [32]byte
+			var shardToRestore [crypto.AES256KeySize]byte
 
 			// shard is in `spike:$id:$base64` format
 			shardParts := strings.SplitN(string(shard), ":", 3)
@@ -136,7 +137,7 @@ func newOperatorRestoreCommand(
 				os.Exit(1)
 			}
 
-			if len(decodedShard) != 32 {
+			if len(decodedShard) != crypto.AES256KeySize {
 				// Security: reset decodedShard immediately after use.
 				mem.ClearBytes(decodedShard)
 
@@ -145,7 +146,7 @@ func newOperatorRestoreCommand(
 				os.Exit(1)
 			}
 
-			for i := 0; i < 32; i++ {
+			for i := 0; i < crypto.AES256KeySize; i++ {
 				shardToRestore[i] = decodedShard[i]
 			}
 

@@ -33,8 +33,7 @@ export SPIKE_NEXUS_KEEPER_UPDATE_INTERVAL="1m"
 export SPIKE_NEXUS_SHAMIR_SHARES="3"
 export SPIKE_NEXUS_SHAMIR_THRESHOLD="2"
 
-export SPIKE_NEXUS_KEEPER_PEERS='{"1":"https://localhost:8443","2":"https://localhost:8543","3":"https://localhost:8643"}'
-
+export SPIKE_NEXUS_KEEPER_PEERS='https://localhost:8443,https://localhost:8543,https://localhost:8643'
 export SPIKE_KEEPER_TLS_PORT=":8443"
 
 export SPIKE_SYSTEM_LOG_LEVEL="debug"

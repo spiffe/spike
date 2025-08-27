@@ -22,7 +22,7 @@ func TestPolicySpecValidation(t *testing.T) {
 			policy: Spec{
 				Name:        "test-policy",
 				SpiffeID:    "spiffe://example.org/test/*",
-				Path:        "/secrets/*",
+				Path:        "secrets/*",
 				Permissions: []string{"read", "write"},
 			},
 			valid: true,
@@ -32,7 +32,7 @@ func TestPolicySpecValidation(t *testing.T) {
 			policy: Spec{
 				Name:        "",
 				SpiffeID:    "spiffe://example.org/test/*",
-				Path:        "/secrets/*",
+				Path:        "secrets/*",
 				Permissions: []string{"read"},
 			},
 			valid: false,
@@ -42,7 +42,7 @@ func TestPolicySpecValidation(t *testing.T) {
 			policy: Spec{
 				Name:        "test-policy",
 				SpiffeID:    "",
-				Path:        "/secrets/*",
+				Path:        "secrets/*",
 				Permissions: []string{"read"},
 			},
 			valid: false,
@@ -62,7 +62,7 @@ func TestPolicySpecValidation(t *testing.T) {
 			policy: Spec{
 				Name:        "test-policy",
 				SpiffeID:    "spiffe://example.org/test/*",
-				Path:        "/secrets/*",
+				Path:        "secrets/*",
 				Permissions: []string{},
 			},
 			valid: false,
@@ -145,7 +145,7 @@ func TestYAMLParsingEdgeCases(t *testing.T) {
 			name: "quoted_values",
 			yamlContent: `name: "my-policy"
 spiffeid: "spiffe://example.org/quoted/*"
-path: "/secrets/quoted/*"
+path: "secrets/quoted/*"
 permissions:
   - "read"
   - "write"`,
@@ -153,7 +153,7 @@ permissions:
 			expectValue: Spec{
 				Name:        "my-policy",
 				SpiffeID:    "spiffe://example.org/quoted/*",
-				Path:        "/secrets/quoted/*",
+				Path:        "secrets/quoted/*",
 				Permissions: []string{"read", "write"},
 			},
 		},
@@ -161,13 +161,13 @@ permissions:
 			name: "permissions_as_flow_sequence",
 			yamlContent: `name: flow-policy
 spiffeid: spiffe://example.org/flow/*
-path: /secrets/flow/*
+path: secrets/flow/*
 permissions: [read, write, list]`,
 			expectError: false,
 			expectValue: Spec{
 				Name:        "flow-policy",
 				SpiffeID:    "spiffe://example.org/flow/*",
-				Path:        "/secrets/flow/*",
+				Path:        "secrets/flow/*",
 				Permissions: []string{"read", "write", "list"},
 			},
 		},
@@ -176,14 +176,14 @@ permissions: [read, write, list]`,
 			yamlContent: `name: multiline-policy
 spiffeid: >
   spiffe://example.org/multiline/*
-path: /secrets/multiline/*
+path: secrets/multiline/*
 permissions:
   - read`,
 			expectError: false,
 			expectValue: Spec{
 				Name:        "multiline-policy",
 				SpiffeID:    "spiffe://example.org/multiline/*\n",
-				Path:        "/secrets/multiline/*",
+				Path:        "secrets/multiline/*",
 				Permissions: []string{"read"},
 			},
 		},

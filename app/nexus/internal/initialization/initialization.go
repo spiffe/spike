@@ -5,11 +5,8 @@
 package initialization
 
 import (
-	"crypto/rand"
-
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	"github.com/spiffe/spike-sdk-go/log"
-	"github.com/spiffe/spike-sdk-go/security/mem"
 
 	"github.com/spiffe/spike/app/nexus/internal/env"
 	"github.com/spiffe/spike/app/nexus/internal/initialization/recovery"
@@ -17,34 +14,36 @@ import (
 )
 
 // Initialize initializes the SPIKE Nexus backing store based on the configured
-// backend store type. The function handles two initialization modes:
+// backend store type. The function handles three initialization modes:
 //
-// 1. Keeper-based initialization (for SQLite and Lite backend types):
+// 1. SPIKE-Keeper-based initialization (SQLite and Lite backends):
 //   - Initializes the backing store from SPIKE Keeper instances
-//   - Starts a background process for periodic shard synchronization
+//   - Starts a background goroutine for periodic shard synchronization
 //
-// 2. In-memory initialization (for other backend types):
-//   - Generates a cryptographically secure 32-byte root key
-//   - Initializes the internal state with the generated root key
-//   - Securely zeros out the root key from memory after use
+// 2. In-memory initialization (Memory backend):
+//   - Initializes an empty in-memory backing store without root key
+//   - Logs warnings about non-production use
+//   - Does not use SPIKE Keepers for disaster recovery.
+//
+// 3. Invalid backend type:
+//   - Terminates the program with a fatal error
 //
 // The source parameter provides the X.509 certificates and private keys
 // needed for SPIFFE-based authentication when communicating with SPIKE Keepers.
+// This parameter is only used for SQLite and Lite backend types.
 //
-// Security considerations:
-//   - Root keys are generated using crypto/rand for cryptographic security
-//   - Memory is explicitly zeroed after use to prevent key material leakage
-//   - The root key is passed by reference to avoid inadvertent copying
+// Backend type configuration is determined by env.BackendStoreType().
+// Valid backend types are: 'sqlite', 'lite', or 'memory'.
 //
-// Note: This function will call log.Fatal and terminate the program if
-// cryptographically secure random number generation fails.
+// Note: This function will call log.Fatal and terminate the program if an
+// invalid backend store type is configured.
 func Initialize(source *workloadapi.X509Source) {
 	const fName = "Initialize"
 
-	requireKeepersToBootstrap := env.BackendStoreType() == env.Sqlite ||
+	requireBackingStoreToBootstrap := env.BackendStoreType() == env.Sqlite ||
 		env.BackendStoreType() == env.Lite
 
-	if requireKeepersToBootstrap {
+	if requireBackingStoreToBootstrap {
 		// Initialize the backing store from SPIKE Keeper instances.
 		// This is only required when the SPIKE Nexus needs bootstrapping.
 		// For modes where bootstrapping is not required (such as in-memory mode),
@@ -59,26 +58,25 @@ func Initialize(source *workloadapi.X509Source) {
 		return
 	}
 
-	// Internal bootstrapping is required.
-	// Initialize the backing store with a cryptographically secure root key.
-	// Do not use SPIKE Keepers.
+	devMode := env.BackendStoreType() == env.Memory
 
-	log.Log().Info(fName, "message", "Will not use SPIKE Keepers.")
+	if devMode {
+		log.Log().Warn(fName, "message", "In-memory store will be used.")
+		log.Log().Warn(fName, "message", "Will not use SPIKE Keepers.")
+		log.Log().Warn(fName,
+			"message",
+			"This mode is NOT recommended for production use.")
 
-	// Security: Use a static byte array and pass it as a pointer to avoid
-	// inadvertent pass-by-value copying / memory allocation.
-	var rootKey [32]byte
-	// Security: Zero-out rootKey after persisted internally.
-	defer func() {
-		// Note: Each function must zero-out ONLY the items it has created.
-		// If it is borrowing an item by reference, it must not zero-out the item
-		// and let the owner zero-out the item.
-		mem.ClearRawBytes(&rootKey)
-	}()
-
-	if _, err := rand.Read(rootKey[:]); err != nil {
-		log.Fatal(err.Error())
+		// `nil` will skip root key initialization and simply initializes an
+		// in-memory backing store.
+		state.Initialize(nil)
+		return
 	}
 
-	state.Initialize(&rootKey)
+	// Unknown store type.
+	// Better to crash, since this is likely a configuration failure.
+	log.FatalLn(
+		fName + ": Invalid backend store type: '" + env.BackendStoreType() + "'." +
+			" Please set SPIKE_BACKEND_STORE_TYPE to 'sqlite', 'lite', or 'memory'.",
+	)
 }

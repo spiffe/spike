@@ -20,6 +20,9 @@ import (
 	"github.com/spiffe/spike/app/bootstrap/internal/url"
 )
 
+// TODO: ! make os exit testable.
+var osExit = os.Exit
+
 func main() {
 	const fName = "boostrap.main"
 
@@ -29,7 +32,7 @@ func main() {
 		fmt.Println("")
 		fmt.Println("Usage: bootstrap -init")
 		fmt.Println("")
-		os.Exit(1)
+		osExit(1)
 		return
 	}
 

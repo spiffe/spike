@@ -55,8 +55,8 @@ func (s *DataStore) StoreSecret(
 
 	// Update metadata
 	_, err = tx.ExecContext(ctx, ddl.QueryUpdateSecretMetadata,
-		path, secret.Metadata.CurrentVersion,
-		secret.Metadata.CreatedTime, secret.Metadata.UpdatedTime)
+		path, secret.Metadata.CurrentVersion, secret.Metadata.OldestVersion,
+		secret.Metadata.CreatedTime, secret.Metadata.UpdatedTime, secret.Metadata.MaxVersions)
 	if err != nil {
 		return fmt.Errorf("failed to kv secret metadata: %w", err)
 	}

@@ -39,7 +39,7 @@ func TestReadPolicyFromFile(t *testing.T) {
 			name: "valid_policy_file",
 			fileContent: `name: test-policy
 spiffeid: spiffe://example.org/test/*
-path: /secrets/*
+path: secrets/*
 permissions:
   - read
   - write`,
@@ -47,7 +47,7 @@ permissions:
 			want: Spec{
 				Name:        "test-policy",
 				SpiffeID:    "spiffe://example.org/test/*",
-				Path:        "/secrets/*",
+				Path:        "secrets/*",
 				Permissions: []string{"read", "write"},
 			},
 			wantErr: false,
@@ -66,7 +66,7 @@ permissions:
 			want: Spec{
 				Name:        "full-access-policy",
 				SpiffeID:    "spiffe://example.org/admin/*",
-				Path:        "/*",
+				Path:        "/*", // TODO: path and spiffeid patterns are NOT globs; they are regexes!
 				Permissions: []string{"read", "write", "list", "super"},
 			},
 			wantErr: false,
@@ -74,7 +74,7 @@ permissions:
 		{
 			name: "missing_name",
 			fileContent: `spiffeid: spiffe://example.org/test/*
-path: /secrets/*
+path: secrets/*
 permissions:
   - read`,
 			fileName:    "missing-name.yaml",
@@ -84,7 +84,7 @@ permissions:
 		{
 			name: "missing_spiffeid",
 			fileContent: `name: test-policy
-path: /secrets/*
+path: secrets/*
 permissions:
   - read`,
 			fileName:    "missing-spiffeid.yaml",
@@ -105,7 +105,7 @@ permissions:
 			name: "missing_permissions",
 			fileContent: `name: test-policy
 spiffeid: spiffe://example.org/test/*
-path: /secrets/*`,
+path: secrets/*`,
 			fileName:    "missing-permissions.yaml",
 			wantErr:     true,
 			errContains: "permissions are required",
@@ -114,7 +114,7 @@ path: /secrets/*`,
 			name: "empty_permissions_list",
 			fileContent: `name: test-policy
 spiffeid: spiffe://example.org/test/*
-path: /secrets/*
+path: secrets/*
 permissions: []`,
 			fileName:    "empty-permissions.yaml",
 			wantErr:     true,
@@ -124,7 +124,7 @@ permissions: []`,
 			name: "invalid_yaml",
 			fileContent: `name: test-policy
 spiffeid: spiffe://example.org/test/*
-path: /secrets/*
+path: secrets/*
 permissions: [
   - read
   - write`, // Invalid YAML - missing closing bracket
@@ -258,12 +258,12 @@ func TestGetPolicyFromFlags(t *testing.T) {
 			name:          "valid_flags",
 			inputName:     "test-policy",
 			inputSpiffeID: "spiffe://example.org/test/*",
-			inputPath:     "/secrets/*",
+			inputPath:     "secrets/*",
 			inputPerms:    "read,write",
 			want: Spec{
 				Name:        "test-policy",
 				SpiffeID:    "spiffe://example.org/test/*",
-				Path:        "/secrets/*",
+				Path:        "secrets/*",
 				Permissions: []string{"read", "write"},
 			},
 			wantErr: false,
@@ -272,12 +272,12 @@ func TestGetPolicyFromFlags(t *testing.T) {
 			name:          "valid_flags_with_spaces",
 			inputName:     "test-policy",
 			inputSpiffeID: "spiffe://example.org/test/*",
-			inputPath:     "/secrets/*",
+			inputPath:     "secrets/*",
 			inputPerms:    "read, write, list",
 			want: Spec{
 				Name:        "test-policy",
 				SpiffeID:    "spiffe://example.org/test/*",
-				Path:        "/secrets/*",
+				Path:        "secrets/*",
 				Permissions: []string{"read", "write", "list"},
 			},
 			wantErr: false,
@@ -286,12 +286,12 @@ func TestGetPolicyFromFlags(t *testing.T) {
 			name:          "single_permission",
 			inputName:     "read-only-policy",
 			inputSpiffeID: "spiffe://example.org/readonly/*",
-			inputPath:     "/secrets/readonly/*",
+			inputPath:     "secrets/readonly/*",
 			inputPerms:    "read",
 			want: Spec{
 				Name:        "read-only-policy",
 				SpiffeID:    "spiffe://example.org/readonly/*",
-				Path:        "/secrets/readonly/*",
+				Path:        "secrets/readonly/*",
 				Permissions: []string{"read"},
 			},
 			wantErr: false,
@@ -314,7 +314,7 @@ func TestGetPolicyFromFlags(t *testing.T) {
 			name:          "missing_name",
 			inputName:     "",
 			inputSpiffeID: "spiffe://example.org/test/*",
-			inputPath:     "/secrets/*",
+			inputPath:     "secrets/*",
 			inputPerms:    "read",
 			wantErr:       true,
 			errContains:   "--name",
@@ -323,7 +323,7 @@ func TestGetPolicyFromFlags(t *testing.T) {
 			name:          "missing_spiffeid",
 			inputName:     "test-policy",
 			inputSpiffeID: "",
-			inputPath:     "/secrets/*",
+			inputPath:     "secrets/*",
 			inputPerms:    "read",
 			wantErr:       true,
 			errContains:   "--spiffeid",
@@ -341,7 +341,7 @@ func TestGetPolicyFromFlags(t *testing.T) {
 			name:          "missing_permissions",
 			inputName:     "test-policy",
 			inputSpiffeID: "spiffe://example.org/test/*",
-			inputPath:     "/secrets/*",
+			inputPath:     "secrets/*",
 			inputPerms:    "",
 			wantErr:       true,
 			errContains:   "--permissions",
@@ -350,7 +350,7 @@ func TestGetPolicyFromFlags(t *testing.T) {
 			name:          "multiple_missing_flags",
 			inputName:     "",
 			inputSpiffeID: "",
-			inputPath:     "/secrets/*",
+			inputPath:     "secrets/*",
 			inputPerms:    "read",
 			wantErr:       true,
 			errContains:   "required flags are missing",
@@ -359,12 +359,12 @@ func TestGetPolicyFromFlags(t *testing.T) {
 			name:          "empty_permissions_after_split",
 			inputName:     "test-policy",
 			inputSpiffeID: "spiffe://example.org/test/*",
-			inputPath:     "/secrets/*",
+			inputPath:     "secrets/*",
 			inputPerms:    ",,,",
 			want: Spec{
 				Name:        "test-policy",
 				SpiffeID:    "spiffe://example.org/test/*",
-				Path:        "/secrets/*",
+				Path:        "secrets/*",
 				Permissions: []string{},
 			},
 			wantErr: false,

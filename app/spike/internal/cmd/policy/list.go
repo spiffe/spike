@@ -33,7 +33,7 @@ import (
 //
 // Flags:
 //   - --format: Output format ("human" or "json", default is "human")
-//   - --path: Filter policies by a resource path pattern (e.g., '/secrets/*')
+//   - --path: Filter policies by a resource path pattern (e.g., 'secrets/*')
 //   - --spiffeid: Filter policies by a SPIFFE ID pattern (e.g., 'spiffe://example.org/service/*')
 //
 // Note: --path and --spiffeid flags cannot be used together.
@@ -42,7 +42,7 @@ import (
 //
 //	spike policy list
 //	spike policy list --format=json
-//	spike policy list --path="/api/v1/*"
+//	spike policy list --path="secrets/db/*"
 //	spike policy list --spiffeid="spiffe://example.org/app"
 //
 // Example output for human format:

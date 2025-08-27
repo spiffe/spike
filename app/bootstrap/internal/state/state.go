@@ -30,7 +30,7 @@ import (
 func RootShares() []shamir.Share {
 	const fName = "rootShares"
 
-	var rootKeySeed [32]byte
+	var rootKeySeed [crypto.AES256KeySize]byte
 	if _, err := rand.Read(rootKeySeed[:]); err != nil {
 		log.Fatal(err.Error())
 	}

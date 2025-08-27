@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS policies (
     name TEXT NOT NULL UNIQUE,
     spiffe_id_pattern TEXT NOT NULL,
     path_pattern TEXT NOT NULL,
+    permissions TEXT NOT NULL,
     created_time DATETIME NOT NULL
 );
 
@@ -30,8 +31,10 @@ CREATE TABLE IF NOT EXISTS secrets (
 CREATE TABLE IF NOT EXISTS secret_metadata (
 	path TEXT PRIMARY KEY,
 	current_version INTEGER NOT NULL,
+	oldest_version INTEGER NOT NULL,
 	created_time DATETIME NOT NULL,
-	updated_time DATETIME NOT NULL
+	updated_time DATETIME NOT NULL,
+	max_versions INTEGER NOT NULL
 );
 
 CREATE INDEX IF NOT EXISTS idx_secrets_path ON secrets(path);
@@ -39,14 +42,16 @@ CREATE INDEX IF NOT EXISTS idx_secrets_created_time ON secrets(created_time);
 `
 
 // QueryUpdateSecretMetadata is a SQL query for inserting or updating secret
-// metadata. It updates the current version and updated time in conflict with
+// metadata. It updates the current version, oldest version, max versions, and updated time in conflict with
 // the existing path.
 const QueryUpdateSecretMetadata = `
-INSERT INTO secret_metadata (path, current_version, created_time, updated_time)
-VALUES (?, ?, ?, ?)
+INSERT INTO secret_metadata (path, current_version, oldest_version, created_time, updated_time, max_versions)
+VALUES (?, ?, ?, ?, ?, ?)
 ON CONFLICT(path) DO UPDATE SET
 	current_version = excluded.current_version,
-	updated_time = excluded.updated_time
+	oldest_version = excluded.oldest_version,
+	updated_time = excluded.updated_time,
+	max_versions = excluded.max_versions
 `
 
 // QueryUpsertSecret is a SQL query for inserting or updating the `secrets`
@@ -62,7 +67,7 @@ ON CONFLICT(path, version) DO UPDATE SET
 
 // QuerySecretMetadata is a SQL query to fetch metadata of a secret by its path.
 const QuerySecretMetadata = `
-SELECT current_version, created_time, updated_time 
+SELECT current_version, oldest_version, created_time, updated_time, max_versions
 FROM secret_metadata 
 WHERE path = ?
 `
@@ -77,12 +82,13 @@ ORDER BY version
 
 // QueryUpsertPolicy defines an SQL query to insert or update a policy record.
 const QueryUpsertPolicy = `
-INSERT INTO policies (id, name, spiffe_id_pattern, path_pattern, created_time)
-VALUES (?, ?, ?, ?, ?)
+INSERT INTO policies (id, name, spiffe_id_pattern, path_pattern, permissions, created_time)
+VALUES (?, ?, ?, ?, ?, ?)
 ON CONFLICT(id) DO UPDATE SET
     name = excluded.name,
     spiffe_id_pattern = excluded.spiffe_id_pattern,
-    path_pattern = excluded.path_pattern
+    path_pattern = excluded.path_pattern,
+    permissions = excluded.permissions
 `
 
 // QueryDeletePolicy defines the SQL statement to delete a policy by its ID.
@@ -93,13 +99,13 @@ WHERE id = ?
 
 // QueryLoadPolicy is a SQL query to select policy details by ID
 const QueryLoadPolicy = `
-SELECT name, spiffe_id_pattern, path_pattern, created_time 
+SELECT name, spiffe_id_pattern, path_pattern, permissions, created_time 
 FROM policies 
 WHERE id = ?
 `
 
 const QueryAllPolicies = `
-SELECT id, name, spiffe_id_pattern, path_pattern, created_time 
+SELECT id, name, spiffe_id_pattern, path_pattern, permissions, created_time 
 FROM policies
 `
 

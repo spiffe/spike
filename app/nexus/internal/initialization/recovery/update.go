@@ -14,6 +14,7 @@ import (
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	apiUrl "github.com/spiffe/spike-sdk-go/api/url"
+	"github.com/spiffe/spike-sdk-go/crypto"
 	"github.com/spiffe/spike-sdk-go/log"
 	network "github.com/spiffe/spike-sdk-go/net"
 	"github.com/spiffe/spike-sdk-go/security/mem"
@@ -23,38 +24,6 @@ import (
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 	"github.com/spiffe/spike/internal/net"
 )
-
-// mustUpdateRecoveryInfo updates the recovery information by setting a new root
-// key and computing new shares. It returns the computed shares.
-//
-// The function sets the provided root key in the state, computes shares from
-// the root secret, performs a sanity check on the computed shares, and ensures
-// that temporary variables containing sensitive information are zeroed out
-// after use.
-//
-// This is a critical security function that handles sensitive key material.
-//
-// Parameters:
-//   - rk: A pointer to a 32-byte array containing the new root key
-//
-// Returns:
-//   - []secretsharing.Share: The computed shares for the root secret
-func mustUpdateRecoveryInfo(rk *[32]byte) []secretsharing.Share {
-	const fName = "mustUpdateRecoveryInfo"
-	log.Log().Info(fName, "message", "Updating recovery info")
-
-	// Save recovery information.
-	state.SetRootKey(rk)
-
-	rootSecret, rootShares := computeShares()
-	sanityCheck(rootSecret, rootShares)
-	// Security: Ensure that temporary variables are zeroed out.
-	defer func() {
-		rootSecret.SetUint64(0)
-	}()
-
-	return rootShares
-}
 
 // sendShardsToKeepers distributes shares of the root key to all keeper nodes.
 // Note that we recompute shares for each keeper rather than computing them once
@@ -157,7 +126,7 @@ func sendShardsToKeepers(
 			continue
 		}
 
-		if len(contribution) != 32 {
+		if len(contribution) != crypto.AES256KeySize {
 			// Security: Ensure that the contribution is zeroed out before
 			// the next iteration.
 			//
@@ -184,7 +153,7 @@ func sendShardsToKeepers(
 
 		scr := reqres.ShardContributionRequest{}
 
-		shard := new([32]byte)
+		shard := new([crypto.AES256KeySize]byte)
 		// Security: shard is intentionally binary (instead of string) for
 		// better memory management. Do not change its data type.
 		copy(shard[:], contribution)

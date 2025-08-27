@@ -8,10 +8,11 @@
 package state
 
 import (
+	"github.com/spiffe/spike-sdk-go/crypto"
 	"sync"
 )
 
-var shard [32]byte
+var shard [crypto.AES256KeySize]byte
 var shardMutex sync.RWMutex
 
 // SetShard safely updates the global shard value under a write lock.
@@ -22,7 +23,7 @@ var shardMutex sync.RWMutex
 //   - s *[32]byte: Pointer to the new shard value to store
 //
 // Thread-safe through shardMutex.
-func SetShard(s *[32]byte) {
+func SetShard(s *[crypto.AES256KeySize]byte) {
 	shardMutex.Lock()
 	defer shardMutex.Unlock()
 
@@ -45,7 +46,7 @@ func SetShard(s *[32]byte) {
 // ShardNoSync returns a pointer to the shard without acquiring any locks.
 // Callers must ensure proper synchronization by using RLockShard and
 // RUnlockShard when accessing the returned pointer.
-func ShardNoSync() *[32]byte {
+func ShardNoSync() *[crypto.AES256KeySize]byte {
 	return &shard
 }
 

@@ -67,9 +67,9 @@ func (s *DataStore) Initialize(ctx context.Context) error {
 
 	// Create tables
 	if err := s.createTables(ctx, db); err != nil {
-		err := db.Close()
-		if err != nil {
-			return err
+		closeErr := db.Close()
+		if closeErr != nil {
+			return closeErr
 		}
 		return fmt.Errorf("failed to create tables: %w", err)
 	}

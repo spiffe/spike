@@ -15,6 +15,7 @@ import (
 	"github.com/cloudflare/circl/secretsharing"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
+	"github.com/spiffe/spike-sdk-go/crypto"
 	"github.com/spiffe/spike-sdk-go/log"
 	network "github.com/spiffe/spike-sdk-go/net"
 	"github.com/spiffe/spike-sdk-go/spiffe"
@@ -29,7 +30,7 @@ import (
 // the default endpoint socket. The function will terminate the program with
 // exit code 1 if the source creation fails.
 func Source() *workloadapi.X509Source {
-	const fName = "source"
+	const fName = "Source"
 	source, _, err := spiffe.Source(
 		context.Background(), spiffe.EndpointSocket(),
 	)
@@ -77,7 +78,7 @@ func Payload(share secretsharing.Share, keeperID string) []byte {
 		os.Exit(1)
 	}
 
-	if len(contribution) != 32 {
+	if len(contribution) != crypto.AES256KeySize {
 		log.Log().Warn(fName,
 			"message", "invalid contribution length",
 			"len", len(contribution), "keeper_id", keeperID)
@@ -85,7 +86,7 @@ func Payload(share secretsharing.Share, keeperID string) []byte {
 	}
 
 	scr := reqres.ShardContributionRequest{}
-	shard := new([32]byte)
+	shard := new([crypto.AES256KeySize]byte)
 	copy(shard[:], contribution)
 	scr.Shard = shard
 

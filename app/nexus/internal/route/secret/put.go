@@ -13,7 +13,7 @@ import (
 	"github.com/spiffe/spike-sdk-go/log"
 
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
-	journal "github.com/spiffe/spike/internal/journal"
+	"github.com/spiffe/spike/internal/journal"
 	"github.com/spiffe/spike/internal/net"
 )
 
@@ -74,7 +74,11 @@ func RoutePutSecret(
 	values := request.Values
 	path := request.Path
 
-	state.UpsertSecret(path, values)
+	err = state.UpsertSecret(path, values)
+	if err != nil {
+		return err
+	}
+
 	log.Log().Info(fName, "message", "Secret upserted")
 
 	responseBody := net.MarshalBody(reqres.SecretPutResponse{}, w)

@@ -5,32 +5,18 @@
 package base
 
 import (
+	"github.com/spiffe/spike-sdk-go/crypto"
+	"github.com/spiffe/spike-sdk-go/security/mem"
 	"sync"
 
-	"github.com/spiffe/spike-sdk-go/kv"
 	"github.com/spiffe/spike-sdk-go/log"
-
-	"github.com/spiffe/spike/app/nexus/internal/env"
 )
-
-// Global variables for storing secrets and policies with thread-safety.
-var (
-	// secretStore is a key-value store for managing secrets with version control.
-	secretStore = kv.New(kv.Config{
-		MaxSecretVersions: env.MaxSecretVersions(),
-	})
-	// secretStoreMu provides mutual exclusion for access to the secret store.
-	secretStoreMu sync.RWMutex
-)
-
-// policies is a thread-safe map used to store policy information.
-var policies sync.Map
 
 // Global variables related to the root key with thread-safety protection.
 var (
 	// rootKey is a 32-byte array that stores the cryptographic root key.
 	// It is initialized to zeroes by default.
-	rootKey [32]byte
+	rootKey [crypto.AES256KeySize]byte
 	// rootKeyMu provides mutual exclusion for access to the root key.
 	rootKeyMu sync.RWMutex
 )
@@ -41,7 +27,7 @@ var (
 //
 // Returns:
 //   - *[32]byte: Pointer to the root key
-func RootKeyNoLock() *[32]byte {
+func RootKeyNoLock() *[crypto.AES256KeySize]byte {
 	return &rootKey
 }
 
@@ -82,11 +68,25 @@ func RootKeyZero() bool {
 // be (and should be) cleaned up after calling this function without
 // impacting the saved root key.
 //
+// To ensure the system always has a legitimate root key, the operation is a
+// no-op if rk is nil or zeroed out. When that happens, the function logs
+// a warning.
+//
 // Parameters:
 //   - rk: Pointer to a 32-byte array containing the new root key value
-func SetRootKey(rk *[32]byte) {
+func SetRootKey(rk *[crypto.AES256KeySize]byte) {
 	fName := "SetRootKey"
 	log.Log().Info(fName, "message", "Setting root key")
+
+	if rk == nil {
+		log.Log().Warn(fName, "message", "Root key is nil. Skipping update.")
+		return
+	}
+
+	if mem.Zeroed32(rk) {
+		log.Log().Warn(fName, "message", "Root key is zeroed. Skipping update.")
+		return
+	}
 
 	rootKeyMu.Lock()
 	defer rootKeyMu.Unlock()

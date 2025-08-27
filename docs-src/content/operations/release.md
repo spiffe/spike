@@ -48,8 +48,9 @@ Release process:
 * Publish documentation by running `zola build` in `./docs-src` and then
   copying the generated HTML in `./docs-src/public` into `/.docs`.
 * Merge all the changes to the `main` branch.
-* Tag a version and convert that version to a **release* on **GitHub**.
-  * Make sure you GPG sign your tag.
+* Tag a version by running `make tag` (*this creates a GPG-signed tag using the 
+  version from `app/VERSION.txt` and pushes it to origin*).
+* Convert the tag to a **release** on **GitHub**.
 * Copy the current version's changelog over to the release notes on **GitHub**.
 * On a Mac machine [follow cross-platform build instructions][cross-platform]
   to generate binaries.

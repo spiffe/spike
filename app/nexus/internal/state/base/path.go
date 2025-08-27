@@ -4,16 +4,26 @@
 
 package base
 
-// ListKeys returns a slice of strings containing all keys currently stored
-// in the key-value store. The function acquires a lock on the store to ensure
-// a consistent view of the keys during enumeration.
+import (
+	"context"
+	"sort"
+
+	"github.com/spiffe/spike/app/nexus/internal/state/persist"
+)
+
+// ListKeys returns a slice of strings containing all secret paths currently
+// stored in the persistence backend. The function loads all secrets from the
+// backend and extracts their paths for enumeration.
 //
-// The returned slice contains the paths to all keys, regardless of their
-// version status (active or deleted). The paths are returned in lexicographical
-// order.
+// The function uses a background context for the backend operation. If an error
+// occurs while loading secrets from the backend, an empty slice is returned.
+// The returned paths are sorted in lexicographical order for consistent
+// ordering.
 //
 // Returns:
-//   - []string: A slice containing all key paths in the store
+//   - []string: A slice containing all secret paths in the backend, sorted
+//     lexicographically.
+//     Returns an empty slice if there are no secrets or if an error occurs.
 //
 // Example:
 //
@@ -22,7 +32,21 @@ package base
 //	    fmt.Printf("Found key: %s\n", key)
 //	}
 func ListKeys() []string {
-	secretStoreMu.Lock()
-	defer secretStoreMu.Unlock()
-	return secretStore.List()
+	ctx := context.Background()
+
+	secrets, err := persist.Backend().LoadAllSecrets(ctx)
+	if err != nil {
+		return []string{}
+	}
+
+	// Extract just the keys
+	keys := make([]string, 0, len(secrets))
+	for path := range secrets {
+		keys = append(keys, path)
+	}
+
+	// Sort for consistent ordering (lexicographical)
+	sort.Strings(keys)
+
+	return keys
 }
