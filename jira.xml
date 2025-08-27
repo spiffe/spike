@@ -22,6 +22,18 @@
           development.
           `make start` already does that for the apps that it launches.
       </issue>
+      <issue>
+          consider adding an "s3" backing store.
+
+          this will be different from the Lite option. It will support policies, and other utilities,
+          it will essentially act as a file-based databased stored in an object store.
+
+          policy management will be done via standard SPIKE policies.
+
+          will be able to connect s3 and anything s3-compatible.
+
+          s3 connection can be established by SPIFFE OIDC, or some other way.
+      </issue>
 	  <issue>
 		  nexus should have a status endpoint and pilot should warn the user if
 		  nexus is not ready
