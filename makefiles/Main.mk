@@ -36,3 +36,10 @@ upgradeable:
 tidy:
 	go mod tidy -v
 	go fmt ./...
+
+# Create a signed git tag using version from app/VERSION.txt
+# Usage: make tag
+# Reads version from app/VERSION.txt and creates a signed tag with "v" prefix
+# Example: if VERSION.txt contains "0.4.4", creates tag "v0.4.4"
+tag:
+	./hack/scm/tag.sh
