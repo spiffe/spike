@@ -87,6 +87,10 @@
   </task-group>
   <task-group for=">v0.5.0">
     <issue>
+      add these strings as constants in SDK to avoid typos in code:
+      p := os.Getenv("SPIKE_NEXUS_SHAMIR_SHARES")
+    </issue>
+    <issue>
       // create an initializeMemoryBackend function for consistency.
       be = memory.NewInMemoryStore(createCipher(), env.MaxSecretVersions())
     </issue>
