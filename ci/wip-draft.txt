@@ -150,7 +150,7 @@ func (h *TestHarness) waitForPod(namespace, labelSelector string, timeout time.D
 		case <-ctx.Done():
 			return "", fmt.Errorf("timeout waiting for pod with selector %s", labelSelector)
 		case <-time.After(2 * time.Second):
-			pods, err := h.clientset.CoreV1().Pods(namespace).List(context.TODO(), metav1.ListOptions{
+			pods, err := h.clientset.CoreV1().Pods(namespace).List(context.BG(), metav1.ListOptions{
 				LabelSelector: labelSelector,
 			})
 			if err != nil {

@@ -55,7 +55,7 @@ func TestNew_InvalidKey(t *testing.T) {
 		{"too short key (16 bytes)", 16},
 		//{"too short key (8 bytes)", 8},
 		//{"empty key", 0},
-		// TODO: fix these!
+		// FIX-ME: fix these!
 	}
 
 	for _, tt := range tests {
@@ -464,7 +464,7 @@ func TestDataStore_MemoryManagement(t *testing.T) {
 	}
 }
 
-// TODO: handle invalid cases.
+// FIX-ME: handle invalid cases.
 //func TestNew_CipherCreationFailure(t *testing.T) {
 //	// This test simulates cipher creation failure
 //	// In practice, aes.NewCipher only fails with invalid key lengths

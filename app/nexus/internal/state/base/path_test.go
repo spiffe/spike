@@ -443,7 +443,6 @@ func BenchmarkListKeys_Empty(b *testing.B) {
 
 func BenchmarkListKeys_SmallSet(b *testing.B) {
 	original := os.Getenv("SPIKE_NEXUS_BACKEND_STORE")
-	// TODO: this pattern is repeated a lot; move to a helper function.
 	_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", "memory")
 	defer func() {
 		if original != "" {

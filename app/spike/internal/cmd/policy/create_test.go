@@ -65,8 +65,8 @@ permissions:
 			fileName: "full-policy.yaml",
 			want: Spec{
 				Name:        "full-access-policy",
-				SpiffeID:    "spiffe://example.org/admin/*",
-				Path:        "/*", // TODO: path and spiffeid patterns are NOT globs; they are regexes!
+				SpiffeID:    "spiffe://example\\.org/admin/.*",
+				Path:        "secrets/.*",
 				Permissions: []string{"read", "write", "list", "super"},
 			},
 			wantErr: false,

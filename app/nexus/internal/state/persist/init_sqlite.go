@@ -44,15 +44,6 @@ func initializeSqliteBackend(rootKey *[32]byte) backend.Backend {
 
 	opts := map[backend.DatabaseConfigKey]any{}
 
-	// TODO: panic if rootKey is nil.
-
-	// TODO:
-	// changing log.FatalLn() (which calls os.Exit()) to panic() would be better because:
-	//  1. It allows the validation logic to be unit tested
-	//  2. Deferred cleanup functions would run
-	//  3. Better error reporting with stack traces
-	//  4. More idiomatic Go for library code
-
 	opts[backend.KeyDataDir] = config.SpikeNexusDataFolder()
 	opts[backend.KeyDatabaseFile] = dbName
 	opts[backend.KeyJournalMode] = env.DatabaseJournalMode()

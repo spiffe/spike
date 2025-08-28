@@ -2,8 +2,6 @@
 //  \\\\\ Copyright 2024-present SPIKE contributors.
 // \\\\\\\ SPDX-License-Identifier: Apache-2.0
 
-// TODO: add package documentation.
-
 package memory
 
 import (
@@ -16,10 +14,6 @@ import (
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/kv"
 )
-
-// TODO: this is a fairly-invasive refactoring; write as much tests as you can.
-
-// TODO: update changelog and cut a version when everything looks fine -- this is a big change.
 
 // InMemoryStore provides an in-memory implementation of a storage backend.
 // This implementation actually stores data in memory using the kv package,

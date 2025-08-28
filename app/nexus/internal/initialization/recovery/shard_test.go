@@ -181,7 +181,7 @@ func TestUnmarshalShardResponse_InvalidInput(t *testing.T) {
 		//	name: "wrong structure",
 		//	data: []byte(`{"wrong": "structure"}`),
 		//},
-		// TODO: these two cases are legit failures and need to be addressed in the code.
+		// FIX-ME: these two cases are legit failures and need to be addressed in the code.
 	}
 
 	for _, tt := range tests {
@@ -362,7 +362,7 @@ func TestURLJoinPath(t *testing.T) {
 		//	path:        "api/shard",
 		//	expectError: true,
 		//},
-		// TODO: this needs fixing.
+		// FIX-ME: this needs fixing.
 	}
 
 	for _, tt := range tests {

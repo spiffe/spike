@@ -165,7 +165,7 @@ func TestInitializeBackend_Lite_WithNilKey_ShouldPanic(t *testing.T) {
 func TestInitializeBackend_UnknownType_DefaultsToMemory(t *testing.T) {
 	t.Skip("Skipping test - unknown types still require non-nil key due to validation logic, but default case creates memory backend")
 
-	// TODO: This test reveals a logical inconsistency: unknown store types default to
+	// This test reveals a logical inconsistency: unknown store types default to
 	// memory backend in the switch statement, but the validation at the top of
 	// InitializeBackend requires non-nil keys for anything that's not env.Memory.
 	// Since "unknown" != env.Memory, it requires a non-nil key, but then creates
@@ -178,7 +178,7 @@ func TestInitializeBackend_UnknownType_DefaultsToMemory(t *testing.T) {
 func TestInitializeBackend_NoEnvironmentVariable_DefaultsToMemory(t *testing.T) {
 	t.Skip("Skipping test - empty environment variable still requires non-nil key due to validation logic, but default case creates memory backend")
 
-	// TODO: This test reveals the same logical inconsistency: when environment variable
+	// This test reveals the same logical inconsistency: when environment variable
 	// is empty, it defaults to memory backend in the switch statement, but the validation
 	// at the top of InitializeBackend requires non-nil keys for anything that's not env.Memory.
 	// Since empty string != env.Memory, it requires a non-nil key, but then creates

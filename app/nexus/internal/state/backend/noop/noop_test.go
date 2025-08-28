@@ -347,13 +347,10 @@ func TestNoopStore_StorePolicy(t *testing.T) {
 		{
 			name: "multi-permission policy",
 			policy: data.Policy{
-				ID:   "admin-policy",
-				Name: "Admin Policy",
-				// TODO: SPIFFEIDPattern should be regex; NOT a glob!!!!
-				// check for all other tests and everywhere across the code
-				// including documentation.
-				SPIFFEIDPattern: "spiffe://example.org/admin/*",
-				PathPattern:     "admin/secret/*",
+				ID:              "admin-policy",
+				Name:            "Admin Policy",
+				SPIFFEIDPattern: "spiffe://example\\.org/admin/.*",
+				PathPattern:     "admin/secret/.*",
 				Permissions:     []data.PolicyPermission{data.PermissionRead, data.PermissionWrite, data.PermissionList},
 			},
 		},

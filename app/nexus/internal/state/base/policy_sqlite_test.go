@@ -15,12 +15,10 @@ import (
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/crypto"
+
 	"github.com/spiffe/spike/app/nexus/internal/state/persist"
 	"github.com/spiffe/spike/internal/config"
 )
-
-// TODO: review every single file in the codebase and make sure they are (still)
-// in good shape.
 
 func TestSQLitePolicy_CreateAndGet(t *testing.T) {
 	withSQLiteEnvironment(t, func() {
@@ -640,8 +638,6 @@ func BenchmarkSQLiteGetPolicy(b *testing.B) {
 			_ = os.Unsetenv("SPIKE_NEXUS_DB_SKIP_SCHEMA_CREATION")
 		}
 	}()
-
-	// TODO: there are a lof of patterns that repeat; move them to helpers.
 
 	// Clean up the database
 	dataDir := config.SpikeNexusDataFolder()

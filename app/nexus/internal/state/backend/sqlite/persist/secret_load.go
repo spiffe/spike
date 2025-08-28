@@ -52,8 +52,6 @@ func (s *DataStore) loadSecretInternal(
 ) (*kv.Value, error) {
 	var secret kv.Value
 
-	// TODO: wherever context is used panic if the context is nil.
-
 	// Load metadata
 	err := s.db.QueryRowContext(ctx, ddl.QuerySecretMetadata, path).Scan(
 		&secret.Metadata.CurrentVersion,

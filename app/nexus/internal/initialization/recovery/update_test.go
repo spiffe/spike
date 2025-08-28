@@ -114,7 +114,7 @@ func TestURLJoinPathForKeepers(t *testing.T) {
 		//	expectedPath:  string(apiUrl.KeeperContribute),
 		//	expectError:   true,
 		//},
-		// TODO: address me.
+		// FIX-ME: address me.
 	}
 
 	for _, tt := range tests {

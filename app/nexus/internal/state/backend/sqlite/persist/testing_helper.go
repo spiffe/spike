@@ -6,19 +6,16 @@ import (
 	"crypto/cipher"
 	"crypto/rand"
 	"fmt"
-	"github.com/spiffe/spike/app/nexus/internal/state/backend/sqlite/ddl"
 	"os"
 	"path/filepath"
 	"testing"
 	"time"
 
 	"github.com/spiffe/spike-sdk-go/crypto"
+
+	"github.com/spiffe/spike/app/nexus/internal/state/backend/sqlite/ddl"
 	"github.com/spiffe/spike/internal/config"
 )
-
-// TODO: some of these helpers can go to the SDK too.
-
-// TODO: why do we need this interface?
 
 // TestingInterface allows both *testing.T and *testing.B to be used
 type TestingInterface interface {

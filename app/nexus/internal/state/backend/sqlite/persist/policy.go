@@ -17,8 +17,6 @@ import (
 	"github.com/spiffe/spike/app/nexus/internal/state/backend/sqlite/ddl"
 )
 
-// TODO: regenerate docs, also update changelog.
-
 // DeletePolicy removes a policy from the database by its ID.
 //
 // Uses serializable transaction isolation to ensure consistency.
@@ -160,9 +158,6 @@ func (s *DataStore) LoadPolicy(
 		}
 		return nil, fmt.Errorf("failed to load policy: %w", err)
 	}
-
-	// TODO: these serialization stuff can go to their own methods.
-	// They can even be part of the SDK.
 
 	// Deserialize permissions from comma-separated string
 	if permissionsStr != "" {

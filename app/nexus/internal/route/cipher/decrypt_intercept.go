@@ -48,9 +48,6 @@ func guardDecryptSecretRequest(
 		return apiErr.ErrUnauthorized
 	}
 
-	// TODO: this check should have been within state.CheckAccess
-	// maybe we can fork based on spike/system/secrets/encrypt.
-	//
 	// Lite Workloads are always allowed:
 	allowed := false
 	if spiffeid.IsLiteWorkload(

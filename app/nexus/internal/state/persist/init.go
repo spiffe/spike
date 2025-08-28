@@ -8,6 +8,7 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
+
 	"github.com/spiffe/spike-sdk-go/crypto"
 	"github.com/spiffe/spike-sdk-go/log"
 	"github.com/spiffe/spike-sdk-go/security/mem"
@@ -104,7 +105,6 @@ func InitializeBackend(rootKey *[crypto.AES256KeySize]byte) {
 	case env.Lite:
 		be = initializeLiteBackend(rootKey)
 	case env.Memory:
-		// TODO: create an initializeMemoryBackend function for consistency.
 		be = memory.NewInMemoryStore(createCipher(), env.MaxSecretVersions())
 	case env.Sqlite:
 		be = initializeSqliteBackend(rootKey)

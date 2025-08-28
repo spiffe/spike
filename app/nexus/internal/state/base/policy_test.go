@@ -16,8 +16,6 @@ import (
 	"github.com/spiffe/spike/app/nexus/internal/state/persist"
 )
 
-// TODO: once tests are done create a coverage report to see what's not tested / needs testing.
-
 func TestCheckAccess_PilotAccess(t *testing.T) {
 	// Test that pilot SPIFFE IDs always have access
 	withEnvironment(t, "SPIKE_NEXUS_BACKEND_STORE", "memory", func() {
@@ -853,8 +851,6 @@ func TestListPoliciesBySPIFFEID_NoMatches(t *testing.T) {
 	})
 }
 
-// TODO: scan the codebase for environment variables and update configuration.md and claude.md.
-
 func TestPolicyRegexCompilation(t *testing.T) {
 	withEnvironment(t, "SPIKE_NEXUS_BACKEND_STORE", "memory", func() {
 		resetBackendForTest()
@@ -969,9 +965,6 @@ func BenchmarkCreatePolicy(b *testing.B) {
 	for _, id := range createdPolicies {
 		_ = DeletePolicy(id)
 	}
-
-	// TODO: methods for delete all policies; delete all secrets; and delete
-	// a range of policies or secrets.
 }
 
 func BenchmarkListPolicies(b *testing.B) {

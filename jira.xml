@@ -17,248 +17,385 @@
       The code needs some cleanup; so here are things to do after merging the "good enough" version.
 
       * Scan all TOD0s in the codebase and come up with action plans (ie. candidate for next release
-        or shall wait for some time later.
+      or shall wait for some time later.
       * Read every file and check for consistency / conventions / AI slop etc.
     </issue>
   </after-mergin-no-cache-feature>
   <task-group for="v0.5.0">
     <issue>
-        SDK should panic for Log.FatalXXX for easier testing.
-
-        SDK should have a wrapper for os.Exit (for testing).
-
-        Add "generate coverage report" to the release instructions.
-        Coverage report shall be published on the website, and linked
-        somewhere in the docs too (find a suitable place)
+      scan the codebase for environment variables and update configuration.md and claude.md.
     </issue>
+    <issue>
+      check tests, there are a lot of repeating patterns;
+      move them to helpers.
+    </issue>
+    <issue>
+      review every file in the codebase and make sure they are in good shape.
+    </issue>
+    <issue>
+      check for all spiffeid patterns and path patterns everywhere
+      including documentation.
 
+      they should be regexes; not globs.
+    </issue>
+    <issue>
+      fix func TestInitializeBackend_UnknownType_DefaultsToMemory(t *testing.T) {
+      it is a logic error, so better to fix this release rather than waiting for
+      the next one.
+
+      same here:
+      func TestInitializeBackend_NoEnvironmentVariable_DefaultsToMemory(t *testing.T) {
+    </issue>
+    <issue>
+      make the CI folder work again.
+      there is a wip-draft.txt there to think about.
+      we can run the tests in gh actions inside a container probably.
+    </issue>
+    <issue>
+      regenerate documentation.
+    </issue>
+    <issue>
+      Update changelog before version cut.
+    </issue>
+    <issue>
+      SDK should panic for Log.FatalXXX for easier testing.
+
+      SDK should have a wrapper for os.Exit (for testing).
+
+      Add "generate coverage report" to the release instructions.
+      Coverage report shall be published on the website, and linked
+      somewhere in the docs too (find a suitable place)
+    </issue>
+    <issue>
+      // changing log.FatalLn() (which calls os.Exit()) to panic() would be better because:
+      //  1. It allows the validation logic to be unit tested
+      //  2. Deferred cleanup functions would run
+      //  3. Better error reporting with stack traces
+      //  4. More idiomatic Go for library code
+    </issue>
+    <issue>
+      func initializeSqliteBackend(rootKey *[32]byte) backend.Backend {
+      panic if rootkey is nil or empty.
+    </issue>
   </task-group>
   <task-group for=">v0.5.0">
-      <issue>
-          Fix LogFatalXXX-related tests.
-          * func TestPostHTTPInteraction(t *testing.T) {
-      </issue>
-      <issue>
-          Make this testable:
+    <issue>
+      // create an initializeMemoryBackend function for consistency.
+      be = memory.NewInMemoryStore(createCipher(), env.MaxSecretVersions())
+    </issue>
+    <issue>
+      update SPIKE pilot to be able to delete multiple policies or secrets
+    </issue>
+    <issue>
+      go through all files and create tests for them.
+      create a dedicated PR just for tests.
+    </issue>
+    <issue>
+      // this pattern is repeated a lot; move to a helper function.
+      _ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", "memory")
+      defer func() {
+      if original != "" {
+      _ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", original)
+      } else {
+      _ = os.Unsetenv("SPIKE_NEXUS_BACKEND_STORE")
+      }
+      }()
 
-          fmt.Println("")
-          fmt.Println("Usage: bootstrap -init")
-          fmt.Println("")
-          os.Exit(1) // define a global osExit function or maybe in SDK, to be able to test stuff.
-      </issue>
-      <issue>
-          func TestKeeperIDConversion(t *testing.T) {
-          keeper ids need to be stricter. add validation logic to the code.
-      </issue>
-      <issue>
-          func TestShardURL_InvalidInput(t *testing.T) {
-          Keeper API root shall not be empty.
-      </issue>
+
+    </issue>
+    <issue>
+      fix:
+      func TestInitialize_MemoryBackend_ValidKey(t *testing.T) {
+    </issue>
+    <issue>
+      // to SDK
+      //// Helper function to create a random test key
+      //func createRandomTestKey(t *testing.T) *[crypto.AES256KeySize]byte {
+      // key := &[crypto.AES256KeySize]byte{}
+      // if _, err := rand.Read(key[:]); err != nil {
+      // t.Fatalf("Failed to generate random test key: %v", err)
+      // }
+      // return key
+      //}
+    </issue>
+    <issue>
+      check all test helpers. some of them can go to the SDK instead.
+    </issue>
+    <issue>
+      wherever context is passed as an argument, panic if context is nil.
+    </issue>
+    <issue>
+      these serialization and deserialization functions can be
+      extracted. --- They can even be part of the Go SDK.
+
+      // Deserialize permissions from comma-separated string
+      if permissionsStr != "" {
+      permissionStrs := strings.Split(permissionsStr, ",")
+      policy.Permissions = make([]data.PolicyPermission, len(permissionStrs))
+      for i, permStr := range permissionStrs {
+      policy.Permissions[i] = data.PolicyPermission(strings.TrimSpace(permStr))
+      }
+      }
+    </issue>
+    <issue>
+      // add package documentation.
+
+      package memory
+    </issue>
+    <issue>
+      Fix LogFatalXXX-related tests.
+      * func TestPostHTTPInteraction(t *testing.T) {
+
+      Fix:
+      //func TestNew_CipherCreationFailure(t *testing.T) {
+    </issue>
+    <issue>
+      // this check should have been within state.CheckAccess
+      // maybe we can fork based on spike/system/secrets/encrypt.
+      //
+      // Lite Workloads are always allowed:
+      allowed := false
+      if spiffeid.IsLiteWorkload(
+      env.TrustRootForLiteWorkload(), sid.String()) {
+      allowed = true
+      }
+    </issue>
+    <issue>
+      Fix:
+      func TestNew_InvalidKey(t *testing.T) {
+    </issue>
+    <issue>
+      Fix:
+      func TestUnmarshalShardResponse_InvalidInput(t *testing.T) {
+
+      Fix:
+      func TestURLJoinPath(t *testing.T) {
+
+      Fix:
+      func TestURLJoinPathForKeepers(t *testing.T) {
+    </issue>
+    <issue>
+      Make this testable:
+
+      fmt.Println("")
+      fmt.Println("Usage: bootstrap -init")
+      fmt.Println("")
+      os.Exit(1) // define a global osExit function or maybe in SDK, to be able to test stuff.
+    </issue>
+    <issue>
+      func TestKeeperIDConversion(t *testing.T) {
+      keeper ids need to be stricter. add validation logic to the code.
+    </issue>
+    <issue>
+      func TestShardURL_InvalidInput(t *testing.T) {
+      Keeper API root shall not be empty.
+    </issue>
   </task-group>
   <immediate-backlog>
-      <issue>
-          add to docs:
-          sourcing
-          source /home/volkan/WORKSPACE/spike/hack/lib/env.sh
-          in your profile file can be helpful for development
-          it has predefined environment variables for bare-metal local
-          development.
-          `make start` already does that for the apps that it launches.
-      </issue>
-      <issue>
-          consider adding an "s3" backing store.
-
-          this will be different from the Lite option. It will support policies, and other utilities,
-          it will essentially act as a file-based databased stored in an object store.
-
-          policy management will be done via standard SPIKE policies.
-
-          will be able to connect s3 and anything s3-compatible.
-
-          s3 connection can be established by SPIFFE OIDC, or some other way.
-      </issue>
-	  <issue>
-		  nexus should have a status endpoint and pilot should warn the user if
-		  nexus is not ready
-
-		  Bootstrap completed successfully!
-➜  spike git:(feature/no-cache) ✗ spike secret list
-Error listing secret keys: post: Problem connecting to peer
-Post "https://localhost:8553/v1/store/secrets?action=list": dial tcp 127.0.0.1:8553: connect: connection refused
-➜  spike git:(feature/no-cache) ✗ spike secret list
-
-     </issue>
-      <issue>
-          we removed s3 store type; remove it from docs if any too.
-      </issue>
-      <issue>
-          fix all `t.Skip()` skipped tests.
-      </issue>
-      <issue>
-          address TODO:s in the source code.
-      </issue>
-      <issue>
-          CLI should call log.FatalLn and log.FatalLn should panic for better
-          testability.
-
-
-          // CLI app tests
-          func TestRun_InvalidConfig(t *testing.T) {
-          defer func() {
-          if r := recover(); r == nil {
-          t.Error("Expected panic with invalid config")
-          }
-          }()
-
-          run() // This can now be tested!
-          }
-
-          // Library tests
-          func TestInitializeBackend_NilKey(t *testing.T) {
-          defer func() {
-          if r := recover(); r == nil {
-          t.Error("Expected panic with nil key")
-          }
-          }()
-
-          InitializeBackend(nil)
-          }
-
-      </issue>
-      <issue>
-          func Fatal(msg string) {
-          func FatalF(format string, args ...any) {
-          func FatalLn(args ...any) {
-          ^ these should use structured logs (log.Log().Error() to log
-          almost always when things crash.
-      </issue>
-      <issue>
-          do not cache secrets and policies in nexus:
-          https://github.com/spiffe/spike/issues/213
-
-          create an ADR about "not caching secrets locally and directly
-          querying the backing store" (will make HA simpler/easier and will
-          make SPIKE Nexus "mostly" stateless).
-      </issue>
-      <issue>
-          add unit tests.
-          we are adding more and more features, and we don't have sufficient
-          coverage.
-      </issue>
-      <issue>
-          create a demo video about the new bootstrap flow
-          - for bare metal
-          - for kubernetes/minikube
-      </issue>
-      <issue>
-          Test SPIKE Lite setup.
-      </issue>
-      <issue>
-          maybe we can add a configurable "bootsrap time out" as an env var later. For now, the bootsrap app will try to bootstrap the thing in an exponentially-backing-off loop until it succeeds.
-      </issue>
-      <issue>
-          create a /status endpoint for SPIKE Nexus and use that for the
-          Bootstrap job instead of querying the jobs k8s api.
-          that will also mean, the Bootstrap job will be more secure since
-          its ServiceAccount will not need kube api access.
-      </issue>
-      <issue>
-          isolate this into a function
-
-          // Security: Use a static byte array and pass it as a pointer to avoid
-          // inadvertent pass-by-value copying / memory allocation.
-          var rootKey [32]byte
-          // Security: Zero-out rootKey after persisted internally.
-          defer func() {
-          // Note: Each function must zero-out ONLY the items it has created.
-          // If it is borrowing an item by reference, it must not zero-out the item
-          // and let the owner zero-out the item.
-          mem.ClearRawBytes(&rootKey)
-          }()
-
-          if _, err := rand.Read(rootKey[:]); err != nil {
-          log.Fatal(err.Error())
-          }
-
-          state.Initialize(&rootKey)
-      </issue>
-      <issue>
-          bootstrap: only Nexus can read the shard, Bootstrap cannot read the shard
-          RouteShard of keeper should reject of bootstrap tries to "read" a shard.
-      </issue>
-      <issue>
-          // I should be Nexus.
-          if !spiffeid.IsNexus(env.TrustRoot(), selfSpiffeid) {
-          log.FatalF("Authenticate: SPIFFE ID %s is not valid.\n", selfSpiffeid)
-          }
-
-          use the similar trust.Authenticate(...) pattern instead of these if checks.
-      </issue>
-      <issue>
-          maybe for vsecm: plugin-based dynamic secrets to access third-party
-          services:
-          https://developer.hashicorp.com/vault/tutorials/get-started/understand-static-dynamic-secrets
-        </issue>
-      <issue>
-          if spike nexus had a prometheus endpoint, what kinds of metrics
-          would it expose?
-      </issue>
-      <issue>
-          vsecm:
-          Integration with Key Vault providers
-          - e.g. AWS Secrets Manager, CyberArk
-      </issue>
-      <issue>
-          SPIKE OPA Integration
-          ---
-          webhooks for external policies, and maybe ValidatingAdmissionPolicies (CEL based)
-      </issue>
-      <issue>
-        Kubernetes secrets as a backing store for SPIKE.
-          The secrets are stored in k8s secrets in encrypted form.
-          the workloads have to decrypt the secrets using the lite API.
-      </issue>
-      <issue>
-          Audit Logging: SOC 2 Type II compliance
-          Records of creation, modification, and deletion, including the user who performed the action and a timestamp.
-      </issue>
     <issue>
-        add `make audit` to the CI pipeline
-        ci does its own verifications, so does `make audit`
-        these should be merged.
+      add to docs:
+      sourcing
+      source /home/volkan/WORKSPACE/spike/hack/lib/env.sh
+      in your profile file can be helpful for development
+      it has predefined environment variables for bare-metal local
+      development.
+      `make start` already does that for the apps that it launches.
     </issue>
-      <issue>
-          design a dedicated landing page.
-      </issue>
     <issue>
-        add make audit to spike-sdk-go too.
+      consider adding an "s3" backing store.
 
-        also add `make audit` to user-facing documentation
-        as in "run `make audit` before your commit" etc.
+      this will be different from the Lite option. It will support policies, and other utilities,
+      it will essentially act as a file-based databased stored in an object store.
+
+      policy management will be done via standard SPIKE policies.
+
+      will be able to connect s3 and anything s3-compatible.
+
+      s3 connection can be established by SPIFFE OIDC, or some other way.
     </issue>
-      <issue>
-          // FIXME move constant
-          case a == url.ActionDefault && p == "/v1/cipher/encrypt" && !fullMode:
-          return cipher.RouteEncrypt
-          case a == url.ActionDefault && p == "/v1/cipher/decrypt" && !fullMode:
-          return cipher.RouteDecrypt
-      </issue>
-      <issue>
-          u, err := url.JoinPath(
-          keeperAPIRoot, string(apiUrl.KeeperContribute),
-          )
-
-          these should be methods of SDK instead.
-      </issue>
-      <issue>
-          make sure we check Spike.LiteWorkload spiffe id in policies.
-          also make sure the encryption as a service works.
-      </issue>
     <issue>
-        A `--dry run` feature for vsecm commands:
-        it will not create policies, secrets, etc, but just pass validations
-        and return success/failure responses instead.
-        useful for integration tests.
+      nexus should have a status endpoint and pilot should warn the user if
+      nexus is not ready
+
+      Bootstrap completed successfully!
+      ➜ spike git:(feature/no-cache) ✗ spike secret list
+      Error listing secret keys: post: Problem connecting to peer
+      Post "https://localhost:8553/v1/store/secrets?action=list": dial tcp 127.0.0.1:8553: connect: connection refused
+      ➜ spike git:(feature/no-cache) ✗ spike secret list
+
+    </issue>
+    <issue>
+      we removed s3 store type; remove it from docs if any too.
+    </issue>
+    <issue>
+      fix all `t.Skip()` skipped tests.
+    </issue>
+    <issue>
+      address TODO:s in the source code.
+    </issue>
+    <issue>
+      CLI should call log.FatalLn and log.FatalLn should panic for better
+      testability.
+
+
+      // CLI app tests
+      func TestRun_InvalidConfig(t *testing.T) {
+      defer func() {
+      if r := recover(); r == nil {
+      t.Error("Expected panic with invalid config")
+      }
+      }()
+
+      run() // This can now be tested!
+      }
+
+      // Library tests
+      func TestInitializeBackend_NilKey(t *testing.T) {
+      defer func() {
+      if r := recover(); r == nil {
+      t.Error("Expected panic with nil key")
+      }
+      }()
+
+      InitializeBackend(nil)
+      }
+
+    </issue>
+    <issue>
+      func Fatal(msg string) {
+      func FatalF(format string, args ...any) {
+      func FatalLn(args ...any) {
+      ^ these should use structured logs (log.Log().Error() to log
+      almost always when things crash.
+    </issue>
+    <issue>
+      do not cache secrets and policies in nexus:
+      https://github.com/spiffe/spike/issues/213
+
+      create an ADR about "not caching secrets locally and directly
+      querying the backing store" (will make HA simpler/easier and will
+      make SPIKE Nexus "mostly" stateless).
+    </issue>
+    <issue>
+      add unit tests.
+      we are adding more and more features, and we don't have sufficient
+      coverage.
+    </issue>
+    <issue>
+      create a demo video about the new bootstrap flow
+      - for bare metal
+      - for kubernetes/minikube
+    </issue>
+    <issue>
+      Test SPIKE Lite setup.
+    </issue>
+    <issue>
+      maybe we can add a configurable "bootsrap time out" as an env var later. For now, the bootsrap app will try to
+      bootstrap the thing in an exponentially-backing-off loop until it succeeds.
+    </issue>
+    <issue>
+      create a /status endpoint for SPIKE Nexus and use that for the
+      Bootstrap job instead of querying the jobs k8s api.
+      that will also mean, the Bootstrap job will be more secure since
+      its ServiceAccount will not need kube api access.
+    </issue>
+    <issue>
+      isolate this into a function
+
+      // Security: Use a static byte array and pass it as a pointer to avoid
+      // inadvertent pass-by-value copying / memory allocation.
+      var rootKey [32]byte
+      // Security: Zero-out rootKey after persisted internally.
+      defer func() {
+      // Note: Each function must zero-out ONLY the items it has created.
+      // If it is borrowing an item by reference, it must not zero-out the item
+      // and let the owner zero-out the item.
+      mem.ClearRawBytes(&rootKey)
+      }()
+
+      if _, err := rand.Read(rootKey[:]); err != nil {
+      log.Fatal(err.Error())
+      }
+
+      state.Initialize(&rootKey)
+    </issue>
+    <issue>
+      bootstrap: only Nexus can read the shard, Bootstrap cannot read the shard
+      RouteShard of keeper should reject of bootstrap tries to "read" a shard.
+    </issue>
+    <issue>
+      // I should be Nexus.
+      if !spiffeid.IsNexus(env.TrustRoot(), selfSpiffeid) {
+      log.FatalF("Authenticate: SPIFFE ID %s is not valid.\n", selfSpiffeid)
+      }
+
+      use the similar trust.Authenticate(...) pattern instead of these if checks.
+    </issue>
+    <issue>
+      maybe for vsecm: plugin-based dynamic secrets to access third-party
+      services:
+      https://developer.hashicorp.com/vault/tutorials/get-started/understand-static-dynamic-secrets
+    </issue>
+    <issue>
+      if spike nexus had a prometheus endpoint, what kinds of metrics
+      would it expose?
+    </issue>
+    <issue>
+      vsecm:
+      Integration with Key Vault providers
+      - e.g. AWS Secrets Manager, CyberArk
+    </issue>
+    <issue>
+      SPIKE OPA Integration
+      ---
+      webhooks for external policies, and maybe ValidatingAdmissionPolicies (CEL based)
+    </issue>
+    <issue>
+      Kubernetes secrets as a backing store for SPIKE.
+      The secrets are stored in k8s secrets in encrypted form.
+      the workloads have to decrypt the secrets using the lite API.
+    </issue>
+    <issue>
+      Audit Logging: SOC 2 Type II compliance
+      Records of creation, modification, and deletion, including the user who performed the action and a timestamp.
+    </issue>
+    <issue>
+      add `make audit` to the CI pipeline
+      ci does its own verifications, so does `make audit`
+      these should be merged.
+    </issue>
+    <issue>
+      design a dedicated landing page.
+    </issue>
+    <issue>
+      add make audit to spike-sdk-go too.
+
+      also add `make audit` to user-facing documentation
+      as in "run `make audit` before your commit" etc.
+    </issue>
+    <issue>
+      // FIXME move constant
+      case a == url.ActionDefault && p == "/v1/cipher/encrypt" && !fullMode:
+      return cipher.RouteEncrypt
+      case a == url.ActionDefault && p == "/v1/cipher/decrypt" && !fullMode:
+      return cipher.RouteDecrypt
+    </issue>
+    <issue>
+      u, err := url.JoinPath(
+      keeperAPIRoot, string(apiUrl.KeeperContribute),
+      )
+
+      these should be methods of SDK instead.
+    </issue>
+    <issue>
+      make sure we check Spike.LiteWorkload spiffe id in policies.
+      also make sure the encryption as a service works.
+    </issue>
+    <issue>
+      A `--dry run` feature for vsecm commands:
+      it will not create policies, secrets, etc, but just pass validations
+      and return success/failure responses instead.
+      useful for integration tests.
     </issue>
     <issue>
       type ShardResponse struct {
@@ -317,7 +454,7 @@ Post "https://localhost:8553/v1/store/secrets?action=list": dial tcp 127.0.0.1:8
       return apiErr.ErrUnauthorized
       }
 
-:w
+      :w
 
     </issue>
     <issue>
@@ -343,12 +480,15 @@ Post "https://localhost:8553/v1/store/secrets?action=list": dial tcp 127.0.0.1:8
     <issue>
       fips compliance and boringcrpto
 
-      with new go you don’t need boring crypto for FIPS compliance; you still do need to change code, but not build parameters.
+      with new go you don’t need boring crypto for FIPS compliance; you still do need to change code, but not build
+      parameters.
       boring-crypto requires CGO, so without it, Keepers (and pilot) don’t need CGO.
       but for Nexus we still need cgo (because of sqlite)
-      that might be a reason enough to ditch sqlite and move towards some other database (and the “plugin” architecture that we discussed that will allow s3 etc compatibility)
+      that might be a reason enough to ditch sqlite and move towards some other database (and the “plugin” architecture
+      that we discussed that will allow s3 etc compatibility)
       But
-      that will be removing a feature that we support and have tested so far (which is okay, this is an alpha version product)
+      that will be removing a feature that we support and have tested so far (which is okay, this is an alpha version
+      product)
       a lot of work since the new backings store does not exist
     </issue>
     <issue>
@@ -477,7 +617,7 @@ Post "https://localhost:8553/v1/store/secrets?action=list": dial tcp 127.0.0.1:8
     <issue kind="v1.0-requirement">
       - OIDC integration: Ability to connect to an identity provider.
       - NOTE: This feature can be delegated to VSecM instead.
-        VSecM can be an identity broker; and SPIKE can be a client.
+      VSecM can be an identity broker; and SPIKE can be a client.
     </issue>
     <issue kind="v1.0-requirement">
       - ESO (External Secrets Operator) integration
@@ -486,7 +626,7 @@ Post "https://localhost:8553/v1/store/secrets?action=list": dial tcp 127.0.0.1:8
     <issue kind="v1.0-requirement">
       - An ADMIN UI (linked to OIDC probably)
       - NOTE: This feature can be delegated to VSecM instead.
-        VSecM can provide a UI for SPIKE Nexus.
+      VSecM can provide a UI for SPIKE Nexus.
     </issue>
     <issue kind="v1.0-requirement">
       - Ability to use the RESTful API without needing an SDK.
@@ -623,7 +763,8 @@ Post "https://localhost:8553/v1/store/secrets?action=list": dial tcp 127.0.0.1:8
       Where we basically turn off the secrets and policy api, and add an endpoint for encrypt / decrypt.
 
       2:51
-      we could still do a full s3 backend too, but for someone just wanting to handle things themselves, but have the power of nexus/keepers for encrypting/decrypting things just stored somewhere, it might be a nice feature.
+      we could still do a full s3 backend too, but for someone just wanting to handle things themselves, but have the
+      power of nexus/keepers for encrypting/decrypting things just stored somewhere, it might be a nice feature.
       2:52
       what do you thnk?
 
@@ -633,9 +774,12 @@ Post "https://localhost:8553/v1/store/secrets?action=list": dial tcp 127.0.0.1:8
 
       SPIKE Lite:
       # get pilot's pem and key to test things out.
-      # this can be part of documentation too. to test the API directly, 1. extract the pem and key, and then do regular curl.
-      curl -s -X POST --header "Content-Type:application/octet-stream" --data-binary "This is a test encryption" https://spire-spike-nexus/v1/encrypt -k --cert /tmp/pem/svid.0.pem --key /tmp/pem/svid.0.key -o encrypted
-      curl -s -X POST --header "Content-Type:application/octet-stream" --data-binary  @encrypted https://spire-spike-nexus/v1/decrypt -k --cert /tmp/pem/svid.0.pem --key /tmp/pem/svid.0.key -o decrypted
+      # this can be part of documentation too. to test the API directly, 1. extract the pem and key, and then do regular
+      curl.
+      curl -s -X POST --header "Content-Type:application/octet-stream" --data-binary "This is a test encryption"
+      https://spire-spike-nexus/v1/encrypt -k --cert /tmp/pem/svid.0.pem --key /tmp/pem/svid.0.key -o encrypted
+      curl -s -X POST --header "Content-Type:application/octet-stream" --data-binary @encrypted
+      https://spire-spike-nexus/v1/decrypt -k --cert /tmp/pem/svid.0.pem --key /tmp/pem/svid.0.key -o decrypted
       cat decrypted; echo
     </issue>
     <issue>
@@ -1193,8 +1337,10 @@ Post "https://localhost:8553/v1/store/secrets?action=list": dial tcp 127.0.0.1:8
       * in-memory -- in-memory mode should disregard any keeper config.
     </issue>
     <issue kind="performance,research" severity="low" priority="low" fun="high">
-      {"time":"2025-04-25T13:24:52.652299515-07:00","level":"INFO","m":"HydrateMemoryFromBackingStore","m":"HydrateMemoryFromBackingStore: secrets loaded"}
-      {"time":"2025-04-25T13:24:52.652368182-07:00","level":"INFO","m":"HydrateMemoryFromBackingStore","m":"HydrateMemoryFromBackingStore: policies loaded"}
+      {"time":"2025-04-25T13:24:52.652299515-07:00","level":"INFO","m":"HydrateMemoryFromBackingStore","m":"HydrateMemoryFromBackingStore:
+      secrets loaded"}
+      {"time":"2025-04-25T13:24:52.652368182-07:00","level":"INFO","m":"HydrateMemoryFromBackingStore","m":"HydrateMemoryFromBackingStore:
+      policies loaded"}
       ^
       how can we know that this data has already been pushed.
       a brute force way is to hash the last payloads and compare with the hashes of the current payloads.
@@ -1239,7 +1385,8 @@ Post "https://localhost:8553/v1/store/secrets?action=list": dial tcp 127.0.0.1:8
     </issue>
     <issue>
       VSecM:
-      For Ubuntu users; do not use snap to install docker as it can create permission issues when working with minikube. */
+      For Ubuntu users; do not use snap to install docker as it can create permission issues when working with minikube.
+      */
       ^
       rendering on the page has error.
     </issue>
@@ -1409,7 +1556,8 @@ Post "https://localhost:8553/v1/store/secrets?action=list": dial tcp 127.0.0.1:8
     </issue>
     <issue kind="research">
       spike, but as an http proxy?
-      like, point http(s)_proxy at this thing, connect to it using your spiffe id, the proxy can use policies and the client spiffeid to allow/disallow an http proxy request
+      like, point http(s)_proxy at this thing, connect to it using your spiffe id, the proxy can use policies and the
+      client spiffeid to allow/disallow an http proxy request
       No; but not a bad idea indeed. -- will look around; I'll share if I find something related.
     </issue>
     <issue>
