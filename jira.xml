@@ -5,11 +5,18 @@
 # \\\\\\\ SPDX-License-Identifier: Apache-2.0
 -->
 <!--
- ABOUT THIS FILE
+  ABOUT JIRA.XML
 
- This is a place where we dump ideas and issue templates.
- It helps us have a free-form environment where we can "think out loud" can ideate issue templates
- without overpopulating the active GitHub issues.
+  JIRA.XML serves as a sandbox for capturing ideas and drafting issue templates.
+  It is a tongue-in-cheek jab at how inefficient Jira is at managing tasks and
+  how, sometimes, simple tools (like a shared, version-controlled, free-form
+  text file) can make wonders because they are easy to use without any red tape
+  around them.
+
+  JIRA.xml provides a free-form space where we can “think out loud” and sketch
+  potential issues before deciding which ones to formally create in GitHub. By
+  working here first, we keep the active issue tracker focused and avoid
+  cluttering it with early-stage or exploratory thoughts.
  -->
 <stuff>
   <after-mergin-no-cache-feature>
