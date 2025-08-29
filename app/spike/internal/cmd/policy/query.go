@@ -12,14 +12,6 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// Spec represents the YAML structure for policy configuration
-type Spec struct {
-	Name        string   `yaml:"name"`
-	SpiffeID    string   `yaml:"spiffeid"`
-	Path        string   `yaml:"path"`
-	Permissions []string `yaml:"permissions"`
-}
-
 // readPolicyFromFile reads a policy configuration from a YAML file
 func readPolicyFromFile(filePath string) (Spec, error) {
 	var policy Spec

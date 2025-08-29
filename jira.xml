@@ -30,6 +30,13 @@
   </after-mergin-no-cache-feature>
   <task-group for="v0.5.0">
     <issue>
+      //	spike policy list --format=json
+      //	spike policy list --path="secrets/db/.*"
+      //	spike policy list --spiffeid="spiffe://example\.org/app"
+
+      rename as path-pattern and spiffeid-pattern
+    </issue>
+    <issue>
       make sure the documentation examples on the website
       including the sdk doc; clearly indicate that spiffe id
       and path are regex patterns without any doubt.

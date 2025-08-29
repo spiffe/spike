@@ -101,8 +101,8 @@ func newPolicyGetCommand(
 			trust.Authenticate(SPIFFEID)
 			api := spike.NewWithSource(source)
 
-			// If the first argument is provided without `--name` flag, it could be
-			// misinterpreted as trying to use policy name directly
+			// If the first argument is provided without the `--name` flag, it could
+			// be misinterpreted as trying to use policy name directly
 			if len(args) > 0 && !cmd.Flags().Changed("name") {
 				fmt.Println("Note: To look up a policy by name, use --name flag:")
 				fmt.Printf("  spike policy get --name=%s\n\n", args[0])
