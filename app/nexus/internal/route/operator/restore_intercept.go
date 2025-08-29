@@ -20,7 +20,7 @@ import (
 func guardRestoreRequest(
 	request reqres.RestoreRequest, w http.ResponseWriter, r *http.Request,
 ) error {
-	peerSpiffeid, err := spiffe.IDFromRequest(r)
+	peerSPIFFEID, err := spiffe.IDFromRequest(r)
 	if err != nil {
 		responseBody := net.MarshalBody(reqres.RestoreResponse{
 			Err: data.ErrUnauthorized,
@@ -29,7 +29,7 @@ func guardRestoreRequest(
 		return apiErr.ErrUnauthorized
 	}
 
-	if peerSpiffeid == nil {
+	if peerSPIFFEID == nil {
 		responseBody := net.MarshalBody(reqres.RestoreResponse{
 			Err: data.ErrUnauthorized,
 		}, w)
@@ -37,7 +37,7 @@ func guardRestoreRequest(
 		return apiErr.ErrUnauthorized
 	}
 
-	if !spiffeid.IsPilotRestore(env.TrustRootForPilot(), peerSpiffeid.String()) {
+	if !spiffeid.IsPilotRestore(env.TrustRootForPilot(), peerSPIFFEID.String()) {
 		responseBody := net.MarshalBody(reqres.RestoreResponse{
 			Err: data.ErrUnauthorized,
 		}, w)

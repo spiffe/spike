@@ -15,10 +15,10 @@ import (
 	"github.com/spiffe/spike-sdk-go/kv"
 )
 
-// InMemoryStore provides an in-memory implementation of a storage backend.
+// Store provides an in-memory implementation of a storage backend.
 // This implementation actually stores data in memory using the kv package,
 // suitable for development, testing, or scenarios where persistence isn't needed.
-type InMemoryStore struct {
+type Store struct {
 	secretStore *kv.KV
 	secretMu    sync.RWMutex
 
@@ -29,8 +29,8 @@ type InMemoryStore struct {
 }
 
 // NewInMemoryStore creates a new in-memory store instance
-func NewInMemoryStore(cipher cipher.AEAD, maxVersions int) *InMemoryStore {
-	return &InMemoryStore{
+func NewInMemoryStore(cipher cipher.AEAD, maxVersions int) *Store {
+	return &Store{
 		secretStore: kv.New(kv.Config{
 			MaxSecretVersions: maxVersions,
 		}),
@@ -40,19 +40,19 @@ func NewInMemoryStore(cipher cipher.AEAD, maxVersions int) *InMemoryStore {
 }
 
 // Initialize prepares the store for use.
-func (s *InMemoryStore) Initialize(_ context.Context) error {
+func (s *Store) Initialize(_ context.Context) error {
 	// Already initialized in constructor
 	return nil
 }
 
 // Close implements the closing operation for the store.
-func (s *InMemoryStore) Close(_ context.Context) error {
+func (s *Store) Close(_ context.Context) error {
 	// Nothing to close for in-memory store
 	return nil
 }
 
 // StoreSecret saves a secret to the store at the specified path.
-func (s *InMemoryStore) StoreSecret(
+func (s *Store) StoreSecret(
 	_ context.Context, path string, secret kv.Value,
 ) error {
 	s.secretMu.Lock()
@@ -67,7 +67,7 @@ func (s *InMemoryStore) StoreSecret(
 }
 
 // LoadSecret retrieves a secret from the store by its path.
-func (s *InMemoryStore) LoadSecret(
+func (s *Store) LoadSecret(
 	_ context.Context, path string,
 ) (*kv.Value, error) {
 	s.secretMu.RLock()
@@ -86,7 +86,7 @@ func (s *InMemoryStore) LoadSecret(
 }
 
 // LoadAllSecrets retrieves all secrets stored in the store.
-func (s *InMemoryStore) LoadAllSecrets(_ context.Context) (
+func (s *Store) LoadAllSecrets(_ context.Context) (
 	map[string]*kv.Value, error,
 ) {
 	s.secretMu.RLock()
@@ -110,7 +110,7 @@ func (s *InMemoryStore) LoadAllSecrets(_ context.Context) (
 }
 
 // StorePolicy stores a policy in the store.
-func (s *InMemoryStore) StorePolicy(_ context.Context, policy data.Policy) error {
+func (s *Store) StorePolicy(_ context.Context, policy data.Policy) error {
 	s.policyMu.Lock()
 	defer s.policyMu.Unlock()
 
@@ -123,7 +123,7 @@ func (s *InMemoryStore) StorePolicy(_ context.Context, policy data.Policy) error
 }
 
 // LoadPolicy retrieves a policy from the store by its ID.
-func (s *InMemoryStore) LoadPolicy(
+func (s *Store) LoadPolicy(
 	_ context.Context, id string,
 ) (*data.Policy, error) {
 	s.policyMu.RLock()
@@ -131,14 +131,14 @@ func (s *InMemoryStore) LoadPolicy(
 
 	policy, exists := s.policies[id]
 	if !exists {
-		return nil, nil // Return nil, nil for not found (matching NoopStore behavior)
+		return nil, nil // Return nil, nil for not found (matching Store behavior)
 	}
 
 	return policy, nil
 }
 
 // LoadAllPolicies retrieves all policies from the store.
-func (s *InMemoryStore) LoadAllPolicies(
+func (s *Store) LoadAllPolicies(
 	_ context.Context,
 ) (map[string]*data.Policy, error) {
 	s.policyMu.RLock()
@@ -154,7 +154,7 @@ func (s *InMemoryStore) LoadAllPolicies(
 }
 
 // DeletePolicy removes a policy from the store by its ID.
-func (s *InMemoryStore) DeletePolicy(_ context.Context, id string) error {
+func (s *Store) DeletePolicy(_ context.Context, id string) error {
 	s.policyMu.Lock()
 	defer s.policyMu.Unlock()
 
@@ -163,6 +163,6 @@ func (s *InMemoryStore) DeletePolicy(_ context.Context, id string) error {
 }
 
 // GetCipher returns the cipher used for encryption/decryption
-func (s *InMemoryStore) GetCipher() cipher.AEAD {
+func (s *Store) GetCipher() cipher.AEAD {
 	return s.cipher
 }

@@ -43,7 +43,7 @@ func TestShamirSecretSharingBasics(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// Create deterministic reader for consistent results
+			// Create a deterministic reader for consistent results
 			reader := crypto.NewDeterministicReader(testKey)
 			ss := shamir.New(reader, tt.threshold, secret)
 
@@ -91,7 +91,7 @@ func TestShamirDeterministicBehavior(t *testing.T) {
 	threshold := uint(2)
 	numShares := uint(3)
 
-	// Generate shares twice with same seed
+	// Generate shares twice with the same seed
 	reader1 := crypto.NewDeterministicReader(testKey)
 	ss1 := shamir.New(reader1, threshold, secret)
 	shares1 := ss1.Share(numShares)
@@ -102,7 +102,8 @@ func TestShamirDeterministicBehavior(t *testing.T) {
 
 	// Shares should be identical
 	if len(shares1) != len(shares2) {
-		t.Fatalf("Share counts should be equal: %d vs %d", len(shares1), len(shares2))
+		t.Fatalf("Share counts should be equal: %d vs %d",
+			len(shares1), len(shares2))
 	}
 
 	for i, share1 := range shares1 {
@@ -211,7 +212,8 @@ func TestShamirShareStructure(t *testing.T) {
 			t.Errorf("Failed to marshal share %d Value: %v", i, err)
 		}
 		if len(valueBytes) != crypto.AES256KeySize {
-			t.Errorf("Share %d Value should be %d bytes, got %d", i, crypto.AES256KeySize, len(valueBytes))
+			t.Errorf("Share %d Value should be %d bytes, got %d",
+				i, crypto.AES256KeySize, len(valueBytes))
 		}
 	}
 
@@ -232,14 +234,14 @@ func TestEnvironmentThresholdAndShares(t *testing.T) {
 
 	defer func() {
 		if originalThreshold != "" {
-			os.Setenv("SPIKE_NEXUS_SHAMIR_THRESHOLD", originalThreshold)
+			_ = os.Setenv("SPIKE_NEXUS_SHAMIR_THRESHOLD", originalThreshold)
 		} else {
-			os.Unsetenv("SPIKE_NEXUS_SHAMIR_THRESHOLD")
+			_ = os.Unsetenv("SPIKE_NEXUS_SHAMIR_THRESHOLD")
 		}
 		if originalShares != "" {
-			os.Setenv("SPIKE_NEXUS_SHAMIR_SHARES", originalShares)
+			_ = os.Setenv("SPIKE_NEXUS_SHAMIR_SHARES", originalShares)
 		} else {
-			os.Unsetenv("SPIKE_NEXUS_SHAMIR_SHARES")
+			_ = os.Unsetenv("SPIKE_NEXUS_SHAMIR_SHARES")
 		}
 	}()
 
@@ -258,8 +260,8 @@ func TestEnvironmentThresholdAndShares(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			os.Setenv("SPIKE_NEXUS_SHAMIR_THRESHOLD", tt.threshold)
-			os.Setenv("SPIKE_NEXUS_SHAMIR_SHARES", tt.shares)
+			_ = os.Setenv("SPIKE_NEXUS_SHAMIR_THRESHOLD", tt.threshold)
+			_ = os.Setenv("SPIKE_NEXUS_SHAMIR_SHARES", tt.shares)
 
 			// The functions would use these values like:
 			// t := uint(env.ShamirThreshold() - 1)
@@ -368,7 +370,7 @@ func TestDeterministicReader(t *testing.T) {
 	secret := g.NewScalar()
 	secret.SetUint64(42)
 
-	// Create shares with same seed
+	// Create shares with the same seed
 	ss1 := shamir.New(reader1, 1, secret)
 	shares1 := ss1.Share(2)
 
@@ -379,7 +381,7 @@ func TestDeterministicReader(t *testing.T) {
 	ss3 := shamir.New(reader3, 1, secret)
 	shares3 := ss3.Share(2)
 
-	// Shares from same seed should be identical
+	// Shares from the same seed should be identical
 	if len(shares1) != len(shares2) {
 		t.Fatal("Same seed should produce same number of shares")
 	}

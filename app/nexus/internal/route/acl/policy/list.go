@@ -46,7 +46,7 @@ import (
 // Example request body (filter by path):
 //
 //	{
-//	    "path_pattern": "^api/v1/"
+//	    "path_pattern": "^secrets/db/.*"
 //	}
 //
 // Possible errors:

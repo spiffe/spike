@@ -69,12 +69,14 @@ func TestShardURL_ValidInput(t *testing.T) {
 
 				// Verify the result contains the keeper API root
 				if !containsBase(result, tt.keeperAPIRoot) {
-					t.Errorf("Result %s should contain base URL %s", result, tt.keeperAPIRoot)
+					t.Errorf("Result %s should contain base URL %s",
+						result, tt.keeperAPIRoot)
 				}
 
 				// Verify the result contains the keeper shard path
 				if !containsPath(result, tt.expectedSuffix) {
-					t.Errorf("Result %s should contain path %s", result, tt.expectedSuffix)
+					t.Errorf("Result %s should contain path %s",
+						result, tt.expectedSuffix)
 				}
 
 				// Verify it's a valid URL
@@ -113,7 +115,8 @@ func TestShardURL_InvalidInput(t *testing.T) {
 
 			// Invalid inputs should return an empty string
 			if result != "" {
-				t.Errorf("Expected empty result for invalid input, got %s", result)
+				t.Errorf("Expected empty result for invalid input, got %s",
+					result)
 			}
 		})
 	}
@@ -151,7 +154,8 @@ func TestUnmarshalShardResponse_ValidInput(t *testing.T) {
 	for i, b := range result.Shard {
 		expected := byte(i % 256)
 		if b != expected {
-			t.Errorf("Data mismatch at index %d: expected %d, got %d", i, expected, b)
+			t.Errorf("Data mismatch at index %d: expected %d, got %d",
+				i, expected, b)
 		}
 	}
 }
@@ -190,7 +194,8 @@ func TestUnmarshalShardResponse_InvalidInput(t *testing.T) {
 
 			// Invalid input should return nil
 			if result != nil {
-				t.Errorf("Expected nil result for invalid input, got %+v", result)
+				t.Errorf("Expected nil result for invalid input, got %+v",
+					result)
 			}
 		})
 	}
@@ -461,5 +466,6 @@ func containsPath(fullURL, path string) bool {
 		cleanPath = cleanPath[1:]
 	}
 
-	return len(parsedURL.Path) > 0 && (parsedURL.Path[len(parsedURL.Path)-len(cleanPath):] == cleanPath)
+	return len(parsedURL.Path) > 0 &&
+		(parsedURL.Path[len(parsedURL.Path)-len(cleanPath):] == cleanPath)
 }

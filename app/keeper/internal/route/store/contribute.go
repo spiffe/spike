@@ -18,9 +18,9 @@ import (
 	"github.com/spiffe/spike/internal/net"
 )
 
-// RouteContribute handles HTTP requests for shard contributions in the system.
-// It processes incoming shard data, decodes it from Base64 encoding, and stores
-// it in the system state.
+// RouteContribute handles HTTP requests for the shard contributions in the
+// system. It processes incoming shard data, decodes it from Base64 encoding,
+// and stores it in the system state.
 //
 // The function expects a Base64-encoded shard and a keeper ID in the request
 // body. It performs the following operations:

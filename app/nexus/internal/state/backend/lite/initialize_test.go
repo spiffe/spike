@@ -29,17 +29,17 @@ func TestNew_ValidKey(t *testing.T) {
 	}
 
 	if ds == nil {
-		t.Error("Expected non-nil DataStore")
+		t.Error("Expected non-nil Store")
 	}
 
 	// Verify it implements the Backend interface
 	// noinspection ALL
 	var _ backend.Backend = ds
 
-	// Verify the DataStore has a cipher
-	liteStore, ok := ds.(*DataStore)
+	// Verify the Store has a cipher
+	liteStore, ok := ds.(*Store)
 	if !ok {
-		t.Fatal("Expected DataStore type")
+		t.Fatal("Expected Store type")
 	}
 
 	if liteStore.Cipher == nil {
@@ -80,7 +80,7 @@ func TestNew_InvalidKey(t *testing.T) {
 					t.Errorf("Expected error with invalid key size %d, got nil", tt.keySize)
 				}
 				if ds != nil {
-					t.Errorf("Expected nil DataStore with invalid key, got: %v", ds)
+					t.Errorf("Expected nil Store with invalid key, got: %v", ds)
 				}
 			} else {
 				// For this test, even though we're testing "invalid" keys,
@@ -107,12 +107,12 @@ func TestNew_ZeroKey(t *testing.T) {
 	}
 
 	if ds == nil {
-		t.Error("Expected non-nil DataStore even with zero key")
+		t.Error("Expected non-nil Store even with zero key")
 	}
 
 	// Verify cipher is created even with a zero key
 	if ds != nil {
-		liteStore := ds.(*DataStore)
+		liteStore := ds.(*Store)
 		if liteStore.Cipher == nil {
 			t.Error("Expected cipher to be created even with zero key")
 		}
@@ -128,10 +128,10 @@ func TestDataStore_GetCipher(t *testing.T) {
 
 	ds, err := New(rootKey)
 	if err != nil {
-		t.Fatalf("Failed to create DataStore: %v", err)
+		t.Fatalf("Failed to create Store: %v", err)
 	}
 
-	liteStore := ds.(*DataStore)
+	liteStore := ds.(*Store)
 
 	// Test GetCipher method
 	cipher := liteStore.GetCipher()
@@ -154,23 +154,23 @@ func TestDataStore_Implements_Backend_Interface(t *testing.T) {
 
 	ds, err := New(rootKey)
 	if err != nil {
-		t.Fatalf("Failed to create DataStore: %v", err)
+		t.Fatalf("Failed to create Store: %v", err)
 	}
 
 	// Test that it implements all Backend interface methods
 	ctx := context.Background()
 
-	// Test Initialize (inherited from NoopStore)
+	// Test Initialize (inherited from Store)
 	if err := ds.Initialize(ctx); err != nil {
 		t.Errorf("Initialize should not return error: %v", err)
 	}
 
-	// Test Close (inherited from NoopStore)
+	// Test Close (inherited from Store)
 	if err := ds.Close(ctx); err != nil {
 		t.Errorf("Close should not return error: %v", err)
 	}
 
-	// Test LoadSecret (inherited from NoopStore)
+	// Test LoadSecret (inherited from Store)
 	secret, err := ds.LoadSecret(ctx, "test/path")
 	if err != nil {
 		t.Errorf("LoadSecret should not return error: %v", err)
@@ -179,7 +179,7 @@ func TestDataStore_Implements_Backend_Interface(t *testing.T) {
 		t.Error("LoadSecret should return nil (noop implementation)")
 	}
 
-	// Test LoadAllSecrets (inherited from NoopStore)
+	// Test LoadAllSecrets (inherited from Store)
 	secrets, err := ds.LoadAllSecrets(ctx)
 	if err != nil {
 		t.Errorf("LoadAllSecrets should not return error: %v", err)
@@ -188,7 +188,7 @@ func TestDataStore_Implements_Backend_Interface(t *testing.T) {
 		t.Error("LoadAllSecrets should return nil (noop implementation)")
 	}
 
-	// Test StoreSecret (inherited from NoopStore)
+	// Test StoreSecret (inherited from Store)
 	testSecret := kv.Value{
 		Versions: map[int]kv.Version{
 			1: {
@@ -202,7 +202,7 @@ func TestDataStore_Implements_Backend_Interface(t *testing.T) {
 		t.Errorf("StoreSecret should not return error: %v", err)
 	}
 
-	// Test LoadPolicy (inherited from NoopStore)
+	// Test LoadPolicy (inherited from Store)
 	policy, err := ds.LoadPolicy(ctx, "test-policy-id")
 	if err != nil {
 		t.Errorf("LoadPolicy should not return error: %v", err)
@@ -211,7 +211,7 @@ func TestDataStore_Implements_Backend_Interface(t *testing.T) {
 		t.Error("LoadPolicy should return nil (noop implementation)")
 	}
 
-	// Test LoadAllPolicies (inherited from NoopStore)
+	// Test LoadAllPolicies (inherited from Store)
 	policies, err := ds.LoadAllPolicies(ctx)
 	if err != nil {
 		t.Errorf("LoadAllPolicies should not return error: %v", err)
@@ -220,12 +220,12 @@ func TestDataStore_Implements_Backend_Interface(t *testing.T) {
 		t.Error("LoadAllPolicies should return nil (noop implementation)")
 	}
 
-	// Test StorePolicy (inherited from NoopStore)
+	// Test StorePolicy (inherited from Store)
 	testPolicy := data.Policy{
 		ID:              "test-policy",
 		Name:            "test policy",
-		SPIFFEIDPattern: "spiffe://example.org/test",
-		PathPattern:     "test/*",
+		SPIFFEIDPattern: "spiffe://example\\.org/test",
+		PathPattern:     "test/.*",
 		Permissions:     []data.PolicyPermission{data.PermissionRead},
 	}
 	err = ds.StorePolicy(ctx, testPolicy)
@@ -233,13 +233,13 @@ func TestDataStore_Implements_Backend_Interface(t *testing.T) {
 		t.Errorf("StorePolicy should not return error: %v", err)
 	}
 
-	// Test DeletePolicy (inherited from NoopStore)
+	// Test DeletePolicy (inherited from Store)
 	err = ds.DeletePolicy(ctx, "test-policy-id")
 	if err != nil {
 		t.Errorf("DeletePolicy should not return error: %v", err)
 	}
 
-	// Test GetCipher (overridden in DataStore)
+	// Test GetCipher (overridden in Store)
 	cipher := ds.GetCipher()
 	if cipher == nil {
 		t.Error("GetCipher should return non-nil cipher")
@@ -255,10 +255,10 @@ func TestDataStore_CipherFunctionality(t *testing.T) {
 
 	ds, err := New(rootKey)
 	if err != nil {
-		t.Fatalf("Failed to create DataStore: %v", err)
+		t.Fatalf("Failed to create Store: %v", err)
 	}
 
-	liteStore := ds.(*DataStore)
+	liteStore := ds.(*Store)
 	cipher := liteStore.GetCipher()
 
 	// Test basic cipher properties
@@ -346,7 +346,7 @@ func TestDataStore_DifferentKeys_ProduceDifferentCiphers(t *testing.T) {
 }
 
 func TestDataStore_EmbeddedNoopStore(t *testing.T) {
-	// Test that DataStore properly embeds NoopStore
+	// Test that Store properly embeds Store
 	rootKey := &[crypto.AES256KeySize]byte{}
 	if _, err := rand.Read(rootKey[:]); err != nil {
 		t.Fatalf("Failed to generate random key: %v", err)
@@ -354,16 +354,16 @@ func TestDataStore_EmbeddedNoopStore(t *testing.T) {
 
 	ds, err := New(rootKey)
 	if err != nil {
-		t.Fatalf("Failed to create DataStore: %v", err)
+		t.Fatalf("Failed to create Store: %v", err)
 	}
 
-	liteStore := ds.(*DataStore)
+	liteStore := ds.(*Store)
 
-	// Check that the embedded NoopStore is accessible
+	// Check that the embedded Store is accessible
 	// (This tests the struct composition)
 	ctx := context.Background()
 
-	// These methods should all be inherited from NoopStore and return no error
+	// These methods should all be inherited from Store and return no error
 	testSecret := kv.Value{
 		Versions: map[int]kv.Version{
 			1: {
@@ -375,8 +375,8 @@ func TestDataStore_EmbeddedNoopStore(t *testing.T) {
 	testPolicy := data.Policy{
 		ID:              "test-policy",
 		Name:            "test policy",
-		SPIFFEIDPattern: "spiffe://example.org/test",
-		PathPattern:     "test/*",
+		SPIFFEIDPattern: "spiffe://example\\.org/test",
+		PathPattern:     "test/.*",
 		Permissions:     []data.PolicyPermission{data.PermissionRead},
 	}
 
@@ -390,7 +390,7 @@ func TestDataStore_EmbeddedNoopStore(t *testing.T) {
 
 	for i, method := range methods {
 		if err := method(); err != nil {
-			t.Errorf("NoopStore method %d should not return error: %v", i, err)
+			t.Errorf("Store method %d should not return error: %v", i, err)
 		}
 	}
 }
@@ -404,7 +404,7 @@ func TestDataStore_GCMProperties(t *testing.T) {
 
 	ds, err := New(rootKey)
 	if err != nil {
-		t.Fatalf("Failed to create DataStore: %v", err)
+		t.Fatalf("Failed to create Store: %v", err)
 	}
 
 	cipher := ds.GetCipher()
@@ -423,9 +423,9 @@ func TestDataStore_GCMProperties(t *testing.T) {
 }
 
 func TestDataStore_MemoryManagement(t *testing.T) {
-	// Test that multiple DataStore instances can coexist
+	// Test that multiple Store instances can coexist
 	keys := make([]*[crypto.AES256KeySize]byte, 5)
-	datastores := make([]backend.Backend, 5)
+	dss := make([]backend.Backend, 5)
 
 	// Create multiple instances
 	for i := 0; i < 5; i++ {
@@ -436,15 +436,15 @@ func TestDataStore_MemoryManagement(t *testing.T) {
 
 		ds, err := New(keys[i])
 		if err != nil {
-			t.Fatalf("Failed to create DataStore %d: %v", i, err)
+			t.Fatalf("Failed to create Store %d: %v", i, err)
 		}
-		datastores[i] = ds
+		dss[i] = ds
 	}
 
 	// Verify all instances are independent
-	for i, ds := range datastores {
+	for i, ds := range dss {
 		if ds == nil {
-			t.Errorf("DataStore %d should not be nil", i)
+			t.Errorf("Store %d should not be nil", i)
 		}
 
 		if ds == nil {
@@ -456,9 +456,9 @@ func TestDataStore_MemoryManagement(t *testing.T) {
 		}
 
 		// Compare with other instances
-		for j, otherDs := range datastores {
+		for j, otherDs := range dss {
 			if i != j && ds == otherDs {
-				t.Errorf("DataStore %d and %d should be different instances", i, j)
+				t.Errorf("Store %d and %d should be different instances", i, j)
 			}
 		}
 	}
@@ -498,7 +498,7 @@ func TestDataStore_MemoryManagement(t *testing.T) {
 //					t.Errorf("Expected error for invalid key data, got nil")
 //				}
 //				if ds != nil {
-//					t.Errorf("Expected nil DataStore for invalid key, got: %v", ds)
+//					t.Errorf("Expected nil Store for invalid key, got: %v", ds)
 //				}
 //			}
 //		})

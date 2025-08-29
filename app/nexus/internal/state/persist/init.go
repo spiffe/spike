@@ -49,7 +49,7 @@ func createCipher() cipher.AEAD {
 //
 // Returns:
 //   - A backend.Backend interface implementation:
-//   - memory.NoopStore for 'memory' store type or unknown types
+//   - memory.Store for 'memory' store type or unknown types
 //   - SQLite backend for 'sqlite' store type
 //
 // The actual backend type is determined by env.BackendStoreType():

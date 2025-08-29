@@ -25,7 +25,7 @@ func TestNewInMemoryStore(t *testing.T) {
 
 	// Verify store was created properly
 	if store == nil {
-		t.Fatal("Expected non-nil InMemoryStore")
+		t.Fatal("Expected non-nil Store")
 	}
 
 	if store.secretStore == nil {

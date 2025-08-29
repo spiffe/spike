@@ -246,13 +246,13 @@ func TestListKeys_DeepPaths(t *testing.T) {
 		// Test deeply nested paths
 		deepPaths := []string{
 			"/",
-			"/app",
-			"/app/service",
-			"/app/service/db",
-			"/app/service/db/prod",
-			"/app/service/db/prod/password",
-			"/app/service/api/v1/key",
-			"/app/service/cache/redis/config",
+			"app",
+			"app/service",
+			"app/service/db",
+			"app/service/db/prod",
+			"app/service/db/prod/password",
+			"app/service/api/v1/key",
+			"app/service/cache/redis/config",
 		}
 
 		for _, path := range deepPaths {
@@ -301,7 +301,7 @@ func TestListKeys_DuplicatePaths(t *testing.T) {
 			},
 		}
 
-		path := "/test/duplicate"
+		path := "test/duplicate"
 
 		// Store first version
 		err := backend.StoreSecret(ctx, path, secret1)
@@ -354,7 +354,7 @@ func TestListKeys_LargeBatch(t *testing.T) {
 		expectedPaths := make([]string, numSecrets)
 
 		for i := 0; i < numSecrets; i++ {
-			path := fmt.Sprintf("/batch/secret-%04d", i)
+			path := fmt.Sprintf("batch/secret-%04d", i)
 			expectedPaths[i] = path
 
 			err := backend.StoreSecret(ctx, path, testSecret)
@@ -401,7 +401,7 @@ func TestListKeys_MemoryReuse(t *testing.T) {
 		}
 
 		// Store some secrets
-		paths := []string{"/test1", "/test2", "/test3"}
+		paths := []string{"test1", "test2", "test3"}
 		for _, path := range paths {
 			err := backend.StoreSecret(ctx, path, testSecret)
 			if err != nil {
@@ -505,7 +505,7 @@ func BenchmarkListKeys_LargeSet(b *testing.B) {
 
 	// Set up a large set of secrets
 	for i := 0; i < 1000; i++ {
-		path := fmt.Sprintf("/bench/large/secret-%04d", i)
+		path := fmt.Sprintf("bench/large/secret-%04d", i)
 		_ = backend.StoreSecret(ctx, path, testSecret)
 	}
 

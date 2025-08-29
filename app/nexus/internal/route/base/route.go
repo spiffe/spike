@@ -16,10 +16,6 @@ import (
 	"github.com/spiffe/spike-sdk-go/api/url"
 
 	"github.com/spiffe/spike/app/nexus/internal/env"
-	"github.com/spiffe/spike/app/nexus/internal/route/acl/policy"
-	"github.com/spiffe/spike/app/nexus/internal/route/cipher"
-	"github.com/spiffe/spike/app/nexus/internal/route/operator"
-	"github.com/spiffe/spike/app/nexus/internal/route/secret"
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 	"github.com/spiffe/spike/internal/journal"
 	"github.com/spiffe/spike/internal/net"
@@ -41,49 +37,27 @@ func Route(
 		url.APIAction(r.URL.Query().Get(url.KeyAPIAction)),
 		r.Method,
 		func(a url.APIAction, p url.APIURL) net.Handler {
+			// Lite: requires root key.
+			// SQLite: requires root key.
+			// Memory: does not require root key.
+
 			emptyRootKey := state.RootKeyZero()
 			inMemoryMode := env.BackendStoreType() == env.Memory
-			fullMode := env.BackendStoreType() != env.Lite
+			hasBackingStore := env.BackendStoreType() != env.Lite
 			emergencyAction := p == url.NexusOperatorRecover ||
 				p == url.NexusOperatorRestore
-			canBypassRootKeyValidation := inMemoryMode || emergencyAction
-			rootKeyValidationRequired := !canBypassRootKeyValidation
+			rootKeyValidationRequired := !inMemoryMode && !emergencyAction
 
 			if rootKeyValidationRequired && emptyRootKey {
 				return net.NotReady
 			}
 
-			switch {
-			case a == url.ActionDefault && p == url.NexusSecrets && fullMode:
-				return secret.RoutePutSecret
-			case a == url.ActionGet && p == url.NexusSecrets && fullMode:
-				return secret.RouteGetSecret
-			case a == url.ActionDelete && p == url.NexusSecrets && fullMode:
-				return secret.RouteDeleteSecret
-			case a == url.ActionUndelete && p == url.NexusSecrets && fullMode:
-				return secret.RouteUndeleteSecret
-			case a == url.ActionList && p == url.NexusSecrets && fullMode:
-				return secret.RouteListPaths
-			case a == url.ActionDefault && p == url.NexusPolicy && fullMode:
-				return policy.RoutePutPolicy
-			case a == url.ActionGet && p == url.NexusPolicy && fullMode:
-				return policy.RouteGetPolicy
-			case a == url.ActionDelete && p == url.NexusPolicy && fullMode:
-				return policy.RouteDeletePolicy
-			case a == url.ActionList && p == url.NexusPolicy && fullMode:
-				return policy.RouteListPolicies
-			case a == url.ActionGet && p == url.NexusSecretsMetadata && fullMode:
-				return secret.RouteGetSecretMetadata
-			case a == url.ActionDefault && p == url.NexusOperatorRestore:
-				return operator.RouteRestore
-			case a == url.ActionDefault && p == url.NexusOperatorRecover:
-				return operator.RouteRecover
-			case a == url.ActionDefault && p == url.NexusCipherEncrypt && !fullMode:
-				return cipher.RouteEncrypt
-			case a == url.ActionDefault && p == url.NexusCipherDecrypt && !fullMode:
-				return cipher.RouteDecrypt
-			default:
-				return net.Fallback
+			if hasBackingStore {
+				return routeWithBackingStore(a, p)
 			}
+
+			// No backing store: We cannot store or retrieve secrets
+			// or policies directly.
+			return routeWithNoBackingStore(a, p)
 		})(w, r, a)
 }

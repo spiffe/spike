@@ -74,7 +74,7 @@ func TestInitializeBackend_Memory_WithNilKey(t *testing.T) {
 		}
 
 		// Verify it's a memory backend
-		if _, ok := backend.(*memory.InMemoryStore); !ok {
+		if _, ok := backend.(*memory.Store); !ok {
 			t.Errorf("Expected memory backend, got %T", backend)
 		}
 	})
@@ -104,7 +104,7 @@ func TestInitializeBackend_SQLite_WithValidKey(t *testing.T) {
 		}
 
 		// For SQLite, we expect a different type than memory
-		if _, ok := backend.(*memory.InMemoryStore); ok {
+		if _, ok := backend.(*memory.Store); ok {
 			t.Error("Expected non-memory backend for sqlite store type")
 		}
 	})
@@ -145,7 +145,7 @@ func TestInitializeBackend_Lite_WithValidKey(t *testing.T) {
 		}
 
 		// For lite, we expect a different type than memory
-		if _, ok := backend.(*memory.InMemoryStore); ok {
+		if _, ok := backend.(*memory.Store); ok {
 			t.Error("Expected non-memory backend for lite store type")
 		}
 	})
@@ -204,10 +204,10 @@ func TestInitializeBackend_MultipleInitializations(t *testing.T) {
 		}
 
 		// Both should be memory backends
-		if _, ok := firstBackend.(*memory.InMemoryStore); !ok {
+		if _, ok := firstBackend.(*memory.Store); !ok {
 			t.Error("First backend is not memory backend")
 		}
-		if _, ok := secondBackend.(*memory.InMemoryStore); !ok {
+		if _, ok := secondBackend.(*memory.Store); !ok {
 			t.Error("Second backend is not memory backend")
 		}
 	})
@@ -219,7 +219,7 @@ func TestInitializeBackend_SwitchBetweenTypes(t *testing.T) {
 		InitializeBackend(nil)
 		memoryBackend := Backend()
 
-		if _, ok := memoryBackend.(*memory.InMemoryStore); !ok {
+		if _, ok := memoryBackend.(*memory.Store); !ok {
 			t.Error("Expected memory backend")
 		}
 	})
@@ -230,7 +230,7 @@ func TestInitializeBackend_SwitchBetweenTypes(t *testing.T) {
 		InitializeBackend(key)
 		sqliteBackend := Backend()
 
-		if _, ok := sqliteBackend.(*memory.InMemoryStore); ok {
+		if _, ok := sqliteBackend.(*memory.Store); ok {
 			t.Error("Expected non-memory backend after switching to sqlite")
 		}
 	})
@@ -291,7 +291,7 @@ func TestInitializeBackend_ConcurrentAccess(t *testing.T) {
 					return
 				}
 
-				if _, ok := backend.(*memory.InMemoryStore); !ok {
+				if _, ok := backend.(*memory.Store); !ok {
 					t.Errorf("Expected memory backend in goroutine, got %T", backend)
 				}
 			}()
@@ -316,7 +316,7 @@ func TestBackend_AccessAfterInitialization(t *testing.T) {
 				t.Fatalf("Backend is nil on access %d", i)
 			}
 
-			if _, ok := backend.(*memory.InMemoryStore); !ok {
+			if _, ok := backend.(*memory.Store); !ok {
 				t.Errorf("Expected memory backend on access %d, got %T", i, backend)
 			}
 		}

@@ -44,7 +44,7 @@ import (
 //	{
 //	    "name": "example-policy",
 //	    "spiffe_id_pattern": "spiffe://example\.org/.*/service",
-//	    "path_pattern": "^/api/.*",
+//	    "path_pattern": "^secrets/db/.*",
 //	    "permissions": ["read", "write"]
 //	}
 //

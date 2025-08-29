@@ -23,7 +23,8 @@ func TestErrRecoveryRetry(t *testing.T) {
 	// Test error message
 	expectedMsg := "recovery failed; retrying"
 	if ErrRecoveryRetry.Error() != expectedMsg {
-		t.Errorf("Expected error message '%s', got '%s'", expectedMsg, ErrRecoveryRetry.Error())
+		t.Errorf("Expected error message '%s', got '%s'",
+			expectedMsg, ErrRecoveryRetry.Error())
 	}
 
 	// Test error comparison
@@ -304,7 +305,8 @@ func TestEnvironmentDependencies(t *testing.T) {
 
 	// Test `threshold <= shares` (common validation)
 	if threshold > shares {
-		t.Errorf("Threshold (%d) should not be greater than shares (%d)", threshold, shares)
+		t.Errorf("Threshold (%d) should not be greater than shares (%d)",
+			threshold, shares)
 	}
 }
 
@@ -388,7 +390,8 @@ func TestShardDataIntegrity(t *testing.T) {
 	for i, b := range shard.Value {
 		expected := byte(i % 256)
 		if b != expected {
-			t.Errorf("Data corruption at index %d: expected %d, got %d", i, expected, b)
+			t.Errorf("Data corruption at index %d: expected %d, got %d",
+				i, expected, b)
 		}
 	}
 

@@ -84,8 +84,66 @@
       func initializeSqliteBackend(rootKey *[32]byte) backend.Backend {
       panic if rootkey is nil or empty.
     </issue>
+    <issue>
+      SPIKE_NEXUS_RECOVERY_TIMEOUT and SPIKE_NEXUS_RECOVERY_POLL_INTERVAL
+      are not used anymore; remove them from everywhere.
+    </issue>
   </task-group>
   <task-group for=">v0.5.0">
+    <issue>
+      func contains(permissions []data.PolicyPermission,
+      func hasAllPermissions(
+      these can be generic helper functions in the sdk.
+    </issue>
+    <issue>
+      rename
+      ListPoliciesBySPIFFEID
+      ListPoliciesBySPIFFEIDPattern
+      same for path => pathpattern
+    </issue>
+    <issue>
+      wildcard for spiffeid pattern and path pattern is redundant and confusing
+      instead of that, you can always provide a similar regex like `.*`
+      remove that part from code and documentation
+      it will make validation logic simpler too.
+
+      also, empty id or path should raise an error.
+    </issue>
+    <issue>
+      // The encryption key must be 16, 24, or 32 bytes in length (for AES-128,
+      // AES-192, or AES-256 respectively).
+
+      Nope. we only use 32 bytes.
+      fix the docs and also the tests.
+    </issue>
+    <issue>
+      type GuardFunc[Req any] func(Req, http.ResponseWriter, *http.Request) error
+
+      // Change function signature [BREAKING]
+      func HandleRequest[Req any, Res any](
+      requestBody []byte,
+      w http.ResponseWriter,
+      r *http.Request,
+      errorResponse Res,
+      guard GuardFunc[Req], // Required parameter
+      ) *Req {
+      // ... existing logic ...
+
+      if err := guard(request, w, r); err != nil {
+      return nil
+      }
+
+      return &request
+      }
+    </issue>
+    <issue>
+      "spike/system/acl" -> to constants
+      if there are other predefined paths, they go to constants too.
+    </issue>
+    <issue>
+      func DatabaseOperationTimeout() time.Duration {
+      ^ this is not used anywhere. find where it should be used and add it.
+    </issue>
     <issue>
       add these strings as constants in SDK to avoid typos in code:
       p := os.Getenv("SPIKE_NEXUS_SHAMIR_SHARES")

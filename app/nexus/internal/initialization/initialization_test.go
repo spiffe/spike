@@ -169,7 +169,8 @@ func TestBackendStoreTypeDetection(t *testing.T) {
 			}
 
 			// Test requireBackingStoreToBootstrap logic
-			requireBackingStoreToBootstrap := backendType == env.Sqlite || backendType == env.Lite
+			requireBackingStoreToBootstrap := backendType == env.Sqlite ||
+				backendType == env.Lite
 			if requireBackingStoreToBootstrap != tt.requireBackingStoreToBootstrap {
 				t.Errorf("Expected requireBackingStoreToBootstrap %v, got %v",
 					tt.requireBackingStoreToBootstrap, requireBackingStoreToBootstrap)
@@ -273,7 +274,8 @@ func TestInitializationPathLogic(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// Test requireBackingStoreToBootstrap logic
-			requireBootstrap := tt.backendType == env.Sqlite || tt.backendType == env.Lite
+			requireBootstrap := tt.backendType == env.Sqlite ||
+				tt.backendType == env.Lite
 			if requireBootstrap != tt.expectedRequireBootstrap {
 				t.Errorf("Expected requireBootstrap %v, got %v",
 					tt.expectedRequireBootstrap, requireBootstrap)
@@ -355,7 +357,8 @@ func TestStringConversionConsistency(t *testing.T) {
 			// Test that we can create a StoreType from the string
 			backToType := env.StoreType(str)
 			if backToType != tt.storeType {
-				t.Errorf("Round-trip conversion failed: %s -> %s", tt.storeType, backToType)
+				t.Errorf("Round-trip conversion failed: %s -> %s",
+					tt.storeType, backToType)
 			}
 		})
 	}

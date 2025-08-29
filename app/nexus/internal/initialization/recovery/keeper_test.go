@@ -74,7 +74,8 @@ func TestIterateKeepersAndInitializeState_NonMemoryMode(t *testing.T) {
 
 	// Set to non-memory mode
 	_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", "sqlite")
-	_ = os.Setenv("SPIKE_NEXUS_KEEPER_PEERS", "https://keeper1.example.com,https://keeper2.example.com") // Test keepers
+	_ = os.Setenv("SPIKE_NEXUS_KEEPER_PEERS",
+		"https://keeper1.example.com,https://keeper2.example.com") // Test keepers
 	_ = os.Setenv("SPIKE_NEXUS_SHAMIR_THRESHOLD", "2")
 
 	// Verify the environment is set correctly

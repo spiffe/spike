@@ -31,7 +31,8 @@ func TestSetShardValidData(t *testing.T) {
 	RLockShard()
 	retrievedShard := ShardNoSync()
 	if !bytes.Equal(retrievedShard[:], testData[:]) {
-		t.Errorf("Shard data mismatch. Expected: %v, Got: %v", testData, *retrievedShard)
+		t.Errorf("Shard data mismatch. Expected: %v, Got: %v",
+			testData, *retrievedShard)
 	}
 	RUnlockShard()
 }
@@ -368,7 +369,8 @@ func TestShardSize(t *testing.T) {
 
 	// noinspection GoBoolExpressions
 	if len(shardPtr) != crypto.AES256KeySize {
-		t.Errorf("Shard size should be %d, got %d", crypto.AES256KeySize, len(shardPtr))
+		t.Errorf("Shard size should be %d, got %d",
+			crypto.AES256KeySize, len(shardPtr))
 	}
 
 	// noinspection GoBoolExpressions

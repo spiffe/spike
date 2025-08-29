@@ -120,7 +120,7 @@ func TestRouteRestore_InvalidJSONBody(t *testing.T) {
 func TestRouteRestore_GuardValidationFailure(t *testing.T) {
 	// This test would fail due to missing SPIFFE context and HTTP infrastructure
 	// The guardRestoreRequest function requires:
-	// 1. Valid SPIFFE ID from request context
+	// 1. Valid SPIFFE ID from the request context
 	// 2. Proper TLS peer certificates
 	// 3. Network infrastructure setup
 	//
@@ -182,7 +182,7 @@ func TestRouteRestore_TooManyShards(t *testing.T) {
 	// w := httptest.NewRecorder()
 	// audit := &journal.AuditEntry{}
 
-	// This test focuses on the shards collection logic, not the full HTTP flow
+	// This test focuses on the `shards` collection logic, not the full HTTP flow
 	t.Skip("Skipping test that requires SPIFFE infrastructure for guard validation")
 }
 

@@ -4,12 +4,12 @@
 
 // Package noop implements an in-memory storage backend for managing
 // secrets and policies in the SPIKE system. This package includes a
-// no-op implementation, `NoopStore`, which acts as a placeholder or
+// no-op implementation, `Store`, which acts as a placeholder or
 // testing tool for scenarios where persistent storage isn't required.
 //
-// The `NoopStore` provides implementations for interfaces related to
+// The `Store` provides implementations for interfaces related to
 // storing and retrieving secrets and policies but does not perform
-// any actual storage operations. All methods in `NoopStore` are no-ops and
+// any actual storage operations. All methods in `Store` are no-ops and
 // always return `nil` or equivalent default values.
 package noop
 
@@ -21,28 +21,28 @@ import (
 	"github.com/spiffe/spike-sdk-go/kv"
 )
 
-// NoopStore provides a no-op implementation of a storage backend.
+// Store provides a no-op implementation of a storage backend.
 // This implementation can be used for testing or as a placeholder
-// where no actual storage is needed. NoopStore is also used when the
+// where no actual storage is needed. Store is also used when the
 // backing kv is configured to be in-memory.
-type NoopStore struct {
+type Store struct {
 }
 
 // Close implements the closing operation for the kv.
 // This implementation is a no-op and always returns nil.
-func (s *NoopStore) Close(_ context.Context) error {
+func (s *Store) Close(_ context.Context) error {
 	return nil
 }
 
 // Initialize prepares the kv for use.
 // This implementation is a no-op and always returns nil.
-func (s *NoopStore) Initialize(_ context.Context) error {
+func (s *Store) Initialize(_ context.Context) error {
 	return nil
 }
 
 // LoadSecret retrieves a secret from the kv by its path.
 // This implementation always returns nil secret and nil error.
-func (s *NoopStore) LoadSecret(
+func (s *Store) LoadSecret(
 	_ context.Context, _ string,
 ) (*kv.Value, error) {
 	return nil, nil
@@ -50,7 +50,7 @@ func (s *NoopStore) LoadSecret(
 
 // LoadAllSecrets retrieves all secrets stored in the kv.
 // This implementation always returns nil and nil error.
-func (s *NoopStore) LoadAllSecrets(_ context.Context) (
+func (s *Store) LoadAllSecrets(_ context.Context) (
 	map[string]*kv.Value, error,
 ) {
 	return nil, nil
@@ -58,7 +58,7 @@ func (s *NoopStore) LoadAllSecrets(_ context.Context) (
 
 // StoreSecret saves a secret to the kv at the specified path.
 // This implementation is a no-op and always returns nil.
-func (s *NoopStore) StoreSecret(
+func (s *Store) StoreSecret(
 	_ context.Context, _ string, _ kv.Value,
 ) error {
 	return nil
@@ -66,13 +66,13 @@ func (s *NoopStore) StoreSecret(
 
 // StorePolicy stores a policy in the no-op kv.
 // This implementation is a no-op and always returns nil.
-func (s *NoopStore) StorePolicy(_ context.Context, _ data.Policy) error {
+func (s *Store) StorePolicy(_ context.Context, _ data.Policy) error {
 	return nil
 }
 
 // LoadPolicy retrieves a policy from the kv by its ID.
 // This implementation always returns nil and nil error.
-func (s *NoopStore) LoadPolicy(
+func (s *Store) LoadPolicy(
 	_ context.Context, _ string,
 ) (*data.Policy, error) {
 	return nil, nil
@@ -80,7 +80,7 @@ func (s *NoopStore) LoadPolicy(
 
 // LoadAllPolicies retrieves all policies from the no-op store.
 // This implementation always returns nil and nil error.
-func (s *NoopStore) LoadAllPolicies(
+func (s *Store) LoadAllPolicies(
 	_ context.Context,
 ) (map[string]*data.Policy, error) {
 	return nil, nil
@@ -88,10 +88,10 @@ func (s *NoopStore) LoadAllPolicies(
 
 // DeletePolicy removes a policy from the no-op kv by its ID.
 // This implementation is a no-op and always returns nil.
-func (s *NoopStore) DeletePolicy(_ context.Context, _ string) error {
+func (s *Store) DeletePolicy(_ context.Context, _ string) error {
 	return nil
 }
 
-func (s *NoopStore) GetCipher() cipher.AEAD {
+func (s *Store) GetCipher() cipher.AEAD {
 	return nil
 }

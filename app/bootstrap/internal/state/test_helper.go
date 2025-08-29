@@ -5,10 +5,11 @@
 package state
 
 import (
+	"testing"
+
 	"github.com/cloudflare/circl/group"
 	shamir "github.com/cloudflare/circl/secretsharing"
 	"github.com/spiffe/spike-sdk-go/crypto"
-	"testing"
 )
 
 // Helper function to create test shares with known structure
