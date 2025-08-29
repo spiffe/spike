@@ -49,9 +49,10 @@ func normalizePath(path string) string {
 //
 // Command flags:
 //   - --name: Name of the policy (required if not using --file)
-//   - --spiffeid: SPIFFE ID pattern for workload matching
+//   - --spiffeid: SPIFFE ID regex pattern for workload matching
 //     (required if not using --file)
-//   - --path: Path pattern for access control (required if not using --file)
+//   - --path: Path regex pattern for access control (required
+//     if not using --file)
 //   - --permissions: Comma-separated list of permissions
 //     (required if not using --file)
 //   - --file: Path to YAML file containing policy configuration
@@ -66,7 +67,7 @@ func normalizePath(path string) string {
 //
 //	spike policy apply \
 //	    --name "web-service-policy" \
-//	    --spiffeid "spiffe://example.org/web-service/*" \
+//	    --spiffeid "spiffe://example\.org/web-service/.*" \
 //	    --path "secrets/web/database" \
 //	    --permissions "read,write"
 //
@@ -77,7 +78,7 @@ func normalizePath(path string) string {
 // Example YAML file structure:
 //
 //	name: web-service-policy
-//	spiffeid: ^spiffe://example\.org/web-service/
+//	spiffeid: ^spiffe://example\.org/web-service/.*
 //	path: ^secrets/web/database$
 //	permissions:
 //	  - read
@@ -120,8 +121,8 @@ func newPolicyApplyCommand(
 
         Example YAML file structure:
         name: db-access
-        spiffeid: ^spiffe://example\.org/service/
-        path: ^secrets/database/production
+        spiffeid: ^spiffe://example\.org/service/.*
+        path: ^secrets/database/production/*
         permissions:
           - read
           - write
@@ -190,11 +191,11 @@ func newPolicyApplyCommand(
 	cmd.Flags().StringVar(&name, "name", "",
 		"Policy name (required if not using --file)")
 	cmd.Flags().StringVar(&pathPattern, "path", "",
-		"Resource path pattern, e.g., "+
-			"'^secrets/database/production' (required if not using --file)")
+		"Resource path regex pattern, e.g., "+
+			"'^secrets/database/production/*' (required if not using --file)")
 	cmd.Flags().StringVar(&SPIFFEIDPattern, "spiffeid", "",
-		"SPIFFE ID pattern, e.g., "+
-			"'^spiffe://example\\.org/service/' (required if not using --file)")
+		"SPIFFE ID regex pattern, e.g., "+
+			"'^spiffe://example\\.org/service/.*' (required if not using --file)")
 	cmd.Flags().StringVar(&permsStr, "permissions", "",
 		"Comma-separated permissions: read, write, list, "+
 			"super (required if not using --file)")

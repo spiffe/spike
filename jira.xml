@@ -30,6 +30,31 @@
   </after-mergin-no-cache-feature>
   <task-group for="v0.5.0">
     <issue>
+      make sure the documentation examples on the website
+      including the sdk doc; clearly indicate that spiffe id
+      and path are regex patterns without any doubt.
+    </issue>
+    <issue>
+      consider enforcing spiffeid pattern to start
+       with ^spiffe://
+      or maybe automatically wrapping patterns with ^ and $
+      not sure about either of those.
+      at least add those to examples and documentation to make
+      the intention clear.
+    </issue>
+    <issue>
+      Example YAML file structure:
+      name: db-access
+      spiffeid: ^spiffe://example\.org/service/.*
+      path: ^secrets/database/production/*
+      permissions:
+      - read
+      - write
+
+      better to explicitly use SpifeIDPattern and PathPattern
+      to not get them confused with actual non-pattern attriburtes.
+    </issue>
+    <issue>
       scan the codebase for environment variables and update configuration.md and claude.md.
     </issue>
     <issue>

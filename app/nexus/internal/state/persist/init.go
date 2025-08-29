@@ -60,7 +60,7 @@ func createCipher() cipher.AEAD {
 // The function is safe for concurrent access as it uses a mutex to protect the
 // initialization process.
 //
-// Note: This function modifies the package-level be variable. Subsequent calls
+// Note: This function modifies the package-level be variable. Later calls
 // will reinitialize the backend, potentially losing any existing state.
 func InitializeBackend(rootKey *[crypto.AES256KeySize]byte) {
 	const fName = "initializeBackend"

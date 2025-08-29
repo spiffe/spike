@@ -5,10 +5,27 @@
 package persist
 
 import (
-	"github.com/spiffe/spike-sdk-go/crypto"
 	"os"
+	"path/filepath"
 	"testing"
+
+	"github.com/spiffe/spike-sdk-go/crypto"
+	"github.com/spiffe/spike/internal/config"
 )
+
+// cleanupSQLiteDatabase removes the existing SQLite database to ensure a clean test state
+func cleanupSQLiteDatabase(t *testing.T) {
+	dataDir := config.SpikeNexusDataFolder()
+	dbPath := filepath.Join(dataDir, "spike.db")
+
+	// Remove the database file if it exists
+	if _, err := os.Stat(dbPath); err == nil {
+		t.Logf("Removing existing database at %s", dbPath)
+		if err := os.Remove(dbPath); err != nil {
+			t.Logf("Warning: Failed to remove existing database: %v", err)
+		}
+	}
+}
 
 // Helper function to create a test root key with a specific pattern
 func createTestKey(_ *testing.T) *[crypto.AES256KeySize]byte {
