@@ -19,7 +19,7 @@
   cluttering it with early-stage or exploratory thoughts.
  -->
 <stuff>
-  <after-mergin-no-cache-feature>
+  <after-merging-no-cache-feature>
     <issue>
       SPIKE_NEXUS_KEEPER_PEERS='https://localhost:8443,https://localhost:8543,https://localhost:8643' \
 
@@ -55,11 +55,19 @@
       or shall wait for some time later.
       * Read every file and check for consistency / conventions / AI slop etc.
     </issue>
-  </after-mergin-no-cache-feature>
+  </after-merging-no-cache-feature>
   <task-group for="v0.5.0">
+    <issue>
+      use this:
+      var SpikeBootstrapVersion = app.Version
+
+    </issue>
     <issue>
       update release instructions to include adding a snapshot to
       snapshots.md.
+    </issue>
+    <issue>
+      add qa/cover.sh to release instructions if not there already.
     </issue>
     <issue>
       create a demo video for the new bootstrapping feature.

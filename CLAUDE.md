@@ -30,7 +30,7 @@ The following table lists the environment variables that you can use to
 configure the SPIKE components. **DO NOT** make you your own environment 
 variables. Use them from the table below. -- If the environment variable
 does not exist in this table, scan the codebase to see if there are any
-missing environment variables that are not mentioned, and suggest updates here.
+missing environment variables that are not mentioned and suggest updates here.
 
 | Component    | Environment Variable                    | Description                                                                                                                                         | Default Value                                                            |
 |--------------|-----------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------|
@@ -104,7 +104,7 @@ internal/config/    # Configuration helpers
 
 ### Use Proper English
 
-During generating documentation, you often forget articles and prepositions,
+During generating documentation, you often forget articles and prepositions
 and sometimes make basic grammatical errors.
 
 For example `// Test with empty map` should better have been
@@ -124,7 +124,7 @@ In short, pay extra attention to punctuation and grammar.
 
 ### Line Length
 
-The code has 80-character line length (including tests, and markdown files).
+The code has 80-character line length (including tests and markdown files).
 Tabs are counted as two characters.
 
 When it's not possible, it's okay to make exceptions, but try your best to keep
