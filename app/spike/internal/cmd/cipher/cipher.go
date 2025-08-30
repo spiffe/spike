@@ -21,3 +21,4 @@ func NewCipherCommand(source *workloadapi.X509Source, SPIFFEID string) *cobra.Co
 
 	return cmd
 }
+

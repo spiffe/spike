@@ -30,3 +30,4 @@ func NexusBaseURL() string {
 
 	return host + port
 }
+
