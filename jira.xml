@@ -171,6 +171,19 @@
   </task-group>
   <task-group for=">v0.5.0">
     <issue>
+      path normalization test failing
+
+      //{
+      //	name:         "flags_with_multiple_trailing_slashes",
+      //	inputName:    "multi-slash-policy",
+      //	inputSpiffed: "^spiffe://example\\.org/test/.*$",
+      //	inputPath:    "^secrets/test///$",
+      //	inputPerms:   "read",
+      //	expectedPath: "^secrets/test$",
+      //	wantErr:      false,
+      //},
+    </issue>
+    <issue>
       func contains(permissions []data.PolicyPermission,
       func hasAllPermissions(
       these can be generic helper functions in the sdk.

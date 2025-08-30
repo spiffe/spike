@@ -144,7 +144,7 @@ func TestYAMLParsingEdgeCases(t *testing.T) {
 		{
 			name: "quoted_values",
 			yamlContent: `name: "my-policy"
-spiffeid: "^spiffe://example\.org/quoted/.*$"
+spiffeid: "^spiffe://example\\.org/quoted/.*$"
 path: "^secrets/quoted/.*$"
 permissions:
   - "read"

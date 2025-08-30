@@ -56,7 +56,7 @@ permissions:
 			name: "valid_policy_with_all_permissions",
 			fileContent: `name: full-access-policy
 spiffeid: ^spiffe://example\.org/admin/.*$
-path: ^.*$
+path: ^secrets/.*$
 permissions:
   - read
   - write

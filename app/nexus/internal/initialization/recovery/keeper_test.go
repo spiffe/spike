@@ -140,11 +140,17 @@ func TestIterateKeepersAndInitializeState_ShardMapHandling(t *testing.T) {
 func TestIterateKeepersAndInitializeState_ParameterValidation(t *testing.T) {
 	// Save the original environment
 	originalStore := os.Getenv("SPIKE_NEXUS_BACKEND_STORE")
+	originalKeeperPeers := os.Getenv("SPIKE_NEXUS_KEEPER_PEERS")
 	defer func() {
 		if originalStore != "" {
 			_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", originalStore)
 		} else {
 			_ = os.Unsetenv("SPIKE_NEXUS_BACKEND_STORE")
+		}
+		if originalKeeperPeers != "" {
+			_ = os.Setenv("SPIKE_NEXUS_KEEPER_PEERS", originalKeeperPeers)
+		} else {
+			_ = os.Unsetenv("SPIKE_NEXUS_KEEPER_PEERS")
 		}
 	}()
 
@@ -158,14 +164,15 @@ func TestIterateKeepersAndInitializeState_ParameterValidation(t *testing.T) {
 	}
 
 	_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", "sqlite")
+	_ = os.Setenv("SPIKE_NEXUS_KEEPER_PEERS", "https://localhost:8443")
 
-	// Test with a nil shards map (should panic - this is expected behavior)
-	defer func() {
-		if r := recover(); r == nil {
-			t.Error("Expected panic with nil shards map")
-		}
-	}()
-	iterateKeepersAndInitializeState(nil, nil)
+	// Test with a nil shards map (should not panic, just return false)
+	// The function gracefully handles nil maps by never reaching code that would panic
+	// since network calls will fail and no shards will be processed
+	result2 := iterateKeepersAndInitializeState(nil, nil)
+	if result2 {
+		t.Error("Expected false when using nil shards map with unreachable keepers")
+	}
 }
 
 func TestShamirShardStructure(t *testing.T) {
