@@ -48,7 +48,7 @@ func main() {
 	fmt.Println("before trying to get source...")
 	source, selfSPIFFEID, err := spiffe.Source(ctx, spiffe.EndpointSocket())
 	if err != nil {
-		log.Fatal(err.Error())
+		log.FatalLn(appName, "message", "failed to get source", "err", err.Error())
 	}
 	defer spiffe.CloseSource(source)
 
