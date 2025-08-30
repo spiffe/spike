@@ -4,8 +4,6 @@
 #  \\\\\ Copyright 2024-present SPIKE contributors.
 # \\\\\\\ SPDX-License-Identifier: Apache-2.0
 
-# ./hack/bare-metal/startup/start.sh
-#
 # This is a helper script that establishes the following tasks:
 #
 # 0. Build the binaries for the demo app, SPIKE Keeper, and SPIKE Nexus.
@@ -58,6 +56,7 @@ check_domain() {
 # Check domain before proceeding
 if ! check_domain; then
   echo "Domain check failed. Exiting..."
+  echo "Please add '127.0.0.1 spire.spike.ist' to your /etc/hosts."
   exit 1
 fi
 

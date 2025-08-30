@@ -118,13 +118,6 @@ spike-pilot:
     repository: spike-pilot
     pullPolicy: IfNotPresent
     tag: ""
-
-spike-keeper:
-  enabled: true
-spike-nexus:
-  enabled: true
-spike-pilot:
-  enabled: true
 ```
 
 Then deploy SPIKE using the following command:

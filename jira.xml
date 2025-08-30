@@ -21,6 +21,34 @@
 <stuff>
   <after-mergin-no-cache-feature>
     <issue>
+      SPIKE_NEXUS_KEEPER_PEERS='https://localhost:8443,https://localhost:8543,https://localhost:8643' \
+
+    </issue>
+    <issue>
+      add to prerelase smoke tests to run
+      ./hack/bare-metal/cmd/put-sample-secrets.sh
+      ./hack/bare-metal/cmd/read-sample-secrets.sh
+      and also an instruciton to test demo workload.
+    </issue>
+    <issue>
+      once all the changes are done ensure that the demo app still works.
+    </issue>
+    <issue>
+      ## Path Patterns in SPIKE
+
+      Path patterns in **SPIKE** are designed to provide flexibility but also follow
+
+      ^ this is in the wrong place; we should discuss actual paths (in secrets)
+      not patterns in policies, because path patterns in policies are patterns.
+    </issue>
+    <issue>
+      - If the pattern is a single `"*"`, then it matches anything.
+      ^ remove this constraint from code, docs, tests, everywhere!
+    </issue>
+    <issue>
+      add ^ and $ to all regex path and ids, including examples.
+    </issue>
+    <issue>
       The code needs some cleanup; so here are things to do after merging the "good enough" version.
 
       * Scan all TOD0s in the codebase and come up with action plans (ie. candidate for next release
@@ -29,6 +57,13 @@
     </issue>
   </after-mergin-no-cache-feature>
   <task-group for="v0.5.0">
+    <issue>
+      update release instructions to include adding a snapshot to
+      snapshots.md.
+    </issue>
+    <issue>
+      create a demo video for the new bootstrapping feature.
+    </issue>
     <issue>
       //	spike policy list --format=json
       //	spike policy list --path="secrets/db/.*"

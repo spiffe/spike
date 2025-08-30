@@ -43,11 +43,11 @@ spike policy apply --file policy.yaml
 name: "web-service-policy"
 
 # SPIFFE ID pattern for workload matching
-spiffeid: "spiffe://example.org/web-service/"
+spiffeid: "^spiffe://example\\.org/web-service/$"
 
 # Path pattern for access control
 # Note: Trailing slashes are automatically removed during normalization
-path: "secrets/web-service/database"
+path: "^secrets/web-service/db-[0-9]*$"
 
 # List of permissions to grant
 permissions:
@@ -71,33 +71,33 @@ path: "secrets/database/production//"  # → "secrets/database/production"
 ```yaml
 # Database secrets
 name: "database-policy"
-spiffeid: "spiffe://example.org/database/"
-path: "secrets/database/production"
+spiffeid: "^spiffe://example\.org/database$"
+path: "^secrets/database/production$"
 permissions: [read]
 
 # Web service configuration
 name: "web-service-policy"
-spiffeid: "spiffe://example.org/web-service/"
-path: "secrets/web-service/config"
+spiffeid: "^spiffe://example\.org/web-service$"
+path: "^secrets/web-service/config$"
 permissions: [read, write]
 
 # Cache credentials
 name: "cache-policy"
-spiffeid: "spiffe://example.org/cache/"
-path: "secrets/cache/redis/session"
+spiffeid: "^spiffe://example\.org/cache/$"
+path: "^secrets/cache/redis/session$"
 permissions: [read]
 
 # Application environment variables
 name: "app-env-policy"
-spiffeid: "spiffe://example.org/app/"
-path: "secrets/app/env/production"
+spiffeid: "^spiffe://example\.org/app$"
+path: "^secrets/app/env/production$"
 permissions: [read, list]
 ```
 
 ### All Available Permissions
 ```yaml
 name: "admin-policy"
-spiffeid: "spiffe://example.org/admin/"
+spiffeid: "^spiffe://example\.org/admin$"
 path: "secrets"
 permissions:
   - read    # Permission to read secrets
@@ -111,16 +111,16 @@ permissions:
 #### Flow Sequence for Permissions
 ```yaml
 name: "database-policy"
-spiffeid: "spiffe://example.org/database/"
-path: "secrets/database/production"
+spiffeid: "^spiffe://example\.org/database$"
+path: "^secrets/database/production$"
 permissions: [read, write, list]
 ```
 
 #### Quoted Values
 ```yaml
 name: "cache-policy"
-spiffeid: "spiffe://example.org/cache/"
-path: "secrets/cache/redis"
+spiffeid: "^spiffe://example\.org/cache$"
+path: "^secrets/cache/redis$"
 permissions:
   - "read"
   - "write"
@@ -134,8 +134,8 @@ to programmatically create your policies too:
 ```bash
 # Create your first policy
 spike policy create --name=my-service \
-  --path="secrets/app/" \
-  --spiffeid="spiffe://example.org/service/" \
+  --path="^secrets/app$" \
+  --spiffeid="^spiffe://example\.org/service$" \
   --permissions=read
 
 # Verify your policy was created
@@ -228,8 +228,8 @@ When using the `--file` flag, the YAML file should follow this structure:
 
 ```yaml
 name: policy-name
-spiffeid: spiffe://example.org/service/
-path: secrets/database/production
+spiffeid: ^spiffe://example\.org/service$
+path: ^secrets/database/production$
 permissions:
   - read
   - write
@@ -331,15 +331,15 @@ Deletes a policy by ID or name. Requires confirmation.
 # Create a policy for a web service with read and write access
 spike policy create \
   --name=web-service \
-  --path="secrets/web/" \
-  --spiffeid="spiffe://example.org/web/" \
+  --path="^secrets/web$" \
+  --spiffeid="^spiffe://example\.org/web$" \
   --permissions=read,write
 
 # Create a policy with multiple permissions
 spike policy create \
   --name=admin-service \
   --path="secrets/" \
-  --spiffeid="spiffe://example.org/admin/" \
+  --spiffeid="^spiffe://example\.org/admin$" \
   --permissions=read,write,list
 
 # Apply a policy using a YAML file

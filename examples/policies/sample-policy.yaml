@@ -10,12 +10,13 @@
 name: "web-service-policy"
 
 # SPIFFE ID pattern for workload matching
-# This pattern determines which workloads this policy applies to
-spiffeid: "spiffe://example.org/web-service/"
+# This is a regex pattern that determines which workloads this policy applies to
+spiffeid: "^spiffe://example\.org/web-service/.*$"
 
 # Path pattern for access control
-# This pattern determines which resources this policy grants access to
-path: "secrets/web-service/database"
+# This is a regex pattern that determines which resources this policy
+# grants access to
+path: "^secrets/web-service/database$"
 
 # List of permissions to grant
 # Valid values: read, write, list, super

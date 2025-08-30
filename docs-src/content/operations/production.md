@@ -32,8 +32,8 @@ the directories and files of the backing store.
 ### Disable Swap
 
 **SPIKE** encrypts data in transit and at rest; however, it must still have 
-sensitive data in memory to function. Risk of exposure should be minimized by 
-disabling swap to prevent the operating system from paging sensitive data to 
+sensitive data in memory to function. The risk of exposure should be minimized 
+by disabling swap to prevent the operating system from paging sensitive data to 
 disk. 
 
 ### Disable Core Dumps
@@ -486,7 +486,7 @@ configuration.
 > Note that these memory protection measures are also applicable for 
 > **SPIKE Keeper**s where we secure shards of the root key. While a single
 > shard does not expose as much risk as an exposed root key, it's still 
-> good defense in depth to securing the memory of **SPIKE Keeper** instances.
+> good defense in depth to secure the memory of **SPIKE Keeper** instances.
 
 ### Backing Store Security
 
