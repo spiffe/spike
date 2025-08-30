@@ -25,10 +25,12 @@ test/cover:
 # Usage: make test
 # Executes all tests in the project with verbose output and race detection
 # Does not generate coverage reports (use test/cover for that)
-# Flags: -v (verbose), -race (race detection), -buildvcs (include VCS info)
+# Flags: -v (verbose), -race (race detection), -buildvcs (include VCS info), -p 1 (sequential execution to avoid race conditions)
+# NOTE: Sequential execution is temporary workaround for concurrent environment variable/database access
+# TODO: Remove -p 1 flag once issue with concurrent test isolation is resolved
 .PHONY: test
 test:
-	go test -v -race -buildvcs ./...
+	go test -v -race -buildvcs -p 1 ./...
 
 # Comprehensive code quality audit
 # Usage: make audit
