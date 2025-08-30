@@ -37,8 +37,8 @@ func TestSQLitePolicy_CreateAndGet(t *testing.T) {
 		// Create a test policy
 		policy := data.Policy{
 			Name:            "test-policy",
-			SPIFFEIDPattern: "spiffe://example\\.org/workload",
-			PathPattern:     "test/secrets/.*",
+			SPIFFEIDPattern: "^spiffe://example\\.org/workload$",
+			PathPattern:     "^test/secrets/.*$",
 			Permissions:     []data.PolicyPermission{data.PermissionRead, data.PermissionList},
 		}
 
@@ -75,8 +75,8 @@ func TestSQLitePolicy_Persistence(t *testing.T) {
 	policyName := "persistent-policy"
 	policy := data.Policy{
 		Name:            policyName,
-		SPIFFEIDPattern: "spiffe://example\\.org/service",
-		PathPattern:     "persistent/data/.*",
+		SPIFFEIDPattern: "^spiffe://example\\.org/service$",
+		PathPattern:     "^persistent/data/.*$",
 		Permissions:     []data.PolicyPermission{data.PermissionRead, data.PermissionWrite},
 	}
 
@@ -168,20 +168,20 @@ func TestSQLitePolicy_ListPolicies(t *testing.T) {
 		policies := []data.Policy{
 			{
 				Name:            "policy-alpha",
-				SPIFFEIDPattern: "spiffe://example\\.org/alpha",
-				PathPattern:     "alpha/.*",
+				SPIFFEIDPattern: "^spiffe://example\\.org/alpha$",
+				PathPattern:     "^alpha/.*$",
 				Permissions:     []data.PolicyPermission{data.PermissionRead},
 			},
 			{
 				Name:            "policy-beta",
-				SPIFFEIDPattern: "spiffe://example\\.org/beta",
-				PathPattern:     "beta/.*",
+				SPIFFEIDPattern: "^spiffe://example\\.org/beta$",
+				PathPattern:     "^beta/.*$",
 				Permissions:     []data.PolicyPermission{data.PermissionWrite},
 			},
 			{
 				Name:            "policy-gamma",
-				SPIFFEIDPattern: "spiffe://example\\.org/gamma",
-				PathPattern:     "gamma/.*",
+				SPIFFEIDPattern: "^spiffe://example\\.org/gamma$",
+				PathPattern:     "^gamma/.*$",
 				Permissions:     []data.PolicyPermission{data.PermissionSuper},
 			},
 		}
@@ -235,8 +235,8 @@ func TestSQLitePolicy_DeletePolicy(t *testing.T) {
 		for _, policyName := range policies {
 			policy := data.Policy{
 				Name:            policyName,
-				SPIFFEIDPattern: "spiffe://example\\.org/test",
-				PathPattern:     fmt.Sprintf("%s/*", policyName),
+				SPIFFEIDPattern: "^spiffe://example\\.org/test$",
+				PathPattern:     fmt.Sprintf("^%s/.*$", policyName),
 				Permissions:     []data.PolicyPermission{data.PermissionRead},
 			}
 			_, err := CreatePolicy(policy)
@@ -318,8 +318,8 @@ func TestSQLitePolicy_CreateMultiplePolicies(t *testing.T) {
 		// Create first policy
 		firstPolicy := data.Policy{
 			Name:            "first-policy",
-			SPIFFEIDPattern: "spiffe://example\\.org/first",
-			PathPattern:     "first/.*",
+			SPIFFEIDPattern: "^spiffe://example\\.org/first$",
+			PathPattern:     "^first/.*$",
 			Permissions:     []data.PolicyPermission{data.PermissionRead},
 		}
 

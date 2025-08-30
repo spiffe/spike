@@ -25,8 +25,8 @@ func TestCheckAccess_PilotAccess(t *testing.T) {
 		// Test with a pilot SPIFFE ID pattern
 		// Note: The actual IsPilot function behavior would need to be mocked
 		// For now, we'll test the policy matching logic
-		pilotSPIFFEID := "spiffe://example.org/pilot"
-		path := "test/secret"
+		pilotSPIFFEID := "^spiffe://example\\.org/pilot$"
+		path := "^test/secret$"
 		wants := []data.PolicyPermission{data.PermissionRead}
 
 		// This will return false in practice because we don't have the actual
@@ -129,8 +129,8 @@ func TestCheckAccess_SpecificPatterns(t *testing.T) {
 		// Create a policy with specific patterns
 		specificPolicy := data.Policy{
 			Name:            "specific-access",
-			SPIFFEIDPattern: "spiffe://example\\.org/service.*",
-			PathPattern:     "app/.*",
+			SPIFFEIDPattern: "^spiffe://example\\.org/service.*$",
+			PathPattern:     "^app/.*$",
 			Permissions: []data.PolicyPermission{
 				data.PermissionRead, data.PermissionWrite},
 		}
@@ -227,8 +227,8 @@ func TestCreatePolicy_ValidPolicy(t *testing.T) {
 
 		policy := data.Policy{
 			Name:            "test-policy",
-			SPIFFEIDPattern: "spiffe://example\\.org/.*",
-			PathPattern:     "test/.*",
+			SPIFFEIDPattern: "^spiffe://example\\.org/.*$",
+			PathPattern:     "^test/.*$",
 			Permissions: []data.PolicyPermission{
 				data.PermissionRead, data.PermissionWrite},
 		}
@@ -384,14 +384,14 @@ func TestCreatePolicy_InvalidRegexPatterns(t *testing.T) {
 			},
 			{
 				name:            "invalid path regex",
-				spiffeIDPattern: "spiffe://example.org/.*",
+				spiffeIDPattern: "^spiffe://example\\.org/.*$",
 				pathPattern:     "[invalid-regex",
 				expectError:     true,
 			},
 			{
 				name:            "valid patterns",
-				spiffeIDPattern: "spiffe://example.org/.*",
-				pathPattern:     "test/.*",
+				spiffeIDPattern: "^spiffe://example\\.org/.*$",
+				pathPattern:     "^test/.*$",
 				expectError:     false,
 			},
 		}
@@ -652,14 +652,14 @@ func TestListPoliciesByPath_MatchingPolicies(t *testing.T) {
 			},
 			{
 				Name:            "matching-policy-2",
-				SPIFFEIDPattern: "spiffe://example.org/.*",
+				SPIFFEIDPattern: "^spiffe://example\\.org/.*$",
 				PathPattern:     pathPattern,
 				Permissions:     []data.PolicyPermission{data.PermissionWrite},
 			},
 			{
 				Name:            "non-matching-policy",
 				SPIFFEIDPattern: "*",
-				PathPattern:     "other/.*",
+				PathPattern:     "^other/.*$",
 				Permissions:     []data.PolicyPermission{data.PermissionRead},
 			},
 		}

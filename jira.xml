@@ -61,6 +61,11 @@
       use this:
       var SpikeBootstrapVersion = app.Version
 
+
+      spiffe://example.com -> spiffe://example.org
+
+      add to docs; in policy search, the spiffeid pattern and path pattern
+      regexes should exactly match. the cli does not filter partial matches.
     </issue>
     <issue>
       update release instructions to include adding a snapshot to

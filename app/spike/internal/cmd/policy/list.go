@@ -33,8 +33,8 @@ import (
 //
 // Flags:
 //   - --format: Output format ("human" or "json", default is "human")
-//   - --path: Filter policies by a resource path pattern (e.g., 'secrets/.*')
-//   - --spiffeid: Filter policies by a SPIFFE ID pattern (e.g., 'spiffe://example\.org/service/.*')
+//   - --path: Filter policies by a resource path pattern (e.g., '^secrets/.*$')
+//   - --spiffeid: Filter policies by a SPIFFE ID pattern (e.g., '^spiffe://example\.org/service/.*$')
 //
 // Note: --path and --spiffeid flags cannot be used together.
 //
@@ -42,8 +42,8 @@ import (
 //
 //	spike policy list
 //	spike policy list --format=json
-//	spike policy list --path="secrets/db/.*"
-//	spike policy list --spiffeid="spiffe://example\.org/app"
+//	spike policy list --path="^secrets/db/.*$"
+//	spike policy list --spiffeid="^spiffe://example\.org/app$"
 //
 // Example output for human format:
 //
@@ -52,8 +52,8 @@ import (
 //
 //	ID: policy-123
 //	Name: web-service-policy
-//	SPIFFE ID Pattern: spiffe://example\.org/web-service/.*
-//	Path Pattern: /secrets/db/.*
+//	SPIFFE ID Pattern: ^spiffe://example\.org/web-service/.*$
+//	Path Pattern: ^secrets/db/.*$
 //	Permissions: read, write
 //	Created At: 2024-01-01T00:00:00Z
 //	Created By: user-abc
@@ -65,8 +65,8 @@ import (
 //	  {
 //	    "id": "policy-123",
 //	    "name": "web-service-policy",
-//	    "spiffeIdPattern": "spiffe://example\.org/web-service/.*",
-//	    "pathPattern": "^tenants/demo/db",
+//	    "spiffeIdPattern": "^spiffe://example\.org/web-service/.*$",
+//	    "pathPattern": "^tenants/demo/db$",
 //	    "permissions": ["read", "write"],
 //	    "createdAt": "2024-01-01T00:00:00Z",
 //	    "createdBy": "user-abc"
@@ -114,7 +114,7 @@ func newPolicyListCommand(
 	}
 
 	cmd.Flags().StringVar(&pathPattern, "path", "",
-		"Resource path pattern, e.g., '^secrets/web/db'")
+		"Resource path pattern, e.g., '^secrets/web/db$'")
 	cmd.Flags().StringVar(&SPIFFEIDPattern, "spiffeid", "",
 		"SPIFFE ID pattern, e.g., '^spiffe://example\\.org/service/finance$'")
 	cmd.MarkFlagsMutuallyExclusive("path", "spiffeid")

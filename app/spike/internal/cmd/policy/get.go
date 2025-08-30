@@ -53,8 +53,8 @@ import (
 //
 //	ID: policy-123
 //	Name: web-service-policy
-//	SPIFFE ID Pattern: spiffe://example.org/web-service/*
-//	Path Pattern: /api/v1/*
+//	SPIFFE ID Pattern: ^spiffe://example\.org/web-service/.*$
+//	Path Pattern: ^/secrets/db/.*$
 //	Permissions: read, write
 //	Created At: 2024-01-01T00:00:00Z
 //	Created By: user-abc
@@ -64,8 +64,8 @@ import (
 //	{
 //	  "id": "policy-123",
 //	  "name": "web-service-policy",
-//	  "spiffeIdPattern": "spiffe://example.org/web-service/*",
-//	  "pathPattern": "^tenants/demo/db",
+//	  "spiffeIdPattern": "^spiffe://example\\.org/web-service/.*$",
+//	  "pathPattern": "^tenants/demo/db$",
 //	  "permissions": ["read", "write"],
 //	  "createdAt": "2024-01-01T00:00:00Z",
 //	  "createdBy": "user-abc"

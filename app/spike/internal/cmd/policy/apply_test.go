@@ -113,8 +113,8 @@ func TestApplyPolicyFromFile(t *testing.T) {
 		{
 			name: "policy_with_trailing_slash_path",
 			fileContent: `name: test-policy
-spiffeid: spiffe://example\.org/test/.*
-path: secrets/database/production/
+spiffeid: ^spiffe://example\.org/test/.*$
+path: ^secrets/database/production/.*$
 permissions:
   - read
   - write`,
@@ -125,29 +125,29 @@ permissions:
 		{
 			name: "policy_with_normalized_path",
 			fileContent: `name: test-policy
-spiffeid: spiffe://example\.org/test/.*
-path: secrets/cache/redis
+spiffeid: ^spiffe://example\.org/test/.*$
+path: ^secrets/cache/redis$
 permissions:
   - read`,
 			fileName:     "normalized-path.yaml",
-			expectedPath: "secrets/cache/redis",
+			expectedPath: "^secrets/cache/redis$",
 			wantErr:      false,
 		},
 		{
 			name: "policy_with_root_path",
 			fileContent: `name: admin-policy
-spiffeid: spiffe://example\.org/admin/.*
-path: /
+spiffeid: ^spiffe://example\.org/admin/.*$
+path: ^/$
 permissions:
   - super`,
 			fileName:     "root-path.yaml",
-			expectedPath: "/",
+			expectedPath: "^/$",
 			wantErr:      false,
 		},
 		{
 			name: "policy_with_empty_path",
 			fileContent: `name: invalid-policy
-spiffeid: spiffe://example\.org/test/.*
+spiffeid: ^spiffe://example\.org/test/.*$
 path: ""
 permissions:
   - read`,
@@ -226,26 +226,26 @@ func TestApplyPolicyFromFlags(t *testing.T) {
 		{
 			name:         "flags_with_trailing_slash_path",
 			inputName:    "test-policy",
-			inputSpiffed: "spiffe://example\\.org/test/.*",
-			inputPath:    "secrets/database/production/",
+			inputSpiffed: "^spiffe://example\\.org/test/.*$",
+			inputPath:    "^secrets/database/production$",
 			inputPerms:   "read,write",
-			expectedPath: "secrets/database/production",
+			expectedPath: "^secrets/database/production$",
 			wantErr:      false,
 		},
 		{
 			name:         "flags_with_normalized_path",
 			inputName:    "cache-policy",
-			inputSpiffed: "spiffe://example\\.org/cache/.*",
-			inputPath:    "secrets/cache/redis",
+			inputSpiffed: "^spiffe://example\\.org/cache/.*$",
+			inputPath:    "^secrets/cache/redis$",
 			inputPerms:   "read",
-			expectedPath: "secrets/cache/redis",
+			expectedPath: "^secrets/cache/redis$",
 			wantErr:      false,
 		},
 		{
 			name:         "flags_with_multiple_trailing_slashes",
 			inputName:    "multi-slash-policy",
-			inputSpiffed: "spiffe://example\\.org/test/.*",
-			inputPath:    "secrets/test///",
+			inputSpiffed: "^spiffe://example\\.org/test/.*$",
+			inputPath:    "^secrets/test///$",
 			inputPerms:   "read",
 			expectedPath: "secrets/test",
 			wantErr:      false,
@@ -253,16 +253,16 @@ func TestApplyPolicyFromFlags(t *testing.T) {
 		{
 			name:         "flags_with_root_path",
 			inputName:    "root-policy",
-			inputSpiffed: "spiffe://example\\.org/admin/.*",
-			inputPath:    "/",
+			inputSpiffed: "^spiffe://example\\.org/admin/.*$",
+			inputPath:    "^/$",
 			inputPerms:   "super",
-			expectedPath: "/",
+			expectedPath: "^/$",
 			wantErr:      false,
 		},
 		{
 			name:         "missing_path_flag",
 			inputName:    "incomplete-policy",
-			inputSpiffed: "spiffe://example\\.org/test/.*",
+			inputSpiffed: "^spiffe://example\\.org/test/.*$",
 			inputPath:    "",
 			inputPerms:   "read",
 			wantErr:      true,

@@ -339,8 +339,8 @@ func TestNoopStore_StorePolicy(t *testing.T) {
 			policy: data.Policy{
 				ID:              "read-policy",
 				Name:            "Read Policy",
-				SPIFFEIDPattern: "spiffe://example.org/reader/*",
-				PathPattern:     "secrets/*",
+				SPIFFEIDPattern: "^spiffe://example\\.org/reader/.*$",
+				PathPattern:     "^secrets/.*$",
 				Permissions:     []data.PolicyPermission{data.PermissionRead},
 			},
 		},
@@ -349,8 +349,8 @@ func TestNoopStore_StorePolicy(t *testing.T) {
 			policy: data.Policy{
 				ID:              "admin-policy",
 				Name:            "Admin Policy",
-				SPIFFEIDPattern: "spiffe://example\\.org/admin/.*",
-				PathPattern:     "admin/secret/.*",
+				SPIFFEIDPattern: "^spiffe://example\\.org/admin/.*$",
+				PathPattern:     "^admin/secret/.*$",
 				Permissions:     []data.PolicyPermission{data.PermissionRead, data.PermissionWrite, data.PermissionList},
 			},
 		},
@@ -375,8 +375,8 @@ func TestNoopStore_StorePolicyWithTimeout(t *testing.T) {
 	policy := data.Policy{
 		ID:              "test-policy",
 		Name:            "Test Policy",
-		SPIFFEIDPattern: "spiffe://example.org/test/*",
-		PathPattern:     "test/*",
+		SPIFFEIDPattern: "^spiffe://example\\.org/test/.*$",
+		PathPattern:     "^test/.*$",
 		Permissions:     []data.PolicyPermission{data.PermissionRead},
 	}
 
@@ -471,8 +471,8 @@ func TestNoopStore_ConcurrentOperations(t *testing.T) {
 			policy := data.Policy{
 				ID:              "concurrent-policy",
 				Name:            "Concurrent Policy",
-				SPIFFEIDPattern: "spiffe://example.org/concurrent/*",
-				PathPattern:     "concurrent/*",
+				SPIFFEIDPattern: "^spiffe://example\\.org/concurrent/.*$",
+				PathPattern:     "^concurrent/.*$",
 				Permissions:     []data.PolicyPermission{data.PermissionRead},
 			}
 			_ = store.StorePolicy(ctx, policy)
@@ -543,8 +543,8 @@ func TestNoopStore_MultipleInstances(t *testing.T) {
 			testPolicy := data.Policy{
 				ID:              "test-policy",
 				Name:            "Test Policy",
-				SPIFFEIDPattern: "spiffe://example.org/test/*",
-				PathPattern:     "test/*",
+				SPIFFEIDPattern: "^spiffe://example\\.org/test/.*$",
+				PathPattern:     "^test/.*$",
 				Permissions:     []data.PolicyPermission{data.PermissionRead},
 			}
 			err = store.StorePolicy(ctx, testPolicy)
@@ -607,8 +607,8 @@ func TestNoopStore_StressTest(t *testing.T) {
 			policy := data.Policy{
 				ID:              "stress-policy",
 				Name:            "Stress Policy",
-				SPIFFEIDPattern: "spiffe://example.org/stress/*",
-				PathPattern:     "stress/*",
+				SPIFFEIDPattern: "^spiffe://example\\.org/stress/.*$",
+				PathPattern:     "^stress/.*$",
 				Permissions:     []data.PolicyPermission{data.PermissionRead},
 			}
 			_ = store.StorePolicy(ctx, policy)
