@@ -74,7 +74,7 @@ func TestInitializeBackend_Memory_WithNilKey(t *testing.T) {
 		}
 
 		// Verify it's a memory backend
-		if _, ok := backend.(*memory.InMemoryStore); !ok {
+		if _, ok := backend.(*memory.Store); !ok {
 			t.Errorf("Expected memory backend, got %T", backend)
 		}
 	})
@@ -104,7 +104,7 @@ func TestInitializeBackend_SQLite_WithValidKey(t *testing.T) {
 		}
 
 		// For SQLite, we expect a different type than memory
-		if _, ok := backend.(*memory.InMemoryStore); ok {
+		if _, ok := backend.(*memory.Store); ok {
 			t.Error("Expected non-memory backend for sqlite store type")
 		}
 	})
@@ -145,7 +145,7 @@ func TestInitializeBackend_Lite_WithValidKey(t *testing.T) {
 		}
 
 		// For lite, we expect a different type than memory
-		if _, ok := backend.(*memory.InMemoryStore); ok {
+		if _, ok := backend.(*memory.Store); ok {
 			t.Error("Expected non-memory backend for lite store type")
 		}
 	})
@@ -165,26 +165,26 @@ func TestInitializeBackend_Lite_WithNilKey_ShouldPanic(t *testing.T) {
 func TestInitializeBackend_UnknownType_DefaultsToMemory(t *testing.T) {
 	t.Skip("Skipping test - unknown types still require non-nil key due to validation logic, but default case creates memory backend")
 
-	// TODO: This test reveals a logical inconsistency: unknown store types default to
+	// This test reveals a logical inconsistency: unknown store types default to
 	// memory backend in the switch statement, but the validation at the top of
 	// InitializeBackend requires non-nil keys for anything that's not env.Memory.
 	// Since "unknown" != env.Memory, it requires a non-nil key, but then creates
 	// a memory backend that doesn't need the key.
 	//
-	// Expected behavior: Unknown types default to memory backend but validation
+	// Expected behavior: Unknown types default to memory backend, but validation
 	// logic prevents this from working with nil keys
 }
 
 func TestInitializeBackend_NoEnvironmentVariable_DefaultsToMemory(t *testing.T) {
 	t.Skip("Skipping test - empty environment variable still requires non-nil key due to validation logic, but default case creates memory backend")
 
-	// TODO: This test reveals the same logical inconsistency: when environment variable
+	// This test reveals the same logical inconsistency: when the environment variable
 	// is empty, it defaults to memory backend in the switch statement, but the validation
 	// at the top of InitializeBackend requires non-nil keys for anything that's not env.Memory.
 	// Since empty string != env.Memory, it requires a non-nil key, but then creates
 	// a memory backend that doesn't need the key.
 	//
-	// Expected behavior: Empty environment variable defaults to memory backend but validation
+	// Expected behavior: Empty environment variable defaults to memory backend, but validation
 	// logic prevents this from working with nil keys
 }
 
@@ -204,10 +204,10 @@ func TestInitializeBackend_MultipleInitializations(t *testing.T) {
 		}
 
 		// Both should be memory backends
-		if _, ok := firstBackend.(*memory.InMemoryStore); !ok {
+		if _, ok := firstBackend.(*memory.Store); !ok {
 			t.Error("First backend is not memory backend")
 		}
-		if _, ok := secondBackend.(*memory.InMemoryStore); !ok {
+		if _, ok := secondBackend.(*memory.Store); !ok {
 			t.Error("Second backend is not memory backend")
 		}
 	})
@@ -219,7 +219,7 @@ func TestInitializeBackend_SwitchBetweenTypes(t *testing.T) {
 		InitializeBackend(nil)
 		memoryBackend := Backend()
 
-		if _, ok := memoryBackend.(*memory.InMemoryStore); !ok {
+		if _, ok := memoryBackend.(*memory.Store); !ok {
 			t.Error("Expected memory backend")
 		}
 	})
@@ -230,7 +230,7 @@ func TestInitializeBackend_SwitchBetweenTypes(t *testing.T) {
 		InitializeBackend(key)
 		sqliteBackend := Backend()
 
-		if _, ok := sqliteBackend.(*memory.InMemoryStore); ok {
+		if _, ok := sqliteBackend.(*memory.Store); ok {
 			t.Error("Expected non-memory backend after switching to sqlite")
 		}
 	})
@@ -291,7 +291,7 @@ func TestInitializeBackend_ConcurrentAccess(t *testing.T) {
 					return
 				}
 
-				if _, ok := backend.(*memory.InMemoryStore); !ok {
+				if _, ok := backend.(*memory.Store); !ok {
 					t.Errorf("Expected memory backend in goroutine, got %T", backend)
 				}
 			}()
@@ -316,7 +316,7 @@ func TestBackend_AccessAfterInitialization(t *testing.T) {
 				t.Fatalf("Backend is nil on access %d", i)
 			}
 
-			if _, ok := backend.(*memory.InMemoryStore); !ok {
+			if _, ok := backend.(*memory.Store); !ok {
 				t.Errorf("Expected memory backend on access %d, got %T", i, backend)
 			}
 		}

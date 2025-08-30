@@ -10,5 +10,5 @@
 // This package implements the SPIKE CLI policy commands that allow users to
 // manage access control policies in their SPIKE deployment.
 //
-// See <link-here> for CLI documentation.
+// See https://spike.ist/usage/commands/ for CLI documentation.
 package policy

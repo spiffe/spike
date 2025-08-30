@@ -53,8 +53,8 @@ import (
 //
 //	ID: policy-123
 //	Name: web-service-policy
-//	SPIFFE ID Pattern: spiffe://example.org/web-service/*
-//	Path Pattern: /api/v1/*
+//	SPIFFE ID Pattern: ^spiffe://example\.org/web-service/.*$
+//	Path Pattern: ^/secrets/db/.*$
 //	Permissions: read, write
 //	Created At: 2024-01-01T00:00:00Z
 //	Created By: user-abc
@@ -64,8 +64,8 @@ import (
 //	{
 //	  "id": "policy-123",
 //	  "name": "web-service-policy",
-//	  "spiffeIdPattern": "spiffe://example.org/web-service/*",
-//	  "pathPattern": "^tenants/demo/db",
+//	  "spiffeIdPattern": "^spiffe://example\\.org/web-service/.*$",
+//	  "pathPattern": "^tenants/demo/db$",
 //	  "permissions": ["read", "write"],
 //	  "createdAt": "2024-01-01T00:00:00Z",
 //	  "createdBy": "user-abc"
@@ -101,8 +101,8 @@ func newPolicyGetCommand(
 			trust.Authenticate(SPIFFEID)
 			api := spike.NewWithSource(source)
 
-			// If the first argument is provided without `--name` flag, it could be
-			// misinterpreted as trying to use policy name directly
+			// If the first argument is provided without the `--name` flag, it could
+			// be misinterpreted as trying to use policy name directly
 			if len(args) > 0 && !cmd.Flags().Changed("name") {
 				fmt.Println("Note: To look up a policy by name, use --name flag:")
 				fmt.Printf("  spike policy get --name=%s\n\n", args[0])

@@ -13,7 +13,7 @@ import (
 )
 
 // Helper function to manage environment variables in tests
-func withEnvironment(t *testing.T, key, value string, testFunc func()) {
+func withEnvironment(_ *testing.T, key, value string, testFunc func()) {
 	original := os.Getenv(key)
 	_ = os.Setenv(key, value)
 	defer func() {
@@ -35,7 +35,7 @@ func createTestKeyWithPattern(pattern byte) *[crypto.AES256KeySize]byte {
 	return key
 }
 
-// Helper function to reset the root key to zero state for tests
+// Helper function to reset the root key to its zero state for tests
 func resetRootKey() {
 	rootKeyMu.Lock()
 	defer rootKeyMu.Unlock()

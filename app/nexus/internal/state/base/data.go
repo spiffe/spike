@@ -5,9 +5,10 @@
 package base
 
 import (
+	"sync"
+
 	"github.com/spiffe/spike-sdk-go/crypto"
 	"github.com/spiffe/spike-sdk-go/security/mem"
-	"sync"
 
 	"github.com/spiffe/spike-sdk-go/log"
 )

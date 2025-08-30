@@ -8,8 +8,8 @@ SPIKE Policies use `SPIFFEIDPattern` and `PathPattern` fields. Those fields
 are regular expression Strings; NOT globs.
 
 - **For Policy SPIFFEID and Path patterns, ALWAYS use regex patterns, NOT globs**
-- ✅ Correct: `/path/to/.*`, `spiffe://example\.com/workload/.*`
-- ❌ Wrong: `/path/to/*`, `spiffe://example.com/workload/*`
+- ✅ Correct: `/path/to/.*`, `spiffe://example\.org/workload/.*`
+- ❌ Wrong: `/path/to/*`, `spiffe://example.org/workload/*`
 
 ### Paths used in Secrets and Policies are NOT Unix-like paths; they are Namespaces
 
@@ -30,7 +30,7 @@ The following table lists the environment variables that you can use to
 configure the SPIKE components. **DO NOT** make you your own environment 
 variables. Use them from the table below. -- If the environment variable
 does not exist in this table, scan the codebase to see if there are any
-missing environment variables that are not mentioned, and suggest updates here.
+missing environment variables that are not mentioned and suggest updates here.
 
 | Component    | Environment Variable                    | Description                                                                                                                                         | Default Value                                                            |
 |--------------|-----------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------|
@@ -38,7 +38,7 @@ missing environment variables that are not mentioned, and suggest updates here.
 | SPIKE Nexus  | `SPIKE_NEXUS_KEEPER_PEERS`              | A mapping that contains a comma-delimited list of URLs for all SPIKE Keepers that SPIKE Nexus knows about.                                          | "" (check `./hack/bare-metal/startup/start-nexus.sh` for usage examples. |
 | SPIKE Nexus  | `SPIKE_NEXUS_TLS_PORT`                  | The TLS port SPIKE Nexus listens on.                                                                                                                | `":8553"`                                                                |
 | SPIKE Nexus  | `SPIKE_NEXUS_MAX_SECRET_VERSIONS`       | The maximum number of versions of a secret that SPIKE Nexus stores.                                                                                 | `10`                                                                     |
-| SPIKE Nexus  | `SPIKE_NEXUS_BACKEND_STORE`             | The backend store SPIKE Nexus uses to store secrets (memory, s3, sqlite).                                                                           | `"sqlite"`                                                               |
+| SPIKE Nexus  | `SPIKE_NEXUS_BACKEND_STORE`             | The backend store SPIKE Nexus uses to store secrets (memory, lite, sqlite).                                                                         | `"sqlite"`                                                               |
 | SPIKE Nexus  | `SPIKE_NEXUS_DB_OPERATION_TIMEOUT`      | The timeout for database operations.                                                                                                                | `"15s"`                                                                  |
 | SPIKE Nexus  | `SPIKE_NEXUS_DB_JOURNAL_MODE`           | The journal mode for the SQLite database.                                                                                                           | `"WAL"`                                                                  |
 | SPIKE Nexus  | `SPIKE_NEXUS_DB_BUSY_TIMEOUT_MS`        | The timeout for the database to wait for a lock.                                                                                                    | `1000`                                                                   |
@@ -49,7 +49,7 @@ missing environment variables that are not mentioned, and suggest updates here.
 | SPIKE Nexus  | `SPIKE_NEXUS_DB_SKIP_SCHEMA_CREATION`   | If set to `true`, skip creating SPIKE Nexus backing store. When set to `true`, the operator will manually have to create the initial backing store. | `false`                                                                  |
 | SPIKE Nexus  | `SPIKE_NEXUS_PBKDF2_ITERATION_COUNT`    | The number of iterations for the PBKDF2 key derivation function.                                                                                    | `600000`                                                                 |
 | SPIKE Nexus  | `SPIKE_NEXUS_RECOVERY_TIMEOUT`          | The timeout for attempting recovery from SPIKE Keepers. 0 = unlimited                                                                               | `0`                                                                      |
-| SPIKE Nexus  | `SPIKE_NEXUS_RECOVER_MAX_INTERVAL`      | Maximum interval between retries the recovery operation's backing off algorithm                                                                     | `60s`                                                                    |
+| SPIKE Nexus  | `SPIKE_NEXUS_RECOVERY_MAX_INTERVAL`     | Maximum interval between retries the recovery operation's backing off algorithm                                                                     | `60s`                                                                    |
 | SPIKE Nexus  | `SPIKE_NEXUS_RECOVERY_POLL_INTERVAL`    | The duration between attempts to poll the list of SPIKE Keepers during initial bootstrapping.                                                       | `5s`                                                                     |
 | SPIKE Nexus  | `SPIKE_NEXUS_SHAMIR_SHARES`             | The total number of shares used for secret sharding, this should be equal to the number of SPIKE Keepers too.                                       | `3`                                                                      |
 | SPIKE Nexus  | `SPIKE_NEXUS_SHAMIR_THRESHOLD`          | The minimum number of shares to be able to reconstruct the root key.                                                                                | `2`                                                                      |
@@ -61,6 +61,7 @@ missing environment variables that are not mentioned, and suggest updates here.
 | All          | `SPIKE_TRUST_ROOT_KEEPER`               | The SPIFFE trust root used for SPIKE Keeper instances. Can be a single entry, or a comma-delimited list of suitable trust roots.                    | `"spike.ist"`                                                            |
 | All          | `SPIKE_TRUST_ROOT_PILOT`                | The SPIFFE trust root used for SPIKE Pilot instances. Can be a single entry, or a comma-delimited list of suitable trust roots.                     | `"spike.ist"`                                                            |
 | All          | `SPIKE_TRUST_ROOT_NEXUS`                | The SPIFFE trust root used for SPIKE Nexus instances. Can be a single entry, or a comma-delimited list of suitable trust roots.                     | `"spike.ist"`                                                            |
+| All          | `SPIKE_TRUST_ROOT_LITE_WORKLOAD`        | The SPIFFE trust root used for lite workload instances. Can be a single entry, or a comma-delimited list of suitable trust roots.                   | `"spike.ist"`                                                            |
 | All          | `SPIKE_BANNER_ENABLED`                  | Whether to display the SPIKE banner on startup. Set to `true` to enable.                                                                            | `true`                                                                   |
 | All          | `SPIFFE_ENDPOINT_SOCKET`                | The Unix domain socket path used for SPIFFE Workload API                                                                                            | `"unix:///tmp/spire-agent/public/api.sock"`                              |
 
@@ -103,7 +104,7 @@ internal/config/    # Configuration helpers
 
 ### Use Proper English
 
-During generating documentation, you often forget articles and prepositions,
+During generating documentation, you often forget articles and prepositions
 and sometimes make basic grammatical errors.
 
 For example `// Test with empty map` should better have been
@@ -123,7 +124,7 @@ In short, pay extra attention to punctuation and grammar.
 
 ### Line Length
 
-The code has 80-character line length (including tests, and markdown files).
+The code has 80-character line length (including tests and markdown files).
 Tabs are counted as two characters.
 
 When it's not possible, it's okay to make exceptions, but try your best to keep

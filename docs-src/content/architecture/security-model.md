@@ -43,7 +43,7 @@ parameters will be important.
 
 **The primary trust boundary is at the machine level**. Once the machine is
 compromised, hardening **SPIKE** components will provide diminishing returns.
-In that regard, both physical, and OS-level security is important.
+In that regard, both physical and OS-level security is important.
 
 For example, when the machine is compromised, an attacker with sufficient
 privileges can observe and control the memory of **SPIKE Nexus**, or
@@ -157,7 +157,7 @@ The security model allows for different levels of redundancy and control:
 * **SPIKE Nexus** often automatically recovers itself from crashes using 
   **SPIKE Keeper**s. However, for the unlikely case of a total system crash, 
   each administrator can hold one of these shares and use `spike restore` to
-  restore the system back to normal. Since, a single shard cannot recreate 
+  restore the system back to normal. Since a single shard cannot recreate 
   the root key, we are mitigating risk by distributing trust.
 * For those less concerned with strict separation, an alternative approach 
   could involve storing both shares on a single thumb drive or distributing 

@@ -42,10 +42,11 @@ CREATE INDEX IF NOT EXISTS idx_secrets_created_time ON secrets(created_time);
 `
 
 // QueryUpdateSecretMetadata is a SQL query for inserting or updating secret
-// metadata. It updates the current version, oldest version, max versions, and updated time in conflict with
-// the existing path.
+// metadata. It updates the current version, oldest version, max versions, and
+// updated time in conflict with the existing path.
 const QueryUpdateSecretMetadata = `
-INSERT INTO secret_metadata (path, current_version, oldest_version, created_time, updated_time, max_versions)
+INSERT INTO secret_metadata (path, current_version, oldest_version, 
+  created_time, updated_time, max_versions)
 VALUES (?, ?, ?, ?, ?, ?)
 ON CONFLICT(path) DO UPDATE SET
 	current_version = excluded.current_version,

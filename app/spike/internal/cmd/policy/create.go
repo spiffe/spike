@@ -10,6 +10,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	spike "github.com/spiffe/spike-sdk-go/api"
+
 	"github.com/spiffe/spike/app/spike/internal/trust"
 )
 
@@ -29,8 +30,8 @@ import (
 //
 // Command flags:
 //   - --name: Name of the policy (required)
-//   - --spiffeid: SPIFFE ID pattern for workload matching (required)
-//   - --path: Path pattern for access control (required)
+//   - --spiffeid: SPIFFE ID regex pattern for workload matching (required)
+//   - --path: Path regex pattern for access control (required)
 //   - --permissions: Comma-separated list of permissions (required)
 //
 // Valid permissions:
@@ -43,8 +44,8 @@ import (
 //
 //	spike policy create \
 //	    --name "web-service-policy" \
-//	    --spiffeid "spiffe://example.org/web-service/*" \
-//	    --path "/api/v1/*" \
+//	    --spiffeid "^spiffe://example\.org/web-service/.*$" \
+//	    --path "^tenants/acme/creds/.*$" \
 //	    --permissions "read,write"
 //
 // The command will:
@@ -78,7 +79,7 @@ func newPolicyCreateCommand(
 
         Example:
         spike policy create --name=db-access 
-          --path="^db/" --spiffeid="spiffe://example\.org/service/" 
+          --path="^db/.*$" --spiffeid="^spiffe://example\.org/service/.*$" 
           --permissions="read,write"
 
         Valid permissions: read, write, list, super`,
@@ -142,9 +143,9 @@ func newPolicyCreateCommand(
 	// Define flags
 	cmd.Flags().StringVar(&name, "name", "", "Policy name (required)")
 	cmd.Flags().StringVar(&pathPattern, "path", "",
-		"Resource path pattern, e.g., '^secrets/' (required)")
+		"Resource path regexp pattern, e.g., '^secrets/.*$' (required)")
 	cmd.Flags().StringVar(&SPIFFEIDPattern, "spiffeid", "",
-		"SPIFFE ID pattern, e.g., '^spiffe://example\\.org/service/' (required)")
+		"SPIFFE ID regexp pattern, e.g., '^spiffe://example\\.org/service/.*$' (required)")
 	cmd.Flags().StringVar(&permsStr, "permissions", "",
 		"Comma-separated permissions: read, write, list, super (required)")
 

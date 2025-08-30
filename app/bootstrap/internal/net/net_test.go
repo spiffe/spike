@@ -127,7 +127,7 @@ func TestPostHTTPInteraction(t *testing.T) {
 			defer server.Close()
 
 			if tt.expectError {
-				// TODO: fixme after fixing Log.FatalLn and friends to panic
+				// FIX-ME: after fixing Log.FatalLn and friends to panic,
 				// The Post function calls os.Exit(1) on error, which we can't easily test
 				// without significant refactoring. In a real scenario, you'd want to
 				// refactor the function to return errors instead of calling os.Exit.

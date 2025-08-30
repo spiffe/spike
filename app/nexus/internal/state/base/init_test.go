@@ -10,18 +10,9 @@ import (
 
 	"github.com/spiffe/spike-sdk-go/crypto"
 	"github.com/spiffe/spike-sdk-go/security/mem"
+
 	"github.com/spiffe/spike/app/nexus/internal/env"
 )
-
-// TODO: to SDK
-//// Helper function to create a random test key
-//func createRandomTestKey(t *testing.T) *[crypto.AES256KeySize]byte {
-//	key := &[crypto.AES256KeySize]byte{}
-//	if _, err := rand.Read(key[:]); err != nil {
-//		t.Fatalf("Failed to generate random test key: %v", err)
-//	}
-//	return key
-//}
 
 func TestInitialize_MemoryBackend_ValidKey(t *testing.T) {
 	withEnvironment(t, "SPIKE_NEXUS_BACKEND_STORE", "memory", func() {

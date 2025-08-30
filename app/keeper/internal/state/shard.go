@@ -8,8 +8,9 @@
 package state
 
 import (
-	"github.com/spiffe/spike-sdk-go/crypto"
 	"sync"
+
+	"github.com/spiffe/spike-sdk-go/crypto"
 )
 
 var shard [crypto.AES256KeySize]byte

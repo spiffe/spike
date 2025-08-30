@@ -15,11 +15,11 @@ import (
 	"github.com/spiffe/spike/app/nexus/internal/state/backend"
 )
 
-// DataStore implements the backend.Backend interface providing encryption
+// Store implements the backend.Backend interface providing encryption
 // without storage. It uses AES-GCM
-type DataStore struct {
-	noop.NoopStore             // No need to use a store; this is an encryption-as-a-service.
-	Cipher         cipher.AEAD // Encryption Cipher for data protection
+type Store struct {
+	noop.Store             // No need to use a store; this is an encryption-as-a-service.
+	Cipher     cipher.AEAD // Encryption Cipher for data protection
 }
 
 // New creates a new Backend with AES-GCM encryption using the provided key.
@@ -35,12 +35,12 @@ func New(rootKey *[crypto.AES256KeySize]byte) (backend.Backend, error) {
 		return nil, fmt.Errorf("failed to create GCM: %w", err)
 	}
 
-	return &DataStore{
+	return &Store{
 		Cipher: gcm,
 	}, nil
 }
 
 // GetCipher returns the encryption cipher used for data protection.
-func (ds *DataStore) GetCipher() cipher.AEAD {
+func (ds *Store) GetCipher() cipher.AEAD {
 	return ds.Cipher
 }

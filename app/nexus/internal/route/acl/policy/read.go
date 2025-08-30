@@ -137,9 +137,8 @@ func RouteGetPolicy(
 
 		net.Respond(http.StatusInternalServerError, responseBody, w)
 
-		// TODO: the first argument to an slog logger is called `msg`
-		// so the second `msg` parameter is confusing and needs rename.
-		log.Log().Warn(fName, "message", data.ErrInternal)
+		log.Log().Warn(fName, "message", "problem retrieving policy",
+			"err", data.ErrInternal)
 		return err
 	}
 

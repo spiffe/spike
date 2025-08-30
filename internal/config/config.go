@@ -17,6 +17,7 @@ import (
 var SpikeNexusVersion = app.Version
 var SpikePilotVersion = app.Version
 var SpikeKeeperVersion = app.Version
+var SpikeBootstrapVersion = app.Version
 
 // SpikeNexusDataFolder returns the path to the directory where Nexus stores
 // its encrypted backup for its secrets and other data.

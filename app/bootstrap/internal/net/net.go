@@ -10,7 +10,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"os"
 
 	"github.com/cloudflare/circl/secretsharing"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
@@ -35,8 +34,7 @@ func Source() *workloadapi.X509Source {
 		context.Background(), spiffe.EndpointSocket(),
 	)
 	if err != nil {
-		log.Log().Info(fName, "message", "Failed to create source", "err", err)
-		os.Exit(1)
+		log.FatalLn(fName, "message", "Failed to create source", "err", err)
 	}
 	return source
 }
@@ -54,10 +52,9 @@ func MTLSClient(source *workloadapi.X509Source) *http.Client {
 		},
 	)
 	if err != nil {
-		log.Log().Warn(fName,
+		log.FatalLn(fName,
 			"message", "Failed to create mTLS client",
 			"err", err)
-		os.Exit(1)
 	}
 	return client
 }
@@ -73,16 +70,14 @@ func Payload(share secretsharing.Share, keeperID string) []byte {
 
 	contribution, err := share.Value.MarshalBinary()
 	if err != nil {
-		log.Log().Warn(fName, "message", "Failed to marshal share",
+		log.FatalLn(fName, "message", "Failed to marshal share",
 			"err", err, "keeper_id", keeperID)
-		os.Exit(1)
 	}
 
 	if len(contribution) != crypto.AES256KeySize {
-		log.Log().Warn(fName,
+		log.FatalLn(fName,
 			"message", "invalid contribution length",
 			"len", len(contribution), "keeper_id", keeperID)
-		os.Exit(1)
 	}
 
 	scr := reqres.ShardContributionRequest{}
@@ -92,10 +87,9 @@ func Payload(share secretsharing.Share, keeperID string) []byte {
 
 	md, err := json.Marshal(scr)
 	if err != nil {
-		log.Log().Warn(fName,
+		log.FatalLn(fName,
 			"message", "Failed to marshal request",
 			"err", err, "keeper_id", keeperID)
-		os.Exit(1)
 	}
 
 	return md
@@ -112,10 +106,9 @@ func Post(client *http.Client, u string, md []byte, keeperID string) {
 
 	_, err := net.Post(client, u, md)
 	if err != nil {
-		log.Log().Warn(fName, "message",
+		log.FatalLn(fName, "message",
 			"Failed to post",
 			"err", err, "keeper_id", keeperID)
-		os.Exit(1)
 	}
 
 	log.Log().Info(fName, "message", "done")

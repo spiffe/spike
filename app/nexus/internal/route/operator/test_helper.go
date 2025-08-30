@@ -24,7 +24,7 @@ func createTestShardValue(id int) *[crypto.AES256KeySize]byte {
 	for i := range value {
 		value[i] = byte((id*100 + i) % 256)
 	}
-	// Ensure first byte is non-zero for validation
+	// Ensure the first byte is non-zero for validation
 	value[0] = byte(id)
 	return value
 }

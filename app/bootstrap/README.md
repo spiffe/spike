@@ -22,7 +22,7 @@ The bootstrap module performs a one-time initialization process that:
 
 Boostrap reads environment variables to configure its behavior:
 
-* `SPIKE_NEXUS_API_URL` (*default: `https://spiffe-spike-nexus:443`*)
+* `SPIKE_NEXUS_API_URL` (*default: `https://localhost:8553`*)
 * `SPIFFE_ENDPOINT_SOCKET` (*default: 
   `unix:///spiffe-workload-api/spire-agent.sock`*)
 * `SPIKE_TRUST_ROOT` (*default `spike.ist`*)
@@ -30,7 +30,6 @@ Boostrap reads environment variables to configure its behavior:
 * `SPIKE_NEXUS_SHAMIR_THRESHOLD` (*default: `2`*)
 * `SPIKE_NEXUS_KEEPER_PEERS` (*comma-delimited list of SPIKE Keeper HTTPS URLs 
   to seed the trust foundation*)
-* `SPIKE_BOOTSTRAP_VERSION` (*default: `1.0.0`*)
 
 ## Usage
 

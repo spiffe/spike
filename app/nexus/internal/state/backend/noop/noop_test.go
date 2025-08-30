@@ -17,14 +17,14 @@ import (
 )
 
 func TestNoopStore_ImplementsBackendInterface(t *testing.T) {
-	store := &NoopStore{}
+	store := &Store{}
 
 	// Verify it implements Backend interface
 	var _ backend.Backend = store
 }
 
 func TestNoopStore_Initialize(t *testing.T) {
-	store := &NoopStore{}
+	store := &Store{}
 	ctx := context.Background()
 
 	err := store.Initialize(ctx)
@@ -35,7 +35,7 @@ func TestNoopStore_Initialize(t *testing.T) {
 }
 
 func TestNoopStore_InitializeWithTimeout(t *testing.T) {
-	store := &NoopStore{}
+	store := &Store{}
 	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
 	defer cancel()
 
@@ -47,7 +47,7 @@ func TestNoopStore_InitializeWithTimeout(t *testing.T) {
 }
 
 func TestNoopStore_InitializeWithCancelledContext(t *testing.T) {
-	store := &NoopStore{}
+	store := &Store{}
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel() // Cancel immediately
 
@@ -59,7 +59,7 @@ func TestNoopStore_InitializeWithCancelledContext(t *testing.T) {
 }
 
 func TestNoopStore_Close(t *testing.T) {
-	store := &NoopStore{}
+	store := &Store{}
 	ctx := context.Background()
 
 	err := store.Close(ctx)
@@ -70,7 +70,7 @@ func TestNoopStore_Close(t *testing.T) {
 }
 
 func TestNoopStore_CloseWithTimeout(t *testing.T) {
-	store := &NoopStore{}
+	store := &Store{}
 	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
 	defer cancel()
 
@@ -82,7 +82,7 @@ func TestNoopStore_CloseWithTimeout(t *testing.T) {
 }
 
 func TestNoopStore_CloseWithCancelledContext(t *testing.T) {
-	store := &NoopStore{}
+	store := &Store{}
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel() // Cancel immediately
 
@@ -94,7 +94,7 @@ func TestNoopStore_CloseWithCancelledContext(t *testing.T) {
 }
 
 func TestNoopStore_LoadSecret(t *testing.T) {
-	store := &NoopStore{}
+	store := &Store{}
 	ctx := context.Background()
 
 	tests := []struct {
@@ -124,7 +124,7 @@ func TestNoopStore_LoadSecret(t *testing.T) {
 }
 
 func TestNoopStore_LoadSecretWithTimeout(t *testing.T) {
-	store := &NoopStore{}
+	store := &Store{}
 	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
 	defer cancel()
 
@@ -140,7 +140,7 @@ func TestNoopStore_LoadSecretWithTimeout(t *testing.T) {
 }
 
 func TestNoopStore_LoadAllSecrets(t *testing.T) {
-	store := &NoopStore{}
+	store := &Store{}
 	ctx := context.Background()
 
 	secrets, err := store.LoadAllSecrets(ctx)
@@ -155,7 +155,7 @@ func TestNoopStore_LoadAllSecrets(t *testing.T) {
 }
 
 func TestNoopStore_LoadAllSecretsWithTimeout(t *testing.T) {
-	store := &NoopStore{}
+	store := &Store{}
 	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
 	defer cancel()
 
@@ -171,7 +171,7 @@ func TestNoopStore_LoadAllSecretsWithTimeout(t *testing.T) {
 }
 
 func TestNoopStore_StoreSecret(t *testing.T) {
-	store := &NoopStore{}
+	store := &Store{}
 	ctx := context.Background()
 
 	tests := []struct {
@@ -226,7 +226,7 @@ func TestNoopStore_StoreSecret(t *testing.T) {
 }
 
 func TestNoopStore_StoreSecretWithTimeout(t *testing.T) {
-	store := &NoopStore{}
+	store := &Store{}
 	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
 	defer cancel()
 
@@ -247,7 +247,7 @@ func TestNoopStore_StoreSecretWithTimeout(t *testing.T) {
 }
 
 func TestNoopStore_LoadPolicy(t *testing.T) {
-	store := &NoopStore{}
+	store := &Store{}
 	ctx := context.Background()
 
 	tests := []struct {
@@ -276,7 +276,7 @@ func TestNoopStore_LoadPolicy(t *testing.T) {
 }
 
 func TestNoopStore_LoadPolicyWithTimeout(t *testing.T) {
-	store := &NoopStore{}
+	store := &Store{}
 	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
 	defer cancel()
 
@@ -292,7 +292,7 @@ func TestNoopStore_LoadPolicyWithTimeout(t *testing.T) {
 }
 
 func TestNoopStore_LoadAllPolicies(t *testing.T) {
-	store := &NoopStore{}
+	store := &Store{}
 	ctx := context.Background()
 
 	policies, err := store.LoadAllPolicies(ctx)
@@ -307,7 +307,7 @@ func TestNoopStore_LoadAllPolicies(t *testing.T) {
 }
 
 func TestNoopStore_LoadAllPoliciesWithTimeout(t *testing.T) {
-	store := &NoopStore{}
+	store := &Store{}
 	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
 	defer cancel()
 
@@ -323,7 +323,7 @@ func TestNoopStore_LoadAllPoliciesWithTimeout(t *testing.T) {
 }
 
 func TestNoopStore_StorePolicy(t *testing.T) {
-	store := &NoopStore{}
+	store := &Store{}
 	ctx := context.Background()
 
 	tests := []struct {
@@ -339,21 +339,18 @@ func TestNoopStore_StorePolicy(t *testing.T) {
 			policy: data.Policy{
 				ID:              "read-policy",
 				Name:            "Read Policy",
-				SPIFFEIDPattern: "spiffe://example.org/reader/*",
-				PathPattern:     "secrets/*",
+				SPIFFEIDPattern: "^spiffe://example\\.org/reader/.*$",
+				PathPattern:     "^secrets/.*$",
 				Permissions:     []data.PolicyPermission{data.PermissionRead},
 			},
 		},
 		{
 			name: "multi-permission policy",
 			policy: data.Policy{
-				ID:   "admin-policy",
-				Name: "Admin Policy",
-				// TODO: SPIFFEIDPattern should be regex; NOT a glob!!!!
-				// check for all other tests and everywhere across the code
-				// including documentation.
-				SPIFFEIDPattern: "spiffe://example.org/admin/*",
-				PathPattern:     "admin/secret/*",
+				ID:              "admin-policy",
+				Name:            "Admin Policy",
+				SPIFFEIDPattern: "^spiffe://example\\.org/admin/.*$",
+				PathPattern:     "^admin/secret/.*$",
 				Permissions:     []data.PolicyPermission{data.PermissionRead, data.PermissionWrite, data.PermissionList},
 			},
 		},
@@ -371,15 +368,15 @@ func TestNoopStore_StorePolicy(t *testing.T) {
 }
 
 func TestNoopStore_StorePolicyWithTimeout(t *testing.T) {
-	store := &NoopStore{}
+	store := &Store{}
 	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
 	defer cancel()
 
 	policy := data.Policy{
 		ID:              "test-policy",
 		Name:            "Test Policy",
-		SPIFFEIDPattern: "spiffe://example.org/test/*",
-		PathPattern:     "test/*",
+		SPIFFEIDPattern: "^spiffe://example\\.org/test/.*$",
+		PathPattern:     "^test/.*$",
 		Permissions:     []data.PolicyPermission{data.PermissionRead},
 	}
 
@@ -391,7 +388,7 @@ func TestNoopStore_StorePolicyWithTimeout(t *testing.T) {
 }
 
 func TestNoopStore_DeletePolicy(t *testing.T) {
-	store := &NoopStore{}
+	store := &Store{}
 	ctx := context.Background()
 
 	tests := []struct {
@@ -416,7 +413,7 @@ func TestNoopStore_DeletePolicy(t *testing.T) {
 }
 
 func TestNoopStore_DeletePolicyWithTimeout(t *testing.T) {
-	store := &NoopStore{}
+	store := &Store{}
 	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
 	defer cancel()
 
@@ -428,7 +425,7 @@ func TestNoopStore_DeletePolicyWithTimeout(t *testing.T) {
 }
 
 func TestNoopStore_GetCipher(t *testing.T) {
-	store := &NoopStore{}
+	store := &Store{}
 
 	cipher := store.GetCipher()
 
@@ -438,7 +435,7 @@ func TestNoopStore_GetCipher(t *testing.T) {
 }
 
 func TestNoopStore_ConcurrentOperations(t *testing.T) {
-	store := &NoopStore{}
+	store := &Store{}
 	ctx := context.Background()
 
 	var wg sync.WaitGroup
@@ -474,8 +471,8 @@ func TestNoopStore_ConcurrentOperations(t *testing.T) {
 			policy := data.Policy{
 				ID:              "concurrent-policy",
 				Name:            "Concurrent Policy",
-				SPIFFEIDPattern: "spiffe://example.org/concurrent/*",
-				PathPattern:     "concurrent/*",
+				SPIFFEIDPattern: "^spiffe://example\\.org/concurrent/.*$",
+				PathPattern:     "^concurrent/.*$",
 				Permissions:     []data.PolicyPermission{data.PermissionRead},
 			}
 			_ = store.StorePolicy(ctx, policy)
@@ -493,11 +490,11 @@ func TestNoopStore_MultipleInstances(t *testing.T) {
 	ctx := context.Background()
 
 	// Create multiple instances
-	store1 := &NoopStore{}
-	store2 := &NoopStore{}
-	store3 := &NoopStore{}
+	store1 := &Store{}
+	store2 := &Store{}
+	store3 := &Store{}
 
-	stores := []*NoopStore{store1, store2, store3}
+	stores := []*Store{store1, store2, store3}
 
 	// Test that each instance behaves consistently
 	for i, store := range stores {
@@ -546,8 +543,8 @@ func TestNoopStore_MultipleInstances(t *testing.T) {
 			testPolicy := data.Policy{
 				ID:              "test-policy",
 				Name:            "Test Policy",
-				SPIFFEIDPattern: "spiffe://example.org/test/*",
-				PathPattern:     "test/*",
+				SPIFFEIDPattern: "^spiffe://example\\.org/test/.*$",
+				PathPattern:     "^test/.*$",
 				Permissions:     []data.PolicyPermission{data.PermissionRead},
 			}
 			err = store.StorePolicy(ctx, testPolicy)
@@ -580,7 +577,7 @@ func TestNoopStore_StressTest(t *testing.T) {
 		t.Skip("Skipping stress test in short mode")
 	}
 
-	store := &NoopStore{}
+	store := &Store{}
 	ctx := context.Background()
 
 	// Perform many operations rapidly
@@ -610,8 +607,8 @@ func TestNoopStore_StressTest(t *testing.T) {
 			policy := data.Policy{
 				ID:              "stress-policy",
 				Name:            "Stress Policy",
-				SPIFFEIDPattern: "spiffe://example.org/stress/*",
-				PathPattern:     "stress/*",
+				SPIFFEIDPattern: "^spiffe://example\\.org/stress/.*$",
+				PathPattern:     "^stress/.*$",
 				Permissions:     []data.PolicyPermission{data.PermissionRead},
 			}
 			_ = store.StorePolicy(ctx, policy)

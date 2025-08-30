@@ -37,7 +37,8 @@ func TestShamirShardStruct(t *testing.T) {
 	// Test Value length
 	// noinspection GoBoolExpressions
 	if len(shard.Value) != crypto.AES256KeySize {
-		t.Errorf("Expected value length %d, got %d", crypto.AES256KeySize, len(shard.Value))
+		t.Errorf("Expected value length %d, got %d",
+			crypto.AES256KeySize, len(shard.Value))
 	}
 
 	// Test data integrity
@@ -107,7 +108,8 @@ func TestShamirShardSliceOperationsRootKey(t *testing.T) {
 		// Test unique data per shard
 		expectedFirstByte := byte(i * 10)
 		if shard.Value[0] != expectedFirstByte {
-			t.Errorf("Shard %d: expected first byte %d, got %d", i, expectedFirstByte, shard.Value[0])
+			t.Errorf("Shard %d: expected first byte %d, got %d",
+				i, expectedFirstByte, shard.Value[0])
 		}
 	}
 }
@@ -147,7 +149,7 @@ func TestComputeRootKeyFromShards_InvalidInput(t *testing.T) {
 					{ID: 1, Value: testData},
 				}
 			},
-			shouldExit: true, // Insufficient for threshold of 2
+			shouldExit: true, // Insufficient for a threshold of 2
 		},
 		{
 			name: "shard with nil value",
@@ -193,7 +195,8 @@ func TestComputeRootKeyFromShards_InvalidInput(t *testing.T) {
 			}
 			// noinspection GoBoolExpressions
 			if len(result) != crypto.AES256KeySize {
-				t.Errorf("Expected result length %d, got %d", crypto.AES256KeySize, len(result))
+				t.Errorf("Expected result length %d, got %d",
+					crypto.AES256KeySize, len(result))
 			}
 		})
 	}
@@ -248,7 +251,8 @@ func TestComputeRootKeyFromShards_ValidInput(t *testing.T) {
 	}
 	// noinspection GoBoolExpressions
 	if len(result) != crypto.AES256KeySize {
-		t.Errorf("Expected result length %d, got %d", crypto.AES256KeySize, len(result))
+		t.Errorf("Expected result length %d, got %d",
+			crypto.AES256KeySize, len(result))
 	}
 }
 

@@ -140,7 +140,6 @@ func TestBackendStoreTypeInvalidValues(t *testing.T) {
 	// Test invalid values that should default to Sqlite
 	invalidValues := []string{
 		"invalid",
-		"s3", // TODO: This was mentioned in comments but not implemented
 		"postgres",
 		"redis",
 		"",

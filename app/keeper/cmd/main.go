@@ -42,15 +42,16 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	source, selfSpiffeid, err := spiffe.Source(ctx, spiffe.EndpointSocket())
+	source, selfSPIFFEID, err := spiffe.Source(ctx, spiffe.EndpointSocket())
 	if err != nil {
 		log.FatalLn(err.Error())
 	}
 	defer spiffe.CloseSource(source)
 
 	// I should be a SPIKE Keeper.
-	if !spiffeid.IsKeeper(env.TrustRoot(), selfSpiffeid) {
-		log.FatalF("Authenticate: SPIFFE ID %s is not valid.\n", selfSpiffeid)
+	if !spiffeid.IsKeeper(env.TrustRoot(), selfSPIFFEID) {
+		log.FatalLn(appName, "message",
+			"Authenticate: SPIFFE ID %s is not valid.\n", selfSPIFFEID)
 	}
 
 	log.Log().Info(

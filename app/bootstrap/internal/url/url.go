@@ -6,7 +6,6 @@ package url
 
 import (
 	"net/url"
-	"os"
 
 	apiUrl "github.com/spiffe/spike-sdk-go/api/url"
 	"github.com/spiffe/spike-sdk-go/log"
@@ -24,10 +23,9 @@ func KeeperEndpoint(keeperAPIRoot string) string {
 		keeperAPIRoot, string(apiUrl.KeeperContribute),
 	)
 	if err != nil {
-		log.Log().Warn(
+		log.FatalLn(
 			fName, "message", "Failed to join path", "url", keeperAPIRoot,
 		)
-		os.Exit(1)
 	}
 	return u
 }

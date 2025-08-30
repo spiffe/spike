@@ -15,12 +15,10 @@ import (
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/crypto"
+
 	"github.com/spiffe/spike/app/nexus/internal/state/persist"
 	"github.com/spiffe/spike/internal/config"
 )
-
-// TODO: review every single file in the codebase and make sure they are (still)
-// in good shape.
 
 func TestSQLitePolicy_CreateAndGet(t *testing.T) {
 	withSQLiteEnvironment(t, func() {
@@ -39,8 +37,8 @@ func TestSQLitePolicy_CreateAndGet(t *testing.T) {
 		// Create a test policy
 		policy := data.Policy{
 			Name:            "test-policy",
-			SPIFFEIDPattern: "spiffe://example.org/workload",
-			PathPattern:     "test/secrets/*",
+			SPIFFEIDPattern: "^spiffe://example\\.org/workload$",
+			PathPattern:     "^test/secrets/.*$",
 			Permissions:     []data.PolicyPermission{data.PermissionRead, data.PermissionList},
 		}
 
@@ -77,8 +75,8 @@ func TestSQLitePolicy_Persistence(t *testing.T) {
 	policyName := "persistent-policy"
 	policy := data.Policy{
 		Name:            policyName,
-		SPIFFEIDPattern: "spiffe://example.org/service",
-		PathPattern:     "persistent/data/*",
+		SPIFFEIDPattern: "^spiffe://example\\.org/service$",
+		PathPattern:     "^persistent/data/.*$",
 		Permissions:     []data.PolicyPermission{data.PermissionRead, data.PermissionWrite},
 	}
 
@@ -170,20 +168,20 @@ func TestSQLitePolicy_ListPolicies(t *testing.T) {
 		policies := []data.Policy{
 			{
 				Name:            "policy-alpha",
-				SPIFFEIDPattern: "spiffe://example.org/alpha",
-				PathPattern:     "alpha/*",
+				SPIFFEIDPattern: "^spiffe://example\\.org/alpha$",
+				PathPattern:     "^alpha/.*$",
 				Permissions:     []data.PolicyPermission{data.PermissionRead},
 			},
 			{
 				Name:            "policy-beta",
-				SPIFFEIDPattern: "spiffe://example.org/beta",
-				PathPattern:     "beta/*",
+				SPIFFEIDPattern: "^spiffe://example\\.org/beta$",
+				PathPattern:     "^beta/.*$",
 				Permissions:     []data.PolicyPermission{data.PermissionWrite},
 			},
 			{
 				Name:            "policy-gamma",
-				SPIFFEIDPattern: "spiffe://example.org/gamma",
-				PathPattern:     "gamma/*",
+				SPIFFEIDPattern: "^spiffe://example\\.org/gamma$",
+				PathPattern:     "^gamma/.*$",
 				Permissions:     []data.PolicyPermission{data.PermissionSuper},
 			},
 		}
@@ -237,8 +235,8 @@ func TestSQLitePolicy_DeletePolicy(t *testing.T) {
 		for _, policyName := range policies {
 			policy := data.Policy{
 				Name:            policyName,
-				SPIFFEIDPattern: "spiffe://example.org/test",
-				PathPattern:     fmt.Sprintf("%s/*", policyName),
+				SPIFFEIDPattern: "^spiffe://example\\.org/test$",
+				PathPattern:     fmt.Sprintf("^%s/.*$", policyName),
 				Permissions:     []data.PolicyPermission{data.PermissionRead},
 			}
 			_, err := CreatePolicy(policy)
@@ -297,7 +295,8 @@ func TestSQLitePolicy_DeletePolicy(t *testing.T) {
 		sort.Strings(expectedRemaining)
 
 		if !reflect.DeepEqual(remainingPolicies, expectedRemaining) {
-			t.Errorf("Expected remaining policies %v, got %v", expectedRemaining, remainingPolicies)
+			t.Errorf("Expected remaining policies %v, got %v",
+				expectedRemaining, remainingPolicies)
 		}
 	})
 }
@@ -319,8 +318,8 @@ func TestSQLitePolicy_CreateMultiplePolicies(t *testing.T) {
 		// Create first policy
 		firstPolicy := data.Policy{
 			Name:            "first-policy",
-			SPIFFEIDPattern: "spiffe://example.org/first",
-			PathPattern:     "first/*",
+			SPIFFEIDPattern: "^spiffe://example\\.org/first$",
+			PathPattern:     "^first/.*$",
 			Permissions:     []data.PolicyPermission{data.PermissionRead},
 		}
 
@@ -332,8 +331,8 @@ func TestSQLitePolicy_CreateMultiplePolicies(t *testing.T) {
 		// Create second policy with different name
 		secondPolicy := data.Policy{
 			Name:            "second-policy",
-			SPIFFEIDPattern: "spiffe://example.org/second",
-			PathPattern:     "second/path/*",
+			SPIFFEIDPattern: "spiffe://example\\.org/second",
+			PathPattern:     "second/path/.*",
 			Permissions:     []data.PolicyPermission{data.PermissionWrite, data.PermissionList},
 		}
 
@@ -349,10 +348,12 @@ func TestSQLitePolicy_CreateMultiplePolicies(t *testing.T) {
 		}
 
 		if retrievedFirst.Name != firstPolicy.Name {
-			t.Errorf("Expected first policy name %s, got %s", firstPolicy.Name, retrievedFirst.Name)
+			t.Errorf("Expected first policy name %s, got %s",
+				firstPolicy.Name, retrievedFirst.Name)
 		}
 		if retrievedFirst.SPIFFEIDPattern != firstPolicy.SPIFFEIDPattern {
-			t.Errorf("Expected first policy SPIFFE ID pattern %s, got %s", firstPolicy.SPIFFEIDPattern, retrievedFirst.SPIFFEIDPattern)
+			t.Errorf("Expected first policy SPIFFE ID pattern %s, got %s",
+				firstPolicy.SPIFFEIDPattern, retrievedFirst.SPIFFEIDPattern)
 		}
 
 		// Verify the second policy was created correctly
@@ -362,16 +363,20 @@ func TestSQLitePolicy_CreateMultiplePolicies(t *testing.T) {
 		}
 
 		if retrievedSecond.Name != secondPolicy.Name {
-			t.Errorf("Expected second policy name %s, got %s", secondPolicy.Name, retrievedSecond.Name)
+			t.Errorf("Expected second policy name %s, got %s",
+				secondPolicy.Name, retrievedSecond.Name)
 		}
 		if retrievedSecond.SPIFFEIDPattern != secondPolicy.SPIFFEIDPattern {
-			t.Errorf("Expected second policy SPIFFE ID pattern %s, got %s", secondPolicy.SPIFFEIDPattern, retrievedSecond.SPIFFEIDPattern)
+			t.Errorf("Expected second policy SPIFFE ID pattern %s, got %s",
+				secondPolicy.SPIFFEIDPattern, retrievedSecond.SPIFFEIDPattern)
 		}
 		if retrievedSecond.PathPattern != secondPolicy.PathPattern {
-			t.Errorf("Expected second policy path pattern %s, got %s", secondPolicy.PathPattern, retrievedSecond.PathPattern)
+			t.Errorf("Expected second policy path pattern %s, got %s",
+				secondPolicy.PathPattern, retrievedSecond.PathPattern)
 		}
 		if !reflect.DeepEqual(retrievedSecond.Permissions, secondPolicy.Permissions) {
-			t.Errorf("Expected second policy permissions %v, got %v", secondPolicy.Permissions, retrievedSecond.Permissions)
+			t.Errorf("Expected second policy permissions %v, got %v",
+				secondPolicy.Permissions, retrievedSecond.Permissions)
 		}
 
 		// Verify both policies exist in the list
@@ -402,9 +407,10 @@ func TestSQLitePolicy_SpecialCharactersAndLongData(t *testing.T) {
 		// Test with special characters and Unicode
 		policy := data.Policy{
 			Name:            "special-chars-你好-🔐-test",
-			SPIFFEIDPattern: "spiffe://example.org/service-with-special-chars/测试",
+			SPIFFEIDPattern: "spiffe://example\\.org/service-with-special-chars/测试",
 			PathPattern:     "special/chars/with spaces/unicode/路径/测试/*",
-			Permissions:     []data.PolicyPermission{data.PermissionRead, data.PermissionWrite, data.PermissionList},
+			Permissions: []data.PolicyPermission{data.PermissionRead,
+				data.PermissionWrite, data.PermissionList},
 		}
 
 		createdPolicy, err := CreatePolicy(policy)
@@ -419,16 +425,20 @@ func TestSQLitePolicy_SpecialCharactersAndLongData(t *testing.T) {
 		}
 
 		if retrievedPolicy.Name != policy.Name {
-			t.Errorf("Special character policy name not preserved: expected %s, got %s", policy.Name, retrievedPolicy.Name)
+			t.Errorf("Special character policy name not preserved: expected %s, got %s",
+				policy.Name, retrievedPolicy.Name)
 		}
 		if retrievedPolicy.SPIFFEIDPattern != policy.SPIFFEIDPattern {
-			t.Errorf("Special character SPIFFE ID pattern not preserved: expected %s, got %s", policy.SPIFFEIDPattern, retrievedPolicy.SPIFFEIDPattern)
+			t.Errorf("Special character SPIFFE ID pattern not preserved: expected %s, got %s",
+				policy.SPIFFEIDPattern, retrievedPolicy.SPIFFEIDPattern)
 		}
 		if retrievedPolicy.PathPattern != policy.PathPattern {
-			t.Errorf("Special character path pattern not preserved: expected %s, got %s", policy.PathPattern, retrievedPolicy.PathPattern)
+			t.Errorf("Special character path pattern not preserved: expected %s, got %s",
+				policy.PathPattern, retrievedPolicy.PathPattern)
 		}
 		if !reflect.DeepEqual(retrievedPolicy.Permissions, policy.Permissions) {
-			t.Errorf("Special character permissions not preserved: expected %v, got %v", policy.Permissions, retrievedPolicy.Permissions)
+			t.Errorf("Special character permissions not preserved: expected %v, got %v",
+				policy.Permissions, retrievedPolicy.Permissions)
 		}
 	})
 }
@@ -437,8 +447,8 @@ func TestSQLitePolicy_EncryptionWithDifferentKeys(t *testing.T) {
 	policyName := "encryption-test-policy"
 	policy := data.Policy{
 		Name:            policyName,
-		SPIFFEIDPattern: "spiffe://example.org/encryption-test",
-		PathPattern:     "encrypted/data/*",
+		SPIFFEIDPattern: "spiffe://example\\.org/encryption-test",
+		PathPattern:     "encrypted/data/.*",
 		Permissions:     []data.PolicyPermission{data.PermissionSuper},
 	}
 
@@ -511,16 +521,20 @@ func TestSQLitePolicy_EncryptionWithDifferentKeys(t *testing.T) {
 
 		// Compare relevant fields (ignore generated fields like ID, CreatedAt, etc.)
 		if retrievedPolicy.Name != policy.Name {
-			t.Errorf("Policy name corrupted: expected %s, got %s", policy.Name, retrievedPolicy.Name)
+			t.Errorf("Policy name corrupted: expected %s, got %s",
+				policy.Name, retrievedPolicy.Name)
 		}
 		if retrievedPolicy.SPIFFEIDPattern != policy.SPIFFEIDPattern {
-			t.Errorf("Policy SPIFFE ID pattern corrupted: expected %s, got %s", policy.SPIFFEIDPattern, retrievedPolicy.SPIFFEIDPattern)
+			t.Errorf("Policy SPIFFE ID pattern corrupted: expected %s, got %s",
+				policy.SPIFFEIDPattern, retrievedPolicy.SPIFFEIDPattern)
 		}
 		if retrievedPolicy.PathPattern != policy.PathPattern {
-			t.Errorf("Policy path pattern corrupted: expected %s, got %s", policy.PathPattern, retrievedPolicy.PathPattern)
+			t.Errorf("Policy path pattern corrupted: expected %s, got %s",
+				policy.PathPattern, retrievedPolicy.PathPattern)
 		}
 		if !reflect.DeepEqual(retrievedPolicy.Permissions, policy.Permissions) {
-			t.Errorf("Policy permissions corrupted: expected %v, got %v", policy.Permissions, retrievedPolicy.Permissions)
+			t.Errorf("Policy permissions corrupted: expected %v, got %v",
+				policy.Permissions, retrievedPolicy.Permissions)
 		}
 	})
 }
@@ -554,8 +568,8 @@ func TestSQLitePolicy_ErrorHandling(t *testing.T) {
 		// Test creating policy with an empty name
 		emptyNamePolicy := data.Policy{
 			Name:            "",
-			SPIFFEIDPattern: "spiffe://example.org/test",
-			PathPattern:     "test/*",
+			SPIFFEIDPattern: "spiffe://example\\.org/test",
+			PathPattern:     "test/.*",
 			Permissions:     []data.PolicyPermission{data.PermissionRead},
 		}
 
@@ -608,8 +622,8 @@ func BenchmarkSQLiteCreatePolicy(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		policy := data.Policy{
 			Name:            fmt.Sprintf("bench-policy-%d", i),
-			SPIFFEIDPattern: "spiffe://example.org/benchmark",
-			PathPattern:     "benchmark/*",
+			SPIFFEIDPattern: "spiffe://example\\.org/benchmark",
+			PathPattern:     "benchmark/.*",
 			Permissions:     []data.PolicyPermission{data.PermissionRead},
 		}
 
@@ -641,8 +655,6 @@ func BenchmarkSQLiteGetPolicy(b *testing.B) {
 		}
 	}()
 
-	// TODO: there are a lof of patterns that repeat; move them to helpers.
-
 	// Clean up the database
 	dataDir := config.SpikeNexusDataFolder()
 	dbPath := filepath.Join(dataDir, "spike.db")
@@ -663,8 +675,8 @@ func BenchmarkSQLiteGetPolicy(b *testing.B) {
 	policyName := "bench-get-policy"
 	policy := data.Policy{
 		Name:            policyName,
-		SPIFFEIDPattern: "spiffe://example.org/benchmark",
-		PathPattern:     "benchmark/*",
+		SPIFFEIDPattern: "spiffe://example\\.org/benchmark",
+		PathPattern:     "benchmark/.*",
 		Permissions:     []data.PolicyPermission{data.PermissionRead},
 	}
 	_, _ = CreatePolicy(policy)

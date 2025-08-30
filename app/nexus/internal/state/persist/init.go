@@ -8,6 +8,7 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
+
 	"github.com/spiffe/spike-sdk-go/crypto"
 	"github.com/spiffe/spike-sdk-go/log"
 	"github.com/spiffe/spike-sdk-go/security/mem"
@@ -48,7 +49,7 @@ func createCipher() cipher.AEAD {
 //
 // Returns:
 //   - A backend.Backend interface implementation:
-//   - memory.NoopStore for 'memory' store type or unknown types
+//   - memory.Store for 'memory' store type or unknown types
 //   - SQLite backend for 'sqlite' store type
 //
 // The actual backend type is determined by env.BackendStoreType():
@@ -59,7 +60,7 @@ func createCipher() cipher.AEAD {
 // The function is safe for concurrent access as it uses a mutex to protect the
 // initialization process.
 //
-// Note: This function modifies the package-level be variable. Subsequent calls
+// Note: This function modifies the package-level be variable. Later calls
 // will reinitialize the backend, potentially losing any existing state.
 func InitializeBackend(rootKey *[crypto.AES256KeySize]byte) {
 	const fName = "initializeBackend"
@@ -104,7 +105,6 @@ func InitializeBackend(rootKey *[crypto.AES256KeySize]byte) {
 	case env.Lite:
 		be = initializeLiteBackend(rootKey)
 	case env.Memory:
-		// TODO: create an initializeMemoryBackend function for consistency.
 		be = memory.NewInMemoryStore(createCipher(), env.MaxSecretVersions())
 	case env.Sqlite:
 		be = initializeSqliteBackend(rootKey)

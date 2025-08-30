@@ -10,6 +10,9 @@ import (
 	"io"
 )
 
+// encrypt encrypts the given data using the DataStore's cipher.
+// It generates a random nonce and returns the ciphertext, nonce, and any
+// error that occurred during encryption.
 func (s *DataStore) encrypt(data []byte) ([]byte, []byte, error) {
 	nonce := make([]byte, s.Cipher.NonceSize())
 	if _, err := io.ReadFull(rand.Reader, nonce); err != nil {
@@ -19,6 +22,9 @@ func (s *DataStore) encrypt(data []byte) ([]byte, []byte, error) {
 	return ciphertext, nonce, nil
 }
 
+// decrypt decrypts the given ciphertext using the DataStore's cipher
+// and the provided nonce. It returns the plaintext and any error that
+// occurred during decryption.
 func (s *DataStore) decrypt(ciphertext, nonce []byte) ([]byte, error) {
 	plaintext, err := s.Cipher.Open(nil, nonce, ciphertext, nil)
 	if err != nil {

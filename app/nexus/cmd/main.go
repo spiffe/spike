@@ -46,17 +46,17 @@ func main() {
 	log.Log().Info(appName, "message", "SPIFFE Trust Domain: "+env.TrustRoot())
 
 	fmt.Println("before trying to get source...")
-	source, selfSpiffeid, err := spiffe.Source(ctx, spiffe.EndpointSocket())
+	source, selfSPIFFEID, err := spiffe.Source(ctx, spiffe.EndpointSocket())
 	if err != nil {
 		log.Fatal(err.Error())
 	}
 	defer spiffe.CloseSource(source)
 
-	log.Log().Info(appName, "message", "self.spiffeid: "+selfSpiffeid)
+	log.Log().Info(appName, "message", "self.spiffeid: "+selfSPIFFEID)
 
 	// I should be Nexus.
-	if !spiffeid.IsNexus(env.TrustRoot(), selfSpiffeid) {
-		log.FatalF("Authenticate: SPIFFE ID %s is not valid.\n", selfSpiffeid)
+	if !spiffeid.IsNexus(env.TrustRoot(), selfSPIFFEID) {
+		log.FatalF("Authenticate: SPIFFE ID %s is not valid.\n", selfSPIFFEID)
 	}
 
 	initialization.Initialize(source)

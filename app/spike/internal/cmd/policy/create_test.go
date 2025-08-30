@@ -38,16 +38,16 @@ func TestReadPolicyFromFile(t *testing.T) {
 		{
 			name: "valid_policy_file",
 			fileContent: `name: test-policy
-spiffeid: spiffe://example.org/test/*
-path: secrets/*
+spiffeid: ^spiffe://example\.org/test/.*$
+path: ^secrets/.*$
 permissions:
   - read
   - write`,
 			fileName: "valid-policy.yaml",
 			want: Spec{
 				Name:        "test-policy",
-				SpiffeID:    "spiffe://example.org/test/*",
-				Path:        "secrets/*",
+				SpiffeID:    "^spiffe://example\\.org/test/.*$",
+				Path:        "^secrets/.*$",
 				Permissions: []string{"read", "write"},
 			},
 			wantErr: false,
@@ -55,8 +55,8 @@ permissions:
 		{
 			name: "valid_policy_with_all_permissions",
 			fileContent: `name: full-access-policy
-spiffeid: spiffe://example.org/admin/*
-path: /*
+spiffeid: ^spiffe://example\.org/admin/.*$
+path: ^secrets/.*$
 permissions:
   - read
   - write
@@ -65,16 +65,16 @@ permissions:
 			fileName: "full-policy.yaml",
 			want: Spec{
 				Name:        "full-access-policy",
-				SpiffeID:    "spiffe://example.org/admin/*",
-				Path:        "/*", // TODO: path and spiffeid patterns are NOT globs; they are regexes!
+				SpiffeID:    "^spiffe://example\\.org/admin/.*$",
+				Path:        "^secrets/.*$",
 				Permissions: []string{"read", "write", "list", "super"},
 			},
 			wantErr: false,
 		},
 		{
 			name: "missing_name",
-			fileContent: `spiffeid: spiffe://example.org/test/*
-path: secrets/*
+			fileContent: `spiffeid: ^spiffe://example\\.org/test/.*$
+path: ^secrets/*$
 permissions:
   - read`,
 			fileName:    "missing-name.yaml",
@@ -94,7 +94,7 @@ permissions:
 		{
 			name: "missing_path",
 			fileContent: `name: test-policy
-spiffeid: spiffe://example.org/test/*
+spiffeid: ^spiffe://example\.org/test/.*$
 permissions:
   - read`,
 			fileName:    "missing-path.yaml",
@@ -104,8 +104,8 @@ permissions:
 		{
 			name: "missing_permissions",
 			fileContent: `name: test-policy
-spiffeid: spiffe://example.org/test/*
-path: secrets/*`,
+spiffeid: ^spiffe://example\.org/test/.*$
+path: ^secrets/.*$`,
 			fileName:    "missing-permissions.yaml",
 			wantErr:     true,
 			errContains: "permissions are required",
@@ -113,8 +113,8 @@ path: secrets/*`,
 		{
 			name: "empty_permissions_list",
 			fileContent: `name: test-policy
-spiffeid: spiffe://example.org/test/*
-path: secrets/*
+spiffeid: spiffe://example\.org/test/.*
+path: secrets/.*
 permissions: []`,
 			fileName:    "empty-permissions.yaml",
 			wantErr:     true,
@@ -123,8 +123,8 @@ permissions: []`,
 		{
 			name: "invalid_yaml",
 			fileContent: `name: test-policy
-spiffeid: spiffe://example.org/test/*
-path: secrets/*
+spiffeid: ^spiffe://example\.org/test/.*$
+path: ^secrets/.*$
 permissions: [
   - read
   - write`, // Invalid YAML - missing closing bracket
@@ -257,13 +257,13 @@ func TestGetPolicyFromFlags(t *testing.T) {
 		{
 			name:          "valid_flags",
 			inputName:     "test-policy",
-			inputSpiffeID: "spiffe://example.org/test/*",
-			inputPath:     "secrets/*",
+			inputSpiffeID: "^spiffe://example\\.org/test/.*$",
+			inputPath:     "^secrets/.*$",
 			inputPerms:    "read,write",
 			want: Spec{
 				Name:        "test-policy",
-				SpiffeID:    "spiffe://example.org/test/*",
-				Path:        "secrets/*",
+				SpiffeID:    "^spiffe://example\\.org/test/.*$",
+				Path:        "^secrets/.*$",
 				Permissions: []string{"read", "write"},
 			},
 			wantErr: false,
@@ -271,13 +271,13 @@ func TestGetPolicyFromFlags(t *testing.T) {
 		{
 			name:          "valid_flags_with_spaces",
 			inputName:     "test-policy",
-			inputSpiffeID: "spiffe://example.org/test/*",
-			inputPath:     "secrets/*",
+			inputSpiffeID: "^spiffe://example\\.org/test/.*$",
+			inputPath:     "^secrets/.*$",
 			inputPerms:    "read, write, list",
 			want: Spec{
 				Name:        "test-policy",
-				SpiffeID:    "spiffe://example.org/test/*",
-				Path:        "secrets/*",
+				SpiffeID:    "^spiffe://example\\.org/test/.*$",
+				Path:        "^secrets/.*$",
 				Permissions: []string{"read", "write", "list"},
 			},
 			wantErr: false,
@@ -285,13 +285,13 @@ func TestGetPolicyFromFlags(t *testing.T) {
 		{
 			name:          "single_permission",
 			inputName:     "read-only-policy",
-			inputSpiffeID: "spiffe://example.org/readonly/*",
-			inputPath:     "secrets/readonly/*",
+			inputSpiffeID: "^spiffe://example\\.org/readonly/.*$",
+			inputPath:     "^secrets/readonly/.*$",
 			inputPerms:    "read",
 			want: Spec{
 				Name:        "read-only-policy",
-				SpiffeID:    "spiffe://example.org/readonly/*",
-				Path:        "secrets/readonly/*",
+				SpiffeID:    "^spiffe://example\\.org/readonly/.*$",
+				Path:        "^secrets/readonly/.*$",
 				Permissions: []string{"read"},
 			},
 			wantErr: false,
@@ -299,13 +299,13 @@ func TestGetPolicyFromFlags(t *testing.T) {
 		{
 			name:          "all_permissions",
 			inputName:     "admin-policy",
-			inputSpiffeID: "spiffe://example.org/admin/*",
-			inputPath:     "/*",
+			inputSpiffeID: "^spiffe://example\\.org/admin/.*$",
+			inputPath:     "^.*$",
 			inputPerms:    "read,write,list,super",
 			want: Spec{
 				Name:        "admin-policy",
-				SpiffeID:    "spiffe://example.org/admin/*",
-				Path:        "/*",
+				SpiffeID:    "^spiffe://example\\.org/admin/.*$",
+				Path:        "^.*$",
 				Permissions: []string{"read", "write", "list", "super"},
 			},
 			wantErr: false,
@@ -313,8 +313,8 @@ func TestGetPolicyFromFlags(t *testing.T) {
 		{
 			name:          "missing_name",
 			inputName:     "",
-			inputSpiffeID: "spiffe://example.org/test/*",
-			inputPath:     "secrets/*",
+			inputSpiffeID: "^spiffe://example\\.org/test/.*$",
+			inputPath:     "^secrets/.*$",
 			inputPerms:    "read",
 			wantErr:       true,
 			errContains:   "--name",
@@ -323,7 +323,7 @@ func TestGetPolicyFromFlags(t *testing.T) {
 			name:          "missing_spiffeid",
 			inputName:     "test-policy",
 			inputSpiffeID: "",
-			inputPath:     "secrets/*",
+			inputPath:     "^secrets/.*$",
 			inputPerms:    "read",
 			wantErr:       true,
 			errContains:   "--spiffeid",
@@ -331,7 +331,7 @@ func TestGetPolicyFromFlags(t *testing.T) {
 		{
 			name:          "missing_path",
 			inputName:     "test-policy",
-			inputSpiffeID: "spiffe://example.org/test/*",
+			inputSpiffeID: "^spiffe://example\\.org/test/.*$",
 			inputPath:     "",
 			inputPerms:    "read",
 			wantErr:       true,
@@ -340,8 +340,8 @@ func TestGetPolicyFromFlags(t *testing.T) {
 		{
 			name:          "missing_permissions",
 			inputName:     "test-policy",
-			inputSpiffeID: "spiffe://example.org/test/*",
-			inputPath:     "secrets/*",
+			inputSpiffeID: "^spiffe://example\\.org/test/.*$",
+			inputPath:     "^secrets/.*$",
 			inputPerms:    "",
 			wantErr:       true,
 			errContains:   "--permissions",
@@ -350,7 +350,7 @@ func TestGetPolicyFromFlags(t *testing.T) {
 			name:          "multiple_missing_flags",
 			inputName:     "",
 			inputSpiffeID: "",
-			inputPath:     "secrets/*",
+			inputPath:     "^secrets/.*$",
 			inputPerms:    "read",
 			wantErr:       true,
 			errContains:   "required flags are missing",
@@ -358,13 +358,13 @@ func TestGetPolicyFromFlags(t *testing.T) {
 		{
 			name:          "empty_permissions_after_split",
 			inputName:     "test-policy",
-			inputSpiffeID: "spiffe://example.org/test/*",
-			inputPath:     "secrets/*",
+			inputSpiffeID: "^spiffe://example\\.org/test/.*$",
+			inputPath:     "^secrets/.*$",
 			inputPerms:    ",,,",
 			want: Spec{
 				Name:        "test-policy",
-				SpiffeID:    "spiffe://example.org/test/*",
-				Path:        "secrets/*",
+				SpiffeID:    "^spiffe://example\\.org/test/.*$",
+				Path:        "^secrets/.*$",
 				Permissions: []string{},
 			},
 			wantErr: false,
@@ -489,7 +489,7 @@ func TestPolicyCreateCommandFlagValidation(t *testing.T) {
 			name: "missing name flag",
 			flags: map[string]string{
 				"path":        "secrets/database/production",
-				"spiffeid":    "spiffe://example.org/service/*",
+				"spiffeid":    "^spiffe://example\\.org/service/.*$",
 				"permissions": "read,write",
 			},
 			expectError: true,
@@ -499,7 +499,7 @@ func TestPolicyCreateCommandFlagValidation(t *testing.T) {
 			name: "missing path flag",
 			flags: map[string]string{
 				"name":        "test-policy",
-				"spiffeid":    "spiffe://example.org/service/*",
+				"spiffeid":    "^spiffe://example\\.org/service/.*$",
 				"permissions": "read,write",
 			},
 			expectError: true,
@@ -519,8 +519,8 @@ func TestPolicyCreateCommandFlagValidation(t *testing.T) {
 			name: "missing permissions flag",
 			flags: map[string]string{
 				"name":     "test-policy",
-				"path":     "secrets/database/production",
-				"spiffeid": "spiffe://example.org/service/*",
+				"path":     "^secrets/database/production$",
+				"spiffeid": "^spiffe://example\\.org/service/.*$",
 			},
 			expectError: true,
 			errorMsg:    "required flags are missing: --permissions",
@@ -529,8 +529,8 @@ func TestPolicyCreateCommandFlagValidation(t *testing.T) {
 			name: "all flags present",
 			flags: map[string]string{
 				"name":        "test-policy",
-				"path":        "secrets/database/production",
-				"spiffeid":    "spiffe://example.org/service/*",
+				"path":        "^secrets/database/production$",
+				"spiffeid":    "^spiffe://example\\.org/service/.*$",
 				"permissions": "read,write",
 			},
 			expectError: false,
@@ -580,7 +580,7 @@ func TestPolicyCreateCommandFlagValidation(t *testing.T) {
 // Test that the create command is registered properly
 func TestPolicyCreateCommandRegistration(t *testing.T) {
 	source := &workloadapi.X509Source{}
-	SPIFFEID := "spiffe://example.org/spike"
+	SPIFFEID := "^spiffe://example\\.org/spike$"
 
 	policyCmd := NewPolicyCommand(source, SPIFFEID)
 

@@ -95,7 +95,8 @@ func TestSetRootKey_ValidKey(t *testing.T) {
 	rootKeyMu.RLock()
 	for i, b := range rootKey {
 		if b != testKey[i] {
-			t.Errorf("Root key byte %d mismatch: expected %d, got %d", i, testKey[i], b)
+			t.Errorf("Root key byte %d mismatch: expected %d, got %d",
+				i, testKey[i], b)
 		}
 	}
 	rootKeyMu.RUnlock()

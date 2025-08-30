@@ -120,7 +120,7 @@ func formatPolicy(cmd *cobra.Command, policy *data.Policy) string {
 		return string(output)
 	}
 
-	// Human-readable format for single policy:
+	// Human-readable format for a single policy:
 	var result strings.Builder
 	result.WriteString("POLICY DETAILS\n=============\n\n")
 

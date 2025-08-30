@@ -18,10 +18,10 @@ import (
 
 func TestSendShardsToKeepers_NetworkDependentFunction(t *testing.T) {
 	// The sendShardsToKeepers function has multiple external dependencies that make it
-	// difficult to test without significant infrastructure:
+	// difficult to test without a significant infrastructure:
 	// 1. Requires SPIFFE X509Source
 	// 2. Makes network calls via mTLS clients
-	// 3. Depends on state management for root key
+	// 3. Depends on state management for the root key
 	// 4. Calls computeShares() and sanityCheck() which have their own dependencies
 	t.Skip("Skipping sendShardsToKeepers test - requires SPIFFE infrastructure, network connectivity, and state management")
 
@@ -114,7 +114,7 @@ func TestURLJoinPathForKeepers(t *testing.T) {
 		//	expectedPath:  string(apiUrl.KeeperContribute),
 		//	expectError:   true,
 		//},
-		// TODO: address me.
+		// FIX-ME: address me.
 	}
 
 	for _, tt := range tests {
@@ -319,25 +319,29 @@ func TestKeeperMapOperations(t *testing.T) {
 		// Test that keeper ID can be converted to int
 		_, err := strconv.Atoi(keeperID)
 		if err != nil {
-			t.Errorf("Keeper ID '%s' should be convertible to int: %v", keeperID, err)
+			t.Errorf("Keeper ID '%s' should be convertible to int: %v",
+				keeperID, err)
 		}
 
 		// Test that the SPIKE Keeper API root is a valid URL
 		_, err = url.Parse(keeperAPIRoot)
 		if err != nil {
-			t.Errorf("Keeper API root '%s' should be valid URL: %v", keeperAPIRoot, err)
+			t.Errorf("Keeper API root '%s' should be valid URL: %v",
+				keeperAPIRoot, err)
 		}
 	}
 
 	expectedCount := 3
 	if count != expectedCount {
-		t.Errorf("Expected to iterate over %d keepers, got %d", expectedCount, count)
+		t.Errorf("Expected to iterate over %d keepers, got %d",
+			expectedCount, count)
 	}
 
 	// Test map access
 	keeper1URL := keepers["1"]
 	if keeper1URL != "https://keeper1.example.com" {
-		t.Errorf("Expected keeper1 URL to be 'https://keeper1.example.com', got '%s'", keeper1URL)
+		t.Errorf("Expected keeper1 URL to be 'https://keeper1.example.com', got '%s'",
+			keeper1URL)
 	}
 
 	// Test a non-existent key
@@ -427,7 +431,8 @@ func TestShardArrayOperations(t *testing.T) {
 
 	// noinspection GoBoolExpressions
 	if len(shard) != crypto.AES256KeySize {
-		t.Errorf("Shard array length should be %d, got %d", crypto.AES256KeySize, len(shard))
+		t.Errorf("Shard array length should be %d, got %d",
+			crypto.AES256KeySize, len(shard))
 	}
 
 	// Test copy operation (as done in sendShardsToKeepers)
@@ -448,6 +453,7 @@ func TestShardArrayOperations(t *testing.T) {
 
 	// Test that it's a proper array, not a slice
 	if cap(shard[:]) != crypto.AES256KeySize {
-		t.Errorf("Shard capacity should be %d, got %d", crypto.AES256KeySize, cap(shard[:]))
+		t.Errorf("Shard capacity should be %d, got %d",
+			crypto.AES256KeySize, cap(shard[:]))
 	}
 }

@@ -14,12 +14,11 @@ import (
 
 	"github.com/spiffe/spike-sdk-go/crypto"
 	"github.com/spiffe/spike-sdk-go/kv"
+
 	"github.com/spiffe/spike/app/nexus/internal/env"
 	"github.com/spiffe/spike/app/nexus/internal/state/persist"
 	"github.com/spiffe/spike/internal/config"
 )
-
-// TODO: create a similar suite for policy persistence too.
 
 // createTestRootKey creates a test root key for SQLite backend
 func createTestRootKey(_ *testing.T) *[crypto.AES256KeySize]byte {

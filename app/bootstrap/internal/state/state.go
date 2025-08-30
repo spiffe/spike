@@ -6,7 +6,6 @@ package state
 
 import (
 	"crypto/rand"
-	"os"
 	"strconv"
 
 	"github.com/cloudflare/circl/group"
@@ -32,7 +31,7 @@ func RootShares() []shamir.Share {
 
 	var rootKeySeed [crypto.AES256KeySize]byte
 	if _, err := rand.Read(rootKeySeed[:]); err != nil {
-		log.Fatal(err.Error())
+		log.FatalLn(fName, "message", "key seed failure", "err", err.Error())
 	}
 
 	// Initialize parameters
@@ -46,8 +45,7 @@ func RootShares() []shamir.Share {
 	rootSecret := g.NewScalar()
 
 	if err := rootSecret.UnmarshalBinary(rootKeySeed[:]); err != nil {
-		log.FatalLn(fName + ": Failed to unmarshal key: %v" + err.Error())
-		os.Exit(1)
+		log.FatalLn(fName, "message", "Failed to unmarshal key: %v"+err.Error())
 	}
 
 	// To compute identical shares, we need an identical seed for the random
@@ -86,9 +84,8 @@ func KeeperShare(
 	for _, sr := range rootShares {
 		kid, err := strconv.Atoi(keeperID)
 		if err != nil {
-			log.Log().Warn(
+			log.FatalLn(
 				fName, "message", "Failed to convert keeper id to int", "err", err)
-			os.Exit(1)
 		}
 
 		if sr.ID.IsEqual(group.P256.NewScalar().SetUint64(uint64(kid))) {
@@ -98,9 +95,8 @@ func KeeperShare(
 	}
 
 	if share.ID.IsZero() {
-		log.Log().Warn(fName,
+		log.FatalLn(fName,
 			"message", "Failed to find share for keeper", "keeper_id", keeperID)
-		os.Exit(1)
 	}
 
 	return share
