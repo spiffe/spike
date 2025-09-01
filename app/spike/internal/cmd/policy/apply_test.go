@@ -203,10 +203,10 @@ permissions:
 			}
 
 			// Test path normalization
-			normalizedPath := normalizePath(policy.Path)
+			normalizedPath := normalizePath(policy.PathPattern)
 			if normalizedPath != tt.expectedPath {
 				t.Errorf("normalizePath(%q) = %q, want %q",
-					policy.Path, normalizedPath, tt.expectedPath)
+					policy.PathPattern, normalizedPath, tt.expectedPath)
 			}
 		})
 	}
@@ -245,7 +245,7 @@ func TestApplyPolicyFromFlags(t *testing.T) {
 		//	name:         "flags_with_multiple_trailing_slashes",
 		//	inputName:    "multi-slash-policy",
 		//	inputSpiffed: "^spiffe://example\\.org/test/.*$",
-		//	inputPath:    "^secrets/test///$",
+		//	inputPathPattern:    "^secrets/test///$",
 		//	inputPerms:   "read",
 		//	expectedPath: "^secrets/test$",
 		//	wantErr:      false,
@@ -309,10 +309,10 @@ func TestApplyPolicyFromFlags(t *testing.T) {
 			}
 
 			// Test path normalization
-			normalizedPath := normalizePath(policy.Path)
+			normalizedPath := normalizePath(policy.PathPattern)
 			if normalizedPath != tt.expectedPath {
 				t.Errorf("normalizePath(%q) = %q, want %q",
-					policy.Path, normalizedPath, tt.expectedPath)
+					policy.PathPattern, normalizedPath, tt.expectedPath)
 			}
 		})
 	}

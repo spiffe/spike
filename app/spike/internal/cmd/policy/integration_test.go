@@ -8,62 +8,64 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/spiffe/spike-sdk-go/api/entity/data"
 )
 
 // TestPolicySpecValidation tests the Spec struct validation
 func TestPolicySpecValidation(t *testing.T) {
 	tests := []struct {
 		name   string
-		policy Spec
+		policy data.PolicySpec
 		valid  bool
 	}{
 		{
 			name: "valid_policy_spec",
-			policy: Spec{
-				Name:        "test-policy",
-				SpiffeID:    "^spiffe://example\\.org/test/.*$",
-				Path:        "^secrets/.*$",
-				Permissions: []string{"read", "write"},
+			policy: data.PolicySpec{
+				Name:            "test-policy",
+				SpiffeIDPattern: "^spiffe://example\\.org/test/.*$",
+				PathPattern:     "^secrets/.*$",
+				Permissions:     []data.PolicyPermission{"read", "write"},
 			},
 			valid: true,
 		},
 		{
 			name: "empty_name",
-			policy: Spec{
-				Name:        "",
-				SpiffeID:    "^spiffe://example\\.org/test/.*$",
-				Path:        "^secrets/.*$",
-				Permissions: []string{"read"},
+			policy: data.PolicySpec{
+				Name:            "",
+				SpiffeIDPattern: "^spiffe://example\\.org/test/.*$",
+				PathPattern:     "^secrets/.*$",
+				Permissions:     []data.PolicyPermission{"read"},
 			},
 			valid: false,
 		},
 		{
 			name: "empty_spiffe_id",
-			policy: Spec{
-				Name:        "test-policy",
-				SpiffeID:    "",
-				Path:        "secrets/.*",
-				Permissions: []string{"read"},
+			policy: data.PolicySpec{
+				Name:            "test-policy",
+				SpiffeIDPattern: "",
+				PathPattern:     "secrets/.*",
+				Permissions:     []data.PolicyPermission{"read"},
 			},
 			valid: false,
 		},
 		{
 			name: "empty_path",
-			policy: Spec{
-				Name:        "test-policy",
-				SpiffeID:    "^spiffe://example\\.org/test/.*$",
-				Path:        "",
-				Permissions: []string{"read"},
+			policy: data.PolicySpec{
+				Name:            "test-policy",
+				SpiffeIDPattern: "^spiffe://example\\.org/test/.*$",
+				PathPattern:     "",
+				Permissions:     []data.PolicyPermission{"read"},
 			},
 			valid: false,
 		},
 		{
 			name: "empty_permissions",
-			policy: Spec{
-				Name:        "test-policy",
-				SpiffeID:    "^spiffe://example\\.org/test/.*$",
-				Path:        "^secrets/.*$",
-				Permissions: []string{},
+			policy: data.PolicySpec{
+				Name:            "test-policy",
+				SpiffeIDPattern: "^spiffe://example\\.org/test/.*$",
+				PathPattern:     "^secrets/.*$",
+				Permissions:     []data.PolicyPermission{},
 			},
 			valid: false,
 		},
@@ -78,7 +80,7 @@ func TestPolicySpecValidation(t *testing.T) {
 					if i > 0 {
 						permsStr += ","
 					}
-					permsStr += perm
+					permsStr += string(perm)
 				}
 			}
 
@@ -96,11 +98,11 @@ func TestPolicySpecValidation(t *testing.T) {
 			}(tempDir)
 
 			yamlContent := "name: " + tt.policy.Name + "\n"
-			yamlContent += "spiffeid: " + tt.policy.SpiffeID + "\n"
-			yamlContent += "path: " + tt.policy.Path + "\n"
+			yamlContent += "spiffeid: " + tt.policy.SpiffeIDPattern + "\n"
+			yamlContent += "path: " + tt.policy.PathPattern + "\n"
 			yamlContent += "permissions:\n"
 			for _, perm := range tt.policy.Permissions {
-				yamlContent += "  - " + perm + "\n"
+				yamlContent += "  - " + string(perm) + "\n"
 			}
 
 			filePath := filepath.Join(tempDir, "test-policy.yaml")
@@ -139,52 +141,52 @@ func TestYAMLParsingEdgeCases(t *testing.T) {
 		name        string
 		yamlContent string
 		expectError bool
-		expectValue Spec
+		expectValue data.PolicySpec
 	}{
 		{
 			name: "quoted_values",
 			yamlContent: `name: "my-policy"
-spiffeid: "^spiffe://example\\.org/quoted/.*$"
-path: "^secrets/quoted/.*$"
+spiffeidPattern: "^spiffe://example\\.org/quoted/.*$"
+pathPattern: "^secrets/quoted/.*$"
 permissions:
   - "read"
   - "write"`,
 			expectError: false,
-			expectValue: Spec{
-				Name:        "my-policy",
-				SpiffeID:    "^spiffe://example\\.org/quoted/.*$",
-				Path:        "^secrets/quoted/.*$",
-				Permissions: []string{"read", "write"},
+			expectValue: data.PolicySpec{
+				Name:            "my-policy",
+				SpiffeIDPattern: "^spiffe://example\\.org/quoted/.*$",
+				PathPattern:     "^secrets/quoted/.*$",
+				Permissions:     []data.PolicyPermission{"read", "write"},
 			},
 		},
 		{
 			name: "permissions_as_flow_sequence",
 			yamlContent: `name: flow-policy
-spiffeid: ^spiffe://example\.org/flow/.*$
-path: ^secrets/flow/.*$
+spiffeidPattern: ^spiffe://example\.org/flow/.*$
+pathPattern: ^secrets/flow/.*$
 permissions: [read, write, list]`,
 			expectError: false,
-			expectValue: Spec{
-				Name:        "flow-policy",
-				SpiffeID:    "^spiffe://example\\.org/flow/.*$",
-				Path:        "^secrets/flow/.*$",
-				Permissions: []string{"read", "write", "list"},
+			expectValue: data.PolicySpec{
+				Name:            "flow-policy",
+				SpiffeIDPattern: "^spiffe://example\\.org/flow/.*$",
+				PathPattern:     "^secrets/flow/.*$",
+				Permissions:     []data.PolicyPermission{"read", "write", "list"},
 			},
 		},
 		{
 			name: "multiline_spiffe_id",
 			yamlContent: `name: multiline-policy
-spiffeid: >
+spiffeidPattern: >
   ^spiffe://example\.org/multiline/.*$
-path: ^secrets/multiline/.*$
+pathPattern: ^secrets/multiline/.*$
 permissions:
   - read`,
 			expectError: false,
-			expectValue: Spec{
-				Name:        "multiline-policy",
-				SpiffeID:    "^spiffe://example\\.org/multiline/.*$\n",
-				Path:        "^secrets/multiline/.*$",
-				Permissions: []string{"read"},
+			expectValue: data.PolicySpec{
+				Name:            "multiline-policy",
+				SpiffeIDPattern: "^spiffe://example\\.org/multiline/.*$\n",
+				PathPattern:     "^secrets/multiline/.*$",
+				Permissions:     []data.PolicyPermission{"read"},
 			},
 		},
 	}
@@ -212,23 +214,23 @@ permissions:
 			}
 
 			// Trim any trailing whitespace from SpiffeID for comparison
-			if len(policy.SpiffeID) > 0 && policy.SpiffeID[len(policy.SpiffeID)-1] == '\n' {
-				policy.SpiffeID = policy.SpiffeID[:len(policy.SpiffeID)-1]
+			if len(policy.SpiffeIDPattern) > 0 && policy.SpiffeIDPattern[len(policy.SpiffeIDPattern)-1] == '\n' {
+				policy.SpiffeIDPattern = policy.SpiffeIDPattern[:len(policy.SpiffeIDPattern)-1]
 			}
-			if len(tt.expectValue.SpiffeID) > 0 &&
-				tt.expectValue.SpiffeID[len(tt.expectValue.SpiffeID)-1] == '\n' {
-				tt.expectValue.SpiffeID = tt.expectValue.SpiffeID[:len(tt.expectValue.SpiffeID)-1]
+			if len(tt.expectValue.SpiffeIDPattern) > 0 &&
+				tt.expectValue.SpiffeIDPattern[len(tt.expectValue.SpiffeIDPattern)-1] == '\n' {
+				tt.expectValue.SpiffeIDPattern = tt.expectValue.SpiffeIDPattern[:len(tt.expectValue.SpiffeIDPattern)-1]
 			}
 
 			if policy.Name != tt.expectValue.Name {
 				t.Errorf("Name = %v, want %v", policy.Name, tt.expectValue.Name)
 			}
-			if policy.SpiffeID != tt.expectValue.SpiffeID {
+			if policy.SpiffeIDPattern != tt.expectValue.SpiffeIDPattern {
 				t.Errorf("SpiffeID = %v, want %v",
-					policy.SpiffeID, tt.expectValue.SpiffeID)
+					policy.SpiffeIDPattern, tt.expectValue.SpiffeIDPattern)
 			}
-			if policy.Path != tt.expectValue.Path {
-				t.Errorf("Path = %v, want %v", policy.Path, tt.expectValue.Path)
+			if policy.PathPattern != tt.expectValue.PathPattern {
+				t.Errorf("Path = %v, want %v", policy.PathPattern, tt.expectValue.PathPattern)
 			}
 			if len(policy.Permissions) != len(tt.expectValue.Permissions) {
 				t.Errorf("Permissions length = %d, want %d",

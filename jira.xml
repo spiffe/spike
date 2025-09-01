@@ -78,13 +78,6 @@
       create a demo video for the new bootstrapping feature.
     </issue>
     <issue>
-      //	spike policy list --format=json
-      //	spike policy list --path="secrets/db/.*"
-      //	spike policy list --spiffeid="spiffe://example\.org/app"
-
-      rename as path-pattern and spiffeid-pattern
-    </issue>
-    <issue>
       make sure the documentation examples on the website
       including the sdk doc; clearly indicate that spiffe id
       and path are regex patterns without any doubt.
@@ -203,11 +196,17 @@
       also, empty id or path should raise an error.
     </issue>
     <issue>
+      check all log.Log()s. some of them don't have fName
+    </issue>
+    <issue>
       // The encryption key must be 16, 24, or 32 bytes in length (for AES-128,
       // AES-192, or AES-256 respectively).
 
       Nope. we only use 32 bytes.
       fix the docs and also the tests.
+    </issue>
+    <issue>
+      saerch ofr --path too
     </issue>
     <issue>
       type GuardFunc[Req any] func(Req, http.ResponseWriter, *http.Request) error
@@ -228,6 +227,18 @@
 
       return &request
       }
+    </issue>
+    <issue>
+      var permissions []data.PolicyPermission
+      if permsStr != "" {
+      for _, perm := range strings.Split(permsStr, ",") {
+      perm = strings.TrimSpace(perm)
+      if perm != "" {
+      permissions = append(permissions, data.PolicyPermission(perm))
+      }
+      }
+      }
+      ^ thjis needs sanitization in case an invalid permission is passed.
     </issue>
     <issue>
       "spike/system/acl" -> to constants

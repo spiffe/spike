@@ -12,6 +12,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
+	"github.com/spiffe/spike-sdk-go/api/entity/data"
 )
 
 func TestReadPolicyFromFile(t *testing.T) {
@@ -31,50 +32,50 @@ func TestReadPolicyFromFile(t *testing.T) {
 		name        string
 		fileContent string
 		fileName    string
-		want        Spec
+		want        data.PolicySpec
 		wantErr     bool
 		errContains string
 	}{
 		{
 			name: "valid_policy_file",
 			fileContent: `name: test-policy
-spiffeid: ^spiffe://example\.org/test/.*$
-path: ^secrets/.*$
+spiffeidPattern: ^spiffe://example\.org/test/.*$
+pathPattern: ^secrets/.*$
 permissions:
   - read
   - write`,
 			fileName: "valid-policy.yaml",
-			want: Spec{
-				Name:        "test-policy",
-				SpiffeID:    "^spiffe://example\\.org/test/.*$",
-				Path:        "^secrets/.*$",
-				Permissions: []string{"read", "write"},
+			want: data.PolicySpec{
+				Name:            "test-policy",
+				SpiffeIDPattern: "^spiffe://example\\.org/test/.*$",
+				PathPattern:     "^secrets/.*$",
+				Permissions:     []data.PolicyPermission{"read", "write"},
 			},
 			wantErr: false,
 		},
 		{
 			name: "valid_policy_with_all_permissions",
 			fileContent: `name: full-access-policy
-spiffeid: ^spiffe://example\.org/admin/.*$
-path: ^secrets/.*$
+spiffeidPattern: ^spiffe://example\.org/admin/.*$
+pathPattern: ^secrets/.*$
 permissions:
   - read
   - write
   - list
   - super`,
 			fileName: "full-policy.yaml",
-			want: Spec{
-				Name:        "full-access-policy",
-				SpiffeID:    "^spiffe://example\\.org/admin/.*$",
-				Path:        "^secrets/.*$",
-				Permissions: []string{"read", "write", "list", "super"},
+			want: data.PolicySpec{
+				Name:            "full-access-policy",
+				SpiffeIDPattern: "^spiffe://example\\.org/admin/.*$",
+				PathPattern:     "^secrets/.*$",
+				Permissions:     []data.PolicyPermission{"read", "write", "list", "super"},
 			},
 			wantErr: false,
 		},
 		{
 			name: "missing_name",
 			fileContent: `spiffeid: ^spiffe://example\\.org/test/.*$
-path: ^secrets/*$
+pathPattern: ^secrets/*$
 permissions:
   - read`,
 			fileName:    "missing-name.yaml",
@@ -84,7 +85,7 @@ permissions:
 		{
 			name: "missing_spiffeid",
 			fileContent: `name: test-policy
-path: secrets/*
+pathPattern: secrets/*
 permissions:
   - read`,
 			fileName:    "missing-spiffeid.yaml",
@@ -94,7 +95,7 @@ permissions:
 		{
 			name: "missing_path",
 			fileContent: `name: test-policy
-spiffeid: ^spiffe://example\.org/test/.*$
+spiffeidPattern: ^spiffe://example\.org/test/.*$
 permissions:
   - read`,
 			fileName:    "missing-path.yaml",
@@ -104,8 +105,8 @@ permissions:
 		{
 			name: "missing_permissions",
 			fileContent: `name: test-policy
-spiffeid: ^spiffe://example\.org/test/.*$
-path: ^secrets/.*$`,
+spiffeidPattern: ^spiffe://example\.org/test/.*$
+pathPattern: ^secrets/.*$`,
 			fileName:    "missing-permissions.yaml",
 			wantErr:     true,
 			errContains: "permissions are required",
@@ -113,8 +114,8 @@ path: ^secrets/.*$`,
 		{
 			name: "empty_permissions_list",
 			fileContent: `name: test-policy
-spiffeid: spiffe://example\.org/test/.*
-path: secrets/.*
+spiffeidPattern: ^spiffe://example\.org/test/.*$
+pathPattern: ^secrets/.*$
 permissions: []`,
 			fileName:    "empty-permissions.yaml",
 			wantErr:     true,
@@ -123,8 +124,8 @@ permissions: []`,
 		{
 			name: "invalid_yaml",
 			fileContent: `name: test-policy
-spiffeid: ^spiffe://example\.org/test/.*$
-path: ^secrets/.*$
+spiffeidPattern: ^spiffe://example\.org/test/.*$
+pathPattern: ^secrets/.*$
 permissions: [
   - read
   - write`, // Invalid YAML - missing closing bracket
@@ -192,13 +193,13 @@ permissions: [
 				t.Errorf("readPolicyFromFile() Name = %v, want %v",
 					got.Name, tt.want.Name)
 			}
-			if got.SpiffeID != tt.want.SpiffeID {
-				t.Errorf("readPolicyFromFile() SpiffeID = %v, want %v",
-					got.SpiffeID, tt.want.SpiffeID)
+			if got.SpiffeIDPattern != tt.want.SpiffeIDPattern {
+				t.Errorf("readPolicyFromFile() SpiffeIDPattern = %v, want %v",
+					got.SpiffeIDPattern, tt.want.SpiffeIDPattern)
 			}
-			if got.Path != tt.want.Path {
-				t.Errorf("readPolicyFromFile() Path = %v, want %v",
-					got.Path, tt.want.Path)
+			if got.PathPattern != tt.want.PathPattern {
+				t.Errorf("readPolicyFromFile() PathPattern = %v, want %v",
+					got.PathPattern, tt.want.PathPattern)
 			}
 			if len(got.Permissions) != len(tt.want.Permissions) {
 				t.Errorf("readPolicyFromFile() "+
@@ -245,127 +246,127 @@ func TestReadPolicyFromFileNotFound(t *testing.T) {
 
 func TestGetPolicyFromFlags(t *testing.T) {
 	tests := []struct {
-		name          string
-		inputName     string
-		inputSpiffeID string
-		inputPath     string
-		inputPerms    string
-		want          Spec
-		wantErr       bool
-		errContains   string
+		name                 string
+		inputName            string
+		inputSpiffeIDPattern string
+		inputPathPattern     string
+		inputPerms           string
+		want                 data.PolicySpec
+		wantErr              bool
+		errContains          string
 	}{
 		{
-			name:          "valid_flags",
-			inputName:     "test-policy",
-			inputSpiffeID: "^spiffe://example\\.org/test/.*$",
-			inputPath:     "^secrets/.*$",
-			inputPerms:    "read,write",
-			want: Spec{
-				Name:        "test-policy",
-				SpiffeID:    "^spiffe://example\\.org/test/.*$",
-				Path:        "^secrets/.*$",
-				Permissions: []string{"read", "write"},
+			name:                 "valid_flags",
+			inputName:            "test-policy",
+			inputSpiffeIDPattern: "^spiffe://example\\.org/test/.*$",
+			inputPathPattern:     "^secrets/.*$",
+			inputPerms:           "read,write",
+			want: data.PolicySpec{
+				Name:            "test-policy",
+				SpiffeIDPattern: "^spiffe://example\\.org/test/.*$",
+				PathPattern:     "^secrets/.*$",
+				Permissions:     []data.PolicyPermission{"read", "write"},
 			},
 			wantErr: false,
 		},
 		{
-			name:          "valid_flags_with_spaces",
-			inputName:     "test-policy",
-			inputSpiffeID: "^spiffe://example\\.org/test/.*$",
-			inputPath:     "^secrets/.*$",
-			inputPerms:    "read, write, list",
-			want: Spec{
-				Name:        "test-policy",
-				SpiffeID:    "^spiffe://example\\.org/test/.*$",
-				Path:        "^secrets/.*$",
-				Permissions: []string{"read", "write", "list"},
+			name:                 "valid_flags_with_spaces",
+			inputName:            "test-policy",
+			inputSpiffeIDPattern: "^spiffe://example\\.org/test/.*$",
+			inputPathPattern:     "^secrets/.*$",
+			inputPerms:           "read, write, list",
+			want: data.PolicySpec{
+				Name:            "test-policy",
+				SpiffeIDPattern: "^spiffe://example\\.org/test/.*$",
+				PathPattern:     "^secrets/.*$",
+				Permissions:     []data.PolicyPermission{"read", "write", "list"},
 			},
 			wantErr: false,
 		},
 		{
-			name:          "single_permission",
-			inputName:     "read-only-policy",
-			inputSpiffeID: "^spiffe://example\\.org/readonly/.*$",
-			inputPath:     "^secrets/readonly/.*$",
-			inputPerms:    "read",
-			want: Spec{
-				Name:        "read-only-policy",
-				SpiffeID:    "^spiffe://example\\.org/readonly/.*$",
-				Path:        "^secrets/readonly/.*$",
-				Permissions: []string{"read"},
+			name:                 "single_permission",
+			inputName:            "read-only-policy",
+			inputSpiffeIDPattern: "^spiffe://example\\.org/readonly/.*$",
+			inputPathPattern:     "^secrets/readonly/.*$",
+			inputPerms:           "read",
+			want: data.PolicySpec{
+				Name:            "read-only-policy",
+				SpiffeIDPattern: "^spiffe://example\\.org/readonly/.*$",
+				PathPattern:     "^secrets/readonly/.*$",
+				Permissions:     []data.PolicyPermission{"read"},
 			},
 			wantErr: false,
 		},
 		{
-			name:          "all_permissions",
-			inputName:     "admin-policy",
-			inputSpiffeID: "^spiffe://example\\.org/admin/.*$",
-			inputPath:     "^.*$",
-			inputPerms:    "read,write,list,super",
-			want: Spec{
-				Name:        "admin-policy",
-				SpiffeID:    "^spiffe://example\\.org/admin/.*$",
-				Path:        "^.*$",
-				Permissions: []string{"read", "write", "list", "super"},
+			name:                 "all_permissions",
+			inputName:            "admin-policy",
+			inputSpiffeIDPattern: "^spiffe://example\\.org/admin/.*$",
+			inputPathPattern:     "^.*$",
+			inputPerms:           "read,write,list,super",
+			want: data.PolicySpec{
+				Name:            "admin-policy",
+				SpiffeIDPattern: "^spiffe://example\\.org/admin/.*$",
+				PathPattern:     "^.*$",
+				Permissions:     []data.PolicyPermission{"read", "write", "list", "super"},
 			},
 			wantErr: false,
 		},
 		{
-			name:          "missing_name",
-			inputName:     "",
-			inputSpiffeID: "^spiffe://example\\.org/test/.*$",
-			inputPath:     "^secrets/.*$",
-			inputPerms:    "read",
-			wantErr:       true,
-			errContains:   "--name",
+			name:                 "missing_name",
+			inputName:            "",
+			inputSpiffeIDPattern: "^spiffe://example\\.org/test/.*$",
+			inputPathPattern:     "^secrets/.*$",
+			inputPerms:           "read",
+			wantErr:              true,
+			errContains:          "--name",
 		},
 		{
-			name:          "missing_spiffeid",
-			inputName:     "test-policy",
-			inputSpiffeID: "",
-			inputPath:     "^secrets/.*$",
-			inputPerms:    "read",
-			wantErr:       true,
-			errContains:   "--spiffeid",
+			name:                 "missing_spiffeid",
+			inputName:            "test-policy",
+			inputSpiffeIDPattern: "",
+			inputPathPattern:     "^secrets/.*$",
+			inputPerms:           "read",
+			wantErr:              true,
+			errContains:          "--spiffeid-pattern",
 		},
 		{
-			name:          "missing_path",
-			inputName:     "test-policy",
-			inputSpiffeID: "^spiffe://example\\.org/test/.*$",
-			inputPath:     "",
-			inputPerms:    "read",
-			wantErr:       true,
-			errContains:   "--path",
+			name:                 "missing_path",
+			inputName:            "test-policy",
+			inputSpiffeIDPattern: "^spiffe://example\\.org/test/.*$",
+			inputPathPattern:     "",
+			inputPerms:           "read",
+			wantErr:              true,
+			errContains:          "--path-pattern",
 		},
 		{
-			name:          "missing_permissions",
-			inputName:     "test-policy",
-			inputSpiffeID: "^spiffe://example\\.org/test/.*$",
-			inputPath:     "^secrets/.*$",
-			inputPerms:    "",
-			wantErr:       true,
-			errContains:   "--permissions",
+			name:                 "missing_permissions",
+			inputName:            "test-policy",
+			inputSpiffeIDPattern: "^spiffe://example\\.org/test/.*$",
+			inputPathPattern:     "^secrets/.*$",
+			inputPerms:           "",
+			wantErr:              true,
+			errContains:          "--permissions",
 		},
 		{
-			name:          "multiple_missing_flags",
-			inputName:     "",
-			inputSpiffeID: "",
-			inputPath:     "^secrets/.*$",
-			inputPerms:    "read",
-			wantErr:       true,
-			errContains:   "required flags are missing",
+			name:                 "multiple_missing_flags",
+			inputName:            "",
+			inputSpiffeIDPattern: "",
+			inputPathPattern:     "^secrets/.*$",
+			inputPerms:           "read",
+			wantErr:              true,
+			errContains:          "required flags are missing",
 		},
 		{
-			name:          "empty_permissions_after_split",
-			inputName:     "test-policy",
-			inputSpiffeID: "^spiffe://example\\.org/test/.*$",
-			inputPath:     "^secrets/.*$",
-			inputPerms:    ",,,",
-			want: Spec{
-				Name:        "test-policy",
-				SpiffeID:    "^spiffe://example\\.org/test/.*$",
-				Path:        "^secrets/.*$",
-				Permissions: []string{},
+			name:                 "empty_permissions_after_split",
+			inputName:            "test-policy",
+			inputSpiffeIDPattern: "^spiffe://example\\.org/test/.*$",
+			inputPathPattern:     "^secrets/.*$",
+			inputPerms:           ",,,",
+			want: data.PolicySpec{
+				Name:            "test-policy",
+				SpiffeIDPattern: "^spiffe://example\\.org/test/.*$",
+				PathPattern:     "^secrets/.*$",
+				Permissions:     []data.PolicyPermission{},
 			},
 			wantErr: false,
 		},
@@ -374,7 +375,7 @@ func TestGetPolicyFromFlags(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := getPolicyFromFlags(tt.inputName,
-				tt.inputSpiffeID, tt.inputPath, tt.inputPerms)
+				tt.inputSpiffeIDPattern, tt.inputPathPattern, tt.inputPerms)
 
 			// Check error expectations
 			if tt.wantErr {
@@ -416,13 +417,13 @@ func TestGetPolicyFromFlags(t *testing.T) {
 				t.Errorf("getPolicyFromFlags() Name = %v, want %v",
 					got.Name, tt.want.Name)
 			}
-			if got.SpiffeID != tt.want.SpiffeID {
-				t.Errorf("getPolicyFromFlags() SpiffeID = %v, want %v",
-					got.SpiffeID, tt.want.SpiffeID)
+			if got.SpiffeIDPattern != tt.want.SpiffeIDPattern {
+				t.Errorf("getPolicyFromFlags() SpiffeIDPattern = %v, want %v",
+					got.SpiffeIDPattern, tt.want.SpiffeIDPattern)
 			}
-			if got.Path != tt.want.Path {
-				t.Errorf("getPolicyFromFlags() Path = %v, want %v",
-					got.Path, tt.want.Path)
+			if got.PathPattern != tt.want.PathPattern {
+				t.Errorf("getPolicyFromFlags() PathPattern = %v, want %v",
+					got.PathPattern, tt.want.PathPattern)
 			}
 			if len(got.Permissions) != len(tt.want.Permissions) {
 				t.Errorf("getPolicyFromFlags() "+
@@ -443,9 +444,9 @@ func TestGetPolicyFromFlags(t *testing.T) {
 
 func TestNewPolicyCreateCommand(t *testing.T) {
 	source := &workloadapi.X509Source{}
-	SPIFFEID := "spiffe://example.org/spike"
+	SPIFFEIDPattern := "^spiffe://example\\.org/spike$"
 
-	cmd := newPolicyCreateCommand(source, SPIFFEID)
+	cmd := newPolicyCreateCommand(source, SPIFFEIDPattern)
 
 	if cmd == nil {
 		t.Fatal("Expected command to be created, got nil")
@@ -488,9 +489,9 @@ func TestPolicyCreateCommandFlagValidation(t *testing.T) {
 		{
 			name: "missing name flag",
 			flags: map[string]string{
-				"path":        "secrets/database/production",
-				"spiffeid":    "^spiffe://example\\.org/service/.*$",
-				"permissions": "read,write",
+				"path-pattern":     "secrets/database/production",
+				"spiffeid-pattern": "^spiffe://example\\.org/service/.*$",
+				"permissions":      "read,write",
 			},
 			expectError: true,
 			errorMsg:    "required flags are missing: --name",
@@ -498,9 +499,9 @@ func TestPolicyCreateCommandFlagValidation(t *testing.T) {
 		{
 			name: "missing path flag",
 			flags: map[string]string{
-				"name":        "test-policy",
-				"spiffeid":    "^spiffe://example\\.org/service/.*$",
-				"permissions": "read,write",
+				"name":             "test-policy",
+				"spiffeid-pattern": "^spiffe://example\\.org/service/.*$",
+				"permissions":      "read,write",
 			},
 			expectError: true,
 			errorMsg:    "required flags are missing: --path",
@@ -508,19 +509,19 @@ func TestPolicyCreateCommandFlagValidation(t *testing.T) {
 		{
 			name: "missing spiffeid flag",
 			flags: map[string]string{
-				"name":        "test-policy",
-				"path":        "secrets/database/production",
-				"permissions": "read,write",
+				"name":         "test-policy",
+				"path-pattern": "^secrets/database/production$",
+				"permissions":  "read,write",
 			},
 			expectError: true,
-			errorMsg:    "required flags are missing: --spiffeid",
+			errorMsg:    "required flags are missing: --spiffeid-pattern",
 		},
 		{
 			name: "missing permissions flag",
 			flags: map[string]string{
-				"name":     "test-policy",
-				"path":     "^secrets/database/production$",
-				"spiffeid": "^spiffe://example\\.org/service/.*$",
+				"name":             "test-policy",
+				"path-pattern":     "^secrets/database/production$",
+				"spiffeid-pattern": "^spiffe://example\\.org/service/.*$",
 			},
 			expectError: true,
 			errorMsg:    "required flags are missing: --permissions",
@@ -528,10 +529,10 @@ func TestPolicyCreateCommandFlagValidation(t *testing.T) {
 		{
 			name: "all flags present",
 			flags: map[string]string{
-				"name":        "test-policy",
-				"path":        "^secrets/database/production$",
-				"spiffeid":    "^spiffe://example\\.org/service/.*$",
-				"permissions": "read,write",
+				"name":             "test-policy",
+				"path-pattern":     "^secrets/database/production$",
+				"spiffeid-pattern": "^spiffe://example\\.org/service/.*$",
+				"permissions":      "read,write",
 			},
 			expectError: false,
 		},
@@ -564,13 +565,13 @@ func TestPolicyCreateCommandFlagValidation(t *testing.T) {
 					t.Errorf("Expected policy name to be '%s', got '%s'",
 						tt.flags["name"], policy.Name)
 				}
-				if policy.Path != tt.flags["path"] {
+				if policy.PathPattern != tt.flags["path"] {
 					t.Errorf("Expected policy path to be '%s', got '%s'",
-						tt.flags["path"], policy.Path)
+						tt.flags["path-pattern"], policy.PathPattern)
 				}
-				if policy.SpiffeID != tt.flags["spiffeid"] {
+				if policy.SpiffeIDPattern != tt.flags["spiffeid"] {
 					t.Errorf("Expected policy spiffeid to be '%s', got '%s'",
-						tt.flags["spiffeid"], policy.SpiffeID)
+						tt.flags["spiffeid-pattern"], policy.SpiffeIDPattern)
 				}
 			}
 		})
@@ -580,9 +581,9 @@ func TestPolicyCreateCommandFlagValidation(t *testing.T) {
 // Test that the create command is registered properly
 func TestPolicyCreateCommandRegistration(t *testing.T) {
 	source := &workloadapi.X509Source{}
-	SPIFFEID := "^spiffe://example\\.org/spike$"
+	SPIFFEIDPattern := "^spiffe://example\\.org/spike$"
 
-	policyCmd := NewPolicyCommand(source, SPIFFEID)
+	policyCmd := NewPolicyCommand(source, SPIFFEIDPattern)
 
 	var createCmd *cobra.Command
 	for _, cmd := range policyCmd.Commands() {
