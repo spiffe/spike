@@ -27,7 +27,7 @@ var (
 )
 
 // CheckAccess determines if a given SPIFFE ID has the required permissions for
-// a specific pathPattern. It first checks if the ID belongs to SPIKE Pilot (which has
+// a specific path. It first checks if the ID belongs to SPIKE Pilot (which has
 // unrestricted access), then evaluates against all defined policies. Policies
 // are checked in order, with wildcard patterns evaluated first, followed by
 // specific pattern matching using regular expressions.
