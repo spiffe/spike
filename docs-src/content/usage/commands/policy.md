@@ -190,6 +190,11 @@ spike policy list [--format=human|json] [--path-pattern=<pattern> | --spiffeid-p
 Lists all policies in the system. Can be filtered by a resource path pattern or 
 a SPIFFE ID pattern.
 
+When using filters, you must provide **the exact regular expression pattern** as
+defined in the policies you want to match. For example, if a policy is defined
+with pattern `^secrets/database/production$`, you must use exactly that pattern
+to find it---no partial matches or simpler patterns will work.
+
 **Note:** `--path-pattern` and `--spiffeid-pattern` flags cannot be used 
 together.
 

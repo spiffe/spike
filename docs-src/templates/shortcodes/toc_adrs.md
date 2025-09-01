@@ -4,6 +4,7 @@
 # \\\\\\
 #}
 
+* [ADR-0025: Path Patterns as Key Namespaces with Regular Expression Matching](@/architecture/adrs/adr-0025.md)
 * [ADR-0024: Transition from In-Memory Cache to Direct Backend Storage for High Availability](@/architecture/adrs/adr-0024.md)
 * [ADR-0023: Decision Against Implementing Lock/Unlock Mechanism in SPIKE Nexus](@/architecture/adrs/adr-0023.md)
 * [ADR-0022: Continuous Polling of SPIKE Keepers Despite 404 Response](@/architecture/adrs/adr-0022.md)

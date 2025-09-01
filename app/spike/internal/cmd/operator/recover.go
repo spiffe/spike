@@ -117,7 +117,7 @@ func newOperatorRecoverCommand(
 			}
 
 			// Creates the folder if it does not exist.
-			recoverDir := config.SpikePilotRecoveryFolder()
+			recoverDir := config.PilotRecoveryFolder()
 
 			// Clean the path to normalize it
 			cleanPath, err := filepath.Abs(filepath.Clean(recoverDir))

@@ -14,14 +14,14 @@ import (
 	"github.com/spiffe/spike/app"
 )
 
-var SpikeNexusVersion = app.Version
-var SpikePilotVersion = app.Version
-var SpikeKeeperVersion = app.Version
-var SpikeBootstrapVersion = app.Version
+var NexusVersion = app.Version
+var PilotVersion = app.Version
+var KeeperVersion = app.Version
+var BootstrapVersion = app.Version
 
-// SpikeNexusDataFolder returns the path to the directory where Nexus stores
+// NexusDataFolder returns the path to the directory where Nexus stores
 // its encrypted backup for its secrets and other data.
-func SpikeNexusDataFolder() string {
+func NexusDataFolder() string {
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
 		homeDir = "/tmp"
@@ -41,10 +41,10 @@ func SpikeNexusDataFolder() string {
 	return filepath.Join(spikeDir, "/data")
 }
 
-// SpikePilotRecoveryFolder returns the path to the directory where the
+// PilotRecoveryFolder returns the path to the directory where the
 // recovery shards will be stored as a result of the `spike recover`
 // command.
-func SpikePilotRecoveryFolder() string {
+func PilotRecoveryFolder() string {
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
 		homeDir = "/tmp"

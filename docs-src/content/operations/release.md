@@ -38,10 +38,17 @@ Before every release:
 4. Update any necessary documentation.
 5. Update the changelog.
 6. Update the documentation snapshots page.
-7. Run `./hack/cover.sh` to update and send the coverage report to the public 
+7. Run `./hack/qa/cover.sh` to update and send the coverage report to the public 
    docs.
-8. Make sure you update `./app/VERSION.txt` with the new version.
-9. Make sure you run `make audit` and the process cleanly exits with no errors.
+8. Run `./hack/bare-metal/cmd/put-sample-secrets.sh` to ensure secret and 
+   policy creation work as expected. 
+9. Run `./hack/bare-metal/cmd/read-sample-secrets.sh` to ensure secret and
+   policy reading work as expected.
+10. Make sure you update `./app/VERSION.txt` with the new version.
+11. Make sure you run `make build` and the process cleanly exits with no errors.
+12. Make sure you run `make test` and the process cleanly exits with no errors.
+13. Make sure you run `make audit` and the process cleanly exits with no errors.
+14. Make sure you update the documentation, and documentation snapshots.
 
 Release process:
 

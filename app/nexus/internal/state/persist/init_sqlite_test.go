@@ -29,7 +29,7 @@ func TestInitializeSqliteBackend_Success(t *testing.T) {
 	}
 
 	// Verify the database file was created
-	dataDir := config.SpikeNexusDataFolder()
+	dataDir := config.NexusDataFolder()
 	dbPath := filepath.Join(dataDir, "spike.db")
 	if _, err := os.Stat(dbPath); os.IsNotExist(err) {
 		t.Errorf("Database file was not created at %s", dbPath)
@@ -100,7 +100,7 @@ func BenchmarkInitializeSqliteBackend(b *testing.B) {
 	}
 
 	// Clean up before and after
-	dataDir := config.SpikeNexusDataFolder()
+	dataDir := config.NexusDataFolder()
 	dbPath := filepath.Join(dataDir, "spike.db")
 	if _, err := os.Stat(dbPath); err == nil {
 		_ = os.Remove(dbPath)

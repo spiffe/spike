@@ -15,7 +15,7 @@ import (
 
 // cleanupSQLiteDatabase removes the existing SQLite database to ensure a clean test state
 func cleanupSQLiteDatabase(t *testing.T) {
-	dataDir := config.SpikeNexusDataFolder()
+	dataDir := config.NexusDataFolder()
 	dbPath := filepath.Join(dataDir, "spike.db")
 
 	// Remove the database file if it exists
