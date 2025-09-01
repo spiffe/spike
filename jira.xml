@@ -229,6 +229,30 @@
       }
     </issue>
     <issue>
+      add to instructions for relase
+      make audit
+      make test
+      also add that to contributing.md
+    </issue>
+    <issue>
+      missingFlags = append(missingFlags, "name")
+      }
+      if pathPattern == "" {
+      missingFlags = append(missingFlags, "path-pattern")
+      }
+      if SPIFFEIDPattern == "" {
+      missingFlags = append(missingFlags, "spiffeid-pattern")
+      }
+      if permsStr == "" {
+      missingFlags = append(missingFlags, "permissions")
+
+      have these flag names as constants maybe.
+    </issue>
+    <issue>
+      update docs-src/content/usage/commands/policy.md
+      it still mentions path instead of pathPattern etc.
+    </issue>
+    <issue>
       var permissions []data.PolicyPermission
       if permsStr != "" {
       for _, perm := range strings.Split(permsStr, ",") {

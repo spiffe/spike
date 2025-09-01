@@ -113,8 +113,8 @@ func TestApplyPolicyFromFile(t *testing.T) {
 		{
 			name: "policy_with_trailing_slash_path",
 			fileContent: `name: test-policy
-spiffeid: ^spiffe://example\.org/test/.*$
-path: ^secrets/database/production/.*$
+spiffeidPattern: ^spiffe://example\.org/test/.*$
+pathPattern: ^secrets/database/production/.*$
 permissions:
   - read
   - write`,
@@ -125,8 +125,8 @@ permissions:
 		{
 			name: "policy_with_normalized_path",
 			fileContent: `name: test-policy
-spiffeid: ^spiffe://example\.org/test/.*$
-path: ^secrets/cache/redis$
+spiffeidPattern: ^spiffe://example\.org/test/.*$
+pathPattern: ^secrets/cache/redis$
 permissions:
   - read`,
 			fileName:     "normalized-path.yaml",
@@ -136,8 +136,8 @@ permissions:
 		{
 			name: "policy_with_root_path",
 			fileContent: `name: admin-policy
-spiffeid: ^spiffe://example\.org/admin/.*$
-path: ^/$
+spiffeidPattern: ^spiffe://example\.org/admin/.*$
+pathPattern: ^/$
 permissions:
   - super`,
 			fileName:     "root-path.yaml",
@@ -147,13 +147,13 @@ permissions:
 		{
 			name: "policy_with_empty_path",
 			fileContent: `name: invalid-policy
-spiffeid: ^spiffe://example\.org/test/.*$
-path: ""
+spiffeidPattern: ^spiffe://example\.org/test/.*$
+pathPattern: ""
 permissions:
   - read`,
 			fileName:    "empty-path.yaml",
 			wantErr:     true,
-			errContains: "path is required",
+			errContains: "pathPattern is required",
 		},
 	}
 

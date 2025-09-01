@@ -90,7 +90,7 @@ permissions:
   - read`,
 			fileName:    "missing-spiffeid.yaml",
 			wantErr:     true,
-			errContains: "spiffeid is required",
+			errContains: "spiffeidPattern is required",
 		},
 		{
 			name: "missing_path",
@@ -100,7 +100,7 @@ permissions:
   - read`,
 			fileName:    "missing-path.yaml",
 			wantErr:     true,
-			errContains: "path is required",
+			errContains: "pathPattern is required",
 		},
 		{
 			name: "missing_permissions",
@@ -463,7 +463,7 @@ func TestNewPolicyCreateCommand(t *testing.T) {
 
 	// Check if all required flags are present (create command
 	// only has flag-based input)
-	expectedFlags := []string{"name", "path", "spiffeid", "permissions"}
+	expectedFlags := []string{"name", "path-pattern", "spiffeid-pattern", "permissions"}
 	for _, flagName := range expectedFlags {
 		flag := cmd.Flags().Lookup(flagName)
 		if flag == nil {
@@ -542,8 +542,8 @@ func TestPolicyCreateCommandFlagValidation(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			policy, err := getPolicyFromFlags(
 				tt.flags["name"],
-				tt.flags["spiffeid"],
-				tt.flags["path"],
+				tt.flags["spiffeid-pattern"],
+				tt.flags["path-pattern"],
 				tt.flags["permissions"],
 			)
 
@@ -565,11 +565,11 @@ func TestPolicyCreateCommandFlagValidation(t *testing.T) {
 					t.Errorf("Expected policy name to be '%s', got '%s'",
 						tt.flags["name"], policy.Name)
 				}
-				if policy.PathPattern != tt.flags["path"] {
+				if policy.PathPattern != tt.flags["path-pattern"] {
 					t.Errorf("Expected policy path to be '%s', got '%s'",
 						tt.flags["path-pattern"], policy.PathPattern)
 				}
-				if policy.SpiffeIDPattern != tt.flags["spiffeid"] {
+				if policy.SpiffeIDPattern != tt.flags["spiffeid-pattern"] {
 					t.Errorf("Expected policy spiffeid to be '%s', got '%s'",
 						tt.flags["spiffeid-pattern"], policy.SpiffeIDPattern)
 				}

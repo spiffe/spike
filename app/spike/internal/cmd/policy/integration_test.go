@@ -98,8 +98,8 @@ func TestPolicySpecValidation(t *testing.T) {
 			}(tempDir)
 
 			yamlContent := "name: " + tt.policy.Name + "\n"
-			yamlContent += "spiffeid: " + tt.policy.SpiffeIDPattern + "\n"
-			yamlContent += "path: " + tt.policy.PathPattern + "\n"
+			yamlContent += "spiffeidPattern: " + tt.policy.SpiffeIDPattern + "\n"
+			yamlContent += "pathPattern: " + tt.policy.PathPattern + "\n"
 			yamlContent += "permissions:\n"
 			for _, perm := range tt.policy.Permissions {
 				yamlContent += "  - " + string(perm) + "\n"

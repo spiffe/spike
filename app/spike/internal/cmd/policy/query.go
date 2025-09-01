@@ -61,10 +61,10 @@ func getPolicyFromFlags(name, SPIFFEIDPattern, pathPattern, permsStr string) (da
 		missingFlags = append(missingFlags, "name")
 	}
 	if pathPattern == "" {
-		missingFlags = append(missingFlags, "path")
+		missingFlags = append(missingFlags, "path-pattern")
 	}
 	if SPIFFEIDPattern == "" {
-		missingFlags = append(missingFlags, "spiffeid")
+		missingFlags = append(missingFlags, "spiffeid-pattern")
 	}
 	if permsStr == "" {
 		missingFlags = append(missingFlags, "permissions")
