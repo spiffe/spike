@@ -352,8 +352,7 @@ spike policy delete --name=web-service
 **SPIKE** policies support **regular expression** pattern matching for both 
 SPIFFE IDs and resource paths:
 
-- If the pattern is a single `"*"`, then it matches anything.
-- For any other pattern, the pattern is compiled as a "*regular expression*".
+- The pattern is compiled as a "*regular expression*".
 
 This would mean, for an exact match, you would need to include `^` and `$` in
 your patterns as well.
