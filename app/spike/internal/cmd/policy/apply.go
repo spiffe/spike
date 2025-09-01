@@ -11,6 +11,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	spike "github.com/spiffe/spike-sdk-go/api"
+	"github.com/spiffe/spike-sdk-go/api/entity/data"
 
 	"github.com/spiffe/spike/app/spike/internal/trust"
 )
@@ -49,9 +50,9 @@ func normalizePath(path string) string {
 //
 // Command flags:
 //   - --name: Name of the policy (required if not using --file)
-//   - --spiffeid: SPIFFE ID regex pattern for workload matching
+//   - --spiffeid-pattern: SPIFFE ID regex pattern for workload matching
 //     (required if not using --file)
-//   - --path: Path regex pattern for access control (required
+//   - --path-pattern: Path regex pattern for access control (required
 //     if not using --file)
 //   - --permissions: Comma-separated list of permissions
 //     (required if not using --file)
@@ -67,8 +68,8 @@ func normalizePath(path string) string {
 //
 //	spike policy apply \
 //	    --name "web-service-policy" \
-//	    --spiffeid "spiffe://example\.org/web-service/.*" \
-//	    --path "^secrets/web/database$" \
+//	    --spiffeid-pattern "spiffe://example\.org/web-service/.*" \
+//	    --path-pattern "^secrets/web/database$" \
 //	    --permissions "read,write"
 //
 // Example usage with YAML file:
@@ -121,8 +122,8 @@ func newPolicyApplyCommand(
 
         Example YAML file structure:
         name: db-access
-        spiffeid: ^spiffe://example\.org/service/.*$
-        path: ^secrets/database/production/.*$
+        spiffeidPattern: ^spiffe://example\.org/service/.*$
+        pathPattern: ^secrets/database/production/.*$
         permissions:
           - read
           - write
@@ -130,7 +131,7 @@ func newPolicyApplyCommand(
         Valid permissions: read, write, list, super`,
 		Args: cobra.NoArgs,
 		Run: func(cmd *cobra.Command, args []string) {
-			var policy Spec
+			var policy data.PolicySpec
 			var err error
 
 			// Determine if we're using file-based or flag-based input
@@ -152,7 +153,7 @@ func newPolicyApplyCommand(
 			}
 
 			// Normalize the path pattern
-			policy.Path = normalizePath(policy.Path)
+			policy.PathPattern = normalizePath(policy.PathPattern)
 
 			// Convert permissions slice to comma-separated string
 			// for validation
@@ -162,7 +163,7 @@ func newPolicyApplyCommand(
 					if i > 0 {
 						ps += ","
 					}
-					ps += perm
+					ps += string(perm)
 				}
 			}
 
@@ -177,8 +178,8 @@ func newPolicyApplyCommand(
 			}
 
 			// Apply policy using upsert semantics
-			err = api.CreatePolicy(policy.Name, policy.SpiffeID,
-				policy.Path, permissions)
+			err = api.CreatePolicy(policy.Name, policy.SpiffeIDPattern,
+				policy.PathPattern, permissions)
 			if handleAPIError(err) {
 				return
 			}
@@ -190,10 +191,10 @@ func newPolicyApplyCommand(
 	// Define flags
 	cmd.Flags().StringVar(&name, "name", "",
 		"Policy name (required if not using --file)")
-	cmd.Flags().StringVar(&pathPattern, "path", "",
+	cmd.Flags().StringVar(&pathPattern, "path-pattern", "",
 		"Resource path regex pattern, e.g., "+
 			"'^secrets/database/production/.*$' (required if not using --file)")
-	cmd.Flags().StringVar(&SPIFFEIDPattern, "spiffeid", "",
+	cmd.Flags().StringVar(&SPIFFEIDPattern, "spiffeid-pattern", "",
 		"SPIFFE ID regex pattern, e.g., "+
 			"'^spiffe://example\\.org/service/.*$' (required if not using --file)")
 	cmd.Flags().StringVar(&permsStr, "permissions", "",

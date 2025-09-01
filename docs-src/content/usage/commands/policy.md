@@ -12,7 +12,7 @@ sort_by = "weight"
 
 The `spike policy` command is the main entry point for managing **access
 policies** in SPIKE. It allows administrators to define, view, and manage rules
-that control access to secrets and resources based on workload identity 
+that control access to secrets and resources based on workload identity
 (**SPIFFE ID**) and resource paths.
 
 SPIKE provides two commands for managing policies:
@@ -47,7 +47,7 @@ spiffeid: "^spiffe://example\\.org/web-service/$"
 
 # Path pattern for access control
 # Note: Trailing slashes are automatically removed during normalization
-path: "^secrets/web-service/db-[0-9]*$"
+pathPattern: "^secrets/web-service/db-[0-9]*$"
 
 # List of permissions to grant
 permissions:

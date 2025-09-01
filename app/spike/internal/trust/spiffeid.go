@@ -18,11 +18,16 @@ import (
 // Authenticate verifies if the provided SPIFFE ID belongs to a pilot instance.
 // Logs a fatal error and exits if verification fails.
 func Authenticate(SPIFFEID string) {
+	const fName = "Authenticate"
 	if !svid.IsPilot(env.TrustRoot(), SPIFFEID) {
 		log.Log().Error(
+			fName,
+			"message",
 			"Authenticate: You need a 'super user' SPIFFE ID to use this command.",
 		)
-		log.FatalF(
+		log.FatalLn(
+			fName,
+			"message",
 			"Authenticate: You are not authorized to use this command (%s).\n",
 			SPIFFEID,
 		)
@@ -32,12 +37,18 @@ func Authenticate(SPIFFEID string) {
 // AuthenticateRecover validates the SPIFFE ID for the recover role and exits
 // the application if it does not match the recover SPIFFE ID.
 func AuthenticateRecover(SPIFFEID string) {
+	const fName = "AuthenticateRecover"
+
 	if !svid.IsPilotRecover(env.TrustRoot(), SPIFFEID) {
 		log.Log().Error(
-			"AuthenticateRecover: You need a 'recover' " +
+			fName,
+			"message",
+			"AuthenticateRecover: You need a 'recover' "+
 				"SPIFFE ID to use this command.",
 		)
-		log.FatalF(
+		log.FatalLn(
+			fName,
+			"message",
 			"AuthenticateRecover: You are not authorized to use this command (%s).\n",
 			SPIFFEID,
 		)
@@ -47,12 +58,18 @@ func AuthenticateRecover(SPIFFEID string) {
 // AuthenticateRestore verifies if the given SPIFFE ID is valid for restoration.
 // Logs a fatal error and exits if the SPIFFE ID validation fails.
 func AuthenticateRestore(SPIFFEID string) {
+	const fName = "AuthenticateRestore"
+
 	if !svid.IsPilotRestore(env.TrustRoot(), SPIFFEID) {
 		log.Log().Error(
-			"AuthenticateRestore: You need a 'restore' " +
+			fName,
+			"message",
+			"AuthenticateRestore: You need a 'restore' "+
 				"SPIFFE ID to use this command.",
 		)
-		log.FatalF(
+		log.FatalLn(
+			fName,
+			"message",
 			"AuthenticateRecover: You are not authorized to use this command (%s).\n",
 			SPIFFEID,
 		)

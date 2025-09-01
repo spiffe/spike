@@ -4,8 +4,8 @@
 
 # Admin policy configuration with all permissions
 name: "admin-policy"
-spiffeid: "^spiffe://example\.org/admin$"
-path: "^secrets$"
+spiffeidPattern: "^spiffe://example\.org/admin$"
+pathPattern: "^secrets$"
 permissions:
   - read
   - write

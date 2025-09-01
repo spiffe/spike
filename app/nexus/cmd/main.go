@@ -56,7 +56,9 @@ func main() {
 
 	// I should be Nexus.
 	if !spiffeid.IsNexus(env.TrustRoot(), selfSPIFFEID) {
-		log.FatalF("Authenticate: SPIFFE ID %s is not valid.\n", selfSPIFFEID)
+		log.FatalLn(appName,
+			"message",
+			"Authenticate: SPIFFE ID %s is not valid.\n", selfSPIFFEID)
 	}
 
 	initialization.Initialize(source)

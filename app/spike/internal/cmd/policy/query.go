@@ -9,12 +9,13 @@ import (
 	"os"
 	"strings"
 
+	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"gopkg.in/yaml.v3"
 )
 
 // readPolicyFromFile reads a policy configuration from a YAML file
-func readPolicyFromFile(filePath string) (Spec, error) {
-	var policy Spec
+func readPolicyFromFile(filePath string) (data.PolicySpec, error) {
+	var policy data.PolicySpec
 
 	// Check if the file exists:
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {
@@ -37,11 +38,11 @@ func readPolicyFromFile(filePath string) (Spec, error) {
 	if policy.Name == "" {
 		return policy, fmt.Errorf("policy name is required in YAML file")
 	}
-	if policy.SpiffeID == "" {
-		return policy, fmt.Errorf("spiffeid is required in YAML file")
+	if policy.SpiffeIDPattern == "" {
+		return policy, fmt.Errorf("spiffeidPattern is required in YAML file")
 	}
-	if policy.Path == "" {
-		return policy, fmt.Errorf("path is required in YAML file")
+	if policy.PathPattern == "" {
+		return policy, fmt.Errorf("pathPattern is required in YAML file")
 	}
 	if len(policy.Permissions) == 0 {
 		return policy, fmt.Errorf("permissions are required in YAML file")
@@ -51,8 +52,8 @@ func readPolicyFromFile(filePath string) (Spec, error) {
 }
 
 // getPolicyFromFlags extracts policy configuration from command line flags
-func getPolicyFromFlags(name, SPIFFEIDPattern, pathPattern, permsStr string) (Spec, error) {
-	var policy Spec
+func getPolicyFromFlags(name, SPIFFEIDPattern, pathPattern, permsStr string) (data.PolicySpec, error) {
+	var policy data.PolicySpec
 
 	// Check if all required flags are provided
 	var missingFlags []string
@@ -60,10 +61,10 @@ func getPolicyFromFlags(name, SPIFFEIDPattern, pathPattern, permsStr string) (Sp
 		missingFlags = append(missingFlags, "name")
 	}
 	if pathPattern == "" {
-		missingFlags = append(missingFlags, "path")
+		missingFlags = append(missingFlags, "path-pattern")
 	}
 	if SPIFFEIDPattern == "" {
-		missingFlags = append(missingFlags, "spiffeid")
+		missingFlags = append(missingFlags, "spiffeid-pattern")
 	}
 	if permsStr == "" {
 		missingFlags = append(missingFlags, "permissions")
@@ -81,21 +82,21 @@ func getPolicyFromFlags(name, SPIFFEIDPattern, pathPattern, permsStr string) (Sp
 	}
 
 	// Convert comma-separated permissions to slice
-	var permissions []string
+	var permissions []data.PolicyPermission
 	if permsStr != "" {
 		for _, perm := range strings.Split(permsStr, ",") {
 			perm = strings.TrimSpace(perm)
 			if perm != "" {
-				permissions = append(permissions, perm)
+				permissions = append(permissions, data.PolicyPermission(perm))
 			}
 		}
 	}
 
-	policy = Spec{
-		Name:        name,
-		SpiffeID:    SPIFFEIDPattern,
-		Path:        pathPattern,
-		Permissions: permissions,
+	policy = data.PolicySpec{
+		Name:            name,
+		SpiffeIDPattern: SPIFFEIDPattern,
+		PathPattern:     pathPattern,
+		Permissions:     permissions,
 	}
 
 	return policy, nil
