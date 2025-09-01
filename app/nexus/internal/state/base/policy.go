@@ -34,7 +34,7 @@ var (
 //
 // Parameters:
 //   - spiffeId: The SPIFFE ID of the requestor
-//   - pathPattern: The resource pathPattern being accessed
+//   - path: The resource path being accessed
 //   - wants: Slice of permissions being requested
 //
 // Returns:
