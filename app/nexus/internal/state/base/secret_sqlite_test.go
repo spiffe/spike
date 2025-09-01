@@ -32,7 +32,7 @@ func createTestRootKey(_ *testing.T) *[crypto.AES256KeySize]byte {
 
 // cleanupSQLiteDatabase removes the existing SQLite database to ensure a clean test state
 func cleanupSQLiteDatabase(t *testing.T) {
-	dataDir := config.SpikeNexusDataFolder()
+	dataDir := config.NexusDataFolder()
 	dbPath := filepath.Join(dataDir, "spike.db")
 
 	// Remove the database file if it exists
@@ -81,7 +81,7 @@ func TestSQLiteSecret_NewSecret(t *testing.T) {
 		}
 
 		// Get the actual database pathPattern used by the system
-		dataDir := config.SpikeNexusDataFolder()
+		dataDir := config.NexusDataFolder()
 		dbPath := filepath.Join(dataDir, "spike.db")
 		t.Logf("Using SQLite database at: %s", dbPath)
 
@@ -484,7 +484,7 @@ func BenchmarkSQLiteUpsertSecret(b *testing.B) {
 	}()
 
 	// Clean up the database
-	dataDir := config.SpikeNexusDataFolder()
+	dataDir := config.NexusDataFolder()
 	dbPath := filepath.Join(dataDir, "spike.db")
 	if _, err := os.Stat(dbPath); err == nil {
 		_ = os.Remove(dbPath)
@@ -537,7 +537,7 @@ func BenchmarkSQLiteGetSecret(b *testing.B) {
 	}()
 
 	// Clean up the database
-	dataDir := config.SpikeNexusDataFolder()
+	dataDir := config.NexusDataFolder()
 	dbPath := filepath.Join(dataDir, "spike.db")
 	if _, err := os.Stat(dbPath); err == nil {
 		_ = os.Remove(dbPath)

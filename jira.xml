@@ -19,105 +19,7 @@
   cluttering it with early-stage or exploratory thoughts.
  -->
 <stuff>
-  <after-merging-no-cache-feature>
-    <issue>
-      SPIKE_NEXUS_KEEPER_PEERS='https://localhost:8443,https://localhost:8543,https://localhost:8643' \
-
-    </issue>
-    <issue>
-      add to prerelase smoke tests to run
-      ./hack/bare-metal/cmd/put-sample-secrets.sh
-      ./hack/bare-metal/cmd/read-sample-secrets.sh
-      and also an instruciton to test demo workload.
-    </issue>
-    <issue>
-      once all the changes are done ensure that the demo app still works.
-    </issue>
-    <issue>
-      ## Path Patterns in SPIKE
-
-      Path patterns in **SPIKE** are designed to provide flexibility but also follow
-
-      ^ this is in the wrong place; we should discuss actual paths (in secrets)
-      not patterns in policies, because path patterns in policies are patterns.
-    </issue>
-    <issue>
-      - If the pattern is a single `"*"`, then it matches anything.
-      ^ remove this constraint from code, docs, tests, everywhere!
-    </issue>
-    <issue>
-      add ^ and $ to all regex path and ids, including examples.
-    </issue>
-    <issue>
-      The code needs some cleanup; so here are things to do after merging the "good enough" version.
-
-      * Scan all TOD0s in the codebase and come up with action plans (ie. candidate for next release
-      or shall wait for some time later.
-      * Read every file and check for consistency / conventions / AI slop etc.
-    </issue>
-  </after-merging-no-cache-feature>
   <task-group for="v0.5.0">
-    <issue>
-      use this:
-      var SpikeBootstrapVersion = app.Version
-
-
-      spiffe://example.com -> spiffe://example.org
-
-      add to docs; in policy search, the spiffeid pattern and path pattern
-      regexes should exactly match. the cli does not filter partial matches.
-    </issue>
-    <issue>
-      update release instructions to include adding a snapshot to
-      snapshots.md.
-    </issue>
-    <issue>
-      add qa/cover.sh to release instructions if not there already.
-    </issue>
-    <issue>
-      create a demo video for the new bootstrapping feature.
-    </issue>
-    <issue>
-      make sure the documentation examples on the website
-      including the sdk doc; clearly indicate that spiffe id
-      and path are regex patterns without any doubt.
-    </issue>
-    <issue>
-      consider enforcing spiffeid pattern to start
-       with ^spiffe://
-      or maybe automatically wrapping patterns with ^ and $
-      not sure about either of those.
-      at least add those to examples and documentation to make
-      the intention clear.
-    </issue>
-    <issue>
-      Example YAML file structure:
-      name: db-access
-      spiffeid: ^spiffe://example\.org/service/.*
-      path: ^secrets/database/production/*
-      permissions:
-      - read
-      - write
-
-      better to explicitly use SpifeIDPattern and PathPattern
-      to not get them confused with actual non-pattern attriburtes.
-    </issue>
-    <issue>
-      scan the codebase for environment variables and update configuration.md and claude.md.
-    </issue>
-    <issue>
-      check tests, there are a lot of repeating patterns;
-      move them to helpers.
-    </issue>
-    <issue>
-      review every file in the codebase and make sure they are in good shape.
-    </issue>
-    <issue>
-      check for all spiffeid patterns and path patterns everywhere
-      including documentation.
-
-      they should be regexes; not globs.
-    </issue>
     <issue>
       fix func TestInitializeBackend_UnknownType_DefaultsToMemory(t *testing.T) {
       it is a logic error, so better to fix this release rather than waiting for
@@ -161,8 +63,28 @@
       SPIKE_NEXUS_RECOVERY_TIMEOUT and SPIKE_NEXUS_RECOVERY_POLL_INTERVAL
       are not used anymore; remove them from everywhere.
     </issue>
+    <issue>
+      once all the changes are done ensure that the demo app still works.
+    </issue>
   </task-group>
   <task-group for=">v0.5.0">
+    <issue>
+      create a demo video for the new bootstrapping feature.
+    </issue>
+    <issue>
+      some test helpers we use can move to the SDK.
+    </issue>
+    <issue>
+      When using filters, you must provide **the exact regular expression pattern** as
+      defined in the policies you want to match. For example, if a policy is defined
+      with pattern `^secrets/database/production$`, you must use exactly that pattern
+      to find it---no partial matches or simpler patterns will work.
+
+      ^ it would be nice for the list command to have substring matches.
+
+      ^ we can then use the same substring match logic to list secrets
+      (i.e. list secrets that have db/creds anywhere in their path.
+    </issue>
     <issue>
       path normalization test failing
 

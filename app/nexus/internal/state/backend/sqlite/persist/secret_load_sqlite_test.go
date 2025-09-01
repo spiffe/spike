@@ -358,7 +358,7 @@ func BenchmarkDataStore_loadSecretInternal(b *testing.B) {
 	}()
 
 	// Clean up the database
-	dataDir := config.SpikeNexusDataFolder()
+	dataDir := config.NexusDataFolder()
 	dbPath := filepath.Join(dataDir, "spike.db")
 	if _, err := os.Stat(dbPath); err == nil {
 		_ = os.Remove(dbPath)

@@ -74,7 +74,7 @@ func withSQLiteEnvironment(_ *testing.T, testFunc func()) {
 }
 
 func cleanupSQLiteDatabase(t *testing.T) {
-	dataDir := config.SpikeNexusDataFolder()
+	dataDir := config.NexusDataFolder()
 	dbPath := filepath.Join(dataDir, "spike.db")
 
 	// Remove the database file if it exists
@@ -101,7 +101,7 @@ func createTestDataStore(t TestingInterface) *DataStore {
 
 	// Use DefaultOptions and override the data directory for testing
 	opts := DefaultOptions()
-	opts.DataDir = config.SpikeNexusDataFolder()
+	opts.DataDir = config.NexusDataFolder()
 
 	// Create a unique database filename to avoid race conditions
 	opts.DatabaseFile = fmt.Sprintf("spike_test_%d.db", time.Now().UnixNano())

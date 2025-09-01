@@ -29,7 +29,7 @@ func main() {
  \\\\\ Copyright 2024-present SPIKE contributors.
 \\\\\\\ SPDX-License-Identifier: Apache-2.0`+"\n\n"+
 			"%s v%s. | LOG LEVEL: %s; FIPS 140.3 Enabled: %v\n\n",
-			appName, config.SpikeKeeperVersion, log.Level(), fips140.Enabled(),
+			appName, config.KeeperVersion, log.Level(), fips140.Enabled(),
 		)
 	}
 
@@ -65,7 +65,7 @@ func main() {
 
 	log.Log().Info(appName, "message", fmt.Sprintf(
 		"Started service: %s v%s",
-		appName, config.SpikeNexusVersion),
+		appName, config.NexusVersion),
 	)
 
 	// Start the server:

@@ -24,17 +24,15 @@ Also, make sure you read, understand and accept
 as it is a requirement to contribute to this project and contains more details
 about the contribution process.
 
-## Audit Your Code Before You Submit
+## Audit and Test Your Code Before You Submit
 
-Before submitting a pull request run `make audit` and ensure that there are no
-issues. Running `make audit` will find issues with the code that would trigger
-CI failures and prevent it from being merged.
+Before submitting a pull request run the following commands and make sure
+that there are no issues:
 
 ## How To Run Tests
 
-`make audit` already runs the tests for you; however, running the tests
-separately is still useful.
+* `make build`: Ensure that the code builds firs.
+* `make test`: Run the tests.
+* `make audit`: Run security audits and linters.
 
-Before merging your changes, make sure all tests pass.
-
-To run the unit tests locally, run `go test ./...` on the project root.
+If all of the above pass, you're ready to submit a pull request.

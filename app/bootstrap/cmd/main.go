@@ -13,6 +13,7 @@ import (
 	"github.com/spiffe/spike-sdk-go/log"
 	"github.com/spiffe/spike-sdk-go/spiffe"
 	svid "github.com/spiffe/spike-sdk-go/spiffeid"
+	"github.com/spiffe/spike/internal/config"
 
 	"github.com/spiffe/spike/app/bootstrap/internal/env"
 	"github.com/spiffe/spike/app/bootstrap/internal/net"
@@ -22,6 +23,8 @@ import (
 
 func main() {
 	const fName = "boostrap.main"
+
+	log.Log().Info(fName, "message", "Starting SPIKE bootstrap...", "version", config.BootstrapVersion)
 
 	init := flag.Bool("init", false, "Initialize the bootstrap module")
 	flag.Parse()
