@@ -220,7 +220,7 @@ func TestListKeys_SpecialCharacters(t *testing.T) {
 				}
 			}
 			if !found {
-				t.Errorf("Expected pathPattern %s not found in result", expectedPath)
+				t.Errorf("Expected path %s not found in result", expectedPath)
 			}
 		}
 	})
