@@ -125,9 +125,6 @@ func (s *DataStore) StorePolicy(ctx context.Context, policy data.Policy) error {
 
 // LoadPolicy retrieves a policy from the database and compiles its patterns.
 //
-// The function loads policy data and compiles regex patterns for SPIFFE ID
-// and path matching if they aren't wildcards (*).
-//
 // Parameters:
 //   - ctx: Context for the database operation
 //   - id: Unique identifier of the policy to load
@@ -168,22 +165,17 @@ func (s *DataStore) LoadPolicy(
 		}
 	}
 
-	// Compile the patterns just like in CreatePolicy
-	if policy.SPIFFEIDPattern != "*" {
-		idRegex, err := regexp.Compile(policy.SPIFFEIDPattern)
-		if err != nil {
-			return nil, fmt.Errorf("invalid spiffeid pattern: %w", err)
-		}
-		policy.IDRegex = idRegex
+	idRegex, err := regexp.Compile(policy.SPIFFEIDPattern)
+	if err != nil {
+		return nil, fmt.Errorf("invalid spiffeid pattern: %w", err)
 	}
+	policy.IDRegex = idRegex
 
-	if policy.PathPattern != "*" {
-		pathRegex, err := regexp.Compile(policy.PathPattern)
-		if err != nil {
-			return nil, fmt.Errorf("invalid path pattern: %w", err)
-		}
-		policy.PathRegex = pathRegex
+	pathRegex, err := regexp.Compile(policy.PathPattern)
+	if err != nil {
+		return nil, fmt.Errorf("invalid path pattern: %w", err)
 	}
+	policy.PathRegex = pathRegex
 
 	return &policy, nil
 }
@@ -248,23 +240,19 @@ func (s *DataStore) LoadAllPolicies(
 		}
 
 		// Compile the patterns just like in LoadPolicy
-		if policy.SPIFFEIDPattern != "*" {
-			idRegex, err := regexp.Compile(policy.SPIFFEIDPattern)
-			if err != nil {
-				return nil,
-					fmt.Errorf("invalid spiffeid pattern for policy %s: %w", policy.ID, err)
-			}
-			policy.IDRegex = idRegex
+		idRegex, err := regexp.Compile(policy.SPIFFEIDPattern)
+		if err != nil {
+			return nil,
+				fmt.Errorf("invalid spiffeid pattern for policy %s: %w", policy.ID, err)
 		}
+		policy.IDRegex = idRegex
 
-		if policy.PathPattern != "*" {
-			pathRegex, err := regexp.Compile(policy.PathPattern)
-			if err != nil {
-				return nil,
-					fmt.Errorf("invalid path pattern for policy %s: %w", policy.ID, err)
-			}
-			policy.PathRegex = pathRegex
+		pathRegex, err := regexp.Compile(policy.PathPattern)
+		if err != nil {
+			return nil,
+				fmt.Errorf("invalid path pattern for policy %s: %w", policy.ID, err)
 		}
+		policy.PathRegex = pathRegex
 
 		policies[policy.ID] = &policy
 	}

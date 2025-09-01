@@ -42,11 +42,10 @@ spike policy apply --file policy.yaml
 # Policy name - must be unique within the system
 name: "web-service-policy"
 
-# SPIFFE ID pattern for workload matching
-spiffeid: "^spiffe://example\\.org/web-service/$"
+# SPIFFE ID RegEx pattern for workload matching
+spiffeidPattern: "^spiffe://example\\.org/web-service/$"
 
-# Path pattern for access control
-# Note: Trailing slashes are automatically removed during normalization
+# Path RegEx pattern for access control
 pathPattern: "^secrets/web-service/db-[0-9]*$"
 
 # List of permissions to grant
@@ -55,41 +54,30 @@ permissions:
   - write
 ```
 
-### Path Normalization
-
-The `apply` command automatically normalizes paths by removing trailing slashes:
-
-```yaml
-# These paths are all normalized to the same value:
-path: "secrets/database/production"    # ✓ Normalized form
-path: "secrets/database/production/"   # → "secrets/database/production"
-path: "secrets/database/production//"  # → "secrets/database/production"
-```
-
-### Realistic Path Examples
+### Realistic SPIFFE ID Pattern and Path Pattern Examples
 
 ```yaml
 # Database secrets
 name: "database-policy"
-spiffeid: "^spiffe://example\.org/database$"
-path: "^secrets/database/production$"
+spiffeidPattern: "^spiffe://example\\.org/database$"
+pathPattern: "^secrets/database/production$"
 permissions: [read]
 
 # Web service configuration
 name: "web-service-policy"
-spiffeid: "^spiffe://example\.org/web-service$"
+spiffeid: "^spiffe://example\\.org/web-service$"
 path: "^secrets/web-service/config$"
 permissions: [read, write]
 
 # Cache credentials
 name: "cache-policy"
-spiffeid: "^spiffe://example\.org/cache/$"
+spiffeid: "^spiffe://example\\.org/cache/$"
 path: "^secrets/cache/redis/session$"
 permissions: [read]
 
 # Application environment variables
 name: "app-env-policy"
-spiffeid: "^spiffe://example\.org/app$"
+spiffeid: "^spiffe://example\\.org/app$"
 path: "^secrets/app/env/production$"
 permissions: [read, list]
 ```
@@ -97,7 +85,7 @@ permissions: [read, list]
 ### All Available Permissions
 ```yaml
 name: "admin-policy"
-spiffeid: "^spiffe://example\.org/admin$"
+spiffeid: "^spiffe://example\\.org/admin$"
 path: "secrets"
 permissions:
   - read    # Permission to read secrets
@@ -111,7 +99,7 @@ permissions:
 #### Flow Sequence for Permissions
 ```yaml
 name: "database-policy"
-spiffeid: "^spiffe://example\.org/database$"
+spiffeid: "^spiffe://example\\.org/database$"
 path: "^secrets/database/production$"
 permissions: [read, write, list]
 ```
@@ -119,8 +107,8 @@ permissions: [read, write, list]
 #### Quoted Values
 ```yaml
 name: "cache-policy"
-spiffeid: "^spiffe://example\.org/cache$"
-path: "^secrets/cache/redis$"
+spiffeidPattern: "^spiffe://example\\.org/cache$"
+pathPattern: "^secrets/cache/redis$"
 permissions:
   - "read"
   - "write"
@@ -134,8 +122,8 @@ to programmatically create your policies too:
 ```bash
 # Create your first policy
 spike policy create --name=my-service \
-  --path="^secrets/app$" \
-  --spiffeid="^spiffe://example\.org/service$" \
+  --path-pattern="^secrets/app$" \
+  --spiffeid-pattern="^spiffe://example\.org/service$" \
   --permissions=read
 
 # Verify your policy was created
@@ -196,20 +184,21 @@ When a workload attempts to access a resource in SPIKE:
 ### `spike policy list`
 
 ```bash
-spike policy list [--format=human|json] [--path=<pattern> | --spiffeid=<pattern>]
+spike policy list [--format=human|json] [--path-pattern=<pattern> | --spiffeid-pattern=<pattern>]
 ```
 
 Lists all policies in the system. Can be filtered by a resource path pattern or 
 a SPIFFE ID pattern.
 
-**Note:** `--path` and `--spiffeid` flags cannot be used together.
+**Note:** `--path-pattern` and `--spiffeid-pattern` flags cannot be used 
+together.
 
 ### `spike policy create`
 
 ```bash
 spike policy create --name=<name> \
-  --path=<path-pattern> \
-  --spiffeid=<spiffe-id-pattern> \
+  --path-pattern=<path-pattern> \
+  --spiffeid-pattern=<spiffe-id-pattern> \
   --permissions=<permissions>
 ```
 Creates a new policy with the specified parameters.
@@ -228,8 +217,8 @@ When using the `--file` flag, the YAML file should follow this structure:
 
 ```yaml
 name: policy-name
-spiffeid: ^spiffe://example\.org/service$
-path: ^secrets/database/production$
+spiffeidPattern: ^spiffe://example\.org/service$
+pathPattern: ^secrets/database/production$
 permissions:
   - read
   - write
@@ -331,15 +320,15 @@ Deletes a policy by ID or name. Requires confirmation.
 # Create a policy for a web service with read and write access
 spike policy create \
   --name=web-service \
-  --path="^secrets/web$" \
-  --spiffeid="^spiffe://example\.org/web$" \
+  --path-pattern="^secrets/web$" \
+  --spiffeid-pattern="^spiffe://example\.org/web$" \
   --permissions=read,write
 
 # Create a policy with multiple permissions
 spike policy create \
   --name=admin-service \
-  --path="secrets/" \
-  --spiffeid="^spiffe://example\.org/admin$" \
+  --path-pattern="secrets/" \
+  --spiffeid-pattern="^spiffe://example\.org/admin$" \
   --permissions=read,write,list
 
 # Apply a policy using a YAML file
@@ -363,8 +352,7 @@ spike policy delete --name=web-service
 **SPIKE** policies support **regular expression** pattern matching for both 
 SPIFFE IDs and resource paths:
 
-- If the pattern is a single `"*"`, then it matches anything.
-- For any other pattern, the pattern is compiled as a "*regular expression*".
+- The pattern is compiled as a "*regular expression*".
 
 This would mean, for an exact match, you would need to include `^` and `$` in
 your patterns as well.
@@ -375,7 +363,7 @@ For example:
 * Whereas, `^secrets/db$` only matches `secrets/db` and nothing else 
   (*`global/secrets/db` and `secrets/db/local` will not match*)
 
-Thus, for precise control, you might want to include `^` and `$` at the 
+Thus, for precise control, you are encouraged to include `^` and `$` at the 
 beginning and end of your patterns respectively for an exact match.
 
 ## How Regular Expressions are Used For Policy Matching
@@ -418,48 +406,20 @@ specified rules and allow for flexibility with wildcards or exact matches.
 ### Path Pattern Examples
 
 ```txt
-secrets/               # All resources in the secrets directory
-secrets/database/      # Only resources in the database subdirectory  
-secrets/database/creds # Only the specific creds resource
+^secrets/               # All resources in the secrets directory
+^secrets/database/      # Only resources in the database subdirectory  
+^secrets/database/creds # Only the specific creds resource
 
 # You can provide regular expressions for a more fine-tuned
 # pattern match:
 ^secrets/db-[123]$ # Matches secrets/db-2, but not secrets/db-4.
 ```
 
-## Path Patterns in SPIKE
-
-Path patterns in **SPIKE** are designed to provide flexibility but also follow
-certain conventions for clarity and usability. While the path pattern is
-suggested (*but not mandated*) to look like a UNIX-style path for familiarity, 
-**SPIKE secret paths DO NOT start with a leading slash**.
-
-This is because **SPIKE paths represent logical key namespaces**, not
-hierarchical filesystem paths. They are always relative to the secrets engine
-mount point, making the leading slash redundant and potentially confusing.
-
-#### Example:
-
-* **Correct:** `secrets/app/config`
-* **Redundant/Confusing:** `/secrets/app/config`
-
-Additionally, although there is currently no restriction on how the path is
-formed, it is worth noting that future versions of **SPIKE** may restrict paths 
-from having a trailing slash to avoid ambiguity and maintain consistency
-in naming practices.
-
-#### Best Practices for Path Patterns:
-
-1. Avoid leading slashes.
-2. Avoid trailing slashes to ensure forward compatibility.
-3. Use descriptive and meaningful names that reflect the resource's purpose or
-   hierarchy.
-
 ### SPIFFE ID Pattern Examples
 ```
-spiffe://example.org/              # Workloads in the example.org trust domain
-spiffe://example.org/web/          # Only web workloads
-^spiffe://example.org/web/server$  # Only the specific web server workload
+^spiffe://example\.org/             # Workloads in the example.org trust domain
+^spiffe://example\.org/web/         # Only web workloads
+^spiffe://example\.org/web/server$  # Only the specific web server workload
 ```
 
 ## Best Practices

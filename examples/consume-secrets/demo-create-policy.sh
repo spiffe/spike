@@ -5,21 +5,21 @@
 # \\\\\\\ SPDX-License-Identifier: Apache-2.
 
 if ! command -v spike &> /dev/null; then
-    echo "Error: 'spike' command not found. Please add ./spike to your PATH."
-    exit 1
+  echo "Error: 'spike' command not found. Please add ./spike to your PATH."
+  exit 1
 fi
 
 spike policy create --name=workload-can-read \
- --path="^tenants/demo/db/.*$" \
- --spiffeid="^spiffe://spike\.ist/workload/.*$" \
+ --path-pattern="^tenants/demo/db/.*$" \
+ --spiffeid-pattern="^spiffe://spike\.ist/workload/.*$" \
  --permissions="read"
 
 spike policy create --name=workload-can-write \
- --path="^tenants/demo/db/.*$" \
- --spiffeid="^spiffe://spike\.ist/workload/.*$" \
+ --path-pattern="^tenants/demo/db/.*$" \
+ --spiffeid-pattern="^spiffe://spike\.ist/workload/.*$" \
  --permissions="write"
 
 # spike policy create --name=workload-can-rw \
-#  --path="^tenants/demo/db/.*$" \
-#  --spiffeid="^spiffe://spike\.ist/workload/.*$" \
+#  --path-pattern="^tenants/demo/db/.*$" \
+#  --spiffeid-pattern="^spiffe://spike\.ist/workload/.*$" \
 #  --permissions="read,write"

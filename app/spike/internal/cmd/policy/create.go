@@ -44,8 +44,8 @@ import (
 //
 //	spike policy create \
 //	    --name "web-service-policy" \
-//	    --spiffeid "^spiffe://example\.org/web-service/.*$" \
-//	    --path "^tenants/acme/creds/.*$" \
+//	    --spiffeid-pattern "^spiffe://example\.org/web-service/.*$" \
+//	    --path-pattern "^tenants/acme/creds/.*$" \
 //	    --permissions "read,write"
 //
 // The command will:

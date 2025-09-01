@@ -30,52 +30,12 @@ func TestCheckAccess_PilotAccess(t *testing.T) {
 		wants := []data.PolicyPermission{data.PermissionRead}
 
 		// This will return false in practice because we don't have the actual
-		// SPIKE Pilot setup, but the code path will be tested
+		// SPIKE Pilot setup, but the code pathPattern will be tested
 		result := CheckAccess(pilotSPIFFEID, path, wants)
 
-		// Since we don't have actual pilot setup, this will test the policy matching path
+		// Since we don't have actual pilot setup, this will test the policy matching pathPattern
 		if result {
 			t.Log("Pilot access granted (unexpected in test environment)")
-		}
-	})
-}
-
-func TestCheckAccess_WildcardPolicies(t *testing.T) {
-	withEnvironment(t, "SPIKE_NEXUS_BACKEND_STORE", "memory", func() {
-		resetBackendForTest()
-		persist.InitializeBackend(nil)
-
-		// Create a wildcard policy
-		wildcardPolicy := data.Policy{
-			Name:            "wildcard-read",
-			SPIFFEIDPattern: "*",
-			PathPattern:     "*",
-			Permissions:     []data.PolicyPermission{data.PermissionRead},
-		}
-
-		createdPolicy, err := CreatePolicy(wildcardPolicy)
-		if err != nil {
-			t.Fatalf("Failed to create wildcard policy: %v", err)
-		}
-
-		// Test access with a wildcard policy
-		result := CheckAccess("spiffe://example.org/test",
-			"any/path", []data.PolicyPermission{data.PermissionRead})
-		if !result {
-			t.Error("Expected wildcard policy to grant read access")
-		}
-
-		// Test access without required permission
-		result = CheckAccess("spiffe://example.org/test",
-			"any/path", []data.PolicyPermission{data.PermissionWrite})
-		if result {
-			t.Error("Expected wildcard policy to grant write access")
-		}
-
-		// Clean up
-		err = DeletePolicy(createdPolicy.ID)
-		if err != nil {
-			t.Errorf("Failed to clean up policy: %v", err)
 		}
 	})
 }
@@ -88,8 +48,8 @@ func TestCheckAccess_SuperPermission(t *testing.T) {
 		// Create a policy with super permission
 		superPolicy := data.Policy{
 			Name:            "super-admin",
-			SPIFFEIDPattern: "*",
-			PathPattern:     "*",
+			SPIFFEIDPattern: ".*",
+			PathPattern:     ".*",
 			Permissions:     []data.PolicyPermission{data.PermissionSuper},
 		}
 
@@ -107,7 +67,7 @@ func TestCheckAccess_SuperPermission(t *testing.T) {
 
 		for _, perm := range permissions {
 			result := CheckAccess("spiffe://example.org/test",
-				"any/path", []data.PolicyPermission{perm})
+				"any/pathPattern", []data.PolicyPermission{perm})
 			if !result {
 				t.Errorf("Expected super permission to grant %v access", perm)
 			}
@@ -142,42 +102,42 @@ func TestCheckAccess_SpecificPatterns(t *testing.T) {
 
 		testCases := []struct {
 			name        string
-			spiffeID    string
+			SPIFFEID    string
 			path        string
 			wants       []data.PolicyPermission
 			expectGrant bool
 		}{
 			{
-				name:        "matching spiffeid and path",
-				spiffeID:    "spiffe://example.org/service-a",
+				name:        "matching spiffeid and pathPattern",
+				SPIFFEID:    "spiffe://example.org/service-a",
 				path:        "app/secrets",
 				wants:       []data.PolicyPermission{data.PermissionRead},
 				expectGrant: true,
 			},
 			{
 				name:        "matching spiffeid and path, multiple permissions",
-				spiffeID:    "spiffe://example.org/service-b",
+				SPIFFEID:    "spiffe://example.org/service-b",
 				path:        "app/config",
 				wants:       []data.PolicyPermission{data.PermissionRead, data.PermissionWrite},
 				expectGrant: true,
 			},
 			{
 				name:        "non-matching spiffeid",
-				spiffeID:    "spiffe://other.org/service-a",
+				SPIFFEID:    "spiffe://other.org/service-a",
 				path:        "app/secrets",
 				wants:       []data.PolicyPermission{data.PermissionRead},
 				expectGrant: false,
 			},
 			{
-				name:        "non-matching path",
-				spiffeID:    "spiffe://example.org/service-a",
+				name:        "non-matching pathPattern",
+				SPIFFEID:    "spiffe://example.org/service-a",
 				path:        "other/secrets",
 				wants:       []data.PolicyPermission{data.PermissionRead},
 				expectGrant: false,
 			},
 			{
 				name:        "requesting permission not granted",
-				spiffeID:    "spiffe://example.org/service-a",
+				SPIFFEID:    "spiffe://example.org/service-a",
 				path:        "app/secrets",
 				wants:       []data.PolicyPermission{data.PermissionList},
 				expectGrant: false,
@@ -186,7 +146,7 @@ func TestCheckAccess_SpecificPatterns(t *testing.T) {
 
 		for _, tc := range testCases {
 			t.Run(tc.name, func(t *testing.T) {
-				result := CheckAccess(tc.spiffeID, tc.path, tc.wants)
+				result := CheckAccess(tc.SPIFFEID, tc.path, tc.wants)
 				if result != tc.expectGrant {
 					t.Errorf("Expected %v, got %v for case: %s",
 						tc.expectGrant, result, tc.name)
@@ -250,7 +210,7 @@ func TestCreatePolicy_ValidPolicy(t *testing.T) {
 				policy.SPIFFEIDPattern, createdPolicy.SPIFFEIDPattern)
 		}
 		if createdPolicy.PathPattern != policy.PathPattern {
-			t.Errorf("Expected path pattern %s, got %s",
+			t.Errorf("Expected pathPattern pattern %s, got %s",
 				policy.PathPattern, createdPolicy.PathPattern)
 		}
 		if !reflect.DeepEqual(createdPolicy.Permissions, policy.Permissions) {
@@ -275,39 +235,6 @@ func TestCreatePolicy_ValidPolicy(t *testing.T) {
 	})
 }
 
-func TestCreatePolicy_WildcardPatterns(t *testing.T) {
-	withEnvironment(t, "SPIKE_NEXUS_BACKEND_STORE", "memory", func() {
-		resetBackendForTest()
-		persist.InitializeBackend(nil)
-
-		policy := data.Policy{
-			Name:            "wildcard-policy",
-			SPIFFEIDPattern: "*",
-			PathPattern:     "*",
-			Permissions:     []data.PolicyPermission{data.PermissionRead},
-		}
-
-		createdPolicy, err := CreatePolicy(policy)
-		if err != nil {
-			t.Fatalf("Failed to create wildcard policy: %v", err)
-		}
-
-		// Verify wildcard patterns don't have compiled regexes
-		if createdPolicy.IDRegex != nil {
-			t.Error("Expected IDRegex to be nil for wildcard pattern")
-		}
-		if createdPolicy.PathRegex != nil {
-			t.Error("Expected PathRegex to be nil for wildcard pattern")
-		}
-
-		// Clean up
-		err = DeletePolicy(createdPolicy.ID)
-		if err != nil {
-			t.Errorf("Failed to clean up policy: %v", err)
-		}
-	})
-}
-
 func TestCreatePolicy_InvalidName(t *testing.T) {
 	withEnvironment(t, "SPIKE_NEXUS_BACKEND_STORE", "memory", func() {
 		resetBackendForTest()
@@ -315,8 +242,8 @@ func TestCreatePolicy_InvalidName(t *testing.T) {
 
 		policy := data.Policy{
 			Name:            "", // Invalid empty name
-			SPIFFEIDPattern: "*",
-			PathPattern:     "*",
+			SPIFFEIDPattern: ".*",
+			PathPattern:     ".*",
 			Permissions:     []data.PolicyPermission{data.PermissionRead},
 		}
 
@@ -337,8 +264,8 @@ func TestCreatePolicy_DuplicateName(t *testing.T) {
 
 		policy := data.Policy{
 			Name:            "duplicate-policy",
-			SPIFFEIDPattern: "*",
-			PathPattern:     "*",
+			SPIFFEIDPattern: ".*",
+			PathPattern:     ".*",
 			Permissions:     []data.PolicyPermission{data.PermissionRead},
 		}
 
@@ -383,7 +310,7 @@ func TestCreatePolicy_InvalidRegexPatterns(t *testing.T) {
 				expectError:     true,
 			},
 			{
-				name:            "invalid path regex",
+				name:            "invalid pathPattern regex",
 				spiffeIDPattern: "^spiffe://example\\.org/.*$",
 				pathPattern:     "[invalid-regex",
 				expectError:     true,
@@ -434,8 +361,8 @@ func TestCreatePolicy_PreserveCreatedAt(t *testing.T) {
 		customTime := time.Date(2023, 1, 1, 12, 0, 0, 0, time.UTC)
 		policy := data.Policy{
 			Name:            "time-test-policy",
-			SPIFFEIDPattern: "*",
-			PathPattern:     "*",
+			SPIFFEIDPattern: ".*",
+			PathPattern:     ".*",
 			Permissions:     []data.PolicyPermission{data.PermissionRead},
 			CreatedAt:       customTime,
 		}
@@ -465,8 +392,8 @@ func TestGetPolicy_ExistingPolicy(t *testing.T) {
 		// Create a policy first
 		policy := data.Policy{
 			Name:            "get-test-policy",
-			SPIFFEIDPattern: "*",
-			PathPattern:     "*",
+			SPIFFEIDPattern: ".*",
+			PathPattern:     ".*",
 			Permissions:     []data.PolicyPermission{data.PermissionRead},
 		}
 
@@ -523,8 +450,8 @@ func TestDeletePolicy_ExistingPolicy(t *testing.T) {
 		// Create a policy first
 		policy := data.Policy{
 			Name:            "delete-test-policy",
-			SPIFFEIDPattern: "*",
-			PathPattern:     "*",
+			SPIFFEIDPattern: ".*",
+			PathPattern:     ".*",
 			Permissions:     []data.PolicyPermission{data.PermissionRead},
 		}
 
@@ -591,8 +518,8 @@ func TestListPolicies_MultiplePolicies(t *testing.T) {
 		for _, name := range policyNames {
 			policy := data.Policy{
 				Name:            name,
-				SPIFFEIDPattern: "*",
-				PathPattern:     "*",
+				SPIFFEIDPattern: ".*",
+				PathPattern:     ".*",
 				Permissions:     []data.PolicyPermission{data.PermissionRead},
 			}
 
@@ -640,13 +567,13 @@ func TestListPoliciesByPath_MatchingPolicies(t *testing.T) {
 		resetBackendForTest()
 		persist.InitializeBackend(nil)
 
-		pathPattern := "app/.*"
+		pathPattern := "^app/.*$"
 
-		// Create policies with different path patterns
+		// Create policies with different pathPattern patterns
 		policies := []data.Policy{
 			{
 				Name:            "matching-policy-1",
-				SPIFFEIDPattern: "*",
+				SPIFFEIDPattern: ".*",
 				PathPattern:     pathPattern,
 				Permissions:     []data.PolicyPermission{data.PermissionRead},
 			},
@@ -658,7 +585,7 @@ func TestListPoliciesByPath_MatchingPolicies(t *testing.T) {
 			},
 			{
 				Name:            "non-matching-policy",
-				SPIFFEIDPattern: "*",
+				SPIFFEIDPattern: ".*",
 				PathPattern:     "^other/.*$",
 				Permissions:     []data.PolicyPermission{data.PermissionRead},
 			},
@@ -673,10 +600,10 @@ func TestListPoliciesByPath_MatchingPolicies(t *testing.T) {
 			createdPolicies = append(createdPolicies, createdPolicy)
 		}
 
-		// List policies by path
+		// List policies by pathPattern
 		matchingPolicies, err := ListPoliciesByPath(pathPattern)
 		if err != nil {
-			t.Fatalf("Failed to list policies by path: %v", err)
+			t.Fatalf("Failed to list policies by pathPattern: %v", err)
 		}
 
 		if len(matchingPolicies) != 2 {
@@ -718,11 +645,11 @@ func TestListPoliciesByPath_NoMatches(t *testing.T) {
 		resetBackendForTest()
 		persist.InitializeBackend(nil)
 
-		// Create a policy with a different path pattern
+		// Create a policy with a different pathPattern pattern
 		policy := data.Policy{
-			Name:            "different-path-policy",
-			SPIFFEIDPattern: "*",
-			PathPattern:     "app/.*",
+			Name:            "different-pathPattern-policy",
+			SPIFFEIDPattern: ".*",
+			PathPattern:     "^app/.*$",
 			Permissions:     []data.PolicyPermission{data.PermissionRead},
 		}
 
@@ -731,10 +658,10 @@ func TestListPoliciesByPath_NoMatches(t *testing.T) {
 			t.Fatalf("Failed to create policy: %v", err)
 		}
 
-		// List policies with a non-matching path
+		// List policies with a non-matching pathPattern
 		matchingPolicies, err := ListPoliciesByPath("other/.*")
 		if err != nil {
-			t.Fatalf("Failed to list policies by path: %v", err)
+			t.Fatalf("Failed to list policies by pathPattern: %v", err)
 		}
 
 		if len(matchingPolicies) != 0 {
@@ -761,19 +688,19 @@ func TestListPoliciesBySPIFFEID_MatchingPolicies(t *testing.T) {
 			{
 				Name:            "matching-spiffeid-policy-1",
 				SPIFFEIDPattern: spiffeIDPattern,
-				PathPattern:     "app/.*",
+				PathPattern:     "^app/.*$",
 				Permissions:     []data.PolicyPermission{data.PermissionRead},
 			},
 			{
 				Name:            "matching-spiffeid-policy-2",
 				SPIFFEIDPattern: spiffeIDPattern,
-				PathPattern:     "other/.*",
+				PathPattern:     "^other/.*$",
 				Permissions:     []data.PolicyPermission{data.PermissionWrite},
 			},
 			{
 				Name:            "non-matching-spiffeid-policy",
 				SPIFFEIDPattern: "spiffe://other\\.org/.*",
-				PathPattern:     "app/.*",
+				PathPattern:     "^app/.*$",
 				Permissions:     []data.PolicyPermission{data.PermissionRead},
 			},
 		}
@@ -836,8 +763,8 @@ func TestListPoliciesBySPIFFEID_NoMatches(t *testing.T) {
 		// Create a policy with a different SPIFFE ID pattern
 		policy := data.Policy{
 			Name:            "different-spiffeid-policy",
-			SPIFFEIDPattern: "spiffe://example\\.org/.*",
-			PathPattern:     "*",
+			SPIFFEIDPattern: "^spiffe://example\\.org/.*$",
+			PathPattern:     ".*",
 			Permissions:     []data.PolicyPermission{data.PermissionRead},
 		}
 
@@ -872,8 +799,8 @@ func TestPolicyRegexCompilation(t *testing.T) {
 		// Test that regex patterns are correctly compiled
 		policy := data.Policy{
 			Name:            "regex-test-policy",
-			SPIFFEIDPattern: "spiffe://example\\.org/service-[0-9]+",
-			PathPattern:     "app/service-[a-z]+/.*",
+			SPIFFEIDPattern: "^spiffe://example\\.org/service-[0-9]+$",
+			PathPattern:     "^app/service-[a-z]+/.*$",
 			Permissions:     []data.PolicyPermission{data.PermissionRead},
 		}
 
@@ -884,21 +811,21 @@ func TestPolicyRegexCompilation(t *testing.T) {
 
 		// Test the compiled regexes work correctly
 		testCases := []struct {
-			spiffeID    string
+			SPIFFEID    string
 			path        string
 			shouldMatch bool
 		}{
 			{"spiffe://example.org/service-123", "app/service-test/config", true},
 			{"spiffe://example.org/service-abc", "app/service-test/config", false}, // invalid spiffeid
-			{"spiffe://example.org/service-123", "app/service-123/config", false},  // invalid path (numbers instead of letters)
+			{"spiffe://example.org/service-123", "app/service-123/config", false},  // invalid pathPattern (numbers instead of letters)
 			{"spiffe://other.org/service-123", "app/service-test/config", false},   // wrong domain
 		}
 
 		for i, tc := range testCases {
 			t.Run(fmt.Sprintf("regex_test_%d", i), func(t *testing.T) {
-				result := CheckAccess(tc.spiffeID, tc.path, []data.PolicyPermission{data.PermissionRead})
+				result := CheckAccess(tc.SPIFFEID, tc.path, []data.PolicyPermission{data.PermissionRead})
 				if result != tc.shouldMatch {
-					t.Errorf("Expected %v for SPIFFEID %s and path %s", tc.shouldMatch, tc.spiffeID, tc.path)
+					t.Errorf("Expected %v for SPIFFEID %s and path %s", tc.shouldMatch, tc.SPIFFEID, tc.path)
 				}
 			})
 		}
@@ -929,8 +856,8 @@ func BenchmarkCheckAccess_WildcardPolicy(b *testing.B) {
 	// Create a wildcard policy
 	policy := data.Policy{
 		Name:            "benchmark-wildcard",
-		SPIFFEIDPattern: "*",
-		PathPattern:     "*",
+		SPIFFEIDPattern: ".*",
+		PathPattern:     ".*",
 		Permissions:     []data.PolicyPermission{data.PermissionRead},
 	}
 
@@ -1000,8 +927,8 @@ func BenchmarkListPolicies(b *testing.B) {
 	for i := 0; i < 100; i++ {
 		policy := data.Policy{
 			Name:            fmt.Sprintf("benchmark-list-policy-%d", i),
-			SPIFFEIDPattern: "*",
-			PathPattern:     "*",
+			SPIFFEIDPattern: ".*",
+			PathPattern:     ".*",
 			Permissions:     []data.PolicyPermission{data.PermissionRead},
 		}
 		createdPolicy, _ := CreatePolicy(policy)

@@ -229,6 +229,25 @@
       }
     </issue>
     <issue>
+      unit tests are failing in CI because it cannot find the db path.
+
+    </issue>
+    <issue>
+      The `apply` command automatically normalizes the path patterns by removing
+      trailing slashes:
+
+      ^ we don't need this normalization as
+      1. paths are keys, and the user may intentionally want to include multiple slashes
+         that's not against spec.
+      2. something like ^test/path/one//$ is not normalized anyway.
+
+      once you implement the fix, update the documentation too.
+    </issue>
+    <issue>
+      remove single wildcard special case from
+      spiffeid pattern and path pattern match.
+    </issue>
+    <issue>
       add to instructions for relase
       make audit
       make test

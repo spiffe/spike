@@ -10,85 +10,6 @@ import (
 	"testing"
 )
 
-func TestNormalizePath(t *testing.T) {
-	tests := []struct {
-		name     string
-		input    string
-		expected string
-	}{
-		{
-			name:     "empty_path",
-			input:    "",
-			expected: "",
-		},
-		{
-			name:     "root_path_unchanged",
-			input:    "/",
-			expected: "/",
-		},
-		{
-			name:     "simple_path_no_trailing_slash",
-			input:    "secrets/database",
-			expected: "secrets/database",
-		},
-		{
-			name:     "simple_path_with_trailing_slash",
-			input:    "secrets/database/",
-			expected: "secrets/database",
-		},
-		{
-			name:     "complex_path_with_trailing_slash",
-			input:    "secrets/web-service/production/",
-			expected: "secrets/web-service/production",
-		},
-		{
-			name:     "complex_path_no_trailing_slash",
-			input:    "secrets/web-service/production",
-			expected: "secrets/web-service/production",
-		},
-		{
-			name:     "path_with_multiple_trailing_slashes",
-			input:    "secrets/database///",
-			expected: "secrets/database",
-		},
-		{
-			name:     "absolute_path_with_trailing_slash",
-			input:    "secrets/database/",
-			expected: "secrets/database",
-		},
-		{
-			name:     "absolute_path_no_trailing_slash",
-			input:    "secrets/database",
-			expected: "secrets/database",
-		},
-		{
-			name:     "single_segment_with_trailing_slash",
-			input:    "secrets/",
-			expected: "secrets",
-		},
-		{
-			name:     "wildcard_path_with_trailing_slash",
-			input:    "secrets/*/",
-			expected: "secrets/*",
-		},
-		{
-			name:     "deeply_nested_path",
-			input:    "secrets/app/env/production/database/primary/",
-			expected: "secrets/app/env/production/database/primary",
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			result := normalizePath(tt.input)
-			if result != tt.expected {
-				t.Errorf("normalizePath(%q) = %q, want %q",
-					tt.input, result, tt.expected)
-			}
-		})
-	}
-}
-
 func TestApplyPolicyFromFile(t *testing.T) {
 	// Create a temporary directory for test files
 	tempDir, err := os.MkdirTemp("", "spike-apply-test")
@@ -167,7 +88,7 @@ permissions:
 			}
 
 			// Test reading the policy
-			policy, err := readPolicyFromFile(filePath)
+			_, err = readPolicyFromFile(filePath)
 
 			if tt.wantErr {
 				if err == nil {
@@ -200,13 +121,6 @@ permissions:
 			if err != nil {
 				t.Errorf("readPolicyFromFile() unexpected error: %v", err)
 				return
-			}
-
-			// Test path normalization
-			normalizedPath := normalizePath(policy.PathPattern)
-			if normalizedPath != tt.expectedPath {
-				t.Errorf("normalizePath(%q) = %q, want %q",
-					policy.PathPattern, normalizedPath, tt.expectedPath)
 			}
 		})
 	}
@@ -266,13 +180,13 @@ func TestApplyPolicyFromFlags(t *testing.T) {
 			inputPath:    "",
 			inputPerms:   "read",
 			wantErr:      true,
-			errContains:  "--path",
+			errContains:  "--path-pattern",
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			policy, err := getPolicyFromFlags(tt.inputName,
+			_, err := getPolicyFromFlags(tt.inputName,
 				tt.inputSpiffed, tt.inputPath, tt.inputPerms)
 
 			if tt.wantErr {
@@ -306,40 +220,6 @@ func TestApplyPolicyFromFlags(t *testing.T) {
 			if err != nil {
 				t.Errorf("getPolicyFromFlags() unexpected error: %v", err)
 				return
-			}
-
-			// Test path normalization
-			normalizedPath := normalizePath(policy.PathPattern)
-			if normalizedPath != tt.expectedPath {
-				t.Errorf("normalizePath(%q) = %q, want %q",
-					policy.PathPattern, normalizedPath, tt.expectedPath)
-			}
-		})
-	}
-}
-
-func TestPathNormalizationIntegration(t *testing.T) {
-	// Test that various path formats all normalize correctly
-	pathTests := []struct {
-		original   string
-		normalized string
-	}{
-		{"secrets/database/password", "secrets/database/password"},
-		{"secrets/database/password/", "secrets/database/password"},
-		{"secrets/web-service/config/", "secrets/web-service/config"},
-		{"secrets/", "secrets"},
-		{"secrets/", "secrets"},
-		{"/", "/"},
-		{"app/env/production/db/", "app/env/production/db"},
-		{"cache/redis/session///", "cache/redis/session"},
-	}
-
-	for _, test := range pathTests {
-		t.Run("normalize_"+test.original, func(t *testing.T) {
-			result := normalizePath(test.original)
-			if result != test.normalized {
-				t.Errorf("normalizePath(%q) = %q, want %q",
-					test.original, result, test.normalized)
 			}
 		})
 	}
