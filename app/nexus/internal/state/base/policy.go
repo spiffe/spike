@@ -46,9 +46,9 @@ var (
 //  3. A matching policy contains all requested permissions
 //
 // A policy matches when:
-//  1. It has wildcard patterns ("*") for both SPIFFE ID and pathPattern, or
-//  2. Its SPIFFE ID pattern matches the requestor's ID, and its pathPattern pattern
-//     matches the requested pathPattern
+//
+//	Its SPIFFE ID pattern matches the requestor's ID, and its path pattern
+//	matches the requested path.
 func CheckAccess(
 	peerSPIFFEID string, path string, wants []data.PolicyPermission,
 ) bool {
@@ -69,26 +69,14 @@ func CheckAccess(
 	}
 
 	for _, policy := range policies {
-		// Check the wildcard pattern first
-		if policy.SPIFFEIDPattern == "*" && policy.PathPattern == "*" {
-			if hasAllPermissions(policy.Permissions, wants) {
-				return true
-			}
+		// Check specific patterns using pre-compiled regexes
+
+		if !policy.IDRegex.MatchString(peerSPIFFEID) {
 			continue
 		}
 
-		// Check specific patterns using pre-compiled regexes
-
-		if policy.SPIFFEIDPattern != "*" {
-			if !policy.IDRegex.MatchString(peerSPIFFEID) {
-				continue
-			}
-		}
-
-		if policy.PathPattern != "*" {
-			if !policy.PathRegex.MatchString(path) {
-				continue
-			}
+		if !policy.PathRegex.MatchString(path) {
+			continue
 		}
 
 		if contains(policy.Permissions, data.PermissionSuper) {
@@ -109,8 +97,7 @@ func CheckAccess(
 //
 // Parameters:
 //   - policy: The policy to create. Must have a non-empty Name field.
-//     SpiffeIdPattern and PathPattern can be "*" for wildcard matching
-//     or valid regular expressions.
+//     SpiffeIdPattern and PathPattern MUST be valid regular expressions.
 //
 // Returns:
 //   - data.Policy: The created policy, including generated ID and timestamps
@@ -142,29 +129,25 @@ func CreatePolicy(policy data.Policy) (data.Policy, error) {
 	}
 
 	// Compile and validate patterns
-	if policy.SPIFFEIDPattern != "*" {
-		idRegex, err := regexp.Compile(policy.SPIFFEIDPattern)
-		if err != nil {
-			return data.Policy{},
-				errors.Join(
-					ErrInvalidPolicy,
-					fmt.Errorf("%s: %v", "invalid spiffeid pattern", err),
-				)
-		}
-		policy.IDRegex = idRegex
+	idRegex, err := regexp.Compile(policy.SPIFFEIDPattern)
+	if err != nil {
+		return data.Policy{},
+			errors.Join(
+				ErrInvalidPolicy,
+				fmt.Errorf("%s: %v", "invalid spiffeid pattern", err),
+			)
 	}
+	policy.IDRegex = idRegex
 
-	if policy.PathPattern != "*" {
-		pathRegex, err := regexp.Compile(policy.PathPattern)
-		if err != nil {
-			return data.Policy{},
-				errors.Join(
-					ErrInvalidPolicy,
-					fmt.Errorf("%s: %v", "invalid pathPattern pattern", err),
-				)
-		}
-		policy.PathRegex = pathRegex
+	pathRegex, err := regexp.Compile(policy.PathPattern)
+	if err != nil {
+		return data.Policy{},
+			errors.Join(
+				ErrInvalidPolicy,
+				fmt.Errorf("%s: %v", "invalid path pattern", err),
+			)
 	}
+	policy.PathRegex = pathRegex
 
 	// Generate ID and set creation time
 	policy.ID = uuid.New().String()
