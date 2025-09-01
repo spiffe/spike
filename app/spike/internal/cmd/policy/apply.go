@@ -6,7 +6,6 @@ package policy
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/spf13/cobra"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
@@ -15,20 +14,6 @@ import (
 
 	"github.com/spiffe/spike/app/spike/internal/trust"
 )
-
-// normalizePath removes trailing slashes and ensures a consistent path format.
-func normalizePath(path string) string {
-	if path == "" {
-		return path
-	}
-
-	// Remove all trailing slashes except for the root path:
-	if path != "/" {
-		path = strings.TrimRight(path, "/")
-	}
-
-	return path
-}
 
 // newPolicyApplyCommand creates a new Cobra command for policy application.
 // It allows users to apply policies via the command line by specifying
@@ -151,9 +136,6 @@ func newPolicyApplyCommand(
 					return
 				}
 			}
-
-			// Normalize the path pattern
-			policy.PathPattern = normalizePath(policy.PathPattern)
 
 			// Convert permissions slice to comma-separated string
 			// for validation

@@ -824,7 +824,7 @@ func TestSecretOperations_SpecialCharacters(t *testing.T) {
 			"/test/with.dots",
 			"/test/with_underscores",
 			"/test/with-dashes",
-			"/test/with/deep/nested/path",
+			"/test/with/deep/nested/pathPattern",
 		}
 
 		for _, path := range specialPaths {

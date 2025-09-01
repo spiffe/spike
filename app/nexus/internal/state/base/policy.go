@@ -27,14 +27,14 @@ var (
 )
 
 // CheckAccess determines if a given SPIFFE ID has the required permissions for
-// a specific path. It first checks if the ID belongs to SPIKE Pilot (which has
+// a specific pathPattern. It first checks if the ID belongs to SPIKE Pilot (which has
 // unrestricted access), then evaluates against all defined policies. Policies
 // are checked in order, with wildcard patterns evaluated first, followed by
 // specific pattern matching using regular expressions.
 //
 // Parameters:
 //   - spiffeId: The SPIFFE ID of the requestor
-//   - path: The resource path being accessed
+//   - pathPattern: The resource pathPattern being accessed
 //   - wants: Slice of permissions being requested
 //
 // Returns:
@@ -46,9 +46,9 @@ var (
 //  3. A matching policy contains all requested permissions
 //
 // A policy matches when:
-//  1. It has wildcard patterns ("*") for both SPIFFE ID and path, or
-//  2. Its SPIFFE ID pattern matches the requestor's ID, and its path pattern
-//     matches the requested path
+//  1. It has wildcard patterns ("*") for both SPIFFE ID and pathPattern, or
+//  2. Its SPIFFE ID pattern matches the requestor's ID, and its pathPattern pattern
+//     matches the requested pathPattern
 func CheckAccess(
 	peerSPIFFEID string, path string, wants []data.PolicyPermission,
 ) bool {
@@ -160,7 +160,7 @@ func CreatePolicy(policy data.Policy) (data.Policy, error) {
 			return data.Policy{},
 				errors.Join(
 					ErrInvalidPolicy,
-					fmt.Errorf("%s: %v", "invalid path pattern", err),
+					fmt.Errorf("%s: %v", "invalid pathPattern pattern", err),
 				)
 		}
 		policy.PathRegex = pathRegex
@@ -263,12 +263,12 @@ func ListPolicies() ([]data.Policy, error) {
 	return result, nil
 }
 
-// ListPoliciesByPath returns all policies that match a specific path pattern.
+// ListPoliciesByPath returns all policies that match a specific pathPattern pattern.
 // It filters the policy store and returns only policies where PathPattern
 // exactly matches the provided pattern string.
 //
 // Parameters:
-//   - pathPattern: The exact path pattern to match against policies
+//   - pathPattern: The exact pathPattern pattern to match against policies
 //
 // Returns:
 //   - []data.Policy: A slice of policies with matching PathPattern. Returns an
@@ -284,7 +284,7 @@ func ListPoliciesByPath(pathPattern string) ([]data.Policy, error) {
 		return nil, fmt.Errorf("failed to load policies: %w", err)
 	}
 
-	// Filter by path pattern
+	// Filter by pathPattern pattern
 	var result []data.Policy
 	for _, policy := range allPolicies {
 		if policy != nil && policy.PathPattern == pathPattern {

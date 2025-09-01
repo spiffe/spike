@@ -29,21 +29,21 @@ import (
 //
 // Command usage:
 //
-//	list [--format=<format>] [--path=<pattern> | --spiffeid=<pattern>]
+//	list [--format=<format>] [--path-pattern=<pattern> | --spiffeid-pattern=<pattern>]
 //
 // Flags:
 //   - --format: Output format ("human" or "json", default is "human")
-//   - --path: Filter policies by a resource path pattern (e.g., '^secrets/.*$')
-//   - --spiffeid: Filter policies by a SPIFFE ID pattern (e.g., '^spiffe://example\.org/service/.*$')
+//   - --path-pattern: Filter policies by a resource path pattern (e.g., '^secrets/.*$')
+//   - --spiffeid-pattern: Filter policies by a SPIFFE ID pattern (e.g., '^spiffe://example\.org/service/.*$')
 //
-// Note: --path and --spiffeid flags cannot be used together.
+// Note: --path-pattern and --spiffeid-pattern flags cannot be used together.
 //
 // Example usage:
 //
 //	spike policy list
 //	spike policy list --format=json
-//	spike policy list --path="^secrets/db/.*$"
-//	spike policy list --spiffeid="^spiffe://example\.org/app$"
+//	spike policy list --path-pattern="^secrets/db/.*$"
+//	spike policy list --spiffeid-pattern="^spiffe://example\.org/app$"
 //
 // Example output for human format:
 //
@@ -97,7 +97,7 @@ func newPolicyListCommand(
 	)
 	cmd := &cobra.Command{
 		Use:   "list",
-		Short: "List policies, optionally filtering by path or SPIFFE ID",
+		Short: "List policies, optionally filtering by path pattern or SPIFFE ID pattern",
 		Args:  cobra.NoArgs,
 		Run: func(cmd *cobra.Command, args []string) {
 			trust.Authenticate(SPIFFEID)
@@ -113,11 +113,11 @@ func newPolicyListCommand(
 		},
 	}
 
-	cmd.Flags().StringVar(&pathPattern, "path", "",
+	cmd.Flags().StringVar(&pathPattern, "path-pattern", "",
 		"Resource path pattern, e.g., '^secrets/web/db$'")
-	cmd.Flags().StringVar(&SPIFFEIDPattern, "spiffeid", "",
+	cmd.Flags().StringVar(&SPIFFEIDPattern, "spiffeid-pattern", "",
 		"SPIFFE ID pattern, e.g., '^spiffe://example\\.org/service/finance$'")
-	cmd.MarkFlagsMutuallyExclusive("path", "spiffeid")
+	cmd.MarkFlagsMutuallyExclusive("path-pattern", "spiffeid-pattern")
 
 	addFormatFlag(cmd)
 	return cmd

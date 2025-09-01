@@ -80,7 +80,7 @@ func TestSQLiteSecret_NewSecret(t *testing.T) {
 			t.Fatalf("Expected env.BackendStoreType()=Sqlite, got %v", env.BackendStoreType())
 		}
 
-		// Get the actual database path used by the system
+		// Get the actual database pathPattern used by the system
 		dataDir := config.SpikeNexusDataFolder()
 		dbPath := filepath.Join(dataDir, "spike.db")
 		t.Logf("Using SQLite database at: %s", dbPath)
@@ -109,7 +109,7 @@ func TestSQLiteSecret_NewSecret(t *testing.T) {
 		t.Logf("Found %d existing secrets after initialization (expected 0)", len(allSecrets))
 		if len(allSecrets) != 0 {
 			for path := range allSecrets {
-				t.Logf("  - Unexpected secret at path: %s", path)
+				t.Logf("  - Unexpected secret at pathPattern: %s", path)
 			}
 		}
 
@@ -128,7 +128,7 @@ func TestSQLiteSecret_NewSecret(t *testing.T) {
 		if secretBeforeUpsert != nil {
 			t.Fatalf("Expected LoadSecret to return nil for non-existent secret, got: %+v", secretBeforeUpsert)
 		}
-		t.Logf("✅ LoadSecret correctly returned nil for non-existent path")
+		t.Logf("✅ LoadSecret correctly returned nil for non-existent pathPattern")
 
 		err = UpsertSecret(path, values)
 		if err != nil {

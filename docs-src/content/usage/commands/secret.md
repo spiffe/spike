@@ -63,6 +63,25 @@ their verified identity, following zero-trust security principles.
 Secret paths in **SPIKE** have specific syntax requirements and recommended 
 conventions to ensure consistency and avoid common pitfalls.
 
+Paths in **SPIKE** are designed to provide flexibility but also follow
+certain conventions for clarity and usability. While the path is
+suggested (*but not mandated*) to look like a UNIX-style path for familiarity,
+**SPIKE secret paths SHOULD NOT start with a leading slash**.
+
+This is because **SPIKE paths represent logical key namespaces**, not
+hierarchical filesystem paths. They are always relative to the secrets engine
+mount point, making the leading slash redundant and potentially confusing.
+
+Additionally, although there is currently no restriction on how the path is
+formed, it is worth noting that future versions of **SPIKE** may restrict paths
+from having a trailing slash to avoid ambiguity and maintain consistency
+in naming practices.
+
+#### Example:
+
+* **Correct:** `secrets/app/config`
+* **Redundant/Confusing:** `/secrets/app/config`
+
 ### Path Format Requirements
 
 All secret paths must match the regex pattern:
@@ -104,7 +123,8 @@ conventions are strongly recommended:
 
 * Use consistent prefixes like `secrets/` or `credentials/` as the first segment
 * Organize paths by application, service, or environment
-* Include version indicators in the path for managed rotation (e.g., `secrets/database/v1/credentials`)
+* Include version indicators in the path for managed rotation
+  (*e.g., `secrets/database/v1/credentials`*)
 * Use clear, descriptive names that indicate the purpose of the secret
 * Keep paths reasonably short while maintaining clarity
 
@@ -123,7 +143,8 @@ secrets/api/external/stripe/key   # External API credentials with service name
 * Use separate paths for different environments (dev, staging, production)
 * Limit the number of key-value pairs in a single secret for better management
 * Use version history for auditing and rollback capability
-* Create specific policies that grant the minimum required access to each secret path
+* Create specific policies that grant the minimum required access to each 
+  secret path
 * Regularly rotate sensitive secrets like API keys and passwords
 * Use secret delete and undelete for safe secret lifecycle management
 * Validate paths are properly formatted and follow naming conventions

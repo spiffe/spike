@@ -220,7 +220,7 @@ func TestListKeys_SpecialCharacters(t *testing.T) {
 				}
 			}
 			if !found {
-				t.Errorf("Expected path %s not found in result", expectedPath)
+				t.Errorf("Expected pathPattern %s not found in result", expectedPath)
 			}
 		}
 	})
@@ -327,7 +327,7 @@ func TestListKeys_DuplicatePaths(t *testing.T) {
 		}
 
 		if actualCount != expectedCount {
-			t.Errorf("Expected path %s to appear %d time(s), got %d", path, expectedCount, actualCount)
+			t.Errorf("Expected pathPattern %s to appear %d time(s), got %d", path, expectedCount, actualCount)
 		}
 	})
 }

@@ -142,8 +142,8 @@ spike secret get /acme/db
 
 ```bash
 spike policy create --name=workload-can-read \
-  --path="/tenants/demo/db/*" \
-  --spiffeid="^spiffe://spike.ist/workload/*" \
+  --path-pattern="/tenants/demo/db/*" \
+  --spiffeid-pattern="^spiffe://spike.ist/workload/*" \
   --permissions="read"
 ```
 

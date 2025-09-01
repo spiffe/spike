@@ -60,7 +60,7 @@ func TestSQLitePolicy_CreateAndGet(t *testing.T) {
 			t.Errorf("Expected spiffeid pattern %s, got %s", policy.SPIFFEIDPattern, retrievedPolicy.SPIFFEIDPattern)
 		}
 		if retrievedPolicy.PathPattern != policy.PathPattern {
-			t.Errorf("Expected path pattern %s, got %s", policy.PathPattern, retrievedPolicy.PathPattern)
+			t.Errorf("Expected pathPattern pattern %s, got %s", policy.PathPattern, retrievedPolicy.PathPattern)
 		}
 		if !reflect.DeepEqual(retrievedPolicy.Permissions, policy.Permissions) {
 			t.Errorf("Expected permissions %v, got %v", policy.Permissions, retrievedPolicy.Permissions)
@@ -142,7 +142,7 @@ func TestSQLitePolicy_Persistence(t *testing.T) {
 			t.Errorf("Policy SPIFFE ID pattern not persisted correctly: expected %s, got %s", policy.SPIFFEIDPattern, retrievedPolicy.SPIFFEIDPattern)
 		}
 		if retrievedPolicy.PathPattern != policy.PathPattern {
-			t.Errorf("Policy path pattern not persisted correctly: expected %s, got %s", policy.PathPattern, retrievedPolicy.PathPattern)
+			t.Errorf("Policy pathPattern pattern not persisted correctly: expected %s, got %s", policy.PathPattern, retrievedPolicy.PathPattern)
 		}
 		if !reflect.DeepEqual(retrievedPolicy.Permissions, policy.Permissions) {
 			t.Errorf("Policy permissions not persisted correctly: expected %v, got %v", policy.Permissions, retrievedPolicy.Permissions)
@@ -332,7 +332,7 @@ func TestSQLitePolicy_CreateMultiplePolicies(t *testing.T) {
 		secondPolicy := data.Policy{
 			Name:            "second-policy",
 			SPIFFEIDPattern: "spiffe://example\\.org/second",
-			PathPattern:     "second/path/.*",
+			PathPattern:     "second/pathPattern/.*",
 			Permissions:     []data.PolicyPermission{data.PermissionWrite, data.PermissionList},
 		}
 
@@ -371,7 +371,7 @@ func TestSQLitePolicy_CreateMultiplePolicies(t *testing.T) {
 				secondPolicy.SPIFFEIDPattern, retrievedSecond.SPIFFEIDPattern)
 		}
 		if retrievedSecond.PathPattern != secondPolicy.PathPattern {
-			t.Errorf("Expected second policy path pattern %s, got %s",
+			t.Errorf("Expected second policy pathPattern pattern %s, got %s",
 				secondPolicy.PathPattern, retrievedSecond.PathPattern)
 		}
 		if !reflect.DeepEqual(retrievedSecond.Permissions, secondPolicy.Permissions) {
@@ -433,7 +433,7 @@ func TestSQLitePolicy_SpecialCharactersAndLongData(t *testing.T) {
 				policy.SPIFFEIDPattern, retrievedPolicy.SPIFFEIDPattern)
 		}
 		if retrievedPolicy.PathPattern != policy.PathPattern {
-			t.Errorf("Special character path pattern not preserved: expected %s, got %s",
+			t.Errorf("Special character pathPattern pattern not preserved: expected %s, got %s",
 				policy.PathPattern, retrievedPolicy.PathPattern)
 		}
 		if !reflect.DeepEqual(retrievedPolicy.Permissions, policy.Permissions) {
@@ -529,7 +529,7 @@ func TestSQLitePolicy_EncryptionWithDifferentKeys(t *testing.T) {
 				policy.SPIFFEIDPattern, retrievedPolicy.SPIFFEIDPattern)
 		}
 		if retrievedPolicy.PathPattern != policy.PathPattern {
-			t.Errorf("Policy path pattern corrupted: expected %s, got %s",
+			t.Errorf("Policy pathPattern pattern corrupted: expected %s, got %s",
 				policy.PathPattern, retrievedPolicy.PathPattern)
 		}
 		if !reflect.DeepEqual(retrievedPolicy.Permissions, policy.Permissions) {

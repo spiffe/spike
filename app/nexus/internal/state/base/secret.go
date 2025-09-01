@@ -16,7 +16,7 @@ import (
 	"github.com/spiffe/spike/app/nexus/internal/state/persist"
 )
 
-// UpsertSecret stores or updates a secret at the specified path with the
+// UpsertSecret stores or updates a secret at the specified pathPattern with the
 // provided values. It handles version management, maintaining a history of
 // secret values up to the configured maximum number of versions.
 //
@@ -30,7 +30,7 @@ import (
 // deployments.
 //
 // Parameters:
-//   - path: The location where the secret should be stored
+//   - pathPattern: The location where the secret should be stored
 //   - values: A map containing the secret key-value pairs to be stored
 //
 // Returns:
@@ -128,12 +128,12 @@ func UpsertSecret(path string, values map[string]string) error {
 	return nil
 }
 
-// DeleteSecret deletes one or more versions of a secret at the specified path.
+// DeleteSecret deletes one or more versions of a secret at the specified pathPattern.
 // It acquires a mutex lock before performing the deletion to ensure thread
 // safety.
 //
 // Parameters:
-//   - path: The path to the secret to be deleted
+//   - pathPattern: The pathPattern to the secret to be deleted
 //   - versions: A slice of version numbers to delete. If empty, deletes the
 //     current version only. Version number 0 is the current version.
 func DeleteSecret(path string, versions []int) error {
@@ -145,7 +145,7 @@ func DeleteSecret(path string, versions []int) error {
 		return fmt.Errorf("failed to load secret: %w", err)
 	}
 	if secret == nil {
-		return fmt.Errorf("secret not found at path: %s", path)
+		return fmt.Errorf("secret not found at pathPattern: %s", path)
 	}
 
 	// If no versions specified OR version 0 specified, delete the current version
@@ -209,7 +209,7 @@ func DeleteSecret(path string, versions []int) error {
 }
 
 // UndeleteSecret restores previously deleted versions of a secret at the
-// specified path. It takes a path string identifying the secret's location and
+// specified pathPattern. It takes a pathPattern string identifying the secret's location and
 // a slice of version numbers to restore. The function acquires a lock on the
 // key-value kv to ensure thread-safe operations during the `undelete` process.
 //
@@ -218,7 +218,7 @@ func DeleteSecret(path string, versions []int) error {
 // not previously deleted, those versions will be silently skipped.
 //
 // Parameters:
-//   - path: The path to the secret to be restored
+//   - pathPattern: The pathPattern to the secret to be restored
 //   - versions: A slice of integer version numbers to restore
 //
 // Example:
@@ -234,7 +234,7 @@ func UndeleteSecret(path string, versions []int) error {
 		return fmt.Errorf("failed to load secret: %w", err)
 	}
 	if secret == nil {
-		return fmt.Errorf("secret not found at path: %s", path)
+		return fmt.Errorf("secret not found at pathPattern: %s", path)
 	}
 
 	currentVersion := secret.Metadata.CurrentVersion
@@ -253,7 +253,7 @@ func UndeleteSecret(path string, versions []int) error {
 			if highestDeleted > 0 {
 				versions = []int{highestDeleted}
 			} else {
-				return fmt.Errorf("no deleted versions to undelete at path: %s", path)
+				return fmt.Errorf("no deleted versions to undelete at pathPattern: %s", path)
 			}
 		} else {
 			versions = []int{currentVersion}
@@ -286,7 +286,7 @@ func UndeleteSecret(path string, versions []int) error {
 	}
 
 	if !anyUndeleted {
-		return fmt.Errorf("no versions were undeleted at path: %s", path)
+		return fmt.Errorf("no versions were undeleted at pathPattern: %s", path)
 	}
 
 	// If CurrentVersion was 0 (all deleted), set it to
@@ -305,11 +305,11 @@ func UndeleteSecret(path string, versions []int) error {
 	return nil
 }
 
-// GetSecret retrieves a secret from the specified path and version.
+// GetSecret retrieves a secret from the specified pathPattern and version.
 // It provides thread-safe read access to the secret kv.
 //
 // Parameters:
-//   - path: The location of the secret to retrieve
+//   - pathPattern: The location of the secret to retrieve
 //   - version: The specific version of the secret to fetch
 //
 // Returns:
@@ -324,14 +324,14 @@ func GetSecret(path string, version int) (map[string]string, error) {
 		return nil, fmt.Errorf("failed to load secret: %w", err)
 	}
 	if secret == nil {
-		return nil, fmt.Errorf("secret not found at path: %s", path)
+		return nil, fmt.Errorf("secret not found at pathPattern: %s", path)
 	}
 
 	// Handle version 0 (current version)
 	if version == 0 {
 		version = secret.Metadata.CurrentVersion
 		if version == 0 {
-			return nil, fmt.Errorf("no active versions for secret at path: %s", path)
+			return nil, fmt.Errorf("no active versions for secret at pathPattern: %s", path)
 		}
 	}
 
@@ -339,23 +339,23 @@ func GetSecret(path string, version int) (map[string]string, error) {
 	v, exists := secret.Versions[version]
 	if !exists {
 		return nil, fmt.Errorf(
-			"version %d not found for secret at path: %s", version, path)
+			"version %d not found for secret at pathPattern: %s", version, path)
 	}
 
 	// Check if the version is deleted
 	if v.DeletedTime != nil {
 		return nil, fmt.Errorf(
-			"version %d is deleted for secret at path: %s", version, path)
+			"version %d is deleted for secret at pathPattern: %s", version, path)
 	}
 
 	return v.Data, nil
 }
 
-// GetRawSecret retrieves a secret with metadata from the specified path and
+// GetRawSecret retrieves a secret with metadata from the specified pathPattern and
 // version. It provides thread-safe read access to the backing store.
 //
 // Parameters:
-//   - path: The location of the secret to retrieve
+//   - pathPattern: The location of the secret to retrieve
 //   - version: The specific version of the secret to fetch
 //
 // Returns:
@@ -370,7 +370,7 @@ func GetRawSecret(path string, version int) (*kv.Value, error) {
 		return nil, fmt.Errorf("failed to load secret: %w", err)
 	}
 	if secret == nil {
-		return nil, fmt.Errorf("secret not found at path: %s", path)
+		return nil, fmt.Errorf("secret not found at pathPattern: %s", path)
 	}
 
 	// Validate the requested version exists and is not deleted
@@ -378,17 +378,17 @@ func GetRawSecret(path string, version int) (*kv.Value, error) {
 	if checkVersion == 0 {
 		checkVersion = secret.Metadata.CurrentVersion
 		if checkVersion == 0 {
-			return nil, fmt.Errorf("no active versions for secret at path: %s", path)
+			return nil, fmt.Errorf("no active versions for secret at pathPattern: %s", path)
 		}
 	}
 
 	v, exists := secret.Versions[checkVersion]
 	if !exists {
-		return nil, fmt.Errorf("version %d not found for secret at path: %s", checkVersion, path)
+		return nil, fmt.Errorf("version %d not found for secret at pathPattern: %s", checkVersion, path)
 	}
 
 	if v.DeletedTime != nil {
-		return nil, fmt.Errorf("version %d is deleted for secret at path: %s", checkVersion, path)
+		return nil, fmt.Errorf("version %d is deleted for secret at pathPattern: %s", checkVersion, path)
 	}
 
 	// Return the full secret, but we've validated the requested version exists
