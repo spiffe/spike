@@ -68,7 +68,7 @@ func RouteDecrypt(
 			http.Error(w, "cipher not available", http.StatusInternalServerError)
 			return fmt.Errorf("cipher not available")
 		}
-		responseBody := net.MarshalBody(reqres.SecretDecryptResponse{
+		responseBody := net.MarshalBody(reqres.CipherDecryptResponse{
 			Err: data.ErrInternal,
 		}, w)
 		if responseBody == nil {
@@ -83,7 +83,7 @@ func RouteDecrypt(
 	var ciphertext []byte
 
 	if streamModeActive {
-		err := guardDecryptSecretRequest(reqres.SecretDecryptRequest{}, w, r)
+		err := guardDecryptSecretRequest(reqres.CipherDecryptRequest{}, w, r)
 		if err != nil {
 			return err
 		}
@@ -121,9 +121,9 @@ func RouteDecrypt(
 		}
 
 		request := net.HandleRequest[
-			reqres.SecretDecryptRequest, reqres.SecretDecryptResponse](
+			reqres.CipherDecryptRequest, reqres.CipherDecryptResponse](
 			requestBody, w,
-			reqres.SecretDecryptResponse{Err: data.ErrBadInput},
+			reqres.CipherDecryptResponse{Err: data.ErrBadInput},
 		)
 		if request == nil {
 			return apiErr.ErrParseFailure
@@ -145,7 +145,7 @@ func RouteDecrypt(
 			http.Error(w, "unsupported version", http.StatusBadRequest)
 			return fmt.Errorf("unsupported version: %v", version)
 		}
-		responseBody := net.MarshalBody(reqres.SecretDecryptResponse{
+		responseBody := net.MarshalBody(reqres.CipherDecryptResponse{
 			Err: data.ErrBadInput,
 		}, w)
 		if responseBody == nil {
@@ -162,7 +162,7 @@ func RouteDecrypt(
 			return fmt.Errorf("invalid nonce size: expected %d, got %d",
 				c.NonceSize(), len(nonce))
 		}
-		responseBody := net.MarshalBody(reqres.SecretDecryptResponse{
+		responseBody := net.MarshalBody(reqres.CipherDecryptResponse{
 			Err: data.ErrBadInput,
 		}, w)
 		if responseBody == nil {
@@ -185,7 +185,7 @@ func RouteDecrypt(
 			http.Error(w, "decryption failed", http.StatusBadRequest)
 			return fmt.Errorf("decryption failed: %w", err)
 		}
-		responseBody := net.MarshalBody(reqres.SecretDecryptResponse{
+		responseBody := net.MarshalBody(reqres.CipherDecryptResponse{
 			Err: data.ErrInternal,
 		}, w)
 		if responseBody == nil {
@@ -206,7 +206,7 @@ func RouteDecrypt(
 	}
 
 	// JSON response
-	responseBody := net.MarshalBody(reqres.SecretDecryptResponse{
+	responseBody := net.MarshalBody(reqres.CipherDecryptResponse{
 		Plaintext: plaintext,
 		Err:       data.ErrSuccess,
 	}, w)

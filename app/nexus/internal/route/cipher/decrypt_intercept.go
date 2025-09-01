@@ -20,11 +20,11 @@ import (
 )
 
 func guardDecryptSecretRequest(
-	_ reqres.SecretDecryptRequest, w http.ResponseWriter, r *http.Request,
+	_ reqres.CipherDecryptRequest, w http.ResponseWriter, r *http.Request,
 ) error {
 	sid, err := spiffe.IDFromRequest(r)
 	if err != nil {
-		responseBody := net.MarshalBody(reqres.SecretDecryptResponse{
+		responseBody := net.MarshalBody(reqres.CipherDecryptResponse{
 			Err: data.ErrUnauthorized,
 		}, w)
 		net.Respond(http.StatusUnauthorized, responseBody, w)
@@ -32,7 +32,7 @@ func guardDecryptSecretRequest(
 	}
 
 	if sid == nil {
-		responseBody := net.MarshalBody(reqres.SecretDecryptResponse{
+		responseBody := net.MarshalBody(reqres.CipherDecryptResponse{
 			Err: data.ErrUnauthorized,
 		}, w)
 		net.Respond(http.StatusUnauthorized, responseBody, w)
@@ -41,7 +41,7 @@ func guardDecryptSecretRequest(
 
 	err = validation.ValidateSPIFFEID(sid.String())
 	if err != nil {
-		responseBody := net.MarshalBody(reqres.SecretDecryptResponse{
+		responseBody := net.MarshalBody(reqres.CipherDecryptResponse{
 			Err: data.ErrUnauthorized,
 		}, w)
 		net.Respond(http.StatusUnauthorized, responseBody, w)
@@ -64,7 +64,7 @@ func guardDecryptSecretRequest(
 	}
 	// If not, do a policy check to determine if the request is allowed:
 	if !allowed {
-		responseBody := net.MarshalBody(reqres.SecretDecryptResponse{
+		responseBody := net.MarshalBody(reqres.CipherDecryptResponse{
 			Err: data.ErrUnauthorized,
 		}, w)
 		net.Respond(http.StatusUnauthorized, responseBody, w)
