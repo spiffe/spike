@@ -1,0 +1,93 @@
+<script>
+    fetch('{{ config.extra.release | safe }}')
+        .then(response => response.json())
+        .then(data => {
+            const release = document.getElementById('release');
+            const icon = '<i class="bx bx-package"></i>';
+            release.href = data.name ? data.html_url : '{{ config.extra.releases | safe }}';
+            release.innerHTML = icon + (data.name ? ' ' + data.name : ' Releases');
+        });
+</script>
+<div id="banner">
+    <a href="{{ get_url(path="/") | safe }}">
+        <img src="{{ get_url(path="assets/spike-banner.png") | safe }}" alt="logo" />
+    </a>
+    <div id="banner-body">
+        <a class="banner-title" href="{{ get_url(path="/") | safe }}">
+            SPIKE
+        </a>
+        <span class="banner-tagline">
+            Secure your secrets<br> with SPIFFE.
+        </span>
+        <a id="release" class="banner-link" href="https://github.com/spiffe/spike/releases">
+            <i class='bx bx-package'></i>
+        </a>
+        <a href="https://github.com/spiffe/spike" class="banner-link">
+            <i class='bx bxl-github'></i> GitHub
+        </a>
+
+    </div>
+</div>
+<style>
+   /* Banner on top of the nav */
+   #banner {
+        position: sticky;
+        background-color: var(--bg-primary);
+        z-index: 100;
+        top: 0;
+        display: flex;
+        flex-direction: row;
+        padding: 1rem;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        margin-bottom: 1rem;
+    }
+
+    #banner img {
+        width: 100px;
+        height: auto;
+    }
+
+    #banner-body {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        justify-content: space-between;
+        margin-left: 1rem;
+    }
+
+    .banner-title {
+        font-size: 1.75rem;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        margin-bottom: -15px;
+        font-family: var(--brand-font-family);
+    }
+    .banner-tagline {
+        font-size: 0.875rem;
+        color: var(--text-muted);
+        font-style: italic;
+    }
+
+    .banner-link {
+        display: flex;
+        gap: 0.5rem;
+        min-width: 84px;
+        font-size: 0.875rem;
+        font-weight: 300;
+        padding: 0.25rem 0.75rem;
+        border-radius: 4px;
+        background-color: var(--bg-interactive);
+        transition: all 0.2s ease;
+    }
+
+    .banner-link i {
+        font-size: 1.125rem;
+        color: var(--spike-blue);
+    }
+
+    .banner-link:hover {
+        background-color: var(--spike-blue);
+    }
+</style>

@@ -1,0 +1,1025 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://spike.ist/main.css">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link rel="icon" href="https://spike.ist/assets/spike-favicon-16x16.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+    <title> SPIKE | ADR-0007: Root Key Lifecycle and Management Strategy </title>
+</head>
+<body>
+
+<main>
+    
+    <nav>
+  <script>
+    fetch('https://api.github.com/repos/spiffe/spike/releases/latest')
+        .then(response => response.json())
+        .then(data => {
+            const release = document.getElementById('release');
+            const icon = '<i class="bx bx-package"></i>';
+            release.href = data.name ? data.html_url : 'https://api.github.com/repos/spiffe/spike/releases';
+            release.innerHTML = icon + (data.name ? ' ' + data.name : ' Releases');
+        });
+</script>
+<div id="banner">
+    <a href="https://spike.ist">
+        <img src="https://spike.ist/assets/spike-banner.png" alt="logo" />
+    </a>
+    <div id="banner-body">
+        <a class="banner-title" href="https://spike.ist">
+            SPIKE
+        </a>
+        <span class="banner-tagline">
+            Secure your secrets<br> with SPIFFE.
+        </span>
+        <a id="release" class="banner-link" href="https://github.com/spiffe/spike/releases">
+            <i class='bx bx-package'></i>
+        </a>
+        <a href="https://github.com/spiffe/spike" class="banner-link">
+            <i class='bx bxl-github'></i> GitHub
+        </a>
+
+    </div>
+</div>
+<style>
+   /* Banner on top of the nav */
+   #banner {
+        position: sticky;
+        background-color: var(--bg-primary);
+        z-index: 100;
+        top: 0;
+        display: flex;
+        flex-direction: row;
+        padding: 1rem;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        margin-bottom: 1rem;
+    }
+
+    #banner img {
+        width: 100px;
+        height: auto;
+    }
+
+    #banner-body {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        justify-content: space-between;
+        margin-left: 1rem;
+    }
+
+    .banner-title {
+        font-size: 1.75rem;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        margin-bottom: -15px;
+        font-family: var(--brand-font-family);
+    }
+    .banner-tagline {
+        font-size: 0.875rem;
+        color: var(--text-muted);
+        font-style: italic;
+    }
+
+    .banner-link {
+        display: flex;
+        gap: 0.5rem;
+        min-width: 84px;
+        font-size: 0.875rem;
+        font-weight: 300;
+        padding: 0.25rem 0.75rem;
+        border-radius: 4px;
+        background-color: var(--bg-interactive);
+        transition: all 0.2s ease;
+    }
+
+    .banner-link i {
+        font-size: 1.125rem;
+        color: var(--spike-blue);
+    }
+
+    .banner-link:hover {
+        background-color: var(--spike-blue);
+    }
+</style> <div id="trees">
+    <input class="tree-toggle" type="checkbox" id="about"
+               />
+        <label class="tree-toggle-label "
+               for="about">About</label>
+
+        <ul class="subtree">
+            <li >
+                    <a href="https://spike.ist/about/intro/">About SPIKE</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/about/project-status/">Project Maturity</a>
+                </li>
+
+                </ul>
+    <input class="tree-toggle" type="checkbox" id="community"
+               />
+        <label class="tree-toggle-label "
+               for="community">Community</label>
+
+        <ul class="subtree">
+            <li >
+                    <a href="https://spike.ist/community/hello/">Hello Universe</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/community/contact/">Contact Us</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/community/presentations/">Presentations and Demos</a>
+                </li>
+
+                </ul>
+    <input class="tree-toggle" type="checkbox" id="getting-started"
+               />
+        <label class="tree-toggle-label "
+               for="getting-started">Getting Started</label>
+
+        <ul class="subtree">
+            <li >
+                    <a href="https://spike.ist/getting-started/quickstart/">SPIKE Quickstart Guide</a>
+                </li>
+
+                </ul>
+    <input class="tree-toggle" type="checkbox" id="using-spike"
+               />
+        <label class="tree-toggle-label "
+               for="using-spike">Using SPIKE</label>
+
+        <ul class="subtree">
+            <li >
+                    <a href="https://spike.ist/usage/configuration/">Configuring SPIKE</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/usage/cli/">SPIKE CLI</a>
+                </li>
+
+                </ul>
+    <input class="tree-toggle" type="checkbox" id="developing-spike"
+               />
+        <label class="tree-toggle-label "
+               for="developing-spike">Developing SPIKE</label>
+
+        <ul class="subtree">
+            <li >
+                    <a href="https://spike.ist/development/local-deployment/">SPIKE on Kubernetes</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/development/bare-metal/">SPIKE on Linux</a>
+                </li>
+
+                </ul>
+    <input class="tree-toggle" type="checkbox" id="spike-architecture"
+               checked/>
+        <label class="tree-toggle-label "
+               for="spike-architecture">SPIKE Architecture</label>
+
+        <ul class="subtree">
+            <li >
+                    <a href="https://spike.ist/architecture/system-overview/">System Overview</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/architecture/security-model/">SPIKE Security Model</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/architecture/architectural-decision-records/">ADRs</a>
+                </li>
+
+                </ul>
+    <input class="tree-toggle" type="checkbox" id="tracking"
+               />
+        <label class="tree-toggle-label "
+               for="tracking">Tracking</label>
+
+        <ul class="subtree">
+            <li >
+                    <a href="https://spike.ist/tracking/changelog/">Changelog</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/tracking/snapshots/">Documentation Snapshots</a>
+                </li>
+
+                </ul>
+    <input class="tree-toggle" type="checkbox" id="operations"
+               />
+        <label class="tree-toggle-label "
+               for="operations">Operations</label>
+
+        <ul class="subtree">
+            <li >
+                    <a href="https://spike.ist/operations/build/">SPIKE Cross-Platform Build</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/operations/production/">SPIKE Production Setup</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/operations/recovery/">SPIKE Recovery Procedures</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/operations/backup/">SPIKE Backup and Restore</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/operations/release/">SPIKE Relase Management</a>
+                </li>
+
+                </ul>
+    </div>
+<style>
+    /* Navigation tree structure */
+    #trees {
+        padding: 0 1rem;
+    }
+
+    .tree-toggle {
+        display: none;
+    }
+
+    .tree-toggle:checked + .tree-toggle-label + .subtree {
+        display: block;
+    }
+
+    .tree-toggle-label {
+        display: block;
+        padding: 0.75rem 1rem;
+        margin: 0.25rem 0;
+        border-radius: 6px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .tree-toggle-label:hover {
+        background-color: rgba(0, 0, 0, 0.05);
+    }
+
+    .tree-toggle-label::before {
+        content: '▸';
+        display: inline-block;
+        margin-right: 0.5rem;
+        transition: transform 0.2s ease;
+    }
+
+    .tree-toggle:checked + .tree-toggle-label::before {
+        transform: rotate(90deg);
+    }
+
+    .subtree {
+        display: none;
+        margin: 0;
+        padding: 0 0 0 1rem;
+        list-style: none;
+    }
+
+    .subtree li {
+        margin: 0.25rem 0;
+    }
+
+    .subtree li a {
+        display: block;
+        padding: 0.5rem 1rem;
+        text-decoration: none;
+        border-radius: 4px;
+        font-size: 0.9375rem;
+        transition: all 0.2s ease;
+    }
+
+    .subtree li a:hover {
+        background-color: rgba(0, 0, 0, 0.05);
+    }
+
+    .subtree li.active a {
+        font-weight: 600;
+        background-color: rgba(0, 0, 0, 0.05);
+    }
+
+    /* Table of contents styling */
+    #toc {
+        margin: 0.5rem 0 0.5rem 1.5rem;
+        padding: 0;
+        list-style: none;
+        font-size: 0.875rem;
+    }
+
+    #toc li {
+        margin: 0.25rem 0;
+    }
+
+    #toc li a {
+        padding: 0.375rem 0.75rem;
+        opacity: 0.8;
+    }
+
+    #toc li a:hover {
+        opacity: 1;
+    }
+
+    #toc ul {
+        margin: 0.25rem 0 0.25rem 1rem;
+        padding: 0;
+        list-style: none;
+    }
+</style>
+</nav>
+<style>
+  nav {
+    position: sticky;
+    width: 300px;
+    height: 100vh;
+    top: 0;
+    max-height: 100vh;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 0, 0, 0.3) transparent;
+    z-index: 100;
+    box-shadow: 5px 0 20px var(--shadow-color);
+    border-right: 1px solid var(--border-color);
+    transition: transform 0.4s ease-in-out;
+    background-color: var(--bg-primary);
+  }
+
+  nav::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  nav::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  nav::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.3);
+    border-radius: 4px;
+    border: 2px solid transparent;
+  }
+
+  @media (max-width: 1300px) {
+    .nav-toggle {
+      display: none;
+    }
+
+    nav {
+      position: fixed;
+      transform: translateX(-100%);
+      width: 85%;
+      max-width: 300px;
+      height: calc(100vh - 57px);
+      top: 57px;
+    }
+
+    nav.active {
+      transform: translateX(0);
+    }
+  }
+</style>
+
+
+    <div class="content">
+        <div class="header">
+  <div class="header-content">
+    <button
+      id="mobile-nav-toggle"
+      aria-label="Toggle navigation"
+      class="mobile-only"
+    >
+      <i class="bx bx-menu"></i>
+    </button>
+    <script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const searchInput = document.querySelector(".search-input");
+    const overlay = document.querySelector(".overlay");
+    const searchResults = document.querySelector(".search-results");
+
+    function closeSearch() {
+      overlay.style.display = "none";
+      searchResults.style.display = "none";
+      searchInput.blur();
+    }
+
+    function openSearch() {
+      overlay.style.display = "block";
+      searchResults.style.display = "block";
+    }
+
+    searchInput.addEventListener("focus", openSearch);
+    overlay.addEventListener("click", closeSearch);
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        closeSearch();
+      }
+    });
+  });
+</script>
+<div class="overlay"></div>
+<input class="search-input" type="text" placeholder="Search..." />
+<div class="search-results">
+  <div class="search-results__header">
+    <span class="search-results__count">Waiting for input...</span>
+  </div>
+  <div class="search-results__items"></div>
+</div>
+
+<style>
+  .search-input {
+    width: 100%;
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background-color: var(--bg-interactive);
+    color: var(--text-primary);
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+    z-index: 101;
+  }
+
+  .search-input:focus {
+    outline: none;
+    border-color: var(--spike-blue);
+    background-color: var(--bg-primary);
+    box-shadow: 0 0 0 2px rgba(var(--spike-blue-rgb), 0.2);
+  }
+
+  .search-input::placeholder {
+    color: var(--text-muted);
+  }
+
+  .overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 100;
+  }
+
+  .search-results {
+    display: none;
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 100%;
+    max-width: 700px;
+    margin: 0.5rem auto;
+    background: var(--bg-primary);
+    border-radius: 8px;
+    box-shadow: 0px 4px 8px 3px rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--border-color);
+    z-index: 102;
+  }
+
+  .search-results__header {
+    padding: 0.75rem 1rem;
+    color: var(--text-muted);
+    font-size: 0.875rem;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .search-results__items {
+    max-height: 60vh;
+    overflow-y: auto;
+  }
+
+  .search-results__item {
+    display: block;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--border-color);
+    transition: background-color 0.2s ease;
+  }
+
+  .search-results__item:hover {
+    background-color: var(--bg-interactive);
+  }
+
+  .search-results__title {
+    color: var(--spike-blue);
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+  }
+
+  .search-results__preview {
+    color: var(--text-secondary);
+    font-size: 0.8125rem;
+    line-height: 1.4;
+  }
+
+  .search-results__preview b {
+    color: var(--spike-dark-green);
+    font-weight: 600;
+  }
+
+  .search-results__items::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  .search-results__items::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 4px;
+  }
+
+  /* Empty state */
+  .search-results__empty {
+    padding: 2rem 1rem;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.875rem;
+  }
+</style>
+
+    <a
+      href="https://github.com/spiffe/spike"
+      target="_blank"
+      rel="noopener"
+      class="github-star"
+    >
+      <i class="bx bx-star"></i>
+      <span>Star <strong>SPIKE</strong> on <strong>GitHub</strong></span>
+    </a>
+    <button id="theme-toggle" aria-label="Toggle theme">
+      <i class="bx bx-sun light-icon"></i>
+      <i class="bx bx-moon dark-icon"></i>
+    </button>
+  </div>
+</div>
+
+<style>
+  .header {
+    position: sticky;
+    top: 0;
+    background-color: var(--bg-primary);
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color);
+    box-shadow: 0 4px 6px -1px var(--shadow-color),
+      0 2px 4px -1px var(--shadow-color);
+    z-index: 101;
+  }
+
+  .header-content {
+    max-width: 800px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  #mobile-nav-toggle {
+    display: none;
+    background: none;
+    border: none;
+    padding: 0.5rem;
+    cursor: pointer;
+    color: var(--text-primary);
+    font-size: 1.5rem;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+  }
+
+  #mobile-nav-toggle i {
+    pointer-events: none;
+    display: block;
+  }
+
+  #mobile-nav-toggle:hover {
+    background-color: var(--bg-interactive);
+  }
+
+  @media (max-width: 1300px) {
+    #mobile-nav-toggle {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+    }
+  }
+
+  #theme-toggle {
+    background: none;
+    border: none;
+    padding: 0.5rem;
+    cursor: pointer;
+    color: var(--text-primary);
+    font-size: 1.25rem;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  #theme-toggle:hover {
+    background-color: var(--bg-interactive);
+  }
+
+  #theme-toggle:active {
+    background-color: var(--bg-secondary);
+  }
+
+  /* Show/hide icons based on theme */
+  [data-theme="dark"] .light-icon,
+  :root:not([data-theme="dark"]) .dark-icon {
+    display: none;
+  }
+
+  /* GitHub Star Button */
+  .github-star {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    color: white;
+    text-decoration: none;
+    background: linear-gradient(
+      135deg,
+      var(--spike-blue),
+      var(--spike-dark-green)
+    );
+    border-radius: 20px;
+    transition: all 0.2s ease;
+    font-size: 0.875rem;
+    white-space: nowrap;
+  }
+
+  .github-star:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(var(--spike-blue-rgb), 0.3);
+  }
+
+  .github-star i {
+    font-size: 1.1rem;
+    animation: starBounce 2s infinite;
+    color: #ffd700;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+  }
+
+  @keyframes starBounce {
+    0%,
+    100% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.2);
+    }
+  }
+
+  .github-star span {
+    white-space: nowrap;
+  }
+
+  @media (max-width: 768px) {
+    .github-star span {
+      display: none;
+    }
+
+    .github-star {
+      padding: 0.5rem;
+    }
+  }
+</style>
+
+<script>
+  // Theme toggle functionality
+  document.addEventListener("DOMContentLoaded", () => {
+    const themeToggle = document.getElementById("theme-toggle");
+
+    // Function to set theme
+    function setTheme(theme) {
+      document.documentElement.setAttribute("data-theme", theme);
+      localStorage.setItem("theme", theme);
+    }
+
+    // Initialize theme
+    const savedTheme = localStorage.getItem("theme");
+    if (savedTheme) {
+      setTheme(savedTheme);
+    } else if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+      setTheme("dark");
+    }
+
+    // Toggle theme on button click
+    themeToggle.addEventListener("click", () => {
+      const currentTheme = document.documentElement.getAttribute("data-theme");
+      const newTheme = currentTheme === "dark" ? "light" : "dark";
+      setTheme(newTheme);
+    });
+
+    // Listen for system theme changes
+    window
+      .matchMedia("(prefers-color-scheme: dark)")
+      .addEventListener("change", (e) => {
+        if (!localStorage.getItem("theme")) {
+          setTheme(e.matches ? "dark" : "light");
+        }
+      });
+  });
+</script>
+
+
+        <article>
+            
+        <h1 id="adr-0007-root-key-lifecycle-and-management-strategy">ADR-0007: Root Key Lifecycle and Management Strategy</h1>
+<br style="clear:both" />
+<ul>
+<li>Status: accepted</li>
+<li>Date: 2024-11-03</li>
+<li>Tags: Security</li>
+</ul>
+<h2 id="context">Context</h2>
+<p>Our system requires a robust and secure approach to managing the root key,
+which is fundamental to the entire security infrastructure. We need to
+establish:</p>
+<ul>
+<li>Key generation and storage policies</li>
+<li>Backup and recovery procedures</li>
+<li>Rotation policies</li>
+<li>Emergency recovery procedures</li>
+</ul>
+<p>The root key is a critical security component that requires careful handling
+throughout its lifecycle while maintaining operational efficiency.</p>
+<h2 id="decision">Decision</h2>
+<p>We will implement the following key management strategy:</p>
+<h3 id="root-key-characteristics">Root Key Characteristics</h3>
+<ul>
+<li>Long-lived key with periodic rotation</li>
+<li>Generated automatically by SPIKE Nexus</li>
+<li>Stored exclusively in memory, never on disk in plain text</li>
+</ul>
+<h3 id="key-protection">Key Protection</h3>
+<ul>
+<li>Administrator-provided password through SPIKE Pilot</li>
+<li>Encrypted backup for emergency recovery</li>
+<li>Memory-only plain text existence</li>
+</ul>
+<h3 id="key-rotation">Key Rotation:</h3>
+<ul>
+<li>Periodic rotation schedule</li>
+<li>Automatic re-encryption of all dependent secrets</li>
+<li>Maintain system availability during rotation</li>
+</ul>
+<h2 id="consequences">Consequences</h2>
+<h3 id="positive">Positive</h3>
+<ul>
+<li>No plain text key storage on disk</li>
+<li>Administrator-controlled recovery capability</li>
+<li>Automated key generation reduces human error</li>
+<li>Regular rotation enhances security</li>
+<li>Automatic re-encryption maintains data security</li>
+<li>Clear recovery procedures</li>
+</ul>
+<h3 id="negative">Negative</h3>
+<ul>
+<li>Dependency on administrator password</li>
+<li>Risk of system unavailability if both memory content and recovery password are
+lost</li>
+<li>Performance impact during key rotation and re-encryption</li>
+<li>Need for careful password management</li>
+<li>Operational complexity during rotation</li>
+</ul>
+<h2 id="implementation-requirements">Implementation Requirements</h2>
+<h3 id="key-generation">Key Generation</h3>
+<h4 id="initial-generation">Initial Generation</h4>
+<ul>
+<li>Automated generation by SPIKE Nexus</li>
+<li>Cryptographically secure random number generator</li>
+<li>Immediate memory storage</li>
+</ul>
+<h4 id="storage-requirements">Storage Requirements:</h4>
+<ul>
+<li>Memory-only plain text storage</li>
+<li>Secure memory handling</li>
+<li>Memory zeroing after use</li>
+</ul>
+<h3 id="backup-and-recovery">Backup and Recovery</h3>
+<h4 id="password-requirements">Password Requirements</h4>
+<ul>
+<li>Strong password policies</li>
+<li>Secure password transmission</li>
+<li>Password storage guidelines</li>
+</ul>
+<h4 id="backup-process">Backup Process</h4>
+<ul>
+<li>Encryption of the root key</li>
+<li>Secure storage of encrypted backup</li>
+<li>Regular backup verification</li>
+</ul>
+<h3 id="key-rotation-1">Key Rotation</h3>
+<h4 id="rotation-process">Rotation Process:</h4>
+<ul>
+<li>Automated rotation procedure</li>
+<li>Gradual secret re-encryption</li>
+<li>Validation of re-encrypted secrets</li>
+</ul>
+<h4 id="scheduling">Scheduling:</h4>
+<ul>
+<li>Define rotation intervals</li>
+<li>Maintenance window planning</li>
+<li>Emergency rotation procedures</li>
+</ul>
+<h2 id="critical-operations">Critical Operations</h2>
+<h3 id="password-management">Password Management</h3>
+<h4 id="administrator-responsibilities">Administrator Responsibilities:</h4>
+<ul>
+<li>Secure password creation</li>
+<li>Password storage</li>
+<li>Access control</li>
+<li>Regular password verification</li>
+</ul>
+<h4 id="recovery-procedures">Recovery Procedures:</h4>
+<ul>
+<li>Emergency recovery process</li>
+<li>Password verification</li>
+<li>System restoration steps</li>
+</ul>
+<h3 id="rotation-operations">Rotation Operations</h3>
+<h4 id="pre-rotation">Pre-rotation:</h4>
+<ul>
+<li>System health check</li>
+<li>Backup verification</li>
+<li>Resource availability check</li>
+</ul>
+<h4 id="during-rotation">During Rotation:</h4>
+<ul>
+<li>Progress monitoring</li>
+<li>Error handling</li>
+<li>Recovery readiness</li>
+</ul>
+<h4 id="post-rotation">Post-rotation:</h4>
+<ul>
+<li>Verification of re-encrypted secrets</li>
+<li>System health validation</li>
+<li>Backup update</li>
+</ul>
+<h2 id="monitoring-and-alerts">Monitoring and Alerts</h2>
+<h3 id="key-health">Key Health</h3>
+<ul>
+<li>Memory presence verification</li>
+<li>Backup status</li>
+<li>Rotation schedule tracking</li>
+</ul>
+<h3 id="critical-alerts">Critical Alerts:</h3>
+<ul>
+<li>Failed rotation attempts</li>
+<li>Backup failures</li>
+<li>Memory issues</li>
+<li>Access attempts</li>
+</ul>
+<h2 id="recovery-procedures-1">Recovery Procedures</h2>
+<h3 id="emergency-recovery">Emergency Recovery:</h3>
+<ul>
+<li>Password validation</li>
+<li>Backup decryption</li>
+<li>System restoration</li>
+<li>Verification steps</li>
+</ul>
+<h3 id="failed-rotation-recovery">Failed Rotation Recovery:</h3>
+<ul>
+<li>Rollback procedures</li>
+<li>System state verification</li>
+<li>Impact assessment</li>
+</ul>
+<h2 id="references">References</h2>
+<ul>
+<li><a href="https://csrc.nist.gov/projects/key-management/key-management-guidelines">NIST Key Management Guidelines</a></li>
+<li><a href="https://cheatsheetseries.owasp.org/cheatsheets/Cryptographic_Storage_Cheat_Sheet.html">OWASP Key Management Cheat Sheet</a></li>
+<li>Cryptographic Key Lifecycle Best Practices</li>
+</ul>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>Regular audits of key management procedures are required</li>
+<li>Document all rotation events and issues</li>
+<li>Maintain detailed recovery runbooks</li>
+<li>Regular testing of recovery procedures</li>
+<li>Password management procedures must be documented and practiced</li>
+</ul>
+<h2 id="warning">Warning</h2>
+<p>The administrator password for key recovery is <strong>CRUCIAL</strong>. Loss of this
+password combined with system failure could result in permanent data loss.
+Implement appropriate password management procedures.</p>
+<hr />
+<ul>
+<li><a href="https://spike.ist/architecture/adrs/adr-0023/">ADR-0023: Decision Against Implementing Lock/Unlock Mechanism in SPIKE Nexus</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0022/">ADR-0022: Continuous Polling of SPIKE Keepers Despite 404 Response</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0021/">ADR-0021: SPIKE Keeper as a Stateless Shard Holder</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0020/">ADR-0020: Switch to Zola for Documentation System</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0019/">ADR-0019: Plugin-Based Storage Backend Architecture</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0018/">ADR-0018: Administrative Access to SPIKE</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0017/">ADR-0017: Synchronous Persistence for SPIKE Secrets Store</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0016/">ADR-0016: Memory-First Secrets Store</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0015/">ADR-0015: Use Singular Form for File and Package Naming</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0014/">ADR-0014: Maintaining SQLite as SPIKE’s Primary Storage Backend</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0013/">ADR-0013: S3-Compatible Storage as SPIKE’s Backing Store</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0012/">ADR-0012: HTTP Methods for SPIKE API</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0011/">ADR-0011: PostgreSQL as SPIKE’s Backing Store</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0010/">ADR-0010: Session Token Storage Strategy for SPIKE Nexus</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0009/">ADR-0009: Multi-Administrator Support System</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0008/">ADR-0008: Administrative Access Control System</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0007/">ADR-0007: Root Key Lifecycle and Management Strategy</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0006/">ADR-0006: Trust Boundary Definition and Security Assumptions</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0005/">ADR-0005: Use SPIFFE mTLS for Inter-Component Authentication and Communication</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0004/">ADR-0004: SPIKE Keeper Minimalist Design Approach</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0003/">ADR-0003: Root Key Management and Storage Strategy</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0002/">ADR-0002: Use Docsify for Documentation System</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0001/">ADR-0001: Display Secrets in Plain Text in SPIKE Pilot Admin CLI</a></li>
+</ul>
+<hr />
+<ul>
+<li><a href="https://spike.ist/architecture/system-overview/"><strong>SPIKE</strong> System Overview</a></li>
+<li><a href="https://spike.ist/architecture/security-model/"><strong>SPIKE</strong> Security Model</a></li>
+<li><a href="https://spike.ist/architecture/architectural-decision-records/"><strong>SPIKE</strong> Architectural Decision Records</a></li>
+</ul>
+
+    
+        </article>
+
+        <footer id="footer">
+            Copyright © 2024-present <strong>SPIKE Contributors</strong>.<br>
+            <strong>SPIKE</strong>'s code
+            is distributed under <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache (v2.0)</a>.
+            <br>
+            The documentation on this website
+            is distributed under <a href="https://creativecommons.org/licenses/by/4.0/">CC-BY-4.0</a>.
+            <br><br>
+            We <strong>do not</strong> collect your data.
+            This site <strong>does not</strong> use any tracking cookies or scripts.
+        </footer>
+    </div>
+
+</main>
+
+
+    <script type="text/javascript" src="https://spike.ist/elasticlunr.min.js" defer></script>
+    <script type="text/javascript" src="https://spike.ist/search_index.en.js" defer></script>
+<script type="text/javascript" src="https://spike.ist/js.js" defer></script>
+</body>
+</html>
+<style>
+body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    font-family: var(--font-family);
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+}
+
+main {
+    width: 100vw;
+    max-width: 1920px;
+    display: flex;
+    flex-direction: row;
+    overflow: hidden;
+}
+
+#footer {
+    text-align: center;
+    padding: 2rem;
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    border-top: 1px solid var(--border-color);
+    margin-top: 2rem;
+}
+
+.content {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    height: 100vh;
+    overflow-y: auto;
+    background-color: var(--bg-primary);
+    line-height: 1.6;
+    border-left: 1px solid var(--border-color);
+}
+
+#footer a {
+    color: var(--spike-blue);
+    text-decoration: none;
+    transition: all 0.2s ease;
+    border-bottom: 1px solid transparent;
+    font-weight: 500;
+
+}
+
+#footer a:hover {
+    border-bottom-color: var(--spike-blue);
+}
+
+</style>

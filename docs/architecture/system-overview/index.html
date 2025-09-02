@@ -1,0 +1,1176 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://spike.ist/main.css">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link rel="icon" href="https://spike.ist/assets/spike-favicon-16x16.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+    <title> SPIKE | System Overview </title>
+</head>
+<body>
+
+<main>
+    
+    <nav>
+  <script>
+    fetch('https://api.github.com/repos/spiffe/spike/releases/latest')
+        .then(response => response.json())
+        .then(data => {
+            const release = document.getElementById('release');
+            const icon = '<i class="bx bx-package"></i>';
+            release.href = data.name ? data.html_url : 'https://api.github.com/repos/spiffe/spike/releases';
+            release.innerHTML = icon + (data.name ? ' ' + data.name : ' Releases');
+        });
+</script>
+<div id="banner">
+    <a href="https://spike.ist">
+        <img src="https://spike.ist/assets/spike-banner.png" alt="logo" />
+    </a>
+    <div id="banner-body">
+        <a class="banner-title" href="https://spike.ist">
+            SPIKE
+        </a>
+        <span class="banner-tagline">
+            Secure your secrets<br> with SPIFFE.
+        </span>
+        <a id="release" class="banner-link" href="https://github.com/spiffe/spike/releases">
+            <i class='bx bx-package'></i>
+        </a>
+        <a href="https://github.com/spiffe/spike" class="banner-link">
+            <i class='bx bxl-github'></i> GitHub
+        </a>
+
+    </div>
+</div>
+<style>
+   /* Banner on top of the nav */
+   #banner {
+        position: sticky;
+        background-color: var(--bg-primary);
+        z-index: 100;
+        top: 0;
+        display: flex;
+        flex-direction: row;
+        padding: 1rem;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        margin-bottom: 1rem;
+    }
+
+    #banner img {
+        width: 100px;
+        height: auto;
+    }
+
+    #banner-body {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        justify-content: space-between;
+        margin-left: 1rem;
+    }
+
+    .banner-title {
+        font-size: 1.75rem;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        margin-bottom: -15px;
+        font-family: var(--brand-font-family);
+    }
+    .banner-tagline {
+        font-size: 0.875rem;
+        color: var(--text-muted);
+        font-style: italic;
+    }
+
+    .banner-link {
+        display: flex;
+        gap: 0.5rem;
+        min-width: 84px;
+        font-size: 0.875rem;
+        font-weight: 300;
+        padding: 0.25rem 0.75rem;
+        border-radius: 4px;
+        background-color: var(--bg-interactive);
+        transition: all 0.2s ease;
+    }
+
+    .banner-link i {
+        font-size: 1.125rem;
+        color: var(--spike-blue);
+    }
+
+    .banner-link:hover {
+        background-color: var(--spike-blue);
+    }
+</style> <div id="trees">
+    <input class="tree-toggle" type="checkbox" id="about"
+               />
+        <label class="tree-toggle-label "
+               for="about">About</label>
+
+        <ul class="subtree">
+            <li >
+                    <a href="https://spike.ist/about/intro/">About SPIKE</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/about/project-status/">Project Maturity</a>
+                </li>
+
+                </ul>
+    <input class="tree-toggle" type="checkbox" id="community"
+               />
+        <label class="tree-toggle-label "
+               for="community">Community</label>
+
+        <ul class="subtree">
+            <li >
+                    <a href="https://spike.ist/community/hello/">Hello Universe</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/community/contact/">Contact Us</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/community/presentations/">Presentations and Demos</a>
+                </li>
+
+                </ul>
+    <input class="tree-toggle" type="checkbox" id="getting-started"
+               />
+        <label class="tree-toggle-label "
+               for="getting-started">Getting Started</label>
+
+        <ul class="subtree">
+            <li >
+                    <a href="https://spike.ist/getting-started/quickstart/">SPIKE Quickstart Guide</a>
+                </li>
+
+                </ul>
+    <input class="tree-toggle" type="checkbox" id="using-spike"
+               />
+        <label class="tree-toggle-label "
+               for="using-spike">Using SPIKE</label>
+
+        <ul class="subtree">
+            <li >
+                    <a href="https://spike.ist/usage/configuration/">Configuring SPIKE</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/usage/cli/">SPIKE CLI</a>
+                </li>
+
+                </ul>
+    <input class="tree-toggle" type="checkbox" id="developing-spike"
+               />
+        <label class="tree-toggle-label "
+               for="developing-spike">Developing SPIKE</label>
+
+        <ul class="subtree">
+            <li >
+                    <a href="https://spike.ist/development/local-deployment/">SPIKE on Kubernetes</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/development/bare-metal/">SPIKE on Linux</a>
+                </li>
+
+                </ul>
+    <input class="tree-toggle" type="checkbox" id="spike-architecture"
+               checked/>
+        <label class="tree-toggle-label "
+               for="spike-architecture">SPIKE Architecture</label>
+
+        <ul class="subtree">
+            <li class="active">
+                    <a href="https://spike.ist/architecture/system-overview/">System Overview</a>
+                </li>
+
+                
+                        
+                        
+                            <ul id="toc">
+                                <li><a href="
+                                            https://spike.ist/architecture/system-overview/#spike-system-overview">SPIKE System Overview</a>
+                                        <ul>
+                                                <li>
+                                                        <a href="https://spike.ist/architecture/system-overview/#spike-components">SPIKE Components</a>
+                                                    </li>
+                                                <li>
+                                                        <a href="https://spike.ist/architecture/system-overview/#identity-control-plane">Identity Control Plane</a>
+                                                    </li>
+                                                <li>
+                                                        <a href="https://spike.ist/architecture/system-overview/#spike-component-interaction">SPIKE Component Interaction</a>
+                                                    </li>
+                                                <li>
+                                                        <a href="https://spike.ist/architecture/system-overview/#spike-nexus-root-key-sharding">SPIKE Nexus Root Key Sharding</a>
+                                                    </li>
+                                                <li>
+                                                        <a href="https://spike.ist/architecture/system-overview/#spike-nexus-init-flow">SPIKE Nexus Init Flow</a>
+                                                    </li>
+                                                <li>
+                                                        <a href="https://spike.ist/architecture/system-overview/#spike-break-the-glass-disaster-recovery">SPIKE “break-the-glass” Disaster Recovery</a>
+                                                    </li>
+                                                <li>
+                                                        <a href="https://spike.ist/architecture/system-overview/#spike-components-1">SPIKE Components</a>
+                                                    </li>
+                                                </ul>
+                                        </li>
+                                </ul>
+                        <li >
+                    <a href="https://spike.ist/architecture/security-model/">SPIKE Security Model</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/architecture/architectural-decision-records/">ADRs</a>
+                </li>
+
+                </ul>
+    <input class="tree-toggle" type="checkbox" id="tracking"
+               />
+        <label class="tree-toggle-label "
+               for="tracking">Tracking</label>
+
+        <ul class="subtree">
+            <li >
+                    <a href="https://spike.ist/tracking/changelog/">Changelog</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/tracking/snapshots/">Documentation Snapshots</a>
+                </li>
+
+                </ul>
+    <input class="tree-toggle" type="checkbox" id="operations"
+               />
+        <label class="tree-toggle-label "
+               for="operations">Operations</label>
+
+        <ul class="subtree">
+            <li >
+                    <a href="https://spike.ist/operations/build/">SPIKE Cross-Platform Build</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/operations/production/">SPIKE Production Setup</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/operations/recovery/">SPIKE Recovery Procedures</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/operations/backup/">SPIKE Backup and Restore</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/operations/release/">SPIKE Relase Management</a>
+                </li>
+
+                </ul>
+    </div>
+<style>
+    /* Navigation tree structure */
+    #trees {
+        padding: 0 1rem;
+    }
+
+    .tree-toggle {
+        display: none;
+    }
+
+    .tree-toggle:checked + .tree-toggle-label + .subtree {
+        display: block;
+    }
+
+    .tree-toggle-label {
+        display: block;
+        padding: 0.75rem 1rem;
+        margin: 0.25rem 0;
+        border-radius: 6px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .tree-toggle-label:hover {
+        background-color: rgba(0, 0, 0, 0.05);
+    }
+
+    .tree-toggle-label::before {
+        content: '▸';
+        display: inline-block;
+        margin-right: 0.5rem;
+        transition: transform 0.2s ease;
+    }
+
+    .tree-toggle:checked + .tree-toggle-label::before {
+        transform: rotate(90deg);
+    }
+
+    .subtree {
+        display: none;
+        margin: 0;
+        padding: 0 0 0 1rem;
+        list-style: none;
+    }
+
+    .subtree li {
+        margin: 0.25rem 0;
+    }
+
+    .subtree li a {
+        display: block;
+        padding: 0.5rem 1rem;
+        text-decoration: none;
+        border-radius: 4px;
+        font-size: 0.9375rem;
+        transition: all 0.2s ease;
+    }
+
+    .subtree li a:hover {
+        background-color: rgba(0, 0, 0, 0.05);
+    }
+
+    .subtree li.active a {
+        font-weight: 600;
+        background-color: rgba(0, 0, 0, 0.05);
+    }
+
+    /* Table of contents styling */
+    #toc {
+        margin: 0.5rem 0 0.5rem 1.5rem;
+        padding: 0;
+        list-style: none;
+        font-size: 0.875rem;
+    }
+
+    #toc li {
+        margin: 0.25rem 0;
+    }
+
+    #toc li a {
+        padding: 0.375rem 0.75rem;
+        opacity: 0.8;
+    }
+
+    #toc li a:hover {
+        opacity: 1;
+    }
+
+    #toc ul {
+        margin: 0.25rem 0 0.25rem 1rem;
+        padding: 0;
+        list-style: none;
+    }
+</style>
+</nav>
+<style>
+  nav {
+    position: sticky;
+    width: 300px;
+    height: 100vh;
+    top: 0;
+    max-height: 100vh;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 0, 0, 0.3) transparent;
+    z-index: 100;
+    box-shadow: 5px 0 20px var(--shadow-color);
+    border-right: 1px solid var(--border-color);
+    transition: transform 0.4s ease-in-out;
+    background-color: var(--bg-primary);
+  }
+
+  nav::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  nav::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  nav::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.3);
+    border-radius: 4px;
+    border: 2px solid transparent;
+  }
+
+  @media (max-width: 1300px) {
+    .nav-toggle {
+      display: none;
+    }
+
+    nav {
+      position: fixed;
+      transform: translateX(-100%);
+      width: 85%;
+      max-width: 300px;
+      height: calc(100vh - 57px);
+      top: 57px;
+    }
+
+    nav.active {
+      transform: translateX(0);
+    }
+  }
+</style>
+
+
+    <div class="content">
+        <div class="header">
+  <div class="header-content">
+    <button
+      id="mobile-nav-toggle"
+      aria-label="Toggle navigation"
+      class="mobile-only"
+    >
+      <i class="bx bx-menu"></i>
+    </button>
+    <script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const searchInput = document.querySelector(".search-input");
+    const overlay = document.querySelector(".overlay");
+    const searchResults = document.querySelector(".search-results");
+
+    function closeSearch() {
+      overlay.style.display = "none";
+      searchResults.style.display = "none";
+      searchInput.blur();
+    }
+
+    function openSearch() {
+      overlay.style.display = "block";
+      searchResults.style.display = "block";
+    }
+
+    searchInput.addEventListener("focus", openSearch);
+    overlay.addEventListener("click", closeSearch);
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        closeSearch();
+      }
+    });
+  });
+</script>
+<div class="overlay"></div>
+<input class="search-input" type="text" placeholder="Search..." />
+<div class="search-results">
+  <div class="search-results__header">
+    <span class="search-results__count">Waiting for input...</span>
+  </div>
+  <div class="search-results__items"></div>
+</div>
+
+<style>
+  .search-input {
+    width: 100%;
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background-color: var(--bg-interactive);
+    color: var(--text-primary);
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+    z-index: 101;
+  }
+
+  .search-input:focus {
+    outline: none;
+    border-color: var(--spike-blue);
+    background-color: var(--bg-primary);
+    box-shadow: 0 0 0 2px rgba(var(--spike-blue-rgb), 0.2);
+  }
+
+  .search-input::placeholder {
+    color: var(--text-muted);
+  }
+
+  .overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 100;
+  }
+
+  .search-results {
+    display: none;
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 100%;
+    max-width: 700px;
+    margin: 0.5rem auto;
+    background: var(--bg-primary);
+    border-radius: 8px;
+    box-shadow: 0px 4px 8px 3px rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--border-color);
+    z-index: 102;
+  }
+
+  .search-results__header {
+    padding: 0.75rem 1rem;
+    color: var(--text-muted);
+    font-size: 0.875rem;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .search-results__items {
+    max-height: 60vh;
+    overflow-y: auto;
+  }
+
+  .search-results__item {
+    display: block;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--border-color);
+    transition: background-color 0.2s ease;
+  }
+
+  .search-results__item:hover {
+    background-color: var(--bg-interactive);
+  }
+
+  .search-results__title {
+    color: var(--spike-blue);
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+  }
+
+  .search-results__preview {
+    color: var(--text-secondary);
+    font-size: 0.8125rem;
+    line-height: 1.4;
+  }
+
+  .search-results__preview b {
+    color: var(--spike-dark-green);
+    font-weight: 600;
+  }
+
+  .search-results__items::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  .search-results__items::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 4px;
+  }
+
+  /* Empty state */
+  .search-results__empty {
+    padding: 2rem 1rem;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.875rem;
+  }
+</style>
+
+    <a
+      href="https://github.com/spiffe/spike"
+      target="_blank"
+      rel="noopener"
+      class="github-star"
+    >
+      <i class="bx bx-star"></i>
+      <span>Star <strong>SPIKE</strong> on <strong>GitHub</strong></span>
+    </a>
+    <button id="theme-toggle" aria-label="Toggle theme">
+      <i class="bx bx-sun light-icon"></i>
+      <i class="bx bx-moon dark-icon"></i>
+    </button>
+  </div>
+</div>
+
+<style>
+  .header {
+    position: sticky;
+    top: 0;
+    background-color: var(--bg-primary);
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color);
+    box-shadow: 0 4px 6px -1px var(--shadow-color),
+      0 2px 4px -1px var(--shadow-color);
+    z-index: 101;
+  }
+
+  .header-content {
+    max-width: 800px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  #mobile-nav-toggle {
+    display: none;
+    background: none;
+    border: none;
+    padding: 0.5rem;
+    cursor: pointer;
+    color: var(--text-primary);
+    font-size: 1.5rem;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+  }
+
+  #mobile-nav-toggle i {
+    pointer-events: none;
+    display: block;
+  }
+
+  #mobile-nav-toggle:hover {
+    background-color: var(--bg-interactive);
+  }
+
+  @media (max-width: 1300px) {
+    #mobile-nav-toggle {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+    }
+  }
+
+  #theme-toggle {
+    background: none;
+    border: none;
+    padding: 0.5rem;
+    cursor: pointer;
+    color: var(--text-primary);
+    font-size: 1.25rem;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  #theme-toggle:hover {
+    background-color: var(--bg-interactive);
+  }
+
+  #theme-toggle:active {
+    background-color: var(--bg-secondary);
+  }
+
+  /* Show/hide icons based on theme */
+  [data-theme="dark"] .light-icon,
+  :root:not([data-theme="dark"]) .dark-icon {
+    display: none;
+  }
+
+  /* GitHub Star Button */
+  .github-star {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    color: white;
+    text-decoration: none;
+    background: linear-gradient(
+      135deg,
+      var(--spike-blue),
+      var(--spike-dark-green)
+    );
+    border-radius: 20px;
+    transition: all 0.2s ease;
+    font-size: 0.875rem;
+    white-space: nowrap;
+  }
+
+  .github-star:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(var(--spike-blue-rgb), 0.3);
+  }
+
+  .github-star i {
+    font-size: 1.1rem;
+    animation: starBounce 2s infinite;
+    color: #ffd700;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+  }
+
+  @keyframes starBounce {
+    0%,
+    100% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.2);
+    }
+  }
+
+  .github-star span {
+    white-space: nowrap;
+  }
+
+  @media (max-width: 768px) {
+    .github-star span {
+      display: none;
+    }
+
+    .github-star {
+      padding: 0.5rem;
+    }
+  }
+</style>
+
+<script>
+  // Theme toggle functionality
+  document.addEventListener("DOMContentLoaded", () => {
+    const themeToggle = document.getElementById("theme-toggle");
+
+    // Function to set theme
+    function setTheme(theme) {
+      document.documentElement.setAttribute("data-theme", theme);
+      localStorage.setItem("theme", theme);
+    }
+
+    // Initialize theme
+    const savedTheme = localStorage.getItem("theme");
+    if (savedTheme) {
+      setTheme(savedTheme);
+    } else if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+      setTheme("dark");
+    }
+
+    // Toggle theme on button click
+    themeToggle.addEventListener("click", () => {
+      const currentTheme = document.documentElement.getAttribute("data-theme");
+      const newTheme = currentTheme === "dark" ? "light" : "dark";
+      setTheme(newTheme);
+    });
+
+    // Listen for system theme changes
+    window
+      .matchMedia("(prefers-color-scheme: dark)")
+      .addEventListener("change", (e) => {
+        if (!localStorage.getItem("theme")) {
+          setTheme(e.matches ? "dark" : "light");
+        }
+      });
+  });
+</script>
+
+
+        <article>
+            
+        <h1 id="spike-system-overview">SPIKE System Overview</h1>
+<p>This document provides an overview of <strong>SPIKE</strong>, a <a href="https://spiffe.io/" title="SPIFFE"><strong>SPIFFE</strong></a>-native
+Secrets Management solution. It is designed to ensure secure storage, recovery,
+and management of sensitive data with a focus on simplicity, reliability,
+and scalability for production environments.</p>
+<h2 id="spike-components">SPIKE Components</h2>
+<p><strong>SPIKE</strong> (<em>Secure Production Identity for Key Encryption</em>) is a Secrets
+Management system built on top of a <a href="https://spiffe.io/" title="SPIFFE"><strong>SPIFFE</strong></a> (<em>Secure Production
+Identity Framework for Everyone</em>) identity control plane, consisting of three
+components:</p>
+<ul>
+<li><strong>SPIKE Nexus</strong> (<code>./nexus</code>): The secrets store</li>
+<li><strong>SPIKE Pilot</strong> (<code>./spike</code>): The CLI</li>
+<li><strong>SPIKE Keeper</strong> (<code>./keeper</code>): The redundancy mechanism</li>
+</ul>
+<p>The system provides high availability for secret storage with a manual recovery
+mechanism in case of irrecoverable failure.</p>
+<h2 id="identity-control-plane">Identity Control Plane</h2>
+<p>The following diagram shows how <a href="https://spiffe.io/docs/latest/spire-about/spire-concepts/#a-day-in-the-life-of-an-svid" title="A Day in the Life of an SVID"><strong>SVID</strong>s</a> are assigned to <strong>SPIKE</strong>
+components and other actors in the system. <strong>SVID</strong>s, or <em>SPIFFE-Verifiable
+Identity Documents</em>, are <a href="https://en.wikipedia.org/wiki/X.509" title="X.509">x.509 Digital Certificates</a>, that contain
+a <a href="https://spiffe.io/docs/latest/spiffe-about/spiffe-concepts/" title="SPIFFE Concepts"><strong>SPIFFE ID</strong></a> in their <a href="https://en.wikipedia.org/wiki/Public_key_certificate" title="Public Key Certificate">SAN</a> (<em>Subject Alternative Name</em>)</p>
+<p>The following diagram illustrates how <strong>SPIFFE</strong> identities are distributed
+across different <strong>SPIKE</strong> system components using <strong>SPIRE</strong> as the identity
+control plane.</p>
+
+<a href="&#x2F;assets&#x2F;docs&#x2F;spike-svid-assignment.jpg" title="Establishing the Identity Control Plane.">
+    <div class="z2h-image">
+        <p class="img"><img src="&#x2F;assets&#x2F;docs&#x2F;spike-svid-assignment.jpg" alt="Establishing the Identity Control Plane."/></p>
+        <p class="alt" style="text-align: center; font-style: italic;
+    margin-top: -1.125em; font-size: 1em;">Establishing the Identity Control Plane.</p>
+    </div>
+</a>
+<p>In a <strong>SPIKE</strong> deployment, <strong>SPIRE</strong> acts as the central authority that issues
+<strong>SVID</strong>s to different workloads:</p>
+<ul>
+<li>Applications who need to manage secret lifecycles stored in <strong>SPIKE Nexus</strong>.</li>
+<li><strong>SPIKE</strong> Infrastructure components:
+<ul>
+<li><strong>SPIKE</strong> Nexus</li>
+<li><strong>SPIKE</strong> Pilot</li>
+<li>Multiple <strong>SPIKE</strong> Keeper instances.</li>
+</ul>
+</li>
+</ul>
+<p>Each component receives its own SVID, which serves as a
+<strong>cryptographically verifiable</strong> identity document. These SVIDs allow the
+components to:</p>
+<ul>
+<li>Prove their identity to other services</li>
+<li>Establish secure, authenticated <a href="https://www.cloudflare.com/learning/access-management/what-is-mutual-tls/" title="What is mTLS"><strong>mTLS</strong></a> connections</li>
+<li>Access resources they’re authorized to use</li>
+<li>Communicate securely with other components in the system</li>
+</ul>
+<p>The dashed boxes represent distinct security and deployment boundaries.
+<strong>SPIRE</strong> provides identity management capabilities that span across these
+trust boundaries. This architecture allows administrative operations to be
+performed on a hardened, secured <strong>SPIRE Server</strong> instance (<em>shown in the top
+yellow box</em>), while restricting direct access to sensitive operations
+(<em>like creating SPIRE Server registration entries</em>) from users and applications
+located in other trust boundaries.</p>
+<blockquote>
+<p><strong>Zero Trust FTW!</strong></p>
+<p>The approached described here is a common pattern in <strong>zero-trust</strong>
+architectures, where every service needs to have a strong, verifiable
+identity regardless of its network location.</p>
+<p>This approach is more secure than traditional methods like shared secrets or
+network-based security, as each workload gets its own unique, short-lived
+identity that can be automatically rotated and revoked if needed.</p>
+</blockquote>
+<h2 id="spike-component-interaction">SPIKE Component Interaction</h2>
+<p>The following diagram depicts how various <strong>SPIKE</strong> components interact with
+each other:</p>
+
+<a href="&#x2F;assets&#x2F;docs&#x2F;spike-secret-management.jpg" title="Secret Management in SPIKE.">
+    <div class="z2h-image">
+        <p class="img"><img src="&#x2F;assets&#x2F;docs&#x2F;spike-secret-management.jpg" alt="Secret Management in SPIKE."/></p>
+        <p class="alt" style="text-align: center; font-style: italic;
+    margin-top: -1.125em; font-size: 1em;">Secret Management in SPIKE.</p>
+    </div>
+</a>
+<p>At the top level, there’s an Application that consumes secrets through an
+mTLS (mutual TLS) connection to SPIKE Nexus. The application will likely use
+the <a href="https://github.com/spiffe/spike-sdk-go" title="SPIKE Go SDK"><strong>SPIKE Developer SDK</strong></a> to consume secrets without having
+to implement the underlying SPIFFE mTLS wiring.</p>
+<p>The secrets are created/managed through:</p>
+<p>An administrative user interacting with <strong>SPIKE Pilot</strong> through a command line
+interface (<em>the CLI is the <code>spike</code> binary itself</em>).</p>
+<p>Then, <strong>SPIKE Pilot</strong> communicates with <strong>SPIKE Nexus</strong> over <strong>mTLS</strong> to create
+secrets.</p>
+<p><strong>SPIKE Nexus</strong> is the central management point for secrets. It’s our
+secrets store.</p>
+<p>At the bottom of the diagram, multiple <strong>SPIKE Keeper</strong>s connect to
+<strong>SPIKE Nexus</strong> via mTLS. Each <strong>SPIKE Keeper</strong> holds a single
+<a href="https://en.wikipedia.org/wiki/Shamir%27s_secret_sharing" title="Shamir&#39;s Secret Sharing"><strong>Shamir Secret Share</strong></a> (<em>shard</em>) of the <strong>root key</strong> that
+<strong>SPIKE Nexus</strong> maintains in memory.</p>
+<p>This design ensures that compromising any individual <strong>SPIKE Keeper</strong> cannot
+breach the system, as a single shard is insufficient to reconstruct the
+root key.</p>
+<p>The system’s security can be tuned by configuring both the total number of
+<strong>SPIKE Keepers</strong> and the **threshold **of required shards needed to reconstruct
+the root key.</p>
+<p>During system bootstrapping, <strong>SPIKE Nexus</strong> distributes these shards to the
+<strong>SPIKE Keeper</strong>s. If <strong>SPIKE Nexus</strong> crashes or restarts, it automatically
+recovers by requesting shards from a threshold number of healthy
+<strong>SPIKE Keeper</strong>s to reconstruct the <strong>root key</strong>.</p>
+<p>This mechanism provides automatic resiliency and redundancy without requiring
+manual intervention or “<em>unsealing</em>” operations that are common in other secret
+management solutions.</p>
+<p>The system’s security and availability can be tuned by configuring both the
+total number of <strong>SPIKE Keeper</strong>s and the <strong>threshold</strong> of required shards
+needed to reconstruct the root key. This flexibility allows implementors to
+balance their security requirements against operational needs–from basic
+redundancy to highly paranoid configurations requiring many <strong>SPIKE Keeper</strong>s
+to be healthy.</p>
+<p><strong>Both the individual shards and the assembled root key are exclusively held in
+memory and NEVER persisted to disk</strong>, forming a core aspect of SPIKE’s security
+model.</p>
+<p>The system uses mTLS (mutual TLS) throughout for secure communication between
+components, which ensures:</p>
+<ul>
+<li>All communications are encrypted</li>
+<li>Both sides of each connection authenticate each other</li>
+<li>The system maintains a high level of security for secret management</li>
+</ul>
+<h2 id="spike-nexus-root-key-sharding">SPIKE Nexus Root Key Sharding</h2>
+<p>The following diagram shows how the <strong>SPIKE Nexus</strong> <em>root key</em> is split into
+shards and then delivered to <strong>SPIKE Keeper</strong>s:</p>
+
+<a href="&#x2F;assets&#x2F;docs&#x2F;spike-shamir-sharding.jpg" title="Secret Nexus root key sharding.">
+    <div class="z2h-image">
+        <p class="img"><img src="&#x2F;assets&#x2F;docs&#x2F;spike-shamir-sharding.jpg" alt="Secret Nexus root key sharding."/></p>
+        <p class="alt" style="text-align: center; font-style: italic;
+    margin-top: -1.125em; font-size: 1em;">Secret Nexus root key sharding.</p>
+    </div>
+</a>
+<p>The <strong>SPIKE Nexus</strong> has a <strong>root key</strong> that’s essential for encrypting the
+backing store. This <strong>root key</strong> is split into <a href="https://en.wikipedia.org/wiki/Shamir%27s_secret_sharing" title="Shamir&#39;s Secret Sharing">Shamir shards</a> based
+on a configurable number and threshold. There should be as many keepers as
+the created shards.</p>
+<p>The key advantage of using <em>Shamir sharding</em> specifically (<em>versus other forms
+of key splitting</em>) is that it’s <strong>mathematically secure</strong>: The shards are
+created using polynomial interpolation, meaning:</p>
+<ul>
+<li>Each shard contains no meaningful information about the original key by itself</li>
+<li>You need a threshold number of shards to reconstruct the key</li>
+<li>The system can be configured to require any M of N shards to reconstruct the
+root key (<em>e.g., any 2 of 3, or 3 of 5, etc.</em>)</li>
+</ul>
+<p>This provides both security and fault tolerance: The system can continue
+operating even if some <strong>SPIKE Keeper</strong>s become temporarily unavailable, as
+long as the threshold number of shards remains accessible.</p>
+<h2 id="spike-nexus-init-flow">SPIKE Nexus Init Flow</h2>
+<p>The following diagram depicts <strong>SPIKE Nexus</strong> initial bootstrapping flow:</p>
+
+<a href="&#x2F;assets&#x2F;docs&#x2F;spike-nexus-bootstrapping.jpg" title="Secret Nexus bootstrapping.">
+    <div class="z2h-image">
+        <p class="img"><img src="&#x2F;assets&#x2F;docs&#x2F;spike-nexus-bootstrapping.jpg" alt="Secret Nexus bootstrapping."/></p>
+        <p class="alt" style="text-align: center; font-style: italic;
+    margin-top: -1.125em; font-size: 1em;">Secret Nexus bootstrapping.</p>
+    </div>
+</a>
+<p>When <strong>SPIKE Nexus</strong> is configured to use an <strong>in-memory</strong> backing store, we
+don’t need <strong>SPIKE Keeper</strong> because the database is in <strong>SPIKE Nexus</strong>’s memory
+and there is nothing to recover if <strong>SPIKE Nexus</strong> crashes. This is a convenient
+setup to use for <strong>development</strong> purposes.</p>
+<p>When <strong>SPIKE Nexus</strong> is configured to use a persistent backing store (<em>like
+SQLite</em>), however, then it will follow two paths.</p>
+<ul>
+<li>If <strong>SPIKE Nexus</strong> has bootstrapped before, then it has just crashed. Which
+means, it has lost its <strong>root key</strong>. So, it will try to recover its
+<strong>root key</strong> by requesting <strong>shards</strong> from the <strong>SPIKE Keeper</strong>s.</li>
+<li>If, otherwise, it’s the first time <strong>SPIKE Nexus</strong> is bootstrapping, then
+we compute a secure <strong>root key</strong>, initialize the backing store with that
+root key. Split the root key into <a href="https://en.wikipedia.org/wiki/Shamir%27s_secret_sharing" title="Shamir&#39;s Secret Sharing"><strong>Shamir</strong></a> shards, and send those
+shards to relevant <strong>SPIKE Keeper</strong> instances.</li>
+</ul>
+<p>Regardless of the above flow, there is an ongoing operation (<em>shown in the
+bottom part of the diagram</em>) that runs as a separate <strong>goroutine</strong>.</p>
+<ul>
+<li>At regular intervals, if <strong>SPIKE Nexus</strong> happens to have a <strong>root key</strong>, it
+computes <a href="https://en.wikipedia.org/wiki/Shamir%27s_secret_sharing" title="Shamir&#39;s Secret Sharing"><strong>Shamir</strong></a> shards out of it and dispatches these shards
+to the <strong>SPIKE Keeper</strong>s.</li>
+</ul>
+<p>This flow establishes a secure boot process that handles both initial setup and
+subsequent startups. The system ensures the <strong>root key</strong> is either properly
+recovered from existing shards or securely generated and distributed when
+starting fresh.</p>
+<p>There is one edge case, though: When there is a total system crash, and <strong>SPIKE
+Keeper</strong>s don’t have any shards in their memory, then you’ll need a manual
+recovery.</p>
+<p>This event is highly unlikely, as deploying a sufficient number of <strong>SPIKE
+Keepers</strong> with proper geographic distribution significantly reduces the
+probability of them all crashing simultaneously. Since <strong>SPIKE Keepers</strong> are
+designed to operate independently and without requiring intercommunication,
+failures caused by systemic issues are minimized. By ensuring redundancy across
+diverse geographic locations, even large-scale outages or localized failures are
+highly improbable to impact all <strong>SPIKE Keepers</strong> at once.</p>
+<p>That being said, unexpected failures can occur, and the disaster recovery
+procedure for these situations is described in the next section.</p>
+<h2 id="spike-break-the-glass-disaster-recovery">SPIKE “break-the-glass” Disaster Recovery</h2>
+<blockquote>
+<p><strong>Need a Runbook</strong>?</p>
+<p>The <a href="/@/operations/recovery.md"><strong>SPIKE Recovery Procedures</strong></a> page contains
+step-by-step instructions to follow during, before, and a disaster occurs.</p>
+<p>You will need to prepare <strong>beforehand</strong> so that you can recover the root
+key when the system fails to automatically recover it from <strong>SPIKE Keeper</strong>s.</p>
+</blockquote>
+<p>The following diagram outlines <strong>SPIKE</strong>’s manual disaster recovery procedure.
+You can open the picture on a new tab for an enlarged version of it.</p>
+
+<a href="&#x2F;assets&#x2F;docs&#x2F;spike-doomsday-recovery.jpg" title="SPIKE Manual disaster recovery flow.">
+    <div class="z2h-image">
+        <p class="img"><img src="&#x2F;assets&#x2F;docs&#x2F;spike-doomsday-recovery.jpg" alt="SPIKE Manual disaster recovery flow."/></p>
+        <p class="alt" style="text-align: center; font-style: italic;
+    margin-top: -1.125em; font-size: 1em;">SPIKE Manual disaster recovery flow.</p>
+    </div>
+</a>
+<h3 id="preventive-backup">Preventive Backup</h3>
+<blockquote>
+<p><strong>Run <code>spik recover</code> as Soon as You Can</strong></p>
+<p>You must back up the <strong>root key</strong> shards using <code>spike recover</code> <strong>BEFORE</strong> a
+disaster strikes.</p>
+<p>This is like having a spare key stored in a safe place before you lose your
+main keys. Without this proactive backup step, there would be nothing to
+recover from in a catastrophic failure.</p>
+</blockquote>
+<p>This operation needs to be done <strong>BEFORE</strong> any disaster; ideally, shortly after
+deploying <strong>SPIKE</strong>.</p>
+<p>Here is how the flow goes:</p>
+<ul>
+<li>The Operator runs <code>spike recover</code> using <strong>SPIKE Pilot</strong>.</li>
+<li><strong>SPIKE Pilot</strong> saves the recovery shards on the home directory of the system/</li>
+<li>The Operator encrypts and stores these shards in a secure medium, and securely
+erases the copies generated as an output to <code>spike recover</code>.</li>
+</ul>
+<p>When later recovery is needed, the Operator will provide these shards to
+<strong>SPIKE</strong> to restore the system back to its working state.</p>
+<h3 id="disaster-recovery">Disaster Recovery</h3>
+<p>When disaster strikes (<em>shown in the red box</em>):</p>
+<ul>
+<li><strong>SPIKE Nexus</strong> and SPIKE Keepers have simultaneously crashed and restarted.</li>
+<li><strong>SPIKE Nexus</strong> has <strong>lost</strong> its <strong>root key</strong></li>
+<li><strong>SPIKE Keeper</strong>s don’t have enough shards</li>
+<li>Thus, automatic recovery is impossible and the system requires manual
+recovery.</li>
+</ul>
+<p>In that case, the Operator uses <code>spike restore</code> to provide the previously
+backed-up shards one at a time</p>
+<ul>
+<li><strong>SPIKE Pilot</strong> forwards the entered shard to <strong>SPIKE Nexus</strong></li>
+<li>System acknowledges and tracks the progress of shard restoration, returning
+the number of shards received, and the number of shards remaining to restore
+the root key.</li>
+</ul>
+<h3 id="system-restoration">System Restoration</h3>
+<p>Once enough shards are provided, <strong>SPIKE Nexus</strong> reconstructs the <strong>root key</strong>.</p>
+<p>A separate goroutine redistributes shards to <strong>SPIKE Keeper</strong>s and the System
+returns to normal operation.</p>
+<h2 id="spike-components-1">SPIKE Components</h2>
+<p>Here is an overview of each <strong>SPIKE</strong> component:</p>
+<h3 id="spike-nexus">SPIKE Nexus</h3>
+<ul>
+<li><strong>SPIKE Nexus</strong> is the primary component responsible for secrets management.</li>
+<li>It creates and manages the root encryption key.</li>
+<li>It handles secret encryption and decryption.</li>
+<li>It syncs the <strong>root key</strong>’s <a href="https://en.wikipedia.org/wiki/Shamir%27s_secret_sharing" title="Shamir&#39;s Secret Sharing"><strong>Shamir Shards</strong></a> with <strong>SPIKE
+Keepers</strong>s. These shards then can be used to recover <strong>SPIKE Nexus</strong>
+upon a crash.</li>
+<li>It provides an <strong>RESTful mTLS API</strong> for <em>secret lifecycle management</em>,
+<em>policy management</em>, <em>admin operations</em>, and <em>disaster recovery</em>.</li>
+</ul>
+<h3 id="spike-keeper">SPIKE Keeper</h3>
+<ul>
+<li>It is designed to be <strong>simple</strong> and <strong>reliable</strong>.</li>
+<li>It does one thing and does it well.</li>
+<li>Its <strong>only</strong> goal is to keep a <a href="https://en.wikipedia.org/wiki/Shamir%27s_secret_sharing" title="Shamir&#39;s Secret Sharing"><strong>Shamir Shard</strong></a> in <strong>memory</strong>.</li>
+<li>By design, it does not have any knowledge about its peer <strong>SPIKE Keepers</strong>,
+nor <strong>SPIKE Nexus</strong>. It doesn’t require any configuration to be brought up.
+This makes it simple to operate, replace, scale, replicate.</li>
+<li>It enables automatic recovery if <strong>SPIKE Nexus</strong> crashes.</li>
+</ul>
+<p>Since <strong>SPIKE Keeper</strong> only contains a single shard, its compromise will not
+compromise the system.</p>
+<p>The more keepers you have, the more reliable and secure your <strong>SPIKE</strong>
+deployment will be. We recommend <code>5</code> <strong>SPIKE Keeper</strong> instances with a
+shard-generation threshold of <code>3</code>, for production deployments.</p>
+<p><a href="/@/operations/production.md">Check out <strong>SPIKE Production Hardening Guide</strong></a> for more
+details.</p>
+<h3 id="spike-pilot">SPIKE Pilot</h3>
+<ul>
+<li>It is the CLI to the system (<em>i.e., the <code>spike</code> binary that you see
+in the examples</em>).</li>
+<li>It converts CLI commands to <strong>RESTful mTLS API calls</strong> to <strong>SPIKE Nexus</strong>.</li>
+</ul>
+<p><strong>SPIKE Pilot</strong> is the only management entry point to the system.
+Thus, deleting/disabling/removing <strong>SPIKE Pilot</strong> reduces the attack surface
+of the system since admin operations will not be possible without
+<strong>SPIKE Pilot</strong>.</p>
+<p>Similarly, revoking the <strong>SPIRE Server</strong> registration of <strong>SPIKE Pilot</strong>’s
+<strong>SVID</strong> (<em>once SPIKE Pilot is no longer needed</em>) will effectively block
+administrative access to the system, improving the overall security posture.</p>
+<h3 id="builtin-spiffe-ids">Builtin SPIFFE IDs</h3>
+<p><strong>SPIKE Nexus</strong> recognizes the following builtin SPIFFE IDS:</p>
+<ul>
+<li><code>spiffe://$trustRoot/spike/pilot/role/superuser</code>: Super Admin</li>
+<li><code>spiffe://$trustRoot/spike/pilot/role/recover</code>: Recovery Admin</li>
+<li><code>spiffe://$trustRoot/spike/pilot/role/restore</code>: Restore Admin</li>
+</ul>
+<p>You can check out the <a href="https://spike.ist/architecture/security-model/#administrative-access">**Administrative Access section of SPIKE security
+model</a> for more
+information about these roles.</p>
+<p>&nbsp;</p>
+<hr />
+<ul>
+<li><a href="https://spike.ist/architecture/system-overview/"><strong>SPIKE</strong> System Overview</a></li>
+<li><a href="https://spike.ist/architecture/security-model/"><strong>SPIKE</strong> Security Model</a></li>
+<li><a href="https://spike.ist/architecture/architectural-decision-records/"><strong>SPIKE</strong> Architectural Decision Records</a></li>
+</ul>
+<hr />
+<ul>
+<li><a href="https://spike.ist/about/">About</a></li>
+<li><a href="https://spike.ist/community/">Community</a></li>
+<li><a href="https://spike.ist/getting-started/">Getting Started</a></li>
+<li><a href="https://spike.ist/usage/">Using SPIKE</a></li>
+<li><a href="https://spike.ist/development/">Developing SPIKE</a></li>
+<li><a href="https://spike.ist/architecture/">SPIKE Architecture</a></li>
+<li><a href="https://spike.ist/tracking/">Tracking</a></li>
+<li><a href="https://spike.ist/operations/">Operations</a></li>
+</ul>
+
+    
+        </article>
+
+        <footer id="footer">
+            Copyright © 2024-present <strong>SPIKE Contributors</strong>.<br>
+            <strong>SPIKE</strong>'s code
+            is distributed under <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache (v2.0)</a>.
+            <br>
+            The documentation on this website
+            is distributed under <a href="https://creativecommons.org/licenses/by/4.0/">CC-BY-4.0</a>.
+            <br><br>
+            We <strong>do not</strong> collect your data.
+            This site <strong>does not</strong> use any tracking cookies or scripts.
+        </footer>
+    </div>
+
+</main>
+
+
+    <script type="text/javascript" src="https://spike.ist/elasticlunr.min.js" defer></script>
+    <script type="text/javascript" src="https://spike.ist/search_index.en.js" defer></script>
+<script type="text/javascript" src="https://spike.ist/js.js" defer></script>
+</body>
+</html>
+<style>
+body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    font-family: var(--font-family);
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+}
+
+main {
+    width: 100vw;
+    max-width: 1920px;
+    display: flex;
+    flex-direction: row;
+    overflow: hidden;
+}
+
+#footer {
+    text-align: center;
+    padding: 2rem;
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    border-top: 1px solid var(--border-color);
+    margin-top: 2rem;
+}
+
+.content {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    height: 100vh;
+    overflow-y: auto;
+    background-color: var(--bg-primary);
+    line-height: 1.6;
+    border-left: 1px solid var(--border-color);
+}
+
+#footer a {
+    color: var(--spike-blue);
+    text-decoration: none;
+    transition: all 0.2s ease;
+    border-bottom: 1px solid transparent;
+    font-weight: 500;
+
+}
+
+#footer a:hover {
+    border-bottom-color: var(--spike-blue);
+}
+
+</style>

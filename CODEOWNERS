@@ -1,0 +1,11 @@
+#    \\ SPIKE: Secure your secrets with SPIFFE. — https://spike.ist/
+#  \\\\\ Copyright 2024-present SPIKE contributors.
+# \\\\\\\ SPDX-License-Identifier: Apache-2.0
+
+# Lines starting with '#' are comments.
+# Each line is a file pattern followed by one or more owners.
+# More details are here: https://help.github.com/articles/about-codeowners/
+
+## Code Owners (in no particular order) ##
+
+* @v0lkan, @kfox1111, @parlakisik

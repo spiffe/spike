@@ -1,0 +1,97 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: test
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: test
+  template:
+    metadata:
+      annotations:
+        kubectl.kubernetes.io/default-container: main
+      labels:
+        app.kubernetes.io/instance: test
+    spec:
+      initContainers:
+      - name: spike
+        command:
+        - /bin/sh
+        args:
+        - -c
+        - |
+          cp -a /usr/local/bin/spike /pilot
+        image: ghcr.io/spiffe/spike-pilot:dev
+        imagePullPolicy: Never
+        volumeMounts:
+        - name: pilot
+          mountPath: /pilot
+      containers:
+      - command:
+        - /bin/bash
+        args:
+        - -c
+        - |
+          yum install -y tar gzip
+          cd /tmp
+          curl https://dl.min.io/client/mc/release/linux-amd64/mc -o /bin/mc
+          curl -L https://github.com/spiffe/aws-spiffe-workload-helper/releases/download/v0.0.4/aws-spiffe-workload-helper_Linux_x86_64.tar.gz -o /tmp/aws-helper.tgz
+          curl -L https://github.com/spiffe/spiffe-helper/releases/download/v0.10.0/spiffe-helper_v0.10.0_Linux-x86_64.tar.gz -o helper.tgz
+          tar -xvf aws-helper.tgz
+          tar -xvf helper.tgz
+          chmod +x /bin/mc
+          mkdir -p /tmp/creds
+          mkdir -p ~/.aws
+          cat > ~/.aws/config <<EOF
+          [default]
+          credential_process = /tmp/aws-spiffe-workload-helper jwt-credential-process --role-arn arn:minio:iam:::role/MHR2BeH2-q1dHO2yx5U9Mf-tP9Q --audience minio --endpoint http://minio.minio:9000 --workload-api-addr unix:/spiffe-workload-api/spire-agent.sock --hint minio
+          EOF
+          cat > /tmp/helper.conf <<EOF
+          agent_address = "/spiffe-workload-api/spire-agent.sock"
+          cmd = ""
+          cmd_args = ""
+          cert_dir = "/tmp/creds"
+          renew_signal = ""
+          svid_file_name = "tls.crt"
+          svid_key_file_name = "tls.key"
+          svid_bundle_file_name = "ca.pem"
+          daemon_mode = false
+          hint = "spike"
+          EOF
+          touch /tmp/ready
+          while true; do sleep 1000; done
+        name: main
+        readinessProbe:
+          exec:
+            command:
+            - cat
+            - /tmp/ready
+        env:
+        - name: SPIKE_NEXUS_API_URL
+          value: https://spire-spike-nexus.spire-server:443
+        - name: SPIFFE_ENDPOINT_SOCKET
+          value: "unix:///spiffe-workload-api/spire-agent.sock"
+        - name: SPIKE_SYSTEM_LOG_LEVEL
+          value: debug
+        - name: SPIKE_TRUST_ROOT
+          value: example.org
+        - name: SPIKE_TRUST_ROOT_NEXUS
+          value: example.org
+        image: amazon/aws-cli:latest
+        imagePullPolicy: IfNotPresent
+        volumeMounts:
+        - mountPath: /spiffe-workload-api
+          name: spiffe-workload-api
+          readOnly: true
+        - name: pilot
+          mountPath: /usr/local/bin/spike
+          subPath: spike
+          readOnly: true
+      volumes:
+      - name: pilot
+        emptyDir: {}
+      - csi:
+          driver: csi.spiffe.io
+          readOnly: true
+        name: spiffe-workload-api

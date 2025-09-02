@@ -1,0 +1,168 @@
+#    \\ SPIKE: Secure your secrets with SPIFFE. — https://spike.ist/
+#  \\\\\ Copyright 2024-present SPIKE contributors.
+# \\\\\\\ SPDX-License-Identifier: Apache-2.0
+
+# values file for a demo setup:
+# Management Cluster that hosts SPIKE Nexus and SPIKE Pilot.
+
+# Basic SPIRE Server Configuration
+global:
+  openshift: false
+  spire:
+    recommendations:
+      enabled: true
+    namespaces:
+      create: true
+    clusterName: spiffe
+    trustDomain: mgmt.spike.ist
+    caSubject:
+      country: US
+      organization: SPIKE
+      commonName: mgmt.spike.ist
+spire-agent:
+  enabled: true
+spiffe-csi-driver:
+  enabled: true
+spiffe-oidc-discovery-provider:
+  enabled: true
+
+# Don't install SPIKE Keeper here.
+# We will install it to its own cluster.
+spike-keeper:
+  enabled: false
+
+# SPIKE Nexus Settings
+spike-nexus:
+  enabled: true
+  namespaceOverride: spike
+  image:
+    registry: localhost:5000
+    repository: spike-nexus
+    pullPolicy: IfNotPresent
+    tag: "dev"
+
+  # Six shards; two of which can recreate the root key.
+  shamir:
+    shares: 9
+    threshold: 4
+
+  # These six SPIKE Keepers securely store each of these six shards.
+  keeperPeers:
+  # Edge-1:
+  - "https://10.211.55.26:8444"
+  - "https://10.211.55.26:8543"
+  - "https://10.211.55.26:8643"
+  # Edge-2:
+  - "https://10.211.55.27:8444"
+  - "https://10.211.55.27:8543"
+  - "https://10.211.55.27:8643"
+  # Edge-3:
+  - "https://10.211.55.31:8444"
+  - "https://10.211.55.31:8543"
+  - "https://10.211.55.31:8643"
+
+  trustRoot:
+    # SPIKE Pilot is in the mgmt.spike.ist trust domain.
+    # mgmt.spike.ist trust domain also identifies the Management Cluster.
+    pilot: "mgmt.spike.ist"
+    # SPIKE Keepers are in edge-1.spike-ist, and edge-2.spike.ist trust
+    # domains. These trust domains also identify Edge-1, Edge-2,
+    # and Edge-3 clusters.
+    keepers:
+    - "edge-1.spike.ist"
+    - "edge-2.spike.ist"
+    - "edge-3.spike.ist"
+
+# SPIKE Pilot
+spike-pilot:
+  enabled: true
+  namespaceOverride: spike
+  image:
+    registry: localhost:5000
+    repository: spike-pilot
+    pullPolicy: IfNotPresent
+    tag: "dev"
+
+  trustRoot:
+    # SPIKE Nexus is in the mgmt.spike.ist trust domain.
+    # mgmt.spike.ist trust domain also identifies the Management Cluster.
+    nexus: "mgmt.spike.ist"
+
+# SPIRE Server
+spire-server:
+  enabled: true
+
+  # Enable Federation
+  federation:
+    enabled: true
+    bundleEndpoint:
+      address: "0.0.0.0"
+      port: 8443
+
+  controllerManager:
+    # Federate with the following trust domains:
+    clusterFederatedTrustDomains:
+      workload:
+        bundleEndpointProfile:
+          endpointSPIFFEID: spiffe://workload.spike.ist/spire/server
+          type: https_spiffe
+        bundleEndpointURL: https://spiffe-workload-cluster:8443
+        trustDomain: workload.spike.ist
+      edge-1:
+        bundleEndpointProfile:
+          endpointSPIFFEID: spiffe://edge-1.spike.ist/spire/server
+          type: https_spiffe
+        bundleEndpointURL: https://spiffe-edge-cluster-1:8443
+        trustDomain: edge-1.spike.ist
+      edge-2:
+        bundleEndpointProfile:
+          endpointSPIFFEID: spiffe://edge-2.spike.ist/spire/server
+          type: https_spiffe
+        bundleEndpointURL: https://spiffe-edge-cluster-2:8443
+        trustDomain: edge-2.spike.ist
+      edge-3:
+        bundleEndpointProfile:
+          endpointSPIFFEID: spiffe://edge-3.spike.ist/spire/server
+          type: https_spiffe
+        bundleEndpointURL: https://spiffe-edge-cluster-3:8443
+        trustDomain: edge-3.spike.ist
+
+    # ClusterSPIFFEIDs
+    identities:
+      clusterSPIFFEIDs:
+        # We don't have SPIKE Keeper in this cluster:
+        spike-keeper:
+          enabled: false
+
+        spike-nexus:
+          type: raw
+          enabled: true
+          spiffeIDTemplate: spiffe://{{ .TrustDomain }}/spike/nexus/{{ .PodMeta.Name }}
+          podSelector:
+            matchLabels:
+              component: spike-nexus
+          namespaceSelector:
+            matchExpressions:
+            - key: kubernetes.io/metadata.name
+              operator: In
+              values:
+              - spike
+          federatesWith:
+            - edge-1.spike.ist
+            - edge-2.spike.ist
+            - edge-3.spike.ist
+            - workload.spike.ist
+
+        spike-pilot:
+          type: raw
+          enabled: true
+          spiffeIDTemplate: spiffe://{{ .TrustDomain }}/spike/pilot/role/superuser
+          podSelector:
+            matchLabels:
+              component: spike-pilot
+          namespaceSelector:
+            matchExpressions:
+            - key: kubernetes.io/metadata.name
+              operator: In
+              values:
+              - spike

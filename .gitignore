@@ -1,0 +1,96 @@
+#   \\
+#  \\\\ SPIKE: Secure your secrets with SPIFFE. — https://spike.ist/
+# \\\\\\
+
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binary, built with `go test -c`
+*.test
+
+# Output of the go coverage tool, specifically when used with LiteIDE
+*.out
+
+# Dependency directories (remove the comment below to include it)
+# vendor/
+
+# Go workspace file
+go.work
+go.work.sum
+
+# env file
+.env
+.env.*
+
+# Generated binaries.
+/keeper
+/nexus
+/pilot
+/spike
+/bootstrap
+/keeper-arm
+/keeper-darwin
+/keeper-x86
+/nexus-arm
+/nexus-darwin
+/nexus-x68
+/spike-arm
+/spike-darwin
+/spike-x86
+/bootstrap-arm
+/bootstrap-darwin
+/bootstrap-x86
+/keeper-darwin-arm64
+/keeper-linux-amd64
+/nexus-linux-amd64
+/keeper-linux-arm64
+/nexus-darwin-arm64
+/nexus-linux-arm64
+/spike-darwin-arm64
+/spike-linux-amd64
+/spike-linux-arm64
+/bootstrap-darwin-arm64
+/bootstrap-linux-amd64
+/bootstrap-linux-arm64
+
+# IDE
+.idea
+.code
+.vscode
+.history
+*.DS_Store
+*.iml
+
+# App-specific:
+.spike-token
+.spike-admin-token
+.spire-agent-join-token
+.data
+.pilot-token
+
+keeper-darwin-arm64.sum.txt
+keeper-linux-amd64.sum.txt
+keeper-linux-arm64.sum.txt
+nexus-darwin-arm64.sum.txt
+checksums.sha256
+nexus-linux-amd64.sum.txt
+nexus-linux-arm64.sum.txt
+spike-darwin-arm64.sum.txt
+spike-linux-amd64.sum.txt
+spike-linux-arm64.sum.txt
+bootstrap-darwin-arm64.sum.txt
+bootstrap-linux-amd64.sum.txt
+bootstrap-linux-arm64.sum.txt
+
+# logs
+*.log
+
+# Other
+/ci-test
+/identifier.sqlite
+/demo
+/docs-src/public

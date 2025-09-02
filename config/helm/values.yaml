@@ -1,0 +1,43 @@
+#    \\ SPIKE: Secure your secrets with SPIFFE. — https://spike.ist/
+#  \\\\\ Copyright 2024-present SPIKE contributors.
+# \\\\\\\ SPDX-License-Identifier: Apache-2.0
+
+# SPIRE Helm Charts
+# See https://github.com/spiffe/helm-charts-hardened for documentation
+# and configuration options.
+
+spike-keeper:
+  enabled: true
+  image:
+    registry: localhost:5000
+    repository: spike-keeper
+    pullPolicy: IfNotPresent
+    tag: "dev"
+
+spike-nexus:
+  enabled: true
+  image:
+    registry: localhost:5000
+    repository: spike-nexus
+    pullPolicy: IfNotPresent
+    tag: "dev"
+
+spike-pilot:
+  enabled: true
+  image:
+    registry: localhost:5000
+    repository: spike-pilot
+    pullPolicy: IfNotPresent
+    tag: "dev"
+
+spire-server:
+  enabled: true
+
+spire-agent:
+  enabled: true
+
+spiffe-csi-driver:
+  enabled: true
+
+spiffe-oidc-discovery-provider:
+  enabled: true

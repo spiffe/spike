@@ -1,0 +1,88 @@
+name: Build and Push to Docker Hub
+
+#    \\ SPIKE: Secure your secrets with SPIFFE. — https://spike.ist/
+#  \\\\\ Copyright 2024-present SPIKE contributors.
+# \\\\\\\ SPDX-License-Identifier: Apache-2.0
+
+on:
+  release:
+    types: [published]
+
+env:
+  REGISTRY: ghcr.io
+  REPOSITORY: spiffe
+  DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+  COSIGN_EXPERIMENTAL: 1
+#  DOCKER_CONTENT_TRUST: 1
+
+jobs:
+  docker:
+    runs-on: ${{ matrix.archmap[matrix.arch] }}
+    strategy:
+      matrix:
+        app: [pilot, keeper, nexus, demo, bootstrap]
+        arch: [linux/amd64, linux/arm64]
+        archmap: [{
+          "linux/amd64": "ubuntu-24.04",
+          "linux/arm64": "ubuntu-24.04-arm"
+        }]
+    permissions:
+      contents: read
+      packages: write
+      id-token: write # needed for signing the images with GitHub OIDC Token
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.release.tag_name }}
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Install cosign
+        uses: sigstore/cosign-installer@v3.3.0
+
+      - name: Login to Docker HUB
+        uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # v3.3.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # Build and push images using the script
+      - name: Build and push images
+        run: |
+          # Extract version from release tag
+          VERSION="${{ github.event.release.tag_name }}"
+          VERSION=${VERSION#v}  # Remove 'v' prefix if present
+          export PUSH=true
+          
+          ./hack/docker/build-push-sign.sh \
+            ${{ matrix.app }} ${{ matrix.arch }} \
+            ${VERSION} ${{ env.REGISTRY }} ${{ env.REPOSITORY }}
+
+  manifest:
+    runs-on: ubuntu-24.04
+    needs: docker
+    strategy:
+      matrix:
+        app: [pilot, keeper, nexus, demo, bootstrap]
+    steps:
+      - name: Log in to the Container registry
+        uses: docker/login-action@v3.3.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - run: |
+          # Extract version from release tag
+          VERSION="${{ github.event.release.tag_name }}"
+          VERSION=${VERSION#v}  # Remove 'v' prefix if present
+          docker manifest create ghcr.io/spiffe/spike-${{ matrix.app }}:${VERSION} \
+            --amend ghcr.io/spiffe/spike-${{ matrix.app }}:${VERSION}-linux-amd64 \
+            --amend ghcr.io/spiffe/spike-${{ matrix.app }}:${VERSION}-linux-arm64 && \
+          docker manifest push ghcr.io/spiffe/spike-${{ matrix.app }}:${VERSION}

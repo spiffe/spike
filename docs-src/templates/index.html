@@ -1,0 +1,111 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="{{ get_url(path="main.css") | safe }}">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link rel="icon" href="{{ get_url(path=config.extra.favicon) | safe }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+    <title>{% block title %}{{ config.title }}{% endblock title %}</title>
+</head>
+<body>
+
+<main>
+    {# Create variable to allow appending index.html at end of links if set in config #}
+    {% if not config.extra.easydocs_uglyurls or config.mode == "serve" or config.mode == "Serve" -%}
+        {% set _ugly_url = "" -%}
+    {% else %}
+        {% set _ugly_url = "index.html" -%}
+    {% endif -%}
+
+    {% include "components/nav.html" %}
+
+    <div class="content">
+        {% include "components/header.html" %}
+
+        <article>
+            {% block content -%}
+                {%- if section.word_count -%}
+                    {{ section.content |safe }}
+                {%- else -%}
+                    {%- include "sec_toc_2_level.html" -%}
+                {% endif -%}
+            {% endblock content %}
+        </article>
+
+        <footer id="footer">
+            Copyright © 2024-present <strong>SPIKE Contributors</strong>.<br>
+            <strong>SPIKE</strong>'s code
+            is distributed under <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache (v2.0)</a>.
+            <br>
+            The documentation on this website
+            is distributed under <a href="https://creativecommons.org/licenses/by/4.0/">CC-BY-4.0</a>.
+            <br><br>
+            We <strong>do not</strong> collect your data.
+            This site <strong>does not</strong> use any tracking cookies or scripts.
+        </footer>
+    </div>
+
+</main>
+
+{% if config.build_search_index %}
+    <script type="text/javascript" src="{{ get_url(path="elasticlunr.min.js") | safe }}" defer></script>
+    <script type="text/javascript" src="{{ get_url(path="search_index.en.js") | safe }}" defer></script>
+{% endif -%}
+
+    <script type="text/javascript" src="{{ get_url(path="js.js") | safe }}" defer></script>
+</body>
+</html>
+<style>
+body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    font-family: var(--font-family);
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+}
+
+main {
+    width: 100vw;
+    max-width: 1920px;
+    display: flex;
+    flex-direction: row;
+    overflow: hidden;
+}
+
+#footer {
+    text-align: center;
+    padding: 2rem;
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    border-top: 1px solid var(--border-color);
+    margin-top: 2rem;
+}
+
+.content {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    height: 100vh;
+    overflow-y: auto;
+    background-color: var(--bg-primary);
+    line-height: 1.6;
+    border-left: 1px solid var(--border-color);
+}
+
+#footer a {
+    color: var(--spike-blue);
+    text-decoration: none;
+    transition: all 0.2s ease;
+    border-bottom: 1px solid transparent;
+    font-weight: 500;
+
+}
+
+#footer a:hover {
+    border-bottom-color: var(--spike-blue);
+}
+
+</style>

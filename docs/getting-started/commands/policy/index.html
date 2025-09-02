@@ -1,0 +1,1199 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://spike.ist/main.css">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link rel="icon" href="https://spike.ist/assets/spike-favicon-16x16.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+    <title> SPIKE | spike policy </title>
+</head>
+<body>
+
+<main>
+    
+    <nav>
+  <script>
+    fetch('https://api.github.com/repos/spiffe/spike/releases/latest')
+        .then(response => response.json())
+        .then(data => {
+            const release = document.getElementById('release');
+            const icon = '<i class="bx bx-package"></i>';
+            release.href = data.name ? data.html_url : 'https://api.github.com/repos/spiffe/spike/releases';
+            release.innerHTML = icon + (data.name ? ' ' + data.name : ' Releases');
+        });
+</script>
+<div id="banner">
+    <a href="https://spike.ist">
+        <img src="https://spike.ist/assets/spike-banner.png" alt="logo" />
+    </a>
+    <div id="banner-body">
+        <a class="banner-title" href="https://spike.ist">
+            SPIKE
+        </a>
+        <span class="banner-tagline">
+            Secure your secrets<br> with SPIFFE.
+        </span>
+        <a id="release" class="banner-link" href="https://github.com/spiffe/spike/releases">
+            <i class='bx bx-package'></i>
+        </a>
+        <a href="https://github.com/spiffe/spike" class="banner-link">
+            <i class='bx bxl-github'></i> GitHub
+        </a>
+
+    </div>
+</div>
+<style>
+   /* Banner on top of the nav */
+   #banner {
+        position: sticky;
+        background-color: var(--bg-primary);
+        z-index: 100;
+        top: 0;
+        display: flex;
+        flex-direction: row;
+        padding: 1rem;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        margin-bottom: 1rem;
+    }
+
+    #banner img {
+        width: 100px;
+        height: auto;
+    }
+
+    #banner-body {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        justify-content: space-between;
+        margin-left: 1rem;
+    }
+
+    .banner-title {
+        font-size: 1.75rem;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        margin-bottom: -15px;
+        font-family: var(--brand-font-family);
+    }
+    .banner-tagline {
+        font-size: 0.875rem;
+        color: var(--text-muted);
+        font-style: italic;
+    }
+
+    .banner-link {
+        display: flex;
+        gap: 0.5rem;
+        min-width: 84px;
+        font-size: 0.875rem;
+        font-weight: 300;
+        padding: 0.25rem 0.75rem;
+        border-radius: 4px;
+        background-color: var(--bg-interactive);
+        transition: all 0.2s ease;
+    }
+
+    .banner-link i {
+        font-size: 1.125rem;
+        color: var(--spike-blue);
+    }
+
+    .banner-link:hover {
+        background-color: var(--spike-blue);
+    }
+</style> <div id="trees">
+    <input class="tree-toggle" type="checkbox" id="getting-started"
+               checked/>
+        <label class="tree-toggle-label "
+               for="getting-started">Getting Started</label>
+
+        <ul class="subtree">
+            <li >
+                    <a href="https://spike.ist/getting-started/about/">About SPIKE</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/getting-started/project-status/">Project Maturity</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/getting-started/quickstart/">SPIKE Quickstart Guide</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/getting-started/local-deployment/">Building SPIKE Locally</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/getting-started/bare-metal/">SPIKE on Linux</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/getting-started/configuration/">Configuring SPIKE</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/getting-started/cli/">SPIKE CLI</a>
+                </li>
+
+                </ul>
+    <input class="tree-toggle" type="checkbox" id="community"
+               />
+        <label class="tree-toggle-label "
+               for="community">Community</label>
+
+        <ul class="subtree">
+            <li >
+                    <a href="https://spike.ist/community/hello/">Hello Universe</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/community/contact/">Contact Us</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/community/presentations/">Presentations and Demos</a>
+                </li>
+
+                </ul>
+    <input class="tree-toggle" type="checkbox" id="spike-architecture"
+               />
+        <label class="tree-toggle-label "
+               for="spike-architecture">SPIKE Architecture</label>
+
+        <ul class="subtree">
+            <li >
+                    <a href="https://spike.ist/architecture/system-overview/">System Overview</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/architecture/security-model/">SPIKE Security Model</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/architecture/architectural-decision-records/">ADRs</a>
+                </li>
+
+                </ul>
+    <input class="tree-toggle" type="checkbox" id="operations"
+               />
+        <label class="tree-toggle-label "
+               for="operations">Operations</label>
+
+        <ul class="subtree">
+            <li >
+                    <a href="https://spike.ist/operations/build/">SPIKE Cross-Platform Build</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/operations/production/">SPIKE Production Setup</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/operations/recovery/">SPIKE Recovery Procedures</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/operations/backup/">SPIKE Backup and Restore</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/operations/release/">SPIKE Relase Management</a>
+                </li>
+
+                </ul>
+    <input class="tree-toggle" type="checkbox" id="tracking"
+               />
+        <label class="tree-toggle-label "
+               for="tracking">Tracking</label>
+
+        <ul class="subtree">
+            <li >
+                    <a href="https://spike.ist/tracking/changelog/">Changelog</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/tracking/snapshots/">Documentation Snapshots</a>
+                </li>
+
+                </ul>
+    </div>
+<style>
+    /* Navigation tree structure */
+    #trees {
+        padding: 0 1rem;
+    }
+
+    .tree-toggle {
+        display: none;
+    }
+
+    .tree-toggle:checked + .tree-toggle-label + .subtree {
+        display: block;
+    }
+
+    .tree-toggle-label {
+        display: block;
+        padding: 0.75rem 1rem;
+        margin: 0.25rem 0;
+        border-radius: 6px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .tree-toggle-label:hover {
+        background-color: rgba(0, 0, 0, 0.05);
+    }
+
+    .tree-toggle-label::before {
+        content: '▸';
+        display: inline-block;
+        margin-right: 0.5rem;
+        transition: transform 0.2s ease;
+    }
+
+    .tree-toggle:checked + .tree-toggle-label::before {
+        transform: rotate(90deg);
+    }
+
+    .subtree {
+        display: none;
+        margin: 0;
+        padding: 0 0 0 1rem;
+        list-style: none;
+    }
+
+    .subtree li {
+        margin: 0.25rem 0;
+    }
+
+    .subtree li a {
+        display: block;
+        padding: 0.5rem 1rem;
+        text-decoration: none;
+        border-radius: 4px;
+        font-size: 0.9375rem;
+        transition: all 0.2s ease;
+    }
+
+    .subtree li a:hover {
+        background-color: rgba(0, 0, 0, 0.05);
+    }
+
+    .subtree li.active a {
+        font-weight: 600;
+        background-color: rgba(0, 0, 0, 0.05);
+    }
+
+    /* Table of contents styling */
+    #toc {
+        margin: 0.5rem 0 0.5rem 1.5rem;
+        padding: 0;
+        list-style: none;
+        font-size: 0.875rem;
+    }
+
+    #toc li {
+        margin: 0.25rem 0;
+    }
+
+    #toc li a {
+        padding: 0.375rem 0.75rem;
+        opacity: 0.8;
+    }
+
+    #toc li a:hover {
+        opacity: 1;
+    }
+
+    #toc ul {
+        margin: 0.25rem 0 0.25rem 1rem;
+        padding: 0;
+        list-style: none;
+    }
+</style>
+</nav>
+<style>
+  nav {
+    position: sticky;
+    width: 300px;
+    height: 100vh;
+    top: 0;
+    max-height: 100vh;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 0, 0, 0.3) transparent;
+    z-index: 100;
+    box-shadow: 5px 0 20px var(--shadow-color);
+    border-right: 1px solid var(--border-color);
+    transition: transform 0.4s ease-in-out;
+    background-color: var(--bg-primary);
+  }
+
+  nav::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  nav::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  nav::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.3);
+    border-radius: 4px;
+    border: 2px solid transparent;
+  }
+
+  @media (max-width: 1300px) {
+    .nav-toggle {
+      display: none;
+    }
+
+    nav {
+      position: fixed;
+      transform: translateX(-100%);
+      width: 85%;
+      max-width: 300px;
+      height: calc(100vh - 57px);
+      top: 57px;
+    }
+
+    nav.active {
+      transform: translateX(0);
+    }
+  }
+</style>
+
+
+    <div class="content">
+        <div class="header">
+  <div class="header-content">
+    <button
+      id="mobile-nav-toggle"
+      aria-label="Toggle navigation"
+      class="mobile-only"
+    >
+      <i class="bx bx-menu"></i>
+    </button>
+    <script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const searchInput = document.querySelector(".search-input");
+    const overlay = document.querySelector(".overlay");
+    const searchResults = document.querySelector(".search-results");
+
+    function closeSearch() {
+      overlay.style.display = "none";
+      searchResults.style.display = "none";
+      searchInput.blur();
+    }
+
+    function openSearch() {
+      overlay.style.display = "block";
+      searchResults.style.display = "block";
+    }
+
+    searchInput.addEventListener("focus", openSearch);
+    overlay.addEventListener("click", closeSearch);
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        closeSearch();
+      }
+    });
+  });
+</script>
+<div class="overlay"></div>
+<input class="search-input" type="text" placeholder="Search..." />
+<div class="search-results">
+  <div class="search-results__header">
+    <span class="search-results__count">Waiting for input...</span>
+  </div>
+  <div class="search-results__items"></div>
+</div>
+
+<style>
+  .search-input {
+    width: 100%;
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background-color: var(--bg-interactive);
+    color: var(--text-primary);
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+    z-index: 101;
+  }
+
+  .search-input:focus {
+    outline: none;
+    border-color: var(--spike-blue);
+    background-color: var(--bg-primary);
+    box-shadow: 0 0 0 2px rgba(var(--spike-blue-rgb), 0.2);
+  }
+
+  .search-input::placeholder {
+    color: var(--text-muted);
+  }
+
+  .overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 100;
+  }
+
+  .search-results {
+    display: none;
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 100%;
+    max-width: 700px;
+    margin: 0.5rem auto;
+    background: var(--bg-primary);
+    border-radius: 8px;
+    box-shadow: 0px 4px 8px 3px rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--border-color);
+    z-index: 102;
+  }
+
+  .search-results__header {
+    padding: 0.75rem 1rem;
+    color: var(--text-muted);
+    font-size: 0.875rem;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .search-results__items {
+    max-height: 60vh;
+    overflow-y: auto;
+  }
+
+  .search-results__item {
+    display: block;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--border-color);
+    transition: background-color 0.2s ease;
+  }
+
+  .search-results__item:hover {
+    background-color: var(--bg-interactive);
+  }
+
+  .search-results__title {
+    color: var(--spike-blue);
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+  }
+
+  .search-results__preview {
+    color: var(--text-secondary);
+    font-size: 0.8125rem;
+    line-height: 1.4;
+  }
+
+  .search-results__preview b {
+    color: var(--spike-dark-green);
+    font-weight: 600;
+  }
+
+  .search-results__items::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  .search-results__items::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 4px;
+  }
+
+  /* Empty state */
+  .search-results__empty {
+    padding: 2rem 1rem;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.875rem;
+  }
+</style>
+
+    <a
+      href="https://github.com/spiffe/spike"
+      target="_blank"
+      rel="noopener"
+      class="github-star"
+    >
+      <i class="bx bx-star"></i>
+      <span>Star <strong>SPIKE</strong> on <strong>GitHub</strong></span>
+    </a>
+    <button id="theme-toggle" aria-label="Toggle theme">
+      <i class="bx bx-sun light-icon"></i>
+      <i class="bx bx-moon dark-icon"></i>
+    </button>
+  </div>
+</div>
+
+<style>
+  .header {
+    position: sticky;
+    top: 0;
+    background-color: var(--bg-primary);
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color);
+    box-shadow: 0 4px 6px -1px var(--shadow-color),
+      0 2px 4px -1px var(--shadow-color);
+    z-index: 101;
+  }
+
+  .header-content {
+    max-width: 800px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  #mobile-nav-toggle {
+    display: none;
+    background: none;
+    border: none;
+    padding: 0.5rem;
+    cursor: pointer;
+    color: var(--text-primary);
+    font-size: 1.5rem;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+  }
+
+  #mobile-nav-toggle i {
+    pointer-events: none;
+    display: block;
+  }
+
+  #mobile-nav-toggle:hover {
+    background-color: var(--bg-interactive);
+  }
+
+  @media (max-width: 1300px) {
+    #mobile-nav-toggle {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+    }
+  }
+
+  #theme-toggle {
+    background: none;
+    border: none;
+    padding: 0.5rem;
+    cursor: pointer;
+    color: var(--text-primary);
+    font-size: 1.25rem;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  #theme-toggle:hover {
+    background-color: var(--bg-interactive);
+  }
+
+  #theme-toggle:active {
+    background-color: var(--bg-secondary);
+  }
+
+  /* Show/hide icons based on theme */
+  [data-theme="dark"] .light-icon,
+  :root:not([data-theme="dark"]) .dark-icon {
+    display: none;
+  }
+
+  /* GitHub Star Button */
+  .github-star {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    color: white;
+    text-decoration: none;
+    background: linear-gradient(
+      135deg,
+      var(--spike-blue),
+      var(--spike-dark-green)
+    );
+    border-radius: 20px;
+    transition: all 0.2s ease;
+    font-size: 0.875rem;
+    white-space: nowrap;
+  }
+
+  .github-star:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(var(--spike-blue-rgb), 0.3);
+  }
+
+  .github-star i {
+    font-size: 1.1rem;
+    animation: starBounce 2s infinite;
+    color: #ffd700;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+  }
+
+  @keyframes starBounce {
+    0%,
+    100% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.2);
+    }
+  }
+
+  .github-star span {
+    white-space: nowrap;
+  }
+
+  @media (max-width: 768px) {
+    .github-star span {
+      display: none;
+    }
+
+    .github-star {
+      padding: 0.5rem;
+    }
+  }
+</style>
+
+<script>
+  // Theme toggle functionality
+  document.addEventListener("DOMContentLoaded", () => {
+    const themeToggle = document.getElementById("theme-toggle");
+
+    // Function to set theme
+    function setTheme(theme) {
+      document.documentElement.setAttribute("data-theme", theme);
+      localStorage.setItem("theme", theme);
+    }
+
+    // Initialize theme
+    const savedTheme = localStorage.getItem("theme");
+    if (savedTheme) {
+      setTheme(savedTheme);
+    } else if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+      setTheme("dark");
+    }
+
+    // Toggle theme on button click
+    themeToggle.addEventListener("click", () => {
+      const currentTheme = document.documentElement.getAttribute("data-theme");
+      const newTheme = currentTheme === "dark" ? "light" : "dark";
+      setTheme(newTheme);
+    });
+
+    // Listen for system theme changes
+    window
+      .matchMedia("(prefers-color-scheme: dark)")
+      .addEventListener("change", (e) => {
+        if (!localStorage.getItem("theme")) {
+          setTheme(e.matches ? "dark" : "light");
+        }
+      });
+  });
+</script>
+
+
+        <article>
+            
+        <h1 id="spike-policy"><code>spike policy</code></h1>
+<p>The <code>spike policy</code> command is the main entry point for managing <strong>access
+policies</strong> in SPIKE. It allows administrators to define, view, and manage rules
+that control access to secrets and resources based on workload identity
+(<strong>SPIFFE ID</strong>) and resource paths.</p>
+<p>SPIKE provides two commands for managing policies:</p>
+<ol>
+<li><strong><code>spike policy create</code></strong>—Traditional command-line interface
+(<em>backward compatibility</em>)</li>
+<li><strong><code>spike policy apply</code></strong>—Enhanced command with YAML file support
+(<em>recommended for new workflows</em>)</li>
+</ol>
+<p>While <code>spike policy create</code> checks for the existence of a policy, and
+errors out if we are overriding an existing policy, <code>spike policy apply</code> uses
+<strong>upsert semantics</strong>—it will create a new policy if one doesn’t exist, or
+update an existing policy if one with the same name already exists. This makes
+the <code>spike policy apply</code> command safe to use in automation and GitOps workflows.</p>
+<h2 id="quick-start">Quick Start</h2>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># Using YAML file (recommended)
+</span><span style="color:#bf616a;">spike</span><span> policy apply</span><span style="color:#bf616a;"> --file</span><span> policy.yaml
+</span></code></pre>
+<h2 id="yaml-file-format">YAML File Format</h2>
+<h3 id="basic-structure">Basic Structure</h3>
+<pre data-lang="yaml" style="background-color:#2b303b;color:#c0c5ce;" class="language-yaml "><code class="language-yaml" data-lang="yaml"><span style="color:#65737e;"># Policy name - must be unique within the system
+</span><span style="color:#bf616a;">name</span><span>: &quot;</span><span style="color:#a3be8c;">web-service-policy</span><span>&quot;
+</span><span>
+</span><span style="color:#65737e;"># SPIFFE ID pattern for workload matching
+</span><span style="color:#bf616a;">spiffeid</span><span>: &quot;</span><span style="color:#a3be8c;">spiffe://example.org/web-service/</span><span>&quot;
+</span><span>
+</span><span style="color:#65737e;"># Path pattern for access control
+</span><span style="color:#65737e;"># Note: Trailing slashes are automatically removed during normalization
+</span><span style="color:#bf616a;">path</span><span>: &quot;</span><span style="color:#a3be8c;">secrets/web-service/database</span><span>&quot;
+</span><span>
+</span><span style="color:#65737e;"># List of permissions to grant
+</span><span style="color:#bf616a;">permissions</span><span>:
+</span><span>  - </span><span style="color:#a3be8c;">read
+</span><span>  - </span><span style="color:#a3be8c;">write
+</span></code></pre>
+<h3 id="path-normalization">Path Normalization</h3>
+<p>The <code>apply</code> command automatically normalizes paths by removing trailing slashes:</p>
+<pre data-lang="yaml" style="background-color:#2b303b;color:#c0c5ce;" class="language-yaml "><code class="language-yaml" data-lang="yaml"><span style="color:#65737e;"># These paths are all normalized to the same value:
+</span><span style="color:#bf616a;">path</span><span>: &quot;</span><span style="color:#a3be8c;">secrets/database/production</span><span>&quot;    </span><span style="color:#65737e;"># ✓ Normalized form
+</span><span style="color:#bf616a;">path</span><span>: &quot;</span><span style="color:#a3be8c;">secrets/database/production/</span><span>&quot;   </span><span style="color:#65737e;"># → &quot;secrets/database/production&quot;
+</span><span style="color:#bf616a;">path</span><span>: &quot;</span><span style="color:#a3be8c;">secrets/database/production//</span><span>&quot;  </span><span style="color:#65737e;"># → &quot;secrets/database/production&quot;
+</span></code></pre>
+<h3 id="realistic-path-examples">Realistic Path Examples</h3>
+<pre data-lang="yaml" style="background-color:#2b303b;color:#c0c5ce;" class="language-yaml "><code class="language-yaml" data-lang="yaml"><span style="color:#65737e;"># Database secrets
+</span><span style="color:#bf616a;">name</span><span>: &quot;</span><span style="color:#a3be8c;">database-policy</span><span>&quot;
+</span><span style="color:#bf616a;">spiffeid</span><span>: &quot;</span><span style="color:#a3be8c;">spiffe://example.org/database/</span><span>&quot;
+</span><span style="color:#bf616a;">path</span><span>: &quot;</span><span style="color:#a3be8c;">secrets/database/production</span><span>&quot;
+</span><span style="color:#bf616a;">permissions</span><span>: [</span><span style="color:#a3be8c;">read</span><span>]
+</span><span>
+</span><span style="color:#65737e;"># Web service configuration
+</span><span style="color:#bf616a;">name</span><span>: &quot;</span><span style="color:#a3be8c;">web-service-policy</span><span>&quot;
+</span><span style="color:#bf616a;">spiffeid</span><span>: &quot;</span><span style="color:#a3be8c;">spiffe://example.org/web-service/</span><span>&quot;
+</span><span style="color:#bf616a;">path</span><span>: &quot;</span><span style="color:#a3be8c;">secrets/web-service/config</span><span>&quot;
+</span><span style="color:#bf616a;">permissions</span><span>: [</span><span style="color:#a3be8c;">read</span><span>, </span><span style="color:#a3be8c;">write</span><span>]
+</span><span>
+</span><span style="color:#65737e;"># Cache credentials
+</span><span style="color:#bf616a;">name</span><span>: &quot;</span><span style="color:#a3be8c;">cache-policy</span><span>&quot;
+</span><span style="color:#bf616a;">spiffeid</span><span>: &quot;</span><span style="color:#a3be8c;">spiffe://example.org/cache/</span><span>&quot;
+</span><span style="color:#bf616a;">path</span><span>: &quot;</span><span style="color:#a3be8c;">secrets/cache/redis/session</span><span>&quot;
+</span><span style="color:#bf616a;">permissions</span><span>: [</span><span style="color:#a3be8c;">read</span><span>]
+</span><span>
+</span><span style="color:#65737e;"># Application environment variables
+</span><span style="color:#bf616a;">name</span><span>: &quot;</span><span style="color:#a3be8c;">app-env-policy</span><span>&quot;
+</span><span style="color:#bf616a;">spiffeid</span><span>: &quot;</span><span style="color:#a3be8c;">spiffe://example.org/app/</span><span>&quot;
+</span><span style="color:#bf616a;">path</span><span>: &quot;</span><span style="color:#a3be8c;">secrets/app/env/production</span><span>&quot;
+</span><span style="color:#bf616a;">permissions</span><span>: [</span><span style="color:#a3be8c;">read</span><span>, </span><span style="color:#a3be8c;">list</span><span>]
+</span></code></pre>
+<h3 id="all-available-permissions">All Available Permissions</h3>
+<pre data-lang="yaml" style="background-color:#2b303b;color:#c0c5ce;" class="language-yaml "><code class="language-yaml" data-lang="yaml"><span style="color:#bf616a;">name</span><span>: &quot;</span><span style="color:#a3be8c;">admin-policy</span><span>&quot;
+</span><span style="color:#bf616a;">spiffeid</span><span>: &quot;</span><span style="color:#a3be8c;">spiffe://example.org/admin/</span><span>&quot;
+</span><span style="color:#bf616a;">path</span><span>: &quot;</span><span style="color:#a3be8c;">secrets</span><span>&quot;
+</span><span style="color:#bf616a;">permissions</span><span>:
+</span><span>  - </span><span style="color:#a3be8c;">read    </span><span style="color:#65737e;"># Permission to read secrets
+</span><span>  - </span><span style="color:#a3be8c;">write   </span><span style="color:#65737e;"># Permission to create, update, or delete secrets
+</span><span>  - </span><span style="color:#a3be8c;">list    </span><span style="color:#65737e;"># Permission to list resources
+</span><span>  - </span><span style="color:#a3be8c;">super   </span><span style="color:#65737e;"># Administrative permissions
+</span></code></pre>
+<h3 id="alternative-yaml-formats">Alternative YAML Formats</h3>
+<h4 id="flow-sequence-for-permissions">Flow Sequence for Permissions</h4>
+<pre data-lang="yaml" style="background-color:#2b303b;color:#c0c5ce;" class="language-yaml "><code class="language-yaml" data-lang="yaml"><span style="color:#bf616a;">name</span><span>: &quot;</span><span style="color:#a3be8c;">database-policy</span><span>&quot;
+</span><span style="color:#bf616a;">spiffeid</span><span>: &quot;</span><span style="color:#a3be8c;">spiffe://example.org/database/</span><span>&quot;
+</span><span style="color:#bf616a;">path</span><span>: &quot;</span><span style="color:#a3be8c;">secrets/database/production</span><span>&quot;
+</span><span style="color:#bf616a;">permissions</span><span>: [</span><span style="color:#a3be8c;">read</span><span>, </span><span style="color:#a3be8c;">write</span><span>, </span><span style="color:#a3be8c;">list</span><span>]
+</span></code></pre>
+<h4 id="quoted-values">Quoted Values</h4>
+<pre data-lang="yaml" style="background-color:#2b303b;color:#c0c5ce;" class="language-yaml "><code class="language-yaml" data-lang="yaml"><span style="color:#bf616a;">name</span><span>: &quot;</span><span style="color:#a3be8c;">cache-policy</span><span>&quot;
+</span><span style="color:#bf616a;">spiffeid</span><span>: &quot;</span><span style="color:#a3be8c;">spiffe://example.org/cache/</span><span>&quot;
+</span><span style="color:#bf616a;">path</span><span>: &quot;</span><span style="color:#a3be8c;">secrets/cache/redis</span><span>&quot;
+</span><span style="color:#bf616a;">permissions</span><span>:
+</span><span>  - &quot;</span><span style="color:#a3be8c;">read</span><span>&quot;
+</span><span>  - &quot;</span><span style="color:#a3be8c;">write</span><span>&quot;
+</span></code></pre>
+<h2 id="creating-policies-using-command-line-flags">Creating Policies Using Command-Line Flags</h2>
+<p>Instead of using a <code>yaml</code> file, you can provide command-line arguments
+to programmatically create your policies too:</p>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># Create your first policy
+</span><span style="color:#bf616a;">spike</span><span> policy create</span><span style="color:#bf616a;"> --name</span><span>=my-service \
+</span><span style="color:#bf616a;">  --path</span><span>=&quot;</span><span style="color:#a3be8c;">secrets/app/</span><span>&quot; \
+</span><span style="color:#bf616a;">  --spiffeid</span><span>=&quot;</span><span style="color:#a3be8c;">spiffe://example.org/service/</span><span>&quot; \
+</span><span style="color:#bf616a;">  --permissions</span><span>=read
+</span><span>
+</span><span style="color:#65737e;"># Verify your policy was created
+</span><span style="color:#bf616a;">spike</span><span> policy list
+</span></code></pre>
+<h2 id="what-are-spike-policies">What are SPIKE Policies?</h2>
+<p>Policies in <strong>SPIKE</strong> provide a secure and flexible way to control access to
+secrets and resources. Each policy defines:</p>
+<ul>
+<li><strong>Who</strong> can access resources (via <strong>SPIFFE ID</strong> patterns)</li>
+<li><strong>What</strong> resources can be accessed (via <strong>path</strong> patterns)</li>
+<li><strong>How</strong> resources can be accessed (via <strong>permissions</strong>)</li>
+</ul>
+<p>Policies are the cornerstone of <strong>SPIKE</strong>’s security model, allowing for
+fine-grained access control based on workload identity. Using
+<a href="https://spiffe.io/docs/latest/spiffe-about/spiffe-concepts/" title="SPIFFE Concepts"><strong>SPIFFE ID</strong></a>s as the foundation, <strong>SPIKE</strong> ensures that
+only authorized workloads can access sensitive information.</p>
+<h3 id="how-policies-work">How Policies Work</h3>
+<p>When a workload attempts to access a resource in SPIKE:</p>
+<ol>
+<li>The workload presents its <strong>SPIFFE ID</strong> through a
+SPIFFE Verifiable Identity Document (<strong>SVID</strong>)</li>
+<li><strong>SPIKE</strong> validates the <strong>SVID</strong> to verify the workload’s identity</li>
+<li><strong>SPIKE</strong> checks if any policy matches both:
+<ul>
+<li>The workload’s <strong>SPIFFE ID</strong> against the policy’s <strong>SPIFFE ID pattern</strong></li>
+<li>The requested <strong>resource path</strong> against the policy’s <strong>path pattern</strong></li>
+</ul>
+</li>
+<li>If a match is found, SPIKE checks if the requested operation is allowed by
+the policy’s <strong>permissions</strong></li>
+<li>Access is granted only if <strong>ALL</strong> conditions are met</li>
+</ol>
+<h3 id="why-use-policies">Why Use Policies?</h3>
+<ul>
+<li><strong>Zero Trust Security</strong>: Access is based on workload identity, not network
+location</li>
+<li><strong>Least Privilege</strong>: Grant only the permissions needed for each workload</li>
+<li><strong>Auditability</strong>: All access is tied to specific policies and identities</li>
+<li><strong>Flexibility</strong>: Patterns support regular expression matching, which allows
+a more fine-grained control over which resources the policy applies to.</li>
+<li><strong>Scalability</strong>: Policies work consistently across any deployment size</li>
+</ul>
+<h2 id="features">Features</h2>
+<ul>
+<li><strong>Create policies</strong> with specific permissions and access patterns</li>
+<li><strong>Apply policies</strong> using upsert semantics (create new or update existing)</li>
+<li><strong>List all policies</strong> in human-readable or JSON format</li>
+<li><strong>Get policy details</strong> by ID or name</li>
+<li><strong>Delete policies</strong> with confirmation protection</li>
+<li><strong>Enhanced validation</strong> for permissions and parameters</li>
+</ul>
+<h2 id="commands">Commands</h2>
+<h3 id="spike-policy-list"><code>spike policy list</code></h3>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">spike</span><span> policy list </span><span style="color:#b48ead;">[</span><span>--format=human|json</span><span style="color:#b48ead;">] [</span><span>--path=&lt;pattern&gt; | --spiffeid=&lt;pattern&gt;</span><span style="color:#b48ead;">]
+</span></code></pre>
+<p>Lists all policies in the system. Can be filtered by a resource path pattern or
+a SPIFFE ID pattern.</p>
+<p><strong>Note:</strong> <code>--path</code> and <code>--spiffeid</code> flags cannot be used together.</p>
+<h3 id="spike-policy-create"><code>spike policy create</code></h3>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">spike</span><span> policy create</span><span style="color:#bf616a;"> --name</span><span>=&lt;name&gt; \
+</span><span style="color:#bf616a;">  --path</span><span>=&lt;path-pattern&gt; \
+</span><span style="color:#bf616a;">  --spiffeid</span><span>=&lt;spiffe-id-pattern&gt; \
+</span><span style="color:#bf616a;">  --permissions</span><span>=&lt;permissions&gt;
+</span></code></pre>
+<p>Creates a new policy with the specified parameters.</p>
+<h3 id="spike-policy-apply"><code>spike policy apply</code></h3>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">spike</span><span> policy apply</span><span style="color:#bf616a;"> --file</span><span>=&lt;policy-file.yaml&gt;
+</span></code></pre>
+<p>Creates a new policy with file-based input using YAML configuration.</p>
+<h4 id="yaml-configuration-format">YAML Configuration Format</h4>
+<p>When using the <code>--file</code> flag, the YAML file should follow this structure:</p>
+<pre data-lang="yaml" style="background-color:#2b303b;color:#c0c5ce;" class="language-yaml "><code class="language-yaml" data-lang="yaml"><span style="color:#bf616a;">name</span><span>: </span><span style="color:#a3be8c;">policy-name
+</span><span style="color:#bf616a;">spiffeid</span><span>: </span><span style="color:#a3be8c;">spiffe://example.org/service/
+</span><span style="color:#bf616a;">path</span><span>: </span><span style="color:#a3be8c;">secrets/database/production
+</span><span style="color:#bf616a;">permissions</span><span>:
+</span><span>  - </span><span style="color:#a3be8c;">read
+</span><span>  - </span><span style="color:#a3be8c;">write
+</span></code></pre>
+<h3 id="example-files">Example Files</h3>
+<p>SPIKE repository has the following example policies for your convenience:</p>
+<ul>
+<li><a href="https://github.com/spiffe/spike/blob/main/examples/policies/sample-policy.yaml"><code>./examples/policies/sample-policy.yaml</code></a>—Basic policy example</li>
+<li><a href="https://github.com/spiffe/spike/blob/main/examples/policies/test-policies/basic-policy.yaml"><code>./examples/policies/test-policies/basic-policy.yaml</code></a>—Minimal
+policy</li>
+<li><a href="https://github.com/spiffe/spike/blob/main/examples/policies/test-policies/admin-policy.yaml"><code>./examples/policies/test-policies/admin-policy.yaml</code></a>—Full
+permissions policy</li>
+<li><a href="https://github.com/spiffe/spike/blob/main/examples/policies/test-policies/invalid-permissions.yaml"><code>./examples/policies/test-policies/invalid-permissions.yaml</code></a>—Example
+with invalid permissions (for testing)</li>
+</ul>
+<h4 id="permission-types">Permission Types</h4>
+<table><thead><tr><th>Permission</th><th>Description</th></tr></thead><tbody>
+<tr><td><strong>read</strong></td><td>Allows reading secrets and resources</td></tr>
+<tr><td><strong>write</strong></td><td>Allows creating, updating, and deleting secrets</td></tr>
+<tr><td><strong>list</strong></td><td>Allows listing resources and directories</td></tr>
+<tr><td><strong>super</strong></td><td>Full administrative permissions (<strong>use with caution</strong>)</td></tr>
+</tbody></table>
+<h4 id="validation">Validation</h4>
+<p>All policy configurations are validated to ensure:</p>
+<ol>
+<li><strong>Required fields</strong>: <code>name</code>, <code>spiffeid</code>, <code>path</code>, and <code>permissions</code> must be
+present</li>
+<li><strong>Valid permissions</strong>: Only <code>read</code>, <code>write</code>, <code>list</code>, and <code>super</code> are allowed</li>
+<li><strong>Valid YAML syntax</strong>: Proper YAML formatting is required (for YAML files)</li>
+<li><strong>Non-empty values</strong>: All fields must have non-empty values</li>
+</ol>
+<h4 id="gitops-integration">GitOps Integration</h4>
+<p>YAML files can be easily integrated into GitOps workflows:</p>
+<ol>
+<li>
+<p><strong>Store policy YAML files in a Git repository</strong></p>
+<pre data-lang="text" style="background-color:#2b303b;color:#c0c5ce;" class="language-text "><code class="language-text" data-lang="text"><span>policies/
+</span><span>├── web-service-policy.yaml
+</span><span>├── database-policy.yaml
+</span><span>└── admin-policy.yaml
+</span></code></pre>
+</li>
+<li>
+<p><strong>Use CI/CD pipelines to validate policies before deployment</strong></p>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># Validation step in CI
+</span><span style="color:#b48ead;">for</span><span> policy </span><span style="color:#b48ead;">in</span><span> policies/*.yaml; </span><span style="color:#b48ead;">do
+</span><span>  </span><span style="color:#bf616a;">spike</span><span> policy apply</span><span style="color:#bf616a;"> --file </span><span>&quot;$</span><span style="color:#bf616a;">policy</span><span>&quot;
+</span><span>  </span><span style="color:#65737e;"># - ensure that the policy is created
+</span><span>  </span><span style="color:#65737e;"># - delete the policy
+</span><span>  </span><span style="color:#65737e;"># - ensure that the policy is gone
+</span><span style="color:#b48ead;">done
+</span></code></pre>
+</li>
+<li>
+<p><strong>Apply policies using <code>spike policy apply --file</code> in deployment scripts</strong></p>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># Deployment script
+</span><span style="color:#b48ead;">for</span><span> policy </span><span style="color:#b48ead;">in</span><span> policies/*.yaml; </span><span style="color:#b48ead;">do
+</span><span>  </span><span style="color:#bf616a;">spike</span><span> policy apply</span><span style="color:#bf616a;"> --file </span><span>&quot;$</span><span style="color:#bf616a;">policy</span><span>&quot;
+</span><span style="color:#b48ead;">done
+</span></code></pre>
+</li>
+<li>
+<p><strong>Version control changes to policies alongside application code</strong></p>
+</li>
+<li>
+<p><strong>Use upsert semantics to safely apply policy changes without worrying
+about conflicts</strong></p>
+</li>
+</ol>
+<h3 id="spike-policy-get"><code>spike policy get</code></h3>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">spike</span><span> policy get &lt;id&gt; </span><span style="color:#b48ead;">[</span><span>--format=human|json</span><span style="color:#b48ead;">]
+</span><span style="color:#bf616a;">spike</span><span> policy get</span><span style="color:#bf616a;"> --name</span><span>=&lt;name&gt; </span><span style="color:#b48ead;">[</span><span>--format=human|json</span><span style="color:#b48ead;">]
+</span></code></pre>
+<p>Gets details of a specific policy by ID or name. Use <code>--format=json</code>
+for machine-readable output.</p>
+<h3 id="spike-policy-delete"><code>spike policy delete</code></h3>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">spike</span><span> policy delete &lt;id&gt;
+</span><span style="color:#bf616a;">spike</span><span> policy delete</span><span style="color:#bf616a;"> --name</span><span>=&lt;name&gt;
+</span></code></pre>
+<p>Deletes a policy by ID or name. Requires confirmation.</p>
+<h2 id="usage-examples">Usage Examples</h2>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># Create a policy for a web service with read and write access
+</span><span style="color:#bf616a;">spike</span><span> policy create \
+</span><span style="color:#bf616a;">  --name</span><span>=web-service \
+</span><span style="color:#bf616a;">  --path</span><span>=&quot;</span><span style="color:#a3be8c;">secrets/web/</span><span>&quot; \
+</span><span style="color:#bf616a;">  --spiffeid</span><span>=&quot;</span><span style="color:#a3be8c;">spiffe://example.org/web/</span><span>&quot; \
+</span><span style="color:#bf616a;">  --permissions</span><span>=read,write
+</span><span>
+</span><span style="color:#65737e;"># Create a policy with multiple permissions
+</span><span style="color:#bf616a;">spike</span><span> policy create \
+</span><span style="color:#bf616a;">  --name</span><span>=admin-service \
+</span><span style="color:#bf616a;">  --path</span><span>=&quot;</span><span style="color:#a3be8c;">secrets/</span><span>&quot; \
+</span><span style="color:#bf616a;">  --spiffeid</span><span>=&quot;</span><span style="color:#a3be8c;">spiffe://example.org/admin/</span><span>&quot; \
+</span><span style="color:#bf616a;">  --permissions</span><span>=read,write,list
+</span><span>
+</span><span style="color:#65737e;"># Apply a policy using a YAML file
+</span><span style="color:#bf616a;">spike</span><span> policy apply</span><span style="color:#bf616a;"> --file</span><span>=policy.yaml
+</span><span>
+</span><span style="color:#65737e;"># List all policies in JSON format (useful for automation)
+</span><span style="color:#bf616a;">spike</span><span> policy list</span><span style="color:#bf616a;"> --format</span><span>=json
+</span><span>
+</span><span style="color:#65737e;"># Get details of a specific policy by name
+</span><span style="color:#bf616a;">spike</span><span> policy get</span><span style="color:#bf616a;"> --name</span><span>=web-service
+</span><span>
+</span><span style="color:#65737e;"># Get policy details in JSON format
+</span><span style="color:#bf616a;">spike</span><span> policy get</span><span style="color:#bf616a;"> --name</span><span>=web-service</span><span style="color:#bf616a;"> --format</span><span>=json
+</span><span>
+</span><span style="color:#65737e;"># Delete a policy and confirm deletion
+</span><span style="color:#bf616a;">spike</span><span> policy delete</span><span style="color:#bf616a;"> --name</span><span>=web-service
+</span></code></pre>
+<h2 id="pattern-syntax">Pattern Syntax</h2>
+<p><strong>SPIKE</strong> policies support <strong>regular expression</strong> pattern matching for both
+SPIFFE IDs and resource paths:</p>
+<ul>
+<li>If the pattern is a single <code>"*"</code>, then it matches anything.</li>
+<li>For any other pattern, the pattern is compiled as a “<em>regular expression</em>”.</li>
+</ul>
+<p>This would mean, for an exact match, you would need to include <code>^</code> and <code>$</code> in
+your patterns as well.</p>
+<p>For example:</p>
+<ul>
+<li><code>secrets/db</code> matches <code>global/secrets/db</code> and <code>secrets/db/local</code></li>
+<li>Whereas, <code>^secrets/db$</code> only matches <code>secrets/db</code> and nothing else
+(<em><code>global/secrets/db</code> and <code>secrets/db/local</code> will not match</em>)</li>
+</ul>
+<p>Thus, for precise control, you might want to include <code>^</code> and <code>$</code> at the
+beginning and end of your patterns respectively for an exact match.</p>
+<h2 id="how-regular-expressions-are-used-for-policy-matching">How Regular Expressions are Used For Policy Matching</h2>
+<p>More specifically, <strong>SPIKE</strong> compiles <strong>SPIFFE ID patterns</strong> and
+<strong>path patterns</strong> defined in the policies into <strong>regular
+expressions</strong>.</p>
+<p>Here is a simplified version of how this regular expression compilation
+happens behind-the-scenes:</p>
+<pre data-lang="go" style="background-color:#2b303b;color:#c0c5ce;" class="language-go "><code class="language-go" data-lang="go"><span style="color:#bf616a;">pathRegex</span><span>, </span><span style="color:#bf616a;">err </span><span>:= </span><span style="color:#bf616a;">regexp</span><span>.</span><span style="color:#bf616a;">Compile</span><span>(</span><span style="color:#bf616a;">policy</span><span>.</span><span style="color:#bf616a;">PathPattern</span><span>)
+</span><span style="color:#65737e;">// ... error handling omitted for brevity.
+</span><span style="color:#bf616a;">policy</span><span>.</span><span style="color:#bf616a;">PathRegex </span><span>= </span><span style="color:#bf616a;">pathRegex
+</span><span style="color:#65737e;">// `pathRegEx` is used for policy validation.
+</span></code></pre>
+<p>As seen from the example above, both the path pattern and the SPIFFE ID
+pattern that are provided during policy creation which are used “<strong>AS IS</strong>” to
+create regular expression matchers. These patterns are compiled
+into Go’s built-in regex engine, ensuring that the matching process strictly
+adheres to the patterns defined in the policy, allowing for precise and flexible
+access control.</p>
+<h2 id="simplicity-is-the-key">Simplicity Is the Key</h2>
+<p>Because of the regular expression usage in SPIKE policies, a <code>policy create</code>
+operation can define more flexible matching patterns. However, keeping patterns
+simple is both more secure and easier to manage and reason about. Creating a
+pattern that is too broad or that uses overly complex regular expressions may
+lead to unintended consequences and security risks. <strong>Simplicity</strong> is important
+to ensure patterns are clear, predictable, and effective.</p>
+<p>When a workload attempts to access a resource, its <strong>SPIFFE ID</strong> and the
+requested resource <strong>path</strong> are matched against these compiled <strong>regular
+expressions</strong>. This ensures that both identity and resource patterns follow the
+specified rules and allow for flexibility with wildcards or exact matches.</p>
+<h3 id="path-pattern-examples">Path Pattern Examples</h3>
+<pre data-lang="text" style="background-color:#2b303b;color:#c0c5ce;" class="language-text "><code class="language-text" data-lang="text"><span>secrets/               # All resources in the secrets directory
+</span><span>secrets/database/      # Only resources in the database subdirectory  
+</span><span>secrets/database/creds # Only the specific creds resource
+</span><span>
+</span><span># You can provide regular expressions for a more fine-tuned
+</span><span># pattern match:
+</span><span>^secrets/db-[123]$ # Matches secrets/db-2, but not secrets/db-4.
+</span></code></pre>
+<h2 id="path-patterns-in-spike">Path Patterns in SPIKE</h2>
+<p>Path patterns in <strong>SPIKE</strong> are designed to provide flexibility but also follow
+certain conventions for clarity and usability. While the path pattern is
+suggested (<em>but not mandated</em>) to look like a UNIX-style path for familiarity,
+<strong>SPIKE secret paths DO NOT start with a leading slash</strong>.</p>
+<p>This is because <strong>SPIKE paths represent logical key namespaces</strong>, not
+hierarchical filesystem paths. They are always relative to the secrets engine
+mount point, making the leading slash redundant and potentially confusing.</p>
+<h4 id="example">Example:</h4>
+<ul>
+<li><strong>Correct:</strong> <code>secrets/app/config</code></li>
+<li><strong>Redundant/Confusing:</strong> <code>/secrets/app/config</code></li>
+</ul>
+<p>Additionally, although there is currently no restriction on how the path is
+formed, it is worth noting that future versions of <strong>SPIKE</strong> may restrict paths
+from having a trailing slash to avoid ambiguity and maintain consistency
+in naming practices.</p>
+<h4 id="best-practices-for-path-patterns">Best Practices for Path Patterns:</h4>
+<ol>
+<li>Avoid leading slashes.</li>
+<li>Avoid trailing slashes to ensure forward compatibility.</li>
+<li>Use descriptive and meaningful names that reflect the resource’s purpose or
+hierarchy.</li>
+</ol>
+<h3 id="spiffe-id-pattern-examples">SPIFFE ID Pattern Examples</h3>
+<pre style="background-color:#2b303b;color:#c0c5ce;"><code><span>spiffe://example.org/              # Workloads in the example.org trust domain
+</span><span>spiffe://example.org/web/          # Only web workloads
+</span><span>^spiffe://example.org/web/server$  # Only the specific web server workload
+</span></code></pre>
+<h2 id="best-practices">Best Practices</h2>
+<ul>
+<li>Follow the principle of least privilege when assigning permissions</li>
+<li>Use descriptive policy names that reflect their purpose</li>
+<li>Create separate policies for different workload types</li>
+<li>Use specific path patterns rather than overly broad ones</li>
+<li>Regularly audit and review your policies</li>
+<li>Never assign <code>super</code> permissions unless absolutely necessary</li>
+</ul>
+<hr />
+<h2 id="spike-command-index"><code>spike</code> Command Index</h2>
+<ul>
+<li><a href="https://spike.ist/getting-started/commands/secret/"><code>spike secret</code></a>:  Manage secrets.</li>
+<li><a href="https://spike.ist/getting-started/commands/policy/"><code>spike policy</code></a>: Manage rules that
+control access to secrets.</li>
+<li><a href="https://spike.ist/getting-started/commands/operator/"><code>spike operator</code></a>: Administrative
+functionality for system operations and disaster recovery.</li>
+</ul>
+<hr />
+<ul>
+<li><a href="https://spike.ist/getting-started/about/">About SPIKE</a></li>
+<li><a href="https://spike.ist/getting-started/quickstart/">SPIKE Quickstart Guide</a></li>
+<li><a href="https://spike.ist/getting-started/local-deployment/">Building SPIKE Locally</a></li>
+<li><a href="https://spike.ist/getting-started/project-status/">Early Access Notice</a></li>
+<li><a href="https://spike.ist/getting-started/configuration/">Configuring SPIKE</a></li>
+<li><a href="https://spike.ist/getting-started/cli/">SPIKE CLI</a></li>
+</ul>
+<hr />
+<ul>
+<li><a href="https://spike.ist/getting-started/">Getting Started</a></li>
+<li><a href="https://spike.ist/community/">Community</a></li>
+<li><a href="https://spike.ist/architecture/">SPIKE Architecture</a></li>
+<li><a href="https://spike.ist/operations/">Operations</a></li>
+<li><a href="https://spike.ist/tracking/">Tracking</a></li>
+</ul>
+
+    
+        </article>
+
+        <footer id="footer">
+            Copyright © 2024-present <strong>SPIKE Contributors</strong>.<br>
+            <strong>SPIKE</strong>'s code
+            is distributed under <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache (v2.0)</a>.
+            <br>
+            The documentation on this website
+            is distributed under <a href="https://creativecommons.org/licenses/by/4.0/">CC-BY-4.0</a>.
+            <br><br>
+            We <strong>do not</strong> collect your data.
+            This site <strong>does not</strong> use any tracking cookies or scripts.
+        </footer>
+    </div>
+
+</main>
+
+
+    <script type="text/javascript" src="https://spike.ist/elasticlunr.min.js" defer></script>
+    <script type="text/javascript" src="https://spike.ist/search_index.en.js" defer></script>
+<script type="text/javascript" src="https://spike.ist/js.js" defer></script>
+</body>
+</html>
+<style>
+body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    font-family: var(--font-family);
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+}
+
+main {
+    width: 100vw;
+    max-width: 1920px;
+    display: flex;
+    flex-direction: row;
+    overflow: hidden;
+}
+
+#footer {
+    text-align: center;
+    padding: 2rem;
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    border-top: 1px solid var(--border-color);
+    margin-top: 2rem;
+}
+
+.content {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    height: 100vh;
+    overflow-y: auto;
+    background-color: var(--bg-primary);
+    line-height: 1.6;
+    border-left: 1px solid var(--border-color);
+}
+
+#footer a {
+    color: var(--spike-blue);
+    text-decoration: none;
+    transition: all 0.2s ease;
+    border-bottom: 1px solid transparent;
+    font-weight: 500;
+
+}
+
+#footer a:hover {
+    border-bottom-color: var(--spike-blue);
+}
+
+</style>

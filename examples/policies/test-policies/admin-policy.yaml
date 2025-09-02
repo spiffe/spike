@@ -1,0 +1,13 @@
+#   \\
+#  \\\\ SPIKE: Secure your secrets with SPIFFE. — https://spike.ist/
+# \\\\\\
+
+# Admin policy configuration with all permissions
+name: "admin-policy"
+spiffeidPattern: "^spiffe://example\.org/admin$"
+pathPattern: "^secrets$"
+permissions:
+  - read
+  - write
+  - list
+  - super
