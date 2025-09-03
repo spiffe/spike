@@ -21,6 +21,51 @@
 <stuff>
   <task-group for="v0.5.0">
     <issue>
+      Kevin Fox
+      9:16 AM
+      what do you think about making plugins for bootstrap state?
+      9:16
+      one for sql, one for k8s configmap initially?
+      9:17
+      I think the configmap option would be nicer to integrate with for the chart. I'm really not a fan of shared volumes, particularly for k8s jobs
+
+
+      Murat Parlakisik
+      9:36 AM
+      If this is a static configuration. I agree that we should convert the file in volumes to configmaps
+
+
+      Kevin Fox
+      9:38 AM
+      if someone could stub out the plugin bits, I could implement the k8s plugin.
+
+      1 reply
+      12 days agoView thread
+
+
+      Volkan Ozcelik
+      9:53 AM
+      Yeah, configmap would be useful. -- for SQLite, the configuration is mostly static. -- we initialize the db with some root key; but that can be dynamically provided anyway.
+      The rest is just "best guess" defaults.
+
+
+      Kevin Fox
+      10:05 AM
+      I think its just storing a single bool. "inited=true"
+      10:05
+      and the plugin can be used by the bootstrapper to not run again, and the nexus process to determine if it can continue to start or just wait (edited)
+
+
+
+
+
+
+
+      Murat Parlakisik
+      12:08 PM
+      I can work on it
+    </issue>
+    <issue>
       fix func TestInitializeBackend_UnknownType_DefaultsToMemory(t *testing.T) {
       it is a logic error, so better to fix this release rather than waiting for
       the next one.
