@@ -29,36 +29,20 @@
       func TestInitializeBackend_NoEnvironmentVariable_DefaultsToMemory(t *testing.T) {
     </issue>
     <issue>
-      SDK should panic for Log.FatalXXX for easier testing.
-
-      SDK should have a wrapper for os.Exit (for testing).
-
-      Add "generate coverage report" to the release instructions.
-      Coverage report shall be published on the website, and linked
-      somewhere in the docs too (find a suitable place)
-    </issue>
-    <issue>
-      // changing log.FatalLn() (which calls os.Exit()) to panic() would be better because:
-      //  1. It allows the validation logic to be unit tested
-      //  2. Deferred cleanup functions would run
-      //  3. Better error reporting with stack traces
-      //  4. More idiomatic Go for library code
-    </issue>
-    <issue>
-      func initializeSqliteBackend(rootKey *[32]byte) backend.Backend {
-      panic if rootkey is nil or empty.
-    </issue>
-    <issue>
-      SPIKE_NEXUS_RECOVERY_TIMEOUT and SPIKE_NEXUS_RECOVERY_POLL_INTERVAL
-      are not used anymore; remove them from everywhere.
-    </issue>
-    <issue>
       once all the changes are done ensure that the demo app still works.
     </issue>
   </task-group>
   <task-group for=">v0.5.0">
     <issue>
+      func initializeSqliteBackend(rootKey *[32]byte) backend.Backend {
+      panic if rootkey is nil or empty.
+    </issue>
+
+    <issue>
       create a demo video for the new bootstrapping feature.
+    </issue>
+    <issue>
+      create a video about how to develop SPIKE on WSL.
     </issue>
     <issue>
       some test helpers we use can move to the SDK.
@@ -75,7 +59,7 @@
       (i.e. list secrets that have db/creds anywhere in their path.
     </issue>
     <issue>
-      path normalization test failing
+      remove path normalization tests, since we are not normalizing paths anymore.
 
       //{
       //	name:         "flags_with_multiple_trailing_slashes",
@@ -93,18 +77,8 @@
       these can be generic helper functions in the sdk.
     </issue>
     <issue>
-      rename
-      ListPoliciesBySPIFFEID
-      ListPoliciesBySPIFFEIDPattern
-      same for path => pathpattern
-    </issue>
-    <issue>
-      wildcard for spiffeid pattern and path pattern is redundant and confusing
-      instead of that, you can always provide a similar regex like `.*`
-      remove that part from code and documentation
-      it will make validation logic simpler too.
-
-      also, empty id or path should raise an error.
+      also, empty id or path should raise an error for policies
+      and also for secrets
     </issue>
     <issue>
       check all log.Log()s. some of them don't have fName
@@ -115,9 +89,6 @@
 
       Nope. we only use 32 bytes.
       fix the docs and also the tests.
-    </issue>
-    <issue>
-      saerch ofr --path too
     </issue>
     <issue>
       type GuardFunc[Req any] func(Req, http.ResponseWriter, *http.Request) error
@@ -140,29 +111,9 @@
       }
     </issue>
     <issue>
+      !IMPORTANT!
       unit tests are failing in CI because it cannot find the db path.
 
-    </issue>
-    <issue>
-      The `apply` command automatically normalizes the path patterns by removing
-      trailing slashes:
-
-      ^ we don't need this normalization as
-      1. paths are keys, and the user may intentionally want to include multiple slashes
-         that's not against spec.
-      2. something like ^test/path/one//$ is not normalized anyway.
-
-      once you implement the fix, update the documentation too.
-    </issue>
-    <issue>
-      remove single wildcard special case from
-      spiffeid pattern and path pattern match.
-    </issue>
-    <issue>
-      add to instructions for relase
-      make audit
-      make test
-      also add that to contributing.md
     </issue>
     <issue>
       missingFlags = append(missingFlags, "name")
@@ -177,10 +128,6 @@
       missingFlags = append(missingFlags, "permissions")
 
       have these flag names as constants maybe.
-    </issue>
-    <issue>
-      update docs-src/content/usage/commands/policy.md
-      it still mentions path instead of pathPattern etc.
     </issue>
     <issue>
       var permissions []data.PolicyPermission
@@ -205,6 +152,14 @@
     <issue>
       add these strings as constants in SDK to avoid typos in code:
       p := os.Getenv("SPIKE_NEXUS_SHAMIR_SHARES")
+      SPIKE SDK uses some getenv too, it'll be nice to consolidate all of them
+      in somwhere like config/constant.go or something similar.
+    </issue>
+    <issue>
+      add to inline docs; dataStore's getCipher method should only be used
+      for the SPIKE Lite mode.
+      Check if you can find a way to enforce this, as people will not likely
+      read the docs.
     </issue>
     <issue>
       // create an initializeMemoryBackend function for consistency.
@@ -227,8 +182,6 @@
       _ = os.Unsetenv("SPIKE_NEXUS_BACKEND_STORE")
       }
       }()
-
-
     </issue>
     <issue>
       fix:
@@ -263,11 +216,6 @@
       policy.Permissions[i] = data.PolicyPermission(strings.TrimSpace(permStr))
       }
       }
-    </issue>
-    <issue>
-      // add package documentation.
-
-      package memory
     </issue>
     <issue>
       Fix LogFatalXXX-related tests.
@@ -357,9 +305,6 @@
 
     </issue>
     <issue>
-      we removed s3 store type; remove it from docs if any too.
-    </issue>
-    <issue>
       fix all `t.Skip()` skipped tests.
     </issue>
     <issue>
@@ -367,7 +312,7 @@
     </issue>
     <issue>
       CLI should call log.FatalLn and log.FatalLn should panic for better
-      testability.
+      testability. (instead of os.Exit(1))
 
 
       // CLI app tests
@@ -392,21 +337,6 @@
       InitializeBackend(nil)
       }
 
-    </issue>
-    <issue>
-      func Fatal(msg string) {
-      func FatalF(format string, args ...any) {
-      func FatalLn(args ...any) {
-      ^ these should use structured logs (log.Log().Error() to log
-      almost always when things crash.
-    </issue>
-    <issue>
-      do not cache secrets and policies in nexus:
-      https://github.com/spiffe/spike/issues/213
-
-      create an ADR about "not caching secrets locally and directly
-      querying the backing store" (will make HA simpler/easier and will
-      make SPIKE Nexus "mostly" stateless).
     </issue>
     <issue>
       add unit tests.
@@ -497,22 +427,6 @@
       these should be merged.
     </issue>
     <issue>
-      design a dedicated landing page.
-    </issue>
-    <issue>
-      add make audit to spike-sdk-go too.
-
-      also add `make audit` to user-facing documentation
-      as in "run `make audit` before your commit" etc.
-    </issue>
-    <issue>
-      // FIXME move constant
-      case a == url.ActionDefault && p == "/v1/cipher/encrypt" && !fullMode:
-      return cipher.RouteEncrypt
-      case a == url.ActionDefault && p == "/v1/cipher/decrypt" && !fullMode:
-      return cipher.RouteDecrypt
-    </issue>
-    <issue>
       u, err := url.JoinPath(
       keeperAPIRoot, string(apiUrl.KeeperContribute),
       )
@@ -594,20 +508,6 @@
     </issue>
     <issue>
       verify kind scripts.
-    </issue>
-    <issue>
-      func bootstrap(source *workloadapi.X509Source) {
-      const fName = "bootstrap"
-
-      if source == nil {
-      // If `source` is nil, nobody is going to recreate the source,
-      // it's better to log and crash.
-      log.FatalLn(fName + ": source is nil. this should not happen.")
-      }
-
-      sqlBackend := env.BackendStoreType() == env.Sqlite
-
-      // FIXME Consider alternate tombstone mechanisms. Needed for HA SPIKE Nexus
     </issue>
     <issue>
       fips compliance and boringcrpto
@@ -704,39 +604,6 @@
       Make vSecM use helm only (you can override images if needed,
       to test with local images. -- that will be better than
       generating local manifests and maintaining them separately)
-    </issue>
-    <issue>
-      ADR:
-      why not store the tombstone in the db?
-      because we don't use the db before initialization
-      actually, having a db schema can count as a tombstone
-      also, what if we are not using the db (in memory mode) but we still need
-      to rely on the tombstone
-      but there are edge cases
-      better to use a file. file access is simple.
-    </issue>
-    <issue kind="documentation">
-      Also, create a script in ./hack that does that.
-      (i.e. something that forces Nexus to reset its root key
-      upon next restart; and see how it impacts the system
-      see SQLite db with a db viewer
-      or maybe let that script delete the database too.)
-
-      // TODO: if you stop nexus, delete the tombstone file, and
-      restart nexus,
-      // (and no keeper returns a shard and returns 404)
-      // it will reset its root key and update the keepers to store
-      the new
-      // root key. This is not an attack vector, because an adversary
-      who can
-      // delete the tombstone file, can also delete the backing store.
-      /// Plus no sensitive data is exposed; it's just all data is
-      inaccessible
-      // now because the root key is lost for good. In either
-      // case, for production systems, the backing store needs to be
-      backed up
-      // and the root key needs to be backed up in a secure place too.
-      // ^ add these to the documentation.
     </issue>
     <issue kind="v1.0-requirement">
       - Postgres support as a backing store.
@@ -1428,7 +1295,7 @@
     </issue>
     <issue priority="medium" severity="medium">
       a way to factory-reset SPIKE: reset db; recreate rootkey; delete
-      tombstone file etc.
+       etc.
 
       spike operator reset:
       deletes and recreates the ~/.spike folder
