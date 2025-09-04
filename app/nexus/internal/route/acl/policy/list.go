@@ -86,12 +86,12 @@ func RouteListPolicies(
 
 	switch {
 	case SPIFFEIDPattern != "":
-		policies, err = state.ListPoliciesBySPIFFEID(SPIFFEIDPattern)
+		policies, err = state.ListPoliciesBySPIFFEIDPattern(SPIFFEIDPattern)
 		if err != nil {
 			return err
 		}
 	case pathPattern != "":
-		policies, err = state.ListPoliciesByPath(pathPattern)
+		policies, err = state.ListPoliciesByPathPattern(pathPattern)
 		if err != nil {
 			return err
 		}

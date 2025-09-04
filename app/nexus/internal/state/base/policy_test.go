@@ -601,7 +601,7 @@ func TestListPoliciesByPath_MatchingPolicies(t *testing.T) {
 		}
 
 		// List policies by pathPattern
-		matchingPolicies, err := ListPoliciesByPath(pathPattern)
+		matchingPolicies, err := ListPoliciesByPathPattern(pathPattern)
 		if err != nil {
 			t.Fatalf("Failed to list policies by pathPattern: %v", err)
 		}
@@ -659,7 +659,7 @@ func TestListPoliciesByPath_NoMatches(t *testing.T) {
 		}
 
 		// List policies with a non-matching pathPattern
-		matchingPolicies, err := ListPoliciesByPath("other/.*")
+		matchingPolicies, err := ListPoliciesByPathPattern("other/.*")
 		if err != nil {
 			t.Fatalf("Failed to list policies by pathPattern: %v", err)
 		}
@@ -715,7 +715,7 @@ func TestListPoliciesBySPIFFEID_MatchingPolicies(t *testing.T) {
 		}
 
 		// List policies by SPIFFE ID
-		matchingPolicies, err := ListPoliciesBySPIFFEID(spiffeIDPattern)
+		matchingPolicies, err := ListPoliciesBySPIFFEIDPattern(spiffeIDPattern)
 		if err != nil {
 			t.Fatalf("Failed to list policies by SPIFFE ID: %v", err)
 		}
@@ -774,7 +774,7 @@ func TestListPoliciesBySPIFFEID_NoMatches(t *testing.T) {
 		}
 
 		// List policies with non-matching SPIFFE ID
-		matchingPolicies, err := ListPoliciesBySPIFFEID("spiffe://other\\.org/.*")
+		matchingPolicies, err := ListPoliciesBySPIFFEIDPattern("spiffe://other\\.org/.*")
 		if err != nil {
 			t.Fatalf("Failed to list policies by SPIFFE ID: %v", err)
 		}
