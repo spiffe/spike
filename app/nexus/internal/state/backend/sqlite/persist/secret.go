@@ -11,6 +11,7 @@ import (
 	"fmt"
 
 	"github.com/spiffe/spike-sdk-go/kv"
+	"github.com/spiffe/spike-sdk-go/log"
 
 	"github.com/spiffe/spike/app/nexus/internal/state/backend/sqlite/ddl"
 )
@@ -34,6 +35,11 @@ import (
 func (s *DataStore) StoreSecret(
 	ctx context.Context, path string, secret kv.Value,
 ) error {
+	const fName = "StoreSecret"
+	if ctx == nil {
+		log.FatalLn(fName, "message", "nil context")
+	}
+
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -105,6 +111,11 @@ func (s *DataStore) StoreSecret(
 func (s *DataStore) LoadSecret(
 	ctx context.Context, path string,
 ) (*kv.Value, error) {
+	const fName = "LoadSecret"
+	if ctx == nil {
+		log.FatalLn(fName, "message", "nil context")
+	}
+
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
