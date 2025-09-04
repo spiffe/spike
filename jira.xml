@@ -21,60 +21,77 @@
 <stuff>
   <task-group for="v0.5.0">
     <issue>
-      Kevin Fox
-      9:16 AM
+      add to inline docs; dataStore's getCipher method should only be used
+      for the SPIKE Lite mode.
+      Check if you can find a way to enforce this, as people will not likely
+      read the docs.
+    </issue>
+    <issue>
+    wherever context is passed as an argument, panic if context is nil.
+    </issue>
+    <issue>
+      // create an initializeMemoryBackend function for consistency.
+      be = memory.NewInMemoryStore(createCipher(), env.MaxSecretVersions())
+    </issue>
+    <issue>
+      add these strings as constants in SDK to avoid typos in code:
+      p := os.Getenv("SPIKE_NEXUS_SHAMIR_SHARES")
+      SPIKE SDK uses some getenv too, it'll be nice to consolidate all of them
+      in somwhere like config/constant.go or something similar.
+    </issue>
+    <issue>
+      these serialization and deserialization functions can be
+      extracted. --- They can even be part of the Go SDK.
+
+      It can error, or swallow unknown permissions.
+
+      // Deserialize permissions from comma-separated string
+      if permissionsStr != "" {
+      permissionStrs := strings.Split(permissionsStr, ",")
+      policy.Permissions = make([]data.PolicyPermission, len(permissionStrs))
+      for i, permStr := range permissionStrs {
+      policy.Permissions[i] = data.PolicyPermission(strings.TrimSpace(permStr))
+      }
+      }
+    </issue>
+    <issue>
+      // this check should have been within state.CheckAccess
+      // maybe we can fork based on spike/system/secrets/encrypt.
+      //
+      // Lite Workloads are always allowed:
+      allowed := false
+      if spiffeid.IsLiteWorkload(
+      env.TrustRootForLiteWorkload(), sid.String()) {
+      allowed = true
+      }
+    </issue>
+    <issue>
+      "spike/system/acl" -> to constants
+      if there are other predefined paths, they go to constants too.
+    </issue>
+    <issue>
       what do you think about making plugins for bootstrap state?
-      9:16
       one for sql, one for k8s configmap initially?
-      9:17
       I think the configmap option would be nicer to integrate with for the chart. I'm really not a fan of shared volumes, particularly for k8s jobs
 
-
-      Murat Parlakisik
-      9:36 AM
       If this is a static configuration. I agree that we should convert the file in volumes to configmaps
 
-
-      Kevin Fox
-      9:38 AM
       if someone could stub out the plugin bits, I could implement the k8s plugin.
 
-      1 reply
-      12 days agoView thread
-
-
-      Volkan Ozcelik
-      9:53 AM
       Yeah, configmap would be useful. -- for SQLite, the configuration is mostly static. -- we initialize the db with some root key; but that can be dynamically provided anyway.
       The rest is just "best guess" defaults.
 
-
-      Kevin Fox
-      10:05 AM
       I think its just storing a single bool. "inited=true"
-      10:05
       and the plugin can be used by the bootstrapper to not run again, and the nexus process to determine if it can continue to start or just wait (edited)
-
-
-
-
-
-
-
-      Murat Parlakisik
-      12:08 PM
-      I can work on it
     </issue>
     <issue>
-      fix func TestInitializeBackend_UnknownType_DefaultsToMemory(t *testing.T) {
-      it is a logic error, so better to fix this release rather than waiting for
-      the next one.
-
-      same here:
-      func TestInitializeBackend_NoEnvironmentVariable_DefaultsToMemory(t *testing.T) {
+      Fix CI failing tests
     </issue>
     <issue>
-      once all the changes are done ensure that the demo app still works.
+      once all the changes are done, ensure that the demo app still works.
+    </issue>
+    <issue>
+      update documentation and changelog.
     </issue>
   </task-group>
   <task-group for=">v0.5.0">
@@ -82,7 +99,6 @@
       func initializeSqliteBackend(rootKey *[32]byte) backend.Backend {
       panic if rootkey is nil or empty.
     </issue>
-
     <issue>
       create a demo video for the new bootstrapping feature.
     </issue>
@@ -91,17 +107,6 @@
     </issue>
     <issue>
       some test helpers we use can move to the SDK.
-    </issue>
-    <issue>
-      When using filters, you must provide **the exact regular expression pattern** as
-      defined in the policies you want to match. For example, if a policy is defined
-      with pattern `^secrets/database/production$`, you must use exactly that pattern
-      to find it---no partial matches or simpler patterns will work.
-
-      ^ it would be nice for the list command to have substring matches.
-
-      ^ we can then use the same substring match logic to list secrets
-      (i.e. list secrets that have db/creds anywhere in their path.
     </issue>
     <issue>
       remove path normalization tests, since we are not normalizing paths anymore.
@@ -156,11 +161,6 @@
       }
     </issue>
     <issue>
-      !IMPORTANT!
-      unit tests are failing in CI because it cannot find the db path.
-
-    </issue>
-    <issue>
       missingFlags = append(missingFlags, "name")
       }
       if pathPattern == "" {
@@ -184,38 +184,11 @@
       }
       }
       }
-      ^ thjis needs sanitization in case an invalid permission is passed.
-    </issue>
-    <issue>
-      "spike/system/acl" -> to constants
-      if there are other predefined paths, they go to constants too.
+      ^ this needs sanitization in case an invalid permission is passed.
     </issue>
     <issue>
       func DatabaseOperationTimeout() time.Duration {
       ^ this is not used anywhere. find where it should be used and add it.
-    </issue>
-    <issue>
-      add these strings as constants in SDK to avoid typos in code:
-      p := os.Getenv("SPIKE_NEXUS_SHAMIR_SHARES")
-      SPIKE SDK uses some getenv too, it'll be nice to consolidate all of them
-      in somwhere like config/constant.go or something similar.
-    </issue>
-    <issue>
-      add to inline docs; dataStore's getCipher method should only be used
-      for the SPIKE Lite mode.
-      Check if you can find a way to enforce this, as people will not likely
-      read the docs.
-    </issue>
-    <issue>
-      // create an initializeMemoryBackend function for consistency.
-      be = memory.NewInMemoryStore(createCipher(), env.MaxSecretVersions())
-    </issue>
-    <issue>
-      update SPIKE pilot to be able to delete multiple policies or secrets
-    </issue>
-    <issue>
-      go through all files and create tests for them.
-      create a dedicated PR just for tests.
     </issue>
     <issue>
       // this pattern is repeated a lot; move to a helper function.
@@ -227,10 +200,6 @@
       _ = os.Unsetenv("SPIKE_NEXUS_BACKEND_STORE")
       }
       }()
-    </issue>
-    <issue>
-      fix:
-      func TestInitialize_MemoryBackend_ValidKey(t *testing.T) {
     </issue>
     <issue>
       // to SDK
@@ -246,21 +215,340 @@
     <issue>
       check all test helpers. some of them can go to the SDK instead.
     </issue>
+  </task-group>
+  <task-group for="SOC2-compliance">
     <issue>
-      wherever context is passed as an argument, panic if context is nil.
-    </issue>
-    <issue>
-      these serialization and deserialization functions can be
-      extracted. --- They can even be part of the Go SDK.
+      SOC-2 Compliance Checklist for SPIKE Logging System
 
-      // Deserialize permissions from comma-separated string
-      if permissionsStr != "" {
-      permissionStrs := strings.Split(permissionsStr, ",")
-      policy.Permissions = make([]data.PolicyPermission, len(permissionStrs))
-      for i, permStr := range permissionStrs {
-      policy.Permissions[i] = data.PolicyPermission(strings.TrimSpace(permStr))
-      }
-      }
+      ## Overall Plan
+
+      * Make SPIKE Audit logs streamable, structured, and have mandatory SOC-2
+        fields and actions.
+      * Position VSecM as a centralized log manager that does the heavy-lifting.
+
+      ## Overview
+
+      This checklist helps ensure the SPIKE's and VSecM's logging infrastructure
+      meets SOC-2 compliance requirements under the Trust Services Criteria,
+      with a focus on Security (mandatory), Availability, Processing Integrity,
+      Confidentiality, and Privacy.
+
+      ## 1. Logging Infrastructure Setup
+
+      ### Core Logging Requirements
+
+      - [ ] **Centralized Log Management** (VSecM)
+      - Implement a centralized log repository for all SPIKE components
+        (Nexus, Keeper, Pilot, Bootstrap)
+      - Use structured logging format (JSON preferred)
+      - Ensure logs from all environments are aggregated
+
+      - [ ] **Log Collection Scope**
+      - Application logs (errors, warnings, info, debug)
+      - Authentication and authorization events
+      - System access logs (successful and failed attempts)
+      - API request/response logs
+      - Security events and anomalies
+      - Configuration changes
+      - Administrative actions
+      - Data access and modification events
+      - Network traffic logs
+
+      - [ ] **Real-time Monitoring**
+      - Implement continuous, real-time log collection
+      - Set up automated log analysis
+      - (potential future item) Configure SIEM integration.
+
+      ## 2. Log Content Requirements
+
+      ### Mandatory Fields for Each Log Entry
+      - [ ] **Timestamp** (ISO 8601 format with timezone)
+      - [ ] **Event Type/Category** (authentication, authorization, error, etc.)
+      - [ ] **User Identity** (user ID, service account, or system)
+      - [ ] **Source IP Address**
+      - [ ] **Component/Service Name** (Nexus, Keeper, Pilot)
+      - [ ] **Action Performed**
+      - [ ] **Result** (success/failure)
+      - [ ] **Session ID** (for correlation)
+      - [ ] **Unique Log ID**
+
+      ### Security-Specific Events to Log
+
+      - [ ] **Authentication Events**
+      - Login attempts (successful/failed)
+      - Logout events
+      - Password changes
+      - MFA events
+      - Session timeouts
+
+      - [ ] **Authorization Events**
+      - Access grants/denials
+      - Privilege escalations
+      - Role changes
+      - Permission modifications
+
+      - [ ] **Secret Management Events**
+      - Secret creation/deletion
+      - Secret access requests
+      - Secret modifications
+      - Key rotation events (feat: implement automatic root key rotation)
+      - Root key management operations
+
+      - [ ] **System Changes**
+      - Configuration modifications
+      - Software updates/patches
+      - Security policy changes
+      - Certificate updates
+
+      ## 3. Log Protection and Integrity
+
+      ### Security Controls
+      - [ ] **Encryption**
+      - Encrypt logs in transit (TLS 1.2+)
+      - Encrypt logs at rest (AES-256 or stronger)
+
+      - [ ] **Access Controls**
+      - Implement role-based access control (RBAC) for log access
+      - Principle of least privilege for log viewers
+      - Separate duties for log administration
+      - Multi-factor authentication for log access
+
+      - [ ] **Integrity Protection**
+      - Implement log tampering detection
+      - Use write-once storage where possible
+      - Generate checksums/hashes for log files
+      - Implement log signing for critical events
+
+      - [ ] **Segregation**
+      - Separate production logs from development/testing
+      - Isolate sensitive data logs with additional controls
+
+      ## 4. Log Retention and Availability
+
+      ### Retention Policies
+
+      - [ ] **Define Retention Periods** (all configurable)
+      - Security event logs: minimum 12 months
+      - Access logs: minimum 90 days
+      - System logs: minimum 6 months
+      - Audit logs: minimum 7 years (or per regulatory requirements)
+
+      - [ ] **Backup and Recovery**
+      - Regular automated backups of log data
+      - Test restore procedures quarterly
+      - Off-site/cloud backup storage
+      - Document recovery time objectives (RTO)
+
+      - [ ] **Availability Requirements**
+      - Ensure 99.9% availability of logging system
+      - Implement redundancy for log collectors
+      - Set up failover mechanisms
+      - Monitor logging system health
+
+
+      ## 5. Monitoring and Alerting
+
+      ### Alert Configuration
+
+      - [ ] **Security Alerts**
+      - Multiple failed authentication attempts
+      - Unauthorized access attempts
+      - Privilege escalation events
+      - Configuration changes
+      - Suspicious API usage patterns
+      - Log system failures
+
+      - [ ] **Threshold Settings**
+      - Define baselines for normal activity
+      - Set anomaly detection thresholds
+      - Configure rate-limiting alerts
+      - Establish escalation procedures
+
+      - [ ] **Response Procedures**
+      - Document incident response procedures
+      - Define alert priority levels
+      - Establish notification chains
+      - Set response time SLAs
+
+      ## 6. Compliance and Audit Support
+
+      ### Documentation
+
+      - [ ] **Logging Policy**
+      - Create a formal logging and monitoring policy
+      - Define what must be logged
+      - Specify retention requirements
+      - Document access procedures
+
+      - [ ] **Procedures Documentation**
+      - Log review procedures
+      - Incident investigation procedures
+      - Log export/reporting procedures
+      - Evidence collection procedures
+
+      ### Audit Trail Features
+
+      - [ ] **Evidence Collection**
+      - Automated evidence gathering capabilities
+      - Log export in standard formats (CSV, JSON)
+      - Chain of custody documentation
+      - Audit report generation
+
+      - [ ] **Compliance Mapping**
+      - Map log events to SOC-2 controls
+      - Create compliance dashboards
+      - Generate compliance reports
+      - Track control effectiveness
+
+      ## 7. Privacy and Data Protection
+
+      ### PII Handling
+
+      - [ ] **Data Minimization**
+      - Avoid logging sensitive personal data
+      - Mask/redact PII in logs (SSN, credit cards, etc.)
+      - Implement field-level encryption for sensitive data
+
+      - [ ] **Privacy Controls**
+      - Implement data classification
+      - Tag logs containing personal data
+      - Apply appropriate retention policies
+      - Enable right-to-erasure capabilities
+
+      ## 8. Implementation Checklist
+
+      ### Technical Implementation
+      - [ ] **Logging Framework**
+      - Choose an appropriate logging library (e.g., structured logging)
+      - Implement correlation IDs across services
+      - Add context to all log entries
+      - Standardize log formats across components
+
+      - [ ] **Infrastructure Setup**
+      - Deploy log aggregation system (preferably open source with a non-evil license)
+      - Configure log forwarders/agents
+      - Set up log storage infrastructure
+      - Implement log rotation policies
+
+      - [ ] **Integration Points**
+      - SPIFFE/SPIRE integration for identity
+      - mTLS logging for Pilot API calls
+      - Keeper redundancy event logging
+      - Nexus encryption/decryption audit logs
+
+      ## 9. Testing and Validation
+
+      ### Testing Requirements
+      - [ ] **Log Generation Testing**
+      - Verify all required events are logged
+      - Test log format consistency
+      - Validate timestamp accuracy
+      - Check correlation ID propagation
+
+      - [ ] **Security Testing**
+      - Test access controls
+      - Verify encryption implementation
+      - Attempt log tampering (should fail)
+      - Test log injection prevention
+
+      - [ ] **Performance Testing**
+      - Measure logging overhead
+      - Test high-volume scenarios
+      - Verify no log loss under load
+      - Monitor storage growth rates
+
+      ## 10. Ongoing Maintenance
+
+      ### Regular Activities
+
+      - [ ] **Monthly Tasks**
+      - Review log storage capacity
+      - Analyze security alerts
+      - Update alert thresholds
+      - Review access logs
+
+      - [ ] **Quarterly Tasks**
+      - Test backup/restore procedures
+      - Review and update logging policy
+      - Conduct log retention cleanup
+      - Perform access reviews
+
+      - [ ] **Annual Tasks**
+      - Complete logging policy review
+      - Update risk assessment
+      - Conduct penetration testing
+      - Review with external auditor
+
+      ## 11. Metrics and KPIs
+
+      ### Monitoring Metrics
+      - [ ] **Operational Metrics**
+      - Log ingestion rate
+      - Storage utilization
+      - Query response times
+      - System availability percentage
+
+      - [ ] **Security Metrics**
+      - Failed authentication attempts
+      - Unauthorized access attempts
+      - Time to detect incidents
+      - Mean time to respond (MTTR)
+
+      - [ ] **Compliance Metrics**
+      - Percentage of systems with logging enabled
+      - Log retention compliance rate
+      - Audit finding closure rate
+      - Evidence collection time
+
+      ## 12. Tools and Technologies to Consider
+
+      ### Logging Solutions
+
+      - **Open Source Options:**
+      - Fluentd + Prometheus + Grafana
+      - Graylog
+      - Apache Kafka for log streaming
+
+      ### SIEM Integration
+
+      - Configure integration with Security Information and Event Management systems
+      - Enable correlation rules
+      - Set up automated threat detection
+
+      ## Priority Actions for SPIKE
+
+      Given SPIKE's architecture as a secrets management system using SPIFFE:
+
+      1. **Immediate Priorities:**
+      - Implement comprehensive audit logging for all secret operations
+      - Add mTLS certificate validation logging
+      - Log all SPIFFE identity verification events
+      - Capture root key access and management events
+
+      2. **Critical Security Events:**
+      - Log every secret encryption/decryption operation
+      - Track Keeper failover events
+      - Monitor Pilot CLI authentication and commands
+      - Record all administrative access to Nexus
+
+      3. **Integration Requirements:**
+      - Ensure SPIRE integration includes workload attestation logs
+      - Log SVID issuance and rotation
+      - Capture trust bundle updates
+      - Monitor federation events if applicable
+
+
+      ## Notes
+
+      - This checklist should be reviewed and updated quarterly
+      - SOC-2 Type II requires demonstrating control effectiveness
+        over 3-12 months
+    </issue>
+  </task-group>
+  <task-group for=">v0.5.0;fix-tests">
+    <issue>
+      fix:
+      func TestInitialize_MemoryBackend_ValidKey(t *testing.T) {
     </issue>
     <issue>
       Fix LogFatalXXX-related tests.
@@ -270,15 +558,12 @@
       //func TestNew_CipherCreationFailure(t *testing.T) {
     </issue>
     <issue>
-      // this check should have been within state.CheckAccess
-      // maybe we can fork based on spike/system/secrets/encrypt.
-      //
-      // Lite Workloads are always allowed:
-      allowed := false
-      if spiffeid.IsLiteWorkload(
-      env.TrustRootForLiteWorkload(), sid.String()) {
-      allowed = true
-      }
+      fix func TestInitializeBackend_UnknownType_DefaultsToMemory(t *testing.T) {
+      it is a logic error, so better to fix this release rather than waiting for
+      the next one.
+
+      same here:
+      func TestInitializeBackend_NoEnvironmentVariable_DefaultsToMemory(t *testing.T) {
     </issue>
     <issue>
       Fix:
@@ -310,13 +595,33 @@
       func TestShardURL_InvalidInput(t *testing.T) {
       Keeper API root shall not be empty.
     </issue>
+  </task-group>
+
+  <immediate-backlog>
     <issue>
       make the CI folder work again.
       there is a wip-draft.txt there to think about.
       we can run the tests in gh actions inside a container probably.
     </issue>
-  </task-group>
-  <immediate-backlog>
+    <issue>
+      update SPIKE pilot to be able to delete multiple policies or secrets
+    </issue>
+    <issue>
+      go through all files and create tests for them.
+      create a dedicated PR just for tests.
+    </issue>
+    <issue>
+      This how policy list works now:
+      When using filters, you must provide **the exact regular expression pattern** as
+      defined in the policies you want to match. For example, if a policy is defined
+      with pattern `^secrets/database/production$`, you must use exactly that pattern
+      to find it---no partial matches or simpler patterns will work.
+
+      ^ it would be nice for the list command to have substring matches.
+
+      ^ we can then use the same substring match logic to list secrets
+      (i.e. list secrets that have db/creds anywhere in their path.
+    </issue>
     <issue>
       add to docs:
       sourcing
