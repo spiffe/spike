@@ -29,17 +29,6 @@
       func TestInitializeBackend_NoEnvironmentVariable_DefaultsToMemory(t *testing.T) {
     </issue>
     <issue>
-      make the CI folder work again.
-      there is a wip-draft.txt there to think about.
-      we can run the tests in gh actions inside a container probably.
-    </issue>
-    <issue>
-      regenerate documentation.
-    </issue>
-    <issue>
-      Update changelog before version cut.
-    </issue>
-    <issue>
       SDK should panic for Log.FatalXXX for easier testing.
 
       SDK should have a wrapper for os.Exit (for testing).
@@ -327,6 +316,11 @@
     <issue>
       func TestShardURL_InvalidInput(t *testing.T) {
       Keeper API root shall not be empty.
+    </issue>
+    <issue>
+      make the CI folder work again.
+      there is a wip-draft.txt there to think about.
+      we can run the tests in gh actions inside a container probably.
     </issue>
   </task-group>
   <immediate-backlog>
