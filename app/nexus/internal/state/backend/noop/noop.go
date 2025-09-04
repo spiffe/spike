@@ -92,6 +92,8 @@ func (s *Store) DeletePolicy(_ context.Context, _ string) error {
 	return nil
 }
 
+// GetCipher returns the cipher used for encryption/decryption.
+// This implementation always returns nil.
 func (s *Store) GetCipher() cipher.AEAD {
 	return nil
 }

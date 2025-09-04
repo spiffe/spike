@@ -12,6 +12,8 @@ import (
 	"fmt"
 	"path/filepath"
 
+	"github.com/spiffe/spike-sdk-go/log"
+
 	"github.com/spiffe/spike/app/nexus/internal/env"
 )
 
@@ -29,6 +31,11 @@ import (
 //
 // This method is thread-safe.
 func (s *DataStore) Initialize(ctx context.Context) error {
+	const fName = "Initialize"
+	if ctx == nil {
+		log.FatalLn(fName, "message", "nil context")
+	}
+
 	s.mu.Lock()
 	defer s.mu.Unlock()
 

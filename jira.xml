@@ -21,19 +21,6 @@
 <stuff>
   <task-group for="v0.5.0">
     <issue>
-      add to inline docs; dataStore's getCipher method should only be used
-      for the SPIKE Lite mode.
-      Check if you can find a way to enforce this, as people will not likely
-      read the docs.
-    </issue>
-    <issue>
-    wherever context is passed as an argument, panic if context is nil.
-    </issue>
-    <issue>
-      // create an initializeMemoryBackend function for consistency.
-      be = memory.NewInMemoryStore(createCipher(), env.MaxSecretVersions())
-    </issue>
-    <issue>
       add these strings as constants in SDK to avoid typos in code:
       p := os.Getenv("SPIKE_NEXUS_SHAMIR_SHARES")
       SPIKE SDK uses some getenv too, it'll be nice to consolidate all of them

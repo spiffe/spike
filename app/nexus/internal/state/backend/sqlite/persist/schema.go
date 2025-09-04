@@ -9,6 +9,8 @@ import (
 	"database/sql"
 	"os"
 
+	"github.com/spiffe/spike-sdk-go/log"
+
 	"github.com/spiffe/spike/app/nexus/internal/state/backend/sqlite/ddl"
 )
 
@@ -17,6 +19,11 @@ func (s *DataStore) createDataDir() error {
 }
 
 func (s *DataStore) createTables(ctx context.Context, db *sql.DB) error {
+	const fName = "createTables"
+	if ctx == nil {
+		log.FatalLn(fName, "message", "nil context")
+	}
+
 	_, err := db.ExecContext(ctx, ddl.QueryInitialize)
 	return err
 }
