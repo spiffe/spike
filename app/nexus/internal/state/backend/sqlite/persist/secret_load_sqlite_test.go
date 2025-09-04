@@ -12,6 +12,7 @@ import (
 	"time"
 
 	_ "github.com/mattn/go-sqlite3"
+	"github.com/spiffe/spike-sdk-go/config/env"
 	"github.com/spiffe/spike/app/nexus/internal/state/backend/sqlite/ddl"
 	"github.com/spiffe/spike/internal/config"
 )
@@ -338,22 +339,22 @@ func containsSubstring(s, substr string) bool {
 // Benchmark test for performance with real SQLite
 func BenchmarkDataStore_loadSecretInternal(b *testing.B) {
 	// Set environment variables for SQLite backend
-	originalBackend := os.Getenv("SPIKE_NEXUS_BACKEND_STORE")
-	originalSkipSchema := os.Getenv("SPIKE_NEXUS_DB_SKIP_SCHEMA_CREATION")
+	originalBackend := os.Getenv(env.NexusBackendStore)
+	originalSkipSchema := os.Getenv(env.NexusDBSkipSchemaCreation)
 
-	_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", "sqlite")
-	_ = os.Unsetenv("SPIKE_NEXUS_DB_SKIP_SCHEMA_CREATION")
+	_ = os.Setenv(env.NexusBackendStore, "sqlite")
+	_ = os.Unsetenv(env.NexusDBSkipSchemaCreation)
 
 	defer func() {
 		if originalBackend != "" {
-			_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", originalBackend)
+			_ = os.Setenv(env.NexusBackendStore, originalBackend)
 		} else {
-			_ = os.Unsetenv("SPIKE_NEXUS_BACKEND_STORE")
+			_ = os.Unsetenv(env.NexusBackendStore)
 		}
 		if originalSkipSchema != "" {
-			_ = os.Setenv("SPIKE_NEXUS_DB_SKIP_SCHEMA_CREATION", originalSkipSchema)
+			_ = os.Setenv(env.NexusDBSkipSchemaCreation, originalSkipSchema)
 		} else {
-			_ = os.Unsetenv("SPIKE_NEXUS_DB_SKIP_SCHEMA_CREATION")
+			_ = os.Unsetenv(env.NexusDBSkipSchemaCreation)
 		}
 	}()
 

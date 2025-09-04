@@ -13,6 +13,7 @@ import (
 
 	"github.com/cloudflare/circl/group"
 	shamir "github.com/cloudflare/circl/secretsharing"
+	"github.com/spiffe/spike-sdk-go/config/env"
 	"github.com/spiffe/spike-sdk-go/crypto"
 )
 
@@ -229,20 +230,20 @@ func TestShamirSecretSharingBasics(t *testing.T) {
 
 func TestEnvironmentVariableHandling(t *testing.T) {
 	// Test default values when environment variables are not set
-	originalShares := os.Getenv("SPIKE_NEXUS_SHAMIR_SHARES")
-	originalThreshold := os.Getenv("SPIKE_NEXUS_SHAMIR_THRESHOLD")
+	originalShares := os.Getenv(env.NexusShamirShares)
+	originalThreshold := os.Getenv(env.NexusShamirThreshold)
 	defer func() {
 		if originalShares != "" {
-			_ = os.Setenv("SPIKE_NEXUS_SHAMIR_SHARES", originalShares)
+			_ = os.Setenv(env.NexusShamirShares, originalShares)
 		}
 		if originalThreshold != "" {
-			_ = os.Setenv("SPIKE_NEXUS_SHAMIR_THRESHOLD", originalThreshold)
+			_ = os.Setenv(env.NexusShamirThreshold, originalThreshold)
 		}
 	}()
 
 	// Clear environment variables
-	_ = os.Unsetenv("SPIKE_NEXUS_SHAMIR_SHARES")
-	_ = os.Unsetenv("SPIKE_NEXUS_SHAMIR_THRESHOLD")
+	_ = os.Unsetenv(env.NexusShamirShares)
+	_ = os.Unsetenv(env.NexusShamirThreshold)
 
 	// This should use default values (defined in env package)
 	shares := RootShares()

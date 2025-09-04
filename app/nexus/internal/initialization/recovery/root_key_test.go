@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/cloudflare/circl/group"
+	appEnv "github.com/spiffe/spike-sdk-go/config/env"
 	"github.com/spiffe/spike-sdk-go/crypto"
 )
 
@@ -116,12 +117,12 @@ func TestShamirShardSliceOperationsRootKey(t *testing.T) {
 
 func TestComputeRootKeyFromShards_InvalidInput(t *testing.T) {
 	// Save the original environment
-	originalThreshold := os.Getenv("SPIKE_NEXUS_SHAMIR_THRESHOLD")
+	originalThreshold := os.Getenv(appEnv.NexusShamirThreshold)
 	defer func() {
 		if originalThreshold != "" {
-			_ = os.Setenv("SPIKE_NEXUS_SHAMIR_THRESHOLD", originalThreshold)
+			_ = os.Setenv(appEnv.NexusShamirThreshold, originalThreshold)
 		} else {
-			_ = os.Unsetenv("SPIKE_NEXUS_SHAMIR_THRESHOLD")
+			_ = os.Unsetenv(appEnv.NexusShamirThreshold)
 		}
 	}()
 
@@ -204,12 +205,12 @@ func TestComputeRootKeyFromShards_InvalidInput(t *testing.T) {
 
 func TestComputeRootKeyFromShards_ValidInput(t *testing.T) {
 	// Save the original environment
-	originalThreshold := os.Getenv("SPIKE_NEXUS_SHAMIR_THRESHOLD")
+	originalThreshold := os.Getenv(appEnv.NexusShamirThreshold)
 	defer func() {
 		if originalThreshold != "" {
-			_ = os.Setenv("SPIKE_NEXUS_SHAMIR_THRESHOLD", originalThreshold)
+			_ = os.Setenv(appEnv.NexusShamirThreshold, originalThreshold)
 		} else {
-			_ = os.Unsetenv("SPIKE_NEXUS_SHAMIR_THRESHOLD")
+			_ = os.Unsetenv(appEnv.NexusShamirThreshold)
 		}
 	}()
 
@@ -408,12 +409,12 @@ func TestArrayOperations(t *testing.T) {
 
 func TestEnvironmentThresholdHandling(t *testing.T) {
 	// Test different threshold values
-	originalThreshold := os.Getenv("SPIKE_NEXUS_SHAMIR_THRESHOLD")
+	originalThreshold := os.Getenv(appEnv.NexusShamirThreshold)
 	defer func() {
 		if originalThreshold != "" {
-			_ = os.Setenv("SPIKE_NEXUS_SHAMIR_THRESHOLD", originalThreshold)
+			_ = os.Setenv(appEnv.NexusShamirThreshold, originalThreshold)
 		} else {
-			_ = os.Unsetenv("SPIKE_NEXUS_SHAMIR_THRESHOLD")
+			_ = os.Unsetenv(appEnv.NexusShamirThreshold)
 		}
 	}()
 
@@ -421,7 +422,7 @@ func TestEnvironmentThresholdHandling(t *testing.T) {
 
 	for _, threshold := range testThresholds {
 		t.Run("threshold_"+threshold, func(t *testing.T) {
-			_ = os.Setenv("SPIKE_NEXUS_SHAMIR_THRESHOLD", threshold)
+			_ = os.Setenv(appEnv.NexusShamirThreshold, threshold)
 
 			// Test that threshold-1 calculation works
 			// (This is used in ComputeRootKeyFromShards)
@@ -432,7 +433,7 @@ func TestEnvironmentThresholdHandling(t *testing.T) {
 			// Then: secretsharing.Recover(uint(threshold-1), shares)
 
 			// Just verify the environment is set correctly
-			envValue := os.Getenv("SPIKE_NEXUS_SHAMIR_THRESHOLD")
+			envValue := os.Getenv(appEnv.NexusShamirThreshold)
 			if envValue != threshold {
 				t.Errorf("Expected threshold %s, got %s", threshold, envValue)
 			}

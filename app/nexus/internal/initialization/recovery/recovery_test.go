@@ -9,6 +9,7 @@ import (
 	"os"
 	"testing"
 
+	appEnv "github.com/spiffe/spike-sdk-go/config/env"
 	"github.com/spiffe/spike-sdk-go/crypto"
 
 	"github.com/spiffe/spike/app/nexus/internal/env"
@@ -36,17 +37,17 @@ func TestErrRecoveryRetry(t *testing.T) {
 
 func TestRestoreBackingStoreFromPilotShards_InsufficientShards(t *testing.T) {
 	// Save original environment variables
-	originalThreshold := os.Getenv("SPIKE_NEXUS_SHAMIR_THRESHOLD")
+	originalThreshold := os.Getenv(appEnv.NexusShamirThreshold)
 	defer func() {
 		if originalThreshold != "" {
-			_ = os.Setenv("SPIKE_NEXUS_SHAMIR_THRESHOLD", originalThreshold)
+			_ = os.Setenv(appEnv.NexusShamirThreshold, originalThreshold)
 		} else {
-			_ = os.Unsetenv("SPIKE_NEXUS_SHAMIR_THRESHOLD")
+			_ = os.Unsetenv(appEnv.NexusShamirThreshold)
 		}
 	}()
 
 	// Set the threshold to 3
-	_ = os.Setenv("SPIKE_NEXUS_SHAMIR_THRESHOLD", "3")
+	_ = os.Setenv(appEnv.NexusShamirThreshold, "3")
 
 	// Create insufficient shards (only 2, but the threshold is 3)
 	shards := make([]ShamirShard, 2)
@@ -273,31 +274,31 @@ func TestShamirShardSliceOperations(t *testing.T) {
 
 func TestEnvironmentDependencies(t *testing.T) {
 	// Test that environment functions work as expected
-	originalThreshold := os.Getenv("SPIKE_NEXUS_SHAMIR_THRESHOLD")
-	originalShares := os.Getenv("SPIKE_NEXUS_SHAMIR_SHARES")
+	originalThreshold := os.Getenv(appEnv.NexusShamirThreshold)
+	originalShares := os.Getenv(appEnv.NexusShamirShares)
 
 	defer func() {
 		if originalThreshold != "" {
-			_ = os.Setenv("SPIKE_NEXUS_SHAMIR_THRESHOLD", originalThreshold)
+			_ = os.Setenv(appEnv.NexusShamirThreshold, originalThreshold)
 		} else {
-			_ = os.Unsetenv("SPIKE_NEXUS_SHAMIR_THRESHOLD")
+			_ = os.Unsetenv(appEnv.NexusShamirThreshold)
 		}
 		if originalShares != "" {
-			_ = os.Setenv("SPIKE_NEXUS_SHAMIR_SHARES", originalShares)
+			_ = os.Setenv(appEnv.NexusShamirShares, originalShares)
 		} else {
-			_ = os.Unsetenv("SPIKE_NEXUS_SHAMIR_SHARES")
+			_ = os.Unsetenv(appEnv.NexusShamirShares)
 		}
 	}()
 
 	// Test ShamirThreshold
-	_ = os.Setenv("SPIKE_NEXUS_SHAMIR_THRESHOLD", "3")
+	_ = os.Setenv(appEnv.NexusShamirThreshold, "3")
 	threshold := env.ShamirThreshold()
 	if threshold != 3 {
 		t.Errorf("Expected threshold 3, got %d", threshold)
 	}
 
 	// Test ShamirShares
-	_ = os.Setenv("SPIKE_NEXUS_SHAMIR_SHARES", "5")
+	_ = os.Setenv(appEnv.NexusShamirShares, "5")
 	shares := env.ShamirShares()
 	if shares != 5 {
 		t.Errorf("Expected shares 5, got %d", shares)

@@ -10,6 +10,8 @@ import (
 	"os"
 	"strconv"
 	"strings"
+
+	"github.com/spiffe/spike-sdk-go/config/env"
 )
 
 // ShamirShares returns the total number of shares to be used in Shamir's
@@ -26,7 +28,7 @@ import (
 //
 //	splitting a secret.
 func ShamirShares() int {
-	p := os.Getenv("SPIKE_NEXUS_SHAMIR_SHARES")
+	p := os.Getenv(env.NexusShamirShares)
 	if p != "" {
 		mv, err := strconv.Atoi(p)
 		if err == nil && mv > 0 {
@@ -52,7 +54,7 @@ func ShamirShares() int {
 // original secret. It should be less than or equal to the total number of
 // shares (ShamirShares()).
 func ShamirThreshold() int {
-	p := os.Getenv("SPIKE_NEXUS_SHAMIR_THRESHOLD")
+	p := os.Getenv(env.NexusShamirThreshold)
 	if p != "" {
 		mv, err := strconv.Atoi(p)
 		if err == nil && mv > 0 {
@@ -88,7 +90,7 @@ func validURL(urlStr string) bool {
 // Panics if:
 //   - SPIKE_NEXUS_KEEPER_PEERS is not set
 func Keepers() map[string]string {
-	p := os.Getenv("SPIKE_NEXUS_KEEPER_PEERS")
+	p := os.Getenv(env.NexusKeeperPeers)
 
 	if p == "" {
 		panic("SPIKE_NEXUS_KEEPER_PEERS has to be configured in the environment")
@@ -142,7 +144,7 @@ func Keepers() map[string]string {
 //   - A string containing one or more trust root domains for SPIKE Keeper,
 //     comma-delimited if multiple
 func TrustRootForKeeper() string {
-	tr := os.Getenv("SPIKE_TRUST_ROOT_KEEPER")
+	tr := os.Getenv(env.TrustRootKeeper)
 	if tr == "" {
 		return "spike.ist"
 	}
@@ -160,7 +162,7 @@ func TrustRootForKeeper() string {
 //   - A string containing one or more trust root domains, comma-delimited if
 //     multiple
 func TrustRoot() string {
-	tr := os.Getenv("SPIKE_TRUST_ROOT")
+	tr := os.Getenv(env.TrustRoot)
 	if tr == "" {
 		return "spike.ist"
 	}

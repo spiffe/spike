@@ -15,6 +15,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/spiffe/spike-sdk-go/config/env"
 	"github.com/spiffe/spike-sdk-go/crypto"
 
 	"github.com/spiffe/spike/app/nexus/internal/state/backend/sqlite/ddl"
@@ -48,26 +49,26 @@ func createTestRootKey(_ TestingInterface) *[crypto.AES256KeySize]byte {
 
 func withSQLiteEnvironment(_ *testing.T, testFunc func()) {
 	// Save original environment variables
-	originalStore := os.Getenv("SPIKE_NEXUS_BACKEND_STORE")
-	originalSkipSchema := os.Getenv("SPIKE_NEXUS_DB_SKIP_SCHEMA_CREATION")
+	originalStore := os.Getenv(env.NexusBackendStore)
+	originalSkipSchema := os.Getenv(env.NexusDBSkipSchemaCreation)
 
 	// Ensure cleanup happens
 	defer func() {
 		if originalStore != "" {
-			_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", originalStore)
+			_ = os.Setenv(env.NexusBackendStore, originalStore)
 		} else {
-			_ = os.Unsetenv("SPIKE_NEXUS_BACKEND_STORE")
+			_ = os.Unsetenv(env.NexusBackendStore)
 		}
 		if originalSkipSchema != "" {
-			_ = os.Setenv("SPIKE_NEXUS_DB_SKIP_SCHEMA_CREATION", originalSkipSchema)
+			_ = os.Setenv(env.NexusDBSkipSchemaCreation, originalSkipSchema)
 		} else {
-			_ = os.Unsetenv("SPIKE_NEXUS_DB_SKIP_SCHEMA_CREATION")
+			_ = os.Unsetenv(env.NexusDBSkipSchemaCreation)
 		}
 	}()
 
 	// Set to SQLite backend and ensure schema creation
-	_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", "sqlite")
-	_ = os.Unsetenv("SPIKE_NEXUS_DB_SKIP_SCHEMA_CREATION")
+	_ = os.Setenv(env.NexusBackendStore, "sqlite")
+	_ = os.Unsetenv(env.NexusDBSkipSchemaCreation)
 
 	// Run the test function
 	testFunc()

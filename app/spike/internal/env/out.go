@@ -7,6 +7,8 @@ package env
 import (
 	"os"
 	"strings"
+
+	"github.com/spiffe/spike-sdk-go/config/env"
 )
 
 // ShowMemoryWarning returns whether to display a warning when the system
@@ -25,7 +27,7 @@ import (
 // This warning is typically shown when memory locking fails, which could
 // impact security-sensitive operations that require pages to remain in RAM.
 func ShowMemoryWarning() bool {
-	s := os.Getenv("SPIKE_PILOT_SHOW_MEMORY_WARNING")
+	s := os.Getenv(env.PilotShowMemoryWarning)
 	s = strings.ToLower(strings.TrimSpace(s))
 	if s == "" {
 		return false

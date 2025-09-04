@@ -10,6 +10,8 @@ import (
 	"os"
 	"strconv"
 	"strings"
+
+	"github.com/spiffe/spike-sdk-go/config/env"
 )
 
 // validURL validates that a URL is properly formatted and uses HTTPS
@@ -37,7 +39,7 @@ func validURL(urlStr string) bool {
 // Panics if:
 //   - SPIKE_NEXUS_KEEPER_PEERS is not set
 func Keepers() map[string]string {
-	p := os.Getenv("SPIKE_NEXUS_KEEPER_PEERS")
+	p := os.Getenv(env.NexusKeeperPeers)
 
 	if p == "" {
 		panic("SPIKE_NEXUS_KEEPER_PEERS has to be configured in the environment")

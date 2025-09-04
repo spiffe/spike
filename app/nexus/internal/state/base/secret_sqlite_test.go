@@ -12,10 +12,11 @@ import (
 	"reflect"
 	"testing"
 
+	appEnv "github.com/spiffe/spike-sdk-go/config/env"
 	"github.com/spiffe/spike-sdk-go/crypto"
 	"github.com/spiffe/spike-sdk-go/kv"
-
 	"github.com/spiffe/spike/app/nexus/internal/env"
+
 	"github.com/spiffe/spike/app/nexus/internal/state/persist"
 	"github.com/spiffe/spike/internal/config"
 )
@@ -47,26 +48,26 @@ func cleanupSQLiteDatabase(t *testing.T) {
 // withSQLiteEnvironment sets up environment for SQLite testing
 func withSQLiteEnvironment(_ *testing.T, testFunc func()) {
 	// Save original environment variables
-	originalStore := os.Getenv("SPIKE_NEXUS_BACKEND_STORE")
-	originalSkipSchema := os.Getenv("SPIKE_NEXUS_DB_SKIP_SCHEMA_CREATION")
+	originalStore := os.Getenv(appEnv.NexusBackendStore)
+	originalSkipSchema := os.Getenv(appEnv.NexusDBSkipSchemaCreation)
 
 	// Ensure cleanup happens
 	defer func() {
 		if originalStore != "" {
-			_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", originalStore)
+			_ = os.Setenv(appEnv.NexusBackendStore, originalStore)
 		} else {
-			_ = os.Unsetenv("SPIKE_NEXUS_BACKEND_STORE")
+			_ = os.Unsetenv(appEnv.NexusBackendStore)
 		}
 		if originalSkipSchema != "" {
-			_ = os.Setenv("SPIKE_NEXUS_DB_SKIP_SCHEMA_CREATION", originalSkipSchema)
+			_ = os.Setenv(appEnv.NexusDBSkipSchemaCreation, originalSkipSchema)
 		} else {
-			_ = os.Unsetenv("SPIKE_NEXUS_DB_SKIP_SCHEMA_CREATION")
+			_ = os.Unsetenv(appEnv.NexusDBSkipSchemaCreation)
 		}
 	}()
 
 	// Set to SQLite backend and ensure schema creation
-	_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", "sqlite")
-	_ = os.Unsetenv("SPIKE_NEXUS_DB_SKIP_SCHEMA_CREATION")
+	_ = os.Setenv(appEnv.NexusBackendStore, "sqlite")
+	_ = os.Unsetenv(appEnv.NexusDBSkipSchemaCreation)
 
 	testFunc()
 }
@@ -77,7 +78,8 @@ func TestSQLiteSecret_NewSecret(t *testing.T) {
 
 		// Verify the environment is set correctly
 		if env.BackendStoreType() != env.Sqlite {
-			t.Fatalf("Expected env.BackendStoreType()=Sqlite, got %v", env.BackendStoreType())
+			t.Fatalf("Expected env.BackendStoreType()=Sqlite, got %v",
+				env.BackendStoreType())
 		}
 
 		// Get the actual database pathPattern used by the system
@@ -236,7 +238,8 @@ func TestSQLiteSecret_SimpleVersioning(t *testing.T) {
 		if secret1 == nil {
 			t.Fatal("Secret should exist after first upsert")
 		}
-		t.Logf("After first upsert - CurrentVersion: %d, Versions: %v", secret1.Metadata.CurrentVersion, getVersionNumbers(secret1))
+		t.Logf("After first upsert - CurrentVersion: %d, Versions: %v",
+			secret1.Metadata.CurrentVersion, getVersionNumbers(secret1))
 
 		// Create a second version
 		t.Log("Creating second version...")
@@ -254,7 +257,8 @@ func TestSQLiteSecret_SimpleVersioning(t *testing.T) {
 		if secret2 == nil {
 			t.Fatal("Secret should exist after second upsert")
 		}
-		t.Logf("After second upsert - CurrentVersion: %d, Versions: %v", secret2.Metadata.CurrentVersion, getVersionNumbers(secret2))
+		t.Logf("After second upsert - CurrentVersion: %d, Versions: %v",
+			secret2.Metadata.CurrentVersion, getVersionNumbers(secret2))
 
 		// Test GetSecret with version 0 (current)
 		currentValues, err := GetSecret(path, 0)
@@ -262,7 +266,8 @@ func TestSQLiteSecret_SimpleVersioning(t *testing.T) {
 			t.Fatalf("Failed to get current version: %v", err)
 		}
 		if currentValues["data"] != "version2" {
-			t.Errorf("Expected current version to be 'version2', got %s", currentValues["data"])
+			t.Errorf("Expected current version to be 'version2', got %s",
+				currentValues["data"])
 		}
 
 		// Test GetSecret with version 1
@@ -271,7 +276,8 @@ func TestSQLiteSecret_SimpleVersioning(t *testing.T) {
 			t.Fatalf("Failed to get version 1: %v", err)
 		}
 		if version1Values["data"] != "version1" {
-			t.Errorf("Expected version 1 to be 'version1', got %s", version1Values["data"])
+			t.Errorf("Expected version 1 to be 'version1', got %s",
+				version1Values["data"])
 		}
 
 		// Test GetSecret with version 2
@@ -280,7 +286,8 @@ func TestSQLiteSecret_SimpleVersioning(t *testing.T) {
 			t.Fatalf("Failed to get version 2: %v", err)
 		}
 		if version2Values["data"] != "version2" {
-			t.Errorf("Expected version 2 to be 'version2', got %s", version2Values["data"])
+			t.Errorf("Expected version 2 to be 'version2', got %s",
+				version2Values["data"])
 		}
 	})
 }
@@ -328,7 +335,8 @@ func TestSQLiteSecret_VersionPersistence(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Failed to get raw secret in first session: %v", err)
 		}
-		t.Logf("First session - Current version: %d", rawSecret.Metadata.CurrentVersion)
+		t.Logf("First session - Current version: %d",
+			rawSecret.Metadata.CurrentVersion)
 		t.Logf("First session - Total versions: %d", len(rawSecret.Versions))
 		for version := range rawSecret.Versions {
 			t.Logf("  - Version %d exists in first session", version)
@@ -354,7 +362,8 @@ func TestSQLiteSecret_VersionPersistence(t *testing.T) {
 			t.Fatalf("Failed to get raw secret: %v", err)
 		}
 
-		t.Logf("Second session - Current version: %d", rawSecret.Metadata.CurrentVersion)
+		t.Logf("Second session - Current version: %d",
+			rawSecret.Metadata.CurrentVersion)
 		t.Logf("Second session - Total versions stored: %d", len(rawSecret.Versions))
 		for version := range rawSecret.Versions {
 			t.Logf("  - Version %d exists in second session", version)
@@ -370,13 +379,15 @@ func TestSQLiteSecret_VersionPersistence(t *testing.T) {
 
 			expectedVersion := fmt.Sprintf("v%d", version)
 			if values["version"] != expectedVersion {
-				t.Errorf("Version %d: expected %s, got %s", version, expectedVersion, values["version"])
+				t.Errorf("Version %d: expected %s, got %s",
+					version, expectedVersion, values["version"])
 			}
 		}
 
 		// Verify metadata
 		if rawSecret.Metadata.CurrentVersion != 3 {
-			t.Errorf("Expected current version 3, got %d", rawSecret.Metadata.CurrentVersion)
+			t.Errorf("Expected current version 3, got %d",
+				rawSecret.Metadata.CurrentVersion)
 		}
 		if len(rawSecret.Versions) != 3 {
 			t.Errorf("Expected 3 versions, got %d", len(rawSecret.Versions))
@@ -464,22 +475,22 @@ func TestSQLiteSecret_EncryptionWithDifferentKeys(t *testing.T) {
 // Benchmark tests for SQLite
 func BenchmarkSQLiteUpsertSecret(b *testing.B) {
 	// Set environment variables for SQLite backend
-	originalBackend := os.Getenv("SPIKE_NEXUS_BACKEND_STORE")
-	originalSkipSchema := os.Getenv("SPIKE_NEXUS_DB_SKIP_SCHEMA_CREATION")
+	originalBackend := os.Getenv(appEnv.NexusBackendStore)
+	originalSkipSchema := os.Getenv(appEnv.NexusDBSkipSchemaCreation)
 
-	_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", "sqlite")
-	_ = os.Unsetenv("SPIKE_NEXUS_DB_SKIP_SCHEMA_CREATION")
+	_ = os.Setenv(appEnv.NexusBackendStore, "sqlite")
+	_ = os.Unsetenv(appEnv.NexusDBSkipSchemaCreation)
 
 	defer func() {
 		if originalBackend != "" {
-			_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", originalBackend)
+			_ = os.Setenv(appEnv.NexusBackendStore, originalBackend)
 		} else {
-			_ = os.Unsetenv("SPIKE_NEXUS_BACKEND_STORE")
+			_ = os.Unsetenv(appEnv.NexusBackendStore)
 		}
 		if originalSkipSchema != "" {
-			_ = os.Setenv("SPIKE_NEXUS_DB_SKIP_SCHEMA_CREATION", originalSkipSchema)
+			_ = os.Setenv(appEnv.NexusDBSkipSchemaCreation, originalSkipSchema)
 		} else {
-			_ = os.Unsetenv("SPIKE_NEXUS_DB_SKIP_SCHEMA_CREATION")
+			_ = os.Unsetenv(appEnv.NexusDBSkipSchemaCreation)
 		}
 	}()
 
@@ -517,22 +528,22 @@ func BenchmarkSQLiteUpsertSecret(b *testing.B) {
 
 func BenchmarkSQLiteGetSecret(b *testing.B) {
 	// Set environment variables for SQLite backend
-	originalBackend := os.Getenv("SPIKE_NEXUS_BACKEND_STORE")
-	originalSkipSchema := os.Getenv("SPIKE_NEXUS_DB_SKIP_SCHEMA_CREATION")
+	originalBackend := os.Getenv(appEnv.NexusBackendStore)
+	originalSkipSchema := os.Getenv(appEnv.NexusDBSkipSchemaCreation)
 
-	_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", "sqlite")
-	_ = os.Unsetenv("SPIKE_NEXUS_DB_SKIP_SCHEMA_CREATION")
+	_ = os.Setenv(appEnv.NexusBackendStore, "sqlite")
+	_ = os.Unsetenv(appEnv.NexusDBSkipSchemaCreation)
 
 	defer func() {
 		if originalBackend != "" {
-			_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", originalBackend)
+			_ = os.Setenv(appEnv.NexusBackendStore, originalBackend)
 		} else {
-			_ = os.Unsetenv("SPIKE_NEXUS_BACKEND_STORE")
+			_ = os.Unsetenv(appEnv.NexusBackendStore)
 		}
 		if originalSkipSchema != "" {
-			_ = os.Setenv("SPIKE_NEXUS_DB_SKIP_SCHEMA_CREATION", originalSkipSchema)
+			_ = os.Setenv(appEnv.NexusDBSkipSchemaCreation, originalSkipSchema)
 		} else {
-			_ = os.Unsetenv("SPIKE_NEXUS_DB_SKIP_SCHEMA_CREATION")
+			_ = os.Unsetenv(appEnv.NexusDBSkipSchemaCreation)
 		}
 	}()
 
