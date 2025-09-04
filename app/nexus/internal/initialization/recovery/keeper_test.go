@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"testing"
 
+	appEnv "github.com/spiffe/spike-sdk-go/config/env"
 	"github.com/spiffe/spike-sdk-go/crypto"
 
 	"github.com/spiffe/spike/app/nexus/internal/env"
@@ -16,12 +17,12 @@ import (
 
 func TestIterateKeepersAndInitializeState_MemoryMode(t *testing.T) {
 	// Save original environment variables
-	originalStore := os.Getenv("SPIKE_NEXUS_BACKEND_STORE")
+	originalStore := os.Getenv(appEnv.NexusBackendStore)
 	defer func() {
 		if originalStore != "" {
-			_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", originalStore)
+			_ = os.Setenv(appEnv.NexusBackendStore, originalStore)
 		} else {
-			_ = os.Unsetenv("SPIKE_NEXUS_BACKEND_STORE")
+			_ = os.Unsetenv(appEnv.NexusBackendStore)
 		}
 	}()
 
@@ -50,31 +51,31 @@ func TestIterateKeepersAndInitializeState_MemoryMode(t *testing.T) {
 
 func TestIterateKeepersAndInitializeState_NonMemoryMode(t *testing.T) {
 	// Save original environment variables
-	originalStore := os.Getenv("SPIKE_NEXUS_BACKEND_STORE")
-	originalKeeperPeers := os.Getenv("SPIKE_NEXUS_KEEPER_PEERS")
-	originalThreshold := os.Getenv("SPIKE_NEXUS_SHAMIR_THRESHOLD")
+	originalStore := os.Getenv(appEnv.NexusBackendStore)
+	originalKeeperPeers := os.Getenv(appEnv.NexusKeeperPeers)
+	originalThreshold := os.Getenv(appEnv.NexusShamirThreshold)
 
 	defer func() {
 		if originalStore != "" {
-			_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", originalStore)
+			_ = os.Setenv(appEnv.NexusBackendStore, originalStore)
 		} else {
-			_ = os.Unsetenv("SPIKE_NEXUS_BACKEND_STORE")
+			_ = os.Unsetenv(appEnv.NexusBackendStore)
 		}
 		if originalKeeperPeers != "" {
-			_ = os.Setenv("SPIKE_NEXUS_KEEPER_PEERS", originalKeeperPeers)
+			_ = os.Setenv(appEnv.NexusKeeperPeers, originalKeeperPeers)
 		} else {
-			_ = os.Unsetenv("SPIKE_NEXUS_KEEPER_PEERS")
+			_ = os.Unsetenv(appEnv.NexusKeeperPeers)
 		}
 		if originalThreshold != "" {
-			_ = os.Setenv("SPIKE_NEXUS_SHAMIR_THRESHOLD", originalThreshold)
+			_ = os.Setenv(appEnv.NexusShamirThreshold, originalThreshold)
 		} else {
-			_ = os.Unsetenv("SPIKE_NEXUS_SHAMIR_THRESHOLD")
+			_ = os.Unsetenv(appEnv.NexusShamirThreshold)
 		}
 	}()
 
 	// Set to non-memory mode
-	_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", "sqlite")
-	_ = os.Setenv("SPIKE_NEXUS_KEEPER_PEERS",
+	_ = os.Setenv(appEnv.NexusBackendStore, "sqlite")
+	_ = os.Setenv(appEnv.NexusKeeperPeers,
 		"https://keeper1.example.com,https://keeper2.example.com") // Test keepers
 	_ = os.Setenv("SPIKE_NEXUS_SHAMIR_THRESHOLD", "2")
 
@@ -107,17 +108,17 @@ func TestIterateKeepersAndInitializeState_ShardMapHandling(t *testing.T) {
 	successfulKeeperShards["test-keeper"] = testShard
 
 	// Save the original environment
-	originalStore := os.Getenv("SPIKE_NEXUS_BACKEND_STORE")
+	originalStore := os.Getenv(appEnv.NexusBackendStore)
 	defer func() {
 		if originalStore != "" {
-			_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", originalStore)
+			_ = os.Setenv(appEnv.NexusBackendStore, originalStore)
 		} else {
-			_ = os.Unsetenv("SPIKE_NEXUS_BACKEND_STORE")
+			_ = os.Unsetenv(appEnv.NexusBackendStore)
 		}
 	}()
 
 	// Set to memory mode for a quick test
-	_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", "memory")
+	_ = os.Setenv(appEnv.NexusBackendStore, "memory")
 
 	// The map should not be modified in memory mode
 	originalLen := len(successfulKeeperShards)
@@ -139,23 +140,23 @@ func TestIterateKeepersAndInitializeState_ShardMapHandling(t *testing.T) {
 
 func TestIterateKeepersAndInitializeState_ParameterValidation(t *testing.T) {
 	// Save the original environment
-	originalStore := os.Getenv("SPIKE_NEXUS_BACKEND_STORE")
-	originalKeeperPeers := os.Getenv("SPIKE_NEXUS_KEEPER_PEERS")
+	originalStore := os.Getenv(appEnv.NexusBackendStore)
+	originalKeeperPeers := os.Getenv(appEnv.NexusKeeperPeers)
 	defer func() {
 		if originalStore != "" {
-			_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", originalStore)
+			_ = os.Setenv(appEnv.NexusBackendStore, originalStore)
 		} else {
-			_ = os.Unsetenv("SPIKE_NEXUS_BACKEND_STORE")
+			_ = os.Unsetenv(appEnv.NexusBackendStore)
 		}
 		if originalKeeperPeers != "" {
-			_ = os.Setenv("SPIKE_NEXUS_KEEPER_PEERS", originalKeeperPeers)
+			_ = os.Setenv(appEnv.NexusKeeperPeers, originalKeeperPeers)
 		} else {
-			_ = os.Unsetenv("SPIKE_NEXUS_KEEPER_PEERS")
+			_ = os.Unsetenv(appEnv.NexusKeeperPeers)
 		}
 	}()
 
 	// Set to memory mode for testing
-	_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", "memory")
+	_ = os.Setenv(appEnv.NexusBackendStore, "memory")
 
 	// Test with a nil source (should work in memory mode)
 	result := iterateKeepersAndInitializeState(nil, make(map[string]*[crypto.AES256KeySize]byte))
@@ -163,8 +164,8 @@ func TestIterateKeepersAndInitializeState_ParameterValidation(t *testing.T) {
 		t.Error("Should work with nil source in memory mode")
 	}
 
-	_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", "sqlite")
-	_ = os.Setenv("SPIKE_NEXUS_KEEPER_PEERS", "https://localhost:8443")
+	_ = os.Setenv(appEnv.NexusBackendStore, "sqlite")
+	_ = os.Setenv(appEnv.NexusKeeperPeers, "https://localhost:8443")
 
 	// Test with a nil shards map (should not panic, just return false)
 	// The function gracefully handles nil maps by never reaching code that would panic
@@ -362,35 +363,35 @@ func TestEnvironmentDependenciesKeeper(t *testing.T) {
 	// Test that environment functions work as expected
 
 	// Save original values
-	originalStore := os.Getenv("SPIKE_NEXUS_BACKEND_STORE")
-	originalThreshold := os.Getenv("SPIKE_NEXUS_SHAMIR_THRESHOLD")
+	originalStore := os.Getenv(appEnv.NexusBackendStore)
+	originalThreshold := os.Getenv(appEnv.NexusShamirThreshold)
 
 	defer func() {
 		if originalStore != "" {
-			_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", originalStore)
+			_ = os.Setenv(appEnv.NexusBackendStore, originalStore)
 		} else {
-			_ = os.Unsetenv("SPIKE_NEXUS_BACKEND_STORE")
+			_ = os.Unsetenv(appEnv.NexusBackendStore)
 		}
 		if originalThreshold != "" {
-			_ = os.Setenv("SPIKE_NEXUS_SHAMIR_THRESHOLD", originalThreshold)
+			_ = os.Setenv(appEnv.NexusShamirThreshold, originalThreshold)
 		} else {
-			_ = os.Unsetenv("SPIKE_NEXUS_SHAMIR_THRESHOLD")
+			_ = os.Unsetenv(appEnv.NexusShamirThreshold)
 		}
 	}()
 
 	// Test BackendStoreType detection
-	_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", "memory")
+	_ = os.Setenv(appEnv.NexusBackendStore, "memory")
 	if env.BackendStoreType() != env.Memory {
 		t.Error("Expected Memory backend type")
 	}
 
-	_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", "sqlite")
+	_ = os.Setenv(appEnv.NexusBackendStore, "sqlite")
 	if env.BackendStoreType() != env.Sqlite {
 		t.Error("Expected Sqlite backend type")
 	}
 
 	// Test ShamirThreshold function exists and returns a reasonable value
-	_ = os.Setenv("SPIKE_NEXUS_SHAMIR_THRESHOLD", "3")
+	_ = os.Setenv(appEnv.NexusShamirThreshold, "3")
 	threshold := env.ShamirThreshold()
 	if threshold < 1 {
 		t.Errorf("Expected threshold >= 1, got %d", threshold)

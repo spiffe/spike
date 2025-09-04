@@ -7,6 +7,8 @@ package env
 import (
 	"os"
 	"strconv"
+
+	"github.com/spiffe/spike-sdk-go/config/env"
 )
 
 // ShamirShares returns the total number of shares to be used in Shamir's
@@ -23,7 +25,7 @@ import (
 //
 //	splitting a secret.
 func ShamirShares() int {
-	p := os.Getenv("SPIKE_NEXUS_SHAMIR_SHARES")
+	p := os.Getenv(env.NexusShamirShares)
 	if p != "" {
 		mv, err := strconv.Atoi(p)
 		if err == nil && mv > 0 {
@@ -49,7 +51,7 @@ func ShamirShares() int {
 // original secret. It should be less than or equal to the total number of
 // shares (ShamirShares()).
 func ShamirThreshold() int {
-	p := os.Getenv("SPIKE_NEXUS_SHAMIR_THRESHOLD")
+	p := os.Getenv(env.NexusShamirThreshold)
 	if p != "" {
 		mv, err := strconv.Atoi(p)
 		if err == nil && mv > 0 {

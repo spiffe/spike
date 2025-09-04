@@ -12,6 +12,7 @@ import (
 	"sort"
 	"testing"
 
+	"github.com/spiffe/spike-sdk-go/config/env"
 	"github.com/spiffe/spike-sdk-go/kv"
 	"github.com/spiffe/spike/app/nexus/internal/state/persist"
 )
@@ -422,13 +423,13 @@ func TestListKeys_MemoryReuse(t *testing.T) {
 // Benchmark tests
 func BenchmarkListKeys_Empty(b *testing.B) {
 	// Save and restore environment variable
-	original := os.Getenv("SPIKE_NEXUS_BACKEND_STORE")
-	_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", "memory")
+	original := os.Getenv(env.NexusBackendStore)
+	_ = os.Setenv(env.NexusBackendStore, "memory")
 	defer func() {
 		if original != "" {
-			_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", original)
+			_ = os.Setenv(env.NexusBackendStore, original)
 		} else {
-			_ = os.Unsetenv("SPIKE_NEXUS_BACKEND_STORE")
+			_ = os.Unsetenv(env.NexusBackendStore)
 		}
 	}()
 
@@ -442,13 +443,13 @@ func BenchmarkListKeys_Empty(b *testing.B) {
 }
 
 func BenchmarkListKeys_SmallSet(b *testing.B) {
-	original := os.Getenv("SPIKE_NEXUS_BACKEND_STORE")
-	_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", "memory")
+	original := os.Getenv(env.NexusBackendStore)
+	_ = os.Setenv(env.NexusBackendStore, "memory")
 	defer func() {
 		if original != "" {
-			_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", original)
+			_ = os.Setenv(env.NexusBackendStore, original)
 		} else {
-			_ = os.Unsetenv("SPIKE_NEXUS_BACKEND_STORE")
+			_ = os.Unsetenv(env.NexusBackendStore)
 		}
 	}()
 
@@ -479,13 +480,13 @@ func BenchmarkListKeys_SmallSet(b *testing.B) {
 }
 
 func BenchmarkListKeys_LargeSet(b *testing.B) {
-	original := os.Getenv("SPIKE_NEXUS_BACKEND_STORE")
-	_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", "memory")
+	original := os.Getenv(env.NexusBackendStore)
+	_ = os.Setenv(env.NexusBackendStore, "memory")
 	defer func() {
 		if original != "" {
-			_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", original)
+			_ = os.Setenv(env.NexusBackendStore, original)
 		} else {
-			_ = os.Unsetenv("SPIKE_NEXUS_BACKEND_STORE")
+			_ = os.Unsetenv(env.NexusBackendStore)
 		}
 	}()
 

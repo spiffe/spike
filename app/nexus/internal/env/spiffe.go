@@ -4,7 +4,11 @@
 
 package env
 
-import "os"
+import (
+	"os"
+
+	"github.com/spiffe/spike-sdk-go/config/env"
+)
 
 // TrustRoot returns the trust root domain(s) for the application.
 //
@@ -17,7 +21,7 @@ import "os"
 //   - A string containing one or more trust root domains, comma-delimited if
 //     multiple
 func TrustRoot() string {
-	tr := os.Getenv("SPIKE_TRUST_ROOT")
+	tr := os.Getenv(env.TrustRoot)
 	if tr == "" {
 		return "spike.ist"
 	}
@@ -36,7 +40,7 @@ func TrustRoot() string {
 //   - A string containing one or more trust root domains for SPIKE Keeper,
 //     comma-delimited if multiple
 func TrustRootForKeeper() string {
-	tr := os.Getenv("SPIKE_TRUST_ROOT_KEEPER")
+	tr := os.Getenv(env.TrustRootKeeper)
 	if tr == "" {
 		return "spike.ist"
 	}
@@ -55,7 +59,7 @@ func TrustRootForKeeper() string {
 //   - A string containing one or more trust root domains for Pilot,
 //     comma-delimited if multiple
 func TrustRootForPilot() string {
-	tr := os.Getenv("SPIKE_TRUST_ROOT_PILOT")
+	tr := os.Getenv(env.TrustRootPilot)
 	if tr == "" {
 		return "spike.ist"
 	}
@@ -74,7 +78,7 @@ func TrustRootForPilot() string {
 //   - A string containing one or more trust root domains for Lite Workload,
 //     comma-delimited if multiple
 func TrustRootForLiteWorkload() string {
-	tr := os.Getenv("SPIKE_TRUST_ROOT_LITE_WORKLOAD")
+	tr := os.Getenv(env.TrustRootLiteWorkload)
 	if tr == "" {
 		return "spike.ist"
 	}

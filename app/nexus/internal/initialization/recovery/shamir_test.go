@@ -10,6 +10,7 @@ import (
 
 	"github.com/cloudflare/circl/group"
 	shamir "github.com/cloudflare/circl/secretsharing"
+	appEnv "github.com/spiffe/spike-sdk-go/config/env"
 	"github.com/spiffe/spike-sdk-go/crypto"
 )
 
@@ -229,19 +230,19 @@ func TestShamirShareStructure(t *testing.T) {
 
 func TestEnvironmentThresholdAndShares(t *testing.T) {
 	// Test different environment configurations
-	originalThreshold := os.Getenv("SPIKE_NEXUS_SHAMIR_THRESHOLD")
-	originalShares := os.Getenv("SPIKE_NEXUS_SHAMIR_SHARES")
+	originalThreshold := os.Getenv(appEnv.NexusShamirThreshold)
+	originalShares := os.Getenv(appEnv.NexusShamirShares)
 
 	defer func() {
 		if originalThreshold != "" {
-			_ = os.Setenv("SPIKE_NEXUS_SHAMIR_THRESHOLD", originalThreshold)
+			_ = os.Setenv(appEnv.NexusShamirThreshold, originalThreshold)
 		} else {
-			_ = os.Unsetenv("SPIKE_NEXUS_SHAMIR_THRESHOLD")
+			_ = os.Unsetenv(appEnv.NexusShamirThreshold)
 		}
 		if originalShares != "" {
-			_ = os.Setenv("SPIKE_NEXUS_SHAMIR_SHARES", originalShares)
+			_ = os.Setenv(appEnv.NexusShamirShares, originalShares)
 		} else {
-			_ = os.Unsetenv("SPIKE_NEXUS_SHAMIR_SHARES")
+			_ = os.Unsetenv(appEnv.NexusShamirShares)
 		}
 	}()
 
@@ -260,8 +261,8 @@ func TestEnvironmentThresholdAndShares(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_ = os.Setenv("SPIKE_NEXUS_SHAMIR_THRESHOLD", tt.threshold)
-			_ = os.Setenv("SPIKE_NEXUS_SHAMIR_SHARES", tt.shares)
+			_ = os.Setenv(appEnv.NexusShamirThreshold, tt.threshold)
+			_ = os.Setenv(appEnv.NexusShamirShares, tt.shares)
 
 			// The functions would use these values like:
 			// t := uint(env.ShamirThreshold() - 1)
@@ -270,8 +271,8 @@ func TestEnvironmentThresholdAndShares(t *testing.T) {
 			// We can't easily test the actual functions due to dependencies,
 			// but we can verify the environment configuration is valid
 			if tt.valid {
-				envThreshold := os.Getenv("SPIKE_NEXUS_SHAMIR_THRESHOLD")
-				envShares := os.Getenv("SPIKE_NEXUS_SHAMIR_SHARES")
+				envThreshold := os.Getenv(appEnv.NexusShamirThreshold)
+				envShares := os.Getenv(appEnv.NexusShamirShares)
 
 				if envThreshold != tt.threshold {
 					t.Errorf("Expected threshold %s, got %s", tt.threshold, envThreshold)

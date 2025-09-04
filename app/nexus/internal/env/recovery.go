@@ -7,6 +7,8 @@ package env
 import (
 	"os"
 	"time"
+
+	"github.com/spiffe/spike-sdk-go/config/env"
 )
 
 // RecoveryOperationMaxInterval returns the maximum interval duration for
@@ -16,7 +18,7 @@ import (
 // If the environment variable is not set or is not a valid duration
 // string, then it defaults to 60 seconds.
 func RecoveryOperationMaxInterval() time.Duration {
-	e := os.Getenv("SPIKE_NEXUS_RECOVERY_MAX_INTERVAL")
+	e := os.Getenv(env.NexusRecoveryMaxInterval)
 	if e != "" {
 		if d, err := time.ParseDuration(e); err == nil {
 			return d
@@ -32,7 +34,7 @@ func RecoveryOperationMaxInterval() time.Duration {
 // time.ParseDuration), that duration is returned. Otherwise, it returns a
 // default value of 5 minutes.
 func RecoveryKeeperUpdateInterval() time.Duration {
-	e := os.Getenv("SPIKE_NEXUS_KEEPER_UPDATE_INTERVAL")
+	e := os.Getenv(env.NexusKeeperUpdateInterval)
 	if e != "" {
 		if d, err := time.ParseDuration(e); err == nil {
 			return d

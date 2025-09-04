@@ -7,6 +7,8 @@ package env
 import (
 	"os"
 	"strconv"
+
+	"github.com/spiffe/spike-sdk-go/config/env"
 )
 
 // MaxSecretVersions returns the maximum number of versions to retain for each
@@ -15,7 +17,7 @@ import (
 // If the environment variable is not set, contains an invalid integer, or
 // specifies a non-positive value, it returns the default of 10 versions.
 func MaxSecretVersions() int {
-	p := os.Getenv("SPIKE_NEXUS_MAX_SECRET_VERSIONS")
+	p := os.Getenv(env.NexusMaxSecretVersions)
 	if p != "" {
 		mv, err := strconv.Atoi(p)
 		if err == nil && mv > 0 {

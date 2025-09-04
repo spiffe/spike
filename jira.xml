@@ -21,12 +21,6 @@
 <stuff>
   <task-group for="v0.5.0">
     <issue>
-      add these strings as constants in SDK to avoid typos in code:
-      p := os.Getenv("SPIKE_NEXUS_SHAMIR_SHARES")
-      SPIKE SDK uses some getenv too, it'll be nice to consolidate all of them
-      in somwhere like config/constant.go or something similar.
-    </issue>
-    <issue>
       these serialization and deserialization functions can be
       extracted. --- They can even be part of the Go SDK.
 

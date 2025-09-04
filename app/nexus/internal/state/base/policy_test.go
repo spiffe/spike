@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
+	"github.com/spiffe/spike-sdk-go/config/env"
 	"github.com/spiffe/spike/app/nexus/internal/state/persist"
 )
 
@@ -840,13 +841,13 @@ func TestPolicyRegexCompilation(t *testing.T) {
 
 // Benchmark tests
 func BenchmarkCheckAccess_WildcardPolicy(b *testing.B) {
-	original := os.Getenv("SPIKE_NEXUS_BACKEND_STORE")
-	_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", "memory")
+	original := os.Getenv(env.NexusBackendStore)
+	_ = os.Setenv(env.NexusBackendStore, "memory")
 	defer func() {
 		if original != "" {
-			_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", original)
+			_ = os.Setenv(env.NexusBackendStore, original)
 		} else {
-			_ = os.Unsetenv("SPIKE_NEXUS_BACKEND_STORE")
+			_ = os.Unsetenv(env.NexusBackendStore)
 		}
 	}()
 
@@ -873,13 +874,13 @@ func BenchmarkCheckAccess_WildcardPolicy(b *testing.B) {
 }
 
 func BenchmarkCreatePolicy(b *testing.B) {
-	original := os.Getenv("SPIKE_NEXUS_BACKEND_STORE")
-	_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", "memory")
+	original := os.Getenv(env.NexusBackendStore)
+	_ = os.Setenv(env.NexusBackendStore, "memory")
 	defer func() {
 		if original != "" {
-			_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", original)
+			_ = os.Setenv(env.NexusBackendStore, original)
 		} else {
-			_ = os.Unsetenv("SPIKE_NEXUS_BACKEND_STORE")
+			_ = os.Unsetenv(env.NexusBackendStore)
 		}
 	}()
 
@@ -909,13 +910,13 @@ func BenchmarkCreatePolicy(b *testing.B) {
 }
 
 func BenchmarkListPolicies(b *testing.B) {
-	original := os.Getenv("SPIKE_NEXUS_BACKEND_STORE")
-	_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", "memory")
+	original := os.Getenv(env.NexusBackendStore)
+	_ = os.Setenv(env.NexusBackendStore, "memory")
 	defer func() {
 		if original != "" {
-			_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", original)
+			_ = os.Setenv(env.NexusBackendStore, original)
 		} else {
-			_ = os.Unsetenv("SPIKE_NEXUS_BACKEND_STORE")
+			_ = os.Unsetenv(env.NexusBackendStore)
 		}
 	}()
 

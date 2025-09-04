@@ -7,6 +7,8 @@ package env
 import (
 	"os"
 	"strings"
+
+	"github.com/spiffe/spike-sdk-go/config/env"
 )
 
 // StoreType represents the type of backend storage to use.
@@ -44,7 +46,7 @@ const (
 // If the environment variable is not set or contains an invalid value,
 // it defaults to SQLite.
 func BackendStoreType() StoreType {
-	st := os.Getenv("SPIKE_NEXUS_BACKEND_STORE")
+	st := os.Getenv(env.NexusBackendStore)
 
 	switch strings.ToLower(st) {
 	case string(Lite):
