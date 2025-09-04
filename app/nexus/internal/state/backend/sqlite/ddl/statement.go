@@ -11,12 +11,11 @@ package ddl
 const QueryInitialize = `
 CREATE TABLE IF NOT EXISTS policies (
     id TEXT PRIMARY KEY,
-    name TEXT NOT NULL UNIQUE,
-    nonce_spiffe BLOB NOT NULL, 
+    name TEXT NOT NULL,
+    nonce BLOB NOT NULL,  
     encrypted_spiffe_id_pattern BLOB NOT NULL,
-    nonce_path BLOB NOT NULL,
     encrypted_path_pattern BLOB NOT NULL,
-    encrypted_permissions TEXT NOT NULL, 
+    encrypted_permissions BLOB NOT NULL,
     created_time INTEGER NOT NULL
 );
 
@@ -88,21 +87,19 @@ ORDER BY version
 // QueryUpsertPolicy defines an SQL query to insert or update a policy record.
 const QueryUpsertPolicy = `
 INSERT INTO policies (
-     id, 
+    id, 
     name, 
-    nonce_spiffe,
+    nonce,
     encrypted_spiffe_id_pattern, 
-    nonce_path,
     encrypted_path_pattern, 
     encrypted_permissions, 
     created_time
 )
-VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+VALUES (?, ?, ?, ?, ?, ?, ?)
 ON CONFLICT(id) DO UPDATE SET
- 	 name = excluded.name,
-    nonce_spiffe = excluded.nonce_spiffe,
+    name = excluded.name,
+    nonce = excluded.nonce,
     encrypted_spiffe_id_pattern = excluded.encrypted_spiffe_id_pattern,
-    nonce_path = excluded.nonce_path,
     encrypted_path_pattern = excluded.encrypted_path_pattern,
     encrypted_permissions = excluded.encrypted_permissions
 `
@@ -119,8 +116,7 @@ SELECT name,
        encrypted_spiffe_id_pattern, 
        encrypted_path_pattern, 
        encrypted_permissions, 
-       nonce_spiffe, 
-       nonce_path,
+       nonce, 
        created_time
 FROM policies
 WHERE id = ?
@@ -132,8 +128,7 @@ SELECT id,
        encrypted_spiffe_id_pattern, 
        encrypted_path_pattern, 
        encrypted_permissions, 
-       nonce_spiffe, 
-       nonce_path, 
+       nonce, 
        created_time
 FROM policies
 `
