@@ -19,34 +19,52 @@ spec:
         component: spike-bootstrap
     spec:
       restartPolicy: OnFailure
+      # IMPORTANT: We've moved all state checking logic into the Go binary itself.
+      # This approach:
+      # 1. Maintains distroless security posture (no shell, no kubectl)
+      # 2. Works in both Kubernetes and bare-metal environments
+      # 3. Eliminates the need for initContainers and volume mounts
+      # 4. Single image to manage, no additional attack surface
+      #
+      # The bootstrap binary will:
+      # - Check if running in Kubernetes (via InClusterConfig)
+      # - If in k8s: Check ConfigMap spike-bootstrap-state for skip-bootstrap=true
+      # - If not in k8s (bare-metal): Always proceed with bootstrap
+      # - Respect SPIKE_FORCE_BOOTSTRAP=true in all environments
       initContainers:
-      - name: check-bootstrap-state
-        image: bitnami/kubectl:latest
-        command:
-        - /bin/sh
-        - -c
-        - |
-          # Check if bootstrap already completed (unless forced)
-          if [ "$SPIKE_FORCE_BOOTSTRAP" != "true" ]; then
-            # Check if any previous bootstrap job completed successfully
+        - name: check-previous-jobs
+          # This initContainer only creates/updates the ConfigMap based on Job history
+          # The actual decision to skip is made by the bootstrap binary
+          image: registry.k8s.io/kubectl:v1.30.0
+          command:
+          - /bin/sh
+          - -c
+          - |
+            # Only check and update state, don't make skip decisions here
             if kubectl get jobs -l app.kubernetes.io/name=spike-bootstrap -o jsonpath='{.items[?(@.status.succeeded>=1)].metadata.name}' | grep -q .; then
-              echo "Previous bootstrap job completed successfully. Exiting without running bootstrap."
-              # Create a marker that the main container can check
-              touch /shared/skip-bootstrap
-              exit 0
+              echo "Found previous successful bootstrap job(s). Updating ConfigMap."
+              kubectl create configmap spike-bootstrap-state \
+                --from-literal=skip-bootstrap=true \
+                --from-literal=reason="previous-job-succeeded" \
+                --from-literal=last-check-time="$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+                --dry-run=client -o yaml | kubectl apply -f -
+            else
+              echo "No previous successful bootstrap jobs found. Updating ConfigMap."
+              kubectl create configmap spike-bootstrap-state \
+                --from-literal=skip-bootstrap=false \
+                --from-literal=reason="no-previous-success" \
+                --from-literal=last-check-time="$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+                --dry-run=client -o yaml | kubectl apply -f -
             fi
-          fi
-          echo "Bootstrap should proceed"
-        env:
-        - name: SPIKE_FORCE_BOOTSTRAP
-          value: "false"
-        volumeMounts:
-        - mountPath: /shared
-          name: shared-data
+          env:
+          - name: SPIKE_NAMESPACE
+            value: "spike"
       containers:
-      - command:
-        - /bootstrap
-        - -init
+      - name: spiffe-spike-bootstrap
+        image: localhost:5000/spike-bootstrap:dev
+        # The bootstrap binary now handles all state checking internally
+        # No shell wrapper needed - distroless image works perfectly
+        command: ["/bootstrap", "-init"]
         env:
         - name: SPIKE_NEXUS_API_URL
           value: https://spiffe-spike-nexus:443
@@ -62,9 +80,11 @@ spec:
           value: "2"
         - name: SPIKE_NEXUS_KEEPER_PEERS
           value: "https://spiffe-spike-keeper-0.spiffe-spike-keeper-headless:8443,https://spiffe-spike-keeper-1.spiffe-spike-keeper-headless:8443,https://spiffe-spike-keeper-2.spiffe-spike-keeper-headless:8443"
-        image: localhost:5000/spike-bootstrap:dev
+        - name: SPIKE_FORCE_BOOTSTRAP
+          value: "false"
+        - name: SPIKE_NAMESPACE
+          value: "spike"
         imagePullPolicy: IfNotPresent
-        name: spiffe-spike-bootstrap
         resources: {}
         securityContext:
           allowPrivilegeEscalation: false
@@ -79,8 +99,6 @@ spec:
         - mountPath: /spiffe-workload-api
           name: spiffe-workload-api
           readOnly: true
-        - mountPath: /shared
-          name: shared-data
       dnsPolicy: ClusterFirst
       securityContext:
         fsGroup: 1000
@@ -93,8 +111,6 @@ spec:
           driver: csi.spiffe.io
           readOnly: true
         name: spiffe-workload-api
-      - emptyDir: {}
-        name: shared-data
 ---
 apiVersion: v1
 kind: ServiceAccount
@@ -111,9 +127,13 @@ metadata:
   namespace: spike
   name: spiffe-bootstrap-role
 rules:
+# The initContainer needs to check Job status and update ConfigMaps
 - apiGroups: ["batch"]
   resources: ["jobs"]
   verbs: ["get", "list"]
+- apiGroups: [""]
+  resources: ["configmaps"]
+  verbs: ["get", "create", "update", "patch"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
