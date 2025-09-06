@@ -184,6 +184,11 @@ else
   echo "SPIKE_SKIP_NEXUS_START is set, skipping Nexus start."
 fi
 
+echo "Waiting before SPIKE Bootstrap..."
+sleep 5
+
+./hack/bare-metal/startup/bootstrap.sh
+
 echo ""
 echo ""
 echo "<<"
