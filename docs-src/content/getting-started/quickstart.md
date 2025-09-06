@@ -175,7 +175,7 @@ spec:
         - /bin/sh
         - -c
         - |
-          if [ "$SPIKE_FORCE_BOOTSTRAP" != "true" ]; then
+          if [ "$SPIKE_BOOTSTRAP_FORCE" != "true" ]; then
             if kubectl get jobs -l \
               app.kubernetes.io/name=spike-bootstrap \ 
               -o jsonpath='\
@@ -187,7 +187,7 @@ spec:
             fi
           fi
         env:
-        - name: SPIKE_FORCE_BOOTSTRAP
+        - name: SPIKE_BOOTSTRAP_FORCE
           value: "false"
         volumeMounts:
         - mountPath: /shared
