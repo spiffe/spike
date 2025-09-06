@@ -17,7 +17,7 @@ import (
 // If the environment variable is not set, contains an invalid integer, or
 // specifies a non-positive value, it returns the default of 10 versions.
 func MaxSecretVersions() int {
-	p := os.Getenv(env.NexusMaxSecretVersions)
+	p := os.Getenv(env.NexusMaxEntryVersions)
 	if p != "" {
 		mv, err := strconv.Atoi(p)
 		if err == nil && mv > 0 {

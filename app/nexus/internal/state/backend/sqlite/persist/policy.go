@@ -134,6 +134,19 @@ func (s *DataStore) StorePolicy(ctx context.Context, policy data.Policy) error {
 	return nil
 }
 
+func deserializePermissions(permissions string) []data.PolicyPermission {
+	permissions = strings.TrimSpace(permissions)
+	if len(permissions) == 0 {
+		return []data.PolicyPermission{}
+	}
+	ps := strings.Split(permissions, ",")
+	pp := make([]data.PolicyPermission, len(ps))
+	for i, p := range ps {
+		pp[i] = data.PolicyPermission(strings.TrimSpace(p))
+	}
+	return pp
+}
+
 // LoadPolicy retrieves a policy from the database and compiles its patterns.
 //
 // Parameters:
@@ -172,14 +185,7 @@ func (s *DataStore) LoadPolicy(
 		return nil, fmt.Errorf("failed to load policy: %w", err)
 	}
 
-	// Deserialize permissions from comma-separated string
-	if permissionsStr != "" {
-		permissionStrs := strings.Split(permissionsStr, ",")
-		policy.Permissions = make([]data.PolicyPermission, len(permissionStrs))
-		for i, permStr := range permissionStrs {
-			policy.Permissions[i] = data.PolicyPermission(strings.TrimSpace(permStr))
-		}
-	}
+	policy.Permissions = deserializePermissions(permissionsStr)
 
 	idRegex, err := regexp.Compile(policy.SPIFFEIDPattern)
 	if err != nil {

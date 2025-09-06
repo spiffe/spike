@@ -16,15 +16,19 @@ import (
 	"github.com/spiffe/spike/internal/config"
 
 	"github.com/spiffe/spike/app/bootstrap/internal/env"
+	"github.com/spiffe/spike/app/bootstrap/internal/k8s"
 	"github.com/spiffe/spike/app/bootstrap/internal/net"
 	"github.com/spiffe/spike/app/bootstrap/internal/state"
 	"github.com/spiffe/spike/app/bootstrap/internal/url"
 )
 
 func main() {
-	const fName = "boostrap.main"
+	const fName = "bootstrap.main"
 
-	log.Log().Info(fName, "message", "Starting SPIKE bootstrap...", "version", config.BootstrapVersion)
+	log.Log().Info(fName, "message",
+		"Starting SPIKE bootstrap...",
+		"version", config.BootstrapVersion,
+	)
 
 	init := flag.Bool("init", false, "Initialize the bootstrap module")
 	flag.Parse()
@@ -32,12 +36,12 @@ func main() {
 		fmt.Println("")
 		fmt.Println("Usage: bootstrap -init")
 		fmt.Println("")
-		os.Exit(1)
+		log.FatalLn(fName, "message", "Invalid command line arguments")
 		return
 	}
 
-	// Check if we should skip bootstrap (set by init container)
-	if _, err := os.Stat("/shared/skip-bootstrap"); err == nil {
+	skip := k8s.ShouldSkipBootstrap() // Kubernetes or bare-metal check.
+	if skip {
 		log.Log().Info(fName,
 			"message", "Bootstrap already completed previously. Skipping.",
 		)
@@ -53,21 +57,22 @@ func main() {
 		log.FatalLn(fName,
 			"message", "Failed to get X.509 SVID",
 			"err", err.Error())
-		os.Exit(1)
+		log.FatalLn(fName, "message", "Failed to acquire SVID")
 		return
 	}
 
 	if !svid.IsBootstrap(env.TrustRoot(), sv.ID.String()) {
 		log.Log().Error(
-			"Authenticate: You need a 'boostrap' SPIFFE ID to use this command.",
+			"Authenticate: You need a 'bootstrap' SPIFFE ID to use this command.",
 		)
-		os.Exit(1)
+		log.FatalLn(fName, "message", "Command not authorized")
 		return
 	}
 
 	log.Log().Info(
 		fName, "FIPS 140.3 enabled", fips140.Enabled(),
 	)
+
 	log.Log().Info(
 		fName, "message", "Sending shards to SPIKE Keeper instances...",
 	)
@@ -86,6 +91,14 @@ func main() {
 	}
 
 	log.Log().Info(fName, "message", "Sent shards to SPIKE Keeper instances.")
+
+	// Mark completion in Kubernetes
+	if err := k8s.MarkBootstrapComplete(); err != nil {
+		// Log but don't fail - bootstrap itself succeeded
+		log.Log().Warn(fName, "message",
+			"Could not mark bootstrap complete in ConfigMap", "err", err.Error())
+	}
+
 	fmt.Println("Bootstrap completed successfully!")
 	os.Exit(0)
 }
