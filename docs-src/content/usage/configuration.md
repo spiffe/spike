@@ -17,6 +17,7 @@ configure the SPIKE components:
 
 | Component    | Environment Variable                    | Description                                                                                                                                         | Default Value                                                            |
 |--------------|-----------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------|
+| SPIKE Bootstrap| 
 | SPIKE Keeper | `SPIKE_KEEPER_TLS_PORT`                 | The TLS port the current SPIKE Keeper instance listens on.                                                                                          | `":8443"`                                                                |
 | SPIKE Nexus  | `SPIKE_NEXUS_KEEPER_PEERS`              | A mapping that contains a comma-delimited list of URLs for all SPIKE Keepers that SPIKE Nexus knows about.                                          | "" (check `./hack/bare-metal/startup/start-nexus.sh` for usage examples. |
 | SPIKE Nexus  | `SPIKE_NEXUS_TLS_PORT`                  | The TLS port SPIKE Nexus listens on.                                                                                                                | `":8553"`                                                                |

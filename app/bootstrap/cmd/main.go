@@ -16,7 +16,7 @@ import (
 	"github.com/spiffe/spike/internal/config"
 
 	"github.com/spiffe/spike/app/bootstrap/internal/env"
-	"github.com/spiffe/spike/app/bootstrap/internal/k8s"
+	"github.com/spiffe/spike/app/bootstrap/internal/lifecycle"
 	"github.com/spiffe/spike/app/bootstrap/internal/net"
 	"github.com/spiffe/spike/app/bootstrap/internal/state"
 	"github.com/spiffe/spike/app/bootstrap/internal/url"
@@ -40,7 +40,7 @@ func main() {
 		return
 	}
 
-	skip := k8s.ShouldSkipBootstrap() // Kubernetes or bare-metal check.
+	skip := lifecycle.ShouldSkipBootstrap() // Kubernetes or bare-metal check.
 	if skip {
 		log.Log().Info(fName,
 			"message", "Bootstrap already completed previously. Skipping.",
@@ -93,7 +93,7 @@ func main() {
 	log.Log().Info(fName, "message", "Sent shards to SPIKE Keeper instances.")
 
 	// Mark completion in Kubernetes
-	if err := k8s.MarkBootstrapComplete(); err != nil {
+	if err := lifecycle.MarkBootstrapComplete(); err != nil {
 		// Log but don't fail - bootstrap itself succeeded
 		log.Log().Warn(fName, "message",
 			"Could not mark bootstrap complete in ConfigMap", "err", err.Error())

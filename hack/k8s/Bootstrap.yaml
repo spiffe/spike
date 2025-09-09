@@ -2,11 +2,11 @@
 #  \\\\\ Copyright 2024-present SPIKE contributors.
 # \\\\\\\ SPDX-License-Identifier: Apache-2.0
 
-# TODO: SPIKE_BOOTSTRAP_FORCE should come from SDK constants
 # TODO: update docs that refer SPIKE_BOOTSTRAP_FORCE
 # TODO: update config.md and CLAUDE.md too.
 # TODO: verify that k8s setup work in local k8s.
 # TODO: update the yaml example in the docs too.
+# TODO: SPIKE Bootstrap is a new component so we need to add it to the architecture docs too.
 
 apiVersion: batch/v1
 kind: Job
@@ -99,7 +99,11 @@ rules:
 # Allow Bootstrap to read/write ConfigMaps
 - apiGroups: [""]
   resources: ["configmaps"]
-  verbs: ["get", "create", "update", "patch"]
+  verbs: ["create"]
+- apiGroups: [""]
+  resources: ["configmaps"]
+  verbs: ["get", "update", "patch"]
+  resourceNames: ["spike-bootstrap-state"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding

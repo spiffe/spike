@@ -5,7 +5,7 @@
 // Package k8s provides utilities for managing bootstrap state in Kubernetes
 // environments. It handles coordination between multiple bootstrap instances
 // to ensure bootstrap operations run exactly once per cluster.
-package k8s
+package lifecycle
 
 import (
 	"context"
