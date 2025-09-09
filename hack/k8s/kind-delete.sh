@@ -4,6 +4,9 @@
 #  \\\\\ Copyright 2024-present SPIKE contributors.
 # \\\\\\\ SPDX-License-Identifier: Apache-2.0
 
+# Enable alias expansion in non-interactive shells
+shopt -s expand_aliases
+
 command_exists() {
   command -v "$1" >/dev/null 2>&1
 }

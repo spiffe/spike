@@ -18,6 +18,9 @@
 # The script also sets up a trap to ensure that all background processes are
 # terminated when the script exits.
 
+# Enable alias expansion in non-interactive shells
+shopt -s expand_aliases
+
 # Domain to check
 SPIRE_SERVER_DOMAIN="spire.spike.ist"
 
