@@ -17,6 +17,19 @@
 #
 # The script also sets up a trap to ensure that all background processes are
 # terminated when the script exits.
+#
+# Environment variables for skipping startup steps:
+# - SPIKE_SKIP_CLEAR_DATA: Skip clearing existing data
+# - SPIKE_SKIP_SPIKE_BUILD: Skip building SPIKE binaries
+# - SPIKE_SKIP_SPIRE_SERVER_START: Skip starting SPIRE server
+# - SPIKE_SKIP_GENERATE_AGENT_TOKEN: Skip generating SPIRE agent token
+# - SPIKE_SKIP_REGISTER_ENTRIES: Skip registering SPIRE entries
+# - SPIKE_SKIP_SPIRE_AGENT_START: Skip starting SPIRE agent
+# - SPIKE_SKIP_KEEPER_INITIALIZATION: Skip initializing SPIKE Keeper instances
+# - SPIKE_SKIP_NEXUS_START: Skip starting SPIKE Nexus
+#
+# Additional environment variables:
+# - SPIKE_NEXUS_BACKEND_STORE: When set to "memory", skips Keeper instances
 
 # Enable alias expansion in non-interactive shells
 shopt -s expand_aliases

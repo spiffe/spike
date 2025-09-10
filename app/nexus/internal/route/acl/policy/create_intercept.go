@@ -53,7 +53,7 @@ func guardPutPolicyRequest(
 
 	// Request "write" access to the ACL system for the SPIFFE ID.
 	allowed := state.CheckAccess(
-		sid.String(), "spike/system/acl",
+		sid.String(), "spike/system/acl", // TODO: to constants.
 		[]data.PolicyPermission{data.PermissionWrite},
 	)
 	if !allowed {
