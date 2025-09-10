@@ -64,7 +64,7 @@ func (s *DataStore) DeletePolicy(ctx context.Context, id string) error {
 	return nil
 }
 
-func GenerateCustomNonce(s *DataStore) ([]byte, error) {
+func generateNonce(s *DataStore) ([]byte, error) {
 	nonce := make([]byte, s.Cipher.NonceSize())
 	if _, err := io.ReadFull(rand.Reader, nonce); err != nil {
 		return nil, err
@@ -72,7 +72,7 @@ func GenerateCustomNonce(s *DataStore) ([]byte, error) {
 	return nonce, nil
 }
 
-func EncryptWithCustomNonce(s *DataStore, nonce []byte, data []byte) ([]byte, error) {
+func encryptWithNonce(s *DataStore, nonce []byte, data []byte) ([]byte, error) {
 	if len(nonce) != s.Cipher.NonceSize() {
 		return nil, fmt.Errorf("invalid nonce size: got %d, want %d", len(nonce), s.Cipher.NonceSize())
 	}
@@ -123,20 +123,20 @@ func (s *DataStore) StorePolicy(ctx context.Context, policy data.Policy) error {
 	}
 
 	// Encryption
-	nonce, err := GenerateCustomNonce(s)
+	nonce, err := generateNonce(s)
 	if err != nil {
 		return fmt.Errorf("failed to generate nonce: %w", err)
 	}
-	encryptedSpiffeID, err := EncryptWithCustomNonce(s, nonce, []byte(policy.SPIFFEIDPattern))
+	encryptedSpiffeID, err := encryptWithNonce(s, nonce, []byte(policy.SPIFFEIDPattern))
 	if err != nil {
 		return fmt.Errorf("failed to encrypt SPIFFE ID: %w", err)
 	}
 
-	encryptedPathPattern, err := EncryptWithCustomNonce(s, nonce, []byte(policy.PathPattern))
+	encryptedPathPattern, err := encryptWithNonce(s, nonce, []byte(policy.PathPattern))
 	if err != nil {
 		return fmt.Errorf("failed to encrypt path pattern: %w", err)
 	}
-	encryptedPermissions, err := EncryptWithCustomNonce(s, nonce, []byte(permissionsStr))
+	encryptedPermissions, err := encryptWithNonce(s, nonce, []byte(permissionsStr))
 	if err != nil {
 		return fmt.Errorf("failed to encrypt permissions: %w", err)
 	}
