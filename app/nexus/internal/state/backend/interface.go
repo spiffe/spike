@@ -67,6 +67,18 @@ type Backend interface {
 	DeletePolicy(ctx context.Context, id string) error
 
 	// GetCipher retrieves the AEAD cipher used for encryption and decryption.
+	//
+	// INTENDED USAGE:
+	//   - Cipher API routes (v1/cipher/encrypt, v1/cipher/decrypt) for
+	//     encryption-as-a-service functionality
+	//   - Backend-internal encryption operations (via private
+	//     encrypt/decrypt methods)
+	//
+	// IMPORTANT: Other API routes (secrets, policies) should NOT use this method
+	// directly. They should rely on the backend's own StoreSecret/LoadSecret
+	// methods which handle encryption internally, because Backend implementations
+	// may return nil if cipher access is not appropriate for their specific use
+	// case.
 	GetCipher() cipher.AEAD
 }
 

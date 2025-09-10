@@ -14,6 +14,7 @@ import (
 	"testing"
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
+	"github.com/spiffe/spike-sdk-go/config/env"
 	"github.com/spiffe/spike-sdk-go/crypto"
 
 	"github.com/spiffe/spike/app/nexus/internal/state/persist"
@@ -583,22 +584,22 @@ func TestSQLitePolicy_ErrorHandling(t *testing.T) {
 // Benchmark tests for SQLite policy operations
 func BenchmarkSQLiteCreatePolicy(b *testing.B) {
 	// Set environment variables for SQLite backend
-	originalBackend := os.Getenv("SPIKE_NEXUS_BACKEND_STORE")
-	originalSkipSchema := os.Getenv("SPIKE_NEXUS_DB_SKIP_SCHEMA_CREATION")
+	originalBackend := os.Getenv(env.NexusBackendStore)
+	originalSkipSchema := os.Getenv(env.NexusDBSkipSchemaCreation)
 
-	_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", "sqlite")
-	_ = os.Unsetenv("SPIKE_NEXUS_DB_SKIP_SCHEMA_CREATION")
+	_ = os.Setenv(env.NexusBackendStore, "sqlite")
+	_ = os.Unsetenv(env.NexusDBSkipSchemaCreation)
 
 	defer func() {
 		if originalBackend != "" {
-			_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", originalBackend)
+			_ = os.Setenv(env.NexusBackendStore, originalBackend)
 		} else {
-			_ = os.Unsetenv("SPIKE_NEXUS_BACKEND_STORE")
+			_ = os.Unsetenv(env.NexusBackendStore)
 		}
 		if originalSkipSchema != "" {
-			_ = os.Setenv("SPIKE_NEXUS_DB_SKIP_SCHEMA_CREATION", originalSkipSchema)
+			_ = os.Setenv(env.NexusDBSkipSchemaCreation, originalSkipSchema)
 		} else {
-			_ = os.Unsetenv("SPIKE_NEXUS_DB_SKIP_SCHEMA_CREATION")
+			_ = os.Unsetenv(env.NexusDBSkipSchemaCreation)
 		}
 	}()
 
@@ -636,22 +637,22 @@ func BenchmarkSQLiteCreatePolicy(b *testing.B) {
 
 func BenchmarkSQLiteGetPolicy(b *testing.B) {
 	// Set environment variables for SQLite backend
-	originalBackend := os.Getenv("SPIKE_NEXUS_BACKEND_STORE")
-	originalSkipSchema := os.Getenv("SPIKE_NEXUS_DB_SKIP_SCHEMA_CREATION")
+	originalBackend := os.Getenv(env.NexusBackendStore)
+	originalSkipSchema := os.Getenv(env.NexusDBSkipSchemaCreation)
 
-	_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", "sqlite")
-	_ = os.Unsetenv("SPIKE_NEXUS_DB_SKIP_SCHEMA_CREATION")
+	_ = os.Setenv(env.NexusBackendStore, "sqlite")
+	_ = os.Unsetenv(env.NexusDBSkipSchemaCreation)
 
 	defer func() {
 		if originalBackend != "" {
-			_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", originalBackend)
+			_ = os.Setenv(env.NexusBackendStore, originalBackend)
 		} else {
-			_ = os.Unsetenv("SPIKE_NEXUS_BACKEND_STORE")
+			_ = os.Unsetenv(env.NexusBackendStore)
 		}
 		if originalSkipSchema != "" {
-			_ = os.Setenv("SPIKE_NEXUS_DB_SKIP_SCHEMA_CREATION", originalSkipSchema)
+			_ = os.Setenv(env.NexusDBSkipSchemaCreation, originalSkipSchema)
 		} else {
-			_ = os.Unsetenv("SPIKE_NEXUS_DB_SKIP_SCHEMA_CREATION")
+			_ = os.Unsetenv(env.NexusDBSkipSchemaCreation)
 		}
 	}()
 

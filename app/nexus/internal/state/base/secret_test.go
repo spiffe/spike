@@ -11,6 +11,7 @@ import (
 	"reflect"
 	"testing"
 
+	appEnv "github.com/spiffe/spike-sdk-go/config/env"
 	"github.com/spiffe/spike/app/nexus/internal/state/persist"
 )
 
@@ -857,13 +858,13 @@ func TestSecretOperations_SpecialCharacters(t *testing.T) {
 
 // Benchmark tests
 func BenchmarkUpsertSecret_NewSecret(b *testing.B) {
-	original := os.Getenv("SPIKE_NEXUS_BACKEND_STORE")
-	_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", "memory")
+	original := os.Getenv(appEnv.NexusBackendStore)
+	_ = os.Setenv(appEnv.NexusBackendStore, "memory")
 	defer func() {
 		if original != "" {
-			_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", original)
+			_ = os.Setenv(appEnv.NexusBackendStore, original)
 		} else {
-			_ = os.Unsetenv("SPIKE_NEXUS_BACKEND_STORE")
+			_ = os.Unsetenv(appEnv.NexusBackendStore)
 		}
 	}()
 
@@ -883,13 +884,13 @@ func BenchmarkUpsertSecret_NewSecret(b *testing.B) {
 }
 
 func BenchmarkUpsertSecret_UpdateExisting(b *testing.B) {
-	original := os.Getenv("SPIKE_NEXUS_BACKEND_STORE")
-	_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", "memory")
+	original := os.Getenv(appEnv.NexusBackendStore)
+	_ = os.Setenv(appEnv.NexusBackendStore, "memory")
 	defer func() {
 		if original != "" {
-			_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", original)
+			_ = os.Setenv(appEnv.NexusBackendStore, original)
 		} else {
-			_ = os.Unsetenv("SPIKE_NEXUS_BACKEND_STORE")
+			_ = os.Unsetenv(appEnv.NexusBackendStore)
 		}
 	}()
 
@@ -918,13 +919,13 @@ func BenchmarkUpsertSecret_UpdateExisting(b *testing.B) {
 }
 
 func BenchmarkGetSecret(b *testing.B) {
-	original := os.Getenv("SPIKE_NEXUS_BACKEND_STORE")
-	_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", "memory")
+	original := os.Getenv(appEnv.NexusBackendStore)
+	_ = os.Setenv(appEnv.NexusBackendStore, "memory")
 	defer func() {
 		if original != "" {
-			_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", original)
+			_ = os.Setenv(appEnv.NexusBackendStore, original)
 		} else {
-			_ = os.Unsetenv("SPIKE_NEXUS_BACKEND_STORE")
+			_ = os.Unsetenv(appEnv.NexusBackendStore)
 		}
 	}()
 
@@ -946,13 +947,13 @@ func BenchmarkGetSecret(b *testing.B) {
 }
 
 func BenchmarkGetRawSecret(b *testing.B) {
-	original := os.Getenv("SPIKE_NEXUS_BACKEND_STORE")
-	_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", "memory")
+	original := os.Getenv(appEnv.NexusBackendStore)
+	_ = os.Setenv(appEnv.NexusBackendStore, "memory")
 	defer func() {
 		if original != "" {
-			_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", original)
+			_ = os.Setenv(appEnv.NexusBackendStore, original)
 		} else {
-			_ = os.Unsetenv("SPIKE_NEXUS_BACKEND_STORE")
+			_ = os.Unsetenv(appEnv.NexusBackendStore)
 		}
 	}()
 

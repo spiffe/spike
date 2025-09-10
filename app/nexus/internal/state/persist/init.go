@@ -15,7 +15,6 @@ import (
 
 	"github.com/spiffe/spike/app/nexus/internal/env"
 	"github.com/spiffe/spike/app/nexus/internal/state/backend"
-	"github.com/spiffe/spike/app/nexus/internal/state/backend/memory"
 )
 
 var be backend.Backend
@@ -105,11 +104,11 @@ func InitializeBackend(rootKey *[crypto.AES256KeySize]byte) {
 	case env.Lite:
 		be = initializeLiteBackend(rootKey)
 	case env.Memory:
-		be = memory.NewInMemoryStore(createCipher(), env.MaxSecretVersions())
+		be = initializeInMemoryBackend()
 	case env.Sqlite:
 		be = initializeSqliteBackend(rootKey)
 	default:
-		be = memory.NewInMemoryStore(createCipher(), env.MaxSecretVersions())
+		be = initializeInMemoryBackend()
 	}
 
 	log.Log().Info(

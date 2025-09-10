@@ -27,6 +27,17 @@ This document is targeted for **core contributors** who are responsible for
 managing the release cuts of **SPIKE**. It provides detailed instructions to
 ensure a smooth and reliable release process.
 
+## Coverage Report
+
+The coverage report is available at [https://spike.ist/coverage.html][coverage].
+
+[coverage]: https://spike.ist/coverage.html "SPIKE Coverage Report"
+
+We update the coverage report at every release cut.
+
+If you want to increase test coverage, you are more than welcome to contribute
+to the project.
+
 ## Before Every Release
 
 Before every release:
@@ -39,7 +50,8 @@ Before every release:
 5. Update the changelog.
 6. Update the documentation snapshots page.
 7. Run `./hack/qa/cover.sh` to update and send the coverage report to the public 
-   docs.
+   docs. Make sure you do this **after** you publish the generated documentation
+   to the `./docs` folder.
 8. Run `./hack/bare-metal/cmd/put-sample-secrets.sh` to ensure secret and 
    policy creation work as expected. 
 9. Run `./hack/bare-metal/cmd/read-sample-secrets.sh` to ensure secret and
@@ -48,7 +60,6 @@ Before every release:
 11. Make sure you run `make build` and the process cleanly exits with no errors.
 12. Make sure you run `make test` and the process cleanly exits with no errors.
 13. Make sure you run `make audit` and the process cleanly exits with no errors.
-14. Make sure you update the documentation, and documentation snapshots.
 
 Release process:
 

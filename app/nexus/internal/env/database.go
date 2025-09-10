@@ -8,6 +8,8 @@ import (
 	"os"
 	"strconv"
 	"time"
+
+	appEnv "github.com/spiffe/spike-sdk-go/config/env"
 )
 
 // DatabaseJournalMode returns the SQLite journal mode to use.
@@ -17,7 +19,7 @@ import (
 // If the environment variable is not set, it defaults to "WAL"
 // (Write-Ahead Logging).
 func DatabaseJournalMode() string {
-	s := os.Getenv("SPIKE_NEXUS_DB_JOURNAL_MODE")
+	s := os.Getenv(appEnv.NexusDBJournalMode)
 	if s != "" {
 		return s
 	}
@@ -31,7 +33,7 @@ func DatabaseJournalMode() string {
 // If the environment variable is not set or contains an invalid value,
 // it defaults to 5000 milliseconds (5 seconds).
 func DatabaseBusyTimeoutMs() int {
-	p := os.Getenv("SPIKE_NEXUS_DB_BUSY_TIMEOUT_MS")
+	p := os.Getenv(appEnv.NexusDBBusyTimeoutMS)
 	if p != "" {
 		bt, err := strconv.Atoi(p)
 		if err == nil && bt > 0 {
@@ -49,7 +51,7 @@ func DatabaseBusyTimeoutMs() int {
 // If the environment variable is not set or contains an invalid value,
 // it defaults to 10 connections.
 func DatabaseMaxOpenConns() int {
-	p := os.Getenv("SPIKE_NEXUS_DB_MAX_OPEN_CONNS")
+	p := os.Getenv(appEnv.NexusDBMaxOpenConns)
 	if p != "" {
 		moc, err := strconv.Atoi(p)
 		if err == nil && moc > 0 {
@@ -67,7 +69,7 @@ func DatabaseMaxOpenConns() int {
 // If the environment variable is not set or contains an invalid value,
 // it defaults to 5 connections.
 func DatabaseMaxIdleConns() int {
-	p := os.Getenv("SPIKE_NEXUS_DB_MAX_IDLE_CONNS")
+	p := os.Getenv(appEnv.NexusDBMaxIdleConns)
 	if p != "" {
 		mic, err := strconv.Atoi(p)
 		if err == nil && mic > 0 {
@@ -86,7 +88,7 @@ func DatabaseMaxIdleConns() int {
 // If the environment variable is not set or contains an invalid duration,
 // it defaults to 1 hour.
 func DatabaseConnMaxLifetimeSec() time.Duration {
-	p := os.Getenv("SPIKE_NEXUS_DB_CONN_MAX_LIFETIME")
+	p := os.Getenv(appEnv.NexusDBConnMaxLifetime)
 	if p != "" {
 		d, err := time.ParseDuration(p)
 		if err == nil {
@@ -104,7 +106,7 @@ func DatabaseConnMaxLifetimeSec() time.Duration {
 // If the environment variable is not set or contains an invalid duration,
 // it defaults to 15 seconds.
 func DatabaseOperationTimeout() time.Duration {
-	p := os.Getenv("SPIKE_NEXUS_DB_OPERATION_TIMEOUT")
+	p := os.Getenv(appEnv.NexusDBOperationTimeout)
 	if p != "" {
 		d, err := time.ParseDuration(p)
 		if err == nil {
@@ -123,7 +125,7 @@ func DatabaseOperationTimeout() time.Duration {
 // value can be parsed as a duration (e.g., "1m30s"), it is used.
 // Otherwise, the function defaults to a timeout of 30 seconds.
 func DatabaseInitializationTimeout() time.Duration {
-	p := os.Getenv("SPIKE_NEXUS_DB_INITIALIZATION_TIMEOUT")
+	p := os.Getenv(appEnv.NexusDBInitializationTimeout)
 	if p != "" {
 		d, err := time.ParseDuration(p)
 		if err == nil {
@@ -138,7 +140,7 @@ func DatabaseInitializationTimeout() time.Duration {
 // If the env variable is set and its value is "true", it returns true.
 // Otherwise, it returns false.
 func DatabaseSkipSchemaCreation() bool {
-	p := os.Getenv("SPIKE_NEXUS_DB_SKIP_SCHEMA_CREATION")
+	p := os.Getenv(appEnv.NexusDBSkipSchemaCreation)
 	if p != "" {
 		s, err := strconv.ParseBool(p)
 		if err == nil {

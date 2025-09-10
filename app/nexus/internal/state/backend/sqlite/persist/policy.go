@@ -16,6 +16,7 @@ import (
 	"time"
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
+	"github.com/spiffe/spike-sdk-go/log"
 
 	"github.com/spiffe/spike/app/nexus/internal/state/backend/sqlite/ddl"
 )
@@ -33,6 +34,11 @@ import (
 //   - Transaction operations fail
 //   - Policy deletion fails
 func (s *DataStore) DeletePolicy(ctx context.Context, id string) error {
+	const fName = "DeletePolicy"
+	if ctx == nil {
+		log.FatalLn(fName, "message", "nil context")
+	}
+
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -94,6 +100,11 @@ func encryptWithNonce(s *DataStore, nonce []byte, data []byte) ([]byte, error) {
 //   - Transaction operations fail
 //   - Policy storage fails
 func (s *DataStore) StorePolicy(ctx context.Context, policy data.Policy) error {
+	const fName = "StorePolicy"
+	if ctx == nil {
+		log.FatalLn(fName, "message", "nil context")
+	}
+
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -175,6 +186,11 @@ func (s *DataStore) StorePolicy(ctx context.Context, policy data.Policy) error {
 func (s *DataStore) LoadPolicy(
 	ctx context.Context, id string,
 ) (*data.Policy, error) {
+	const fName = "LoadPolicy"
+	if ctx == nil {
+		log.FatalLn(fName, "message", "nil context")
+	}
+
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
@@ -250,7 +266,14 @@ func (s *DataStore) LoadPolicy(
 //   - map[string]*data.Policy: Map of policy IDs to loaded policies with
 //     compiled patterns
 //   - error: Database errors or pattern compilation errors
-func (s *DataStore) LoadAllPolicies(ctx context.Context) (map[string]*data.Policy, error) {
+func (s *DataStore) LoadAllPolicies(
+	ctx context.Context,
+) (map[string]*data.Policy, error) {
+	const fName = "LoadAllPolicies"
+	if ctx == nil {
+		log.FatalLn(fName, "message", "nil context")
+	}
+
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 

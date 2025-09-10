@@ -7,6 +7,8 @@ package env
 import (
 	"os"
 	"strings"
+
+	"github.com/spiffe/spike-sdk-go/config/env"
 )
 
 // BannerEnabled returns whether to show the initial banner on app start based
@@ -20,7 +22,7 @@ import (
 // The environment variable value is trimmed of whitespace and converted to
 // lowercase before comparison.
 func BannerEnabled() bool {
-	s := os.Getenv("SPIKE_BANNER_ENABLED")
+	s := os.Getenv(env.BannerEnabled)
 	s = strings.ToLower(strings.TrimSpace(s))
 	if s == "" {
 		return true

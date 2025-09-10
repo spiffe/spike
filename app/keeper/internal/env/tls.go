@@ -4,7 +4,11 @@
 
 package env
 
-import "os"
+import (
+	"os"
+
+	"github.com/spiffe/spike-sdk-go/config/env"
+)
 
 // TLSPort returns the TLS port for the Spike Keeper service.
 // It first checks for a port specified in the SPIKE_KEEPER_TLS_PORT
@@ -14,7 +18,7 @@ import "os"
 // The returned string is in the format ":port" suitable for use with
 // net/http Listen functions.
 func TLSPort() string {
-	p := os.Getenv("SPIKE_KEEPER_TLS_PORT")
+	p := os.Getenv(env.KeeperTLSPort)
 
 	if p != "" {
 		return p

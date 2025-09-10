@@ -246,7 +246,7 @@ func ListPolicies() ([]data.Policy, error) {
 	return result, nil
 }
 
-// ListPoliciesByPath returns all policies that match a specific pathPattern pattern.
+// ListPoliciesByPathPattern returns all policies that match a specific pathPattern pattern.
 // It filters the policy store and returns only policies where PathPattern
 // exactly matches the provided pattern string.
 //
@@ -258,7 +258,7 @@ func ListPolicies() ([]data.Policy, error) {
 //     empty slice if no policies match. The order of policies in the returned
 //     slice is non-deterministic due to the concurrent nature of the underlying
 //     store.
-func ListPoliciesByPath(pathPattern string) ([]data.Policy, error) {
+func ListPoliciesByPathPattern(pathPattern string) ([]data.Policy, error) {
 	ctx := context.Background()
 
 	// Load all policies from the backend
@@ -278,7 +278,7 @@ func ListPoliciesByPath(pathPattern string) ([]data.Policy, error) {
 	return result, nil
 }
 
-// ListPoliciesBySPIFFEID returns all policies that match a specific SPIFFE ID
+// ListPoliciesBySPIFFEIDPattern returns all policies that match a specific SPIFFE ID
 // pattern. It filters the policy store and returns only policies where
 // SpiffeIdPattern exactly matches the provided pattern string.
 //
@@ -290,7 +290,7 @@ func ListPoliciesByPath(pathPattern string) ([]data.Policy, error) {
 //     an empty slice if no policies match. The order of policies in the
 //     returned slice is non-deterministic due to the concurrent nature of the
 //     underlying store.
-func ListPoliciesBySPIFFEID(SPIFFEIDPattern string) ([]data.Policy, error) {
+func ListPoliciesBySPIFFEIDPattern(SPIFFEIDPattern string) ([]data.Policy, error) {
 	ctx := context.Background()
 
 	// Load all policies from the backend.

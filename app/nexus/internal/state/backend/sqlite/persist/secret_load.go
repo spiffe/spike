@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/spiffe/spike-sdk-go/kv"
+	"github.com/spiffe/spike-sdk-go/log"
 
 	"github.com/spiffe/spike/app/nexus/internal/state/backend/sqlite/ddl"
 )
@@ -50,6 +51,11 @@ import (
 func (s *DataStore) loadSecretInternal(
 	ctx context.Context, path string,
 ) (*kv.Value, error) {
+	const fName = "loadSecretInternal"
+	if ctx == nil {
+		log.FatalLn(fName, "message", "nil context")
+	}
+
 	var secret kv.Value
 
 	// Load metadata
