@@ -4,7 +4,6 @@
 
 package base
 
-
 import (
 	"context"
 	"errors"
@@ -155,45 +154,6 @@ func CreatePolicy(policy data.Policy) (data.Policy, error) {
 	if policy.CreatedAt.IsZero() {
 		policy.CreatedAt = time.Now()
 	}
-
-	c := persist.Backend().GetCipher()
-	// Get the system cipher from the backend. This cipher holds the key and AEAD logic for encryption.
-
-	if c == nil {
-		return data.Policy{}, fmt.Errorf("cipher not available")
-		// If the cipher is not available, we cannot encrypt, so return an error.
-	}
-
-	// Generate a nonce for SPIFFEIDPattern
-	nonceID := make([]byte, c.NonceSize())
-	// Create a cryptographically secure random nonce of the correct size for AEAD.
-
-	if _, err := io.ReadFull(rand.Reader, nonceID); err != nil {
-		return data.Policy{}, fmt.Errorf("failed to generate nonce for SPIFFEIDPattern: %w", err)
-		// If nonce generation fails, return an error.
-	}
-
-	// Encrypt the SPIFFEIDPattern
-	ciphertextID := c.Seal(nil, nonceID, []byte(policy.SPIFFEIDPattern), nil)
-	// Seal encrypts the plaintext with AEAD using the generated nonce.
-
-	policy.SPIFFEIDPattern = string(ciphertextID)
-	// Store the encrypted SPIFFEIDPattern. Nonce must be saved elsewhere if decryption is needed.
-
-	// Generate a nonce for PathPattern
-	noncePath := make([]byte, c.NonceSize())
-	// Create a separate nonce for the path encryption.
-
-	if _, err := io.ReadFull(rand.Reader, noncePath); err != nil {
-		return data.Policy{}, fmt.Errorf("failed to generate nonce for PathPattern: %w", err)
-	}
-
-	// Encrypt the PathPattern
-	ciphertextPath := c.Seal(nil, noncePath, []byte(policy.PathPattern), nil)
-	// Seal encrypts the path pattern using AEAD and the new nonce.
-
-	policy.PathPattern = string(ciphertextPath)
-	// Store the encrypted PathPattern. Again, nonce must be saved if decryption is required.
 
 	// Store directly to the backend
 	err = persist.Backend().StorePolicy(ctx, policy)
