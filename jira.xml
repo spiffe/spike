@@ -24,6 +24,11 @@
       transfer stuff from ToT.
     </issue>
     <issue>
+      when entries are not registered to the SPIRE Server and the
+      operator tries to use SPIKE, the error messages can be more
+      explanatory.
+    </issue>
+    <issue>
       to docs too:
 
       # For Minikube, instead of forwarding the registry, you can directly load
