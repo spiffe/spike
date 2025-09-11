@@ -19,6 +19,12 @@
   cluttering it with early-stage or exploratory thoughts.
  -->
 <stuff>
+  <high-level-plan>
+    <issue order="1">Release SPIKE v0.5.0 to enable Helm Charts work</issue>
+    <issue order="2">Fix post v0.5.0 issues</issue>
+    <issue order="3">Secure Secrets Management Web UX</issue>
+    <issue order="4">Zero Turtle Pi Grid</issue>
+  </high-level-plan>
   <task-group for="v0.5.0">
     <issue>
       transfer stuff from ToT.
@@ -122,6 +128,17 @@
     </issue>
   </task-group>
   <task-group for=">v0.5.0">
+    <issue>
+      Sep 20th: SPIKE Onboarding.
+    </issue>
+    <issue>
+      The flows here have changed; need new diagrams and updated docs:
+      https://spike.ist/architecture/system-overview/
+    </issue>
+    <issue>
+      https://spike.ist/getting-started/quickstart/
+      needs update once helm charts is updated.
+    </issue>
     <issue>
       the nonce generation functions can go to the SDK too.
     </issue>

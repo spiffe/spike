@@ -8,6 +8,19 @@ weight = 2
 sort_by = "weight"
 +++
 
+> **⚠️ This Page Needs Work**
+> 
+> Since **SPIFFE Helm Charts** do not have **SPIKE Bootstrap** yet, the 
+> instructions on this page are incomplete and will likely fail.
+> 
+> If you want to test **SPIKE** on a Kubernetes cluster, we recommend
+> using the [**SPIKE Quickstart Guide**][quickstart] instead.
+> 
+> We will update this page once **SPIKE Bootstrap** is available in the 
+> upstream **SPIFFE Helm Charts**.
+
+[quickstart]: @/getting-started/quickstart.md "SPIKE Quickstart"
+
 # **SPIKE** Quickstart Guide
 
 The fastest way to get started with **SPIRE** and **SPIKE** is to deploy them 
