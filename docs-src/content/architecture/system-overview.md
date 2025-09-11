@@ -264,7 +264,7 @@ You can open the picture on a new tab for an enlarged version of it.
 
 ### Preventive Backup 
 
-> **Run `spik recover` as Soon as You Can**
+> **Run `spike recover` as Soon as You Can**
 > 
 > You must back up the **root key** shards using `spike recover` **BEFORE** a 
 > disaster strikes.
