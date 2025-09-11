@@ -168,6 +168,14 @@
     function setTheme(theme) {
       document.documentElement.setAttribute("data-theme", theme);
       localStorage.setItem("theme", theme);
+      
+      // Update banner image based on theme
+      const bannerImage = document.getElementById("banner-image");
+      if (bannerImage) {
+        bannerImage.src = theme === "dark" 
+          ? "/assets/spike-banner-dark-thin.png"
+          : "/assets/spike-banner-light-thin.png";
+      }
     }
 
     // Initialize theme

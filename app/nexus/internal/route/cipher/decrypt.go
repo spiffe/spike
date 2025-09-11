@@ -83,7 +83,7 @@ func RouteDecrypt(
 	var ciphertext []byte
 
 	if streamModeActive {
-		err := guardDecryptSecretRequest(reqres.CipherDecryptRequest{}, w, r)
+		err := guardDecryptCipherRequest(reqres.CipherDecryptRequest{}, w, r)
 		if err != nil {
 			return err
 		}
@@ -129,7 +129,7 @@ func RouteDecrypt(
 			return apiErr.ErrParseFailure
 		}
 
-		err := guardDecryptSecretRequest(*request, w, r)
+		err := guardDecryptCipherRequest(*request, w, r)
 		if err != nil {
 			return err
 		}

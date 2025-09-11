@@ -8,6 +8,12 @@ package ddl
 // It includes table creation and index definitions for policies, secrets,
 // and secret metadata. These tables handle secret storage, metadata, and
 // policy management with relevant constraints and indices.
+//
+// Note: The policies table has no additional indexes beyond the PRIMARY KEY
+// because current queries only use the 'id' field (already indexed) or
+// perform full table scans. Additional indexes should be added if queries
+// are introduced that filter by name, spiffe_id_pattern, path_pattern,
+// created_time, or combinations of these columns.
 const QueryInitialize = `
 CREATE TABLE IF NOT EXISTS policies (
     id TEXT PRIMARY KEY,

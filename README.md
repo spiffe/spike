@@ -30,6 +30,8 @@ Key components include:
   enabling fast recovery if Nexus fails.
 * **SPIKE Pilot**: A secure CLI interface, translating commands into **mTLS** 
   API calls, reducing system vulnerability by containing all admin access.
+* **SPIKE Bootstrap**: An initialization app to securely bootstrap the entire
+  system and deliver root key shards to **SPIKE Nexus**.
 
 With its minimal footprint and robust security, **SPIKE** provides peace of mind 
 for your team and critical data resilience when it counts.
@@ -94,6 +96,7 @@ Here are the important folders and files in this repository:
   * `./app/keeper`: **SPIKE** Keeper
   * `./app/nexus`: **SPIKE** Nexus
   * `./app/spike`: **SPIKE** Pilot
+  * `./app/bootstrap`: **SPIKE** Bootstrap
 * `./config`: Contains configuration files to run SPIRE in a development
   environment.
 * `./docs-src`: Public documentation.

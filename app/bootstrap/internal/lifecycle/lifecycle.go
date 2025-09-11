@@ -2,7 +2,7 @@
 //  \\\\\ Copyright 2024-present SPIKE contributors.
 // \\\\\\\ SPDX-License-Identifier: Apache-2.0
 
-// Package k8s provides utilities for managing bootstrap state in Kubernetes
+// Package lifecycle provides utilities for managing bootstrap state in Kubernetes
 // environments. It handles coordination between multiple bootstrap instances
 // to ensure bootstrap operations run exactly once per cluster.
 package lifecycle
@@ -20,6 +20,8 @@ import (
 	k8sMeta "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
+
+	appEnv "github.com/spiffe/spike/app/bootstrap/internal/env"
 )
 
 const k8sTrue = "true"
@@ -100,7 +102,7 @@ func ShouldSkipBootstrap() bool {
 		return false
 	}
 
-	bootstrapCompleted := cm.Data["bootstrap-completed"] == "true"
+	bootstrapCompleted := cm.Data["bootstrap-completed"] == k8sTrue
 	completedAt := cm.Data["completed-at"]
 	completedByPod := cm.Data["completed-by-pod"]
 
@@ -161,10 +163,10 @@ func MarkBootstrapComplete() error {
 	// Create ConfigMap marking bootstrap as complete
 	cm := &k8s.ConfigMap{
 		ObjectMeta: k8sMeta.ObjectMeta{
-			Name: "spike-bootstrap-state",
+			Name: appEnv.ConfigMapName(),
 		},
 		Data: map[string]string{
-			"bootstrap-completed": "true",
+			"bootstrap-completed": k8sTrue,
 			"completed-at":        time.Now().UTC().Format(time.RFC3339),
 			"completed-by-pod":    os.Getenv("HOSTNAME"),
 		},

@@ -51,11 +51,9 @@ In addition, you will need the usual suspects:
 * [`git`](https://git-scm.com/)
 * [`make`](https://www.gnu.org/software/make/)
 * [`go`](https://go.dev/) (*the most recent version would do*)
-* [`node`](https://nodejs.org) (*at least [GitHub Copilot][copilot] requires it on Linux*)
+* [`node`](https://nodejs.org) (*(optional: most AI tools require it*)
 * [`build-essential`](https://packages.ubuntu.com/hirsute/build-essential)
   (*i.e., `sudo apt install build-essential`*)
-
-[copilot]: https://copilot.github.com/ "GitHub Copilot"
 
 ## Go Environment Setup
 
@@ -147,8 +145,17 @@ echo 'PATH=$PATH:$WORKSPACE/spire/bin' >> ~/.profile
 
 ## Adding SPIKE Binaries to `$PATH`
 
+The bare-metal installation will create **SPIKE** binaries in the project
+root directory by default. You can add the binaries to your `$PATH` as follows:
+
+```bash
+# ~/.profile
+export PATH=$PATH:$WORKSPACE/spike
+echo 'PATH=$PATH:$WORKSPACE/spike' >> ~/.profile
+```
+
 Additionally, you can source the following file to define additional
-**SPIKE**-related environment variables for your convenience. This is not
+**SPIKE**-related environment variables for your convenience. This is **NOT**
 required because if you don't define them, **SPIKE** will assume sensible
 defaults.
 
@@ -162,7 +169,7 @@ as documentation to help understand the development environment.
 ```bash
 # ~/.profile
 
-# ...
+# ... truncated ...
 
 # SPIKE Environment configuration                                                
 source $WORKSPACE/spike/hack/lib/env.sh 
@@ -210,6 +217,7 @@ make build
 #   keeper*
 #   nexus*
 #   spike*
+#   bootstrap*
 ```
 
 ## Configure Local DNS
@@ -239,8 +247,6 @@ You can run this to start all the required components:
 ```bash
 # Start everything:
 make start
-# Then, boostrap everything:
-make bootstrap
 ```
 
 And then, on a separate terminal, you can run `spike`:
@@ -269,9 +275,9 @@ spike
 # Use "spike [command] --help" for help.
 ```
 
-Although the `make start;make bootstrap` script is convenient, it might be 
-useful to run the components individually to understand the process better and
-debug any issues that might arise.
+Although the `make start` script is convenient, it might be useful to run the
+components individually to understand the process better and debug any issues
+that might arise.
 
 The following sections will guide you through the individual steps.
 

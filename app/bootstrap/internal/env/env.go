@@ -168,3 +168,20 @@ func TrustRoot() string {
 	}
 	return tr
 }
+
+// ConfigMapName returns the name of the ConfigMap used to store SPIKE
+// Bootstrap state information.
+//
+// It retrieves the ConfigMap name from the SPIKE_BOOTSTRAP_CONFIGMAP_NAME
+// environment variable. If the environment variable is not set, it returns
+// the default value "spike-bootstrap-state".
+//
+// Returns:
+//   - A string containing the ConfigMap name for storing bootstrap state
+func ConfigMapName() string {
+	cn := os.Getenv(env.BootstrapConfigMapName)
+	if cn == "" {
+		return "spike-bootstrap-state"
+	}
+	return cn
+}
