@@ -8,7 +8,6 @@ import (
 	"crypto/fips140"
 	"flag"
 	"fmt"
-	"os"
 
 	"github.com/spiffe/spike-sdk-go/log"
 	"github.com/spiffe/spike-sdk-go/spiffe"
@@ -46,7 +45,6 @@ func main() {
 			"message", "Bootstrap already completed previously. Skipping.",
 		)
 		fmt.Println("Bootstrap already completed previously. Exiting.")
-		os.Exit(0)
 		return
 	}
 
@@ -100,5 +98,5 @@ func main() {
 	}
 
 	fmt.Println("Bootstrap completed successfully!")
-	os.Exit(0)
+	return
 }
