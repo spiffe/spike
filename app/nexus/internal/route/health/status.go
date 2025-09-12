@@ -2,19 +2,23 @@ package health
 
 import (
 	"crypto/fips140"
-	"encoding/json"
 	"net/http"
 	"os"
 	"strconv"
 	"strings"
 	"time"
 
-	"github.com/spiffe/spike-sdk-go/log"
+	apiErr "github.com/spiffe/spike-sdk-go/api/errors"
 
+	"github.com/spiffe/spike-sdk-go/log"
 	env "github.com/spiffe/spike/app/nexus/internal/env"
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 	"github.com/spiffe/spike/internal/journal"
+	"github.com/spiffe/spike/internal/net"
 )
+
+// TODO(doguhannilt): Move StatusResponse and related structs to spike-sdk-go/api/data/status.go
+// These are part of the public API contract and should live in the SDK.
 
 // StatusResponse represents the complete system status information
 // returned by the /v1/operator/status endpoint. It provides a comprehensive
@@ -74,16 +78,27 @@ var startTime = time.Now()
 func RouteGetStatus(
 	w http.ResponseWriter, r *http.Request, audit *journal.AuditEntry,
 ) error {
-	status := getSystemStatus()
+	const fName = "routeGetStatus"
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
+	// 1️⃣ Audit the request
+	journal.AuditRequest(fName, r, audit, journal.AuditRead)
 
-	if err := json.NewEncoder(w).Encode(status); err != nil {
-		http.Error(w, "Failed to encode status response", http.StatusInternalServerError)
+	err := guardStatusRequest(w, r)
+	if err != nil {
 		return err
 	}
 
+	// 3️⃣ Get system status
+	status := getSystemStatus()
+
+	// 4️⃣ Marshal & respond
+	responseBody := net.MarshalBody(status, w)
+	if responseBody == nil {
+		return apiErr.ErrMarshalFailure
+	}
+
+	net.Respond(http.StatusOK, responseBody, w)
+	log.Log().Info(fName, "message", "Status returned successfully")
 	return nil
 }
 
