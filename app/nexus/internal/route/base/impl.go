@@ -9,6 +9,7 @@ import (
 
 	"github.com/spiffe/spike/app/nexus/internal/route/acl/policy"
 	"github.com/spiffe/spike/app/nexus/internal/route/cipher"
+	"github.com/spiffe/spike/app/nexus/internal/route/health"
 	"github.com/spiffe/spike/app/nexus/internal/route/operator"
 	"github.com/spiffe/spike/app/nexus/internal/route/secret"
 	"github.com/spiffe/spike/internal/net"
@@ -44,8 +45,8 @@ func routeWithBackingStore(a url.APIAction, p url.APIURL) net.Handler {
 		return cipher.RouteEncrypt
 	case a == url.ActionDefault && p == url.NexusCipherDecrypt:
 		return cipher.RouteDecrypt
-	case a == url.ActionGet && p == url.NexusOperatorStatus:
-		return operator.RouteGetStatus
+	case a == url.ActionGet && p == url.NexusHealthStatus:
+		return health.RouteGetStatus
 	default:
 		return net.Fallback
 	}
