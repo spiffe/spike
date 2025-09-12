@@ -44,8 +44,7 @@ Before every release:
 
 1. Run the unit tests
 2. Run the following smoke tests documented in the next section.
-3. If everything passes, update `NexusVersion`, `PilotVersion` 
-   and `KeeperVersion` in `$WORKSPACE/spike/internal/config/config.go`
+3. If everything passes, update `./app/VERSION.txt` to the release version. 
 4. Update any necessary documentation.
 5. Update the changelog.
 6. Update the documentation snapshots page.
@@ -56,10 +55,9 @@ Before every release:
    policy creation work as expected. 
 9. Run `./hack/bare-metal/cmd/read-sample-secrets.sh` to ensure secret and
    policy reading work as expected.
-10. Make sure you update `./app/VERSION.txt` with the new version.
-11. Make sure you run `make build` and the process cleanly exits with no errors.
-12. Make sure you run `make test` and the process cleanly exits with no errors.
-13. Make sure you run `make audit` and the process cleanly exits with no errors.
+10. Make sure you run `make build` and the process cleanly exits with no errors.
+11. Make sure you run `make test` and the process cleanly exits with no errors.
+12. Make sure you run `make audit` and the process cleanly exits with no errors.
 
 Release process:
 
