@@ -6,7 +6,7 @@
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <link rel="icon" href="https://spike.ist/assets/spike-favicon-16x16.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
-    <title> SPIKE | ADR-0014: Maintaining SQLite as SPIKE&#x27;s Primary Storage Backend </title>
+    <title> SPIKE | ADR-0024: Transition from In-Memory Cache to Direct Backend Storage for High Availability </title>
 </head>
 <body>
 
@@ -744,136 +744,154 @@
 
         <article>
             
-        <h1 id="adr-0014-maintaining-sqlite-as-spike-s-primary-storage-backend">ADR-0014: Maintaining SQLite as SPIKE’s Primary Storage Backend</h1>
-<br style="clear:both" />
+        <h1 id="adr-0024-transition-from-in-memory-cache-to-direct-backend-storage-for-high-availability">ADR-0024: Transition from In-Memory Cache to Direct Backend Storage for High Availability</h1>
 <ul>
-<li>Status: accepted</li>
-<li>Date: 2024-11-15</li>
-<li>Tags: Persistence, Storage, SQLite, File-System</li>
+<li>Status: accepted
+<ul>
+<li>Supersedes: <a href="https://spike.ist/architecture/adrs/adr-0016/">ADR-0016: Memory-First Secrets Store</a></li>
+<li>Supersedes: <a href="https://spike.ist/architecture/adrs/adr-0017/">ADR-0017: Synchronous Persistence</a></li>
+</ul>
+</li>
+<li>Date: 2025-08-23</li>
+<li>Tags: Security, Operations, HA, Simplicity</li>
 </ul>
 <h2 id="context">Context</h2>
-<p>SPIKE currently uses SQLite as its backing store for secret management. There
-is a proposal to implement a file-system-based backing store as an alternative
-storage solution. SPIKE uses SPIFFE as its identity control plane for
-authentication and authorization.</p>
-<p>The key considerations are:</p>
-<ul>
-<li>SQLite is already implemented and proven to work well for SPIKE’s needs</li>
-<li>SQLite itself is fundamentally a file-system-based database</li>
-<li>A new file-system backing store would need to implement similar functionality</li>
-<li>Both solutions ultimately interact with the filesystem at their core</li>
-</ul>
+<p><strong>SPIKE Nexus</strong> currently uses a dual-layer storage architecture where an
+in-memory cache (<code>secretStore</code> using <code>kv.KV</code> and <code>policies</code> using <code>sync.Map</code>)
+serves as the primary source of truth, with a backing store (<em>SQLite, S3, etc.</em>)
+providing persistence. This design pattern follows
+<a href="https://spike.ist/architecture/adrs/adr-0016/">ADR-0016 (Memory-First Secrets Store)</a> and
+<a href="https://spike.ist/architecture/adrs/adr-0017/">ADR-0017 (Synchronous Persistence)</a>.</p>
+<p>While this architecture provides excellent performance for single-instance
+deployments, it creates challenges that unnecessarily increase the
+architectural complexity of the distributed system when attempting to achieve
+high availability (<em>HA</em>) through horizontal scaling:</p>
+<p><strong>Current Architecture Issues:</strong></p>
+<ol>
+<li><strong>Split-brain scenarios</strong>: Multiple instances behind a load balancer can
+maintain independent in-memory states, leading to inconsistent data views</li>
+<li><strong>Version drift</strong>: When instance A and instance B update the same secret
+path, they maintain different version numbers in their local memory stores</li>
+<li><strong>Lost updates</strong>: Without distributed locking, concurrent updates from
+different instances can silently overwrite each other</li>
+<li><strong>Inconsistent reads</strong>: Users can receive different responses depending on
+which instance handles their request</li>
+<li><strong>Complex synchronization</strong>: Maintaining cache coherency across instances
+would require additional infrastructure (<em>message buses, distributed locks,
+consensus protocols</em>)</li>
+</ol>
+<p><strong>Example Scenario:</strong></p>
+<pre style="background-color:#2b303b;color:#c0c5ce;"><code><span>Time T1: Instance A updates secret at /api/key to version 2
+</span><span>Time T2: Instance B (unaware of A&#39;s update) updates same path to its version 2
+</span><span>Result: Both instances have version 2 with different content
+</span><span>         Backend has whichever write completed last
+</span><span>         Users see different data depending on load balancer routing
+</span></code></pre>
 <h2 id="decision">Decision</h2>
-<p>We will maintain SQLite as the primary storage backend and not implement a
-separate file-system-based storage solution.</p>
-<h2 id="rationale">Rationale</h2>
-<h3 id="technical-advantages-of-sqlite">Technical Advantages of SQLite</h3>
+<p>We will eliminate the in-memory cache layer entirely and make all secret and
+policy operations interact directly with the backing store.</p>
+<p>This change involves:</p>
 <ol>
 <li>
-<p><strong>File-System Foundation</strong>: SQLite already operates directly on the file
-system, using efficient file I/O operations. As per SQLite’s documentation,
-it competes directly with <code>fs.open()</code> for performance.</p>
-</li>
-<li>
-<p><strong>ACID Compliance</strong>: SQLite provides built-in:</p>
+<p><strong>Remove global in-memory stores</strong>:</p>
 <ul>
-<li>Atomicity for operations</li>
-<li>Consistency in data storage</li>
-<li>Isolation for concurrent operations</li>
-<li>Durability of stored data</li>
+<li>Comment out <code>secretStore</code> (<code>kv.KV</code>) and <code>secretStoreMu</code></li>
+<li>Comment out <code>policies</code> (<code>sync.Map</code>)</li>
 </ul>
 </li>
 <li>
-<p><strong>Proven Security</strong>: SQLite has undergone extensive security auditing and
-has a well-understood security model.</p>
-</li>
-</ol>
-<h3 id="implementation-considerations">Implementation Considerations</h3>
-<ol>
-<li>
-<p><strong>Redundant Development</strong>: Creating a separate file-system store would:</p>
+<p><strong>Refactor all operations to use backend directly</strong>:</p>
 <ul>
-<li>Duplicate existing functionality</li>
-<li>Require implementing concurrent access controls</li>
-<li>Need additional security auditing</li>
-<li>Require new testing infrastructure</li>
+<li><code>GetSecret()</code> → Read from <code>persist.Backend().LoadSecret()</code></li>
+<li><code>UpsertSecret()</code> → Write to <code>persist.Backend().StoreSecret()</code>
+with atomic operations</li>
+<li><code>DeleteSecret()</code> → Update backend with deletion timestamps</li>
+<li>Similar changes for policy operations</li>
 </ul>
 </li>
 <li>
-<p><strong>Maintenance Overhead</strong>: Supporting two storage backends would:</p>
+<p><strong>Move version management to persistence layer</strong>:</p>
 <ul>
-<li>Increase maintenance complexity</li>
-<li>Require maintaining two sets of documentation</li>
-<li>Complicate troubleshooting</li>
-<li>Potentially create inconsistencies in behavior</li>
+<li>Implement compare-and-swap (CAS) operations in the backend</li>
+<li>Use optimistic locking to handle concurrent updates</li>
+<li>Maintain version consistency at the database level</li>
+</ul>
+</li>
+<li>
+<p><strong>Transform <code>NoopStore</code> to <code>InMemoryStore</code></strong>:</p>
+<ul>
+<li>For development/testing scenarios requiring true in-memory operation</li>
+<li>Implement full <code>Backend</code> interface using <code>kv.KV</code> internally</li>
+<li>Provide the same semantics as persistent backends</li>
 </ul>
 </li>
 </ol>
-<h3 id="performance">Performance</h3>
-<ul>
-<li>SQLite is highly optimized for the types of operations SPIKE performs</li>
-<li>The overhead of SQLite compared to direct file system operations is
-negligible for SPIKE’s use case</li>
-<li>SQLite’s page cache provides performance benefits that would need to be
-re-implemented in a file-system solution</li>
-</ul>
+<h2 id="alternatives-considered">Alternatives Considered</h2>
+<ol>
+<li><strong>Distributed cache with cache invalidation</strong>: Add Redis/Hazelcast with
+pub/sub for cache invalidation. Rejected due to added complexity and
+potential for cache inconsistency windows.</li>
+<li><strong>Leader-follower architecture</strong>: Elect a single leader instance to handle
+all writes. Rejected as it doesn’t provide true HA and adds complexity of
+leader election.</li>
+<li><strong>Distributed locking for writes</strong>: Keep cache but use distributed locks
+(for, i.e., via <code>etcd</code>) for write operations. Rejected as it adds external
+dependencies and doesn’t solve read inconsistency.</li>
+<li><strong>Event sourcing</strong>: Transform to event-driven architecture with CQRS.
+Rejected as it requires fundamental redesign of the entire system and brings
+unnecessary complexity.</li>
+</ol>
 <h2 id="consequences">Consequences</h2>
 <h3 id="positive">Positive</h3>
-<ol>
-<li>Reduced development effort and maintenance burden</li>
-<li>Continued use of a well-tested, secure storage solution</li>
-<li>Simplified codebase and deployment</li>
-<li>Consistent behavior across deployments</li>
-</ol>
+<ul>
+<li><strong>Immediate consistency</strong>: All instances read the same data from the single
+source of truth</li>
+<li><strong>True high availability</strong>: Any <strong>SPIKE Nexus</strong> instance can serve any request
+without coordination</li>
+<li><strong>Simplified architecture</strong>: Removes entire class of distributed systems
+problems</li>
+<li><strong>Easier debugging</strong>: No cache invalidation issues or cache/backend divergence</li>
+<li><strong>Reduced memory footprint</strong>: Instances no longer hold all secrets in memory</li>
+<li><strong>Atomic operations</strong>: Version conflicts handled at database level with
+proper transactions</li>
+</ul>
 <h3 id="negative">Negative</h3>
-<ol>
-<li>Less flexibility in storage formats</li>
-<li>Continued dependency on SQLite</li>
-<li>Potential perception of over-engineering for simple storage needs</li>
-</ol>
-<h3 id="mitigations">Mitigations</h3>
-<ol>
-<li>Document SQLite’s role as a file-system interface</li>
-<li>Maintain clear interface boundaries for potential future storage implementations</li>
-<li>Monitor performance and storage requirements to validate continued suitability</li>
-</ol>
-<h2 id="related-documents">Related Documents</h2>
 <ul>
-<li><a href="https://www.sqlite.org/docs.html">SQLite Documentation</a></li>
+<li><strong>Increased latency</strong>: Every operation now involves backend I/O (<em>can be
+mitigated by backend proximity and connection pooling</em>)</li>
+<li><strong>Higher backend load</strong>: All reads hit the backing store (<em>can be mitigated
+by backend scaling and potentially adding read replicas</em>)</li>
+<li><strong>Backend becomes the critical path</strong>: System availability now entirely
+depends on backend availability (<em>can be mitigated by using a HA backing
+store</em>)</li>
+<li><strong>Potential thundering herd</strong>: Many instances might request the same secret
+simultaneously after backend recovery</li>
 </ul>
-<hr />
+<h3 id="neutral">Neutral</h3>
 <ul>
-<li><a href="https://spike.ist/architecture/adrs/adr-0025/">ADR-0025: Path Patterns as Key Namespaces with Regular Expression Matching</a></li>
-<li><a href="https://spike.ist/architecture/adrs/adr-0024/">ADR-0024: Transition from In-Memory Cache to Direct Backend Storage for High Availability</a></li>
-<li><a href="https://spike.ist/architecture/adrs/adr-0023/">ADR-0023: Decision Against Implementing Lock/Unlock Mechanism in SPIKE Nexus</a></li>
-<li><a href="https://spike.ist/architecture/adrs/adr-0022/">ADR-0022: Continuous Polling of SPIKE Keepers Despite 404 Response</a></li>
-<li><a href="https://spike.ist/architecture/adrs/adr-0021/">ADR-0021: SPIKE Keeper as a Stateless Shard Holder</a></li>
-<li><a href="https://spike.ist/architecture/adrs/adr-0020/">ADR-0020: Switch to Zola for Documentation System</a></li>
-<li><a href="https://spike.ist/architecture/adrs/adr-0019/">ADR-0019: Plugin-Based Storage Backend Architecture</a></li>
-<li><a href="https://spike.ist/architecture/adrs/adr-0018/">ADR-0018: Administrative Access to SPIKE</a></li>
-<li><a href="https://spike.ist/architecture/adrs/adr-0017/">ADR-0017: Synchronous Persistence for SPIKE Secrets Store</a></li>
-<li><a href="https://spike.ist/architecture/adrs/adr-0016/">ADR-0016: Memory-First Secrets Store</a></li>
-<li><a href="https://spike.ist/architecture/adrs/adr-0015/">ADR-0015: Use Singular Form for File and Package Naming</a></li>
-<li><a href="https://spike.ist/architecture/adrs/adr-0014/">ADR-0014: Maintaining SQLite as SPIKE’s Primary Storage Backend</a></li>
-<li><a href="https://spike.ist/architecture/adrs/adr-0013/">ADR-0013: S3-Compatible Storage as SPIKE’s Backing Store</a></li>
-<li><a href="https://spike.ist/architecture/adrs/adr-0012/">ADR-0012: HTTP Methods for SPIKE API</a></li>
-<li><a href="https://spike.ist/architecture/adrs/adr-0011/">ADR-0011: PostgreSQL as SPIKE’s Backing Store</a></li>
-<li><a href="https://spike.ist/architecture/adrs/adr-0010/">ADR-0010: Session Token Storage Strategy for SPIKE Nexus</a></li>
-<li><a href="https://spike.ist/architecture/adrs/adr-0009/">ADR-0009: Multi-Administrator Support System</a></li>
-<li><a href="https://spike.ist/architecture/adrs/adr-0008/">ADR-0008: Administrative Access Control System</a></li>
-<li><a href="https://spike.ist/architecture/adrs/adr-0007/">ADR-0007: Root Key Lifecycle and Management Strategy</a></li>
-<li><a href="https://spike.ist/architecture/adrs/adr-0006/">ADR-0006: Trust Boundary Definition and Security Assumptions</a></li>
-<li><a href="https://spike.ist/architecture/adrs/adr-0005/">ADR-0005: Use SPIFFE mTLS for Inter-Component Authentication and Communication</a></li>
-<li><a href="https://spike.ist/architecture/adrs/adr-0004/">ADR-0004: SPIKE Keeper Minimalist Design Approach</a></li>
-<li><a href="https://spike.ist/architecture/adrs/adr-0003/">ADR-0003: Root Key Management and Storage Strategy</a></li>
-<li><a href="https://spike.ist/architecture/adrs/adr-0002/">ADR-0002: Use Docsify for Documentation System</a></li>
-<li><a href="https://spike.ist/architecture/adrs/adr-0001/">ADR-0001: Display Secrets in Plain Text in SPIKE Pilot Admin CLI</a></li>
+<li><strong>Different operational characteristics</strong>: Everything (<em>as always</em>) is a
+trade-off. With this new design, teams now need to monitor and scale
+the backend appropriately</li>
+<li><strong>Changed failure modes</strong>: Failures now manifest as backend errors rather
+than cache inconsistencies</li>
 </ul>
-<hr />
+<h2 id="implementation-notes">Implementation Notes</h2>
+<p>The refactoring follows a systematic approach:</p>
+<ol>
+<li>Comment out cache-related globals</li>
+<li>Let the compiler identify all broken dependencies</li>
+<li>Update each function to use backend directly</li>
+<li>Ensure proper error handling for I/O operations</li>
+<li>Add context propagation for timeouts and cancellation</li>
+</ol>
+<p>This change aligns with modern cloud-native patterns where stateless services
+rely on robust, scalable data stores rather than maintaining local state.</p>
+<h2 id="references">References</h2>
 <ul>
-<li><a href="https://spike.ist/architecture/system-overview/"><strong>SPIKE</strong> System Overview</a></li>
-<li><a href="https://spike.ist/architecture/security-model/"><strong>SPIKE</strong> Security Model</a></li>
-<li><a href="https://spike.ist/architecture/architectural-decision-records/"><strong>SPIKE</strong> Architectural Decision Records</a></li>
+<li>Supersedes: <a href="https://spike.ist/architecture/adrs/adr-0016/">ADR-0016 (Memory-First Secrets Store)</a></li>
+<li>Supersedes: <a href="https://spike.ist/architecture/adrs/adr-0017/">ADR-0017 (Synchronous Persistence for SPIKE Secrets Store)</a></li>
+<li>Related: <a href="https://spike.ist/architecture/adrs/adr-0014/">ADR-0014 (Maintaining SQLite as SPIKE’s Primary Storage Backend)</a></li>
+<li>Related: <a href="https://spike.ist/architecture/adrs/adr-0019/">ADR-0019 (Plugin-Based Storage Backend Architecture)</a></li>
 </ul>
 
     

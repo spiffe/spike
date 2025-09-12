@@ -14,6 +14,52 @@ sort_by = "weight"
 
 TBD
 
+## [0.5.0] - 2025-09-11
+
+This is still a **prerelease** version; however, it includes major changes
+and improvements. We will cut a stable release once we have **SPIKE Bootstrap**
+included in the SPIFFE Helm Charts.
+
+### Added
+
+* Updates to documentation and usage examples.
+* Updates to the SPIKE Go SDK around the logging API.
+* Moved certain reusable features from in-tree to SPIKE Go SDK.
+* A new `make audit` target that helps contributors run style checks and
+  linters before submitting a PR.
+* Enhancements to bare-metal installation scripts.
+
+### Changed
+
+* Updated Go version to `1.25.1`
+* Updated **SPIKE Bootstrap** to be more robust and enabled it to work on
+  Kubernetes too.
+* Clarified documentation around path pattern and SPIFFE ID pattern matching
+  in SPIKE policies.
+* Slight improvements in the SPIKE logo and a brand-new landing page that
+  highlights the project's vision and goals.
+* Moved environment variable names to the SPIKE Go SDK as constants to prevent
+  typos and to make it easier to use the SDK.
+
+### Fixed
+
+* Bug fixes and stability improvements.
+* Fixed failing unit tests on CI (that's a temporary fix that runs tests
+  sequentially instead of in parallel; we will fix that soon)
+
+### Security
+
+* Along with secrets, SPIKE Nexus now encrypts policies at rest too.
+
+### Upcoming
+
+* A lot of ongoing design work around key rotation, encryption, and a secure
+  web interface that leverages Web Cryptography API to provide a secure
+  experience of managing secrets without having to interact with the command
+  line.
+* Ongoing work on the **Cipher** API to provide "encryption as a service" to
+  systems and workloads that do not require to store secrets in a backing store.
+
 ## [0.4.3] - 2025-08-16 (*prerelease*)
 
 This is a "*prerelease*" version to enable upstream SPIFFE Helm Charts

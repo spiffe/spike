@@ -35,59 +35,19 @@
     </watch-list>
   </high-level-plan>
   <task-group for="v0.5.0">
-    <issue>
-      Move anything that's not critical to the next bucket.
-      We need to cut a prerelease to trigger helm charts work.
-    </issue>
-    <issue>
-      transfer stuff from ToT.
-    </issue>
-    <issue>
-      move generated binaries to `./bin` folder.
-      stream logs to `./logs` folder.
-    </issue>
-    <issue>
-      demo: onboarding SPIKE in WSL2
 
-      demo: bootstrapping: bare metal + k8s.
+  </task-group>
+  <task-group for=">v0.5.0">
+    <issue>
+      Sep 20th: SPIKE Onboarding.
     </issue>
     <issue>
-      need change and link to the web page
-
-      Reference
-      Since the SPIKE CLI is a work in progress and highly in flux, the best way to get the most up-to-date information is to run spike --help or spike [command] --helpto learn about the available commands and flags.
-      In addition, you can [check out the demo recordings](https://spike.ist/community/presentations/) to see the CLI in action.
-    </issue>
-    <issue>
-      `make start` should check the existence of all required binaries
+      ensure that the demo app still works.
     </issue>
     <issue>
       when entries are not registered to the SPIRE Server and the
       operator tries to use SPIKE, the error messages can be more
       explanatory.
-    </issue>
-    <issue>
-      to docs too:
-
-      # For Minikube, instead of forwarding the registry, you can directly load
-      # the container images to the cluster's internal local registry.
-      #
-      # This is especially helpful when you are using Docker Desktop for Windows' WSL
-      # Integration and `make docker-push` hangs up regardless of the
-      # `insecure-registries` settings in `Settings > Docker Engine` of Docker
-      # for Windows or `/etc/docker/daemon.json` of Docker on WSL.
-      #
-      # This can happen because in a typical WSL-Docker-for-Windows integration,
-      # your Docker CLI is in WSL, but the daemon is Docker Desktop: So when you run
-      # `docker push localhost:5000/...`, the Windows-side daemon tries to reach
-      # Windows' `localhost:5000`; meanwhile your WSL `docker push` will hit WSL's
-      # `localhost:5000` (*where you likely did the `kubectl port-forward`). Those
-      # are different network stacks. The result will: the push sits on "Waiting".
-      k8s-load-images:
-      ./hack/k8s/minikube-load-images.sh
-    </issue>
-    <issue>
-      deploy-local is deprecated change it with deploy-dev-local in docs.
     </issue>
     <issue>
       reading an unknown secret gives an error instead of "not found"
@@ -131,40 +91,8 @@
       }
     </issue>
     <issue>
-      "spike/system/acl" -> to constants
-      if there are other predefined paths, they go to constants too.
-    </issue>
-    <issue>
-      what do you think about making plugins for bootstrap state?
-      one for sql, one for k8s configmap initially?
-      I think the configmap option would be nicer to integrate with for the chart. I'm really not a fan of shared volumes, particularly for k8s jobs
-
-      If this is a static configuration. I agree that we should convert the file in volumes to configmaps
-
-      if someone could stub out the plugin bits, I could implement the k8s plugin.
-
-      Yeah, configmap would be useful. -- for SQLite, the configuration is mostly static. -- we initialize the db with some root key; but that can be dynamically provided anyway.
-      The rest is just "best guess" defaults.
-
-      I think its just storing a single bool. "inited=true"
-      and the plugin can be used by the bootstrapper to not run again, and the nexus process to determine if it can continue to start or just wait (edited)
-    </issue>
-    <issue>
-      Fix CI failing tests
-    </issue>
-    <issue>
-      once all the changes are done, ensure that the demo app still works.
-    </issue>
-    <issue>
-      update documentation and changelog.
-    </issue>
-  </task-group>
-  <task-group for=">v0.5.0">
-    <issue>
-      Sep 20th: SPIKE Onboarding.
-    </issue>
-    <issue>
-      upgrade to go 1.25.1
+      move generated binaries to `./bin` folder.
+      stream logs to `./logs` folder.
     </issue>
     <issue>
       for operator actions ensure that `spike/system/ops` path is enforced (similar to how acl is enforced above.
@@ -332,6 +260,17 @@
   </task-group>
   <task-group for="SOC2-compliance">
     <issue>
+      Update:
+      This needs to be re-evaluated. As long as we make SPIKE log formatting
+      SOC-compliant; and streamable to a log aggregator, we don't necesarrily
+      need to implement an opinionated logging infra, as users will likely
+      be using their own secure log aggregation solutions anyway.
+
+      It is possible to have a reference infrastructure somewhere, but I think
+      it's out of SPIKE (and also VSecM's) scope.
+
+      ---
+
       SOC-2 Compliance Checklist for SPIKE Logging System
 
       ## Overall Plan

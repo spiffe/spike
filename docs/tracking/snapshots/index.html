@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <link rel="stylesheet" href="https://spike.ist/main.css">
+    <link rel="stylesheet" href="/main.css">
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <link rel="icon" href="https://spike.ist/assets/spike-favicon-16x16.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
@@ -25,7 +25,7 @@
 </script>
 <div id="banner">
     <a href="https://spike.ist">
-        <img src="https://spike.ist/assets/spike-banner.png" alt="logo" />
+        <img id="banner-image" src="https://spike.ist/assets/spike-banner.png" alt="logo" />
     </a>
     <div id="banner-body">
         <a class="banner-title" href="https://spike.ist">
@@ -707,15 +707,24 @@
     function setTheme(theme) {
       document.documentElement.setAttribute("data-theme", theme);
       localStorage.setItem("theme", theme);
+      
+      // Update banner image based on theme
+      const bannerImage = document.getElementById("banner-image");
+      if (bannerImage) {
+        bannerImage.src = theme === "dark" 
+          ? "/assets/spike-banner-dark-thin.png"
+          : "/assets/spike-banner-light-thin.png";
+      }
     }
 
     // Initialize theme
     const savedTheme = localStorage.getItem("theme");
-    if (savedTheme) {
-      setTheme(savedTheme);
-    } else if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
-      setTheme("dark");
-    }
+    setTheme(savedTheme ? savedTheme : "dark");
+    // Discard system theme changes; the landing page is always dark, so
+    // it's better to transition to a dark-by-default theme.
+    // } else if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+    //   setTheme("dark");
+    // }
 
     // Toggle theme on button click
     themeToggle.addEventListener("click", () => {
@@ -724,14 +733,14 @@
       setTheme(newTheme);
     });
 
-    // Listen for system theme changes
-    window
-      .matchMedia("(prefers-color-scheme: dark)")
-      .addEventListener("change", (e) => {
-        if (!localStorage.getItem("theme")) {
-          setTheme(e.matches ? "dark" : "light");
-        }
-      });
+    // Discard system-theme changes.
+    // window
+    //   .matchMedia("(prefers-color-scheme: dark)")
+    //   .addEventListener("change", (e) => {
+    //     if (!localStorage.getItem("theme")) {
+    //       setTheme(e.matches ? "dark" : "light");
+    //     }
+    //   });
   });
 </script>
 
@@ -744,6 +753,7 @@
 <p>Here are the links to point-in-time documentation snapshots at each release:</p>
 <ul>
 <li><a href="https://github.com/spiffe/spike/tree/main/docs">current</a></li>
+<li><a href="https://github.com/spiffe/spike/tree/v0.5.0/docs">v0.5.0</a></li>
 <li><a href="https://github.com/spiffe/spike/tree/v0.4.3/docs">v0.4.3</a></li>
 <li><a href="https://github.com/spiffe/spike/tree/v0.4.2/docs">v0.4.2</a></li>
 <li><a href="https://github.com/spiffe/spike/tree/v0.4.1/docs">v0.4.1</a></li>

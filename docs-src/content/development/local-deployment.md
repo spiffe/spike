@@ -101,6 +101,25 @@ make docker-forward-registry
 Leave this terminal open. We will execute the rest of the commands in  
 a separate terminal window.
 
+> **Alternative to Registry Port Forwarding**
+>
+> If you don't want to use port forwarding, you can directly load the container
+> images into the Minikube cluster's local registry.
+>
+> Although this is typically used to overcome network restrictions around
+> WSL and Docker for Windows, it can also be used as an alternative to port
+> forwarding.
+>
+> To copy images directly into the Minikube cluster's local registry, do not run
+> the above command, but instead execute the following:
+>
+> ```bash
+> make k8s-load-images
+> ```
+>
+> This will effectively have the same end-result as port forwarding, and you
+> won't have to keep the port forwarding terminal open.
+
 ## Build Container Images Locally
 
 We have a `make` target to build the container images locally.

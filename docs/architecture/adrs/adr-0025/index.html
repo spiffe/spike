@@ -6,7 +6,7 @@
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <link rel="icon" href="https://spike.ist/assets/spike-favicon-16x16.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
-    <title> SPIKE | ADR-0014: Maintaining SQLite as SPIKE&#x27;s Primary Storage Backend </title>
+    <title> SPIKE | ADR-0025: Path Patterns as Key Namespaces with Regular Expression Matching </title>
 </head>
 <body>
 
@@ -744,137 +744,146 @@
 
         <article>
             
-        <h1 id="adr-0014-maintaining-sqlite-as-spike-s-primary-storage-backend">ADR-0014: Maintaining SQLite as SPIKE’s Primary Storage Backend</h1>
-<br style="clear:both" />
+        <h1 id="adr-0025-path-patterns-as-key-namespaces-with-regular-expression-matching">ADR-0025: Path Patterns as Key Namespaces with Regular Expression Matching</h1>
 <ul>
 <li>Status: accepted</li>
-<li>Date: 2024-11-15</li>
-<li>Tags: Persistence, Storage, SQLite, File-System</li>
+<li>Date: 2025-09-01</li>
+<li>Tags: Security, Policy, Architecture, UX</li>
 </ul>
 <h2 id="context">Context</h2>
-<p>SPIKE currently uses SQLite as its backing store for secret management. There
-is a proposal to implement a file-system-based backing store as an alternative
-storage solution. SPIKE uses SPIFFE as its identity control plane for
-authentication and authorization.</p>
-<p>The key considerations are:</p>
+<p>SPIKE uses path patterns in two primary contexts:</p>
+<ol>
+<li><strong>Secret paths</strong>: Logical namespaces where secrets are stored
+(e.g., <code>secrets/app/config</code>)</li>
+<li><strong>Policy patterns</strong>: <strong>Regular expressions</strong> used to match secret paths
+and SPIFFE IDs for access control</li>
+</ol>
+<p>This creates potential confusion because:</p>
 <ul>
-<li>SQLite is already implemented and proven to work well for SPIKE’s needs</li>
-<li>SQLite itself is fundamentally a file-system-based database</li>
-<li>A new file-system backing store would need to implement similar functionality</li>
-<li>Both solutions ultimately interact with the filesystem at their core</li>
+<li><strong>Secret paths are not Unix filesystem paths</strong>: They are logical key
+namespaces that happen to use slash-separated hierarchical notation for
+familiarity</li>
+<li><strong>Policy patterns use regular expressions</strong>: Pattern matching in policies
+uses full regex syntax, not shell globs or simple wildcards</li>
+<li><strong>Documentation and examples mix conventions</strong>: Some examples used to
+incorrectly suggest Unix path semantics or glob patterns: we have fixed
+those in the recent documentation updates.</li>
 </ul>
+<p>The current implementation correctly uses regular expressions for policy
+matching, but the terminology and documentation can mislead users into thinking
+they’re working with filesystem paths or simple glob patterns.</p>
 <h2 id="decision">Decision</h2>
-<p>We will maintain SQLite as the primary storage backend and not implement a
-separate file-system-based storage solution.</p>
-<h2 id="rationale">Rationale</h2>
-<h3 id="technical-advantages-of-sqlite">Technical Advantages of SQLite</h3>
-<ol>
-<li>
-<p><strong>File-System Foundation</strong>: SQLite already operates directly on the file
-system, using efficient file I/O operations. As per SQLite’s documentation,
-it competes directly with <code>fs.open()</code> for performance.</p>
-</li>
-<li>
-<p><strong>ACID Compliance</strong>: SQLite provides built-in:</p>
+<p>We establish the following architectural principles for path handling in SPIKE:</p>
+<h3 id="1-secret-paths-are-key-namespaces">1. Secret Paths Are Key Namespaces</h3>
+<p><strong>Secret paths represent logical key namespaces, not filesystem paths:</strong></p>
 <ul>
-<li>Atomicity for operations</li>
-<li>Consistency in data storage</li>
-<li>Isolation for concurrent operations</li>
-<li>Durability of stored data</li>
+<li>Paths <strong>SHOULD NOT</strong> start with a forward slash (<code>/</code>)</li>
+<li>Paths are relative to the secrets engine mount point</li>
+<li>The slash separator (<code>/</code>) is used purely for hierarchical organization and
+familiarity</li>
+<li>Future versions MAY restrict trailing slashes for consistency</li>
 </ul>
-</li>
-<li>
-<p><strong>Proven Security</strong>: SQLite has undergone extensive security auditing and
-has a well-understood security model.</p>
-</li>
-</ol>
-<h3 id="implementation-considerations">Implementation Considerations</h3>
-<ol>
-<li>
-<p><strong>Redundant Development</strong>: Creating a separate file-system store would:</p>
+<p><strong>Examples:</strong></p>
 <ul>
-<li>Duplicate existing functionality</li>
-<li>Require implementing concurrent access controls</li>
-<li>Need additional security auditing</li>
-<li>Require new testing infrastructure</li>
+<li>✅ Correct: <code>secrets/app/config</code></li>
+<li>❌ Discouraged: <code>/secrets/app/config</code></li>
 </ul>
-</li>
-<li>
-<p><strong>Maintenance Overhead</strong>: Supporting two storage backends would:</p>
+<h3 id="2-policy-patterns-use-regular-expressions">2. Policy Patterns Use Regular Expressions</h3>
+<p><strong>All pattern matching in SPIKE policies uses regular expressions:</strong></p>
 <ul>
-<li>Increase maintenance complexity</li>
-<li>Require maintaining two sets of documentation</li>
-<li>Complicate troubleshooting</li>
-<li>Potentially create inconsistencies in behavior</li>
+<li><code>spiffeidPattern</code> fields contain regex patterns, not globs</li>
+<li><code>pathPattern</code> fields contain regex patterns, not globs</li>
+<li>Patterns are compiled using Go’s <code>regexp.Compile()</code></li>
+<li>For exact matches, patterns should include <code>^</code> (start) and <code>$</code> (end) anchors</li>
 </ul>
-</li>
-</ol>
-<h3 id="performance">Performance</h3>
+<p><strong>Examples:</strong></p>
 <ul>
-<li>SQLite is highly optimized for the types of operations SPIKE performs</li>
-<li>The overhead of SQLite compared to direct file system operations is
-negligible for SPIKE’s use case</li>
-<li>SQLite’s page cache provides performance benefits that would need to be
-re-implemented in a file-system solution</li>
+<li>✅ Regex: <code>^secrets/app/.*$</code> (matches secrets/app/config, secrets/app/env, etc.)</li>
+<li>✅ Regex: <code>^spiffe://example\.org/service$</code> (exact match, escaped dots)</li>
+<li>❌ Not glob: <code>secrets/app/*</code> (this is NOT a valid SPIKE pattern)</li>
+<li>❌ Not glob: <code>spiffe://example.org/service*</code> (this is NOT a valid SPIKE pattern)</li>
+</ul>
+<h3 id="3-terminology-clarification">3. Terminology Clarification</h3>
+<ul>
+<li><strong>Path</strong>: Refers to secret storage locations (key namespaces)</li>
+<li><strong>Pattern</strong>: Refers to regular expressions used in policies for matching</li>
+<li><strong>Route</strong> or <strong>Namespace</strong>: Alternative terms that may be used to emphasize
+the non-filesystem nature of paths</li>
 </ul>
 <h2 id="consequences">Consequences</h2>
 <h3 id="positive">Positive</h3>
-<ol>
-<li>Reduced development effort and maintenance burden</li>
-<li>Continued use of a well-tested, secure storage solution</li>
-<li>Simplified codebase and deployment</li>
-<li>Consistent behavior across deployments</li>
-</ol>
+<ul>
+<li><strong>Clear semantics</strong>: Users understand that paths are logical namespaces,
+not filesystem paths</li>
+<li><strong>Powerful matching</strong>: Regular expressions provide precise and flexible
+pattern matching</li>
+<li><strong>Consistent behavior</strong>: All pattern matching uses the same regex engine</li>
+<li><strong>Predictable results</strong>: Users can test patterns using standard regex tools</li>
+<li><strong>Security focused</strong>: Regex patterns allow for precise access control rules</li>
+</ul>
 <h3 id="negative">Negative</h3>
+<ul>
+<li><strong>Learning curve</strong>: Users familiar with shell globs must learn regex syntax</li>
+<li><strong>Complexity</strong>: Regular expressions can be more complex than simple wildcards</li>
+<li><strong>Potential errors</strong>: Incorrect regex patterns can be overly permissive or
+overly restrictive</li>
+</ul>
+<h3 id="neutral">Neutral</h3>
+<ul>
+<li><strong>Documentation updates</strong>: All examples and documentation will use
+the correct terminology</li>
+</ul>
+<h2 id="implementation-guidelines">Implementation Guidelines</h2>
+<h3 id="for-secret-paths">For Secret Paths</h3>
 <ol>
-<li>Less flexibility in storage formats</li>
-<li>Continued dependency on SQLite</li>
-<li>Potential perception of over-engineering for simple storage needs</li>
+<li><strong>Validation</strong>: Paths must match <code>^[a-zA-Z0-9._\-/()?+*|[\]{}\\]+$</code></li>
+<li><strong>Conventions</strong>: Should not start with <code>/</code>, should use <code>/</code> for hierarchy</li>
+<li><strong>Examples</strong>: <code>secrets/database/creds</code>, <code>config/app/production</code></li>
 </ol>
-<h3 id="mitigations">Mitigations</h3>
+<h3 id="for-policy-patterns">For Policy Patterns</h3>
 <ol>
-<li>Document SQLite’s role as a file-system interface</li>
-<li>Maintain clear interface boundaries for potential future storage implementations</li>
-<li>Monitor performance and storage requirements to validate continued suitability</li>
+<li><strong>Compilation</strong>: All patterns are compiled with <code>regexp.Compile(pattern)</code></li>
+<li><strong>Anchoring</strong>: Use <code>^</code> and <code>$</code> for exact matches</li>
+<li><strong>Escaping</strong>: Literal dots should be escaped as <code>\.</code></li>
+<li><strong>Testing</strong>: Patterns can be tested using Go’s regex tools or online
+regex testers</li>
 </ol>
-<h2 id="related-documents">Related Documents</h2>
+<h3 id="documentation-standards">Documentation Standards</h3>
 <ul>
-<li><a href="https://www.sqlite.org/docs.html">SQLite Documentation</a></li>
+<li>Always refer to policy “patterns” not “paths” when discussing regex matching</li>
+<li>Include regex examples with proper escaping and anchoring</li>
+<li>Clearly distinguish between secret paths (storage keys) and policy patterns
+(regex)</li>
 </ul>
-<hr />
-<ul>
-<li><a href="https://spike.ist/architecture/adrs/adr-0025/">ADR-0025: Path Patterns as Key Namespaces with Regular Expression Matching</a></li>
-<li><a href="https://spike.ist/architecture/adrs/adr-0024/">ADR-0024: Transition from In-Memory Cache to Direct Backend Storage for High Availability</a></li>
-<li><a href="https://spike.ist/architecture/adrs/adr-0023/">ADR-0023: Decision Against Implementing Lock/Unlock Mechanism in SPIKE Nexus</a></li>
-<li><a href="https://spike.ist/architecture/adrs/adr-0022/">ADR-0022: Continuous Polling of SPIKE Keepers Despite 404 Response</a></li>
-<li><a href="https://spike.ist/architecture/adrs/adr-0021/">ADR-0021: SPIKE Keeper as a Stateless Shard Holder</a></li>
-<li><a href="https://spike.ist/architecture/adrs/adr-0020/">ADR-0020: Switch to Zola for Documentation System</a></li>
-<li><a href="https://spike.ist/architecture/adrs/adr-0019/">ADR-0019: Plugin-Based Storage Backend Architecture</a></li>
-<li><a href="https://spike.ist/architecture/adrs/adr-0018/">ADR-0018: Administrative Access to SPIKE</a></li>
-<li><a href="https://spike.ist/architecture/adrs/adr-0017/">ADR-0017: Synchronous Persistence for SPIKE Secrets Store</a></li>
-<li><a href="https://spike.ist/architecture/adrs/adr-0016/">ADR-0016: Memory-First Secrets Store</a></li>
-<li><a href="https://spike.ist/architecture/adrs/adr-0015/">ADR-0015: Use Singular Form for File and Package Naming</a></li>
-<li><a href="https://spike.ist/architecture/adrs/adr-0014/">ADR-0014: Maintaining SQLite as SPIKE’s Primary Storage Backend</a></li>
-<li><a href="https://spike.ist/architecture/adrs/adr-0013/">ADR-0013: S3-Compatible Storage as SPIKE’s Backing Store</a></li>
-<li><a href="https://spike.ist/architecture/adrs/adr-0012/">ADR-0012: HTTP Methods for SPIKE API</a></li>
-<li><a href="https://spike.ist/architecture/adrs/adr-0011/">ADR-0011: PostgreSQL as SPIKE’s Backing Store</a></li>
-<li><a href="https://spike.ist/architecture/adrs/adr-0010/">ADR-0010: Session Token Storage Strategy for SPIKE Nexus</a></li>
-<li><a href="https://spike.ist/architecture/adrs/adr-0009/">ADR-0009: Multi-Administrator Support System</a></li>
-<li><a href="https://spike.ist/architecture/adrs/adr-0008/">ADR-0008: Administrative Access Control System</a></li>
-<li><a href="https://spike.ist/architecture/adrs/adr-0007/">ADR-0007: Root Key Lifecycle and Management Strategy</a></li>
-<li><a href="https://spike.ist/architecture/adrs/adr-0006/">ADR-0006: Trust Boundary Definition and Security Assumptions</a></li>
-<li><a href="https://spike.ist/architecture/adrs/adr-0005/">ADR-0005: Use SPIFFE mTLS for Inter-Component Authentication and Communication</a></li>
-<li><a href="https://spike.ist/architecture/adrs/adr-0004/">ADR-0004: SPIKE Keeper Minimalist Design Approach</a></li>
-<li><a href="https://spike.ist/architecture/adrs/adr-0003/">ADR-0003: Root Key Management and Storage Strategy</a></li>
-<li><a href="https://spike.ist/architecture/adrs/adr-0002/">ADR-0002: Use Docsify for Documentation System</a></li>
-<li><a href="https://spike.ist/architecture/adrs/adr-0001/">ADR-0001: Display Secrets in Plain Text in SPIKE Pilot Admin CLI</a></li>
-</ul>
-<hr />
-<ul>
-<li><a href="https://spike.ist/architecture/system-overview/"><strong>SPIKE</strong> System Overview</a></li>
-<li><a href="https://spike.ist/architecture/security-model/"><strong>SPIKE</strong> Security Model</a></li>
-<li><a href="https://spike.ist/architecture/architectural-decision-records/"><strong>SPIKE</strong> Architectural Decision Records</a></li>
-</ul>
+<h2 id="examples">Examples</h2>
+<h3 id="secret-path-examples">Secret Path Examples</h3>
+<pre style="background-color:#2b303b;color:#c0c5ce;"><code><span>secrets/app/config                # Application configuration
+</span><span>secrets/database/production/creds # Production database credentials  
+</span><span>config/service/tls                # TLS configuration
+</span><span>tenantA/projectX/env1/key         # Multi-tenant organization
+</span></code></pre>
+<h3 id="policy-pattern-examples">Policy Pattern Examples</h3>
+<pre data-lang="yaml" style="background-color:#2b303b;color:#c0c5ce;" class="language-yaml "><code class="language-yaml" data-lang="yaml"><span style="color:#65737e;"># Match all secrets under app namespace
+</span><span style="color:#bf616a;">pathPattern</span><span>: &quot;</span><span style="color:#a3be8c;">^secrets/app/.*$</span><span>&quot;
+</span><span>
+</span><span style="color:#65737e;"># Match specific database credentials
+</span><span style="color:#bf616a;">pathPattern</span><span>: &quot;</span><span style="color:#a3be8c;">^secrets/database/production$</span><span>&quot;
+</span><span>
+</span><span style="color:#65737e;"># Match numbered database instances
+</span><span style="color:#bf616a;">pathPattern</span><span>: &quot;</span><span style="color:#a3be8c;">^secrets/db-[0-9]+/creds$</span><span>&quot;
+</span><span>
+</span><span style="color:#65737e;"># Match SPIFFE ID with escaped dots
+</span><span style="color:#bf616a;">spiffeidPattern</span><span>: &quot;</span><span style="color:#a3be8c;">^spiffe://example</span><span style="color:#96b5b4;">\\</span><span style="color:#a3be8c;">.org/service$</span><span>&quot;
+</span></code></pre>
+<h2 id="migration-guide">Migration Guide</h2>
+<p>For users transitioning from glob-style thinking:</p>
+<table><thead><tr><th>Glob Pattern</th><th>SPIKE Regex Pattern</th><th>Notes</th></tr></thead><tbody>
+<tr><td><code>secrets/*</code></td><td><code>^secrets/[^/]*$</code></td><td>Single level only</td></tr>
+<tr><td><code>secrets/**</code></td><td><code>^secrets/.*$</code></td><td>All levels</td></tr>
+<tr><td><code>secrets/app*</code></td><td><code>^secrets/app.*$</code></td><td>Prefix match</td></tr>
+<tr><td><code>secrets/db-?</code></td><td><code>^secrets/db-.$</code></td><td>Single character</td></tr>
+<tr><td><code>secrets/db-[123]</code></td><td><code>^secrets/db-[123]$</code></td><td>Character class</td></tr>
+</tbody></table>
 
     
         </article>

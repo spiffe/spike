@@ -283,14 +283,19 @@ The following sections will guide you through the individual steps.
 
 > **CLI Reference**
 >
-> Since the **SPIKE CLI** is a work in progress and highly in flux, the best
-> way to get the most up-to-date information is to run `spike --help` or
-> `spike [command] --help` to learn about the available commands and flags.
+> One of the best ways to get the most up-to-date information about the `spike`
+> CLI is to run `spike --help` or `spike [command] --help`.
 >
-> In addition, you can [check out the demo recordings][demo] to see the CLI in
+> Additionally, you can [check out the **SPIKE** CLI
+> Documentation][cli-docs] for a more detailed reference with sample commands
+> and examples.
+>
+> There are also [demo recordings][demo] that showcase the **SPIKE** CLI in
 > action.
 
 [demo]: @/community/presentations.md
+[cli-docs]: @/usage/commands/_index.md
+
 
 ## Start SPIRE Server
 

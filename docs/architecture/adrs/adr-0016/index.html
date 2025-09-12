@@ -2,11 +2,11 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <link rel="stylesheet" href="https://spike.ist/main.css">
+    <link rel="stylesheet" href="/main.css">
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <link rel="icon" href="https://spike.ist/assets/spike-favicon-16x16.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
-    <title> SPIKE | ADR-0016: ADR-0015: Memory-First Secrets Store </title>
+    <title> SPIKE | ADR-0016: Memory-First Secrets Store </title>
 </head>
 <body>
 
@@ -25,7 +25,7 @@
 </script>
 <div id="banner">
     <a href="https://spike.ist">
-        <img src="https://spike.ist/assets/spike-banner.png" alt="logo" />
+        <img id="banner-image" src="https://spike.ist/assets/spike-banner.png" alt="logo" />
     </a>
     <div id="banner-body">
         <a class="banner-title" href="https://spike.ist">
@@ -704,15 +704,24 @@
     function setTheme(theme) {
       document.documentElement.setAttribute("data-theme", theme);
       localStorage.setItem("theme", theme);
+      
+      // Update banner image based on theme
+      const bannerImage = document.getElementById("banner-image");
+      if (bannerImage) {
+        bannerImage.src = theme === "dark" 
+          ? "/assets/spike-banner-dark-thin.png"
+          : "/assets/spike-banner-light-thin.png";
+      }
     }
 
     // Initialize theme
     const savedTheme = localStorage.getItem("theme");
-    if (savedTheme) {
-      setTheme(savedTheme);
-    } else if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
-      setTheme("dark");
-    }
+    setTheme(savedTheme ? savedTheme : "dark");
+    // Discard system theme changes; the landing page is always dark, so
+    // it's better to transition to a dark-by-default theme.
+    // } else if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+    //   setTheme("dark");
+    // }
 
     // Toggle theme on button click
     themeToggle.addEventListener("click", () => {
@@ -721,14 +730,14 @@
       setTheme(newTheme);
     });
 
-    // Listen for system theme changes
-    window
-      .matchMedia("(prefers-color-scheme: dark)")
-      .addEventListener("change", (e) => {
-        if (!localStorage.getItem("theme")) {
-          setTheme(e.matches ? "dark" : "light");
-        }
-      });
+    // Discard system-theme changes.
+    // window
+    //   .matchMedia("(prefers-color-scheme: dark)")
+    //   .addEventListener("change", (e) => {
+    //     if (!localStorage.getItem("theme")) {
+    //       setTheme(e.matches ? "dark" : "light");
+    //     }
+    //   });
   });
 </script>
 
@@ -738,8 +747,18 @@
         <h1 id="adr-0016-memory-first-secrets-store">ADR-0016: Memory-First Secrets Store</h1>
 <br style="clear:both" />
 <ul>
-<li>Status: accepted</li>
-<li>Date: 2024-12-22</li>
+<li>Status:
+<ul>
+<li>Superseded by <a href="https://spike.ist/architecture/adrs/adr-0024/">ADR-0024: Transition from In-Memory Cache to Direct Backend Storage for High Availabilitye</a></li>
+</ul>
+</li>
+<li>Date: 2025-08-23</li>
+<li>History:
+<ul>
+<li>2024-12-22: Accepted</li>
+<li>2025-08-23: Superseded by ADR-0024</li>
+</ul>
+</li>
 <li>Tags: Security, Operations, Storage, Performance, Scalability</li>
 </ul>
 <h2 id="context">Context</h2>
@@ -867,6 +886,8 @@ machine is compromised, the secrets are considered compromised as well.</li>
 </ul>
 <hr />
 <ul>
+<li><a href="https://spike.ist/architecture/adrs/adr-0025/">ADR-0025: Path Patterns as Key Namespaces with Regular Expression Matching</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0024/">ADR-0024: Transition from In-Memory Cache to Direct Backend Storage for High Availability</a></li>
 <li><a href="https://spike.ist/architecture/adrs/adr-0023/">ADR-0023: Decision Against Implementing Lock/Unlock Mechanism in SPIKE Nexus</a></li>
 <li><a href="https://spike.ist/architecture/adrs/adr-0022/">ADR-0022: Continuous Polling of SPIKE Keepers Despite 404 Response</a></li>
 <li><a href="https://spike.ist/architecture/adrs/adr-0021/">ADR-0021: SPIKE Keeper as a Stateless Shard Holder</a></li>
