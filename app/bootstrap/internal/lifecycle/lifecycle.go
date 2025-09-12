@@ -27,25 +27,39 @@ import (
 const k8sTrue = "true"
 const k8sServiceAccountNamespace = "/var/run/secrets/kubernetes.io/serviceaccount/namespace"
 
-// ShouldSkipBootstrap determines whether the bootstrap process should be
+// ShouldBootstrap determines whether the bootstrap process should be
 // skipped based on the current environment and state. The function follows
 // this decision logic:
 //
-//  1. If SPIKE_BOOTSTRAP_FORCE="true", always proceed (returns false)
+//  1. If SPIKE_BOOTSTRAP_FORCE="true", always proceed (return true)
 //  2. In bare-metal environments (non-Kubernetes), always proceed
 //  3. In Kubernetes environments, check the "spike-bootstrap-state" ConfigMap:
 //     - If ConfigMap exists and bootstrap-completed="true", skip bootstrap
 //     - Otherwise, proceed with bootstrap
 //
-// The function returns true if bootstrap should be skipped, false if it
+// The function returns false if bootstrap should be skipped, true if it
 // should proceed.
-func ShouldSkipBootstrap() bool {
+func ShouldBootstrap() bool {
 	const fName = "bootstrap.shouldSkipBootstrap"
+
+	// Memory backend doesn't need bootstrap.
+	if appEnv.BackendStoreType() == appEnv.Memory {
+		log.Log().Info(fName,
+			"message", "Skipping bootstrap for 'in memory' backend")
+		return false
+	}
+
+	// Lite backend doesn't need bootstrap.
+	if appEnv.BackendStoreType() == appEnv.Lite {
+		log.Log().Info(fName,
+			"message", "Skipping bootstrap for 'lite' backend")
+		return false
+	}
 
 	// Check if we're forcing bootstrap
 	if os.Getenv(env.BootstrapForce) == k8sTrue {
 		log.Log().Info(fName, "message", "Force bootstrap enabled")
-		return false
+		return true
 	}
 
 	// Try to detect if we're running in Kubernetes
@@ -60,7 +74,7 @@ func ShouldSkipBootstrap() bool {
 			log.Log().Info(fName,
 				"message", "Not running in Kubernetes, proceeding with bootstrap",
 			)
-			return false
+			return true
 		}
 
 		// Some other error. Skip bootstrap.
@@ -68,7 +82,7 @@ func ShouldSkipBootstrap() bool {
 			"message",
 			"Could not determine cluster config. Skipping bootstrap",
 			"err", err.Error())
-		return true
+		return false
 	}
 
 	// We're in Kubernetes - check the ConfigMap
@@ -79,7 +93,7 @@ func ShouldSkipBootstrap() bool {
 			"Failed to create Kubernetes client. SKIPPING bootstrap.",
 			"err", err.Error())
 		// Can't check state, skip bootstrap.
-		return true
+		return false
 	}
 
 	namespace := "spike"
@@ -90,7 +104,7 @@ func ShouldSkipBootstrap() bool {
 
 	cm, err := clientset.CoreV1().ConfigMaps(namespace).Get(
 		context.Background(),
-		"spike-bootstrap-state",
+		appEnv.ConfigMapName(),
 		k8sMeta.GetOptions{},
 	)
 	if err != nil {
@@ -99,7 +113,7 @@ func ShouldSkipBootstrap() bool {
 			"message",
 			"ConfigMap not found or not readable, proceeding with bootstrap",
 			"err", err.Error())
-		return false
+		return true
 	}
 
 	bootstrapCompleted := cm.Data["bootstrap-completed"] == k8sTrue
@@ -115,11 +129,11 @@ func ShouldSkipBootstrap() bool {
 			"completed-by-pod", completedByPod,
 			"reason", reason,
 		)
-		return true
+		return false
 	}
 
 	// Boostrap not completed---proceed with bootstrap
-	return false
+	return true
 }
 
 // MarkBootstrapComplete creates or updates the "spike-bootstrap-state"

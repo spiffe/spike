@@ -39,12 +39,12 @@ func main() {
 		return
 	}
 
-	skip := lifecycle.ShouldSkipBootstrap() // Kubernetes or bare-metal check.
+	skip := !lifecycle.ShouldBootstrap() // Kubernetes or bare-metal check.
 	if skip {
 		log.Log().Info(fName,
-			"message", "Bootstrap already completed previously. Skipping.",
+			"message", "Skipping bootstrap.",
 		)
-		fmt.Println("Bootstrap already completed previously. Exiting.")
+		fmt.Println("Bootstrap skipped. Check the logs for more information.")
 		return
 	}
 
