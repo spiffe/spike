@@ -206,28 +206,49 @@ func getSystemStatus(ctx context.Context) (StatusResponse, error) {
 //
 // Health status levels:
 //   - "OK": All critical components are functioning normally
-//   - "DEGRADED": Backing store issues but system partially functional
-//   - "UNAVAILABLE": Root key unavailable, system cannot perform crypto operations
+//   - "BACKING_STORE_FAILURE": Backing store is unavailable or not healthy (only for Sqlite)
+//   - "ROOT_KEY_UNAVAILABLE": Root key is missing, system cannot perform crypto operations
 //
-// The function prioritizes root key availability over backing store health
-// since cryptographic operations are impossible without the root key.
+// Notes:
+//   - Memory mode: root key unavailable by design, system is still considered healthy
+//   - Lite mode: backing store does not exist, but root key is required
+//   - Sqlite mode: both backing store and root key are checked
+//
+// The function uses separate checks for backing store and root key to ensure
+// each critical component is evaluated independently.
 func determineOverallHealth() string {
-	// Check all critical components
-	if !backingStoreHealthy() {
-		return "BACKING_STORE_FAILURE"
+	// BACKING STORE CHECK
+	switch env.BackendStoreType() {
+	case env.Memory, env.Lite:
+		// No backing store, skip check
+	default: // Sqlite
+		if !backingStoreHealthy() {
+			return "BACKING_STORE_FAILURE"
+		}
 	}
 
+	// ROOT KEY CHECK
 	switch env.BackendStoreType() {
 	case env.Memory:
-		// In-memory mode: no root key, but still healthy
-		return "OK"
-	default:
+		// Root key unavailable by design; still healthy
+	default: // Lite and Sqlite
 		if !rootKeyAvailable() {
 			return "ROOT_KEY_UNAVAILABLE"
 		}
 	}
 
 	return "OK"
+}
+
+func backingStoreHealthy() bool {
+	defer func() {
+		if recover() != nil {
+			// Panic occurred during storage operation, treat as unhealthy
+		}
+	}()
+
+	keys := state.ListKeys()
+	return keys != nil
 }
 
 func rootKeyAvailable() bool {
@@ -330,15 +351,4 @@ func getSecretsCount() *int {
 
 func fipsMode() bool {
 	return fips140.Enabled()
-}
-
-func backingStoreHealthy() bool {
-	defer func() {
-		if recover() != nil {
-			// Panic occurred during storage operation
-		}
-	}()
-
-	keys := state.ListKeys()
-	return keys != nil
 }
