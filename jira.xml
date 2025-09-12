@@ -24,10 +24,42 @@
     <issue order="2">Fix post v0.5.0 issues</issue>
     <issue order="3">Secure Secrets Management Web UX</issue>
     <issue order="4">Zero Turtle Pi Grid</issue>
+    <watch-list>
+      * cipher encrypt decrypt: https://github.com/spiffe/spike/pull/212
+      * encrypt policy info: https://github.com/spiffe/spike/pull/223
+      * ConfigMap: https://github.com/spiffe/spike/pull/228
+      * status: https://github.com/spiffe/spike/pull/222
+      --
+      * key rotation: https://github.com/spiffe/spike/issues/229
+      * secure UI: https://github.com/spiffe/spike/issues/230
+    </watch-list>
   </high-level-plan>
   <task-group for="v0.5.0">
     <issue>
+      Move anything that's not critical to the next bucket.
+      We need to cut a prerelease to trigger helm charts work.
+    </issue>
+    <issue>
       transfer stuff from ToT.
+    </issue>
+    <issue>
+      move generated binaries to `./bin` folder.
+      stream logs to `./logs` folder.
+    </issue>
+    <issue>
+      demo: onboarding SPIKE in WSL2
+
+      demo: bootstrapping: bare metal + k8s.
+    </issue>
+    <issue>
+      need change and link to the web page
+
+      Reference
+      Since the SPIKE CLI is a work in progress and highly in flux, the best way to get the most up-to-date information is to run spike --help or spike [command] --helpto learn about the available commands and flags.
+      In addition, you can [check out the demo recordings](https://spike.ist/community/presentations/) to see the CLI in action.
+    </issue>
+    <issue>
+      `make start` should check the existence of all required binaries
     </issue>
     <issue>
       when entries are not registered to the SPIRE Server and the
@@ -132,12 +164,47 @@
       Sep 20th: SPIKE Onboarding.
     </issue>
     <issue>
+      upgrade to go 1.25.1
+    </issue>
+    <issue>
+      for operator actions ensure that `spike/system/ops` path is enforced (similar to how acl is enforced above.
+
+      create a workload that can create policies
+      create another workload that can backup the root key
+      to demo these features.
+    </issue>
+    <issue>
+      these may go to the sdk
+
+      func GenerateCustomNonce(s *DataStore) ([]byte, error) {
+      nonce := make([]byte, s.Cipher.NonceSize())
+      if _, err := io.ReadFull(rand.Reader, nonce); err != nil {
+      return nil, err
+      }
+      return nonce, nil
+      }
+
+      func EncryptWithCustomNonce(s *DataStore, nonce []byte, data []byte) ([]byte, error) {
+      if len(nonce) != s.Cipher.NonceSize() {
+      return nil, fmt.Errorf("invalid nonce size: got %d, want %d", len(nonce), s.Cipher.NonceSize())
+      }
+      ciphertext := s.Cipher.Seal(nil, nonce, data, nil)
+      return ciphertext, nil
+      }
+    </issue>
+    <issue>
+      For VSecM: create a UI that directly talks to SPIKE; depracate all VSecM secret model. also delete most of the folders. start with a clean slate
+    </issue>
+    <issue>
       The flows here have changed; need new diagrams and updated docs:
       https://spike.ist/architecture/system-overview/
     </issue>
     <issue>
       https://spike.ist/getting-started/quickstart/
       needs update once helm charts is updated.
+    </issue>
+    <issue>
+      have an official "press kit" to let people download logos and such.
     </issue>
     <issue>
       the nonce generation functions can go to the SDK too.
