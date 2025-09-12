@@ -214,14 +214,31 @@ func getSystemStatus(ctx context.Context) (StatusResponse, error) {
 func determineOverallHealth() string {
 	// Check all critical components
 	if !backingStoreHealthy() {
-		return "DEGRADED"
+		return "BACKING_STORE_FAILURE"
 	}
 
-	if !rootKeyAvailable() {
-		return "UNAVAILABLE"
+	switch env.BackendStoreType() {
+	case env.Memory:
+		// In-memory mode: no root key, but still healthy
+		return "OK"
+	default:
+		if !rootKeyAvailable() {
+			return "ROOT_KEY_UNAVAILABLE"
+		}
 	}
 
 	return "OK"
+}
+
+func rootKeyAvailable() bool {
+	switch env.BackendStoreType() {
+	case env.Memory:
+		// In-memory mode: no root key by design
+		return false
+	default:
+		// Lite or Sqlite
+		return !state.RootKeyZero()
+	}
 }
 
 func getKeeperStatus() KeeperStatus {
@@ -313,19 +330,6 @@ func getSecretsCount() *int {
 
 func fipsMode() bool {
 	return fips140.Enabled()
-}
-
-func rootKeyAvailable() bool {
-	if state.RootKeyZero() {
-		return false
-	}
-
-	keeperStatus := getKeeperStatus()
-	if keeperStatus.ActiveCount < keeperStatus.RequiredCount {
-		return false
-	}
-
-	return true
 }
 
 func backingStoreHealthy() bool {
