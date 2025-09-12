@@ -81,7 +81,7 @@ func RouteEncrypt(
 	var plaintext []byte
 
 	if streamModeActive {
-		err := guardEncryptSecretRequest(reqres.CipherEncryptRequest{}, w, r)
+		err := guardEncryptCipherRequest(reqres.CipherEncryptRequest{}, w, r)
 		if err != nil {
 			return err
 		}
@@ -109,7 +109,7 @@ func RouteEncrypt(
 			return apiErr.ErrParseFailure
 		}
 
-		err := guardEncryptSecretRequest(*request, w, r)
+		err := guardEncryptCipherRequest(*request, w, r)
 		if err != nil {
 			return err
 		}

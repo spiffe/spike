@@ -8,10 +8,19 @@ weight = 1
 sort_by = "weight"
 +++
 
+> **⚠️ This Page Needs Work**
+>
+> With the recent introduction of **SPIKE Bootstrap**, some of the workflows
+> mentioned in the page has slightly changed. Although the architecture and
+> the trust model remain the same, the content of this page needs to be
+> updated.
+>
+> This notice will be removed once the page is updated.
+
 # SPIKE System Overview
 
 This document provides an overview of **SPIKE**, a [**SPIFFE**][spiffe]-native 
-Secrets Management solution. It is designed to ensure secure storage, recovery, 
+Secrets Management solution. It is designed to ensure secure storage, recovery,
 and management of sensitive data with a focus on simplicity, reliability, 
 and scalability for production environments.
 
@@ -20,13 +29,15 @@ and scalability for production environments.
 ## SPIKE Components
 
 **SPIKE** (*Secure Production Identity for Key Encryption*) is a Secrets 
-Management system built on top of a [**SPIFFE**][spiffe] (*Secure Production
+Manager built on top of a [**SPIFFE**][spiffe] (*Secure Production
 Identity Framework for Everyone*) identity control plane, consisting of three
 components:
 
 * **SPIKE Nexus** (`./nexus`): The secrets store
 * **SPIKE Pilot** (`./spike`): The CLI
 * **SPIKE Keeper** (`./keeper`): The redundancy mechanism
+* **SPIKE Boostrap**: (`./bootstrap`): Securely initializes **SPIKE Nexus**
+  with the required crypto material without human intervention.
 
 The system provides high availability for secret storage with a manual recovery
 mechanism in case of irrecoverable failure.
@@ -55,7 +66,8 @@ In a **SPIKE** deployment, **SPIRE** acts as the central authority that issues
 * **SPIKE** Infrastructure components:
   * **SPIKE** Nexus
   * **SPIKE** Pilot
-  * Multiple **SPIKE** Keeper instances.
+  * Multiple **SPIKE** Keeper instances
+  * **SPIKE** Bootstrap, to be executed once during system bootstrapping.
 
 Each component receives its own SVID, which serves as a 
 **cryptographically verifiable** identity document. These SVIDs allow the 
@@ -264,7 +276,7 @@ You can open the picture on a new tab for an enlarged version of it.
 
 ### Preventive Backup 
 
-> **Run `spik recover` as Soon as You Can**
+> **Run `spike recover` as Soon as You Can**
 > 
 > You must back up the **root key** shards using `spike recover` **BEFORE** a 
 > disaster strikes.

@@ -199,6 +199,7 @@ func (s *DataStore) LoadPolicy(
 	var createdTime int64
 
 	err := s.db.QueryRowContext(ctx, ddl.QueryLoadPolicy, id).Scan(
+		&policy.ID,
 		&policy.Name,
 		&encryptedSPIFFEIDPattern,
 		&encryptedPathPattern,

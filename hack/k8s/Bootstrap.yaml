@@ -19,34 +19,17 @@ spec:
         component: spike-bootstrap
     spec:
       restartPolicy: OnFailure
-      initContainers:
-      - name: check-bootstrap-state
-        image: bitnami/kubectl:latest
-        command:
-        - /bin/sh
-        - -c
-        - |
-          # Check if bootstrap already completed (unless forced)
-          if [ "$SPIKE_FORCE_BOOTSTRAP" != "true" ]; then
-            # Check if any previous bootstrap job completed successfully
-            if kubectl get jobs -l app.kubernetes.io/name=spike-bootstrap -o jsonpath='{.items[?(@.status.succeeded>=1)].metadata.name}' | grep -q .; then
-              echo "Previous bootstrap job completed successfully. Exiting without running bootstrap."
-              # Create a marker that the main container can check
-              touch /shared/skip-bootstrap
-              exit 0
-            fi
-          fi
-          echo "Bootstrap should proceed"
-        env:
-        - name: SPIKE_FORCE_BOOTSTRAP
-          value: "false"
-        volumeMounts:
-        - mountPath: /shared
-          name: shared-data
+      # DESIGN:
+      # The bootstrap binary handles all state management internally:
+      # 1. On startup: Checks if ConfigMap exists with bootstrap-completed=true
+      # 2. On successful completion: Update ConfigMap to mark completion
+      # 3. ConfigMap serves as the persistent completion marker
+      # 4. The administrator can delete the ConfigMap to force re-bootstrap
+      #    (or use SPIKE_BOOTSTRAP_FORCE=true)
       containers:
-      - command:
-        - /bootstrap
-        - -init
+      - name: spiffe-spike-bootstrap
+        image: localhost:5000/spike-bootstrap:dev
+        command: ["/bootstrap", "-init"]
         env:
         - name: SPIKE_NEXUS_API_URL
           value: https://spiffe-spike-nexus:443
@@ -62,9 +45,9 @@ spec:
           value: "2"
         - name: SPIKE_NEXUS_KEEPER_PEERS
           value: "https://spiffe-spike-keeper-0.spiffe-spike-keeper-headless:8443,https://spiffe-spike-keeper-1.spiffe-spike-keeper-headless:8443,https://spiffe-spike-keeper-2.spiffe-spike-keeper-headless:8443"
-        image: localhost:5000/spike-bootstrap:dev
+        - name: SPIKE_BOOTSTRAP_FORCE
+          value: "false"
         imagePullPolicy: IfNotPresent
-        name: spiffe-spike-bootstrap
         resources: {}
         securityContext:
           allowPrivilegeEscalation: false
@@ -79,8 +62,6 @@ spec:
         - mountPath: /spiffe-workload-api
           name: spiffe-workload-api
           readOnly: true
-        - mountPath: /shared
-          name: shared-data
       dnsPolicy: ClusterFirst
       securityContext:
         fsGroup: 1000
@@ -93,8 +74,6 @@ spec:
           driver: csi.spiffe.io
           readOnly: true
         name: spiffe-workload-api
-      - emptyDir: {}
-        name: shared-data
 ---
 apiVersion: v1
 kind: ServiceAccount
@@ -111,9 +90,15 @@ metadata:
   namespace: spike
   name: spiffe-bootstrap-role
 rules:
-- apiGroups: ["batch"]
-  resources: ["jobs"]
-  verbs: ["get", "list"]
+# Allow Bootstrap to read/write ConfigMaps
+- apiGroups: [""]
+  resources: ["configmaps"]
+  verbs: ["create"]
+- apiGroups: [""]
+  resources: ["configmaps"]
+  verbs: ["get", "update", "patch"]
+  # Restrict write to the relevant ConfigMap only.
+  resourceNames: ["spike-bootstrap-state"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding

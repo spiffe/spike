@@ -8,6 +8,19 @@ weight = 2
 sort_by = "weight"
 +++
 
+> **⚠️ This Page Needs Work**
+> 
+> Since **SPIFFE Helm Charts** do not have **SPIKE Bootstrap** yet, the 
+> instructions on this page are incomplete and will likely fail.
+> 
+> If you want to test **SPIKE** on a Kubernetes cluster, we recommend
+> using the [**SPIKE Quickstart Guide**][quickstart] instead.
+> 
+> We will update this page once **SPIKE Bootstrap** is available in the 
+> upstream **SPIFFE Helm Charts**.
+
+[quickstart]: @/getting-started/quickstart.md "SPIKE Quickstart"
+
 # **SPIKE** Quickstart Guide
 
 The fastest way to get started with **SPIRE** and **SPIKE** is to deploy them 
@@ -168,73 +181,44 @@ spec:
         component: spike-bootstrap
     spec:
       restartPolicy: OnFailure
-      initContainers:
-      - name: check-bootstrap-state
-        image: bitnami/kubectl:latest
-        command:
-        - /bin/sh
-        - -c
-        - |
-          if [ "$SPIKE_FORCE_BOOTSTRAP" != "true" ]; then
-            if kubectl get jobs -l \
-              app.kubernetes.io/name=spike-bootstrap \ 
-              -o jsonpath='\
-              {.items[?(@.status.succeeded>=1)]\
-              .metadata.name}' | grep -q .; then
-              echo "prev."
-              touch /shared/skip-bootstrap
-              exit 0
-            fi
-          fi
-        env:
-        - name: SPIKE_FORCE_BOOTSTRAP
-          value: "false"
-        volumeMounts:
-        - mountPath: /shared
-          name: shared-data
       containers:
-      - command:
-        - /bootstrap
-        - -init
-        env:
-        - name: SPIKE_NEXUS_API_URL
-          value: https://spiffe-spike-nexus:443
-        - name: SPIFFE_ENDPOINT_SOCKET
-          value: unix:///spiffe-workload-api/spire-agent.sock
-        - name: SPIKE_SYSTEM_LOG_LEVEL
-          value: DEBUG
-        - name: SPIKE_TRUST_ROOT
-          value: spike.ist
-        - name: SPIKE_NEXUS_SHAMIR_SHARES
-          value: "3"
-        - name: SPIKE_NEXUS_SHAMIR_THRESHOLD
-          value: "2"
-        - name: SPIKE_NEXUS_KEEPER_PEERS
-          value: "https://spiffe-spike-keeper-0…
-          .spiffe-spike-keeper-headless:8443,…
-          https://spiffe-spike-keeper-1…
-          .spiffe-spike-keeper-headless:8443,…
-          https://spiffe-spike-keeper-2.…
-          spiffe-spike-keeper-headless:8443"
-        image: localhost:5000/spike-bootstrap:dev
-        imagePullPolicy: IfNotPresent
-        name: spiffe-spike-bootstrap
-        resources: {}
-        securityContext:
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop:
-              - ALL
-          readOnlyRootFilesystem: true
-          runAsNonRoot: true
-          seccompProfile:
-            type: RuntimeDefault
-        volumeMounts:
-        - mountPath: /spiffe-workload-api
-          name: spiffe-workload-api
-          readOnly: true
-        - mountPath: /shared
-          name: shared-data
+        - name: spiffe-spike-bootstrap
+          image: localhost:5000/spike-bootstrap:dev
+          command: ["/bootstrap", "-init"]
+          env:
+            - name: SPIKE_NEXUS_API_URL
+              value: https://spiffe-spike-nexus:443
+            - name: SPIFFE_ENDPOINT_SOCKET
+              value: unix:///spiffe-workload-api/spire-agent.sock
+            - name: SPIKE_SYSTEM_LOG_LEVEL
+              value: DEBUG
+            - name: SPIKE_TRUST_ROOT
+              value: spike.ist
+            - name: SPIKE_NEXUS_SHAMIR_SHARES
+              value: "3"
+            - name: SPIKE_NEXUS_SHAMIR_THRESHOLD
+              value: "2"
+            - name: SPIKE_NEXUS_KEEPER_PEERS
+              value: "spiffe-spike-keeper-0.spiffe-spike-keeper-headless:8443\
+              ,https://spiffe-spike-keeper-1.spiffe-spike-keeper-headless:8443\
+              ,https://spiffe-spike-keeper-2.spiffe-spike-keeper-headless:8443"
+            - name: SPIKE_BOOTSTRAP_FORCE
+              value: "false"
+          imagePullPolicy: IfNotPresent
+          resources: {}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            seccompProfile:
+              type: RuntimeDefault
+          volumeMounts:
+            - mountPath: /spiffe-workload-api
+              name: spiffe-workload-api
+              readOnly: true
       dnsPolicy: ClusterFirst
       securityContext:
         fsGroup: 1000
@@ -243,12 +227,10 @@ spec:
         runAsUser: 1000
       serviceAccountName: spiffe-spike-bootstrap
       volumes:
-      - csi:
-          driver: csi.spiffe.io
-          readOnly: true
-        name: spiffe-workload-api
-      - emptyDir: {}
-        name: shared-data
+        - csi:
+            driver: csi.spiffe.io
+            readOnly: true
+          name: spiffe-workload-api
 ---
 apiVersion: v1
 kind: ServiceAccount
@@ -265,9 +247,13 @@ metadata:
   namespace: spike
   name: spiffe-bootstrap-role
 rules:
-- apiGroups: ["batch"]
-  resources: ["jobs"]
-  verbs: ["get", "list"]
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    verbs: ["create"]
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    verbs: ["get", "update", "patch"]
+    resourceNames: ["spike-bootstrap-state"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
@@ -275,9 +261,9 @@ metadata:
   name: spiffe-bootstrap-rolebinding
   namespace: spike
 subjects:
-- kind: ServiceAccount
-  name: spiffe-spike-bootstrap
-  namespace: spike
+  - kind: ServiceAccount
+    name: spiffe-spike-bootstrap
+    namespace: spike
 roleRef:
   kind: Role
   name: spiffe-bootstrap-role

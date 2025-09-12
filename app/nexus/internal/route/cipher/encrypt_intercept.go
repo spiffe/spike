@@ -8,18 +8,19 @@ import (
 	"net/http"
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
+	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	apiErr "github.com/spiffe/spike-sdk-go/api/errors"
+	"github.com/spiffe/spike-sdk-go/config/auth"
 	"github.com/spiffe/spike-sdk-go/spiffe"
 	"github.com/spiffe/spike-sdk-go/spiffeid"
 	"github.com/spiffe/spike-sdk-go/validation"
 
-	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	"github.com/spiffe/spike/app/nexus/internal/env"
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 	"github.com/spiffe/spike/internal/net"
 )
 
-func guardEncryptSecretRequest(
+func guardEncryptCipherRequest(
 	_ reqres.CipherEncryptRequest, w http.ResponseWriter, r *http.Request,
 ) error {
 	sid, err := spiffe.IDFromRequest(r)
@@ -58,7 +59,7 @@ func guardEncryptSecretRequest(
 	if !allowed {
 		allowed = state.CheckAccess(
 			sid.String(),
-			"spike/system/secrets/encrypt",
+			auth.PathSystemCipherEncrypt,
 			[]data.PolicyPermission{data.PermissionExecute},
 		)
 	}

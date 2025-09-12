@@ -4,6 +4,9 @@
 #  \\\\\ Copyright 2024-present SPIKE contributors.
 # \\\\\\\ SPDX-License-Identifier: Apache-2.
 
+# Enable alias expansion in non-interactive shells
+shopt -s expand_aliases
+
 if ! command -v spike &> /dev/null; then
     echo "Error: 'spike' command not found. Please add ./spike to your PATH."
     exit 1

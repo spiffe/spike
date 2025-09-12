@@ -4,7 +4,16 @@
 #  \\\\\ Copyright 2024-present SPIKE contributors.
 # \\\\\\\ SPDX-License-Identifier: Apache-2.0
 
+# Enable alias expansion in non-interactive shells
+shopt -s expand_aliases
+
 TOKEN_FILE=".spire-agent-join-token"
+
+# Enable alias expansion in non-interactive shells
+shopt -s expand_aliases
+
+# Enable alias expansion in non-interactive shells
+shopt -s expand_aliases
 
 if ! command -v spire-server &>/dev/null; then
   echo "Error: spire-server binary not found in PATH"

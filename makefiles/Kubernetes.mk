@@ -53,6 +53,7 @@ docker-push:
 
 # DEPRECATED
 deploy-local:
+	@echo "deploy-local is deprecated. Please use deploy-dev-local"
 	./hack/k8s/spike-install.sh
 
 # 6. Deploy SPIKE locally.

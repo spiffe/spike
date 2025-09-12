@@ -9,6 +9,9 @@
 
 set -e  # Exit on any error
 
+# Don't forget to update this to latest stable regularly.
+SPIRE_HELM_CHART_VERSION="0.26.1"
+
 # Add Helm repository if it doesn't exist
 if ! helm repo list | grep -q "^spiffe\s"; then
   echo "Adding SPIFFE Helm repository..."
@@ -46,7 +49,7 @@ create_namespace_if_not_exists() {
   fi
 }
 
-create_namespace_if_not_exists "spike" # Pilot/Nexus/Keepers
+create_namespace_if_not_exists "spike" # Pilot/Nexus/Keepers/Bootstrap
 
 # List all namespaces after creation
 echo "SPIKE namespaces:"
@@ -54,14 +57,14 @@ kubectl get namespaces | grep spike || echo "No spike namespaces found"
 
 helm upgrade --install -n spire-mgmt spire-crds spire-crds \
   --repo https://spiffe.github.io/helm-charts-hardened/ \
-  --version 0.26.1 --create-namespace
+  --version "$SPIRE_HELM_CHART_VERSION" --create-namespace
 
 echo "Sleeping for 15 secs before installing SPIRE and SPIKE..."
 sleep 15
 
 helm upgrade --install -n spire-mgmt spiffe spire \
   --repo https://spiffe.github.io/helm-charts-hardened/ \
-  --version 0.26.1 \
+  --version "$SPIRE_HELM_CHART_VERSION" \
   -f ./spike/config/helm/values-custom.yaml
 
 echo "Sleeping for 15 secs..."

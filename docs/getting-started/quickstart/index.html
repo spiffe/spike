@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <link rel="stylesheet" href="https://spike.ist/main.css">
+    <link rel="stylesheet" href="/main.css">
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <link rel="icon" href="https://spike.ist/assets/spike-favicon-16x16.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
@@ -25,7 +25,7 @@
 </script>
 <div id="banner">
     <a href="https://spike.ist">
-        <img src="https://spike.ist/assets/spike-banner.png" alt="logo" />
+        <img id="banner-image" src="https://spike.ist/assets/spike-banner.png" alt="logo" />
     </a>
     <div id="banner-body">
         <a class="banner-title" href="https://spike.ist">
@@ -174,6 +174,9 @@
                                                     </li>
                                                 <li>
                                                         <a href="https://spike.ist/getting-started/quickstart/#next-up">Next Up</a>
+                                                    </li>
+                                                <li>
+                                                        <a href="https://spike.ist/getting-started/quickstart/#open-source-is-better-together">Open Source Is Better Together</a>
                                                     </li>
                                                 </ul>
                                         </li>
@@ -732,15 +735,24 @@
     function setTheme(theme) {
       document.documentElement.setAttribute("data-theme", theme);
       localStorage.setItem("theme", theme);
+      
+      // Update banner image based on theme
+      const bannerImage = document.getElementById("banner-image");
+      if (bannerImage) {
+        bannerImage.src = theme === "dark" 
+          ? "/assets/spike-banner-dark-thin.png"
+          : "/assets/spike-banner-light-thin.png";
+      }
     }
 
     // Initialize theme
     const savedTheme = localStorage.getItem("theme");
-    if (savedTheme) {
-      setTheme(savedTheme);
-    } else if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
-      setTheme("dark");
-    }
+    setTheme(savedTheme ? savedTheme : "dark");
+    // Discard system theme changes; the landing page is always dark, so
+    // it's better to transition to a dark-by-default theme.
+    // } else if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+    //   setTheme("dark");
+    // }
 
     // Toggle theme on button click
     themeToggle.addEventListener("click", () => {
@@ -749,21 +761,30 @@
       setTheme(newTheme);
     });
 
-    // Listen for system theme changes
-    window
-      .matchMedia("(prefers-color-scheme: dark)")
-      .addEventListener("change", (e) => {
-        if (!localStorage.getItem("theme")) {
-          setTheme(e.matches ? "dark" : "light");
-        }
-      });
+    // Discard system-theme changes.
+    // window
+    //   .matchMedia("(prefers-color-scheme: dark)")
+    //   .addEventListener("change", (e) => {
+    //     if (!localStorage.getItem("theme")) {
+    //       setTheme(e.matches ? "dark" : "light");
+    //     }
+    //   });
   });
 </script>
 
 
         <article>
             
-        <h1 id="spike-quickstart-guide"><strong>SPIKE</strong> Quickstart Guide</h1>
+        <blockquote>
+<p><strong>⚠️ This Page Needs Work</strong></p>
+<p>Since <strong>SPIFFE Helm Charts</strong> do not have <strong>SPIKE Bootstrap</strong> yet, the
+instructions on this page are incomplete and will likely fail.</p>
+<p>If you want to test <strong>SPIKE</strong> on a Kubernetes cluster, we recommend
+using the <a href="https://spike.ist/getting-started/quickstart/" title="SPIKE Quickstart"><strong>SPIKE Quickstart Guide</strong></a> instead.</p>
+<p>We will update this page once <strong>SPIKE Bootstrap</strong> is available in the
+upstream <strong>SPIFFE Helm Charts</strong>.</p>
+</blockquote>
+<h1 id="spike-quickstart-guide"><strong>SPIKE</strong> Quickstart Guide</h1>
 <p>The fastest way to get started with <strong>SPIRE</strong> and <strong>SPIKE</strong> is to deploy them
 using the official <a href="https://github.com/spiffe/helm-charts-hardened" title="SPIFFE Helm charts (hardened)">SPIFFE Helm chart</a>.</p>
 <p>You can deploy SPIKE to any Kubernetes cluster, including a local one like
@@ -846,13 +867,6 @@ necessary plugins enabled. You can verify that Minikube is running by executing:
 </span><span>    </span><span style="color:#bf616a;">repository</span><span>: </span><span style="color:#a3be8c;">spike-pilot
 </span><span>    </span><span style="color:#bf616a;">pullPolicy</span><span>: </span><span style="color:#a3be8c;">IfNotPresent
 </span><span>    </span><span style="color:#bf616a;">tag</span><span>: &quot;&quot;
-</span><span>
-</span><span style="color:#bf616a;">spike-keeper</span><span>:
-</span><span>  </span><span style="color:#bf616a;">enabled</span><span>: </span><span style="color:#d08770;">true
-</span><span style="color:#bf616a;">spike-nexus</span><span>:
-</span><span>  </span><span style="color:#bf616a;">enabled</span><span>: </span><span style="color:#d08770;">true
-</span><span style="color:#bf616a;">spike-pilot</span><span>:
-</span><span>  </span><span style="color:#bf616a;">enabled</span><span>: </span><span style="color:#d08770;">true
 </span></code></pre>
 <p>Then deploy SPIKE using the following command:</p>
 <pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">helm</span><span> upgrade</span><span style="color:#bf616a;"> --install</span><span> spire-crds spire-crds \
@@ -892,73 +906,44 @@ GitHub</a> instead.</p>
 </span><span>        </span><span style="color:#bf616a;">component</span><span>: </span><span style="color:#a3be8c;">spike-bootstrap
 </span><span>    </span><span style="color:#bf616a;">spec</span><span>:
 </span><span>      </span><span style="color:#bf616a;">restartPolicy</span><span>: </span><span style="color:#a3be8c;">OnFailure
-</span><span>      </span><span style="color:#bf616a;">initContainers</span><span>:
-</span><span>      - </span><span style="color:#bf616a;">name</span><span>: </span><span style="color:#a3be8c;">check-bootstrap-state
-</span><span>        </span><span style="color:#bf616a;">image</span><span>: </span><span style="color:#a3be8c;">bitnami/kubectl:latest
-</span><span>        </span><span style="color:#bf616a;">command</span><span>:
-</span><span>        - </span><span style="color:#a3be8c;">/bin/sh
-</span><span>        - </span><span style="color:#a3be8c;">-c
-</span><span>        - </span><span style="color:#b48ead;">|
-</span><span style="color:#a3be8c;">          if [ &quot;$SPIKE_FORCE_BOOTSTRAP&quot; != &quot;true&quot; ]; then
-</span><span style="color:#a3be8c;">            if kubectl get jobs -l \
-</span><span style="color:#a3be8c;">              app.kubernetes.io/name=spike-bootstrap \ 
-</span><span style="color:#a3be8c;">              -o jsonpath=&#39;\
-</span><span style="color:#a3be8c;">              {.items[?(@.status.succeeded&gt;=1)]\
-</span><span style="color:#a3be8c;">              .metadata.name}&#39; | grep -q .; then
-</span><span style="color:#a3be8c;">              echo &quot;prev.&quot;
-</span><span style="color:#a3be8c;">              touch /shared/skip-bootstrap
-</span><span style="color:#a3be8c;">              exit 0
-</span><span style="color:#a3be8c;">            fi
-</span><span style="color:#a3be8c;">          fi
-</span><span>        </span><span style="color:#bf616a;">env</span><span>:
-</span><span>        - </span><span style="color:#bf616a;">name</span><span>: </span><span style="color:#a3be8c;">SPIKE_FORCE_BOOTSTRAP
-</span><span>          </span><span style="color:#bf616a;">value</span><span>: &quot;</span><span style="color:#a3be8c;">false</span><span>&quot;
-</span><span>        </span><span style="color:#bf616a;">volumeMounts</span><span>:
-</span><span>        - </span><span style="color:#bf616a;">mountPath</span><span>: </span><span style="color:#a3be8c;">/shared
-</span><span>          </span><span style="color:#bf616a;">name</span><span>: </span><span style="color:#a3be8c;">shared-data
 </span><span>      </span><span style="color:#bf616a;">containers</span><span>:
-</span><span>      - </span><span style="color:#bf616a;">command</span><span>:
-</span><span>        - </span><span style="color:#a3be8c;">/bootstrap
-</span><span>        - </span><span style="color:#a3be8c;">-init
-</span><span>        </span><span style="color:#bf616a;">env</span><span>:
-</span><span>        - </span><span style="color:#bf616a;">name</span><span>: </span><span style="color:#a3be8c;">SPIKE_NEXUS_API_URL
-</span><span>          </span><span style="color:#bf616a;">value</span><span>: </span><span style="color:#a3be8c;">https://spiffe-spike-nexus:443
-</span><span>        - </span><span style="color:#bf616a;">name</span><span>: </span><span style="color:#a3be8c;">SPIFFE_ENDPOINT_SOCKET
-</span><span>          </span><span style="color:#bf616a;">value</span><span>: </span><span style="color:#a3be8c;">unix:///spiffe-workload-api/spire-agent.sock
-</span><span>        - </span><span style="color:#bf616a;">name</span><span>: </span><span style="color:#a3be8c;">SPIKE_SYSTEM_LOG_LEVEL
-</span><span>          </span><span style="color:#bf616a;">value</span><span>: </span><span style="color:#a3be8c;">DEBUG
-</span><span>        - </span><span style="color:#bf616a;">name</span><span>: </span><span style="color:#a3be8c;">SPIKE_TRUST_ROOT
-</span><span>          </span><span style="color:#bf616a;">value</span><span>: </span><span style="color:#a3be8c;">spike.ist
-</span><span>        - </span><span style="color:#bf616a;">name</span><span>: </span><span style="color:#a3be8c;">SPIKE_NEXUS_SHAMIR_SHARES
-</span><span>          </span><span style="color:#bf616a;">value</span><span>: &quot;</span><span style="color:#a3be8c;">3</span><span>&quot;
-</span><span>        - </span><span style="color:#bf616a;">name</span><span>: </span><span style="color:#a3be8c;">SPIKE_NEXUS_SHAMIR_THRESHOLD
-</span><span>          </span><span style="color:#bf616a;">value</span><span>: &quot;</span><span style="color:#a3be8c;">2</span><span>&quot;
-</span><span>        - </span><span style="color:#bf616a;">name</span><span>: </span><span style="color:#a3be8c;">SPIKE_NEXUS_KEEPER_PEERS
-</span><span>          </span><span style="color:#bf616a;">value</span><span>: &quot;</span><span style="color:#a3be8c;">https://spiffe-spike-keeper-0…
-</span><span style="color:#a3be8c;">          .spiffe-spike-keeper-headless:8443,…
-</span><span style="color:#a3be8c;">          https://spiffe-spike-keeper-1…
-</span><span style="color:#a3be8c;">          .spiffe-spike-keeper-headless:8443,…
-</span><span style="color:#a3be8c;">          https://spiffe-spike-keeper-2.…
-</span><span style="color:#a3be8c;">          spiffe-spike-keeper-headless:8443</span><span>&quot;
-</span><span>        </span><span style="color:#bf616a;">image</span><span>: </span><span style="color:#a3be8c;">localhost:5000/spike-bootstrap:dev
-</span><span>        </span><span style="color:#bf616a;">imagePullPolicy</span><span>: </span><span style="color:#a3be8c;">IfNotPresent
-</span><span>        </span><span style="color:#bf616a;">name</span><span>: </span><span style="color:#a3be8c;">spiffe-spike-bootstrap
-</span><span>        </span><span style="color:#bf616a;">resources</span><span>: {}
-</span><span>        </span><span style="color:#bf616a;">securityContext</span><span>:
-</span><span>          </span><span style="color:#bf616a;">allowPrivilegeEscalation</span><span>: </span><span style="color:#d08770;">false
-</span><span>          </span><span style="color:#bf616a;">capabilities</span><span>:
-</span><span>            </span><span style="color:#bf616a;">drop</span><span>:
-</span><span>              - </span><span style="color:#a3be8c;">ALL
-</span><span>          </span><span style="color:#bf616a;">readOnlyRootFilesystem</span><span>: </span><span style="color:#d08770;">true
-</span><span>          </span><span style="color:#bf616a;">runAsNonRoot</span><span>: </span><span style="color:#d08770;">true
-</span><span>          </span><span style="color:#bf616a;">seccompProfile</span><span>:
-</span><span>            </span><span style="color:#bf616a;">type</span><span>: </span><span style="color:#a3be8c;">RuntimeDefault
-</span><span>        </span><span style="color:#bf616a;">volumeMounts</span><span>:
-</span><span>        - </span><span style="color:#bf616a;">mountPath</span><span>: </span><span style="color:#a3be8c;">/spiffe-workload-api
-</span><span>          </span><span style="color:#bf616a;">name</span><span>: </span><span style="color:#a3be8c;">spiffe-workload-api
-</span><span>          </span><span style="color:#bf616a;">readOnly</span><span>: </span><span style="color:#d08770;">true
-</span><span>        - </span><span style="color:#bf616a;">mountPath</span><span>: </span><span style="color:#a3be8c;">/shared
-</span><span>          </span><span style="color:#bf616a;">name</span><span>: </span><span style="color:#a3be8c;">shared-data
+</span><span>        - </span><span style="color:#bf616a;">name</span><span>: </span><span style="color:#a3be8c;">spiffe-spike-bootstrap
+</span><span>          </span><span style="color:#bf616a;">image</span><span>: </span><span style="color:#a3be8c;">localhost:5000/spike-bootstrap:dev
+</span><span>          </span><span style="color:#bf616a;">command</span><span>: [&quot;</span><span style="color:#a3be8c;">/bootstrap</span><span>&quot;, &quot;</span><span style="color:#a3be8c;">-init</span><span>&quot;]
+</span><span>          </span><span style="color:#bf616a;">env</span><span>:
+</span><span>            - </span><span style="color:#bf616a;">name</span><span>: </span><span style="color:#a3be8c;">SPIKE_NEXUS_API_URL
+</span><span>              </span><span style="color:#bf616a;">value</span><span>: </span><span style="color:#a3be8c;">https://spiffe-spike-nexus:443
+</span><span>            - </span><span style="color:#bf616a;">name</span><span>: </span><span style="color:#a3be8c;">SPIFFE_ENDPOINT_SOCKET
+</span><span>              </span><span style="color:#bf616a;">value</span><span>: </span><span style="color:#a3be8c;">unix:///spiffe-workload-api/spire-agent.sock
+</span><span>            - </span><span style="color:#bf616a;">name</span><span>: </span><span style="color:#a3be8c;">SPIKE_SYSTEM_LOG_LEVEL
+</span><span>              </span><span style="color:#bf616a;">value</span><span>: </span><span style="color:#a3be8c;">DEBUG
+</span><span>            - </span><span style="color:#bf616a;">name</span><span>: </span><span style="color:#a3be8c;">SPIKE_TRUST_ROOT
+</span><span>              </span><span style="color:#bf616a;">value</span><span>: </span><span style="color:#a3be8c;">spike.ist
+</span><span>            - </span><span style="color:#bf616a;">name</span><span>: </span><span style="color:#a3be8c;">SPIKE_NEXUS_SHAMIR_SHARES
+</span><span>              </span><span style="color:#bf616a;">value</span><span>: &quot;</span><span style="color:#a3be8c;">3</span><span>&quot;
+</span><span>            - </span><span style="color:#bf616a;">name</span><span>: </span><span style="color:#a3be8c;">SPIKE_NEXUS_SHAMIR_THRESHOLD
+</span><span>              </span><span style="color:#bf616a;">value</span><span>: &quot;</span><span style="color:#a3be8c;">2</span><span>&quot;
+</span><span>            - </span><span style="color:#bf616a;">name</span><span>: </span><span style="color:#a3be8c;">SPIKE_NEXUS_KEEPER_PEERS
+</span><span>              </span><span style="color:#bf616a;">value</span><span>: &quot;</span><span style="color:#a3be8c;">spiffe-spike-keeper-0.spiffe-spike-keeper-headless:8443</span><span style="color:#96b5b4;">\
+</span><span style="color:#a3be8c;">              ,https://spiffe-spike-keeper-1.spiffe-spike-keeper-headless:8443</span><span style="color:#96b5b4;">\
+</span><span style="color:#a3be8c;">              ,https://spiffe-spike-keeper-2.spiffe-spike-keeper-headless:8443</span><span>&quot;
+</span><span>            - </span><span style="color:#bf616a;">name</span><span>: </span><span style="color:#a3be8c;">SPIKE_BOOTSTRAP_FORCE
+</span><span>              </span><span style="color:#bf616a;">value</span><span>: &quot;</span><span style="color:#a3be8c;">false</span><span>&quot;
+</span><span>          </span><span style="color:#bf616a;">imagePullPolicy</span><span>: </span><span style="color:#a3be8c;">IfNotPresent
+</span><span>          </span><span style="color:#bf616a;">resources</span><span>: {}
+</span><span>          </span><span style="color:#bf616a;">securityContext</span><span>:
+</span><span>            </span><span style="color:#bf616a;">allowPrivilegeEscalation</span><span>: </span><span style="color:#d08770;">false
+</span><span>            </span><span style="color:#bf616a;">capabilities</span><span>:
+</span><span>              </span><span style="color:#bf616a;">drop</span><span>:
+</span><span>                - </span><span style="color:#a3be8c;">ALL
+</span><span>            </span><span style="color:#bf616a;">readOnlyRootFilesystem</span><span>: </span><span style="color:#d08770;">true
+</span><span>            </span><span style="color:#bf616a;">runAsNonRoot</span><span>: </span><span style="color:#d08770;">true
+</span><span>            </span><span style="color:#bf616a;">seccompProfile</span><span>:
+</span><span>              </span><span style="color:#bf616a;">type</span><span>: </span><span style="color:#a3be8c;">RuntimeDefault
+</span><span>          </span><span style="color:#bf616a;">volumeMounts</span><span>:
+</span><span>            - </span><span style="color:#bf616a;">mountPath</span><span>: </span><span style="color:#a3be8c;">/spiffe-workload-api
+</span><span>              </span><span style="color:#bf616a;">name</span><span>: </span><span style="color:#a3be8c;">spiffe-workload-api
+</span><span>              </span><span style="color:#bf616a;">readOnly</span><span>: </span><span style="color:#d08770;">true
 </span><span>      </span><span style="color:#bf616a;">dnsPolicy</span><span>: </span><span style="color:#a3be8c;">ClusterFirst
 </span><span>      </span><span style="color:#bf616a;">securityContext</span><span>:
 </span><span>        </span><span style="color:#bf616a;">fsGroup</span><span>: </span><span style="color:#d08770;">1000
@@ -967,12 +952,10 @@ GitHub</a> instead.</p>
 </span><span>        </span><span style="color:#bf616a;">runAsUser</span><span>: </span><span style="color:#d08770;">1000
 </span><span>      </span><span style="color:#bf616a;">serviceAccountName</span><span>: </span><span style="color:#a3be8c;">spiffe-spike-bootstrap
 </span><span>      </span><span style="color:#bf616a;">volumes</span><span>:
-</span><span>      - </span><span style="color:#bf616a;">csi</span><span>:
-</span><span>          </span><span style="color:#bf616a;">driver</span><span>: </span><span style="color:#a3be8c;">csi.spiffe.io
-</span><span>          </span><span style="color:#bf616a;">readOnly</span><span>: </span><span style="color:#d08770;">true
-</span><span>        </span><span style="color:#bf616a;">name</span><span>: </span><span style="color:#a3be8c;">spiffe-workload-api
-</span><span>      - </span><span style="color:#bf616a;">emptyDir</span><span>: {}
-</span><span>        </span><span style="color:#bf616a;">name</span><span>: </span><span style="color:#a3be8c;">shared-data
+</span><span>        - </span><span style="color:#bf616a;">csi</span><span>:
+</span><span>            </span><span style="color:#bf616a;">driver</span><span>: </span><span style="color:#a3be8c;">csi.spiffe.io
+</span><span>            </span><span style="color:#bf616a;">readOnly</span><span>: </span><span style="color:#d08770;">true
+</span><span>          </span><span style="color:#bf616a;">name</span><span>: </span><span style="color:#a3be8c;">spiffe-workload-api
 </span><span>---
 </span><span style="color:#bf616a;">apiVersion</span><span>: </span><span style="color:#a3be8c;">v1
 </span><span style="color:#bf616a;">kind</span><span>: </span><span style="color:#a3be8c;">ServiceAccount
@@ -989,9 +972,13 @@ GitHub</a> instead.</p>
 </span><span>  </span><span style="color:#bf616a;">namespace</span><span>: </span><span style="color:#a3be8c;">spike
 </span><span>  </span><span style="color:#bf616a;">name</span><span>: </span><span style="color:#a3be8c;">spiffe-bootstrap-role
 </span><span style="color:#bf616a;">rules</span><span>:
-</span><span>- </span><span style="color:#bf616a;">apiGroups</span><span>: [&quot;</span><span style="color:#a3be8c;">batch</span><span>&quot;]
-</span><span>  </span><span style="color:#bf616a;">resources</span><span>: [&quot;</span><span style="color:#a3be8c;">jobs</span><span>&quot;]
-</span><span>  </span><span style="color:#bf616a;">verbs</span><span>: [&quot;</span><span style="color:#a3be8c;">get</span><span>&quot;, &quot;</span><span style="color:#a3be8c;">list</span><span>&quot;]
+</span><span>  - </span><span style="color:#bf616a;">apiGroups</span><span>: [&quot;&quot;]
+</span><span>    </span><span style="color:#bf616a;">resources</span><span>: [&quot;</span><span style="color:#a3be8c;">configmaps</span><span>&quot;]
+</span><span>    </span><span style="color:#bf616a;">verbs</span><span>: [&quot;</span><span style="color:#a3be8c;">create</span><span>&quot;]
+</span><span>  - </span><span style="color:#bf616a;">apiGroups</span><span>: [&quot;&quot;]
+</span><span>    </span><span style="color:#bf616a;">resources</span><span>: [&quot;</span><span style="color:#a3be8c;">configmaps</span><span>&quot;]
+</span><span>    </span><span style="color:#bf616a;">verbs</span><span>: [&quot;</span><span style="color:#a3be8c;">get</span><span>&quot;, &quot;</span><span style="color:#a3be8c;">update</span><span>&quot;, &quot;</span><span style="color:#a3be8c;">patch</span><span>&quot;]
+</span><span>    </span><span style="color:#bf616a;">resourceNames</span><span>: [&quot;</span><span style="color:#a3be8c;">spike-bootstrap-state</span><span>&quot;]
 </span><span>---
 </span><span style="color:#bf616a;">apiVersion</span><span>: </span><span style="color:#a3be8c;">rbac.authorization.k8s.io/v1
 </span><span style="color:#bf616a;">kind</span><span>: </span><span style="color:#a3be8c;">RoleBinding
@@ -999,9 +986,9 @@ GitHub</a> instead.</p>
 </span><span>  </span><span style="color:#bf616a;">name</span><span>: </span><span style="color:#a3be8c;">spiffe-bootstrap-rolebinding
 </span><span>  </span><span style="color:#bf616a;">namespace</span><span>: </span><span style="color:#a3be8c;">spike
 </span><span style="color:#bf616a;">subjects</span><span>:
-</span><span>- </span><span style="color:#bf616a;">kind</span><span>: </span><span style="color:#a3be8c;">ServiceAccount
-</span><span>  </span><span style="color:#bf616a;">name</span><span>: </span><span style="color:#a3be8c;">spiffe-spike-bootstrap
-</span><span>  </span><span style="color:#bf616a;">namespace</span><span>: </span><span style="color:#a3be8c;">spike
+</span><span>  - </span><span style="color:#bf616a;">kind</span><span>: </span><span style="color:#a3be8c;">ServiceAccount
+</span><span>    </span><span style="color:#bf616a;">name</span><span>: </span><span style="color:#a3be8c;">spiffe-spike-bootstrap
+</span><span>    </span><span style="color:#bf616a;">namespace</span><span>: </span><span style="color:#a3be8c;">spike
 </span><span style="color:#bf616a;">roleRef</span><span>:
 </span><span>  </span><span style="color:#bf616a;">kind</span><span>: </span><span style="color:#a3be8c;">Role
 </span><span>  </span><span style="color:#bf616a;">name</span><span>: </span><span style="color:#a3be8c;">spiffe-bootstrap-role
@@ -1046,17 +1033,21 @@ creating a sample secret and reading its value back.</p>
 </span><span style="color:#65737e;"># username: spike
 </span></code></pre>
 <h2 id="next-up">Next Up</h2>
-<p>You are all set. You have successfully deployed SPIKE to your local Minikube
-cluster. Explore other parts of the documentation to learn more about
-using SPIKE.</p>
+<p>You are all set. You have successfully deployed <strong>SPIKE</strong> to your local
+Minikube cluster. Explore other parts of the documentation to learn more about
+using <strong>SPIKE</strong>.</p>
 <p>Here are a few links to get you started:</p>
 <ul>
-<li><a href="https://spike.ist/development/local-deployment/">Building SPIKE Locally and Deploying to Minikube</a></li>
-<li><a href="https://spike.ist/development/bare-metal/">Bare Metal SPIKE Installation</a></li>
-<li><a href="https://spike.ist/usage/configuration/">Configuring SPIKE</a></li>
-<li><a href="https://spike.ist/architecture/">SPIKE Architecture</a></li>
-<li><a href="https://spike.ist/operations/production/">SPIKE Production Hardening Guide</a></li>
+<li><a href="https://spike.ist/development/local-deployment/" title="Building SPIKE Locally and Deploying to Minikube">Building <strong>SPIKE</strong> Locally and Deploying to Minikube</a></li>
+<li><a href="https://spike.ist/development/bare-metal/" title="Bare Metal SPIKE Installation">Bare Metal <strong>SPIKE</strong> Installation</a></li>
+<li><a href="https://spike.ist/usage/configuration/" title="Configuring SPIKE">Configuring <strong>SPIKE</strong></a></li>
+<li><a href="https://spike.ist/architecture/" title="SPIKE Architecture"><strong>SPIKE</strong> Architecture</a></li>
+<li><a href="https://spike.ist/operations/production/" title="SPIKE Production Hardening Guide"><em>8SPIKE</em>* Production Hardening Guide</a></li>
+<li><a href="https://spike.ist/usage/commands/"><strong>SPIKE</strong> CLI Reference</a></li>
 </ul>
+<h2 id="open-source-is-better-together">Open Source Is Better Together</h2>
+<p><a href="https://spike.ist/community/hello/" title="Open Source is better together."><strong>Join the SPIKE community</strong></a> to ask your questions and
+learn from the subject-matter experts.</p>
 <p>&nbsp;</p>
 <hr />
 <ul>

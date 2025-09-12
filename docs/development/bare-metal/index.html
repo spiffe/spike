@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <link rel="stylesheet" href="https://spike.ist/main.css">
+    <link rel="stylesheet" href="/main.css">
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <link rel="icon" href="https://spike.ist/assets/spike-favicon-16x16.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
@@ -25,7 +25,7 @@
 </script>
 <div id="banner">
     <a href="https://spike.ist">
-        <img src="https://spike.ist/assets/spike-banner.png" alt="logo" />
+        <img id="banner-image" src="https://spike.ist/assets/spike-banner.png" alt="logo" />
     </a>
     <div id="banner-body">
         <a class="banner-title" href="https://spike.ist">
@@ -768,15 +768,24 @@
     function setTheme(theme) {
       document.documentElement.setAttribute("data-theme", theme);
       localStorage.setItem("theme", theme);
+      
+      // Update banner image based on theme
+      const bannerImage = document.getElementById("banner-image");
+      if (bannerImage) {
+        bannerImage.src = theme === "dark" 
+          ? "/assets/spike-banner-dark-thin.png"
+          : "/assets/spike-banner-light-thin.png";
+      }
     }
 
     // Initialize theme
     const savedTheme = localStorage.getItem("theme");
-    if (savedTheme) {
-      setTheme(savedTheme);
-    } else if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
-      setTheme("dark");
-    }
+    setTheme(savedTheme ? savedTheme : "dark");
+    // Discard system theme changes; the landing page is always dark, so
+    // it's better to transition to a dark-by-default theme.
+    // } else if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+    //   setTheme("dark");
+    // }
 
     // Toggle theme on button click
     themeToggle.addEventListener("click", () => {
@@ -785,14 +794,14 @@
       setTheme(newTheme);
     });
 
-    // Listen for system theme changes
-    window
-      .matchMedia("(prefers-color-scheme: dark)")
-      .addEventListener("change", (e) => {
-        if (!localStorage.getItem("theme")) {
-          setTheme(e.matches ? "dark" : "light");
-        }
-      });
+    // Discard system-theme changes.
+    // window
+    //   .matchMedia("(prefers-color-scheme: dark)")
+    //   .addEventListener("change", (e) => {
+    //     if (!localStorage.getItem("theme")) {
+    //       setTheme(e.matches ? "dark" : "light");
+    //     }
+    //   });
   });
 </script>
 
@@ -827,7 +836,7 @@ free to discuss them on the <a href="https://slack.spiffe.io/" title="SPIFFE Sla
 <li><a href="https://git-scm.com/"><code>git</code></a></li>
 <li><a href="https://www.gnu.org/software/make/"><code>make</code></a></li>
 <li><a href="https://go.dev/"><code>go</code></a> (<em>the most recent version would do</em>)</li>
-<li><a href="https://nodejs.org"><code>node</code></a> (<em>at least <a href="https://copilot.github.com/" title="GitHub Copilot">GitHub Copilot</a> requires it on Linux</em>)</li>
+<li><a href="https://nodejs.org"><code>node</code></a> (<em>(optional: most AI tools require it</em>)</li>
 <li><a href="https://packages.ubuntu.com/hirsute/build-essential"><code>build-essential</code></a>
 (<em>i.e., <code>sudo apt install build-essential</code></em>)</li>
 </ul>
@@ -896,8 +905,14 @@ follow the <a href="https://spiffe.io/docs/latest/deploying/configuring/" title=
 </span><span style="color:#96b5b4;">echo </span><span>&#39;</span><span style="color:#a3be8c;">PATH=$PATH:$WORKSPACE/spire/bin</span><span>&#39; &gt;&gt; </span><span style="color:#bf616a;">~</span><span>/.profile
 </span></code></pre>
 <h2 id="adding-spike-binaries-to-path">Adding SPIKE Binaries to <code>$PATH</code></h2>
+<p>The bare-metal installation will create <strong>SPIKE</strong> binaries in the project
+root directory by default. You can add the binaries to your <code>$PATH</code> as follows:</p>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># ~/.profile
+</span><span style="color:#b48ead;">export </span><span style="color:#bf616a;">PATH</span><span>=$</span><span style="color:#bf616a;">PATH</span><span style="color:#a3be8c;">:</span><span>$</span><span style="color:#bf616a;">WORKSPACE</span><span style="color:#a3be8c;">/spike
+</span><span style="color:#96b5b4;">echo </span><span>&#39;</span><span style="color:#a3be8c;">PATH=$PATH:$WORKSPACE/spike</span><span>&#39; &gt;&gt; </span><span style="color:#bf616a;">~</span><span>/.profile
+</span></code></pre>
 <p>Additionally, you can source the following file to define additional
-<strong>SPIKE</strong>-related environment variables for your convenience. This is not
+<strong>SPIKE</strong>-related environment variables for your convenience. This is <strong>NOT</strong>
 required because if you don’t define them, <strong>SPIKE</strong> will assume sensible
 defaults.</p>
 <p>Sourcing <code>./hack/lib/env.sh</code> allows you to override the default <strong>SPIKE</strong>
@@ -907,7 +922,7 @@ purposes to test custom setups or alternative paths.</p>
 as documentation to help understand the development environment.</p>
 <pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># ~/.profile
 </span><span>
-</span><span style="color:#65737e;"># ...
+</span><span style="color:#65737e;"># ... truncated ...
 </span><span>
 </span><span style="color:#65737e;"># SPIKE Environment configuration                                                
 </span><span style="color:#96b5b4;">source </span><span>$</span><span style="color:#bf616a;">WORKSPACE</span><span>/spike/hack/lib/env.sh 
@@ -944,6 +959,7 @@ as documentation to help understand the development environment.</p>
 </span><span style="color:#65737e;">#   keeper*
 </span><span style="color:#65737e;">#   nexus*
 </span><span style="color:#65737e;">#   spike*
+</span><span style="color:#65737e;">#   bootstrap*
 </span></code></pre>
 <h2 id="configure-local-dns">Configure Local DNS</h2>
 <p><a href="https://github.com/spiffe/spike/blob/main/config/spire/agent/agent.conf#L4">The default agent configuration file</a> uses
@@ -962,8 +978,6 @@ SPIKE Nexus, and SPIKE Keeper.</p>
 <p>You can run this to start all the required components:</p>
 <pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># Start everything:
 </span><span style="color:#bf616a;">make</span><span> start
-</span><span style="color:#65737e;"># Then, boostrap everything:
-</span><span style="color:#bf616a;">make</span><span> bootstrap
 </span></code></pre>
 <p>And then, on a separate terminal, you can run <code>spike</code>:</p>
 <pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># Make sure you have the `spike` binary in your PATH.
@@ -988,16 +1002,18 @@ SPIKE Nexus, and SPIKE Keeper.</p>
 </span><span style="color:#65737e;"># 
 </span><span style="color:#65737e;"># Use &quot;spike [command] --help&quot; for help.
 </span></code></pre>
-<p>Although the <code>make start;make bootstrap</code> script is convenient, it might be
-useful to run the components individually to understand the process better and
-debug any issues that might arise.</p>
+<p>Although the <code>make start</code> script is convenient, it might be useful to run the
+components individually to understand the process better and debug any issues
+that might arise.</p>
 <p>The following sections will guide you through the individual steps.</p>
 <blockquote>
 <p><strong>CLI Reference</strong></p>
-<p>Since the <strong>SPIKE CLI</strong> is a work in progress and highly in flux, the best
-way to get the most up-to-date information is to run <code>spike --help</code> or
-<code>spike [command] --help</code> to learn about the available commands and flags.</p>
-<p>In addition, you can <a href="https://spike.ist/community/presentations/">check out the demo recordings</a> to see the CLI in
+<p>One of the best ways to get the most up-to-date information about the <code>spike</code>
+CLI is to run <code>spike --help</code> or <code>spike [command] --help</code>.</p>
+<p>Additionally, you can <a href="https://spike.ist/usage/commands/">check out the <strong>SPIKE</strong> CLI
+Documentation</a> for a more detailed reference with sample commands
+and examples.</p>
+<p>There are also <a href="https://spike.ist/community/presentations/">demo recordings</a> that showcase the <strong>SPIKE</strong> CLI in
 action.</p>
 </blockquote>
 <h2 id="start-spire-server">Start SPIRE Server</h2>

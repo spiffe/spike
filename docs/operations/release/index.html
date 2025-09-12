@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <link rel="stylesheet" href="https://spike.ist/main.css">
+    <link rel="stylesheet" href="/main.css">
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <link rel="icon" href="https://spike.ist/assets/spike-favicon-16x16.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
@@ -25,7 +25,7 @@
 </script>
 <div id="banner">
     <a href="https://spike.ist">
-        <img src="https://spike.ist/assets/spike-banner.png" alt="logo" />
+        <img id="banner-image" src="https://spike.ist/assets/spike-banner.png" alt="logo" />
     </a>
     <div id="banner-body">
         <a class="banner-title" href="https://spike.ist">
@@ -248,6 +248,9 @@
                                 <li><a href="
                                             https://spike.ist/operations/release/#spike-release-management">SPIKE Release Management</a>
                                         <ul>
+                                                <li>
+                                                        <a href="https://spike.ist/operations/release/#coverage-report">Coverage Report</a>
+                                                    </li>
                                                 <li>
                                                         <a href="https://spike.ist/operations/release/#before-every-release">Before Every Release</a>
                                                     </li>
@@ -720,15 +723,24 @@
     function setTheme(theme) {
       document.documentElement.setAttribute("data-theme", theme);
       localStorage.setItem("theme", theme);
+      
+      // Update banner image based on theme
+      const bannerImage = document.getElementById("banner-image");
+      if (bannerImage) {
+        bannerImage.src = theme === "dark" 
+          ? "/assets/spike-banner-dark-thin.png"
+          : "/assets/spike-banner-light-thin.png";
+      }
     }
 
     // Initialize theme
     const savedTheme = localStorage.getItem("theme");
-    if (savedTheme) {
-      setTheme(savedTheme);
-    } else if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
-      setTheme("dark");
-    }
+    setTheme(savedTheme ? savedTheme : "dark");
+    // Discard system theme changes; the landing page is always dark, so
+    // it's better to transition to a dark-by-default theme.
+    // } else if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+    //   setTheme("dark");
+    // }
 
     // Toggle theme on button click
     themeToggle.addEventListener("click", () => {
@@ -737,14 +749,14 @@
       setTheme(newTheme);
     });
 
-    // Listen for system theme changes
-    window
-      .matchMedia("(prefers-color-scheme: dark)")
-      .addEventListener("change", (e) => {
-        if (!localStorage.getItem("theme")) {
-          setTheme(e.matches ? "dark" : "light");
-        }
-      });
+    // Discard system-theme changes.
+    // window
+    //   .matchMedia("(prefers-color-scheme: dark)")
+    //   .addEventListener("change", (e) => {
+    //     if (!localStorage.getItem("theme")) {
+    //       setTheme(e.matches ? "dark" : "light");
+    //     }
+    //   });
   });
 </script>
 
@@ -766,6 +778,11 @@ through the release and testing process.</p>
 <p>This document is targeted for <strong>core contributors</strong> who are responsible for
 managing the release cuts of <strong>SPIKE</strong>. It provides detailed instructions to
 ensure a smooth and reliable release process.</p>
+<h2 id="coverage-report">Coverage Report</h2>
+<p>The coverage report is available at <a href="https://spike.ist/coverage.html" title="SPIKE Coverage Report">https://spike.ist/coverage.html</a>.</p>
+<p>We update the coverage report at every release cut.</p>
+<p>If you want to increase test coverage, you are more than welcome to contribute
+to the project.</p>
 <h2 id="before-every-release">Before Every Release</h2>
 <p>Before every release:</p>
 <ol>
@@ -776,9 +793,16 @@ and <code>KeeperVersion</code> in <code>$WORKSPACE/spike/internal/config/config.
 <li>Update any necessary documentation.</li>
 <li>Update the changelog.</li>
 <li>Update the documentation snapshots page.</li>
-<li>Run <code>./hack/cover.sh</code> to update and send the coverage report to the public
-docs.</li>
+<li>Run <code>./hack/qa/cover.sh</code> to update and send the coverage report to the public
+docs. Make sure you do this <strong>after</strong> you publish the generated documentation
+to the <code>./docs</code> folder.</li>
+<li>Run <code>./hack/bare-metal/cmd/put-sample-secrets.sh</code> to ensure secret and
+policy creation work as expected.</li>
+<li>Run <code>./hack/bare-metal/cmd/read-sample-secrets.sh</code> to ensure secret and
+policy reading work as expected.</li>
 <li>Make sure you update <code>./app/VERSION.txt</code> with the new version.</li>
+<li>Make sure you run <code>make build</code> and the process cleanly exits with no errors.</li>
+<li>Make sure you run <code>make test</code> and the process cleanly exits with no errors.</li>
 <li>Make sure you run <code>make audit</code> and the process cleanly exits with no errors.</li>
 </ol>
 <p>Release process:</p>
@@ -786,11 +810,9 @@ docs.</li>
 <li>Publish documentation by running <code>zola build</code> in <code>./docs-src</code> and then
 copying the generated HTML in <code>./docs-src/public</code> into <code>/.docs</code>.</li>
 <li>Merge all the changes to the <code>main</code> branch.</li>
-<li>Tag a version and convert that version to a *<em>release</em> on <strong>GitHub</strong>.
-<ul>
-<li>Make sure you GPG sign your tag.</li>
-</ul>
-</li>
+<li>Tag a version by running <code>make tag</code> (<em>this creates a GPG-signed tag using the
+version from <code>app/VERSION.txt</code> and pushes it to origin</em>).</li>
+<li>Convert the tag to a <strong>release</strong> on <strong>GitHub</strong>.</li>
 <li>Copy the current version’s changelog over to the release notes on <strong>GitHub</strong>.</li>
 <li>On a Mac machine <a href="https://spike.ist/operations/build/" title="SPIKE Cross-Platform Build">follow cross-platform build instructions</a>
 to generate binaries.</li>
@@ -864,8 +886,8 @@ not that frequent, it’s okay to do these checks manually.</p>
 </span></code></pre>
 <h3 id="create-a-policy">Create a Policy</h3>
 <pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">spike</span><span> policy create</span><span style="color:#bf616a;"> --name</span><span>=workload-can-read \
-</span><span style="color:#bf616a;">  --path</span><span>=&quot;</span><span style="color:#a3be8c;">/tenants/demo/db/*</span><span>&quot; \
-</span><span style="color:#bf616a;">  --spiffeid</span><span>=&quot;</span><span style="color:#a3be8c;">^spiffe://spike.ist/workload/*</span><span>&quot; \
+</span><span style="color:#bf616a;">  --path-pattern</span><span>=&quot;</span><span style="color:#a3be8c;">/tenants/demo/db/*</span><span>&quot; \
+</span><span style="color:#bf616a;">  --spiffeid-pattern</span><span>=&quot;</span><span style="color:#a3be8c;">^spiffe://spike.ist/workload/*</span><span>&quot; \
 </span><span style="color:#bf616a;">  --permissions</span><span>=&quot;</span><span style="color:#a3be8c;">read</span><span>&quot;
 </span></code></pre>
 <h3 id="verify-the-policy-creation">Verify the Policy Creation</h3>

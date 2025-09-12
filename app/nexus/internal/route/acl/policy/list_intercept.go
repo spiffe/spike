@@ -10,6 +10,7 @@ import (
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	apiErr "github.com/spiffe/spike-sdk-go/api/errors"
+	"github.com/spiffe/spike-sdk-go/config/auth"
 	"github.com/spiffe/spike-sdk-go/spiffe"
 	"github.com/spiffe/spike-sdk-go/validation"
 
@@ -47,7 +48,7 @@ func guardListPolicyRequest(
 	}
 
 	allowed := state.CheckAccess(
-		sid.String(), "spike/system/acl",
+		sid.String(), auth.PathSystemPolicyAccess,
 		[]data.PolicyPermission{data.PermissionList},
 	)
 	if !allowed {

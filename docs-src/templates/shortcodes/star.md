@@ -7,7 +7,8 @@
 {% if large %}
 [![SPIKE](/assets/spike-banner-lg.png)](/)
 {% else %}
-<a href="/" title="Back to home"><img src="/assets/spike-banner.png" 
+<a href="/" title="Back to home"><img src="/assets/spike-banner.png"
+                                      id="spike-logo"
 style="float:left;margin: 0 1em 0 1em;" alt="SPIKE Logo" /></a>
 {% endif %}
 

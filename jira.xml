@@ -19,7 +19,51 @@
   cluttering it with early-stage or exploratory thoughts.
  -->
 <stuff>
+  <high-level-plan>
+    <issue order="1">Release SPIKE v0.5.0 to enable Helm Charts work</issue>
+    <issue order="2">Fix post v0.5.0 issues</issue>
+    <issue order="3">Secure Secrets Management Web UX</issue>
+    <issue order="4">Zero Turtle Pi Grid</issue>
+    <watch-list>
+      * cipher encrypt decrypt: https://github.com/spiffe/spike/pull/212
+      * encrypt policy info: https://github.com/spiffe/spike/pull/223
+      * ConfigMap: https://github.com/spiffe/spike/pull/228
+      * status: https://github.com/spiffe/spike/pull/222
+      --
+      * key rotation: https://github.com/spiffe/spike/issues/229
+      * secure UI: https://github.com/spiffe/spike/issues/230
+    </watch-list>
+  </high-level-plan>
   <task-group for="v0.5.0">
+
+  </task-group>
+  <task-group for=">v0.5.0">
+    <issue>
+      Sep 20th: SPIKE Onboarding.
+    </issue>
+    <issue>
+      ensure that the demo app still works.
+    </issue>
+    <issue>
+      when entries are not registered to the SPIRE Server and the
+      operator tries to use SPIKE, the error messages can be more
+      explanatory.
+    </issue>
+    <issue>
+      reading an unknown secret gives an error instead of "not found"
+
+      ➜  spike git:(feature/bootstrap-job) ✗ spike secret get tenants/demo/db
+      Error: failure reading secret: post: Problem connecting to peer
+      Usage:
+      spike secret get <path> [key] [flags]
+
+      Flags:
+      -f, --format string   Format to use. Valid options: plain, p, yaml, y, json, j (default "plain")
+      -h, --help            help for get
+      -v, --version int     Specific version to retrieve
+
+      failure reading secret: post: Problem connecting to peer
+    </issue>
     <issue>
       these serialization and deserialization functions can be
       extracted. --- They can even be part of the Go SDK.
@@ -47,35 +91,52 @@
       }
     </issue>
     <issue>
-      "spike/system/acl" -> to constants
-      if there are other predefined paths, they go to constants too.
+      move generated binaries to `./bin` folder.
+      stream logs to `./logs` folder.
     </issue>
     <issue>
-      what do you think about making plugins for bootstrap state?
-      one for sql, one for k8s configmap initially?
-      I think the configmap option would be nicer to integrate with for the chart. I'm really not a fan of shared volumes, particularly for k8s jobs
+      for operator actions ensure that `spike/system/ops` path is enforced (similar to how acl is enforced above.
 
-      If this is a static configuration. I agree that we should convert the file in volumes to configmaps
-
-      if someone could stub out the plugin bits, I could implement the k8s plugin.
-
-      Yeah, configmap would be useful. -- for SQLite, the configuration is mostly static. -- we initialize the db with some root key; but that can be dynamically provided anyway.
-      The rest is just "best guess" defaults.
-
-      I think its just storing a single bool. "inited=true"
-      and the plugin can be used by the bootstrapper to not run again, and the nexus process to determine if it can continue to start or just wait (edited)
+      create a workload that can create policies
+      create another workload that can backup the root key
+      to demo these features.
     </issue>
     <issue>
-      Fix CI failing tests
+      these may go to the sdk
+
+      func GenerateCustomNonce(s *DataStore) ([]byte, error) {
+      nonce := make([]byte, s.Cipher.NonceSize())
+      if _, err := io.ReadFull(rand.Reader, nonce); err != nil {
+      return nil, err
+      }
+      return nonce, nil
+      }
+
+      func EncryptWithCustomNonce(s *DataStore, nonce []byte, data []byte) ([]byte, error) {
+      if len(nonce) != s.Cipher.NonceSize() {
+      return nil, fmt.Errorf("invalid nonce size: got %d, want %d", len(nonce), s.Cipher.NonceSize())
+      }
+      ciphertext := s.Cipher.Seal(nil, nonce, data, nil)
+      return ciphertext, nil
+      }
     </issue>
     <issue>
-      once all the changes are done, ensure that the demo app still works.
+      For VSecM: create a UI that directly talks to SPIKE; depracate all VSecM secret model. also delete most of the folders. start with a clean slate
     </issue>
     <issue>
-      update documentation and changelog.
+      The flows here have changed; need new diagrams and updated docs:
+      https://spike.ist/architecture/system-overview/
     </issue>
-  </task-group>
-  <task-group for=">v0.5.0">
+    <issue>
+      https://spike.ist/getting-started/quickstart/
+      needs update once helm charts is updated.
+    </issue>
+    <issue>
+      have an official "press kit" to let people download logos and such.
+    </issue>
+    <issue>
+      the nonce generation functions can go to the SDK too.
+    </issue>
     <issue>
       func initializeSqliteBackend(rootKey *[32]byte) backend.Backend {
       panic if rootkey is nil or empty.
@@ -199,6 +260,17 @@
   </task-group>
   <task-group for="SOC2-compliance">
     <issue>
+      Update:
+      This needs to be re-evaluated. As long as we make SPIKE log formatting
+      SOC-compliant; and streamable to a log aggregator, we don't necesarrily
+      need to implement an opinionated logging infra, as users will likely
+      be using their own secure log aggregation solutions anyway.
+
+      It is possible to have a reference infrastructure somewhere, but I think
+      it's out of SPIKE (and also VSecM's) scope.
+
+      ---
+
       SOC-2 Compliance Checklist for SPIKE Logging System
 
       ## Overall Plan

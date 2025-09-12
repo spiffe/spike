@@ -11,5 +11,5 @@ kubectl exec -n spike deploy/spiffe-spike-pilot -- spike policy create --name=wo
 
 kubectl exec -n spike deploy/spiffe-spike-pilot -- spike policy create --name=workload-can-write-2 \
  --path-pattern="tenants/demo/db/*" \
- --spiffeid-pattern="^spiffe://wor`kload\.spike\.ist/workload/.*$" \
+ --spiffeid-pattern="^spiffe://workload\.spike\.ist/workload/.*$" \
  --permissions="write"
