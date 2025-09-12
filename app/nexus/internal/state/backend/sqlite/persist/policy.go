@@ -228,6 +228,9 @@ func (s *DataStore) LoadPolicy(
 		return nil, fmt.Errorf("failed to decrypt permissions: %w", err)
 	}
 
+	// Set policy ID
+	policy.ID = id
+
 	// Set decrypted values
 	policy.SPIFFEIDPattern = string(decryptedSPIFFEIDPattern)
 	policy.PathPattern = string(decryptedPathPattern)
