@@ -174,19 +174,6 @@ func (s *DataStore) StorePolicy(ctx context.Context, policy data.Policy) error {
 	return nil
 }
 
-func deserializePermissions(permissions string) []data.PolicyPermission {
-	permissions = strings.TrimSpace(permissions)
-	if len(permissions) == 0 {
-		return []data.PolicyPermission{}
-	}
-	ps := strings.Split(permissions, ",")
-	pp := make([]data.PolicyPermission, len(ps))
-	for i, p := range ps {
-		pp[i] = data.PolicyPermission(strings.TrimSpace(p))
-	}
-	return pp
-}
-
 // LoadPolicy retrieves a policy from the database and compiles its patterns.
 //
 // Parameters:
