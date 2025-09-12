@@ -118,7 +118,8 @@ WHERE id = ?
 
 // QueryLoadPolicy is a SQL query to select policy details by ID
 const QueryLoadPolicy = `
-SELECT name, 
+SELECT id,
+       name, 
        encrypted_spiffe_id_pattern, 
        encrypted_path_pattern, 
        encrypted_permissions, 
