@@ -17,12 +17,15 @@ package ddl
 const QueryInitialize = `
 CREATE TABLE IF NOT EXISTS policies (
     id TEXT PRIMARY KEY,
-    name TEXT NOT NULL UNIQUE,
-    spiffe_id_pattern TEXT NOT NULL,
-    path_pattern TEXT NOT NULL,
-    permissions TEXT NOT NULL,
-    created_time DATETIME NOT NULL
+    name TEXT NOT NULL,
+    nonce BLOB NOT NULL,  
+    encrypted_spiffe_id_pattern BLOB NOT NULL,
+    encrypted_path_pattern BLOB NOT NULL,
+    encrypted_permissions BLOB NOT NULL,
+    created_time INTEGER NOT NULL
 );
+
+
 
 CREATE TABLE IF NOT EXISTS secrets (
 	path TEXT NOT NULL,
@@ -89,13 +92,22 @@ ORDER BY version
 
 // QueryUpsertPolicy defines an SQL query to insert or update a policy record.
 const QueryUpsertPolicy = `
-INSERT INTO policies (id, name, spiffe_id_pattern, path_pattern, permissions, created_time)
-VALUES (?, ?, ?, ?, ?, ?)
+INSERT INTO policies (
+    id, 
+    name, 
+    nonce,
+    encrypted_spiffe_id_pattern, 
+    encrypted_path_pattern, 
+    encrypted_permissions, 
+    created_time
+)
+VALUES (?, ?, ?, ?, ?, ?, ?)
 ON CONFLICT(id) DO UPDATE SET
     name = excluded.name,
-    spiffe_id_pattern = excluded.spiffe_id_pattern,
-    path_pattern = excluded.path_pattern,
-    permissions = excluded.permissions
+    nonce = excluded.nonce,
+    encrypted_spiffe_id_pattern = excluded.encrypted_spiffe_id_pattern,
+    encrypted_path_pattern = excluded.encrypted_path_pattern,
+    encrypted_permissions = excluded.encrypted_permissions
 `
 
 // QueryDeletePolicy defines the SQL statement to delete a policy by its ID.
@@ -106,13 +118,24 @@ WHERE id = ?
 
 // QueryLoadPolicy is a SQL query to select policy details by ID
 const QueryLoadPolicy = `
-SELECT name, spiffe_id_pattern, path_pattern, permissions, created_time 
-FROM policies 
+SELECT name, 
+       encrypted_spiffe_id_pattern, 
+       encrypted_path_pattern, 
+       encrypted_permissions, 
+       nonce, 
+       created_time
+FROM policies
 WHERE id = ?
 `
 
 const QueryAllPolicies = `
-SELECT id, name, spiffe_id_pattern, path_pattern, permissions, created_time 
+SELECT id, 
+       name, 
+       encrypted_spiffe_id_pattern, 
+       encrypted_path_pattern, 
+       encrypted_permissions, 
+       nonce, 
+       created_time
 FROM policies
 `
 

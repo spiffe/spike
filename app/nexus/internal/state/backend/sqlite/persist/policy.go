@@ -6,11 +6,14 @@ package persist
 
 import (
 	"context"
+	"crypto/rand"
 	"database/sql"
 	"errors"
 	"fmt"
+	"io"
 	"regexp"
 	"strings"
+	"time"
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/log"
@@ -67,6 +70,22 @@ func (s *DataStore) DeletePolicy(ctx context.Context, id string) error {
 	return nil
 }
 
+func generateNonce(s *DataStore) ([]byte, error) {
+	nonce := make([]byte, s.Cipher.NonceSize())
+	if _, err := io.ReadFull(rand.Reader, nonce); err != nil {
+		return nil, err
+	}
+	return nonce, nil
+}
+
+func encryptWithNonce(s *DataStore, nonce []byte, data []byte) ([]byte, error) {
+	if len(nonce) != s.Cipher.NonceSize() {
+		return nil, fmt.Errorf("invalid nonce size: got %d, want %d", len(nonce), s.Cipher.NonceSize())
+	}
+	ciphertext := s.Cipher.Seal(nil, nonce, data, nil)
+	return ciphertext, nil
+}
+
 // StorePolicy saves or updates a policy in the database.
 //
 // Uses serializable transaction isolation to ensure consistency.
@@ -114,16 +133,37 @@ func (s *DataStore) StorePolicy(ctx context.Context, policy data.Policy) error {
 		permissionsStr = strings.Join(permissions, ",")
 	}
 
+	// Encryption
+	nonce, err := generateNonce(s)
+	if err != nil {
+		return fmt.Errorf("failed to generate nonce: %w", err)
+	}
+	encryptedSpiffeID, err := encryptWithNonce(s, nonce, []byte(policy.SPIFFEIDPattern))
+	if err != nil {
+		return fmt.Errorf("failed to encrypt SPIFFE ID: %w", err)
+	}
+
+	encryptedPathPattern, err := encryptWithNonce(s, nonce, []byte(policy.PathPattern))
+	if err != nil {
+		return fmt.Errorf("failed to encrypt path pattern: %w", err)
+	}
+	encryptedPermissions, err := encryptWithNonce(s, nonce, []byte(permissionsStr))
+	if err != nil {
+		return fmt.Errorf("failed to encrypt permissions: %w", err)
+	}
+
 	_, err = tx.ExecContext(ctx, ddl.QueryUpsertPolicy,
 		policy.ID,
 		policy.Name,
-		policy.SPIFFEIDPattern,
-		policy.PathPattern,
-		permissionsStr,
-		policy.CreatedAt,
+		nonce,
+		encryptedSpiffeID,
+		encryptedPathPattern,
+		encryptedPermissions,
+		time.Now().Unix(),
 	)
+
 	if err != nil {
-		return fmt.Errorf("failed to store policy: %w", err)
+		return fmt.Errorf("failed to upsert policy: %w", err)
 	}
 
 	if err := tx.Commit(); err != nil {
@@ -168,15 +208,16 @@ func (s *DataStore) LoadPolicy(
 	defer s.mu.RUnlock()
 
 	var policy data.Policy
-	policy.ID = id // Set the ID since we queried with it
+	var encryptedSPIFFEIDPattern, encryptedPathPattern, encryptedPermissions, nonce []byte
+	var createdTime int64
 
-	var permissionsStr string
 	err := s.db.QueryRowContext(ctx, ddl.QueryLoadPolicy, id).Scan(
 		&policy.Name,
-		&policy.SPIFFEIDPattern,
-		&policy.PathPattern,
-		&permissionsStr,
-		&policy.CreatedAt,
+		&encryptedSPIFFEIDPattern,
+		&encryptedPathPattern,
+		&encryptedPermissions,
+		&nonce,
+		&createdTime,
 	)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -185,19 +226,43 @@ func (s *DataStore) LoadPolicy(
 		return nil, fmt.Errorf("failed to load policy: %w", err)
 	}
 
-	policy.Permissions = deserializePermissions(permissionsStr)
+	// Decrypt
+	decryptedSPIFFEIDPattern, err := s.decrypt(encryptedSPIFFEIDPattern, nonce)
+	if err != nil {
+		return nil, fmt.Errorf("failed to decrypt SPIFFE ID pattern: %w", err)
+	}
+	decryptedPathPattern, err := s.decrypt(encryptedPathPattern, nonce)
+	if err != nil {
+		return nil, fmt.Errorf("failed to decrypt path pattern: %w", err)
+	}
 
-	idRegex, err := regexp.Compile(policy.SPIFFEIDPattern)
+	decryptedPermissions, err := s.decrypt(encryptedPermissions, nonce)
+	if err != nil {
+		return nil, fmt.Errorf("failed to decrypt permissions: %w", err)
+	}
+
+	// Set decrypted values
+	policy.SPIFFEIDPattern = string(decryptedSPIFFEIDPattern)
+	policy.PathPattern = string(decryptedPathPattern)
+	policy.CreatedAt = time.Unix(createdTime, 0)
+
+	permissionsStr := string(decryptedPermissions)
+	if permissionsStr != "" {
+		perms := strings.Split(permissionsStr, ",")
+		policy.Permissions = make([]data.PolicyPermission, len(perms))
+		for i, p := range perms {
+			policy.Permissions[i] = data.PolicyPermission(strings.TrimSpace(p))
+		}
+	}
+	// Compile regex
+	policy.IDRegex, err = regexp.Compile(policy.SPIFFEIDPattern)
 	if err != nil {
 		return nil, fmt.Errorf("invalid spiffeid pattern: %w", err)
 	}
-	policy.IDRegex = idRegex
-
-	pathRegex, err := regexp.Compile(policy.PathPattern)
+	policy.PathRegex, err = regexp.Compile(policy.PathPattern)
 	if err != nil {
 		return nil, fmt.Errorf("invalid path pattern: %w", err)
 	}
-	policy.PathRegex = pathRegex
 
 	return &policy, nil
 }
@@ -225,61 +290,68 @@ func (s *DataStore) LoadAllPolicies(
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
-	// Query to get all policies
 	rows, err := s.db.QueryContext(ctx, ddl.QueryAllPolicies)
-
 	if err != nil {
 		return nil, fmt.Errorf("failed to query policies: %w", err)
 	}
-	defer func(rows *sql.Rows) {
-		err := rows.Close()
-		if err != nil {
-			fmt.Printf("failed to close rows: %v\n", err)
-		}
-	}(rows)
+	defer rows.Close()
 
-	// Map to store all policies
 	policies := make(map[string]*data.Policy)
 
-	// Iterate over policy rows
 	for rows.Next() {
 		var policy data.Policy
-		var permissionsStr string
+		var encryptedSPIFFEIDPattern, encryptedPathPattern, encryptedPermissions, nonce []byte
+		var createdTime int64
 
 		if err := rows.Scan(
 			&policy.ID,
 			&policy.Name,
-			&policy.SPIFFEIDPattern,
-			&policy.PathPattern,
-			&permissionsStr,
-			&policy.CreatedAt,
+			&encryptedSPIFFEIDPattern,
+			&encryptedPathPattern,
+			&encryptedPermissions,
+			&nonce,
+			&createdTime,
 		); err != nil {
 			return nil, fmt.Errorf("failed to scan policy: %w", err)
 		}
 
-		// Deserialize permissions from comma-separated string
+		// Decrypt
+		decryptedSPIFFEIDPattern, err := s.decrypt(encryptedSPIFFEIDPattern, nonce)
+		if err != nil {
+			return nil, fmt.Errorf("failed to decrypt SPIFFE ID pattern for policy %s: %w", policy.ID, err)
+		}
+		decryptedPathPattern, err := s.decrypt(encryptedPathPattern, nonce)
+		if err != nil {
+			return nil, fmt.Errorf("failed to decrypt path pattern for policy %s: %w", policy.ID, err)
+		}
+		decryptedPermissions, err := s.decrypt(encryptedPermissions, nonce)
+		if err != nil {
+			return nil, fmt.Errorf("failed to decrypt permissions for policy %s: %w", policy.ID, err)
+		}
+
+		policy.SPIFFEIDPattern = string(decryptedSPIFFEIDPattern)
+		policy.PathPattern = string(decryptedPathPattern)
+		policy.CreatedAt = time.Unix(createdTime, 0)
+
+		// Deserialize permissions
+		permissionsStr := string(decryptedPermissions)
 		if permissionsStr != "" {
-			permissionStrs := strings.Split(permissionsStr, ",")
-			policy.Permissions = make([]data.PolicyPermission, len(permissionStrs))
-			for i, permStr := range permissionStrs {
-				policy.Permissions[i] = data.PolicyPermission(strings.TrimSpace(permStr))
+			perms := strings.Split(permissionsStr, ",")
+			policy.Permissions = make([]data.PolicyPermission, len(perms))
+			for i, p := range perms {
+				policy.Permissions[i] = data.PolicyPermission(strings.TrimSpace(p))
 			}
 		}
 
-		// Compile the patterns just like in LoadPolicy
-		idRegex, err := regexp.Compile(policy.SPIFFEIDPattern)
+		// Compile regex
+		policy.IDRegex, err = regexp.Compile(policy.SPIFFEIDPattern)
 		if err != nil {
-			return nil,
-				fmt.Errorf("invalid spiffeid pattern for policy %s: %w", policy.ID, err)
+			return nil, fmt.Errorf("invalid spiffeid pattern for policy %s: %w", policy.ID, err)
 		}
-		policy.IDRegex = idRegex
-
-		pathRegex, err := regexp.Compile(policy.PathPattern)
+		policy.PathRegex, err = regexp.Compile(policy.PathPattern)
 		if err != nil {
-			return nil,
-				fmt.Errorf("invalid path pattern for policy %s: %w", policy.ID, err)
+			return nil, fmt.Errorf("invalid path pattern for policy %s: %w", policy.ID, err)
 		}
-		policy.PathRegex = pathRegex
 
 		policies[policy.ID] = &policy
 	}
