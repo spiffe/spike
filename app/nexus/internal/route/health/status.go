@@ -3,18 +3,17 @@ package health
 import (
 	"crypto/fips140"
 	"encoding/json"
+	"net/http"
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/spiffe/spike-sdk-go/log"
 
 	env "github.com/spiffe/spike/app/nexus/internal/env"
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 	"github.com/spiffe/spike/internal/journal"
-
-	"net/http"
-	"time"
 )
 
 // StatusResponse represents the complete system status information
