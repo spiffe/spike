@@ -64,25 +64,19 @@ type BackingStore struct {
 // startTime records when the server was started, used for uptime calculation
 var startTime = time.Now()
 
-// RouteGetStatus handles GET requests to /v1/operator/status endpoint.
-// It returns a comprehensive JSON response containing the current status
-// of all critical system components including health, keepers, root key,
-// backing store, FIPS mode, secrets count, and uptime.
-//
-// The endpoint provides essential monitoring information for:
-//   - Health check systems and load balancers
-//   - Prometheus/Grafana monitoring and alerting
-//   - Kubernetes readiness and liveness probes
-//   - Operations teams for system diagnostics
-//
-// Response format conforms to standard REST API patterns with proper
-// HTTP status codes and JSON content type headers.
+// RouteGetStatus handles GET requests to the /v1/operator/status endpoint.
+// It performs the following steps:
+// Audits the incoming request for monitoring and compliance purposes.
+// Guards the request by validating the SPIFFE ID and checking ACL permissions.
+// Fetches the current system status, including keeper status, root key status, backing store health, FIPS mode, secrets count, and overall health.
+// Marshals the aggregated system status into JSON and responds to the client.
+// Handles errors gracefully, returning appropriate HTTP status codes and messages.
 func RouteGetStatus(
 	w http.ResponseWriter, r *http.Request, audit *journal.AuditEntry,
 ) error {
 	const fName = "routeGetStatus"
 
-	// 1️⃣ Audit the request
+	// Audit the request
 	journal.AuditRequest(fName, r, audit, journal.AuditRead)
 
 	err := guardStatusRequest(w, r)
@@ -92,7 +86,6 @@ func RouteGetStatus(
 
 	status, err := getSystemStatus(r.Context())
 	if err != nil {
-		// Timeout veya başka bir hata varsa
 		responseBody := net.MarshalBody(map[string]string{
 			"error": "failed to get system status",
 		}, w)
@@ -111,6 +104,17 @@ func RouteGetStatus(
 	return nil
 }
 
+// getSystemStatus concurrently collects status information from all critical
+// system components using goroutines and a wait group. It ensures that:
+//   - Keeper cluster status is retrieved.
+//   - Root key availability and source are checked.
+//   - Backing store connectivity and performance metrics are measured.
+//   - FIPS mode and overall system health are determined.
+//
+// The function uses a shared mutex to safely write results from multiple
+// goroutines and a context with timeout to prevent blocking forever.
+// Returns a fully aggregated StatusResponse or an error if the operation
+// times out.
 func getSystemStatus(ctx context.Context) (StatusResponse, error) {
 	// Set a reasonable timeout for the entire operation
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
