@@ -53,6 +53,8 @@ missing environment variables that are not mentioned and suggest updates here.
 | SPIKE Nexus     | `SPIKE_NEXUS_SHAMIR_SHARES`             | The total number of shares used for secret sharding, this should be equal to the number of SPIKE Keepers too.                                       | `3`                                                                      |
 | SPIKE Nexus     | `SPIKE_NEXUS_SHAMIR_THRESHOLD`          | The minimum number of shares to be able to reconstruct the root key.                                                                                | `2`                                                                      |
 | SPIKE Nexus     | `SPIKE_NEXUS_KEEPER_UPDATE_INTERVAL`    | The duration between SPIKE Nexus updates SPIKE Keepers with the relevant shard information.                                                         | `5m`                                                                     |
+| SPIKE Nexus     | `SPIKE_NEXUS_DATA_DIR`                  | Custom data directory for SPIKE Nexus database storage. If not set, falls back to `~/.spike/data`.                                                  | `""` (uses `~/.spike/data`)                                             |
+| SPIKE Pilot     | `SPIKE_PILOT_RECOVERY_DIR`              | Custom recovery directory for SPIKE Pilot recovery shards. If not set, falls back to `~/.spike/recover`.                                            | `""` (uses `~/.spike/recover`)                                          |
 | SPIKE Pilot     | `SPIKE_PILOT_SHOW_MEMORY_WARNING`       | Whether to show a warning when the system cannot lock memory for security.                                                                          | `false`                                                                  |
 | All             | `SPIKE_SYSTEM_LOG_LEVEL`                | The log level for all SPIKE components (`"DEBUG"`, `"INFO"`, `"WARN"`, `"ERROR"`).                                                                  | `"WARN"`                                                                 |
 | All             | `SPIKE_NEXUS_API_URL`                   | The URL where SPIKE Nexus can be reached                                                                                                            | `"https://localhost:8553"`                                               |
@@ -86,7 +88,7 @@ missing environment variables that are not mentioned and suggest updates here.
 - SPIKE Keeper: Secret injection agent
 
 ### Database
-- SQLite backend uses `~/.spike/data/spike.db` (hardcoded, not configurable)
+- SQLite backend uses `~/.spike/data/spike.db` by default (configurable via `SPIKE_NEXUS_DATA_DIR`)
 - Encryption keys are `crypto.AES256KeySize` byte (32 bytes)
 - Schema in `app/nexus/internal/state/backend/sqlite/ddl/statements.go`
 

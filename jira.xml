@@ -20,7 +20,6 @@
  -->
 <stuff>
   <high-level-plan>
-    <issue order="1">Release SPIKE v0.5.0 to enable Helm Charts work</issue>
     <issue order="2">Fix post v0.5.0 issues</issue>
     <issue order="3">Secure Secrets Management Web UX</issue>
     <issue order="4">Zero Turtle Pi Grid</issue>
@@ -40,6 +39,10 @@
   <task-group for=">v0.5.0">
     <issue>
       Sep 20th: SPIKE Onboarding.
+    </issue>
+    <issue>
+      SQLite datasource should be able to use a separate file for tests
+      to be able to test things in parallel.
     </issue>
     <issue>
       ensure that the demo app still works.

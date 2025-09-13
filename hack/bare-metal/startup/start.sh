@@ -194,27 +194,28 @@ else
   echo "SPIKE_SKIP_SPIRE_AGENT_START is set, skipping SPIRE agent start."
 fi
 
-# Check if SPIKE_NEXUS_BACKEND_STORE is set to memory:
+# No SPIKE Keeper initialization is required for the "in-memory" backing store:
 if [ "$SPIKE_NEXUS_BACKEND_STORE" != "memory" ]; then
-  # Check if we want to skip the keeper initialization step:
-  if [ -z "$SPIKE_SKIP_KEEPER_INITIALIZATION" ]; then
-    echo ""
-    echo "Waiting before SPIKE Keeper 1..."
-    sleep 5
-    run_background "./hack/bare-metal/startup/start-keeper-1.sh"
-    echo ""
-    echo "Waiting before SPIKE Keeper 2..."
-    sleep 5
-    run_background "./hack/bare-metal/startup/start-keeper-2.sh"
-    echo ""
-    echo "Waiting before SPIKE Keeper 3..."
-    sleep 5
-    run_background "./hack/bare-metal/startup/start-keeper-3.sh"
-  else
-    echo "SPIKE_SKIP_KEEPER_INITIALIZATION is set, skipping Keeper instances."
-  fi
-else
   echo "SPIKE_NEXUS_BACKEND_STORE is set to memory, skipping Keeper instances."
+  SPIKE_SKIP_KEEPER_INITIALIZATION="true"
+fi
+
+# Check if we want to skip the keeper initialization step:
+if [ -z "$SPIKE_SKIP_KEEPER_INITIALIZATION" ]; then
+  echo ""
+  echo "Waiting before SPIKE Keeper 1..."
+  sleep 5
+  run_background "./hack/bare-metal/startup/start-keeper-1.sh"
+  echo ""
+  echo "Waiting before SPIKE Keeper 2..."
+  sleep 5
+  run_background "./hack/bare-metal/startup/start-keeper-2.sh"
+  echo ""
+  echo "Waiting before SPIKE Keeper 3..."
+  sleep 5
+  run_background "./hack/bare-metal/startup/start-keeper-3.sh"
+else
+  echo "SPIKE_SKIP_KEEPER_INITIALIZATION is set, skipping Keeper instances."
 fi
 
 if [ -z "$SPIKE_SKIP_NEXUS_START" ]; then

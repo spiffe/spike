@@ -38,3 +38,15 @@ export SPIKE_SYSTEM_LOG_LEVEL="debug"
 
 export SPIKE_TRUST_ROOT="spike.ist"
 export SPIKE_NEXUS_API_URL="https://localhost:8553"
+
+
+# To modify bare-metal startup behavior:
+# . ~/.zshrc
+# export SPIKE_SKIP_REGISTER_ENTRIES="true"
+# export SPIKE_SKIP_CLEAR_DATA="true"
+# export SPIKE_SKIP_SPIKE_BUILD="true"
+# export SPIKE_SKIP_SPIRE_SERVER_START="true"
+# export SPIKE_SKIP_GENERATE_AGENT_TOKEN="true"
+# export SPIKE_SKIP_SPIRE_AGENT_START="true"
+# export SPIKE_SKIP_KEEPER_INITIALIZATION="true"
+# export SPIKE_SKIP_NEXUS_START="true"
