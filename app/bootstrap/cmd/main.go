@@ -5,11 +5,14 @@
 package main
 
 import (
+	"context"
 	"crypto/fips140"
 	"flag"
 	"fmt"
+	"time"
 
 	"github.com/spiffe/spike-sdk-go/log"
+	"github.com/spiffe/spike-sdk-go/retry"
 	"github.com/spiffe/spike-sdk-go/spiffe"
 	svid "github.com/spiffe/spike-sdk-go/spiffeid"
 	"github.com/spiffe/spike/internal/config"
@@ -74,18 +77,46 @@ func main() {
 	log.Log().Info(
 		fName, "message", "Sending shards to SPIKE Keeper instances...",
 	)
+
+	ctx := context.Background()
+
 	for keeperID, keeperAPIRoot := range env.Keepers() {
+		fmt.Println(">>>>>> LOOPING KEEPERS:", "id", keeperID, "root", keeperAPIRoot)
+
 		log.Log().Info(fName, "keeper ID", keeperID)
-		net.Post(
-			net.MTLSClient(src),
-			url.KeeperEndpoint(keeperAPIRoot),
-			net.Payload(
-				state.KeeperShare(
-					state.RootShares(), keeperID),
+
+		_, err := retry.Do(ctx, func() (bool, error) {
+			log.Log().Info(fName, "message", "retry:"+time.Now().String())
+
+			err := net.Post(
+				net.MTLSClient(src),
+				url.KeeperEndpoint(keeperAPIRoot),
+				net.Payload(
+					state.KeeperShare(
+						state.RootShares(), keeperID),
+					keeperID,
+				),
 				keeperID,
+			)
+			if err != nil {
+				log.Log().Warn(fName, "message", "Failed to send shard. Will retry.")
+				return false, err
+			}
+
+			log.Log().Info(fName, "message", "Shard sent successfully.")
+			return true, nil
+		},
+			retry.WithBackOffOptions(
+				retry.WithMaxInterval(60*time.Second), // TODO: to env vars.
+				retry.WithMaxElapsedTime(0),           // Retry forever.
 			),
-			keeperID,
 		)
+
+		// This should never happen since the above loop retries forever:
+		if err != nil {
+			log.FatalLn(fName, "message", "Initialization failed", "err", err)
+		}
+
 	}
 
 	log.Log().Info(fName, "message", "Sent shards to SPIKE Keeper instances.")
