@@ -51,6 +51,11 @@
 
     </issue>
     <issue>
+      SPIKE Bootstrap tries to reach keepers forever, but it should have a max
+      timeout (like, say, 20mins), after which it gives up and crashes.
+      -- configurable.
+    </issue>
+    <issue>
       bootstrap: when bootstrap is done encrypt a text and let nexus decrypt it
       to ensure that the bootstrapping is done and the root key works.
     </issue>

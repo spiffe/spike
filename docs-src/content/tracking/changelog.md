@@ -14,6 +14,15 @@ sort_by = "weight"
 
 TBD
 
+## [0.5.1] - 2025-09-14
+
+## Changed
+
+* Updated SPIKE Bootstrap to be more robust by adding exponential backoff while
+  waiting for SPIKE Keepers to be ready.
+* Enhancements in startup scripts to better enable local development with
+  SPIFFE Helm Charts that have not been published yet.
+
 ## [0.5.0] - 2025-09-11
 
 This is still a **prerelease** version; however, it includes major changes
