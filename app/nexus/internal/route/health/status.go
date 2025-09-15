@@ -391,6 +391,11 @@ func getBackingStoreType() string {
 }
 
 func getSecretsCount() *int {
+	storeType := env.BackendStoreType()
+
+	if storeType == env.Lite || storeType == env.Memory {
+		return nil
+	}
 
 	if !backingStoreHealthy() {
 		return nil
@@ -399,6 +404,7 @@ func getSecretsCount() *int {
 	secrets := state.ListKeys()
 	count := len(secrets)
 	return &count
+
 }
 
 func fipsMode() bool {
