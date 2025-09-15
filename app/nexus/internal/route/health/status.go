@@ -254,8 +254,37 @@ func backingStoreHealthy() bool {
 		}
 	}()
 
-	keys := state.ListKeys()
-	return keys != nil
+	key := "healthcheck-temp-key"
+	values := map[string]string{"value": "test"}
+
+	// Set a temporary secret
+	err := state.UpsertSecret(key, values)
+	if err != nil {
+		fmt.Println("Failed to upsert secret:", err)
+		return false
+	}
+
+	// Get the secret back
+	vals, err := state.GetSecret(key, 0)
+	if err != nil {
+		fmt.Println("Failed to get secret:", err)
+		_ = state.DeleteSecret(key, nil)
+		return false
+	}
+	if v, ok := vals["value"]; !ok || v != "test" {
+		fmt.Println("Secret value mismatch")
+		_ = state.DeleteSecret(key, nil)
+		return false
+	}
+
+	// Delete the secret
+	err = state.DeleteSecret(key, nil) // nil = delete current version only
+	if err != nil {
+		fmt.Println("Failed to delete secret:", err)
+		return false
+	}
+
+	return true
 }
 
 func rootKeyAvailable() bool {
@@ -362,12 +391,14 @@ func getBackingStoreType() string {
 }
 
 func getSecretsCount() *int {
-	secrets := state.ListKeys()
-	if backingStoreHealthy() {
-		count := len(secrets)
-		return &count
+
+	if !backingStoreHealthy() {
+		return nil
 	}
-	return nil
+
+	secrets := state.ListKeys()
+	count := len(secrets)
+	return &count
 }
 
 func fipsMode() bool {
