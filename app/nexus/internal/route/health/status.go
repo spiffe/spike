@@ -3,13 +3,14 @@ package health
 import (
 	"context"
 	"crypto/fips140"
+	"crypto/tls"
+	"fmt"
+
 	"net/http"
-	"os"
-	"strconv"
-	"strings"
 	"sync"
 	"time"
 
+	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	apiErr "github.com/spiffe/spike-sdk-go/api/errors"
 
 	"github.com/spiffe/spike-sdk-go/log"
@@ -41,16 +42,14 @@ type StatusResponse struct {
 // Shamir secret sharing. It tracks both the configured keeper instances
 // and the threshold required for root key reconstruction.
 type KeeperStatus struct {
-	Status        string `json:"status"`
-	ActiveCount   int    `json:"active_count"`
-	RequiredCount int    `json:"required_count"`
+	Status      string `json:"status"`
+	ActiveCount int    `json:"active_count"`
 }
 
 // RootKeyStatus indicates whether the root encryption key is available
 // for cryptographic operations and where it's sourced from.
 type RootKeyStatus struct {
 	Status string `json:"status"`
-	Source string `json:"source"`
 }
 
 // BackingStore represents the connection status and performance metrics
@@ -139,7 +138,15 @@ func getSystemStatus(ctx context.Context) (StatusResponse, error) {
 	// Keeper status
 	go func() {
 		defer wg.Done()
-		k := getKeeperStatus()
+		ctx := context.Background()
+		source, err := workloadapi.NewX509Source(ctx)
+		if err != nil {
+			fmt.Printf("Failed to create X509Source: %v\n", err)
+			return
+		}
+		defer source.Close()
+
+		k := getKeeperStatus(source)
 		mu.Lock()
 		res.keepers = k
 		mu.Unlock()
@@ -262,57 +269,71 @@ func rootKeyAvailable() bool {
 	}
 }
 
-func getKeeperStatus() KeeperStatus {
-	peersEnv := os.Getenv("SPIKE_NEXUS_KEEPER_PEERS")
-	if peersEnv == "" {
-		return KeeperStatus{
-			Status:        "UNKNOWN",
-			ActiveCount:   0,
-			RequiredCount: 0,
+func getKeeperStatus(source *workloadapi.X509Source) KeeperStatus {
+	keepers := env.Keepers()
+	activeCount := 0
+
+	for _, keeperURL := range keepers {
+		// X509SVID
+		svid, err := source.GetX509SVID()
+		if err != nil {
+			fmt.Println("Failed to get X509SVID from SPIFFE source:", err)
+			continue
 		}
-	}
 
-	urls := strings.Split(peersEnv, ",")
-	cleanURLs := make([]string, 0, len(urls))
-	for _, u := range urls {
-		trimmed := strings.TrimSpace(u)
-		if trimmed != "" {
-			cleanURLs = append(cleanURLs, trimmed)
+		cert := tls.Certificate{
+			Certificate: make([][]byte, len(svid.Certificates)),
+			PrivateKey:  svid.PrivateKey,
 		}
+		for i, c := range svid.Certificates {
+			cert.Certificate[i] = c.Raw
+		}
+
+		resp, err := callKeeperHealth(keeperURL, cert)
+		if err != nil {
+			fmt.Println("Keeper not reachable:", keeperURL, err)
+			continue
+		}
+
+		if resp.StatusCode == http.StatusOK {
+			activeCount++
+		}
+		resp.Body.Close()
 	}
 
-	activeCount := len(cleanURLs)
-	requiredCountStr := os.Getenv("SPIKE_NEXUS_SHAMIR_THRESHOLD")
-	requiredCount, err := strconv.Atoi(requiredCountStr)
-	if err != nil || requiredCount <= 0 {
-		requiredCount = 2
-	}
-
-	status := "HEALTHY"
-	if activeCount == 0 {
-		status = "UNHEALTHY"
-	} else if activeCount < requiredCount {
-		status = "DEGRADED"
+	status := "UNHEALTHY"
+	if activeCount > 0 {
+		status = "HEALTHY"
 	}
 
 	return KeeperStatus{
-		Status:        status,
-		ActiveCount:   activeCount,
-		RequiredCount: requiredCount,
+		Status:      status,
+		ActiveCount: activeCount,
 	}
+}
+
+func callKeeperHealth(keeperURL string, cert tls.Certificate) (*http.Response, error) {
+	client := &http.Client{
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{
+				Certificates: []tls.Certificate{cert},
+			},
+		},
+	}
+
+	resp, err := client.Get(keeperURL + "/v1/store/health")
+	return resp, err
 }
 
 func getRootKeyStatus() RootKeyStatus {
 	if rootKeyAvailable() {
 		return RootKeyStatus{
 			Status: "AVAILABLE",
-			Source: "keeper",
 		}
 	}
 
 	return RootKeyStatus{
 		Status: "UNAVAILABLE",
-		Source: "unknown",
 	}
 }
 

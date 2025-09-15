@@ -43,6 +43,8 @@ func Route(
 			// Provide your shard to SPIKE Nexus:
 			case a == url.ActionDefault && p == url.KeeperShard:
 				return store.RouteShard
+			case a == url.ActionDefault && p == url.KeeperHealth:
+				return store.RouteHealth
 			default:
 				return net.Fallback
 			}
