@@ -81,8 +81,6 @@ func main() {
 	ctx := context.Background()
 
 	for keeperID, keeperAPIRoot := range env.Keepers() {
-		fmt.Println(">>>>>> LOOPING KEEPERS:", "id", keeperID, "root", keeperAPIRoot)
-
 		log.Log().Info(fName, "keeper ID", keeperID)
 
 		_, err := retry.Do(ctx, func() (bool, error) {
