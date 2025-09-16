@@ -45,7 +45,7 @@ func routeWithBackingStore(a url.APIAction, p url.APIURL) net.Handler {
 		return cipher.RouteEncrypt
 	case a == url.ActionDefault && p == url.NexusCipherDecrypt:
 		return cipher.RouteDecrypt
-	case a == url.ActionGet && p == url.NexusHealthStatus:
+	case a == url.ActionGet && p == url.NexusHealth:
 		return health.RouteGetStatus
 	default:
 		return net.Fallback
