@@ -134,7 +134,10 @@ func TestPostHTTPInteraction(t *testing.T) {
 				t.Skip("Skipping test that would cause os.Exit - needs refactoring for testability")
 			} else {
 				// This should work without calling os.Exit
-				Post(server.Client(), server.URL, tt.payload, "test-keeper")
+				err := Post(server.Client(), server.URL, tt.payload, "test-keeper")
+				if err != nil {
+					return
+				}
 			}
 		})
 	}

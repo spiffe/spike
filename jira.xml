@@ -42,6 +42,24 @@
       Sep 20th: SPIKE Onboarding.
     </issue>
     <issue>
+      it looks like Pilot does not do any SVID validation against Nexus.
+
+      func CreateMTLSClient(source *workloadapi.X509Source) (*http.Client, error) {
+      return CreateMTLSClientWithPredicate(source, func(string) bool { return true })
+      }
+      ^ this accepts all peer spiffe ids.
+
+    </issue>
+    <issue>
+      SPIKE Bootstrap tries to reach keepers forever, but it should have a max
+      timeout (like, say, 20mins), after which it gives up and crashes.
+      -- configurable.
+    </issue>
+    <issue>
+      bootstrap: when bootstrap is done encrypt a text and let nexus decrypt it
+      to ensure that the bootstrapping is done and the root key works.
+    </issue>
+    <issue>
       ensure that the demo app still works.
     </issue>
     <issue>

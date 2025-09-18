@@ -99,17 +99,16 @@ func Payload(share secretsharing.Share, keeperID string) []byte {
 // client and payload data. The function is designed for sending shard
 // contribution requests to keepers in a secure manner. It will terminate the
 // program with exit code 1 if the POST request fails.
-func Post(client *http.Client, u string, md []byte, keeperID string) {
+func Post(client *http.Client, u string, md []byte, keeperID string) error {
 	const fName = "post"
 
 	log.Log().Info(fName, "payload", fmt.Sprintf("%x", sha256.Sum256(md)))
 
 	_, err := net.Post(client, u, md)
 	if err != nil {
-		log.FatalLn(fName, "message",
+		log.Log().Info(fName, "message",
 			"Failed to post",
 			"err", err, "keeper_id", keeperID)
 	}
-
-	log.Log().Info(fName, "message", "done")
+	return err
 }
