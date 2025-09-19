@@ -781,14 +781,6 @@ configure the SPIKE components:</p>
 <tr><td>All</td><td><code>SPIKE_TRUST_ROOT_LITE_WORKLOAD</code></td><td>The SPIFFE trust root used for lite workload instances. Can be a single entry, or a comma-delimited list of suitable trust roots.</td><td><code>"spike.ist"</code></td></tr>
 <tr><td>All</td><td><code>SPIKE_BANNER_ENABLED</code></td><td>Whether to display the SPIKE banner on startup. Set to <code>true</code> to enable.</td><td><code>true</code></td></tr>
 <tr><td>All</td><td><code>SPIFFE_ENDPOINT_SOCKET</code></td><td>The Unix domain socket path used for SPIFFE Workload API</td><td><code>"unix:///tmp/spire-agent/public/api.sock"</code></td></tr>
-<tr><td>Startup Scripts</td><td><code>SPIKE_SKIP_CLEAR_DATA</code></td><td>Skip clearing existing data during startup (used in <code>hack/bare-metal/startup/start.sh</code>).</td><td>not set (data is cleared)</td></tr>
-<tr><td>Startup Scripts</td><td><code>SPIKE_SKIP_SPIKE_BUILD</code></td><td>Skip building SPIKE binaries during startup (used in <code>hack/bare-metal/startup/start.sh</code>).</td><td>not set (binaries are built)</td></tr>
-<tr><td>Startup Scripts</td><td><code>SPIKE_SKIP_SPIRE_SERVER_START</code></td><td>Skip starting the SPIRE server during startup (used in <code>hack/bare-metal/startup/start.sh</code>).</td><td>not set (SPIRE server is started)</td></tr>
-<tr><td>Startup Scripts</td><td><code>SPIKE_SKIP_GENERATE_AGENT_TOKEN</code></td><td>Skip generating the SPIRE agent token during startup (used in <code>hack/bare-metal/startup/start.sh</code>).</td><td>not set (agent token is generated)</td></tr>
-<tr><td>Startup Scripts</td><td><code>SPIKE_SKIP_REGISTER_ENTRIES</code></td><td>Skip registering SPIRE entries during startup (used in <code>hack/bare-metal/startup/start.sh</code>).</td><td>not set (entries are registered)</td></tr>
-<tr><td>Startup Scripts</td><td><code>SPIKE_SKIP_SPIRE_AGENT_START</code></td><td>Skip starting the SPIRE agent during startup (used in <code>hack/bare-metal/startup/start.sh</code>).</td><td>not set (SPIRE agent is started)</td></tr>
-<tr><td>Startup Scripts</td><td><code>SPIKE_SKIP_KEEPER_INITIALIZATION</code></td><td>Skip initializing SPIKE Keeper instances during startup (used in <code>hack/bare-metal/startup/start.sh</code>).</td><td>not set (Keeper instances are started)</td></tr>
-<tr><td>Startup Scripts</td><td><code>SPIKE_SKIP_NEXUS_START</code></td><td>Skip starting SPIKE Nexus during startup (used in <code>hack/bare-metal/startup/start.sh</code>).</td><td>not set (Nexus is started)</td></tr>
 </tbody></table>
 <p>We’ll add more configuration options in the future. Stay tuned.</p>
 <p>&nbsp;</p>
