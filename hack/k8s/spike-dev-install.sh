@@ -7,6 +7,15 @@
 # Installs SPIRE and SPIKE to the cluster.
 # Uses the local container registry for SPIKE images.
 
+# Configuration
+SPIKE_USE_LOCAL_CHARTS="${SPIKE_USE_LOCAL_CHARTS:-true}" # TODO: should default to false after upstream helm is merged.
+SPIKE_LOCAL_CHARTS_PATH="${SPIKE_LOCAL_CHARTS_PATH:-$HOME/WORKSPACE/helm-charts-hardened}"
+SPIKE_LOCAL_CHARTS_VALUES_FILE="${SPIKE_LOCAL_CHARTS_VALUES_FILE:-./config/helm/values-local.yaml}"
+SPIKE_REMOTE_CHARTS_HELM_REPO="${SPIKE_REMOTE_CHARTS_HELM_REPO:-https://spiffe.github.io/helm-charts-hardened/}"
+SPIKE_REMOTE_CHARTS_VALUES_FILE="${SPIKE_REMOTE_CHARTS_VALUES_FILE:-./config/helm/values-dev.yaml}"
+SPIKE_REMOTE_CHARTS_CRDS_VERSION="${SPIKE_REMOTE_CHARTS_CRDS_VERSION:-0.5.0}"
+SPIKE_REMOTE_CHARTS_SPIRE_VERSION="${SPIKE_REMOTE_CHARTS_SPIRE_VERSION:-0.26.1}"
+
 set -e  # Exit on any error
 
 # Add Helm repository if it doesn't exist
@@ -52,19 +61,65 @@ create_namespace_if_not_exists "spike" # Pilot/Nexus/Keepers/Bootstrap
 echo "SPIKE namespaces:"
 kubectl get namespaces | grep spike || echo "No spike namespaces found"
 
-helm upgrade --install -n spire-mgmt spire-crds spire-crds \
-  --repo https://spiffe.github.io/helm-charts-hardened/ \
-  --version 0.5.0 --create-namespace
+# Function to install a single chart
+install_chart() {
+  local release_name=$1
+  local chart_name=$2
+  shift 2
+  local extra_args=("$@")
 
-echo "Sleeping for 15 secs before installing SPIRE and SPIKE..."
-sleep 15
+  if [ -n "${SPIKE_USE_LOCAL_CHARTS}" ]; then
+    helm upgrade --install -n spire-mgmt "$release_name" \
+      "${SPIKE_LOCAL_CHARTS_PATH}/charts/${chart_name}" \
+      "${extra_args[@]}"
+  else
+    # Map chart names to version variables
+    case "$chart_name" in
+      "spire-crds")
+        local version="$SPIKE_REMOTE_CHARTS_CRDS_VERSION"
+        ;;
+      "spire")
+        local version="$SPIKE_REMOTE_CHARTS_SPIRE_VERSION"
+        ;;
+      *)
+        echo "Error: Unknown chart $chart_name"
+        return 1
+        ;;
+    esac
 
-helm upgrade --install -n spire-mgmt spiffe spire \
-  --repo https://spiffe.github.io/helm-charts-hardened/ \
-  --version 0.26.1 \
-  -f ./config/helm/values-dev.yaml
+    helm upgrade --install -n spire-mgmt "$release_name" "$chart_name" \
+      --repo "$SPIKE_REMOTE_CHARTS_HELM_REPO" \
+      --version "$version" \
+      "${extra_args[@]}"
+  fi
+}
+
+# Function to install all charts
+install_charts() {
+  if [ -n "${SPIKE_USE_LOCAL_CHARTS}" ]; then
+    echo "Using local charts from $SPIKE_LOCAL_CHARTS_PATH"
+    local values_file="$SPIKE_LOCAL_CHARTS_VALUES_FILE"
+  else
+    echo "Using upstream charts from $SPIKE_REMOTE_CHARTS_HELM_REPO"
+    local values_file="$SPIKE_REMOTE_CHARTS_VALUES_FILE"
+  fi
+
+  # Install spire-crds
+  install_chart "spire-crds" "spire-crds" --create-namespace
+
+  echo "Sleeping for 15 secs before installing SPIRE and SPIKE..."
+  sleep 15
+
+  # Install spire
+  install_chart "spiffe" "spire" -f "$values_file"
+}
+
+# Install the charts
+install_charts
 
 echo "Sleeping for 15 secs..."
 sleep 15
+
+
 
 echo "Everything is awesome!"

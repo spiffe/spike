@@ -35,6 +35,7 @@ func Serve(appName string, source *workloadapi.X509Source) {
 		func() { routing.HandleRoute(http.Route) },
 		func(peerSpiffeId string) bool {
 			// Only SPIKE Nexus can talk to SPIKE Keeper:
+			// TODO: check this out!
 			return spiffeid.PeerCanTalkToKeeper(env.TrustRootForNexus(), peerSpiffeId)
 		},
 		env.TLSPort(),
