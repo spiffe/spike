@@ -27,12 +27,18 @@ import (
 var startTime = time.Now()
 
 // RouteGetStatus handles GET requests to the /v1/operator/status endpoint.
+//
 // It performs the following steps:
-// Audits the incoming request for monitoring and compliance purposes.
-// Guards the request by validating the SPIFFE ID and checking ACL permissions.
-// Fetches the current system status, including keeper status, root key status, backing store health, FIPS mode, secrets count, and overall health.
-// Marshals the aggregated system status into JSON and responds to the client.
-// Handles errors gracefully, returning appropriate HTTP status codes and messages.
+//   - Audits the incoming request for monitoring and compliance purposes.
+//   - Guards the request by validating the SPIFFE ID and checking ACL
+//     permissions.
+//   - Fetches the current system status, including keeper status, root key
+//     status, backing store health, FIPS mode, secrets count, and overall
+//     health.
+//   - Marshals the aggregated system status into JSON and responds to the
+//     client.
+//   - Handles errors gracefully, returning appropriate HTTP status codes and
+//     messages.
 func RouteGetStatus(
 	w http.ResponseWriter, r *http.Request, audit *journal.AuditEntry,
 ) error {
