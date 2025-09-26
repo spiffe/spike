@@ -38,7 +38,129 @@
   </task-group>
   <task-group for=">v0.5.0">
     <issue>
-      Sep 20th: SPIKE Onboarding.
+      during bootsrap retry; if a single keeper fails, it will retry it indefinitely without
+      giving chance to other keepers.
+      a better solution is needed for that.
+    </issue>
+    <issue>
+      bootstrap verification:
+      encrypt a known txt and send it to nexus,
+      if it can decrypt, bootstrap is complete,
+      if not, fail the job and log an error both on bootstrap and also nexus.
+    </issue>
+    <issue>
+      for spike consider some of these if not there yet already
+      https://fluxcd.io/flux/security/
+    </issue>
+    <issue>
+      spike bootstrap and other container images don't have any descriptions
+
+      No description provided
+      This package version was published 7 minutes ago.
+
+      To provide a description, add the following line to your Dockerfile:
+
+      LABEL org.opencontainers.image.description DESCRIPTION
+      For multi-arch images, set a value for the org.opencontainers.image.description key in the annotations field of the manifest:
+
+      "annotations": { "org.opencontainers.image.description": "DESCRIPTION" }
+      https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry#labelling-container-images
+    </issue>
+    <issue>
+      Sign generated binaries:
+      #!/usr/bin/env bash
+      set -euo pipefail
+
+      ART_DIR="${1:-dist}"
+      MODE="${MODE:-kms}"  # kms|keyless|file
+      KEY="${KEY:-awskms://arn:aws:kms:us-west-2:123456789012:key/XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX}"
+      PUB="${PUB:-spike-cosign.pub}"
+
+      cd "$ART_DIR"
+
+      # 1) checksums
+      sha256sum * > SHA256SUMS
+
+      signfile () {
+      local f="$1"
+      case "$MODE" in
+      kms)
+      cosign sign-blob --key "$KEY" --output-signature "$f.sig" "$f"
+      ;;
+      file)
+      cosign sign-blob --key cosign.key --output-signature "$f.sig" "$f"
+      ;;
+      keyless)
+      COSIGNEXPERIMENTAL=1 cosign sign-blob --yes \
+      --output-signature "$f.sig" \
+      --output-certificate "$f.pem" \
+      --bundle "$f.bundle" \
+      "$f"
+      ;;
+      *)
+      echo "Unknown MODE=$MODE" >&2; exit 1
+      ;;
+      esac
+      }
+
+      # 2) sign all artifacts + checksum file
+      for f in *; do
+      [[ "$f" =~ .(sig|pem|bundle)$ ]] && continue
+      sign_file "$f"
+      done
+
+      # 3) export public key if using KMS
+      if [[ "$MODE" == "kms" ]]; then
+      cosign public-key --key "$KEY" > "../$PUB"
+      fi
+
+      echo "Signed. Publish signatures + $PUB (if present)."
+    </issue>
+    <issue>
+      YAML-based secret creation from SPIKE CLI.
+
+      Follow up: for k8s clusters, a custom resource that manages these secrets securely
+      (i.e., values will be encrypted, and can only be decrypted through SPIKE Pilot; we can create
+      a cli helper for that (`kubectl get --raw /apis/example.com/v1/namespaces/default/spikesecrets/demo-db/reveal`)
+      (as a custom resource)
+      or
+      a kubectl plugin
+      `curl -H "Authorization: Bearer $(kubectl config view --raw -o jsonpath='{.users[0].user.token}')" \
+      "https://spike-controller.default.svc/reveal?name=$1"`
+      or a CSI Driver that mounts secrets to a volume.
+      or something like that:
+
+      # Direct API call for cluster admins
+      kubectl get --raw /apis/spike.io/v1/namespaces/default/spikesecrets/demo-db/reveal
+      # Or with a simple kubectl plugin wrapper
+      kubectl spike reveal demo-db
+      # Or
+      kubectl spike reveal demo-db -o yaml
+
+      cid:6062f33b-4a94-4b0f-a306-c13c4dd3d777
+    </issue>
+    <issue>
+      add some smoke tests to the end of start.sh
+
+      also maybe have a k8s job for smoke tests too after helm deployment.
+    </issue>
+    <issue>
+      there are pending PR reviews.
+    </issue>
+    <issue>
+      Due to vimeo migration, video links everywhere are likely broken,
+      that includes spike web too -- fix them.
+    </issue>
+    <issue>
+      add `-trimpath` and `-a` to go build.
+    </issue>
+    <issue>
+      consider using modernize:
+      https://pkg.go.dev/golang.org/x/tools/gopls/internal/analysis/modernize
+    </issue>
+    <issue>
+      introduce SPIKE to VSecM
+      https://github.com/vmware/secrets-manager/issues/1275
     </issue>
     <issue>
       SQLite datasource should be able to use a separate file for tests
