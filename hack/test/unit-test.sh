@@ -5,6 +5,7 @@
 # \\\\\\\ SPDX-License-Identifier: Apache-2.0
 
 # Run tests with coverage
+export CGO_ENABLED=0
 go test -coverprofile=coverage.out ./...
 
 # Generate HTML coverage report from the coverage data

@@ -77,7 +77,7 @@ func Initialize(source *workloadapi.X509Source) {
 	// Better to crash, since this is likely a configuration failure.
 	log.FatalLn(
 		fName, "message",
-		"Invalid backend store type: '"+env.BackendStoreType()+"'."+
+		"Invalid backend store type: '"+string(env.BackendStoreType())+"'."+
 			" Please set SPIKE_BACKEND_STORE_TYPE to 'sqlite', 'lite', or 'memory'.",
 	)
 }
