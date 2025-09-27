@@ -111,7 +111,7 @@ install_chart() {
 
 # Function to install all charts
 install_charts() {
-  if [ -n "${SPIKE_USE_LOCAL_CHARTS}" ]; then
+  if [ "${SPIKE_USE_LOCAL_CHARTS}" = "true" ]; then
     echo "Using local charts from $SPIKE_LOCAL_CHARTS_PATH"
     local values_file="$SPIKE_LOCAL_CHARTS_VALUES_FILE"
   else
