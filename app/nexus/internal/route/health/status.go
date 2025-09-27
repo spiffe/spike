@@ -69,7 +69,7 @@ func RouteGetStatus(
 	status, err := getSystemStatus(r.Context())
 	if err != nil {
 		responseBody := net.MarshalBody(reqres.HealthReadResponse{
-			StatusResponse: data.StatusResponse{},
+			StatusResponse: reqres.StatusResponse{},
 			Err:            data.ErrBadInput,
 		}, w)
 		net.Respond(http.StatusInternalServerError, responseBody, w)
@@ -101,14 +101,14 @@ func RouteGetStatus(
 // goroutines and a context with timeout to prevent blocking forever.
 // Returns a fully aggregated StatusResponse or an error if the operation
 // times out.
-func getSystemStatus(ctx context.Context) (data.StatusResponse, error) {
+func getSystemStatus(ctx context.Context) (reqres.StatusResponse, error) {
 
 	// Set a reasonable timeout for the entire operation
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
 	// Result struct to hold intermediate results
-	res := data.Result{}
+	res := data.HealthResult{}
 
 	var wg sync.WaitGroup
 	var mu sync.Mutex
@@ -153,10 +153,10 @@ func getSystemStatus(ctx context.Context) (data.StatusResponse, error) {
 
 	select {
 	case <-ctx.Done():
-		return data.StatusResponse{}, ctx.Err() // timeout
+		return reqres.StatusResponse{}, ctx.Err() // timeout
 	case <-done:
 		// Return aggregated status
-		return data.StatusResponse{
+		return reqres.StatusResponse{
 			Health:        res.Health,
 			Timestamp:     time.Now(),
 			RootKey:       res.RootKey,
@@ -267,14 +267,14 @@ func rootKeyAvailable() bool {
 }
 
 // getRootKeyStatus checks if the root key is available and returns its status.
-func getRootKeyStatus() data.RootKeyStatus {
+func getRootKeyStatus() data.RootKeyState {
 	if rootKeyAvailable() {
-		return data.RootKeyStatus{
+		return data.RootKeyState{
 			Status: "AVAILABLE",
 		}
 	}
 
-	return data.RootKeyStatus{
+	return data.RootKeyState{
 		Status: "UNAVAILABLE",
 	}
 }
@@ -283,7 +283,7 @@ func getRootKeyStatus() data.RootKeyStatus {
 // It performs a simple write-read-delete operation to verify connectivity
 // and responsiveness. The function returns the backing store status along
 // with its type and response time in milliseconds.
-func getBackingStoreStatus() data.BackingStore {
+func getBackingStoreStatus() data.BackingStoreState {
 	start := time.Now()
 
 	healthy := backingStoreHealthy()
@@ -294,7 +294,7 @@ func getBackingStoreStatus() data.BackingStore {
 		status = "DISCONNECTED"
 	}
 
-	return data.BackingStore{
+	return data.BackingStoreState{
 		Status:         status,
 		Type:           getBackingStoreType(),
 		ResponseTimeMs: &responseTime,
@@ -362,12 +362,12 @@ func getSpireAgentSocketPath() string {
 // getKeeperStatus checks the health of all configured keepers in the cluster.
 // It attempts to connect to each keeper's health endpoint using the provided
 // X.509 source for mTLS authentication. The function counts how many keepers
-func getKeeperStatus(source *workloadapi.X509Source) data.KeeperStatus {
+func getKeeperStatus(source *workloadapi.X509Source) data.KeeperState {
 	keepers := env.Keepers()
 	activeCount := 0
 
 	if len(keepers) == 0 {
-		return data.KeeperStatus{
+		return data.KeeperState{
 			Status:      "NO_KEEPERS_CONFIGURED",
 			ActiveCount: activeCount,
 		}
@@ -405,7 +405,7 @@ func getKeeperStatus(source *workloadapi.X509Source) data.KeeperStatus {
 
 	fmt.Printf("[DEBUG] Keeper status result: %s (active=%d)\n", status, activeCount)
 
-	return data.KeeperStatus{
+	return data.KeeperState{
 		Status:      status,
 		ActiveCount: activeCount,
 	}
