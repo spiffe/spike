@@ -8,7 +8,7 @@
 # Uses the local container registry for SPIKE images.
 
 # Configuration
-SPIKE_USE_LOCAL_CHARTS="${SPIKE_USE_LOCAL_CHARTS:-true}"
+SPIKE_USE_LOCAL_CHARTS="${SPIKE_USE_LOCAL_CHARTS:-false}"
 SPIKE_LOCAL_CHARTS_PATH="${SPIKE_LOCAL_CHARTS_PATH:-$HOME/WORKSPACE/helm-charts-hardened}"
 SPIKE_LOCAL_CHARTS_VALUES_FILE="${SPIKE_LOCAL_CHARTS_VALUES_FILE:-./config/helm/values-local.yaml}"
 SPIKE_REMOTE_CHARTS_HELM_REPO="${SPIKE_REMOTE_CHARTS_HELM_REPO:-https://spiffe.github.io/helm-charts-hardened/}"
@@ -68,7 +68,7 @@ install_chart() {
   shift 2
   local extra_args=("$@")
 
-  if [ -n "${SPIKE_USE_LOCAL_CHARTS}" ]; then
+  if [ "${SPIKE_USE_LOCAL_CHARTS}" = "true" ]; then
     helm upgrade --install -n spire-mgmt "$release_name" \
       "${SPIKE_LOCAL_CHARTS_PATH}/charts/${chart_name}" \
       "${extra_args[@]}"
@@ -96,7 +96,7 @@ install_chart() {
 
 # Function to install all charts
 install_charts() {
-  if [ -n "${SPIKE_USE_LOCAL_CHARTS}" ]; then
+  if [ "${SPIKE_USE_LOCAL_CHARTS}" = "true" ]; then
     echo "Using local charts from $SPIKE_LOCAL_CHARTS_PATH"
     local values_file="$SPIKE_LOCAL_CHARTS_VALUES_FILE"
   else
