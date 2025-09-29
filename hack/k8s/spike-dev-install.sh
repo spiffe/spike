@@ -120,6 +120,4 @@ install_charts
 echo "Sleeping for 15 secs..."
 sleep 15
 
-
-
 echo "Everything is awesome!"

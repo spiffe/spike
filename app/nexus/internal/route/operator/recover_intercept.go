@@ -7,8 +7,6 @@ package operator
 import (
 	"net/http"
 
-	"github.com/spiffe/spike/app/nexus/internal/env"
-
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	apiErr "github.com/spiffe/spike-sdk-go/api/errors"
@@ -38,7 +36,7 @@ func guardRecoverRequest(
 		return apiErr.ErrUnauthorized
 	}
 
-	if !spiffeid.IsPilotRecover(env.TrustRootForPilot(), peerSPIFFEID.String()) {
+	if !spiffeid.IsPilotRecover(peerSPIFFEID.String()) {
 		responseBody := net.MarshalBody(reqres.RestoreResponse{
 			Err: data.ErrUnauthorized,
 		}, w)

@@ -49,7 +49,7 @@ func main() {
 	defer spiffe.CloseSource(source)
 
 	// I should be a SPIKE Keeper.
-	if !spiffeid.IsKeeper(env.TrustRoot(), selfSPIFFEID) {
+	if !spiffeid.IsKeeper(selfSPIFFEID) {
 		log.FatalLn(appName, "message",
 			"Authenticate: SPIFFE ID is not valid",
 			"spiffeid", selfSPIFFEID)

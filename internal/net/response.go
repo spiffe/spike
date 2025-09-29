@@ -69,7 +69,10 @@ func Respond(statusCode int, body []byte, w http.ResponseWriter) {
 	w.Header().Set("Content-Type", "application/json")
 
 	// Add cache invalidation headers
-	w.Header().Set("Cache-Control", "no-store, no-cache, must-revalidate, private")
+	w.Header().Set(
+		"Cache-Control",
+		"no-store, no-cache, must-revalidate, private",
+	)
 	w.Header().Set("Pragma", "no-cache")
 	w.Header().Set("Expires", "0")
 

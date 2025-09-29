@@ -8,7 +8,7 @@ import (
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	"github.com/spiffe/spike-sdk-go/log"
 	"github.com/spiffe/spike-sdk-go/net"
-	"github.com/spiffe/spike-sdk-go/spiffeid"
+	"github.com/spiffe/spike-sdk-go/predicate"
 
 	"github.com/spiffe/spike/app/keeper/internal/env"
 	http "github.com/spiffe/spike/app/keeper/internal/route/base"
@@ -33,11 +33,9 @@ func Serve(appName string, source *workloadapi.X509Source) {
 	if err := net.ServeWithPredicate(
 		source,
 		func() { routing.HandleRoute(http.Route) },
-		func(peerSpiffeId string) bool {
-			// Only SPIKE Nexus can talk to SPIKE Keeper:
-			// TODO: check this out!
-			return spiffeid.PeerCanTalkToKeeper(env.TrustRootForNexus(), peerSpiffeId)
-		},
+		// Security: Only SPIKE Nexus and SPIKE Bootstrap
+		// can talk to SPIKE Keepers.
+		predicate.AllowKeeperPeer,
 		env.TLSPort(),
 	); err != nil {
 		log.FatalF("%s: Failed to serve: %s\n", appName, err.Error())

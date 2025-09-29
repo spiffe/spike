@@ -6,13 +6,19 @@ package main
 
 import (
 	"fmt"
+	"strings"
 
 	spike "github.com/spiffe/spike-sdk-go/api"
 )
 
 func main() {
+	allowDemo := func(id string) bool {
+		baseID := "spiffe://spike.ist/workload/demo"
+		return id == baseID || strings.HasPrefix(id, baseID+"/")
+	}
+
 	// https://pkg.go.dev/github.com/spiffe/spike-sdk-go/api#New
-	api := spike.New() // Use the default Workload API Socket
+	api := spike.New(allowDemo) // Use the default Workload API Socket
 
 	// https://pkg.go.dev/github.com/spiffe/spike-sdk-go/api#Close
 	defer api.Close() // Close the connection when done

@@ -19,7 +19,6 @@ import (
 	"github.com/spiffe/spike-sdk-go/security/mem"
 	"github.com/spiffe/spike-sdk-go/spiffeid"
 
-	"github.com/spiffe/spike/app/spike/internal/env"
 	"github.com/spiffe/spike/app/spike/internal/trust"
 	"github.com/spiffe/spike/internal/config"
 )
@@ -62,7 +61,7 @@ func newOperatorRecoverCommand(
 		Use:   "recover",
 		Short: "Recover SPIKE Nexus (do this while SPIKE Nexus is healthy)",
 		Run: func(cmd *cobra.Command, args []string) {
-			if !spiffeid.IsPilotRecover(env.TrustRoot(), SPIFFEID) {
+			if !spiffeid.IsPilotRecover(SPIFFEID) {
 				fmt.Println("")
 				fmt.Println("  You need to have a `recover` role to use this command.")
 				fmt.Println(
@@ -72,8 +71,9 @@ func newOperatorRecoverCommand(
 				log.FatalLn("Aborting.")
 			}
 
-			trust.AuthenticateRecover(SPIFFEID)
+			trust.AuthenticateForPilotRecover(SPIFFEID)
 
+			// Only accept SPIKE Nexus as a peer.
 			api := spike.NewWithSource(source)
 
 			shards, err := api.Recover()

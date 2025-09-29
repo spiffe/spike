@@ -9,6 +9,7 @@ import (
 	"crypto/fips140"
 	"fmt"
 
+	cfg "github.com/spiffe/spike-sdk-go/config/env"
 	"github.com/spiffe/spike-sdk-go/log"
 	"github.com/spiffe/spike-sdk-go/security/mem"
 	"github.com/spiffe/spike-sdk-go/spiffe"
@@ -43,9 +44,10 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	log.Log().Info(appName, "message", "SPIFFE Trust Domain: "+env.TrustRoot())
+	log.Log().Info(appName,
+		"message", "SPIFFE Trust Domain: "+cfg.TrustRootVal(),
+	)
 
-	fmt.Println("before trying to get source...")
 	source, selfSPIFFEID, err := spiffe.Source(ctx, spiffe.EndpointSocket())
 	if err != nil {
 		log.FatalLn(appName, "message", "failed to get source", "err", err.Error())
@@ -54,8 +56,8 @@ func main() {
 
 	log.Log().Info(appName, "message", "self.spiffeid: "+selfSPIFFEID)
 
-	// I should be Nexus.
-	if !spiffeid.IsNexus(env.TrustRoot(), selfSPIFFEID) {
+	// I should be SPIKE Nexus.
+	if !spiffeid.IsNexus(selfSPIFFEID) {
 		log.FatalLn(appName,
 			"message",
 			"Authenticate: SPIFFE ID is not valid",

@@ -13,9 +13,8 @@ import (
 	apiUrl "github.com/spiffe/spike-sdk-go/api/url"
 	"github.com/spiffe/spike-sdk-go/log"
 	network "github.com/spiffe/spike-sdk-go/net"
-	"github.com/spiffe/spike-sdk-go/spiffeid"
+	"github.com/spiffe/spike-sdk-go/predicate"
 
-	"github.com/spiffe/spike/app/nexus/internal/env"
 	"github.com/spiffe/spike/internal/net"
 )
 
@@ -46,9 +45,8 @@ func shardResponse(source *workloadapi.X509Source, u string) []byte {
 
 	client, err := network.CreateMTLSClientWithPredicate(
 		source,
-		func(peerId string) bool {
-			return spiffeid.IsKeeper(env.TrustRootForKeeper(), peerId)
-		},
+		// Only get shards from SPIKE Keepers.
+		predicate.AllowKeeper,
 	)
 
 	if err != nil {

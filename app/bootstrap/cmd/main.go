@@ -59,7 +59,7 @@ func main() {
 		return
 	}
 
-	if !svid.IsBootstrap(env.TrustRoot(), sv.ID.String()) {
+	if !svid.IsBootstrap(sv.ID.String()) {
 		log.Log().Error(
 			"Authenticate: You need a 'bootstrap' SPIFFE ID to use this command.",
 		)

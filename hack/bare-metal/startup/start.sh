@@ -99,7 +99,7 @@ if [ ${#MISSING_BINARIES[@]} -gt 0 ]; then
   echo "Please build SPIKE binaries first by running:"
   echo "  ./hack/bare-metal/build/build-spike.sh"
   echo ""
-  echo "Or ensure the binaries are in your PATH."
+  echo "If you have the binaries built, ensure the binaries are in your PATH."
   exit 1
 fi
 
@@ -195,7 +195,7 @@ else
 fi
 
 # No SPIKE Keeper initialization is required for the "in-memory" backing store:
-if [ "$SPIKE_NEXUS_BACKEND_STORE" != "memory" ]; then
+if [ "$SPIKE_NEXUS_BACKEND_STORE" == "memory" ]; then
   echo "SPIKE_NEXUS_BACKEND_STORE is set to memory, skipping Keeper instances."
   SPIKE_SKIP_KEEPER_INITIALIZATION="true"
 fi

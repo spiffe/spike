@@ -16,7 +16,6 @@ import (
 	"github.com/spiffe/spike-sdk-go/log"
 	"github.com/spiffe/spike-sdk-go/spiffeid"
 
-	"github.com/spiffe/spike/app/nexus/internal/env"
 	"github.com/spiffe/spike/app/nexus/internal/state/persist"
 )
 
@@ -55,7 +54,7 @@ func CheckAccess(
 	const fName = "CheckAccess"
 	// Role:SpikePilot can always manage secrets and policies,
 	// and can call encryption and decryption API endpoints.
-	if spiffeid.IsPilot(env.TrustRootForPilot(), peerSPIFFEID) {
+	if spiffeid.IsPilot(peerSPIFFEID) {
 		return true
 	}
 

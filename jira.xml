@@ -38,6 +38,25 @@
   </task-group>
   <task-group for=">v0.5.0">
     <issue>
+      test what happens if there are no keepers available and initialized
+      but bootstrap still tries to bootstrap
+    </issue>
+    <issue>
+      is SPIKE_TRUST_ROOT_BOOTSTRAP documented?
+    </issue>
+    <issue>
+      SPIKE_TRUST_ROOT_BOOTSTRAP is not documented anywhere.
+      possibly it's not used in bootsrap either.
+    </issue>
+    <issue>
+      address TODOs in the source code.
+    </issue>
+    <issue>
+      verify `make start` work in in-memory mode.
+      it likely tries to trigger bootstrap and fail
+      if it fails, give a proper warning in bootstrap instead of random panics.
+    </issue>
+    <issue>
       during bootsrap retry; if a single keeper fails, it will retry it indefinitely without
       giving chance to other keepers.
       a better solution is needed for that.
@@ -115,6 +134,80 @@
       fi
 
       echo "Signed. Publish signatures + $PUB (if present)."
+    </issue>
+    <issue>
+      api := spike.NewWithSource(source, predicate.AllowNexus(env.TrustRoot()))
+
+      new methods to SDK:
+
+      spike.NewForPilot
+      spike.NewUnrestricted // maybe a better name.
+    </issue>
+    <issue>
+      we can make these configurable from env too
+      this is from the SDK, so everyone in SPIKE uses it.
+
+      tlsConfig := tlsconfig.MTLSClientConfig(source, source, authorizer)
+      client := &http.Client{
+      Transport: &http.Transport{
+      TLSClientConfig:     tlsConfig,
+      IdleConnTimeout:     30 * time.Second,
+      MaxIdleConns:        100,
+      MaxConnsPerHost:     10,
+      MaxIdleConnsPerHost: 10,
+      DialContext: (&net.Dialer{
+      Timeout:   30 * time.Second,
+      KeepAlive: 30 * time.Second,
+      }).DialContext,
+      TLSHandshakeTimeout:   10 * time.Second,
+      ResponseHeaderTimeout: 10 * time.Second,
+      ExpectContinueTimeout: 5 * time.Second,
+      },
+      Timeout: 60 * time.Second,
+      }
+    </issue>
+    <issue>
+      better to have different fns per content type instead
+
+      this is from go sdk
+
+      // Encrypt encrypts either via streaming or JSON based on mode.
+      // Stream mode: send r as body with contentType. Returns ciphertext bytes.
+      // JSON mode: send plaintext + algorithm; returns ciphertext bytes.
+      func Encrypt(
+      source *workloadapi.X509Source, mode Mode, r io.Reader,
+      contentType string, plaintext []byte, algorithm string,
+      allow predicate.Predicate,
+      ) ([]byte, error) {
+    </issue>
+    <issue>
+      allowDemo := func(id string) bool {
+      baseID := "spiffe://spike.ist/workload/demo"
+      return id == baseID || strings.HasPrefix(id, baseID+"/")
+      }
+
+      // https://pkg.go.dev/github.com/spiffe/spike-sdk-go/api#New
+      api := spike.New(allowDemo) // Use the default Workload API Socket
+
+      create a function spike.NewWithSpiffeIdPrefix to abstract the above
+      complexity.
+    </issue>
+    <issue>
+      VERSION="v0.7.9"
+
+      git tag -s "$VERSION" -m "$VERSION"
+      git push origin --tags
+
+      ^ this is sdk tag.sh --> let it parse a VERSION.txt instead.
+      that way typical reader will also see the version at project root.
+    </issue>
+    <issue>
+      func (a *API) CipherDecryptJSON(
+      version byte, nonce, ciphertext []byte, algorithm string,
+      ) ([]byte, error) {
+
+      better to define an algorithmy type so that users can pick from
+      supported algorithms.
     </issue>
     <issue>
       YAML-based secret creation from SPIKE CLI.

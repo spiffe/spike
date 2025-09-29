@@ -73,7 +73,7 @@ Examples:
   # Deletes current version plus versions 1 and 2`,
 		Args: cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
-			trust.Authenticate(SPIFFEID)
+			trust.AuthenticateForPilot(SPIFFEID)
 
 			api := spike.NewWithSource(source)
 
