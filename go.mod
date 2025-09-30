@@ -9,7 +9,7 @@ require (
 	github.com/mattn/go-sqlite3 v1.14.32
 	github.com/spf13/cobra v1.10.1
 	github.com/spiffe/go-spiffe/v2 v2.6.0
-	github.com/spiffe/spike-sdk-go v0.9.3
+	github.com/spiffe/spike-sdk-go v0.9.4
 	golang.org/x/term v0.35.0
 	gopkg.in/yaml.v3 v3.0.1
 	k8s.io/api v0.34.1
@@ -66,4 +66,4 @@ require (
 )
 
 // For Development Use. Comment out when pushing.
-replace github.com/spiffe/spike-sdk-go => /home/volkan/WORKSPACE/spike-sdk-go
+// replace github.com/spiffe/spike-sdk-go => /path-to-spike-sdk-go/spike-sdk-go

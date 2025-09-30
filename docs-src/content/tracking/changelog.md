@@ -14,6 +14,15 @@ sort_by = "weight"
 
 TBD
 
+## [0.6.0]
+
+* Minor bug fixes.
+* Improvements to the SPIKE Go SDK. 
+* Fixed flaky unit tests. 
+* Stricter SPIFFE ID validation. SPIKE SDK now ensures that the API client
+  only talks to SPIKE Nexus as the server.
+
+
 ## [0.5.0] - 2025-09-11
 
 This is still a **prerelease** version; however, it includes major changes

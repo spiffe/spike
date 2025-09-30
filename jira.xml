@@ -57,6 +57,9 @@
       if it fails, give a proper warning in bootstrap instead of random panics.
     </issue>
     <issue>
+      Add executing ./demo to smoke tests too, with sample output.
+    </issue>
+    <issue>
       during bootsrap retry; if a single keeper fails, it will retry it indefinitely without
       giving chance to other keepers.
       a better solution is needed for that.

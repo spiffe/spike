@@ -38,7 +38,7 @@ func validateDataDirectory(dir string) error {
 		return fmt.Errorf("directory path cannot be empty")
 	}
 
-	// Resolve to absolute path
+	// Resolve to an absolute path
 	absPath, err := filepath.Abs(dir)
 	if err != nil {
 		return fmt.Errorf("failed to resolve absolute path: %w", err)
@@ -61,13 +61,13 @@ func validateDataDirectory(dir string) error {
 		)
 	}
 
-	// Check if directory exists
+	// Check if the directory exists
 	info, err := os.Stat(absPath)
 	if err != nil {
 		if !os.IsNotExist(err) {
 			return fmt.Errorf("failed to check directory: %w", err)
 		}
-		// Directory doesn't exist, check if parent exists and we can create it
+		// Directory doesn't exist, check if the parent exists, and we can create it
 		parentDir := filepath.Dir(absPath)
 		if _, err := os.Stat(parentDir); err != nil {
 			return fmt.Errorf(
@@ -94,7 +94,7 @@ func validateDataDirectory(dir string) error {
 func NexusDataFolder() string {
 	const fName = "NexusDataFolder"
 
-	// Check for custom data directory from environment
+	// Check for custom data directory from the environment
 	if customDir := os.Getenv("SPIKE_NEXUS_DATA_DIR"); customDir != "" {
 		if err := validateDataDirectory(customDir); err == nil {
 			// Ensure the directory exists with proper permissions

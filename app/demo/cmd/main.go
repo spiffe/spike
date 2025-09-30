@@ -6,24 +6,25 @@ package main
 
 import (
 	"fmt"
-	"strings"
 
 	spike "github.com/spiffe/spike-sdk-go/api"
 )
 
 func main() {
-	allowDemo := func(id string) bool {
-		baseID := "spiffe://spike.ist/workload/demo"
-		return id == baseID || strings.HasPrefix(id, baseID+"/")
-	}
+	fmt.Println("SPIKE Demo")
+
+	// Make sure you register the demo app SPIRE Server registration entry first:
+	// ./examples/consume-secrets/demo-register-entry.sh
 
 	// https://pkg.go.dev/github.com/spiffe/spike-sdk-go/api#New
-	api := spike.New(allowDemo) // Use the default Workload API Socket
+	api := spike.New() // Use the default Workload API Socket
+
+	fmt.Println("Connected to SPIKE Nexus.")
 
 	// https://pkg.go.dev/github.com/spiffe/spike-sdk-go/api#Close
 	defer api.Close() // Close the connection when done
 
-	path := "^tenants/demo/db/creds"
+	path := "tenants/demo/db/creds"
 
 	// Create a Secret
 	// https://pkg.go.dev/github.com/spiffe/spike-sdk-go/api#PutSecret

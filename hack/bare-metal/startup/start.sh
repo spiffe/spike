@@ -232,6 +232,18 @@ sleep 5
 
 ./hack/bare-metal/startup/bootstrap.sh
 
+echo "Registering entries for the demo workload..."
+./examples/consume-secrets/demo-register-entry.sh
+
+echo "Waiting a bit more for the entries to marinate..."
+sleep 5
+
+echo "Creating policies for the demo workload..."
+./examples/consume-secrets/demo-create-policy.sh
+
+echo "Done. Will sleep a bit..."
+sleep 5
+
 echo ""
 echo ""
 echo "<<"
