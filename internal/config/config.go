@@ -13,6 +13,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/spiffe/spike-sdk-go/config/env"
 	"github.com/spiffe/spike-sdk-go/log"
 
 	"github.com/spiffe/spike/app"
@@ -160,7 +161,7 @@ func PilotRecoveryFolder() string {
 	const fName = "PilotRecoveryFolder"
 
 	// Check for custom recovery directory from environment
-	if customDir := os.Getenv("SPIKE_PILOT_RECOVERY_DIR"); customDir != "" {
+	if customDir := os.Getenv(env.PilotRecoveryDir); customDir != "" {
 		if err := validateDataDirectory(customDir); err == nil {
 			// Ensure the directory exists with proper permissions
 			recoverPath := filepath.Join(customDir, "recover")
