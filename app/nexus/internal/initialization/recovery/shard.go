@@ -34,6 +34,11 @@ func shardURL(keeperAPIRoot string) string {
 func shardResponse(source *workloadapi.X509Source, u string) []byte {
 	const fName = "shardResponse"
 
+	if source == nil {
+		log.Log().Warn(fName, "message", "Source is nil")
+		return []byte{}
+	}
+
 	shardRequest := reqres.ShardRequest{}
 	md, err := json.Marshal(shardRequest)
 	if err != nil {
