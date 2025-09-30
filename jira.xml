@@ -20,6 +20,7 @@
  -->
 <stuff>
   <high-level-plan>
+    <issue order="1">Release SPIKE v0.5.0 to enable Helm Charts work</issue>
     <issue order="2">Fix post v0.5.0 issues</issue>
     <issue order="3">Secure Secrets Management Web UX</issue>
     <issue order="4">Zero Turtle Pi Grid</issue>
@@ -210,6 +211,25 @@
       cid:6062f33b-4a94-4b0f-a306-c13c4dd3d777
     </issue>
     <issue>
+      it looks like Pilot does not do any SVID validation against Nexus.
+
+      func CreateMTLSClient(source *workloadapi.X509Source) (*http.Client, error) {
+      return CreateMTLSClientWithPredicate(source, func(string) bool { return true })
+      }
+      ^ this accepts all peer spiffe ids.
+
+    </issue>
+    <issue>
+      SPIKE Bootstrap tries to reach keepers forever, but it should have a max
+      timeout (like, say, 20mins), after which it gives up and crashes.
+      -- configurable.
+    </issue>
+    <issue>
+      bootstrap: when bootstrap is done encrypt a text and let nexus decrypt it
+      to ensure that the bootstrapping is done and the root key works.
+    </issue>
+    <issue>
+      ensure that the demo app still works.
       add some smoke tests to the end of start.sh
       also maybe have a k8s job for smoke tests too after helm deployment.
     </issue>
@@ -358,6 +378,9 @@
     <issue>
       also, empty id or path should raise an error for policies
       and also for secrets
+    </issue>
+    <issue>
+      check all log.Log()s. some of them don't have fName
     </issue>
     <issue>
       // The encryption key must be 16, 24, or 32 bytes in length (for AES-128,

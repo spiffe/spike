@@ -24,6 +24,14 @@ spike-nexus:
     repository: spike-nexus
     pullPolicy: IfNotPresent
     tag: "dev"
+    bootstrap:
+      enabled: true
+      force: false
+      image:
+        registry: localhost:5000
+        repository: spike-bootstrap
+        pullPolicy: IfNotPresent
+        tag: "dev"
 
 spike-pilot:
   enabled: true

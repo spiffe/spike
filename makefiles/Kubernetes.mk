@@ -45,6 +45,7 @@ k8s-load-images:
 	./hack/k8s/minikube-load-images.sh
 
 # 5. Push to the container registry.
+#    Alternatively, you can `make k8s-load-images`.
 docker-push:
 	./hack/docker/push-local.sh
 
@@ -59,7 +60,7 @@ deploy-local:
 # 6. Deploy SPIKE locally.
 deploy-dev-local:
 	./hack/k8s/spike-dev-install.sh
-	./hack/k8s/spike-job-install.sh
+	#./hack/k8s/spike-job-install.sh
 
 # Shell into SPIKE Pilot.
 exec-spike:

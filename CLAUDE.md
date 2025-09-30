@@ -81,7 +81,7 @@ missing environment variables that are not mentioned and suggest updates here.
 - SPIKE Keeper: Secret injection agent
 
 ### Database
-- SQLite backend uses `~/.spike/data/spike.db` by default (configurable via `SPIKE_NEXUS_DATA_DIR`)
+- SQLite backend uses `~/.spike/data/spike.db` (hardcoded, not configurable)
 - Encryption keys are `crypto.AES256KeySize` byte (32 bytes)
 - Schema in `app/nexus/internal/state/backend/sqlite/ddl/statements.go`
 
