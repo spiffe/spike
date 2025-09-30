@@ -55,7 +55,7 @@ func sendShardsToKeepers(
 			continue
 		}
 
-		// Only SPIKE Keeper can send shards to SPIKE Nexus
+		// Security: Only SPIKE Keeper can send shards to SPIKE Nexus
 		client, err := network.CreateMTLSClientWithPredicate(
 			source, predicate.AllowKeeper,
 		)

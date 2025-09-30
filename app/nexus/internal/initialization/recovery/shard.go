@@ -45,7 +45,7 @@ func shardResponse(source *workloadapi.X509Source, u string) []byte {
 
 	client, err := network.CreateMTLSClientWithPredicate(
 		source,
-		// Only get shards from SPIKE Keepers.
+		// Security: Only get shards from SPIKE Keepers.
 		predicate.AllowKeeper,
 	)
 

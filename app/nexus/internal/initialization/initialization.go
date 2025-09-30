@@ -2,10 +2,6 @@
 //  \\\\\ Copyright 2024-present SPIKE contributors.
 // \\\\\\\ SPDX-License-Identifier: Apache-2.0
 
-// TODO: There are svid validations that use `func(){return true;}` as the
-// predicate, essentially accepting any valid SVID. Fix those while updating
-// this issue too.
-
 package initialization
 
 import (

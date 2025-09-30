@@ -14,6 +14,7 @@ import (
 	"strings"
 
 	"github.com/spiffe/spike-sdk-go/log"
+
 	"github.com/spiffe/spike/app"
 )
 

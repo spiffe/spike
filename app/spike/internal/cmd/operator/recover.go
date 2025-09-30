@@ -73,7 +73,6 @@ func newOperatorRecoverCommand(
 
 			trust.AuthenticateForPilotRecover(SPIFFEID)
 
-			// Only accept SPIKE Nexus as a peer.
 			api := spike.NewWithSource(source)
 
 			shards, err := api.Recover()
