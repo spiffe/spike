@@ -15,7 +15,6 @@ import (
 	"github.com/spiffe/spike-sdk-go/spiffeid"
 	"github.com/spiffe/spike-sdk-go/validation"
 
-	"github.com/spiffe/spike/app/nexus/internal/env"
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 	"github.com/spiffe/spike/internal/net"
 )
@@ -51,8 +50,7 @@ func guardEncryptCipherRequest(
 
 	// Lite Workloads are always allowed:
 	allowed := false
-	if spiffeid.IsLiteWorkload(
-		env.TrustRootForLiteWorkload(), sid.String()) {
+	if spiffeid.IsLiteWorkload(sid.String()) {
 		allowed = true
 	}
 	// If not, do a policy check to determine if the request is allowed:

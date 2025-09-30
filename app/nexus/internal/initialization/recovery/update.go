@@ -17,10 +17,9 @@ import (
 	"github.com/spiffe/spike-sdk-go/crypto"
 	"github.com/spiffe/spike-sdk-go/log"
 	network "github.com/spiffe/spike-sdk-go/net"
+	"github.com/spiffe/spike-sdk-go/predicate"
 	"github.com/spiffe/spike-sdk-go/security/mem"
-	"github.com/spiffe/spike-sdk-go/spiffeid"
 
-	"github.com/spiffe/spike/app/nexus/internal/env"
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 	"github.com/spiffe/spike/internal/net"
 )
@@ -57,10 +56,9 @@ func sendShardsToKeepers(
 			continue
 		}
 
+		// Security: Only SPIKE Keeper can send shards to SPIKE Nexus
 		client, err := network.CreateMTLSClientWithPredicate(
-			source, func(peerId string) bool {
-				return spiffeid.IsKeeper(env.TrustRootForKeeper(), peerId)
-			},
+			source, predicate.AllowKeeper,
 		)
 
 		if err != nil {

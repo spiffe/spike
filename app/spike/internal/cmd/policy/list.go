@@ -100,7 +100,7 @@ func newPolicyListCommand(
 		Short: "List policies, optionally filtering by path pattern or SPIFFE ID pattern",
 		Args:  cobra.NoArgs,
 		Run: func(cmd *cobra.Command, args []string) {
-			trust.Authenticate(SPIFFEID)
+			trust.AuthenticateForPilot(SPIFFEID)
 			api := spike.NewWithSource(source)
 
 			policies, err := api.ListPolicies(SPIFFEIDPattern, pathPattern)

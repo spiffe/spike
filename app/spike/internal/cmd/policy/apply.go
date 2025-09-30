@@ -11,7 +11,6 @@ import (
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	spike "github.com/spiffe/spike-sdk-go/api"
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
-
 	"github.com/spiffe/spike/app/spike/internal/trust"
 )
 
@@ -149,7 +148,7 @@ func newPolicyApplyCommand(
 				}
 			}
 
-			trust.Authenticate(SPIFFEID)
+			trust.AuthenticateForPilot(SPIFFEID)
 			api := spike.NewWithSource(source)
 
 			// Validate permissions

@@ -15,13 +15,13 @@ import (
 	"github.com/spiffe/spike-sdk-go/retry"
 	"github.com/spiffe/spike-sdk-go/spiffe"
 	svid "github.com/spiffe/spike-sdk-go/spiffeid"
-	"github.com/spiffe/spike/internal/config"
 
 	"github.com/spiffe/spike/app/bootstrap/internal/env"
 	"github.com/spiffe/spike/app/bootstrap/internal/lifecycle"
 	"github.com/spiffe/spike/app/bootstrap/internal/net"
 	"github.com/spiffe/spike/app/bootstrap/internal/state"
 	"github.com/spiffe/spike/app/bootstrap/internal/url"
+	"github.com/spiffe/spike/internal/config"
 )
 
 func main() {
@@ -62,7 +62,7 @@ func main() {
 		return
 	}
 
-	if !svid.IsBootstrap(env.TrustRoot(), sv.ID.String()) {
+	if !svid.IsBootstrap(sv.ID.String()) {
 		log.Log().Error(
 			"Authenticate: You need a 'bootstrap' SPIFFE ID to use this command.",
 		)

@@ -17,10 +17,9 @@ import (
 	"github.com/spiffe/spike-sdk-go/crypto"
 	"github.com/spiffe/spike-sdk-go/log"
 	network "github.com/spiffe/spike-sdk-go/net"
+	"github.com/spiffe/spike-sdk-go/predicate"
 	"github.com/spiffe/spike-sdk-go/spiffe"
-	"github.com/spiffe/spike-sdk-go/spiffeid"
 
-	"github.com/spiffe/spike/app/bootstrap/internal/env"
 	"github.com/spiffe/spike/internal/net"
 )
 
@@ -47,9 +46,7 @@ func Source() *workloadapi.X509Source {
 func MTLSClient(source *workloadapi.X509Source) *http.Client {
 	const fName = "MTLSClient"
 	client, err := network.CreateMTLSClientWithPredicate(
-		source, func(peerId string) bool {
-			return spiffeid.IsKeeper(env.TrustRootForKeeper(), peerId)
-		},
+		source, predicate.AllowKeeper,
 	)
 	if err != nil {
 		log.FatalLn(fName,
