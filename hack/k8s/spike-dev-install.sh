@@ -8,7 +8,7 @@
 # Uses the local container registry for SPIKE images.
 
 # Configuration
-SPIKE_USE_LOCAL_CHARTS="${SPIKE_USE_LOCAL_CHARTS:-true}" # TODO: should default to false after upstream helm is merged.
+SPIKE_USE_LOCAL_CHARTS="${SPIKE_USE_LOCAL_CHARTS:-true}" # FIXME: should default to false after upstream helm is merged.
 SPIKE_LOCAL_CHARTS_PATH="${SPIKE_LOCAL_CHARTS_PATH:-$HOME/WORKSPACE/helm-charts-hardened}"
 SPIKE_LOCAL_CHARTS_VALUES_FILE="${SPIKE_LOCAL_CHARTS_VALUES_FILE:-./config/helm/values-local.yaml}"
 SPIKE_REMOTE_CHARTS_HELM_REPO="${SPIKE_REMOTE_CHARTS_HELM_REPO:-https://spiffe.github.io/helm-charts-hardened/}"
