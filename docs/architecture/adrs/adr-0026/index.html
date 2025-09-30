@@ -6,7 +6,7 @@
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <link rel="icon" href="https://spike.ist/assets/spike-favicon-16x16.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
-    <title> SPIKE | ADR-0020: Switch to Zola for Documentation System </title>
+    <title> SPIKE | ADR-0026: Configurable Data Directory for SPIKE Components </title>
 </head>
 <body>
 
@@ -744,69 +744,158 @@
 
         <article>
             
-        <h1 id="adr-0020-switch-to-zola-for-documentation-system">ADR-0020: Switch to Zola for Documentation System</h1>
-<br style="clear:both" />
+        <h1 id="adr-0026-configurable-data-directory-for-spike-components">ADR-0026: Configurable Data Directory for SPIKE Components</h1>
 <ul>
-<li>Status:
+<li>Status: accepted</li>
+<li>Date: 2025-09-13</li>
+<li>Tags: Configuration, Operations, Deployment</li>
+</ul>
+<h2 id="context-and-problem-statement">Context and Problem Statement</h2>
+<p><strong>SPIKE</strong> currently hardcodes the data directory to <code>~/.spike</code> for storing
+encrypted databases and recovery data. The comment in
+<code>internal/config/config.go:40</code> states this is “for security reasons,” but
+analysis reveals this constraint provides limited security benefits while
+restricting legitimate operational use cases.</p>
+<p>Given <strong>SPIKE</strong>’s security model:</p>
 <ul>
-<li>accepted</li>
-<li>Supersedes: <a href="https://spike.ist/architecture/adrs/adr-0002/">ADR-0002: Use Docsify for Documentation System</a></li>
+<li>The backing store is always encrypted with <code>AES-256</code></li>
+<li><strong>SPIKE</strong> treats the backing store as untrusted</li>
+<li>Directory permissions are set to <code>0700</code> regardless of location</li>
+</ul>
+<p>The hardcoded path primarily provides <em>operational simplicity</em> rather than
+fundamental security guarantees.</p>
+<h2 id="decision-drivers">Decision Drivers</h2>
+<ul>
+<li>Deployment flexibility for containerized environments</li>
+<li>Support for multi-instance deployments</li>
+<li>Compliance requirements for data residency</li>
+<li>Testing and CI/CD pipeline needs</li>
+<li>Maintaining the security posture</li>
+</ul>
+<h2 id="considered-options">Considered Options</h2>
+<ol>
+<li><strong>Keep current hardcoded approach</strong> - Maintain <code>~/.spike</code> as the only option</li>
+<li><strong>Environment variable configuration</strong> - Allow override via environment
+variables</li>
+<li><strong>Configuration file approach</strong> - Use a configuration file for data paths</li>
+<li><strong>Hybrid approach</strong> - Environment variables with sensible defaults and
+validation</li>
+</ol>
+<h2 id="decision">Decision</h2>
+<p>Implement <strong>Option 4: Hybrid approach</strong> using environment variables with
+sensible defaults and comprehensive validation.</p>
+<h2 id="detailed-design">Detailed Design</h2>
+<h3 id="new-environment-variables">New Environment Variables</h3>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># SPIKE Nexus data directory (default: ~/.spike/data)
+</span><span style="color:#bf616a;">SPIKE_NEXUS_DATA_DIR</span><span>=</span><span style="color:#a3be8c;">/custom/path/to/data
+</span><span>
+</span><span style="color:#65737e;"># SPIKE Pilot recovery directory (default: ~/.spike/recovery)
+</span><span style="color:#bf616a;">SPIKE_PILOT_RECOVERY_DIR</span><span>=</span><span style="color:#a3be8c;">/custom/path/to/recovery
+</span></code></pre>
+<h3 id="fallback-chain">Fallback Chain</h3>
+<ol>
+<li>Use environment variable if set and valid</li>
+<li>Fall back to <code>~/.spike</code> (current default)</li>
+<li>Fall back to <code>/tmp/.spike-$USER</code> if home directory unavailable</li>
+</ol>
+<h3 id="validation-rules">Validation Rules</h3>
+<p>The system will validate custom paths to ensure:</p>
+<ol>
+<li><strong>Path exists or can be created</strong> - Parent directory must exist</li>
+<li><strong>Proper permissions</strong> - Directory must have 0700 permissions</li>
+<li><strong>Write access</strong> - Process must be able to write to the directory</li>
+<li><strong>Restricted locations</strong> - Reject problematic paths:
+<ul>
+<li>System directories: <code>/</code>, <code>/etc</code>, <code>/sys</code>, <code>/proc</code>, <code>/dev</code></li>
+<li>Shared temp without user isolation: <code>/tmp</code> (without user suffix)</li>
 </ul>
 </li>
-<li>Date: 2024-02-20</li>
-<li>Tags: Documentation</li>
-</ul>
-<h2 id="context">Context</h2>
-<p>While Docsify has served our documentation needs, we’ve identified several
-limitations:
-*</p>
+<li><strong>Warning for risky locations</strong> - Warn but allow:
 <ul>
-<li>SEO capabilities are limited due to client-side rendering</li>
-<li>Performance is dependent on JavaScript execution</li>
-<li>Template customization options are restricted</li>
-<li>Page load times can be impacted by the single JavaScript parser</li>
+<li>World-writable directories</li>
+<li>Network mounts (when detectable)</li>
 </ul>
-<p>We need a documentation system that addresses these limitations while
-maintaining the benefits of our current system.</p>
-<h2 id="decision">Decision</h2>
-<p>We will switch to <a href="https://www.getzola.org/documentation/getting-started/overview/"><strong>Zola</strong></a> as our documentation system, replacing
-Docsify.</p>
-<h2 id="rationale">Rationale</h2>
-<p>Zola offers several advantages that align better with our current needs:</p>
-<ul>
-<li>Static site generation provides better SEO capabilities</li>
-<li>No JavaScript dependency for core functionality</li>
-<li>Flexible templating system using Tera</li>
-<li>Fast build times due to being written in Rust</li>
-<li>Direct rendering to HTML improves page load performance</li>
-<li>Maintains support for Markdown-based content</li>
-<li>Built-in syntax highlighting and search capabilities</li>
-</ul>
+</li>
+</ol>
+<h3 id="implementation-example">Implementation Example</h3>
+<pre data-lang="go" style="background-color:#2b303b;color:#c0c5ce;" class="language-go "><code class="language-go" data-lang="go"><span style="color:#b48ead;">func </span><span style="color:#8fa1b3;">NexusDataFolder</span><span>() </span><span style="color:#b48ead;">string </span><span>{
+</span><span>    </span><span style="color:#65737e;">// Check environment variable first
+</span><span>    </span><span style="color:#b48ead;">if </span><span style="color:#bf616a;">customDir </span><span>:= </span><span style="color:#bf616a;">os</span><span>.</span><span style="color:#bf616a;">Getenv</span><span>(&quot;</span><span style="color:#a3be8c;">SPIKE_NEXUS_DATA_DIR</span><span>&quot;); </span><span style="color:#bf616a;">customDir </span><span>!= &quot;&quot; {
+</span><span>        </span><span style="color:#b48ead;">if </span><span style="color:#bf616a;">err </span><span>:= </span><span style="color:#bf616a;">validateDataDirectory</span><span>(</span><span style="color:#bf616a;">customDir</span><span>); </span><span style="color:#bf616a;">err </span><span>== </span><span style="color:#d08770;">nil </span><span>{
+</span><span>            </span><span style="color:#b48ead;">return </span><span style="color:#bf616a;">filepath</span><span>.</span><span style="color:#bf616a;">Join</span><span>(</span><span style="color:#bf616a;">customDir</span><span>, &quot;</span><span style="color:#a3be8c;">data</span><span>&quot;)
+</span><span>        }
+</span><span>        </span><span style="color:#bf616a;">log</span><span>.</span><span style="color:#bf616a;">Warn</span><span>(&quot;</span><span style="color:#a3be8c;">Invalid custom data directory, falling back to default</span><span>&quot;,
+</span><span>            &quot;</span><span style="color:#a3be8c;">dir</span><span>&quot;, </span><span style="color:#bf616a;">customDir</span><span>, &quot;</span><span style="color:#a3be8c;">err</span><span>&quot;, </span><span style="color:#bf616a;">err</span><span>)
+</span><span>    }
+</span><span>
+</span><span>    </span><span style="color:#65737e;">// Fall back to home directory
+</span><span>    </span><span style="color:#bf616a;">homeDir</span><span>, </span><span style="color:#bf616a;">err </span><span>:= </span><span style="color:#bf616a;">os</span><span>.</span><span style="color:#bf616a;">UserHomeDir</span><span>()
+</span><span>    </span><span style="color:#b48ead;">if </span><span style="color:#bf616a;">err </span><span>!= </span><span style="color:#d08770;">nil </span><span>{
+</span><span>        </span><span style="color:#65737e;">// Fall back to temp with user isolation
+</span><span>        </span><span style="color:#b48ead;">return </span><span style="color:#bf616a;">fmt</span><span>.</span><span style="color:#bf616a;">Sprintf</span><span>(&quot;</span><span style="color:#a3be8c;">/tmp/.spike-</span><span style="color:#d08770;">%s</span><span style="color:#a3be8c;">/data</span><span>&quot;, </span><span style="color:#bf616a;">os</span><span>.</span><span style="color:#bf616a;">Getenv</span><span>(&quot;</span><span style="color:#a3be8c;">USER</span><span>&quot;))
+</span><span>    }
+</span><span>
+</span><span>    </span><span style="color:#bf616a;">spikeDir </span><span>:= </span><span style="color:#bf616a;">filepath</span><span>.</span><span style="color:#bf616a;">Join</span><span>(</span><span style="color:#bf616a;">homeDir</span><span>, &quot;</span><span style="color:#a3be8c;">.spike</span><span>&quot;)
+</span><span>    </span><span style="color:#bf616a;">os</span><span>.</span><span style="color:#bf616a;">MkdirAll</span><span>(</span><span style="color:#bf616a;">filepath</span><span>.</span><span style="color:#bf616a;">Join</span><span>(</span><span style="color:#bf616a;">spikeDir</span><span>, &quot;</span><span style="color:#a3be8c;">data</span><span>&quot;), </span><span style="color:#d08770;">0700</span><span>)
+</span><span>    </span><span style="color:#b48ead;">return </span><span style="color:#bf616a;">filepath</span><span>.</span><span style="color:#bf616a;">Join</span><span>(</span><span style="color:#bf616a;">spikeDir</span><span>, &quot;</span><span style="color:#a3be8c;">data</span><span>&quot;)
+</span><span>}
+</span></code></pre>
 <h2 id="consequences">Consequences</h2>
 <h3 id="positive">Positive</h3>
 <ul>
-<li>Improved SEO through static HTML generation</li>
-<li>Better performance due to pre-rendered content</li>
-<li>More flexible templating and customization options</li>
-<li>No JavaScript requirement for core functionality</li>
-<li>Faster page loads</li>
-<li>Maintains Git-based workflow</li>
-<li>Syntax highlighting is out of the box</li>
-<li>Built-in search functionality</li>
-<li>Clear separation between content and presentation</li>
+<li><strong>Container deployments</strong> - Mount persistent volumes at custom paths</li>
+<li><strong>Multi-instance support</strong> - Run multiple SPIKE instances with isolation</li>
+<li><strong>Compliance flexibility</strong> - Store data in specific locations for compliance</li>
+<li><strong>Testing isolation</strong> - Use temporary directories without affecting user data</li>
+<li><strong>Backward compatible</strong> - Existing deployments continue working unchanged</li>
+<li><strong>Security maintained</strong> - Validation ensures security properties are preserved</li>
 </ul>
 <h3 id="negative">Negative</h3>
 <ul>
-<li>Requires a build step (<em>though builds are <strong>very</strong> fast</em>)</li>
-<li>Team needs to learn Zola-specific templating syntax</li>
-<li>Migration effort required for existing documentation</li>
-<li>Need to set up a build pipeline for documentation deployment</li>
+<li><strong>Configuration complexity</strong> - Additional environment variables to manage</li>
+<li><strong>Validation overhead</strong> - Path validation adds startup complexity</li>
+<li><strong>Support burden</strong> - More configurations to troubleshoot</li>
+<li><strong>Misconfiguration risk</strong> - Users might specify inappropriate paths</li>
 </ul>
-<h2 id="references">References</h2>
+<h3 id="neutral">Neutral</h3>
 <ul>
-<li><a href="https://www.getzola.org/documentation/getting-started/overview/">Zola Documentation</a></li>
-<li><a href="https://spike.ist/architecture/adrs/adr-0002/">ADR-0002: Use Docsify for Documentation System</a> (superseded)</li>
+<li><strong>Documentation updates</strong> - Need to document new configuration options</li>
 </ul>
+<h2 id="migration-path">Migration Path</h2>
+<h3 id="for-existing-users">For Existing Users</h3>
+<p>No action required. The system continues to use <code>~/.spike</code> by default.</p>
+<h3 id="for-users-wanting-custom-paths">For Users Wanting Custom Paths</h3>
+<ol>
+<li>Stop SPIKE components</li>
+<li>Move existing data to new location:<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">mv ~</span><span>/.spike/data /new/path/data
+</span></code></pre>
+</li>
+<li>Set environment variable:<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#b48ead;">export </span><span style="color:#bf616a;">SPIKE_NEXUS_DATA_DIR</span><span>=</span><span style="color:#a3be8c;">/new/path
+</span></code></pre>
+</li>
+<li>Restart SPIKE components</li>
+</ol>
+<h2 id="security-considerations">Security Considerations</h2>
+<h3 id="maintained-security-properties">Maintained Security Properties</h3>
+<ul>
+<li><strong>Encryption</strong> - Data remains encrypted regardless of location</li>
+<li><strong>Permissions</strong> - Directory permissions enforced (0700)</li>
+<li><strong>Untrusted storage</strong> - Security model unchanged</li>
+</ul>
+<h3 id="additional-safeguards">Additional Safeguards</h3>
+<ul>
+<li><strong>Path validation</strong> - Prevents use of system directories</li>
+<li><strong>Permission checks</strong> - Verifies proper access controls</li>
+<li><strong>Audit logging</strong> - Log custom directory usage for security monitoring</li>
+</ul>
+<h2 id="implementation-notes">Implementation Notes</h2>
+<ol>
+<li>Update <code>internal/config/config.go</code> to implement path resolution logic</li>
+<li>Add validation functions for directory security checks</li>
+<li>Update CLAUDE.md and configuration.md with new environment variables</li>
+<li>Add tests for path validation and fallback logic</li>
+<li>Update necessary user-facing documentation</li>
+</ol>
 <hr />
 <ul>
 <li><a href="https://spike.ist/architecture/adrs/adr-0026/">ADR-0026: Configurable Data Directory for SPIKE Components</a></li>

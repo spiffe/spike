@@ -33,23 +33,13 @@
       * secure UI: https://github.com/spiffe/spike/issues/230
     </watch-list>
   </high-level-plan>
-  <task-group for="v0.5.0">
+  <task-group for="v0.6.0">
 
   </task-group>
-  <task-group for=">v0.5.0">
+  <task-groud for=">v0.6.0">
     <issue>
       test what happens if there are no keepers available and initialized
       but bootstrap still tries to bootstrap
-    </issue>
-    <issue>
-      is SPIKE_TRUST_ROOT_BOOTSTRAP documented?
-    </issue>
-    <issue>
-      SPIKE_TRUST_ROOT_BOOTSTRAP is not documented anywhere.
-      possibly it's not used in bootsrap either.
-    </issue>
-    <issue>
-      address TODOs in the source code.
     </issue>
     <issue>
       verify `make start` work in in-memory mode.
@@ -57,11 +47,15 @@
       if it fails, give a proper warning in bootstrap instead of random panics.
     </issue>
     <issue>
+      if there are no binaries, `make start` errs out; it should not, since it
+      builds the binaries before anything else anyway.
+    </issue>
+    <issue>
       Add executing ./demo to smoke tests too, with sample output.
     </issue>
     <issue>
-      during bootsrap retry; if a single keeper fails, it will retry it indefinitely without
-      giving chance to other keepers.
+      during bootstrap retry; if a single keeper fails, it will retry it
+      indefinitely without giving chance to other keepers.
       a better solution is needed for that.
     </issue>
     <issue>
@@ -139,14 +133,6 @@
       echo "Signed. Publish signatures + $PUB (if present)."
     </issue>
     <issue>
-      api := spike.NewWithSource(source, predicate.AllowNexus(env.TrustRoot()))
-
-      new methods to SDK:
-
-      spike.NewForPilot
-      spike.NewUnrestricted // maybe a better name.
-    </issue>
-    <issue>
       we can make these configurable from env too
       this is from the SDK, so everyone in SPIKE uses it.
 
@@ -184,18 +170,6 @@
       ) ([]byte, error) {
     </issue>
     <issue>
-      allowDemo := func(id string) bool {
-      baseID := "spiffe://spike.ist/workload/demo"
-      return id == baseID || strings.HasPrefix(id, baseID+"/")
-      }
-
-      // https://pkg.go.dev/github.com/spiffe/spike-sdk-go/api#New
-      api := spike.New(allowDemo) // Use the default Workload API Socket
-
-      create a function spike.NewWithSpiffeIdPrefix to abstract the above
-      complexity.
-    </issue>
-    <issue>
       VERSION="v0.7.9"
 
       git tag -s "$VERSION" -m "$VERSION"
@@ -209,7 +183,7 @@
       version byte, nonce, ciphertext []byte, algorithm string,
       ) ([]byte, error) {
 
-      better to define an algorithmy type so that users can pick from
+      better to define an algorithm type so that users can pick from
       supported algorithms.
     </issue>
     <issue>
@@ -237,7 +211,6 @@
     </issue>
     <issue>
       add some smoke tests to the end of start.sh
-
       also maybe have a k8s job for smoke tests too after helm deployment.
     </issue>
     <issue>
@@ -257,13 +230,6 @@
     <issue>
       introduce SPIKE to VSecM
       https://github.com/vmware/secrets-manager/issues/1275
-    </issue>
-    <issue>
-      SQLite datasource should be able to use a separate file for tests
-      to be able to test things in parallel.
-    </issue>
-    <issue>
-      ensure that the demo app still works.
     </issue>
     <issue>
       when entries are not registered to the SPIRE Server and the
@@ -392,9 +358,6 @@
     <issue>
       also, empty id or path should raise an error for policies
       and also for secrets
-    </issue>
-    <issue>
-      check all log.Log()s. some of them don't have fName
     </issue>
     <issue>
       // The encryption key must be 16, 24, or 32 bytes in length (for AES-128,

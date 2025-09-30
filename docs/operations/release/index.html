@@ -788,8 +788,7 @@ to the project.</p>
 <ol>
 <li>Run the unit tests</li>
 <li>Run the following smoke tests documented in the next section.</li>
-<li>If everything passes, update <code>NexusVersion</code>, <code>PilotVersion</code>
-and <code>KeeperVersion</code> in <code>$WORKSPACE/spike/internal/config/config.go</code></li>
+<li>If everything passes, update <code>./app/VERSION.txt</code> to the release version.</li>
 <li>Update any necessary documentation.</li>
 <li>Update the changelog.</li>
 <li>Update the documentation snapshots page.</li>
@@ -800,7 +799,6 @@ to the <code>./docs</code> folder.</li>
 policy creation work as expected.</li>
 <li>Run <code>./hack/bare-metal/cmd/read-sample-secrets.sh</code> to ensure secret and
 policy reading work as expected.</li>
-<li>Make sure you update <code>./app/VERSION.txt</code> with the new version.</li>
 <li>Make sure you run <code>make build</code> and the process cleanly exits with no errors.</li>
 <li>Make sure you run <code>make test</code> and the process cleanly exits with no errors.</li>
 <li>Make sure you run <code>make audit</code> and the process cleanly exits with no errors.</li>
