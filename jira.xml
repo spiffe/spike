@@ -410,6 +410,12 @@
       }
     </issue>
     <issue>
+      path := "^tenants/demo/db/creds"
+      path := "tenants/demo/db/creds"
+      the first one creates an error in demo app but the error response is
+      not helpful.
+    </issue>
+    <issue>
       missingFlags = append(missingFlags, "name")
       }
       if pathPattern == "" {
