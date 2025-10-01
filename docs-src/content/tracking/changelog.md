@@ -14,13 +14,13 @@ sort_by = "weight"
 
 TBD
 
-## [0.6.0] - 2025-09-29
+## [0.6.0] - 2025-10-01
 
 This was a security release where the main focus was hardening SPIKE SDK mTLS
 implementation. In addition, we created a configurable SPIKE backing store 
 directory to enable future HA development.
 
-## Added
+### Added
 
 * Added `SPIKE_TRUST_ROOT_BOOTSTRAP` to enable SPIKE Bootstrap to be used
   in different trust boundaries.
@@ -28,18 +28,18 @@ directory to enable future HA development.
   SPIKE Nexus backing store.
 * Added convenience methods to the SPIKE Go SDK.
 
-## Changed
+### Changed
 
 * Improvements to the SPIKE Go SDK.
 * Stricter SPIFFE ID validation. SPIKE SDK now ensures that the API client
   only talks to SPIKE Nexus as the server.
 
-## Fixed
+### Fixed
 
 * Minor bug fixes.
 * Fixed flaky unit tests.
 
-## Security 
+### Security 
 
 * SPIKE Go SDK clients are hardened to only talk to SPIKE Nexus as the
   server during mTLS.

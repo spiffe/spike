@@ -221,19 +221,7 @@
                                                         <a href="https://spike.ist/tracking/changelog/#recent">Recent</a>
                                                     </li>
                                                 <li>
-                                                        <a href="https://spike.ist/tracking/changelog/#0-6-0-2025-09-29">[0.6.0] - 2025-09-29</a>
-                                                    </li>
-                                                <li>
-                                                        <a href="https://spike.ist/tracking/changelog/#added">Added</a>
-                                                    </li>
-                                                <li>
-                                                        <a href="https://spike.ist/tracking/changelog/#changed">Changed</a>
-                                                    </li>
-                                                <li>
-                                                        <a href="https://spike.ist/tracking/changelog/#fixed">Fixed</a>
-                                                    </li>
-                                                <li>
-                                                        <a href="https://spike.ist/tracking/changelog/#security">Security</a>
+                                                        <a href="https://spike.ist/tracking/changelog/#0-6-0-2025-10-01">[0.6.0] - 2025-10-01</a>
                                                     </li>
                                                 <li>
                                                         <a href="https://spike.ist/tracking/changelog/#0-5-1-2025-09-14">[0.5.1] - 2025-09-14</a>
@@ -811,11 +799,11 @@
         <h1 id="spike-changelog">SPIKE Changelog</h1>
 <h2 id="recent">Recent</h2>
 <p>TBD</p>
-<h2 id="0-6-0-2025-09-29">[0.6.0] - 2025-09-29</h2>
+<h2 id="0-6-0-2025-10-01">[0.6.0] - 2025-10-01</h2>
 <p>This was a security release where the main focus was hardening SPIKE SDK mTLS
 implementation. In addition, we created a configurable SPIKE backing store
 directory to enable future HA development.</p>
-<h2 id="added">Added</h2>
+<h3 id="added">Added</h3>
 <ul>
 <li>Added <code>SPIKE_TRUST_ROOT_BOOTSTRAP</code> to enable SPIKE Bootstrap to be used
 in different trust boundaries.</li>
@@ -823,18 +811,18 @@ in different trust boundaries.</li>
 SPIKE Nexus backing store.</li>
 <li>Added convenience methods to the SPIKE Go SDK.</li>
 </ul>
-<h2 id="changed">Changed</h2>
+<h3 id="changed">Changed</h3>
 <ul>
 <li>Improvements to the SPIKE Go SDK.</li>
 <li>Stricter SPIFFE ID validation. SPIKE SDK now ensures that the API client
 only talks to SPIKE Nexus as the server.</li>
 </ul>
-<h2 id="fixed">Fixed</h2>
+<h3 id="fixed">Fixed</h3>
 <ul>
 <li>Minor bug fixes.</li>
 <li>Fixed flaky unit tests.</li>
 </ul>
-<h2 id="security">Security</h2>
+<h3 id="security">Security</h3>
 <ul>
 <li>SPIKE Go SDK clients are hardened to only talk to SPIKE Nexus as the
 server during mTLS.</li>
