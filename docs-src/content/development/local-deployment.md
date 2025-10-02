@@ -209,7 +209,7 @@ Once we push the container images to the registry, we can now deploy **SPIRE**
 and **SPIKE**.
 
 ```bash
-# Uses `./config/helm/values-dev.yaml`
+# Uses `./config/helm/values-local.yaml`
 make deploy-dev-local
 ```
 

@@ -37,7 +37,44 @@
   <task-group for="v0.6.0">
 
   </task-group>
-  <task-groud for=">v0.6.0">
+  <task-group for=">v0.6.0">
+    <issue>
+      add docs for `make deploy-minikube` to the makefile and also to the
+      user-facing website.
+    </issue>
+    <issue>
+      update documentation about memory locking.
+      if you are getting a memory allocation warning, check your limits
+      and update it in the system if needed.
+
+      spike tries to
+      mlockall(MCL_CURRENT | MCL_FUTURE), it tries to lock:
+      All currently allocated memory
+      All future memory allocations
+
+      so if your user does not have enough limits, this attempt will fail.
+
+      sudo vim /etc/security/limits.conf
+      Change those lines to:
+      volkan    soft    memlock    16777216
+      volkan    hard    memlock    16777216
+      and reboot your system
+      (pick a reasonable memory limit instead of 167777...)
+
+      also for docker
+
+      volkan@spike-fedora:~/WORKSPACE/spike$ cat /etc/docker/daemon.json
+      {
+      "default-ulimits": {
+      "memlock": {
+      "Name": "memlock",
+      "Hard": 17179869184,
+      "Soft": 17179869184
+      }
+      }
+      }
+
+    </issue>
     <issue>
       test what happens if there are no keepers available and initialized
       but bootstrap still tries to bootstrap

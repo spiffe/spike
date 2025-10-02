@@ -6,8 +6,9 @@
 # See https://github.com/spiffe/helm-charts-hardened for documentation
 # and configuration options.
 
-# `values.yaml`, but pointing to a local container registry instead of the
-# upstream SPIFFE `helm-charts-hardened` registry.
+# Uses the SPIFFE Helm Charts default `values.yaml`, but pointing to a local
+# container registry instead of the upstream SPIFFE `helm-charts-hardened`
+# registry.
 
 spike-keeper:
   enabled: true
@@ -24,14 +25,12 @@ spike-nexus:
     repository: spike-nexus
     pullPolicy: IfNotPresent
     tag: "dev"
-    bootstrap:
-      enabled: true
-      force: false
-      image:
-        registry: localhost:5000
-        repository: spike-bootstrap
-        pullPolicy: IfNotPresent
-        tag: "dev"
+  bootstrap:
+    image:
+      registry: localhost:5000
+      repository: spike-bootstrap
+      pullPolicy: IfNotPresent
+      tag: "dev"
 
 spike-pilot:
   enabled: true

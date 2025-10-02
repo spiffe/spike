@@ -66,6 +66,15 @@ deploy-dev-local:
 exec-spike:
 	./hack/k8s/spike-sh.sh
 
+deploy-minikube: \
+	build \
+	docker-cleanup \
+	docker-build \
+	k8s-delete \
+	k8s-start \
+	k8s-load-images \
+	deploy-dev-local
+
 tail-nexus:
 	kubectl logs spike-nexus-0 -n spike -f
 
