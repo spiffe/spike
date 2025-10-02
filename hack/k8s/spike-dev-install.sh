@@ -71,7 +71,7 @@ install_chart() {
   local extra_args=("$@")
 
   if [ -n "${SPIKE_USE_LOCAL_CHARTS}" ]; then
-    echo ">>>>>>>>>>>> USING LOCAL CHARTS"
+    echo "Using helm charts from the local helm-charts-hardened repo..."
 
     local output_file="./${release_name}-rendered.yaml"
     echo "Rendering template to $output_file..."
@@ -86,7 +86,8 @@ install_chart() {
       # -f "$SPIKE_LOCAL_CHARTS_VALUES_FILE"
 
   else
-    echo ">>>>>>>> USING REMOTE CHARTS!!!!!!!!"
+    echo "Using helm charts from the upstream https://github.com/spiffe/helm-charts-hardened repo"
+
     # Map chart names to version variables
     case "$chart_name" in
       "spire-crds")
