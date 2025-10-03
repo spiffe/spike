@@ -72,8 +72,8 @@ spike  soft    memlock    16777216
 spike  hard    memlock    16777216
 ```
 
-For Linux, edit or create the `/etc/docker/daemon.json` file and add the
-following:
+For Docker, edit or create the `/etc/docker/daemon.json` file and add the
+following---The instructions may differ for other container runtimes:
 
 ```json
 {
