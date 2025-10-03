@@ -99,7 +99,7 @@ if [ ${#MISSING_BINARIES[@]} -gt 0 ]; then
   echo "Please build SPIKE binaries first by running:"
   echo "  ./hack/bare-metal/build/build-spike.sh"
   echo ""
-  echo "Or ensure the binaries are in your PATH."
+  echo "If you have the binaries built, ensure the binaries are in your PATH."
   exit 1
 fi
 
@@ -194,27 +194,28 @@ else
   echo "SPIKE_SKIP_SPIRE_AGENT_START is set, skipping SPIRE agent start."
 fi
 
-# Check if SPIKE_NEXUS_BACKEND_STORE is set to memory:
-if [ "$SPIKE_NEXUS_BACKEND_STORE" != "memory" ]; then
-  # Check if we want to skip the keeper initialization step:
-  if [ -z "$SPIKE_SKIP_KEEPER_INITIALIZATION" ]; then
-    echo ""
-    echo "Waiting before SPIKE Keeper 1..."
-    sleep 5
-    run_background "./hack/bare-metal/startup/start-keeper-1.sh"
-    echo ""
-    echo "Waiting before SPIKE Keeper 2..."
-    sleep 5
-    run_background "./hack/bare-metal/startup/start-keeper-2.sh"
-    echo ""
-    echo "Waiting before SPIKE Keeper 3..."
-    sleep 5
-    run_background "./hack/bare-metal/startup/start-keeper-3.sh"
-  else
-    echo "SPIKE_SKIP_KEEPER_INITIALIZATION is set, skipping Keeper instances."
-  fi
-else
+# No SPIKE Keeper initialization is required for the "in-memory" backing store:
+if [ "$SPIKE_NEXUS_BACKEND_STORE" == "memory" ]; then
   echo "SPIKE_NEXUS_BACKEND_STORE is set to memory, skipping Keeper instances."
+  SPIKE_SKIP_KEEPER_INITIALIZATION="true"
+fi
+
+# Check if we want to skip the keeper initialization step:
+if [ -z "$SPIKE_SKIP_KEEPER_INITIALIZATION" ]; then
+  echo ""
+  echo "Waiting before SPIKE Keeper 1..."
+  sleep 5
+  run_background "./hack/bare-metal/startup/start-keeper-1.sh"
+  echo ""
+  echo "Waiting before SPIKE Keeper 2..."
+  sleep 5
+  run_background "./hack/bare-metal/startup/start-keeper-2.sh"
+  echo ""
+  echo "Waiting before SPIKE Keeper 3..."
+  sleep 5
+  run_background "./hack/bare-metal/startup/start-keeper-3.sh"
+else
+  echo "SPIKE_SKIP_KEEPER_INITIALIZATION is set, skipping Keeper instances."
 fi
 
 if [ -z "$SPIKE_SKIP_NEXUS_START" ]; then
@@ -230,6 +231,18 @@ echo "Waiting before SPIKE Bootstrap..."
 sleep 5
 
 ./hack/bare-metal/startup/bootstrap.sh
+
+echo "Registering entries for the demo workload..."
+./examples/consume-secrets/demo-register-entry.sh
+
+echo "Waiting a bit more for the entries to marinate..."
+sleep 5
+
+echo "Creating policies for the demo workload..."
+./examples/consume-secrets/demo-create-policy.sh
+
+echo "Done. Will sleep a bit..."
+sleep 5
 
 echo ""
 echo ""

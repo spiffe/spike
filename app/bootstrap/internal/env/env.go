@@ -132,43 +132,6 @@ func Keepers() map[string]string {
 	return peers
 }
 
-// TrustRootForKeeper returns the trust root domain(s) specifically for
-// SPIKE Keeper service.
-//
-// It retrieves the trust root from the SPIKE_TRUST_ROOT_KEEPER environment
-// variable. If the environment variable is not set, it returns the default
-// value "spike.ist". The return value can be a comma-delimited string of
-// multiple trust root domains.
-//
-// Returns:
-//   - A string containing one or more trust root domains for SPIKE Keeper,
-//     comma-delimited if multiple
-func TrustRootForKeeper() string {
-	tr := os.Getenv(env.TrustRootKeeper)
-	if tr == "" {
-		return "spike.ist"
-	}
-	return tr
-}
-
-// TrustRoot returns the trust root domain(s) for the application.
-//
-// It retrieves the trust root from the SPIKE_TRUST_ROOT environment variable.
-// If the environment variable is not set, it returns the default value
-// "spike.ist". The return value can be a comma-delimited string of multiple
-// trust root domains.
-//
-// Returns:
-//   - A string containing one or more trust root domains, comma-delimited if
-//     multiple
-func TrustRoot() string {
-	tr := os.Getenv(env.TrustRoot)
-	if tr == "" {
-		return "spike.ist"
-	}
-	return tr
-}
-
 // ConfigMapName returns the name of the ConfigMap used to store SPIKE
 // Bootstrap state information.
 //

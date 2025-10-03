@@ -94,3 +94,5 @@ bootstrap-linux-arm64.sum.txt
 /identifier.sqlite
 /demo
 /docs-src/public
+/spiffe-rendered.yaml
+/spire-crds-rendered.yaml

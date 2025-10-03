@@ -13,7 +13,6 @@ import (
 	"github.com/spiffe/spike-sdk-go/spiffe"
 	"github.com/spiffe/spike-sdk-go/spiffeid"
 
-	"github.com/spiffe/spike/app/nexus/internal/env"
 	"github.com/spiffe/spike/internal/net"
 )
 
@@ -37,7 +36,7 @@ func guardRestoreRequest(
 		return apiErr.ErrUnauthorized
 	}
 
-	if !spiffeid.IsPilotRestore(env.TrustRootForPilot(), peerSPIFFEID.String()) {
+	if !spiffeid.IsPilotRestore(peerSPIFFEID.String()) {
 		responseBody := net.MarshalBody(reqres.RestoreResponse{
 			Err: data.ErrUnauthorized,
 		}, w)
@@ -48,7 +47,6 @@ func guardRestoreRequest(
 	// It's unlikely to have 1000 SPIKE Keepers across the board.
 	// The indexes start from 1 and increase one-by-one by design.
 	const maxShardID = 1000
-
 	if request.ID < 1 || request.ID > maxShardID {
 		responseBody := net.MarshalBody(reqres.RestoreResponse{
 			Err: data.ErrBadInput,

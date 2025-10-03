@@ -52,7 +52,7 @@ func newSecretGetCommand(
 		Short: "Get secrets from the specified path",
 		Args:  cobra.RangeArgs(1, 2),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			trust.Authenticate(SPIFFEID)
+			trust.AuthenticateForPilot(SPIFFEID)
 
 			api := spike.NewWithSource(source)
 

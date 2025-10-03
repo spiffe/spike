@@ -34,6 +34,6 @@ func Serve(appName string, source *workloadapi.X509Source) {
 		func() { routing.HandleRoute(http.Route) },
 		env.TLSPort(),
 	); err != nil {
-		log.FatalF("%s: Failed to serve: %s\n", appName, err.Error())
+		log.FatalLn(appName, "message", "Failed to serve", "err", err.Error())
 	}
 }

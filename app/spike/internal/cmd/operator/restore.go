@@ -20,7 +20,6 @@ import (
 	"github.com/spiffe/spike-sdk-go/spiffeid"
 	"golang.org/x/term"
 
-	"github.com/spiffe/spike/app/spike/internal/env"
 	"github.com/spiffe/spike/app/spike/internal/trust"
 )
 
@@ -65,7 +64,7 @@ func newOperatorRestoreCommand(
 		Use:   "restore",
 		Short: "Restore SPIKE Nexus (do this if SPIKE Nexus cannot auto-recover)",
 		Run: func(cmd *cobra.Command, args []string) {
-			if !spiffeid.IsPilotRestore(env.TrustRoot(), SPIFFEID) {
+			if !spiffeid.IsPilotRestore(SPIFFEID) {
 				fmt.Println("")
 				fmt.Println(
 					"  You need to have a `restore` role to use this command.")
@@ -77,7 +76,7 @@ func newOperatorRestoreCommand(
 				os.Exit(1)
 			}
 
-			trust.AuthenticateRestore(SPIFFEID)
+			trust.AuthenticateForPilotRestore(SPIFFEID)
 
 			fmt.Println("(your input will be hidden as you paste/type it)")
 			fmt.Print("Enter recovery shard: ")

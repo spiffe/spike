@@ -25,8 +25,10 @@ test/cover:
 # Usage: make test
 # Executes all tests in the project with verbose output and race detection
 # Does not generate coverage reports (use test/cover for that)
-# Flags: -v (verbose), -race (race detection), -buildvcs (include VCS info), -p 1 (sequential execution to avoid race conditions)
-# NOTE: Sequential execution is temporary workaround for concurrent environment variable/database access
+# Flags: -v (verbose), -race (race detection), -buildvcs (include VCS info),
+# -p 1 (sequential execution to avoid race conditions)
+# NOTE: Sequential execution is temporary workaround for concurrent environment
+# variable/database access
 # FIXME: Remove -p 1 flag once issue with concurrent test isolation is resolved
 .PHONY: test
 test:
@@ -54,7 +56,7 @@ audit:
 	go vet ./...
 	go run honnef.co/go/tools/cmd/staticcheck@latest -checks=all,-ST1000,-U1000 ./...
 	go run golang.org/x/vuln/cmd/govulncheck@latest ./...
-	go run github.com/golangci/golangci-lint/cmd/golangci-lint@latest run
+	CGO_ENABLED=0 go run github.com/golangci/golangci-lint/cmd/golangci-lint@latest run
 
 # Comprehensive set of checks to simulate a CI environment
 # Usage: make ci

@@ -10,7 +10,6 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	spike "github.com/spiffe/spike-sdk-go/api"
-
 	"github.com/spiffe/spike/app/spike/internal/trust"
 )
 
@@ -98,7 +97,7 @@ func newPolicyGetCommand(
 
         Use --format=json to get the output in JSON format.`,
 		Run: func(cmd *cobra.Command, args []string) {
-			trust.Authenticate(SPIFFEID)
+			trust.AuthenticateForPilot(SPIFFEID)
 			api := spike.NewWithSource(source)
 
 			// If the first argument is provided without the `--name` flag, it could

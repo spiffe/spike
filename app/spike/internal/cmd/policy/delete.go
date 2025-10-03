@@ -13,7 +13,6 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	spike "github.com/spiffe/spike-sdk-go/api"
-
 	"github.com/spiffe/spike/app/spike/internal/trust"
 )
 
@@ -77,7 +76,7 @@ func newPolicyDeleteCommand(
         - A policy name with the --name flag: 
           spike policy delete --name=my-policy`,
 		Run: func(cmd *cobra.Command, args []string) {
-			trust.Authenticate(SPIFFEID)
+			trust.AuthenticateForPilot(SPIFFEID)
 			api := spike.NewWithSource(source)
 
 			policyID, err := sendGetPolicyIDRequest(cmd, args, api)

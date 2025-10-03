@@ -10,7 +10,6 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	spike "github.com/spiffe/spike-sdk-go/api"
-
 	"github.com/spiffe/spike/app/spike/internal/trust"
 )
 
@@ -109,7 +108,7 @@ func newPolicyCreateCommand(
 				return
 			}
 
-			trust.Authenticate(SPIFFEID)
+			trust.AuthenticateForPilot(SPIFFEID)
 			api := spike.NewWithSource(source)
 
 			// Validate permissions
