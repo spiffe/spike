@@ -14,6 +14,11 @@ sort_by = "weight"
 
 TBD
 
+## [0.6.1] - 2025-10-02
+
+This is a patch release to align with the changes in the upstream helm charts.
+
+
 ## [0.6.0] - 2025-10-01
 
 This was a security release where the main focus was hardening SPIKE SDK mTLS

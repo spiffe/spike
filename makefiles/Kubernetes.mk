@@ -23,10 +23,6 @@ k8s-reset:
 docker-build:
 	./hack/docker/build-local.sh
 
-# 4. Forward registry.
-docker-forward-registry:
-	./hack/k8s/minikube-forward-registry.sh
-
 # For Minikube, instead of forwarding the registry, you can directly load
 # the container images to the cluster's internal local registry.
 #
@@ -43,11 +39,6 @@ docker-forward-registry:
 # are different network stacks. The result will: the push sits on "Waiting".
 k8s-load-images:
 	./hack/k8s/minikube-load-images.sh
-
-# 5. Push to the container registry.
-#    Alternatively, you can `make k8s-load-images`.
-docker-push:
-	./hack/docker/push-local.sh
 
 # For Multi-Cluster Federation Demo, DO NOT run `deploy-local`
 # Instead, see FederationDemo.mk for the remaining steps.
@@ -66,6 +57,10 @@ deploy-dev-local:
 exec-spike:
 	./hack/k8s/spike-sh.sh
 
+# Builds and deploys SPIKE to Minikube from scratch. This target orchestrates
+# a complete deployment pipeline: builds binaries, cleans up Docker resources,
+# builds container images, resets the Minikube cluster, loads images into the
+# cluster, and deploys SPIKE in development mode.
 deploy-minikube: \
 	build \
 	docker-cleanup \

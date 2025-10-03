@@ -45,6 +45,63 @@ a platform-specific process; on Linux setting the resource limit `RLIMIT_CORE`
 to `0` disables core dumps. In the `systemd` service unit file, setting 
 `LimitCORE=0` will enforce this setting for the Vault service.
 
+### Memory Protection
+
+**SPIKE** uses memory locking to prevent memory from being swapped to disk. This 
+ensures that the memory is not accessible to an attacker who has access to the 
+system.
+
+**SPIKE** tries to `mlockall(MCL_CURRENT | MCL_FUTURE)`, it tries to lock:
+
+* All currently allocated memory
+* All future memory allocations
+
+So if the user running the **SPIKE** components does not have enough limits, 
+this attempt will fail.
+
+To enable memory locking, you may need to modify the `ulimit` settings for the 
+user running **SPIKE** components.
+
+For bare-metal Linux deployments, edit the `/etc/security/limits.conf` file to 
+add the following lines:
+
+```text
+# Replace "spike" with the user running SPIKE components
+spike  soft    memlock    16777216
+spike  soft    memlock    16777216
+spike  hard    memlock    16777216
+```
+
+For Linux, edit or create the `/etc/docker/daemon.json` file and add the
+following:
+
+```json
+{
+  "default-ulimits": {
+    "memlock": {
+      "Name": "memlock",
+      "Hard": 17179869184,
+      "Soft": 17179869184
+    }
+  }
+}
+```
+
+For Kubernetes, the settings will depend on your container runtime.
+For `containerd`, for example, execute the following:
+
+```bash
+sudo systemctl edit containerd
+# Add:
+[Service]
+LimitMEMLOCK=infinity
+# Then:
+sudo systemctl daemon-reload && sudo systemctl restart containerd
+```
+
+If, for any reason, you cannot enable memory locking, make sure to disable
+swap and core dumps on your system for additional security.
+
 ### Network Security
 
 Although **SPIKE** relies on Zero Trust networking principles and establishes

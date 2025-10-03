@@ -19,6 +19,9 @@ GOOS=darwin GOARCH=arm64 GOFIPS140=v1.0.0 \
 GOOS=darwin GOARCH=arm64 GOFIPS140=v1.0.0 \
   go build -ldflags="-s -w" -o bootstrap-v"$VERSION"-darwin-arm64 \
   ./app/bootstrap/cmd/main.go
+GOOS=darwin GOARCH=arm64 GOFIPS140=v1.0.0 \
+  go build -ldflags="-s -w" -o demo-v"$VERSION"-darwin-arm64 \
+  ./app/demo/cmd/main.go
 echo "Built for Mac ARM64."
 
 # Build for Linux ARM64
@@ -39,6 +42,10 @@ CC=aarch64-linux-musl-gcc \
   GOOS=linux GOARCH=arm64 GOFIPS140=v1.0.0 \
   go build -ldflags="-s -w" -o bootstrap-v"$VERSION"-linux-arm64 \
   ./app/bootstrap/cmd/main.go
+CC=aarch64-linux-musl-gcc \
+  GOOS=linux GOARCH=arm64 GOFIPS140=v1.0.0 \
+  go build -ldflags="-s -w" -o demo-v"$VERSION"-linux-arm64 \
+  ./app/demo/cmd/main.go
 echo "Built for Linux ARM64."
 
 # Build for Linux AMD64

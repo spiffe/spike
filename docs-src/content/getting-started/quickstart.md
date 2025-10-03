@@ -97,6 +97,8 @@ kubectl get node
 
 ## Deploying **SPIKE** to Minikube
 
+TODO: update this to use the local helm charts for now 
+
 Once you have Minikube running, you can deploy **SPIKE** to it from 
 **SPIFFE helm charts**.
 
