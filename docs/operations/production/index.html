@@ -824,8 +824,8 @@ add the following lines:</p>
 </span><span>spike  soft    memlock    16777216
 </span><span>spike  hard    memlock    16777216
 </span></code></pre>
-<p>For Linux, edit or create the <code>/etc/docker/daemon.json</code> file and add the
-following:</p>
+<p>For Docker, edit or create the <code>/etc/docker/daemon.json</code> file and add the
+following—The instructions may differ for other container runtimes:</p>
 <pre data-lang="json" style="background-color:#2b303b;color:#c0c5ce;" class="language-json "><code class="language-json" data-lang="json"><span>{
 </span><span>  &quot;</span><span style="color:#a3be8c;">default-ulimits</span><span>&quot;: {
 </span><span>    &quot;</span><span style="color:#a3be8c;">memlock</span><span>&quot;: {
