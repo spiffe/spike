@@ -804,6 +804,49 @@ cryptographically sensitive material encryption keys. Preventing core dumps is
 a platform-specific process; on Linux setting the resource limit <code>RLIMIT_CORE</code>
 to <code>0</code> disables core dumps. In the <code>systemd</code> service unit file, setting
 <code>LimitCORE=0</code> will enforce this setting for the Vault service.</p>
+<h3 id="memory-protection">Memory Protection</h3>
+<p><strong>SPIKE</strong> uses memory locking to prevent memory from being swapped to disk. This
+ensures that the memory is not accessible to an attacker who has access to the
+system.</p>
+<p><strong>SPIKE</strong> tries to <code>mlockall(MCL_CURRENT | MCL_FUTURE)</code>, it tries to lock:</p>
+<ul>
+<li>All currently allocated memory</li>
+<li>All future memory allocations</li>
+</ul>
+<p>So if the user running the <strong>SPIKE</strong> components does not have enough limits,
+this attempt will fail.</p>
+<p>To enable memory locking, you may need to modify the <code>ulimit</code> settings for the
+user running <strong>SPIKE</strong> components.</p>
+<p>For bare-metal Linux deployments, edit the <code>/etc/security/limits.conf</code> file to
+add the following lines:</p>
+<pre data-lang="text" style="background-color:#2b303b;color:#c0c5ce;" class="language-text "><code class="language-text" data-lang="text"><span># Replace &quot;spike&quot; with the user running SPIKE components
+</span><span>spike  soft    memlock    16777216
+</span><span>spike  soft    memlock    16777216
+</span><span>spike  hard    memlock    16777216
+</span></code></pre>
+<p>For Docker, edit or create the <code>/etc/docker/daemon.json</code> file and add the
+following—The instructions may differ for other container runtimes:</p>
+<pre data-lang="json" style="background-color:#2b303b;color:#c0c5ce;" class="language-json "><code class="language-json" data-lang="json"><span>{
+</span><span>  &quot;</span><span style="color:#a3be8c;">default-ulimits</span><span>&quot;: {
+</span><span>    &quot;</span><span style="color:#a3be8c;">memlock</span><span>&quot;: {
+</span><span>      &quot;</span><span style="color:#a3be8c;">Name</span><span>&quot;: &quot;</span><span style="color:#a3be8c;">memlock</span><span>&quot;,
+</span><span>      &quot;</span><span style="color:#a3be8c;">Hard</span><span>&quot;: </span><span style="color:#d08770;">17179869184</span><span>,
+</span><span>      &quot;</span><span style="color:#a3be8c;">Soft</span><span>&quot;: </span><span style="color:#d08770;">17179869184
+</span><span>    }
+</span><span>  }
+</span><span>}
+</span></code></pre>
+<p>For Kubernetes, the settings will depend on your container runtime.
+For <code>containerd</code>, for example, execute the following:</p>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">sudo</span><span> systemctl edit containerd
+</span><span style="color:#65737e;"># Add:
+</span><span style="color:#bf616a;">[Service]
+</span><span style="color:#bf616a;">LimitMEMLOCK</span><span>=</span><span style="color:#a3be8c;">infinity
+</span><span style="color:#65737e;"># Then:
+</span><span style="color:#bf616a;">sudo</span><span> systemctl daemon-reload &amp;&amp; </span><span style="color:#bf616a;">sudo</span><span> systemctl restart containerd
+</span></code></pre>
+<p>If, for any reason, you cannot enable memory locking, make sure to disable
+swap and core dumps on your system for additional security.</p>
 <h3 id="network-security">Network Security</h3>
 <p>Although <strong>SPIKE</strong> relies on Zero Trust networking principles and establishes
 mTLS everywhere, that does not mean perimeter defense is unimportant.</p>
@@ -1164,7 +1207,7 @@ before for details)</p>
 in memory and using encrypted storage for persistence. Due to its critical role
 in managing secrets, special attention must be paid to its security
 configuration.</p>
-<h3 id="memory-protection">Memory Protection</h3>
+<h3 id="memory-protection-1">Memory Protection</h3>
 <ul>
 <li>The <code>ptrace</code> and <code>yama</code> recommendations for <strong>SPIKE Keeper</strong>s covered in
 the previous section also applies to <strong>SPIKE Nexus</strong>. Protect <strong>SPIKE

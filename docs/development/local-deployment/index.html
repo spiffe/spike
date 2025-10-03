@@ -187,19 +187,19 @@
                                                         <a href="https://spike.ist/development/local-deployment/#prerequisites">Prerequisites</a>
                                                     </li>
                                                 <li>
-                                                        <a href="https://spike.ist/development/local-deployment/#starting-minikube">Starting Minikube</a>
+                                                        <a href="https://spike.ist/development/local-deployment/#docker-registry-setup">Docker Registry Setup</a>
                                                     </li>
                                                 <li>
-                                                        <a href="https://spike.ist/development/local-deployment/#forwarding-the-local-registry">Forwarding the Local Registry</a>
+                                                        <a href="https://spike.ist/development/local-deployment/#all-in-one-script">All-in-One Script</a>
+                                                    </li>
+                                                <li>
+                                                        <a href="https://spike.ist/development/local-deployment/#starting-minikube">Starting Minikube</a>
                                                     </li>
                                                 <li>
                                                         <a href="https://spike.ist/development/local-deployment/#build-container-images-locally">Build Container Images Locally</a>
                                                     </li>
                                                 <li>
                                                         <a href="https://spike.ist/development/local-deployment/#pushing-container-images-to-the-local-registry">Pushing Container Images to the Local Registry</a>
-                                                    </li>
-                                                <li>
-                                                        <a href="https://spike.ist/development/local-deployment/#docker-windows-subsystem-for-linux-integration-issues">Docker Windows Subsystem for Linux Integration Issues</a>
                                                     </li>
                                                 <li>
                                                         <a href="https://spike.ist/development/local-deployment/#deploying-spire-and-spike-to-the-local-cluster">Deploying SPIRE and SPIKE to the Local Cluster</a>
@@ -803,9 +803,56 @@ starting with this guide:</p>
 <li>Have <a href="https://www.docker.com/" title="Docker: Build, Share, and Run Applications">Docker</a> installed and running on your machine.</li>
 <li>Have a <a href="https://kubernetes.io/docs/tasks/tools/" title="kubectl: Kubernetes command-line tool"><code>kubectl</code></a> client installed.</li>
 <li>Have <a href="https://www.gnu.org/software/make/" title="GNU Make: Build Automation Tool"><code>make</code></a> installed on your machine.</li>
-<li>Have a [<code>minikube</code>][minikube] binary installed.</li>
+<li>Have a <a href="https://minikube.sigs.k8s.io/docs/start/" title="Minikube: Run Kubernetes Locally"><code>minikube</code></a> binary installed.</li>
 <li>Have <a href="https://helm.sh/" title="Helm"><code>helm</code></a> binary installed.</li>
 </ul>
+<h2 id="docker-registry-setup">Docker Registry Setup</h2>
+<p>For security, SPIKE components lock the memory they use at runtime. You may
+need to update the <code>ulimit</code> settings for your Docker daemon to allow this.</p>
+<p>For Linux, edit or create the <code>/etc/docker/daemon.json</code> file and add the
+following:</p>
+<pre data-lang="json" style="background-color:#2b303b;color:#c0c5ce;" class="language-json "><code class="language-json" data-lang="json"><span>{
+</span><span>  &quot;</span><span style="color:#a3be8c;">default-ulimits</span><span>&quot;: {
+</span><span>    &quot;</span><span style="color:#a3be8c;">memlock</span><span>&quot;: {
+</span><span>      &quot;</span><span style="color:#a3be8c;">Name</span><span>&quot;: &quot;</span><span style="color:#a3be8c;">memlock</span><span>&quot;,
+</span><span>      &quot;</span><span style="color:#a3be8c;">Hard</span><span>&quot;: </span><span style="color:#d08770;">17179869184</span><span>,
+</span><span>      &quot;</span><span style="color:#a3be8c;">Soft</span><span>&quot;: </span><span style="color:#d08770;">17179869184
+</span><span>    }
+</span><span>  }
+</span><span>}
+</span></code></pre>
+<p><code>17179869184</code> will set the maximum amount of memory a container can lock to
+16GB. You can set this to a lower value if you want, since SPIKE components
+don’t need that much memory.</p>
+<p>For Docker for Mac, or Docker for Windows, you will need to update
+the Docker Engine settings from the “<em>Settings &gt; Docker Engine</em>” menu as
+follows:</p>
+<pre data-lang="json" style="background-color:#2b303b;color:#c0c5ce;" class="language-json "><code class="language-json" data-lang="json"><span>{
+</span><span>  &quot;</span><span style="color:#a3be8c;">builder</span><span>&quot;: {
+</span><span>    &quot;</span><span style="color:#a3be8c;">gc</span><span>&quot;: {
+</span><span>      &quot;</span><span style="color:#a3be8c;">defaultKeepStorage</span><span>&quot;: &quot;</span><span style="color:#a3be8c;">20GB</span><span>&quot;,
+</span><span>      &quot;</span><span style="color:#a3be8c;">enabled</span><span>&quot;: </span><span style="color:#d08770;">true
+</span><span>    }
+</span><span>  },
+</span><span>  &quot;</span><span style="color:#a3be8c;">experimental</span><span>&quot;: </span><span style="color:#d08770;">false</span><span>,
+</span><span>  &quot;</span><span style="color:#a3be8c;">default-ulimits</span><span>&quot;: {
+</span><span>    &quot;</span><span style="color:#a3be8c;">memlock</span><span>&quot;: {
+</span><span>      &quot;</span><span style="color:#a3be8c;">Name</span><span>&quot;: &quot;</span><span style="color:#a3be8c;">memlock</span><span>&quot;,
+</span><span>      &quot;</span><span style="color:#a3be8c;">Hard</span><span>&quot;: </span><span style="color:#d08770;">17179869184</span><span>,
+</span><span>      &quot;</span><span style="color:#a3be8c;">Soft</span><span>&quot;: </span><span style="color:#d08770;">17179869184
+</span><span>    }
+</span><span>  }
+</span><span>}
+</span></code></pre>
+<p>Once the change is done, remember to restart the Docker Engine.</p>
+<h2 id="all-in-one-script">All-in-One Script</h2>
+<p>If you have the prerequisites set up and want to skip ahead and run the entire
+guide in one go, you can use the following script:</p>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#96b5b4;">cd </span><span>$</span><span style="color:#bf616a;">WORKSPACE </span><span style="color:#65737e;"># Replace with your workspace directory
+</span><span style="color:#bf616a;">git</span><span> clone https://github.com/spiffe/spike.git
+</span><span style="color:#96b5b4;">cd</span><span> spike
+</span><span style="color:#bf616a;">make</span><span> deploy-minikube 
+</span></code></pre>
 <h2 id="starting-minikube">Starting Minikube</h2>
 <p>To start a local Minikube cluster, clone the project repository and run the
 following command in the root directory of the project:</p>
@@ -836,33 +883,6 @@ necessary plugins enabled. You can verify that Minikube is running by executing:
 </span><span style="color:#65737e;"># NAME       STATUS   ROLES           AGE   VERSION
 </span><span style="color:#65737e;"># minikube   Ready    control-plane   67s   v1.33.1
 </span></code></pre>
-<h2 id="forwarding-the-local-registry">Forwarding the Local Registry</h2>
-<p>Since Minikube contains its Kubernetes cluster in a virtual machine, accessing
-its container registry requires network mapping. There are several ways to
-achieve this. In this guide, we will use Kubernetes port forwarding.</p>
-<p>Open a terminal, change your directory to the project’s folder, and execute
-the following:</p>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">make</span><span> docker-forward-registry
-</span><span style="color:#65737e;"># Sample Output:
-</span><span style="color:#65737e;"># Forwarding from 127.0.0.1:5000 -&gt; 5000
-</span><span style="color:#65737e;"># Forwarding from [::1]:5000 -&gt; 5000
-</span></code></pre>
-<p>Leave this terminal open. We will execute the rest of the commands in<br />
-a separate terminal window.</p>
-<blockquote>
-<p><strong>Alternative to Registry Port Forwarding</strong></p>
-<p>If you don’t want to use port forwarding, you can directly load the container
-images into the Minikube cluster’s local registry.</p>
-<p>Although this is typically used to overcome network restrictions around
-WSL and Docker for Windows, it can also be used as an alternative to port
-forwarding.</p>
-<p>To copy images directly into the Minikube cluster’s local registry, do not run
-the above command, but instead execute the following:</p>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">make</span><span> k8s-load-images
-</span></code></pre>
-<p>This will effectively have the same end-result as port forwarding, and you
-won’t have to keep the port forwarding terminal open.</p>
-</blockquote>
 <h2 id="build-container-images-locally">Build Container Images Locally</h2>
 <p>We have a <code>make</code> target to build the container images locally.</p>
 <pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">make</span><span> docker-build
@@ -870,53 +890,8 @@ won’t have to keep the port forwarding terminal open.</p>
 <h2 id="pushing-container-images-to-the-local-registry">Pushing Container Images to the Local Registry</h2>
 <p>Next up, we’ll push the container images to our internal Minikube container
 registry:</p>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># Make sure you port forward using 
-</span><span style="color:#65737e;"># `make docker-forward-registry`
-</span><span style="color:#65737e;"># before executing this command:
-</span><span style="color:#bf616a;">make</span><span> docker-push
-</span></code></pre>
-<h2 id="docker-windows-subsystem-for-linux-integration-issues">Docker Windows Subsystem for Linux Integration Issues</h2>
-<p>If <code>make docker-push</code> hangs up or gives a network error, it’s typically
-related to how Docker for Windows, Windows, and Windows Subsystem for Linux
-handle routing, DNS resolution, and networking.</p>
-<p>One way to push container images to the Minikube cluster without adding them
-to the local Minikube registry would be to run the following script:</p>
 <pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">make</span><span> k8s-load-images
 </span></code></pre>
-<p>This will effectively have the same end-result as pushing the images to
-the registry.</p>
-<p>Alternatively, you might try pointing your terminal’s Docker CLI to the
-Docker engine inside Minikube:</p>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># Set Minikube Docker environment
-</span><span style="color:#96b5b4;">eval </span><span>$(</span><span style="color:#bf616a;">minikube</span><span> docker-env)
-</span><span style="color:#65737e;"># Interact with Minikube&#39;s Docker Engine
-</span><span style="color:#bf616a;">make</span><span> docker-build
-</span><span style="color:#65737e;"># Unset Minikube Docker environment when you&#39;re done
-</span><span style="color:#96b5b4;">eval </span><span>$(</span><span style="color:#bf616a;">minikube</span><span> docker-env</span><span style="color:#bf616a;"> --unset</span><span>)
-</span></code></pre>
-<p>For Mac OS and Linuxes, where if you get registry-access-related errors, adding
-the following to <code>/etc/docker/daemon.json</code> can help:</p>
-<pre data-lang="json" style="background-color:#2b303b;color:#c0c5ce;" class="language-json "><code class="language-json" data-lang="json"><span>{
-</span><span>  &quot;</span><span style="color:#a3be8c;">insecure-registries</span><span>&quot;: [&quot;</span><span style="color:#a3be8c;">localhost:5000</span><span>&quot;]
-</span><span>}
-</span></code></pre>
-<p>For Docker for Mac, or Docker for Windows, you will need to update
-the Docker Engine settings from the “<em>Settings &gt; Docker Engine</em>” menu as
-follows:</p>
-<pre data-lang="json" style="background-color:#2b303b;color:#c0c5ce;" class="language-json "><code class="language-json" data-lang="json"><span>{
-</span><span>  &quot;</span><span style="color:#a3be8c;">builder</span><span>&quot;: {
-</span><span>    &quot;</span><span style="color:#a3be8c;">gc</span><span>&quot;: {
-</span><span>      &quot;</span><span style="color:#a3be8c;">defaultKeepStorage</span><span>&quot;: &quot;</span><span style="color:#a3be8c;">20GB</span><span>&quot;,
-</span><span>      &quot;</span><span style="color:#a3be8c;">enabled</span><span>&quot;: </span><span style="color:#d08770;">true
-</span><span>    }
-</span><span>  },
-</span><span>  &quot;</span><span style="color:#a3be8c;">experimental</span><span>&quot;: </span><span style="color:#d08770;">false</span><span>,
-</span><span>  &quot;</span><span style="color:#a3be8c;">insecure-registries</span><span>&quot;: [
-</span><span>    &quot;</span><span style="color:#a3be8c;">localhost:5000</span><span>&quot;
-</span><span>  ]
-</span><span>}
-</span></code></pre>
-<p>Once the change is done, don’t forget to restart the Docker Engine.</p>
 <p>That said, <code>make k8s-load-images</code> is the safest and simplest way to push
 the images into Minikube without having to deal with Docker networking,
 port forwarding, and Docker registry, making it the preferred method, and
@@ -924,7 +899,7 @@ it is what we recommend.</p>
 <h2 id="deploying-spire-and-spike-to-the-local-cluster">Deploying SPIRE and SPIKE to the Local Cluster</h2>
 <p>Once we push the container images to the registry, we can now deploy <strong>SPIRE</strong>
 and <strong>SPIKE</strong>.</p>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># Uses `./config/helm/values-dev.yaml`
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># Uses `./config/helm/values-local.yaml`
 </span><span style="color:#bf616a;">make</span><span> deploy-dev-local
 </span></code></pre>
 <h2 id="verifying-spike-deployment">Verifying SPIKE Deployment</h2>

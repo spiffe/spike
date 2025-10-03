@@ -25,6 +25,7 @@
     <issue order="3">Secure Secrets Management Web UX</issue>
     <issue order="4">Zero Turtle Pi Grid</issue>
     <watch-list>
+      * Outstanding PRs on SDK and SPIKE.
       * cipher encrypt decrypt: https://github.com/spiffe/spike/pull/212
       * encrypt policy info: https://github.com/spiffe/spike/pull/223
       * ConfigMap: https://github.com/spiffe/spike/pull/228
@@ -34,30 +35,17 @@
       * secure UI: https://github.com/spiffe/spike/issues/230
     </watch-list>
   </high-level-plan>
-  <task-group for="v0.6.0">
-
-  </task-group>
-  <task-groud for=">v0.6.0">
+  <task-group for="v0.6.3">
     <issue>
-      test what happens if there are no keepers available and initialized
-      but bootstrap still tries to bootstrap
+      after helm-charts changes are merged, verify that the quickstart
+      guide still works.
     </issue>
     <issue>
-      verify `make start` work in in-memory mode.
-      it likely tries to trigger bootstrap and fail
-      if it fails, give a proper warning in bootstrap instead of random panics.
+      Go over entire documentation: There are places to update since
+      we have helm charts updates.
     </issue>
     <issue>
-      if there are no binaries, `make start` errs out; it should not, since it
-      builds the binaries before anything else anyway.
-    </issue>
-    <issue>
-      Add executing ./demo to smoke tests too, with sample output.
-    </issue>
-    <issue>
-      during bootstrap retry; if a single keeper fails, it will retry it
-      indefinitely without giving chance to other keepers.
-      a better solution is needed for that.
+      make tests concurrent again.
     </issue>
     <issue>
       bootstrap verification:
@@ -68,20 +56,6 @@
     <issue>
       for spike consider some of these if not there yet already
       https://fluxcd.io/flux/security/
-    </issue>
-    <issue>
-      spike bootstrap and other container images don't have any descriptions
-
-      No description provided
-      This package version was published 7 minutes ago.
-
-      To provide a description, add the following line to your Dockerfile:
-
-      LABEL org.opencontainers.image.description DESCRIPTION
-      For multi-arch images, set a value for the org.opencontainers.image.description key in the annotations field of the manifest:
-
-      "annotations": { "org.opencontainers.image.description": "DESCRIPTION" }
-      https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry#labelling-container-images
     </issue>
     <issue>
       Sign generated binaries:
@@ -134,6 +108,127 @@
       echo "Signed. Publish signatures + $PUB (if present)."
     </issue>
     <issue>
+      better to have different fns per content type instead
+
+      this is from go sdk
+
+      // Encrypt encrypts either via streaming or JSON based on mode.
+      // Stream mode: send r as body with contentType. Returns ciphertext bytes.
+      // JSON mode: send plaintext + algorithm; returns ciphertext bytes.
+      func Encrypt(
+      source *workloadapi.X509Source, mode Mode, r io.Reader,
+      contentType string, plaintext []byte, algorithm string,
+      allow predicate.Predicate,
+      ) ([]byte, error) {
+    </issue>
+    <issue>
+      func (a *API) CipherDecryptJSON(
+      version byte, nonce, ciphertext []byte, algorithm string,
+      ) ([]byte, error) {
+
+      better to define an algorithm type so that users can pick from
+      supported algorithms.
+    </issue>
+    <issue>
+      SPIKE Bootstrap tries to reach keepers forever, but it should have a max
+      timeout (like, say, 20mins), after which it gives up and crashes.
+      -- configurable.
+    </issue>
+    <issue>
+      bootstrap: when bootstrap is done encrypt a text and let nexus decrypt it
+      to ensure that the bootstrapping is done and the root key works.
+    </issue>
+    <issue>
+      consider using modernize:
+      https://pkg.go.dev/golang.org/x/tools/gopls/internal/analysis/modernize
+    </issue>
+    <issue>
+      introduce SPIKE to VSecM
+      https://github.com/vmware/secrets-manager/issues/1275
+    </issue>
+  </task-group>
+  <task-group for="v0.6.2">
+    <issue>
+      update documentation to provide details about SPIKE Bootstrap
+      Also, remove/edit part that are not relevant anymore due to the
+      introduction of SPIKE Bootstrap.
+    </issue>
+    <issue>
+      fix broken video links.
+    </issue>
+    <issue>
+      demo: new architecture overview.
+    </issue>
+    <issue>
+      reading an unknown secret gives an error instead of "not found"
+
+      ➜  spike git:(feature/bootstrap-job) ✗ spike secret get tenants/demo/db
+      Error: failure reading secret: post: Problem connecting to peer
+      Usage:
+      spike secret get <path> [key] [flags]
+
+      Flags:
+      -f, --format string   Format to use. Valid options: plain, p, yaml, y, json, j (default "plain")
+      -h, --help            help for get
+      -v, --version int     Specific version to retrieve
+
+      failure reading secret: post: Problem connecting to peer
+    </issue>
+    <issue>
+      when entries are not registered to the SPIRE Server and the
+      operator tries to use SPIKE, the error messages can be more
+      explanatory.
+    </issue>
+    <issue>
+      Due to vimeo migration, video links everywhere are likely broken,
+      that includes spike web too -- fix them.
+    </issue>
+    <issue>
+      add `-trimpath` and `-a` to go build.
+    </issue>
+    <issue>
+      log.FatalLn panics by design, but then it prints the stack trace.
+      For better security, disable this if SPIKE is in production mode
+      (can be controlled via an environment variable)
+      or maybe a different env var and the default behaviour is not to
+      dump the stack.
+    </issue>
+    <issue>
+      during bootstrap retry; if a single keeper fails, it will retry it
+      indefinitely without giving chance to other keepers.
+      a better solution is needed for that.
+    </issue>
+    <issue>
+      test what happens if there are no keepers available and initialized
+      but bootstrap still tries to bootstrap
+    </issue>
+    <issue>
+      verify `make start` work in in-memory mode.
+      it likely tries to trigger bootstrap and fail
+      if it fails, give a proper warning in bootstrap instead of random panics.
+    </issue>
+    <issue>
+      if there are no binaries, `make start` errs out; it should not, since it
+      builds the binaries before anything else anyway.
+    </issue>
+    <issue>
+      Add executing ./demo to smoke tests too, with sample output.
+    </issue>
+    <issue>
+      spike bootstrap and other container images don't have any descriptions
+
+      No description provided
+      This package version was published 7 minutes ago.
+
+      To provide a description, add the following line to your Dockerfile:
+
+      LABEL org.opencontainers.image.description DESCRIPTION
+      For multi-arch images, set a value for the org.opencontainers.image.description key in the annotations field of the manifest:
+
+      "annotations": { "org.opencontainers.image.description": "DESCRIPTION" }
+      https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry#labelling-container-images
+    </issue>
+    <issue>
       we can make these configurable from env too
       this is from the SDK, so everyone in SPIKE uses it.
 
@@ -157,119 +252,8 @@
       }
     </issue>
     <issue>
-      better to have different fns per content type instead
-
-      this is from go sdk
-
-      // Encrypt encrypts either via streaming or JSON based on mode.
-      // Stream mode: send r as body with contentType. Returns ciphertext bytes.
-      // JSON mode: send plaintext + algorithm; returns ciphertext bytes.
-      func Encrypt(
-      source *workloadapi.X509Source, mode Mode, r io.Reader,
-      contentType string, plaintext []byte, algorithm string,
-      allow predicate.Predicate,
-      ) ([]byte, error) {
-    </issue>
-    <issue>
-      VERSION="v0.7.9"
-
-      git tag -s "$VERSION" -m "$VERSION"
-      git push origin --tags
-
-      ^ this is sdk tag.sh --> let it parse a VERSION.txt instead.
-      that way typical reader will also see the version at project root.
-    </issue>
-    <issue>
-      func (a *API) CipherDecryptJSON(
-      version byte, nonce, ciphertext []byte, algorithm string,
-      ) ([]byte, error) {
-
-      better to define an algorithm type so that users can pick from
-      supported algorithms.
-    </issue>
-    <issue>
-      YAML-based secret creation from SPIKE CLI.
-
-      Follow up: for k8s clusters, a custom resource that manages these secrets securely
-      (i.e., values will be encrypted, and can only be decrypted through SPIKE Pilot; we can create
-      a cli helper for that (`kubectl get --raw /apis/example.com/v1/namespaces/default/spikesecrets/demo-db/reveal`)
-      (as a custom resource)
-      or
-      a kubectl plugin
-      `curl -H "Authorization: Bearer $(kubectl config view --raw -o jsonpath='{.users[0].user.token}')" \
-      "https://spike-controller.default.svc/reveal?name=$1"`
-      or a CSI Driver that mounts secrets to a volume.
-      or something like that:
-
-      # Direct API call for cluster admins
-      kubectl get --raw /apis/spike.io/v1/namespaces/default/spikesecrets/demo-db/reveal
-      # Or with a simple kubectl plugin wrapper
-      kubectl spike reveal demo-db
-      # Or
-      kubectl spike reveal demo-db -o yaml
-
-      cid:6062f33b-4a94-4b0f-a306-c13c4dd3d777
-    </issue>
-    <issue>
-      it looks like Pilot does not do any SVID validation against Nexus.
-
-      func CreateMTLSClient(source *workloadapi.X509Source) (*http.Client, error) {
-      return CreateMTLSClientWithPredicate(source, func(string) bool { return true })
-      }
-      ^ this accepts all peer spiffe ids.
-
-    </issue>
-    <issue>
-      SPIKE Bootstrap tries to reach keepers forever, but it should have a max
-      timeout (like, say, 20mins), after which it gives up and crashes.
-      -- configurable.
-    </issue>
-    <issue>
-      bootstrap: when bootstrap is done encrypt a text and let nexus decrypt it
-      to ensure that the bootstrapping is done and the root key works.
-    </issue>
-    <issue>
-      ensure that the demo app still works.
       add some smoke tests to the end of start.sh
       also maybe have a k8s job for smoke tests too after helm deployment.
-    </issue>
-    <issue>
-      there are pending PR reviews.
-    </issue>
-    <issue>
-      Due to vimeo migration, video links everywhere are likely broken,
-      that includes spike web too -- fix them.
-    </issue>
-    <issue>
-      add `-trimpath` and `-a` to go build.
-    </issue>
-    <issue>
-      consider using modernize:
-      https://pkg.go.dev/golang.org/x/tools/gopls/internal/analysis/modernize
-    </issue>
-    <issue>
-      introduce SPIKE to VSecM
-      https://github.com/vmware/secrets-manager/issues/1275
-    </issue>
-    <issue>
-      when entries are not registered to the SPIRE Server and the
-      operator tries to use SPIKE, the error messages can be more
-      explanatory.
-    </issue>
-    <issue>
-      reading an unknown secret gives an error instead of "not found"
-
-      ➜  spike git:(feature/bootstrap-job) ✗ spike secret get tenants/demo/db
-      Error: failure reading secret: post: Problem connecting to peer
-      Usage:
-      spike secret get <path> [key] [flags]
-
-      Flags:
-      -f, --format string   Format to use. Valid options: plain, p, yaml, y, json, j (default "plain")
-      -h, --help            help for get
-      -v, --version int     Specific version to retrieve
-
-      failure reading secret: post: Problem connecting to peer
     </issue>
     <issue>
       these serialization and deserialization functions can be
@@ -302,7 +286,8 @@
       stream logs to `./logs` folder.
     </issue>
     <issue>
-      for operator actions ensure that `spike/system/ops` path is enforced (similar to how acl is enforced above.
+      for operator actions ensure that `spike/system/ops` path is enforced
+      (similar to how acl is enforced above.
 
       create a workload that can create policies
       create another workload that can backup the root key
@@ -456,6 +441,39 @@
       }
       }()
     </issue>
+
+
+  </task-group>
+  <issue>
+    there are pending PR reviews.
+  </issue>
+  <task-group for="later">
+    <issue>
+      YAML-based secret creation from SPIKE CLI.
+
+      Follow up: for k8s clusters, a custom resource that manages these secrets securely
+      (i.e., values will be encrypted, and can only be decrypted through SPIKE Pilot; we can create
+      a cli helper for that (`kubectl get --raw /apis/example.com/v1/namespaces/default/spikesecrets/demo-db/reveal`)
+      (as a custom resource)
+      or
+      a kubectl plugin
+      `curl -H "Authorization: Bearer $(kubectl config view --raw -o jsonpath='{.users[0].user.token}')" \
+      "https://spike-controller.default.svc/reveal?name=$1"`
+      or a CSI Driver that mounts secrets to a volume.
+      or something like that:
+
+      # Direct API call for cluster admins
+      kubectl get --raw /apis/spike.io/v1/namespaces/default/spikesecrets/demo-db/reveal
+      # Or with a simple kubectl plugin wrapper
+      kubectl spike reveal demo-db
+      # Or
+      kubectl spike reveal demo-db -o yaml
+
+      cid:6062f33b-4a94-4b0f-a306-c13c4dd3d777
+    </issue>
+    <issue>
+      check all test helpers. some of them can go to the SDK instead.
+    </issue>
     <issue>
       // to SDK
       //// Helper function to create a random test key
@@ -466,9 +484,6 @@
       // }
       // return key
       //}
-    </issue>
-    <issue>
-      check all test helpers. some of them can go to the SDK instead.
     </issue>
   </task-group>
   <task-group for="SOC2-compliance">

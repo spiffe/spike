@@ -12,7 +12,7 @@ SPIKE_USE_LOCAL_CHARTS="${SPIKE_USE_LOCAL_CHARTS:-true}" # FIXME: should default
 SPIKE_LOCAL_CHARTS_PATH="${SPIKE_LOCAL_CHARTS_PATH:-$HOME/WORKSPACE/helm-charts-hardened}"
 SPIKE_LOCAL_CHARTS_VALUES_FILE="${SPIKE_LOCAL_CHARTS_VALUES_FILE:-./config/helm/values-local.yaml}"
 SPIKE_REMOTE_CHARTS_HELM_REPO="${SPIKE_REMOTE_CHARTS_HELM_REPO:-https://spiffe.github.io/helm-charts-hardened/}"
-SPIKE_REMOTE_CHARTS_VALUES_FILE="${SPIKE_REMOTE_CHARTS_VALUES_FILE:-./config/helm/values-dev.yaml}"
+SPIKE_REMOTE_CHARTS_VALUES_FILE="${SPIKE_REMOTE_CHARTS_VALUES_FILE:-./config/helm/values-local.yaml}"
 SPIKE_REMOTE_CHARTS_CRDS_VERSION="${SPIKE_REMOTE_CHARTS_CRDS_VERSION:-0.5.0}"
 SPIKE_REMOTE_CHARTS_SPIRE_VERSION="${SPIKE_REMOTE_CHARTS_SPIRE_VERSION:-0.26.1}"
 
@@ -55,7 +55,9 @@ create_namespace_if_not_exists() {
   fi
 }
 
-create_namespace_if_not_exists "spike" # Pilot/Nexus/Keepers/Bootstrap
+# Create necessary namespaces
+create_namespace_if_not_exists "spike"
+create_namespace_if_not_exists "spire-mgmt"
 
 # List all namespaces after creation
 echo "SPIKE namespaces:"
@@ -69,10 +71,23 @@ install_chart() {
   local extra_args=("$@")
 
   if [ -n "${SPIKE_USE_LOCAL_CHARTS}" ]; then
+    echo "Using helm charts from the local helm-charts-hardened repo..."
+
+    local output_file="./${release_name}-rendered.yaml"
+    echo "Rendering template to $output_file..."
+    helm template -n spire-mgmt "$release_name" \
+      "${SPIKE_LOCAL_CHARTS_PATH}/charts/${chart_name}" \
+      -f "$SPIKE_LOCAL_CHARTS_VALUES_FILE" > "$output_file"
+
+    echo "Installing chart..."
     helm upgrade --install -n spire-mgmt "$release_name" \
       "${SPIKE_LOCAL_CHARTS_PATH}/charts/${chart_name}" \
       "${extra_args[@]}"
+      # -f "$SPIKE_LOCAL_CHARTS_VALUES_FILE"
+
   else
+    echo "Using helm charts from the upstream https://github.com/spiffe/helm-charts-hardened repo"
+
     # Map chart names to version variables
     case "$chart_name" in
       "spire-crds")

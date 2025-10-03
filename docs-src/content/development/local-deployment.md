@@ -44,6 +44,68 @@ starting with this guide:
 [kubectl]: https://kubernetes.io/docs/tasks/tools/ "kubectl: Kubernetes command-line tool"
 [make]: https://www.gnu.org/software/make/ "GNU Make: Build Automation Tool"
 [helm]: https://helm.sh/ "Helm"
+[minikube]: https://minikube.sigs.k8s.io/docs/start/ "Minikube: Run Kubernetes Locally"
+
+## Docker Registry Setup
+
+For security, SPIKE components lock the memory they use at runtime. You may
+need to update the `ulimit` settings for your Docker daemon to allow this.
+
+For Linux, edit or create the `/etc/docker/daemon.json` file and add the
+following:
+
+```json
+{
+  "default-ulimits": {
+    "memlock": {
+      "Name": "memlock",
+      "Hard": 17179869184,
+      "Soft": 17179869184
+    }
+  }
+}
+```
+
+`17179869184` will set the maximum amount of memory a container can lock to 
+16GB. You can set this to a lower value if you want, since SPIKE components 
+don't need that much memory.
+
+For Docker for Mac, or Docker for Windows, you will need to update
+the Docker Engine settings from the "*Settings > Docker Engine*" menu as
+follows:
+
+```json
+{
+  "builder": {
+    "gc": {
+      "defaultKeepStorage": "20GB",
+      "enabled": true
+    }
+  },
+  "experimental": false,
+  "default-ulimits": {
+    "memlock": {
+      "Name": "memlock",
+      "Hard": 17179869184,
+      "Soft": 17179869184
+    }
+  }
+}
+```
+
+Once the change is done, remember to restart the Docker Engine.
+
+## All-in-One Script
+
+If you have the prerequisites set up and want to skip ahead and run the entire 
+guide in one go, you can use the following script:
+
+```bash
+cd $WORKSPACE # Replace with your workspace directory
+git clone https://github.com/spiffe/spike.git
+cd spike
+make deploy-minikube 
+```
 
 ## Starting Minikube
 
@@ -82,44 +144,6 @@ kubectl get node
 # minikube   Ready    control-plane   67s   v1.33.1
 ```
 
-## Forwarding the Local Registry
-
-Since Minikube contains its Kubernetes cluster in a virtual machine, accessing
-its container registry requires network mapping. There are several ways to 
-achieve this. In this guide, we will use Kubernetes port forwarding.
-
-Open a terminal, change your directory to the project's folder, and execute
-the following:
-
-```bash 
-make docker-forward-registry
-# Sample Output:
-# Forwarding from 127.0.0.1:5000 -> 5000
-# Forwarding from [::1]:5000 -> 5000
-```
-
-Leave this terminal open. We will execute the rest of the commands in  
-a separate terminal window.
-
-> **Alternative to Registry Port Forwarding**
->
-> If you don't want to use port forwarding, you can directly load the container
-> images into the Minikube cluster's local registry.
->
-> Although this is typically used to overcome network restrictions around
-> WSL and Docker for Windows, it can also be used as an alternative to port
-> forwarding.
->
-> To copy images directly into the Minikube cluster's local registry, do not run
-> the above command, but instead execute the following:
->
-> ```bash
-> make k8s-load-images
-> ```
->
-> This will effectively have the same end-result as port forwarding, and you
-> won't have to keep the port forwarding terminal open.
-
 ## Build Container Images Locally
 
 We have a `make` target to build the container images locally.
@@ -134,69 +158,12 @@ Next up, we'll push the container images to our internal Minikube container
 registry:
 
 ```bash
-# Make sure you port forward using 
-# `make docker-forward-registry`
-# before executing this command:
-make docker-push
-```
-
-## Docker Windows Subsystem for Linux Integration Issues
-
-If `make docker-push` hangs up or gives a network error, it's typically
-related to how Docker for Windows, Windows, and Windows Subsystem for Linux
-handle routing, DNS resolution, and networking.
- 
-One way to push container images to the Minikube cluster without adding them
-to the local Minikube registry would be to run the following script:
-
-```bash
 make k8s-load-images
 ```
 
-This will effectively have the same end-result as pushing the images to
-the registry.
 
-Alternatively, you might try pointing your terminal's Docker CLI to the 
-Docker engine inside Minikube:
 
-```bash
-# Set Minikube Docker environment
-eval $(minikube docker-env)
-# Interact with Minikube's Docker Engine
-make docker-build
-# Unset Minikube Docker environment when you're done
-eval $(minikube docker-env --unset)
-```
 
-For Mac OS and Linuxes, where if you get registry-access-related errors, adding
-the following to `/etc/docker/daemon.json` can help:
-
-```json
-{
-  "insecure-registries": ["localhost:5000"]
-}
-```
-
-For Docker for Mac, or Docker for Windows, you will need to update
-the Docker Engine settings from the "*Settings > Docker Engine*" menu as
-follows:
-
-```json
-{
-  "builder": {
-    "gc": {
-      "defaultKeepStorage": "20GB",
-      "enabled": true
-    }
-  },
-  "experimental": false,
-  "insecure-registries": [
-    "localhost:5000"
-  ]
-}
-```
-
-Once the change is done, don't forget to restart the Docker Engine.
 
 That said, `make k8s-load-images` is the safest and simplest way to push
 the images into Minikube without having to deal with Docker networking,
@@ -209,7 +176,7 @@ Once we push the container images to the registry, we can now deploy **SPIRE**
 and **SPIKE**.
 
 ```bash
-# Uses `./config/helm/values-dev.yaml`
+# Uses `./config/helm/values-local.yaml`
 make deploy-dev-local
 ```
 
