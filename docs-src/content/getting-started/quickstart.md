@@ -8,13 +8,11 @@ weight = 2
 sort_by = "weight"
 +++
 
-> **⚠️ This Page Needs Work**
+> **⚠️ Additional Instructions**
 > 
 > Since **SPIFFE Helm Charts** do not have **SPIKE Bootstrap** yet, the 
-> instructions on this page are incomplete and will likely fail.
-> 
-> If you want to test **SPIKE** on a Kubernetes cluster, we recommend
-> using the [**SPIKE Quickstart Guide**][quickstart] instead.
+> instructions on this page have additional guidance to deploy **SPIKE** 
+> using a local **SPIFFE Helm Charts** repo.
 > 
 > We will update this page once **SPIKE Bootstrap** is available in the 
 > upstream **SPIFFE Helm Charts**.
@@ -97,7 +95,47 @@ kubectl get node
 
 ## Deploying **SPIKE** to Minikube
 
-TODO: update this to use the local helm charts for now 
+> ** ⚠️ Changes Due to Current Upstream Helm Charts Work**
+> 
+> There are some changes to the upstream **SPIFFE Helm Charts** that are
+> currently in progress. Until they are merged, you will need to use a
+> feature branch of the upstream repo.
+> 
+> For this, first clone the upstream repo:
+> 
+> ```bash
+> git clone https://github.com/spiffe/helm-charts-hardened.git
+> ```
+> 
+> Then, switch to the `spike-next` branch:
+> 
+> ```bash
+> cd helm-charts-hardened
+> git checkout spike-next
+> ```
+> 
+> You can now use the `spike-next` branch of the upstream repo to deploy
+> **SPIKE** to Minikube.
+> 
+> ```bash
+> # $WORKSPACE is your local workspace directory where you cloned the 
+> # helm-charts-hardened repo and the spike repo.
+>
+> # Create a new namespace for SPIRE components.
+> kubectl create ns spire-mgmt
+>
+> # Deploy the CRDs.
+> helm upgrade --install -n spire-mgmt "spire-crds" "spire-crds" \
+> "WORKSPACE/helm-charts-hardened/charts/spire-crds" \
+> --create-namespace
+>
+> # Deploy SPIRE and SPIKE components.
+> helm upgrade --install -n spire-mgmt "spiffe" "spire" \
+> "WORKSPACE/helm-charts-hardened/charts/spire" \
+> -f /path/to/your/values.yaml
+> ```
+
+spife-helm-charts-hardened: https://spiffe.github.io/helm-charts-hardened/
 
 Once you have Minikube running, you can deploy **SPIKE** to it from 
 **SPIFFE helm charts**.
@@ -106,33 +144,20 @@ First create a `values.yaml` file to enable SPIKE components:
 
 ```yaml
 # file: values.yaml
-
-spike-keeper:
-  enabled: true
-  namespaceOverride: spike
-  image:
-    registry: ghcr.io
-    repository: spiffe/spike-keeper
-    pullPolicy: IfNotPresent
-    tag: ""
-
 spike-nexus:
   enabled: true
-  namespaceOverride: spike
-  image:
-    registry: ghcr.io
-    repository: spiffe/spike-nexus
-    pullPolicy: IfNotPresent
-    tag: ""
-
+spike-keeper:
+  enabled: true
 spike-pilot:
   enabled: true
-  namespaceOverride: spike
-  image:
-    registry: ghcr.io
-    repository: spike-pilot
-    pullPolicy: IfNotPresent
-    tag: ""
+spire-server:
+  enabled: true
+spire-agent:
+  enabled: true
+spiffe-csi-driver:
+  enabled: true
+spiffe-oidc-discovery-provider:
+  enabled: true
 ```
 
 Then deploy SPIKE using the following command:
@@ -146,138 +171,6 @@ helm upgrade --install spiffe spire \
   -f ./values.yaml # The values.yaml file we created earlier
 ```
 
-## Bootstrapping **SPIKE Nexus**
-
-To use **SPIKE Nexus**, we'll need to run a bootstrapper job that will
-seed it with a secure random root key.
-
-At the time of this writing, there is an ongoing work to automate this at
-**SPIFFE Helm Charts** upstream repo; however, until that work is merged and
-published, you'll need to create [the following `bootrsap.yaml` 
-file][bootstrap-yaml] and apply it using `kubectl`.
-
-The following YAML snippet has been slightly altered to fit into the 
-documentation. This may cause parsing issues if you directly copy it from this 
-page. If you want to use it, [check out `bootstrap.yaml` at 
-GitHub][bootstrap-yaml] instead.
-
-[bootstrap-yaml]: https://github.com/spiffe/spike/blob/main/hack/k8s/Bootstrap.yaml "Bootstrap.yaml"
-
-```yaml
-# file: bootstrap.yaml
-
-apiVersion: batch/v1
-kind: Job
-metadata:
-  labels:
-    app.kubernetes.io/instance: spiffe
-    app.kubernetes.io/name: spike-bootstrap
-  name: spiffe-spike-bootstrap
-  namespace: spike
-spec:
-  template:
-    metadata:
-      labels:
-        app.kubernetes.io/instance: spiffe
-        app.kubernetes.io/name: spike-bootstrap
-        component: spike-bootstrap
-    spec:
-      restartPolicy: OnFailure
-      containers:
-        - name: spiffe-spike-bootstrap
-          image: localhost:5000/spike-bootstrap:dev
-          command: ["/bootstrap", "-init"]
-          env:
-            - name: SPIKE_NEXUS_API_URL
-              value: https://spiffe-spike-nexus:443
-            - name: SPIFFE_ENDPOINT_SOCKET
-              value: unix:///spiffe-workload-api/spire-agent.sock
-            - name: SPIKE_SYSTEM_LOG_LEVEL
-              value: DEBUG
-            - name: SPIKE_TRUST_ROOT
-              value: spike.ist
-            - name: SPIKE_NEXUS_SHAMIR_SHARES
-              value: "3"
-            - name: SPIKE_NEXUS_SHAMIR_THRESHOLD
-              value: "2"
-            - name: SPIKE_NEXUS_KEEPER_PEERS
-              value: "spiffe-spike-keeper-0.spiffe-spike-keeper-headless:8443\
-              ,https://spiffe-spike-keeper-1.spiffe-spike-keeper-headless:8443\
-              ,https://spiffe-spike-keeper-2.spiffe-spike-keeper-headless:8443"
-            - name: SPIKE_BOOTSTRAP_FORCE
-              value: "false"
-          imagePullPolicy: IfNotPresent
-          resources: {}
-          securityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-                - ALL
-            readOnlyRootFilesystem: true
-            runAsNonRoot: true
-            seccompProfile:
-              type: RuntimeDefault
-          volumeMounts:
-            - mountPath: /spiffe-workload-api
-              name: spiffe-workload-api
-              readOnly: true
-      dnsPolicy: ClusterFirst
-      securityContext:
-        fsGroup: 1000
-        fsGroupChangePolicy: OnRootMismatch
-        runAsGroup: 1000
-        runAsUser: 1000
-      serviceAccountName: spiffe-spike-bootstrap
-      volumes:
-        - csi:
-            driver: csi.spiffe.io
-            readOnly: true
-          name: spiffe-workload-api
----
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  labels:
-    app.kubernetes.io/instance: spiffe
-    app.kubernetes.io/name: spike-bootstrap
-  name: spiffe-spike-bootstrap
-  namespace: spike
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
-metadata:
-  namespace: spike
-  name: spiffe-bootstrap-role
-rules:
-  - apiGroups: [""]
-    resources: ["configmaps"]
-    verbs: ["create"]
-  - apiGroups: [""]
-    resources: ["configmaps"]
-    verbs: ["get", "update", "patch"]
-    resourceNames: ["spike-bootstrap-state"]
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
-metadata:
-  name: spiffe-bootstrap-rolebinding
-  namespace: spike
-subjects:
-  - kind: ServiceAccount
-    name: spiffe-spike-bootstrap
-    namespace: spike
-roleRef:
-  kind: Role
-  name: spiffe-bootstrap-role
-  apiGroup: rbac.authorization.k8s.io
-```
-
-With the above YAML file, execute the following:
-
-```bash
-kubectl apply -f bootstrap.yaml
-```
-
 ## Verifying **SPIKE** Deployment
 
 First, make sure that your components are up and running.
@@ -287,7 +180,6 @@ kubectl get po -A
 # Sample Output:
 #
 # NAME                                              READY  STATUS 
-# spike          spiffe-spike-bootstrap-x9nlr       1/1    Completed
 # spike          spiffe-spike-keeper-0              1/1    Running
 # spike          spiffe-spike-keeper-1              1/1    Running
 # spike          spiffe-spike-keeper-2              1/1    Running

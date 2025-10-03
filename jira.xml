@@ -25,6 +25,7 @@
     <issue order="3">Secure Secrets Management Web UX</issue>
     <issue order="4">Zero Turtle Pi Grid</issue>
     <watch-list>
+      * Outstanding PRs on SDK and SPIKE.
       * cipher encrypt decrypt: https://github.com/spiffe/spike/pull/212
       * encrypt policy info: https://github.com/spiffe/spike/pull/223
       * ConfigMap: https://github.com/spiffe/spike/pull/228
@@ -35,6 +36,10 @@
     </watch-list>
   </high-level-plan>
   <task-group for="v0.6.3">
+    <issue>
+      after helm-charts changes are merged, verify that the quickstart
+      guide still works.
+    </issue>
     <issue>
       Go over entire documentation: There are places to update since
       we have helm charts updates.
@@ -143,6 +148,17 @@
     </issue>
   </task-group>
   <task-group for="v0.6.2">
+    <issue>
+      update documentation to provide details about SPIKE Bootstrap
+      Also, remove/edit part that are not relevant anymore due to the
+      introduction of SPIKE Bootstrap.
+    </issue>
+    <issue>
+      fix broken video links.
+    </issue>
+    <issue>
+      demo: new architecture overview.
+    </issue>
     <issue>
       reading an unknown secret gives an error instead of "not found"
 
@@ -469,8 +485,6 @@
       // return key
       //}
     </issue>
-
-
   </task-group>
   <task-group for="SOC2-compliance">
     <issue>
