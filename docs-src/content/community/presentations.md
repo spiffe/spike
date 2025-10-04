@@ -13,22 +13,32 @@ sort_by = "weight"
 Here you can find a range of presentations and demos that highlight **SPIKE**'s
 capabilities and showcase its innovative features.
 
-* [Introduction to SPIKE: Secure Production Identity for Key Encryption][spike]:<br>
-  This is our first **SPIKE** walkthrough, where we introduce the project and its
-  goals.
-* [Unlocking SPIKE: A New Era for Secure Identity-Driven Secrets][spike-intro]:<br>
+* [Developing SPIKE on Bare Metal and Kubernetes][spike-dev]:<br>
+  This walkthrough demonstrates building and running **SPIKE** both on local
+  bare-metal Linux and inside a local Minikube Kubernetes, illustrating how the
+  project can be built, developed, and tested on your development environment.
+* [Building and Testing SPIKE from Source in ~2 Minutes][spike-in-2]:<br>
+  This is a quick demonstration of how to clone, build, and test the **SPIKE**
+  system from its codebase in under two minutes, showing rapid developer
+  iteration and validating that the core components work end-to-end.
+* [Introduction to SPIKE: Secure Production Identity for Key
+  Encryption][spike]:<br>
+  This is our first **SPIKE** walkthrough, where we introduce the project and 
+  its goals.
+* [Unlocking SPIKE: A New Era for Secure Identity-Driven
+  Secrets][spike-intro]:<br>
   This is a brief introduction to **SPIKE**; what it is, how it works, and why
   it's important.
 * [Unlocking SPIKE: A Seamless Token-Based Login Experience][spike-jwt]:<br>
   In this demo, we see **SPIKE**'s new JWT authentication flow.
 * [Goodbye Passwords: Secure Secrets Management with SPIFFE
   and SPIKE][spike-passwordless]:<br>
-  In this demo, we allow a user to use `spike` just by checking an SVID; we don't
-  use any kind of passwords to identify the user, SPIFFE does it for us.
+  In this demo, we allow a user to use `spike` just by checking an SVID; we 
+  don't use any kind of passwords to identify the user, SPIFFE does it for us.
 * [Unveiling SPIKE's New Audit Trail Capabilities: Zero-Trust Meets
   Accountability][spike-audits]:<br>
   This demo explains the new auditing capabilities of **SPIKE** that we will
-  continue developing. This is the initial incarnation of the feature and
+  continue developing. This is the initial incarnation of the feature, and
   more will come.
 * [Introducing Policy-Based Access Control in SPIKE][spike-policy]:<br>
   This demo introduces the new policy-based access control feature of **SPIKE**.
@@ -41,26 +51,51 @@ capabilities and showcase its innovative features.
 * [Using Policies to Read and Write Secrets using SPIKE][spike-policies]:<br>
   This demo introduces the new **Makefile**-based development workflow, the
   enhanced starter script, policy-based access control, and metadata support.
-* [Secrets Resiliency with SPIKE: Self-Healing and Doomsday Recovery][spike-doomsday]:<br>
+* [Secrets Resiliency with SPIKE: Self-Healing and Doomsday
+  Recovery][spike-doomsday]:<br>
   Secrets management is critical, but what happens when everything fails? In 
   this video, we explore **SPIKE**’s disaster recovery mechanisms, covering both 
   self-healing capabilities and the manual break-the-glass recovery process.
-* [Federating Secrets with SPIFFE and SPIKE][spike-federated]<br>
+* [Federating Secrets with SPIFFE and SPIKE][spike-federated]:<br>
   In this demo, we show how you can deploy **SPIRE** and **SPIKE** from SPIFFE
   Helm charts. We then establish a multi-cluster secret federation where 
   the workload clusters can securely access secrets stored in the management
   cluster.
+* [SPIKE's Shamir's Secret Sharing with SPIFFE mTLS][spike-shamir]:<br>
+  This demo walks through how SPIKE leverages Shamir's Secret Sharing to split
+  the root key across multiple SPIKE Keeper nodes such that no single node holds 
+  the full key. It also demonstrates how communications between **SPIKE
+  Keeper**s and **SPIKE Nexus** are secured using SPIFFE-based mTLS to ensure
+  authenticated, encrypted transport.
+* [Secure SPIKE Deployment: Integrating SPIRE with an Isolated Management
+  Cluster][secure-spike]:<br>
+  In this demo, the presenter shows how to deploy SPIKE in a management cluster
+  that is isolated from workload clusters, integrating SPIRE to issue identities
+  and enforce trust boundaries. They highlight deployment topology, secure
+  isolation methods, and how **SPIKE** components interface via SPIFFE
+  identities in that setup.
+* [Cross-Cluster Secrets Federation with SPIFFE and
+  SPIKE][spike-fed-secrets]:<br>
+  Here, the focus is on federating secrets across multiple clusters, allowing
+  workloads in different clusters to access shared secrets securely. The demo
+  shows how **SPIKE** can bridge trust boundaries using SPIFFE identities and
+  secret federation.
 
-[spike]: https://vimeo.com/v0lkan/spike
-[spike-intro]: https://vimeo.com/v0lkan/spike-rocks
-[spike-jwt]: https://vimeo.com/v0lkan/spike-jwt
-[spike-passwordless]: https://vimeo.com/v0lkan/passwordless-secrets
-[spike-audits]: https://vimeo.com/v0lkan/spike-audits
-[spike-policy]: https://vimeo.com/v0lkan/spike-policy
-[spike-metadata]: https://vimeo.com/v0lkan/spike-metadata
-[spike-policies]: https://vimeo.com/v0lkan/spike-policies
-[spike-doomsday]: https://vimeo.com/v0lkan/spike-doomsday
-[spike-federated]: https://vimeo.com/v0lkan/spike-federation
+[spike-shamir]: https://youtu.be/N2uAeFwxf90?si=CfZXPbQtWOKzE6Sd
+[secure-spike]: https://youtu.be/BHtl_wGN-KY?si=pf1CZBf6NX4P5U5m
+[spike-dev]: https://youtu.be/AdJblx6NLOU?si=y9mZ053mTLHNUQve
+[spike-fed-secrets]: https://youtu.be/-AtHyqakbeY?si=eb16L9wb0LhonE_i
+[spike-in-2]: https://youtu.be/Rl6pBvxffA0?si=dUkeBkB1yLxML5Yw
+[spike]: https://youtu.be/Eeis67-3dd0?si=Z_vM1pOXhQG0ip-o
+[spike-intro]: https://youtu.be/NEvQpTeKFp0?si=iuYx9xL_aA6SHECv
+[spike-jwt]: https://youtu.be/ZT1f67N8vLA?si=k4a79C40-v3aqIj8
+[spike-passwordless]: https://youtu.be/Tk8EERYjATo?si=JE8UR-F16nRE8rVs
+[spike-audits]: https://youtu.be/EnIsDbQqUEs?si=WgqNXeUzBVPZdn7w
+[spike-policy]: https://youtu.be/KGxHxgtHptI?si=0ljNrKKm0q138pcn
+[spike-metadata]: https://youtu.be/OSr5VahEE0E?si=p_JV5IhtwmC8FA3S
+[spike-policies]: https://youtu.be/cwNMHDzLP5Y?si=eFQcUlm212pOufBF
+[spike-doomsday]: https://youtu.be/MX8dIUDC9iI?si=vGInHbBd3Vv0Iion
+[spike-federated]: https://youtu.be/xGAg_zBvJrg?si=bEz2uJwQnalSOAMw
 
 <p>&nbsp;</p>
 

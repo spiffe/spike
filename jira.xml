@@ -152,9 +152,15 @@
       update documentation to provide details about SPIKE Bootstrap
       Also, remove/edit part that are not relevant anymore due to the
       introduction of SPIKE Bootstrap.
+
+      also, check the docs to see if there is any diagram that need an
+      update.
     </issue>
     <issue>
       fix broken video links.
+    </issue>
+    <issue>
+      demo: encryption as a service
     </issue>
     <issue>
       demo: new architecture overview.
