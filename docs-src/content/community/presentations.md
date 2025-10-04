@@ -50,10 +50,7 @@ capabilities and showcase its innovative features.
 * [Unlocking Secrets: Policy-Based Access and Metadata in 
   SPIKE][spike-policy-access]<br>
   This demo showcases how **SPIKE** enforces policy-based access control when
-  reading or writing secrets, incorporating metadata as a first-class dimension
-  of those policies. We observe how policies can conditionally govern operations
-  based on the metadata values, enabling fine-grained, context-aware
-  authorization.
+  reading or writing secrets. We also look into **SPIKE**'s Secret Metadata API.
 * [Policy to the Rescue: Secure Secret Access and Metadata with
   SPIKE][spike-metadata]:<br>
   This demo introduces the new **SPIKE** metadata API. We also use the **SPIKE**
