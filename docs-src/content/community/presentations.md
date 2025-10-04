@@ -74,7 +74,7 @@ capabilities and showcase its innovative features.
   the workload clusters can securely access secrets stored in the management
   cluster.
 * [SPIKE's Shamir's Secret Sharing with SPIFFE mTLS][spike-shamir]:<br>
-  This demo walks through how SPIKE leverages Shamir's Secret Sharing to split
+  This demo walks through how **SPIKE** leverages Shamir's Secret Sharing to split
   the root key across multiple SPIKE Keeper nodes such that no single node holds 
   the full key. It also demonstrates how communications between **SPIKE
   Keeper**s and **SPIKE Nexus** are secured using SPIFFE-based mTLS to ensure
