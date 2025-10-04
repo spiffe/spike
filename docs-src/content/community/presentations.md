@@ -13,6 +13,14 @@ sort_by = "weight"
 Here you can find a range of presentations and demos that highlight **SPIKE**'s
 capabilities and showcase its innovative features.
 
+* [Introduction to SPIKE: Secure Production Identity for Key
+  Encryption][spike]:<br>
+  This is our first **SPIKE** walkthrough, where we introduce the project and
+  its goals.
+* [Unlocking SPIKE: A New Era for Secure Identity-Driven
+  Secrets][spike-intro]:<br>
+  This is a brief introduction to **SPIKE**; what it is, how it works, and why
+  it's important.
 * [Developing SPIKE on Bare Metal and Kubernetes][spike-dev]:<br>
   This walkthrough demonstrates building and running **SPIKE** both on local
   bare-metal Linux and inside a local Minikube Kubernetes, illustrating how the
@@ -21,16 +29,6 @@ capabilities and showcase its innovative features.
   This is a quick demonstration of how to clone, build, and test the **SPIKE**
   system from its codebase in under two minutes, showing rapid developer
   iteration and validating that the core components work end-to-end.
-* [Introduction to SPIKE: Secure Production Identity for Key
-  Encryption][spike]:<br>
-  This is our first **SPIKE** walkthrough, where we introduce the project and 
-  its goals.
-* [Unlocking SPIKE: A New Era for Secure Identity-Driven
-  Secrets][spike-intro]:<br>
-  This is a brief introduction to **SPIKE**; what it is, how it works, and why
-  it's important.
-* [Unlocking SPIKE: A Seamless Token-Based Login Experience][spike-jwt]:<br>
-  In this demo, we see **SPIKE**'s new JWT authentication flow.
 * [Goodbye Passwords: Secure Secrets Management with SPIFFE
   and SPIKE][spike-passwordless]:<br>
   In this demo, we allow a user to use `spike` just by checking an SVID; we 
