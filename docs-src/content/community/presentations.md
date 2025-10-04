@@ -78,9 +78,7 @@ capabilities and showcase its innovative features.
   Cluster][secure-spike]:<br>
   In this demo, the presenter shows how to deploy SPIKE in a management cluster
   that is isolated from workload clusters, integrating SPIRE to issue identities
-  and enforce trust boundaries. They highlight deployment topology, secure
-  isolation methods, and how **SPIKE** components interface via SPIFFE
-  identities in that setup.
+  and enforce trust boundaries. 
 * [Cross-Cluster Secrets Federation with SPIFFE and
   SPIKE][spike-fed-secrets]:<br>
   Here, the focus is on federating secrets across multiple clusters, allowing
