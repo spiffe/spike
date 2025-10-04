@@ -751,43 +751,73 @@
 <p>Here you can find a range of presentations and demos that highlight <strong>SPIKE</strong>’s
 capabilities and showcase its innovative features.</p>
 <ul>
-<li><a href="https://vimeo.com/v0lkan/spike">Introduction to SPIKE: Secure Production Identity for Key Encryption</a>:<br>
-This is our first <strong>SPIKE</strong> walkthrough, where we introduce the project and its
-goals.</li>
-<li><a href="https://vimeo.com/v0lkan/spike-rocks">Unlocking SPIKE: A New Era for Secure Identity-Driven Secrets</a>:<br>
+<li><a href="https://youtu.be/AdJblx6NLOU?si=y9mZ053mTLHNUQve">Developing SPIKE on Bare Metal and Kubernetes</a>:<br>
+This walkthrough demonstrates building and running <strong>SPIKE</strong> both on local
+bare-metal Linux and inside a local Minikube Kubernetes, illustrating how the
+project can be built, developed, and tested on your development environment.</li>
+<li><a href="https://youtu.be/Rl6pBvxffA0?si=dUkeBkB1yLxML5Yw">Building and Testing SPIKE from Source in ~2 Minutes</a>:<br>
+This is a quick demonstration of how to clone, build, and test the <strong>SPIKE</strong>
+system from its codebase in under two minutes, showing rapid developer
+iteration and validating that the core components work end-to-end.</li>
+<li><a href="https://youtu.be/Eeis67-3dd0?si=Z_vM1pOXhQG0ip-o">Introduction to SPIKE: Secure Production Identity for Key
+Encryption</a>:<br>
+This is our first <strong>SPIKE</strong> walkthrough, where we introduce the project and
+its goals.</li>
+<li><a href="https://youtu.be/NEvQpTeKFp0?si=iuYx9xL_aA6SHECv">Unlocking SPIKE: A New Era for Secure Identity-Driven
+Secrets</a>:<br>
 This is a brief introduction to <strong>SPIKE</strong>; what it is, how it works, and why
 it’s important.</li>
-<li><a href="https://vimeo.com/v0lkan/spike-jwt">Unlocking SPIKE: A Seamless Token-Based Login Experience</a>:<br>
+<li><a href="https://youtu.be/ZT1f67N8vLA?si=k4a79C40-v3aqIj8">Unlocking SPIKE: A Seamless Token-Based Login Experience</a>:<br>
 In this demo, we see <strong>SPIKE</strong>’s new JWT authentication flow.</li>
-<li><a href="https://vimeo.com/v0lkan/passwordless-secrets">Goodbye Passwords: Secure Secrets Management with SPIFFE
+<li><a href="https://youtu.be/Tk8EERYjATo?si=JE8UR-F16nRE8rVs">Goodbye Passwords: Secure Secrets Management with SPIFFE
 and SPIKE</a>:<br>
-In this demo, we allow a user to use <code>spike</code> just by checking an SVID; we don’t
-use any kind of passwords to identify the user, SPIFFE does it for us.</li>
-<li><a href="https://vimeo.com/v0lkan/spike-audits">Unveiling SPIKE’s New Audit Trail Capabilities: Zero-Trust Meets
+In this demo, we allow a user to use <code>spike</code> just by checking an SVID; we
+don’t use any kind of passwords to identify the user, SPIFFE does it for us.</li>
+<li><a href="https://youtu.be/EnIsDbQqUEs?si=WgqNXeUzBVPZdn7w">Unveiling SPIKE’s New Audit Trail Capabilities: Zero-Trust Meets
 Accountability</a>:<br>
 This demo explains the new auditing capabilities of <strong>SPIKE</strong> that we will
-continue developing. This is the initial incarnation of the feature and
+continue developing. This is the initial incarnation of the feature, and
 more will come.</li>
-<li><a href="https://vimeo.com/v0lkan/spike-policy">Introducing Policy-Based Access Control in SPIKE</a>:<br>
+<li><a href="https://youtu.be/KGxHxgtHptI?si=0ljNrKKm0q138pcn">Introducing Policy-Based Access Control in SPIKE</a>:<br>
 This demo introduces the new policy-based access control feature of <strong>SPIKE</strong>.
 This is the initial incarnation of the feature. We will create more demos
 as we enhance the feature.</li>
-<li><a href="https://vimeo.com/v0lkan/spike-metadata">Policy to the Rescue: Secure Secret Access and Metadata with
+<li><a href="https://youtu.be/OSr5VahEE0E?si=p_JV5IhtwmC8FA3S">Policy to the Rescue: Secure Secret Access and Metadata with
 SPIKE</a>:<br>
 This demo introduces the new <strong>SPIKE</strong> metadata API. We also use the <strong>SPIKE</strong>
 Go SDK to consume secrets.</li>
-<li><a href="https://vimeo.com/v0lkan/spike-policies">Using Policies to Read and Write Secrets using SPIKE</a>:<br>
+<li><a href="https://youtu.be/cwNMHDzLP5Y?si=eFQcUlm212pOufBF">Using Policies to Read and Write Secrets using SPIKE</a>:<br>
 This demo introduces the new <strong>Makefile</strong>-based development workflow, the
 enhanced starter script, policy-based access control, and metadata support.</li>
-<li><a href="https://vimeo.com/v0lkan/spike-doomsday">Secrets Resiliency with SPIKE: Self-Healing and Doomsday Recovery</a>:<br>
+<li><a href="https://youtu.be/MX8dIUDC9iI?si=vGInHbBd3Vv0Iion">Secrets Resiliency with SPIKE: Self-Healing and Doomsday
+Recovery</a>:<br>
 Secrets management is critical, but what happens when everything fails? In
 this video, we explore <strong>SPIKE</strong>’s disaster recovery mechanisms, covering both
 self-healing capabilities and the manual break-the-glass recovery process.</li>
-<li><a href="https://vimeo.com/v0lkan/spike-federation">Federating Secrets with SPIFFE and SPIKE</a><br>
+<li><a href="https://youtu.be/xGAg_zBvJrg?si=bEz2uJwQnalSOAMw">Federating Secrets with SPIFFE and SPIKE</a>:<br>
 In this demo, we show how you can deploy <strong>SPIRE</strong> and <strong>SPIKE</strong> from SPIFFE
 Helm charts. We then establish a multi-cluster secret federation where
 the workload clusters can securely access secrets stored in the management
 cluster.</li>
+<li><a href="https://youtu.be/N2uAeFwxf90?si=CfZXPbQtWOKzE6Sd">SPIKE’s Shamir’s Secret Sharing with SPIFFE mTLS</a>:<br>
+This demo walks through how SPIKE leverages Shamir’s Secret Sharing to split
+the root key across multiple SPIKE Keeper nodes such that no single node holds
+the full key. It also demonstrates how communications between <strong>SPIKE
+Keeper</strong>s and <strong>SPIKE Nexus</strong> are secured using SPIFFE-based mTLS to ensure
+authenticated, encrypted transport.</li>
+<li><a href="https://youtu.be/BHtl_wGN-KY?si=pf1CZBf6NX4P5U5m">Secure SPIKE Deployment: Integrating SPIRE with an Isolated Management
+Cluster</a>:<br>
+In this demo, the presenter shows how to deploy SPIKE in a management cluster
+that is isolated from workload clusters, integrating SPIRE to issue identities
+and enforce trust boundaries. They highlight deployment topology, secure
+isolation methods, and how <strong>SPIKE</strong> components interface via SPIFFE
+identities in that setup.</li>
+<li><a href="https://youtu.be/-AtHyqakbeY?si=eb16L9wb0LhonE_i">Cross-Cluster Secrets Federation with SPIFFE and
+SPIKE</a>:<br>
+Here, the focus is on federating secrets across multiple clusters, allowing
+workloads in different clusters to access shared secrets securely. The demo
+shows how <strong>SPIKE</strong> can bridge trust boundaries using SPIFFE identities and
+secret federation.</li>
 </ul>
 <p>&nbsp;</p>
 <hr />
