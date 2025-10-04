@@ -65,7 +65,7 @@ user running **SPIKE** components.
 For bare-metal Linux deployments, edit the `/etc/security/limits.conf` file to 
 add the following lines:
 
-```text
+```txt
 # Replace "spike" with the user running SPIKE components
 spike  soft    memlock    16777216
 spike  soft    memlock    16777216

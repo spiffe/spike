@@ -43,3 +43,7 @@ tidy:
 # Example: if VERSION.txt contains "0.4.4", creates tag "v0.4.4"
 tag:
 	./hack/scm/tag.sh
+
+.PHONY: docs
+docs:
+	./hack/bare-metal/build/build-docs.sh

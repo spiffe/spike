@@ -44,6 +44,18 @@ capabilities and showcase its innovative features.
   This demo introduces the new policy-based access control feature of **SPIKE**.
   This is the initial incarnation of the feature. We will create more demos
   as we enhance the feature.
+* [Introducing SPIKE Secret Metadata API][spike-metadata-intro]<br>
+  This demo introduces **SPIKE**'s new metadata API, which lets you attach
+  key/value metadata to secrets to add richer context, governance, or
+  classification. It also shows how the SPIKE Go SDK can be used to both set
+  and retrieve that metadata in conjunction with policy enforcement.
+* [Unlocking Secrets: Policy-Based Access and Metadata in 
+  SPIKE][spike-policy-access]<br>
+  This demo showcases how **SPIKE** enforces policy-based access control when
+  reading or writing secrets, incorporating metadata as a first-class dimension
+  of those policies. We observe how policies can conditionally govern operations
+  based on the metadata values, enabling fine-grained, context-aware
+  authorization.
 * [Policy to the Rescue: Secure Secret Access and Metadata with
   SPIKE][spike-metadata]:<br>
   This demo introduces the new **SPIKE** metadata API. We also use the **SPIKE**
@@ -92,7 +104,9 @@ capabilities and showcase its innovative features.
 [spike-passwordless]: https://youtu.be/Tk8EERYjATo?si=JE8UR-F16nRE8rVs
 [spike-audits]: https://youtu.be/EnIsDbQqUEs?si=WgqNXeUzBVPZdn7w
 [spike-policy]: https://youtu.be/KGxHxgtHptI?si=0ljNrKKm0q138pcn
+[spike-policy-access]: https://youtu.be/pyi26rIJbnI?si=ZZhGCNYhecc3TCQD
 [spike-metadata]: https://youtu.be/OSr5VahEE0E?si=p_JV5IhtwmC8FA3S
+[spike-metadata-intro]: https://youtu.be/OSr5VahEE0E?si=7Q4kfKdBU_2atwlC
 [spike-policies]: https://youtu.be/cwNMHDzLP5Y?si=eFQcUlm212pOufBF
 [spike-doomsday]: https://youtu.be/MX8dIUDC9iI?si=vGInHbBd3Vv0Iion
 [spike-federated]: https://youtu.be/xGAg_zBvJrg?si=bEz2uJwQnalSOAMw
