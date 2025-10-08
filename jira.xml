@@ -36,15 +36,15 @@
     </watch-list>
   </high-level-plan>
   <task-group for="v0.6.3">
-    <issue>
+    <issue waitingFor="upstreamHelmCharts">
       after helm-charts changes are merged, verify that the quickstart
       guide still works.
     </issue>
-    <issue>
+    <issue waitingFor="upstreamHelmCharts">
       Go over entire documentation: There are places to update since
       we have helm charts updates.
     </issue>
-    <issue>
+    <issue status="assigned">
       make tests concurrent again.
     </issue>
     <issue>

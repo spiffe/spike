@@ -88,7 +88,7 @@ func main() {
 
 			err := net.Post(
 				net.MTLSClient(src),
-				url.KeeperEndpoint(keeperAPIRoot),
+				url.KeeperContributeEndpoint(keeperAPIRoot),
 				net.Payload(
 					state.KeeperShare(
 						state.RootShares(), keeperID),
@@ -114,8 +114,14 @@ func main() {
 		if err != nil {
 			log.FatalLn(fName, "message", "Initialization failed", "err", err)
 		}
-
 	}
+
+	// TODO:
+	// 1. Create a random text
+	// 2. Encrypt it with the root key
+	// 3. Send it to SPIKE Nexus
+	// 4. SPIKE Nexus will decrypt it and send its hash back.
+	// 5. Verify the hash to ensure that SPIKE Nexus has initialized.
 
 	log.Log().Info(fName, "message", "Sent shards to SPIKE Keeper instances.")
 
