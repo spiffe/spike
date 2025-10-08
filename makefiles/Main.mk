@@ -47,3 +47,4 @@ tag:
 .PHONY: docs
 docs:
 	./hack/bare-metal/build/build-docs.sh
+	./hack/qa/cover.sh

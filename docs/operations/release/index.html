@@ -767,11 +767,10 @@
 <p>This document provides an overview of how the cut a <strong>SPIKE</strong> release, including
 testing guidelines and instructions.</p>
 <blockquote>
-<p><strong>We Use Humans as Push-buttons</strong></p>
-<p>At the moment, we don’t have a CI pipeline in place for the release
-process. Most of the operations mentioned here are manual. However, we are
-actively working on improving and automating the release process. This
-document will be updated as we introduce more automation into the pipeline.</p>
+<p><strong>We Still Use Human Push-buttons</strong></p>
+<p>Although some steps, audits, and integration tests of the release
+process are automated, we still follow several manual steps
+outlined in this document.</p>
 </blockquote>
 <p>Below, you will find detailed instructions and examples to guide contributors
 through the release and testing process.</p>
@@ -786,15 +785,17 @@ to the project.</p>
 <h2 id="before-every-release">Before Every Release</h2>
 <p>Before every release:</p>
 <ol>
-<li>Run the unit tests</li>
+<li>Run the unit tests: <code>make test</code>.</li>
+<li>Run <code>make start</code> and verify you see the message “Everything is set up.”
+to confirm automated smoke tests pass, then press <code>Ctrl+C</code> to stop.</li>
 <li>Run the following smoke tests documented in the next section.</li>
 <li>If everything passes, update <code>./app/VERSION.txt</code> to the release version.</li>
 <li>Update any necessary documentation.</li>
 <li>Update the changelog.</li>
-<li>Update the documentation snapshots page.</li>
-<li>Run <code>./hack/qa/cover.sh</code> to update and send the coverage report to the public
-docs. Make sure you do this <strong>after</strong> you publish the generated documentation
-to the <code>./docs</code> folder.</li>
+<li>Update the documentation snapshots page
+(<code>docs-src/content/tracking/snapshots.md</code>).</li>
+<li>Run <code>make docs</code> to generate and publish the documentation, including the
+coverage report.</li>
 <li>Run <code>./hack/bare-metal/cmd/put-sample-secrets.sh</code> to ensure secret and
 policy creation work as expected.</li>
 <li>Run <code>./hack/bare-metal/cmd/read-sample-secrets.sh</code> to ensure secret and
@@ -805,8 +806,6 @@ policy reading work as expected.</li>
 </ol>
 <p>Release process:</p>
 <ul>
-<li>Publish documentation by running <code>zola build</code> in <code>./docs-src</code> and then
-copying the generated HTML in <code>./docs-src/public</code> into <code>/.docs</code>.</li>
 <li>Merge all the changes to the <code>main</code> branch.</li>
 <li>Tag a version by running <code>make tag</code> (<em>this creates a GPG-signed tag using the
 version from <code>app/VERSION.txt</code> and pushes it to origin</em>).</li>

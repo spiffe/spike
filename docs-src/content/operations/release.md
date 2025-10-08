@@ -13,12 +13,12 @@ sort_by = "weight"
 This document provides an overview of how the cut a **SPIKE** release, including
 testing guidelines and instructions.
 
-> **We Use Humans as Push-buttons**
+> **We Still Use Human Push-buttons**
 > 
-> At the moment, we don't have a CI pipeline in place for the release
-> process. Most of the operations mentioned here are manual. However, we are
-> actively working on improving and automating the release process. This 
-> document will be updated as we introduce more automation into the pipeline.
+> Although some steps, audits, and integration tests of the release
+> process are automated, we still follow several manual steps
+> outlined in this document.
+
 
 Below, you will find detailed instructions and examples to guide contributors
 through the release and testing process.
@@ -42,27 +42,27 @@ to the project.
 
 Before every release:
 
-1. Run the unit tests
-2. Run the following smoke tests documented in the next section.
-3. If everything passes, update `./app/VERSION.txt` to the release version. 
-4. Update any necessary documentation.
-5. Update the changelog.
-6. Update the documentation snapshots page.
-7. Run `./hack/qa/cover.sh` to update and send the coverage report to the public 
-   docs. Make sure you do this **after** you publish the generated documentation
-   to the `./docs` folder.
-8. Run `./hack/bare-metal/cmd/put-sample-secrets.sh` to ensure secret and 
-   policy creation work as expected. 
-9. Run `./hack/bare-metal/cmd/read-sample-secrets.sh` to ensure secret and
+1. Run the unit tests: `make test`.
+2. Run `make start` and verify you see the message "Everything is set up."
+   to confirm automated smoke tests pass, then press `Ctrl+C` to stop.
+3. Run the following smoke tests documented in the next section.
+4. If everything passes, update `./app/VERSION.txt` to the release version.
+5. Update any necessary documentation.
+6. Update the changelog.
+7. Update the documentation snapshots page
+   (`docs-src/content/tracking/snapshots.md`).
+8. Run `make docs` to generate and publish the documentation, including the
+   coverage report.
+9. Run `./hack/bare-metal/cmd/put-sample-secrets.sh` to ensure secret and
+   policy creation work as expected.
+10. Run `./hack/bare-metal/cmd/read-sample-secrets.sh` to ensure secret and
    policy reading work as expected.
-10. Make sure you run `make build` and the process cleanly exits with no errors.
-11. Make sure you run `make test` and the process cleanly exits with no errors.
-12. Make sure you run `make audit` and the process cleanly exits with no errors.
+11. Make sure you run `make build` and the process cleanly exits with no errors.
+12. Make sure you run `make test` and the process cleanly exits with no errors.
+13. Make sure you run `make audit` and the process cleanly exits with no errors.
 
 Release process:
 
-* Publish documentation by running `zola build` in `./docs-src` and then
-  copying the generated HTML in `./docs-src/public` into `/.docs`.
 * Merge all the changes to the `main` branch.
 * Tag a version by running `make tag` (*this creates a GPG-signed tag using the 
   version from `app/VERSION.txt` and pushes it to origin*).
