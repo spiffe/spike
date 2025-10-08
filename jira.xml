@@ -149,9 +149,6 @@
   </task-group>
   <task-group for="v0.6.2">
     <issue>
-      add `make docs` to the release instructions.
-    </issue>
-    <issue>
       Since the architecture has changed a bit, a re-introduction to SPIKE
       demo video is due. But before that, update all the diagrams that need
       updating, since you can use them while doing the into architecture
@@ -164,9 +161,6 @@
 
       also, check the docs to see if there is any diagram that need an
       update.
-    </issue>
-    <issue>
-      fix broken video links.
     </issue>
     <issue>
       demo: encryption as a service
@@ -197,6 +191,9 @@
     <issue>
       Due to vimeo migration, video links everywhere are likely broken,
       that includes spike web too -- fix them.
+    </issue>
+    <issue>
+      when SPIKE is active via `make start`, `make test` fails.
     </issue>
     <issue>
       add `-trimpath` and `-a` to go build.

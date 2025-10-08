@@ -241,6 +241,62 @@ sleep 5
 echo "Creating policies for the demo workload..."
 ./examples/consume-secrets/demo-create-policy.sh
 
+echo "Running demo workload to verify setup..."
+DEMO_OUTPUT=$(demo 2>&1)
+DEMO_EXIT_CODE=$?
+
+if [ $DEMO_EXIT_CODE -ne 0 ]; then
+  echo "Error: Demo workload failed with exit code $DEMO_EXIT_CODE"
+  echo "Output:"
+  echo "$DEMO_OUTPUT"
+  exit 1
+fi
+
+# Validate expected output
+echo "$DEMO_OUTPUT" | grep -q "SPIKE Demo" || \
+  { echo "Error: Missing 'SPIKE Demo' in output"; exit 1; }
+echo "$DEMO_OUTPUT" | grep -q "Connected to SPIKE Nexus." || \
+  { echo "Error: Missing 'Connected to SPIKE Nexus.' in output"; exit 1; }
+echo "$DEMO_OUTPUT" | grep -q "Secret found:" || \
+  { echo "Error: Missing 'Secret found:' in output"; exit 1; }
+echo "$DEMO_OUTPUT" | grep -q "password: SPIKE_Rocks" || \
+  { echo "Error: Missing expected password in output"; exit 1; }
+echo "$DEMO_OUTPUT" | grep -q "username: SPIKE" || \
+  { echo "Error: Missing expected username in output"; exit 1; }
+
+echo "Demo workload verification passed."
+
+echo "Verifying policies..."
+POLICY_OUTPUT=$(spike policy list 2>&1)
+POLICY_EXIT_CODE=$?
+
+if [ $POLICY_EXIT_CODE -ne 0 ]; then
+  echo "Error: Policy list failed with exit code $POLICY_EXIT_CODE"
+  echo "Output:"
+  echo "$POLICY_OUTPUT"
+  exit 1
+fi
+
+# Validate expected policy output
+echo "$POLICY_OUTPUT" | grep -q "POLICIES" || \
+  { echo "Error: Missing 'POLICIES' header in output"; exit 1; }
+echo "$POLICY_OUTPUT" | grep -q "workload-can-read" || \
+  { echo "Error: Missing 'workload-can-read' policy"; exit 1; }
+echo "$POLICY_OUTPUT" | grep -q "workload-can-write" || \
+  { echo "Error: Missing 'workload-can-write' policy"; exit 1; }
+echo "$POLICY_OUTPUT" | \
+  grep -qF "SPIFFE ID Pattern: ^spiffe://spike\.ist/workload/.*$" || \
+  { echo "Error: Missing expected SPIFFE ID pattern"; exit 1; }
+echo "$POLICY_OUTPUT" | \
+  grep -qF "Path Pattern: ^tenants/demo/db/.*$" || \
+  { echo "Error: Missing expected path pattern"; exit 1; }
+echo "$POLICY_OUTPUT" | grep -q "Permissions: read" || \
+  { echo "Error: Missing read permission"; exit 1; }
+echo "$POLICY_OUTPUT" | grep -q "Permissions: write" || \
+  { echo "Error: Missing write permission"; exit 1; }
+
+echo "Policy verification passed."
+
 echo "Done. Will sleep a bit..."
 sleep 5
 
