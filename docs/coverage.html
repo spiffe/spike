@@ -219,7 +219,7 @@
 				
 				<option value="file81">github.com/spiffe/spike/app/nexus/internal/state/backend/sqlite/persist/secret_load.go (79.4%)</option>
 				
-				<option value="file82">github.com/spiffe/spike/app/nexus/internal/state/backend/sqlite/persist/testing_helper.go (85.9%)</option>
+				<option value="file82">github.com/spiffe/spike/app/nexus/internal/state/backend/sqlite/persist/testing_helper.go (82.8%)</option>
 				
 				<option value="file83">github.com/spiffe/spike/app/nexus/internal/state/base/data.go (100.0%)</option>
 				
@@ -1758,43 +1758,43 @@ var shardMutex sync.RWMutex
 //   - s *[32]byte: Pointer to the new shard value to store
 //
 // Thread-safe through shardMutex.
-func SetShard(s *[crypto.AES256KeySize]byte) <span class="cov8" title="5047">{
+func SetShard(s *[crypto.AES256KeySize]byte) <span class="cov8" title="5041">{
         shardMutex.Lock()
         defer shardMutex.Unlock()
 
         zeroed := true
-        for i := range s </span><span class="cov8" title="5190">{
-                if s[i] != 0 </span><span class="cov8" title="5045">{
+        for i := range s </span><span class="cov8" title="5184">{
+                if s[i] != 0 </span><span class="cov8" title="5039">{
                         zeroed = false
                         break</span>
                 }
         }
 
         // Do not reset the shard if the new value is zero.
-        <span class="cov8" title="5047">if zeroed </span><span class="cov1" title="2">{
+        <span class="cov8" title="5041">if zeroed </span><span class="cov1" title="2">{
                 return
         }</span>
 
-        <span class="cov8" title="5045">copy(shard[:], s[:])</span>
+        <span class="cov8" title="5039">copy(shard[:], s[:])</span>
 }
 
 // ShardNoSync returns a pointer to the shard without acquiring any locks.
 // Callers must ensure proper synchronization by using RLockShard and
 // RUnlockShard when accessing the returned pointer.
-func ShardNoSync() *[crypto.AES256KeySize]byte <span class="cov9" title="56744">{
+func ShardNoSync() *[crypto.AES256KeySize]byte <span class="cov9" title="56384">{
         return &amp;shard
 }</span>
 
 // RLockShard acquires a read lock on the shard mutex.
 // This should be paired with a corresponding call to RUnlockShard,
 // typically using `defer`.
-func RLockShard() <span class="cov10" title="56745">{
+func RLockShard() <span class="cov10" title="56385">{
         shardMutex.RLock()
 }</span>
 
 // RUnlockShard releases a read lock on the shard mutex.
 // This should only be called after a corresponding call to RLockShard.
-func RUnlockShard() <span class="cov10" title="56745">{
+func RUnlockShard() <span class="cov10" title="56385">{
         shardMutex.RUnlock()
 }</span>
 </pre>
@@ -6843,7 +6843,7 @@ type Store struct {
 }
 
 // NewInMemoryStore creates a new in-memory store instance
-func NewInMemoryStore(cipher cipher.AEAD, maxVersions int) *Store <span class="cov7" title="19">{
+func NewInMemoryStore(cipher cipher.AEAD, maxVersions int) *Store <span class="cov6" title="19">{
         return &amp;Store{
                 secretStore: kv.New(kv.Config{
                         MaxSecretVersions: maxVersions,
@@ -6868,7 +6868,7 @@ func (s *Store) Close(_ context.Context) error <span class="cov1" title="1">{
 // StoreSecret saves a secret to the store at the specified path.
 func (s *Store) StoreSecret(
         _ context.Context, path string, secret kv.Value,
-) error <span class="cov10" title="60">{
+) error <span class="cov8" title="60">{
         s.secretMu.Lock()
         defer s.secretMu.Unlock()
 
@@ -6912,19 +6912,19 @@ func (s *Store) LoadAllSecrets(_ context.Context) (
         paths := s.secretStore.List()
 
         // Load each secret
-        for _, path := range paths </span><span class="cov9" title="58">{
+        for _, path := range paths </span><span class="cov10" title="108">{
                 secret, err := s.secretStore.GetRawSecret(path)
                 if err != nil </span><span class="cov0" title="0">{
                         continue</span> // Skip secrets that can't be loaded
                 }
-                <span class="cov9" title="58">result[path] = secret</span>
+                <span class="cov10" title="108">result[path] = secret</span>
         }
 
         <span class="cov6" title="14">return result, nil</span>
 }
 
 // StorePolicy stores a policy in the store.
-func (s *Store) StorePolicy(_ context.Context, policy data.Policy) error <span class="cov9" title="41">{
+func (s *Store) StorePolicy(_ context.Context, policy data.Policy) error <span class="cov8" title="41">{
         s.policyMu.Lock()
         defer s.policyMu.Unlock()
 
@@ -6932,14 +6932,14 @@ func (s *Store) StorePolicy(_ context.Context, policy data.Policy) error <span c
                 return fmt.Errorf("policy ID cannot be empty")
         }</span>
 
-        <span class="cov9" title="40">s.policies[policy.ID] = &amp;policy
+        <span class="cov8" title="40">s.policies[policy.ID] = &amp;policy
         return nil</span>
 }
 
 // LoadPolicy retrieves a policy from the store by its ID.
 func (s *Store) LoadPolicy(
         _ context.Context, id string,
-) (*data.Policy, error) <span class="cov4" title="4">{
+) (*data.Policy, error) <span class="cov3" title="4">{
         s.policyMu.RLock()
         defer s.policyMu.RUnlock()
 
@@ -6960,7 +6960,7 @@ func (s *Store) LoadAllPolicies(
 
         // Create a copy to avoid race conditions
         result := make(map[string]*data.Policy, len(s.policies))
-        for id, policy := range s.policies </span><span class="cov8" title="38">{
+        for id, policy := range s.policies </span><span class="cov9" title="88">{
                 result[id] = policy
         }</span>
 
@@ -8242,7 +8242,7 @@ func cleanupSQLiteDatabase(t *testing.T) <span class="cov3" title="5">{
         dbPath := filepath.Join(dataDir, "spike.db")
 
         // Remove the database file if it exists
-        if _, err := os.Stat(dbPath); err == nil </span><span class="cov1" title="1">{
+        if _, err := os.Stat(dbPath); err == nil </span><span class="cov0" title="0">{
                 t.Logf("Removing existing database at %s", dbPath)
                 if err := os.Remove(dbPath); err != nil </span><span class="cov0" title="0">{
                         t.Logf("Warning: Failed to remove existing database: %v", err)
@@ -8394,12 +8394,12 @@ func RootKeyZero() bool <span class="cov7" title="1226">{
         rootKeyMu.RLock()
         defer rootKeyMu.RUnlock()
 
-        for _, b := range rootKey[:] </span><span class="cov10" title="32939">{
-                if b != 0 </span><span class="cov5" title="204">{
+        for _, b := range rootKey[:] </span><span class="cov10" title="32691">{
+                if b != 0 </span><span class="cov5" title="212">{
                         return false
                 }</span>
         }
-        <span class="cov6" title="1022">return true</span>
+        <span class="cov6" title="1014">return true</span>
 }
 
 // SetRootKey updates the root key with the provided value.
@@ -9029,7 +9029,7 @@ func DeleteSecret(path string, versions []int) error <span class="cov6" title="9
                 newCurrent := 0 // Start at 0 (meaning "no valid version")
                 for version, v := range secret.Versions </span><span class="cov6" title="11">{
                         if v.DeletedTime == nil &amp;&amp;
-                                version &gt; newCurrent &amp;&amp; version &lt; secret.Metadata.CurrentVersion </span><span class="cov1" title="1">{
+                                version &gt; newCurrent &amp;&amp; version &lt; secret.Metadata.CurrentVersion </span><span class="cov2" title="2">{
                                 newCurrent = version
                         }</span>
                 }
@@ -9096,7 +9096,7 @@ func UndeleteSecret(path string, versions []int) error <span class="cov4" title=
                 if currentVersion == 0 </span><span class="cov1" title="1">{
                         highestDeleted := 0
                         for version, v := range secret.Versions </span><span class="cov3" title="3">{
-                                if v.DeletedTime != nil &amp;&amp; version &gt; highestDeleted </span><span class="cov1" title="1">{
+                                if v.DeletedTime != nil &amp;&amp; version &gt; highestDeleted </span><span class="cov3" title="3">{
                                         highestDeleted = version
                                 }</span>
                         }
@@ -9703,7 +9703,7 @@ func cleanupSQLiteDatabase(t *testing.T) <span class="cov4" title="8">{
         dbPath := filepath.Join(dataDir, "spike.db")
 
         // Remove the database file if it exists
-        if _, err := os.Stat(dbPath); err == nil </span><span class="cov3" title="5">{
+        if _, err := os.Stat(dbPath); err == nil </span><span class="cov3" title="6">{
                 t.Logf("Removing existing database at %s", dbPath)
                 if err := os.Remove(dbPath); err != nil </span><span class="cov0" title="0">{
                         t.Logf("Warning: Failed to remove existing database: %v", err)

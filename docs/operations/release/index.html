@@ -244,23 +244,7 @@
                 
                         
                         
-                            <ul id="toc">
-                                <li><a href="
-                                            https://spike.ist/operations/release/#spike-release-management">SPIKE Release Management</a>
-                                        <ul>
-                                                <li>
-                                                        <a href="https://spike.ist/operations/release/#coverage-report">Coverage Report</a>
-                                                    </li>
-                                                <li>
-                                                        <a href="https://spike.ist/operations/release/#before-every-release">Before Every Release</a>
-                                                    </li>
-                                                <li>
-                                                        <a href="https://spike.ist/operations/release/#spike-smoke-tests">SPIKE Smoke Tests</a>
-                                                    </li>
-                                                </ul>
-                                        </li>
-                                </ul>
-                        </ul>
+                            </ul>
     </div>
 <style>
     /* Navigation tree structure */
@@ -787,22 +771,17 @@ to the project.</p>
 <ol>
 <li>Run the unit tests: <code>make test</code>.</li>
 <li>Run <code>make start</code> and verify you see the message “Everything is set up.”
-to confirm automated smoke tests pass, then press <code>Ctrl+C</code> to stop.</li>
-<li>Run the following smoke tests documented in the next section.</li>
+to confirm the smoke tests pass, then press <code>Ctrl+C</code> to stop.</li>
+<li>Switch to “in-memory” mode, run <code>make start</code> and verify you see the message
+“Everything is set up.” again to confirm the smoke tests pass in that mode
+too, then press <code>Ctrl+C</code> to stop.</li>
+<li>Run <code>make audit</code> to ensure the project is free of security vulnerabilities.</li>
 <li>If everything passes, update <code>./app/VERSION.txt</code> to the release version.</li>
 <li>Update any necessary documentation.</li>
-<li>Update the changelog.</li>
-<li>Update the documentation snapshots page
-(<code>docs-src/content/tracking/snapshots.md</code>).</li>
+<li>Update the changelog
+(<code>docs-src/content/tracking/changelog.md</code>).</li>
 <li>Run <code>make docs</code> to generate and publish the documentation, including the
 coverage report.</li>
-<li>Run <code>./hack/bare-metal/cmd/put-sample-secrets.sh</code> to ensure secret and
-policy creation work as expected.</li>
-<li>Run <code>./hack/bare-metal/cmd/read-sample-secrets.sh</code> to ensure secret and
-policy reading work as expected.</li>
-<li>Make sure you run <code>make build</code> and the process cleanly exits with no errors.</li>
-<li>Make sure you run <code>make test</code> and the process cleanly exits with no errors.</li>
-<li>Make sure you run <code>make audit</code> and the process cleanly exits with no errors.</li>
 </ol>
 <p>Release process:</p>
 <ul>
@@ -817,107 +796,6 @@ to generate binaries.</li>
 <li>Announce the release in relevant channels.</li>
 <li>You are all set.</li>
 </ul>
-<h2 id="spike-smoke-tests">SPIKE Smoke Tests</h2>
-<blockquote>
-<p><strong>How About Automation</strong>?</p>
-<p>There is a partially-working <code>./ci/test/main.go</code> binary that you can play
-with. But unless that is fixed, we’ll have to run <strong>SPIKE</strong> smoke test
-manually.</p>
-<p><code>./ci/test/main.go</code> is designed for integration tests, and it assumes a
-working <strong>SPIKE</strong> and <strong>SPIKE</strong> environment to execute properly.</p>
-</blockquote>
-<p>Note that these are instructions for a manual smoke test, and it’s not a
-replacement for a full integration test. We may add more steps, but we’ll
-keep it lightweight—Passing the smoke test means that the core components
-and the features of the system are reliably functional.</p>
-<p>Here is a list of manual tests that can be done before every release:</p>
-<ol>
-<li>Reset the test bed.</li>
-<li>Switch to “in-memory” mode.</li>
-<li>Make sure you can create a secret and read it back.</li>
-<li>Make sure you can create a policy and read it back.</li>
-<li>Make sure you can list secrets.</li>
-<li>Make sure you can list policies.</li>
-<li>Make sure the demo workload reads and writes based on the
-policies you created.</li>
-<li>Reset the entire test bed.</li>
-<li>Switch to sqlite mode.</li>
-<li>Make sure SPIKE Nexus and SPIKE Keepers are up and running.</li>
-<li>Repeat steps 2–7.</li>
-<li>Test recover and restore scenarios:
-(a: Nexus auto-recover; b: doomsday recovery)</li>
-</ol>
-<p>If everything looks good so far and the unit tests pass, you can cut a release.</p>
-<p>Ideally, this setup should be automated, but since our releasee cadence is
-not that frequent, it’s okay to do these checks manually.</p>
-<h3 id="start-the-test-environment">Start the Test Environment</h3>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">make</span><span> start
-</span><span>
-</span><span style="color:#65737e;"># enter user password if prompted
-</span><span>
-</span><span style="color:#65737e;"># wait for the following prompt:
-</span><span style="color:#65737e;"># &lt;&lt;
-</span><span style="color:#65737e;"># &gt;
-</span><span style="color:#65737e;"># &gt; Everything is set up.
-</span><span style="color:#65737e;"># &gt; You can now experiment with SPIKE.
-</span><span style="color:#65737e;"># &gt;
-</span><span style="color:#65737e;"># &lt;&lt;
-</span><span style="color:#65737e;"># &gt; &gt;&gt; To begin, run &#39;./spike&#39; on a separate terminal window.
-</span><span style="color:#65737e;"># &lt;&lt;
-</span><span style="color:#65737e;"># &gt;
-</span><span style="color:#65737e;"># &gt; When you are done with your experiments, you can press &#39;Ctrl+C&#39;
-</span><span style="color:#65737e;"># &gt; on this terminal to exit and cleanup all background processes.
-</span><span style="color:#65737e;"># &gt;
-</span><span style="color:#65737e;"># &lt;&lt;
-</span></code></pre>
-<h3 id="create-a-secret">Create a Secret</h3>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">spike</span><span> secret put /acme/db user=spike pass=SPIKERocks
-</span><span style="color:#65737e;"># Output:
-</span><span style="color:#65737e;"># OK
-</span></code></pre>
-<p>Verify secret:</p>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">spike</span><span> secret get /acme/db
-</span><span style="color:#65737e;"># Output:
-</span><span style="color:#65737e;"># pass: SPIKERocks
-</span><span style="color:#65737e;"># user: spike
-</span></code></pre>
-<h3 id="create-a-policy">Create a Policy</h3>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">spike</span><span> policy create</span><span style="color:#bf616a;"> --name</span><span>=workload-can-read \
-</span><span style="color:#bf616a;">  --path-pattern</span><span>=&quot;</span><span style="color:#a3be8c;">/tenants/demo/db/*</span><span>&quot; \
-</span><span style="color:#bf616a;">  --spiffeid-pattern</span><span>=&quot;</span><span style="color:#a3be8c;">^spiffe://spike.ist/workload/*</span><span>&quot; \
-</span><span style="color:#bf616a;">  --permissions</span><span>=&quot;</span><span style="color:#a3be8c;">read</span><span>&quot;
-</span></code></pre>
-<h3 id="verify-the-policy-creation">Verify the Policy Creation</h3>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">spike</span><span> policy list</span><span style="color:#bf616a;"> --format</span><span>=json
-</span><span>
-</span><span style="color:#65737e;"># Sample output:
-</span><span style="color:#65737e;"># [
-</span><span style="color:#65737e;">#  {
-</span><span style="color:#65737e;">#    &quot;id&quot;: &quot;872478b1-cef6-45c1-8417-1de82995aaa4&quot;,
-</span><span style="color:#65737e;">#    &quot;name&quot;: &quot;workload-can-read&quot;,
-</span><span style="color:#65737e;">#    &quot;spiffeIdPattern&quot;: &quot;^spiffe://spike.ist/workload/*&quot;,
-</span><span style="color:#65737e;">#    &quot;pathPattern&quot;: &quot;/tenants/demo/db/*&quot;,
-</span><span style="color:#65737e;">#    &quot;permissions&quot;: [
-</span><span style="color:#65737e;">#      &quot;read&quot;
-</span><span style="color:#65737e;">#    ],
-</span><span style="color:#65737e;">#    &quot;createdAt&quot;: &quot;2025-02-15T07:43:47.306286591-08:00&quot;,
-</span><span style="color:#65737e;">#    &quot;createdBy&quot;: &quot;&quot;
-</span><span style="color:#65737e;">#  }
-</span><span style="color:#65737e;"># ]
-</span></code></pre>
-<h3 id="test-the-demo-workload">Test the Demo Workload</h3>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">./examples/consume-secrets/demo-create-policy.sh
-</span><span style="color:#bf616a;">./examples/consume-secrets/demo-register-entry.sh
-</span><span>
-</span><span style="color:#bf616a;">./demo
-</span><span>
-</span><span style="color:#65737e;"># Output
-</span><span style="color:#65737e;"># Secret found:
-</span><span style="color:#65737e;"># password: SPIKE_Rocks
-</span><span style="color:#65737e;"># username: SPIKE
-</span></code></pre>
-<p>If everything went well so far, we can assume that the current <strong>SPIKE</strong> release
-is in a good enough shape.</p>
 <p>&nbsp;</p>
 <hr />
 <ul>

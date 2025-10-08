@@ -42,24 +42,19 @@ to the project.
 
 Before every release:
 
-1. Run the unit tests: `make test`.
-2. Run `make start` and verify you see the message "Everything is set up."
-   to confirm automated smoke tests pass, then press `Ctrl+C` to stop.
-3. Run the following smoke tests documented in the next section.
-4. If everything passes, update `./app/VERSION.txt` to the release version.
-5. Update any necessary documentation.
-6. Update the changelog.
-7. Update the documentation snapshots page
-   (`docs-src/content/tracking/snapshots.md`).
-8. Run `make docs` to generate and publish the documentation, including the
-   coverage report.
-9. Run `./hack/bare-metal/cmd/put-sample-secrets.sh` to ensure secret and
-   policy creation work as expected.
-10. Run `./hack/bare-metal/cmd/read-sample-secrets.sh` to ensure secret and
-   policy reading work as expected.
-11. Make sure you run `make build` and the process cleanly exits with no errors.
-12. Make sure you run `make test` and the process cleanly exits with no errors.
-13. Make sure you run `make audit` and the process cleanly exits with no errors.
+1.  Run the unit tests: `make test`.
+2.  Run `make start` and verify you see the message "Everything is set up."
+    to confirm the smoke tests pass, then press `Ctrl+C` to stop.
+3.  Switch to "in-memory" mode, run `make start` and verify you see the message
+    "Everything is set up." again to confirm the smoke tests pass in that mode
+    too, then press `Ctrl+C` to stop.
+4.  Run `make audit` to ensure the project is free of security vulnerabilities.
+5.  If everything passes, update `./app/VERSION.txt` to the release version.
+6.  Update any necessary documentation.
+7.  Update the changelog
+    (`docs-src/content/tracking/changelog.md`). 
+8.  Run `make docs` to generate and publish the documentation, including the
+    coverage report.
 
 Release process:
 
@@ -75,131 +70,6 @@ Release process:
 * You are all set.
 
 [cross-platform]: @/operations/build.md "SPIKE Cross-Platform Build"
-
-## SPIKE Smoke Tests
-
-> **How About Automation**?
->
-> There is a partially-working `./ci/test/main.go` binary that you can play
-> with. But unless that is fixed, we'll have to run **SPIKE** smoke test
-> manually.
->
-> `./ci/test/main.go` is designed for integration tests, and it assumes a
-> working **SPIKE** and **SPIKE** environment to execute properly.
-
-Note that these are instructions for a manual smoke test, and it's not a
-replacement for a full integration test. We may add more steps, but we'll
-keep it lightweight---Passing the smoke test means that the core components
-and the features of the system are reliably functional.
-
-Here is a list of manual tests that can be done before every release:
-
-1. Reset the test bed.
-2. Switch to "in-memory" mode.
-3. Make sure you can create a secret and read it back.
-4. Make sure you can create a policy and read it back.
-5. Make sure you can list secrets.
-6. Make sure you can list policies.
-7. Make sure the demo workload reads and writes based on the
-   policies you created.
-8. Reset the entire test bed.
-9. Switch to sqlite mode.
-10. Make sure SPIKE Nexus and SPIKE Keepers are up and running.
-11. Repeat steps 2--7.
-12. Test recover and restore scenarios:
-    (a: Nexus auto-recover; b: doomsday recovery)
-
-If everything looks good so far and the unit tests pass, you can cut a release.
-
-Ideally, this setup should be automated, but since our releasee cadence is 
-not that frequent, it's okay to do these checks manually.
-
-### Start the Test Environment
-
-```bash
-make start
-
-# enter user password if prompted
-
-# wait for the following prompt:
-# <<
-# >
-# > Everything is set up.
-# > You can now experiment with SPIKE.
-# >
-# <<
-# > >> To begin, run './spike' on a separate terminal window.
-# <<
-# >
-# > When you are done with your experiments, you can press 'Ctrl+C'
-# > on this terminal to exit and cleanup all background processes.
-# >
-# <<
-```
-
-### Create a Secret
-
-```bash
-spike secret put /acme/db user=spike pass=SPIKERocks
-# Output:
-# OK
-```
-
-Verify secret:
-
-```bash 
-spike secret get /acme/db
-# Output:
-# pass: SPIKERocks
-# user: spike
-```
-
-### Create a Policy
-
-```bash
-spike policy create --name=workload-can-read \
-  --path-pattern="/tenants/demo/db/*" \
-  --spiffeid-pattern="^spiffe://spike.ist/workload/*" \
-  --permissions="read"
-```
-
-### Verify the Policy Creation
-
-```bash
-spike policy list --format=json
-
-# Sample output:
-# [
-#  {
-#    "id": "872478b1-cef6-45c1-8417-1de82995aaa4",
-#    "name": "workload-can-read",
-#    "spiffeIdPattern": "^spiffe://spike.ist/workload/*",
-#    "pathPattern": "/tenants/demo/db/*",
-#    "permissions": [
-#      "read"
-#    ],
-#    "createdAt": "2025-02-15T07:43:47.306286591-08:00",
-#    "createdBy": ""
-#  }
-# ]
-```
-
-### Test the Demo Workload
-
-```bash
-./examples/consume-secrets/demo-create-policy.sh
-./examples/consume-secrets/demo-register-entry.sh
-
-./demo
-
-# Output
-# Secret found:
-# password: SPIKE_Rocks
-# username: SPIKE
-```
-
-If everything went well so far, we can assume that the current **SPIKE** release
-is in a good enough shape.
 
 <p>&nbsp;</p>
 
