@@ -171,6 +171,9 @@
   </task-group>
   <task-group for="v0.6.2">
     <issue>
+      ensure bootstrap PoP workflow works with different trust domains too.
+    </issue>
+    <issue>
       Since the architecture has changed a bit, a re-introduction to SPIKE
       demo video is due. But before that, update all the diagrams that need
       updating, since you can use them while doing the into architecture
