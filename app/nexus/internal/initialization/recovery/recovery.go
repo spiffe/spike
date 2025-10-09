@@ -11,13 +11,13 @@ import (
 	"time"
 
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
+	"github.com/spiffe/spike-sdk-go/config/env"
 	"github.com/spiffe/spike-sdk-go/crypto"
 	"github.com/spiffe/spike-sdk-go/log"
 	"github.com/spiffe/spike-sdk-go/retry"
 	"github.com/spiffe/spike-sdk-go/security/mem"
 	"github.com/spiffe/spike-sdk-go/spiffe"
 
-	"github.com/spiffe/spike/app/nexus/internal/env"
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 )
 
@@ -85,7 +85,7 @@ func InitializeBackingStoreFromKeepers(source *workloadapi.X509Source) {
 		return false, ErrRecoveryRetry
 	},
 		retry.WithBackOffOptions(
-			retry.WithMaxInterval(env.RecoveryOperationMaxInterval()),
+			retry.WithMaxInterval(env.RecoveryOperationMaxIntervalVal()),
 			retry.WithMaxElapsedTime(0), // Retry forever.
 		),
 	)
@@ -138,14 +138,14 @@ func RestoreBackingStoreFromPilotShards(shards []ShamirShard) {
 
 	log.Log().Info(fName,
 		"message", "Recovering backing store using pilot shards",
-		"threshold", env.ShamirThreshold(),
+		"threshold", env.ShamirThresholdVal(),
 		"len", len(shards),
 	)
 
 	// Ensure we have at least the threshold number of shards
-	if len(shards) < env.ShamirThreshold() {
+	if len(shards) < env.ShamirThresholdVal() {
 		log.Log().Error(fName, "message", "Insufficient shards for recovery",
-			"provided", len(shards), "required", env.ShamirThreshold())
+			"provided", len(shards), "required", env.ShamirThresholdVal())
 		return
 	}
 
@@ -178,7 +178,7 @@ func RestoreBackingStoreFromPilotShards(shards []ShamirShard) {
 
 	// Don't wait for the next cycle in `SendShardsPeriodically`.
 	// Send the shards asap.
-	sendShardsToKeepers(source, env.Keepers())
+	sendShardsToKeepers(source, env.KeepersVal())
 }
 
 // SendShardsPeriodically distributes key shards to configured keeper nodes at
@@ -199,7 +199,7 @@ func SendShardsPeriodically(source *workloadapi.X509Source) {
 
 	log.Log().Info(fName, "message", "Will send shards to keepers")
 
-	ticker := time.NewTicker(env.RecoveryKeeperUpdateInterval())
+	ticker := time.NewTicker(env.RecoveryKeeperUpdateIntervalVal())
 	defer ticker.Stop()
 
 	for range ticker.C {
@@ -211,8 +211,8 @@ func SendShardsPeriodically(source *workloadapi.X509Source) {
 			continue
 		}
 
-		keepers := env.Keepers()
-		if len(keepers) < env.ShamirShares() {
+		keepers := env.KeepersVal()
+		if len(keepers) < env.ShamirSharesVal() {
 			log.FatalLn(fName + ": not enough keepers")
 		}
 

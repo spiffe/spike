@@ -56,6 +56,25 @@ func MTLSClient(source *workloadapi.X509Source) *http.Client {
 	return client
 }
 
+// MTLSClientForNexus creates an HTTP client configured for mutual TLS
+// authentication with SPIKE Nexus using the provided X509Source. The client
+// is configured with a predicate that validates peer IDs against the trusted
+// Nexus root. Only peers that pass the spiffeid.IsNexus validation will be
+// accepted for connections. The function will terminate the program with exit
+// code 1 if client creation fails.
+func MTLSClientForNexus(source *workloadapi.X509Source) *http.Client {
+	const fName = "MTLSClientForNexus"
+	client, err := network.CreateMTLSClientWithPredicate(
+		source, predicate.AllowNexus,
+	)
+	if err != nil {
+		log.FatalLn(fName,
+			"message", "Failed to create mTLS client for Nexus",
+			"err", err)
+	}
+	return client
+}
+
 // Payload marshals a secret sharing contribution into a JSON payload for
 // transmission to a Keeper. It takes a secret sharing share and the target
 // Keeper ID, validates the contribution is exactly 32 bytes, and returns the
@@ -108,4 +127,48 @@ func Post(client *http.Client, u string, md []byte, keeperID string) error {
 			"err", err, "keeper_id", keeperID)
 	}
 	return err
+}
+
+// VerifyPayload creates a JSON payload for the bootstrap verification request.
+// It takes a nonce and ciphertext, and returns the marshaled
+// BootstrapVerifyRequest as a byte slice. The function will terminate the
+// program with exit code 1 if marshaling fails.
+func VerifyPayload(nonce, ciphertext []byte) []byte {
+	const fName = "verifyPayload"
+
+	request := reqres.BootstrapVerifyRequest{
+		Nonce:      nonce,
+		Ciphertext: ciphertext,
+	}
+
+	md, err := json.Marshal(request)
+	if err != nil {
+		log.FatalLn(fName,
+			"message", "Failed to marshal verification request",
+			"err", err)
+	}
+
+	return md
+}
+
+// PostVerify sends an HTTP POST request with verification data to SPIKE Nexus
+// and returns the verification response. It logs the request hash for
+// debugging purposes. The function returns the response body and any error
+// encountered during the request.
+func PostVerify(
+	client *http.Client, u string, md []byte,
+) ([]byte, error) {
+	const fName = "postVerify"
+
+	log.Log().Info(fName, "payload", fmt.Sprintf("%x", sha256.Sum256(md)))
+
+	responseBody, err := net.Post(client, u, md)
+	if err != nil {
+		log.Log().Error(fName, "message",
+			"Failed to post verification request",
+			"err", err)
+		return nil, err
+	}
+
+	return responseBody, nil
 }

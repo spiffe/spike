@@ -8,9 +8,9 @@ import (
 	"context"
 	"encoding/hex"
 
+	"github.com/spiffe/spike-sdk-go/config/env"
 	"github.com/spiffe/spike-sdk-go/log"
 
-	"github.com/spiffe/spike/app/nexus/internal/env"
 	"github.com/spiffe/spike/app/nexus/internal/state/backend"
 	"github.com/spiffe/spike/app/nexus/internal/state/backend/sqlite"
 	"github.com/spiffe/spike/internal/config"
@@ -46,11 +46,11 @@ func initializeSqliteBackend(rootKey *[32]byte) backend.Backend {
 
 	opts[backend.KeyDataDir] = config.NexusDataFolder()
 	opts[backend.KeyDatabaseFile] = dbName
-	opts[backend.KeyJournalMode] = env.DatabaseJournalMode()
-	opts[backend.KeyBusyTimeoutMs] = env.DatabaseBusyTimeoutMs()
-	opts[backend.KeyMaxOpenConns] = env.DatabaseMaxOpenConns()
-	opts[backend.KeyMaxIdleConns] = env.DatabaseMaxIdleConns()
-	opts[backend.KeyConnMaxLifetimeSeconds] = env.DatabaseConnMaxLifetimeSec()
+	opts[backend.KeyJournalMode] = env.DatabaseJournalModeVal()
+	opts[backend.KeyBusyTimeoutMs] = env.DatabaseBusyTimeoutMsVal()
+	opts[backend.KeyMaxOpenConns] = env.DatabaseMaxOpenConnsVal()
+	opts[backend.KeyMaxIdleConns] = env.DatabaseMaxIdleConnsVal()
+	opts[backend.KeyConnMaxLifetimeSeconds] = env.DatabaseConnMaxLifetimeSecVal()
 
 	// Create SQLite backend configuration
 	cfg := backend.Config{
@@ -73,7 +73,7 @@ func initializeSqliteBackend(rootKey *[32]byte) backend.Backend {
 	}
 
 	ctxC, cancel := context.WithTimeout(
-		context.Background(), env.DatabaseInitializationTimeout(),
+		context.Background(), env.DatabaseInitializationTimeoutVal(),
 	)
 	defer cancel()
 

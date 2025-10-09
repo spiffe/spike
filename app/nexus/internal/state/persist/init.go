@@ -9,11 +9,11 @@ import (
 	"crypto/cipher"
 	"crypto/rand"
 
+	"github.com/spiffe/spike-sdk-go/config/env"
 	"github.com/spiffe/spike-sdk-go/crypto"
 	"github.com/spiffe/spike-sdk-go/log"
 	"github.com/spiffe/spike-sdk-go/security/mem"
 
-	"github.com/spiffe/spike/app/nexus/internal/env"
 	"github.com/spiffe/spike/app/nexus/internal/state/backend"
 )
 
@@ -65,14 +65,14 @@ func InitializeBackend(rootKey *[crypto.AES256KeySize]byte) {
 	const fName = "initializeBackend"
 
 	log.Log().Info(fName,
-		"message", "Initializing backend", "storeType", env.BackendStoreType())
+		"message", "Initializing backend", "storeType", env.BackendStoreTypeVal())
 
 	// Root key is not needed, nor used in in-memory stores.
 	// For in-memory stores, ensure that it is always nil, as the alternative
 	// might mean a logic, or initialization-flow bug, and an unnecessary
 	// crypto material in the memory.
 	// In other store types, ensure it is set for security.
-	if env.BackendStoreType() == env.Memory {
+	if env.BackendStoreTypeVal() == env.Memory {
 		if rootKey != nil {
 			log.FatalLn(fName,
 				"message", "In-memory store can only be initialized with nil root key",
@@ -98,7 +98,7 @@ func InitializeBackend(rootKey *[crypto.AES256KeySize]byte) {
 	backendMu.Lock()
 	defer backendMu.Unlock()
 
-	storeType := env.BackendStoreType()
+	storeType := env.BackendStoreTypeVal()
 
 	switch storeType {
 	case env.Lite:

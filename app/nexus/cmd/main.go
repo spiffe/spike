@@ -9,13 +9,12 @@ import (
 	"crypto/fips140"
 	"fmt"
 
-	cfg "github.com/spiffe/spike-sdk-go/config/env"
+	"github.com/spiffe/spike-sdk-go/config/env"
 	"github.com/spiffe/spike-sdk-go/log"
 	"github.com/spiffe/spike-sdk-go/security/mem"
 	"github.com/spiffe/spike-sdk-go/spiffe"
 	"github.com/spiffe/spike-sdk-go/spiffeid"
 
-	"github.com/spiffe/spike/app/nexus/internal/env"
 	"github.com/spiffe/spike/app/nexus/internal/initialization"
 	"github.com/spiffe/spike/app/nexus/internal/net"
 	"github.com/spiffe/spike/internal/config"
@@ -24,7 +23,7 @@ import (
 const appName = "SPIKE Nexus"
 
 func main() {
-	if env.BannerEnabled() {
+	if env.BannerEnabledVal() {
 		fmt.Printf(`
    \\ SPIKE: Secure your secrets with SPIFFE. — https://spike.ist/
  \\\\\ Copyright 2024-present SPIKE contributors.
@@ -45,7 +44,7 @@ func main() {
 	defer cancel()
 
 	log.Log().Info(appName,
-		"message", "SPIFFE Trust Domain: "+cfg.TrustRootVal(),
+		"message", "SPIFFE Trust Domain: "+env.TrustRootVal(),
 	)
 
 	source, selfSPIFFEID, err := spiffe.Source(ctx, spiffe.EndpointSocket())

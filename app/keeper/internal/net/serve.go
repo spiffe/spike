@@ -6,11 +6,11 @@ package net
 
 import (
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
+	"github.com/spiffe/spike-sdk-go/config/env"
 	"github.com/spiffe/spike-sdk-go/log"
 	"github.com/spiffe/spike-sdk-go/net"
 	"github.com/spiffe/spike-sdk-go/predicate"
 
-	"github.com/spiffe/spike/app/keeper/internal/env"
 	http "github.com/spiffe/spike/app/keeper/internal/route/base"
 	routing "github.com/spiffe/spike/internal/net"
 )
@@ -36,7 +36,7 @@ func Serve(appName string, source *workloadapi.X509Source) {
 		// Security: Only SPIKE Nexus and SPIKE Bootstrap
 		// can talk to SPIKE Keepers.
 		predicate.AllowKeeperPeer,
-		env.TLSPort(),
+		env.KeeperTLSPortVal(),
 	); err != nil {
 		log.FatalLn(appName, "message", "Failed to serve", "err", err.Error())
 	}

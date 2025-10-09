@@ -7,11 +7,11 @@ package recovery
 import (
 	"github.com/cloudflare/circl/group"
 	shamir "github.com/cloudflare/circl/secretsharing"
+	"github.com/spiffe/spike-sdk-go/config/env"
 	"github.com/spiffe/spike-sdk-go/crypto"
 	"github.com/spiffe/spike-sdk-go/log"
 	"github.com/spiffe/spike-sdk-go/security/mem"
 
-	"github.com/spiffe/spike/app/nexus/internal/env"
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 )
 
@@ -42,9 +42,9 @@ import (
 func sanityCheck(secret group.Scalar, shares []shamir.Share) {
 	const fName = "sanityCheck"
 
-	t := uint(env.ShamirThreshold() - 1) // Need t+1 shares to reconstruct
+	t := uint(env.ShamirThresholdVal() - 1) // Need t+1 shares to reconstruct
 
-	reconstructed, err := shamir.Recover(t, shares[:env.ShamirThreshold()])
+	reconstructed, err := shamir.Recover(t, shares[:env.ShamirThresholdVal()])
 	// Security: Ensure that the secret is zeroed out if the check fails.
 	defer func() {
 		if reconstructed == nil {
@@ -87,8 +87,8 @@ func computeShares() (group.Scalar, []shamir.Share) {
 
 	// Initialize parameters
 	g := group.P256
-	t := uint(env.ShamirThreshold() - 1) // Need t+1 shares to reconstruct
-	n := uint(env.ShamirShares())        // Total number of shares
+	t := uint(env.ShamirThresholdVal() - 1) // Need t+1 shares to reconstruct
+	n := uint(env.ShamirSharesVal())        // Total number of shares
 
 	log.Log().Info(fName, "t", t, "n", n)
 

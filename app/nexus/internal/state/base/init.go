@@ -5,11 +5,11 @@
 package base
 
 import (
+	"github.com/spiffe/spike-sdk-go/config/env"
 	"github.com/spiffe/spike-sdk-go/crypto"
 	"github.com/spiffe/spike-sdk-go/log"
 	"github.com/spiffe/spike-sdk-go/security/mem"
 
-	"github.com/spiffe/spike/app/nexus/internal/env"
 	"github.com/spiffe/spike/app/nexus/internal/state/persist"
 )
 
@@ -27,7 +27,7 @@ func Initialize(r *[crypto.AES256KeySize]byte) {
 	persist.InitializeBackend(r)
 
 	// The in-memory store does not use a root key to operate.
-	if env.BackendStoreType() == env.Memory {
+	if env.BackendStoreTypeVal() == env.Memory {
 		log.Log().Info(fName, "message", "in-memory store. will not create root key")
 		return
 	}

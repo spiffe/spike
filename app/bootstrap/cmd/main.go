@@ -6,23 +6,32 @@ package main
 
 import (
 	"context"
+	"crypto/aes"
+	"crypto/cipher"
 	"crypto/fips140"
+	"crypto/rand"
+	"crypto/sha256"
+	"encoding/hex"
+	"encoding/json"
 	"flag"
 	"fmt"
+	"io"
 	"time"
 
+	"github.com/spiffe/spike-sdk-go/config/env"
 	"github.com/spiffe/spike-sdk-go/log"
 	"github.com/spiffe/spike-sdk-go/retry"
 	"github.com/spiffe/spike-sdk-go/spiffe"
 	svid "github.com/spiffe/spike-sdk-go/spiffeid"
 
-	"github.com/spiffe/spike/app/bootstrap/internal/env"
 	"github.com/spiffe/spike/app/bootstrap/internal/lifecycle"
 	"github.com/spiffe/spike/app/bootstrap/internal/net"
 	"github.com/spiffe/spike/app/bootstrap/internal/state"
 	"github.com/spiffe/spike/app/bootstrap/internal/url"
 	"github.com/spiffe/spike/internal/config"
 )
+
+// TODO: some folders are missing doc.go
 
 func main() {
 	const fName = "bootstrap.main"
@@ -80,7 +89,7 @@ func main() {
 
 	ctx := context.Background()
 
-	for keeperID, keeperAPIRoot := range env.Keepers() {
+	for keeperID, keeperAPIRoot := range env.KeepersVal() {
 		log.Log().Info(fName, "keeper ID", keeperID)
 
 		_, err := retry.Do(ctx, func() (bool, error) {
@@ -116,14 +125,95 @@ func main() {
 		}
 	}
 
-	// TODO:
-	// 1. Create a random text
-	// 2. Encrypt it with the root key
-	// 3. Send it to SPIKE Nexus
-	// 4. SPIKE Nexus will decrypt it and send its hash back.
-	// 5. Verify the hash to ensure that SPIKE Nexus has initialized.
-
 	log.Log().Info(fName, "message", "Sent shards to SPIKE Keeper instances.")
+
+	// Verify that SPIKE Nexus has been properly initialized by sending an
+	// encrypted payload and verifying the hash of the decrypted plaintext.
+
+	// Generate random text for verification
+	randomBytes := make([]byte, 32)
+	_, err = rand.Read(randomBytes)
+	if err != nil {
+		log.FatalLn(fName, "message",
+			"Failed to generate random text", "err", err.Error())
+		return
+	}
+	randomText := hex.EncodeToString(randomBytes)
+	log.Log().Info(fName, "message",
+		"Generated random verification text", "length", len(randomText))
+
+	// Encrypt the random text with the root key
+	rootKey := state.RootKey()
+	block, err := aes.NewCipher(rootKey[:])
+	if err != nil {
+		log.FatalLn(fName, "message",
+			"Failed to create cipher", "err", err.Error())
+		return
+	}
+
+	gcm, err := cipher.NewGCM(block)
+	if err != nil {
+		log.FatalLn(fName, "message",
+			"Failed to create GCM", "err", err.Error())
+		return
+	}
+
+	nonce := make([]byte, gcm.NonceSize())
+	if _, err := io.ReadFull(rand.Reader, nonce); err != nil {
+		log.FatalLn(fName, "message",
+			"Failed to generate nonce", "err", err.Error())
+		return
+	}
+
+	ciphertext := gcm.Seal(nil, nonce, []byte(randomText), nil)
+	log.Log().Info(fName, "message",
+		"Encrypted verification text",
+		"nonce_len", len(nonce),
+		"ciphertext_len", len(ciphertext))
+
+	// Send verification request to SPIKE Nexus
+	nexusAPIRoot := env.NexusAPIRootVal()
+	verifyURL := url.NexusVerifyEndpoint(nexusAPIRoot)
+
+	log.Log().Info(fName, "message",
+		"Sending verification request to SPIKE Nexus", "url", verifyURL)
+
+	nexusClient := net.MTLSClientForNexus(src)
+	verifyPayload := net.VerifyPayload(nonce, ciphertext)
+
+	responseBody, err := net.PostVerify(nexusClient, verifyURL, verifyPayload)
+	if err != nil {
+		log.FatalLn(fName, "message",
+			"Failed to send verification request", "err", err.Error())
+		return
+	}
+
+	// Parse the response
+	var verifyResponse struct {
+		Hash string `json:"hash"`
+		Err  string `json:"err"`
+	}
+	if err := json.Unmarshal(responseBody, &verifyResponse); err != nil {
+		log.FatalLn(fName, "message",
+			"Failed to parse verification response", "err", err.Error())
+		return
+	}
+
+	// Compute expected hash
+	expectedHash := sha256.Sum256([]byte(randomText))
+	expectedHashHex := hex.EncodeToString(expectedHash[:])
+
+	// Verify the hash matches
+	if verifyResponse.Hash != expectedHashHex {
+		log.FatalLn(fName, "message",
+			"Verification failed: hash mismatch",
+			"expected", expectedHashHex,
+			"received", verifyResponse.Hash)
+		return
+	}
+
+	log.Log().Info(fName, "message",
+		"SPIKE Nexus verification successful", "hash", verifyResponse.Hash)
 
 	// Mark completion in Kubernetes
 	if err := lifecycle.MarkBootstrapComplete(); err != nil {

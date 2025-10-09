@@ -11,10 +11,10 @@ import (
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	"github.com/spiffe/spike-sdk-go/api/errors"
+	"github.com/spiffe/spike-sdk-go/config/env"
 	"github.com/spiffe/spike-sdk-go/log"
 	"github.com/spiffe/spike-sdk-go/security/mem"
 
-	"github.com/spiffe/spike/app/nexus/internal/env"
 	"github.com/spiffe/spike/app/nexus/internal/initialization/recovery"
 	"github.com/spiffe/spike/internal/journal"
 	"github.com/spiffe/spike/internal/net"
@@ -63,7 +63,7 @@ func RouteRestore(
 
 	journal.AuditRequest(fName, r, audit, journal.AuditCreate)
 
-	if env.BackendStoreType() == env.Memory {
+	if env.BackendStoreTypeVal() == env.Memory {
 		log.Log().Info(fName, "message", "skipping restoration in memory mode")
 		return nil
 	}
@@ -93,7 +93,7 @@ func RouteRestore(
 	// Check if we already have enough shards
 	currentShardCount := len(shards)
 
-	if currentShardCount >= env.ShamirThreshold() {
+	if currentShardCount >= env.ShamirThresholdVal() {
 		responseBody := net.MarshalBody(reqres.RestoreResponse{
 			RestorationStatus: data.RestorationStatus{
 				ShardsCollected: currentShardCount,
@@ -119,8 +119,8 @@ func RouteRestore(
 		responseBody := net.MarshalBody(reqres.RestoreResponse{
 			RestorationStatus: data.RestorationStatus{
 				ShardsCollected: currentShardCount,
-				ShardsRemaining: env.ShamirThreshold() - currentShardCount,
-				Restored:        currentShardCount == env.ShamirThreshold(),
+				ShardsRemaining: env.ShamirThresholdVal() - currentShardCount,
+				Restored:        currentShardCount == env.ShamirThresholdVal(),
 			},
 			Err: data.ErrBadInput,
 		}, w)
@@ -144,7 +144,7 @@ func RouteRestore(
 	// RouteRestore cleans this up when it is no longer necessary.
 
 	// Trigger restoration if we have collected all shards
-	if currentShardCount == env.ShamirThreshold() {
+	if currentShardCount == env.ShamirThresholdVal() {
 		recovery.RestoreBackingStoreFromPilotShards(shards)
 		// Security: Zero out all shards since we have finished restoration:
 		for i := range shards {
@@ -156,8 +156,8 @@ func RouteRestore(
 	responseBody := net.MarshalBody(reqres.RestoreResponse{
 		RestorationStatus: data.RestorationStatus{
 			ShardsCollected: currentShardCount,
-			ShardsRemaining: env.ShamirThreshold() - currentShardCount,
-			Restored:        currentShardCount == env.ShamirThreshold(),
+			ShardsRemaining: env.ShamirThresholdVal() - currentShardCount,
+			Restored:        currentShardCount == env.ShamirThresholdVal(),
 		},
 	}, w)
 	if responseBody == nil {

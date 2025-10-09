@@ -40,12 +40,34 @@
       after helm-charts changes are merged, verify that the quickstart
       guide still works.
     </issue>
+    <issue>
+      SDK exponential retry unit tests are still flaky.
+      maybe create them from scratch.
+    </issue>
+    <issue>
+      create a list for what needs for 1.0 version; i.e. to move SPIKE
+      out of alpha and make it "ready for production use with a hint of caution"
+
+      SPIFFE Org already has standard requirements and a process for that.
+      Check it out.
+    </issue>
+    <issue>
+      Generate coverage reports for the SDK too.
+    </issue>
     <issue waitingFor="upstreamHelmCharts">
       Go over entire documentation: There are places to update since
       we have helm charts updates.
     </issue>
     <issue status="assigned">
       make tests concurrent again.
+    </issue>
+    <issue>
+      const KeeperKeep APIURL = "/v1/store/keep"
+      const KeeperContribute APIURL = "/v1/store/contribute"
+      const KeeperShard APIURL = "/v1/store/shard"
+
+      ^ these are unused in the SDK, which may hint that whatever uses them
+      here may need to be SDK methods maybe.
     </issue>
     <issue>
       bootstrap verification:

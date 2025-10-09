@@ -7,9 +7,8 @@ package validation
 import (
 	"github.com/cloudflare/circl/group"
 	shamir "github.com/cloudflare/circl/secretsharing"
+	"github.com/spiffe/spike-sdk-go/config/env"
 	"github.com/spiffe/spike-sdk-go/log"
-
-	"github.com/spiffe/spike/app/bootstrap/internal/env"
 )
 
 // SanityCheck verifies that a set of secret shares can correctly reconstruct
@@ -39,9 +38,9 @@ import (
 func SanityCheck(secret group.Scalar, shares []shamir.Share) {
 	const fName = "SanityCheck"
 
-	t := uint(env.ShamirThreshold() - 1) // Need t+1 shares to reconstruct
+	t := uint(env.ShamirThresholdVal() - 1) // Need t+1 shares to reconstruct
 
-	reconstructed, err := shamir.Recover(t, shares[:env.ShamirThreshold()])
+	reconstructed, err := shamir.Recover(t, shares[:env.ShamirThresholdVal()])
 	// Security: Ensure that the secret is zeroed out if the check fails.
 	defer func() {
 		if reconstructed == nil {
