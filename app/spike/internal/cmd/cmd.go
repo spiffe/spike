@@ -10,6 +10,7 @@ import (
 
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 
+	"github.com/spiffe/spike/app/spike/internal/cmd/health"
 	"github.com/spiffe/spike/app/spike/internal/cmd/operator"
 	"github.com/spiffe/spike/app/spike/internal/cmd/policy"
 	"github.com/spiffe/spike/app/spike/internal/cmd/secret"
@@ -42,6 +43,7 @@ func Initialize(source *workloadapi.X509Source, SPIFFEID string) {
 	rootCmd.AddCommand(policy.NewPolicyCommand(source, SPIFFEID))
 	rootCmd.AddCommand(secret.NewSecretCommand(source, SPIFFEID))
 	rootCmd.AddCommand(operator.NewOperatorCommand(source, SPIFFEID))
+	rootCmd.AddCommand(health.NewOperatorCommand(source, SPIFFEID))
 }
 
 // Execute runs the root command and handles any errors that occur.
