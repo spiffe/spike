@@ -12,7 +12,10 @@ sort_by = "weight"
 
 ## Recent
 
-TBD
+* moved entities to the sdk
+* added extensive package documentation to ALL packages of SPIKE and SPIKE go SDK
+* minor bugfixes
+* PoP validation after bootstrap sequence to ensure SPIKE Nexus has initialized properly.
 
 ## [0.6.1] - 2025-10-02
 
