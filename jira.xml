@@ -429,6 +429,16 @@
       }
     </issue>
     <issue>
+      retry.WithBackOffOptions(
+      retry.WithMaxInterval(60*time.Second), // to env vars.
+      retry.WithMaxElapsedTime(0),           // Retry forever.
+      ),
+    </issue>
+    <issue>
+      check how the progress of this is going:
+      https://github.com/spiffe/spike/issues/238
+    </issue>
+    <issue>
       path := "^tenants/demo/db/creds"
       path := "tenants/demo/db/creds"
       the first one creates an error in demo app but the error response is

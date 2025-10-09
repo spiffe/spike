@@ -112,8 +112,8 @@ func main() {
 			return true, nil
 		},
 			retry.WithBackOffOptions(
-				retry.WithMaxInterval(60*time.Second), // TODO: to env vars.
-				retry.WithMaxElapsedTime(0),           // Retry forever.
+				retry.WithMaxInterval(60*time.Second),
+				retry.WithMaxElapsedTime(0),
 			),
 		)
 
