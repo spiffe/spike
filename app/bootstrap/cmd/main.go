@@ -31,8 +31,6 @@ import (
 	"github.com/spiffe/spike/internal/config"
 )
 
-// TODO: some folders are missing doc.go
-
 func main() {
 	const fName = "bootstrap.main"
 
