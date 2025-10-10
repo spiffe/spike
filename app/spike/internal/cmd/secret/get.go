@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"slices"
+	"strings"
 
 	"github.com/spf13/cobra"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
@@ -76,7 +77,13 @@ func newSecretGetCommand(
 					return fmt.Errorf("server not ready")
 				}
 
-				return fmt.Errorf("failure reading secret: %v", err.Error())
+				// Handle specific error cases
+				errorMsg := err.Error()
+				if strings.Contains(errorMsg, "Problem connecting to peer") {
+					return fmt.Errorf("secret not found at path: %s", path)
+				}
+
+				return fmt.Errorf("failure reading secret: %v", errorMsg)
 			}
 
 			if secret == nil {
