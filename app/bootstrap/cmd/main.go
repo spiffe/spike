@@ -20,6 +20,7 @@ import (
 
 	"github.com/spiffe/spike-sdk-go/config/env"
 	"github.com/spiffe/spike-sdk-go/log"
+	tls "github.com/spiffe/spike-sdk-go/net"
 	"github.com/spiffe/spike-sdk-go/retry"
 	"github.com/spiffe/spike-sdk-go/spiffe"
 	svid "github.com/spiffe/spike-sdk-go/spiffeid"
@@ -58,7 +59,7 @@ func main() {
 		return
 	}
 
-	src := net.Source()
+	src := tls.Source()
 	defer spiffe.CloseSource(src)
 	sv, err := src.GetX509SVID()
 	if err != nil {
@@ -93,8 +94,9 @@ func main() {
 		_, err := retry.Do(ctx, func() (bool, error) {
 			log.Log().Info(fName, "message", "retry:"+time.Now().String())
 
+			// TODO: goes to SDK.
 			err := net.Post(
-				net.MTLSClient(src),
+				tls.CreateMTLSClientForKeeper(src),
 				url.KeeperContributeEndpoint(keeperAPIRoot),
 				net.Payload(
 					state.KeeperShare(
@@ -176,7 +178,8 @@ func main() {
 	log.Log().Info(fName, "message",
 		"Sending verification request to SPIKE Nexus", "url", verifyURL)
 
-	nexusClient := net.MTLSClientForNexus(src)
+	// TODO: goes to SDK
+	nexusClient := tls.CreateMTLSClientForNexus(src)
 	verifyPayload := net.VerifyPayload(nonce, ciphertext)
 
 	responseBody, err := net.PostVerify(nexusClient, verifyURL, verifyPayload)

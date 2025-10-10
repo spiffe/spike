@@ -5,75 +5,17 @@
 package net
 
 import (
-	"context"
 	"crypto/sha256"
 	"encoding/json"
 	"fmt"
 	"net/http"
 
 	"github.com/cloudflare/circl/secretsharing"
-	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	"github.com/spiffe/spike-sdk-go/crypto"
 	"github.com/spiffe/spike-sdk-go/log"
-	network "github.com/spiffe/spike-sdk-go/net"
-	"github.com/spiffe/spike-sdk-go/predicate"
-	"github.com/spiffe/spike-sdk-go/spiffe"
-
 	"github.com/spiffe/spike/internal/net"
 )
-
-// Source creates and returns a new SPIFFE X509Source for workload API
-// communication. It establishes a connection to the SPIFFE workload API using
-// the default endpoint socket. The function will terminate the program with
-// exit code 1 if the source creation fails.
-func Source() *workloadapi.X509Source {
-	const fName = "Source"
-	source, _, err := spiffe.Source(
-		context.Background(), spiffe.EndpointSocket(),
-	)
-	if err != nil {
-		log.FatalLn(fName, "message", "Failed to create source", "err", err)
-	}
-	return source
-}
-
-// MTLSClient creates an HTTP client configured for mutual TLS authentication
-// using the provided X509Source. The client is configured with a predicate that
-// validates peer IDs against the trusted keeper root. Only peers that pass the
-// spiffeid.IsKeeper validation will be accepted for connections. The function
-// will terminate the program with exit code 1 if client creation fails.
-func MTLSClient(source *workloadapi.X509Source) *http.Client {
-	const fName = "MTLSClient"
-	client, err := network.CreateMTLSClientWithPredicate(
-		source, predicate.AllowKeeper,
-	)
-	if err != nil {
-		log.FatalLn(fName,
-			"message", "Failed to create mTLS client",
-			"err", err)
-	}
-	return client
-}
-
-// MTLSClientForNexus creates an HTTP client configured for mutual TLS
-// authentication with SPIKE Nexus using the provided X509Source. The client
-// is configured with a predicate that validates peer IDs against the trusted
-// Nexus root. Only peers that pass the spiffeid.IsNexus validation will be
-// accepted for connections. The function will terminate the program with exit
-// code 1 if client creation fails.
-func MTLSClientForNexus(source *workloadapi.X509Source) *http.Client {
-	const fName = "MTLSClientForNexus"
-	client, err := network.CreateMTLSClientWithPredicate(
-		source, predicate.AllowNexus,
-	)
-	if err != nil {
-		log.FatalLn(fName,
-			"message", "Failed to create mTLS client for Nexus",
-			"err", err)
-	}
-	return client
-}
 
 // Payload marshals a secret sharing contribution into a JSON payload for
 // transmission to a Keeper. It takes a secret sharing share and the target
