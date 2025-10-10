@@ -128,13 +128,13 @@ func TestPostHTTPInteraction(t *testing.T) {
 
 			if tt.expectError {
 				// FIX-ME: after fixing Log.FatalLn and friends to panic,
-				// The Post function calls os.Exit(1) on error, which we can't easily test
+				// The PutShardContributionRequest function calls os.Exit(1) on error, which we can't easily test
 				// without significant refactoring. In a real scenario, you'd want to
 				// refactor the function to return errors instead of calling os.Exit.
 				t.Skip("Skipping test that would cause os.Exit - needs refactoring for testability")
 			} else {
 				// This should work without calling os.Exit
-				err := Post(server.Client(), server.URL, tt.payload, "test-keeper")
+				err := PutShardContributionRequest(server.Client(), server.URL, tt.payload, "test-keeper")
 				if err != nil {
 					return
 				}
@@ -197,7 +197,7 @@ func TestCryptoConstants(t *testing.T) {
 }
 
 func TestHTTPClientInteraction(t *testing.T) {
-	// Test HTTP client behavior that Post() relies on
+	// Test HTTP client behavior that PutShardContributionRequest() relies on
 	testPayload := []byte(`{"shard": "test data"}`)
 
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -221,7 +221,7 @@ func TestHTTPClientInteraction(t *testing.T) {
 	}))
 	defer server.Close()
 
-	// Test the successful HTTP POST (this mimics what Post() does internally)
+	// Test the successful HTTP POST (this mimics what PutShardContributionRequest() does internally)
 	client := server.Client()
 	req, err := http.NewRequest(http.MethodPost, server.URL, bytes.NewReader(testPayload))
 	if err != nil {

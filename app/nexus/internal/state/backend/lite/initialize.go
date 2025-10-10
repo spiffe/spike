@@ -18,8 +18,9 @@ import (
 // Store implements the backend.Backend interface providing encryption
 // without storage. It uses AES-GCM
 type Store struct {
-	noop.Store             // No need to use a store; this is an encryption-as-a-service.
-	Cipher     cipher.AEAD // Encryption Cipher for data protection
+	noop.Store // No need to use a store;
+	// this is an encryption-as-a-service.
+	Cipher cipher.AEAD // Encryption Cipher for data protection
 }
 
 // New creates a new Backend with AES-GCM encryption using the provided key.

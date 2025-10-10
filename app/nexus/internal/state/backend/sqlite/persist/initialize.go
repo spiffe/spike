@@ -12,9 +12,8 @@ import (
 	"fmt"
 	"path/filepath"
 
+	"github.com/spiffe/spike-sdk-go/config/env"
 	"github.com/spiffe/spike-sdk-go/log"
-
-	"github.com/spiffe/spike/app/nexus/internal/env"
 )
 
 // Initialize prepares the DataStore for use by:
@@ -67,7 +66,7 @@ func (s *DataStore) Initialize(ctx context.Context) error {
 	db.SetConnMaxLifetime(s.Opts.ConnMaxLifetime)
 
 	// Use the existing database if the schema is not to be created.
-	if env.DatabaseSkipSchemaCreation() {
+	if env.DatabaseSkipSchemaCreationVal() {
 		s.db = db
 		return nil
 	}

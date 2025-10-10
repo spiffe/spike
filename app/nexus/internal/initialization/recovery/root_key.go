@@ -7,11 +7,10 @@ package recovery
 import (
 	"github.com/cloudflare/circl/group"
 	"github.com/cloudflare/circl/secretsharing"
+	"github.com/spiffe/spike-sdk-go/config/env"
 	"github.com/spiffe/spike-sdk-go/crypto"
 	"github.com/spiffe/spike-sdk-go/log"
 	"github.com/spiffe/spike-sdk-go/security/mem"
-
-	"github.com/spiffe/spike/app/nexus/internal/env"
 )
 
 type ShamirShard struct {
@@ -79,7 +78,7 @@ func ComputeRootKeyFromShards(ss []ShamirShard) *[crypto.AES256KeySize]byte {
 	// Recover the secret
 	// The first parameter to Recover is threshold-1
 	// We need the threshold from the environment
-	threshold := env.ShamirThreshold()
+	threshold := env.ShamirThresholdVal()
 	reconstructed, err := secretsharing.Recover(uint(threshold-1), shares)
 	if err != nil {
 		// Security: Reset shares.

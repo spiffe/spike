@@ -6,9 +6,9 @@ package initialization
 
 import (
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
+	"github.com/spiffe/spike-sdk-go/config/env"
 	"github.com/spiffe/spike-sdk-go/log"
 
-	"github.com/spiffe/spike/app/nexus/internal/env"
 	"github.com/spiffe/spike/app/nexus/internal/initialization/recovery"
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 )
@@ -40,8 +40,8 @@ import (
 func Initialize(source *workloadapi.X509Source) {
 	const fName = "Initialize"
 
-	requireBackingStoreToBootstrap := env.BackendStoreType() == env.Sqlite ||
-		env.BackendStoreType() == env.Lite
+	requireBackingStoreToBootstrap := env.BackendStoreTypeVal() == env.Sqlite ||
+		env.BackendStoreTypeVal() == env.Lite
 
 	if requireBackingStoreToBootstrap {
 		// Initialize the backing store from SPIKE Keeper instances.
@@ -58,7 +58,7 @@ func Initialize(source *workloadapi.X509Source) {
 		return
 	}
 
-	devMode := env.BackendStoreType() == env.Memory
+	devMode := env.BackendStoreTypeVal() == env.Memory
 
 	if devMode {
 		log.Log().Warn(fName, "message", "In-memory store will be used.")
@@ -77,7 +77,7 @@ func Initialize(source *workloadapi.X509Source) {
 	// Better to crash, since this is likely a configuration failure.
 	log.FatalLn(
 		fName, "message",
-		"Invalid backend store type: '"+env.BackendStoreType()+"'."+
+		"Invalid backend store type: '"+env.BackendStoreTypeVal()+"'."+
 			" Please set SPIKE_BACKEND_STORE_TYPE to 'sqlite', 'lite', or 'memory'.",
 	)
 }

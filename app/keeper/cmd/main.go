@@ -9,12 +9,12 @@ import (
 	"crypto/fips140"
 	"fmt"
 
+	"github.com/spiffe/spike-sdk-go/config/env"
 	"github.com/spiffe/spike-sdk-go/log"
 	"github.com/spiffe/spike-sdk-go/security/mem"
 	"github.com/spiffe/spike-sdk-go/spiffe"
 	"github.com/spiffe/spike-sdk-go/spiffeid"
 
-	"github.com/spiffe/spike/app/keeper/internal/env"
 	"github.com/spiffe/spike/app/keeper/internal/net"
 	"github.com/spiffe/spike/internal/config"
 )
@@ -22,7 +22,7 @@ import (
 const appName = "SPIKE Keeper"
 
 func main() {
-	if env.BannerEnabled() {
+	if env.BannerEnabledVal() {
 		fmt.Printf(`
    \\ SPIKE: Secure your secrets with SPIFFE. — https://spike.ist/
  \\\\\ Copyright 2024-present SPIKE contributors.

@@ -14,8 +14,8 @@ import (
 	"net/http"
 
 	"github.com/spiffe/spike-sdk-go/api/url"
+	"github.com/spiffe/spike-sdk-go/config/env"
 
-	"github.com/spiffe/spike/app/nexus/internal/env"
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 	"github.com/spiffe/spike/internal/journal"
 	"github.com/spiffe/spike/internal/net"
@@ -42,8 +42,8 @@ func Route(
 			// Memory: does not require root key.
 
 			emptyRootKey := state.RootKeyZero()
-			inMemoryMode := env.BackendStoreType() == env.Memory
-			hasBackingStore := env.BackendStoreType() != env.Lite
+			inMemoryMode := env.BackendStoreTypeVal() == env.Memory
+			hasBackingStore := env.BackendStoreTypeVal() != env.Lite
 			emergencyAction := p == url.NexusOperatorRecover ||
 				p == url.NexusOperatorRestore
 			rootKeyValidationRequired := !inMemoryMode && !emergencyAction

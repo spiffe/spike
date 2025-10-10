@@ -10,9 +10,9 @@ import (
 	"sort"
 	"time"
 
+	"github.com/spiffe/spike-sdk-go/config/env"
 	"github.com/spiffe/spike-sdk-go/kv"
 
-	"github.com/spiffe/spike/app/nexus/internal/env"
 	"github.com/spiffe/spike/app/nexus/internal/state/persist"
 )
 
@@ -77,7 +77,7 @@ func UpsertSecret(path string, values map[string]string) error {
 				UpdatedTime:    now,
 				CurrentVersion: 1,
 				OldestVersion:  1,
-				MaxVersions:    env.MaxSecretVersions(), // Get from the environment
+				MaxVersions:    env.MaxSecretVersionsVal(), // Get from the environment
 			},
 		}
 	} else {

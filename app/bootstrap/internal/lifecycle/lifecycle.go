@@ -20,8 +20,6 @@ import (
 	k8sMeta "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
-
-	appEnv "github.com/spiffe/spike/app/bootstrap/internal/env"
 )
 
 const k8sTrue = "true"
@@ -43,14 +41,14 @@ func ShouldBootstrap() bool {
 	const fName = "bootstrap.shouldSkipBootstrap"
 
 	// Memory backend doesn't need bootstrap.
-	if appEnv.BackendStoreType() == appEnv.Memory {
+	if env.BackendStoreTypeVal() == env.Memory {
 		log.Log().Info(fName,
 			"message", "Skipping bootstrap for 'in memory' backend")
 		return false
 	}
 
 	// Lite backend doesn't need bootstrap.
-	if appEnv.BackendStoreType() == appEnv.Lite {
+	if env.BackendStoreTypeVal() == env.Lite {
 		log.Log().Info(fName,
 			"message", "Skipping bootstrap for 'lite' backend")
 		return false
@@ -104,7 +102,7 @@ func ShouldBootstrap() bool {
 
 	cm, err := clientset.CoreV1().ConfigMaps(namespace).Get(
 		context.Background(),
-		appEnv.ConfigMapName(),
+		env.BootstrapConfigMapNameVal(),
 		k8sMeta.GetOptions{},
 	)
 	if err != nil {
@@ -177,7 +175,7 @@ func MarkBootstrapComplete() error {
 	// Create ConfigMap marking bootstrap as complete
 	cm := &k8s.ConfigMap{
 		ObjectMeta: k8sMeta.ObjectMeta{
-			Name: appEnv.ConfigMapName(),
+			Name: env.BootstrapConfigMapNameVal(),
 		},
 		Data: map[string]string{
 			"bootstrap-completed": k8sTrue,

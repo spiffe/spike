@@ -9,19 +9,19 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/spiffe/spike-sdk-go/config/env"
 	"github.com/spiffe/spike-sdk-go/log"
 	"github.com/spiffe/spike-sdk-go/security/mem"
 	"github.com/spiffe/spike-sdk-go/spiffe"
 
 	"github.com/spiffe/spike/app/spike/internal/cmd"
-	"github.com/spiffe/spike/app/spike/internal/env"
 )
 
 const appName = "SPIKE"
 
 func main() {
 	if !mem.Lock() {
-		if env.ShowMemoryWarning() {
+		if env.ShowMemoryWarningVal() {
 			if _, err := fmt.Fprintln(os.Stderr, `
 Memory locking is not available.
 Consider disabling swap to enhance security.
