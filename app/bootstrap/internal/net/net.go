@@ -53,11 +53,11 @@ func Payload(share secretsharing.Share, keeperID string) []byte {
 	return md
 }
 
-// Post sends an HTTP POST request to the specified URL using the provided
+// PutShardContributionRequest sends an HTTP POST request to the specified URL using the provided
 // client and payload data. The function is designed for sending shard
 // contribution requests to keepers in a secure manner. It will terminate the
 // program with exit code 1 if the POST request fails.
-func Post(client *http.Client, u string, md []byte, keeperID string) error {
+func PutShardContributionRequest(client *http.Client, u string, md []byte, keeperID string) error {
 	const fName = "post"
 
 	log.Log().Info(fName, "payload", fmt.Sprintf("%x", sha256.Sum256(md)))
@@ -93,11 +93,11 @@ func VerifyPayload(nonce, ciphertext []byte) []byte {
 	return md
 }
 
-// PostVerify sends an HTTP POST request with verification data to SPIKE Nexus
+// PostBootstrapVerifyRequest sends an HTTP POST request with verification data to SPIKE Nexus
 // and returns the verification response. It logs the request hash for
 // debugging purposes. The function returns the response body and any error
 // encountered during the request.
-func PostVerify(
+func PostBootstrapVerifyRequest(
 	client *http.Client, u string, md []byte,
 ) ([]byte, error) {
 	const fName = "postVerify"

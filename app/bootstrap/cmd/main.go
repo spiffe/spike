@@ -95,7 +95,7 @@ func main() {
 			log.Log().Info(fName, "message", "retry:"+time.Now().String())
 
 			// TODO: goes to SDK.
-			err := net.Post(
+			err := net.PutShardContributionRequest(
 				tls.CreateMTLSClientForKeeper(src),
 				url.KeeperContributeEndpoint(keeperAPIRoot),
 				net.Payload(
@@ -182,7 +182,8 @@ func main() {
 	nexusClient := tls.CreateMTLSClientForNexus(src)
 	verifyPayload := net.VerifyPayload(nonce, ciphertext)
 
-	responseBody, err := net.PostVerify(nexusClient, verifyURL, verifyPayload)
+	// TODO: Nexus may not initialize immediately; do this in a backoff
+	responseBody, err := net.PostBootstrapVerifyRequest(nexusClient, verifyURL, verifyPayload)
 	if err != nil {
 		log.FatalLn(fName, "message",
 			"Failed to send verification request", "err", err.Error())
