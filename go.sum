@@ -114,6 +114,8 @@ github.com/spiffe/go-spiffe/v2 v2.6.0 h1:l+DolpxNWYgruGQVV0xsfeya3CsC7m8iBzDnMps
 github.com/spiffe/go-spiffe/v2 v2.6.0/go.mod h1:gm2SeUoMZEtpnzPNs2Csc0D/gX33k1xIx7lEzqblHEs=
 github.com/spiffe/spike-sdk-go v0.10.2 h1:/FmPbMBiCkMEIaVTyYvyyuZuMrQO7emWBO0NvDW3T5U=
 github.com/spiffe/spike-sdk-go v0.10.2/go.mod h1:fZaK0tBhBK2BS5XmOsixee3+HneAjmgRy/HbZTBaMvs=
+github.com/spiffe/spike-sdk-go v0.12.0/go.mod h1:Xmp460aknS+DO9MUWQzLItzUlttRRf+YXJnvEgwHiXY=
+github.com/spiffe/spike-sdk-go v0.12.1/go.mod h1:Xmp460aknS+DO9MUWQzLItzUlttRRf+YXJnvEgwHiXY=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
 github.com/stretchr/objx v0.4.0/go.mod h1:YvHI0jy2hoMjB+UWwv71VJQ9isScKT/TqJzVSSt89Yw=
 github.com/stretchr/objx v0.5.0/go.mod h1:Yh+to48EsGEfYuaHDzXPcE3xhTkx73EhmCGUpEOglKo=

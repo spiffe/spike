@@ -67,7 +67,7 @@ func InitializeBackingStoreFromKeepers(source *workloadapi.X509Source) {
 	)
 	defer cancel()
 
-	_, err := retry.Do(ctx, func() (bool, error) {
+	_, err := retry.Forever(ctx, func() (bool, error) {
 		log.Log().Info(fName, "message", "retry:"+time.Now().String())
 
 		initSuccessful := iterateKeepersAndInitializeState(
@@ -83,12 +83,7 @@ func InitializeBackingStoreFromKeepers(source *workloadapi.X509Source) {
 			"keepersSoFar", len(successfulKeeperShards),
 		)
 		return false, ErrRecoveryRetry
-	},
-		retry.WithBackOffOptions(
-			retry.WithMaxInterval(env.RecoveryOperationMaxIntervalVal()),
-			retry.WithMaxElapsedTime(0), // Retry forever.
-		),
-	)
+	})
 
 	// This should never happen since the above loop retries forever:
 	if err != nil {
