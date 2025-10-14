@@ -123,13 +123,13 @@ func TestShardURL_InvalidInput(t *testing.T) {
 }
 
 func TestUnmarshalShardResponse_ValidInput(t *testing.T) {
-	// Create a valid ShardResponse for testing
+	// Create a valid ShardGetResponse for testing
 	testShard := &[crypto.AES256KeySize]byte{}
 	for i := range testShard {
 		testShard[i] = byte(i % 256)
 	}
 
-	validResponse := reqres.ShardResponse{
+	validResponse := reqres.ShardGetResponse{
 		Shard: testShard,
 	}
 
@@ -202,9 +202,9 @@ func TestUnmarshalShardResponse_InvalidInput(t *testing.T) {
 }
 
 func TestShardResponse_NetworkDependentFunction(t *testing.T) {
-	// The shardResponse function makes network calls and requires SPIFFE infrastructure
+	// The ShardGetResponse function makes network calls and requires SPIFFE infrastructure
 	// We skip this test since it would hang or fail without proper setup
-	t.Skip("Skipping shardResponse test - requires SPIFFE source and network connectivity")
+	t.Skip("Skipping ShardGetResponse test - requires SPIFFE source and network connectivity")
 
 	// Note: To properly test this function, you would need to:
 	// 1. Mock the network.CreateMTLSClientWithPredicate function
@@ -215,8 +215,8 @@ func TestShardResponse_NetworkDependentFunction(t *testing.T) {
 }
 
 func TestShardRequestMarshaling(t *testing.T) {
-	// Test the ShardRequest marshaling used in shardResponse
-	shardRequest := reqres.ShardRequest{}
+	// Test the ShardRequest marshaling used in ShardGetResponse
+	shardRequest := reqres.ShardGetRequest{}
 
 	data, err := json.Marshal(shardRequest)
 	if err != nil {
@@ -228,7 +228,7 @@ func TestShardRequestMarshaling(t *testing.T) {
 	}
 
 	// Test that it can be unmarshaled back
-	var unmarshaled reqres.ShardRequest
+	var unmarshaled reqres.ShardGetRequest
 	err = json.Unmarshal(data, &unmarshaled)
 	if err != nil {
 		t.Errorf("Failed to unmarshal ShardRequest: %v", err)
@@ -239,18 +239,18 @@ func TestShardRequestMarshaling(t *testing.T) {
 }
 
 func TestShardResponseStructure(t *testing.T) {
-	// Test ShardResponse structure operations
+	// Test ShardGetResponse structure operations
 	tests := []struct {
 		name        string
-		setupShard  func() *reqres.ShardResponse
+		setupShard  func() *reqres.ShardGetResponse
 		expectValid bool
 	}{
 		{
 			name: "valid shard response",
-			setupShard: func() *reqres.ShardResponse {
+			setupShard: func() *reqres.ShardGetResponse {
 				testData := &[crypto.AES256KeySize]byte{}
 				testData[0] = 42
-				return &reqres.ShardResponse{
+				return &reqres.ShardGetResponse{
 					Shard: testData,
 				}
 			},
@@ -258,8 +258,8 @@ func TestShardResponseStructure(t *testing.T) {
 		},
 		{
 			name: "nil shard response",
-			setupShard: func() *reqres.ShardResponse {
-				return &reqres.ShardResponse{
+			setupShard: func() *reqres.ShardGetResponse {
+				return &reqres.ShardGetResponse{
 					Shard: nil,
 				}
 			},
@@ -267,8 +267,8 @@ func TestShardResponseStructure(t *testing.T) {
 		},
 		{
 			name: "zero shard response",
-			setupShard: func() *reqres.ShardResponse {
-				return &reqres.ShardResponse{
+			setupShard: func() *reqres.ShardGetResponse {
+				return &reqres.ShardGetResponse{
 					Shard: &[crypto.AES256KeySize]byte{}, // All zeros
 				}
 			},
@@ -296,7 +296,7 @@ func TestShardResponseStructure(t *testing.T) {
 					return
 				}
 
-				var unmarshaled reqres.ShardResponse
+				var unmarshaled reqres.ShardGetResponse
 				err = json.Unmarshal(data, &unmarshaled)
 				if err != nil {
 					t.Errorf("Failed to unmarshal response: %v", err)

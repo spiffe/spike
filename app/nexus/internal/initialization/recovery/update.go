@@ -149,7 +149,7 @@ func sendShardsToKeepers(
 			continue
 		}
 
-		scr := reqres.ShardContributionRequest{}
+		scr := reqres.ShardPutRequest{}
 
 		shard := new([crypto.AES256KeySize]byte)
 		// Security: shard is intentionally binary (instead of string) for

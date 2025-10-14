@@ -30,7 +30,7 @@ import (
 func BroadcastKeepers(ctx context.Context, api *spike.API) {
 	const fName = "BroadcastKeepers"
 
-	for keeperID, _ := range env.KeepersVal() {
+	for keeperID := range env.KeepersVal() {
 		keeperShare := state.KeeperShare(state.RootShares(), keeperID)
 
 		log.Log().Info(fName, "keeper ID", keeperID)

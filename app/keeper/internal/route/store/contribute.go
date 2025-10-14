@@ -61,16 +61,16 @@ func RouteContribute(
 	}
 
 	request := net.HandleRequest[
-		reqres.ShardContributionRequest, reqres.ShardContributionResponse](
+		reqres.ShardPutRequest, reqres.ShardPutResponse](
 		requestBody, w,
-		reqres.ShardContributionResponse{Err: data.ErrBadInput},
+		reqres.ShardPutResponse{Err: data.ErrBadInput},
 	)
 	if request == nil {
 		return errors.ErrParseFailure
 	}
 
 	if request.Shard == nil {
-		responseBody := net.MarshalBody(reqres.ShardContributionResponse{
+		responseBody := net.MarshalBody(reqres.ShardPutResponse{
 			Err: data.ErrBadInput,
 		}, w)
 		net.Respond(http.StatusBadRequest, responseBody, w)
@@ -87,7 +87,7 @@ func RouteContribute(
 	// indicate invalid input. Since Shard is a fixed-length array in the request,
 	// clients must send meaningful non-zero data.
 	if mem.Zeroed32(request.Shard) {
-		responseBody := net.MarshalBody(reqres.ShardContributionResponse{
+		responseBody := net.MarshalBody(reqres.ShardPutResponse{
 			Err: data.ErrBadInput,
 		}, w)
 		net.Respond(http.StatusBadRequest, responseBody, w)
@@ -97,7 +97,7 @@ func RouteContribute(
 	// `state.SetShard` copies the shard. We can safely reset this one at [1].
 	state.SetShard(request.Shard)
 
-	responseBody := net.MarshalBody(reqres.ShardContributionResponse{}, w)
+	responseBody := net.MarshalBody(reqres.ShardPutResponse{}, w)
 	net.Respond(http.StatusOK, responseBody, w)
 
 	log.Log().Info(fName, "message", data.ErrSuccess)

@@ -1122,7 +1122,7 @@
       useful for integration tests.
     </issue>
     <issue>
-      type ShardResponse struct {
+      type ShardGetResponse struct {
       error field should be optional.
     </issue>
     <issue>

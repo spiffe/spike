@@ -24,7 +24,7 @@ func TestShardContributionRequestMarshaling(t *testing.T) {
 		validShard[i] = byte(i % 256)
 	}
 
-	scr := reqres.ShardContributionRequest{}
+	scr := reqres.ShardPutRequest{}
 	shard := new([crypto.AES256KeySize]byte)
 	copy(shard[:], validShard)
 	scr.Shard = shard
@@ -32,7 +32,7 @@ func TestShardContributionRequestMarshaling(t *testing.T) {
 	// Test marshaling
 	payload, err := json.Marshal(scr)
 	if err != nil {
-		t.Fatalf("Failed to marshal ShardContributionRequest: %v", err)
+		t.Fatalf("Failed to marshal ShardPutRequest: %v", err)
 	}
 
 	if len(payload) == 0 {
@@ -40,7 +40,7 @@ func TestShardContributionRequestMarshaling(t *testing.T) {
 	}
 
 	// Test unmarshaling
-	var unmarshaled reqres.ShardContributionRequest
+	var unmarshaled reqres.ShardPutRequest
 	err = json.Unmarshal(payload, &unmarshaled)
 	if err != nil {
 		t.Fatalf("Failed to unmarshal payload: %v", err)
@@ -144,16 +144,16 @@ func TestPostHTTPInteraction(t *testing.T) {
 }
 
 func TestShardContributionRequestStructure(t *testing.T) {
-	// Test that we can create and work with ShardContributionRequest
-	scr := reqres.ShardContributionRequest{}
+	// Test that we can create and work with ShardPutRequest
+	scr := reqres.ShardPutRequest{}
 
 	// Test with nil shard (should be valid)
 	payload, err := json.Marshal(scr)
 	if err != nil {
-		t.Fatalf("Failed to marshal empty ShardContributionRequest: %v", err)
+		t.Fatalf("Failed to marshal empty ShardPutRequest: %v", err)
 	}
 
-	var unmarshaled reqres.ShardContributionRequest
+	var unmarshaled reqres.ShardPutRequest
 	err = json.Unmarshal(payload, &unmarshaled)
 	if err != nil {
 		t.Fatalf("Failed to unmarshal empty payload: %v", err)
@@ -168,7 +168,7 @@ func TestShardContributionRequestStructure(t *testing.T) {
 
 	payload, err = json.Marshal(scr)
 	if err != nil {
-		t.Fatalf("Failed to marshal ShardContributionRequest with shard: %v", err)
+		t.Fatalf("Failed to marshal ShardPutRequest with shard: %v", err)
 	}
 
 	err = json.Unmarshal(payload, &unmarshaled)

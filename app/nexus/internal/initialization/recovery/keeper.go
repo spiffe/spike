@@ -72,7 +72,7 @@ func iterateKeepersAndInitializeState(
 			continue
 		}
 
-		data := shardResponse(source, u)
+		data := ShardGetResponse(source, u)
 		if len(data) == 0 {
 			continue
 		}

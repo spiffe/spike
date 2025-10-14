@@ -20,7 +20,7 @@ import (
 // Payload marshals a secret sharing contribution into a JSON payload for
 // transmission to a Keeper. It takes a secret sharing share and the target
 // Keeper ID, validates the contribution is exactly 32 bytes, and returns the
-// marshaled ShardContributionRequest as a byte slice. The function will
+// marshaled ShardPutRequest as a byte slice. The function will
 // terminate the program with exit code 1 if marshaling fails or if the
 // contribution length is invalid.
 func Payload(share secretsharing.Share, keeperID string) []byte {
@@ -38,7 +38,7 @@ func Payload(share secretsharing.Share, keeperID string) []byte {
 			"len", len(contribution), "keeper_id", keeperID)
 	}
 
-	scr := reqres.ShardContributionRequest{}
+	scr := reqres.ShardPutRequest{}
 	shard := new([crypto.AES256KeySize]byte)
 	copy(shard[:], contribution)
 	scr.Shard = shard
