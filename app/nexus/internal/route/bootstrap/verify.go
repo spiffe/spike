@@ -14,6 +14,7 @@ import (
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	apiErr "github.com/spiffe/spike-sdk-go/api/errors"
 	"github.com/spiffe/spike-sdk-go/log"
+	"github.com/spiffe/spike/app/nexus/internal/state/base"
 
 	"github.com/spiffe/spike/app/nexus/internal/state/persist"
 	"github.com/spiffe/spike/internal/journal"
@@ -97,6 +98,9 @@ func RouteVerify(
 	}
 
 	// Decrypt the ciphertext
+	fmt.Println("nonce", hex.EncodeToString(request.Nonce))
+	fmt.Println("ciphertext", hex.EncodeToString(request.Ciphertext))
+	fmt.Println("rootKey", hex.EncodeToString(base.RootKeyNoLock()[:]))
 	plaintext, err := c.Open(nil, request.Nonce, request.Ciphertext, nil)
 	if err != nil {
 		log.Log().Error(fName, "message", "decryption failed", "err",

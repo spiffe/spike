@@ -30,8 +30,11 @@ import (
 func BroadcastKeepers(ctx context.Context, api *spike.API) {
 	const fName = "BroadcastKeepers"
 
+	// Call this once! Every call to RootShares() will generate a new root key.
+	rs := state.RootShares()
+
 	for keeperID := range env.KeepersVal() {
-		keeperShare := state.KeeperShare(state.RootShares(), keeperID)
+		keeperShare := state.KeeperShare(rs, keeperID)
 
 		log.Log().Info(fName, "keeper ID", keeperID)
 

@@ -45,7 +45,7 @@ func routeWithBackingStore(a url.APIAction, p url.APIURL) net.Handler {
 		return cipher.RouteEncrypt
 	case a == url.ActionDefault && p == url.NexusCipherDecrypt:
 		return cipher.RouteDecrypt
-	case a == url.ActionDefault && p == "/v1/bootstrap/verify":
+	case a == url.ActionDefault && p == url.NexusBootstrapVerify:
 		return bootstrap.RouteVerify
 	default:
 		return net.Fallback

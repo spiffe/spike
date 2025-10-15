@@ -49,7 +49,7 @@ func main() {
 		fName, "FIPS 140.3 enabled", fips140.Enabled(),
 	)
 
-	// Panics if it cannot acquire source.
+	// Panics if it cannot acquire the source.
 	src := net.AcquireSource()
 
 	log.Log().Info(
@@ -71,8 +71,6 @@ func main() {
 	// encrypted payload and verifying the hash of the decrypted plaintext.
 	// Retries verification until successful.
 	net.VerifyInitialization(ctx, api)
-
-	// TODO: verify and contribute are too generic; maybe rename them in SDK.
 
 	// TODO: both verification and retry is done forever; we need an upper limit
 	// for these.

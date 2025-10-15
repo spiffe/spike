@@ -7,6 +7,7 @@ package state
 import (
 	"crypto/rand"
 	"strconv"
+	"sync"
 
 	"github.com/cloudflare/circl/group"
 	shamir "github.com/cloudflare/circl/secretsharing"
@@ -21,6 +22,8 @@ var (
 	// rootKeySeed stores the root key seed generated during initialization.
 	// It is kept in memory to allow encryption operations during bootstrap.
 	rootKeySeed [crypto.AES256KeySize]byte
+	// rootKeySeedMu provides mutual exclusion for access to the root key seed.
+	rootKeySeedMu sync.RWMutex
 )
 
 // RootShares generates a set of Shamir secret shares from a cryptographically
@@ -34,6 +37,9 @@ var (
 // zeroing of sensitive data after use.
 func RootShares() []shamir.Share {
 	const fName = "rootShares"
+
+	rootKeySeedMu.Lock()
+	defer rootKeySeedMu.Unlock()
 
 	if _, err := rand.Read(rootKeySeed[:]); err != nil {
 		log.FatalLn(fName, "message", "key seed failure", "err", err.Error())
@@ -75,11 +81,14 @@ func RootShares() []shamir.Share {
 
 // RootKey returns a pointer to the root key seed used for encryption.
 // This key is generated when RootShares() is called and persists in memory
-// for the duration of the bootstrap process.
+// for the duration of the bootstrap process. This function acquires a read
+// lock to ensure thread-safe access to the root key seed.
 //
 // Returns:
 //   - *[32]byte: Pointer to the root key seed
 func RootKey() *[crypto.AES256KeySize]byte {
+	rootKeySeedMu.RLock()
+	defer rootKeySeedMu.RUnlock()
 	return &rootKeySeed
 }
 
