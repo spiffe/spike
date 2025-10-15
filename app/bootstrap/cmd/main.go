@@ -72,11 +72,6 @@ func main() {
 	// Retries verification until successful.
 	net.VerifyInitialization(ctx, api)
 
-	// TODO: both verification and retry is done forever; we need an upper limit
-	// for these.
-	// we can have a goroutine/channel that panic if this entire main thread
-	// does not complete within a given timeframe.
-
 	// Bootstrap verification is complete. Mark bootstrap as "done".
 
 	// Mark completion in Kubernetes

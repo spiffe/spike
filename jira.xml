@@ -41,6 +41,12 @@
       guide still works.
     </issue>
     <issue>
+      // TO: both verification and retry is done forever; we need an upper limit
+      // for these.
+      // we can have a goroutine/channel that panic if this entire main thread
+      // does not complete within a given timeframe.
+    </issue>
+    <issue>
       // TDO: both verification and retry is done forever; we need an upper limit
       // for these.
       // we can have a goroutine/channel that panic if this entire main thread
