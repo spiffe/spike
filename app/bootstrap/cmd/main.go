@@ -9,18 +9,12 @@ import (
 	"crypto/fips140"
 	"flag"
 	"fmt"
-	"time"
 
+	spike "github.com/spiffe/spike-sdk-go/api"
 	"github.com/spiffe/spike-sdk-go/log"
-	"github.com/spiffe/spike-sdk-go/retry"
-	"github.com/spiffe/spike-sdk-go/spiffe"
-	svid "github.com/spiffe/spike-sdk-go/spiffeid"
-
-	"github.com/spiffe/spike/app/bootstrap/internal/env"
-	"github.com/spiffe/spike/app/bootstrap/internal/lifecycle"
 	"github.com/spiffe/spike/app/bootstrap/internal/net"
-	"github.com/spiffe/spike/app/bootstrap/internal/state"
-	"github.com/spiffe/spike/app/bootstrap/internal/url"
+
+	"github.com/spiffe/spike/app/bootstrap/internal/lifecycle"
 	"github.com/spiffe/spike/internal/config"
 )
 
@@ -51,73 +45,34 @@ func main() {
 		return
 	}
 
-	src := net.Source()
-	defer spiffe.CloseSource(src)
-	sv, err := src.GetX509SVID()
-	if err != nil {
-		log.FatalLn(fName,
-			"message", "Failed to get X.509 SVID",
-			"err", err.Error())
-		log.FatalLn(fName, "message", "Failed to acquire SVID")
-		return
-	}
-
-	if !svid.IsBootstrap(sv.ID.String()) {
-		log.Log().Error(
-			"Authenticate: You need a 'bootstrap' SPIFFE ID to use this command.",
-		)
-		log.FatalLn(fName, "message", "Command not authorized")
-		return
-	}
-
 	log.Log().Info(
 		fName, "FIPS 140.3 enabled", fips140.Enabled(),
 	)
+
+	// Panics if it cannot acquire the source.
+	src := net.AcquireSource()
 
 	log.Log().Info(
 		fName, "message", "Sending shards to SPIKE Keeper instances...",
 	)
 
+	api := spike.NewWithSource(src)
+	defer api.Close()
+
 	ctx := context.Background()
 
-	for keeperID, keeperAPIRoot := range env.Keepers() {
-		log.Log().Info(fName, "keeper ID", keeperID)
-
-		_, err := retry.Do(ctx, func() (bool, error) {
-			log.Log().Info(fName, "message", "retry:"+time.Now().String())
-
-			err := net.Post(
-				net.MTLSClient(src),
-				url.KeeperEndpoint(keeperAPIRoot),
-				net.Payload(
-					state.KeeperShare(
-						state.RootShares(), keeperID),
-					keeperID,
-				),
-				keeperID,
-			)
-			if err != nil {
-				log.Log().Warn(fName, "message", "Failed to send shard. Will retry.")
-				return false, err
-			}
-
-			log.Log().Info(fName, "message", "Shard sent successfully.")
-			return true, nil
-		},
-			retry.WithBackOffOptions(
-				retry.WithMaxInterval(60*time.Second), // TODO: to env vars.
-				retry.WithMaxElapsedTime(0),           // Retry forever.
-			),
-		)
-
-		// This should never happen since the above loop retries forever:
-		if err != nil {
-			log.FatalLn(fName, "message", "Initialization failed", "err", err)
-		}
-
-	}
+	// Broadcast shards to the SPIKE keepers until all shards are
+	// dispatched successfully.
+	net.BroadcastKeepers(ctx, api)
 
 	log.Log().Info(fName, "message", "Sent shards to SPIKE Keeper instances.")
+
+	// Verify that SPIKE Nexus has been properly initialized by sending an
+	// encrypted payload and verifying the hash of the decrypted plaintext.
+	// Retries verification until successful.
+	net.VerifyInitialization(ctx, api)
+
+	// Bootstrap verification is complete. Mark bootstrap as "done".
 
 	// Mark completion in Kubernetes
 	if err := lifecycle.MarkBootstrapComplete(); err != nil {

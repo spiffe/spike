@@ -5,7 +5,8 @@
 package persist
 
 import (
-	"github.com/spiffe/spike/app/nexus/internal/env"
+	"github.com/spiffe/spike-sdk-go/config/env"
+
 	"github.com/spiffe/spike/app/nexus/internal/state/backend"
 	"github.com/spiffe/spike/app/nexus/internal/state/backend/memory"
 )
@@ -18,5 +19,5 @@ import (
 // persistence. This backend is suitable for testing or scenarios where
 // persistent storage is not required.
 func initializeInMemoryBackend() backend.Backend {
-	return memory.NewInMemoryStore(createCipher(), env.MaxSecretVersions())
+	return memory.NewInMemoryStore(createCipher(), env.MaxSecretVersionsVal())
 }

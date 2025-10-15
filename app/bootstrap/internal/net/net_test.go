@@ -24,7 +24,7 @@ func TestShardContributionRequestMarshaling(t *testing.T) {
 		validShard[i] = byte(i % 256)
 	}
 
-	scr := reqres.ShardContributionRequest{}
+	scr := reqres.ShardPutRequest{}
 	shard := new([crypto.AES256KeySize]byte)
 	copy(shard[:], validShard)
 	scr.Shard = shard
@@ -32,7 +32,7 @@ func TestShardContributionRequestMarshaling(t *testing.T) {
 	// Test marshaling
 	payload, err := json.Marshal(scr)
 	if err != nil {
-		t.Fatalf("Failed to marshal ShardContributionRequest: %v", err)
+		t.Fatalf("Failed to marshal ShardPutRequest: %v", err)
 	}
 
 	if len(payload) == 0 {
@@ -40,7 +40,7 @@ func TestShardContributionRequestMarshaling(t *testing.T) {
 	}
 
 	// Test unmarshaling
-	var unmarshaled reqres.ShardContributionRequest
+	var unmarshaled reqres.ShardPutRequest
 	err = json.Unmarshal(payload, &unmarshaled)
 	if err != nil {
 		t.Fatalf("Failed to unmarshal payload: %v", err)
@@ -128,13 +128,13 @@ func TestPostHTTPInteraction(t *testing.T) {
 
 			if tt.expectError {
 				// FIX-ME: after fixing Log.FatalLn and friends to panic,
-				// The Post function calls os.Exit(1) on error, which we can't easily test
+				// The PutShardContributionRequest function calls os.Exit(1) on error, which we can't easily test
 				// without significant refactoring. In a real scenario, you'd want to
 				// refactor the function to return errors instead of calling os.Exit.
 				t.Skip("Skipping test that would cause os.Exit - needs refactoring for testability")
 			} else {
 				// This should work without calling os.Exit
-				err := Post(server.Client(), server.URL, tt.payload, "test-keeper")
+				err := PutShardContributionRequest(server.Client(), server.URL, tt.payload, "test-keeper")
 				if err != nil {
 					return
 				}
@@ -144,16 +144,16 @@ func TestPostHTTPInteraction(t *testing.T) {
 }
 
 func TestShardContributionRequestStructure(t *testing.T) {
-	// Test that we can create and work with ShardContributionRequest
-	scr := reqres.ShardContributionRequest{}
+	// Test that we can create and work with ShardPutRequest
+	scr := reqres.ShardPutRequest{}
 
 	// Test with nil shard (should be valid)
 	payload, err := json.Marshal(scr)
 	if err != nil {
-		t.Fatalf("Failed to marshal empty ShardContributionRequest: %v", err)
+		t.Fatalf("Failed to marshal empty ShardPutRequest: %v", err)
 	}
 
-	var unmarshaled reqres.ShardContributionRequest
+	var unmarshaled reqres.ShardPutRequest
 	err = json.Unmarshal(payload, &unmarshaled)
 	if err != nil {
 		t.Fatalf("Failed to unmarshal empty payload: %v", err)
@@ -168,7 +168,7 @@ func TestShardContributionRequestStructure(t *testing.T) {
 
 	payload, err = json.Marshal(scr)
 	if err != nil {
-		t.Fatalf("Failed to marshal ShardContributionRequest with shard: %v", err)
+		t.Fatalf("Failed to marshal ShardPutRequest with shard: %v", err)
 	}
 
 	err = json.Unmarshal(payload, &unmarshaled)
@@ -197,7 +197,7 @@ func TestCryptoConstants(t *testing.T) {
 }
 
 func TestHTTPClientInteraction(t *testing.T) {
-	// Test HTTP client behavior that Post() relies on
+	// Test HTTP client behavior that PutShardContributionRequest() relies on
 	testPayload := []byte(`{"shard": "test data"}`)
 
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -221,7 +221,7 @@ func TestHTTPClientInteraction(t *testing.T) {
 	}))
 	defer server.Close()
 
-	// Test the successful HTTP POST (this mimics what Post() does internally)
+	// Test the successful HTTP POST (this mimics what PutShardContributionRequest() does internally)
 	client := server.Client()
 	req, err := http.NewRequest(http.MethodPost, server.URL, bytes.NewReader(testPayload))
 	if err != nil {

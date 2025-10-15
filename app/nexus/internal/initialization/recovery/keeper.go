@@ -8,11 +8,11 @@ import (
 	"strconv"
 
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
+	"github.com/spiffe/spike-sdk-go/config/env"
 	"github.com/spiffe/spike-sdk-go/crypto"
 	"github.com/spiffe/spike-sdk-go/log"
 	"github.com/spiffe/spike-sdk-go/security/mem"
 
-	"github.com/spiffe/spike/app/nexus/internal/env"
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 )
 
@@ -58,13 +58,13 @@ func iterateKeepersAndInitializeState(
 ) bool {
 	const fName = "iterateKeepersAndInitializeState"
 
-	if env.BackendStoreType() == env.Memory {
+	if env.BackendStoreTypeVal() == env.Memory {
 		log.Log().Warn(fName, "message", "In memory mode; skipping recovery")
 		// Assume successful initialization, since initialization is not needed.
 		return true
 	}
 
-	for keeperID, keeperAPIRoot := range env.Keepers() {
+	for keeperID, keeperAPIRoot := range env.KeepersVal() {
 		log.Log().Info(fName, "id", keeperID, "url", keeperAPIRoot)
 
 		u := shardURL(keeperAPIRoot)
@@ -72,7 +72,7 @@ func iterateKeepersAndInitializeState(
 			continue
 		}
 
-		data := shardResponse(source, u)
+		data := ShardGetResponse(source, u)
 		if len(data) == 0 {
 			continue
 		}
@@ -91,7 +91,7 @@ func iterateKeepersAndInitializeState(
 		}
 
 		successfulKeeperShards[keeperID] = res.Shard
-		if len(successfulKeeperShards) != env.ShamirThreshold() {
+		if len(successfulKeeperShards) != env.ShamirThresholdVal() {
 			continue
 		}
 

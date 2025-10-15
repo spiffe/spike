@@ -8,17 +8,15 @@ import (
 	"os"
 	"testing"
 
-	appEnv "github.com/spiffe/spike-sdk-go/config/env"
+	"github.com/spiffe/spike-sdk-go/config/env"
 	"github.com/spiffe/spike-sdk-go/crypto"
 	"github.com/spiffe/spike-sdk-go/security/mem"
-
-	"github.com/spiffe/spike/app/nexus/internal/env"
 )
 
 func TestInitialize_MemoryBackend_ValidKey(t *testing.T) {
-	withEnvironment(t, appEnv.NexusBackendStore, "memory", func() {
+	withEnvironment(t, env.NexusBackendStore, "memory", func() {
 		// Verify the environment is set correctly
-		if env.BackendStoreType() != env.Memory {
+		if env.BackendStoreTypeVal() != env.Memory {
 			t.Fatal("Expected Memory backend store type")
 		}
 
@@ -38,7 +36,7 @@ func TestInitialize_MemoryBackend_NilKey(t *testing.T) {
 
 	withEnvironment(t, "SPIKE_NEXUS_BACKEND_STORE", "memory", func() {
 		// Verify the environment is set correctly
-		if env.BackendStoreType() != env.Memory {
+		if env.BackendStoreTypeVal() != env.Memory {
 			t.Fatal("Expected Memory backend store type")
 		}
 
@@ -54,9 +52,9 @@ func TestInitialize_MemoryBackend_NilKey(t *testing.T) {
 }
 
 func TestInitialize_MemoryBackend_ZeroKey(t *testing.T) {
-	withEnvironment(t, appEnv.NexusBackendStore, "memory", func() {
+	withEnvironment(t, env.NexusBackendStore, "memory", func() {
 		// Verify the environment is set correctly
-		if env.BackendStoreType() != env.Memory {
+		if env.BackendStoreTypeVal() != env.Memory {
 			t.Fatal("Expected Memory backend store type")
 		}
 
@@ -74,9 +72,9 @@ func TestInitialize_NonMemoryBackend_ValidKey(t *testing.T) {
 	resetRootKey()
 	defer resetRootKey()
 
-	withEnvironment(t, appEnv.NexusBackendStore, "sqlite", func() {
+	withEnvironment(t, env.NexusBackendStore, "sqlite", func() {
 		// Verify the environment is set correctly
-		if env.BackendStoreType() != env.Sqlite {
+		if env.BackendStoreTypeVal() != env.Sqlite {
 			t.Fatal("Expected SQLite backend store type")
 		}
 
@@ -101,9 +99,9 @@ func TestInitialize_NonMemoryBackend_ValidKey(t *testing.T) {
 }
 
 func TestInitialize_NonMemoryBackend_NilKey(t *testing.T) {
-	withEnvironment(t, appEnv.NexusBackendStore, "sqlite", func() {
+	withEnvironment(t, env.NexusBackendStore, "sqlite", func() {
 		// Verify the environment is set correctly
-		if env.BackendStoreType() != env.Sqlite {
+		if env.BackendStoreTypeVal() != env.Sqlite {
 			t.Fatal("Expected SQLite backend store type")
 		}
 
@@ -114,9 +112,9 @@ func TestInitialize_NonMemoryBackend_NilKey(t *testing.T) {
 }
 
 func TestInitialize_NonMemoryBackend_ZeroKey(t *testing.T) {
-	withEnvironment(t, appEnv.NexusBackendStore, "lite", func() {
+	withEnvironment(t, env.NexusBackendStore, "lite", func() {
 		// Verify the environment is set correctly
-		if env.BackendStoreType() != env.Lite {
+		if env.BackendStoreTypeVal() != env.Lite {
 			t.Fatal("Expected Lite backend store type")
 		}
 
@@ -206,9 +204,9 @@ func TestInitialize_DifferentBackendTypes(t *testing.T) {
 			resetRootKey()
 			defer resetRootKey()
 
-			withEnvironment(t, appEnv.NexusBackendStore, bt.backendType, func() {
+			withEnvironment(t, env.NexusBackendStore, bt.backendType, func() {
 				// Verify the environment is set correctly
-				if env.BackendStoreType() != bt.envType {
+				if env.BackendStoreTypeVal() != bt.envType {
 					t.Fatalf("Expected %s backend store type", bt.name)
 				}
 
@@ -245,7 +243,7 @@ func TestInitialize_CallsSetRootKey(t *testing.T) {
 	resetRootKey()
 	defer resetRootKey()
 
-	withEnvironment(t, appEnv.NexusBackendStore, "sqlite", func() {
+	withEnvironment(t, env.NexusBackendStore, "sqlite", func() {
 		// Create a unique test key
 		testKey := createTestKeyWithPattern(0xAB)
 
@@ -274,7 +272,7 @@ func TestInitialize_KeyIndependence(t *testing.T) {
 	resetRootKey()
 	defer resetRootKey()
 
-	withEnvironment(t, appEnv.NexusBackendStore, "sqlite", func() {
+	withEnvironment(t, env.NexusBackendStore, "sqlite", func() {
 		// Create a test key
 		testKey := createTestKeyWithPattern(0x12)
 		originalFirstByte := testKey[0]
@@ -301,7 +299,7 @@ func TestInitialize_MemoryVersusNonMemoryBehavior(t *testing.T) {
 
 	// Test memory backend
 	resetRootKey()
-	withEnvironment(t, appEnv.NexusBackendStore, "memory", func() {
+	withEnvironment(t, env.NexusBackendStore, "memory", func() {
 		Initialize(nil) // Memory backend MUST use nil key with the new defensive approach
 		memoryResult := RootKeyZero()
 		if !memoryResult {
@@ -311,7 +309,7 @@ func TestInitialize_MemoryVersusNonMemoryBehavior(t *testing.T) {
 
 	// Test non-memory backend
 	resetRootKey()
-	withEnvironment(t, appEnv.NexusBackendStore, "sqlite", func() {
+	withEnvironment(t, env.NexusBackendStore, "sqlite", func() {
 		Initialize(testKey)
 		nonMemoryResult := RootKeyZero()
 		if nonMemoryResult {
@@ -325,12 +323,12 @@ func TestInitialize_MemoryVersusNonMemoryBehavior(t *testing.T) {
 
 func TestInitialize_EnvironmentVariableHandling(t *testing.T) {
 	// Test that the function properly reads environment variables
-	originalValue := os.Getenv(appEnv.NexusBackendStore)
+	originalValue := os.Getenv(env.NexusBackendStore)
 	defer func() {
 		if originalValue != "" {
-			_ = os.Setenv(appEnv.NexusBackendStore, originalValue)
+			_ = os.Setenv(env.NexusBackendStore, originalValue)
 		} else {
-			_ = os.Unsetenv(appEnv.NexusBackendStore)
+			_ = os.Unsetenv(env.NexusBackendStore)
 		}
 	}()
 
@@ -341,10 +339,10 @@ func TestInitialize_EnvironmentVariableHandling(t *testing.T) {
 			resetRootKey()
 			defer resetRootKey()
 
-			_ = os.Setenv(appEnv.NexusBackendStore, backendType)
+			_ = os.Setenv(env.NexusBackendStore, backendType)
 
 			// Verify the environment variable is read correctly
-			actualType := env.BackendStoreType()
+			actualType := env.BackendStoreTypeVal()
 			expectedType := env.StoreType(backendType)
 
 			if actualType != expectedType {
@@ -376,13 +374,13 @@ func TestInitialize_EnvironmentVariableHandling(t *testing.T) {
 // Benchmark tests
 func BenchmarkInitialize_MemoryBackend(b *testing.B) {
 	// Save and restore environment variable
-	original := os.Getenv(appEnv.NexusBackendStore)
-	_ = os.Setenv(appEnv.NexusBackendStore, "memory")
+	original := os.Getenv(env.NexusBackendStore)
+	_ = os.Setenv(env.NexusBackendStore, "memory")
 	defer func() {
 		if original != "" {
-			_ = os.Setenv(appEnv.NexusBackendStore, original)
+			_ = os.Setenv(env.NexusBackendStore, original)
 		} else {
-			_ = os.Unsetenv(appEnv.NexusBackendStore)
+			_ = os.Unsetenv(env.NexusBackendStore)
 		}
 	}()
 
@@ -395,13 +393,13 @@ func BenchmarkInitialize_MemoryBackend(b *testing.B) {
 
 func BenchmarkInitialize_NonMemoryBackend(b *testing.B) {
 	// Save and restore environment variable
-	original := os.Getenv(appEnv.NexusBackendStore)
-	_ = os.Setenv(appEnv.NexusBackendStore, "sqlite")
+	original := os.Getenv(env.NexusBackendStore)
+	_ = os.Setenv(env.NexusBackendStore, "sqlite")
 	defer func() {
 		if original != "" {
-			_ = os.Setenv(appEnv.NexusBackendStore, original)
+			_ = os.Setenv(env.NexusBackendStore, original)
 		} else {
-			_ = os.Unsetenv(appEnv.NexusBackendStore)
+			_ = os.Unsetenv(env.NexusBackendStore)
 		}
 	}()
 

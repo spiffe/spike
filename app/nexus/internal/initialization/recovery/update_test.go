@@ -149,20 +149,20 @@ func TestURLJoinPathForKeepers(t *testing.T) {
 }
 
 func TestShardContributionRequestStructure(t *testing.T) {
-	// Test the ShardContributionRequest structure used in sendShardsToKeepers
+	// Test the ShardPutRequest structure used in sendShardsToKeepers
 	tests := []struct {
 		name        string
-		setupShard  func() *reqres.ShardContributionRequest
+		setupShard  func() *reqres.ShardPutRequest
 		expectValid bool
 	}{
 		{
 			name: "valid shard contribution",
-			setupShard: func() *reqres.ShardContributionRequest {
+			setupShard: func() *reqres.ShardPutRequest {
 				testData := &[crypto.AES256KeySize]byte{}
 				for i := range testData {
 					testData[i] = byte(i % 256)
 				}
-				return &reqres.ShardContributionRequest{
+				return &reqres.ShardPutRequest{
 					Shard: testData,
 				}
 			},
@@ -170,8 +170,8 @@ func TestShardContributionRequestStructure(t *testing.T) {
 		},
 		{
 			name: "nil shard contribution",
-			setupShard: func() *reqres.ShardContributionRequest {
-				return &reqres.ShardContributionRequest{
+			setupShard: func() *reqres.ShardPutRequest {
+				return &reqres.ShardPutRequest{
 					Shard: nil,
 				}
 			},
@@ -179,8 +179,8 @@ func TestShardContributionRequestStructure(t *testing.T) {
 		},
 		{
 			name: "zero shard contribution",
-			setupShard: func() *reqres.ShardContributionRequest {
-				return &reqres.ShardContributionRequest{
+			setupShard: func() *reqres.ShardPutRequest {
+				return &reqres.ShardPutRequest{
 					Shard: &[crypto.AES256KeySize]byte{}, // All zeros
 				}
 			},
@@ -213,7 +213,7 @@ func TestShardContributionRequestStructure(t *testing.T) {
 				}
 
 				// Test unmarshaling back
-				var unmarshaled reqres.ShardContributionRequest
+				var unmarshaled reqres.ShardPutRequest
 				err = json.Unmarshal(data, &unmarshaled)
 				if err != nil {
 					t.Errorf("Failed to unmarshal request: %v", err)

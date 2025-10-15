@@ -10,10 +10,10 @@ import (
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	"github.com/spiffe/spike-sdk-go/api/errors"
+	"github.com/spiffe/spike-sdk-go/config/env"
 	"github.com/spiffe/spike-sdk-go/log"
 	"github.com/spiffe/spike-sdk-go/security/mem"
 
-	"github.com/spiffe/spike/app/nexus/internal/env"
 	"github.com/spiffe/spike/app/nexus/internal/initialization/recovery"
 	"github.com/spiffe/spike/internal/journal"
 	"github.com/spiffe/spike/internal/net"
@@ -81,7 +81,7 @@ func RouteRecover(
 		}
 	}()
 
-	if len(shards) < env.ShamirThreshold() {
+	if len(shards) < env.ShamirThresholdVal() {
 		log.Log().Error(fName, "message", "not enough shards. Exiting.")
 		return errors.ErrNotFound
 	}
@@ -122,7 +122,7 @@ func RouteRecover(
 		}
 
 		// Verify shard index is within valid range:
-		if idx < 1 || idx > env.ShamirShares() {
+		if idx < 1 || idx > env.ShamirSharesVal() {
 			log.Log().Error(fName, "message", "invalid index. Exiting.")
 			return errors.ErrInvalidInput
 		}

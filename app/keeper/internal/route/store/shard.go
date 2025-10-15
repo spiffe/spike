@@ -53,9 +53,9 @@ func RouteShard(
 	}
 
 	request := net.HandleRequest[
-		reqres.ShardRequest, reqres.ShardResponse](
+		reqres.ShardGetRequest, reqres.ShardGetResponse](
 		requestBody, w,
-		reqres.ShardResponse{Err: data.ErrBadInput},
+		reqres.ShardGetResponse{Err: data.ErrBadInput},
 	)
 	if request == nil {
 		return errors.ErrParseFailure
@@ -70,7 +70,7 @@ func RouteShard(
 	if mem.Zeroed32(sh) {
 		log.Log().Error(fName, "message", "No shard found")
 
-		responseBody := net.MarshalBody(reqres.ShardResponse{
+		responseBody := net.MarshalBody(reqres.ShardGetResponse{
 			Err: data.ErrNotFound,
 		}, w)
 		net.Respond(http.StatusNotFound, responseBody, w)
@@ -78,7 +78,7 @@ func RouteShard(
 		return errors.ErrNotFound
 	}
 
-	responseBody := net.MarshalBody(reqres.ShardResponse{
+	responseBody := net.MarshalBody(reqres.ShardGetResponse{
 		Shard: sh,
 	}, w)
 	// Security: Reset response body before function exits.

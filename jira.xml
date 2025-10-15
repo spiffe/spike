@@ -36,16 +36,50 @@
     </watch-list>
   </high-level-plan>
   <task-group for="v0.6.3">
-    <issue>
+    <issue waitingFor="upstreamHelmCharts">
       after helm-charts changes are merged, verify that the quickstart
       guide still works.
     </issue>
     <issue>
+      // TO: both verification and retry is done forever; we need an upper limit
+      // for these.
+      // we can have a goroutine/channel that panic if this entire main thread
+      // does not complete within a given timeframe.
+    </issue>
+    <issue>
+      // TDO: both verification and retry is done forever; we need an upper limit
+      // for these.
+      // we can have a goroutine/channel that panic if this entire main thread
+      // does not complete within a given timeframe.
+    </issue>
+    <issue>
+      SDK exponential retry unit tests are still flaky.
+      maybe create them from scratch.
+    </issue>
+    <issue>
+      create a list for what needs for 1.0 version; i.e. to move SPIKE
+      out of alpha and make it "ready for production use with a hint of caution"
+
+      SPIFFE Org already has standard requirements and a process for that.
+      Check it out.
+    </issue>
+    <issue>
+      Generate coverage reports for the SDK too.
+    </issue>
+    <issue waitingFor="upstreamHelmCharts">
       Go over entire documentation: There are places to update since
       we have helm charts updates.
     </issue>
-    <issue>
+    <issue status="assigned">
       make tests concurrent again.
+    </issue>
+    <issue>
+      const KeeperKeep APIURL = "/v1/store/keep"
+      const KeeperContribute APIURL = "/v1/store/contribute"
+      const KeeperShard APIURL = "/v1/store/shard"
+
+      ^ these are unused in the SDK, which may hint that whatever uses them
+      here may need to be SDK methods maybe.
     </issue>
     <issue>
       bootstrap verification:
@@ -148,6 +182,9 @@
     </issue>
   </task-group>
   <task-group for="v0.6.2">
+    <issue>
+      ensure bootstrap PoP workflow works with different trust domains too.
+    </issue>
     <issue>
       Since the architecture has changed a bit, a re-introduction to SPIKE
       demo video is due. But before that, update all the diagrams that need
@@ -405,6 +442,16 @@
 
       return &request
       }
+    </issue>
+    <issue>
+      retry.WithBackOffOptions(
+      retry.WithMaxInterval(60*time.Second), // to env vars.
+      retry.WithMaxElapsedTime(0),           // Retry forever.
+      ),
+    </issue>
+    <issue>
+      check how the progress of this is going:
+      https://github.com/spiffe/spike/issues/238
     </issue>
     <issue>
       path := "^tenants/demo/db/creds"
@@ -1087,7 +1134,7 @@
       useful for integration tests.
     </issue>
     <issue>
-      type ShardResponse struct {
+      type ShardGetResponse struct {
       error field should be optional.
     </issue>
     <issue>

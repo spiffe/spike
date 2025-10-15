@@ -216,6 +216,7 @@ if [ -z "$SPIKE_SKIP_KEEPER_INITIALIZATION" ]; then
   run_background "./hack/bare-metal/startup/start-keeper-3.sh"
 else
   echo "SPIKE_SKIP_KEEPER_INITIALIZATION is set, skipping Keeper instances."
+
 fi
 
 if [ -z "$SPIKE_SKIP_NEXUS_START" ]; then
@@ -225,22 +226,27 @@ if [ -z "$SPIKE_SKIP_NEXUS_START" ]; then
   run_background "./hack/bare-metal/startup/start-nexus.sh"
 else
   echo "SPIKE_SKIP_NEXUS_START is set, skipping Nexus start."
+  echo ""
 fi
 
+echo ""
 echo "Waiting before SPIKE Bootstrap..."
 sleep 5
+run_background ./hack/bare-metal/startup/bootstrap.sh
 
-./hack/bare-metal/startup/bootstrap.sh
-
+echo ""
 echo "Registering entries for the demo workload..."
 ./examples/consume-secrets/demo-register-entry.sh
 
+echo ""
 echo "Waiting a bit more for the entries to marinate..."
 sleep 5
 
+echo ""
 echo "Creating policies for the demo workload..."
 ./examples/consume-secrets/demo-create-policy.sh
 
+echo ""
 echo "Running demo workload to verify setup..."
 DEMO_OUTPUT=$(demo 2>&1)
 DEMO_EXIT_CODE=$?
@@ -266,6 +272,7 @@ echo "$DEMO_OUTPUT" | grep -q "username: SPIKE" || \
 
 echo "Demo workload verification passed."
 
+echo ""
 echo "Verifying policies..."
 POLICY_OUTPUT=$(spike policy list 2>&1)
 POLICY_EXIT_CODE=$?

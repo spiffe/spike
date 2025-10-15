@@ -14,30 +14,29 @@ import (
 	"testing"
 
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
-	appEnv "github.com/spiffe/spike-sdk-go/config/env"
+	"github.com/spiffe/spike-sdk-go/config/env"
 	"github.com/spiffe/spike-sdk-go/crypto"
 
-	"github.com/spiffe/spike/app/nexus/internal/env"
 	"github.com/spiffe/spike/app/nexus/internal/initialization/recovery"
 	"github.com/spiffe/spike/internal/journal"
 )
 
 func TestRouteRestore_MemoryMode(t *testing.T) {
 	// Save original environment variables
-	originalStore := os.Getenv(appEnv.NexusBackendStore)
+	originalStore := os.Getenv(env.NexusBackendStore)
 	defer func() {
 		if originalStore != "" {
-			_ = os.Setenv(appEnv.NexusBackendStore, originalStore)
+			_ = os.Setenv(env.NexusBackendStore, originalStore)
 		} else {
-			_ = os.Unsetenv(appEnv.NexusBackendStore)
+			_ = os.Unsetenv(env.NexusBackendStore)
 		}
 	}()
 
 	// Set to memory mode
-	_ = os.Setenv(appEnv.NexusBackendStore, "memory")
+	_ = os.Setenv(env.NexusBackendStore, "memory")
 
 	// Verify the environment is set correctly
-	if env.BackendStoreType() != env.Memory {
+	if env.BackendStoreTypeVal() != env.Memory {
 		t.Fatal("Expected Memory backend store type")
 	}
 
@@ -57,17 +56,17 @@ func TestRouteRestore_MemoryMode(t *testing.T) {
 
 func TestRouteRestore_InvalidRequestBody(t *testing.T) {
 	// Save original environment variables
-	originalStore := os.Getenv(appEnv.NexusBackendStore)
+	originalStore := os.Getenv(env.NexusBackendStore)
 	defer func() {
 		if originalStore != "" {
-			_ = os.Setenv(appEnv.NexusBackendStore, originalStore)
+			_ = os.Setenv(env.NexusBackendStore, originalStore)
 		} else {
-			_ = os.Unsetenv(appEnv.NexusBackendStore)
+			_ = os.Unsetenv(env.NexusBackendStore)
 		}
 	}()
 
 	// Set to non-memory mode
-	_ = os.Setenv(appEnv.NexusBackendStore, "sqlite")
+	_ = os.Setenv(env.NexusBackendStore, "sqlite")
 
 	// Create request with invalid/empty body
 	req := httptest.NewRequest(http.MethodPost, "/restore",
@@ -89,17 +88,17 @@ func TestRouteRestore_InvalidRequestBody(t *testing.T) {
 
 func TestRouteRestore_InvalidJSONBody(t *testing.T) {
 	// Save original environment variables
-	originalStore := os.Getenv(appEnv.NexusBackendStore)
+	originalStore := os.Getenv(env.NexusBackendStore)
 	defer func() {
 		if originalStore != "" {
-			_ = os.Setenv(appEnv.NexusBackendStore, originalStore)
+			_ = os.Setenv(env.NexusBackendStore, originalStore)
 		} else {
-			_ = os.Unsetenv(appEnv.NexusBackendStore)
+			_ = os.Unsetenv(env.NexusBackendStore)
 		}
 	}()
 
 	// Set to non-memory mode
-	_ = os.Setenv(appEnv.NexusBackendStore, "sqlite")
+	_ = os.Setenv(env.NexusBackendStore, "sqlite")
 
 	// Create a request with invalid JSON
 	invalidJSON := []byte("{invalid json}")
@@ -133,24 +132,24 @@ func TestRouteRestore_GuardValidationFailure(t *testing.T) {
 
 func TestRouteRestore_TooManyShards(t *testing.T) {
 	// Save original environment variables
-	originalStore := os.Getenv(appEnv.NexusBackendStore)
-	originalThreshold := os.Getenv(appEnv.NexusBackendStore)
+	originalStore := os.Getenv(env.NexusBackendStore)
+	originalThreshold := os.Getenv(env.NexusBackendStore)
 	defer func() {
 		if originalStore != "" {
-			_ = os.Setenv(appEnv.NexusBackendStore, originalStore)
+			_ = os.Setenv(env.NexusBackendStore, originalStore)
 		} else {
-			_ = os.Unsetenv(appEnv.NexusBackendStore)
+			_ = os.Unsetenv(env.NexusBackendStore)
 		}
 		if originalThreshold != "" {
-			_ = os.Setenv(appEnv.NexusShamirThreshold, originalThreshold)
+			_ = os.Setenv(env.NexusShamirThreshold, originalThreshold)
 		} else {
-			_ = os.Unsetenv(appEnv.NexusShamirThreshold)
+			_ = os.Unsetenv(env.NexusShamirThreshold)
 		}
 	}()
 
 	// Set environment
-	_ = os.Setenv(appEnv.NexusBackendStore, "sqlite")
-	_ = os.Setenv(appEnv.NexusShamirThreshold, "2")
+	_ = os.Setenv(env.NexusBackendStore, "sqlite")
+	_ = os.Setenv(env.NexusShamirThreshold, "2")
 
 	// Reset and pre-fill shards to exceed the threshold
 	resetShards()
@@ -190,24 +189,24 @@ func TestRouteRestore_TooManyShards(t *testing.T) {
 
 func TestRouteRestore_DuplicateShard(t *testing.T) {
 	// Save original environment variables
-	originalStore := os.Getenv(appEnv.NexusBackendStore)
-	originalThreshold := os.Getenv(appEnv.NexusShamirThreshold)
+	originalStore := os.Getenv(env.NexusBackendStore)
+	originalThreshold := os.Getenv(env.NexusShamirThreshold)
 	defer func() {
 		if originalStore != "" {
-			_ = os.Setenv(appEnv.NexusBackendStore, originalStore)
+			_ = os.Setenv(env.NexusBackendStore, originalStore)
 		} else {
-			_ = os.Unsetenv(appEnv.NexusBackendStore)
+			_ = os.Unsetenv(env.NexusBackendStore)
 		}
 		if originalThreshold != "" {
-			_ = os.Setenv(appEnv.NexusShamirThreshold, originalThreshold)
+			_ = os.Setenv(env.NexusShamirThreshold, originalThreshold)
 		} else {
-			_ = os.Unsetenv(appEnv.NexusShamirThreshold)
+			_ = os.Unsetenv(env.NexusShamirThreshold)
 		}
 	}()
 
 	// Set environment
-	_ = os.Setenv(appEnv.NexusBackendStore, "sqlite")
-	_ = os.Setenv(appEnv.NexusShamirThreshold, "3")
+	_ = os.Setenv(env.NexusBackendStore, "sqlite")
+	_ = os.Setenv(env.NexusShamirThreshold, "3")
 
 	// Reset and add one shard
 	resetShards()
@@ -253,16 +252,16 @@ func TestRouteRestore_SuccessfulShardAddition(t *testing.T) {
 func TestShardCollectionLogic(t *testing.T) {
 	// Test the core shard collection logic in isolation
 	// Save original environment variables
-	originalThreshold := os.Getenv(appEnv.NexusShamirThreshold)
+	originalThreshold := os.Getenv(env.NexusShamirThreshold)
 	defer func() {
 		if originalThreshold != "" {
-			_ = os.Setenv(appEnv.NexusShamirThreshold, originalThreshold)
+			_ = os.Setenv(env.NexusShamirThreshold, originalThreshold)
 		} else {
-			_ = os.Unsetenv(appEnv.NexusShamirThreshold)
+			_ = os.Unsetenv(env.NexusShamirThreshold)
 		}
 	}()
 
-	_ = os.Setenv(appEnv.NexusShamirThreshold, "3")
+	_ = os.Setenv(env.NexusShamirThreshold, "3")
 
 	tests := []struct {
 		name            string
@@ -310,7 +309,7 @@ func TestShardCollectionLogic(t *testing.T) {
 			// Test the logic
 			shardsMutex.RLock()
 			currentCount := len(shards)
-			threshold := env.ShamirThreshold()
+			threshold := env.ShamirThresholdVal()
 			shardsMutex.RUnlock()
 
 			// Simulate adding a new shard
@@ -385,16 +384,16 @@ func TestShardDuplicateDetection(t *testing.T) {
 func TestShardSecurityCleanup(t *testing.T) {
 	// Test that shards are properly cleaned up after restoration
 	// Save original environment variables
-	originalThreshold := os.Getenv(appEnv.NexusShamirThreshold)
+	originalThreshold := os.Getenv(env.NexusShamirThreshold)
 	defer func() {
 		if originalThreshold != "" {
-			_ = os.Setenv(appEnv.NexusShamirThreshold, originalThreshold)
+			_ = os.Setenv(env.NexusShamirThreshold, originalThreshold)
 		} else {
-			_ = os.Unsetenv(appEnv.NexusShamirThreshold)
+			_ = os.Unsetenv(env.NexusShamirThreshold)
 		}
 	}()
 
-	_ = os.Setenv(appEnv.NexusShamirThreshold, "2")
+	_ = os.Setenv(env.NexusShamirThreshold, "2")
 
 	// Reset and add shards that would trigger restoration
 	resetShards()
@@ -409,7 +408,7 @@ func TestShardSecurityCleanup(t *testing.T) {
 
 	// Simulate the cleanup logic from RouteRestore
 	shardsMutex.Lock()
-	if len(shards) == env.ShamirThreshold() {
+	if len(shards) == env.ShamirThresholdVal() {
 		// This simulates the security cleanup without calling the actual
 		// RestoreBackingStoreFromPilotShards which would require infrastructure
 		for i := range shards {
@@ -454,16 +453,16 @@ func TestConcurrentShardAccess(t *testing.T) {
 	resetShards()
 
 	// Save original environment variables
-	originalThreshold := os.Getenv(appEnv.NexusShamirThreshold)
+	originalThreshold := os.Getenv(env.NexusShamirThreshold)
 	defer func() {
 		if originalThreshold != "" {
-			_ = os.Setenv(appEnv.NexusShamirThreshold, originalThreshold)
+			_ = os.Setenv(env.NexusShamirThreshold, originalThreshold)
 		} else {
-			_ = os.Unsetenv(appEnv.NexusShamirThreshold)
+			_ = os.Unsetenv(env.NexusShamirThreshold)
 		}
 	}()
 
-	_ = os.Setenv(appEnv.NexusShamirThreshold, "10")
+	_ = os.Setenv(env.NexusShamirThreshold, "10")
 
 	var wg sync.WaitGroup
 	numGoroutines := 5
@@ -514,16 +513,16 @@ func TestConcurrentShardAccess(t *testing.T) {
 func TestRestorationStatusCalculation(t *testing.T) {
 	// Test restoration status calculation logic
 	// Save original environment variables
-	originalThreshold := os.Getenv(appEnv.NexusShamirThreshold)
+	originalThreshold := os.Getenv(env.NexusShamirThreshold)
 	defer func() {
 		if originalThreshold != "" {
-			_ = os.Setenv(appEnv.NexusShamirThreshold, originalThreshold)
+			_ = os.Setenv(env.NexusShamirThreshold, originalThreshold)
 		} else {
-			_ = os.Unsetenv(appEnv.NexusShamirThreshold)
+			_ = os.Unsetenv(env.NexusShamirThreshold)
 		}
 	}()
 
-	_ = os.Setenv(appEnv.NexusShamirThreshold, "5")
+	_ = os.Setenv(env.NexusShamirThreshold, "5")
 
 	tests := []struct {
 		name              string
@@ -541,7 +540,7 @@ func TestRestorationStatusCalculation(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			threshold := env.ShamirThreshold()
+			threshold := env.ShamirThresholdVal()
 			remaining := threshold - tt.currentShardCount
 			if remaining < 0 {
 				remaining = 0
@@ -561,18 +560,18 @@ func TestRestorationStatusCalculation(t *testing.T) {
 
 func TestEnvironmentDependencies(t *testing.T) {
 	// Test environment variable dependencies
-	originalStore := os.Getenv(appEnv.NexusBackendStore)
-	originalThreshold := os.Getenv(appEnv.NexusShamirThreshold)
+	originalStore := os.Getenv(env.NexusBackendStore)
+	originalThreshold := os.Getenv(env.NexusShamirThreshold)
 	defer func() {
 		if originalStore != "" {
-			_ = os.Setenv(appEnv.NexusBackendStore, originalStore)
+			_ = os.Setenv(env.NexusBackendStore, originalStore)
 		} else {
-			_ = os.Unsetenv(appEnv.NexusBackendStore)
+			_ = os.Unsetenv(env.NexusBackendStore)
 		}
 		if originalThreshold != "" {
-			_ = os.Setenv(appEnv.NexusShamirThreshold, originalThreshold)
+			_ = os.Setenv(env.NexusShamirThreshold, originalThreshold)
 		} else {
-			_ = os.Unsetenv(appEnv.NexusShamirThreshold)
+			_ = os.Unsetenv(env.NexusShamirThreshold)
 		}
 	}()
 
@@ -588,7 +587,7 @@ func TestEnvironmentDependencies(t *testing.T) {
 
 	for _, backend := range testBackends {
 		_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", backend.value)
-		actual := env.BackendStoreType()
+		actual := env.BackendStoreTypeVal()
 		if actual != backend.expected {
 			t.Errorf("Expected backend type %s, got %s", backend.expected, actual)
 		}
@@ -605,8 +604,8 @@ func TestEnvironmentDependencies(t *testing.T) {
 	}
 
 	for _, threshold := range testThresholds {
-		_ = os.Setenv(appEnv.NexusShamirThreshold, threshold.value)
-		actual := env.ShamirThreshold()
+		_ = os.Setenv(env.NexusShamirThreshold, threshold.value)
+		actual := env.ShamirThresholdVal()
 		if actual != threshold.expected {
 			t.Errorf("Expected threshold %d, got %d", threshold.expected, actual)
 		}

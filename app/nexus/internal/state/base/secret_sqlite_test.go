@@ -12,10 +12,9 @@ import (
 	"reflect"
 	"testing"
 
-	appEnv "github.com/spiffe/spike-sdk-go/config/env"
+	"github.com/spiffe/spike-sdk-go/config/env"
 	"github.com/spiffe/spike-sdk-go/crypto"
 	"github.com/spiffe/spike-sdk-go/kv"
-	"github.com/spiffe/spike/app/nexus/internal/env"
 
 	"github.com/spiffe/spike/app/nexus/internal/state/persist"
 	"github.com/spiffe/spike/internal/config"
@@ -48,26 +47,26 @@ func cleanupSQLiteDatabase(t *testing.T) {
 // withSQLiteEnvironment sets up environment for SQLite testing
 func withSQLiteEnvironment(_ *testing.T, testFunc func()) {
 	// Save original environment variables
-	originalStore := os.Getenv(appEnv.NexusBackendStore)
-	originalSkipSchema := os.Getenv(appEnv.NexusDBSkipSchemaCreation)
+	originalStore := os.Getenv(env.NexusBackendStore)
+	originalSkipSchema := os.Getenv(env.NexusDBSkipSchemaCreation)
 
 	// Ensure cleanup happens
 	defer func() {
 		if originalStore != "" {
-			_ = os.Setenv(appEnv.NexusBackendStore, originalStore)
+			_ = os.Setenv(env.NexusBackendStore, originalStore)
 		} else {
-			_ = os.Unsetenv(appEnv.NexusBackendStore)
+			_ = os.Unsetenv(env.NexusBackendStore)
 		}
 		if originalSkipSchema != "" {
-			_ = os.Setenv(appEnv.NexusDBSkipSchemaCreation, originalSkipSchema)
+			_ = os.Setenv(env.NexusDBSkipSchemaCreation, originalSkipSchema)
 		} else {
-			_ = os.Unsetenv(appEnv.NexusDBSkipSchemaCreation)
+			_ = os.Unsetenv(env.NexusDBSkipSchemaCreation)
 		}
 	}()
 
 	// Set to SQLite backend and ensure schema creation
-	_ = os.Setenv(appEnv.NexusBackendStore, "sqlite")
-	_ = os.Unsetenv(appEnv.NexusDBSkipSchemaCreation)
+	_ = os.Setenv(env.NexusBackendStore, "sqlite")
+	_ = os.Unsetenv(env.NexusDBSkipSchemaCreation)
 
 	testFunc()
 }
@@ -77,9 +76,9 @@ func TestSQLiteSecret_NewSecret(t *testing.T) {
 		ctx := context.Background()
 
 		// Verify the environment is set correctly
-		if env.BackendStoreType() != env.Sqlite {
+		if env.BackendStoreTypeVal() != env.Sqlite {
 			t.Fatalf("Expected env.BackendStoreType()=Sqlite, got %v",
-				env.BackendStoreType())
+				env.BackendStoreTypeVal())
 		}
 
 		// Get the actual database pathPattern used by the system
@@ -475,22 +474,22 @@ func TestSQLiteSecret_EncryptionWithDifferentKeys(t *testing.T) {
 // Benchmark tests for SQLite
 func BenchmarkSQLiteUpsertSecret(b *testing.B) {
 	// Set environment variables for SQLite backend
-	originalBackend := os.Getenv(appEnv.NexusBackendStore)
-	originalSkipSchema := os.Getenv(appEnv.NexusDBSkipSchemaCreation)
+	originalBackend := os.Getenv(env.NexusBackendStore)
+	originalSkipSchema := os.Getenv(env.NexusDBSkipSchemaCreation)
 
-	_ = os.Setenv(appEnv.NexusBackendStore, "sqlite")
-	_ = os.Unsetenv(appEnv.NexusDBSkipSchemaCreation)
+	_ = os.Setenv(env.NexusBackendStore, "sqlite")
+	_ = os.Unsetenv(env.NexusDBSkipSchemaCreation)
 
 	defer func() {
 		if originalBackend != "" {
-			_ = os.Setenv(appEnv.NexusBackendStore, originalBackend)
+			_ = os.Setenv(env.NexusBackendStore, originalBackend)
 		} else {
-			_ = os.Unsetenv(appEnv.NexusBackendStore)
+			_ = os.Unsetenv(env.NexusBackendStore)
 		}
 		if originalSkipSchema != "" {
-			_ = os.Setenv(appEnv.NexusDBSkipSchemaCreation, originalSkipSchema)
+			_ = os.Setenv(env.NexusDBSkipSchemaCreation, originalSkipSchema)
 		} else {
-			_ = os.Unsetenv(appEnv.NexusDBSkipSchemaCreation)
+			_ = os.Unsetenv(env.NexusDBSkipSchemaCreation)
 		}
 	}()
 
@@ -528,22 +527,22 @@ func BenchmarkSQLiteUpsertSecret(b *testing.B) {
 
 func BenchmarkSQLiteGetSecret(b *testing.B) {
 	// Set environment variables for SQLite backend
-	originalBackend := os.Getenv(appEnv.NexusBackendStore)
-	originalSkipSchema := os.Getenv(appEnv.NexusDBSkipSchemaCreation)
+	originalBackend := os.Getenv(env.NexusBackendStore)
+	originalSkipSchema := os.Getenv(env.NexusDBSkipSchemaCreation)
 
-	_ = os.Setenv(appEnv.NexusBackendStore, "sqlite")
-	_ = os.Unsetenv(appEnv.NexusDBSkipSchemaCreation)
+	_ = os.Setenv(env.NexusBackendStore, "sqlite")
+	_ = os.Unsetenv(env.NexusDBSkipSchemaCreation)
 
 	defer func() {
 		if originalBackend != "" {
-			_ = os.Setenv(appEnv.NexusBackendStore, originalBackend)
+			_ = os.Setenv(env.NexusBackendStore, originalBackend)
 		} else {
-			_ = os.Unsetenv(appEnv.NexusBackendStore)
+			_ = os.Unsetenv(env.NexusBackendStore)
 		}
 		if originalSkipSchema != "" {
-			_ = os.Setenv(appEnv.NexusDBSkipSchemaCreation, originalSkipSchema)
+			_ = os.Setenv(env.NexusDBSkipSchemaCreation, originalSkipSchema)
 		} else {
-			_ = os.Unsetenv(appEnv.NexusDBSkipSchemaCreation)
+			_ = os.Unsetenv(env.NexusDBSkipSchemaCreation)
 		}
 	}()
 

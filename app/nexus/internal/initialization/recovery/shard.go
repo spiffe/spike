@@ -31,15 +31,15 @@ func shardURL(keeperAPIRoot string) string {
 	return u
 }
 
-func shardResponse(source *workloadapi.X509Source, u string) []byte {
-	const fName = "shardResponse"
+func ShardGetResponse(source *workloadapi.X509Source, u string) []byte {
+	const fName = "ShardGetResponse"
 
 	if source == nil {
 		log.Log().Warn(fName, "message", "Source is nil")
 		return []byte{}
 	}
 
-	shardRequest := reqres.ShardRequest{}
+	shardRequest := reqres.ShardGetRequest{}
 	md, err := json.Marshal(shardRequest)
 	if err != nil {
 		log.Log().Warn(fName,
@@ -76,10 +76,10 @@ func shardResponse(source *workloadapi.X509Source, u string) []byte {
 	return data
 }
 
-func unmarshalShardResponse(data []byte) *reqres.ShardResponse {
+func unmarshalShardResponse(data []byte) *reqres.ShardGetResponse {
 	const fName = "unmarshalShardResponse"
 
-	var res reqres.ShardResponse
+	var res reqres.ShardGetResponse
 	err := json.Unmarshal(data, &res)
 	if err != nil {
 		log.Log().Info(fName, "message",

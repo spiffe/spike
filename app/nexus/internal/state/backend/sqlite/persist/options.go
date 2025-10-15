@@ -7,7 +7,7 @@ package persist
 import (
 	"time"
 
-	"github.com/spiffe/spike/app/nexus/internal/env"
+	"github.com/spiffe/spike-sdk-go/config/env"
 )
 
 // Options defines SQLite-specific configuration options
@@ -42,10 +42,10 @@ func DefaultOptions() *Options {
 	return &Options{
 		DataDir:         ".data",
 		DatabaseFile:    "spike.db",
-		JournalMode:     env.DatabaseJournalMode(),
-		BusyTimeoutMs:   env.DatabaseBusyTimeoutMs(),
-		MaxOpenConns:    env.DatabaseMaxOpenConns(),
-		MaxIdleConns:    env.DatabaseMaxIdleConns(),
-		ConnMaxLifetime: env.DatabaseConnMaxLifetimeSec(),
+		JournalMode:     env.DatabaseJournalModeVal(),
+		BusyTimeoutMs:   env.DatabaseBusyTimeoutMsVal(),
+		MaxOpenConns:    env.DatabaseMaxOpenConnsVal(),
+		MaxIdleConns:    env.DatabaseMaxIdleConnsVal(),
+		ConnMaxLifetime: env.DatabaseConnMaxLifetimeSecVal(),
 	}
 }

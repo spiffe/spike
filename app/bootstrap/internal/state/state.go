@@ -7,14 +7,23 @@ package state
 import (
 	"crypto/rand"
 	"strconv"
+	"sync"
 
 	"github.com/cloudflare/circl/group"
 	shamir "github.com/cloudflare/circl/secretsharing"
+	"github.com/spiffe/spike-sdk-go/config/env"
 	"github.com/spiffe/spike-sdk-go/crypto"
 	"github.com/spiffe/spike-sdk-go/log"
 
-	"github.com/spiffe/spike/app/bootstrap/internal/env"
 	"github.com/spiffe/spike/app/bootstrap/internal/validation"
+)
+
+var (
+	// rootKeySeed stores the root key seed generated during initialization.
+	// It is kept in memory to allow encryption operations during bootstrap.
+	rootKeySeed [crypto.AES256KeySize]byte
+	// rootKeySeedMu provides mutual exclusion for access to the root key seed.
+	rootKeySeedMu sync.RWMutex
 )
 
 // RootShares generates a set of Shamir secret shares from a cryptographically
@@ -29,15 +38,17 @@ import (
 func RootShares() []shamir.Share {
 	const fName = "rootShares"
 
-	var rootKeySeed [crypto.AES256KeySize]byte
+	rootKeySeedMu.Lock()
+	defer rootKeySeedMu.Unlock()
+
 	if _, err := rand.Read(rootKeySeed[:]); err != nil {
 		log.FatalLn(fName, "message", "key seed failure", "err", err.Error())
 	}
 
 	// Initialize parameters
 	g := group.P256
-	t := uint(env.ShamirThreshold() - 1) // Need t+1 shares to reconstruct
-	n := uint(env.ShamirShares())        // Total number of shares
+	t := uint(env.ShamirThresholdVal() - 1) // Need t+1 shares to reconstruct
+	n := uint(env.ShamirSharesVal())        // Total number of shares
 
 	log.Log().Info(fName, "t", t, "n", n)
 
@@ -66,6 +77,19 @@ func RootShares() []shamir.Share {
 
 	log.Log().Info(fName, "message", "Successfully generated shards.")
 	return rs
+}
+
+// RootKey returns a pointer to the root key seed used for encryption.
+// This key is generated when RootShares() is called and persists in memory
+// for the duration of the bootstrap process. This function acquires a read
+// lock to ensure thread-safe access to the root key seed.
+//
+// Returns:
+//   - *[32]byte: Pointer to the root key seed
+func RootKey() *[crypto.AES256KeySize]byte {
+	rootKeySeedMu.RLock()
+	defer rootKeySeedMu.RUnlock()
+	return &rootKeySeed
 }
 
 // KeeperShare finds and returns the secret share corresponding to a specific
