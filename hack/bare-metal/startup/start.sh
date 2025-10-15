@@ -6,14 +6,25 @@
 
 # This is a helper script that establishes the following tasks:
 #
-# 0. Build the binaries for the demo app, SPIKE Keeper, and SPIKE Nexus.
-# 1. Start the SPIRE server as a background process.
-# 2. Generate an agent token.
-# 3. Establish trust between the SPIRE server and SPIRE agent.
-# 4. Start the SPIRE agent as a background process.
-# 5. Register the SPIRE entries for SPIKE Keeper and SPIKE Nexus.
-# 6. Start the SPIKE Keeper as a background process.
-# 7. Start the SPIKE Nexus as a background process.
+# 0. Verify that spire.spike.ist domain resolves.
+# 1. Check for required SPIKE binaries in PATH.
+# 2. Clear existing data from previous runs.
+# 3. Build the binaries for the demo app, SPIKE Keeper, SPIKE Nexus, SPIKE
+#    Bootstrap, and SPIKE Pilot.
+# 4. Start the SPIRE server as a background process.
+# 5. Generate a SPIRE agent token.
+# 6. Establish trust between the SPIRE server and SPIRE agent.
+# 7. Register the SPIRE entries for SPIKE Keeper, SPIKE Nexus, SPIKE
+#    Bootstrap, and the superuser (SU).
+# 8. Start the SPIRE agent as a background process.
+# 9. Start the SPIKE Keeper instances as background processes (unless using
+#    in-memory backend).
+# 10. Start the SPIKE Nexus as a background process.
+# 11. Start the SPIKE Bootstrap to initialize the system.
+# 12. Register SPIRE entries for the demo workload.
+# 13. Create policies for the demo workload.
+# 14. Run the demo workload to verify the setup.
+# 15. Verify that policies were created correctly.
 #
 # The script also sets up a trap to ensure that all background processes are
 # terminated when the script exits.
@@ -140,7 +151,6 @@ else
   echo "SPIKE_SKIP_SPIRE_SERVER_START is set, skipping SPIRE server start."
 fi
 
-
 # Run the registration scripts
 if [ -z "$SPIKE_SKIP_GENERATE_AGENT_TOKEN" ]; then
   echo "Generating agent token..."
@@ -216,7 +226,6 @@ if [ -z "$SPIKE_SKIP_KEEPER_INITIALIZATION" ]; then
   run_background "./hack/bare-metal/startup/start-keeper-3.sh"
 else
   echo "SPIKE_SKIP_KEEPER_INITIALIZATION is set, skipping Keeper instances."
-
 fi
 
 if [ -z "$SPIKE_SKIP_NEXUS_START" ]; then
