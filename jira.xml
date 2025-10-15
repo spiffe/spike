@@ -201,6 +201,8 @@
     </issue>
     <issue>
       demo: encryption as a service
+
+      ad that to the smoke tests too.
     </issue>
     <issue>
       demo: new architecture overview.
