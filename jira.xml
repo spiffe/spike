@@ -157,7 +157,10 @@
 
       Fix the document for chart-related things, if needed.
     </issue>
-
+    <issue>
+      fix bare metal instructions.
+      a lot of files have new paths now and the instructions will fail.
+    </issue>
     <issue>
       type GuardFunc[Req any] func(Req, http.ResponseWriter, *http.Request) error
 
@@ -177,6 +180,30 @@
 
       return &request
       }
+    </issue>
+    <issue>
+      SPIKE Documentation
+      Build the Project
+      Make sure you have a running local Docker daemon and execute the following:
+      make build-local
+      ^
+      missing documentation. this directive assumes that we have a local registry
+      at port 5000; so we need to start minikube as well.
+
+      will remove spike (feature/k8s)$ eval $(minikube -p minikube docker-env)
+      from docs.
+    </issue>
+    <issue>
+      Maybe have an env var for that configuration too.
+
+      Ensure SPIKE Pilot does not indefinitely hang up if SPIRE Nexus is not there
+      or there is a SPIFFEID/SVID issue. It should give up after a while and
+      print a warning that a connection to the api server could not be established
+      in a timely manner.
+
+      We had a timeout configurable somewhere; we can verify that and document
+      it in "best practices" section. The timeout was infinite by default,
+      I think.
     </issue>
     <issue>
       demo main.go:
@@ -392,6 +419,94 @@
       ciphertext := s.Cipher.Seal(nil, nonce, data, nil)
       return ciphertext, nil
       }
+    </issue>
+    <issue>
+      kind of thinking of a new mode for spike.... something like calling it spike lite or something.
+      Where we basically turn off the secrets and policy api, and add an endpoint for encrypt / decrypt.
+
+      2:51
+      we could still do a full s3 backend too, but for someone just wanting to handle things themselves, but have the
+      power of nexus/keepers for encrypting/decrypting things just stored somewhere, it might be a nice feature.
+      2:52
+      what do you thnk?
+
+      Volkan Ozcelik
+      5:09 PM
+      could be useful.
+
+      SPIKE Lite:
+      # get pilot's pem and key to test things out.
+      # this can be part of documentation too. to test the API directly, 1. extract the pem and key, and then do regular
+      curl.
+      curl -s -X POST --header "Content-Type:application/octet-stream" --data-binary "This is a test encryption"
+      https://spire-spike-nexus/v1/encrypt -k --cert /tmp/pem/svid.0.pem --key /tmp/pem/svid.0.key -o encrypted
+      curl -s -X POST --header "Content-Type:application/octet-stream" --data-binary @encrypted
+      https://spire-spike-nexus/v1/decrypt -k --cert /tmp/pem/svid.0.pem --key /tmp/pem/svid.0.key -o decrypted
+      cat decrypted; echo
+    </issue>
+    <issue severity="important" urgency="moderate">
+      // TDO: check all database operations (secrets, policies, metadata)
+      and
+      // ensure that they are retried with exponential backoff.
+
+      add retries to everything under:
+      app/nexus/internal/state/persist
+      ^ they all talk to db; and sqlite can temporarily lock for
+      a variety of reasons.
+    </issue>
+    <issue>
+      Try SPIKE on a Mac (and create a video)
+    </issue>
+    <issue>
+      Try SPIKE on an x-86 Linux (and create a video)
+    </issue>
+    <issue>
+      Check what else needed (aside from enabling fips-algorithms) to
+      be fips-compatible.
+    </issue>
+    <issue>
+      also check out: https://developer.hashicorp.com/vault/docs/concepts/policies
+      to see if we can amend any updates to the policy rules
+      (one such update, for example, is limiting what kind of attributes are
+      allowed, but we should discuss whether that much granularity is worth the
+      hassle)
+    </issue>
+    <issue>
+      ADR:
+      * Added the ability to optionally skip database schema creation during SPIKE
+      initialization. This can be useful if the operator does not want to give
+      db schema modification privileges to SPIKE to adhere to the principle of
+      least privilege. The default behavior is to allow automatic schema creation.
+      Since SPIKE is assumed to own its backing store, limiting its access
+      does not provide a significant security benefit. Letting SPIKE manage
+      its own database schema provides operational convenience.
+    </issue>
+    <issue>
+      ErrPolicyExists = errors.New("policy already exists")
+      ^ this error is never used; check why.
+    </issue>
+    <issue>
+      before trying to get source...
+      remove this log.
+    </issue>
+    <issue>
+      // TDO: Yes memory is the source of truth; but at least
+      // attempt some exponential retries before giving up.
+      if err := be.StoreSecret(ctx, path, *secret); err != nil {
+      // Log error but continue - memory is the source of truth
+      log.Log().Warn(fName,
+      "message", "Failed to cache secret",
+      "path", path,
+      "err", err.Error(),
+      )
+      }
+
+      SQLLite can error out if there is a blocked transaction or
+      a integrity issue, which a retry can fix it.
+    </issue>
+    <issue>
+      update the guides: PSP is not a thing anymore; better update it
+      to Pod Security Standards.
     </issue>
 
   </task-group>
@@ -1150,7 +1265,6 @@
     <issue>
       verify kind scripts.
     </issue>
-
     <issue>
       vsecm: cleanup experimental parts;
       switch to github registry; switch to %100 helm;
@@ -1158,26 +1272,6 @@
     </issue>
     <issue>
       create a federated spike doc; and also a video.
-    </issue>
-
-    <issue>
-      SPIKE Nexus has config for SPIKE_TRUST_ROOT_PILOT
-      but SPIKE pilot does not have a corresponding config.
-
-      which means, if SPIKE Pilot is deployed in a different trust zone,
-      it won't be able to talk to SPIKE Nexus.
-
-      ---
-
-      provide demo.Dockerfile as another container image that we provide via gcr.
-    </issue>
-    <issue>
-      update changelog, publish docs, also update changelog in github
-      also generate non-docker binary assets for the release too.
-    </issue>
-    <issue>
-      fix bare metal instructions.
-      a lot of files have new paths now and the instructions will fail.
     </issue>
   </immediate-backlog>
   <runner-up>
@@ -1195,28 +1289,6 @@
       Generating Protocol Buffers should be before the "build the project" section
       also, needed to do "go mod vendor"
       https://vsecm.com/documentation/development/use-the-source/
-    </issue>
-    <issue>
-      SPIKE Documentation
-      Build the Project
-      Make sure you have a running local Docker daemon and execute the following:
-      make build-local
-      ^
-      missing documentation. this directive assumes that we have a local registry
-      at port 5000; so we need to start minikube as well.
-
-      will remove spike (feature/k8s)$ eval $(minikube -p minikube docker-env)
-      from docs.
-    </issue>
-    <issue>
-      Ensure SPIKE Pilot does not indefinitely hang up if SPIRE Nexus is not there
-      or there is a SPIFFEID/SVID issue. It should give up after a while and
-      print a warning that a connection to the api server could not be established
-      in a timely manner.
-
-      We had a timeout configurable somewhere; we can verify that and document
-      it in "best practices" section. The timeout was infinite by default,
-      I think.
     </issue>
     <issue>
       Make vSecM use helm only (you can override images if needed,
@@ -1299,10 +1371,6 @@
       /public at every merge.
     </issue>
     <issue>
-      VSecM: codeql is failing because there is no legit github actions to scan.
-      Error: "No source code was seen during the build"
-    </issue>
-    <issue>
       VSecM: Use GCR.
     </issue>
     <issue>
@@ -1376,30 +1444,6 @@
       remove relay client and relay server-related code.
     </issue>
     <issue>
-      kind of thinking of a new mode for spike.... something like calling it spike lite or something.
-      Where we basically turn off the secrets and policy api, and add an endpoint for encrypt / decrypt.
-
-      2:51
-      we could still do a full s3 backend too, but for someone just wanting to handle things themselves, but have the
-      power of nexus/keepers for encrypting/decrypting things just stored somewhere, it might be a nice feature.
-      2:52
-      what do you thnk?
-
-      Volkan Ozcelik
-      5:09 PM
-      could be useful.
-
-      SPIKE Lite:
-      # get pilot's pem and key to test things out.
-      # this can be part of documentation too. to test the API directly, 1. extract the pem and key, and then do regular
-      curl.
-      curl -s -X POST --header "Content-Type:application/octet-stream" --data-binary "This is a test encryption"
-      https://spire-spike-nexus/v1/encrypt -k --cert /tmp/pem/svid.0.pem --key /tmp/pem/svid.0.key -o encrypted
-      curl -s -X POST --header "Content-Type:application/octet-stream" --data-binary @encrypted
-      https://spire-spike-nexus/v1/decrypt -k --cert /tmp/pem/svid.0.pem --key /tmp/pem/svid.0.key -o decrypted
-      cat decrypted; echo
-    </issue>
-    <issue>
       VSecM:
       move docs to public and update CloudFlare worker to automatically
       consume it.
@@ -1449,46 +1493,6 @@
       We also need to start a work on updating spiffe.io for the
       new book.
     </issue>
-    <issue severity="important" urgency="moderate">
-      // TDO: check all database operations (secrets, policies, metadata)
-      and
-      // ensure that they are retried with exponential backoff.
-
-      add retries to everything under:
-      app/nexus/internal/state/persist
-      ^ they all talk to db; and sqlite can temporarily lock for
-      a variety of reasons.
-    </issue>
-    <issue>
-      enable and verify FIPS mode.
-      It should have been easier with the new Go version by now.
-
-      Also upgrade Go to the latest while you are at it.
-
-      Go 1.24 introduces native support to FIPS 140-3. The Go Cryptographic
-      Module in 1.24 will be FIPS 140-3 certified.
-
-      It will not require linking to BoringCrypto/BoringSSL nor enabling CGO.
-
-      This approach if it works, is more preferrable; research about it.
-    </issue>
-    <issue>
-      Try SPIKE on a Mac (and create a video)
-    </issue>
-    <issue>
-      Try SPIKE on an x-86 Linux (and create a video)
-    </issue>
-    <issue>
-      Check what else needed (aside from enabling fips-algorithms) to
-      be fips-compatible.
-    </issue>
-    <issue>
-      also check out: https://developer.hashicorp.com/vault/docs/concepts/policies
-      to see if we can amend any updates to the policy rules
-      (one such update, for example, is limiting what kind of attributes are
-      allowed, but we should discuss whether that much granularity is worth the
-      hassle)
-    </issue>
     <issue>
       in development mode, nexus shall act as a single binary:
       - you can create secrets and policies via `nexus create policy` etc
@@ -1507,7 +1511,7 @@
       Consider using OSS Security Scorecard:
       https://github.com/vmware-tanzu/secrets-manager/security/code-scanning/tools/Scorecard/status
     </issue>
-    <issue>
+    <issue type="security">
       SPIKE automatic rotation of encryption key.
       the shards will create a root key and the root key will encrypt the
       encryption key.
@@ -1516,17 +1520,7 @@
       this way, we won't have to rotate the shards to rotate the
       encryption key.
     </issue>
-    <issue>
-      ADR:
-      * Added the ability to optionally skip database schema creation during SPIKE
-      initialization. This can be useful if the operator does not want to give
-      db schema modification privileges to SPIKE to adhere to the principle of
-      least privilege. The default behavior is to allow automatic schema creation.
-      Since SPIKE is assumed to own its backing store, limiting its access
-      does not provide a significant security benefit. Letting SPIKE manage
-      its own database schema provides operational convenience.
-    </issue>
-    <issue>
+    <issue type="enhancement">
       SPIKE CSI Driver
 
       the CSI Secrets Store driver enables users to create
@@ -1548,16 +1542,11 @@
       are blocked from starting until the secrets are read from SPIKE and
       written to the volume.
     </issue>
-    <issue>
+    <issue type="evaluate">
       shall we implement rate limiting; or should that be out of scope
       (i.e. to be implemented by the user.
     </issue>
-    <issue>
-      change CGO_ENABLED depending on the app we build.
-      Only Nexus needs CGO.
-      That applies for bare metal builds, and docker.
-    </issue>
-    <issue>
+    <issue type="enhancement">
       more fine grained policy management
 
       1. an explicit deny will override allows
@@ -1604,7 +1593,7 @@
       can
       leverage OPA.
     </issue>
-    <issue>
+    <issue type="security">
       key rotation
 
       NIST rotation guidance
@@ -1631,10 +1620,6 @@
       nexus --dev or something similar (maybe an env var)
     </issue>
     <issue>
-      Use SPIKE in lieu of encryption as a service (similar to transit
-      secrets)
-    </issue>
-    <issue>
       dynamic secrets
     </issue>
     <issue>
@@ -1648,7 +1633,7 @@
       that much needed.
     </issue>
     <issue>
-      - TODO Telemetry
+      - TDO Telemetry
       - core system metrics
       - audit log metrics
       - authentication metrics
@@ -1671,7 +1656,6 @@
       over
       the existing PKI)
     </issue>
-
     <issue>
       * Implement strict API access controls:
       * Use mTLS for all API connections
@@ -1704,7 +1688,6 @@
       * Monitor error rates
       * Alert on performance degradation
     </issue>
-
     <issue>
       ability to clone a keeper cluster to another standby keeper cluster
       (for redundancy).
@@ -1718,20 +1701,10 @@
       keepers.
     </issue>
     <issue>
-      ErrPolicyExists = errors.New("policy already exists")
-      ^ this error is never used; check why.
-    </issue>
-    <issue>
       work on the "named admin" feature (using Keycloak as an OIDC
       provider)
       This is required for "named admin" feature.
     </issue>
-    <issue>
-      BootstrapOrDie()
-      if we are certain that SPIKE nexus cannot bootstrap, maybe it can
-      just kill itself.
-    </issue>
-
     <issue>
       Consider using google kms, azure keyvault, and other providers
       (including an external SPIKE deployment) for root key recovery.
@@ -1750,7 +1723,7 @@
       dev mode with "zero" keepers.
     </issue>
     <issue>
-      etc-like watch feature for SPIKE
+      etcd-like watch feature for SPIKE
 
       one functionality that would be really cool and kind of a game changer I
       think, but would be hard to do with sql, would be something similar to
@@ -1759,47 +1732,6 @@
       spike watch /foo keyhere -o /tmp/somefile
 
       would update /tmp/somefile whenever it changes on the server
-    </issue>
-    <issue>
-      remove symbols when packaging binaries for release.
-    </issue>
-    <issue severity="important" priority="above-normal">
-      consider db backend as untrusted
-      i.e. encrypt everything you store there; including policies.
-      (that might already be the case actually) -- if so, document it
-      in the website.
-    </issue>
-    <issue>
-      exponentially back off here
-
-      log.Log().Info("tick", "message", "Waiting for keepers to initialize")
-      time.Sleep(5 * time.Second)
-
-      or maybe not; I'm not sure if it's worth the effort.
-      or maybe this algorithm has changed already; needs to be
-      double-checked.
-    </issue>
-    <issue>
-      dev mode, single binary.
-    </issue>
-    <issue>
-      before trying to get source...
-      remove this log.
-    </issue>
-    <issue>
-      // TDO: Yes memory is the source of truth; but at least
-      // attempt some exponential retries before giving up.
-      if err := be.StoreSecret(ctx, path, *secret); err != nil {
-      // Log error but continue - memory is the source of truth
-      log.Log().Warn(fName,
-      "message", "Failed to cache secret",
-      "path", path,
-      "err", err.Error(),
-      )
-      }
-
-      SQLLite can error out if there is a blocked transaction or
-      a integrity issue, which a retry can fix it.
     </issue>
     <issue>
       idea: custom resources for policies and secrets.
@@ -1972,7 +1904,6 @@
       to test with local images. -- that will be better than
       generating local manifests and maintaining them separately)
     </issue>
-
     <issue>
       Create VSecM ADR:
 
@@ -2059,6 +1990,7 @@
     <issue>
       v.1.0.0 Requirements:
       - Having S3 as a backing store
+      - This is different than SPIKE Lite
     </issue>
     <issue>
       Consider a health check / heartbeat between Nexus and Keeper.
@@ -2103,8 +2035,7 @@
       - keepers storing their shards in a separate SPIKE deployment
       (i.e. SPIKE using another SPIKE to restore root token)
     </issue>
-
-    <issue>
+    <issue kind="enhancement">
       attribute-based policy control
 
       path "secret/restricted" {
@@ -2170,6 +2101,7 @@
     <issue>
       consider using NATS for cross trust boundary (or nor) secret
       federation
+      note: NATS had licensing issues recently.
     </issue>
     <issue kind="research">
       spike, but as an http proxy?
@@ -2199,14 +2131,6 @@
       before resending; if the hashes match, it won't restransmit the shard.
     </issue>
     <issue>
-      By design, we regard memory as the source of truth.
-      This means that backing store might miss some secrets.
-      Find ways to reduce the likelihood of this happening.
-      1. Implement exponential retries.
-      2. Implement a health check to ensure backing store is up.
-      3. Create background jobs to sync the backing store.
-    </issue>
-    <issue>
       A /stats endpoint.
 
       A dedicated /stats endpoint will be implemented to provide real-time
@@ -2219,26 +2143,12 @@
       These measures will ensure comprehensive monitoring and troubleshooting.
     </issue>
     <issue>
-      a mode that enables the admin to load shares to keepers.
-      this will be essentially using the keeper REST API and acting as
-      SPIKE Pilot with a recover svid.
-      The benefit would be; we can have a dedicated recover and restore binaries
-      without having to expose the pilot binary.
-      Or we can update the keepers, even if we don't have access to SPIKE Nexus
-      or SPIKE Nexus is down.
-      maybe by using a "seeder" SPIFFE ID.
-      but I'm also not sure if it's worth it.
-      it would mean more APIs to secure; it would also mean keeping spike
-      keepers more intelligent (instead of keeping them dumb)
-    </issue>
-    <issue>
       configure SPIKE to rekey itself as per NIST guidelines.
       Also maybe `spike operator rekey` to manually initiate that.
       `spike operator rekey` will also change the shamir shares, wheras the
       internal rekey will just change the encryption key, leaving the shamir
       shares intact.
     </issue>
-
     <issue>
       verify if the keeper has shard before resending it:
       send hash of the shard first
@@ -2260,17 +2170,16 @@
       namespace
       that no one other than SPIKE components can see into.
     </issue>
-
     <issue>
       aes256-cbc
       jay:U2FsdGVkX1+VhdGia1yk+JAUSraXj60ZA2ydT9TuHmQBE1sWLcMLb5z0B76sCqpJVGi1GQCl8BnnoV5kznYneQ==
     </issue>
     <issue>
-      TODO it's early but have a deprecation policy for SPIKE
+      TDO it's early but have a deprecation policy for SPIKE
       https://external-secrets.io/latest/introduction/deprecation-policy/
     </issue>
     <issue>
-      TODO update vsecm documentation about cloudflare changes 1. manually upload 2. point to github for older versions.
+      TOO update vsecm documentation about cloudflare changes 1. manually upload 2. point to github for older versions.
     </issue>
     <issue>
       Consider metrics collector integration.
@@ -2340,7 +2249,6 @@
       which also means, SPIKE Keeper can require SPIKE_TRUST_ROOT along
       with SPIKE_KEEPER_TLS_PORT to start. at start-keeper-1.sh
     </issue>
-
     <issue kind="idea">
       ideation:
 
@@ -2402,15 +2310,10 @@
       in the chart on how to do it
     </issue>
     <issue>
-      update the guides: PSP is not a thing anymore; better update it
-      to Pod Security Standards.
-    </issue>
-    <issue>
       An external secrets store (such as Hashi Vault) can use SPIKE Nexus
       to
       auto-unseal itself.
     </issue>
-
     <issue>
       multiple keeper clusters:
 
@@ -2425,7 +2328,6 @@
       a tool to read from one cluster of keepers to hydrate a different
       cluster of keepers.
     </issue>
-
     <issue>
       since OPA knows REST, can we expose a policy evaluation endpoint to
       help OPA augment/extend SPIKE policy decisions?
@@ -2434,11 +2336,9 @@
       maybe create an interface for kv, so we can have thread-safe
       variants too.
     </issue>
-
     <issue>
       maybe create a password manager tool as an example use case
     </issue>
-
     <issue>
       A `stats` endpoint to show the overall
       system utilization
@@ -2450,13 +2350,11 @@
       for that, we need an admin ui first :)
       for that we need keycloak to experiment with first.
     </issue>
-
     <issue>
       the current docs are good and all but they are not good for seo; we
       might
       want to convert to something like zola later down the line
     </issue>
-
     <issues>
       wrt ADR-0014:
       Maybe we should use something S3-compatible as primary storage
@@ -2467,8 +2365,6 @@
       stakeholders
       want to see too.
     </issues>
-
-
     <issue>
       SPIKE Dev Mode:
 
@@ -2512,12 +2408,6 @@
         Kubernetes Deployment
       </issue>
     </to-plan>
-    <issue>
-      Initial super admin can create other admins.
-      So that, if an admin leaves, the super admin can delete them.
-      or if the password of an admin is compromised, the super admin can
-      reset it.
-    </issue>
     <issue>
       - Security Measures (SPIKE Nexus)
       - Encrypting the root key with admin password is good
