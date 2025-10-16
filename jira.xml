@@ -20,8 +20,6 @@
  -->
 <stuff>
   <high-level-plan>
-    <issue order="1">Release SPIKE v0.5.0 to enable Helm Charts work</issue>
-    <issue order="2">Fix post v0.5.0 issues</issue>
     <issue order="3">Secure Secrets Management Web UX</issue>
     <issue order="4">Zero Turtle Pi Grid</issue>
     <watch-list>
@@ -35,6 +33,368 @@
       * secure UI: https://github.com/spiffe/spike/issues/230
     </watch-list>
   </high-level-plan>
+  <task-group for="v0.6.1" theme="doc update and stabilization">
+    <issue>
+      create a demo video about the new bootstrap flow
+      - for bare metal
+      - for kubernetes/minikube
+    </issue>
+    <issue>
+      maybe we can add a configurable "bootsrap time out" as an env var later. For now, the bootsrap app will try to
+      bootstrap the thing in an exponentially-backing-off loop until it succeeds.
+    </issue>
+    <issue>
+      have an official "press kit" to let people download logos and such.
+    </issue>
+    <issue>
+      the nonce generation functions can go to the SDK too.
+    </issue>
+    <issue>
+      isolate this into a function
+
+      // Security: Use a static byte array and pass it as a pointer to avoid
+      // inadvertent pass-by-value copying / memory allocation.
+      var rootKey [32]byte
+      // Security: Zero-out rootKey after persisted internally.
+      defer func() {
+      // Note: Each function must zero-out ONLY the items it has created.
+      // If it is borrowing an item by reference, it must not zero-out the item
+      // and let the owner zero-out the item.
+      mem.ClearRawBytes(&rootKey)
+      }()
+
+      if _, err := rand.Read(rootKey[:]); err != nil {
+      log.Fatal(err.Error())
+      }
+
+      state.Initialize(&rootKey)
+    </issue>
+    <issue>
+      // I should be Nexus.
+      if !spiffeid.IsNexus(env.TrustRoot(), selfSpiffeid) {
+      log.FatalF("Authenticate: SPIFFE ID %s is not valid.\n", selfSpiffeid)
+      }
+
+      use the similar trust.Authenticate(...) pattern instead of these if checks.
+    </issue>
+    <issue>
+      func contains(permissions []data.PolicyPermission,
+      func hasAllPermissions(
+      these can be generic helper functions in the sdk.
+    </issue>
+    <issue>
+      u, err := url.JoinPath(
+      keeperAPIRoot, string(apiUrl.KeeperContribute),
+      )
+
+      these should be methods of SDK instead.
+    </issue>
+    <issue>
+      type ShardGetResponse struct {
+      error field should be optional.
+    </issue>
+    <issue>
+      also, empty id or path should raise an error for policies
+      and also for secrets
+    </issue>
+    <issue>
+      func readPolicyFromFile(filePath string) (Spec, error) {
+      this function is in the wrong file!
+    </issue>
+    <issue>
+      // TODO: this check should have been within state.CheckAccess
+      // maybe we can fork based on spike/system/secrets/encrypt.
+      //
+      // Lite Workloads are always allowed:
+      allowed := false
+      if spiffeid.IsLiteWorkload(
+      env.TrustRootForLiteWorkload(), sid.String()) {
+      allowed = true
+      }
+      // If not, do a policy check to determine if the request is allowed:
+      if !allowed {
+    </issue>
+    <issue>
+      func guardDecryptSecretRequest(
+      _ reqres.SecretDecryptRequest, w http.ResponseWriter, r *http.Request,
+      ) error {
+      // TDO: some of these flows can be factored out if we keep the `request`
+      // a generic parameter. That will deduplicate some of the validation code.
+
+      sid, err := spiffe.IdFromRequest(r)
+      if err != nil {
+      responseBody := net.MarshalBody(reqres.SecretDecryptResponse{
+      Err: data.ErrUnauthorized,
+      }, w)
+      net.Respond(http.StatusUnauthorized, responseBody, w)
+      return apiErr.ErrUnauthorized
+      }
+
+      :w
+
+    </issue>
+    <issue>
+      create a banner for SPIKE too; vSecM has fancy banner that show when sharing links on bluesky.
+
+      https://github.com/vmware/secrets-manager/security/dependabot
+    </issue>
+    <issue>
+      check all log.Log()s; log.FatalF() and log.FatalLn()s.
+      some of them don't have fName
+    </issue>
+    <issue>
+      // The encryption key must be 16, 24, or 32 bytes in length (for AES-128,
+      // AES-192, or AES-256 respectively).
+
+      Nope. we only use 32 bytes.
+      fix the docs and also the tests.
+    </issue>
+    <issue>
+      verify that these still work:
+      * https://spike.ist/getting-started/local-deployment/
+      * https://spike.ist/getting-started/quickstart/
+      * https://spike.ist/getting-started/bare-metal/
+
+      Fix the document for chart-related things, if needed.
+    </issue>
+
+    <issue>
+      type GuardFunc[Req any] func(Req, http.ResponseWriter, *http.Request) error
+
+      // Change function signature [BREAKING]
+      func HandleRequest[Req any, Res any](
+      requestBody []byte,
+      w http.ResponseWriter,
+      r *http.Request,
+      errorResponse Res,
+      guard GuardFunc[Req], // Required parameter
+      ) *Req {
+      // ... existing logic ...
+
+      if err := guard(request, w, r); err != nil {
+      return nil
+      }
+
+      return &request
+      }
+    </issue>
+    <issue>
+      demo main.go:
+
+      path := "^tenants/demo/db/creds"
+      path := "tenants/demo/db/creds"
+      the first one creates an error in demo app but the error response is
+      not helpful.
+    </issue>
+    <issue>
+      var permissions []data.PolicyPermission
+      if permsStr != "" {
+      for _, perm := range strings.Split(permsStr, ",") {
+      perm = strings.TrimSpace(perm)
+      if perm != "" {
+      permissions = append(permissions, data.PolicyPermission(perm))
+      }
+      }
+      }
+      ^ this needs sanitization in case an invalid permission is passed.
+    </issue>
+    <issue>
+      func DatabaseOperationTimeout() time.Duration {
+      ^ this is not used anywhere. find where it should be used and add it.
+    </issue>
+    <issue>
+      add to docs:
+      sourcing
+      source /home/volkan/WORKSPACE/spike/hack/lib/env.sh
+      in your profile file can be helpful for development
+      it has predefined environment variables for bare-metal local
+      development.
+      `make start` already does that for the apps that it launches.
+    </issue>
+    <issue>
+      address TODO:s in the source code.
+    </issue>
+    <issue>
+      missingFlags = append(missingFlags, "name")
+      }
+      if pathPattern == "" {
+      missingFlags = append(missingFlags, "path-pattern")
+      }
+      if SPIFFEIDPattern == "" {
+      missingFlags = append(missingFlags, "spiffeid-pattern")
+      }
+      if permsStr == "" {
+      missingFlags = append(missingFlags, "permissions")
+
+      have these flag names as constants maybe.
+    </issue>
+    <issue>
+      func initializeSqliteBackend(rootKey *[32]byte) backend.Backend {
+      panic if rootkey is nil or empty.
+    </issue>
+    <issue>
+      create a demo video for the new bootstrapping feature.
+    </issue>
+    <issue>
+      create a video about how to develop SPIKE on WSL.
+    </issue>
+    <issue>
+      remove path normalization tests, since we are not normalizing paths anymore.
+
+      //{
+      //	name:         "flags_with_multiple_trailing_slashes",
+      //	inputName:    "multi-slash-policy",
+      //	inputSpiffed: "^spiffe://example\\.org/test/.*$",
+      //	inputPath:    "^secrets/test///$",
+      //	inputPerms:   "read",
+      //	expectedPath: "^secrets/test$",
+      //	wantErr:      false,
+      //},
+    </issue>
+    <issue>
+      Since the architecture has changed a bit, a re-introduction to SPIKE
+      demo video is due. But before that, update all the diagrams that need
+      updating, since you can use them while doing the into architecture
+      walkthrough too.
+    </issue>
+    <issue>
+      update documentation to provide details about SPIKE Bootstrap
+      Also, remove/edit part that are not relevant anymore due to the
+      introduction of SPIKE Bootstrap.
+      also, check the docs to see if there is any diagram that need an
+      update.
+
+      The flows here have changed; need new diagrams and updated docs:
+      https://spike.ist/architecture/system-overview/
+
+      https://spike.ist/getting-started/quickstart/
+      needs update once helm charts is updated.
+    </issue>
+    <issue>
+      demo: new architecture overview.
+    </issue>
+    <issue>
+      there is a bug filed for this; if nobody fixes by then, close the bug too
+      after you fix this.
+
+      reading an unknown secret gives an error instead of "not found"
+
+      ➜  spike git:(feature/bootstrap-job) ✗ spike secret get tenants/demo/db
+      Error: failure reading secret: post: Problem connecting to peer
+      Usage:
+      spike secret get <path> [key] [flags]
+
+      Flags:
+      -f, --format string   Format to use. Valid options: plain, p, yaml, y, json, j (default "plain")
+      -h, --help            help for get
+      -v, --version int     Specific version to retrieve
+
+      failure reading secret: post: Problem connecting to peer
+    </issue>
+    <issue>
+      when entries are not registered to the SPIRE Server and the
+      operator tries to use SPIKE, the error messages can be more
+      explanatory.
+    </issue>
+    <issue>
+      when SPIKE is active via `make start`, `make test` fails.
+    </issue>
+    <issue>
+      add `-trimpath` and `-a` to go build.
+    </issue>
+    <issue>
+      log.FatalLn panics by design, but then it prints the stack trace.
+      For better security, disable this if SPIKE is in production mode
+      (can be controlled via an environment variable)
+      or maybe a different env var and the default behaviour is not to
+      dump the stack.
+    </issue>
+    <issue>
+      during bootstrap retry; if a single keeper fails, it will retry it
+      indefinitely without giving chance to other keepers.
+      a better solution is needed for that.
+    </issue>
+    <issue>
+      test what happens if there are no keepers available and initialized
+      but bootstrap still tries to bootstrap
+    </issue>
+    <issue>
+      verify `make start` works in in-memory mode.
+      it likely tries to trigger bootstrap and fail
+      if it fails, give a proper warning in bootstrap instead of random panics.
+    </issue>
+    <issue>
+      if there are no binaries, `make start` errs out; it should not, since it
+      builds the binaries before anything else anyway.
+    </issue>
+    <issue>
+      spike bootstrap and other container images don't have any descriptions
+
+      No description provided
+      This package version was published 7 minutes ago.
+
+      To provide a description, add the following line to your Dockerfile:
+
+      LABEL org.opencontainers.image.description DESCRIPTION
+      For multi-arch images, set a value for the org.opencontainers.image.description key in the annotations field of the manifest:
+
+      "annotations": { "org.opencontainers.image.description": "DESCRIPTION" }
+      https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry#labelling-container-images
+    </issue>
+    <issue>
+      start.sh should test encryption as a service too; both stream mode and rest mode.
+    </issue>
+    <issue>
+      these serialization and deserialization functions can be
+      extracted. --- They can even be part of the Go SDK.
+
+      It can error, or swallow unknown permissions.
+
+      // Deserialize permissions from comma-separated string
+      if permissionsStr != "" {
+      permissionStrs := strings.Split(permissionsStr, ",")
+      policy.Permissions = make([]data.PolicyPermission, len(permissionStrs))
+      for i, permStr := range permissionStrs {
+      policy.Permissions[i] = data.PolicyPermission(strings.TrimSpace(permStr))
+      }
+      }
+    </issue>
+    <issue>
+      // this check should have been within state.CheckAccess
+      // maybe we can fork based on spike/system/secrets/encrypt.
+      //
+      // Lite Workloads are always allowed:
+      allowed := false
+      if spiffeid.IsLiteWorkload(
+      env.TrustRootForLiteWorkload(), sid.String()) {
+      allowed = true
+      }
+    </issue>
+    <issue>
+      move generated binaries to `./bin` folder.
+      stream logs to `./logs` folder.
+    </issue>
+    <issue>
+      these may go to the sdk
+
+      func GenerateCustomNonce(s *DataStore) ([]byte, error) {
+      nonce := make([]byte, s.Cipher.NonceSize())
+      if _, err := io.ReadFull(rand.Reader, nonce); err != nil {
+      return nil, err
+      }
+      return nonce, nil
+      }
+
+      func EncryptWithCustomNonce(s *DataStore, nonce []byte, data []byte) ([]byte, error) {
+      if len(nonce) != s.Cipher.NonceSize() {
+      return nil, fmt.Errorf("invalid nonce size: got %d, want %d", len(nonce), s.Cipher.NonceSize())
+      }
+      ciphertext := s.Cipher.Seal(nil, nonce, data, nil)
+      return ciphertext, nil
+      }
+    </issue>
+
+  </task-group>
   <task-group for="v0.6.3">
     <issue waitingFor="upstreamHelmCharts">
       after helm-charts changes are merged, verify that the quickstart
@@ -183,156 +543,11 @@
   </task-group>
   <task-group for="v0.6.2">
     <issue>
-      ensure bootstrap PoP workflow works with different trust domains too.
-    </issue>
-    <issue>
-      Since the architecture has changed a bit, a re-introduction to SPIKE
-      demo video is due. But before that, update all the diagrams that need
-      updating, since you can use them while doing the into architecture
-      walkthrough too.
-    </issue>
-    <issue>
-      update documentation to provide details about SPIKE Bootstrap
-      Also, remove/edit part that are not relevant anymore due to the
-      introduction of SPIKE Bootstrap.
-
-      also, check the docs to see if there is any diagram that need an
-      update.
-    </issue>
-    <issue>
       demo: encryption as a service
     </issue>
     <issue>
-      demo: new architecture overview.
-    </issue>
-    <issue>
-      reading an unknown secret gives an error instead of "not found"
-
-      ➜  spike git:(feature/bootstrap-job) ✗ spike secret get tenants/demo/db
-      Error: failure reading secret: post: Problem connecting to peer
-      Usage:
-      spike secret get <path> [key] [flags]
-
-      Flags:
-      -f, --format string   Format to use. Valid options: plain, p, yaml, y, json, j (default "plain")
-      -h, --help            help for get
-      -v, --version int     Specific version to retrieve
-
-      failure reading secret: post: Problem connecting to peer
-    </issue>
-    <issue>
-      when entries are not registered to the SPIRE Server and the
-      operator tries to use SPIKE, the error messages can be more
-      explanatory.
-    </issue>
-    <issue>
-      Due to vimeo migration, video links everywhere are likely broken,
-      that includes spike web too -- fix them.
-    </issue>
-    <issue>
-      when SPIKE is active via `make start`, `make test` fails.
-    </issue>
-    <issue>
-      add `-trimpath` and `-a` to go build.
-    </issue>
-    <issue>
-      log.FatalLn panics by design, but then it prints the stack trace.
-      For better security, disable this if SPIKE is in production mode
-      (can be controlled via an environment variable)
-      or maybe a different env var and the default behaviour is not to
-      dump the stack.
-    </issue>
-    <issue>
-      during bootstrap retry; if a single keeper fails, it will retry it
-      indefinitely without giving chance to other keepers.
-      a better solution is needed for that.
-    </issue>
-    <issue>
-      test what happens if there are no keepers available and initialized
-      but bootstrap still tries to bootstrap
-    </issue>
-    <issue>
-      verify `make start` work in in-memory mode.
-      it likely tries to trigger bootstrap and fail
-      if it fails, give a proper warning in bootstrap instead of random panics.
-    </issue>
-    <issue>
-      if there are no binaries, `make start` errs out; it should not, since it
-      builds the binaries before anything else anyway.
-    </issue>
-    <issue>
-      Add executing ./demo to smoke tests too, with sample output.
-    </issue>
-    <issue>
-      spike bootstrap and other container images don't have any descriptions
-
-      No description provided
-      This package version was published 7 minutes ago.
-
-      To provide a description, add the following line to your Dockerfile:
-
-      LABEL org.opencontainers.image.description DESCRIPTION
-      For multi-arch images, set a value for the org.opencontainers.image.description key in the annotations field of the manifest:
-
-      "annotations": { "org.opencontainers.image.description": "DESCRIPTION" }
-      https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry#labelling-container-images
-    </issue>
-    <issue>
-      we can make these configurable from env too
-      this is from the SDK, so everyone in SPIKE uses it.
-
-      tlsConfig := tlsconfig.MTLSClientConfig(source, source, authorizer)
-      client := &http.Client{
-      Transport: &http.Transport{
-      TLSClientConfig:     tlsConfig,
-      IdleConnTimeout:     30 * time.Second,
-      MaxIdleConns:        100,
-      MaxConnsPerHost:     10,
-      MaxIdleConnsPerHost: 10,
-      DialContext: (&net.Dialer{
-      Timeout:   30 * time.Second,
-      KeepAlive: 30 * time.Second,
-      }).DialContext,
-      TLSHandshakeTimeout:   10 * time.Second,
-      ResponseHeaderTimeout: 10 * time.Second,
-      ExpectContinueTimeout: 5 * time.Second,
-      },
-      Timeout: 60 * time.Second,
-      }
-    </issue>
-    <issue>
-      add some smoke tests to the end of start.sh
-      also maybe have a k8s job for smoke tests too after helm deployment.
-    </issue>
-    <issue>
-      these serialization and deserialization functions can be
-      extracted. --- They can even be part of the Go SDK.
-
-      It can error, or swallow unknown permissions.
-
-      // Deserialize permissions from comma-separated string
-      if permissionsStr != "" {
-      permissionStrs := strings.Split(permissionsStr, ",")
-      policy.Permissions = make([]data.PolicyPermission, len(permissionStrs))
-      for i, permStr := range permissionStrs {
-      policy.Permissions[i] = data.PolicyPermission(strings.TrimSpace(permStr))
-      }
-      }
-    </issue>
-    <issue>
-      // this check should have been within state.CheckAccess
-      // maybe we can fork based on spike/system/secrets/encrypt.
-      //
-      // Lite Workloads are always allowed:
-      allowed := false
-      if spiffeid.IsLiteWorkload(
-      env.TrustRootForLiteWorkload(), sid.String()) {
-      allowed = true
-      }
-    </issue>
-    <issue>
-      move generated binaries to `./bin` folder.
-      stream logs to `./logs` folder.
+      You have OIDC-related drafts; polish them and move them somewhere visible
+      as an actionable roadmap.
     </issue>
     <issue>
       for operator actions ensure that `spike/system/ops` path is enforced
@@ -343,151 +558,19 @@
       to demo these features.
     </issue>
     <issue>
-      these may go to the sdk
+      Need to think about this; I'm not sure we need a UI at all.
+      I am getting more fond of Claude Code model of triggering a web-device-PKCE
+      auth flow and then doing everything through the CLI.
 
-      func GenerateCustomNonce(s *DataStore) ([]byte, error) {
-      nonce := make([]byte, s.Cipher.NonceSize())
-      if _, err := io.ReadFull(rand.Reader, nonce); err != nil {
-      return nil, err
-      }
-      return nonce, nil
-      }
-
-      func EncryptWithCustomNonce(s *DataStore, nonce []byte, data []byte) ([]byte, error) {
-      if len(nonce) != s.Cipher.NonceSize() {
-      return nil, fmt.Errorf("invalid nonce size: got %d, want %d", len(nonce), s.Cipher.NonceSize())
-      }
-      ciphertext := s.Cipher.Seal(nil, nonce, data, nil)
-      return ciphertext, nil
-      }
-    </issue>
-    <issue>
-      For VSecM: create a UI that directly talks to SPIKE; depracate all VSecM secret model. also delete most of the folders. start with a clean slate
-    </issue>
-    <issue>
-      The flows here have changed; need new diagrams and updated docs:
-      https://spike.ist/architecture/system-overview/
-    </issue>
-    <issue>
-      https://spike.ist/getting-started/quickstart/
-      needs update once helm charts is updated.
-    </issue>
-    <issue>
-      have an official "press kit" to let people download logos and such.
-    </issue>
-    <issue>
-      the nonce generation functions can go to the SDK too.
-    </issue>
-    <issue>
-      func initializeSqliteBackend(rootKey *[32]byte) backend.Backend {
-      panic if rootkey is nil or empty.
-    </issue>
-    <issue>
-      create a demo video for the new bootstrapping feature.
-    </issue>
-    <issue>
-      create a video about how to develop SPIKE on WSL.
+      For VSecM: create a UI that directly talks to SPIKE; depracate all VSecM
+      secret model. also delete most of the folders. start with a clean slate
     </issue>
     <issue>
       some test helpers we use can move to the SDK.
     </issue>
     <issue>
-      remove path normalization tests, since we are not normalizing paths anymore.
-
-      //{
-      //	name:         "flags_with_multiple_trailing_slashes",
-      //	inputName:    "multi-slash-policy",
-      //	inputSpiffed: "^spiffe://example\\.org/test/.*$",
-      //	inputPath:    "^secrets/test///$",
-      //	inputPerms:   "read",
-      //	expectedPath: "^secrets/test$",
-      //	wantErr:      false,
-      //},
-    </issue>
-    <issue>
-      func contains(permissions []data.PolicyPermission,
-      func hasAllPermissions(
-      these can be generic helper functions in the sdk.
-    </issue>
-    <issue>
-      also, empty id or path should raise an error for policies
-      and also for secrets
-    </issue>
-    <issue>
-      check all log.Log()s. some of them don't have fName
-    </issue>
-    <issue>
-      // The encryption key must be 16, 24, or 32 bytes in length (for AES-128,
-      // AES-192, or AES-256 respectively).
-
-      Nope. we only use 32 bytes.
-      fix the docs and also the tests.
-    </issue>
-    <issue>
-      type GuardFunc[Req any] func(Req, http.ResponseWriter, *http.Request) error
-
-      // Change function signature [BREAKING]
-      func HandleRequest[Req any, Res any](
-      requestBody []byte,
-      w http.ResponseWriter,
-      r *http.Request,
-      errorResponse Res,
-      guard GuardFunc[Req], // Required parameter
-      ) *Req {
-      // ... existing logic ...
-
-      if err := guard(request, w, r); err != nil {
-      return nil
-      }
-
-      return &request
-      }
-    </issue>
-    <issue>
-      retry.WithBackOffOptions(
-      retry.WithMaxInterval(60*time.Second), // to env vars.
-      retry.WithMaxElapsedTime(0),           // Retry forever.
-      ),
-    </issue>
-    <issue>
       check how the progress of this is going:
       https://github.com/spiffe/spike/issues/238
-    </issue>
-    <issue>
-      path := "^tenants/demo/db/creds"
-      path := "tenants/demo/db/creds"
-      the first one creates an error in demo app but the error response is
-      not helpful.
-    </issue>
-    <issue>
-      missingFlags = append(missingFlags, "name")
-      }
-      if pathPattern == "" {
-      missingFlags = append(missingFlags, "path-pattern")
-      }
-      if SPIFFEIDPattern == "" {
-      missingFlags = append(missingFlags, "spiffeid-pattern")
-      }
-      if permsStr == "" {
-      missingFlags = append(missingFlags, "permissions")
-
-      have these flag names as constants maybe.
-    </issue>
-    <issue>
-      var permissions []data.PolicyPermission
-      if permsStr != "" {
-      for _, perm := range strings.Split(permsStr, ",") {
-      perm = strings.TrimSpace(perm)
-      if perm != "" {
-      permissions = append(permissions, data.PolicyPermission(perm))
-      }
-      }
-      }
-      ^ this needs sanitization in case an invalid permission is passed.
-    </issue>
-    <issue>
-      func DatabaseOperationTimeout() time.Duration {
-      ^ this is not used anywhere. find where it should be used and add it.
     </issue>
     <issue>
       // this pattern is repeated a lot; move to a helper function.
@@ -500,12 +583,7 @@
       }
       }()
     </issue>
-
-
   </task-group>
-  <issue>
-    there are pending PR reviews.
-  </issue>
   <task-group for="later">
     <issue>
       YAML-based secret creation from SPIKE CLI.
@@ -963,15 +1041,6 @@
       (i.e. list secrets that have db/creds anywhere in their path.
     </issue>
     <issue>
-      add to docs:
-      sourcing
-      source /home/volkan/WORKSPACE/spike/hack/lib/env.sh
-      in your profile file can be helpful for development
-      it has predefined environment variables for bare-metal local
-      development.
-      `make start` already does that for the apps that it launches.
-    </issue>
-    <issue>
       consider adding an "s3" backing store.
 
       this will be different from the Lite option. It will support policies, and other utilities,
@@ -998,90 +1067,19 @@
       fix all `t.Skip()` skipped tests.
     </issue>
     <issue>
-      address TODO:s in the source code.
-    </issue>
-    <issue>
-      CLI should call log.FatalLn and log.FatalLn should panic for better
-      testability. (instead of os.Exit(1))
-
-
-      // CLI app tests
-      func TestRun_InvalidConfig(t *testing.T) {
-      defer func() {
-      if r := recover(); r == nil {
-      t.Error("Expected panic with invalid config")
-      }
-      }()
-
-      run() // This can now be tested!
-      }
-
-      // Library tests
-      func TestInitializeBackend_NilKey(t *testing.T) {
-      defer func() {
-      if r := recover(); r == nil {
-      t.Error("Expected panic with nil key")
-      }
-      }()
-
-      InitializeBackend(nil)
-      }
-
-    </issue>
-    <issue>
       add unit tests.
       we are adding more and more features, and we don't have sufficient
       coverage.
     </issue>
     <issue>
-      create a demo video about the new bootstrap flow
-      - for bare metal
-      - for kubernetes/minikube
-    </issue>
-    <issue>
       Test SPIKE Lite setup.
-    </issue>
-    <issue>
-      maybe we can add a configurable "bootsrap time out" as an env var later. For now, the bootsrap app will try to
-      bootstrap the thing in an exponentially-backing-off loop until it succeeds.
+      And maybe create a demo video.
     </issue>
     <issue>
       create a /status endpoint for SPIKE Nexus and use that for the
       Bootstrap job instead of querying the jobs k8s api.
       that will also mean, the Bootstrap job will be more secure since
       its ServiceAccount will not need kube api access.
-    </issue>
-    <issue>
-      isolate this into a function
-
-      // Security: Use a static byte array and pass it as a pointer to avoid
-      // inadvertent pass-by-value copying / memory allocation.
-      var rootKey [32]byte
-      // Security: Zero-out rootKey after persisted internally.
-      defer func() {
-      // Note: Each function must zero-out ONLY the items it has created.
-      // If it is borrowing an item by reference, it must not zero-out the item
-      // and let the owner zero-out the item.
-      mem.ClearRawBytes(&rootKey)
-      }()
-
-      if _, err := rand.Read(rootKey[:]); err != nil {
-      log.Fatal(err.Error())
-      }
-
-      state.Initialize(&rootKey)
-    </issue>
-    <issue>
-      bootstrap: only Nexus can read the shard, Bootstrap cannot read the shard
-      RouteShard of keeper should reject of bootstrap tries to "read" a shard.
-    </issue>
-    <issue>
-      // I should be Nexus.
-      if !spiffeid.IsNexus(env.TrustRoot(), selfSpiffeid) {
-      log.FatalF("Authenticate: SPIFFE ID %s is not valid.\n", selfSpiffeid)
-      }
-
-      use the similar trust.Authenticate(...) pattern instead of these if checks.
     </issue>
     <issue>
       maybe for vsecm: plugin-based dynamic secrets to access third-party
@@ -1117,13 +1115,6 @@
       these should be merged.
     </issue>
     <issue>
-      u, err := url.JoinPath(
-      keeperAPIRoot, string(apiUrl.KeeperContribute),
-      )
-
-      these should be methods of SDK instead.
-    </issue>
-    <issue>
       make sure we check Spike.LiteWorkload spiffe id in policies.
       also make sure the encryption as a service works.
     </issue>
@@ -1132,10 +1123,6 @@
       it will not create policies, secrets, etc, but just pass validations
       and return success/failure responses instead.
       useful for integration tests.
-    </issue>
-    <issue>
-      type ShardGetResponse struct {
-      error field should be optional.
     </issue>
     <issue>
       ability for nexus to return encrypted secrets.
@@ -1158,66 +1145,12 @@
       configurable from the environment options.
     </issue>
     <issue>
-      func readPolicyFromFile(filePath string) (Spec, error) {
-      this function is in the wrong file!
-    </issue>
-    <issue>
-      // TODO: this check should have been within state.CheckAccess
-      // maybe we can fork based on spike/system/secrets/encrypt.
-      //
-      // Lite Workloads are always allowed:
-      allowed := false
-      if spiffeid.IsLiteWorkload(
-      env.TrustRootForLiteWorkload(), sid.String()) {
-      allowed = true
-      }
-      // If not, do a policy check to determine if the request is allowed:
-      if !allowed {
-    </issue>
-    <issue>
-      func guardDecryptSecretRequest(
-      _ reqres.SecretDecryptRequest, w http.ResponseWriter, r *http.Request,
-      ) error {
-      // TODO: some of these flows can be factored out if we keep the `request`
-      // a generic parameter. That will deduplicate some of the validation code.
-
-      sid, err := spiffe.IdFromRequest(r)
-      if err != nil {
-      responseBody := net.MarshalBody(reqres.SecretDecryptResponse{
-      Err: data.ErrUnauthorized,
-      }, w)
-      net.Respond(http.StatusUnauthorized, responseBody, w)
-      return apiErr.ErrUnauthorized
-      }
-
-      :w
-
-    </issue>
-    <issue>
       verify lite mode.
     </issue>
     <issue>
       verify kind scripts.
     </issue>
-    <issue>
-      fips compliance and boringcrpto
 
-      with new go you don’t need boring crypto for FIPS compliance; you still do need to change code, but not build
-      parameters.
-      boring-crypto requires CGO, so without it, Keepers (and pilot) don’t need CGO.
-      but for Nexus we still need cgo (because of sqlite)
-      that might be a reason enough to ditch sqlite and move towards some other database (and the “plugin” architecture
-      that we discussed that will allow s3 etc compatibility)
-      But
-      that will be removing a feature that we support and have tested so far (which is okay, this is an alpha version
-      product)
-      a lot of work since the new backings store does not exist
-    </issue>
-    <issue>
-      create a banner for SPIKE too; vSecM has fancy banner that show when sharing links on bluesky.
-
-      https://github.com/vmware/secrets-manager/security/dependabot
-    </issue>
     <issue>
       vsecm: cleanup experimental parts;
       switch to github registry; switch to %100 helm;
@@ -1226,12 +1159,7 @@
     <issue>
       create a federated spike doc; and also a video.
     </issue>
-    <issue>
-      verify that these still work:
-      * https://spike.ist/getting-started/local-deployment/
-      * https://spike.ist/getting-started/quickstart/
-      * https://spike.ist/getting-started/bare-metal/
-    </issue>
+
     <issue>
       SPIKE Nexus has config for SPIKE_TRUST_ROOT_PILOT
       but SPIKE pilot does not have a corresponding config.

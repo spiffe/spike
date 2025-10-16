@@ -17,6 +17,8 @@ sort_by = "weight"
 * minor bugfixes
 * PoP validation after bootstrap sequence to ensure SPIKE Nexus has initialized properly.
 * Update Go version to `1.25.2`.
+* `make start` includes additional smoke tests to ensure all SPIKE components are
+  in good shape and ready to roll.
 
 ## [0.6.1] - 2025-10-02
 
