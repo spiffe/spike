@@ -1,0 +1,11 @@
+timeout = 60
+max_retries = 3 
+retry_wait_time = 3 
+exclude_mail = true
+exclude_all_private = true
+accept = [200, 206, 403, 429]
+
+[remap]
+"^/+"   = "https://spike.ist/"
+"@/+"   = "https://spike.ist/"
+"^file:///" = "https://spike.ist/"
