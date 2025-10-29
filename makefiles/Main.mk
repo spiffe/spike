@@ -44,6 +44,14 @@ tidy:
 tag:
 	./hack/scm/tag.sh
 
+# Check out a pull request locally for testing
+# Usage: make checkout-pr
+# Interactively prompts for a PR number and checks it out using GitHub CLI
+# Requires gh to be installed and authenticated
+# Example: enter "212" when prompted to checkout PR #212
+checkout-pr:
+	./hack/scm/checkout-pr.sh
+
 .PHONY: docs
 docs:
 	./hack/bare-metal/build/build-docs.sh

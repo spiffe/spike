@@ -35,6 +35,10 @@
   </high-level-plan>
   <task-group for="v0.6.1" theme="doc update and stabilization">
     <issue>
+      review the code related to the `spike cipher` command; refactoring beaver may find some tweaking there.
+      also update changelog.
+    </issue>
+    <issue>
       create a demo video about the new bootstrap flow
       - for bare metal
       - for kubernetes/minikube
