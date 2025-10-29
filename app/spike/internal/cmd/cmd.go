@@ -10,6 +10,7 @@ import (
 
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 
+	"github.com/spiffe/spike/app/spike/internal/cmd/cipher"
 	"github.com/spiffe/spike/app/spike/internal/cmd/operator"
 	"github.com/spiffe/spike/app/spike/internal/cmd/policy"
 	"github.com/spiffe/spike/app/spike/internal/cmd/secret"
@@ -41,6 +42,7 @@ import (
 func Initialize(source *workloadapi.X509Source, SPIFFEID string) {
 	rootCmd.AddCommand(policy.NewPolicyCommand(source, SPIFFEID))
 	rootCmd.AddCommand(secret.NewSecretCommand(source, SPIFFEID))
+	rootCmd.AddCommand(cipher.NewCipherCommand(source, SPIFFEID))
 	rootCmd.AddCommand(operator.NewOperatorCommand(source, SPIFFEID))
 }
 
