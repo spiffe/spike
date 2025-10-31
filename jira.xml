@@ -38,6 +38,9 @@
       Assign the "add cipher validation to start.sh" task to Murat.
     </issue>
     <issue>
+      Follow-up on outstanding PRs (in spike and SDK).
+    </issue>
+    <issue>
       review the code related to the `spike cipher` command; refactoring beaver may find some tweaking there.
       also update changelog.
     </issue>
