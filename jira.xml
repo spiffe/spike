@@ -35,6 +35,9 @@
   </high-level-plan>
   <task-group for="v0.6.1" theme="doc update and stabilization">
     <issue>
+      Assign the "add cipher validation to start.sh" task to Murat.
+    </issue>
+    <issue>
       review the code related to the `spike cipher` command; refactoring beaver may find some tweaking there.
       also update changelog.
     </issue>
