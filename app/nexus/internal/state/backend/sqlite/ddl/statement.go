@@ -34,6 +34,11 @@ CREATE TABLE IF NOT EXISTS secrets (
 	encrypted_data BLOB NOT NULL,
 	created_time DATETIME NOT NULL,
 	deleted_time DATETIME,
+	kek_id TEXT,
+	wrapped_dek BLOB,
+	dek_nonce BLOB,
+	aead_alg TEXT,
+	rewrapped_at DATETIME,
 	PRIMARY KEY (path, version)
 );
 
@@ -48,6 +53,20 @@ CREATE TABLE IF NOT EXISTS secret_metadata (
 
 CREATE INDEX IF NOT EXISTS idx_secrets_path ON secrets(path);
 CREATE INDEX IF NOT EXISTS idx_secrets_created_time ON secrets(created_time);
+
+CREATE TABLE IF NOT EXISTS kek_metadata (
+	id TEXT PRIMARY KEY,
+	version INTEGER NOT NULL,
+	salt BLOB NOT NULL,
+	rmk_version INTEGER NOT NULL,
+	created_at DATETIME NOT NULL,
+	wraps_count INTEGER NOT NULL DEFAULT 0,
+	status TEXT NOT NULL,
+	retired_at DATETIME
+);
+
+CREATE INDEX IF NOT EXISTS idx_kek_metadata_status ON kek_metadata(status);
+CREATE INDEX IF NOT EXISTS idx_kek_metadata_created_at ON kek_metadata(created_at);
 `
 
 // QueryUpdateSecretMetadata is a SQL query for inserting or updating secret
@@ -67,12 +86,18 @@ ON CONFLICT(path) DO UPDATE SET
 // QueryUpsertSecret is a SQL query for inserting or updating the `secrets`
 // records.
 const QueryUpsertSecret = `
-INSERT INTO secrets (path, version, nonce, encrypted_data, created_time, deleted_time)
-VALUES (?, ?, ?, ?, ?, ?)
+INSERT INTO secrets (path, version, nonce, encrypted_data, created_time, deleted_time, 
+                     kek_id, wrapped_dek, dek_nonce, aead_alg, rewrapped_at)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 ON CONFLICT(path, version) DO UPDATE SET
 	nonce = excluded.nonce,
 	encrypted_data = excluded.encrypted_data,
-	deleted_time = excluded.deleted_time
+	deleted_time = excluded.deleted_time,
+	kek_id = excluded.kek_id,
+	wrapped_dek = excluded.wrapped_dek,
+	dek_nonce = excluded.dek_nonce,
+	aead_alg = excluded.aead_alg,
+	rewrapped_at = excluded.rewrapped_at
 `
 
 // QuerySecretMetadata is a SQL query to fetch metadata of a secret by its path.
@@ -84,7 +109,8 @@ WHERE path = ?
 
 // QuerySecretVersions retrieves all versions of a secret from the database.
 const QuerySecretVersions = `
-SELECT version, nonce, encrypted_data, created_time, deleted_time 
+SELECT version, nonce, encrypted_data, created_time, deleted_time,
+       kek_id, wrapped_dek, dek_nonce, aead_alg, rewrapped_at
 FROM secrets 
 WHERE path = ?
 ORDER BY version
@@ -141,3 +167,39 @@ FROM policies
 `
 
 const QueryPathsFromMetadata = `SELECT path FROM secret_metadata`
+
+// KEK Metadata queries
+
+// QueryInsertKEKMetadata inserts a new KEK metadata record
+const QueryInsertKEKMetadata = `
+INSERT INTO kek_metadata (id, version, salt, rmk_version, created_at, wraps_count, status, retired_at)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+`
+
+// QueryLoadKEKMetadata loads a KEK metadata record by ID
+const QueryLoadKEKMetadata = `
+SELECT id, version, salt, rmk_version, created_at, wraps_count, status, retired_at
+FROM kek_metadata
+WHERE id = ?
+`
+
+// QueryListKEKMetadata lists all KEK metadata records
+const QueryListKEKMetadata = `
+SELECT id, version, salt, rmk_version, created_at, wraps_count, status, retired_at
+FROM kek_metadata
+ORDER BY version DESC
+`
+
+// QueryUpdateKEKWrapsCount atomically increments the wraps count
+const QueryUpdateKEKWrapsCount = `
+UPDATE kek_metadata
+SET wraps_count = wraps_count + ?
+WHERE id = ?
+`
+
+// QueryUpdateKEKStatus updates the KEK status and retired_at timestamp
+const QueryUpdateKEKStatus = `
+UPDATE kek_metadata
+SET status = ?, retired_at = ?
+WHERE id = ?
+`

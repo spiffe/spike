@@ -111,6 +111,10 @@ func InitializeBackend(rootKey *[crypto.AES256KeySize]byte) {
 		be = initializeInMemoryBackend()
 	}
 
+	// Wrap backend with envelope encryption support
+	// This wrapper automatically uses envelope encryption when KEK manager is available
+	be = NewEnvelopeAwareBackend(be)
+
 	log.Log().Info(
 		fName, "message", "Backend initialized", "storeType", storeType,
 	)

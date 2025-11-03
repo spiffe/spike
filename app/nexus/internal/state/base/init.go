@@ -39,4 +39,13 @@ func Initialize(r *[crypto.AES256KeySize]byte) {
 	// Update the internal root key.
 	// Locks on a mutex; so only a single process can modify the root key.
 	SetRootKey(r)
+
+	// Initialize KEK manager for envelope encryption (if enabled)
+	// RMK version 1 is the default for initial setup
+	if err := persist.InitializeKEKManager(r, 1); err != nil {
+		log.Log().Error(fName,
+			"message", "failed to initialize KEK manager",
+			"err", err.Error())
+		// Don't fatal here - allow system to operate without KEK rotation
+	}
 }

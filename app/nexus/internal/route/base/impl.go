@@ -10,6 +10,7 @@ import (
 	"github.com/spiffe/spike/app/nexus/internal/route/acl/policy"
 	"github.com/spiffe/spike/app/nexus/internal/route/bootstrap"
 	"github.com/spiffe/spike/app/nexus/internal/route/cipher"
+	"github.com/spiffe/spike/app/nexus/internal/route/kek"
 	"github.com/spiffe/spike/app/nexus/internal/route/operator"
 	"github.com/spiffe/spike/app/nexus/internal/route/secret"
 	"github.com/spiffe/spike/internal/net"
@@ -47,6 +48,20 @@ func routeWithBackingStore(a url.APIAction, p url.APIURL) net.Handler {
 		return cipher.RouteDecrypt
 	case a == url.ActionDefault && p == url.NexusBootstrapVerify:
 		return bootstrap.RouteVerify
+	// KEK management routes
+	case a == url.ActionDefault && p == url.APIURL("/v1/kek/rotate"):
+		return kek.RouteRotateKEK
+	case a == url.ActionGet && p == url.APIURL("/v1/kek/current"):
+		return kek.RouteGetCurrentKEK
+	case a == url.ActionList && p == url.APIURL("/v1/kek/list"):
+		return kek.RouteListKEKs
+	case a == url.ActionGet && p == url.APIURL("/v1/kek/stats"):
+		return kek.RouteGetKEKStats
+	// RMK management routes
+	case a == url.ActionDefault && p == url.APIURL("/v1/rmk/rotate"):
+		return kek.RouteRotateRMK
+	case a == url.ActionGet && p == url.APIURL("/v1/rmk/snapshot"):
+		return kek.RouteRMKSnapshot
 	default:
 		return net.Fallback
 	}
