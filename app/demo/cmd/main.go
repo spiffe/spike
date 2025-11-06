@@ -24,6 +24,7 @@ func main() {
 	// https://pkg.go.dev/github.com/spiffe/spike-sdk-go/api#Close
 	defer api.Close() // Close the connection when done
 
+	// The path to store/retrieve/update the secret.
 	path := "tenants/demo/db/creds"
 
 	// Create a Secret
