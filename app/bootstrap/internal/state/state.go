@@ -73,7 +73,7 @@ func RootShares() []shamir.Share {
 	rs := ss.Share(n)
 
 	// Security: Ensure the root key and shares are zeroed out after use.
-	validation.SanityCheck(rootSecret, rs)
+	validation.VerifyShamirReconstruction(rootSecret, rs)
 
 	log.Log().Info(fName, "message", "Successfully generated shards.")
 	return rs

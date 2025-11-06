@@ -36,14 +36,6 @@
   </high-level-plan>
   <task-group for="v0.6.1" theme="doc update and stabilization">
     <issue>
-      log.FatalLn panics by design, but then it prints the stack trace.
-      For better security, disable this if SPIKE is in production mode
-      (can be controlled via an environment variable)
-      or maybe a different env var and the default behaviour is not to
-      dump the stack.
-    </issue>
-
-    <issue>
       review the code related to the `spike cipher` command; refactoring beaver may find some tweaking there.
       also update changelog.
     </issue>

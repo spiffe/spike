@@ -11,10 +11,10 @@ import (
 	"github.com/spiffe/spike-sdk-go/log"
 )
 
-// SanityCheck verifies that a set of secret shares can correctly reconstruct
-// the original secret. It performs this verification by attempting to recover
-// the secret using the minimum required number of shares and comparing the
-// result with the original secret.
+// VerifyShamirReconstruction verifies that a set of secret shares can
+// correctly reconstruct the original secret. It performs this verification by
+// attempting to recover the secret using the minimum required number of shares
+// and comparing the result with the original secret.
 //
 // Parameters:
 //   - secret group.Scalar: The original secret to verify against
@@ -35,8 +35,8 @@ import (
 //   - The reconstructed secret is always zeroed out to prevent memory leaks
 //   - In case of fatal errors, the reconstructed secret is explicitly zeroed
 //     before logging since deferred functions won't run after log.FatalLn
-func SanityCheck(secret group.Scalar, shares []shamir.Share) {
-	const fName = "SanityCheck"
+func VerifyShamirReconstruction(secret group.Scalar, shares []shamir.Share) {
+	const fName = "VerifyShamirReconstruction"
 
 	t := uint(env.ShamirThresholdVal() - 1) // Need t+1 shares to reconstruct
 
