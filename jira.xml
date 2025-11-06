@@ -28,6 +28,7 @@
       * encrypt policy info: https://github.com/spiffe/spike/pull/223
       * ConfigMap: https://github.com/spiffe/spike/pull/228
       * status: https://github.com/spiffe/spike/pull/222
+      * cipher validation to start.sh: https://github.com/spiffe/spike/issues/242
       --
       * key rotation: https://github.com/spiffe/spike/issues/229
       * secure UI: https://github.com/spiffe/spike/issues/230
@@ -35,11 +36,13 @@
   </high-level-plan>
   <task-group for="v0.6.1" theme="doc update and stabilization">
     <issue>
-      Assign the "add cipher validation to start.sh" task to Murat.
+      log.FatalLn panics by design, but then it prints the stack trace.
+      For better security, disable this if SPIKE is in production mode
+      (can be controlled via an environment variable)
+      or maybe a different env var and the default behaviour is not to
+      dump the stack.
     </issue>
-    <issue>
-      Follow-up on outstanding PRs (in spike and SDK).
-    </issue>
+
     <issue>
       review the code related to the `spike cipher` command; refactoring beaver may find some tweaking there.
       also update changelog.
@@ -339,13 +342,7 @@
     <issue>
       add `-trimpath` and `-a` to go build.
     </issue>
-    <issue>
-      log.FatalLn panics by design, but then it prints the stack trace.
-      For better security, disable this if SPIKE is in production mode
-      (can be controlled via an environment variable)
-      or maybe a different env var and the default behaviour is not to
-      dump the stack.
-    </issue>
+>
     <issue>
       during bootstrap retry; if a single keeper fails, it will retry it
       indefinitely without giving chance to other keepers.

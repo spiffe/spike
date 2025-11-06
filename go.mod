@@ -1,6 +1,6 @@
 module github.com/spiffe/spike
 
-go 1.25.2
+go 1.25.3
 
 require (
 	github.com/cloudflare/circl v1.6.1
@@ -9,7 +9,7 @@ require (
 	github.com/mattn/go-sqlite3 v1.14.32
 	github.com/spf13/cobra v1.10.1
 	github.com/spiffe/go-spiffe/v2 v2.6.0
-	github.com/spiffe/spike-sdk-go v0.12.1
+	github.com/spiffe/spike-sdk-go v0.12.2
 	golang.org/x/term v0.36.0
 	gopkg.in/yaml.v3 v3.0.1
 	k8s.io/api v0.34.1

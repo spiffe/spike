@@ -54,7 +54,7 @@ func ShouldBootstrap() bool {
 		return false
 	}
 
-	// Check if we're forcing bootstrap
+	// Check if we're forcing the bootstrap
 	if os.Getenv(env.BootstrapForce) == k8sTrue {
 		log.Log().Info(fName, "message", "Force bootstrap enabled")
 		return true

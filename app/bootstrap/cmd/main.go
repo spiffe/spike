@@ -72,7 +72,7 @@ func main() {
 	// Retries verification until successful.
 	net.VerifyInitialization(ctx, api)
 
-	// Bootstrap verification is complete. Mark bootstrap as "done".
+	// Bootstrap verification is complete. Mark the bootstrap as "done".
 
 	// Mark completion in Kubernetes
 	if err := lifecycle.MarkBootstrapComplete(); err != nil {

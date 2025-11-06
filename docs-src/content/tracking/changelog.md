@@ -19,6 +19,12 @@ sort_by = "weight"
 * Update Go version to `1.25.2`.
 * `make start` includes additional smoke tests to ensure all SPIKE components are
   in good shape and ready to roll.
+* encryption as a service support for SPIKE Pilot.
+* `log.FatalLn` exits cleanly by default to avoid leaking sensitive information via
+  stack traces in production. Stack traces can be enabled for development/testing by
+  setting `SPIKE_STACK_TRACES_ON_LOG_FATAL=true`.
+* Security: SDK upgrade to Go 1.25.3 to fix GO-2025-4007.
+
 
 ## [0.6.1] - 2025-10-02
 
