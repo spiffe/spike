@@ -53,7 +53,7 @@ func main() {
 	src := net.AcquireSource()
 
 	log.Log().Info(
-		fName, "message", "Sending shards to SPIKE Keeper instances...",
+		fName, "message", "sending shards to SPIKE Keeper instances",
 	)
 
 	api := spike.NewWithSource(src)
@@ -65,7 +65,7 @@ func main() {
 	// dispatched successfully.
 	net.BroadcastKeepers(ctx, api)
 
-	log.Log().Info(fName, "message", "Sent shards to SPIKE Keeper instances.")
+	log.Log().Info(fName, "message", "sent shards to SPIKE Keeper instances")
 
 	// Verify that SPIKE Nexus has been properly initialized by sending an
 	// encrypted payload and verifying the hash of the decrypted plaintext.
@@ -77,9 +77,12 @@ func main() {
 	// Mark completion in Kubernetes
 	if err := lifecycle.MarkBootstrapComplete(); err != nil {
 		// Log but don't fail - bootstrap itself succeeded
-		log.Log().Warn(fName, "message",
-			"Could not mark bootstrap complete in ConfigMap", "err", err.Error())
+		log.Log().Warn(
+			fName, "message",
+			"could not mark bootstrap complete in ConfigMap",
+			"err", err.Error(),
+		)
 	}
 
-	fmt.Println("Bootstrap completed successfully!")
+	fmt.Println("bootstrap completed successfully")
 }

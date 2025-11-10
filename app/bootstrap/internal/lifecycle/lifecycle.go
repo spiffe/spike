@@ -2,9 +2,9 @@
 //  \\\\\ Copyright 2024-present SPIKE contributors.
 // \\\\\\\ SPDX-License-Identifier: Apache-2.0
 
-// Package lifecycle provides utilities for managing bootstrap state in Kubernetes
-// environments. It handles coordination between multiple bootstrap instances
-// to ensure bootstrap operations run exactly once per cluster.
+// Package lifecycle provides utilities for managing bootstrap state in
+// Kubernetes environments. It handles coordination between multiple bootstrap
+// instances to ensure bootstrap operations run exactly once per cluster.
 package lifecycle
 
 import (
@@ -24,6 +24,7 @@ import (
 
 const k8sTrue = "true"
 const k8sServiceAccountNamespace = "/var/run/secrets/kubernetes.io/serviceaccount/namespace"
+const hostNameEnvVar = "HOSTNAME"
 
 // ShouldBootstrap determines whether the bootstrap process should be
 // skipped based on the current environment and state. The function follows
@@ -38,25 +39,25 @@ const k8sServiceAccountNamespace = "/var/run/secrets/kubernetes.io/serviceaccoun
 // The function returns false if bootstrap should be skipped, true if it
 // should proceed.
 func ShouldBootstrap() bool {
-	const fName = "bootstrap.shouldSkipBootstrap"
+	const fName = "ShouldBootstrap"
 
 	// Memory backend doesn't need bootstrap.
 	if env.BackendStoreTypeVal() == env.Memory {
 		log.Log().Info(fName,
-			"message", "Skipping bootstrap for 'in memory' backend")
+			"message", "skipping bootstrap for 'in memory' backend")
 		return false
 	}
 
 	// Lite backend doesn't need bootstrap.
 	if env.BackendStoreTypeVal() == env.Lite {
 		log.Log().Info(fName,
-			"message", "Skipping bootstrap for 'lite' backend")
+			"message", "skipping bootstrap for 'lite' backend")
 		return false
 	}
 
 	// Check if we're forcing the bootstrap
 	if os.Getenv(env.BootstrapForce) == k8sTrue {
-		log.Log().Info(fName, "message", "Force bootstrap enabled")
+		log.Log().Info(fName, "message", "force bootstrap enabled")
 		return true
 	}
 
@@ -69,8 +70,10 @@ func ShouldBootstrap() bool {
 		// We're not in Kubernetes (bare-metal scenario)
 		// Bootstrap should proceed in non-k8s environments
 		if errors.Is(err, rest.ErrNotInCluster) {
-			log.Log().Info(fName,
-				"message", "Not running in Kubernetes, proceeding with bootstrap",
+			log.Log().Info(
+				fName,
+				"message",
+				"not running in Kubernetes, proceeding with bootstrap",
 			)
 			return true
 		}
@@ -78,7 +81,7 @@ func ShouldBootstrap() bool {
 		// Some other error. Skip bootstrap.
 		log.Log().Error(fName,
 			"message",
-			"Could not determine cluster config. Skipping bootstrap",
+			"could not determine cluster config: skipping bootstrap",
 			"err", err.Error())
 		return false
 	}
@@ -88,7 +91,7 @@ func ShouldBootstrap() bool {
 	if err != nil {
 		log.Log().Error(fName,
 			"message",
-			"Failed to create Kubernetes client. SKIPPING bootstrap.",
+			"failed to create Kubernetes client: skipping bootstrap",
 			"err", err.Error())
 		// Can't check state, skip bootstrap.
 		return false
@@ -109,7 +112,7 @@ func ShouldBootstrap() bool {
 		// ConfigMap doesn't exist or can't read it - proceed with bootstrap
 		log.Log().Info(fName,
 			"message",
-			"ConfigMap not found or not readable, proceeding with bootstrap",
+			"ConfigMap not found or not readable: proceeding with bootstrap",
 			"err", err.Error())
 		return true
 	}
@@ -122,7 +125,7 @@ func ShouldBootstrap() bool {
 		reason := fmt.Sprintf("completed at %s by pod %s",
 			completedAt, completedByPod)
 		log.Log().Info(fName,
-			"message", "Skipping bootstrap based on ConfigMap state",
+			"message", "skipping bootstrap based on ConfigMap state",
 			"completed-at", completedAt,
 			"completed-by-pod", completedByPod,
 			"reason", reason,
@@ -130,7 +133,7 @@ func ShouldBootstrap() bool {
 		return false
 	}
 
-	// Boostrap not completed---proceed with bootstrap
+	// Boostrap not completed: proceed with bootstrap
 	return true
 }
 
@@ -148,7 +151,7 @@ func ShouldBootstrap() bool {
 // If the ConfigMap already exists, it will be updated. If creation fails,
 // an update operation is attempted as a fallback.
 func MarkBootstrapComplete() error {
-	const fName = "bootstrap.markBootstrapComplete"
+	const fName = "MarkBootstrapComplete"
 
 	// Only mark complete in Kubernetes environments
 	config, err := rest.InClusterConfig()
@@ -156,7 +159,7 @@ func MarkBootstrapComplete() error {
 		if errors.Is(err, rest.ErrNotInCluster) {
 			// Not in Kubernetes, nothing to mark
 			log.Log().Info(fName,
-				"message", "Not in Kubernetes, skipping completion marker")
+				"message", "not in Kubernetes: skipping completion marker")
 			return nil
 		}
 		return err
@@ -180,7 +183,7 @@ func MarkBootstrapComplete() error {
 		Data: map[string]string{
 			"bootstrap-completed": k8sTrue,
 			"completed-at":        time.Now().UTC().Format(time.RFC3339),
-			"completed-by-pod":    os.Getenv("HOSTNAME"),
+			"completed-by-pod":    os.Getenv(hostNameEnvVar),
 		},
 	}
 
@@ -196,12 +199,17 @@ func MarkBootstrapComplete() error {
 	}
 
 	if err != nil {
-		log.Log().Error(fName,
-			"message", "Failed to mark bootstrap complete", "err", err.Error())
+		log.Log().Error(
+			fName,
+			"message", "failed to mark bootstrap complete",
+			"err", err.Error(),
+		)
 		return err
 	}
 
-	log.Log().Info(fName,
-		"message", "Marked bootstrap as complete in ConfigMap")
+	log.Log().Info(
+		fName,
+		"message", "marked bootstrap as complete in ConfigMap",
+	)
 	return nil
 }

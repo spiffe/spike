@@ -42,17 +42,20 @@ func BroadcastKeepers(ctx context.Context, api *spike.API) {
 			log.Log().Info(fName, "message", "retry:"+time.Now().String())
 			err := api.Contribute(keeperShare, keeperID)
 			if err != nil {
-				log.Log().Warn(fName, "message", "Failed to send shard. Will retry.")
+				log.Log().Warn(
+					fName,
+					"message", "failed to send shard: will retry",
+				)
 				return false, err
 			}
 
-			log.Log().Info(fName, "message", "Shard sent successfully.")
+			log.Log().Info(fName, "message", "shard sent successfully")
 			return true, nil
 		})
 
 		// This should never happen since the above loop retries forever:
 		if err != nil {
-			log.FatalLn(fName, "message", "Initialization failed", "err", err)
+			log.FatalLn(fName, "message", "initialization failed", "err", err)
 		}
 	}
 }
@@ -71,49 +74,72 @@ func VerifyInitialization(ctx context.Context, api *spike.API) {
 	randomBytes := make([]byte, 32)
 	_, err := rand.Read(randomBytes)
 	if err != nil {
-		log.FatalLn(fName, "message",
-			"Failed to generate random text", "err", err.Error())
+		log.FatalLn(
+			fName,
+			"message", "failed to generate random text",
+			"err", err.Error(),
+		)
 		return
 	}
 	randomText := hex.EncodeToString(randomBytes)
-	log.Log().Info(fName, "message",
-		"Generated random verification text", "length", len(randomText))
+	log.Log().Info(
+		fName,
+		"message", "generated random verification text",
+		"length", len(randomText),
+	)
 
 	// Encrypt the random text with the root key
 	rootKey := state.RootKey()
 	block, err := aes.NewCipher(rootKey[:])
 	if err != nil {
-		log.FatalLn(fName, "message",
-			"Failed to create cipher", "err", err.Error())
+		log.FatalLn(
+			fName, "message",
+			"failed to create cipher",
+			"err", err.Error(),
+		)
 		return
 	}
 
 	gcm, err := cipher.NewGCM(block)
 	if err != nil {
-		log.FatalLn(fName, "message",
-			"Failed to create GCM", "err", err.Error())
+		log.FatalLn(
+			fName,
+			"message", "failed to create GCM",
+			"err", err.Error(),
+		)
 		return
 	}
 
 	nonce := make([]byte, gcm.NonceSize())
 	if _, err := io.ReadFull(rand.Reader, nonce); err != nil {
-		log.FatalLn(fName, "message",
-			"Failed to generate nonce", "err", err.Error())
+		log.FatalLn(
+			fName,
+			"message", "failed to generate nonce",
+			"err", err.Error(),
+		)
 		return
 	}
 
 	ciphertext := gcm.Seal(nil, nonce, []byte(randomText), nil)
-	log.Log().Info(fName, "message",
-		"Encrypted verification text",
+	log.Log().Info(
+		fName,
+		"message", "encrypted verification text",
 		"nonce_len", len(nonce),
-		"ciphertext_len", len(ciphertext))
+		"ciphertext_len", len(ciphertext),
+	)
 
 	_, _ = retry.Forever(ctx, func() (bool, error) {
-		log.Log().Info(fName, "message", "retry:"+time.Now().String())
+		log.Log().Info(
+			fName,
+			"message", "retry:"+time.Now().String(),
+		)
 		err := api.Verify(randomText, nonce, ciphertext)
 		if err != nil {
-			log.Log().Warn(fName, "message",
-				"Failed to verify signature", "err", err.Error())
+			log.Log().Warn(
+				fName,
+				"message", "failed to verify signature",
+				"err", err.Error(),
+			)
 			return false, err
 		}
 		return true, nil
@@ -141,14 +167,15 @@ func AcquireSource() *workloadapi.X509Source {
 	}
 	if !svid.IsBootstrap(sv.ID.String()) {
 		log.Log().Error(
-			"Authenticate: You need a 'bootstrap' SPIFFE ID to use this command.",
+			fName,
+			"message", "you need a 'bootstrap' SPIFFE ID to use this command",
 		)
-		log.FatalLn(fName, "message", "Command not authorized")
+		log.FatalLn(fName, "message", "command not authorized")
 		return nil
 	}
 
 	if src == nil {
-		log.FatalLn(fName, "message", "Failed to acquire SVID")
+		log.FatalLn(fName, "message", "failed to acquire SVID")
 		return nil
 	}
 
