@@ -56,7 +56,11 @@ func RootShares() []shamir.Share {
 	rootSecret := g.NewScalar()
 
 	if err := rootSecret.UnmarshalBinary(rootKeySeed[:]); err != nil {
-		log.FatalLn(fName, "message", "Failed to unmarshal key: %v"+err.Error())
+		log.FatalLn(
+			fName,
+			"message", "key unmarshal failure",
+			"err", err.Error(),
+		)
 	}
 
 	// To compute identical shares, we need an identical seed for the random
@@ -68,14 +72,14 @@ func RootShares() []shamir.Share {
 	reader := crypto.NewDeterministicReader(rootKeySeed[:])
 	ss := shamir.New(reader, t, rootSecret)
 
-	log.Log().Info(fName, "message", "Generated Shamir shares")
+	log.Log().Info(fName, "message", "generated Shamir shares")
 
 	rs := ss.Share(n)
 
 	// Security: Ensure the root key and shares are zeroed out after use.
 	validation.VerifyShamirReconstruction(rootSecret, rs)
 
-	log.Log().Info(fName, "message", "Successfully generated shards.")
+	log.Log().Info(fName, "message", "successfully generated shards")
 	return rs
 }
 
@@ -109,7 +113,10 @@ func KeeperShare(
 		kid, err := strconv.Atoi(keeperID)
 		if err != nil {
 			log.FatalLn(
-				fName, "message", "Failed to convert keeper id to int", "err", err)
+				fName,
+				"message", "failed to convert keeper id to int",
+				"err", err.Error(),
+			)
 		}
 
 		if sr.ID.IsEqual(group.P256.NewScalar().SetUint64(uint64(kid))) {
@@ -119,8 +126,11 @@ func KeeperShare(
 	}
 
 	if share.ID.IsZero() {
-		log.FatalLn(fName,
-			"message", "Failed to find share for keeper", "keeper_id", keeperID)
+		log.FatalLn(
+			fName,
+			"message", "failed to find share for keeper",
+			"keeper_id", keeperID,
+		)
 	}
 
 	return share

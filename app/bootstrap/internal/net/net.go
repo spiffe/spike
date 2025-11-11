@@ -22,13 +22,16 @@ func PutShardContributionRequest(
 ) error {
 	const fName = "PutShardContributionRequest"
 
-	log.Log().Info(fName, "payload", fmt.Sprintf("%x", sha256.Sum256(md)))
+	log.Log().Info(fName, "payload_sha", fmt.Sprintf("%x", sha256.Sum256(md)))
 
 	_, err := net.Post(client, u, md)
 	if err != nil {
-		log.Log().Info(fName, "message",
-			"Failed to post",
-			"err", err, "keeper_id", keeperID)
+		log.Log().Info(
+			fName,
+			"message", "failed to post",
+			"err", err,
+			"keeper_id", keeperID,
+		)
 		return err
 	}
 

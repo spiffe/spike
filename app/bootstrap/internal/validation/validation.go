@@ -53,12 +53,15 @@ func VerifyShamirReconstruction(secret group.Scalar, shares []shamir.Share) {
 		// deferred will not run in a fatal crash.
 		reconstructed.SetUint64(0)
 
-		log.FatalLn(fName + ": Failed to recover: " + err.Error())
+		log.FatalLn(fName, "message", "failed to recover", "err", err.Error())
 	}
 	if !secret.IsEqual(reconstructed) {
 		// deferred will not run in a fatal crash.
 		reconstructed.SetUint64(0)
 
-		log.FatalLn(fName + ": Recovered secret does not match original")
+		log.FatalLn(
+			fName,
+			"message", "recovered secret does not match original",
+		)
 	}
 }
