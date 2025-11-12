@@ -25,7 +25,7 @@ func guardSecretUndeleteRequest(
 
 	sid, err := spiffe.IDFromRequest(r)
 	if err != nil {
-		responseBody := net.MarshalBody(reqres.SecretUndeleteResponse{
+		responseBody := net.MarshalBodyAndRespondOnMarshalFail(reqres.SecretUndeleteResponse{
 			Err: data.ErrUnauthorized,
 		}, w)
 		net.Respond(http.StatusUnauthorized, responseBody, w)
@@ -33,7 +33,7 @@ func guardSecretUndeleteRequest(
 	}
 
 	if sid == nil {
-		responseBody := net.MarshalBody(reqres.SecretUndeleteResponse{
+		responseBody := net.MarshalBodyAndRespondOnMarshalFail(reqres.SecretUndeleteResponse{
 			Err: data.ErrUnauthorized,
 		}, w)
 		net.Respond(http.StatusUnauthorized, responseBody, w)
@@ -42,7 +42,7 @@ func guardSecretUndeleteRequest(
 
 	err = validation.ValidateSPIFFEID(sid.String())
 	if err != nil {
-		responseBody := net.MarshalBody(reqres.SecretUndeleteResponse{
+		responseBody := net.MarshalBodyAndRespondOnMarshalFail(reqres.SecretUndeleteResponse{
 			Err: data.ErrUnauthorized,
 		}, w)
 		net.Respond(http.StatusUnauthorized, responseBody, w)
@@ -51,7 +51,7 @@ func guardSecretUndeleteRequest(
 
 	err = validation.ValidatePath(path)
 	if err != nil {
-		responseBody := net.MarshalBody(reqres.SecretUndeleteResponse{
+		responseBody := net.MarshalBodyAndRespondOnMarshalFail(reqres.SecretUndeleteResponse{
 			Err: data.ErrBadInput,
 		}, w)
 		net.Respond(http.StatusBadRequest, responseBody, w)
@@ -64,7 +64,7 @@ func guardSecretUndeleteRequest(
 		[]data.PolicyPermission{data.PermissionWrite},
 	)
 	if !allowed {
-		responseBody := net.MarshalBody(reqres.SecretUndeleteResponse{
+		responseBody := net.MarshalBodyAndRespondOnMarshalFail(reqres.SecretUndeleteResponse{
 			Err: data.ErrUnauthorized,
 		}, w)
 		net.Respond(http.StatusUnauthorized, responseBody, w)

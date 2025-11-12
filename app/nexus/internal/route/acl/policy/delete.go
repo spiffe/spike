@@ -86,24 +86,24 @@ func RouteDeletePolicy(
 	if err != nil {
 		log.Log().Warn(fName, "message", "Failed to delete policy", "err", err)
 
-		responseBody := net.MarshalBody(reqres.PolicyDeleteResponse{
-			Err: data.ErrInternal,
-		}, w)
-		if responseBody == nil {
-			return errors.ErrMarshalFailure
+		responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
+			reqres.PolicyDeleteResponse{
+				Err: data.ErrInternal,
+			}, w)
+		if err == nil {
+			net.Respond(http.StatusInternalServerError, responseBody, w)
 		}
 
-		net.Respond(http.StatusInternalServerError, responseBody, w)
 		log.Log().Error(fName, "message", data.ErrInternal)
 		return err
 	}
 
-	responseBody := net.MarshalBody(reqres.PolicyDeleteResponse{}, w)
-	if responseBody == nil {
-		return errors.ErrMarshalFailure
+	responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
+		reqres.PolicyDeleteResponse{}, w)
+	if err == nil {
+		net.Respond(http.StatusOK, responseBody, w)
 	}
 
-	net.Respond(http.StatusOK, responseBody, w)
 	log.Log().Info(fName, "message", data.ErrSuccess)
 	return nil
 }

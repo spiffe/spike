@@ -24,7 +24,7 @@ func handleGetSecretError(err error, w http.ResponseWriter) error {
 		log.Log().Info(fName, "message", "Secret not found")
 
 		res := reqres.SecretReadResponse{Err: data.ErrNotFound}
-		responseBody := net.MarshalBody(res, w)
+		responseBody := net.MarshalBodyAndRespondOnMarshalFail(res, w)
 		if responseBody == nil {
 			return apiErr.ErrMarshalFailure
 		}
@@ -36,7 +36,7 @@ func handleGetSecretError(err error, w http.ResponseWriter) error {
 
 	log.Log().Warn(fName, "message", "Failed to retrieve secret", "err", err)
 
-	responseBody := net.MarshalBody(reqres.SecretReadResponse{
+	responseBody := net.MarshalBodyAndRespondOnMarshalFail(reqres.SecretReadResponse{
 		Err: data.ErrInternal}, w,
 	)
 	if responseBody == nil {
@@ -55,7 +55,7 @@ func handleGetSecretMetadataError(err error, w http.ResponseWriter) error {
 		log.Log().Info(fName, "message", "Secret not found")
 
 		res := reqres.SecretMetadataResponse{Err: data.ErrNotFound}
-		responseBody := net.MarshalBody(res, w)
+		responseBody := net.MarshalBodyAndRespondOnMarshalFail(res, w)
 		if responseBody == nil {
 			return errors.New("failed to marshal response body")
 		}
@@ -66,7 +66,7 @@ func handleGetSecretMetadataError(err error, w http.ResponseWriter) error {
 
 	log.Log().Info(fName, "message",
 		"Failed to retrieve secret", "err", err)
-	responseBody := net.MarshalBody(reqres.SecretMetadataResponse{
+	responseBody := net.MarshalBodyAndRespondOnMarshalFail(reqres.SecretMetadataResponse{
 		Err: "Internal server error"}, w,
 	)
 	if responseBody == nil {

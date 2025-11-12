@@ -53,20 +53,20 @@ func ExtractPeerSPIFFEID[T any](
 ) (*spiffeid.ID, error) {
 	peerSPIFFEID, err := spiffe.IDFromRequest(r)
 	if err != nil {
-		responseBody := net.MarshalBody(errorResponse, w)
+		responseBody := net.MarshalBodyAndRespondOnMarshalFail(errorResponse, w)
 		net.Respond(http.StatusUnauthorized, responseBody, w)
 		return nil, apiErr.ErrUnauthorized
 	}
 
 	if peerSPIFFEID == nil {
-		responseBody := net.MarshalBody(errorResponse, w)
+		responseBody := net.MarshalBodyAndRespondOnMarshalFail(errorResponse, w)
 		net.Respond(http.StatusUnauthorized, responseBody, w)
 		return nil, apiErr.ErrUnauthorized
 	}
 
 	err = validation.ValidateSPIFFEID(peerSPIFFEID.String())
 	if err != nil {
-		responseBody := net.MarshalBody(errorResponse, w)
+		responseBody := net.MarshalBodyAndRespondOnMarshalFail(errorResponse, w)
 		net.Respond(http.StatusUnauthorized, responseBody, w)
 		return nil, apiErr.ErrUnauthorized
 	}

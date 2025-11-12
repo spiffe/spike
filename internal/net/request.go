@@ -103,7 +103,7 @@ func HandleRequest[Req any, Res any](
 			"message", "Problem unmarshalling request",
 			"err", err.Error())
 
-		responseBody := MarshalBody(errorResponse, w)
+		responseBody := MarshalBodyAndRespondOnMarshalFail(errorResponse, w)
 		if responseBody == nil {
 			return nil
 		}

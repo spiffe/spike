@@ -24,7 +24,7 @@ func guardGetSecretMetadataRequest(
 
 	sid, err := spiffe.IDFromRequest(r)
 	if err != nil {
-		responseBody := net.MarshalBody(reqres.SecretMetadataResponse{
+		responseBody := net.MarshalBodyAndRespondOnMarshalFail(reqres.SecretMetadataResponse{
 			Err: data.ErrUnauthorized,
 		}, w)
 		net.Respond(http.StatusUnauthorized, responseBody, w)
@@ -32,7 +32,7 @@ func guardGetSecretMetadataRequest(
 	}
 
 	if sid == nil {
-		responseBody := net.MarshalBody(reqres.SecretMetadataResponse{
+		responseBody := net.MarshalBodyAndRespondOnMarshalFail(reqres.SecretMetadataResponse{
 			Err: data.ErrUnauthorized,
 		}, w)
 		net.Respond(http.StatusUnauthorized, responseBody, w)
@@ -41,7 +41,7 @@ func guardGetSecretMetadataRequest(
 
 	err = validation.ValidateSPIFFEID(sid.String())
 	if err != nil {
-		responseBody := net.MarshalBody(reqres.SecretMetadataResponse{
+		responseBody := net.MarshalBodyAndRespondOnMarshalFail(reqres.SecretMetadataResponse{
 			Err: data.ErrUnauthorized,
 		}, w)
 		net.Respond(http.StatusUnauthorized, responseBody, w)
@@ -50,7 +50,7 @@ func guardGetSecretMetadataRequest(
 
 	err = validation.ValidatePath(path)
 	if err != nil {
-		responseBody := net.MarshalBody(reqres.SecretMetadataResponse{
+		responseBody := net.MarshalBodyAndRespondOnMarshalFail(reqres.SecretMetadataResponse{
 			Err: data.ErrBadInput,
 		}, w)
 		net.Respond(http.StatusBadRequest, responseBody, w)
@@ -62,7 +62,7 @@ func guardGetSecretMetadataRequest(
 		[]data.PolicyPermission{data.PermissionRead},
 	)
 	if !allowed {
-		responseBody := net.MarshalBody(reqres.SecretListResponse{
+		responseBody := net.MarshalBodyAndRespondOnMarshalFail(reqres.SecretListResponse{
 			Err: data.ErrUnauthorized,
 		}, w)
 		net.Respond(http.StatusUnauthorized, responseBody, w)

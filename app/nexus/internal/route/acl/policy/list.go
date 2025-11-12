@@ -102,14 +102,14 @@ func RouteListPolicies(
 		}
 	}
 
-	responseBody := net.MarshalBody(reqres.PolicyListResponse{
-		Policies: policies,
-	}, w)
-	if responseBody == nil {
-		return errors.ErrMarshalFailure
+	responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
+		reqres.PolicyListResponse{
+			Policies: policies,
+		}, w)
+	if err == nil {
+		net.Respond(http.StatusOK, responseBody, w)
 	}
 
-	net.Respond(http.StatusOK, responseBody, w)
 	log.Log().Info(fName, "message", data.ErrSuccess)
 	return nil
 }

@@ -80,7 +80,7 @@ func RouteListPaths(
 	}
 
 	keys := state.ListKeys()
-	responseBody := net.MarshalBody(reqres.SecretListResponse{Keys: keys}, w)
+	responseBody := net.MarshalBodyAndRespondOnMarshalFail(reqres.SecretListResponse{Keys: keys}, w)
 	if responseBody == nil {
 		return errors.ErrMarshalFailure
 	}

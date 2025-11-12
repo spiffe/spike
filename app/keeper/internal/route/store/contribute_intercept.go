@@ -44,10 +44,13 @@ func guardShardPutRequest(
 	// Allow both Bootstrap (initial setup) and Nexus (periodic updates)
 	if !spiffeid.IsBootstrap(peerSPIFFEID.String()) &&
 		!spiffeid.IsNexus(peerSPIFFEID.String()) {
-		responseBody := net.MarshalBody(reqres.ShardPutResponse{
-			Err: data.ErrUnauthorized,
-		}, w)
-		net.Respond(http.StatusUnauthorized, responseBody, w)
+		responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
+			reqres.ShardPutResponse{
+				Err: data.ErrUnauthorized,
+			}, w)
+		if err == nil {
+			net.Respond(http.StatusUnauthorized, responseBody, w)
+		}
 		return apiErr.ErrUnauthorized
 	}
 

@@ -115,7 +115,7 @@ func RouteGetPolicy(
 		log.Log().Info(fName, "message", "Policy not found")
 
 		res := reqres.PolicyReadResponse{Err: data.ErrNotFound}
-		responseBody := net.MarshalBody(res, w)
+		responseBody := net.MarshalBodyAndRespondOnMarshalFail(res, w)
 		if responseBody == nil {
 			return apiErr.ErrMarshalFailure
 		}
@@ -128,7 +128,7 @@ func RouteGetPolicy(
 
 		log.Log().Info(fName, "message", "Failed to retrieve policy", "err", err)
 
-		responseBody := net.MarshalBody(reqres.PolicyReadResponse{
+		responseBody := net.MarshalBodyAndRespondOnMarshalFail(reqres.PolicyReadResponse{
 			Err: data.ErrInternal}, w,
 		)
 		if responseBody == nil {
@@ -142,7 +142,7 @@ func RouteGetPolicy(
 		return err
 	}
 
-	responseBody := net.MarshalBody(
+	responseBody := net.MarshalBodyAndRespondOnMarshalFail(
 		reqres.PolicyReadResponse{Policy: policy}, w,
 	)
 	if responseBody == nil {

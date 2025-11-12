@@ -87,7 +87,7 @@ func RouteVerify(
 	c := persist.Backend().GetCipher()
 	if c == nil {
 		log.Log().Error(fName, "message", "cipher not available")
-		responseBody := net.MarshalBody(reqres.BootstrapVerifyResponse{
+		responseBody := net.MarshalBodyAndRespondOnMarshalFail(reqres.BootstrapVerifyResponse{
 			Err: data.ErrInternal,
 		}, w)
 		if responseBody == nil {
@@ -105,7 +105,7 @@ func RouteVerify(
 	if err != nil {
 		log.Log().Error(fName, "message", "decryption failed", "err",
 			err.Error())
-		responseBody := net.MarshalBody(reqres.BootstrapVerifyResponse{
+		responseBody := net.MarshalBodyAndRespondOnMarshalFail(reqres.BootstrapVerifyResponse{
 			Err: data.ErrInternal,
 		}, w)
 		if responseBody == nil {
@@ -122,7 +122,7 @@ func RouteVerify(
 	log.Log().Info(fName, "message", "verification successful",
 		"plaintext_len", len(plaintext), "hash", hashHex)
 
-	responseBody := net.MarshalBody(reqres.BootstrapVerifyResponse{
+	responseBody := net.MarshalBodyAndRespondOnMarshalFail(reqres.BootstrapVerifyResponse{
 		Hash: hashHex,
 		Err:  data.ErrSuccess,
 	}, w)

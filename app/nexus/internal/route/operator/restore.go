@@ -94,7 +94,7 @@ func RouteRestore(
 	currentShardCount := len(shards)
 
 	if currentShardCount >= env.ShamirThresholdVal() {
-		responseBody := net.MarshalBody(reqres.RestoreResponse{
+		responseBody := net.MarshalBodyAndRespondOnMarshalFail(reqres.RestoreResponse{
 			RestorationStatus: data.RestorationStatus{
 				ShardsCollected: currentShardCount,
 				ShardsRemaining: 0,
@@ -116,7 +116,7 @@ func RouteRestore(
 
 		// Duplicate shard found.
 
-		responseBody := net.MarshalBody(reqres.RestoreResponse{
+		responseBody := net.MarshalBodyAndRespondOnMarshalFail(reqres.RestoreResponse{
 			RestorationStatus: data.RestorationStatus{
 				ShardsCollected: currentShardCount,
 				ShardsRemaining: env.ShamirThresholdVal() - currentShardCount,
@@ -153,7 +153,7 @@ func RouteRestore(
 		}
 	}
 
-	responseBody := net.MarshalBody(reqres.RestoreResponse{
+	responseBody := net.MarshalBodyAndRespondOnMarshalFail(reqres.RestoreResponse{
 		RestorationStatus: data.RestorationStatus{
 			ShardsCollected: currentShardCount,
 			ShardsRemaining: env.ShamirThresholdVal() - currentShardCount,

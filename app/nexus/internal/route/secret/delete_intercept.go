@@ -24,7 +24,7 @@ func guardDeleteSecretRequest(
 
 	sid, err := spiffe.IDFromRequest(r)
 	if err != nil {
-		responseBody := net.MarshalBody(reqres.SecretDeleteResponse{
+		responseBody := net.MarshalBodyAndRespondOnMarshalFail(reqres.SecretDeleteResponse{
 			Err: data.ErrUnauthorized,
 		}, w)
 		net.Respond(http.StatusUnauthorized, responseBody, w)
@@ -32,7 +32,7 @@ func guardDeleteSecretRequest(
 	}
 
 	if sid == nil {
-		responseBody := net.MarshalBody(reqres.SecretDeleteResponse{
+		responseBody := net.MarshalBodyAndRespondOnMarshalFail(reqres.SecretDeleteResponse{
 			Err: data.ErrUnauthorized,
 		}, w)
 		net.Respond(http.StatusUnauthorized, responseBody, w)
@@ -41,7 +41,7 @@ func guardDeleteSecretRequest(
 
 	err = validation.ValidateSPIFFEID(sid.String())
 	if err != nil {
-		responseBody := net.MarshalBody(reqres.SecretDeleteResponse{
+		responseBody := net.MarshalBodyAndRespondOnMarshalFail(reqres.SecretDeleteResponse{
 			Err: data.ErrUnauthorized,
 		}, w)
 		net.Respond(http.StatusUnauthorized, responseBody, w)
@@ -50,7 +50,7 @@ func guardDeleteSecretRequest(
 
 	err = validation.ValidatePath(path)
 	if err != nil {
-		responseBody := net.MarshalBody(reqres.SecretDeleteResponse{
+		responseBody := net.MarshalBodyAndRespondOnMarshalFail(reqres.SecretDeleteResponse{
 			Err: data.ErrBadInput,
 		}, w)
 		net.Respond(http.StatusBadRequest, responseBody, w)
@@ -63,7 +63,7 @@ func guardDeleteSecretRequest(
 		[]data.PolicyPermission{data.PermissionWrite},
 	)
 	if !allowed {
-		responseBody := net.MarshalBody(reqres.SecretDeleteResponse{
+		responseBody := net.MarshalBodyAndRespondOnMarshalFail(reqres.SecretDeleteResponse{
 			Err: data.ErrUnauthorized,
 		}, w)
 		net.Respond(http.StatusUnauthorized, responseBody, w)

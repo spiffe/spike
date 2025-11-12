@@ -21,7 +21,7 @@ func guardVerifyRequest(
 ) error {
 	peerSPIFFEID, err := spiffe.IDFromRequest(r)
 	if err != nil {
-		responseBody := net.MarshalBody(reqres.BootstrapVerifyResponse{
+		responseBody := net.MarshalBodyAndRespondOnMarshalFail(reqres.BootstrapVerifyResponse{
 			Err: data.ErrUnauthorized,
 		}, w)
 		net.Respond(http.StatusUnauthorized, responseBody, w)
@@ -29,7 +29,7 @@ func guardVerifyRequest(
 	}
 
 	if peerSPIFFEID == nil {
-		responseBody := net.MarshalBody(reqres.BootstrapVerifyResponse{
+		responseBody := net.MarshalBodyAndRespondOnMarshalFail(reqres.BootstrapVerifyResponse{
 			Err: data.ErrUnauthorized,
 		}, w)
 		net.Respond(http.StatusUnauthorized, responseBody, w)
@@ -37,7 +37,7 @@ func guardVerifyRequest(
 	}
 
 	if !spiffeid.IsBootstrap(peerSPIFFEID.String()) {
-		responseBody := net.MarshalBody(reqres.BootstrapVerifyResponse{
+		responseBody := net.MarshalBodyAndRespondOnMarshalFail(reqres.BootstrapVerifyResponse{
 			Err: data.ErrUnauthorized,
 		}, w)
 		net.Respond(http.StatusUnauthorized, responseBody, w)
@@ -47,7 +47,7 @@ func guardVerifyRequest(
 	// Validate nonce size (AES-GCM standard nonce is 12 bytes)
 	const expectedNonceSize = 12
 	if len(request.Nonce) != expectedNonceSize {
-		responseBody := net.MarshalBody(reqres.BootstrapVerifyResponse{
+		responseBody := net.MarshalBodyAndRespondOnMarshalFail(reqres.BootstrapVerifyResponse{
 			Err: data.ErrBadInput,
 		}, w)
 		net.Respond(http.StatusBadRequest, responseBody, w)
@@ -57,7 +57,7 @@ func guardVerifyRequest(
 	// Validate ciphertext size to prevent DoS attacks
 	const maxCiphertextSize = 1024
 	if len(request.Ciphertext) > maxCiphertextSize {
-		responseBody := net.MarshalBody(reqres.BootstrapVerifyResponse{
+		responseBody := net.MarshalBodyAndRespondOnMarshalFail(reqres.BootstrapVerifyResponse{
 			Err: data.ErrBadInput,
 		}, w)
 		net.Respond(http.StatusBadRequest, responseBody, w)

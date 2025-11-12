@@ -33,7 +33,7 @@ func guardListPolicyRequest(
 		[]data.PolicyPermission{data.PermissionList},
 	)
 	if !allowed {
-		responseBody := net.MarshalBody(reqres.PolicyListResponse{
+		responseBody := net.MarshalBodyAndRespondOnMarshalFail(reqres.PolicyListResponse{
 			Err: data.ErrUnauthorized,
 		}, w)
 		net.Respond(http.StatusUnauthorized, responseBody, w)

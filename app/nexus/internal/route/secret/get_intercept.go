@@ -24,7 +24,7 @@ func guardGetSecretRequest(
 
 	sid, err := spiffe.IDFromRequest(r)
 	if err != nil {
-		responseBody := net.MarshalBody(reqres.SecretReadResponse{
+		responseBody := net.MarshalBodyAndRespondOnMarshalFail(reqres.SecretReadResponse{
 			Err: data.ErrUnauthorized,
 		}, w)
 		net.Respond(http.StatusUnauthorized, responseBody, w)
@@ -32,7 +32,7 @@ func guardGetSecretRequest(
 	}
 
 	if sid == nil {
-		responseBody := net.MarshalBody(reqres.SecretReadResponse{
+		responseBody := net.MarshalBodyAndRespondOnMarshalFail(reqres.SecretReadResponse{
 			Err: data.ErrUnauthorized,
 		}, w)
 		net.Respond(http.StatusUnauthorized, responseBody, w)
@@ -41,7 +41,7 @@ func guardGetSecretRequest(
 
 	err = validation.ValidateSPIFFEID(sid.String())
 	if err != nil {
-		responseBody := net.MarshalBody(reqres.SecretReadResponse{
+		responseBody := net.MarshalBodyAndRespondOnMarshalFail(reqres.SecretReadResponse{
 			Err: data.ErrUnauthorized,
 		}, w)
 		net.Respond(http.StatusUnauthorized, responseBody, w)
@@ -50,7 +50,7 @@ func guardGetSecretRequest(
 
 	err = validation.ValidatePath(path)
 	if err != nil {
-		responseBody := net.MarshalBody(reqres.SecretReadResponse{
+		responseBody := net.MarshalBodyAndRespondOnMarshalFail(reqres.SecretReadResponse{
 			Err: data.ErrBadInput,
 		}, w)
 		net.Respond(http.StatusBadRequest, responseBody, w)
@@ -64,7 +64,7 @@ func guardGetSecretRequest(
 	)
 
 	if !allowed {
-		responseBody := net.MarshalBody(reqres.SecretReadResponse{
+		responseBody := net.MarshalBodyAndRespondOnMarshalFail(reqres.SecretReadResponse{
 			Err: data.ErrUnauthorized,
 		}, w)
 		net.Respond(http.StatusUnauthorized, responseBody, w)

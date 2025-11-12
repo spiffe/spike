@@ -25,7 +25,7 @@ func guardPutSecretMetadataRequest(
 
 	spiffeid, err := spiffe.IDFromRequest(r)
 	if err != nil {
-		responseBody := net.MarshalBody(reqres.SecretPutResponse{
+		responseBody := net.MarshalBodyAndRespondOnMarshalFail(reqres.SecretPutResponse{
 			Err: data.ErrUnauthorized,
 		}, w)
 		net.Respond(http.StatusUnauthorized, responseBody, w)
@@ -33,7 +33,7 @@ func guardPutSecretMetadataRequest(
 	}
 
 	if spiffeid == nil {
-		responseBody := net.MarshalBody(reqres.SecretPutResponse{
+		responseBody := net.MarshalBodyAndRespondOnMarshalFail(reqres.SecretPutResponse{
 			Err: data.ErrUnauthorized,
 		}, w)
 		net.Respond(http.StatusUnauthorized, responseBody, w)
@@ -42,7 +42,7 @@ func guardPutSecretMetadataRequest(
 
 	err = validation.ValidateSPIFFEID(spiffeid.String())
 	if err != nil {
-		responseBody := net.MarshalBody(reqres.SecretPutResponse{
+		responseBody := net.MarshalBodyAndRespondOnMarshalFail(reqres.SecretPutResponse{
 			Err: data.ErrUnauthorized,
 		}, w)
 		net.Respond(http.StatusUnauthorized, responseBody, w)
@@ -51,7 +51,7 @@ func guardPutSecretMetadataRequest(
 
 	err = validation.ValidatePath(path)
 	if err != nil {
-		responseBody := net.MarshalBody(reqres.SecretPutResponse{
+		responseBody := net.MarshalBodyAndRespondOnMarshalFail(reqres.SecretPutResponse{
 			Err: data.ErrBadInput,
 		}, w)
 		net.Respond(http.StatusBadRequest, responseBody, w)
@@ -61,7 +61,7 @@ func guardPutSecretMetadataRequest(
 	for k := range values {
 		err := validation.ValidateName(k)
 		if err != nil {
-			responseBody := net.MarshalBody(reqres.SecretPutResponse{
+			responseBody := net.MarshalBodyAndRespondOnMarshalFail(reqres.SecretPutResponse{
 				Err: data.ErrBadInput,
 			}, w)
 			net.Respond(http.StatusUnauthorized, responseBody, w)
@@ -74,7 +74,7 @@ func guardPutSecretMetadataRequest(
 		[]data.PolicyPermission{data.PermissionWrite},
 	)
 	if !allowed {
-		responseBody := net.MarshalBody(reqres.SecretPutResponse{
+		responseBody := net.MarshalBodyAndRespondOnMarshalFail(reqres.SecretPutResponse{
 			Err: data.ErrUnauthorized,
 		}, w)
 		net.Respond(http.StatusUnauthorized, responseBody, w)

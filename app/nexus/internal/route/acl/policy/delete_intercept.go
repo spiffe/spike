@@ -18,6 +18,26 @@ import (
 	"github.com/spiffe/spike/internal/net"
 )
 
+// guardDeletePolicyRequest validates a policy deletion request by performing
+// authentication, authorization, and input validation checks.
+//
+// The function performs the following validations in order:
+//   - Extracts and validates the peer SPIFFE ID from the request
+//   - Validates the policy ID format
+//   - Checks if the peer has write permission for the policy access path
+//
+// If any validation fails, an appropriate error response is written to the
+// ResponseWriter and an error is returned.
+//
+// Parameters:
+//   - request: The policy deletion request containing the policy ID
+//   - w: The HTTP response writer for error responses
+//   - r: The HTTP request containing the peer SPIFFE ID
+//
+// Returns:
+//   - nil if all validations pass
+//   - apiErr.ErrUnauthorized if authentication or authorization fails
+//   - apiErr.ErrInvalidInput if policy ID validation fails
 func guardDeletePolicyRequest(
 	request reqres.PolicyDeleteRequest, w http.ResponseWriter, r *http.Request,
 ) error {
@@ -33,14 +53,14 @@ func guardDeletePolicyRequest(
 
 	err = validation.ValidatePolicyID(policyID)
 	if err != nil {
-		responseBody := net.MarshalBody(reqres.PolicyDeleteResponse{
-			Err: data.ErrBadInput,
-		}, w)
-		if responseBody == nil {
-			return apiErr.ErrMarshalFailure
+		responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
+			reqres.PolicyDeleteResponse{
+				Err: data.ErrBadInput,
+			}, w)
+		if err == nil {
+			net.Respond(http.StatusBadRequest, responseBody, w)
 		}
 
-		net.Respond(http.StatusBadRequest, responseBody, w)
 		return apiErr.ErrInvalidInput
 	}
 
@@ -49,10 +69,14 @@ func guardDeletePolicyRequest(
 		[]data.PolicyPermission{data.PermissionWrite},
 	)
 	if !allowed {
-		responseBody := net.MarshalBody(reqres.PolicyDeleteResponse{
-			Err: data.ErrUnauthorized,
-		}, w)
-		net.Respond(http.StatusUnauthorized, responseBody, w)
+		responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
+			reqres.PolicyDeleteResponse{
+				Err: data.ErrUnauthorized,
+			}, w)
+		if err == nil {
+			net.Respond(http.StatusUnauthorized, responseBody, w)
+		}
+
 		return apiErr.ErrUnauthorized
 	}
 

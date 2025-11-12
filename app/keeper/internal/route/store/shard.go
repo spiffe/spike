@@ -84,24 +84,28 @@ func RouteShard(
 	if mem.Zeroed32(sh) {
 		log.Log().Error(fName, "message", "No shard found")
 
-		responseBody := net.MarshalBody(reqres.ShardGetResponse{
-			Err: data.ErrNotFound,
-		}, w)
-		net.Respond(http.StatusNotFound, responseBody, w)
-
+		responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
+			reqres.ShardGetResponse{
+				Err: data.ErrNotFound,
+			}, w)
+		if err == nil {
+			net.Respond(http.StatusNotFound, responseBody, w)
+		}
 		return errors.ErrNotFound
 	}
 
-	responseBody := net.MarshalBody(reqres.ShardGetResponse{
-		Shard: sh,
-	}, w)
+	responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
+		reqres.ShardGetResponse{
+			Shard: sh,
+		}, w)
+	if err == nil {
+		net.Respond(http.StatusOK, responseBody, w)
+	}
 	// Security: Reset response body before function exits.
 	defer func() {
 		mem.ClearBytes(responseBody)
 	}()
 
-	net.Respond(http.StatusOK, responseBody, w)
 	log.Log().Info(fName, "message", data.ErrSuccess)
-
 	return nil
 }

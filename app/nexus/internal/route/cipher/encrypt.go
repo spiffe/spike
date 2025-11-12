@@ -68,7 +68,7 @@ func RouteEncrypt(
 			http.Error(w, "cipher not available", http.StatusInternalServerError)
 			return fmt.Errorf("cipher not available")
 		}
-		responseBody := net.MarshalBody(reqres.CipherEncryptResponse{
+		responseBody := net.MarshalBodyAndRespondOnMarshalFail(reqres.CipherEncryptResponse{
 			Err: data.ErrInternal,
 		}, w)
 		if responseBody == nil {
@@ -126,7 +126,7 @@ func RouteEncrypt(
 		}
 
 		// JSON response:
-		responseBody := net.MarshalBody(reqres.CipherEncryptResponse{
+		responseBody := net.MarshalBodyAndRespondOnMarshalFail(reqres.CipherEncryptResponse{
 			Err: data.ErrInternal,
 		}, w)
 		if responseBody == nil {
@@ -161,7 +161,7 @@ func RouteEncrypt(
 	}
 
 	// JSON response
-	responseBody := net.MarshalBody(reqres.CipherEncryptResponse{
+	responseBody := net.MarshalBodyAndRespondOnMarshalFail(reqres.CipherEncryptResponse{
 		Version:    byte('1'),
 		Nonce:      nonce,
 		Ciphertext: ciphertext,

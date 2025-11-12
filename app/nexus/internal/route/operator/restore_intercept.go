@@ -21,7 +21,7 @@ func guardRestoreRequest(
 ) error {
 	peerSPIFFEID, err := spiffe.IDFromRequest(r)
 	if err != nil {
-		responseBody := net.MarshalBody(reqres.RestoreResponse{
+		responseBody := net.MarshalBodyAndRespondOnMarshalFail(reqres.RestoreResponse{
 			Err: data.ErrUnauthorized,
 		}, w)
 		net.Respond(http.StatusUnauthorized, responseBody, w)
@@ -29,7 +29,7 @@ func guardRestoreRequest(
 	}
 
 	if peerSPIFFEID == nil {
-		responseBody := net.MarshalBody(reqres.RestoreResponse{
+		responseBody := net.MarshalBodyAndRespondOnMarshalFail(reqres.RestoreResponse{
 			Err: data.ErrUnauthorized,
 		}, w)
 		net.Respond(http.StatusUnauthorized, responseBody, w)
@@ -37,7 +37,7 @@ func guardRestoreRequest(
 	}
 
 	if !spiffeid.IsPilotRestore(peerSPIFFEID.String()) {
-		responseBody := net.MarshalBody(reqres.RestoreResponse{
+		responseBody := net.MarshalBodyAndRespondOnMarshalFail(reqres.RestoreResponse{
 			Err: data.ErrUnauthorized,
 		}, w)
 		net.Respond(http.StatusUnauthorized, responseBody, w)
@@ -48,7 +48,7 @@ func guardRestoreRequest(
 	// The indexes start from 1 and increase one-by-one by design.
 	const maxShardID = 1000
 	if request.ID < 1 || request.ID > maxShardID {
-		responseBody := net.MarshalBody(reqres.RestoreResponse{
+		responseBody := net.MarshalBodyAndRespondOnMarshalFail(reqres.RestoreResponse{
 			Err: data.ErrBadInput,
 		}, w)
 		net.Respond(http.StatusUnauthorized, responseBody, w)
@@ -63,7 +63,7 @@ func guardRestoreRequest(
 		}
 	}
 	if allZero {
-		responseBody := net.MarshalBody(reqres.RestoreResponse{
+		responseBody := net.MarshalBodyAndRespondOnMarshalFail(reqres.RestoreResponse{
 			Err: data.ErrBadInput,
 		}, w)
 		net.Respond(http.StatusUnauthorized, responseBody, w)

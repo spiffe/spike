@@ -21,7 +21,7 @@ func guardRecoverRequest(
 ) error {
 	peerSPIFFEID, err := spiffe.IDFromRequest(r)
 	if err != nil {
-		responseBody := net.MarshalBody(reqres.RestoreResponse{
+		responseBody := net.MarshalBodyAndRespondOnMarshalFail(reqres.RestoreResponse{
 			Err: data.ErrUnauthorized,
 		}, w)
 		net.Respond(http.StatusUnauthorized, responseBody, w)
@@ -29,7 +29,7 @@ func guardRecoverRequest(
 	}
 
 	if peerSPIFFEID == nil {
-		responseBody := net.MarshalBody(reqres.RestoreResponse{
+		responseBody := net.MarshalBodyAndRespondOnMarshalFail(reqres.RestoreResponse{
 			Err: data.ErrUnauthorized,
 		}, w)
 		net.Respond(http.StatusUnauthorized, responseBody, w)
@@ -37,7 +37,7 @@ func guardRecoverRequest(
 	}
 
 	if !spiffeid.IsPilotRecover(peerSPIFFEID.String()) {
-		responseBody := net.MarshalBody(reqres.RestoreResponse{
+		responseBody := net.MarshalBodyAndRespondOnMarshalFail(reqres.RestoreResponse{
 			Err: data.ErrUnauthorized,
 		}, w)
 		net.Respond(http.StatusUnauthorized, responseBody, w)

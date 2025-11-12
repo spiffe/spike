@@ -128,7 +128,7 @@ func RouteRecover(
 		}
 	}
 
-	responseBody := net.MarshalBody(reqres.RecoverResponse{
+	responseBody := net.MarshalBodyAndRespondOnMarshalFail(reqres.RecoverResponse{
 		Shards: shards,
 	}, w)
 	// Security: Clean up response body before exit.

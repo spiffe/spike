@@ -21,37 +21,38 @@ import (
 func guardReadPolicyRequest(
 	request reqres.PolicyReadRequest, w http.ResponseWriter, r *http.Request,
 ) error {
+
+	peerSPIFFEID, err := spiffe.IDFromRequest(r)
+	if err != nil {
+		responseBody := net.MarshalBodyAndRespondOnMarshalFail(reqres.PolicyReadResponse{
+			Err: data.ErrUnauthorized,
+		}, w)
+		net.Respond(http.StatusUnauthorized, responseBody, w)
+		return apiErr.ErrUnauthorized
+	}
+
+	if peerSPIFFEID == nil {
+		responseBody := net.MarshalBodyAndRespondOnMarshalFail(reqres.PolicyReadResponse{
+			Err: data.ErrUnauthorized,
+		}, w)
+		net.Respond(http.StatusUnauthorized, responseBody, w)
+		return apiErr.ErrUnauthorized
+	}
+
+	err = validation.ValidateSPIFFEID(peerSPIFFEID.String())
+	if err != nil {
+		responseBody := net.MarshalBodyAndRespondOnMarshalFail(reqres.PolicyReadResponse{
+			Err: data.ErrUnauthorized,
+		}, w)
+		net.Respond(http.StatusUnauthorized, responseBody, w)
+		return apiErr.ErrUnauthorized
+	}
+
 	policyID := request.ID
-
-	sid, err := spiffe.IDFromRequest(r)
-	if err != nil {
-		responseBody := net.MarshalBody(reqres.PolicyReadResponse{
-			Err: data.ErrUnauthorized,
-		}, w)
-		net.Respond(http.StatusUnauthorized, responseBody, w)
-		return apiErr.ErrUnauthorized
-	}
-
-	if sid == nil {
-		responseBody := net.MarshalBody(reqres.PolicyReadResponse{
-			Err: data.ErrUnauthorized,
-		}, w)
-		net.Respond(http.StatusUnauthorized, responseBody, w)
-		return apiErr.ErrUnauthorized
-	}
-
-	err = validation.ValidateSPIFFEID(sid.String())
-	if err != nil {
-		responseBody := net.MarshalBody(reqres.PolicyReadResponse{
-			Err: data.ErrUnauthorized,
-		}, w)
-		net.Respond(http.StatusUnauthorized, responseBody, w)
-		return apiErr.ErrUnauthorized
-	}
 
 	err = validation.ValidatePolicyID(policyID)
 	if err != nil {
-		responseBody := net.MarshalBody(reqres.PolicyReadResponse{
+		responseBody := net.MarshalBodyAndRespondOnMarshalFail(reqres.PolicyReadResponse{
 			Err: data.ErrBadInput,
 		}, w)
 		if responseBody == nil {
@@ -61,11 +62,11 @@ func guardReadPolicyRequest(
 	}
 
 	allowed := state.CheckAccess(
-		sid.String(), auth.PathSystemPolicyAccess,
+		peerSPIFFEID.String(), auth.PathSystemPolicyAccess,
 		[]data.PolicyPermission{data.PermissionRead},
 	)
 	if !allowed {
-		responseBody := net.MarshalBody(reqres.PolicyReadResponse{
+		responseBody := net.MarshalBodyAndRespondOnMarshalFail(reqres.PolicyReadResponse{
 			Err: data.ErrUnauthorized,
 		}, w)
 		net.Respond(http.StatusUnauthorized, responseBody, w)

@@ -92,7 +92,7 @@ func RouteDeleteSecret(
 		log.Log().Info(fName, "message", "Secret deleted")
 	}
 
-	responseBody := net.MarshalBody(reqres.SecretDeleteResponse{}, w)
+	responseBody := net.MarshalBodyAndRespondOnMarshalFail(reqres.SecretDeleteResponse{}, w)
 	if responseBody == nil {
 		return errors.ErrMarshalFailure
 	}

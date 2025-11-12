@@ -6,17 +6,18 @@ package net
 
 import (
 	"encoding/json"
-	"errors"
 	"net/http"
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
+	apiErr "github.com/spiffe/spike-sdk-go/api/errors"
 	"github.com/spiffe/spike-sdk-go/log"
 
 	"github.com/spiffe/spike/internal/journal"
 )
 
-// MarshalBody serializes a response object to JSON and handles error cases.
+// MarshalBodyAndRespondOnMarshalFail serializes a response object to JSON and
+// handles error cases.
 //
 // This function attempts to marshal the provided response object to JSON bytes.
 // If marshaling fails, it sends a 500 Internal Server Error response to the
@@ -29,9 +30,11 @@ import (
 //
 // Returns:
 //   - []byte - The marshaled JSON bytes, or nil if marshaling failed
-func MarshalBody(res any, w http.ResponseWriter) []byte {
+//   - error - apiErr.ErrMarshalFailure if marshaling failed, nil otherwise
+func MarshalBodyAndRespondOnMarshalFail(
+	res any, w http.ResponseWriter,
+) ([]byte, error) {
 	body, err := json.Marshal(res)
-
 	if err != nil {
 		log.Log().Error("marshalBody",
 			"message", "Problem generating response",
@@ -45,13 +48,13 @@ func MarshalBody(res any, w http.ResponseWriter) []byte {
 			log.Log().Error("marshalBody",
 				"message", "Problem writing response",
 				"err", err.Error())
-			return nil
+			return nil, apiErr.ErrMarshalFailure
 		}
 
-		return nil
+		return nil, apiErr.ErrMarshalFailure
 	}
 
-	return body
+	return body, nil
 }
 
 // Respond writes a JSON response with the specified status code and body.
@@ -90,8 +93,8 @@ func Respond(statusCode int, body []byte, w http.ResponseWriter) {
 //
 // This function serves as a catch-all handler for undefined routes, logging the
 // request details and returning a standardized error response. It uses
-// MarshalBody to generate the response and handles any errors during response
-// writing.
+// MarshalBodyAndRespondOnMarshalFail to generate the response and handles any
+// errors during response writing.
 //
 // Parameters:
 //   - w: http.ResponseWriter - The response writer
@@ -110,9 +113,11 @@ func Fallback(
 		"query", r.URL.RawQuery)
 	audit.Action = journal.AuditFallback
 
-	body := MarshalBody(reqres.FallbackResponse{Err: data.ErrBadInput}, w)
-	if body == nil {
-		return errors.New("failed to marshal response body")
+	body, err := MarshalBodyAndRespondOnMarshalFail(
+		reqres.FallbackResponse{Err: data.ErrBadInput}, w,
+	)
+	if err != nil {
+		return err
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -131,8 +136,8 @@ func Fallback(
 // NotReady handles requests when the system has not initialized its backing
 // store with a root key by returning a 400 Bad Request.
 //
-// This function uses MarshalBody to generate the response and handles any
-// errors during response writing.
+// This function uses MarshalBodyAndRespondOnMarshalFail to generate the
+// response and handles any errors during response writing.
 //
 // Parameters:
 //   - w: http.ResponseWriter - The response writer
@@ -156,9 +161,11 @@ func NotReady(
 		"query", r.URL.RawQuery)
 	audit.Action = journal.AuditBlocked
 
-	body := MarshalBody(reqres.FallbackResponse{Err: data.ErrNotReady}, w)
-	if body == nil {
-		return errors.New("failed to marshal response body")
+	body, err := MarshalBodyAndRespondOnMarshalFail(
+		reqres.FallbackResponse{Err: data.ErrNotReady}, w,
+	)
+	if err != nil {
+		return err
 	}
 
 	w.Header().Set("Content-Type", "application/json")
