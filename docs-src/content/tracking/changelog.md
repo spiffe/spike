@@ -35,6 +35,7 @@ sort_by = "weight"
   that only SPIKE Bootstrap (during initial setup) or SPIKE Nexus (during
   periodic updates) can contribute shards. This prevents unauthorized access
   to sensitive shard data.
+* Various other bugfixes, refactorings, and security improvements.
 
 ## [0.6.1] - 2025-10-02
 
