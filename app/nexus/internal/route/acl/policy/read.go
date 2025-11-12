@@ -115,12 +115,11 @@ func RouteGetPolicy(
 		log.Log().Info(fName, "message", "Policy not found")
 
 		res := reqres.PolicyReadResponse{Err: data.ErrNotFound}
-		responseBody := net.MarshalBodyAndRespondOnMarshalFail(res, w)
-		if responseBody == nil {
-			return apiErr.ErrMarshalFailure
+		responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(res, w)
+		if err == nil {
+			net.Respond(http.StatusNotFound, responseBody, w)
 		}
 
-		net.Respond(http.StatusNotFound, responseBody, w)
 		log.Log().Info(fName, "message", "Policy not found: returning nil")
 		return nil
 	} else {
@@ -128,29 +127,26 @@ func RouteGetPolicy(
 
 		log.Log().Info(fName, "message", "Failed to retrieve policy", "err", err)
 
-		responseBody := net.MarshalBodyAndRespondOnMarshalFail(reqres.PolicyReadResponse{
-			Err: data.ErrInternal}, w,
+		responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
+			reqres.PolicyReadResponse{
+				Err: data.ErrInternal}, w,
 		)
-		if responseBody == nil {
-			return apiErr.ErrMarshalFailure
+		if err == nil {
+			net.Respond(http.StatusInternalServerError, responseBody, w)
 		}
-
-		net.Respond(http.StatusInternalServerError, responseBody, w)
 
 		log.Log().Warn(fName, "message", "problem retrieving policy",
 			"err", data.ErrInternal)
 		return err
 	}
 
-	responseBody := net.MarshalBodyAndRespondOnMarshalFail(
+	responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
 		reqres.PolicyReadResponse{Policy: policy}, w,
 	)
-	if responseBody == nil {
-		return apiErr.ErrMarshalFailure
+	if err == nil {
+		net.Respond(http.StatusOK, responseBody, w)
 	}
 
-	net.Respond(http.StatusOK, responseBody, w)
 	log.Log().Info(fName, "message", data.ErrSuccess)
-
 	return nil
 }
