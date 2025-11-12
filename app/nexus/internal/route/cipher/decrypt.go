@@ -70,16 +70,18 @@ func RouteDecrypt(
 			http.Error(w, "cipher not available", http.StatusInternalServerError)
 			return fmt.Errorf("cipher not available")
 		}
-		responseBody := net.MarshalBodyAndRespondOnMarshalFail(reqres.CipherDecryptResponse{
-			Err: data.ErrInternal,
-		}, w)
-		if responseBody == nil {
-			return apiErr.ErrMarshalFailure
+		responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
+			reqres.CipherDecryptResponse{
+				Err: data.ErrInternal,
+			}, w)
+		if err == nil {
+			net.Respond(http.StatusInternalServerError, responseBody, w)
 		}
-		net.Respond(http.StatusInternalServerError, responseBody, w)
-		return fmt.Errorf("cipher not available")
+
+		return fmt.Errorf("cipher not available") // TODO: this needs to come from a symbolic constant.
 	}
 
+	// TODO: why var?
 	var version byte
 	var nonce []byte
 	var ciphertext []byte
@@ -147,14 +149,15 @@ func RouteDecrypt(
 			http.Error(w, "unsupported version", http.StatusBadRequest)
 			return fmt.Errorf("unsupported version: %v", version)
 		}
-		responseBody := net.MarshalBodyAndRespondOnMarshalFail(reqres.CipherDecryptResponse{
-			Err: data.ErrBadInput,
-		}, w)
-		if responseBody == nil {
-			return apiErr.ErrMarshalFailure
+		responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
+			reqres.CipherDecryptResponse{
+				Err: data.ErrBadInput,
+			}, w)
+		if err == nil {
+			net.Respond(http.StatusBadRequest, responseBody, w)
 		}
-		net.Respond(http.StatusBadRequest, responseBody, w)
-		return fmt.Errorf("unsupported version: %v", version)
+
+		return fmt.Errorf("unsupported version: %v", version) // TODO: this needs to come from a symbolic constant.
 	}
 
 	// Validate nonce size
@@ -164,13 +167,15 @@ func RouteDecrypt(
 			return fmt.Errorf("invalid nonce size: expected %d, got %d",
 				c.NonceSize(), len(nonce))
 		}
-		responseBody := net.MarshalBodyAndRespondOnMarshalFail(reqres.CipherDecryptResponse{
-			Err: data.ErrBadInput,
-		}, w)
-		if responseBody == nil {
-			return apiErr.ErrMarshalFailure
+		responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
+			reqres.CipherDecryptResponse{
+				Err: data.ErrBadInput,
+			}, w)
+		if err == nil {
+			net.Respond(http.StatusBadRequest, responseBody, w)
 		}
-		net.Respond(http.StatusBadRequest, responseBody, w)
+
+		// TODO: this needs to come from a symbolic constant.
 		return fmt.Errorf("invalid nonce size: expected %d, got %d",
 			c.NonceSize(), len(nonce))
 	}
@@ -187,13 +192,15 @@ func RouteDecrypt(
 			http.Error(w, "decryption failed", http.StatusBadRequest)
 			return fmt.Errorf("decryption failed: %w", err)
 		}
-		responseBody := net.MarshalBodyAndRespondOnMarshalFail(reqres.CipherDecryptResponse{
-			Err: data.ErrInternal,
-		}, w)
-		if responseBody == nil {
-			return apiErr.ErrMarshalFailure
+		responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
+			reqres.CipherDecryptResponse{
+				Err: data.ErrInternal,
+			}, w)
+		if err == nil {
+			net.Respond(http.StatusInternalServerError, responseBody, w)
 		}
-		net.Respond(http.StatusBadRequest, responseBody, w)
+
+		// TODO: this needs to be a symbolic constant.
 		return fmt.Errorf("decryption failed: %w", err)
 	}
 
@@ -203,20 +210,20 @@ func RouteDecrypt(
 		if _, err := w.Write(plaintext); err != nil {
 			return err
 		}
-		log.Log().Info(fName, "message", "Streaming decryption successful")
+		log.Log().Info(fName, "message", "streaming decryption successful")
 		return nil
 	}
 
 	// JSON response
-	responseBody := net.MarshalBodyAndRespondOnMarshalFail(reqres.CipherDecryptResponse{
-		Plaintext: plaintext,
-		Err:       data.ErrSuccess,
-	}, w)
-	if responseBody == nil {
-		return apiErr.ErrMarshalFailure
+	responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
+		reqres.CipherDecryptResponse{
+			Plaintext: plaintext,
+			Err:       data.ErrSuccess,
+		}, w)
+	if err == nil {
+		net.Respond(http.StatusOK, responseBody, w)
 	}
 
-	net.Respond(http.StatusOK, responseBody, w)
 	log.Log().Info(fName, "message", data.ErrSuccess)
 	return nil
 }

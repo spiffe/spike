@@ -24,27 +24,36 @@ func guardEncryptCipherRequest(
 ) error {
 	sid, err := spiffe.IDFromRequest(r)
 	if err != nil {
-		responseBody := net.MarshalBodyAndRespondOnMarshalFail(reqres.CipherEncryptResponse{
-			Err: data.ErrUnauthorized,
-		}, w)
-		net.Respond(http.StatusUnauthorized, responseBody, w)
+		responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
+			reqres.CipherEncryptResponse{
+				Err: data.ErrUnauthorized,
+			}, w)
+		if err == nil {
+			net.Respond(http.StatusUnauthorized, responseBody, w)
+		}
 		return apiErr.ErrUnauthorized
 	}
 
 	if sid == nil {
-		responseBody := net.MarshalBodyAndRespondOnMarshalFail(reqres.CipherEncryptResponse{
-			Err: data.ErrUnauthorized,
-		}, w)
-		net.Respond(http.StatusUnauthorized, responseBody, w)
+		responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
+			reqres.CipherEncryptResponse{
+				Err: data.ErrUnauthorized,
+			}, w)
+		if err == nil {
+			net.Respond(http.StatusUnauthorized, responseBody, w)
+		}
 		return apiErr.ErrUnauthorized
 	}
 
 	err = validation.ValidateSPIFFEID(sid.String())
 	if err != nil {
-		responseBody := net.MarshalBodyAndRespondOnMarshalFail(reqres.CipherEncryptResponse{
-			Err: data.ErrUnauthorized,
-		}, w)
-		net.Respond(http.StatusUnauthorized, responseBody, w)
+		responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
+			reqres.CipherEncryptResponse{
+				Err: data.ErrUnauthorized,
+			}, w)
+		if err == nil {
+			net.Respond(http.StatusUnauthorized, responseBody, w)
+		}
 		return apiErr.ErrUnauthorized
 	}
 
@@ -63,10 +72,13 @@ func guardEncryptCipherRequest(
 	}
 	// If not, block the request:
 	if !allowed {
-		responseBody := net.MarshalBodyAndRespondOnMarshalFail(reqres.CipherEncryptResponse{
-			Err: data.ErrUnauthorized,
-		}, w)
-		net.Respond(http.StatusUnauthorized, responseBody, w)
+		responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
+			reqres.CipherEncryptResponse{
+				Err: data.ErrUnauthorized,
+			}, w)
+		if err == nil {
+			net.Respond(http.StatusUnauthorized, responseBody, w)
+		}
 		return apiErr.ErrUnauthorized
 	}
 

@@ -81,12 +81,13 @@ func RoutePutSecret(
 
 	log.Log().Info(fName, "message", "Secret upserted")
 
-	responseBody := net.MarshalBodyAndRespondOnMarshalFail(reqres.SecretPutResponse{}, w)
-	if responseBody == nil {
-		return errors.ErrMarshalFailure
+	responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
+		reqres.SecretPutResponse{}, w,
+	)
+	if err == nil {
+		net.Respond(http.StatusOK, responseBody, w)
 	}
 
-	net.Respond(http.StatusOK, responseBody, w)
 	log.Log().Info(fName, "message", data.ErrSuccess)
 	return nil
 }

@@ -10,53 +10,36 @@ import (
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	apiErr "github.com/spiffe/spike-sdk-go/api/errors"
-	"github.com/spiffe/spike-sdk-go/config/auth"
-	"github.com/spiffe/spike-sdk-go/spiffe"
-	"github.com/spiffe/spike-sdk-go/validation"
+	apiAuth "github.com/spiffe/spike-sdk-go/config/auth"
 
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
+	"github.com/spiffe/spike/internal/auth"
 	"github.com/spiffe/spike/internal/net"
 )
 
 func guardListSecretRequest(
 	_ reqres.SecretListRequest, w http.ResponseWriter, r *http.Request,
 ) error {
-
-	sid, err := spiffe.IDFromRequest(r)
+	peerSPIFFEID, err := auth.ExtractPeerSPIFFEID[reqres.SecretListResponse](
+		r, w, reqres.SecretListResponse{
+			Err: data.ErrUnauthorized,
+		})
 	if err != nil {
-		responseBody := net.MarshalBodyAndRespondOnMarshalFail(reqres.SecretListResponse{
-			Err: data.ErrUnauthorized,
-		}, w)
-		net.Respond(http.StatusUnauthorized, responseBody, w)
-		return apiErr.ErrUnauthorized
-	}
-
-	if sid == nil {
-		responseBody := net.MarshalBodyAndRespondOnMarshalFail(reqres.SecretListResponse{
-			Err: data.ErrUnauthorized,
-		}, w)
-		net.Respond(http.StatusUnauthorized, responseBody, w)
-		return apiErr.ErrUnauthorized
-	}
-
-	err = validation.ValidateSPIFFEID(sid.String())
-	if err != nil {
-		responseBody := net.MarshalBodyAndRespondOnMarshalFail(reqres.SecretListResponse{
-			Err: data.ErrUnauthorized,
-		}, w)
-		net.Respond(http.StatusUnauthorized, responseBody, w)
-		return apiErr.ErrUnauthorized
+		return err
 	}
 
 	allowed := state.CheckAccess(
-		sid.String(), auth.PathSystemSecretAccess,
+		peerSPIFFEID.String(), apiAuth.PathSystemSecretAccess,
 		[]data.PolicyPermission{data.PermissionList},
 	)
 	if !allowed {
-		responseBody := net.MarshalBodyAndRespondOnMarshalFail(reqres.SecretListResponse{
-			Err: data.ErrUnauthorized,
-		}, w)
-		net.Respond(http.StatusUnauthorized, responseBody, w)
+		responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
+			reqres.SecretListResponse{
+				Err: data.ErrUnauthorized,
+			}, w)
+		if err == nil {
+			net.Respond(http.StatusUnauthorized, responseBody, w)
+		}
 		return apiErr.ErrUnauthorized
 	}
 

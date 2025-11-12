@@ -88,12 +88,13 @@ func RouteUndeleteSecret(
 		log.Log().Info(fName, "message", "Secret undeleted")
 	}
 
-	responseBody := net.MarshalBodyAndRespondOnMarshalFail(reqres.SecretUndeleteResponse{}, w)
-	if responseBody == nil {
-		return errors.ErrMarshalFailure
+	responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
+		reqres.SecretUndeleteResponse{}, w,
+	)
+	if err == nil {
+		net.Respond(http.StatusOK, responseBody, w)
 	}
 
-	net.Respond(http.StatusOK, responseBody, w)
 	log.Log().Info(fName, "message", data.ErrSuccess)
 	return nil
 }

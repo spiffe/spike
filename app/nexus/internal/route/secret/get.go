@@ -95,14 +95,14 @@ func RouteGetSecret(
 		return handleGetSecretError(err, w)
 	}
 
-	responseBody := net.MarshalBodyAndRespondOnMarshalFail(reqres.SecretReadResponse{
-		Secret: data.Secret{Data: secret},
-	}, w)
-	if responseBody == nil {
-		return apiErr.ErrMarshalFailure
+	responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
+		reqres.SecretReadResponse{
+			Secret: data.Secret{Data: secret},
+		}, w)
+	if err == nil {
+		net.Respond(http.StatusOK, responseBody, w)
 	}
 
-	net.Respond(http.StatusOK, responseBody, w)
 	log.Log().Info("routeGetSecret", "message", data.ErrSuccess)
 	return nil
 }

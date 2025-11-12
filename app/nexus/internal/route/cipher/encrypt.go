@@ -61,26 +61,31 @@ func RouteEncrypt(
 	contentType := r.Header.Get("Content-Type")
 	streamModeActive := contentType == "application/octet-stream"
 
+	// TODO: we should do this AFTER the guard interception; not before.
+	// TODO: also extract this part into a function.
 	// Get cipher early as both modes need it
 	c := persist.Backend().GetCipher()
 	if c == nil {
 		if streamModeActive {
 			http.Error(w, "cipher not available", http.StatusInternalServerError)
-			return fmt.Errorf("cipher not available")
+			return fmt.Errorf("cipher not available") // TODO: symbolic constant.
 		}
-		responseBody := net.MarshalBodyAndRespondOnMarshalFail(reqres.CipherEncryptResponse{
-			Err: data.ErrInternal,
-		}, w)
-		if responseBody == nil {
-			return apiErr.ErrMarshalFailure
+		responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
+			reqres.CipherEncryptResponse{
+				Err: data.ErrInternal,
+			}, w)
+		if err == nil {
+			net.Respond(http.StatusInternalServerError, responseBody, w)
 		}
-		net.Respond(http.StatusInternalServerError, responseBody, w)
-		return fmt.Errorf("cipher not available")
+
+		return fmt.Errorf("cipher not available") // TODO: symbolic constant.
 	}
 
-	var plaintext []byte
+	var plaintext []byte // TODO: why var?
 
 	if streamModeActive {
+		// TODO: this is called twice; elevate it to an earlier place.
+		// TODO: we probably need a stream-specific guard too.
 		err := guardEncryptCipherRequest(reqres.CipherEncryptRequest{}, w, r)
 		if err != nil {
 			return err
@@ -89,7 +94,7 @@ func RouteEncrypt(
 		// Streaming mode - read raw body
 		requestBody := net.ReadRequestBody(w, r)
 		if requestBody == nil {
-			return apiErr.ErrReadFailure
+			return apiErr.ErrReadFailure // TODO: we return an error but don't respond on http stream.
 		}
 
 		plaintext = requestBody
@@ -97,7 +102,7 @@ func RouteEncrypt(
 		// JSON mode - parse request
 		requestBody := net.ReadRequestBody(w, r)
 		if requestBody == nil {
-			return apiErr.ErrReadFailure
+			return apiErr.ErrReadFailure // TODO: we still need to respond to the client.
 		}
 
 		request := net.HandleRequest[
@@ -106,7 +111,7 @@ func RouteEncrypt(
 			reqres.CipherEncryptResponse{Err: data.ErrBadInput},
 		)
 		if request == nil {
-			return apiErr.ErrParseFailure
+			return apiErr.ErrParseFailure // TODO: we still need to respond to the client.
 		}
 
 		err := guardEncryptCipherRequest(*request, w, r)
@@ -122,18 +127,18 @@ func RouteEncrypt(
 	if _, err := io.ReadFull(rand.Reader, nonce); err != nil {
 		if streamModeActive {
 			http.Error(w, "failed to generate nonce", http.StatusInternalServerError)
-			return fmt.Errorf("failed to generate nonce: %w", err)
+			return fmt.Errorf("failed to generate nonce: %w", err) // TODO: symbolic constant.
 		}
 
 		// JSON response:
-		responseBody := net.MarshalBodyAndRespondOnMarshalFail(reqres.CipherEncryptResponse{
+		responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(reqres.CipherEncryptResponse{
 			Err: data.ErrInternal,
 		}, w)
-		if responseBody == nil {
-			return apiErr.ErrMarshalFailure
+		if err == nil {
+			net.Respond(http.StatusInternalServerError, responseBody, w)
 		}
-		net.Respond(http.StatusInternalServerError, responseBody, w)
-		return fmt.Errorf("failed to generate nonce: %w", err)
+
+		return fmt.Errorf("failed to generate nonce: %w", err) // TODO: symbolic constant.
 	}
 
 	// Encrypt the plaintext
@@ -161,17 +166,17 @@ func RouteEncrypt(
 	}
 
 	// JSON response
-	responseBody := net.MarshalBodyAndRespondOnMarshalFail(reqres.CipherEncryptResponse{
-		Version:    byte('1'),
-		Nonce:      nonce,
-		Ciphertext: ciphertext,
-		Err:        data.ErrSuccess,
-	}, w)
-	if responseBody == nil {
-		return apiErr.ErrMarshalFailure
+	responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
+		reqres.CipherEncryptResponse{
+			Version:    byte('1'), // TODO: maybe set version as constant.
+			Nonce:      nonce,
+			Ciphertext: ciphertext,
+			Err:        data.ErrSuccess,
+		}, w)
+	if err == nil {
+		net.Respond(http.StatusOK, responseBody, w)
 	}
 
-	net.Respond(http.StatusOK, responseBody, w)
 	log.Log().Info(fName, "message", data.ErrSuccess)
 	return nil
 }

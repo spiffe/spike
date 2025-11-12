@@ -87,17 +87,19 @@ func RouteVerify(
 	c := persist.Backend().GetCipher()
 	if c == nil {
 		log.Log().Error(fName, "message", "cipher not available")
-		responseBody := net.MarshalBodyAndRespondOnMarshalFail(reqres.BootstrapVerifyResponse{
-			Err: data.ErrInternal,
-		}, w)
-		if responseBody == nil {
-			return apiErr.ErrMarshalFailure
+		responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
+			reqres.BootstrapVerifyResponse{
+				Err: data.ErrInternal,
+			}, w)
+		if err == nil {
+			net.Respond(http.StatusInternalServerError, responseBody, w)
 		}
-		net.Respond(http.StatusInternalServerError, responseBody, w)
+		// TODO: this needs to come from a symbolic constant.
 		return fmt.Errorf("cipher not available")
 	}
 
 	// Decrypt the ciphertext
+	// TODO: these need to be removed!
 	fmt.Println("nonce", hex.EncodeToString(request.Nonce))
 	fmt.Println("ciphertext", hex.EncodeToString(request.Ciphertext))
 	fmt.Println("rootKey", hex.EncodeToString(base.RootKeyNoLock()[:]))
@@ -105,13 +107,15 @@ func RouteVerify(
 	if err != nil {
 		log.Log().Error(fName, "message", "decryption failed", "err",
 			err.Error())
-		responseBody := net.MarshalBodyAndRespondOnMarshalFail(reqres.BootstrapVerifyResponse{
-			Err: data.ErrInternal,
-		}, w)
-		if responseBody == nil {
-			return apiErr.ErrMarshalFailure
+		responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
+			reqres.BootstrapVerifyResponse{
+				Err: data.ErrInternal,
+			}, w)
+		if err == nil {
+			net.Respond(http.StatusInternalServerError, responseBody, w)
 		}
-		net.Respond(http.StatusBadRequest, responseBody, w)
+
+		// TODO: needs to come from a symbolic constant.
 		return fmt.Errorf("decryption failed: %w", err)
 	}
 
@@ -122,15 +126,15 @@ func RouteVerify(
 	log.Log().Info(fName, "message", "verification successful",
 		"plaintext_len", len(plaintext), "hash", hashHex)
 
-	responseBody := net.MarshalBodyAndRespondOnMarshalFail(reqres.BootstrapVerifyResponse{
-		Hash: hashHex,
-		Err:  data.ErrSuccess,
-	}, w)
-	if responseBody == nil {
-		return apiErr.ErrMarshalFailure
+	responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
+		reqres.BootstrapVerifyResponse{
+			Hash: hashHex,
+			Err:  data.ErrSuccess,
+		}, w)
+	if err == nil {
+		net.Respond(http.StatusOK, responseBody, w)
 	}
 
-	net.Respond(http.StatusOK, responseBody, w)
 	log.Log().Info(fName, "message", data.ErrSuccess)
 	return nil
 }

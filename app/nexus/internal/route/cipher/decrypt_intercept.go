@@ -10,63 +10,47 @@ import (
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	apiErr "github.com/spiffe/spike-sdk-go/api/errors"
-	"github.com/spiffe/spike-sdk-go/config/auth"
-	"github.com/spiffe/spike-sdk-go/spiffe"
+	apiAuth "github.com/spiffe/spike-sdk-go/config/auth"
 	"github.com/spiffe/spike-sdk-go/spiffeid"
-	"github.com/spiffe/spike-sdk-go/validation"
 
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
+	"github.com/spiffe/spike/internal/auth"
 	"github.com/spiffe/spike/internal/net"
 )
 
 func guardDecryptCipherRequest(
 	_ reqres.CipherDecryptRequest, w http.ResponseWriter, r *http.Request,
 ) error {
-	sid, err := spiffe.IDFromRequest(r)
+	peerSPIFFEID, err := auth.ExtractPeerSPIFFEID[reqres.ShardGetResponse](
+		r, w, reqres.ShardGetResponse{
+			Err: data.ErrUnauthorized,
+		})
 	if err != nil {
-		responseBody := net.MarshalBodyAndRespondOnMarshalFail(reqres.CipherDecryptResponse{
-			Err: data.ErrUnauthorized,
-		}, w)
-		net.Respond(http.StatusUnauthorized, responseBody, w)
-		return apiErr.ErrUnauthorized
+		return err
 	}
 
-	if sid == nil {
-		responseBody := net.MarshalBodyAndRespondOnMarshalFail(reqres.CipherDecryptResponse{
-			Err: data.ErrUnauthorized,
-		}, w)
-		net.Respond(http.StatusUnauthorized, responseBody, w)
-		return apiErr.ErrUnauthorized
-	}
-
-	err = validation.ValidateSPIFFEID(sid.String())
-	if err != nil {
-		responseBody := net.MarshalBodyAndRespondOnMarshalFail(reqres.CipherDecryptResponse{
-			Err: data.ErrUnauthorized,
-		}, w)
-		net.Respond(http.StatusUnauthorized, responseBody, w)
-		return apiErr.ErrUnauthorized
-	}
-
-	// Lite Workloads are always allowed:
+	// Lite workloads are always allowed:
 	allowed := false
-	if spiffeid.IsLiteWorkload(sid.String()) {
+	if spiffeid.IsLiteWorkload(peerSPIFFEID.String()) {
 		allowed = true
 	}
 	// If not, do a policy check to determine if the request is allowed:
 	if !allowed {
 		allowed = state.CheckAccess(
-			sid.String(),
-			auth.PathSystemCipherDecrypt,
+			peerSPIFFEID.String(),
+			apiAuth.PathSystemCipherDecrypt,
 			[]data.PolicyPermission{data.PermissionExecute},
 		)
 	}
-	// If not, do a policy check to determine if the request is allowed:
+
 	if !allowed {
-		responseBody := net.MarshalBodyAndRespondOnMarshalFail(reqres.CipherDecryptResponse{
-			Err: data.ErrUnauthorized,
-		}, w)
-		net.Respond(http.StatusUnauthorized, responseBody, w)
+		responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
+			reqres.CipherDecryptResponse{
+				Err: data.ErrUnauthorized,
+			}, w)
+		if err == nil {
+			net.Respond(http.StatusUnauthorized, responseBody, w)
+		}
 		return apiErr.ErrUnauthorized
 	}
 

@@ -94,18 +94,18 @@ func RouteRestore(
 	currentShardCount := len(shards)
 
 	if currentShardCount >= env.ShamirThresholdVal() {
-		responseBody := net.MarshalBodyAndRespondOnMarshalFail(reqres.RestoreResponse{
-			RestorationStatus: data.RestorationStatus{
-				ShardsCollected: currentShardCount,
-				ShardsRemaining: 0,
-				Restored:        true,
-			},
-			Err: data.ErrBadInput,
-		}, w)
-		if responseBody == nil {
-			return errors.ErrMarshalFailure
+		responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
+			reqres.RestoreResponse{
+				RestorationStatus: data.RestorationStatus{
+					ShardsCollected: currentShardCount,
+					ShardsRemaining: 0,
+					Restored:        true,
+				},
+				Err: data.ErrBadInput,
+			}, w)
+		if err == nil {
+			net.Respond(http.StatusBadRequest, responseBody, w)
 		}
-		net.Respond(http.StatusBadRequest, responseBody, w)
 		return nil
 	}
 
@@ -116,20 +116,19 @@ func RouteRestore(
 
 		// Duplicate shard found.
 
-		responseBody := net.MarshalBodyAndRespondOnMarshalFail(reqres.RestoreResponse{
-			RestorationStatus: data.RestorationStatus{
-				ShardsCollected: currentShardCount,
-				ShardsRemaining: env.ShamirThresholdVal() - currentShardCount,
-				Restored:        currentShardCount == env.ShamirThresholdVal(),
-			},
-			Err: data.ErrBadInput,
-		}, w)
-		if responseBody == nil {
-			return errors.ErrMarshalFailure
+		responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
+			reqres.RestoreResponse{
+				RestorationStatus: data.RestorationStatus{
+					ShardsCollected: currentShardCount,
+					ShardsRemaining: env.ShamirThresholdVal() - currentShardCount,
+					Restored:        currentShardCount == env.ShamirThresholdVal(),
+				},
+				Err: data.ErrBadInput,
+			}, w)
+		if err == nil {
+			net.Respond(http.StatusBadRequest, responseBody, w)
 		}
-
-		net.Respond(http.StatusBadRequest, responseBody, w)
-		return nil
+		return nil // TODO: why not log failure exits too? check this for all routing functions.
 	}
 
 	shards = append(shards, recovery.ShamirShard{
@@ -153,18 +152,18 @@ func RouteRestore(
 		}
 	}
 
-	responseBody := net.MarshalBodyAndRespondOnMarshalFail(reqres.RestoreResponse{
-		RestorationStatus: data.RestorationStatus{
-			ShardsCollected: currentShardCount,
-			ShardsRemaining: env.ShamirThresholdVal() - currentShardCount,
-			Restored:        currentShardCount == env.ShamirThresholdVal(),
-		},
-	}, w)
-	if responseBody == nil {
-		return errors.ErrMarshalFailure
+	responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
+		reqres.RestoreResponse{
+			RestorationStatus: data.RestorationStatus{
+				ShardsCollected: currentShardCount,
+				ShardsRemaining: env.ShamirThresholdVal() - currentShardCount,
+				Restored:        currentShardCount == env.ShamirThresholdVal(),
+			},
+		}, w)
+	if err == nil {
+		net.Respond(http.StatusOK, responseBody, w)
 	}
 
-	net.Respond(http.StatusOK, responseBody, w)
 	log.Log().Info(fName, "message", data.ErrSuccess)
 	return nil
 }

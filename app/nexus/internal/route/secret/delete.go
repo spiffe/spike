@@ -56,7 +56,7 @@ import (
 func RouteDeleteSecret(
 	w http.ResponseWriter, r *http.Request, audit *journal.AuditEntry,
 ) error {
-	const fName = "routeDeleteSecret"
+	const fName = "RouteDeleteSecret"
 	journal.AuditRequest(fName, r, audit, journal.AuditDelete)
 
 	requestBody := net.ReadRequestBody(w, r)
@@ -92,12 +92,13 @@ func RouteDeleteSecret(
 		log.Log().Info(fName, "message", "Secret deleted")
 	}
 
-	responseBody := net.MarshalBodyAndRespondOnMarshalFail(reqres.SecretDeleteResponse{}, w)
-	if responseBody == nil {
-		return errors.ErrMarshalFailure
+	responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
+		reqres.SecretDeleteResponse{}, w,
+	)
+	if err == nil {
+		net.Respond(http.StatusOK, responseBody, w)
 	}
 
-	net.Respond(http.StatusOK, responseBody, w)
 	log.Log().Info(fName, "message", data.ErrSuccess)
 	return nil
 }

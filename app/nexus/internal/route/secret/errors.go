@@ -10,7 +10,6 @@ import (
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
-	apiErr "github.com/spiffe/spike-sdk-go/api/errors"
 	"github.com/spiffe/spike-sdk-go/kv"
 	"github.com/spiffe/spike-sdk-go/log"
 
@@ -24,26 +23,25 @@ func handleGetSecretError(err error, w http.ResponseWriter) error {
 		log.Log().Info(fName, "message", "Secret not found")
 
 		res := reqres.SecretReadResponse{Err: data.ErrNotFound}
-		responseBody := net.MarshalBodyAndRespondOnMarshalFail(res, w)
-		if responseBody == nil {
-			return apiErr.ErrMarshalFailure
+		responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(res, w)
+		if err == nil {
+			net.Respond(http.StatusNotFound, responseBody, w)
 		}
 
-		net.Respond(http.StatusNotFound, responseBody, w)
-		log.Log().Info("routeGetSecret", "message", "not found")
+		log.Log().Info(fName, "message", "not found")
 		return nil
 	}
 
-	log.Log().Warn(fName, "message", "Failed to retrieve secret", "err", err)
+	log.Log().Warn(fName, "message", "failed to retrieve secret", "err", err)
 
-	responseBody := net.MarshalBodyAndRespondOnMarshalFail(reqres.SecretReadResponse{
-		Err: data.ErrInternal}, w,
+	responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
+		reqres.SecretReadResponse{
+			Err: data.ErrInternal}, w,
 	)
-	if responseBody == nil {
-		return apiErr.ErrMarshalFailure
+	if err == nil {
+		net.Respond(http.StatusInternalServerError, responseBody, w)
 	}
 
-	net.Respond(http.StatusInternalServerError, responseBody, w)
 	log.Log().Error(fName, "message", data.ErrInternal)
 	return err
 }
@@ -55,24 +53,23 @@ func handleGetSecretMetadataError(err error, w http.ResponseWriter) error {
 		log.Log().Info(fName, "message", "Secret not found")
 
 		res := reqres.SecretMetadataResponse{Err: data.ErrNotFound}
-		responseBody := net.MarshalBodyAndRespondOnMarshalFail(res, w)
-		if responseBody == nil {
-			return errors.New("failed to marshal response body")
+		responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(res, w)
+		if err == nil {
+			net.Respond(http.StatusNotFound, responseBody, w)
 		}
 
 		net.Respond(http.StatusNotFound, responseBody, w)
 		return nil
 	}
 
-	log.Log().Info(fName, "message",
-		"Failed to retrieve secret", "err", err)
-	responseBody := net.MarshalBodyAndRespondOnMarshalFail(reqres.SecretMetadataResponse{
-		Err: "Internal server error"}, w,
+	log.Log().Info(fName, "message", "failed to retrieve secret", "err", err)
+	responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
+		reqres.SecretMetadataResponse{
+			Err: "Internal server error"}, w,
 	)
-	if responseBody == nil {
-		return errors.New("failed to marshal response body")
+	if err == nil {
+		net.Respond(http.StatusInternalServerError, responseBody, w)
 	}
 
-	net.Respond(http.StatusInternalServerError, responseBody, w)
-	return err
+	return err // TODO: log in all exit conditions.
 }

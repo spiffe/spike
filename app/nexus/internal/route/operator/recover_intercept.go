@@ -10,8 +10,8 @@ import (
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	apiErr "github.com/spiffe/spike-sdk-go/api/errors"
-	"github.com/spiffe/spike-sdk-go/spiffe"
 	"github.com/spiffe/spike-sdk-go/spiffeid"
+	"github.com/spiffe/spike/internal/auth"
 
 	"github.com/spiffe/spike/internal/net"
 )
@@ -19,28 +19,22 @@ import (
 func guardRecoverRequest(
 	_ reqres.RecoverRequest, w http.ResponseWriter, r *http.Request,
 ) error {
-	peerSPIFFEID, err := spiffe.IDFromRequest(r)
+	peerSPIFFEID, err := auth.ExtractPeerSPIFFEID[reqres.RestoreResponse](
+		r, w, reqres.RestoreResponse{
+			Err: data.ErrUnauthorized,
+		})
 	if err != nil {
-		responseBody := net.MarshalBodyAndRespondOnMarshalFail(reqres.RestoreResponse{
-			Err: data.ErrUnauthorized,
-		}, w)
-		net.Respond(http.StatusUnauthorized, responseBody, w)
-		return apiErr.ErrUnauthorized
-	}
-
-	if peerSPIFFEID == nil {
-		responseBody := net.MarshalBodyAndRespondOnMarshalFail(reqres.RestoreResponse{
-			Err: data.ErrUnauthorized,
-		}, w)
-		net.Respond(http.StatusUnauthorized, responseBody, w)
-		return apiErr.ErrUnauthorized
+		return err
 	}
 
 	if !spiffeid.IsPilotRecover(peerSPIFFEID.String()) {
-		responseBody := net.MarshalBodyAndRespondOnMarshalFail(reqres.RestoreResponse{
-			Err: data.ErrUnauthorized,
-		}, w)
-		net.Respond(http.StatusUnauthorized, responseBody, w)
+		responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
+			reqres.RestoreResponse{
+				Err: data.ErrUnauthorized,
+			}, w)
+		if err == nil {
+			net.Respond(http.StatusUnauthorized, responseBody, w)
+		}
 		return apiErr.ErrUnauthorized
 	}
 

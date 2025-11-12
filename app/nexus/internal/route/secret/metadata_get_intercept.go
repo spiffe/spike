@@ -10,8 +10,8 @@ import (
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	apiErr "github.com/spiffe/spike-sdk-go/api/errors"
-	"github.com/spiffe/spike-sdk-go/spiffe"
 	"github.com/spiffe/spike-sdk-go/validation"
+	"github.com/spiffe/spike/internal/auth"
 
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 	"github.com/spiffe/spike/internal/net"
@@ -20,52 +20,39 @@ import (
 func guardGetSecretMetadataRequest(
 	request reqres.SecretMetadataRequest, w http.ResponseWriter, r *http.Request,
 ) error {
+	peerSPIFFEID, err := auth.ExtractPeerSPIFFEID[reqres.SecretMetadataResponse](
+		r, w, reqres.SecretMetadataResponse{
+			Err: data.ErrUnauthorized,
+		})
+	if err != nil {
+		return err
+	}
+
 	path := request.Path
-
-	sid, err := spiffe.IDFromRequest(r)
-	if err != nil {
-		responseBody := net.MarshalBodyAndRespondOnMarshalFail(reqres.SecretMetadataResponse{
-			Err: data.ErrUnauthorized,
-		}, w)
-		net.Respond(http.StatusUnauthorized, responseBody, w)
-		return apiErr.ErrUnauthorized
-	}
-
-	if sid == nil {
-		responseBody := net.MarshalBodyAndRespondOnMarshalFail(reqres.SecretMetadataResponse{
-			Err: data.ErrUnauthorized,
-		}, w)
-		net.Respond(http.StatusUnauthorized, responseBody, w)
-		return apiErr.ErrUnauthorized
-	}
-
-	err = validation.ValidateSPIFFEID(sid.String())
-	if err != nil {
-		responseBody := net.MarshalBodyAndRespondOnMarshalFail(reqres.SecretMetadataResponse{
-			Err: data.ErrUnauthorized,
-		}, w)
-		net.Respond(http.StatusUnauthorized, responseBody, w)
-		return apiErr.ErrUnauthorized
-	}
-
 	err = validation.ValidatePath(path)
 	if err != nil {
-		responseBody := net.MarshalBodyAndRespondOnMarshalFail(reqres.SecretMetadataResponse{
-			Err: data.ErrBadInput,
-		}, w)
-		net.Respond(http.StatusBadRequest, responseBody, w)
+		responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
+			reqres.SecretMetadataResponse{
+				Err: data.ErrBadInput,
+			}, w)
+		if err == nil {
+			net.Respond(http.StatusBadRequest, responseBody, w)
+		}
 		return apiErr.ErrInvalidInput
 	}
 
 	allowed := state.CheckAccess(
-		sid.String(), path,
+		peerSPIFFEID.String(), path,
 		[]data.PolicyPermission{data.PermissionRead},
 	)
 	if !allowed {
-		responseBody := net.MarshalBodyAndRespondOnMarshalFail(reqres.SecretListResponse{
-			Err: data.ErrUnauthorized,
-		}, w)
-		net.Respond(http.StatusUnauthorized, responseBody, w)
+		responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
+			reqres.SecretListResponse{
+				Err: data.ErrUnauthorized,
+			}, w)
+		if err == nil {
+			net.Respond(http.StatusUnauthorized, responseBody, w)
+		}
 		return apiErr.ErrUnauthorized
 	}
 

@@ -128,15 +128,18 @@ func RouteRecover(
 		}
 	}
 
-	responseBody := net.MarshalBodyAndRespondOnMarshalFail(reqres.RecoverResponse{
-		Shards: shards,
-	}, w)
+	responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
+		reqres.RecoverResponse{
+			Shards: shards,
+		}, w)
 	// Security: Clean up response body before exit.
 	defer func() {
 		mem.ClearBytes(responseBody)
 	}()
+	if err == nil {
+		net.Respond(http.StatusOK, responseBody, w)
+	}
 
-	net.Respond(http.StatusOK, responseBody, w)
 	log.Log().Info(fName, "message", data.ErrSuccess)
 	return nil
 }

@@ -113,13 +113,11 @@ func RouteGetSecretMetadata(
 	}
 
 	response := toSecretMetadataResponse(rawSecret)
-	responseBody := net.MarshalBodyAndRespondOnMarshalFail(response, w)
-
-	if responseBody == nil {
-		return errors.New("failed to marshal response body")
+	responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(response, w)
+	if err == nil {
+		net.Respond(http.StatusOK, responseBody, w)
 	}
 
-	net.Respond(http.StatusOK, responseBody, w)
 	log.Log().Info("routeGetSecret", "message", "OK")
 	return nil
 }
