@@ -19,8 +19,15 @@ import (
 )
 
 // RouteShard handles HTTP requests to retrieve the stored shard from the
-// system. It retrieves the shard from the system state, encodes it in Base64,
-// and returns it to the requester.
+// system. It retrieves the shard from the system state and returns it to the
+// requester.
+//
+// Security:
+//
+// This endpoint validates that the requesting peer is SPIKE Nexus using SPIFFE
+// ID verification. Only SPIKE Nexus is authorized to retrieve shards during
+// recovery operations. Unauthorized requests receive a 401 Unauthorized
+// response.
 //
 // Parameters:
 //   - w: http.ResponseWriter to write the HTTP response
@@ -31,6 +38,7 @@ import (
 //   - error: nil if successful, otherwise one of:
 //   - errors.ErrReadFailure if request body cannot be read
 //   - errors.ErrParseFailure if request parsing fails
+//   - errors.ErrUnauthorized if peer SPIFFE ID validation fails
 //   - errors.ErrNotFound if no shard is stored in the system
 //
 // Response body:
@@ -40,11 +48,12 @@ import (
 //	}
 //
 // The function returns a 200 OK status with the encoded shard on success,
-// or a 404 Not Found status if no shard exists in the system.
+// a 404 Not Found status if no shard exists, or a 401 Unauthorized status
+// if the peer is not SPIKE Nexus.
 func RouteShard(
 	w http.ResponseWriter, r *http.Request, audit *journal.AuditEntry,
 ) error {
-	const fName = "routeShard"
+	const fName = "RouteShard"
 	journal.AuditRequest(fName, r, audit, journal.AuditRead)
 
 	requestBody := net.ReadRequestBody(w, r)
@@ -61,9 +70,14 @@ func RouteShard(
 		return errors.ErrParseFailure
 	}
 
+	err := guardShardGetRequest(*request, w, r)
+	if err != nil {
+		return err
+	}
+
 	state.RLockShard()
 	defer state.RUnlockShard()
-	// DO NOT reset `sh` after use, as this function does NOT own it.
+	// DO NOT reset `sh` after use, as this function does NOT "own" it.
 	// Treat the value as "read-only".
 	sh := state.ShardNoSync()
 

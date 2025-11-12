@@ -15,16 +15,26 @@ sort_by = "weight"
 * moved entities to the sdk
 * added extensive package documentation to ALL packages of SPIKE and SPIKE go SDK
 * minor bugfixes
-* PoP validation after bootstrap sequence to ensure SPIKE Nexus has initialized properly.
+* PoP validation after bootstrap sequence to ensure SPIKE Nexus has initialized
+  properly.
 * Update Go version to `1.25.2`.
 * `make start` includes additional smoke tests to ensure all SPIKE components are
   in good shape and ready to roll.
 * encryption as a service support for SPIKE Pilot.
-* `log.FatalLn` exits cleanly by default to avoid leaking sensitive information via
-  stack traces in production. Stack traces can be enabled for development/testing by
-  setting `SPIKE_STACK_TRACES_ON_LOG_FATAL=true`.
+* `log.FatalLn` exits cleanly by default to avoid leaking sensitive information
+  via stack traces in production. Stack traces can be enabled for
+  development/testing by setting `SPIKE_STACK_TRACES_ON_LOG_FATAL=true`.
 * Security: SDK upgrade to Go 1.25.3 to fix GO-2025-4007.
-
+* Security: Fixed error handling inconsistency in `NewPilotRecoveryShards` to
+  ensure fail-fast behavior on shard generation failures. The function now
+  consistently uses `log.FatalLn` for all critical errors during shard
+  marshaling to prevent silent generation of corrupted recovery material.
+* Security: Added SPIFFE ID validation to SPIKE Keeper shard endpoints.
+  The `RouteShard` endpoint now validates that only SPIKE Nexus can retrieve
+  shards during recovery operations. The `RouteContribute` endpoint validates
+  that only SPIKE Bootstrap (during initial setup) or SPIKE Nexus (during
+  periodic updates) can contribute shards. This prevents unauthorized access
+  to sensitive shard data.
 
 ## [0.6.1] - 2025-10-02
 

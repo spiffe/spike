@@ -59,13 +59,17 @@ func iterateKeepersAndInitializeState(
 	const fName = "iterateKeepersAndInitializeState"
 
 	if env.BackendStoreTypeVal() == env.Memory {
-		log.Log().Warn(fName, "message", "In memory mode; skipping recovery")
+		log.Log().Warn(fName, "message", "in memory mode: skipping recovery")
 		// Assume successful initialization, since initialization is not needed.
 		return true
 	}
 
 	for keeperID, keeperAPIRoot := range env.KeepersVal() {
-		log.Log().Info(fName, "id", keeperID, "url", keeperAPIRoot)
+		log.Log().Info(
+			fName,
+			"message", "iterating keepers",
+			"id", keeperID, "url", keeperAPIRoot,
+		)
 
 		u := shardURL(keeperAPIRoot)
 		if u == "" {
@@ -86,7 +90,7 @@ func iterateKeepersAndInitializeState(
 		}
 
 		if mem.Zeroed32(res.Shard) {
-			log.Log().Info(fName, "message", "Shard is zeroed")
+			log.Log().Info(fName, "message", "shard is zeroed")
 			continue
 		}
 
@@ -106,7 +110,9 @@ func iterateKeepersAndInitializeState(
 				// This is a configuration error; we cannot recover from it,
 				// and it may cause further security issues. Crash immediately.
 				log.FatalLn(
-					fName, "message", "Failed to convert keeper ID to int", "err", err,
+					fName,
+					"message", "failed to convert keeper ID to int",
+					"err", err.Error(),
 				)
 				return false
 			}
@@ -121,7 +127,7 @@ func iterateKeepersAndInitializeState(
 
 		// Security: Crash if there is a problem with root key recovery.
 		if rk == nil || mem.Zeroed32(rk) {
-			log.FatalLn(fName, "message", "Failed to recover root key")
+			log.FatalLn(fName, "message", "failed to recover the root key")
 		}
 
 		// It is okay to zero out `rk` after calling this function because we

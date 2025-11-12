@@ -13,7 +13,8 @@ import (
 func main() {
 	fmt.Println("SPIKE Demo")
 
-	// Make sure you register the demo app SPIRE Server registration entry first:
+	// Make sure you register the demo app SPIRE Server registration entry
+	// first:
 	// ./examples/consume-secrets/demo-register-entry.sh
 
 	// https://pkg.go.dev/github.com/spiffe/spike-sdk-go/api#New

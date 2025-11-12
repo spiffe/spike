@@ -270,7 +270,7 @@ w
       // Lite Workloads are always allowed:
       allowed := false
       if spiffeid.IsLiteWorkload(
-      env.TrustRootForLiteWorkload(), sid.String()) {
+      env.TrustRootForLiteWorkload(), peerSPIFFEID.String()) {
       allowed = true
       }
       // If not, do a policy check to determine if the request is allowed:
@@ -283,7 +283,7 @@ w
       // TDO: some of these flows can be factored out if we keep the `request`
       // a generic parameter. That will deduplicate some of the validation code.
 
-      sid, err := spiffe.IdFromRequest(r)
+      peerSPIFFEID, err := spiffe.IdFromRequest(r)
       if err != nil {
       responseBody := net.MarshalBody(reqres.SecretDecryptResponse{
       Err: data.ErrUnauthorized,
@@ -549,7 +549,7 @@ w
       // Lite Workloads are always allowed:
       allowed := false
       if spiffeid.IsLiteWorkload(
-      env.TrustRootForLiteWorkload(), sid.String()) {
+      env.TrustRootForLiteWorkload(), peerSPIFFEID.String()) {
       allowed = true
       }
     </issue>
@@ -831,7 +831,7 @@ w
     <issue>
       Need to think about this; I'm not sure we need a UI at all.
       I am getting more fond of Claude Code model of triggering a web-device-PKCE
-      auth flow and then doing everything through the CLI.
+      cfg flow and then doing everything through the CLI.
 
       For VSecM: create a UI that directly talks to SPIKE; depracate all VSecM
       secret model. also delete most of the folders. start with a clean slate
@@ -2393,7 +2393,7 @@ w
       it may however verify the part of spiffeID "after" the trust root.
 
       // I should be a SPIKE Keeper.
-      if !auth.IsKeeper(selfSpiffeid) {
+      if !cfg.IsKeeper(selfSpiffeid) {
       log.FatalF("Authenticate: SPIFFE ID %s is not valid.\n", selfSpiffeid)
       }
 

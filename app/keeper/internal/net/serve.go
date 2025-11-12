@@ -38,6 +38,10 @@ func Serve(appName string, source *workloadapi.X509Source) {
 		predicate.AllowKeeperPeer,
 		env.KeeperTLSPortVal(),
 	); err != nil {
-		log.FatalLn(appName, "message", "Failed to serve", "err", err.Error())
+		log.FatalLn(
+			appName,
+			"message", "failed to serve",
+			"err", err.Error(),
+		)
 	}
 }

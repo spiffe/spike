@@ -18,15 +18,22 @@ import (
 	"github.com/spiffe/spike/internal/net"
 )
 
-// RouteContribute handles HTTP requests for the shard contributions in the
-// system. It processes incoming shard data, decodes it from Base64 encoding,
-// and stores it in the system state.
+// RouteContribute handles HTTP requests for shard contributions in the
+// system. It processes incoming shard data and stores it in the system state.
 //
-// The function expects a Base64-encoded shard and a keeper ID in the request
-// body. It performs the following operations:
+// Security:
+//
+// This endpoint validates that the peer is either SPIKE Bootstrap or SPIKE
+// Nexus using SPIFFE ID verification. SPIKE Bootstrap contributes shards
+// during initial system setup, while SPIKE Nexus contributes shards during
+// periodic updates. Unauthorized requests receive a 401 Unauthorized response.
+//
+// The function expects a shard in the request body. It performs the following
+// operations:
 //   - Reads and validates the request body
-//   - Decodes the Base64-encoded shard
-//   - Stores the decoded shard in the system state
+//   - Validates the peer SPIFFE ID
+//   - Validates the shard is not nil or all zeros
+//   - Stores the shard in the system state
 //   - Logs the operation for auditing purposes
 //
 // Parameters:
@@ -37,7 +44,9 @@ import (
 // Returns:
 //   - error: nil if successful, otherwise one of:
 //   - errors.ErrReadFailure if request body cannot be read
-//   - errors.ErrParseFailure if request parsing fails or shard decoding fails
+//   - errors.ErrParseFailure if request parsing fails
+//   - errors.ErrUnauthorized if peer SPIFFE ID validation fails
+//   - errors.ErrInvalidInput if shard is nil or all zeros
 //
 // Example request body:
 //
@@ -46,13 +55,13 @@ import (
 //	  "keeperId": "uniqueIdentifier"
 //	}
 //
-// The function returns a 200 OK status with an empty response body on success,
-// or a 400 Bad Request status with an error message if the shard content is
-// invalid.
+// The function returns a 200 OK status on success, a 401 Unauthorized status
+// if the peer is not SPIKE Bootstrap or SPIKE Nexus, or a 400 Bad Request
+// status if the shard content is invalid.
 func RouteContribute(
 	w http.ResponseWriter, r *http.Request, audit *journal.AuditEntry,
 ) error {
-	const fName = "routeContribute"
+	const fName = "RouteContribute"
 	journal.AuditRequest(fName, r, audit, journal.AuditCreate)
 
 	requestBody := net.ReadRequestBody(w, r)
@@ -67,6 +76,11 @@ func RouteContribute(
 	)
 	if request == nil {
 		return errors.ErrParseFailure
+	}
+
+	err := guardShardPutRequest(*request, w, r)
+	if err != nil {
+		return err
 	}
 
 	if request.Shard == nil {
