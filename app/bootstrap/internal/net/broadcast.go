@@ -30,14 +30,14 @@ import (
 func BroadcastKeepers(ctx context.Context, api *spike.API) {
 	const fName = "BroadcastKeepers"
 
-	// Call this once! Every call to RootShares() will generate a new root key.
-	// TODO: ^ is there a canonical way to do this? maybe a higher-order function?
+	// RootShares() generates the root key and splits it into shares.
+	// It enforces single-call semantics and will terminate if called again.
 	rs := state.RootShares()
 
 	for keeperID := range env.KeepersVal() {
 		keeperShare := state.KeeperShare(rs, keeperID)
 
-		log.Log().Info(fName, "keeper ID", keeperID)
+		log.Log().Info(fName, "message", "iterating", "keeper ID", keeperID)
 
 		_, err := retry.Forever(ctx, func() (bool, error) {
 			log.Log().Info(fName, "message", "retry:"+time.Now().String())
@@ -169,7 +169,7 @@ func AcquireSource() *workloadapi.X509Source {
 	if !svid.IsBootstrap(sv.ID.String()) {
 		log.Log().Error(
 			fName,
-			"message", "you need a 'bootstrap' SPIFFE ID to use this command",
+			"message", "you need a bootstrap SPIFFE ID to use this command",
 		)
 		log.FatalLn(fName, "message", "command not authorized")
 		return nil

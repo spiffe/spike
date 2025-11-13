@@ -22,7 +22,11 @@ func PutShardContributionRequest(
 ) error {
 	const fName = "PutShardContributionRequest"
 
-	log.Log().Info(fName, "payload_sha", fmt.Sprintf("%x", sha256.Sum256(md)))
+	log.Log().Info(
+		fName,
+		"message", "sending shard contribution request",
+		"payload_sha", fmt.Sprintf("%x", sha256.Sum256(md)),
+	)
 
 	_, err := net.Post(client, u, md)
 	if err != nil {

@@ -24,6 +24,11 @@ var (
 	rootKeySeed [crypto.AES256KeySize]byte
 	// rootKeySeedMu provides mutual exclusion for access to the root key seed.
 	rootKeySeedMu sync.RWMutex
+
+	// rootSharesGenerated tracks whether RootShares() has been called.
+	rootSharesGenerated bool
+	// rootSharesGeneratedMu protects rootSharesGenerated flag.
+	rootSharesGeneratedMu sync.Mutex
 )
 
 // RootShares generates a set of Shamir secret shares from a cryptographically
@@ -35,8 +40,26 @@ var (
 // ensure identical share generation across restarts, which is critical for
 // synchronization after crashes. The function performs security validation and
 // zeroing of sensitive data after use.
+//
+// CRITICAL: This function MUST be called exactly once per process. Calling it
+// multiple times will generate different root keys, breaking the cryptographic
+// guarantees of the system. The function will terminate the application if
+// called more than once.
 func RootShares() []shamir.Share {
 	const fName = "rootShares"
+
+	// Ensure this function is only called once per process.
+	rootSharesGeneratedMu.Lock()
+	if rootSharesGenerated {
+		log.FatalLn(
+			fName,
+			"message", "RootShares() called more than once",
+			"err", "This is a critical programming error that would "+
+				"generate different root keys and break the system",
+		)
+	}
+	rootSharesGenerated = true
+	rootSharesGeneratedMu.Unlock()
 
 	rootKeySeedMu.Lock()
 	defer rootKeySeedMu.Unlock()
@@ -50,7 +73,11 @@ func RootShares() []shamir.Share {
 	t := uint(env.ShamirThresholdVal() - 1) // Need t+1 shares to reconstruct
 	n := uint(env.ShamirSharesVal())        // Total number of shares
 
-	log.Log().Info(fName, "t", t, "n", n)
+	log.Log().Info(
+		fName,
+		"message", "generating Shamir shares",
+		"t", t, "n", n,
+	)
 
 	// Create a secret from our 32-byte key:
 	rootSecret := g.NewScalar()
@@ -115,6 +142,7 @@ func KeeperShare(
 			log.FatalLn(
 				fName,
 				"message", "failed to convert keeper id to int",
+				"keeper_id", keeperID,
 				"err", err.Error(),
 			)
 		}

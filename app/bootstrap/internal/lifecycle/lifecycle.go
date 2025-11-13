@@ -43,15 +43,19 @@ func ShouldBootstrap() bool {
 
 	// Memory backend doesn't need bootstrap.
 	if env.BackendStoreTypeVal() == env.Memory {
-		log.Log().Info(fName,
-			"message", "skipping bootstrap for 'in memory' backend")
+		log.Log().Info(
+			fName,
+			"message", "skipping bootstrap for in-memory backend",
+		)
 		return false
 	}
 
 	// Lite backend doesn't need bootstrap.
 	if env.BackendStoreTypeVal() == env.Lite {
-		log.Log().Info(fName,
-			"message", "skipping bootstrap for 'lite' backend")
+		log.Log().Info(
+			fName,
+			"message", "skipping bootstrap for lite backend",
+		)
 		return false
 	}
 
@@ -73,20 +77,22 @@ func ShouldBootstrap() bool {
 			log.Log().Info(
 				fName,
 				"message",
-				"not running in Kubernetes, proceeding with bootstrap",
+				"not running in Kubernetes: proceeding with bootstrap",
 			)
 			return true
 		}
 
 		// Some other error. Skip bootstrap.
-		log.Log().Error(fName,
+		log.Log().Error(
+			fName,
 			"message",
 			"could not determine cluster config: skipping bootstrap",
-			"err", err.Error())
+			"err", err.Error(),
+		)
 		return false
 	}
 
-	// We're in Kubernetes - check the ConfigMap
+	// We're in Kubernetes---check the ConfigMap
 	clientset, err := kubernetes.NewForConfig(cfg)
 	if err != nil {
 		log.Log().Error(fName,
@@ -110,21 +116,27 @@ func ShouldBootstrap() bool {
 	)
 	if err != nil {
 		// ConfigMap doesn't exist or can't read it - proceed with bootstrap
-		log.Log().Info(fName,
+		log.Log().Info(
+			fName,
 			"message",
 			"ConfigMap not found or not readable: proceeding with bootstrap",
-			"err", err.Error())
+			"err", err.Error(),
+		)
 		return true
 	}
 
+	// TODO: to constants.
 	bootstrapCompleted := cm.Data["bootstrap-completed"] == k8sTrue
 	completedAt := cm.Data["completed-at"]
 	completedByPod := cm.Data["completed-by-pod"]
 
 	if bootstrapCompleted {
-		reason := fmt.Sprintf("completed at %s by pod %s",
-			completedAt, completedByPod)
-		log.Log().Info(fName,
+		reason := fmt.Sprintf(
+			"completed at %s by pod %s",
+			completedAt, completedByPod,
+		)
+		log.Log().Info(
+			fName,
 			"message", "skipping bootstrap based on ConfigMap state",
 			"completed-at", completedAt,
 			"completed-by-pod", completedByPod,
@@ -158,8 +170,10 @@ func MarkBootstrapComplete() error {
 	if err != nil {
 		if errors.Is(err, rest.ErrNotInCluster) {
 			// Not in Kubernetes, nothing to mark
-			log.Log().Info(fName,
-				"message", "not in Kubernetes: skipping completion marker")
+			log.Log().Info(
+				fName,
+				"message", "not in Kubernetes: skipping completion marker",
+			)
 			return nil
 		}
 		return err
@@ -173,6 +187,11 @@ func MarkBootstrapComplete() error {
 	namespace := "spike"
 	if nsBytes, err := os.ReadFile(k8sServiceAccountNamespace); err == nil {
 		namespace = string(nsBytes)
+	} else {
+		log.Log().Warn(
+			fName,
+			"message", "failed to read service account namespace: using default",
+		)
 	}
 
 	// Create ConfigMap marking bootstrap as complete
@@ -181,6 +200,7 @@ func MarkBootstrapComplete() error {
 			Name: env.BootstrapConfigMapNameVal(),
 		},
 		Data: map[string]string{
+			// TODO: these keys are repeated factor them out as constants.
 			"bootstrap-completed": k8sTrue,
 			"completed-at":        time.Now().UTC().Format(time.RFC3339),
 			"completed-by-pod":    os.Getenv(hostNameEnvVar),
