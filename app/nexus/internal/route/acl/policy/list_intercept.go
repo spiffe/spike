@@ -24,7 +24,8 @@ func guardListPolicyRequest(
 		r, w, reqres.PolicyListResponse{
 			Err: data.ErrUnauthorized,
 		})
-	if err != nil {
+	alreadyResponded := err != nil
+	if alreadyResponded {
 		return err
 	}
 
@@ -37,7 +38,8 @@ func guardListPolicyRequest(
 			reqres.PolicyListResponse{
 				Err: data.ErrUnauthorized,
 			}, w)
-		if err == nil {
+		alreadyResponded = err != nil
+		if !alreadyResponded {
 			net.Respond(http.StatusUnauthorized, responseBody, w)
 		}
 		return apiErr.ErrUnauthorized

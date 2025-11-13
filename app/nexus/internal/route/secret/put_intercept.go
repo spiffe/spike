@@ -24,7 +24,8 @@ func guardPutSecretMetadataRequest(
 		r, w, reqres.SecretPutResponse{
 			Err: data.ErrUnauthorized,
 		})
-	if err != nil {
+	alreadyResponded := err != nil
+	if alreadyResponded {
 		return err
 	}
 
@@ -37,7 +38,8 @@ func guardPutSecretMetadataRequest(
 			reqres.SecretPutResponse{
 				Err: data.ErrBadInput,
 			}, w)
-		if err == nil {
+		alreadyResponded = err != nil
+		if !alreadyResponded {
 			net.Respond(http.StatusBadRequest, responseBody, w)
 		}
 		return apiErr.ErrInvalidInput
@@ -50,7 +52,8 @@ func guardPutSecretMetadataRequest(
 				reqres.SecretPutResponse{
 					Err: data.ErrBadInput,
 				}, w)
-			if err == nil {
+			alreadyResponded = err != nil
+			if !alreadyResponded {
 				net.Respond(http.StatusUnauthorized, responseBody, w)
 			}
 			return apiErr.ErrInvalidInput

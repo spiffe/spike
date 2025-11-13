@@ -87,7 +87,7 @@ func RouteGetSecretMetadata(
 
 	requestBody := net.ReadRequestBody(w, r)
 	if requestBody == nil {
-		return errors.New("failed to read request body")
+		return errors.New("failed to read request body") // TODO: constants
 	}
 
 	request := net.HandleRequest[
@@ -96,7 +96,7 @@ func RouteGetSecretMetadata(
 		reqres.SecretMetadataResponse{Err: data.ErrBadInput},
 	)
 	if request == nil {
-		return errors.New("failed to parse request body")
+		return errors.New("failed to parse request body") // TODO: constants
 	}
 
 	err := guardGetSecretMetadataRequest(*request, w, r)

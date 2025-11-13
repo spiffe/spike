@@ -41,6 +41,9 @@
       if needed.
     </issue>
     <issue>
+      audit log separation (ADR-0027)
+    </issue>
+    <issue>
       additioanl memory clearing for the sdk:
       https://github.com/spiffe/spike/issues/243
     </issue>

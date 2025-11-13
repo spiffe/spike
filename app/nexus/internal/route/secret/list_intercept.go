@@ -24,7 +24,8 @@ func guardListSecretRequest(
 		r, w, reqres.SecretListResponse{
 			Err: data.ErrUnauthorized,
 		})
-	if err != nil {
+	alreadyResponded := err != nil
+	if alreadyResponded {
 		return err
 	}
 
@@ -37,7 +38,8 @@ func guardListSecretRequest(
 			reqres.SecretListResponse{
 				Err: data.ErrUnauthorized,
 			}, w)
-		if err == nil {
+		alreadyResponded = err != nil
+		if !alreadyResponded {
 			net.Respond(http.StatusUnauthorized, responseBody, w)
 		}
 		return apiErr.ErrUnauthorized

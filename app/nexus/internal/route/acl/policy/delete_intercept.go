@@ -45,7 +45,8 @@ func guardDeletePolicyRequest(
 		r, w, reqres.PolicyDeleteResponse{
 			Err: data.ErrUnauthorized,
 		})
-	if err != nil {
+	alreadyResponded := err != nil
+	if alreadyResponded {
 		return err
 	}
 
@@ -57,7 +58,8 @@ func guardDeletePolicyRequest(
 			reqres.PolicyDeleteResponse{
 				Err: data.ErrBadInput,
 			}, w)
-		if err == nil {
+		alreadyResponded = err != nil
+		if !alreadyResponded {
 			net.Respond(http.StatusBadRequest, responseBody, w)
 		}
 
@@ -73,7 +75,8 @@ func guardDeletePolicyRequest(
 			reqres.PolicyDeleteResponse{
 				Err: data.ErrUnauthorized,
 			}, w)
-		if err == nil {
+		alreadyResponded = err != nil
+		if !alreadyResponded {
 			net.Respond(http.StatusUnauthorized, responseBody, w)
 		}
 

@@ -24,7 +24,8 @@ func guardGetSecretRequest(
 		r, w, reqres.ShardGetResponse{
 			Err: data.ErrUnauthorized,
 		})
-	if err != nil {
+	alreadyResponded := err != nil
+	if alreadyResponded {
 		return err
 	}
 
@@ -35,7 +36,8 @@ func guardGetSecretRequest(
 			reqres.SecretReadResponse{
 				Err: data.ErrBadInput,
 			}, w)
-		if err == nil {
+		alreadyResponded = err != nil
+		if !alreadyResponded {
 			net.Respond(http.StatusBadRequest, responseBody, w)
 		}
 		return apiErr.ErrInvalidInput
@@ -51,7 +53,8 @@ func guardGetSecretRequest(
 			reqres.SecretReadResponse{
 				Err: data.ErrUnauthorized,
 			}, w)
-		if err == nil {
+		alreadyResponded = err != nil
+		if !alreadyResponded {
 			net.Respond(http.StatusUnauthorized, responseBody, w)
 		}
 		return apiErr.ErrUnauthorized

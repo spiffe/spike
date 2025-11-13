@@ -33,21 +33,22 @@ import (
 func guardShardGetRequest(
 	_ reqres.ShardGetRequest, w http.ResponseWriter, r *http.Request,
 ) error {
-	// TODO: use this in all other guards too.
+	resUnauthorized := reqres.ShardGetResponse{Err: data.ErrUnauthorized}
+
 	peerSPIFFEID, err := auth.ExtractPeerSPIFFEID[reqres.ShardGetResponse](
-		r, w, reqres.ShardGetResponse{
-			Err: data.ErrUnauthorized,
-		})
-	if err != nil {
+		r, w, resUnauthorized,
+	)
+	alreadyResponded := err != nil
+	if alreadyResponded {
 		return err
 	}
 
 	if !spiffeid.IsNexus(peerSPIFFEID.String()) {
 		responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
-			reqres.ShardGetResponse{
-				Err: data.ErrUnauthorized,
-			}, w)
-		if err == nil {
+			resUnauthorized, w,
+		)
+		alreadyResponded = err != nil
+		if alreadyResponded {
 			net.Respond(http.StatusUnauthorized, responseBody, w)
 		}
 		return apiErr.ErrUnauthorized

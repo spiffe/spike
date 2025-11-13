@@ -28,7 +28,8 @@ func guardEncryptCipherRequest(
 			reqres.CipherEncryptResponse{
 				Err: data.ErrUnauthorized,
 			}, w)
-		if err == nil {
+		alreadyResponded := err != nil
+		if !alreadyResponded {
 			net.Respond(http.StatusUnauthorized, responseBody, w)
 		}
 		return apiErr.ErrUnauthorized
@@ -39,7 +40,8 @@ func guardEncryptCipherRequest(
 			reqres.CipherEncryptResponse{
 				Err: data.ErrUnauthorized,
 			}, w)
-		if err == nil {
+		alreadyResponded := err != nil
+		if !alreadyResponded {
 			net.Respond(http.StatusUnauthorized, responseBody, w)
 		}
 		return apiErr.ErrUnauthorized
@@ -51,7 +53,8 @@ func guardEncryptCipherRequest(
 			reqres.CipherEncryptResponse{
 				Err: data.ErrUnauthorized,
 			}, w)
-		if err == nil {
+		alreadyResponded := err != nil
+		if !alreadyResponded {
 			net.Respond(http.StatusUnauthorized, responseBody, w)
 		}
 		return apiErr.ErrUnauthorized
@@ -76,7 +79,8 @@ func guardEncryptCipherRequest(
 			reqres.CipherEncryptResponse{
 				Err: data.ErrUnauthorized,
 			}, w)
-		if err == nil {
+		alreadyResponded := err != nil
+		if !alreadyResponded {
 			net.Respond(http.StatusUnauthorized, responseBody, w)
 		}
 		return apiErr.ErrUnauthorized

@@ -23,7 +23,8 @@ func guardRestoreRequest(
 		r, w, reqres.ShardGetResponse{
 			Err: data.ErrUnauthorized,
 		})
-	if err != nil {
+	alreadyResponded := err != nil
+	if alreadyResponded {
 		return err
 	}
 
@@ -32,7 +33,8 @@ func guardRestoreRequest(
 			reqres.RestoreResponse{
 				Err: data.ErrUnauthorized,
 			}, w)
-		if err == nil {
+		alreadyResponded = err != nil
+		if !alreadyResponded {
 			net.Respond(http.StatusUnauthorized, responseBody, w)
 		}
 		return apiErr.ErrUnauthorized
@@ -46,7 +48,8 @@ func guardRestoreRequest(
 			reqres.RestoreResponse{
 				Err: data.ErrBadInput,
 			}, w)
-		if err == nil {
+		alreadyResponded = err != nil
+		if !alreadyResponded {
 			net.Respond(http.StatusBadRequest, responseBody, w)
 		}
 		return apiErr.ErrInvalidInput
@@ -64,7 +67,8 @@ func guardRestoreRequest(
 			reqres.RestoreResponse{
 				Err: data.ErrBadInput,
 			}, w)
-		if err == nil {
+		alreadyResponded = err != nil
+		if !alreadyResponded {
 			net.Respond(http.StatusUnauthorized, responseBody, w)
 		}
 		return apiErr.ErrInvalidInput

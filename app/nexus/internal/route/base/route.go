@@ -39,7 +39,7 @@ func Route(
 		func(a url.APIAction, p url.APIURL) net.Handler {
 			// Lite: requires root key.
 			// SQLite: requires root key.
-			// Memory: does not require root key.
+			// Memory: does not require the root key.
 
 			emptyRootKey := state.RootKeyZero()
 			inMemoryMode := env.BackendStoreTypeVal() == env.Memory

@@ -25,7 +25,8 @@ func guardDecryptCipherRequest(
 		r, w, reqres.ShardGetResponse{
 			Err: data.ErrUnauthorized,
 		})
-	if err != nil {
+	alreadyResponded := err != nil
+	if alreadyResponded {
 		return err
 	}
 
@@ -48,7 +49,8 @@ func guardDecryptCipherRequest(
 			reqres.CipherDecryptResponse{
 				Err: data.ErrUnauthorized,
 			}, w)
-		if err == nil {
+		alreadyResponded = err != nil
+		if !alreadyResponded {
 			net.Respond(http.StatusUnauthorized, responseBody, w)
 		}
 		return apiErr.ErrUnauthorized

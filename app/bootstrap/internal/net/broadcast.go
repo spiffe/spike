@@ -31,6 +31,7 @@ func BroadcastKeepers(ctx context.Context, api *spike.API) {
 	const fName = "BroadcastKeepers"
 
 	// Call this once! Every call to RootShares() will generate a new root key.
+	// TODO: ^ is there a canonical way to do this? maybe a higher-order function?
 	rs := state.RootShares()
 
 	for keeperID := range env.KeepersVal() {

@@ -37,7 +37,8 @@ func guardSecretUndeleteRequest(
 			reqres.SecretUndeleteResponse{
 				Err: data.ErrBadInput,
 			}, w)
-		if err == nil {
+		alreadyResponded = err != nil
+		if !alreadyResponded {
 			net.Respond(http.StatusBadRequest, responseBody, w)
 		}
 		return errors.ErrInvalidInput
@@ -53,7 +54,8 @@ func guardSecretUndeleteRequest(
 			reqres.SecretUndeleteResponse{
 				Err: data.ErrUnauthorized,
 			}, w)
-		if err == nil {
+		alreadyResponded = err != nil
+		if !alreadyResponded {
 			net.Respond(http.StatusUnauthorized, responseBody, w)
 		}
 		return errors.ErrUnauthorized

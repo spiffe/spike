@@ -10,9 +10,9 @@ import (
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	apiErr "github.com/spiffe/spike-sdk-go/api/errors"
-	"github.com/spiffe/spike-sdk-go/config/auth"
-	"github.com/spiffe/spike-sdk-go/spiffe"
+	apiAuth "github.com/spiffe/spike-sdk-go/config/auth"
 	"github.com/spiffe/spike-sdk-go/validation"
+	"github.com/spiffe/spike/internal/auth"
 
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 	"github.com/spiffe/spike/internal/net"
@@ -21,40 +21,14 @@ import (
 func guardReadPolicyRequest(
 	request reqres.PolicyReadRequest, w http.ResponseWriter, r *http.Request,
 ) error {
+	resUnauthorized := reqres.PolicyReadResponse{Err: data.ErrUnauthorized}
+	resBadInput := reqres.PolicyReadResponse{Err: data.ErrBadInput}
 
-	peerSPIFFEID, err := spiffe.IDFromRequest(r)
-	if err != nil {
-		responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
-			reqres.PolicyReadResponse{
-				Err: data.ErrUnauthorized,
-			}, w)
-		if err == nil {
-			net.Respond(http.StatusUnauthorized, responseBody, w)
-		}
-		return apiErr.ErrUnauthorized
-	}
-
-	if peerSPIFFEID == nil {
-		responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
-			reqres.PolicyReadResponse{
-				Err: data.ErrUnauthorized,
-			}, w)
-		if err == nil {
-			net.Respond(http.StatusUnauthorized, responseBody, w)
-		}
-		return apiErr.ErrUnauthorized
-	}
-
-	err = validation.ValidateSPIFFEID(peerSPIFFEID.String())
-	if err != nil {
-		responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
-			reqres.PolicyReadResponse{
-				Err: data.ErrUnauthorized,
-			}, w)
-		if err == nil {
-			net.Respond(http.StatusUnauthorized, responseBody, w)
-		}
-		return apiErr.ErrUnauthorized
+	peerSPIFFEID, err := auth.ExtractPeerSPIFFEID[reqres.PolicyReadResponse](
+		r, w, resUnauthorized)
+	alreadyResponded := err != nil
+	if alreadyResponded {
+		return err
 	}
 
 	policyID := request.ID
@@ -62,25 +36,25 @@ func guardReadPolicyRequest(
 	err = validation.ValidatePolicyID(policyID)
 	if err != nil {
 		responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
-			reqres.PolicyReadResponse{
-				Err: data.ErrBadInput,
-			}, w)
-		if err == nil {
+			resBadInput, w,
+		)
+		alreadyResponded = err != nil
+		if !alreadyResponded {
 			net.Respond(http.StatusBadRequest, responseBody, w)
 		}
 		return apiErr.ErrInvalidInput
 	}
 
 	allowed := state.CheckAccess(
-		peerSPIFFEID.String(), auth.PathSystemPolicyAccess,
+		peerSPIFFEID.String(), apiAuth.PathSystemPolicyAccess,
 		[]data.PolicyPermission{data.PermissionRead},
 	)
 	if !allowed {
 		responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
-			reqres.PolicyReadResponse{
-				Err: data.ErrUnauthorized,
-			}, w)
-		if err == nil {
+			resUnauthorized, w,
+		)
+		alreadyResponded = err != nil
+		if !alreadyResponded {
 			net.Respond(http.StatusUnauthorized, responseBody, w)
 		}
 		return apiErr.ErrUnauthorized
