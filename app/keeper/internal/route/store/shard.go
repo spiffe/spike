@@ -76,6 +76,7 @@ func RouteShard(
 	sh := state.ShardNoSync()
 
 	if mem.Zeroed32(sh) {
+		log.Log().Warn(fName, "message", "shard is all zeros")
 		responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
 			reqres.ShardGetResponse{
 				Err: data.ErrNotFound,
@@ -105,6 +106,8 @@ func RouteShard(
 
 	log.Log().Info(
 		fName,
-		"message", data.ErrSuccess, "err", strings.MaybeError(err))
+		"message", data.ErrSuccess,
+		"err", strings.MaybeError(err),
+	)
 	return nil
 }

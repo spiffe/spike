@@ -10,6 +10,7 @@ import (
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	"github.com/spiffe/spike-sdk-go/log"
+	"github.com/spiffe/spike-sdk-go/strings"
 
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 	"github.com/spiffe/spike/internal/journal"
@@ -102,7 +103,10 @@ func RouteListPolicies(
 	if err == nil {
 		net.Respond(http.StatusOK, responseBody, w)
 	}
-
-	log.Log().Info(fName, "message", data.ErrSuccess)
+	log.Log().Info(
+		fName,
+		"message", data.ErrSuccess,
+		"err", strings.MaybeError(err),
+	)
 	return nil
 }

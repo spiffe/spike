@@ -36,7 +36,9 @@ sort_by = "weight"
   periodic updates) can contribute shards. This prevents unauthorized access
   to sensitive shard data.
 * Various other bugfixes, refactorings, and security improvements.
-* Finally fixed the flaky tests around the retry logic in SPIKE Go SDK for good.
+* Finally, fixed the flaky tests around the retry logic in SPIKE Go SDK for good.
+* Additional and comprehensive logging to all SPIKE Nexus and SPIKE Keeper API
+  methods.
 
 ## [0.6.1] - 2025-10-02
 

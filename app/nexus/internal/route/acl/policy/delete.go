@@ -10,6 +10,7 @@ import (
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	"github.com/spiffe/spike-sdk-go/log"
+	"github.com/spiffe/spike-sdk-go/strings"
 
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 	"github.com/spiffe/spike/internal/journal"
@@ -57,7 +58,7 @@ import (
 func RouteDeletePolicy(
 	w http.ResponseWriter, r *http.Request, audit *journal.AuditEntry,
 ) error {
-	const fName = "routeDeletePolicy"
+	const fName = "RouteDeletePolicy"
 	journal.AuditRequest(fName, r, audit, journal.AuditDelete)
 	request, err := net.ReadParseAndGuard[
 		reqres.PolicyDeleteRequest,
@@ -76,8 +77,7 @@ func RouteDeletePolicy(
 	policyID := request.ID
 	err = state.DeletePolicy(policyID)
 	if err != nil {
-		log.Log().Warn(fName, "message", "Failed to delete policy", "err", err)
-
+		log.Log().Warn(fName, "message", "failed to delete policy", "err", err)
 		responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
 			reqres.PolicyDeleteResponse{
 				Err: data.ErrInternal,
@@ -85,8 +85,11 @@ func RouteDeletePolicy(
 		if err == nil {
 			net.Respond(http.StatusInternalServerError, responseBody, w)
 		}
-
-		log.Log().Error(fName, "message", data.ErrInternal)
+		log.Log().Error(
+			fName,
+			"message", data.ErrInternal,
+			"err", strings.MaybeError(err),
+		)
 		return err
 	}
 
@@ -95,7 +98,10 @@ func RouteDeletePolicy(
 	if err == nil {
 		net.Respond(http.StatusOK, responseBody, w)
 	}
-
-	log.Log().Info(fName, "message", data.ErrSuccess)
+	log.Log().Info(
+		fName,
+		"message", data.ErrSuccess,
+		"err", strings.MaybeError(err),
+	)
 	return nil
 }

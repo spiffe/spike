@@ -64,7 +64,6 @@ func RoutePutPolicy(
 ) error {
 	const fName = "routePutPolicy"
 	journal.AuditRequest(fName, r, audit, journal.AuditCreate)
-
 	request, err := net.ReadParseAndGuard[
 		reqres.PolicyCreateRequest,
 		reqres.PolicyCreateResponse](
@@ -99,7 +98,6 @@ func RoutePutPolicy(
 			"message", "failed to create policy",
 			"err", err.Error(),
 		)
-
 		responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
 			reqres.PolicyCreateResponse{
 				Err: data.ErrInternal,

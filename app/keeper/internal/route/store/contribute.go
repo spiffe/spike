@@ -78,6 +78,7 @@ func RouteContribute(
 	}
 
 	if request.Shard == nil {
+		log.Log().Warn(fName, "message", "shard is nil")
 		responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
 			reqres.ShardPutResponse{
 				Err: data.ErrBadInput,
@@ -103,6 +104,7 @@ func RouteContribute(
 	// indicate invalid input. Since Shard is a fixed-length array in the request,
 	// clients must send meaningful non-zero data.
 	if mem.Zeroed32(request.Shard) {
+		log.Log().Warn(fName, "message", "shard is all zeros")
 		responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
 			reqres.ShardPutResponse{
 				Err: data.ErrBadInput,
