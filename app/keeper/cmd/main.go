@@ -6,15 +6,14 @@ package main
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/spiffe/spike-sdk-go/log"
 	"github.com/spiffe/spike-sdk-go/spiffe"
 	"github.com/spiffe/spike-sdk-go/spiffeid"
-	"github.com/spiffe/spike/internal/out"
 
 	"github.com/spiffe/spike/app/keeper/internal/net"
 	"github.com/spiffe/spike/internal/config"
+	"github.com/spiffe/spike/internal/out"
 )
 
 const appName = "SPIKE Keeper"
@@ -42,8 +41,9 @@ func main() {
 
 	log.Log().Info(
 		appName,
-		"message",
-		fmt.Sprintf("started service: %s v%s", appName, config.KeeperVersion),
+		"message", "started service",
+		"app", appName,
+		"version", config.KeeperVersion,
 	)
 
 	// Serve the app.
