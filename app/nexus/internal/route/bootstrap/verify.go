@@ -12,10 +12,7 @@ import (
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
-	apiErr "github.com/spiffe/spike-sdk-go/api/errors"
 	"github.com/spiffe/spike-sdk-go/log"
-	"github.com/spiffe/spike/app/nexus/internal/state/base"
-
 	"github.com/spiffe/spike/app/nexus/internal/state/persist"
 	"github.com/spiffe/spike/internal/journal"
 	"github.com/spiffe/spike/internal/net"
@@ -61,25 +58,17 @@ func RouteVerify(
 ) error {
 	const fName = "routeVerify"
 	journal.AuditRequest(fName, r, audit, journal.AuditCreate)
-
-	requestBody := net.ReadRequestBody(w, r)
-	if requestBody == nil {
-		log.Log().Warn(fName, "message", "requestBody is nil")
-		return apiErr.ErrReadFailure
-	}
-
-	request := net.HandleRequest[
-		reqres.BootstrapVerifyRequest, reqres.BootstrapVerifyResponse](
-		requestBody, w,
+	request, err := net.ReadParseAndGuard[
+		reqres.BootstrapVerifyRequest,
+		reqres.BootstrapVerifyResponse](
+		w, r,
 		reqres.BootstrapVerifyResponse{Err: data.ErrBadInput},
+		guardVerifyRequest,
+		fName,
 	)
-	if request == nil {
-		log.Log().Warn(fName, "message", "request is nil")
-		return apiErr.ErrParseFailure
-	}
-
-	err := guardVerifyRequest(*request, w, r)
-	if err != nil {
+	alreadyResponded := err != nil
+	if alreadyResponded {
+		log.Log().Error(fName, "message", "exit", "err", err.Error())
 		return err
 	}
 
@@ -99,10 +88,6 @@ func RouteVerify(
 	}
 
 	// Decrypt the ciphertext
-	// TODO: these need to be removed!
-	fmt.Println("nonce", hex.EncodeToString(request.Nonce))
-	fmt.Println("ciphertext", hex.EncodeToString(request.Ciphertext))
-	fmt.Println("rootKey", hex.EncodeToString(base.RootKeyNoLock()[:]))
 	plaintext, err := c.Open(nil, request.Nonce, request.Ciphertext, nil)
 	if err != nil {
 		log.Log().Error(fName, "message", "decryption failed", "err",

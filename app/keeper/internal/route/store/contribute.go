@@ -63,23 +63,17 @@ func RouteContribute(
 ) error {
 	const fName = "RouteContribute"
 	journal.AuditRequest(fName, r, audit, journal.AuditCreate)
-
-	requestBody := net.ReadRequestBody(w, r)
-	if requestBody == nil {
-		return errors.ErrReadFailure
-	}
-
-	request := net.HandleRequest[
-		reqres.ShardPutRequest, reqres.ShardPutResponse](
-		requestBody, w,
+	request, err := net.ReadParseAndGuard[
+		reqres.ShardPutRequest,
+		reqres.ShardPutResponse](
+		w, r,
 		reqres.ShardPutResponse{Err: data.ErrBadInput},
+		guardShardPutRequest,
+		fName,
 	)
-	if request == nil {
-		return errors.ErrParseFailure
-	}
-
-	err := guardShardPutRequest(*request, w, r)
-	if err != nil {
+	alreadyResponded := err != nil
+	if alreadyResponded {
+		log.Log().Error(fName, "message", "exit", "err", err.Error())
 		return err
 	}
 
@@ -88,9 +82,11 @@ func RouteContribute(
 			reqres.ShardPutResponse{
 				Err: data.ErrBadInput,
 			}, w)
-		if err == nil {
+		alreadyResponded = err != nil
+		if !alreadyResponded {
 			net.Respond(http.StatusBadRequest, responseBody, w)
 		}
+		log.Log().Error(fName, "message", data.ErrBadInput)
 		return errors.ErrInvalidInput
 	}
 
@@ -108,9 +104,11 @@ func RouteContribute(
 			reqres.ShardPutResponse{
 				Err: data.ErrBadInput,
 			}, w)
-		if err == nil {
+		alreadyResponded = err != nil
+		if !alreadyResponded {
 			net.Respond(http.StatusBadRequest, responseBody, w)
 		}
+		log.Log().Error(fName, "message", data.ErrBadInput)
 		return errors.ErrInvalidInput
 	}
 
@@ -119,11 +117,11 @@ func RouteContribute(
 
 	responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
 		reqres.ShardPutResponse{}, w)
-	if err == nil {
+	alreadyResponded = err != nil
+	if !alreadyResponded {
 		net.Respond(http.StatusOK, responseBody, w)
 	}
 
 	log.Log().Info(fName, "message", data.ErrSuccess)
-
 	return nil
 }

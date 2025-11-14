@@ -22,7 +22,8 @@ import (
 )
 
 var (
-	ErrRecoveryRetry = errors.New("recovery failed; retrying")
+	// TODO: To SDK.
+	ErrRecoveryRetry = errors.New("recovery failed: retrying")
 )
 
 // InitializeBackingStoreFromKeepers iterates through keepers until

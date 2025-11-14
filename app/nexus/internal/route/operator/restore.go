@@ -10,7 +10,6 @@ import (
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
-	"github.com/spiffe/spike-sdk-go/api/errors"
 	"github.com/spiffe/spike-sdk-go/config/env"
 	"github.com/spiffe/spike-sdk-go/log"
 	"github.com/spiffe/spike-sdk-go/security/mem"
@@ -60,30 +59,22 @@ func RouteRestore(
 	w http.ResponseWriter, r *http.Request, audit *journal.AuditEntry,
 ) error {
 	const fName = "routeRestore"
-
 	journal.AuditRequest(fName, r, audit, journal.AuditCreate)
-
 	if env.BackendStoreTypeVal() == env.Memory {
 		log.Log().Info(fName, "message", "skipping restoration in memory mode")
 		return nil
 	}
-
-	requestBody := net.ReadRequestBody(w, r)
-	if requestBody == nil {
-		return errors.ErrReadFailure
-	}
-
-	request := net.HandleRequest[
-		reqres.RestoreRequest, reqres.RestoreResponse](
-		requestBody, w,
+	request, err := net.ReadParseAndGuard[
+		reqres.RestoreRequest,
+		reqres.RestoreResponse](
+		w, r,
 		reqres.RestoreResponse{Err: data.ErrBadInput},
+		guardRestoreRequest,
+		fName,
 	)
-	if request == nil {
-		return errors.ErrParseFailure
-	}
-
-	err := guardRestoreRequest(*request, w, r)
-	if err != nil {
+	alreadyResponded := err != nil
+	if alreadyResponded {
+		log.Log().Error(fName, "message", "exit", "err", err.Error())
 		return err
 	}
 

@@ -10,7 +10,6 @@ import (
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
-	"github.com/spiffe/spike-sdk-go/api/errors"
 	"github.com/spiffe/spike-sdk-go/log"
 
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
@@ -65,21 +64,14 @@ func RoutePutPolicy(
 	const fName = "routePutPolicy"
 	journal.AuditRequest(fName, r, audit, journal.AuditCreate)
 
-	requestBody := net.ReadRequestBody(w, r)
-	if requestBody == nil {
-		return errors.ErrParseFailure
-	}
-
-	request := net.HandleRequest[
-		reqres.PolicyCreateRequest, reqres.PolicyCreateResponse](
-		requestBody, w,
+	request, err := net.ReadParseAndGuard[
+		reqres.PolicyCreateRequest,
+		reqres.PolicyCreateResponse](
+		w, r,
 		reqres.PolicyCreateResponse{Err: data.ErrBadInput},
+		guardPutPolicyRequest,
+		"",
 	)
-	if request == nil {
-		return errors.ErrReadFailure
-	}
-
-	err := guardPutPolicyRequest(*request, w, r)
 	if err != nil {
 		return err
 	}

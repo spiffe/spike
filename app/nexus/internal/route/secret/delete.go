@@ -9,7 +9,6 @@ import (
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
-	"github.com/spiffe/spike-sdk-go/api/errors"
 	"github.com/spiffe/spike-sdk-go/log"
 
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
@@ -59,22 +58,17 @@ func RouteDeleteSecret(
 	const fName = "RouteDeleteSecret"
 	journal.AuditRequest(fName, r, audit, journal.AuditDelete)
 
-	requestBody := net.ReadRequestBody(w, r)
-	if requestBody == nil {
-		return errors.ErrReadFailure
-	}
-
-	request := net.HandleRequest[
-		reqres.SecretDeleteRequest, reqres.SecretDeleteResponse](
-		requestBody, w,
+	request, err := net.ReadParseAndGuard[
+		reqres.SecretDeleteRequest,
+		reqres.SecretDeleteResponse](
+		w, r,
 		reqres.SecretDeleteResponse{Err: data.ErrBadInput},
+		guardDeleteSecretRequest,
+		"",
 	)
-	if request == nil {
-		return errors.ErrParseFailure
-	}
-
-	err := guardDeleteSecretRequest(*request, w, r)
-	if err != nil {
+	alreadyResponded := err != nil
+	if alreadyResponded {
+		log.Log().Error(fName, "message", "exit", "err", err.Error())
 		return err
 	}
 

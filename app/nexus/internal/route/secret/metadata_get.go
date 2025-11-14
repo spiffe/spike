@@ -5,7 +5,6 @@
 package secret
 
 import (
-	"errors"
 	"net/http"
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
@@ -77,30 +76,18 @@ func RouteGetSecretMetadata(
 	w http.ResponseWriter, r *http.Request, audit *journal.AuditEntry,
 ) error {
 	const fName = "routeGetSecretMetadata"
-
-	log.Log().Info(fName,
-		"method", r.Method,
-		"path", r.URL.Path,
-		"query", r.URL.RawQuery,
-	)
-	audit.Action = journal.AuditRead
-
-	requestBody := net.ReadRequestBody(w, r)
-	if requestBody == nil {
-		return errors.New("failed to read request body") // TODO: constants
-	}
-
-	request := net.HandleRequest[
-		reqres.SecretMetadataRequest, reqres.SecretMetadataResponse](
-		requestBody, w,
+	journal.AuditRequest(fName, r, audit, journal.AuditRead)
+	request, err := net.ReadParseAndGuard[
+		reqres.SecretMetadataRequest,
+		reqres.SecretMetadataResponse](
+		w, r,
 		reqres.SecretMetadataResponse{Err: data.ErrBadInput},
+		guardGetSecretMetadataRequest,
+		fName,
 	)
-	if request == nil {
-		return errors.New("failed to parse request body") // TODO: constants
-	}
-
-	err := guardGetSecretMetadataRequest(*request, w, r)
-	if err != nil {
+	alreadyResponded := err != nil
+	if alreadyResponded {
+		log.Log().Error(fName, "message", "exit", "err", err.Error())
 		return err
 	}
 

@@ -10,6 +10,7 @@ import (
 	"io"
 	"net/http"
 
+	apiErr "github.com/spiffe/spike-sdk-go/api/errors"
 	"github.com/spiffe/spike-sdk-go/log"
 	"github.com/spiffe/spike-sdk-go/net"
 )
@@ -112,4 +113,149 @@ func HandleRequest[Req any, Res any](
 	}
 
 	return &request
+}
+
+// ReadAndParseRequest reads the HTTP request body and parses it into a typed
+// request struct in a single operation. This function combines ReadRequestBody
+// and HandleRequest to reduce boilerplate in route handlers.
+//
+// This function performs the following steps:
+//  1. Reads the request body from the HTTP request
+//  2. Returns ErrReadFailure if reading fails
+//  3. Unmarshals the body into the request type
+//  4. Returns ErrParseFailure if unmarshaling fails
+//  5. Returns the parsed request and nil error on success
+//
+// Type Parameters:
+//   - Req: The request type to unmarshal into
+//   - Res: The response type for error cases
+//
+// Parameters:
+//   - w: http.ResponseWriter - The response writer for error handling
+//   - r: *http.Request - The incoming HTTP request
+//   - errorResponse: Res - A response object to send if parsing fails
+//   - logContext: string - Optional context string for logging (e.g., function
+//     name). If empty, no additional logging is performed beyond the default.
+//
+// Returns:
+//   - *Req - A pointer to the parsed request struct, or nil if parsing failed
+//   - error - apiErr.ErrReadFailure, apiErr.ErrParseFailure, or nil
+//
+// Example usage:
+//
+//	request, err := net.ReadAndParseRequest[
+//	    reqres.SecretDeleteRequest,
+//	    reqres.SecretDeleteResponse](
+//	    w, r,
+//	    reqres.SecretDeleteResponse{Err: data.ErrBadInput},
+//	    "RouteDeleteSecret",
+//	)
+//	if err != nil {
+//	    return err
+//	}
+func ReadAndParseRequest[Req any, Res any](
+	w http.ResponseWriter,
+	r *http.Request,
+	errorResponse Res,
+	logContext string,
+) (*Req, error) {
+	requestBody := ReadRequestBody(w, r)
+	if requestBody == nil {
+		if logContext != "" {
+			log.Log().Error(logContext, "message", "failed to read request body")
+		}
+		return nil, apiErr.ErrReadFailure
+	}
+
+	request := HandleRequest[Req, Res](requestBody, w, errorResponse)
+	if request == nil {
+		if logContext != "" {
+			log.Log().Error(logContext, "message", "failed to parse request body")
+		}
+		return nil, apiErr.ErrParseFailure
+	}
+
+	return request, nil
+}
+
+// GuardFunc is a function type for request guard/validation functions.
+// Guard functions validate requests and return an error if validation fails.
+// They typically check authentication, authorization, and input validation.
+//
+// Type Parameters:
+//   - Req: The request type to validate
+//
+// Parameters:
+//   - request: The request to validate
+//   - w: http.ResponseWriter for writing error responses
+//   - r: *http.Request for accessing request context
+//
+// Returns:
+//   - error: nil if validation passes, error otherwise
+type GuardFunc[Req any] func(Req, http.ResponseWriter, *http.Request) error
+
+// ReadParseAndGuard reads the HTTP request body, parses it, and executes
+// a guard function in a single operation. This function combines
+// ReadAndParseRequest with guard execution to further reduce boilerplate.
+//
+// This function performs the following steps:
+//  1. Reads the request body from the HTTP request
+//  2. Unmarshals the body into the request type
+//  3. Executes the guard function for validation
+//  4. Logs errors if logContext is provided
+//  5. Returns the parsed request and any errors
+//
+// Type Parameters:
+//   - Req: The request type to unmarshal into
+//   - Res: The response type for error cases
+//
+// Parameters:
+//   - w: http.ResponseWriter - The response writer for error handling
+//   - r: *http.Request - The incoming HTTP request
+//   - errorResponse: Res - A response object to send if parsing fails
+//   - guard: GuardFunc[Req] - The guard function to execute for validation
+//   - logContext: string - Optional context string for logging (e.g., function
+//     name). If empty, no additional logging is performed beyond the default.
+//
+// Returns:
+//   - *Req - A pointer to the parsed request struct, or nil if any step failed
+//   - error - apiErr.ErrReadFailure, apiErr.ErrParseFailure, or error from
+//     guard function
+//
+// Example usage:
+//
+//	request, err := net.ReadParseAndGuard[
+//	    reqres.ShardPutRequest,
+//	    reqres.ShardPutResponse](
+//	    w, r,
+//	    reqres.ShardPutResponse{Err: data.ErrBadInput},
+//	    guardShardPutRequest,
+//	    "RouteContribute",
+//	)
+//	if err != nil {
+//	    return err
+//	}
+func ReadParseAndGuard[Req any, Res any](
+	w http.ResponseWriter,
+	r *http.Request,
+	errorResponse Res,
+	guard GuardFunc[Req],
+	logContext string,
+) (*Req, error) {
+	request, err := ReadAndParseRequest[Req, Res](
+		w, r, errorResponse, logContext,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	err = guard(*request, w, r)
+	if err != nil {
+		if logContext != "" {
+			log.Log().Error(logContext, "message", "guard trap", "err", err.Error())
+		}
+		return nil, err
+	}
+
+	return request, nil
 }

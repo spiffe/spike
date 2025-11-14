@@ -9,7 +9,6 @@ import (
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
-	apiErr "github.com/spiffe/spike-sdk-go/api/errors"
 	"github.com/spiffe/spike-sdk-go/log"
 
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
@@ -64,28 +63,22 @@ func RouteGetSecret(
 ) error {
 	const fName = "routeGetSecret"
 	journal.AuditRequest(fName, r, audit, journal.AuditRead)
-
-	requestBody := net.ReadRequestBody(w, r)
-	if requestBody == nil {
-		return apiErr.ErrReadFailure
-	}
-
-	request := net.HandleRequest[
-		reqres.SecretReadRequest, reqres.SecretReadResponse](
-		requestBody, w,
+	request, err := net.ReadParseAndGuard[
+		reqres.SecretReadRequest,
+		reqres.SecretReadResponse](
+		w, r,
 		reqres.SecretReadResponse{Err: data.ErrBadInput},
+		guardGetSecretRequest,
+		fName,
 	)
-	if request == nil {
-		return apiErr.ErrParseFailure
+	alreadyResponded := err != nil
+	if alreadyResponded {
+		log.Log().Error(fName, "message", "exit", "err", err.Error())
+		return err
 	}
 
 	version := request.Version
 	path := request.Path
-
-	err := guardGetSecretRequest(*request, w, r)
-	if err != nil {
-		return err
-	}
 
 	secret, err := state.GetSecret(path, version)
 	if err == nil {

@@ -9,7 +9,6 @@ import (
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
-	"github.com/spiffe/spike-sdk-go/api/errors"
 	"github.com/spiffe/spike-sdk-go/log"
 
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
@@ -55,28 +54,22 @@ func RouteUndeleteSecret(
 ) error {
 	const fName = "routeUndeleteSecret"
 	journal.AuditRequest(fName, r, audit, journal.AuditUndelete)
-
-	requestBody := net.ReadRequestBody(w, r)
-	if requestBody == nil {
-		return errors.ErrReadFailure
-	}
-
-	req := net.HandleRequest[
-		reqres.SecretUndeleteRequest, reqres.SecretUndeleteResponse](
-		requestBody, w,
+	request, err := net.ReadParseAndGuard[
+		reqres.SecretUndeleteRequest,
+		reqres.SecretUndeleteResponse](
+		w, r,
 		reqres.SecretUndeleteResponse{Err: data.ErrBadInput},
+		guardSecretUndeleteRequest,
+		fName,
 	)
-	if req == nil {
-		return errors.ErrParseFailure
-	}
-
-	err := guardSecretUndeleteRequest(*req, w, r)
-	if err != nil {
+	alreadyResponded := err != nil
+	if alreadyResponded {
+		log.Log().Error(fName, "message", "exit", "err", err.Error())
 		return err
 	}
 
-	path := req.Path
-	versions := req.Versions
+	path := request.Path
+	versions := request.Versions
 	if len(versions) == 0 {
 		versions = []int{}
 	}

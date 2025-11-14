@@ -17,7 +17,7 @@ import (
 	"github.com/spiffe/spike/internal/net"
 )
 
-func guardPutSecretMetadataRequest(
+func guardSecretPutRequest(
 	request reqres.SecretPutRequest, w http.ResponseWriter, r *http.Request,
 ) error {
 	peerSPIFFEID, err := auth.ExtractPeerSPIFFEID[reqres.SecretPutResponse](

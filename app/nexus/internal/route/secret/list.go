@@ -9,7 +9,6 @@ import (
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
-	"github.com/spiffe/spike-sdk-go/api/errors"
 	"github.com/spiffe/spike-sdk-go/log"
 
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
@@ -59,23 +58,17 @@ func RouteListPaths(
 ) error {
 	const fName = "routeListPaths"
 	journal.AuditRequest(fName, r, audit, journal.AuditList)
-
-	requestBody := net.ReadRequestBody(w, r)
-	if requestBody == nil {
-		return errors.ErrReadFailure
-	}
-
-	request := net.HandleRequest[
-		reqres.SecretListRequest, reqres.SecretListResponse](
-		requestBody, w,
+	_, err := net.ReadParseAndGuard[
+		reqres.SecretListRequest,
+		reqres.SecretListResponse](
+		w, r,
 		reqres.SecretListResponse{Err: data.ErrBadInput},
+		guardListSecretRequest,
+		fName,
 	)
-	if request == nil {
-		return errors.ErrParseFailure
-	}
-
-	err := guardListSecretRequest(*request, w, r)
-	if err != nil {
+	alreadyResponded := err != nil
+	if alreadyResponded {
+		log.Log().Error(fName, "message", "exit", "err", err.Error())
 		return err
 	}
 

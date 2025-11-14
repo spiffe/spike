@@ -9,7 +9,6 @@ import (
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
-	"github.com/spiffe/spike-sdk-go/api/errors"
 	"github.com/spiffe/spike-sdk-go/log"
 
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
@@ -51,23 +50,17 @@ func RoutePutSecret(
 ) error {
 	const fName = "routePutSecret"
 	journal.AuditRequest(fName, r, audit, journal.AuditCreate)
-
-	requestBody := net.ReadRequestBody(w, r)
-	if requestBody == nil {
-		return errors.ErrReadFailure
-	}
-
-	request := net.HandleRequest[
-		reqres.SecretPutRequest, reqres.SecretPutResponse](
-		requestBody, w,
+	request, err := net.ReadParseAndGuard[
+		reqres.SecretPutRequest,
+		reqres.SecretPutResponse](
+		w, r,
 		reqres.SecretPutResponse{Err: data.ErrBadInput},
+		guardSecretPutRequest,
+		fName,
 	)
-	if request == nil {
-		return errors.ErrParseFailure
-	}
-
-	err := guardPutSecretMetadataRequest(*request, w, r)
-	if err != nil {
+	alreadyResponded := err != nil
+	if alreadyResponded {
+		log.Log().Error(fName, "message", "exit", "err", err.Error())
 		return err
 	}
 

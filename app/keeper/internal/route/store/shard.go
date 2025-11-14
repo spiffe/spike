@@ -55,23 +55,17 @@ func RouteShard(
 ) error {
 	const fName = "RouteShard"
 	journal.AuditRequest(fName, r, audit, journal.AuditRead)
-
-	requestBody := net.ReadRequestBody(w, r)
-	if requestBody == nil {
-		return errors.ErrReadFailure
-	}
-
-	request := net.HandleRequest[
-		reqres.ShardGetRequest, reqres.ShardGetResponse](
-		requestBody, w,
+	_, err := net.ReadParseAndGuard[
+		reqres.ShardGetRequest,
+		reqres.ShardGetResponse](
+		w, r,
 		reqres.ShardGetResponse{Err: data.ErrBadInput},
+		guardShardGetRequest,
+		fName,
 	)
-	if request == nil {
-		return errors.ErrParseFailure
-	}
-
-	err := guardShardGetRequest(*request, w, r)
-	if err != nil {
+	alreadyResponded := err != nil
+	if alreadyResponded {
+		log.Log().Error(fName, "message", "exit", "err", err.Error())
 		return err
 	}
 

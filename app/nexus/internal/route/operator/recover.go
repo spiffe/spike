@@ -48,30 +48,20 @@ func RouteRecover(
 ) error {
 	const fName = "routeRecover"
 	journal.AuditRequest(fName, r, audit, journal.AuditCreate)
-
-	requestBody := net.ReadRequestBody(w, r)
-	if requestBody == nil {
-		log.Log().Warn(fName, "message", "requestBody is nil")
-		return errors.ErrReadFailure
-	}
-
-	request := net.HandleRequest[
-		reqres.RecoverRequest, reqres.RecoverResponse](
-		requestBody, w,
+	_, err := net.ReadParseAndGuard[
+		reqres.RecoverRequest,
+		reqres.RecoverResponse](
+		w, r,
 		reqres.RecoverResponse{Err: data.ErrBadInput},
+		guardRecoverRequest,
+		fName,
 	)
-	if request == nil {
-		log.Log().Warn(fName, "message", "request is nil")
-		return errors.ErrParseFailure
-	}
-
-	err := guardRecoverRequest(*request, w, r)
-	if err != nil {
+	alreadyResponded := err != nil
+	if alreadyResponded {
+		log.Log().Error(fName, "message", "exit", "err", err.Error())
 		return err
 	}
 
-	log.Log().Info(fName,
-		"message", "request is valid. Recovery shards requested.")
 	shards := recovery.NewPilotRecoveryShards()
 
 	// Security: reset shards before the function exits.

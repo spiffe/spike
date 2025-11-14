@@ -20,7 +20,7 @@ import (
 
 func shardURL(keeperAPIRoot string) string {
 	const fName = "shardURL"
-
+	// TODO: to separate file.
 	u, err := url.JoinPath(keeperAPIRoot, string(apiUrl.KeeperShard))
 	if err != nil {
 		log.Log().Warn(
