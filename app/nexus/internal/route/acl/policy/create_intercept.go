@@ -18,7 +18,7 @@ import (
 	"github.com/spiffe/spike/internal/net"
 )
 
-// guardPutPolicyRequest validates a policy creation request by performing
+// guardPolicyCreateRequest validates a policy creation request by performing
 // authentication, authorization, and input validation checks.
 //
 // The function performs the following validations in order:
@@ -41,7 +41,7 @@ import (
 //   - nil if all validations pass
 //   - apiErr.ErrUnauthorized if authentication or authorization fails
 //   - apiErr.ErrInvalidInput if any input validation fails
-func guardPutPolicyRequest(
+func guardPolicyCreateRequest(
 	request reqres.PolicyCreateRequest, w http.ResponseWriter, r *http.Request,
 ) error {
 	peerSPIFFEID, err := auth.ExtractPeerSPIFFEID[reqres.PolicyCreateResponse](

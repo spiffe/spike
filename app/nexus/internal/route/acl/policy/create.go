@@ -11,6 +11,7 @@ import (
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	"github.com/spiffe/spike-sdk-go/log"
+	"github.com/spiffe/spike-sdk-go/strings"
 
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 	"github.com/spiffe/spike/internal/journal"
@@ -69,10 +70,11 @@ func RoutePutPolicy(
 		reqres.PolicyCreateResponse](
 		w, r,
 		reqres.PolicyCreateResponse{Err: data.ErrBadInput},
-		guardPutPolicyRequest,
+		guardPolicyCreateRequest,
 		"",
 	)
-	if err != nil {
+	if alreadyResponded := err != nil; alreadyResponded {
+		log.Log().Error(fName, "message", "exit", "err", err.Error())
 		return err
 	}
 
@@ -90,18 +92,26 @@ func RoutePutPolicy(
 		CreatedAt:       time.Time{},
 		CreatedBy:       "",
 	})
-	if err != nil {
-		log.Log().Warn(fName, "message", "Failed to create policy", "err", err.Error())
+	creationFailed := err != nil
+	if creationFailed {
+		log.Log().Warn(
+			fName,
+			"message", "failed to create policy",
+			"err", err.Error(),
+		)
 
 		responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
 			reqres.PolicyCreateResponse{
 				Err: data.ErrInternal,
 			}, w)
-		if err == nil {
+		if alreadyResponded := err != nil; !alreadyResponded {
 			net.Respond(http.StatusInternalServerError, responseBody, w)
 		}
-
-		log.Log().Error(fName, "message", data.ErrInternal)
+		log.Log().Error(
+			fName,
+			"message", data.ErrInternal,
+			"err", strings.MaybeError(err),
+		)
 		return err
 	}
 
@@ -109,10 +119,13 @@ func RoutePutPolicy(
 		reqres.PolicyCreateResponse{
 			ID: policy.ID,
 		}, w)
-	if err == nil {
+	if alreadyResponded := err != nil; !alreadyResponded {
 		net.Respond(http.StatusOK, responseBody, w)
 	}
-
-	log.Log().Info(fName, "message", data.ErrSuccess)
+	log.Log().Info(
+		fName,
+		"message", data.ErrSuccess,
+		"err", strings.MaybeError(err),
+	)
 	return nil
 }

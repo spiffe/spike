@@ -12,6 +12,7 @@ import (
 	"github.com/spiffe/spike-sdk-go/api/errors"
 	"github.com/spiffe/spike-sdk-go/log"
 	"github.com/spiffe/spike-sdk-go/security/mem"
+	"github.com/spiffe/spike-sdk-go/strings"
 
 	"github.com/spiffe/spike/app/keeper/internal/state"
 	"github.com/spiffe/spike/internal/journal"
@@ -63,8 +64,7 @@ func RouteShard(
 		guardShardGetRequest,
 		fName,
 	)
-	alreadyResponded := err != nil
-	if alreadyResponded {
+	if alreadyResponded := err != nil; alreadyResponded {
 		log.Log().Error(fName, "message", "exit", "err", err.Error())
 		return err
 	}
@@ -76,15 +76,18 @@ func RouteShard(
 	sh := state.ShardNoSync()
 
 	if mem.Zeroed32(sh) {
-		log.Log().Error(fName, "message", "No shard found")
-
 		responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
 			reqres.ShardGetResponse{
 				Err: data.ErrNotFound,
 			}, w)
-		if err == nil {
+		if alreadyResponded := err != nil; !alreadyResponded {
 			net.Respond(http.StatusNotFound, responseBody, w)
 		}
+		log.Log().Error(
+			fName,
+			"message", data.ErrNotFound,
+			"err", strings.MaybeError(err),
+		)
 		return errors.ErrNotFound
 	}
 
@@ -92,7 +95,7 @@ func RouteShard(
 		reqres.ShardGetResponse{
 			Shard: sh,
 		}, w)
-	if err == nil {
+	if alreadyResponded := err != nil; !alreadyResponded {
 		net.Respond(http.StatusOK, responseBody, w)
 	}
 	// Security: Reset response body before function exits.
@@ -100,6 +103,8 @@ func RouteShard(
 		mem.ClearBytes(responseBody)
 	}()
 
-	log.Log().Info(fName, "message", data.ErrSuccess)
+	log.Log().Info(
+		fName,
+		"message", data.ErrSuccess, "err", strings.MaybeError(err))
 	return nil
 }

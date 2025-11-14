@@ -12,6 +12,7 @@ import (
 	"github.com/spiffe/spike-sdk-go/api/errors"
 	"github.com/spiffe/spike-sdk-go/log"
 	"github.com/spiffe/spike-sdk-go/security/mem"
+	"github.com/spiffe/spike-sdk-go/strings"
 
 	"github.com/spiffe/spike/app/keeper/internal/state"
 	"github.com/spiffe/spike/internal/journal"
@@ -71,8 +72,7 @@ func RouteContribute(
 		guardShardPutRequest,
 		fName,
 	)
-	alreadyResponded := err != nil
-	if alreadyResponded {
+	if alreadyResponded := err != nil; alreadyResponded {
 		log.Log().Error(fName, "message", "exit", "err", err.Error())
 		return err
 	}
@@ -82,11 +82,14 @@ func RouteContribute(
 			reqres.ShardPutResponse{
 				Err: data.ErrBadInput,
 			}, w)
-		alreadyResponded = err != nil
-		if !alreadyResponded {
+		if alreadyResponded := err != nil; !alreadyResponded {
 			net.Respond(http.StatusBadRequest, responseBody, w)
 		}
-		log.Log().Error(fName, "message", data.ErrBadInput)
+		log.Log().Error(
+			fName,
+			"message", data.ErrBadInput,
+			"err", strings.MaybeError(err),
+		)
 		return errors.ErrInvalidInput
 	}
 
@@ -104,11 +107,14 @@ func RouteContribute(
 			reqres.ShardPutResponse{
 				Err: data.ErrBadInput,
 			}, w)
-		alreadyResponded = err != nil
-		if !alreadyResponded {
+		if alreadyResponded := err != nil; !alreadyResponded {
 			net.Respond(http.StatusBadRequest, responseBody, w)
 		}
-		log.Log().Error(fName, "message", data.ErrBadInput)
+		log.Log().Error(
+			fName,
+			"message", data.ErrBadInput,
+			"err", strings.MaybeError(err),
+		)
 		return errors.ErrInvalidInput
 	}
 
@@ -117,11 +123,13 @@ func RouteContribute(
 
 	responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
 		reqres.ShardPutResponse{}, w)
-	alreadyResponded = err != nil
-	if !alreadyResponded {
+	if alreadyResponded := err != nil; !alreadyResponded {
 		net.Respond(http.StatusOK, responseBody, w)
 	}
-
-	log.Log().Info(fName, "message", data.ErrSuccess)
+	log.Log().Info(
+		fName,
+		"message", data.ErrSuccess,
+		"err", strings.MaybeError(err),
+	)
 	return nil
 }
