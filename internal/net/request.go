@@ -259,3 +259,106 @@ func ReadParseAndGuard[Req any, Res any](
 
 	return request, nil
 }
+
+// FailIfError is a helper function that fails a request if an error occurred
+// during validation or processing.
+//
+// This function provides a reusable pattern for validating inputs and
+// responding with appropriate error messages. If the internal error is nil,
+// the function returns nil immediately. Otherwise, it marshals the client
+// response and sends it with a 400 Bad Request status, then returns the
+// specified error to the caller.
+//
+// Type Parameters:
+//   - T: The response type to send to the client (e.g.,
+//     reqres.PolicyCreateBadInput)
+//
+// Parameters:
+//   - internalError: The error to check (e.g., from validation functions).
+//     If nil, the function returns nil immediately.
+//   - errorToRespond: The error to return to the caller (e.g.,
+//     apiErr.ErrInvalidInput)
+//   - clientResponse: The response object to send to the client if there is
+//     an error
+//   - w: The HTTP response writer for error responses
+//
+// Returns:
+//   - error: Returns errorToRespond if internalError is not nil, otherwise
+//     returns nil
+//
+// Example usage:
+//
+//	err := validation.ValidateName(name)
+//	if err := net.FailIfError(
+//	    err, apiErr.ErrInvalidInput,
+//	    reqres.PolicyCreateBadInput, w); err != nil {
+//	    return err
+//	}
+func FailIfError[T any](
+	internalError error, errorToRespond error,
+	clientResponse T, w http.ResponseWriter,
+) error {
+	if internalError != nil {
+		responseBody, marshalErr := MarshalBodyAndRespondOnMarshalFail(
+			clientResponse, w,
+		)
+		if alreadyResponded := marshalErr != nil; !alreadyResponded {
+			Respond(http.StatusBadRequest, responseBody, w)
+		}
+		return errorToRespond
+	}
+	return nil
+}
+
+// FailIf is a helper function that conditionally fails a request by sending
+// an error response based on a boolean condition.
+//
+// This function provides a reusable pattern for conditional error responses,
+// such as authorization checks or validation conditions. If the condition is
+// true, it marshals the client response and sends it with the specified HTTP
+// status code, then returns the specified error to the caller.
+//
+// Type Parameters:
+//   - T: The response type to send to the client (e.g.,
+//     reqres.ShardPutUnauthorized)
+//
+// Parameters:
+//   - condition: If true, fail the request with an error response
+//   - clientResponse: The response object to send to the client if condition
+//     is true
+//   - w: The HTTP response writer for error responses
+//   - statusCode: The HTTP status code to send (e.g., http.StatusUnauthorized)
+//   - errorToRespond: The error to return to the caller (e.g.,
+//     apiErr.ErrUnauthorized)
+//
+// Returns:
+//   - error: Returns errorToRespond if condition is true, otherwise returns
+//     nil
+//
+// Example usage:
+//
+//	if err := net.FailIf(
+//	    !spiffeid.PeerCanTalkToKeeper(peerSPIFFEID.String()),
+//	    reqres.ShardPutUnauthorized, w,
+//	    http.StatusUnauthorized, apiErr.ErrUnauthorized,
+//	); err != nil {
+//	    return err
+//	}
+func FailIf[T any](
+	condition bool,
+	clientResponse T,
+	w http.ResponseWriter,
+	statusCode int,
+	errorToRespond error,
+) error {
+	if condition {
+		responseBody, marshalErr := MarshalBodyAndRespondOnMarshalFail(
+			clientResponse, w,
+		)
+		if alreadyResponded := marshalErr != nil; !alreadyResponded {
+			Respond(statusCode, responseBody, w)
+		}
+		return errorToRespond
+	}
+	return nil
+}

@@ -71,47 +71,48 @@ func guardPolicyCreateRequest(
 	permissions := request.Permissions
 
 	err = validation.ValidateName(name)
-	if invalidName := err != nil; invalidName {
-		responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
-			reqres.PolicyCreateBadInput, w,
-		)
-		if alreadyResponded := err != nil; !alreadyResponded {
-			net.Respond(http.StatusBadRequest, responseBody, w)
+	if err != nil {
+		if failErr := net.FailIfError(
+			err, apiErr.ErrInvalidInput, reqres.PolicyCreateBadInput, w,
+		); failErr != nil {
+			return failErr
 		}
+		// Defensive: ensure we return the error if validation failed.
 		return apiErr.ErrInvalidInput
 	}
 
 	err = validation.ValidateSPIFFEIDPattern(SPIFFEIDPattern)
-	if invalidSPIFFEIDPattern := err != nil; invalidSPIFFEIDPattern {
-		responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
-			reqres.PolicyCreateBadInput, w,
-		)
-		if alreadyResponded := err != nil; !alreadyResponded {
-			net.Respond(http.StatusBadRequest, responseBody, w)
+	if err != nil {
+		if failErr := net.FailIfError(
+			err, apiErr.ErrInvalidInput, reqres.PolicyCreateBadInput, w,
+		); failErr != nil {
+			return failErr
 		}
+		// Defensive: ensure we return the error if validation failed.
 		return apiErr.ErrInvalidInput
 	}
 
 	err = validation.ValidatePathPattern(pathPattern)
 	if err != nil {
-		responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
-			reqres.PolicyCreateBadInput, w,
-		)
-		if alreadyResponded := err != nil; !alreadyResponded {
-			net.Respond(http.StatusBadRequest, responseBody, w)
+		if failErr := net.FailIfError(
+			err, apiErr.ErrInvalidInput, reqres.PolicyCreateBadInput, w,
+		); failErr != nil {
+			return failErr
 		}
+		// Defensive: ensure we return the error if validation failed.
 		return apiErr.ErrInvalidInput
 	}
 
 	err = validation.ValidatePermissions(permissions)
 	if err != nil {
-		responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
-			reqres.PolicyCreateBadInput, w,
-		)
-		if alreadyResponded := err != nil; !alreadyResponded {
-			net.Respond(http.StatusBadRequest, responseBody, w)
+		if failErr := net.FailIfError(
+			err, apiErr.ErrInvalidInput, reqres.PolicyCreateBadInput, w,
+		); failErr != nil {
+			return failErr
 		}
+		// Defensive: ensure we return the error if validation failed.
 		return apiErr.ErrInvalidInput
 	}
+
 	return nil
 }

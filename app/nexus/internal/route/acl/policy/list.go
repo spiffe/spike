@@ -60,12 +60,8 @@ func RouteListPolicies(
 	fName := "routeListPolicies"
 	journal.AuditRequest(fName, r, audit, journal.AuditList)
 	request, err := net.ReadParseAndGuard[
-		reqres.PolicyListRequest,
-		reqres.PolicyListResponse](
-		w, r,
-		reqres.PolicyListResponse{Err: data.ErrBadInput},
-		guardListPolicyRequest,
-		fName,
+		reqres.PolicyListRequest, reqres.PolicyListResponse](
+		w, r, reqres.PolicyListBadInput, guardListPolicyRequest, fName,
 	)
 	alreadyResponded := err != nil
 	if alreadyResponded {
@@ -104,9 +100,7 @@ func RouteListPolicies(
 		net.Respond(http.StatusOK, responseBody, w)
 	}
 	log.Log().Info(
-		fName,
-		"message", data.ErrSuccess,
-		"err", strings.MaybeError(err),
+		fName, "message", data.ErrSuccess, "err", strings.MaybeError(err),
 	)
 	return nil
 }

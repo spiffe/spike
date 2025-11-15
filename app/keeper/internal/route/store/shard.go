@@ -72,21 +72,13 @@ func RouteShard(
 	// Treat the value as "read-only".
 	sh := state.ShardNoSync()
 
-	if mem.Zeroed32(sh) {
-		log.Log().Warn(fName, "message", "shard is all zeros")
-		responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
-			reqres.ShardGetResponse{
-				Err: data.ErrNotFound,
-			}, w)
-		if alreadyResponded := err != nil; !alreadyResponded {
-			net.Respond(http.StatusNotFound, responseBody, w)
-		}
-		log.Log().Error(
-			fName,
-			"message", data.ErrNotFound,
-			"err", strings.MaybeError(err),
-		)
-		return errors.ErrNotFound
+	if err := net.FailIf(
+		mem.Zeroed32(sh),
+		reqres.ShardGetBadInput, w,
+		http.StatusBadRequest, errors.ErrInvalidInput,
+	); err != nil {
+		log.Log().Error(fName, "message", data.ErrBadInput, "err", err.Error())
+		return err
 	}
 
 	responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(

@@ -18,8 +18,6 @@ import (
 	"github.com/spiffe/spike/internal/net"
 )
 
-// TODO: add docs to all guard functions.
-
 // guardPolicyDeleteRequest validates a policy deletion request by performing
 // authentication, authorization, and input validation checks.
 //
@@ -44,27 +42,22 @@ func guardPolicyDeleteRequest(
 	request reqres.PolicyDeleteRequest, w http.ResponseWriter, r *http.Request,
 ) error {
 	peerSPIFFEID, err := auth.ExtractPeerSPIFFEID[reqres.PolicyDeleteResponse](
-		r, w, reqres.PolicyDeleteResponse{
-			Err: data.ErrUnauthorized,
-		})
-	alreadyResponded := err != nil
-	if alreadyResponded {
+		r, w, reqres.PolicyDeleteUnauthorized,
+	)
+	if alreadyResponded := err != nil; alreadyResponded {
 		return err
 	}
 
 	policyID := request.ID
 
 	err = validation.ValidatePolicyID(policyID)
-	if err != nil {
+	if invalidPolicy := err != nil; invalidPolicy {
 		responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
-			reqres.PolicyDeleteResponse{
-				Err: data.ErrBadInput,
-			}, w)
-		alreadyResponded = err != nil
-		if !alreadyResponded {
+			reqres.PolicyDeleteBadInput, w,
+		)
+		if alreadyResponded := err != nil; !alreadyResponded {
 			net.Respond(http.StatusBadRequest, responseBody, w)
 		}
-
 		return apiErr.ErrInvalidInput
 	}
 
@@ -74,14 +67,11 @@ func guardPolicyDeleteRequest(
 	)
 	if !allowed {
 		responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
-			reqres.PolicyDeleteResponse{
-				Err: data.ErrUnauthorized,
-			}, w)
-		alreadyResponded = err != nil
-		if !alreadyResponded {
+			reqres.PolicyDeleteUnauthorized, w,
+		)
+		if alreadyResponded := err != nil; !alreadyResponded {
 			net.Respond(http.StatusUnauthorized, responseBody, w)
 		}
-
 		return apiErr.ErrUnauthorized
 	}
 

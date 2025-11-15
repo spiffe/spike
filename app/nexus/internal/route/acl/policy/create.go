@@ -89,22 +89,20 @@ func RoutePutPolicy(
 		CreatedBy:       "",
 	})
 	if creationFailed := err != nil; creationFailed {
-		log.Log().Warn(
-			fName,
-			"message", "failed to create policy",
-			"err", err.Error(),
-		)
-		responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
+		if failErr := net.FailIf(
+			creationFailed,
 			reqres.PolicyCreateInternal, w,
-		)
-		if alreadyResponded := err != nil; !alreadyResponded {
-			net.Respond(http.StatusInternalServerError, responseBody, w)
+			http.StatusInternalServerError, err,
+		); failErr != nil {
+			log.Log().Error(
+				fName,
+				"message", data.ErrCreationFailed,
+				"err", failErr.Error(),
+			)
+			return failErr
 		}
-		log.Log().Error(
-			fName,
-			"message", data.ErrInternal,
-			"err", strings.MaybeError(err),
-		)
+		// Defensive: ensure we never fall through to the success path if
+		// creation failed.
 		return err
 	}
 
@@ -115,9 +113,7 @@ func RoutePutPolicy(
 		net.Respond(http.StatusOK, responseBody, w)
 	}
 	log.Log().Info(
-		fName,
-		"message", data.ErrSuccess,
-		"err", strings.MaybeError(err),
+		fName, "message", data.ErrSuccess, "err", strings.MaybeError(err),
 	)
 	return nil
 }

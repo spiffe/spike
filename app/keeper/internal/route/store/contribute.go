@@ -74,20 +74,13 @@ func RouteContribute(
 		return err
 	}
 
-	if request.Shard == nil {
-		log.Log().Warn(fName, "message", "shard is nil")
-		responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
-			reqres.ShardPutBadInput, w,
-		)
-		if alreadyResponded := err != nil; !alreadyResponded {
-			net.Respond(http.StatusBadRequest, responseBody, w)
-		}
-		log.Log().Error(
-			fName,
-			"message", data.ErrBadInput,
-			"err", strings.MaybeError(err),
-		)
-		return errors.ErrInvalidInput
+	if err := net.FailIf(
+		request.Shard == nil,
+		reqres.ShardPutBadInput, w,
+		http.StatusBadRequest, errors.ErrInvalidInput,
+	); err != nil {
+		log.Log().Error(fName, "message", data.ErrEmptyPayload, "err", err.Error())
+		return err
 	}
 
 	// Security: Zero out shard before the function exits.
@@ -99,20 +92,13 @@ func RouteContribute(
 	// Ensure the client didn't send an array of all zeros, which would
 	// indicate invalid input. Since Shard is a fixed-length array in the request,
 	// clients must send meaningful non-zero data.
-	if mem.Zeroed32(request.Shard) {
-		log.Log().Warn(fName, "message", "shard is all zeros")
-		responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
-			reqres.ShardPutBadInput, w,
-		)
-		if alreadyResponded := err != nil; !alreadyResponded {
-			net.Respond(http.StatusBadRequest, responseBody, w)
-		}
-		log.Log().Error(
-			fName,
-			"message", data.ErrBadInput,
-			"err", strings.MaybeError(err),
-		)
-		return errors.ErrInvalidInput
+	if err := net.FailIf(
+		mem.Zeroed32(request.Shard),
+		reqres.ShardPutBadInput, w,
+		http.StatusBadRequest, errors.ErrInvalidInput,
+	); err != nil {
+		log.Log().Error(fName, "message", data.ErrEmptyPayload, "err", err.Error())
+		return err
 	}
 
 	// `state.SetShard` copies the shard. We can safely reset this one at [1].
@@ -125,9 +111,7 @@ func RouteContribute(
 		net.Respond(http.StatusOK, responseBody, w)
 	}
 	log.Log().Info(
-		fName,
-		"message", data.ErrSuccess,
-		"err", strings.MaybeError(err),
+		fName, "message", data.ErrSuccess, "err", strings.MaybeError(err),
 	)
 	return nil
 }
