@@ -73,20 +73,14 @@ func RouteDeletePolicy(
 	policyID := request.ID
 
 	err = state.DeletePolicy(policyID)
-	if deletionFailed := err != nil; deletionFailed {
-		if failErr := net.FailIf(
-			deletionFailed,
+	if err != nil {
+		log.Log().Error(
+			fName, "message", data.ErrDeletionFailed, "err", err.Error(),
+		)
+		return net.Fail(
 			reqres.PolicyDeleteInternal, w,
 			http.StatusInternalServerError, err,
-		); failErr != nil {
-			log.Log().Error(
-				fName, "message", data.ErrDeletionFailed, "err", failErr.Error(),
-			)
-			return failErr
-		}
-		// Defensive: ensure we never fall through to the success path if
-		// deletion failed.
-		return err
+		)
 	}
 
 	responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(

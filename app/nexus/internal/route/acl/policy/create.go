@@ -88,22 +88,16 @@ func RoutePutPolicy(
 		CreatedAt:       time.Time{},
 		CreatedBy:       "",
 	})
-	if creationFailed := err != nil; creationFailed {
-		if failErr := net.FailIf(
-			creationFailed,
+	if err != nil {
+		log.Log().Error(
+			fName,
+			"message", data.ErrCreationFailed,
+			"err", err.Error(),
+		)
+		return net.Fail(
 			reqres.PolicyCreateInternal, w,
 			http.StatusInternalServerError, err,
-		); failErr != nil {
-			log.Log().Error(
-				fName,
-				"message", data.ErrCreationFailed,
-				"err", failErr.Error(),
-			)
-			return failErr
-		}
-		// Defensive: ensure we never fall through to the success path if
-		// creation failed.
-		return err
+		)
 	}
 
 	responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(

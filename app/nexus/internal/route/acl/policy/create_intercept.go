@@ -70,48 +70,32 @@ func guardPolicyCreateRequest(
 	pathPattern := request.PathPattern
 	permissions := request.Permissions
 
-	err = validation.ValidateName(name)
-	if err != nil {
-		if failErr := net.FailIfError(
-			err, apiErr.ErrInvalidInput, reqres.PolicyCreateBadInput, w,
-		); failErr != nil {
-			return failErr
-		}
-		// Defensive: ensure we return the error if validation failed.
-		return apiErr.ErrInvalidInput
+	if err := validation.ValidateName(name); err != nil {
+		return net.Fail(
+			reqres.PolicyCreateBadInput, w,
+			http.StatusBadRequest, apiErr.ErrInvalidInput,
+		)
 	}
 
-	err = validation.ValidateSPIFFEIDPattern(SPIFFEIDPattern)
-	if err != nil {
-		if failErr := net.FailIfError(
-			err, apiErr.ErrInvalidInput, reqres.PolicyCreateBadInput, w,
-		); failErr != nil {
-			return failErr
-		}
-		// Defensive: ensure we return the error if validation failed.
-		return apiErr.ErrInvalidInput
+	if err := validation.ValidateSPIFFEIDPattern(SPIFFEIDPattern); err != nil {
+		return net.Fail(
+			reqres.PolicyCreateBadInput, w,
+			http.StatusBadRequest, apiErr.ErrInvalidInput,
+		)
 	}
 
-	err = validation.ValidatePathPattern(pathPattern)
-	if err != nil {
-		if failErr := net.FailIfError(
-			err, apiErr.ErrInvalidInput, reqres.PolicyCreateBadInput, w,
-		); failErr != nil {
-			return failErr
-		}
-		// Defensive: ensure we return the error if validation failed.
-		return apiErr.ErrInvalidInput
+	if err := validation.ValidatePathPattern(pathPattern); err != nil {
+		return net.Fail(
+			reqres.PolicyCreateBadInput, w,
+			http.StatusBadRequest, apiErr.ErrInvalidInput,
+		)
 	}
 
-	err = validation.ValidatePermissions(permissions)
-	if err != nil {
-		if failErr := net.FailIfError(
-			err, apiErr.ErrInvalidInput, reqres.PolicyCreateBadInput, w,
-		); failErr != nil {
-			return failErr
-		}
-		// Defensive: ensure we return the error if validation failed.
-		return apiErr.ErrInvalidInput
+	if err := validation.ValidatePermissions(permissions); err != nil {
+		return net.Fail(
+			reqres.PolicyCreateBadInput, w,
+			http.StatusBadRequest, apiErr.ErrInvalidInput,
+		)
 	}
 
 	return nil

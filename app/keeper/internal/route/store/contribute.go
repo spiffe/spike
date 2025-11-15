@@ -12,7 +12,6 @@ import (
 	"github.com/spiffe/spike-sdk-go/api/errors"
 	"github.com/spiffe/spike-sdk-go/log"
 	"github.com/spiffe/spike-sdk-go/security/mem"
-	"github.com/spiffe/spike-sdk-go/strings"
 
 	"github.com/spiffe/spike/app/keeper/internal/state"
 	"github.com/spiffe/spike/internal/journal"
@@ -74,13 +73,15 @@ func RouteContribute(
 		return err
 	}
 
-	if err := net.FailIf(
-		request.Shard == nil,
-		reqres.ShardPutBadInput, w,
-		http.StatusBadRequest, errors.ErrInvalidInput,
-	); err != nil {
-		log.Log().Error(fName, "message", data.ErrEmptyPayload, "err", err.Error())
-		return err
+	if request.Shard == nil {
+		log.Log().Error(
+			fName,
+			"message", data.ErrEmptyPayload,
+			"err", errors.ErrInvalidInput.Error(),
+		)
+		return net.Fail(
+			reqres.ShardPutBadInput, w, http.StatusBadRequest, errors.ErrInvalidInput,
+		)
 	}
 
 	// Security: Zero out shard before the function exits.
@@ -92,26 +93,19 @@ func RouteContribute(
 	// Ensure the client didn't send an array of all zeros, which would
 	// indicate invalid input. Since Shard is a fixed-length array in the request,
 	// clients must send meaningful non-zero data.
-	if err := net.FailIf(
-		mem.Zeroed32(request.Shard),
-		reqres.ShardPutBadInput, w,
-		http.StatusBadRequest, errors.ErrInvalidInput,
-	); err != nil {
-		log.Log().Error(fName, "message", data.ErrEmptyPayload, "err", err.Error())
-		return err
+	if mem.Zeroed32(request.Shard) {
+		log.Log().Error(
+			fName,
+			"message", data.ErrEmptyPayload,
+			"err", errors.ErrInvalidInput.Error(),
+		)
+		return net.Fail(
+			reqres.ShardPutBadInput, w, http.StatusBadRequest, errors.ErrInvalidInput,
+		)
 	}
 
 	// `state.SetShard` copies the shard. We can safely reset this one at [1].
 	state.SetShard(request.Shard)
 
-	responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
-		reqres.ShardPutSuccess, w,
-	)
-	if alreadyResponded := err != nil; !alreadyResponded {
-		net.Respond(http.StatusOK, responseBody, w)
-	}
-	log.Log().Info(
-		fName, "message", data.ErrSuccess, "err", strings.MaybeError(err),
-	)
-	return nil
+	return net.Success(reqres.ShardPutSuccess, w, fName)
 }

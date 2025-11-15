@@ -36,6 +36,10 @@
   </high-level-plan>
   <task-group for="v0.6.1" theme="doc update and stabilization">
     <issue>
+      internal/net/request.go
+      ^ can be SDK candidates.
+    </issue>
+    <issue>
       lease object; may be used for SPIKE HA setup:
       https://msalinas92.medium.com/deep-dive-into-kubernetes-leases-robust-leader-election-for-daemonsets-with-go-examples-f3b9a8858c49
       if needed.

@@ -362,3 +362,86 @@ func FailIf[T any](
 	}
 	return nil
 }
+
+// Fail sends an error response and returns the specified error.
+//
+// This function is used when you've already determined that a request should
+// fail and need to send an error response. It marshals the client response,
+// sends it with the specified HTTP status code, and returns the error.
+//
+// Type Parameters:
+//   - T: The response type to send to the client (e.g.,
+//     reqres.ShardPutBadInput)
+//
+// Parameters:
+//   - clientResponse: The response object to send to the client
+//   - w: The HTTP response writer for error responses
+//   - statusCode: The HTTP status code to send (e.g., http.StatusBadRequest)
+//   - errorToReturn: The error to return to the caller (e.g.,
+//     errors.ErrInvalidInput)
+//
+// Returns:
+//   - error: Always returns errorToReturn
+//
+// Example usage:
+//
+//	if request.Shard == nil {
+//	    log.Log().Error(fName, "message", data.ErrEmptyPayload)
+//	    return net.Fail(
+//	        reqres.ShardPutBadInput, w,
+//	        http.StatusBadRequest, errors.ErrInvalidInput,
+//	    )
+//	}
+func Fail[T any](
+	clientResponse T,
+	w http.ResponseWriter,
+	statusCode int,
+	errorToReturn error,
+) error {
+	responseBody, marshalErr := MarshalBodyAndRespondOnMarshalFail(
+		clientResponse, w,
+	)
+	if alreadyResponded := marshalErr != nil; !alreadyResponded {
+		Respond(statusCode, responseBody, w)
+	}
+	return errorToReturn
+}
+
+// Success sends a success response with HTTP 200 OK and logs success.
+//
+// This function marshals the client response, sends it with a 200 OK status,
+// logs success, and returns nil to indicate successful processing.
+//
+// Type Parameters:
+//   - T: The response type to send to the client (e.g.,
+//     reqres.ShardPutSuccess)
+//
+// Parameters:
+//   - clientResponse: The response object to send to the client
+//   - w: The HTTP response writer
+//   - logContext: Context string for logging (e.g., function name). If empty,
+//     no log is written.
+//
+// Returns:
+//   - error: Always returns nil
+//
+// Example usage:
+//
+//	state.SetShard(request.Shard)
+//	return net.Success(reqres.ShardPutSuccess, w, fName)
+func Success[T any](
+	clientResponse T,
+	w http.ResponseWriter,
+	logContext string,
+) error {
+	responseBody, marshalErr := MarshalBodyAndRespondOnMarshalFail(
+		clientResponse, w,
+	)
+	if alreadyResponded := marshalErr != nil; !alreadyResponded {
+		Respond(http.StatusOK, responseBody, w)
+	}
+	if logContext != "" {
+		log.Log().Info(logContext, "message", "Success")
+	}
+	return nil
+}
