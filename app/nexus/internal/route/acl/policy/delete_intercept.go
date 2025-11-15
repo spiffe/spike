@@ -18,7 +18,9 @@ import (
 	"github.com/spiffe/spike/internal/net"
 )
 
-// guardDeletePolicyRequest validates a policy deletion request by performing
+// TODO: add docs to all guard functions.
+
+// guardPolicyDeleteRequest validates a policy deletion request by performing
 // authentication, authorization, and input validation checks.
 //
 // The function performs the following validations in order:
@@ -38,7 +40,7 @@ import (
 //   - nil if all validations pass
 //   - apiErr.ErrUnauthorized if authentication or authorization fails
 //   - apiErr.ErrInvalidInput if policy ID validation fails
-func guardDeletePolicyRequest(
+func guardPolicyDeleteRequest(
 	request reqres.PolicyDeleteRequest, w http.ResponseWriter, r *http.Request,
 ) error {
 	peerSPIFFEID, err := auth.ExtractPeerSPIFFEID[reqres.PolicyDeleteResponse](

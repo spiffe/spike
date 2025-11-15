@@ -19,7 +19,7 @@ import (
 	"github.com/spiffe/spike/internal/net"
 )
 
-// RouteContribute handles HTTP requests for shard contributions in the
+// RouteContribute handles HTTP requests for the shard contributions in the
 // system. It processes incoming shard data and stores it in the system state.
 //
 // Security:
@@ -63,14 +63,14 @@ func RouteContribute(
 	w http.ResponseWriter, r *http.Request, audit *journal.AuditEntry,
 ) error {
 	const fName = "RouteContribute"
+
+	resBadInput := reqres.ShardPutResponse{Err: data.ErrBadInput}
+	resSuccess := reqres.ShardPutResponse{Err: data.ErrSuccess}
+
 	journal.AuditRequest(fName, r, audit, journal.AuditCreate)
 	request, err := net.ReadParseAndGuard[
-		reqres.ShardPutRequest,
-		reqres.ShardPutResponse](
-		w, r,
-		reqres.ShardPutResponse{Err: data.ErrBadInput},
-		guardShardPutRequest,
-		fName,
+		reqres.ShardPutRequest, reqres.ShardPutResponse](
+		w, r, resBadInput, guardShardPutRequest, fName,
 	)
 	if alreadyResponded := err != nil; alreadyResponded {
 		log.Log().Error(fName, "message", "exit", "err", err.Error())
@@ -80,9 +80,8 @@ func RouteContribute(
 	if request.Shard == nil {
 		log.Log().Warn(fName, "message", "shard is nil")
 		responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
-			reqres.ShardPutResponse{
-				Err: data.ErrBadInput,
-			}, w)
+			resBadInput, w,
+		)
 		if alreadyResponded := err != nil; !alreadyResponded {
 			net.Respond(http.StatusBadRequest, responseBody, w)
 		}
@@ -105,10 +104,7 @@ func RouteContribute(
 	// clients must send meaningful non-zero data.
 	if mem.Zeroed32(request.Shard) {
 		log.Log().Warn(fName, "message", "shard is all zeros")
-		responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
-			reqres.ShardPutResponse{
-				Err: data.ErrBadInput,
-			}, w)
+		responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(resBadInput, w)
 		if alreadyResponded := err != nil; !alreadyResponded {
 			net.Respond(http.StatusBadRequest, responseBody, w)
 		}
@@ -124,7 +120,8 @@ func RouteContribute(
 	state.SetShard(request.Shard)
 
 	responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
-		reqres.ShardPutResponse{}, w)
+		resSuccess, w,
+	)
 	if alreadyResponded := err != nil; !alreadyResponded {
 		net.Respond(http.StatusOK, responseBody, w)
 	}

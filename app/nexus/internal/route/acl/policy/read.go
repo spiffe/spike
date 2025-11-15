@@ -91,7 +91,7 @@ func RouteGetPolicy(
 		reqres.PolicyReadResponse](
 		w, r,
 		reqres.PolicyReadResponse{Err: data.ErrBadInput},
-		guardReadPolicyRequest,
+		guardPolicyReadRequest,
 		fName,
 	)
 	if alreadyResponded := err != nil; alreadyResponded {

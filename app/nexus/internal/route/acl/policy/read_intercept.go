@@ -18,7 +18,7 @@ import (
 	"github.com/spiffe/spike/internal/net"
 )
 
-func guardReadPolicyRequest(
+func guardPolicyReadRequest(
 	request reqres.PolicyReadRequest, w http.ResponseWriter, r *http.Request,
 ) error {
 	resUnauthorized := reqres.PolicyReadResponse{Err: data.ErrUnauthorized}
