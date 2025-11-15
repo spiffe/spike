@@ -18,6 +18,26 @@ import (
 	"github.com/spiffe/spike/internal/net"
 )
 
+// guardPolicyReadRequest validates a policy read request by performing
+// authentication, authorization, and input validation checks.
+//
+// The function performs the following validations in order:
+//   - Extracts and validates the peer SPIFFE ID from the request
+//   - Validates the policy ID format
+//   - Checks if the peer has read permission for the policy access path
+//
+// If any validation fails, an appropriate error response is written to the
+// ResponseWriter and an error is returned.
+//
+// Parameters:
+//   - request: The policy read request containing the policy ID
+//   - w: The HTTP response writer for error responses
+//   - r: The HTTP request containing the peer SPIFFE ID
+//
+// Returns:
+//   - nil if all validations pass
+//   - apiErr.ErrUnauthorized if authentication or authorization fails
+//   - apiErr.ErrInvalidInput if policy ID validation fails
 func guardPolicyReadRequest(
 	request reqres.PolicyReadRequest, w http.ResponseWriter, r *http.Request,
 ) error {

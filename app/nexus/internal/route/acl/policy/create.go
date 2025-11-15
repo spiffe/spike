@@ -65,12 +65,9 @@ func RoutePutPolicy(
 	const fName = "routePutPolicy"
 	journal.AuditRequest(fName, r, audit, journal.AuditCreate)
 	request, err := net.ReadParseAndGuard[
-		reqres.PolicyCreateRequest,
-		reqres.PolicyCreateResponse](
-		w, r,
-		reqres.PolicyCreateResponse{Err: data.ErrBadInput},
-		guardPolicyCreateRequest,
-		"",
+		reqres.PolicyCreateRequest, reqres.PolicyCreateResponse,
+	](
+		w, r, reqres.PolicyCreateBadInput, guardPolicyCreateRequest, fName,
 	)
 	if alreadyResponded := err != nil; alreadyResponded {
 		log.Log().Error(fName, "message", "exit", "err", err.Error())
@@ -91,17 +88,15 @@ func RoutePutPolicy(
 		CreatedAt:       time.Time{},
 		CreatedBy:       "",
 	})
-	creationFailed := err != nil
-	if creationFailed {
+	if creationFailed := err != nil; creationFailed {
 		log.Log().Warn(
 			fName,
 			"message", "failed to create policy",
 			"err", err.Error(),
 		)
 		responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
-			reqres.PolicyCreateResponse{
-				Err: data.ErrInternal,
-			}, w)
+			reqres.PolicyCreateInternal, w,
+		)
 		if alreadyResponded := err != nil; !alreadyResponded {
 			net.Respond(http.StatusInternalServerError, responseBody, w)
 		}
@@ -114,9 +109,8 @@ func RoutePutPolicy(
 	}
 
 	responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
-		reqres.PolicyCreateResponse{
-			ID: policy.ID,
-		}, w)
+		reqres.PolicyCreateResponse{ID: policy.ID}.Success(), w,
+	)
 	if alreadyResponded := err != nil; !alreadyResponded {
 		net.Respond(http.StatusOK, responseBody, w)
 	}

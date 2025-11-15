@@ -45,11 +45,9 @@ func guardPolicyCreateRequest(
 	request reqres.PolicyCreateRequest, w http.ResponseWriter, r *http.Request,
 ) error {
 	peerSPIFFEID, err := auth.ExtractPeerSPIFFEID[reqres.PolicyCreateResponse](
-		r, w, reqres.PolicyCreateResponse{
-			Err: data.ErrUnauthorized,
-		})
-	alreadyResponded := err != nil
-	if alreadyResponded {
+		r, w, reqres.PolicyCreateUnauthorized,
+	)
+	if alreadyResponded := err != nil; alreadyResponded {
 		return err
 	}
 
@@ -60,11 +58,8 @@ func guardPolicyCreateRequest(
 	)
 	if !allowed {
 		responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
-			reqres.PolicyCreateResponse{
-				Err: data.ErrUnauthorized,
-			}, w)
-		alreadyResponded = err != nil
-		if !alreadyResponded {
+			reqres.PolicyCreateUnauthorized, w)
+		if alreadyResponded := err != nil; !alreadyResponded {
 			net.Respond(http.StatusUnauthorized, responseBody, w)
 		}
 		return apiErr.ErrUnauthorized
@@ -76,26 +71,22 @@ func guardPolicyCreateRequest(
 	permissions := request.Permissions
 
 	err = validation.ValidateName(name)
-	if err != nil {
+	if invalidName := err != nil; invalidName {
 		responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
-			reqres.PolicyCreateResponse{
-				Err: data.ErrBadInput,
-			}, w)
-		alreadyResponded = err != nil
-		if !alreadyResponded {
+			reqres.PolicyCreateBadInput, w,
+		)
+		if alreadyResponded := err != nil; !alreadyResponded {
 			net.Respond(http.StatusBadRequest, responseBody, w)
 		}
 		return apiErr.ErrInvalidInput
 	}
 
 	err = validation.ValidateSPIFFEIDPattern(SPIFFEIDPattern)
-	if err != nil {
+	if invalidSPIFFEIDPattern := err != nil; invalidSPIFFEIDPattern {
 		responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
-			reqres.PolicyCreateResponse{
-				Err: data.ErrBadInput,
-			}, w)
-		alreadyResponded = err != nil
-		if !alreadyResponded {
+			reqres.PolicyCreateBadInput, w,
+		)
+		if alreadyResponded := err != nil; !alreadyResponded {
 			net.Respond(http.StatusBadRequest, responseBody, w)
 		}
 		return apiErr.ErrInvalidInput
@@ -103,12 +94,10 @@ func guardPolicyCreateRequest(
 
 	err = validation.ValidatePathPattern(pathPattern)
 	if err != nil {
-		responseBody, err :=
-			net.MarshalBodyAndRespondOnMarshalFail(reqres.PolicyCreateResponse{
-				Err: data.ErrBadInput,
-			}, w)
-		alreadyResponded = err != nil
-		if !alreadyResponded {
+		responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
+			reqres.PolicyCreateBadInput, w,
+		)
+		if alreadyResponded := err != nil; !alreadyResponded {
 			net.Respond(http.StatusBadRequest, responseBody, w)
 		}
 		return apiErr.ErrInvalidInput
@@ -117,15 +106,12 @@ func guardPolicyCreateRequest(
 	err = validation.ValidatePermissions(permissions)
 	if err != nil {
 		responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
-			reqres.PolicyCreateResponse{
-				Err: data.ErrBadInput,
-			}, w)
-		alreadyResponded = err != nil
-		if !alreadyResponded {
+			reqres.PolicyCreateBadInput, w,
+		)
+		if alreadyResponded := err != nil; !alreadyResponded {
 			net.Respond(http.StatusBadRequest, responseBody, w)
 		}
 		return apiErr.ErrInvalidInput
 	}
-
 	return nil
 }

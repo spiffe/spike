@@ -57,12 +57,9 @@ func RouteShard(
 	const fName = "RouteShard"
 	journal.AuditRequest(fName, r, audit, journal.AuditRead)
 	_, err := net.ReadParseAndGuard[
-		reqres.ShardGetRequest,
-		reqres.ShardGetResponse](
-		w, r,
-		reqres.ShardGetResponse{Err: data.ErrBadInput},
-		guardShardGetRequest,
-		fName,
+		reqres.ShardGetRequest, reqres.ShardGetResponse,
+	](
+		w, r, reqres.ShardGetBadInput, guardShardGetRequest, fName,
 	)
 	if alreadyResponded := err != nil; alreadyResponded {
 		log.Log().Error(fName, "message", "exit", "err", err.Error())
@@ -93,9 +90,8 @@ func RouteShard(
 	}
 
 	responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
-		reqres.ShardGetResponse{
-			Shard: sh,
-		}, w)
+		reqres.ShardGetResponse{Shard: sh}.Success(), w,
+	)
 	if alreadyResponded := err != nil; !alreadyResponded {
 		net.Respond(http.StatusOK, responseBody, w)
 	}
@@ -103,7 +99,6 @@ func RouteShard(
 	defer func() {
 		mem.ClearBytes(responseBody)
 	}()
-
 	log.Log().Info(
 		fName,
 		"message", data.ErrSuccess,

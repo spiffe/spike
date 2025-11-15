@@ -61,12 +61,9 @@ func RouteDeletePolicy(
 	const fName = "RouteDeletePolicy"
 	journal.AuditRequest(fName, r, audit, journal.AuditDelete)
 	request, err := net.ReadParseAndGuard[
-		reqres.PolicyDeleteRequest,
-		reqres.PolicyDeleteResponse](
-		w, r,
-		reqres.PolicyDeleteResponse{Err: data.ErrBadInput},
-		guardPolicyDeleteRequest,
-		fName,
+		reqres.PolicyDeleteRequest, reqres.PolicyDeleteResponse,
+	](
+		w, r, reqres.PolicyDeleteBadInput, guardPolicyDeleteRequest, fName,
 	)
 	if alreadyResponded := err != nil; alreadyResponded {
 		log.Log().Error(fName, "message", "exit", "err", err.Error())
@@ -74,14 +71,12 @@ func RouteDeletePolicy(
 	}
 
 	policyID := request.ID
+
 	err = state.DeletePolicy(policyID)
-	deletionFailed := err != nil
-	if deletionFailed {
+	if deletionFailed := err != nil; deletionFailed {
 		log.Log().Warn(fName, "message", "failed to delete policy", "err", err)
 		responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
-			reqres.PolicyDeleteResponse{
-				Err: data.ErrInternal,
-			}, w,
+			reqres.PolicyDeleteInternal, w,
 		)
 		if alreadyResponded := err != nil; !alreadyResponded {
 			net.Respond(http.StatusInternalServerError, responseBody, w)
@@ -95,7 +90,8 @@ func RouteDeletePolicy(
 	}
 
 	responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
-		reqres.PolicyDeleteResponse{}, w)
+		reqres.PolicyDeleteSuccess, w,
+	)
 	if err == nil {
 		net.Respond(http.StatusOK, responseBody, w)
 	}

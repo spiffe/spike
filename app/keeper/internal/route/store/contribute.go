@@ -63,14 +63,11 @@ func RouteContribute(
 	w http.ResponseWriter, r *http.Request, audit *journal.AuditEntry,
 ) error {
 	const fName = "RouteContribute"
-
-	resBadInput := reqres.ShardPutResponse{Err: data.ErrBadInput}
-	resSuccess := reqres.ShardPutResponse{Err: data.ErrSuccess}
-
 	journal.AuditRequest(fName, r, audit, journal.AuditCreate)
 	request, err := net.ReadParseAndGuard[
-		reqres.ShardPutRequest, reqres.ShardPutResponse](
-		w, r, resBadInput, guardShardPutRequest, fName,
+		reqres.ShardPutRequest, reqres.ShardPutResponse,
+	](
+		w, r, reqres.ShardPutBadInput, guardShardPutRequest, fName,
 	)
 	if alreadyResponded := err != nil; alreadyResponded {
 		log.Log().Error(fName, "message", "exit", "err", err.Error())
@@ -80,7 +77,7 @@ func RouteContribute(
 	if request.Shard == nil {
 		log.Log().Warn(fName, "message", "shard is nil")
 		responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
-			resBadInput, w,
+			reqres.ShardPutBadInput, w,
 		)
 		if alreadyResponded := err != nil; !alreadyResponded {
 			net.Respond(http.StatusBadRequest, responseBody, w)
@@ -104,7 +101,9 @@ func RouteContribute(
 	// clients must send meaningful non-zero data.
 	if mem.Zeroed32(request.Shard) {
 		log.Log().Warn(fName, "message", "shard is all zeros")
-		responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(resBadInput, w)
+		responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
+			reqres.ShardPutBadInput, w,
+		)
 		if alreadyResponded := err != nil; !alreadyResponded {
 			net.Respond(http.StatusBadRequest, responseBody, w)
 		}
@@ -120,7 +119,7 @@ func RouteContribute(
 	state.SetShard(request.Shard)
 
 	responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
-		resSuccess, w,
+		reqres.ShardPutSuccess, w,
 	)
 	if alreadyResponded := err != nil; !alreadyResponded {
 		net.Respond(http.StatusOK, responseBody, w)

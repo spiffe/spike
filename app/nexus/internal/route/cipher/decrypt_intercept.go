@@ -18,6 +18,31 @@ import (
 	"github.com/spiffe/spike/internal/net"
 )
 
+// guardDecryptCipherRequest validates a cipher decryption request by
+// performing authentication and authorization checks.
+//
+// This function implements a two-tier authorization model:
+//  1. Lite workloads are automatically granted decryption access
+//  2. Other workloads must have execute permission for the cipher decrypt path
+//
+// The function performs the following validations in order:
+//   - Extracts and validates the peer SPIFFE ID from the request
+//   - Checks if the peer is a lite workload (automatically allowed)
+//   - If not a lite workload, checks if the peer has execute permission for
+//     the system cipher decrypt path
+//
+// If any validation fails, an appropriate error response is written to the
+// ResponseWriter and an error is returned.
+//
+// Parameters:
+//   - request: The cipher decryption request (currently unused, reserved for
+//     future validation needs)
+//   - w: The HTTP response writer for error responses
+//   - r: The HTTP request containing the peer SPIFFE ID
+//
+// Returns:
+//   - nil if all validations pass
+//   - apiErr.ErrUnauthorized if authentication or authorization fails
 func guardDecryptCipherRequest(
 	_ reqres.CipherDecryptRequest, w http.ResponseWriter, r *http.Request,
 ) error {

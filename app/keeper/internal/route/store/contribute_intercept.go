@@ -7,7 +7,6 @@ package store
 import (
 	"net/http"
 
-	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	apiErr "github.com/spiffe/spike-sdk-go/api/errors"
 	"github.com/spiffe/spike-sdk-go/spiffeid"
@@ -33,13 +32,10 @@ import (
 func guardShardPutRequest(
 	_ reqres.ShardPutRequest, w http.ResponseWriter, r *http.Request,
 ) error {
-	resUnauthorized := reqres.ShardPutResponse{Err: data.ErrUnauthorized}
-
 	peerSPIFFEID, err := auth.ExtractPeerSPIFFEID[reqres.ShardPutResponse](
-		r, w, resUnauthorized,
+		r, w, reqres.ShardPutUnauthorized,
 	)
-	alreadyResponded := err != nil
-	if alreadyResponded {
+	if alreadyResponded := err != nil; alreadyResponded {
 		return err
 	}
 
@@ -47,14 +43,12 @@ func guardShardPutRequest(
 	if !spiffeid.IsBootstrap(peerSPIFFEID.String()) &&
 		!spiffeid.IsNexus(peerSPIFFEID.String()) {
 		responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
-			resUnauthorized, w,
+			reqres.ShardPutUnauthorized, w,
 		)
-		alreadyResponded = err != nil
-		if !alreadyResponded {
+		if alreadyResponded := err != nil; !alreadyResponded {
 			net.Respond(http.StatusUnauthorized, responseBody, w)
 		}
 		return apiErr.ErrUnauthorized
 	}
-
 	return nil
 }

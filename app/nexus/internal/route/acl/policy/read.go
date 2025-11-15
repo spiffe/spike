@@ -87,12 +87,8 @@ func RouteGetPolicy(
 	const fName = "routeGetPolicy"
 	journal.AuditRequest(fName, r, audit, journal.AuditRead)
 	request, err := net.ReadParseAndGuard[
-		reqres.PolicyReadRequest,
-		reqres.PolicyReadResponse](
-		w, r,
-		reqres.PolicyReadResponse{Err: data.ErrBadInput},
-		guardPolicyReadRequest,
-		fName,
+		reqres.PolicyReadRequest, reqres.PolicyReadResponse](
+		w, r, reqres.PolicyReadBadInput, guardPolicyReadRequest, fName,
 	)
 	if alreadyResponded := err != nil; alreadyResponded {
 		log.Log().Error(fName, "message", "exit", "err", err.Error())
@@ -121,7 +117,11 @@ func RouteGetPolicy(
 	} else {
 		// I should not be here, normally.
 
-		log.Log().Info(fName, "message", "failed to retrieve policy", "err", err)
+		log.Log().Info(
+			fName,
+			"message", "failed to retrieve policy", // TODO: consts.
+			"err", err.Error(),
+		)
 
 		responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
 			reqres.PolicyReadResponse{

@@ -17,43 +17,63 @@ import (
 	"github.com/spiffe/spike/internal/net"
 )
 
+// guardSecretPutRequest validates a secret storage request by performing
+// authentication, authorization, and input validation checks.
+//
+// The function performs the following validations in order:
+//   - Extracts and validates the peer SPIFFE ID from the request
+//   - Validates the secret path format
+//   - Validates each key name in the secret values map
+//   - Checks if the peer has write permission for the specified secret path
+//
+// Write permission is required to create or update secret data. The key name
+// validation ensures that all keys in the secret values conform to naming
+// requirements. The authorization check is performed against the specific
+// secret path to enable fine-grained access control.
+//
+// If any validation fails, an appropriate error response is written to the
+// ResponseWriter and an error is returned.
+//
+// Parameters:
+//   - request: The secret put request containing the path and values
+//   - w: The HTTP response writer for error responses
+//   - r: The HTTP request containing the peer SPIFFE ID
+//
+// Returns:
+//   - nil if all validations pass
+//   - apiErr.ErrUnauthorized if authentication or authorization fails
+//   - apiErr.ErrInvalidInput if path or key name validation fails
 func guardSecretPutRequest(
 	request reqres.SecretPutRequest, w http.ResponseWriter, r *http.Request,
 ) error {
 	peerSPIFFEID, err := auth.ExtractPeerSPIFFEID[reqres.SecretPutResponse](
-		r, w, reqres.SecretPutResponse{
-			Err: data.ErrUnauthorized,
-		})
-	alreadyResponded := err != nil
-	if alreadyResponded {
+		r, w, reqres.SecretPutUnauthorized,
+	)
+	if alreadyResponded := err != nil; alreadyResponded {
 		return err
 	}
 
-	values := request.Values
 	path := request.Path
 
 	err = validation.ValidatePath(path)
-	if err != nil {
+	if invalidPath := err != nil; invalidPath {
 		responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
-			reqres.SecretPutResponse{
-				Err: data.ErrBadInput,
-			}, w)
-		alreadyResponded = err != nil
-		if !alreadyResponded {
+			reqres.SecretPutBadInput, w,
+		)
+		if alreadyResponded := err != nil; !alreadyResponded {
 			net.Respond(http.StatusBadRequest, responseBody, w)
 		}
 		return apiErr.ErrInvalidInput
 	}
 
+	values := request.Values
 	for k := range values {
 		err := validation.ValidateName(k)
 		if err != nil {
 			responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
-				reqres.SecretPutResponse{
-					Err: data.ErrBadInput,
-				}, w)
-			alreadyResponded = err != nil
-			if !alreadyResponded {
+				reqres.SecretPutBadInput, w,
+			)
+			if alreadyResponded := err != nil; !alreadyResponded {
 				net.Respond(http.StatusUnauthorized, responseBody, w)
 			}
 			return apiErr.ErrInvalidInput
@@ -66,15 +86,12 @@ func guardSecretPutRequest(
 	)
 	if !allowed {
 		responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
-			reqres.SecretPutResponse{
-				Err: data.ErrUnauthorized,
-			}, w)
-		respondedAlready := err != nil // TODO: add this pattern to all usages.
-		if !respondedAlready {
+			reqres.SecretPutUnauthorized, w,
+		)
+		if respondedAlready := err != nil; !respondedAlready {
 			net.Respond(http.StatusUnauthorized, responseBody, w)
 		}
 		return apiErr.ErrUnauthorized
 	}
-
 	return nil
 }

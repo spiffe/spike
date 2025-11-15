@@ -17,6 +17,25 @@ import (
 	"github.com/spiffe/spike/internal/net"
 )
 
+// guardListPolicyRequest validates a policy list request by performing
+// authentication and authorization checks.
+//
+// The function performs the following validations in order:
+//   - Extracts and validates the peer SPIFFE ID from the request
+//   - Checks if the peer has list permission for the policy access path
+//
+// If any validation fails, an appropriate error response is written to the
+// ResponseWriter and an error is returned.
+//
+// Parameters:
+//   - request: The policy list request (currently unused, reserved for future
+//     validation needs)
+//   - w: The HTTP response writer for error responses
+//   - r: The HTTP request containing the peer SPIFFE ID
+//
+// Returns:
+//   - nil if all validations pass
+//   - apiErr.ErrUnauthorized if authentication or authorization fails
 func guardListPolicyRequest(
 	_ reqres.PolicyListRequest, w http.ResponseWriter, r *http.Request,
 ) error {
