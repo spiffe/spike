@@ -6,48 +6,64 @@ package cipher
 
 import (
 	"crypto/cipher"
-	"fmt"
 	"net/http"
+
+	"github.com/spiffe/spike-sdk-go/api/entity/data"
+	"github.com/spiffe/spike-sdk-go/api/errors"
 
 	"github.com/spiffe/spike/app/nexus/internal/state/persist"
 	"github.com/spiffe/spike/internal/net"
 )
 
-// getCipherOrFail retrieves the system cipher from the backend and handles
-// errors appropriately based on the request mode.
+// getCipherOrFailStreaming retrieves the system cipher from the backend
+// and handles errors for streaming mode requests.
 //
-// If the cipher is unavailable, the function sends an appropriate error
-// response to the client based on whether streaming mode is active:
-//   - Streaming mode: Sends plain HTTP error
-//   - JSON mode: Sends structured JSON error response
+// If the cipher is unavailable, sends a plain HTTP error response.
 //
 // Parameters:
 //   - w: The HTTP response writer for sending error responses
-//   - streamModeActive: Whether the request is in streaming mode
+//
+// Returns:
+//   - cipher.AEAD: The system cipher if available, nil otherwise
+//   - error: An error if the cipher is unavailable, nil otherwise
+func getCipherOrFailStreaming(
+	w http.ResponseWriter,
+) (cipher.AEAD, error) {
+	c := persist.Backend().GetCipher()
+	if c == nil {
+		http.Error(
+			w, string(data.ErrCryptoCipherNotAvailable),
+			http.StatusInternalServerError,
+		)
+		return nil, errors.ErrCipherNotAvailable
+	}
+	return c, nil
+}
+
+// getCipherOrFailJSON retrieves the system cipher from the backend and
+// handles errors for JSON mode requests.
+//
+// If the cipher is unavailable, sends a structured JSON error response.
+//
+// Parameters:
+//   - w: The HTTP response writer for sending error responses
 //   - errorResponse: The error response to send in JSON mode
 //
 // Returns:
 //   - cipher.AEAD: The system cipher if available, nil otherwise
 //   - error: An error if the cipher is unavailable, nil otherwise
-func getCipherOrFail[T any](
-	w http.ResponseWriter, streamModeActive bool, errorResponse T,
+func getCipherOrFailJSON[T any](
+	w http.ResponseWriter, errorResponse T,
 ) (cipher.AEAD, error) {
+	const fName = "getCipherOrFailJSON"
+
 	c := persist.Backend().GetCipher()
 	if c == nil {
-		if streamModeActive {
-			http.Error(
-				w, "cipher not available",
-				http.StatusInternalServerError,
-			)
-			return nil, fmt.Errorf("cipher not available")
-		}
-
 		return nil, net.Fail(
-			errorResponse,
-			w,
+			errorResponse, w,
 			http.StatusInternalServerError,
-			fmt.Errorf("cipher not available"),
-			"",
+			errors.ErrCipherNotAvailable,
+			fName,
 		)
 	}
 	return c, nil

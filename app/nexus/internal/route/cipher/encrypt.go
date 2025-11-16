@@ -56,17 +56,19 @@ func RouteEncrypt(
 	contentType := r.Header.Get(headerKeyContentType)
 	streamModeActive := contentType == headerValueOctetStream
 
-	// Create a cipher getter function (called only after auth passes)
-	getCipher := func() (cipher.AEAD, error) {
-		return getCipherOrFail(
-			w, streamModeActive,
-			reqres.CipherEncryptResponse{Err: data.ErrInternal},
-		)
-	}
-
 	if streamModeActive {
+		// Cipher getter for streaming mode
+		getCipher := func() (cipher.AEAD, error) {
+			return getCipherOrFailStreaming(w)
+		}
 		return handleStreamingEncrypt(w, r, getCipher, fName)
 	}
 
+	// Cipher getter for JSON mode
+	getCipher := func() (cipher.AEAD, error) {
+		return getCipherOrFailJSON(
+			w, reqres.CipherEncryptResponse{Err: data.ErrInternal},
+		)
+	}
 	return handleJSONEncrypt(w, r, getCipher, fName)
 }
