@@ -27,7 +27,7 @@ var (
 
 	// rootSharesGenerated tracks whether RootShares() has been called.
 	rootSharesGenerated bool
-	// rootSharesGeneratedMu protects rootSharesGenerated flag.
+	// rootSharesGeneratedMu protects the rootSharesGenerated flag.
 	rootSharesGeneratedMu sync.Mutex
 )
 

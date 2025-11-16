@@ -26,6 +26,10 @@ const k8sTrue = "true"
 const k8sServiceAccountNamespace = "/var/run/secrets/kubernetes.io/serviceaccount/namespace"
 const hostNameEnvVar = "HOSTNAME"
 
+const keyBootstrapCompleted = "bootstrap-completed"
+const keyBootstrapCompletedAt = "completed-at"
+const keyBootstrapCompletedByPod = "completed-by-pod"
+
 // ShouldBootstrap determines whether the bootstrap process should be
 // skipped based on the current environment and state. The function follows
 // this decision logic:
@@ -126,9 +130,9 @@ func ShouldBootstrap() bool {
 	}
 
 	// TODO: to constants.
-	bootstrapCompleted := cm.Data["bootstrap-completed"] == k8sTrue
-	completedAt := cm.Data["completed-at"]
-	completedByPod := cm.Data["completed-by-pod"]
+	bootstrapCompleted := cm.Data[keyBootstrapCompleted] == k8sTrue
+	completedAt := cm.Data[keyBootstrapCompletedAt]
+	completedByPod := cm.Data[keyBootstrapCompletedByPod]
 
 	if bootstrapCompleted {
 		reason := fmt.Sprintf(
@@ -138,8 +142,8 @@ func ShouldBootstrap() bool {
 		log.Log().Info(
 			fName,
 			"message", "skipping bootstrap based on ConfigMap state",
-			"completed-at", completedAt,
-			"completed-by-pod", completedByPod,
+			keyBootstrapCompletedAt, completedAt,
+			keyBootstrapCompletedByPod, completedByPod,
 			"reason", reason,
 		)
 		return false
@@ -200,10 +204,9 @@ func MarkBootstrapComplete() error {
 			Name: env.BootstrapConfigMapNameVal(),
 		},
 		Data: map[string]string{
-			// TODO: these keys are repeated factor them out as constants.
-			"bootstrap-completed": k8sTrue,
-			"completed-at":        time.Now().UTC().Format(time.RFC3339),
-			"completed-by-pod":    os.Getenv(hostNameEnvVar),
+			keyBootstrapCompleted:      k8sTrue,
+			keyBootstrapCompletedAt:    time.Now().UTC().Format(time.RFC3339),
+			keyBootstrapCompletedByPod: os.Getenv(hostNameEnvVar),
 		},
 	}
 

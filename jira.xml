@@ -38,6 +38,9 @@
     <issue>
       internal/net/request.go
       ^ can be SDK candidates.
+
+      func VerifyShamirReconstruction(secret group.Scalar, shares []shamir.Share) {
+      can go to sdk.
     </issue>
     <issue>
       lease object; may be used for SPIKE HA setup:
