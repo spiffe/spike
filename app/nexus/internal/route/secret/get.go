@@ -62,17 +62,14 @@ func RouteGetSecret(
 	w http.ResponseWriter, r *http.Request, audit *journal.AuditEntry,
 ) error {
 	const fName = "routeGetSecret"
+
 	journal.AuditRequest(fName, r, audit, journal.AuditRead)
+
 	request, err := net.ReadParseAndGuard[
-		reqres.SecretReadRequest,
-		reqres.SecretReadResponse](
-		w, r,
-		reqres.SecretReadResponse{Err: data.ErrBadInput},
-		guardGetSecretRequest,
-		fName,
+		reqres.SecretReadRequest, reqres.SecretReadResponse](
+		w, r, reqres.SecretReadBadInput, guardGetSecretRequest, fName,
 	)
-	alreadyResponded := err != nil
-	if alreadyResponded {
+	if alreadyResponded := err != nil; alreadyResponded {
 		log.Log().Error(fName, "message", "exit", "err", err.Error())
 		return err
 	}
@@ -81,21 +78,23 @@ func RouteGetSecret(
 	path := request.Path
 
 	secret, err := state.GetSecret(path, version)
-	if err == nil {
-		log.Log().Info(fName, "message", "Secret found")
+	secretFound := err == nil
+
+	if secretFound {
+		log.Log().Info(fName, "message", data.ErrFound, "path", path)
+	} else {
+		log.Log().Info(fName, "message", data.ErrNotFound,
+			"path", path, "err", err.Error())
 	}
-	if err != nil {
+
+	if !secretFound {
 		return handleGetSecretError(err, w)
 	}
 
-	responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
+	net.Success(
 		reqres.SecretReadResponse{
-			Secret: data.Secret{Data: secret}, Err: data.ErrSuccess,
-		}, w)
-	if err == nil {
-		net.Respond(http.StatusOK, responseBody, w)
-	}
-
-	log.Log().Info("routeGetSecret", "message", data.ErrSuccess)
+			Secret: data.Secret{Data: secret},
+		}.Success(), w, fName,
+	)
 	return nil
 }

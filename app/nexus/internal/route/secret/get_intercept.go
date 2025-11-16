@@ -5,6 +5,7 @@
 package secret
 
 import (
+	stdErrs "errors"
 	"net/http"
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
@@ -44,26 +45,23 @@ import (
 func guardGetSecretRequest(
 	request reqres.SecretReadRequest, w http.ResponseWriter, r *http.Request,
 ) error {
+	const fName = "guardGetSecretRequest"
+
 	peerSPIFFEID, err := auth.ExtractPeerSPIFFEID[reqres.ShardGetResponse](
-		r, w, reqres.ShardGetResponse{
-			Err: data.ErrUnauthorized,
-		})
-	alreadyResponded := err != nil
-	if alreadyResponded {
+		r, w, reqres.ShardGetUnauthorized,
+	)
+	if alreadyResponded := err != nil; alreadyResponded {
 		return err
 	}
 
 	path := request.Path
 	err = validation.ValidatePath(path)
 	if err != nil {
-		responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
+		failErr := stdErrs.Join(apiErr.ErrInvalidInput, err)
+		return net.Fail(
 			reqres.SecretReadBadInput, w,
+			http.StatusBadRequest, failErr, fName,
 		)
-		alreadyResponded = err != nil
-		if !alreadyResponded {
-			net.Respond(http.StatusBadRequest, responseBody, w)
-		}
-		return apiErr.ErrInvalidInput
 	}
 
 	allowed := state.CheckAccess(
@@ -72,14 +70,10 @@ func guardGetSecretRequest(
 		[]data.PolicyPermission{data.PermissionRead},
 	)
 	if !allowed {
-		responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
+		return net.Fail(
 			reqres.SecretReadUnauthorized, w,
+			http.StatusUnauthorized, apiErr.ErrUnauthorized, fName,
 		)
-		alreadyResponded = err != nil
-		if !alreadyResponded {
-			net.Respond(http.StatusUnauthorized, responseBody, w)
-		}
-		return apiErr.ErrUnauthorized
 	}
 
 	return nil

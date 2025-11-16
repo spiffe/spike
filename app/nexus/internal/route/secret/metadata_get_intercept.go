@@ -5,6 +5,7 @@
 package secret
 
 import (
+	stdErrs "errors"
 	"net/http"
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
@@ -45,27 +46,22 @@ import (
 func guardGetSecretMetadataRequest(
 	request reqres.SecretMetadataRequest, w http.ResponseWriter, r *http.Request,
 ) error {
+	const fName = "guardGetSecretMetadataRequest"
+
 	peerSPIFFEID, err := auth.ExtractPeerSPIFFEID[reqres.SecretMetadataResponse](
-		r, w, reqres.SecretMetadataResponse{
-			Err: data.ErrUnauthorized,
-		})
-	alreadyResponded := err != nil
-	if alreadyResponded {
+		r, w, reqres.SecretMetadataUnauthorized,
+	)
+	if alreadyResponded := err != nil; alreadyResponded {
 		return err
 	}
 
 	path := request.Path
 	err = validation.ValidatePath(path)
 	if err != nil {
-		responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
-			reqres.SecretMetadataResponse{
-				Err: data.ErrBadInput,
-			}, w)
-		alreadyResponded = err != nil
-		if !alreadyResponded {
-			net.Respond(http.StatusBadRequest, responseBody, w)
-		}
-		return apiErr.ErrInvalidInput
+		failErr := stdErrs.Join(apiErr.ErrInvalidInput, err)
+		return net.Fail(
+			reqres.SecretMetadataBadInput, w, http.StatusBadRequest, failErr, fName,
+		)
 	}
 
 	allowed := state.CheckAccess(
@@ -73,15 +69,10 @@ func guardGetSecretMetadataRequest(
 		[]data.PolicyPermission{data.PermissionRead},
 	)
 	if !allowed {
-		responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
-			reqres.SecretListResponse{
-				Err: data.ErrUnauthorized,
-			}, w)
-		alreadyResponded = err != nil
-		if !alreadyResponded {
-			net.Respond(http.StatusUnauthorized, responseBody, w)
-		}
-		return apiErr.ErrUnauthorized
+		return net.Fail(
+			reqres.SecretMetadataUnauthorized, w,
+			http.StatusUnauthorized, apiErr.ErrUnauthorized, fName,
+		)
 	}
 
 	return nil

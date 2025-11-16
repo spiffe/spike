@@ -10,6 +10,26 @@ import (
 	"github.com/spiffe/spike-sdk-go/kv"
 )
 
+// toSecretMetadataResponse converts a key-value store secret value into
+// a secret metadata response.
+//
+// The function transforms the internal kv.Value representation into the API
+// response format by:
+//   - Converting all secret versions into a map of version info
+//   - Extracting metadata including current/oldest versions and timestamps
+//   - Preserving version-specific details like creation and deletion times
+//
+// This conversion is used when clients request secret metadata without
+// retrieving the actual secret data, allowing them to inspect version history
+// and lifecycle information.
+//
+// Parameters:
+//   - secret: The key-value store secret value containing version history
+//     and metadata
+//
+// Returns:
+//   - reqres.SecretMetadataResponse: The formatted metadata response containing
+//     version information and metadata suitable for API responses
 func toSecretMetadataResponse(
 	secret *kv.Value,
 ) reqres.SecretMetadataResponse {

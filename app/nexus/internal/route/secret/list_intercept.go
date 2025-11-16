@@ -43,12 +43,12 @@ import (
 func guardListSecretRequest(
 	_ reqres.SecretListRequest, w http.ResponseWriter, r *http.Request,
 ) error {
+	const fName = "guardListSecretRequest"
+
 	peerSPIFFEID, err := auth.ExtractPeerSPIFFEID[reqres.SecretListResponse](
-		r, w, reqres.SecretListResponse{
-			Err: data.ErrUnauthorized,
-		})
-	alreadyResponded := err != nil
-	if alreadyResponded {
+		r, w, reqres.SecretListUnauthorized,
+	)
+	if alreadyResponded := err != nil; alreadyResponded {
 		return err
 	}
 
@@ -57,15 +57,10 @@ func guardListSecretRequest(
 		[]data.PolicyPermission{data.PermissionList},
 	)
 	if !allowed {
-		responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
-			reqres.SecretListResponse{
-				Err: data.ErrUnauthorized,
-			}, w)
-		alreadyResponded = err != nil
-		if !alreadyResponded {
-			net.Respond(http.StatusUnauthorized, responseBody, w)
-		}
-		return apiErr.ErrUnauthorized
+		return net.Fail(
+			reqres.SecretListResponse{Err: data.ErrUnauthorized}, w,
+			http.StatusUnauthorized, apiErr.ErrUnauthorized, fName,
+		)
 	}
 
 	return nil

@@ -44,6 +44,8 @@ import (
 func guardPolicyCreateRequest(
 	request reqres.PolicyCreateRequest, w http.ResponseWriter, r *http.Request,
 ) error {
+	const fName = "guardPolicyCreateRequest"
+
 	peerSPIFFEID, err := auth.ExtractPeerSPIFFEID[reqres.PolicyCreateResponse](
 		r, w, reqres.PolicyCreateUnauthorized,
 	)
@@ -57,12 +59,10 @@ func guardPolicyCreateRequest(
 		[]data.PolicyPermission{data.PermissionWrite},
 	)
 	if !allowed {
-		responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
-			reqres.PolicyCreateUnauthorized, w)
-		if alreadyResponded := err != nil; !alreadyResponded {
-			net.Respond(http.StatusUnauthorized, responseBody, w)
-		}
-		return apiErr.ErrUnauthorized
+		return net.Fail(
+			reqres.PolicyCreateUnauthorized, w,
+			http.StatusUnauthorized, apiErr.ErrUnauthorized, fName,
+		)
 	}
 
 	name := request.Name
@@ -73,28 +73,28 @@ func guardPolicyCreateRequest(
 	if err := validation.ValidateName(name); err != nil {
 		return net.Fail(
 			reqres.PolicyCreateBadInput, w,
-			http.StatusBadRequest, apiErr.ErrInvalidInput,
+			http.StatusBadRequest, apiErr.ErrInvalidInput, fName,
 		)
 	}
 
 	if err := validation.ValidateSPIFFEIDPattern(SPIFFEIDPattern); err != nil {
 		return net.Fail(
 			reqres.PolicyCreateBadInput, w,
-			http.StatusBadRequest, apiErr.ErrInvalidInput,
+			http.StatusBadRequest, apiErr.ErrInvalidInput, fName,
 		)
 	}
 
 	if err := validation.ValidatePathPattern(pathPattern); err != nil {
 		return net.Fail(
 			reqres.PolicyCreateBadInput, w,
-			http.StatusBadRequest, apiErr.ErrInvalidInput,
+			http.StatusBadRequest, apiErr.ErrInvalidInput, fName,
 		)
 	}
 
 	if err := validation.ValidatePermissions(permissions); err != nil {
 		return net.Fail(
 			reqres.PolicyCreateBadInput, w,
-			http.StatusBadRequest, apiErr.ErrInvalidInput,
+			http.StatusBadRequest, apiErr.ErrInvalidInput, fName,
 		)
 	}
 

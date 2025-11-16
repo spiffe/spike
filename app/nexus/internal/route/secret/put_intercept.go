@@ -5,6 +5,7 @@
 package secret
 
 import (
+	stdErrs "errors"
 	"net/http"
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
@@ -46,6 +47,8 @@ import (
 func guardSecretPutRequest(
 	request reqres.SecretPutRequest, w http.ResponseWriter, r *http.Request,
 ) error {
+	const fName = "guardSecretPutRequest"
+
 	peerSPIFFEID, err := auth.ExtractPeerSPIFFEID[reqres.SecretPutResponse](
 		r, w, reqres.SecretPutUnauthorized,
 	)
@@ -57,26 +60,22 @@ func guardSecretPutRequest(
 
 	err = validation.ValidatePath(path)
 	if invalidPath := err != nil; invalidPath {
-		responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
+		failErr := stdErrs.Join(apiErr.ErrInvalidInput, err)
+		return net.Fail(
 			reqres.SecretPutBadInput, w,
+			http.StatusBadRequest, failErr, fName,
 		)
-		if alreadyResponded := err != nil; !alreadyResponded {
-			net.Respond(http.StatusBadRequest, responseBody, w)
-		}
-		return apiErr.ErrInvalidInput
 	}
 
 	values := request.Values
 	for k := range values {
 		err := validation.ValidateName(k)
 		if err != nil {
-			responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
+			failErr := stdErrs.Join(apiErr.ErrInvalidInput, err)
+			return net.Fail(
 				reqres.SecretPutBadInput, w,
+				http.StatusBadRequest, failErr, fName,
 			)
-			if alreadyResponded := err != nil; !alreadyResponded {
-				net.Respond(http.StatusUnauthorized, responseBody, w)
-			}
-			return apiErr.ErrInvalidInput
 		}
 	}
 
@@ -85,13 +84,11 @@ func guardSecretPutRequest(
 		[]data.PolicyPermission{data.PermissionWrite},
 	)
 	if !allowed {
-		responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
+		return net.Fail(
 			reqres.SecretPutUnauthorized, w,
+			http.StatusUnauthorized, apiErr.ErrUnauthorized, fName,
 		)
-		if respondedAlready := err != nil; !respondedAlready {
-			net.Respond(http.StatusUnauthorized, responseBody, w)
-		}
-		return apiErr.ErrUnauthorized
 	}
+
 	return nil
 }

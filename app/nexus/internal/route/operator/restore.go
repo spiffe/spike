@@ -10,6 +10,7 @@ import (
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
+	"github.com/spiffe/spike-sdk-go/api/errors"
 	"github.com/spiffe/spike-sdk-go/config/env"
 	"github.com/spiffe/spike-sdk-go/log"
 	"github.com/spiffe/spike-sdk-go/security/mem"
@@ -59,21 +60,19 @@ func RouteRestore(
 	w http.ResponseWriter, r *http.Request, audit *journal.AuditEntry,
 ) error {
 	const fName = "routeRestore"
+
 	journal.AuditRequest(fName, r, audit, journal.AuditCreate)
+
 	if env.BackendStoreTypeVal() == env.Memory {
-		log.Log().Info(fName, "message", "skipping restoration in memory mode")
+		log.Log().Info(fName, "message", "skipping restoration: in-memory mode")
 		return nil
 	}
+
 	request, err := net.ReadParseAndGuard[
-		reqres.RestoreRequest,
-		reqres.RestoreResponse](
-		w, r,
-		reqres.RestoreResponse{Err: data.ErrBadInput},
-		guardRestoreRequest,
-		fName,
+		reqres.RestoreRequest, reqres.RestoreResponse](
+		w, r, reqres.RestoreBadInput, guardRestoreRequest, fName,
 	)
-	alreadyResponded := err != nil
-	if alreadyResponded {
+	if alreadyResponded := err != nil; alreadyResponded {
 		log.Log().Error(fName, "message", "exit", "err", err.Error())
 		return err
 	}
@@ -85,7 +84,7 @@ func RouteRestore(
 	currentShardCount := len(shards)
 
 	if currentShardCount >= env.ShamirThresholdVal() {
-		responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
+		return net.Fail(
 			reqres.RestoreResponse{
 				RestorationStatus: data.RestorationStatus{
 					ShardsCollected: currentShardCount,
@@ -93,11 +92,9 @@ func RouteRestore(
 					Restored:        true,
 				},
 				Err: data.ErrBadInput,
-			}, w)
-		if err == nil {
-			net.Respond(http.StatusBadRequest, responseBody, w)
-		}
-		return nil
+			}, w,
+			http.StatusBadRequest, errors.ErrInvalidInput, fName,
+		)
 	}
 
 	for _, shard := range shards {
@@ -107,7 +104,7 @@ func RouteRestore(
 
 		// Duplicate shard found.
 
-		responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
+		return net.Fail(
 			reqres.RestoreResponse{
 				RestorationStatus: data.RestorationStatus{
 					ShardsCollected: currentShardCount,
@@ -115,11 +112,9 @@ func RouteRestore(
 					Restored:        currentShardCount == env.ShamirThresholdVal(),
 				},
 				Err: data.ErrBadInput,
-			}, w)
-		if err == nil {
-			net.Respond(http.StatusBadRequest, responseBody, w)
-		}
-		return nil // TODO: why not log failure exits too? check this for all routing functions.
+			}, w,
+			http.StatusBadRequest, errors.ErrInvalidInput, fName,
+		)
 	}
 
 	shards = append(shards, recovery.ShamirShard{
@@ -143,18 +138,14 @@ func RouteRestore(
 		}
 	}
 
-	responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
+	net.Success(
 		reqres.RestoreResponse{
 			RestorationStatus: data.RestorationStatus{
 				ShardsCollected: currentShardCount,
 				ShardsRemaining: env.ShamirThresholdVal() - currentShardCount,
 				Restored:        currentShardCount == env.ShamirThresholdVal(),
 			},
-		}, w)
-	if err == nil {
-		net.Respond(http.StatusOK, responseBody, w)
-	}
-
-	log.Log().Info(fName, "message", data.ErrSuccess)
+		}, w, fName,
+	)
 	return nil
 }

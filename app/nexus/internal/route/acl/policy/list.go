@@ -5,12 +5,13 @@
 package policy
 
 import (
+	stdErrs "errors"
 	"net/http"
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
+	"github.com/spiffe/spike-sdk-go/api/errors"
 	"github.com/spiffe/spike-sdk-go/log"
-	"github.com/spiffe/spike-sdk-go/strings"
 
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 	"github.com/spiffe/spike/internal/journal"
@@ -58,13 +59,14 @@ func RouteListPolicies(
 	w http.ResponseWriter, r *http.Request, audit *journal.AuditEntry,
 ) error {
 	fName := "routeListPolicies"
+
 	journal.AuditRequest(fName, r, audit, journal.AuditList)
+
 	request, err := net.ReadParseAndGuard[
 		reqres.PolicyListRequest, reqres.PolicyListResponse](
 		w, r, reqres.PolicyListBadInput, guardListPolicyRequest, fName,
 	)
-	alreadyResponded := err != nil
-	if alreadyResponded {
+	if alreadyResponded := err != nil; alreadyResponded {
 		log.Log().Error(fName, "message", "exit", "err", err.Error())
 		return err
 	}
@@ -74,33 +76,37 @@ func RouteListPolicies(
 	SPIFFEIDPattern := request.SPIFFEIDPattern
 	pathPattern := request.PathPattern
 
+	// Note that Go's default switch behavior will not fall through.
 	switch {
 	case SPIFFEIDPattern != "":
 		policies, err = state.ListPoliciesBySPIFFEIDPattern(SPIFFEIDPattern)
 		if err != nil {
-			return err
+			failErr := stdErrs.Join(errors.ErrQueryFailure, err)
+			return net.Fail(
+				reqres.PolicyListInternal, w,
+				http.StatusInternalServerError, failErr, fName,
+			)
 		}
 	case pathPattern != "":
 		policies, err = state.ListPoliciesByPathPattern(pathPattern)
 		if err != nil {
-			return err
+			failErr := stdErrs.Join(errors.ErrQueryFailure, err)
+			return net.Fail(
+				reqres.PolicyListInternal, w,
+				http.StatusInternalServerError, failErr, fName,
+			)
 		}
 	default:
 		policies, err = state.ListPolicies()
 		if err != nil {
-			return err
+			failErr := stdErrs.Join(errors.ErrQueryFailure, err)
+			return net.Fail(
+				reqres.PolicyListInternal, w,
+				http.StatusInternalServerError, failErr, fName,
+			)
 		}
 	}
 
-	responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
-		reqres.PolicyListResponse{
-			Policies: policies,
-		}, w)
-	if err == nil {
-		net.Respond(http.StatusOK, responseBody, w)
-	}
-	log.Log().Info(
-		fName, "message", data.ErrSuccess, "err", strings.MaybeError(err),
-	)
+	net.Success(reqres.PolicyListResponse{Policies: policies}.Success(), w, fName)
 	return nil
 }

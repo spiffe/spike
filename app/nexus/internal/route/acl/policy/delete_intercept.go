@@ -5,6 +5,7 @@
 package policy
 
 import (
+	stdErrs "errors"
 	"net/http"
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
@@ -41,6 +42,8 @@ import (
 func guardPolicyDeleteRequest(
 	request reqres.PolicyDeleteRequest, w http.ResponseWriter, r *http.Request,
 ) error {
+	const fName = "guardPolicyDeleteRequest"
+
 	peerSPIFFEID, err := auth.ExtractPeerSPIFFEID[reqres.PolicyDeleteResponse](
 		r, w, reqres.PolicyDeleteUnauthorized,
 	)
@@ -52,13 +55,11 @@ func guardPolicyDeleteRequest(
 
 	err = validation.ValidatePolicyID(policyID)
 	if invalidPolicy := err != nil; invalidPolicy {
-		responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
+		failErr := stdErrs.Join(apiErr.ErrInvalidInput, err)
+		return net.Fail(
 			reqres.PolicyDeleteBadInput, w,
+			http.StatusBadRequest, failErr, fName,
 		)
-		if alreadyResponded := err != nil; !alreadyResponded {
-			net.Respond(http.StatusBadRequest, responseBody, w)
-		}
-		return apiErr.ErrInvalidInput
 	}
 
 	allowed := state.CheckAccess(
@@ -66,13 +67,10 @@ func guardPolicyDeleteRequest(
 		[]data.PolicyPermission{data.PermissionWrite},
 	)
 	if !allowed {
-		responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
+		return net.Fail(
 			reqres.PolicyDeleteUnauthorized, w,
+			http.StatusUnauthorized, apiErr.ErrUnauthorized, fName,
 		)
-		if alreadyResponded := err != nil; !alreadyResponded {
-			net.Respond(http.StatusUnauthorized, responseBody, w)
-		}
-		return apiErr.ErrUnauthorized
 	}
 
 	return nil

@@ -363,11 +363,13 @@ func FailIf[T any](
 	return nil
 }
 
-// Fail sends an error response and returns the specified error.
+// Fail sends an error response, logs the error, and returns the specified
+// error.
 //
 // This function is used when you've already determined that a request should
 // fail and need to send an error response. It marshals the client response,
-// sends it with the specified HTTP status code, and returns the error.
+// sends it with the specified HTTP status code, optionally logs the error,
+// and returns the error.
 //
 // Type Parameters:
 //   - T: The response type to send to the client (e.g.,
@@ -379,6 +381,8 @@ func FailIf[T any](
 //   - statusCode: The HTTP status code to send (e.g., http.StatusBadRequest)
 //   - errorToReturn: The error to return to the caller (e.g.,
 //     errors.ErrInvalidInput)
+//   - logContext: Context string for logging (e.g., function name). If empty,
+//     no log is written.
 //
 // Returns:
 //   - error: Always returns errorToReturn
@@ -386,10 +390,9 @@ func FailIf[T any](
 // Example usage:
 //
 //	if request.Shard == nil {
-//	    log.Log().Error(fName, "message", data.ErrEmptyPayload)
 //	    return net.Fail(
 //	        reqres.ShardPutBadInput, w,
-//	        http.StatusBadRequest, errors.ErrInvalidInput,
+//	        http.StatusBadRequest, errors.ErrInvalidInput, fName,
 //	    )
 //	}
 func Fail[T any](
@@ -397,6 +400,7 @@ func Fail[T any](
 	w http.ResponseWriter,
 	statusCode int,
 	errorToReturn error,
+	logContext string,
 ) error {
 	responseBody, marshalErr := MarshalBodyAndRespondOnMarshalFail(
 		clientResponse, w,
@@ -404,13 +408,17 @@ func Fail[T any](
 	if alreadyResponded := marshalErr != nil; !alreadyResponded {
 		Respond(statusCode, responseBody, w)
 	}
+	if logContext != "" {
+		log.Log().Error(logContext, "err", errorToReturn.Error())
+	}
 	return errorToReturn
 }
 
 // Success sends a success response with HTTP 200 OK and logs success.
 //
 // This function marshals the client response, sends it with a 200 OK status,
-// logs success, and returns nil to indicate successful processing.
+// and logs success. This function does not return an error for API symmetry
+// with SuccessWithResponseBody.
 //
 // Type Parameters:
 //   - T: The response type to send to the client (e.g.,
@@ -422,18 +430,16 @@ func Fail[T any](
 //   - logContext: Context string for logging (e.g., function name). If empty,
 //     no log is written.
 //
-// Returns:
-//   - error: Always returns nil
-//
 // Example usage:
 //
 //	state.SetShard(request.Shard)
-//	return net.Success(reqres.ShardPutSuccess, w, fName)
+//	net.Success(reqres.ShardPutSuccess, w, fName)
+//	return nil
 func Success[T any](
 	clientResponse T,
 	w http.ResponseWriter,
 	logContext string,
-) error {
+) {
 	responseBody, marshalErr := MarshalBodyAndRespondOnMarshalFail(
 		clientResponse, w,
 	)
@@ -443,5 +449,50 @@ func Success[T any](
 	if logContext != "" {
 		log.Log().Info(logContext, "message", "Success")
 	}
-	return nil
+}
+
+// SuccessWithResponseBody sends a success response with HTTP 200 OK, logs
+// success, and returns the response body for cleanup.
+//
+// This variant is used when you need to explicitly clear the response body
+// from memory for security reasons, such as when returning sensitive
+// cryptographic data.
+//
+// Type Parameters:
+//   - T: The response type to send to the client (e.g.,
+//     reqres.ShardGetResponse)
+//
+// Parameters:
+//   - clientResponse: The response object to send to the client
+//   - w: The HTTP response writer
+//   - logContext: Context string for logging (e.g., function name). If empty,
+//     no log is written.
+//
+// Returns:
+//   - []byte: The marshaled response body that can be cleared for security
+//
+// Example usage:
+//
+//	responseBody := net.SuccessWithResponseBody(
+//	    reqres.ShardGetResponse{Shard: sh}.Success(), w, fName,
+//	)
+//	defer func() {
+//	    mem.ClearBytes(responseBody)
+//	}()
+//	return nil
+func SuccessWithResponseBody[T any](
+	clientResponse T,
+	w http.ResponseWriter,
+	logContext string,
+) []byte {
+	responseBody, marshalErr := MarshalBodyAndRespondOnMarshalFail(
+		clientResponse, w,
+	)
+	if alreadyResponded := marshalErr != nil; !alreadyResponded {
+		Respond(http.StatusOK, responseBody, w)
+	}
+	if logContext != "" {
+		log.Log().Info(logContext, "message", "Success")
+	}
+	return responseBody
 }

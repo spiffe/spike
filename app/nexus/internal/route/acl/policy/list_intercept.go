@@ -39,12 +39,13 @@ import (
 func guardListPolicyRequest(
 	_ reqres.PolicyListRequest, w http.ResponseWriter, r *http.Request,
 ) error {
+	const fName = "guardListPolicyRequest"
+
 	peerSPIFFEID, err := auth.ExtractPeerSPIFFEID[reqres.PolicyListResponse](
 		r, w, reqres.PolicyListResponse{
 			Err: data.ErrUnauthorized,
 		})
-	alreadyResponded := err != nil
-	if alreadyResponded {
+	if alreadyResponded := err != nil; alreadyResponded {
 		return err
 	}
 
@@ -53,15 +54,10 @@ func guardListPolicyRequest(
 		[]data.PolicyPermission{data.PermissionList},
 	)
 	if !allowed {
-		responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
-			reqres.PolicyListResponse{
-				Err: data.ErrUnauthorized,
-			}, w)
-		alreadyResponded = err != nil
-		if !alreadyResponded {
-			net.Respond(http.StatusUnauthorized, responseBody, w)
-		}
-		return apiErr.ErrUnauthorized
+		return net.Fail(
+			reqres.PolicyListResponse{Err: data.ErrUnauthorized}, w,
+			http.StatusUnauthorized, apiErr.ErrUnauthorized, fName,
+		)
 	}
 
 	return nil

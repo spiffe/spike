@@ -5,10 +5,11 @@
 package secret
 
 import (
+	stdErrs "errors"
 	"net/http"
 
-	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
+	"github.com/spiffe/spike-sdk-go/api/errors"
 	"github.com/spiffe/spike-sdk-go/log"
 
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
@@ -48,18 +49,16 @@ import (
 func RoutePutSecret(
 	w http.ResponseWriter, r *http.Request, audit *journal.AuditEntry,
 ) error {
-	const fName = "routePutSecret"
+	const fName = "RoutePutSecret"
+
 	journal.AuditRequest(fName, r, audit, journal.AuditCreate)
+
 	request, err := net.ReadParseAndGuard[
-		reqres.SecretPutRequest,
-		reqres.SecretPutResponse](
-		w, r,
-		reqres.SecretPutResponse{Err: data.ErrBadInput},
-		guardSecretPutRequest,
-		fName,
+		reqres.SecretPutRequest, reqres.SecretPutResponse,
+	](
+		w, r, reqres.SecretPutBadInput, guardSecretPutRequest, fName,
 	)
-	alreadyResponded := err != nil
-	if alreadyResponded {
+	if alreadyResponded := err != nil; alreadyResponded {
 		log.Log().Error(fName, "message", "exit", "err", err.Error())
 		return err
 	}
@@ -69,18 +68,13 @@ func RoutePutSecret(
 
 	err = state.UpsertSecret(path, values)
 	if err != nil {
-		return err
+		failErr := stdErrs.Join(errors.ErrCreationFailed, err)
+		return net.Fail(
+			reqres.SecretPutInternal, w,
+			http.StatusInternalServerError, failErr, fName,
+		)
 	}
 
-	log.Log().Info(fName, "message", "Secret upserted")
-
-	responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
-		reqres.SecretPutResponse{}, w,
-	)
-	if err == nil {
-		net.Respond(http.StatusOK, responseBody, w)
-	}
-
-	log.Log().Info(fName, "message", data.ErrSuccess)
+	net.Success(reqres.SecretPutSuccess.Success(), w, fName)
 	return nil
 }

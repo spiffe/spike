@@ -5,6 +5,7 @@
 package secret
 
 import (
+	stdErrs "errors"
 	"net/http"
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
@@ -43,15 +44,12 @@ import (
 func guardDeleteSecretRequest(
 	request reqres.SecretDeleteRequest, w http.ResponseWriter, r *http.Request,
 ) error {
-	// TODO: have a single response instance at the top and change its error value depending on exit.
-	// do this for all guard clauses.
+	const fName = "guardDeleteSecretRequest"
 
 	peerSPIFFEID, err := auth.ExtractPeerSPIFFEID[reqres.SecretDeleteResponse](
-		r, w, reqres.SecretDeleteResponse{
-			Err: data.ErrUnauthorized,
-		})
-	alreadyResponded := err != nil
-	if alreadyResponded {
+		r, w, reqres.SecretDeleteUnauthorized,
+	)
+	if alreadyResponded := err != nil; alreadyResponded {
 		return err
 	}
 
@@ -59,15 +57,11 @@ func guardDeleteSecretRequest(
 
 	err = validation.ValidatePath(path)
 	if err != nil {
-		responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
-			reqres.SecretDeleteResponse{
-				Err: data.ErrBadInput,
-			}, w)
-		alreadyResponded = err != nil
-		if !alreadyResponded {
-			net.Respond(http.StatusBadRequest, responseBody, w)
-		}
-		return apiErr.ErrInvalidInput
+		failErr := stdErrs.Join(apiErr.ErrInvalidInput, err)
+		return net.Fail(
+			reqres.SecretDeleteResponse{Err: data.ErrBadInput}, w,
+			http.StatusBadRequest, failErr, fName,
+		)
 	}
 
 	allowed := state.CheckAccess(
@@ -76,15 +70,10 @@ func guardDeleteSecretRequest(
 		[]data.PolicyPermission{data.PermissionWrite},
 	)
 	if !allowed {
-		responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
-			reqres.SecretDeleteResponse{
-				Err: data.ErrUnauthorized,
-			}, w)
-		alreadyResponded = err != nil
-		if !alreadyResponded {
-			net.Respond(http.StatusUnauthorized, responseBody, w)
-		}
-		return apiErr.ErrUnauthorized
+		return net.Fail(
+			reqres.SecretDeleteResponse{Err: data.ErrUnauthorized}, w,
+			http.StatusUnauthorized, apiErr.ErrUnauthorized, fName,
+		)
 	}
 
 	return nil

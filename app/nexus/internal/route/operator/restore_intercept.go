@@ -7,7 +7,6 @@ package operator
 import (
 	"net/http"
 
-	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	apiErr "github.com/spiffe/spike-sdk-go/api/errors"
 	"github.com/spiffe/spike-sdk-go/spiffeid"
@@ -50,40 +49,30 @@ import (
 func guardRestoreRequest(
 	request reqres.RestoreRequest, w http.ResponseWriter, r *http.Request,
 ) error {
+	const fName = "guardRestoreRequest"
+
 	peerSPIFFEID, err := auth.ExtractPeerSPIFFEID[reqres.ShardGetResponse](
-		r, w, reqres.ShardGetResponse{
-			Err: data.ErrUnauthorized,
-		})
-	alreadyResponded := err != nil
-	if alreadyResponded {
+		r, w, reqres.ShardGetUnauthorized,
+	)
+	if alreadyResponded := err != nil; alreadyResponded {
 		return err
 	}
 
 	if !spiffeid.IsPilotRestore(peerSPIFFEID.String()) {
-		responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
-			reqres.RestoreResponse{
-				Err: data.ErrUnauthorized,
-			}, w)
-		alreadyResponded = err != nil
-		if !alreadyResponded {
-			net.Respond(http.StatusUnauthorized, responseBody, w)
-		}
-		return apiErr.ErrUnauthorized
+		return net.Fail(
+			reqres.RestoreUnauthorized, w,
+			http.StatusUnauthorized, apiErr.ErrUnauthorized, fName,
+		)
 	}
 
 	// It's unlikely to have 1000 SPIKE Keepers across the board.
 	// The indexes start from 1 and increase one-by-one by design.
-	const maxShardID = 1000 // TODO: to constants.
+	const maxShardID = 1000 // TODO: to SDK constants.
 	if request.ID < 1 || request.ID > maxShardID {
-		responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
-			reqres.RestoreResponse{
-				Err: data.ErrBadInput,
-			}, w)
-		alreadyResponded = err != nil
-		if !alreadyResponded {
-			net.Respond(http.StatusBadRequest, responseBody, w)
-		}
-		return apiErr.ErrInvalidInput
+		return net.Fail(
+			reqres.RestoreBadInput, w,
+			http.StatusBadRequest, apiErr.ErrInvalidInput, fName,
+		)
 	}
 
 	allZero := true
@@ -94,15 +83,10 @@ func guardRestoreRequest(
 		}
 	}
 	if allZero {
-		responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
-			reqres.RestoreResponse{
-				Err: data.ErrBadInput,
-			}, w)
-		alreadyResponded = err != nil
-		if !alreadyResponded {
-			net.Respond(http.StatusUnauthorized, responseBody, w)
-		}
-		return apiErr.ErrInvalidInput
+		return net.Fail(
+			reqres.RestoreBadInput, w,
+			http.StatusBadRequest, apiErr.ErrInvalidInput, fName,
+		)
 	}
 
 	return nil

@@ -46,25 +46,20 @@ import (
 func guardRecoverRequest(
 	_ reqres.RecoverRequest, w http.ResponseWriter, r *http.Request,
 ) error {
+	const fName = "guardRecoverRequest"
+
 	peerSPIFFEID, err := auth.ExtractPeerSPIFFEID[reqres.RestoreResponse](
-		r, w, reqres.RestoreResponse{
-			Err: data.ErrUnauthorized,
-		})
-	alreadyResponded := err != nil
-	if alreadyResponded {
+		r, w, reqres.RestoreUnauthorized,
+	)
+	if alreadyResponded := err != nil; alreadyResponded {
 		return err
 	}
 
 	if !spiffeid.IsPilotRecover(peerSPIFFEID.String()) {
-		responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
-			reqres.RestoreResponse{
-				Err: data.ErrUnauthorized,
-			}, w)
-		alreadyResponded = err != nil
-		if !alreadyResponded {
-			net.Respond(http.StatusUnauthorized, responseBody, w)
-		}
-		return apiErr.ErrUnauthorized
+		return net.Fail(
+			reqres.RestoreResponse{Err: data.ErrUnauthorized}, w,
+			http.StatusUnauthorized, apiErr.ErrUnauthorized, fName,
+		)
 	}
 
 	return nil

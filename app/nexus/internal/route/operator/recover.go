@@ -47,17 +47,14 @@ func RouteRecover(
 	w http.ResponseWriter, r *http.Request, audit *journal.AuditEntry,
 ) error {
 	const fName = "routeRecover"
+
 	journal.AuditRequest(fName, r, audit, journal.AuditCreate)
+
 	_, err := net.ReadParseAndGuard[
-		reqres.RecoverRequest,
-		reqres.RecoverResponse](
-		w, r,
-		reqres.RecoverResponse{Err: data.ErrBadInput},
-		guardRecoverRequest,
-		fName,
+		reqres.RecoverRequest, reqres.RecoverResponse](
+		w, r, reqres.RecoverBadInput, guardRecoverRequest, fName,
 	)
-	alreadyResponded := err != nil
-	if alreadyResponded {
+	if alreadyResponded := err != nil; alreadyResponded {
 		log.Log().Error(fName, "message", "exit", "err", err.Error())
 		return err
 	}
@@ -72,8 +69,8 @@ func RouteRecover(
 	}()
 
 	if len(shards) < env.ShamirThresholdVal() {
-		log.Log().Error(fName, "message", "not enough shards. Exiting.")
-		return errors.ErrNotFound
+		log.Log().Error(fName, "message", data.ErrShamirNotEnoughShards)
+		return errors.ErrInvalidInput
 	}
 
 	// Track seen indices to check for duplicates
@@ -81,7 +78,7 @@ func RouteRecover(
 
 	for idx, shard := range shards {
 		if seenIndices[idx] {
-			log.Log().Error(fName, "message", "duplicate index. Exiting.")
+			log.Log().Error(fName, "message", data.ErrShamirDuplicateIndex)
 			// Duplicate index.
 			return errors.ErrInvalidInput
 		}
@@ -94,7 +91,7 @@ func RouteRecover(
 
 		// Check for nil pointers
 		if shard == nil {
-			log.Log().Error(fName, "message", "nil shard. Exiting.")
+			log.Log().Error(fName, "message", data.ErrShamirNilShard)
 			return errors.ErrInvalidInput
 		}
 
@@ -107,29 +104,22 @@ func RouteRecover(
 			}
 		}
 		if zeroed {
-			log.Log().Error(fName, "message", "zeroed shard. Exiting.")
+			log.Log().Error(fName, "message", data.ErrShamirEmptyShard)
 			return errors.ErrInvalidInput
 		}
 
 		// Verify shard index is within valid range:
 		if idx < 1 || idx > env.ShamirSharesVal() {
-			log.Log().Error(fName, "message", "invalid index. Exiting.")
+			log.Log().Error(fName, "message", data.ErrShamirInvalidIndex)
 			return errors.ErrInvalidInput
 		}
 	}
 
-	responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
-		reqres.RecoverResponse{
-			Shards: shards,
-		}, w)
-	// Security: Clean up response body before exit.
+	responseBody := net.SuccessWithResponseBody(
+		reqres.RecoverResponse{Shards: shards}, w, fName,
+	)
 	defer func() {
 		mem.ClearBytes(responseBody)
 	}()
-	if err == nil {
-		net.Respond(http.StatusOK, responseBody, w)
-	}
-
-	log.Log().Info(fName, "message", data.ErrSuccess)
 	return nil
 }

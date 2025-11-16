@@ -7,7 +7,6 @@ package secret
 import (
 	"net/http"
 
-	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	"github.com/spiffe/spike-sdk-go/log"
 
@@ -76,17 +75,15 @@ func RouteGetSecretMetadata(
 	w http.ResponseWriter, r *http.Request, audit *journal.AuditEntry,
 ) error {
 	const fName = "routeGetSecretMetadata"
+
 	journal.AuditRequest(fName, r, audit, journal.AuditRead)
+
 	request, err := net.ReadParseAndGuard[
-		reqres.SecretMetadataRequest,
-		reqres.SecretMetadataResponse](
-		w, r,
-		reqres.SecretMetadataResponse{Err: data.ErrBadInput},
-		guardGetSecretMetadataRequest,
-		fName,
+		reqres.SecretMetadataRequest, reqres.SecretMetadataResponse,
+	](
+		w, r, reqres.SecretMetadataBadInput, guardGetSecretMetadataRequest, fName,
 	)
-	alreadyResponded := err != nil
-	if alreadyResponded {
+	if alreadyResponded := err != nil; alreadyResponded {
 		log.Log().Error(fName, "message", "exit", "err", err.Error())
 		return err
 	}
@@ -100,11 +97,6 @@ func RouteGetSecretMetadata(
 	}
 
 	response := toSecretMetadataResponse(rawSecret)
-	responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(response, w)
-	if err == nil {
-		net.Respond(http.StatusOK, responseBody, w)
-	}
-
-	log.Log().Info("routeGetSecret", "message", "OK")
+	net.Success(response.Success(), w, fName)
 	return nil
 }

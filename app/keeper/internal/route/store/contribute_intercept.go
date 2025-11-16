@@ -32,6 +32,8 @@ import (
 func guardShardPutRequest(
 	_ reqres.ShardPutRequest, w http.ResponseWriter, r *http.Request,
 ) error {
+	const fName = "guardShardPutRequest"
+
 	peerSPIFFEID, err := auth.ExtractPeerSPIFFEID[reqres.ShardPutResponse](
 		r, w, reqres.ShardPutUnauthorized,
 	)
@@ -40,12 +42,11 @@ func guardShardPutRequest(
 	}
 
 	// Allow both Bootstrap (initial setup) and Nexus (periodic updates)
-	if err := net.FailIf(
-		!spiffeid.PeerCanTalkToKeeper(peerSPIFFEID.String()),
-		reqres.ShardPutUnauthorized, w,
-		http.StatusUnauthorized, apiErr.ErrUnauthorized,
-	); err != nil {
-		return err
+	if !spiffeid.PeerCanTalkToKeeper(peerSPIFFEID.String()) {
+		return net.Fail(
+			reqres.ShardPutUnauthorized, w,
+			http.StatusUnauthorized, apiErr.ErrUnauthorized, fName,
+		)
 	}
 
 	return nil

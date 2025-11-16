@@ -7,7 +7,6 @@ package secret
 import (
 	"net/http"
 
-	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	"github.com/spiffe/spike-sdk-go/log"
 
@@ -57,29 +56,19 @@ func RouteListPaths(
 	w http.ResponseWriter, r *http.Request, audit *journal.AuditEntry,
 ) error {
 	const fName = "routeListPaths"
+
 	journal.AuditRequest(fName, r, audit, journal.AuditList)
+
 	_, err := net.ReadParseAndGuard[
-		reqres.SecretListRequest,
-		reqres.SecretListResponse](
-		w, r,
-		reqres.SecretListResponse{Err: data.ErrBadInput},
-		guardListSecretRequest,
-		fName,
+		reqres.SecretListRequest, reqres.SecretListResponse](
+		w, r, reqres.SecretListBadInput, guardListSecretRequest, fName,
 	)
-	alreadyResponded := err != nil
-	if alreadyResponded {
+	if alreadyResponded := err != nil; alreadyResponded {
 		log.Log().Error(fName, "message", "exit", "err", err.Error())
 		return err
 	}
 
 	keys := state.ListKeys()
-	responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
-		reqres.SecretListResponse{Keys: keys}, w,
-	)
-	if err == nil {
-		net.Respond(http.StatusOK, responseBody, w)
-	}
-
-	log.Log().Info(fName, "message", data.ErrSuccess)
+	net.Success(reqres.SecretListResponse{Keys: keys}.Success(), w, fName)
 	return nil
 }

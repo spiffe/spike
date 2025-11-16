@@ -7,13 +7,10 @@ package store
 import (
 	"net/http"
 
-	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	"github.com/spiffe/spike-sdk-go/api/errors"
 	"github.com/spiffe/spike-sdk-go/log"
 	"github.com/spiffe/spike-sdk-go/security/mem"
-	"github.com/spiffe/spike-sdk-go/strings"
-
 	"github.com/spiffe/spike/app/keeper/internal/state"
 	"github.com/spiffe/spike/internal/journal"
 	"github.com/spiffe/spike/internal/net"
@@ -55,7 +52,9 @@ func RouteShard(
 	w http.ResponseWriter, r *http.Request, audit *journal.AuditEntry,
 ) error {
 	const fName = "RouteShard"
+
 	journal.AuditRequest(fName, r, audit, journal.AuditRead)
+
 	_, err := net.ReadParseAndGuard[
 		reqres.ShardGetRequest, reqres.ShardGetResponse,
 	](
@@ -72,29 +71,19 @@ func RouteShard(
 	// Treat the value as "read-only".
 	sh := state.ShardNoSync()
 
-	if err := net.FailIf(
-		mem.Zeroed32(sh),
-		reqres.ShardGetBadInput, w,
-		http.StatusBadRequest, errors.ErrInvalidInput,
-	); err != nil {
-		log.Log().Error(fName, "message", data.ErrBadInput, "err", err.Error())
-		return err
+	if mem.Zeroed32(sh) {
+		return net.Fail(
+			reqres.ShardGetBadInput, w,
+			http.StatusBadRequest, errors.ErrInvalidInput, fName,
+		)
 	}
 
-	responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
-		reqres.ShardGetResponse{Shard: sh}.Success(), w,
+	responseBody := net.SuccessWithResponseBody(
+		reqres.ShardGetResponse{Shard: sh}.Success(), w, fName,
 	)
-	if alreadyResponded := err != nil; !alreadyResponded {
-		net.Respond(http.StatusOK, responseBody, w)
-	}
 	// Security: Reset response body before function exits.
 	defer func() {
 		mem.ClearBytes(responseBody)
 	}()
-	log.Log().Info(
-		fName,
-		"message", data.ErrSuccess,
-		"err", strings.MaybeError(err),
-	)
 	return nil
 }

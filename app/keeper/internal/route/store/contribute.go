@@ -7,7 +7,6 @@ package store
 import (
 	"net/http"
 
-	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	"github.com/spiffe/spike-sdk-go/api/errors"
 	"github.com/spiffe/spike-sdk-go/log"
@@ -62,7 +61,9 @@ func RouteContribute(
 	w http.ResponseWriter, r *http.Request, audit *journal.AuditEntry,
 ) error {
 	const fName = "RouteContribute"
+
 	journal.AuditRequest(fName, r, audit, journal.AuditCreate)
+
 	request, err := net.ReadParseAndGuard[
 		reqres.ShardPutRequest, reqres.ShardPutResponse,
 	](
@@ -74,13 +75,9 @@ func RouteContribute(
 	}
 
 	if request.Shard == nil {
-		log.Log().Error(
-			fName,
-			"message", data.ErrEmptyPayload,
-			"err", errors.ErrInvalidInput.Error(),
-		)
 		return net.Fail(
-			reqres.ShardPutBadInput, w, http.StatusBadRequest, errors.ErrInvalidInput,
+			reqres.ShardPutBadInput, w,
+			http.StatusBadRequest, errors.ErrInvalidInput, fName,
 		)
 	}
 
@@ -94,18 +91,15 @@ func RouteContribute(
 	// indicate invalid input. Since Shard is a fixed-length array in the request,
 	// clients must send meaningful non-zero data.
 	if mem.Zeroed32(request.Shard) {
-		log.Log().Error(
-			fName,
-			"message", data.ErrEmptyPayload,
-			"err", errors.ErrInvalidInput.Error(),
-		)
 		return net.Fail(
-			reqres.ShardPutBadInput, w, http.StatusBadRequest, errors.ErrInvalidInput,
+			reqres.ShardPutBadInput, w,
+			http.StatusBadRequest, errors.ErrInvalidInput, fName,
 		)
 	}
 
 	// `state.SetShard` copies the shard. We can safely reset this one at [1].
 	state.SetShard(request.Shard)
 
-	return net.Success(reqres.ShardPutSuccess, w, fName)
+	net.Success(reqres.ShardPutSuccess, w, fName)
+	return nil
 }

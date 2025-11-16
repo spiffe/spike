@@ -5,10 +5,11 @@
 package secret
 
 import (
+	stdErrs "errors"
 	"net/http"
 
-	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
+	"github.com/spiffe/spike-sdk-go/api/errors"
 	"github.com/spiffe/spike-sdk-go/log"
 
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
@@ -53,17 +54,15 @@ func RouteUndeleteSecret(
 	w http.ResponseWriter, r *http.Request, audit *journal.AuditEntry,
 ) error {
 	const fName = "routeUndeleteSecret"
+
 	journal.AuditRequest(fName, r, audit, journal.AuditUndelete)
+
 	request, err := net.ReadParseAndGuard[
-		reqres.SecretUndeleteRequest,
-		reqres.SecretUndeleteResponse](
-		w, r,
-		reqres.SecretUndeleteResponse{Err: data.ErrBadInput},
-		guardSecretUndeleteRequest,
-		fName,
+		reqres.SecretUndeleteRequest, reqres.SecretUndeleteResponse,
+	](
+		w, r, reqres.SecretUndeleteBadInput, guardSecretUndeleteRequest, fName,
 	)
-	alreadyResponded := err != nil
-	if alreadyResponded {
+	if alreadyResponded := err != nil; alreadyResponded {
 		log.Log().Error(fName, "message", "exit", "err", err.Error())
 		return err
 	}
@@ -76,18 +75,13 @@ func RouteUndeleteSecret(
 
 	err = state.UndeleteSecret(path, versions)
 	if err != nil {
-		log.Log().Error(fName, "message", "Failed to undelete secret", "err", err)
-	} else {
-		log.Log().Info(fName, "message", "Secret undeleted")
+		failErr := stdErrs.Join(errors.ErrUndeleteFailed, err)
+		return net.Fail(
+			reqres.SecretUndeleteInternal, w,
+			http.StatusInternalServerError, failErr, fName,
+		)
 	}
 
-	responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
-		reqres.SecretUndeleteResponse{}, w,
-	)
-	if err == nil {
-		net.Respond(http.StatusOK, responseBody, w)
-	}
-
-	log.Log().Info(fName, "message", data.ErrSuccess)
+	net.Success(reqres.SecretUndeleteSuccess.Success(), w, fName)
 	return nil
 }

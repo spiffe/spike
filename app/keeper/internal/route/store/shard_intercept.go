@@ -32,6 +32,8 @@ import (
 func guardShardGetRequest(
 	_ reqres.ShardGetRequest, w http.ResponseWriter, r *http.Request,
 ) error {
+	const fName = "guardShardGetRequest"
+
 	peerSPIFFEID, err := auth.ExtractPeerSPIFFEID[reqres.ShardGetResponse](
 		r, w, reqres.ShardGetUnauthorized,
 	)
@@ -40,12 +42,11 @@ func guardShardGetRequest(
 	}
 
 	// Only SPIKE Nexus is authorized to retrieve shards from SPIKE Keeper.
-	if err := net.FailIf(
-		!spiffeid.IsNexus(peerSPIFFEID.String()),
-		reqres.ShardGetUnauthorized, w,
-		http.StatusUnauthorized, apiErr.ErrUnauthorized,
-	); err != nil {
-		return err
+	if !spiffeid.IsNexus(peerSPIFFEID.String()) {
+		return net.Fail(
+			reqres.ShardGetUnauthorized, w,
+			http.StatusUnauthorized, apiErr.ErrUnauthorized, fName,
+		)
 	}
 
 	return nil

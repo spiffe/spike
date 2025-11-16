@@ -5,6 +5,7 @@
 package policy
 
 import (
+	stdErrs "errors"
 	"net/http"
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
@@ -41,13 +42,12 @@ import (
 func guardPolicyReadRequest(
 	request reqres.PolicyReadRequest, w http.ResponseWriter, r *http.Request,
 ) error {
-	resUnauthorized := reqres.PolicyReadResponse{Err: data.ErrUnauthorized}
-	resBadInput := reqres.PolicyReadResponse{Err: data.ErrBadInput}
+	const fName = "guardPolicyReadRequest"
 
 	peerSPIFFEID, err := auth.ExtractPeerSPIFFEID[reqres.PolicyReadResponse](
-		r, w, resUnauthorized)
-	alreadyResponded := err != nil
-	if alreadyResponded {
+		r, w, reqres.PolicyReadUnauthorized,
+	)
+	if alreadyResponded := err != nil; alreadyResponded {
 		return err
 	}
 
@@ -55,14 +55,11 @@ func guardPolicyReadRequest(
 
 	err = validation.ValidatePolicyID(policyID)
 	if err != nil {
-		responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
-			resBadInput, w,
+		failErr := stdErrs.Join(apiErr.ErrInvalidInput, err)
+		return net.Fail(
+			reqres.PolicyReadBadInput, w,
+			http.StatusBadRequest, failErr, fName,
 		)
-		alreadyResponded = err != nil
-		if !alreadyResponded {
-			net.Respond(http.StatusBadRequest, responseBody, w)
-		}
-		return apiErr.ErrInvalidInput
 	}
 
 	allowed := state.CheckAccess(
@@ -70,14 +67,10 @@ func guardPolicyReadRequest(
 		[]data.PolicyPermission{data.PermissionRead},
 	)
 	if !allowed {
-		responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
-			resUnauthorized, w,
+		return net.Fail(
+			reqres.PolicyReadUnauthorized, w,
+			http.StatusUnauthorized, apiErr.ErrUnauthorized, fName,
 		)
-		alreadyResponded = err != nil
-		if !alreadyResponded {
-			net.Respond(http.StatusUnauthorized, responseBody, w)
-		}
-		return apiErr.ErrUnauthorized
 	}
 
 	return nil

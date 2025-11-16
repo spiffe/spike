@@ -5,13 +5,13 @@
 package policy
 
 import (
-	"errors"
+	stdErrors "errors"
 	"net/http"
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
+	"github.com/spiffe/spike-sdk-go/api/errors"
 	"github.com/spiffe/spike-sdk-go/log"
-	"github.com/spiffe/spike-sdk-go/strings"
 
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 	"github.com/spiffe/spike/internal/journal"
@@ -84,8 +84,10 @@ import (
 func RouteGetPolicy(
 	w http.ResponseWriter, r *http.Request, audit *journal.AuditEntry,
 ) error {
-	const fName = "routeGetPolicy"
+	const fName = "RouteGetPolicy"
+
 	journal.AuditRequest(fName, r, audit, journal.AuditRead)
+
 	request, err := net.ReadParseAndGuard[
 		reqres.PolicyReadRequest, reqres.PolicyReadResponse](
 		w, r, reqres.PolicyReadBadInput, guardPolicyReadRequest, fName,
@@ -98,56 +100,32 @@ func RouteGetPolicy(
 	policyID := request.ID
 
 	policy, err := state.GetPolicy(policyID)
-	if err == nil {
-		log.Log().Info(fName, "message", "policy found")
-	} else if errors.Is(err, state.ErrPolicyNotFound) {
-		log.Log().Info(fName, "message", "policy not found")
+	policyFound := err == nil
 
-		res := reqres.PolicyReadResponse{Err: data.ErrNotFound}
-		responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(res, w)
-		if alreadyResponded := err != nil; !alreadyResponded {
-			net.Respond(http.StatusNotFound, responseBody, w)
-		}
-		log.Log().Info(
-			fName,
-			"message", "policy not found: returning nil",
-			"err", strings.MaybeError(err),
+	internalError := err != nil && !stdErrors.Is(err, state.ErrPolicyNotFound)
+	if internalError {
+		failErr := stdErrors.Join(errors.ErrQueryFailure, err)
+		return net.Fail(
+			reqres.PolicyReadResponse{Err: data.ErrInternal}, w,
+			http.StatusInternalServerError, failErr, fName,
 		)
-		return nil
+	}
+
+	if policyFound {
+		log.Log().Info(fName, "message", data.ErrFound, "id", policy.ID)
 	} else {
-		// I should not be here, normally.
-
-		log.Log().Info(
-			fName,
-			"message", "failed to retrieve policy", // TODO: consts.
-			"err", err.Error(),
+		log.Log().Info(fName, "message", data.ErrNotFound,
+			"id", policyID, "err", err.Error(),
 		)
-
-		responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
-			reqres.PolicyReadResponse{
-				Err: data.ErrInternal}, w,
-		)
-		if alreadyResponded := err != nil; !alreadyResponded {
-			net.Respond(http.StatusInternalServerError, responseBody, w)
-		}
-		log.Log().Warn(
-			fName,
-			"message", "problem retrieving policy",
-			"err", strings.MaybeError(err),
-		)
-		return err
 	}
 
-	responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
-		reqres.PolicyReadResponse{Policy: policy}, w,
-	)
-	if alreadyResponded := err != nil; !alreadyResponded {
-		net.Respond(http.StatusOK, responseBody, w)
+	if !policyFound {
+		return net.Fail(
+			reqres.PolicyReadNotFound, w,
+			http.StatusNotFound, state.ErrPolicyNotFound, fName,
+		)
 	}
-	log.Log().Info(
-		fName,
-		"message", data.ErrSuccess,
-		"err", strings.MaybeError(err),
-	)
+
+	net.Success(reqres.PolicyReadResponse{Policy: policy}, w, fName)
 	return nil
 }
