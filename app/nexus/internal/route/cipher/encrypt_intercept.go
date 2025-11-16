@@ -7,29 +7,27 @@ package cipher
 import (
 	"net/http"
 
+	"github.com/spiffe/go-spiffe/v2/spiffeid"
+
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	apiErr "github.com/spiffe/spike-sdk-go/api/errors"
-	"github.com/spiffe/spike-sdk-go/config/auth"
-	"github.com/spiffe/spike-sdk-go/spiffe"
-	"github.com/spiffe/spike-sdk-go/spiffeid"
-	"github.com/spiffe/spike-sdk-go/validation"
+	apiAuth "github.com/spiffe/spike-sdk-go/config/auth"
+	sdkSpiffeid "github.com/spiffe/spike-sdk-go/spiffeid"
 
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 	"github.com/spiffe/spike/internal/net"
 )
 
 // guardEncryptCipherRequest validates a cipher encryption request by
-// performing authentication and authorization checks.
+// performing authentication, authorization, and request field validation.
 //
 // This function implements a two-tier authorization model:
 //  1. Lite workloads are automatically granted encryption access
 //  2. Other workloads must have execute permission for the cipher encrypt path
 //
 // The function performs the following validations in order:
-//   - Extracts the SPIFFE ID from the request
-//   - Verifies the SPIFFE ID is not nil
-//   - Validates the SPIFFE ID format
+//   - Validates request fields (future: size limits, format checks, etc.)
 //   - Checks if the peer is a lite workload (automatically allowed)
 //   - If not a lite workload, checks if the peer has execute permission for
 //     the system cipher encrypt path
@@ -38,79 +36,46 @@ import (
 // ResponseWriter and an error is returned.
 //
 // Parameters:
-//   - request: The cipher encryption request (currently unused, reserved for
-//     future validation needs)
+//   - request: The cipher encryption request to validate
+//   - peerSPIFFEID: The already-validated peer SPIFFE ID (pointer)
 //   - w: The HTTP response writer for error responses
-//   - r: The HTTP request containing the peer SPIFFE ID
+//   - r: The HTTP request (for context)
 //
 // Returns:
 //   - nil if all validations pass
-//   - apiErr.ErrUnauthorized if authentication or authorization fails
+//   - apiErr.ErrUnauthorized if authorization fails
+//   - apiErr.ErrBadInput if request validation fails
 func guardEncryptCipherRequest(
-	_ reqres.CipherEncryptRequest, w http.ResponseWriter, r *http.Request,
+	request reqres.CipherEncryptRequest,
+	peerSPIFFEID *spiffeid.ID,
+	w http.ResponseWriter,
+	r *http.Request,
 ) error {
-	sid, err := spiffe.IDFromRequest(r)
-	if err != nil {
-		responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
-			reqres.CipherEncryptResponse{
-				Err: data.ErrUnauthorized,
-			}, w)
-		alreadyResponded := err != nil
-		if !alreadyResponded {
-			net.Respond(http.StatusUnauthorized, responseBody, w)
-		}
-		return apiErr.ErrUnauthorized
-	}
+	const fName = "guardEncryptCipherRequest"
 
-	if sid == nil {
-		responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
-			reqres.CipherEncryptResponse{
-				Err: data.ErrUnauthorized,
-			}, w)
-		alreadyResponded := err != nil
-		if !alreadyResponded {
-			net.Respond(http.StatusUnauthorized, responseBody, w)
-		}
-		return apiErr.ErrUnauthorized
-	}
-
-	err = validation.ValidateSPIFFEID(sid.String())
-	if err != nil {
-		responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
-			reqres.CipherEncryptResponse{
-				Err: data.ErrUnauthorized,
-			}, w)
-		alreadyResponded := err != nil
-		if !alreadyResponded {
-			net.Respond(http.StatusUnauthorized, responseBody, w)
-		}
-		return apiErr.ErrUnauthorized
-	}
+	// TODO: Add request field validation here
+	// For example: validate plaintext size limits, etc.
+	_ = request // Will be used for validation
 
 	// Lite Workloads are always allowed:
 	allowed := false
-	if spiffeid.IsLiteWorkload(sid.String()) {
+	if sdkSpiffeid.IsLiteWorkload(peerSPIFFEID.String()) {
 		allowed = true
 	}
 	// If not, do a policy check to determine if the request is allowed:
 	if !allowed {
 		allowed = state.CheckAccess(
-			sid.String(),
-			auth.PathSystemCipherEncrypt,
+			peerSPIFFEID.String(),
+			apiAuth.PathSystemCipherEncrypt,
 			[]data.PolicyPermission{data.PermissionExecute},
 		)
 	}
 	// If not, block the request:
 	if !allowed {
-		responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
-			reqres.CipherEncryptResponse{
-				Err: data.ErrUnauthorized,
-			}, w)
-		alreadyResponded := err != nil
-		if !alreadyResponded {
-			net.Respond(http.StatusUnauthorized, responseBody, w)
-		}
-		return apiErr.ErrUnauthorized
+		return net.Fail(
+			reqres.CipherEncryptUnauthorized, w,
+			http.StatusUnauthorized, apiErr.ErrUnauthorized, fName,
+		)
 	}
 
 	return nil

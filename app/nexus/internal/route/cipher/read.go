@@ -1,0 +1,151 @@
+//    \\ SPIKE: Secure your secrets with SPIFFE. — https://spike.ist/
+//  \\\\\ Copyright 2024-present SPIKE contributors.
+// \\\\\\\ SPDX-License-Identifier: Apache-2.0
+
+package cipher
+
+import (
+	"crypto/cipher"
+	"fmt"
+	"io"
+	"net/http"
+
+	"github.com/spiffe/spike-sdk-go/api/entity/data"
+	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
+	apiErr "github.com/spiffe/spike-sdk-go/api/errors"
+	"github.com/spiffe/spike-sdk-go/log"
+	"github.com/spiffe/spike/internal/net"
+)
+
+// readJSONDecryptRequestWithoutGuard reads and parses a JSON mode decryption
+// request without performing guard validation.
+//
+// Parameters:
+//   - w: The HTTP response writer for error responses
+//   - r: The HTTP request containing the JSON data
+//
+// Returns:
+//   - reqres.CipherDecryptRequest: The parsed request
+//   - error: An error if reading or parsing fails
+func readJSONDecryptRequestWithoutGuard(
+	w http.ResponseWriter, r *http.Request,
+) (reqres.CipherDecryptRequest, error) {
+	requestBody := net.ReadRequestBody(w, r)
+	if requestBody == nil {
+		return reqres.CipherDecryptRequest{}, apiErr.ErrReadFailure
+	}
+
+	request := net.HandleRequest[
+		reqres.CipherDecryptRequest, reqres.CipherDecryptResponse](
+		requestBody, w,
+		reqres.CipherDecryptResponse{Err: data.ErrBadInput},
+	)
+	if request == nil {
+		return reqres.CipherDecryptRequest{}, apiErr.ErrParseFailure
+	}
+
+	return *request, nil
+}
+
+// readStreamingDecryptRequestData reads the binary data from a streaming mode
+// decryption request (version, nonce, ciphertext).
+//
+// This function does NOT perform authentication - the caller must have already
+// called the guard function.
+//
+// The streaming format is: version byte + nonce + ciphertext
+//
+// Parameters:
+//   - w: The HTTP response writer for error responses
+//   - r: The HTTP request containing the binary data
+//   - c: The cipher to determine nonce size
+//
+// Returns:
+//   - version: The protocol version byte
+//   - nonce: The nonce bytes
+//   - ciphertext: The encrypted data
+//   - error: An error if reading fails
+func readStreamingDecryptRequestData(
+	w http.ResponseWriter, r *http.Request, c cipher.AEAD,
+) (byte, []byte, []byte, error) {
+	const fName = "readStreamingDecryptRequestData"
+
+	// Read version byte
+	ver := make([]byte, 1)
+	n, err := io.ReadFull(r.Body, ver)
+	if err != nil || n != 1 {
+		log.Log().Debug(fName, "message", "Failed to read version")
+		http.Error(w, "failed to read version", http.StatusBadRequest)
+		return 0, nil, nil, fmt.Errorf("failed to read version")
+	}
+	version := ver[0]
+
+	// Read nonce
+	bytesToRead := c.NonceSize()
+	nonce := make([]byte, bytesToRead)
+	n, err = io.ReadFull(r.Body, nonce)
+	if err != nil || n != bytesToRead {
+		log.Log().Debug(fName, "message", "Failed to read nonce")
+		http.Error(w, "failed to read nonce", http.StatusBadRequest)
+		return 0, nil, nil, fmt.Errorf("failed to read nonce")
+	}
+
+	// Read the remaining body as ciphertext
+	ciphertext := net.ReadRequestBody(w, r)
+	if ciphertext == nil {
+		return 0, nil, nil, apiErr.ErrReadFailure
+	}
+
+	return version, nonce, ciphertext, nil
+}
+
+// readStreamingEncryptRequestWithoutGuard reads a streaming mode encryption
+// request without performing guard validation.
+//
+// Parameters:
+//   - w: The HTTP response writer for error responses
+//   - r: The HTTP request containing the binary data
+//
+// Returns:
+//   - plaintext: The plaintext data to encrypt
+//   - error: An error if reading fails
+func readStreamingEncryptRequestWithoutGuard(
+	w http.ResponseWriter, r *http.Request,
+) ([]byte, error) {
+	plaintext := net.ReadRequestBody(w, r)
+	if plaintext == nil {
+		return nil, apiErr.ErrReadFailure
+	}
+
+	return plaintext, nil
+}
+
+// readJSONEncryptRequestWithoutGuard reads and parses a JSON mode encryption
+// request without performing guard validation.
+//
+// Parameters:
+//   - w: The HTTP response writer for error responses
+//   - r: The HTTP request containing the JSON data
+//
+// Returns:
+//   - reqres.CipherEncryptRequest: The parsed request
+//   - error: An error if reading or parsing fails
+func readJSONEncryptRequestWithoutGuard(
+	w http.ResponseWriter, r *http.Request,
+) (reqres.CipherEncryptRequest, error) {
+	requestBody := net.ReadRequestBody(w, r)
+	if requestBody == nil {
+		return reqres.CipherEncryptRequest{}, apiErr.ErrReadFailure
+	}
+
+	request := net.HandleRequest[
+		reqres.CipherEncryptRequest, reqres.CipherEncryptResponse](
+		requestBody, w,
+		reqres.CipherEncryptResponse{Err: data.ErrBadInput},
+	)
+	if request == nil {
+		return reqres.CipherEncryptRequest{}, apiErr.ErrParseFailure
+	}
+
+	return *request, nil
+}
