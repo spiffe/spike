@@ -7,12 +7,13 @@ package bootstrap
 import (
 	"crypto/sha256"
 	"encoding/hex"
-	"fmt"
 	"net/http"
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
+	"github.com/spiffe/spike-sdk-go/api/errors"
 	"github.com/spiffe/spike-sdk-go/log"
+
 	"github.com/spiffe/spike/app/nexus/internal/state/persist"
 	"github.com/spiffe/spike/internal/journal"
 	"github.com/spiffe/spike/internal/net"
@@ -57,17 +58,14 @@ func RouteVerify(
 	w http.ResponseWriter, r *http.Request, audit *journal.AuditEntry,
 ) error {
 	const fName = "routeVerify"
+
 	journal.AuditRequest(fName, r, audit, journal.AuditCreate)
+
 	request, err := net.ReadParseAndGuard[
-		reqres.BootstrapVerifyRequest,
-		reqres.BootstrapVerifyResponse](
-		w, r,
-		reqres.BootstrapVerifyResponse{Err: data.ErrBadInput},
-		guardVerifyRequest,
-		fName,
+		reqres.BootstrapVerifyRequest, reqres.BootstrapVerifyResponse](
+		w, r, reqres.BootstrapBadInput, guardVerifyRequest, fName,
 	)
-	alreadyResponded := err != nil
-	if alreadyResponded {
+	if alreadyResponded := err != nil; alreadyResponded {
 		log.Log().Error(fName, "message", "exit", "err", err.Error())
 		return err
 	}
@@ -75,51 +73,37 @@ func RouteVerify(
 	// Get cipher from the backend
 	c := persist.Backend().GetCipher()
 	if c == nil {
-		log.Log().Error(fName, "message", "cipher not available")
-		responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
-			reqres.BootstrapVerifyResponse{
-				Err: data.ErrInternal,
-			}, w)
-		if err == nil {
-			net.Respond(http.StatusInternalServerError, responseBody, w)
-		}
-		// TODO: this needs to come from a symbolic constant.
-		return fmt.Errorf("cipher not available")
+		return net.Fail(
+			reqres.BootstrapBadInput, w, http.StatusInternalServerError,
+			errors.ErrCryptoCipherNotAvailable, fName,
+		)
 	}
 
 	// Decrypt the ciphertext
 	plaintext, err := c.Open(nil, request.Nonce, request.Ciphertext, nil)
 	if err != nil {
-		log.Log().Error(fName, "message", "decryption failed", "err",
-			err.Error())
-		responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
-			reqres.BootstrapVerifyResponse{
-				Err: data.ErrInternal,
-			}, w)
-		if err == nil {
-			net.Respond(http.StatusInternalServerError, responseBody, w)
-		}
-
-		// TODO: needs to come from a symbolic constant.
-		return fmt.Errorf("decryption failed: %w", err)
+		return net.Fail(
+			reqres.BootstrapInternal, w, http.StatusInternalServerError,
+			errors.ErrCryptoDecryptionFailed, fName,
+		)
 	}
 
 	// Compute SHA-256 hash of plaintext
 	hash := sha256.Sum256(plaintext)
 	hashHex := hex.EncodeToString(hash[:])
 
-	log.Log().Info(fName, "message", "verification successful",
-		"plaintext_len", len(plaintext), "hash", hashHex)
+	log.Log().Info(
+		fName,
+		"message", data.ErrCryptoCipherVerificationSuccess,
+		"plaintext_len", len(plaintext),
+		"hash_hex", hashHex,
+	)
 
-	responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
+	net.Success(
 		reqres.BootstrapVerifyResponse{
 			Hash: hashHex,
 			Err:  data.ErrSuccess,
-		}, w)
-	if err == nil {
-		net.Respond(http.StatusOK, responseBody, w)
-	}
-
-	log.Log().Info(fName, "message", data.ErrSuccess)
+		}.Success(), w, fName,
+	)
 	return nil
 }

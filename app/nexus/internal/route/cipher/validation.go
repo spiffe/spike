@@ -5,89 +5,106 @@
 package cipher
 
 import (
-	"crypto/cipher"
 	"fmt"
 	"net/http"
 
-	"github.com/spiffe/spike-sdk-go/api/entity/data"
-	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
+	apiErr "github.com/spiffe/spike-sdk-go/api/errors"
+
 	"github.com/spiffe/spike/internal/net"
 )
 
-// validateStreamingDecryptData validates the version and nonce size for
-// streaming mode decryption requests.
-//
-// If validation fails, this function sends an appropriate HTTP error response
-// and returns an error.
+// validateVersion validates that the protocol version is supported.
 //
 // Parameters:
 //   - version: The protocol version byte to validate
-//   - nonce: The nonce bytes to validate
-//   - c: The cipher to determine expected nonce size
 //   - w: The HTTP response writer for error responses
+//   - errorResponse: The error response to send on failure
+//   - fName: The function name for logging
 //
 // Returns:
-//   - nil if all validations pass
-//   - error if the version is unsupported or nonce size is invalid
-func validateStreamingDecryptData(
-	version byte, nonce []byte, c cipher.AEAD, w http.ResponseWriter,
+//   - nil if the version is valid
+//   - error if the version is unsupported
+func validateVersion[T any](
+	version byte, w http.ResponseWriter, errorResponse T, fName string,
 ) error {
 	if version != spikeCipherVersion {
-		http.Error(w, "unsupported version", http.StatusBadRequest)
-		return fmt.Errorf("unsupported version: %v", version)
-	}
-
-	if len(nonce) != c.NonceSize() {
-		http.Error(w, "invalid nonce size", http.StatusBadRequest)
-		return fmt.Errorf(
-			"invalid nonce size: expected %d, got %d",
-			c.NonceSize(), len(nonce),
+		return net.Fail(
+			errorResponse, w,
+			http.StatusBadRequest,
+			fmt.Errorf("unsupported version: %v", version),
+			fName,
 		)
 	}
-
 	return nil
 }
 
-// validateJSONDecryptData validates the version and nonce size for JSON mode
-// decryption requests.
-//
-// If validation fails, this function sends an appropriate JSON error response
-// and returns an error.
+// validateNonceSize validates that the nonce is exactly the expected size.
 //
 // Parameters:
-//   - version: The protocol version byte to validate
 //   - nonce: The nonce bytes to validate
-//   - c: The cipher to determine expected nonce size
 //   - w: The HTTP response writer for error responses
+//   - errorResponse: The error response to send on failure
+//   - fName: The function name for logging
 //
 // Returns:
-//   - nil if all validations pass
-//   - error if version is unsupported or nonce size is invalid
-func validateJSONDecryptData(
-	version byte, nonce []byte, c cipher.AEAD, w http.ResponseWriter,
+//   - nil if the nonce size is valid
+//   - error if the nonce size is invalid
+func validateNonceSize[T any](
+	nonce []byte, w http.ResponseWriter, errorResponse T, fName string,
 ) error {
-	if version != spikeCipherVersion {
+	if len(nonce) != expectedNonceSize {
 		return net.Fail(
-			reqres.CipherDecryptResponse{Err: data.ErrBadInput},
-			w,
-			http.StatusBadRequest,
-			fmt.Errorf("unsupported version: %v", version),
-			"",
+			errorResponse, w,
+			http.StatusBadRequest, apiErr.ErrInvalidInput, fName,
 		)
 	}
+	return nil
+}
 
-	if len(nonce) != c.NonceSize() {
+// validateCiphertextSize validates that the ciphertext does not exceed the
+// maximum allowed size.
+//
+// Parameters:
+//   - ciphertext: The ciphertext bytes to validate
+//   - w: The HTTP response writer for error responses
+//   - errorResponse: The error response to send on failure
+//   - fName: The function name for logging
+//
+// Returns:
+//   - nil if the ciphertext size is valid
+//   - error if the ciphertext is too large
+func validateCiphertextSize[T any](
+	ciphertext []byte, w http.ResponseWriter, errorResponse T, fName string,
+) error {
+	if len(ciphertext) > maxCiphertextSize {
 		return net.Fail(
-			reqres.CipherDecryptResponse{Err: data.ErrBadInput},
-			w,
-			http.StatusBadRequest,
-			fmt.Errorf(
-				"invalid nonce size: expected %d, got %d",
-				c.NonceSize(), len(nonce),
-			),
-			"",
+			errorResponse, w,
+			http.StatusBadRequest, apiErr.ErrInvalidInput, fName,
 		)
 	}
+	return nil
+}
 
+// validatePlaintextSize validates that the plaintext does not exceed the
+// maximum allowed size.
+//
+// Parameters:
+//   - plaintext: The plaintext bytes to validate
+//   - w: The HTTP response writer for error responses
+//   - errorResponse: The error response to send on failure
+//   - fName: The function name for logging
+//
+// Returns:
+//   - nil if the plaintext size is valid
+//   - error if the plaintext is too large
+func validatePlaintextSize[T any](
+	plaintext []byte, w http.ResponseWriter, errorResponse T, fName string,
+) error {
+	if len(plaintext) > maxPlaintextSize {
+		return net.Fail(
+			errorResponse, w,
+			http.StatusBadRequest, apiErr.ErrInvalidInput, fName,
+		)
+	}
 	return nil
 }

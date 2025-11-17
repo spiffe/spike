@@ -6,11 +6,11 @@ package recovery
 
 import (
 	"context"
-	"errors"
 	"math/big"
 	"time"
 
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
+	"github.com/spiffe/spike-sdk-go/api/errors"
 	"github.com/spiffe/spike-sdk-go/config/env"
 	"github.com/spiffe/spike-sdk-go/crypto"
 	"github.com/spiffe/spike-sdk-go/log"
@@ -19,11 +19,6 @@ import (
 	"github.com/spiffe/spike-sdk-go/spiffe"
 
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
-)
-
-var (
-	// TODO: To SDK.
-	ErrRecoveryRetry = errors.New("recovery failed: retrying")
 )
 
 // InitializeBackingStoreFromKeepers iterates through keepers until
@@ -85,7 +80,7 @@ func InitializeBackingStoreFromKeepers(source *workloadapi.X509Source) {
 			"message", "initialization unsuccessful: will retry",
 			"keepers_so_far", len(successfulKeeperShards),
 		)
-		return false, ErrRecoveryRetry
+		return false, errors.ErrRecoveryRetryFailed
 	})
 
 	// This should never happen since the above loop retries forever:

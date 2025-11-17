@@ -7,7 +7,6 @@ package bootstrap
 import (
 	"net/http"
 
-	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	apiErr "github.com/spiffe/spike-sdk-go/api/errors"
 	"github.com/spiffe/spike-sdk-go/spiffeid"
@@ -15,6 +14,14 @@ import (
 
 	"github.com/spiffe/spike/internal/net"
 )
+
+// (AES-GCM standard nonce is 12 bytes)
+const expectedNonceSize = 12
+
+// Limit cipherText size to prevent DoS attacks
+// The maximum possible size is 68,719,476,704
+// The limit comes from GCM's 32-bit counter.
+const maxCiphertextSize = 65536
 
 // guardVerifyRequest validates a bootstrap verification request by performing
 // authentication and input validation checks.
@@ -46,53 +53,34 @@ import (
 func guardVerifyRequest(
 	request reqres.BootstrapVerifyRequest, w http.ResponseWriter, r *http.Request,
 ) error {
+	const fName = "guardVerifyRequest"
+
 	peerSPIFFEID, err := auth.ExtractPeerSPIFFEID[reqres.BootstrapVerifyResponse](
-		r, w, reqres.BootstrapVerifyResponse{
-			Err: data.ErrUnauthorized,
-		})
-	alreadyResponded := err != nil
-	if alreadyResponded {
+		r, w, reqres.BootstrapUnauthorized,
+	)
+	if alreadyResponded := err != nil; alreadyResponded {
 		return err
 	}
 
 	if !spiffeid.IsBootstrap(peerSPIFFEID.String()) {
-		responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
-			reqres.BootstrapVerifyResponse{
-				Err: data.ErrUnauthorized,
-			}, w)
-		alreadyResponded = err != nil
-		if !alreadyResponded {
-			net.Respond(http.StatusUnauthorized, responseBody, w)
-		}
-		return apiErr.ErrUnauthorized
+		return net.Fail(
+			reqres.BootstrapUnauthorized, w, http.StatusUnauthorized,
+			apiErr.ErrUnauthorized, fName,
+		)
 	}
 
-	// Validate nonce size (AES-GCM standard nonce is 12 bytes)
-	const expectedNonceSize = 12 // TODO: to constants.
 	if len(request.Nonce) != expectedNonceSize {
-		responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
-			reqres.BootstrapVerifyResponse{
-				Err: data.ErrBadInput,
-			}, w)
-		alreadyResponded = err != nil
-		if !alreadyResponded {
-			net.Respond(http.StatusBadRequest, responseBody, w)
-		}
-		return apiErr.ErrInvalidInput
+		return net.Fail(
+			reqres.BootstrapBadInput, w, http.StatusBadRequest,
+			apiErr.ErrInvalidInput, fName,
+		)
 	}
 
-	// Validate ciphertext size to prevent DoS attacks
-	const maxCiphertextSize = 1024 // TODO: to constants.
 	if len(request.Ciphertext) > maxCiphertextSize {
-		responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
-			reqres.BootstrapVerifyResponse{
-				Err: data.ErrBadInput,
-			}, w)
-		alreadyResponded = err != nil
-		if !alreadyResponded {
-			net.Respond(http.StatusBadRequest, responseBody, w)
-		}
-		return apiErr.ErrInvalidInput
+		return net.Fail(
+			reqres.BootstrapBadInput, w, http.StatusBadRequest,
+			apiErr.ErrInvalidInput, fName,
+		)
 	}
 
 	return nil

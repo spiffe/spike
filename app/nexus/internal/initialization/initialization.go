@@ -61,11 +61,13 @@ func Initialize(source *workloadapi.X509Source) {
 	devMode := env.BackendStoreTypeVal() == env.Memory
 
 	if devMode {
-		log.Log().Warn(fName, "message", "In-memory store will be used.")
-		log.Log().Warn(fName, "message", "Will not use SPIKE Keepers.")
-		log.Log().Warn(fName,
+		log.Log().Warn(fName, "message", "in-memory store will be used")
+		log.Log().Warn(fName, "message", "will not use SPIKE Keepers")
+		log.Log().Warn(
+			fName,
 			"message",
-			"This mode is NOT recommended for production use.")
+			"this mode is NOT recommended for production use",
+		)
 
 		// `nil` will skip root key initialization and simply initializes an
 		// in-memory backing store.
@@ -76,8 +78,10 @@ func Initialize(source *workloadapi.X509Source) {
 	// Unknown store type.
 	// Better to crash, since this is likely a configuration failure.
 	log.FatalLn(
-		fName, "message",
-		"Invalid backend store type: '"+env.BackendStoreTypeVal()+"'."+
-			" Please set SPIKE_BACKEND_STORE_TYPE to 'sqlite', 'lite', or 'memory'.",
+		fName,
+		"message",
+		"invalid backend store type",
+		"type", env.BackendStoreTypeVal(),
+		"valid_types", "sqlite, lite, memory",
 	)
 }

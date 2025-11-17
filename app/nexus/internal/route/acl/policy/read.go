@@ -114,8 +114,11 @@ func RouteGetPolicy(
 	if policyFound {
 		log.Log().Info(fName, "message", data.ErrFound, "id", policy.ID)
 	} else {
-		log.Log().Info(fName, "message", data.ErrNotFound,
-			"id", policyID, "err", err.Error(),
+		log.Log().Info(
+			fName,
+			"message", data.ErrNotFound,
+			"id", policyID,
+			"err", err.Error(),
 		)
 	}
 

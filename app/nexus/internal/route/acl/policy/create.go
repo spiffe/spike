@@ -7,7 +7,6 @@ package policy
 import (
 	stdErrs "errors"
 	"net/http"
-	"time"
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
@@ -83,13 +82,10 @@ func RoutePutPolicy(
 	permissions := request.Permissions
 
 	policy, err := state.CreatePolicy(data.Policy{
-		ID:              "",
 		Name:            name,
 		SPIFFEIDPattern: SPIFFEIDPattern,
 		PathPattern:     pathPattern,
 		Permissions:     permissions,
-		CreatedAt:       time.Time{},
-		CreatedBy:       "",
 	})
 	if err != nil {
 		failErr := stdErrs.Join(errors.ErrCreationFailed, err)

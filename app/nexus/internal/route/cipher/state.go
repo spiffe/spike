@@ -30,13 +30,15 @@ func getCipherOrFailStreaming(
 	w http.ResponseWriter,
 ) (cipher.AEAD, error) {
 	c := persist.Backend().GetCipher()
+
 	if c == nil {
 		http.Error(
 			w, string(data.ErrCryptoCipherNotAvailable),
 			http.StatusInternalServerError,
 		)
-		return nil, errors.ErrCipherNotAvailable
+		return nil, errors.ErrCryptoCipherNotAvailable
 	}
+
 	return c, nil
 }
 
@@ -62,9 +64,10 @@ func getCipherOrFailJSON[T any](
 		return nil, net.Fail(
 			errorResponse, w,
 			http.StatusInternalServerError,
-			errors.ErrCipherNotAvailable,
+			errors.ErrCryptoCipherNotAvailable,
 			fName,
 		)
 	}
+
 	return c, nil
 }

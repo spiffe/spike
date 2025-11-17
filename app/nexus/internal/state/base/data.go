@@ -7,6 +7,7 @@ package base
 import (
 	"sync"
 
+	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/crypto"
 	"github.com/spiffe/spike-sdk-go/security/mem"
 
@@ -77,15 +78,16 @@ func RootKeyZero() bool {
 //   - rk: Pointer to a 32-byte array containing the new root key value
 func SetRootKey(rk *[crypto.AES256KeySize]byte) {
 	fName := "SetRootKey"
-	log.Log().Info(fName, "message", "Setting root key")
+
+	log.Log().Info(fName, "message", "setting root key")
 
 	if rk == nil {
-		log.Log().Warn(fName, "message", "Root key is nil. Skipping update.")
+		log.Log().Warn(fName, "message", data.ErrRootKeyEmpty)
 		return
 	}
 
 	if mem.Zeroed32(rk) {
-		log.Log().Warn(fName, "message", "Root key is zeroed. Skipping update.")
+		log.Log().Warn(fName, "message", data.ErrRootKeyEmpty)
 		return
 	}
 
@@ -96,5 +98,5 @@ func SetRootKey(rk *[crypto.AES256KeySize]byte) {
 		rootKey[i] = rk[i]
 	}
 
-	log.Log().Info(fName, "message", "Root key set")
+	log.Log().Info(fName, "message", "root key set")
 }

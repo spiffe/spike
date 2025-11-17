@@ -9,6 +9,7 @@ import (
 	"crypto/cipher"
 	"crypto/rand"
 
+	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/config/env"
 	"github.com/spiffe/spike-sdk-go/crypto"
 	"github.com/spiffe/spike-sdk-go/log"
@@ -62,10 +63,13 @@ func createCipher() cipher.AEAD {
 // Note: This function modifies the package-level be variable. Later calls
 // will reinitialize the backend, potentially losing any existing state.
 func InitializeBackend(rootKey *[crypto.AES256KeySize]byte) {
-	const fName = "initializeBackend"
+	const fName = "InitializeBackend"
 
-	log.Log().Info(fName,
-		"message", "Initializing backend", "storeType", env.BackendStoreTypeVal())
+	log.Log().Info(
+		fName,
+		"message", "initializing backend",
+		"storeType", env.BackendStoreTypeVal(),
+	)
 
 	// Root key is not needed, nor used in in-memory stores.
 	// For in-memory stores, ensure that it is always nil, as the alternative
@@ -75,22 +79,25 @@ func InitializeBackend(rootKey *[crypto.AES256KeySize]byte) {
 	if env.BackendStoreTypeVal() == env.Memory {
 		if rootKey != nil {
 			log.FatalLn(fName,
-				"message", "In-memory store can only be initialized with nil root key",
-				"err", "root key is not nil",
+				"message", data.ErrInitializationFailed,
+				"store_type", env.BackendStoreTypeVal(),
+				"err", data.ErrRootKeyNotEmpty,
 			)
 		}
 	} else {
 		if rootKey == nil {
 			log.FatalLn(fName,
-				"message", "Failed to initialize backend",
-				"err", "root key is nil",
+				"message", data.ErrInitializationFailed,
+				"store_type", env.BackendStoreTypeVal(),
+				"err", data.ErrRootKeyEmpty,
 			)
 		}
 
 		if mem.Zeroed32(rootKey) {
 			log.FatalLn(fName,
-				"message", "Failed to initialize backend",
-				"err", "root key is all zeroes",
+				"message", data.ErrInitializationFailed,
+				"store_type", env.BackendStoreTypeVal(),
+				"err", data.ErrRootKeyEmpty,
 			)
 		}
 	}
@@ -112,6 +119,6 @@ func InitializeBackend(rootKey *[crypto.AES256KeySize]byte) {
 	}
 
 	log.Log().Info(
-		fName, "message", "Backend initialized", "storeType", storeType,
+		fName, "message", "backend initialized", "storeType", storeType,
 	)
 }

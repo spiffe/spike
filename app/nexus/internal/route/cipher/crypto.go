@@ -7,131 +7,197 @@ package cipher
 import (
 	"crypto/cipher"
 	"crypto/rand"
+	stdErrors "errors"
 	"fmt"
 	"io"
 	"net/http"
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
+	"github.com/spiffe/spike-sdk-go/api/errors"
 	"github.com/spiffe/spike-sdk-go/log"
+
 	"github.com/spiffe/spike/internal/net"
 )
 
-// decryptData performs the actual decryption operation and handles errors
-// appropriately based on the request mode.
+// decryptDataStreaming performs decryption for streaming mode requests.
 //
 // Parameters:
 //   - nonce: The nonce bytes
 //   - ciphertext: The encrypted data
 //   - c: The cipher to use for decryption
 //   - w: The HTTP response writer for error responses
-//   - streamModeActive: Whether the request is in streaming mode
 //   - fName: The function name for logging
 //
 // Returns:
 //   - plaintext: The decrypted data if successful
 //   - error: An error if decryption fails
-func decryptData(
+func decryptDataStreaming(
 	nonce, ciphertext []byte, c cipher.AEAD, w http.ResponseWriter,
-	streamModeActive bool, fName string,
+	fName string,
 ) ([]byte, error) {
-	log.Log().Info(fName, "message",
-		fmt.Sprintf("Decrypt %d %d", len(nonce), len(ciphertext)),
+	log.Log().Info(
+		fName,
+		"message", "decrypt",
+		"len_nonce", len(nonce),
+		"len_ciphertext", len(ciphertext),
 	)
 
 	plaintext, err := c.Open(nil, nonce, ciphertext, nil)
 	if err != nil {
-		if streamModeActive {
-			http.Error(w, "decryption failed", http.StatusBadRequest)
-			return nil, fmt.Errorf("decryption failed: %w", err)
-		}
+		http.Error(w, "decryption failed", http.StatusBadRequest)
+		return nil, fmt.Errorf("decryption failed: %w", err)
+	}
+
+	return plaintext, nil
+}
+
+// decryptDataJSON performs decryption for JSON mode requests.
+//
+// Parameters:
+//   - nonce: The nonce bytes
+//   - ciphertext: The encrypted data
+//   - c: The cipher to use for decryption
+//   - w: The HTTP response writer for error responses
+//   - fName: The function name for logging
+//
+// Returns:
+//   - plaintext: The decrypted data if successful
+//   - error: An error if decryption fails
+func decryptDataJSON(
+	nonce, ciphertext []byte, c cipher.AEAD, w http.ResponseWriter,
+	fName string,
+) ([]byte, error) {
+	log.Log().Info(
+		fName,
+		"message", "decrypt",
+		"len_nonce", len(nonce),
+		"len_ciphertext", len(ciphertext),
+	)
+
+	plaintext, err := c.Open(nil, nonce, ciphertext, nil)
+	if err != nil {
+		failErr := stdErrors.Join(errors.ErrCryptoDecryptionFailed, err)
 		return nil, net.Fail(
-			reqres.CipherDecryptResponse{Err: data.ErrInternal},
-			w,
-			http.StatusInternalServerError,
-			fmt.Errorf("decryption failed: %w", err),
-			fName,
+			reqres.CipherDecryptInternal, w, http.StatusInternalServerError,
+			failErr, fName,
 		)
 	}
 
 	return plaintext, nil
 }
 
-// generateNonceOrFail generates a cryptographically secure random nonce and
-// handles errors appropriately based on the request mode.
-//
-// If nonce generation fails, the function sends an appropriate error response
-// to the client based on whether streaming mode is active:
-//   - Streaming mode: Sends plain HTTP error
-//   - JSON mode: Sends structured JSON error response
+// generateNonceOrFailStreaming generates a cryptographically secure random
+// nonce for streaming mode requests.
 //
 // Parameters:
 //   - c: The cipher to determine nonce size
 //   - w: The HTTP response writer for error responses
-//   - streamModeActive: Whether the request is in streaming mode
-//   - errorResponse: The error response to send in JSON mode
 //
 // Returns:
 //   - nonce: The generated nonce bytes if successful
 //   - error: An error if nonce generation fails
-func generateNonceOrFail[T any](
+func generateNonceOrFailStreaming(
 	c cipher.AEAD, w http.ResponseWriter,
-	streamModeActive bool, errorResponse T,
 ) ([]byte, error) {
 	nonce := make([]byte, c.NonceSize())
 	if _, err := io.ReadFull(rand.Reader, nonce); err != nil {
-		if streamModeActive {
-			http.Error(
-				w, "failed to generate nonce",
-				http.StatusInternalServerError,
-			)
-			return nil, fmt.Errorf("failed to generate nonce: %w", err)
-		}
-
-		return nil, net.Fail(
-			errorResponse,
-			w,
+		failErr := stdErrors.Join(errors.ErrCryptoNonceGenerationFailed, err)
+		http.Error(
+			w, string(data.ErrCryptoNonceGenerationFailed),
 			http.StatusInternalServerError,
-			fmt.Errorf("failed to generate nonce: %w", err),
-			"",
+		)
+		return nil, failErr
+	}
+
+	return nonce, nil
+}
+
+// generateNonceOrFailJSON generates a cryptographically secure random nonce
+// for JSON mode requests.
+//
+// Parameters:
+//   - c: The cipher to determine nonce size
+//   - w: The HTTP response writer for error responses
+//   - errorResponse: The error response to send on failure
+//
+// Returns:
+//   - nonce: The generated nonce bytes if successful
+//   - error: An error if nonce generation fails
+func generateNonceOrFailJSON[T any](
+	c cipher.AEAD, w http.ResponseWriter, errorResponse T,
+) ([]byte, error) {
+	const fName = "generateNonceOrFailJSON"
+
+	nonce := make([]byte, c.NonceSize())
+	if _, err := io.ReadFull(rand.Reader, nonce); err != nil {
+		failErr := stdErrors.Join(errors.ErrCryptoNonceGenerationFailed, err)
+		return nil, net.Fail(
+			errorResponse, w, http.StatusInternalServerError, failErr, fName,
 		)
 	}
 
 	return nonce, nil
 }
 
-// encryptData generates a nonce, performs the actual encryption operation,
-// and returns the nonce and ciphertext.
+// encryptDataStreaming generates a nonce, performs encryption, and returns
+// the nonce and ciphertext for streaming mode requests.
 //
 // Parameters:
 //   - plaintext: The data to encrypt
 //   - c: The cipher to use for encryption
 //   - w: The HTTP response writer for error responses
-//   - streamModeActive: Whether the request is in streaming mode
 //   - fName: The function name for logging
 //
 // Returns:
 //   - nonce: The generated nonce bytes
 //   - ciphertext: The encrypted data
 //   - error: An error if nonce generation fails
-func encryptData(
-	plaintext []byte, c cipher.AEAD, w http.ResponseWriter,
-	streamModeActive bool, fName string,
+func encryptDataStreaming(
+	plaintext []byte, c cipher.AEAD, w http.ResponseWriter, fName string,
 ) ([]byte, []byte, error) {
-	nonce, err := generateNonceOrFail(
-		c, w, streamModeActive,
-		reqres.CipherEncryptResponse{Err: data.ErrInternal},
-	)
+	nonce, err := generateNonceOrFailStreaming(c, w)
 	if err != nil {
 		return nil, nil, err
 	}
 
 	log.Log().Info(
 		fName,
-		"message",
-		fmt.Sprintf("encrypt %d %d", len(nonce), len(plaintext)),
+		"message", "encrypt",
+		"len_nonce", len(nonce),
+		"len_plaintext", len(plaintext),
 	)
 	ciphertext := c.Seal(nil, nonce, plaintext, nil)
+	return nonce, ciphertext, nil
+}
 
+// encryptDataJSON generates a nonce, performs encryption, and returns the
+// nonce and ciphertext for JSON mode requests.
+//
+// Parameters:
+//   - plaintext: The data to encrypt
+//   - c: The cipher to use for encryption
+//   - w: The HTTP response writer for error responses
+//   - fName: The function name for logging
+//
+// Returns:
+//   - nonce: The generated nonce bytes
+//   - ciphertext: The encrypted data
+//   - error: An error if nonce generation fails
+func encryptDataJSON(
+	plaintext []byte, c cipher.AEAD, w http.ResponseWriter, fName string,
+) ([]byte, []byte, error) {
+	nonce, err := generateNonceOrFailJSON(c, w, reqres.CipherEncryptInternal)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	log.Log().Info(
+		fName,
+		"message", "encrypt",
+		"len_nonce", len(nonce),
+		"len_plaintext", len(plaintext),
+	)
+	ciphertext := c.Seal(nil, nonce, plaintext, nil)
 	return nonce, ciphertext, nil
 }

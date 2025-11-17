@@ -37,11 +37,14 @@ type Options struct {
 	ConnMaxLifetime time.Duration
 }
 
+const spikeDataFolderName = ".spike"
+const spikeDbName = "spike.db"
+
 // DefaultOptions returns the default SQLite options
 func DefaultOptions() *Options {
 	return &Options{
-		DataDir:         ".data",
-		DatabaseFile:    "spike.db",
+		DataDir:         spikeDataFolderName,
+		DatabaseFile:    spikeDbName,
 		JournalMode:     env.DatabaseJournalModeVal(),
 		BusyTimeoutMs:   env.DatabaseBusyTimeoutMsVal(),
 		MaxOpenConns:    env.DatabaseMaxOpenConnsVal(),

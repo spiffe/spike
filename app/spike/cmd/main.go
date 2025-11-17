@@ -6,9 +6,12 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 
+	"github.com/spiffe/spike-sdk-go/api/entity/data"
+	sdkErrors "github.com/spiffe/spike-sdk-go/api/errors"
 	"github.com/spiffe/spike-sdk-go/config/env"
 	"github.com/spiffe/spike-sdk-go/log"
 	"github.com/spiffe/spike-sdk-go/security/mem"
@@ -36,7 +39,19 @@ Consider disabling swap to enhance security.
 
 	source, SPIFFEID, err := spiffe.Source(ctx, spiffe.EndpointSocket())
 	if err != nil {
-		log.FatalLn(appName, "message", "failed to get source", "err", err.Error())
+		failErr := errors.Join(sdkErrors.ErrInitializationFailed, err)
+		msg := "unknown error"
+		// ^ This should never remain as is, unless
+		// sdkErrors.ErrInitializationFailed is set to nil in the SDK
+		// --defensive coding.
+		if failErr != nil {
+			msg = failErr.Error()
+		}
+		log.FatalLn(
+			appName,
+			"message", data.ErrInitializationFailed,
+			"err", msg,
+		)
 	}
 	defer spiffe.CloseSource(source)
 

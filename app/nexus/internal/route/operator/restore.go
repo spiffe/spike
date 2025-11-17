@@ -145,7 +145,7 @@ func RouteRestore(
 				ShardsRemaining: env.ShamirThresholdVal() - currentShardCount,
 				Restored:        currentShardCount == env.ShamirThresholdVal(),
 			},
-		}, w, fName,
+		}.Success(), w, fName,
 	)
 	return nil
 }

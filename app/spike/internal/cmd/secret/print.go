@@ -8,13 +8,41 @@ import (
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 )
 
-// formatTime formats a time.Time object into a readable string.
-// The format used is "2006-01-02 15:04:05 MST".
+// formatTime formats a time.Time value into a human-readable string using
+// the format "2006-01-02 15:04:05 MST" (date, time, and timezone).
+//
+// Parameters:
+//   - t: The time value to format
+//
+// Returns:
+//   - string: Formatted time string
+//
+// Example output: "2024-01-15 14:30:45 UTC"
 func formatTime(t time.Time) string {
 	return t.Format("2006-01-02 15:04:05 MST")
 }
 
-// printSecretResponse prints secret metadata
+// printSecretResponse formats and prints secret metadata to stdout. The
+// function displays secret versioning information including the current
+// version, creation time, update time, and per-version details.
+//
+// The output is formatted in two sections:
+//
+//  1. Metadata section (if present):
+//     - Current version number
+//     - Oldest available version
+//     - Creation and update timestamps
+//     - Maximum versions configured
+//
+//  2. Versions section:
+//     - Per-version creation timestamps
+//     - Deletion timestamps (if soft-deleted)
+//
+// Parameters:
+//   - response: Secret metadata containing versioning information
+//
+// The function uses visual separators (dashes) to improve readability and
+// outputs nothing if the metadata is empty.
 func printSecretResponse(response *data.SecretMetadata) {
 	printSeparator := func() {
 		fmt.Println(strings.Repeat("-", 50))

@@ -5,6 +5,7 @@
 package base
 
 import (
+	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/config/env"
 	"github.com/spiffe/spike-sdk-go/crypto"
 	"github.com/spiffe/spike-sdk-go/log"
@@ -28,12 +29,15 @@ func Initialize(r *[crypto.AES256KeySize]byte) {
 
 	// The in-memory store does not use a root key to operate.
 	if env.BackendStoreTypeVal() == env.Memory {
-		log.Log().Info(fName, "message", "in-memory store. will not create root key")
+		log.Log().Info(
+			fName,
+			"message", data.ErrRootKeySkipCreationForInMemoryMode,
+		)
 		return
 	}
 
 	if r == nil || mem.Zeroed32(r) {
-		log.FatalLn(fName, "message", "root key is nil or zeroed")
+		log.FatalLn(fName, "message", data.ErrRootKeyEmpty)
 	}
 
 	// Update the internal root key.

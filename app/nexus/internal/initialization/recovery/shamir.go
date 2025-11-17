@@ -57,13 +57,17 @@ func sanityCheck(secret group.Scalar, shares []shamir.Share) {
 		// deferred will not run in a fatal crash.
 		reconstructed.SetUint64(0)
 
-		log.FatalLn(fName + ": Failed to recover: " + err.Error())
+		log.FatalLn(
+			fName,
+			"message", "failed to recover",
+			"err", err.Error(),
+		)
 	}
 	if !secret.IsEqual(reconstructed) {
 		// deferred will not run in a fatal crash.
 		reconstructed.SetUint64(0)
 
-		log.FatalLn(fName + ": Recovered secret does not match original")
+		log.FatalLn(fName, "message", "recovered secret does not match original")
 	}
 }
 
@@ -75,7 +79,7 @@ func sanityCheck(secret group.Scalar, shares []shamir.Share) {
 func computeShares() (group.Scalar, []shamir.Share) {
 	const fName = "computeShares"
 
-	log.Log().Info(fName, "message", "Computing Shamir shares")
+	log.Log().Info(fName, "message", "computing Shamir shares")
 
 	state.LockRootKey()
 	defer state.UnlockRootKey()
@@ -96,7 +100,11 @@ func computeShares() (group.Scalar, []shamir.Share) {
 	secret := g.NewScalar()
 
 	if err := secret.UnmarshalBinary(rk[:]); err != nil {
-		log.FatalLn(fName + ": Failed to unmarshal key: %v" + err.Error())
+		log.FatalLn(
+			fName,
+			"message", "failed to unmarshal key",
+			"err", err.Error(),
+		)
 	}
 
 	// To compute identical shares, we need an identical seed for the random
@@ -108,7 +116,7 @@ func computeShares() (group.Scalar, []shamir.Share) {
 	reader := crypto.NewDeterministicReader(rk[:])
 	ss := shamir.New(reader, t, secret)
 
-	log.Log().Info(fName, "message", "Generated Shamir shares")
+	log.Log().Info(fName, "message", "generated Shamir shares")
 
 	computedShares := ss.Share(n)
 

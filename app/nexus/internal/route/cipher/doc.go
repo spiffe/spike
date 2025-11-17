@@ -58,7 +58,7 @@
 //  1. Extract and validate SPIFFE ID (lightweight auth, no cipher access)
 //  2. Get cipher (only after SPIFFE ID validation passes)
 //  3. Read binary data (now that we have cipher for nonce size)
-//  4. Construct request object from binary data
+//  4. Construct the request object from binary data
 //  5. Call guard with request + SPIFFE ID (full validation)
 //  6. Perform cryptographic operation
 //  7. Send response

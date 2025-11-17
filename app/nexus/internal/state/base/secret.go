@@ -6,10 +6,13 @@ package base
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"sort"
+	"strconv"
 	"time"
 
+	sdkErrors "github.com/spiffe/spike-sdk-go/api/errors"
 	"github.com/spiffe/spike-sdk-go/config/env"
 	"github.com/spiffe/spike-sdk-go/kv"
 
@@ -99,7 +102,8 @@ func UpsertSecret(path string, values map[string]string) error {
 		// Clean up old versions if exceeding MaxVersions
 		if len(currentSecret.Versions) > currentSecret.Metadata.MaxVersions {
 			// Find and remove oldest versions
-			versionsToDelete := len(currentSecret.Versions) - currentSecret.Metadata.MaxVersions
+			cmm := currentSecret.Metadata.MaxVersions
+			versionsToDelete := len(currentSecret.Versions) - cmm
 			sortedVersions := make([]int, 0, len(currentSecret.Versions))
 			for v := range currentSecret.Versions {
 				sortedVersions = append(sortedVersions, v)
@@ -122,15 +126,16 @@ func UpsertSecret(path string, values map[string]string) error {
 	// Store to the backend
 	err = persist.Backend().StoreSecret(ctx, path, *secret)
 	if err != nil {
-		return fmt.Errorf("failed to store secret: %w", err)
+		failErr := sdkErrors.ErrDataSaveFailed
+		return errors.Join(failErr, err)
 	}
 
 	return nil
 }
 
-// DeleteSecret deletes one or more versions of a secret at the specified pathPattern.
-// It acquires a mutex lock before performing the deletion to ensure thread
-// safety.
+// DeleteSecret deletes one or more versions of a secret at the specified
+// pathPattern. It acquires a mutex lock before performing the deletion to
+// ensure thread safety.
 //
 // Parameters:
 //   - pathPattern: The pathPattern to the secret to be deleted
@@ -142,10 +147,12 @@ func DeleteSecret(path string, versions []int) error {
 	// Load the current secret from the backing store
 	secret, err := persist.Backend().LoadSecret(ctx, path)
 	if err != nil {
-		return fmt.Errorf("failed to load secret: %w", err)
+		failErr := sdkErrors.ErrDataLoadFailed
+		return errors.Join(failErr, err)
 	}
 	if secret == nil {
-		return fmt.Errorf("secret not found at pathPattern: %s", path)
+		failErr := sdkErrors.ErrInvalidFor("secret", "pathPattern", path)
+		return errors.Join(failErr, err)
 	}
 
 	// If no versions specified OR version 0 specified, delete the current version
@@ -202,16 +209,18 @@ func DeleteSecret(path string, versions []int) error {
 	// Store the updated secret back to the backend
 	err = persist.Backend().StoreSecret(ctx, path, *secret)
 	if err != nil {
-		return fmt.Errorf("failed to store updated secret: %w", err)
+		failErr := sdkErrors.ErrDataSaveFailed
+		return errors.Join(failErr, err)
 	}
 
 	return nil
 }
 
 // UndeleteSecret restores previously deleted versions of a secret at the
-// specified pathPattern. It takes a pathPattern string identifying the secret's location and
-// a slice of version numbers to restore. The function acquires a lock on the
-// key-value kv to ensure thread-safe operations during the `undelete` process.
+// specified pathPattern. It takes a pathPattern string identifying the secret's
+// location and a slice of version numbers to restore. The function acquires a
+// lock on the key-value kv to ensure thread-safe operations during the
+// `undelete` process.
 //
 // The function operates synchronously and will block until the undelete
 // operation is complete. If any specified version numbers don't exist or were
@@ -231,10 +240,12 @@ func UndeleteSecret(path string, versions []int) error {
 	// Load the current secret from the backing store
 	secret, err := persist.Backend().LoadSecret(ctx, path)
 	if err != nil {
-		return fmt.Errorf("failed to load secret: %w", err)
+		failErr := sdkErrors.ErrDataLoadFailed
+		return errors.Join(failErr, err)
 	}
 	if secret == nil {
-		return fmt.Errorf("secret not found at pathPattern: %s", path)
+		failErr := sdkErrors.ErrInvalidFor("secret", "pathPattern", path)
+		return errors.Join(failErr, err)
 	}
 
 	currentVersion := secret.Metadata.CurrentVersion
@@ -253,7 +264,8 @@ func UndeleteSecret(path string, versions []int) error {
 			if highestDeleted > 0 {
 				versions = []int{highestDeleted}
 			} else {
-				return fmt.Errorf("no deleted versions to undelete at pathPattern: %s", path)
+				failErr := sdkErrors.ErrInvalidFor("secret", "pathPattern", path)
+				return errors.Join(failErr, err)
 			}
 		} else {
 			versions = []int{currentVersion}
@@ -286,7 +298,8 @@ func UndeleteSecret(path string, versions []int) error {
 	}
 
 	if !anyUndeleted {
-		return fmt.Errorf("no versions were undeleted at pathPattern: %s", path)
+		failErr := sdkErrors.ErrInvalidFor("secret", "pathPattern", path)
+		return failErr
 	}
 
 	// If CurrentVersion was 0 (all deleted), set it to
@@ -299,7 +312,8 @@ func UndeleteSecret(path string, versions []int) error {
 	// Store the updated secret back to the backend
 	err = persist.Backend().StoreSecret(ctx, path, *secret)
 	if err != nil {
-		return fmt.Errorf("failed to store updated secret: %w", err)
+		failErr := sdkErrors.ErrDataSaveFailed
+		return errors.Join(failErr, err)
 	}
 
 	return nil
@@ -321,38 +335,41 @@ func GetSecret(path string, version int) (map[string]string, error) {
 	// Load secret from the backing store
 	secret, err := persist.Backend().LoadSecret(ctx, path)
 	if err != nil {
-		return nil, fmt.Errorf("failed to load secret: %w", err)
+		failErr := sdkErrors.ErrDataLoadFailed
+		return nil, errors.Join(failErr, err)
 	}
 	if secret == nil {
-		return nil, fmt.Errorf("secret not found at pathPattern: %s", path)
+		failErr := sdkErrors.ErrInvalidFor("secret", "pathPattern", path)
+		return nil, errors.Join(failErr, err)
 	}
 
 	// Handle version 0 (current version)
 	if version == 0 {
 		version = secret.Metadata.CurrentVersion
 		if version == 0 {
-			return nil, fmt.Errorf("no active versions for secret at pathPattern: %s", path)
+			failErr := sdkErrors.ErrInvalidFor("secret", "pathPattern", path)
+			return nil, errors.Join(failErr, err)
 		}
 	}
 
 	// Get the specific version
 	v, exists := secret.Versions[version]
 	if !exists {
-		return nil, fmt.Errorf(
-			"version %d not found for secret at pathPattern: %s", version, path)
+		failErr := sdkErrors.ErrInvalidFor("version", "pathPattern", path)
+		return nil, errors.Join(failErr, err)
 	}
 
 	// Check if the version is deleted
 	if v.DeletedTime != nil {
-		return nil, fmt.Errorf(
-			"version %d is deleted for secret at pathPattern: %s", version, path)
+		failErr := sdkErrors.ErrInvalidFor("version", "pathPattern", path)
+		return nil, errors.Join(failErr, err)
 	}
 
 	return v.Data, nil
 }
 
-// GetRawSecret retrieves a secret with metadata from the specified pathPattern and
-// version. It provides thread-safe read access to the backing store.
+// GetRawSecret retrieves a secret with metadata from the specified pathPattern
+// and version. It provides thread-safe read access to the backing store.
 //
 // Parameters:
 //   - pathPattern: The location of the secret to retrieve
@@ -367,10 +384,12 @@ func GetRawSecret(path string, version int) (*kv.Value, error) {
 	// Load secret from the backing store
 	secret, err := persist.Backend().LoadSecret(ctx, path)
 	if err != nil {
-		return nil, fmt.Errorf("failed to load secret: %w", err)
+		failErr := sdkErrors.ErrDataLoadFailed
+		return nil, errors.Join(failErr, err)
 	}
 	if secret == nil {
-		return nil, fmt.Errorf("secret not found at pathPattern: %s", path)
+		failErr := sdkErrors.ErrInvalidFor("secret", "pathPattern", path)
+		return nil, errors.Join(failErr, err)
 	}
 
 	// Validate the requested version exists and is not deleted
@@ -378,17 +397,23 @@ func GetRawSecret(path string, version int) (*kv.Value, error) {
 	if checkVersion == 0 {
 		checkVersion = secret.Metadata.CurrentVersion
 		if checkVersion == 0 {
-			return nil, fmt.Errorf("no active versions for secret at pathPattern: %s", path)
+			failErr := sdkErrors.ErrInvalidFor("version", "pathPattern", path)
+			return nil, errors.Join(failErr, err)
 		}
 	}
 
 	v, exists := secret.Versions[checkVersion]
 	if !exists {
-		return nil, fmt.Errorf("version %d not found for secret at pathPattern: %s", checkVersion, path)
+		vs := strconv.Itoa(checkVersion)
+		failErr := sdkErrors.ErrFailedFor("query", "raw secret", "v"+vs, path)
+		return nil, errors.Join(failErr, err)
 	}
 
 	if v.DeletedTime != nil {
-		return nil, fmt.Errorf("version %d is deleted for secret at pathPattern: %s", checkVersion, path)
+		vs := strconv.Itoa(checkVersion)
+		failErr := sdkErrors.ErrFailedFor("deletion", "raw secret", "v"+vs, path)
+
+		return nil, errors.Join(failErr, err)
 	}
 
 	// Return the full secret, but we've validated the requested version exists

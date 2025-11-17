@@ -49,13 +49,16 @@ func guardEncryptCipherRequest(
 	request reqres.CipherEncryptRequest,
 	peerSPIFFEID *spiffeid.ID,
 	w http.ResponseWriter,
-	r *http.Request,
+	_ *http.Request,
 ) error {
 	const fName = "guardEncryptCipherRequest"
 
-	// TODO: Add request field validation here
-	// For example: validate plaintext size limits, etc.
-	_ = request // Will be used for validation
+	// Validate plaintext size to prevent DoS attacks
+	if err := validatePlaintextSize(
+		request.Plaintext, w, reqres.CipherEncryptBadInput, fName,
+	); err != nil {
+		return err
+	}
 
 	// Lite Workloads are always allowed:
 	allowed := false

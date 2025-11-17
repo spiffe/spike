@@ -6,8 +6,10 @@ package persist
 
 import (
 	"crypto/rand"
-	"fmt"
+	"errors"
 	"io"
+
+	sdkErrors "github.com/spiffe/spike-sdk-go/api/errors"
 )
 
 // encrypt encrypts the given data using the DataStore's cipher.
@@ -15,8 +17,10 @@ import (
 // error that occurred during encryption.
 func (s *DataStore) encrypt(data []byte) ([]byte, []byte, error) {
 	nonce := make([]byte, s.Cipher.NonceSize())
+	nonceErr := sdkErrors.ErrCryptoNonceGenerationFailed
 	if _, err := io.ReadFull(rand.Reader, nonce); err != nil {
-		return nil, nil, fmt.Errorf("failed to generate nonce: %w", err)
+		failErr := errors.Join(nonceErr, err)
+		return nil, nil, failErr
 	}
 	ciphertext := s.Cipher.Seal(nil, nonce, data, nil)
 	return ciphertext, nonce, nil
@@ -27,8 +31,10 @@ func (s *DataStore) encrypt(data []byte) ([]byte, []byte, error) {
 // occurred during decryption.
 func (s *DataStore) decrypt(ciphertext, nonce []byte) ([]byte, error) {
 	plaintext, err := s.Cipher.Open(nil, nonce, ciphertext, nil)
+	decrpyErr := sdkErrors.ErrCryptoDecryptionFailed
 	if err != nil {
-		return nil, fmt.Errorf("failed to decrypt data: %w", err)
+		failErr := errors.Join(decrpyErr, err)
+		return nil, failErr
 	}
 	return plaintext, nil
 }

@@ -75,13 +75,30 @@ func guardDecryptCipherRequest(
 	request reqres.CipherDecryptRequest,
 	peerSPIFFEID *spiffeid.ID,
 	w http.ResponseWriter,
-	r *http.Request,
+	_ *http.Request,
 ) error {
 	const fName = "guardDecryptCipherRequest"
 
-	// TODO: Add request field validation here
-	// For example: validate ciphertext size limits, nonce format, etc.
-	_ = request // Will be used for validation
+	// Validate version
+	if err := validateVersion(
+		request.Version, w, reqres.CipherDecryptBadInput, fName,
+	); err != nil {
+		return err
+	}
+
+	// Validate nonce size
+	if err := validateNonceSize(
+		request.Nonce, w, reqres.CipherDecryptBadInput, fName,
+	); err != nil {
+		return err
+	}
+
+	// Validate ciphertext size to prevent DoS attacks
+	if err := validateCiphertextSize(
+		request.Ciphertext, w, reqres.CipherDecryptBadInput, fName,
+	); err != nil {
+		return err
+	}
 
 	// Lite workloads are always allowed:
 	allowed := false
@@ -99,7 +116,7 @@ func guardDecryptCipherRequest(
 
 	if !allowed {
 		return net.Fail(
-			reqres.CipherDecryptResponse{Err: data.ErrUnauthorized},
+			reqres.CipherDecryptUnauthorized,
 			w, http.StatusUnauthorized, apiErr.ErrUnauthorized, fName,
 		)
 	}

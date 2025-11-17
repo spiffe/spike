@@ -9,9 +9,10 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"time"
 
+	"github.com/spiffe/spike-sdk-go/api/entity/data"
+	sdkErrors "github.com/spiffe/spike-sdk-go/api/errors"
 	"github.com/spiffe/spike-sdk-go/kv"
 	"github.com/spiffe/spike-sdk-go/log"
 
@@ -46,14 +47,14 @@ import (
 //  1. Queries secret metadata from the `secret_metadata` table
 //  2. Fetches all versions from the `secrets` table
 //  3. Decrypts each version using the DataStore's cipher
-//  4. Unmarshals JSON data into map[string]string format
+//  4. Unmarshals JSON data into `map[string]string` format
 //  5. Assembles the complete kv.Value structure
 func (s *DataStore) loadSecretInternal(
 	ctx context.Context, path string,
 ) (*kv.Value, error) {
 	const fName = "loadSecretInternal"
 	if ctx == nil {
-		log.FatalLn(fName, "message", "nil context")
+		log.FatalLn(fName, "message", data.ErrNilContext)
 	}
 
 	var secret kv.Value
@@ -69,18 +70,22 @@ func (s *DataStore) loadSecretInternal(
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
 		}
-		return nil, fmt.Errorf("failed to load secret metadata: %w", err)
+
+		failErr := sdkErrors.ErrDataLoadFailed
+		return nil, errors.Join(failErr, err)
 	}
 
 	// Load versions
 	rows, err := s.db.QueryContext(ctx, ddl.QuerySecretVersions, path)
 	if err != nil {
-		return nil, fmt.Errorf("failed to query secret versions: %w", err)
+		failErr := sdkErrors.ErrQueryFailure
+		return nil, errors.Join(failErr, err)
 	}
 	defer func(rows *sql.Rows) {
 		err := rows.Close()
 		if err != nil {
-			fmt.Printf("failed to close rows: %v\n", err)
+			failErr := sdkErrors.ErrFileCloseFailed
+			log.Log().Warn(fName, "message", errors.Join(failErr, err).Error())
 		}
 	}(rows)
 
@@ -98,17 +103,20 @@ func (s *DataStore) loadSecretInternal(
 			&version, &nonce,
 			&encrypted, &createdTime, &deletedTime,
 		); err != nil {
-			return nil, fmt.Errorf("failed to scan secret version: %w", err)
+			failErr := sdkErrors.ErrQueryFailure
+			return nil, errors.Join(failErr, err)
 		}
 
 		decrypted, err := s.decrypt(encrypted, nonce)
 		if err != nil {
-			return nil, fmt.Errorf("failed to decrypt secret version: %w", err)
+			failErr := sdkErrors.ErrCryptoDecryptionFailed
+			return nil, errors.Join(failErr, err)
 		}
 
 		var values map[string]string
 		if err := json.Unmarshal(decrypted, &values); err != nil {
-			return nil, fmt.Errorf("failed to unmarshal secret values: %w", err)
+			failErr := sdkErrors.ErrUnmarshalFailure
+			return nil, errors.Join(failErr, err)
 		}
 
 		sv := kv.Version{
@@ -123,7 +131,8 @@ func (s *DataStore) loadSecretInternal(
 	}
 
 	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("failed to iterate secret versions: %w", err)
+		failErr := sdkErrors.ErrQueryFailure
+		return nil, errors.Join(failErr, err)
 	}
 
 	return &secret, nil

@@ -36,6 +36,39 @@
   </high-level-plan>
   <task-group for="v0.6.1" theme="doc update and stabilization">
     <issue>
+      let AI write some tests to all the things.
+    </issue>
+    <issue>
+      if err != nil || v < 0 || v > 255 {
+      ^ version check in spike/internal/cmd/cipher/decrypt.go
+      currently we support only a single version `1`.
+    </issue>
+    <issue>
+      these can be made generic and added to the SDK:
+      app/nexus/internal/state/base/validation.go
+    </issue>
+    <issue>
+      // It's unlikely to have 1000 SPIKE Keepers across the board.
+      // The indexes start from 1 and increase one-by-one by design.
+      const maxShardID = 1000
+      to env var configuration.
+    </issue>
+    <issue>
+      add some more description etc to SPIKE go SDK github repo.
+      also the social media banners on both repos needs an overhaul.
+    </issue>
+    <issue>
+      configure these from env
+      // (AES-GCM standard nonce is 12 bytes)
+      const expectedNonceSize = 12
+
+      // Limit cipherText size to prevent DoS attacks
+      // The maximum possible size is 68,719,476,704
+      // The limit comes from GCM's 32-bit counter.
+      const maxCiphertextSize = 65536
+    </issue>
+
+    <issue>
       internal/net/request.go
       ^ can be SDK candidates.
 

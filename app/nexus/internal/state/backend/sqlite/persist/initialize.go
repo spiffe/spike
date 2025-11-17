@@ -12,6 +12,8 @@ import (
 	"fmt"
 	"path/filepath"
 
+	"github.com/spiffe/spike-sdk-go/api/entity/data"
+	sdkErrors "github.com/spiffe/spike-sdk-go/api/errors"
 	"github.com/spiffe/spike-sdk-go/config/env"
 	"github.com/spiffe/spike-sdk-go/log"
 )
@@ -32,18 +34,19 @@ import (
 func (s *DataStore) Initialize(ctx context.Context) error {
 	const fName = "Initialize"
 	if ctx == nil {
-		log.FatalLn(fName, "message", "nil context")
+		log.FatalLn(fName, "message", data.ErrNilContext)
 	}
 
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
 	if s.db != nil {
-		return errors.New("backend already initialized")
+		return sdkErrors.ErrAlreadyInitialized
 	}
 
 	if err := s.createDataDir(); err != nil {
-		return fmt.Errorf("failed to create data directory: %w", err)
+		failErr := sdkErrors.ErrDirectoryCreationFailed
+		return errors.Join(failErr, err)
 	}
 
 	dbPath := filepath.Join(s.Opts.DataDir, s.Opts.DatabaseFile)
@@ -53,11 +56,11 @@ func (s *DataStore) Initialize(ctx context.Context) error {
 	db, err := sql.Open(
 		"sqlite3",
 		fmt.Sprintf("%s?_journal_mode=%s&_busy_timeout=%d",
-			dbPath,
-			s.Opts.JournalMode,
-			s.Opts.BusyTimeoutMs))
+			dbPath, s.Opts.JournalMode, s.Opts.BusyTimeoutMs),
+	)
 	if err != nil {
-		return fmt.Errorf("failed to open database: %w", err)
+		failErr := sdkErrors.ErrFileOpenFailed
+		return errors.Join(failErr, err)
 	}
 
 	// Set connection pool settings
@@ -77,7 +80,8 @@ func (s *DataStore) Initialize(ctx context.Context) error {
 		if closeErr != nil {
 			return closeErr
 		}
-		return fmt.Errorf("failed to create tables: %w", err)
+		failErr := sdkErrors.ErrCreationFailed
+		return errors.Join(failErr, err)
 	}
 
 	s.db = db

@@ -58,7 +58,7 @@ func guardListSecretRequest(
 	)
 	if !allowed {
 		return net.Fail(
-			reqres.SecretListResponse{Err: data.ErrUnauthorized}, w,
+			reqres.SecretListUnauthorized, w,
 			http.StatusUnauthorized, apiErr.ErrUnauthorized, fName,
 		)
 	}

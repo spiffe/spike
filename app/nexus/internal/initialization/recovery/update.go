@@ -51,7 +51,7 @@ func sendShardsToKeepers(
 
 		if err != nil {
 			log.Log().Warn(
-				fName, "message", "Failed to join path", "url", keeperAPIRoot,
+				fName, "message", "failed to join path", "url", keeperAPIRoot,
 			)
 			continue
 		}
@@ -60,16 +60,17 @@ func sendShardsToKeepers(
 		client, err := network.CreateMTLSClientWithPredicate(
 			source, predicate.AllowKeeper,
 		)
-
 		if err != nil {
-			log.Log().Warn(fName,
-				"message", "Failed to create mTLS client",
-				"err", err)
+			log.Log().Warn(
+				fName,
+				"message", "failed to create mTLS client",
+				"err", err,
+			)
 			continue
 		}
 
 		if state.RootKeyZero() {
-			log.Log().Warn(fName, "message", "rootKey is zero; moving on...")
+			log.Log().Warn(fName, "message", "rootKey is zero: moving on")
 			continue
 		}
 
@@ -81,7 +82,10 @@ func sendShardsToKeepers(
 			kid, err := strconv.Atoi(keeperID)
 			if err != nil {
 				log.Log().Warn(
-					fName, "message", "Failed to convert keeper id to int", "err", err)
+					fName,
+					"message", "failed to convert keeper id to int",
+					"err", err,
+				)
 				continue
 			}
 
@@ -92,8 +96,11 @@ func sendShardsToKeepers(
 		}
 
 		if share.ID.IsZero() {
-			log.Log().Warn(fName,
-				"message", "Failed to find share for keeper", "keeper_id", keeperID)
+			log.Log().Warn(
+				fName,
+				"message", "failed to find share for keeper",
+				"keeper_id", keeperID,
+			)
 			continue
 		}
 
@@ -101,8 +108,12 @@ func sendShardsToKeepers(
 
 		contribution, err := share.Value.MarshalBinary()
 		if err != nil {
-			log.Log().Warn(fName, "message", "Failed to marshal share",
-				"err", err, "keeper_id", keeperID)
+			log.Log().Warn(
+				fName,
+				"message", "failed to marshal share",
+				"err", err.Error(),
+				"keeper_id", keeperID,
+			)
 
 			// Security: Ensure that the contribution is zeroed out before
 			// the next iteration.
@@ -118,9 +129,12 @@ func sendShardsToKeepers(
 				rootShares[i].Value.SetUint64(0)
 			}
 
-			log.Log().Warn(fName,
-				"message", "Failed to marshal share",
-				"err", err, "keeper_id", keeperID)
+			log.Log().Warn(
+				fName,
+				"message", "failed to marshal share",
+				"err", err.Error(),
+				"keeper_id", keeperID,
+			)
 			continue
 		}
 
@@ -143,9 +157,12 @@ func sendShardsToKeepers(
 				rootShares[i].Value.SetUint64(0)
 			}
 
-			log.Log().Warn(fName,
+			log.Log().Warn(
+				fName,
 				"message", "invalid contribution length",
-				"len", len(contribution), "keeper_id", keeperID)
+				"len", len(contribution),
+				"keeper_id", keeperID,
+			)
 			continue
 		}
 
@@ -177,9 +194,12 @@ func sendShardsToKeepers(
 		}
 
 		if err != nil {
-			log.Log().Warn(fName,
-				"message", "Failed to marshal request",
-				"err", err, "keeper_id", keeperID)
+			log.Log().Warn(
+				fName,
+				"message", "failed to marshal request",
+				"err", err.Error(),
+				"keeper_id", keeperID,
+			)
 			continue
 		}
 
@@ -189,9 +209,12 @@ func sendShardsToKeepers(
 		mem.ClearBytes(md)
 
 		if err != nil {
-			log.Log().Warn(fName, "message",
-				"Failed to post",
-				"err", err, "keeper_id", keeperID)
+			log.Log().Warn(
+				fName,
+				"message", "failed to post",
+				"err", err.Error(),
+				"keeper_id", keeperID,
+			)
 			continue
 		}
 	}

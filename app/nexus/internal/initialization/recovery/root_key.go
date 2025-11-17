@@ -69,7 +69,11 @@ func ComputeRootKeyFromShards(ss []ShamirShard) *[crypto.AES256KeySize]byte {
 		// Unmarshal the binary data
 		err := share.Value.UnmarshalBinary(shamirShard.Value[:])
 		if err != nil {
-			log.FatalLn(fName + ": Failed to unmarshal share: " + err.Error())
+			log.FatalLn(
+				fName,
+				"message", "failed to unmarshal shard",
+				"err", err.Error(),
+			)
 		}
 
 		shares = append(shares, share)
@@ -88,7 +92,11 @@ func ComputeRootKeyFromShards(ss []ShamirShard) *[crypto.AES256KeySize]byte {
 			s.Value.SetUint64(0)
 		}
 
-		log.FatalLn(fName + ": Failed to recover: " + err.Error())
+		log.FatalLn(
+			fName,
+			"message", "failed to recover",
+			"err", err.Error(),
+		)
 	}
 
 	if reconstructed == nil {
@@ -99,7 +107,7 @@ func ComputeRootKeyFromShards(ss []ShamirShard) *[crypto.AES256KeySize]byte {
 			s.Value.SetUint64(0)
 		}
 
-		log.FatalLn(fName + ": Failed to reconstruct the root key")
+		log.FatalLn(fName, "message", "failed to reconstruct the root key")
 	}
 
 	if reconstructed != nil {
@@ -108,12 +116,21 @@ func ComputeRootKeyFromShards(ss []ShamirShard) *[crypto.AES256KeySize]byte {
 			// Security: Zero out:
 			reconstructed.SetUint64(0)
 
-			log.FatalLn(fName + ": Failed to marshal: " + err.Error())
+			log.FatalLn(
+				fName,
+				"message", "failed to marshal",
+				"er", err.Error(),
+			)
+
 			return &[crypto.AES256KeySize]byte{}
 		}
 
 		if len(binaryRec) != crypto.AES256KeySize {
-			log.FatalLn(fName + ": Reconstructed root key has incorrect length")
+			log.FatalLn(
+				fName,
+				"message", "reconstructed root key has incorrect length",
+			)
+
 			return &[crypto.AES256KeySize]byte{}
 		}
 

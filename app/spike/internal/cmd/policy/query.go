@@ -13,7 +13,31 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// readPolicyFromFile reads a policy configuration from a YAML file
+// readPolicyFromFile reads and parses a policy configuration from a YAML
+// file. The function validates that the file exists, parses the YAML content,
+// and ensures all required fields are present.
+//
+// The YAML file must contain the following required fields:
+//   - name: Policy name
+//   - spiffeidPattern: Regular expression pattern for SPIFFE IDs
+//   - pathPattern: Regular expression pattern for resource paths
+//   - permissions: List of permissions to grant
+//
+// Parameters:
+//   - filePath: Path to the YAML file containing the policy specification
+//
+// Returns:
+//   - data.PolicySpec: Parsed policy specification
+//   - error: File reading, parsing, or validation errors
+//
+// Example YAML format:
+//
+//	name: my-policy
+//	spiffeidPattern: "^spiffe://example\\.org/.*$"
+//	pathPattern: "^secrets/.*$"
+//	permissions:
+//	  - read
+//	  - write
 func readPolicyFromFile(filePath string) (data.PolicySpec, error) {
 	var policy data.PolicySpec
 
@@ -23,13 +47,13 @@ func readPolicyFromFile(filePath string) (data.PolicySpec, error) {
 	}
 
 	// Read file content
-	data, err := os.ReadFile(filePath)
+	df, err := os.ReadFile(filePath)
 	if err != nil {
 		return policy, fmt.Errorf("failed to read file %s: %v", filePath, err)
 	}
 
 	// Parse YAML
-	err = yaml.Unmarshal(data, &policy)
+	err = yaml.Unmarshal(df, &policy)
 	if err != nil {
 		return policy, fmt.Errorf("failed to parse YAML file %s: %v", filePath, err)
 	}
@@ -51,7 +75,31 @@ func readPolicyFromFile(filePath string) (data.PolicySpec, error) {
 	return policy, nil
 }
 
-// getPolicyFromFlags extracts policy configuration from command line flags
+// getPolicyFromFlags constructs a policy specification from command-line
+// flag values. The function validates that all required flags are provided
+// and parses the comma-separated permissions string into a slice.
+//
+// All parameters are required. If any parameter is empty, the function
+// returns an error listing all missing flags.
+//
+// Parameters:
+//   - name: Policy name (required)
+//   - SPIFFEIDPattern: Regular expression pattern for SPIFFE IDs (required)
+//   - pathPattern: Regular expression pattern for resource paths (required)
+//   - permsStr: Comma-separated list of permissions (e.g., "read,write")
+//
+// Returns:
+//   - data.PolicySpec: Constructed policy specification
+//   - error: Validation errors if required flags are missing
+//
+// Example usage:
+//
+//	policy, err := getPolicyFromFlags(
+//	    "my-policy",
+//	    "^spiffe://example\\.org/.*$",
+//	    "^secrets/.*$",
+//	    "read,write,delete",
+//	)
 func getPolicyFromFlags(name, SPIFFEIDPattern, pathPattern, permsStr string) (data.PolicySpec, error) {
 	var policy data.PolicySpec
 

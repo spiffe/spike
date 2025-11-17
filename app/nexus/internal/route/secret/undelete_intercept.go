@@ -5,17 +5,10 @@
 package secret
 
 import (
-	stdErrs "errors"
 	"net/http"
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
-	"github.com/spiffe/spike-sdk-go/api/errors"
-	"github.com/spiffe/spike-sdk-go/validation"
-
-	state "github.com/spiffe/spike/app/nexus/internal/state/base"
-	"github.com/spiffe/spike/internal/auth"
-	"github.com/spiffe/spike/internal/net"
 )
 
 // guardSecretUndeleteRequest validates a secret restoration request by
@@ -46,36 +39,11 @@ import (
 func guardSecretUndeleteRequest(
 	request reqres.SecretUndeleteRequest, w http.ResponseWriter, r *http.Request,
 ) error {
-	const fName = "guardSecretUndeleteRequest"
-
-	peerSPIFFEID, err := auth.ExtractPeerSPIFFEID[reqres.SecretUndeleteResponse](
-		r, w, reqres.SecretUndeleteUnauthorized,
-	)
-	if alreadyResponded := err != nil; alreadyResponded {
-		return err
-	}
-
-	path := request.Path
-	err = validation.ValidatePath(path)
-	if err != nil {
-		failErr := stdErrs.Join(errors.ErrInvalidInput, err)
-		return net.Fail(
-			reqres.SecretUndeleteResponse{Err: data.ErrBadInput}, w,
-			http.StatusBadRequest, failErr, fName,
-		)
-	}
-
-	allowed := state.CheckAccess(
-		peerSPIFFEID.String(),
-		path,
+	return guardSecretRequest(
+		request.Path,
 		[]data.PolicyPermission{data.PermissionWrite},
+		w, r,
+		reqres.SecretUndeleteUnauthorized, reqres.SecretUndeleteBadInput,
+		"guardSecretUndeleteRequest",
 	)
-	if !allowed {
-		return net.Fail(
-			reqres.SecretUndeleteResponse{Err: data.ErrUnauthorized}, w,
-			http.StatusUnauthorized, errors.ErrUnauthorized, fName,
-		)
-	}
-
-	return nil
 }

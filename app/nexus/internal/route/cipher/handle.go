@@ -62,13 +62,13 @@ func handleStreamingDecrypt(
 		Ciphertext: ciphertext,
 	}
 
-	// Full guard validation (auth + request fields)
+	// Full guard validation (auth and request fields)
 	err = guardDecryptCipherRequest(request, peerSPIFFEID, w, r)
 	if err != nil {
 		return err
 	}
 
-	plaintext, err := decryptData(nonce, ciphertext, c, w, true, fName)
+	plaintext, err := decryptDataStreaming(nonce, ciphertext, c, w, fName)
 	if err != nil {
 		return err
 	}
@@ -107,7 +107,7 @@ func handleJSONDecrypt(
 		return err
 	}
 
-	// Full guard validation (auth + request fields)
+	// Full guard validation (auth and request fields)
 	err = guardDecryptCipherRequest(request, peerSPIFFEID, w, r)
 	if err != nil {
 		return err
@@ -119,13 +119,8 @@ func handleJSONDecrypt(
 		return err
 	}
 
-	err = validateJSONDecryptData(request.Version, request.Nonce, c, w)
-	if err != nil {
-		return err
-	}
-
-	plaintext, err := decryptData(
-		request.Nonce, request.Ciphertext, c, w, false, fName,
+	plaintext, err := decryptDataJSON(
+		request.Nonce, request.Ciphertext, c, w, fName,
 	)
 	if err != nil {
 		return err
@@ -170,7 +165,7 @@ func handleStreamingEncrypt(
 		Plaintext: plaintext,
 	}
 
-	// Full guard validation (auth + request fields)
+	// Full guard validation (auth and request fields)
 	err = guardEncryptCipherRequest(request, peerSPIFFEID, w, r)
 	if err != nil {
 		return err
@@ -182,7 +177,7 @@ func handleStreamingEncrypt(
 		return err
 	}
 
-	nonce, ciphertext, err := encryptData(plaintext, c, w, true, fName)
+	nonce, ciphertext, err := encryptDataStreaming(plaintext, c, w, fName)
 	if err != nil {
 		return err
 	}
@@ -221,7 +216,7 @@ func handleJSONEncrypt(
 		return err
 	}
 
-	// Full guard validation (auth + request fields)
+	// Full guard validation (auth and request fields)
 	err = guardEncryptCipherRequest(request, peerSPIFFEID, w, r)
 	if err != nil {
 		return err
@@ -233,8 +228,8 @@ func handleJSONEncrypt(
 		return err
 	}
 
-	nonce, ciphertext, err := encryptData(
-		request.Plaintext, c, w, false, fName,
+	nonce, ciphertext, err := encryptDataJSON(
+		request.Plaintext, c, w, fName,
 	)
 	if err != nil {
 		return err

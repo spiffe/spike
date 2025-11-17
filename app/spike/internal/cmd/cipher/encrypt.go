@@ -5,113 +5,75 @@
 package cipher
 
 import (
-	"encoding/base64"
-	"fmt"
-	"io"
-	"os"
-
 	"github.com/spf13/cobra"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	sdk "github.com/spiffe/spike-sdk-go/api"
 
-	"github.com/spiffe/spike/app/spike/internal/stdout"
 	"github.com/spiffe/spike/app/spike/internal/trust"
 )
 
-func newEncryptCommand(source *workloadapi.X509Source, SPIFFEID string) *cobra.Command {
-	var inFile string
-	var outFile string
-	var plaintextB64 string
-	var algorithm string
-
+// newEncryptCommand creates a Cobra command for encrypting data via SPIKE
+// Nexus. The command supports two modes of operation:
+//
+// Stream Mode (default):
+//   - Reads data from a file (--file) or stdin
+//   - Writes encrypted data to a file (--out) or stdout
+//   - Handles binary data transparently
+//
+// JSON Mode (when --plaintext is provided):
+//   - Accepts base64-encoded plaintext
+//   - Returns JSON-formatted encryption result
+//   - Allows algorithm specification via --algorithm flag
+//
+// Parameters:
+//   - source: SPIFFE X.509 SVID source for authentication
+//   - SPIFFEID: The SPIFFE ID to authenticate with
+//
+// Returns:
+//   - *cobra.Command: Configured Cobra command for encryption
+//
+// Flags:
+//   - --file, -f: Input file path (defaults to stdin)
+//   - --out, -o: Output file path (defaults to stdout)
+//   - --plaintext: Base64-encoded plaintext for JSON mode
+//   - --algorithm: Algorithm hint for JSON mode
+func newEncryptCommand(
+	source *workloadapi.X509Source, SPIFFEID string,
+) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "encrypt",
 		Short: "Encrypt file or stdin via SPIKE Nexus",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			trust.AuthenticateForPilot(SPIFFEID)
 
-			// Resolve base URL (env or default)
-			base := os.Getenv("SPIKE_NEXUS_URL")
-			if base == "" {
-				base = "https://spire-spike-nexus.spire-server"
-			}
-			_ = base // base kept for now; endpoint is resolved in helper
-
-			// Prepare input reader (for stream mode)
-			var in io.ReadCloser
-			if plaintextB64 == "" { // stream mode
-				if inFile != "" {
-					f, err := os.Open(inFile)
-					if err != nil {
-						return fmt.Errorf("failed to open input file: %w", err)
-					}
-					in = f
-				} else {
-					in = os.Stdin
-				}
-				defer func() {
-					if in != os.Stdin {
-						_ = in.Close()
-					}
-				}()
-			}
-
-			// Prepare output writer
-			var out io.Writer
-			var outCloser io.Closer
-			if outFile != "" {
-				f, err := os.Create(outFile)
-				if err != nil {
-					return fmt.Errorf("failed to create output file: %w", err)
-				}
-				out = f
-				outCloser = f
-			} else {
-				out = os.Stdout
-			}
-			if outCloser != nil {
-				defer outCloser.Close()
-			}
-
 			api := sdk.NewWithSource(source)
-			if plaintextB64 == "" {
-				// Stream mode
-				ciphertext, err := api.CipherEncryptStream(in, "application/octet-stream")
-				if err != nil {
-					if err.Error() == "not ready" {
-						stdout.PrintNotReady()
-					}
-					return fmt.Errorf("failed to call encrypt endpoint: %w", err)
-				}
-				if _, err := out.Write(ciphertext); err != nil {
-					return fmt.Errorf("failed to write output: %w", err)
-				}
-				return nil
+
+			inFile, _ := cmd.Flags().GetString("file")
+			outFile, _ := cmd.Flags().GetString("out")
+			plaintextB64, _ := cmd.Flags().GetString("plaintext")
+			algorithm, _ := cmd.Flags().GetString("algorithm")
+
+			if plaintextB64 != "" {
+				return encryptJSON(api, plaintextB64, algorithm, outFile)
 			}
 
-			// JSON mode
-			plaintext, err := base64.StdEncoding.DecodeString(plaintextB64)
-			if err != nil {
-				return fmt.Errorf("invalid --plaintext base64: %w", err)
-			}
-			ciphertext, err := api.CipherEncryptJSON(plaintext, algorithm)
-			if err != nil {
-				if err.Error() == "not ready" {
-					stdout.PrintNotReady()
-				}
-				return fmt.Errorf("failed to call encrypt endpoint (json): %w", err)
-			}
-			if _, err := out.Write(ciphertext); err != nil {
-				return fmt.Errorf("failed to write ciphertext: %w", err)
-			}
-			return nil
+			return encryptStream(api, inFile, outFile)
 		},
 	}
 
-	cmd.Flags().StringVarP(&inFile, "file", "f", "", "Input file (default: stdin)")
-	cmd.Flags().StringVarP(&outFile, "out", "o", "", "Output file (default: stdout)")
-	cmd.Flags().StringVar(&plaintextB64, "plaintext", "", "Base64 plaintext for JSON mode; if set, uses JSON API")
-	cmd.Flags().StringVar(&algorithm, "algorithm", "", "Algorithm hint for JSON mode")
+	cmd.Flags().StringP(
+		"file", "f", "", "Input file (default: stdin)",
+	)
+	cmd.Flags().StringP(
+		"out", "o", "", "Output file (default: stdout)",
+	)
+	cmd.Flags().String(
+		"plaintext", "",
+		"Base64 plaintext for JSON mode; if set, uses JSON API",
+	)
+	cmd.Flags().String(
+		"algorithm", "", "Algorithm hint for JSON mode",
+	)
 
 	return cmd
 }

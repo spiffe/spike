@@ -102,7 +102,8 @@ func ShouldBootstrap() bool {
 		log.Log().Error(fName,
 			"message",
 			"failed to create Kubernetes client: skipping bootstrap",
-			"err", err.Error())
+			"err", err.Error(),
+		)
 		// Can't check state, skip bootstrap.
 		return false
 	}

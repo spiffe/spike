@@ -62,8 +62,7 @@ func guardSecretPutRequest(
 	if invalidPath := err != nil; invalidPath {
 		failErr := stdErrs.Join(apiErr.ErrInvalidInput, err)
 		return net.Fail(
-			reqres.SecretPutBadInput, w,
-			http.StatusBadRequest, failErr, fName,
+			reqres.SecretPutBadInput, w, http.StatusBadRequest, failErr, fName,
 		)
 	}
 
@@ -73,8 +72,7 @@ func guardSecretPutRequest(
 		if err != nil {
 			failErr := stdErrs.Join(apiErr.ErrInvalidInput, err)
 			return net.Fail(
-				reqres.SecretPutBadInput, w,
-				http.StatusBadRequest, failErr, fName,
+				reqres.SecretPutBadInput, w, http.StatusBadRequest, failErr, fName,
 			)
 		}
 	}

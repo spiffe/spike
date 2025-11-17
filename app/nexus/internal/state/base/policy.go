@@ -7,12 +7,12 @@ package base
 import (
 	"context"
 	"errors"
-	"fmt"
 	"regexp"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
+	sdkErrors "github.com/spiffe/spike-sdk-go/api/errors"
 	"github.com/spiffe/spike-sdk-go/log"
 	"github.com/spiffe/spike-sdk-go/spiffeid"
 
@@ -60,8 +60,9 @@ func CheckAccess(
 
 	policies, err := ListPolicies()
 	if err != nil {
-		log.Log().Warn(fName,
-			"message", "failed to load policies",
+		log.Log().Warn(
+			fName,
+			"message", data.ErrResultSetFailedToLoad,
 			"err", err.Error(),
 		)
 		return false
@@ -118,7 +119,8 @@ func CreatePolicy(policy data.Policy) (data.Policy, error) {
 	// Check for duplicate policy name
 	allPolicies, err := persist.Backend().LoadAllPolicies(ctx)
 	if err != nil {
-		return data.Policy{}, fmt.Errorf("failed to load policies: %w", err)
+		failErr := sdkErrors.ErrDataLoadFailed
+		return data.Policy{}, errors.Join(failErr, err)
 	}
 
 	for _, existingPolicy := range allPolicies {
@@ -130,21 +132,19 @@ func CreatePolicy(policy data.Policy) (data.Policy, error) {
 	// Compile and validate patterns
 	idRegex, err := regexp.Compile(policy.SPIFFEIDPattern)
 	if err != nil {
-		return data.Policy{},
-			errors.Join(
-				ErrInvalidPolicy,
-				fmt.Errorf("%s: %v", "invalid spiffeid pattern", err),
-			)
+		failErr := sdkErrors.ErrInvalidFor(
+			"SPIFFEID pattern", "policy", policy.SPIFFEIDPattern,
+		)
+		return data.Policy{}, errors.Join(ErrInvalidPolicy, failErr, err)
 	}
 	policy.IDRegex = idRegex
 
 	pathRegex, err := regexp.Compile(policy.PathPattern)
 	if err != nil {
-		return data.Policy{},
-			errors.Join(
-				ErrInvalidPolicy,
-				fmt.Errorf("%s: %v", "invalid path pattern", err),
-			)
+		failErr := sdkErrors.ErrInvalidFor(
+			"path pattern", "policy", policy.PathPattern,
+		)
+		return data.Policy{}, errors.Join(ErrInvalidPolicy, failErr, err)
 	}
 	policy.PathRegex = pathRegex
 
@@ -157,7 +157,8 @@ func CreatePolicy(policy data.Policy) (data.Policy, error) {
 	// Store directly to the backend
 	err = persist.Backend().StorePolicy(ctx, policy)
 	if err != nil {
-		return data.Policy{}, fmt.Errorf("failed to store policy: %w", err)
+		failErr := sdkErrors.ErrDataSaveFailed
+		return data.Policy{}, errors.Join(failErr, err)
 	}
 
 	return policy, nil
@@ -177,7 +178,8 @@ func GetPolicy(id string) (data.Policy, error) {
 	// Load directly from the backend
 	policy, err := persist.Backend().LoadPolicy(ctx, id)
 	if err != nil {
-		return data.Policy{}, fmt.Errorf("failed to load policy: %w", err)
+		failErr := sdkErrors.ErrDataLoadFailed
+		return data.Policy{}, errors.Join(failErr, err)
 	}
 
 	if policy == nil {
@@ -201,7 +203,8 @@ func DeletePolicy(id string) error {
 	// Check if the policy exists first (to maintain the same error behavior)
 	policy, err := persist.Backend().LoadPolicy(ctx, id)
 	if err != nil {
-		return fmt.Errorf("failed to load policy: %w", err)
+		failErr := sdkErrors.ErrDataLoadFailed
+		return errors.Join(failErr, err)
 	}
 	if policy == nil {
 		return ErrPolicyNotFound
@@ -210,7 +213,8 @@ func DeletePolicy(id string) error {
 	// Delete the policy from the backend
 	err = persist.Backend().DeletePolicy(ctx, id)
 	if err != nil {
-		return fmt.Errorf("failed to delete policy: %w", err)
+		failErr := sdkErrors.ErrDeletionFailed
+		return errors.Join(failErr, err)
 	}
 
 	return nil
@@ -231,7 +235,8 @@ func ListPolicies() ([]data.Policy, error) {
 	// Load all policies from the backend
 	allPolicies, err := persist.Backend().LoadAllPolicies(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("failed to load policies: %w", err)
+		failErr := sdkErrors.ErrDataLoadFailed
+		return nil, errors.Join(failErr, err)
 	}
 
 	// Convert map to slice
@@ -245,9 +250,9 @@ func ListPolicies() ([]data.Policy, error) {
 	return result, nil
 }
 
-// ListPoliciesByPathPattern returns all policies that match a specific pathPattern pattern.
-// It filters the policy store and returns only policies where PathPattern
-// exactly matches the provided pattern string.
+// ListPoliciesByPathPattern returns all policies that match a specific
+// pathPattern pattern. It filters the policy store and returns only policies
+// where PathPattern exactly matches the provided pattern string.
 //
 // Parameters:
 //   - pathPattern: The exact pathPattern pattern to match against policies
@@ -263,7 +268,8 @@ func ListPoliciesByPathPattern(pathPattern string) ([]data.Policy, error) {
 	// Load all policies from the backend
 	allPolicies, err := persist.Backend().LoadAllPolicies(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("failed to load policies: %w", err)
+		failErr := sdkErrors.ErrDataLoadFailed
+		return nil, errors.Join(failErr, err)
 	}
 
 	// Filter by pathPattern pattern
@@ -277,9 +283,9 @@ func ListPoliciesByPathPattern(pathPattern string) ([]data.Policy, error) {
 	return result, nil
 }
 
-// ListPoliciesBySPIFFEIDPattern returns all policies that match a specific SPIFFE ID
-// pattern. It filters the policy store and returns only policies where
-// SpiffeIdPattern exactly matches the provided pattern string.
+// ListPoliciesBySPIFFEIDPattern returns all policies that match a specific
+// SPIFFE ID pattern. It filters the policy store and returns only policies
+// where SpiffeIdPattern exactly matches the provided pattern string.
 //
 // Parameters:
 //   - spiffeIdPattern: The exact SPIFFE ID pattern to match against policies
@@ -289,13 +295,16 @@ func ListPoliciesByPathPattern(pathPattern string) ([]data.Policy, error) {
 //     an empty slice if no policies match. The order of policies in the
 //     returned slice is non-deterministic due to the concurrent nature of the
 //     underlying store.
-func ListPoliciesBySPIFFEIDPattern(SPIFFEIDPattern string) ([]data.Policy, error) {
+func ListPoliciesBySPIFFEIDPattern(
+	SPIFFEIDPattern string,
+) ([]data.Policy, error) {
 	ctx := context.Background()
 
 	// Load all policies from the backend.
 	allPolicies, err := persist.Backend().LoadAllPolicies(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("failed to load policies: %w", err)
+		failErr := sdkErrors.ErrDataLoadFailed
+		return nil, errors.Join(failErr, err)
 	}
 
 	// Filter by SPIFFE ID pattern

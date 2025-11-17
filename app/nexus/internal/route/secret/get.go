@@ -83,8 +83,12 @@ func RouteGetSecret(
 	if secretFound {
 		log.Log().Info(fName, "message", data.ErrFound, "path", path)
 	} else {
-		log.Log().Info(fName, "message", data.ErrNotFound,
-			"path", path, "err", err.Error())
+		log.Log().Info(
+			fName,
+			"message", data.ErrNotFound,
+			"path", path,
+			"err", err.Error(),
+		)
 	}
 
 	if !secretFound {

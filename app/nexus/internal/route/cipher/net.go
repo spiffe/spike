@@ -7,9 +7,9 @@ package cipher
 import (
 	"net/http"
 
-	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	"github.com/spiffe/spike-sdk-go/log"
+
 	"github.com/spiffe/spike/internal/net"
 )
 
@@ -50,8 +50,7 @@ func respondJSONDecrypt(
 	net.Success(
 		reqres.CipherDecryptResponse{
 			Plaintext: plaintext,
-			Err:       data.ErrSuccess,
-		}, w, fName,
+		}.Success(), w, fName,
 	)
 	return nil
 }
@@ -82,7 +81,7 @@ func respondStreamingEncrypt(
 	if _, err := w.Write(ciphertext); err != nil {
 		return err
 	}
-	log.Log().Info(fName, "message", "Streaming encryption successful")
+	log.Log().Info(fName, "message", "streaming encryption successful")
 	return nil
 }
 
@@ -105,8 +104,7 @@ func respondJSONEncrypt(
 			Version:    spikeCipherVersion,
 			Nonce:      nonce,
 			Ciphertext: ciphertext,
-			Err:        data.ErrSuccess,
-		}, w, fName,
+		}.Success(), w, fName,
 	)
 	return nil
 }

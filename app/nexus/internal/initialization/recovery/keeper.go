@@ -84,7 +84,6 @@ func iterateKeepersAndInitializeState(
 		res := unmarshalShardResponse(data)
 		// Security: Reset data before the function exits.
 		mem.ClearBytes(data)
-
 		if res == nil {
 			continue
 		}

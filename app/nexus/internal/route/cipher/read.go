@@ -6,7 +6,6 @@ package cipher
 
 import (
 	"crypto/cipher"
-	"fmt"
 	"io"
 	"net/http"
 
@@ -14,6 +13,7 @@ import (
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	apiErr "github.com/spiffe/spike-sdk-go/api/errors"
 	"github.com/spiffe/spike-sdk-go/log"
+
 	"github.com/spiffe/spike/internal/net"
 )
 
@@ -53,7 +53,7 @@ func readJSONDecryptRequestWithoutGuard(
 // This function does NOT perform authentication - the caller must have already
 // called the guard function.
 //
-// The streaming format is: version byte + nonce + ciphertext
+// The streaming format is: version byte + nonce and ciphertext
 //
 // Parameters:
 //   - w: The HTTP response writer for error responses
@@ -74,9 +74,11 @@ func readStreamingDecryptRequestData(
 	ver := make([]byte, 1)
 	n, err := io.ReadFull(r.Body, ver)
 	if err != nil || n != 1 {
-		log.Log().Debug(fName, "message", "Failed to read version")
-		http.Error(w, "failed to read version", http.StatusBadRequest)
-		return 0, nil, nil, fmt.Errorf("failed to read version")
+		log.Log().Debug(fName, "message", data.ErrCryptoFailedToReadVersion)
+		http.Error(
+			w, string(data.ErrCryptoFailedToReadVersion), http.StatusBadRequest,
+		)
+		return 0, nil, nil, apiErr.ErrCryptoFailedToReadVersion
 	}
 	version := ver[0]
 
@@ -85,9 +87,11 @@ func readStreamingDecryptRequestData(
 	nonce := make([]byte, bytesToRead)
 	n, err = io.ReadFull(r.Body, nonce)
 	if err != nil || n != bytesToRead {
-		log.Log().Debug(fName, "message", "Failed to read nonce")
-		http.Error(w, "failed to read nonce", http.StatusBadRequest)
-		return 0, nil, nil, fmt.Errorf("failed to read nonce")
+		log.Log().Debug(fName, "message", data.ErrCryptoFailedToReadNonce)
+		http.Error(
+			w, string(data.ErrCryptoFailedToReadNonce), http.StatusBadRequest,
+		)
+		return 0, nil, nil, apiErr.ErrCryptoFailedToReadNonce
 	}
 
 	// Read the remaining body as ciphertext
@@ -140,8 +144,7 @@ func readJSONEncryptRequestWithoutGuard(
 
 	request := net.HandleRequest[
 		reqres.CipherEncryptRequest, reqres.CipherEncryptResponse](
-		requestBody, w,
-		reqres.CipherEncryptResponse{Err: data.ErrBadInput},
+		requestBody, w, reqres.CipherEncryptBadInput,
 	)
 	if request == nil {
 		return reqres.CipherEncryptRequest{}, apiErr.ErrParseFailure

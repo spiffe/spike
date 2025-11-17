@@ -15,6 +15,20 @@ import (
 	"github.com/spiffe/spike/internal/net"
 )
 
+// routeWithBackingStore maps API actions and URLs to their corresponding
+// handlers when the backing store is initialized and available.
+//
+// This function routes requests to handlers that require an initialized
+// backing store, including secret operations, policy management, metadata
+// queries, operator functions, cipher operations, and bootstrap verification.
+//
+// Parameters:
+//   - a: The API action to perform (e.g., Get, Delete, List)
+//   - p: The API URL path identifier
+//
+// Returns:
+//   - net.Handler: The appropriate handler for the given action and URL,
+//     or net.Fallback if no matching route is found
 func routeWithBackingStore(a url.APIAction, p url.APIURL) net.Handler {
 	switch {
 	case a == url.ActionDefault && p == url.NexusSecrets:
@@ -52,6 +66,21 @@ func routeWithBackingStore(a url.APIAction, p url.APIURL) net.Handler {
 	}
 }
 
+// routeWithNoBackingStore maps API actions and URLs to their corresponding
+// handlers when the backing store is not yet initialized.
+//
+// This function provides limited routing for operations that can function
+// without an initialized backing store. Only operator recovery/restore and
+// cipher operations are available in this mode. All other requests are
+// routed to the fallback handler.
+//
+// Parameters:
+//   - a: The API action to perform
+//   - p: The API URL path identifier
+//
+// Returns:
+//   - net.Handler: The appropriate handler for the given action and URL,
+//     or net.Fallback if the operation requires a backing store
 func routeWithNoBackingStore(a url.APIAction, p url.APIURL) net.Handler {
 	switch {
 	case a == url.ActionDefault && p == url.NexusOperatorRecover:

@@ -8,5 +8,6 @@
 package sqlite
 
 import (
+	// Imported for side effects.
 	_ "github.com/mattn/go-sqlite3"
 )

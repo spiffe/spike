@@ -116,7 +116,7 @@ func RouteRecover(
 	}
 
 	responseBody := net.SuccessWithResponseBody(
-		reqres.RecoverResponse{Shards: shards}, w, fName,
+		reqres.RecoverResponse{Shards: shards}.Success(), w, fName,
 	)
 	defer func() {
 		mem.ClearBytes(responseBody)

@@ -70,7 +70,8 @@ func ParseOptions(opts map[backend.DatabaseConfigKey]any) (*Options, error) {
 		return nil,
 			fmt.Errorf(
 				"MaxIdleConns (%d) cannot be greater than MaxOpenConns (%d)",
-				sqliteOpts.MaxIdleConns, sqliteOpts.MaxOpenConns)
+				sqliteOpts.MaxIdleConns, sqliteOpts.MaxOpenConns,
+			)
 	}
 
 	return sqliteOpts, nil

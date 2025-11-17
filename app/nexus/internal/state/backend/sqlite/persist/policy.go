@@ -16,6 +16,7 @@ import (
 	"time"
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
+	sdkErrors "github.com/spiffe/spike-sdk-go/api/errors"
 	"github.com/spiffe/spike-sdk-go/log"
 
 	"github.com/spiffe/spike/app/nexus/internal/state/backend/sqlite/ddl"
@@ -36,7 +37,7 @@ import (
 func (s *DataStore) DeletePolicy(ctx context.Context, id string) error {
 	const fName = "DeletePolicy"
 	if ctx == nil {
-		log.FatalLn(fName, "message", "nil context")
+		log.FatalLn(fName, "message", data.ErrNilContext)
 	}
 
 	s.mu.Lock()
@@ -102,7 +103,7 @@ func encryptWithNonce(s *DataStore, nonce []byte, data []byte) ([]byte, error) {
 func (s *DataStore) StorePolicy(ctx context.Context, policy data.Policy) error {
 	const fName = "StorePolicy"
 	if ctx == nil {
-		log.FatalLn(fName, "message", "nil context")
+		log.FatalLn(fName, "message", data.ErrNilContext)
 	}
 
 	s.mu.Lock()
@@ -188,7 +189,7 @@ func (s *DataStore) LoadPolicy(
 ) (*data.Policy, error) {
 	const fName = "LoadPolicy"
 	if ctx == nil {
-		log.FatalLn(fName, "message", "nil context")
+		log.FatalLn(fName, "message", data.ErrNilContext)
 	}
 
 	s.mu.RLock()
@@ -271,8 +272,9 @@ func (s *DataStore) LoadAllPolicies(
 	ctx context.Context,
 ) (map[string]*data.Policy, error) {
 	const fName = "LoadAllPolicies"
+
 	if ctx == nil {
-		log.FatalLn(fName, "message", "nil context")
+		log.FatalLn(fName, "message", data.ErrNilContext)
 	}
 
 	s.mu.RLock()
@@ -280,15 +282,25 @@ func (s *DataStore) LoadAllPolicies(
 
 	rows, err := s.db.QueryContext(ctx, ddl.QueryAllPolicies)
 	if err != nil {
-		return nil, fmt.Errorf("failed to query policies: %w", err)
+		failErr := sdkErrors.ErrQueryFailure
+		return nil, errors.Join(failErr, err)
 	}
-	defer rows.Close()
+	defer func(rows *sql.Rows) {
+		err := rows.Close()
+		if err != nil {
+			failErr := sdkErrors.ErrFileCloseFailed
+			fmt.Printf("failed to close rows: %v\n", failErr.Error())
+		}
+	}(rows)
 
 	policies := make(map[string]*data.Policy)
 
 	for rows.Next() {
 		var policy data.Policy
-		var encryptedSPIFFEIDPattern, encryptedPathPattern, encryptedPermissions, nonce []byte
+		var encryptedSPIFFEIDPattern []byte
+		var encryptedPathPattern []byte
+		var encryptedPermissions []byte
+		var nonce []byte
 		var createdTime int64
 
 		if err := rows.Scan(
@@ -300,21 +312,31 @@ func (s *DataStore) LoadAllPolicies(
 			&nonce,
 			&createdTime,
 		); err != nil {
-			return nil, fmt.Errorf("failed to scan policy: %w", err)
+			failErr := sdkErrors.ErrQueryFailure
+			return nil, errors.Join(failErr, err)
 		}
 
 		// Decrypt
 		decryptedSPIFFEIDPattern, err := s.decrypt(encryptedSPIFFEIDPattern, nonce)
 		if err != nil {
-			return nil, fmt.Errorf("failed to decrypt SPIFFE ID pattern for policy %s: %w", policy.ID, err)
+			failErr := sdkErrors.ErrFailedFor(
+				"decryption", "SPIFFE ID pattern", "policy", policy.ID,
+			)
+			return nil, errors.Join(failErr, err)
 		}
 		decryptedPathPattern, err := s.decrypt(encryptedPathPattern, nonce)
 		if err != nil {
-			return nil, fmt.Errorf("failed to decrypt path pattern for policy %s: %w", policy.ID, err)
+			failErr := sdkErrors.ErrFailedFor(
+				"decryption", "path pattern", "policy", policy.ID,
+			)
+			return nil, errors.Join(failErr, err)
 		}
 		decryptedPermissions, err := s.decrypt(encryptedPermissions, nonce)
 		if err != nil {
-			return nil, fmt.Errorf("failed to decrypt permissions for policy %s: %w", policy.ID, err)
+			failErr := sdkErrors.ErrFailedFor(
+				"decryption", "permissions", "policy", policy.ID,
+			)
+			return nil, errors.Join(failErr, err)
 		}
 
 		policy.SPIFFEIDPattern = string(decryptedSPIFFEIDPattern)
@@ -334,18 +356,24 @@ func (s *DataStore) LoadAllPolicies(
 		// Compile regex
 		policy.IDRegex, err = regexp.Compile(policy.SPIFFEIDPattern)
 		if err != nil {
-			return nil, fmt.Errorf("invalid spiffeid pattern for policy %s: %w", policy.ID, err)
+			failErr := sdkErrors.ErrInvalidFor(
+				"SPIFFE ID pattern", "policy", policy.ID,
+			)
+			return nil, errors.Join(failErr, err)
 		}
+
 		policy.PathRegex, err = regexp.Compile(policy.PathPattern)
 		if err != nil {
-			return nil, fmt.Errorf("invalid path pattern for policy %s: %w", policy.ID, err)
+			failErr := sdkErrors.ErrInvalidFor("path pattern", "policy", policy.ID)
+			return nil, errors.Join(failErr, err)
 		}
 
 		policies[policy.ID] = &policy
 	}
 
 	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("failed to iterate policy rows: %w", err)
+		failErr := sdkErrors.ErrQueryFailure
+		return nil, errors.Join(failErr, err)
 	}
 
 	return policies, nil

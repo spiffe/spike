@@ -54,7 +54,7 @@ func RootShares() []shamir.Share {
 		log.FatalLn(
 			fName,
 			"message", "RootShares() called more than once",
-			"err", "This is a critical programming error that would "+
+			"err", "This is a critical error that would "+
 				"generate different root keys and break the system",
 		)
 	}

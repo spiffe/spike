@@ -15,6 +15,10 @@ import (
 	"github.com/spiffe/spike/internal/net"
 )
 
+// It's unlikely to have 1000 SPIKE Keepers across the board.
+// The indexes start from 1 and increase one-by-one by design.
+const maxShardID = 1000
+
 // guardRestoreRequest validates a system restore request by performing
 // authentication, authorization, and input validation checks.
 //
@@ -65,9 +69,6 @@ func guardRestoreRequest(
 		)
 	}
 
-	// It's unlikely to have 1000 SPIKE Keepers across the board.
-	// The indexes start from 1 and increase one-by-one by design.
-	const maxShardID = 1000 // TODO: to SDK constants.
 	if request.ID < 1 || request.ID > maxShardID {
 		return net.Fail(
 			reqres.RestoreBadInput, w,

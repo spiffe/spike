@@ -8,8 +8,9 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"encoding/hex"
-	"fmt"
+	"errors"
 
+	sdkErrors "github.com/spiffe/spike-sdk-go/api/errors"
 	"github.com/spiffe/spike-sdk-go/crypto"
 
 	"github.com/spiffe/spike/app/nexus/internal/state/backend"
@@ -29,29 +30,32 @@ import (
 func New(cfg backend.Config) (backend.Backend, error) {
 	opts, err := persist.ParseOptions(cfg.Options)
 	if err != nil {
-		return nil, fmt.Errorf("invalid sqlite options: %w", err)
+		failErr := sdkErrors.ErrBackendInvalidConfiguration
+		return nil, errors.Join(failErr, err)
 	}
 
 	key, err := hex.DecodeString(cfg.EncryptionKey)
 	if err != nil {
-		return nil, fmt.Errorf("invalid encryption key: %w", err)
+		failErr := sdkErrors.ErrBackendInvalidEncryptionKey
+		return nil, errors.Join(failErr, err)
 	}
 
 	// Validate key length
 	if len(key) != crypto.AES256KeySize {
-		return nil, fmt.Errorf(
-			"invalid encryption key length: must be 32 bytes",
-		)
+		failErr := sdkErrors.ErrCryptoInvalidEncryptionKeyLength
+		return nil, failErr
 	}
 
 	block, err := aes.NewCipher(key)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create cipher: %w", err)
+		failErr := sdkErrors.ErrCryptoFailedToCreateCipher
+		return nil, errors.Join(failErr, err)
 	}
 
 	gcm, err := cipher.NewGCM(block)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create GCM: %w", err)
+		failErr := sdkErrors.ErrCryptoFailedToCreateGCM
+		return nil, errors.Join(failErr, err)
 	}
 
 	return &persist.DataStore{

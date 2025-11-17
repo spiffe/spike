@@ -5,6 +5,10 @@
 package persist
 
 import (
+	"errors"
+
+	"github.com/spiffe/spike-sdk-go/api/entity/data"
+	sdkErrors "github.com/spiffe/spike-sdk-go/api/errors"
 	"github.com/spiffe/spike-sdk-go/crypto"
 	"github.com/spiffe/spike-sdk-go/log"
 
@@ -42,14 +46,21 @@ import (
 //
 // Note: Unlike the SQLite backend, the Lite backend does not require a
 // separate Initialize() call or timeout configuration.
-func initializeLiteBackend(rootKey *[crypto.AES256KeySize]byte) backend.Backend {
+func initializeLiteBackend(
+	rootKey *[crypto.AES256KeySize]byte,
+) backend.Backend {
 	const fName = "initializeLiteBackend"
+
 	dbBackend, err := lite.New(rootKey)
 	if err != nil {
-		log.FatalLn(fName, "message", "Failed to create Lite backend",
-			"err", err.Error(),
+		failErr := errors.Join(sdkErrors.ErrInitializationFailed, err)
+		log.FatalLn(
+			fName,
+			"message", data.ErrCreationFailed,
+			"err", failErr,
 		)
 		return nil
 	}
+
 	return dbBackend
 }
