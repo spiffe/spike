@@ -9,8 +9,8 @@ import (
 	"net/http"
 
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
-	"github.com/spiffe/spike-sdk-go/api/errors"
-	"github.com/spiffe/spike-sdk-go/kv"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
+
 	"github.com/spiffe/spike/internal/net"
 )
 
@@ -36,14 +36,14 @@ import (
 func handleGetSecretError(err error, w http.ResponseWriter) error {
 	fName := "handleGetSecretError"
 
-	if stdErrors.Is(err, kv.ErrItemNotFound) {
-		failErr := stdErrors.Join(errors.ErrNotFound, err)
+	if stdErrors.Is(err, sdkErrors.ErrNotFound) {
+		failErr := stdErrors.Join(sdkErrors.ErrNotFound, err)
 		return net.Fail(
 			reqres.SecretReadNotFound, w, http.StatusNotFound, failErr, fName,
 		)
 	}
 
-	failErr := stdErrors.Join(errors.ErrQueryFailure, err)
+	failErr := stdErrors.Join(sdkErrors.ErrQueryFailure, err)
 	return net.Fail(
 		reqres.SecretReadInternal, w, http.StatusInternalServerError,
 		failErr, fName,
@@ -72,15 +72,15 @@ func handleGetSecretError(err error, w http.ResponseWriter) error {
 func handleGetSecretMetadataError(err error, w http.ResponseWriter) error {
 	fName := "handleGetSecretMetadataError"
 
-	if stdErrors.Is(err, kv.ErrItemNotFound) {
-		failErr := stdErrors.Join(errors.ErrNotFound, err)
+	if stdErrors.Is(err, sdkErrors.ErrNotFound) {
+		failErr := stdErrors.Join(sdkErrors.ErrNotFound, err)
 		return net.Fail(
 			reqres.SecretMetadataNotFound, w,
 			http.StatusNotFound, failErr, fName,
 		)
 	}
 
-	failErr := stdErrors.Join(errors.ErrQueryFailure, err)
+	failErr := stdErrors.Join(sdkErrors.ErrQueryFailure, err)
 	return net.Fail(
 		reqres.SecretMetadataInternal, w,
 		http.StatusInternalServerError, failErr, fName,

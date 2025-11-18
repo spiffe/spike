@@ -8,8 +8,8 @@ import (
 	"crypto/cipher"
 	"net/http"
 
-	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike/internal/journal"
 )
 
@@ -66,7 +66,7 @@ func RouteDecrypt(
 	// Cipher getter for JSON mode
 	getCipher := func() (cipher.AEAD, error) {
 		return getCipherOrFailJSON(
-			w, reqres.CipherDecryptResponse{Err: data.ErrInternal},
+			w, reqres.CipherDecryptResponse{Err: sdkErrors.ErrCodeInternal},
 		)
 	}
 	return handleJSONDecrypt(w, r, getCipher, fName)

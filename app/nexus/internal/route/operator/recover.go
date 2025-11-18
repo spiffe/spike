@@ -7,7 +7,6 @@ package operator
 import (
 	"net/http"
 
-	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	"github.com/spiffe/spike-sdk-go/config/env"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
@@ -91,7 +90,7 @@ func RouteRecover(
 
 		// Check for nil pointers
 		if shard == nil {
-			log.Log().Error(fName, "message", data.ErrShamirNilShard)
+			log.Log().Error(fName, "message", sdkErrors.ErrCodeShamirNilShard)
 			return sdkErrors.ErrInvalidInput
 		}
 
@@ -104,13 +103,13 @@ func RouteRecover(
 			}
 		}
 		if zeroed {
-			log.Log().Error(fName, "message", data.ErrShamirEmptyShard)
+			log.Log().Error(fName, "message", sdkErrors.ErrCodeShamirEmptyShard)
 			return sdkErrors.ErrInvalidInput
 		}
 
 		// Verify shard index is within valid range:
 		if idx < 1 || idx > env.ShamirSharesVal() {
-			log.Log().Error(fName, "message", data.ErrShamirInvalidIndex)
+			log.Log().Error(fName, "message", sdkErrors.ErrCodeShamirInvalidIndex)
 			return sdkErrors.ErrInvalidInput
 		}
 	}

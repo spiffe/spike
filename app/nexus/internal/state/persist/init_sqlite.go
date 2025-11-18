@@ -9,9 +9,8 @@ import (
 	"encoding/hex"
 	"errors"
 
-	"github.com/spiffe/spike-sdk-go/api/entity/data"
-	sdkErrors "github.com/spiffe/spike-sdk-go/api/errors"
 	"github.com/spiffe/spike-sdk-go/config/env"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/log"
 
 	"github.com/spiffe/spike/app/nexus/internal/state/backend"
@@ -71,7 +70,7 @@ func initializeSqliteBackend(rootKey *[32]byte) backend.Backend {
 		// The system can still work with just in-memory state
 		log.Log().Warn(
 			fName,
-			"message", data.ErrCreationFailed,
+			"message", sdkErrors.ErrCodeCreationFailed,
 			"err", failErr,
 		)
 		return nil
@@ -85,7 +84,7 @@ func initializeSqliteBackend(rootKey *[32]byte) backend.Backend {
 	if err := dbBackend.Initialize(ctxC); err != nil {
 		failErr := errors.Join(sdkErrors.ErrInitializationFailed, err)
 		log.Log().Warn(
-			fName, "message", data.ErrInitializationFailed, "err", failErr,
+			fName, "message", sdkErrors.ErrInitializationFailed, "err", failErr,
 		)
 		return nil
 	}

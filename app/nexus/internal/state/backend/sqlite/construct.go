@@ -10,8 +10,8 @@ import (
 	"encoding/hex"
 	"errors"
 
-	sdkErrors "github.com/spiffe/spike-sdk-go/api/errors"
 	"github.com/spiffe/spike-sdk-go/crypto"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 
 	"github.com/spiffe/spike/app/nexus/internal/state/backend"
 	"github.com/spiffe/spike/app/nexus/internal/state/backend/sqlite/persist"

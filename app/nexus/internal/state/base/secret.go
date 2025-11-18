@@ -12,9 +12,10 @@ import (
 	"strconv"
 	"time"
 
-	sdkErrors "github.com/spiffe/spike-sdk-go/api/errors"
 	"github.com/spiffe/spike-sdk-go/config/env"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/kv"
+	"github.com/spiffe/spike-sdk-go/log"
 
 	"github.com/spiffe/spike/app/nexus/internal/state/persist"
 )
@@ -142,18 +143,17 @@ func UpsertSecret(path string, values map[string]string) error {
 //   - versions: A slice of version numbers to delete. If empty, deletes the
 //     current version only. Version number 0 is the current version.
 func DeleteSecret(path string, versions []int) error {
-	ctx := context.Background()
+	const fName = "DeleteSecret"
 
-	// Load the current secret from the backing store
-	secret, err := persist.Backend().LoadSecret(ctx, path)
+	secret, err := loadAndValidateSecret(fName, path)
 	if err != nil {
-		failErr := sdkErrors.ErrDataLoadFailed
-		return errors.Join(failErr, err)
+		return err
 	}
 	if secret == nil {
-		failErr := sdkErrors.ErrInvalidFor("secret", "pathPattern", path)
-		return errors.Join(failErr, err)
+		return sdkErrors.ErrInvalidForAReason
 	}
+
+	ctx := context.Background()
 
 	// If no versions specified OR version 0 specified, delete the current version
 	if len(versions) == 0 {
@@ -235,18 +235,17 @@ func DeleteSecret(path string, versions []int) error {
 //	// Restore versions 1 and 3 of a secret
 //	UndeleteSecret("app/secrets/api-key", []int{1, 3})
 func UndeleteSecret(path string, versions []int) error {
-	ctx := context.Background()
+	const fName = "UndeleteSecret"
 
-	// Load the current secret from the backing store
-	secret, err := persist.Backend().LoadSecret(ctx, path)
+	secret, err := loadAndValidateSecret(fName, path)
 	if err != nil {
-		failErr := sdkErrors.ErrDataLoadFailed
-		return errors.Join(failErr, err)
+		return err
 	}
 	if secret == nil {
-		failErr := sdkErrors.ErrInvalidFor("secret", "pathPattern", path)
-		return errors.Join(failErr, err)
+		return sdkErrors.ErrInvalidForAReason
 	}
+
+	ctx := context.Background()
 
 	currentVersion := secret.Metadata.CurrentVersion
 
@@ -264,8 +263,9 @@ func UndeleteSecret(path string, versions []int) error {
 			if highestDeleted > 0 {
 				versions = []int{highestDeleted}
 			} else {
-				failErr := sdkErrors.ErrInvalidFor("secret", "pathPattern", path)
-				return errors.Join(failErr, err)
+				failMsg := sdkErrors.InvalidFor("secret", "pathPattern", path)
+				log.Log().Warn(fName, "message", failMsg)
+				return errors.Join(sdkErrors.ErrInvalidForAReason, err)
 			}
 		} else {
 			versions = []int{currentVersion}
@@ -298,8 +298,9 @@ func UndeleteSecret(path string, versions []int) error {
 	}
 
 	if !anyUndeleted {
-		failErr := sdkErrors.ErrInvalidFor("secret", "pathPattern", path)
-		return failErr
+		failMsg := sdkErrors.InvalidFor("secret", "pathPattern", path)
+		log.Log().Warn(fName, "message", failMsg)
+		return sdkErrors.ErrInvalidForAReason
 	}
 
 	// If CurrentVersion was 0 (all deleted), set it to
@@ -330,39 +331,39 @@ func UndeleteSecret(path string, versions []int) error {
 //   - map[string]string: The secret key-value pairs
 //   - bool: Whether the secret was found
 func GetSecret(path string, version int) (map[string]string, error) {
-	ctx := context.Background()
+	const fName = "GetSecret"
 
-	// Load secret from the backing store
-	secret, err := persist.Backend().LoadSecret(ctx, path)
+	secret, err := loadAndValidateSecret(fName, path)
 	if err != nil {
-		failErr := sdkErrors.ErrDataLoadFailed
-		return nil, errors.Join(failErr, err)
+		return nil, err
 	}
 	if secret == nil {
-		failErr := sdkErrors.ErrInvalidFor("secret", "pathPattern", path)
-		return nil, errors.Join(failErr, err)
+		return nil, sdkErrors.ErrInvalidForAReason
 	}
 
 	// Handle version 0 (current version)
 	if version == 0 {
 		version = secret.Metadata.CurrentVersion
 		if version == 0 {
-			failErr := sdkErrors.ErrInvalidFor("secret", "pathPattern", path)
-			return nil, errors.Join(failErr, err)
+			failMsg := sdkErrors.InvalidFor("secret", "pathPattern", path)
+			log.Log().Warn(fName, "message", failMsg)
+			return nil, errors.Join(sdkErrors.ErrInvalidForAReason, err)
 		}
 	}
 
 	// Get the specific version
 	v, exists := secret.Versions[version]
 	if !exists {
-		failErr := sdkErrors.ErrInvalidFor("version", "pathPattern", path)
-		return nil, errors.Join(failErr, err)
+		failMsg := sdkErrors.InvalidFor("version", "pathPattern", path)
+		log.Log().Warn(fName, "message", failMsg)
+		return nil, errors.Join(sdkErrors.ErrInvalidForAReason, err)
 	}
 
 	// Check if the version is deleted
 	if v.DeletedTime != nil {
-		failErr := sdkErrors.ErrInvalidFor("version", "pathPattern", path)
-		return nil, errors.Join(failErr, err)
+		failMsg := sdkErrors.InvalidFor("version", "pathPattern", path)
+		log.Log().Warn(fName, "message", failMsg)
+		return nil, errors.Join(sdkErrors.ErrInvalidForAReason, err)
 	}
 
 	return v.Data, nil
@@ -379,17 +380,14 @@ func GetSecret(path string, version int) (map[string]string, error) {
 //   - *kv.Secret: The secret type
 //   - bool: Whether the secret was found
 func GetRawSecret(path string, version int) (*kv.Value, error) {
-	ctx := context.Background()
+	const fName = "GetRawSecret"
 
-	// Load secret from the backing store
-	secret, err := persist.Backend().LoadSecret(ctx, path)
+	secret, err := loadAndValidateSecret(fName, path)
 	if err != nil {
-		failErr := sdkErrors.ErrDataLoadFailed
-		return nil, errors.Join(failErr, err)
+		return nil, err
 	}
 	if secret == nil {
-		failErr := sdkErrors.ErrInvalidFor("secret", "pathPattern", path)
-		return nil, errors.Join(failErr, err)
+		return nil, sdkErrors.ErrInvalidForAReason
 	}
 
 	// Validate the requested version exists and is not deleted
@@ -397,23 +395,25 @@ func GetRawSecret(path string, version int) (*kv.Value, error) {
 	if checkVersion == 0 {
 		checkVersion = secret.Metadata.CurrentVersion
 		if checkVersion == 0 {
-			failErr := sdkErrors.ErrInvalidFor("version", "pathPattern", path)
-			return nil, errors.Join(failErr, err)
+			failMsg := sdkErrors.InvalidFor("version", "pathPattern", path)
+			log.Log().Warn(fName, "message", failMsg)
+			return nil, errors.Join(sdkErrors.ErrInvalidForAReason, err)
 		}
 	}
 
 	v, exists := secret.Versions[checkVersion]
 	if !exists {
 		vs := strconv.Itoa(checkVersion)
-		failErr := sdkErrors.ErrFailedFor("query", "raw secret", "v"+vs, path)
-		return nil, errors.Join(failErr, err)
+		failMsg := sdkErrors.FailedFor("query", "raw secret", "v"+vs, path)
+		log.Log().Warn(fName, "message", failMsg)
+		return nil, errors.Join(sdkErrors.ErrFailedForAReason, err)
 	}
 
 	if v.DeletedTime != nil {
 		vs := strconv.Itoa(checkVersion)
-		failErr := sdkErrors.ErrFailedFor("deletion", "raw secret", "v"+vs, path)
-
-		return nil, errors.Join(failErr, err)
+		failMsg := sdkErrors.FailedFor("deletion", "raw secret", "v"+vs, path)
+		log.Log().Warn(fName, "message", failMsg)
+		return nil, errors.Join(sdkErrors.ErrFailedForAReason, err)
 	}
 
 	// Return the full secret, but we've validated the requested version exists

@@ -10,9 +10,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/spiffe/spike-sdk-go/api/entity/data"
-	sdkErrors "github.com/spiffe/spike-sdk-go/api/errors"
 	"github.com/spiffe/spike-sdk-go/config/env"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/log"
 	"github.com/spiffe/spike-sdk-go/security/mem"
 	"github.com/spiffe/spike-sdk-go/spiffe"
@@ -49,7 +48,7 @@ Consider disabling swap to enhance security.
 		}
 		log.FatalLn(
 			appName,
-			"message", data.ErrInitializationFailed,
+			"message", sdkErrors.ErrCodeInitializationFailed,
 			"err", msg,
 		)
 	}

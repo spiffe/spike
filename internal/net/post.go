@@ -10,30 +10,9 @@ import (
 	"io"
 	"net/http"
 
-	apiErr "github.com/spiffe/spike-sdk-go/api/errors"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/log"
 )
-
-// body reads and returns all bytes from an HTTP response body. This is a
-// helper function that wraps io.ReadAll for use with HTTP responses.
-//
-// Parameters:
-//   - r: The HTTP response containing the body to read
-//
-// Returns:
-//   - []byte: The complete response body as a byte slice
-//   - error: Any error encountered while reading the body
-//
-// Note: This function does not close the response body. The caller is
-// responsible for closing r.Body after calling this function.
-func body(r *http.Response) (bod []byte, err error) {
-	body, err := io.ReadAll(r.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	return body, err
-}
 
 // Post performs an HTTP POST request with a JSON payload and returns the
 // response body. It handles the common cases of connection errors, non-200
@@ -84,27 +63,27 @@ func Post(client *http.Client, path string, mr []byte) ([]byte, error) {
 	r, err := client.Do(req)
 	if err != nil {
 		return []byte{}, errors.Join(
-			apiErr.ErrPeerConnection,
+			sdkErrors.ErrPeerConnection,
 			err,
 		)
 	}
 
 	if r.StatusCode != http.StatusOK {
 		if r.StatusCode == http.StatusNotFound {
-			return []byte{}, apiErr.ErrNotFound
+			return []byte{}, sdkErrors.ErrNotFound
 		}
 
 		if r.StatusCode == http.StatusUnauthorized {
-			return []byte{}, apiErr.ErrUnauthorized
+			return []byte{}, sdkErrors.ErrUnauthorized
 		}
 
-		return []byte{}, apiErr.ErrPeerConnection
+		return []byte{}, sdkErrors.ErrPeerConnection
 	}
 
 	b, err := body(r)
 	if err != nil {
 		return []byte{}, errors.Join(
-			apiErr.ErrReadingResponseBody,
+			sdkErrors.ErrReadingResponseBody,
 			err,
 		)
 	}

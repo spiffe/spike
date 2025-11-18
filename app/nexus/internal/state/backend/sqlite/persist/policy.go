@@ -319,24 +319,27 @@ func (s *DataStore) LoadAllPolicies(
 		// Decrypt
 		decryptedSPIFFEIDPattern, err := s.decrypt(encryptedSPIFFEIDPattern, nonce)
 		if err != nil {
-			failErr := sdkErrors.ErrFailedFor(
+			failMsg := sdkErrors.FailedFor(
 				"decryption", "SPIFFE ID pattern", "policy", policy.ID,
 			)
-			return nil, errors.Join(failErr, err)
+			log.Log().Warn(fName, "message", failMsg)
+			return nil, errors.Join(sdkErrors.ErrFailedForAReason, err)
 		}
 		decryptedPathPattern, err := s.decrypt(encryptedPathPattern, nonce)
 		if err != nil {
-			failErr := sdkErrors.ErrFailedFor(
+			failMsg := sdkErrors.FailedFor(
 				"decryption", "path pattern", "policy", policy.ID,
 			)
-			return nil, errors.Join(failErr, err)
+			log.Log().Warn(fName, "message", failMsg)
+			return nil, errors.Join(sdkErrors.ErrFailedForAReason, err)
 		}
 		decryptedPermissions, err := s.decrypt(encryptedPermissions, nonce)
 		if err != nil {
-			failErr := sdkErrors.ErrFailedFor(
+			failMsg := sdkErrors.FailedFor(
 				"decryption", "permissions", "policy", policy.ID,
 			)
-			return nil, errors.Join(failErr, err)
+			log.Log().Warn(fName, "message", failMsg)
+			return nil, errors.Join(sdkErrors.ErrFailedForAReason, err)
 		}
 
 		policy.SPIFFEIDPattern = string(decryptedSPIFFEIDPattern)
@@ -356,16 +359,18 @@ func (s *DataStore) LoadAllPolicies(
 		// Compile regex
 		policy.IDRegex, err = regexp.Compile(policy.SPIFFEIDPattern)
 		if err != nil {
-			failErr := sdkErrors.ErrInvalidFor(
+			failMsg := sdkErrors.InvalidFor(
 				"SPIFFE ID pattern", "policy", policy.ID,
 			)
-			return nil, errors.Join(failErr, err)
+			log.Log().Warn(fName, "message", failMsg)
+			return nil, errors.Join(sdkErrors.ErrInvalidForAReason, err)
 		}
 
 		policy.PathRegex, err = regexp.Compile(policy.PathPattern)
 		if err != nil {
-			failErr := sdkErrors.ErrInvalidFor("path pattern", "policy", policy.ID)
-			return nil, errors.Join(failErr, err)
+			failMsg := sdkErrors.InvalidFor("path pattern", "policy", policy.ID)
+			log.Log().Warn(fName, "message", failMsg)
+			return nil, errors.Join(sdkErrors.ErrInvalidForAReason, err)
 		}
 
 		policies[policy.ID] = &policy

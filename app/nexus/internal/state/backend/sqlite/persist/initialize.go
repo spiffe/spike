@@ -12,9 +12,8 @@ import (
 	"fmt"
 	"path/filepath"
 
-	"github.com/spiffe/spike-sdk-go/api/entity/data"
-	sdkErrors "github.com/spiffe/spike-sdk-go/api/errors"
 	"github.com/spiffe/spike-sdk-go/config/env"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/log"
 )
 
@@ -34,7 +33,7 @@ import (
 func (s *DataStore) Initialize(ctx context.Context) error {
 	const fName = "Initialize"
 	if ctx == nil {
-		log.FatalLn(fName, "message", data.ErrNilContext)
+		log.FatalLn(fName, "message", sdkErrors.ErrCodeNilContext)
 	}
 
 	s.mu.Lock()

@@ -31,8 +31,12 @@ func HandleRoute(h Handler) {
 		writer http.ResponseWriter, request *http.Request,
 	) {
 		now := time.Now()
+
+		// TODO: handle error
+		id, _ := crypto.ID()
+
 		entry := journal.AuditEntry{
-			TrailID:   crypto.ID(),
+			TrailID:   id,
 			Timestamp: now,
 			UserID:    "",
 			Action:    journal.AuditEnter,

@@ -10,7 +10,7 @@ import (
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
-	apiErr "github.com/spiffe/spike-sdk-go/api/errors"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/validation"
 	"github.com/spiffe/spike/internal/auth"
 
@@ -60,7 +60,7 @@ func guardSecretPutRequest(
 
 	err = validation.ValidatePath(path)
 	if invalidPath := err != nil; invalidPath {
-		failErr := stdErrs.Join(apiErr.ErrInvalidInput, err)
+		failErr := stdErrs.Join(sdkErrors.ErrInvalidInput, err)
 		return net.Fail(
 			reqres.SecretPutBadInput, w, http.StatusBadRequest, failErr, fName,
 		)
@@ -70,7 +70,7 @@ func guardSecretPutRequest(
 	for k := range values {
 		err := validation.ValidateName(k)
 		if err != nil {
-			failErr := stdErrs.Join(apiErr.ErrInvalidInput, err)
+			failErr := stdErrs.Join(sdkErrors.ErrInvalidInput, err)
 			return net.Fail(
 				reqres.SecretPutBadInput, w, http.StatusBadRequest, failErr, fName,
 			)
@@ -84,7 +84,7 @@ func guardSecretPutRequest(
 	if !allowed {
 		return net.Fail(
 			reqres.SecretPutUnauthorized, w,
-			http.StatusUnauthorized, apiErr.ErrUnauthorized, fName,
+			http.StatusUnauthorized, sdkErrors.ErrUnauthorized, fName,
 		)
 	}
 

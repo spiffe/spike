@@ -10,8 +10,7 @@ import (
 	"encoding/json"
 	"errors"
 
-	"github.com/spiffe/spike-sdk-go/api/entity/data"
-	sdkErrors "github.com/spiffe/spike-sdk-go/api/errors"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/kv"
 	"github.com/spiffe/spike-sdk-go/log"
 
@@ -40,7 +39,7 @@ func (s *DataStore) StoreSecret(
 	const fName = "StoreSecret"
 
 	if ctx == nil {
-		log.FatalLn(fName, "message", data.ErrNilContext)
+		log.FatalLn(fName, "message", sdkErrors.ErrCodeNilContext)
 	}
 
 	s.mu.Lock()
@@ -124,7 +123,7 @@ func (s *DataStore) LoadSecret(
 ) (*kv.Value, error) {
 	const fName = "LoadSecret"
 	if ctx == nil {
-		log.FatalLn(fName, "message", data.ErrNilContext)
+		log.FatalLn(fName, "message", sdkErrors.ErrCodeNilContext)
 	}
 
 	s.mu.RLock()

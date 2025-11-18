@@ -9,9 +9,9 @@ import (
 	"crypto/cipher"
 	"crypto/rand"
 
-	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/config/env"
 	"github.com/spiffe/spike-sdk-go/crypto"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/log"
 	"github.com/spiffe/spike-sdk-go/security/mem"
 
@@ -79,25 +79,25 @@ func InitializeBackend(rootKey *[crypto.AES256KeySize]byte) {
 	if env.BackendStoreTypeVal() == env.Memory {
 		if rootKey != nil {
 			log.FatalLn(fName,
-				"message", data.ErrInitializationFailed,
+				"message", sdkErrors.ErrCodeInitializationFailed,
 				"store_type", env.BackendStoreTypeVal(),
-				"err", data.ErrRootKeyNotEmpty,
+				"err", sdkErrors.ErrCodeRootKeyNotEmpty,
 			)
 		}
 	} else {
 		if rootKey == nil {
 			log.FatalLn(fName,
-				"message", data.ErrInitializationFailed,
+				"message", sdkErrors.ErrCodeInitializationFailed,
 				"store_type", env.BackendStoreTypeVal(),
-				"err", data.ErrRootKeyEmpty,
+				"err", sdkErrors.ErrCodeRootKeyEmpty,
 			)
 		}
 
 		if mem.Zeroed32(rootKey) {
 			log.FatalLn(fName,
-				"message", data.ErrInitializationFailed,
+				"message", sdkErrors.ErrCodeInitializationFailed,
 				"store_type", env.BackendStoreTypeVal(),
-				"err", data.ErrRootKeyEmpty,
+				"err", sdkErrors.ErrCodeRootKeyEmpty,
 			)
 		}
 	}

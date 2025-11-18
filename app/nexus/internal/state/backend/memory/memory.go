@@ -22,6 +22,7 @@ import (
 	"sync"
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/kv"
 )
 
@@ -84,7 +85,7 @@ func (s *Store) LoadSecret(
 	defer s.secretMu.RUnlock()
 
 	rawSecret, err := s.secretStore.GetRawSecret(path)
-	if err != nil && errors.Is(err, kv.ErrItemNotFound) {
+	if err != nil && errors.Is(err, sdkErrors.ErrStoreItemNotFound) {
 		// To align with the SQLite implementation, don't return an error for
 		// "not found" items and just return a `nil` secret.
 		return nil, nil

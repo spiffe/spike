@@ -7,9 +7,8 @@ package persist
 import (
 	"errors"
 
-	"github.com/spiffe/spike-sdk-go/api/entity/data"
-	sdkErrors "github.com/spiffe/spike-sdk-go/api/errors"
 	"github.com/spiffe/spike-sdk-go/crypto"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/log"
 
 	"github.com/spiffe/spike/app/nexus/internal/state/backend"
@@ -56,7 +55,7 @@ func initializeLiteBackend(
 		failErr := errors.Join(sdkErrors.ErrInitializationFailed, err)
 		log.FatalLn(
 			fName,
-			"message", data.ErrCreationFailed,
+			"message", sdkErrors.ErrCodeCreationFailed,
 			"err", failErr,
 		)
 		return nil

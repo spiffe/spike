@@ -12,17 +12,11 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
-	sdkErrors "github.com/spiffe/spike-sdk-go/api/errors"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/log"
 	"github.com/spiffe/spike-sdk-go/spiffeid"
 
 	"github.com/spiffe/spike/app/nexus/internal/state/persist"
-)
-
-var (
-	ErrPolicyNotFound = errors.New("policy not found")
-	ErrPolicyExists   = errors.New("policy already exists")
-	ErrInvalidPolicy  = errors.New("invalid policy")
 )
 
 // CheckAccess determines if a given SPIFFE ID has the required permissions for
@@ -62,7 +56,7 @@ func CheckAccess(
 	if err != nil {
 		log.Log().Warn(
 			fName,
-			"message", data.ErrResultSetFailedToLoad,
+			"message", sdkErrors.ErrCodeResultSetFailedToLoad,
 			"err", err.Error(),
 		)
 		return false
@@ -110,8 +104,10 @@ func CheckAccess(
 //   - Generates and sets a new UUID as the policy ID
 //   - Sets CreatedAt to current time if not already set
 func CreatePolicy(policy data.Policy) (data.Policy, error) {
+	const fName = "CreatePolicy"
+
 	if policy.Name == "" {
-		return data.Policy{}, ErrInvalidPolicy
+		return data.Policy{}, sdkErrors.ErrPolicyInvalid
 	}
 
 	ctx := context.Background()
@@ -125,26 +121,28 @@ func CreatePolicy(policy data.Policy) (data.Policy, error) {
 
 	for _, existingPolicy := range allPolicies {
 		if existingPolicy.Name == policy.Name {
-			return data.Policy{}, ErrPolicyExists
+			return data.Policy{}, sdkErrors.ErrPolicyExists
 		}
 	}
 
 	// Compile and validate patterns
 	idRegex, err := regexp.Compile(policy.SPIFFEIDPattern)
 	if err != nil {
-		failErr := sdkErrors.ErrInvalidFor(
+		failMsg := sdkErrors.InvalidFor(
 			"SPIFFEID pattern", "policy", policy.SPIFFEIDPattern,
 		)
-		return data.Policy{}, errors.Join(ErrInvalidPolicy, failErr, err)
+		log.Log().Warn(fName, "message", failMsg)
+		return data.Policy{}, errors.Join(sdkErrors.ErrPolicyInvalid, err)
 	}
 	policy.IDRegex = idRegex
 
 	pathRegex, err := regexp.Compile(policy.PathPattern)
 	if err != nil {
-		failErr := sdkErrors.ErrInvalidFor(
+		failMsg := sdkErrors.InvalidFor(
 			"path pattern", "policy", policy.PathPattern,
 		)
-		return data.Policy{}, errors.Join(ErrInvalidPolicy, failErr, err)
+		log.Log().Warn(fName, "message", failMsg)
+		return data.Policy{}, errors.Join(sdkErrors.ErrPolicyInvalid, err)
 	}
 	policy.PathRegex = pathRegex
 
@@ -183,7 +181,7 @@ func GetPolicy(id string) (data.Policy, error) {
 	}
 
 	if policy == nil {
-		return data.Policy{}, ErrPolicyNotFound
+		return data.Policy{}, sdkErrors.ErrPolicyNotFound
 	}
 
 	return *policy, nil
@@ -207,7 +205,7 @@ func DeletePolicy(id string) error {
 		return errors.Join(failErr, err)
 	}
 	if policy == nil {
-		return ErrPolicyNotFound
+		return sdkErrors.ErrPolicyNotFound
 	}
 
 	// Delete the policy from the backend

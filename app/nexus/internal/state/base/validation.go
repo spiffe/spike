@@ -5,8 +5,44 @@
 package base
 
 import (
+	"context"
+	"errors"
+
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
+	"github.com/spiffe/spike-sdk-go/kv"
+	"github.com/spiffe/spike-sdk-go/log"
+	"github.com/spiffe/spike/app/nexus/internal/state/persist"
 )
+
+// loadAndValidateSecret loads a secret from the backend and validates that it
+// exists. This helper function encapsulates the common pattern of loading and
+// validating secrets used across multiple functions.
+//
+// Parameters:
+//   - fName: The name of the calling function (for logging purposes)
+//   - path: The path to the secret
+//
+// Returns:
+//   - *kv.Value: The loaded secret if successful
+//   - error: An error if loading fails or the secret does not exist
+func loadAndValidateSecret(fName, path string) (*kv.Value, error) {
+	ctx := context.Background()
+
+	// Load the secret from the backing store
+	secret, err := persist.Backend().LoadSecret(ctx, path)
+	if err != nil {
+		failErr := sdkErrors.ErrDataLoadFailed
+		return nil, errors.Join(failErr, err)
+	}
+	if secret == nil {
+		failMsg := sdkErrors.InvalidFor("secret", "pathPattern", path)
+		log.Log().Warn(fName, "message", failMsg)
+		return nil, errors.Join(sdkErrors.ErrInvalidForAReason, err)
+	}
+
+	return secret, nil
+}
 
 // contains checks whether a specific permission exists in the given slice of
 // permissions.

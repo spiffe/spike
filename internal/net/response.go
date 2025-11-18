@@ -8,9 +8,8 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
-	apiErr "github.com/spiffe/spike-sdk-go/api/errors"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/log"
 
 	"github.com/spiffe/spike/internal/journal"
@@ -48,10 +47,10 @@ func MarshalBodyAndRespondOnMarshalFail(
 			log.Log().Error("marshalBody",
 				"message", "Problem writing response",
 				"err", err.Error())
-			return nil, apiErr.ErrMarshalFailure
+			return nil, sdkErrors.ErrMarshalFailure
 		}
 
-		return nil, apiErr.ErrMarshalFailure
+		return nil, sdkErrors.ErrMarshalFailure
 	}
 
 	return body, nil
@@ -114,7 +113,7 @@ func Fallback(
 	audit.Action = journal.AuditFallback
 
 	body, err := MarshalBodyAndRespondOnMarshalFail(
-		reqres.FallbackResponse{Err: data.ErrBadInput}, w,
+		reqres.FallbackResponse{Err: sdkErrors.ErrCodeBadInput}, w,
 	)
 	if err != nil {
 		return err
@@ -162,7 +161,7 @@ func NotReady(
 	audit.Action = journal.AuditBlocked
 
 	body, err := MarshalBodyAndRespondOnMarshalFail(
-		reqres.FallbackResponse{Err: data.ErrNotReady}, w,
+		reqres.FallbackResponse{Err: sdkErrors.ErrCodeNotReady}, w,
 	)
 	if err != nil {
 		return err

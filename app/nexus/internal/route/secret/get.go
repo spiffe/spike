@@ -9,6 +9,7 @@ import (
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/log"
 
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
@@ -81,11 +82,11 @@ func RouteGetSecret(
 	secretFound := err == nil
 
 	if secretFound {
-		log.Log().Info(fName, "message", data.ErrFound, "path", path)
+		log.Log().Info(fName, "message", sdkErrors.ErrCodeNotFound, "path", path)
 	} else {
 		log.Log().Info(
 			fName,
-			"message", data.ErrNotFound,
+			"message", sdkErrors.ErrCodeNotFound,
 			"path", path,
 			"err", err.Error(),
 		)

@@ -101,7 +101,7 @@ func RouteGetPolicy(
 	policy, err := state.GetPolicy(policyID)
 	policyFound := err == nil
 
-	internalError := err != nil && !stdErrors.Is(err, state.ErrPolicyNotFound)
+	internalError := err != nil && !stdErrors.Is(err, sdkErrors.ErrPolicyNotFound)
 	if internalError {
 		failErr := stdErrors.Join(sdkErrors.ErrQueryFailure, err)
 		return net.Fail(
@@ -122,9 +122,13 @@ func RouteGetPolicy(
 	}
 
 	if !policyFound {
+		// TODO: if we have ErrPolicyNotFound, then we should also have
+		// ErrSecretNotFound, and ErrSecretMetaDataNotFound and get rid of
+		// the generic ErrNotFound.
+		// Same for ErrFound, if any.
 		return net.Fail(
 			reqres.PolicyReadNotFound, w,
-			http.StatusNotFound, state.ErrPolicyNotFound, fName,
+			http.StatusNotFound, sdkErrors.ErrPolicyNotFound, fName,
 		)
 	}
 

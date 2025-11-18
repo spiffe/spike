@@ -10,7 +10,7 @@ import (
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
-	apiErr "github.com/spiffe/spike-sdk-go/api/errors"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/validation"
 	"github.com/spiffe/spike/internal/auth"
 
@@ -58,7 +58,7 @@ func guardGetSecretMetadataRequest(
 	path := request.Path
 	err = validation.ValidatePath(path)
 	if err != nil {
-		failErr := stdErrs.Join(apiErr.ErrInvalidInput, err)
+		failErr := stdErrs.Join(sdkErrors.ErrInvalidInput, err)
 		return net.Fail(
 			reqres.SecretMetadataBadInput, w, http.StatusBadRequest, failErr, fName,
 		)
@@ -71,7 +71,7 @@ func guardGetSecretMetadataRequest(
 	if !allowed {
 		return net.Fail(
 			reqres.SecretMetadataUnauthorized, w,
-			http.StatusUnauthorized, apiErr.ErrUnauthorized, fName,
+			http.StatusUnauthorized, sdkErrors.ErrUnauthorized, fName,
 		)
 	}
 

@@ -9,7 +9,7 @@ import (
 	"net/http"
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
-	apiErr "github.com/spiffe/spike-sdk-go/api/errors"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/validation"
 
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
@@ -55,7 +55,7 @@ func guardSecretRequest[TUnauth, TBadInput any](
 	// Validate path format
 	err = validation.ValidatePath(path)
 	if err != nil {
-		failErr := stdErrs.Join(apiErr.ErrInvalidInput, err)
+		failErr := stdErrs.Join(sdkErrors.ErrInvalidInput, err)
 		return net.Fail(
 			badInputResp, w, http.StatusBadRequest, failErr, fName,
 		)
@@ -70,7 +70,7 @@ func guardSecretRequest[TUnauth, TBadInput any](
 	if !allowed {
 		return net.Fail(
 			unauthorizedResp, w,
-			http.StatusUnauthorized, apiErr.ErrUnauthorized, fName,
+			http.StatusUnauthorized, sdkErrors.ErrUnauthorized, fName,
 		)
 	}
 

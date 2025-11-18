@@ -10,7 +10,7 @@ import (
 	"io"
 	"net/http"
 
-	apiErr "github.com/spiffe/spike-sdk-go/api/errors"
+	apiErr "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/log"
 	"github.com/spiffe/spike-sdk-go/net"
 )

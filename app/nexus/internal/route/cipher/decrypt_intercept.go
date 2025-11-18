@@ -36,7 +36,7 @@ func extractAndValidateSPIFFEID(
 ) (*spiffeid.ID, error) {
 	peerSPIFFEID, err := auth.ExtractPeerSPIFFEID[reqres.CipherDecryptResponse](
 		r, w, reqres.CipherDecryptResponse{
-			Err: data.ErrUnauthorized,
+			Err: sdkErrors.ErrCodeUnauthorized,
 		})
 	if alreadyResponded := err != nil; alreadyResponded {
 		return nil, err
