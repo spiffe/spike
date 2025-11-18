@@ -12,9 +12,8 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
-	"github.com/spiffe/spike-sdk-go/api/errors"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/log"
 
 	"github.com/spiffe/spike/internal/net"
@@ -77,7 +76,7 @@ func decryptDataJSON(
 
 	plaintext, err := c.Open(nil, nonce, ciphertext, nil)
 	if err != nil {
-		failErr := stdErrors.Join(errors.ErrCryptoDecryptionFailed, err)
+		failErr := stdErrors.Join(sdkErrors.ErrCryptoDecryptionFailed, err)
 		return nil, net.Fail(
 			reqres.CipherDecryptInternal, w, http.StatusInternalServerError,
 			failErr, fName,
@@ -102,9 +101,9 @@ func generateNonceOrFailStreaming(
 ) ([]byte, error) {
 	nonce := make([]byte, c.NonceSize())
 	if _, err := io.ReadFull(rand.Reader, nonce); err != nil {
-		failErr := stdErrors.Join(errors.ErrCryptoNonceGenerationFailed, err)
+		failErr := stdErrors.Join(sdkErrors.ErrCryptoNonceGenerationFailed, err)
 		http.Error(
-			w, string(data.ErrCryptoNonceGenerationFailed),
+			w, string(sdkErrors.ErrCodeCryptoNonceGenerationFailed),
 			http.StatusInternalServerError,
 		)
 		return nil, failErr
@@ -131,7 +130,7 @@ func generateNonceOrFailJSON[T any](
 
 	nonce := make([]byte, c.NonceSize())
 	if _, err := io.ReadFull(rand.Reader, nonce); err != nil {
-		failErr := stdErrors.Join(errors.ErrCryptoNonceGenerationFailed, err)
+		failErr := stdErrors.Join(sdkErrors.ErrCryptoNonceGenerationFailed, err)
 		return nil, net.Fail(
 			errorResponse, w, http.StatusInternalServerError, failErr, fName,
 		)

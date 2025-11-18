@@ -10,9 +10,9 @@ import (
 	"time"
 
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
-	"github.com/spiffe/spike-sdk-go/api/errors"
 	"github.com/spiffe/spike-sdk-go/config/env"
 	"github.com/spiffe/spike-sdk-go/crypto"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/log"
 	"github.com/spiffe/spike-sdk-go/retry"
 	"github.com/spiffe/spike-sdk-go/security/mem"
@@ -80,7 +80,7 @@ func InitializeBackingStoreFromKeepers(source *workloadapi.X509Source) {
 			"message", "initialization unsuccessful: will retry",
 			"keepers_so_far", len(successfulKeeperShards),
 		)
-		return false, errors.ErrRecoveryRetryFailed
+		return false, sdkErrors.ErrRecoveryRetryFailed
 	})
 
 	// This should never happen since the above loop retries forever:

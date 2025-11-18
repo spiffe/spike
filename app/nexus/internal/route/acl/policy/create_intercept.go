@@ -9,8 +9,8 @@ import (
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
-	apiErr "github.com/spiffe/spike-sdk-go/api/errors"
 	cfg "github.com/spiffe/spike-sdk-go/config/auth"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/validation"
 
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
@@ -61,7 +61,7 @@ func guardPolicyCreateRequest(
 	if !allowed {
 		return net.Fail(
 			reqres.PolicyCreateUnauthorized, w,
-			http.StatusUnauthorized, apiErr.ErrUnauthorized, fName,
+			http.StatusUnauthorized, sdkErrors.ErrUnauthorized, fName,
 		)
 	}
 
@@ -73,28 +73,28 @@ func guardPolicyCreateRequest(
 	if err := validation.ValidateName(name); err != nil {
 		return net.Fail(
 			reqres.PolicyCreateBadInput, w,
-			http.StatusBadRequest, apiErr.ErrInvalidInput, fName,
+			http.StatusBadRequest, sdkErrors.ErrInvalidInput, fName,
 		)
 	}
 
 	if err := validation.ValidateSPIFFEIDPattern(SPIFFEIDPattern); err != nil {
 		return net.Fail(
 			reqres.PolicyCreateBadInput, w,
-			http.StatusBadRequest, apiErr.ErrInvalidInput, fName,
+			http.StatusBadRequest, sdkErrors.ErrInvalidInput, fName,
 		)
 	}
 
 	if err := validation.ValidatePathPattern(pathPattern); err != nil {
 		return net.Fail(
 			reqres.PolicyCreateBadInput, w,
-			http.StatusBadRequest, apiErr.ErrInvalidInput, fName,
+			http.StatusBadRequest, sdkErrors.ErrInvalidInput, fName,
 		)
 	}
 
 	if err := validation.ValidatePermissions(permissions); err != nil {
 		return net.Fail(
 			reqres.PolicyCreateBadInput, w,
-			http.StatusBadRequest, apiErr.ErrInvalidInput, fName,
+			http.StatusBadRequest, sdkErrors.ErrInvalidInput, fName,
 		)
 	}
 

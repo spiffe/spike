@@ -9,9 +9,8 @@ import (
 	"encoding/hex"
 	"net/http"
 
-	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
-	"github.com/spiffe/spike-sdk-go/api/errors"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/log"
 
 	"github.com/spiffe/spike/app/nexus/internal/state/persist"
@@ -75,7 +74,7 @@ func RouteVerify(
 	if c == nil {
 		return net.Fail(
 			reqres.BootstrapBadInput, w, http.StatusInternalServerError,
-			errors.ErrCryptoCipherNotAvailable, fName,
+			sdkErrors.ErrCryptoCipherNotAvailable, fName,
 		)
 	}
 
@@ -84,7 +83,7 @@ func RouteVerify(
 	if err != nil {
 		return net.Fail(
 			reqres.BootstrapInternal, w, http.StatusInternalServerError,
-			errors.ErrCryptoDecryptionFailed, fName,
+			sdkErrors.ErrCryptoDecryptionFailed, fName,
 		)
 	}
 
@@ -94,7 +93,7 @@ func RouteVerify(
 
 	log.Log().Info(
 		fName,
-		"message", data.ErrCryptoCipherVerificationSuccess,
+		"message", sdkErrors.ErrCodeCryptoCipherVerificationSuccess,
 		"plaintext_len", len(plaintext),
 		"hash_hex", hashHex,
 	)
@@ -102,7 +101,6 @@ func RouteVerify(
 	net.Success(
 		reqres.BootstrapVerifyResponse{
 			Hash: hashHex,
-			Err:  data.ErrSuccess,
 		}.Success(), w, fName,
 	)
 	return nil

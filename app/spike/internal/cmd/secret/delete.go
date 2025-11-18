@@ -6,7 +6,6 @@ package secret
 
 import (
 	"fmt"
-	"regexp"
 	"strconv"
 	"strings"
 
@@ -18,14 +17,6 @@ import (
 	"github.com/spiffe/spike/app/spike/internal/stdout"
 	"github.com/spiffe/spike/app/spike/internal/trust"
 )
-
-const validPath = `^[a-zA-Z0-9._\-/()?+*|[\]{}\\]+$`
-
-// Helper function to validate secret paths
-func validSecretPath(path string) bool {
-	r := regexp.MustCompile(validPath)
-	return r.MatchString(path)
-}
 
 // newSecretDeleteCommand creates and returns a new cobra.Command for deleting
 // secrets. It configures a command that allows users to delete one or more

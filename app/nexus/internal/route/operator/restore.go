@@ -10,8 +10,8 @@ import (
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
-	"github.com/spiffe/spike-sdk-go/api/errors"
 	"github.com/spiffe/spike-sdk-go/config/env"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/log"
 	"github.com/spiffe/spike-sdk-go/security/mem"
 
@@ -91,9 +91,9 @@ func RouteRestore(
 					ShardsRemaining: 0,
 					Restored:        true,
 				},
-				Err: data.ErrBadInput,
+				Err: sdkErrors.ErrCodeBadInput,
 			}, w,
-			http.StatusBadRequest, errors.ErrInvalidInput, fName,
+			http.StatusBadRequest, sdkErrors.ErrInvalidInput, fName,
 		)
 	}
 
@@ -111,9 +111,9 @@ func RouteRestore(
 					ShardsRemaining: env.ShamirThresholdVal() - currentShardCount,
 					Restored:        currentShardCount == env.ShamirThresholdVal(),
 				},
-				Err: data.ErrBadInput,
+				Err: sdkErrors.ErrCodeBadInput,
 			}, w,
-			http.StatusBadRequest, errors.ErrInvalidInput, fName,
+			http.StatusBadRequest, sdkErrors.ErrInvalidInput, fName,
 		)
 	}
 

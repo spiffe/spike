@@ -8,7 +8,7 @@ import (
 	"net/http"
 
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
-	apiErr "github.com/spiffe/spike-sdk-go/api/errors"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/spiffeid"
 	"github.com/spiffe/spike/internal/auth"
 
@@ -65,14 +65,14 @@ func guardRestoreRequest(
 	if !spiffeid.IsPilotRestore(peerSPIFFEID.String()) {
 		return net.Fail(
 			reqres.RestoreUnauthorized, w,
-			http.StatusUnauthorized, apiErr.ErrUnauthorized, fName,
+			http.StatusUnauthorized, sdkErrors.ErrUnauthorized, fName,
 		)
 	}
 
 	if request.ID < 1 || request.ID > maxShardID {
 		return net.Fail(
 			reqres.RestoreBadInput, w,
-			http.StatusBadRequest, apiErr.ErrInvalidInput, fName,
+			http.StatusBadRequest, sdkErrors.ErrInvalidInput, fName,
 		)
 	}
 
@@ -86,7 +86,7 @@ func guardRestoreRequest(
 	if allZero {
 		return net.Fail(
 			reqres.RestoreBadInput, w,
-			http.StatusBadRequest, apiErr.ErrInvalidInput, fName,
+			http.StatusBadRequest, sdkErrors.ErrInvalidInput, fName,
 		)
 	}
 

@@ -8,12 +8,14 @@ import (
 	"net/http"
 
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
-	apiErr "github.com/spiffe/spike-sdk-go/api/errors"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/spiffeid"
 
 	"github.com/spiffe/spike/internal/auth"
 	"github.com/spiffe/spike/internal/net"
 )
+
+// TODO: replace apiErr in comments too.
 
 // guardShardPutRequest validates that the peer contributing a shard is either
 // SPIKE Bootstrap or SPIKE Nexus. This prevents unauthorized modification of
@@ -45,7 +47,7 @@ func guardShardPutRequest(
 	if !spiffeid.PeerCanTalkToKeeper(peerSPIFFEID.String()) {
 		return net.Fail(
 			reqres.ShardPutUnauthorized, w,
-			http.StatusUnauthorized, apiErr.ErrUnauthorized, fName,
+			http.StatusUnauthorized, sdkErrors.ErrUnauthorized, fName,
 		)
 	}
 

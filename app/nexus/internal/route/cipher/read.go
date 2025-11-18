@@ -9,9 +9,8 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
-	apiErr "github.com/spiffe/spike-sdk-go/api/errors"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/log"
 
 	"github.com/spiffe/spike/internal/net"
@@ -32,16 +31,16 @@ func readJSONDecryptRequestWithoutGuard(
 ) (reqres.CipherDecryptRequest, error) {
 	requestBody := net.ReadRequestBody(w, r)
 	if requestBody == nil {
-		return reqres.CipherDecryptRequest{}, apiErr.ErrReadFailure
+		return reqres.CipherDecryptRequest{}, sdkErrors.ErrReadFailure
 	}
 
 	request := net.HandleRequest[
 		reqres.CipherDecryptRequest, reqres.CipherDecryptResponse](
 		requestBody, w,
-		reqres.CipherDecryptResponse{Err: data.ErrBadInput},
+		reqres.CipherDecryptResponse{Err: sdkErrors.ErrCodeBadInput},
 	)
 	if request == nil {
-		return reqres.CipherDecryptRequest{}, apiErr.ErrParseFailure
+		return reqres.CipherDecryptRequest{}, sdkErrors.ErrParseFailure
 	}
 
 	return *request, nil
@@ -74,11 +73,11 @@ func readStreamingDecryptRequestData(
 	ver := make([]byte, 1)
 	n, err := io.ReadFull(r.Body, ver)
 	if err != nil || n != 1 {
-		log.Log().Debug(fName, "message", data.ErrCryptoFailedToReadVersion)
+		log.Log().Debug(fName, "message", sdkErrors.ErrCodeCryptoFailedToReadVersion)
 		http.Error(
-			w, string(data.ErrCryptoFailedToReadVersion), http.StatusBadRequest,
+			w, string(sdkErrors.ErrCodeCryptoFailedToReadVersion), http.StatusBadRequest,
 		)
-		return 0, nil, nil, apiErr.ErrCryptoFailedToReadVersion
+		return 0, nil, nil, sdkErrors.ErrCryptoFailedToReadVersion
 	}
 	version := ver[0]
 
@@ -87,17 +86,17 @@ func readStreamingDecryptRequestData(
 	nonce := make([]byte, bytesToRead)
 	n, err = io.ReadFull(r.Body, nonce)
 	if err != nil || n != bytesToRead {
-		log.Log().Debug(fName, "message", data.ErrCryptoFailedToReadNonce)
+		log.Log().Debug(fName, "message", sdkErrors.ErrCodeCryptoFailedToReadNonce)
 		http.Error(
-			w, string(data.ErrCryptoFailedToReadNonce), http.StatusBadRequest,
+			w, string(sdkErrors.ErrCodeCryptoFailedToReadNonce), http.StatusBadRequest,
 		)
-		return 0, nil, nil, apiErr.ErrCryptoFailedToReadNonce
+		return 0, nil, nil, sdkErrors.ErrCryptoFailedToReadNonce
 	}
 
 	// Read the remaining body as ciphertext
 	ciphertext := net.ReadRequestBody(w, r)
 	if ciphertext == nil {
-		return 0, nil, nil, apiErr.ErrReadFailure
+		return 0, nil, nil, sdkErrors.ErrReadFailure
 	}
 
 	return version, nonce, ciphertext, nil
@@ -118,7 +117,7 @@ func readStreamingEncryptRequestWithoutGuard(
 ) ([]byte, error) {
 	plaintext := net.ReadRequestBody(w, r)
 	if plaintext == nil {
-		return nil, apiErr.ErrReadFailure
+		return nil, sdkErrors.ErrReadFailure
 	}
 
 	return plaintext, nil
@@ -139,7 +138,7 @@ func readJSONEncryptRequestWithoutGuard(
 ) (reqres.CipherEncryptRequest, error) {
 	requestBody := net.ReadRequestBody(w, r)
 	if requestBody == nil {
-		return reqres.CipherEncryptRequest{}, apiErr.ErrReadFailure
+		return reqres.CipherEncryptRequest{}, sdkErrors.ErrReadFailure
 	}
 
 	request := net.HandleRequest[
@@ -147,7 +146,7 @@ func readJSONEncryptRequestWithoutGuard(
 		requestBody, w, reqres.CipherEncryptBadInput,
 	)
 	if request == nil {
-		return reqres.CipherEncryptRequest{}, apiErr.ErrParseFailure
+		return reqres.CipherEncryptRequest{}, sdkErrors.ErrParseFailure
 	}
 
 	return *request, nil

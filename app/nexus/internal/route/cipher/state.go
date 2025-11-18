@@ -8,8 +8,7 @@ import (
 	"crypto/cipher"
 	"net/http"
 
-	"github.com/spiffe/spike-sdk-go/api/entity/data"
-	"github.com/spiffe/spike-sdk-go/api/errors"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 
 	"github.com/spiffe/spike/app/nexus/internal/state/persist"
 	"github.com/spiffe/spike/internal/net"
@@ -33,10 +32,10 @@ func getCipherOrFailStreaming(
 
 	if c == nil {
 		http.Error(
-			w, string(data.ErrCryptoCipherNotAvailable),
+			w, string(sdkErrors.ErrCodeCryptoCipherNotAvailable),
 			http.StatusInternalServerError,
 		)
-		return nil, errors.ErrCryptoCipherNotAvailable
+		return nil, sdkErrors.ErrCryptoCipherNotAvailable
 	}
 
 	return c, nil
@@ -64,7 +63,7 @@ func getCipherOrFailJSON[T any](
 		return nil, net.Fail(
 			errorResponse, w,
 			http.StatusInternalServerError,
-			errors.ErrCryptoCipherNotAvailable,
+			sdkErrors.ErrCryptoCipherNotAvailable,
 			fName,
 		)
 	}

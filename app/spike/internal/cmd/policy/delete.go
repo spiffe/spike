@@ -93,7 +93,7 @@ func newPolicyDeleteCommand(
 			confirm = strings.TrimSpace(confirm)
 
 			if confirm != "y" && confirm != "Y" {
-				fmt.Println("Operation canceled")
+				fmt.Println("Operation canceled.")
 				return
 			}
 
@@ -102,7 +102,7 @@ func newPolicyDeleteCommand(
 				return
 			}
 
-			fmt.Println("Policy deleted successfully")
+			fmt.Println("Policy deleted successfully.")
 		},
 	}
 

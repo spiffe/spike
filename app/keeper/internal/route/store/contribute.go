@@ -8,7 +8,7 @@ import (
 	"net/http"
 
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
-	"github.com/spiffe/spike-sdk-go/api/errors"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/log"
 	"github.com/spiffe/spike-sdk-go/security/mem"
 
@@ -77,7 +77,7 @@ func RouteContribute(
 	if request.Shard == nil {
 		return net.Fail(
 			reqres.ShardPutBadInput, w,
-			http.StatusBadRequest, errors.ErrInvalidInput, fName,
+			http.StatusBadRequest, sdkErrors.ErrInvalidInput, fName,
 		)
 	}
 
@@ -93,7 +93,7 @@ func RouteContribute(
 	if mem.Zeroed32(request.Shard) {
 		return net.Fail(
 			reqres.ShardPutBadInput, w,
-			http.StatusBadRequest, errors.ErrInvalidInput, fName,
+			http.StatusBadRequest, sdkErrors.ErrInvalidInput, fName,
 		)
 	}
 

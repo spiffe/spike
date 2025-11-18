@@ -8,7 +8,7 @@ import (
 	"net/http"
 
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
-	apiErr "github.com/spiffe/spike-sdk-go/api/errors"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/spiffeid"
 	"github.com/spiffe/spike/internal/auth"
 
@@ -65,21 +65,21 @@ func guardVerifyRequest(
 	if !spiffeid.IsBootstrap(peerSPIFFEID.String()) {
 		return net.Fail(
 			reqres.BootstrapUnauthorized, w, http.StatusUnauthorized,
-			apiErr.ErrUnauthorized, fName,
+			sdkErrors.ErrUnauthorized, fName,
 		)
 	}
 
 	if len(request.Nonce) != expectedNonceSize {
 		return net.Fail(
 			reqres.BootstrapBadInput, w, http.StatusBadRequest,
-			apiErr.ErrInvalidInput, fName,
+			sdkErrors.ErrInvalidInput, fName,
 		)
 	}
 
 	if len(request.Ciphertext) > maxCiphertextSize {
 		return net.Fail(
 			reqres.BootstrapBadInput, w, http.StatusBadRequest,
-			apiErr.ErrInvalidInput, fName,
+			sdkErrors.ErrInvalidInput, fName,
 		)
 	}
 

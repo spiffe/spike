@@ -7,7 +7,6 @@ package cipher
 import (
 	"encoding/base64"
 	"fmt"
-	"io"
 	"os"
 	"strconv"
 
@@ -39,47 +38,17 @@ func decryptStream(api *sdk.API, inFile, outFile string) error {
 		}
 	}
 
-	var in io.ReadCloser
-	if inFile != "" {
-		f, err := os.Open(inFile)
-		if err != nil {
-			return fmt.Errorf("failed to open input file: %w", err)
-		}
-		in = f
-	} else {
-		in = os.Stdin
+	in, cleanupIn, err := openInput(inFile)
+	if err != nil {
+		return err
 	}
-	defer func() {
-		if in != os.Stdin {
-			err := in.Close()
-			if err != nil {
-				fmt.Printf("Failed to close input file: %s\n",
-					err.Error())
-			}
-		}
-	}()
+	defer cleanupIn()
 
-	var out io.Writer
-	var outCloser io.Closer
-	if outFile != "" {
-		f, err := os.Create(outFile)
-		if err != nil {
-			return fmt.Errorf("failed to create output file: %w", err)
-		}
-		out = f
-		outCloser = f
-	} else {
-		out = os.Stdout
+	out, cleanupOut, err := openOutput(outFile)
+	if err != nil {
+		return err
 	}
-	if outCloser != nil {
-		defer func(outCloser io.Closer) {
-			err := outCloser.Close()
-			if err != nil {
-				fmt.Printf("Failed to close output file: %s\n",
-					err.Error())
-			}
-		}(outCloser)
-	}
+	defer cleanupOut()
 
 	plaintext, err := api.CipherDecryptStream(in,
 		"application/octet-stream")
@@ -129,38 +98,22 @@ func decryptJSON(api *sdk.API, versionStr, nonceB64, ciphertextB64,
 		return fmt.Errorf("invalid --ciphertext base64: %w", err)
 	}
 
-	var out io.Writer
-	var outCloser io.Closer
-	if outFile != "" {
-		f, err := os.Create(outFile)
-		if err != nil {
-			return fmt.Errorf("failed to create output file: %w", err)
-		}
-		out = f
-		outCloser = f
-	} else {
-		out = os.Stdout
+	out, cleanupOut, err := openOutput(outFile)
+	if err != nil {
+		return err
 	}
-	if outCloser != nil {
-		defer func(outCloser io.Closer) {
-			err := outCloser.Close()
-			if err != nil {
-				fmt.Printf(
-					"Failed to close output file: %s\n",
-					err.Error(),
-				)
-			}
-		}(outCloser)
-	}
+	defer cleanupOut()
 
-	plaintext, err := api.CipherDecryptJSON(byte(v), nonce, ciphertext,
-		algorithm)
+	plaintext, err := api.CipherDecryptJSON(
+		byte(v), nonce, ciphertext, algorithm,
+	)
 	if err != nil {
 		if errors.NotReadyError(err) {
 			stdout.PrintNotReady()
 		}
-		return fmt.Errorf("failed to call decrypt endpoint (json): %w",
-			err)
+		return fmt.Errorf(
+			"failed to call decrypt endpoint (json): %w", err,
+		)
 	}
 
 	if _, err := out.Write(plaintext); err != nil {

@@ -16,7 +16,7 @@ import (
 	"time"
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
-	sdkErrors "github.com/spiffe/spike-sdk-go/api/errors"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/log"
 
 	"github.com/spiffe/spike/app/nexus/internal/state/backend/sqlite/ddl"
@@ -37,7 +37,7 @@ import (
 func (s *DataStore) DeletePolicy(ctx context.Context, id string) error {
 	const fName = "DeletePolicy"
 	if ctx == nil {
-		log.FatalLn(fName, "message", data.ErrNilContext)
+		log.FatalLn(fName, "message", sdkErrors.ErrCodeNilContext)
 	}
 
 	s.mu.Lock()
@@ -103,7 +103,7 @@ func encryptWithNonce(s *DataStore, nonce []byte, data []byte) ([]byte, error) {
 func (s *DataStore) StorePolicy(ctx context.Context, policy data.Policy) error {
 	const fName = "StorePolicy"
 	if ctx == nil {
-		log.FatalLn(fName, "message", data.ErrNilContext)
+		log.FatalLn(fName, "message", sdkErrors.ErrCodeNilContext)
 	}
 
 	s.mu.Lock()
@@ -189,7 +189,7 @@ func (s *DataStore) LoadPolicy(
 ) (*data.Policy, error) {
 	const fName = "LoadPolicy"
 	if ctx == nil {
-		log.FatalLn(fName, "message", data.ErrNilContext)
+		log.FatalLn(fName, "message", sdkErrors.ErrCodeNilContext)
 	}
 
 	s.mu.RLock()
@@ -274,7 +274,7 @@ func (s *DataStore) LoadAllPolicies(
 	const fName = "LoadAllPolicies"
 
 	if ctx == nil {
-		log.FatalLn(fName, "message", data.ErrNilContext)
+		log.FatalLn(fName, "message", sdkErrors.ErrCodeNilContext)
 	}
 
 	s.mu.RLock()

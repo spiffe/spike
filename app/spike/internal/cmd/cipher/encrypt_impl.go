@@ -7,7 +7,6 @@ package cipher
 import (
 	"encoding/base64"
 	"fmt"
-	"io"
 	"os"
 
 	sdk "github.com/spiffe/spike-sdk-go/api"
@@ -38,50 +37,19 @@ func encryptStream(api *sdk.API, inFile, outFile string) error {
 		}
 	}
 
-	var in io.ReadCloser
-	if inFile != "" {
-		f, err := os.Open(inFile)
-		if err != nil {
-			return fmt.Errorf("failed to open input file: %w", err)
-		}
-		in = f
-	} else {
-		in = os.Stdin
+	in, cleanupIn, err := openInput(inFile)
+	if err != nil {
+		return err
 	}
-	defer func() {
-		if in != os.Stdin {
-			err := in.Close()
-			if err != nil {
-				fmt.Printf("Failed to close input file: %s\n",
-					err.Error())
-			}
-		}
-	}()
+	defer cleanupIn()
 
-	var out io.Writer
-	var outCloser io.Closer
-	if outFile != "" {
-		f, err := os.Create(outFile)
-		if err != nil {
-			return fmt.Errorf("failed to create output file: %w", err)
-		}
-		out = f
-		outCloser = f
-	} else {
-		out = os.Stdout
+	out, cleanupOut, err := openOutput(outFile)
+	if err != nil {
+		return err
 	}
-	if outCloser != nil {
-		defer func(outCloser io.Closer) {
-			err := outCloser.Close()
-			if err != nil {
-				fmt.Printf("Failed to close output file: %s\n",
-					err.Error())
-			}
-		}(outCloser)
-	}
+	defer cleanupOut()
 
-	ciphertext, err := api.CipherEncryptStream(in,
-		"application/octet-stream")
+	ciphertext, err := api.CipherEncryptStream(in, "application/octet-stream")
 	if err != nil {
 		if errors.NotReadyError(err) {
 			stdout.PrintNotReady()
@@ -114,27 +82,11 @@ func encryptJSON(api *sdk.API, plaintextB64, algorithm,
 		return fmt.Errorf("invalid --plaintext base64: %w", err)
 	}
 
-	var out io.Writer
-	var outCloser io.Closer
-	if outFile != "" {
-		f, err := os.Create(outFile)
-		if err != nil {
-			return fmt.Errorf("failed to create output file: %w", err)
-		}
-		out = f
-		outCloser = f
-	} else {
-		out = os.Stdout
+	out, cleanupOut, err := openOutput(outFile)
+	if err != nil {
+		return err
 	}
-	if outCloser != nil {
-		defer func(outCloser io.Closer) {
-			err := outCloser.Close()
-			if err != nil {
-				fmt.Printf("Failed to close output file: %s\n",
-					err.Error())
-			}
-		}(outCloser)
-	}
+	defer cleanupOut()
 
 	ciphertext, err := api.CipherEncryptJSON(plaintext, algorithm)
 	if err != nil {

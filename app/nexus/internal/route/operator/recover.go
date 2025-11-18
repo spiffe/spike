@@ -9,8 +9,8 @@ import (
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
-	"github.com/spiffe/spike-sdk-go/api/errors"
 	"github.com/spiffe/spike-sdk-go/config/env"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/log"
 	"github.com/spiffe/spike-sdk-go/security/mem"
 
@@ -69,8 +69,8 @@ func RouteRecover(
 	}()
 
 	if len(shards) < env.ShamirThresholdVal() {
-		log.Log().Error(fName, "message", data.ErrShamirNotEnoughShards)
-		return errors.ErrInvalidInput
+		log.Log().Error(fName, "message", sdkErrors.ErrCodeShamirNotEnoughShards)
+		return sdkErrors.ErrInvalidInput
 	}
 
 	// Track seen indices to check for duplicates
@@ -78,9 +78,9 @@ func RouteRecover(
 
 	for idx, shard := range shards {
 		if seenIndices[idx] {
-			log.Log().Error(fName, "message", data.ErrShamirDuplicateIndex)
+			log.Log().Error(fName, "message", sdkErrors.ErrCodeShamirDuplicateIndex)
 			// Duplicate index.
-			return errors.ErrInvalidInput
+			return sdkErrors.ErrInvalidInput
 		}
 
 		// We cannot check for duplicate values, because although it's
@@ -92,7 +92,7 @@ func RouteRecover(
 		// Check for nil pointers
 		if shard == nil {
 			log.Log().Error(fName, "message", data.ErrShamirNilShard)
-			return errors.ErrInvalidInput
+			return sdkErrors.ErrInvalidInput
 		}
 
 		// Check for empty shards (all zeros)
@@ -105,13 +105,13 @@ func RouteRecover(
 		}
 		if zeroed {
 			log.Log().Error(fName, "message", data.ErrShamirEmptyShard)
-			return errors.ErrInvalidInput
+			return sdkErrors.ErrInvalidInput
 		}
 
 		// Verify shard index is within valid range:
 		if idx < 1 || idx > env.ShamirSharesVal() {
 			log.Log().Error(fName, "message", data.ErrShamirInvalidIndex)
-			return errors.ErrInvalidInput
+			return sdkErrors.ErrInvalidInput
 		}
 	}
 

@@ -7,9 +7,8 @@ package operator
 import (
 	"net/http"
 
-	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
-	apiErr "github.com/spiffe/spike-sdk-go/api/errors"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/spiffeid"
 	"github.com/spiffe/spike/internal/auth"
 
@@ -57,8 +56,8 @@ func guardRecoverRequest(
 
 	if !spiffeid.IsPilotRecover(peerSPIFFEID.String()) {
 		return net.Fail(
-			reqres.RestoreResponse{Err: data.ErrUnauthorized}, w,
-			http.StatusUnauthorized, apiErr.ErrUnauthorized, fName,
+			reqres.RestoreResponse{Err: sdkErrors.ErrCodeUnauthorized}, w,
+			http.StatusUnauthorized, sdkErrors.ErrUnauthorized, fName,
 		)
 	}
 

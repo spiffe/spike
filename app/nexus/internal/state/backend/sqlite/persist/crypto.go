@@ -9,7 +9,7 @@ import (
 	"errors"
 	"io"
 
-	sdkErrors "github.com/spiffe/spike-sdk-go/api/errors"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 )
 
 // encrypt encrypts the given data using the DataStore's cipher.
@@ -31,9 +31,9 @@ func (s *DataStore) encrypt(data []byte) ([]byte, []byte, error) {
 // occurred during decryption.
 func (s *DataStore) decrypt(ciphertext, nonce []byte) ([]byte, error) {
 	plaintext, err := s.Cipher.Open(nil, nonce, ciphertext, nil)
-	decrpyErr := sdkErrors.ErrCryptoDecryptionFailed
+	decryptErr := sdkErrors.ErrCryptoDecryptionFailed
 	if err != nil {
-		failErr := errors.Join(decrpyErr, err)
+		failErr := errors.Join(decryptErr, err)
 		return nil, failErr
 	}
 	return plaintext, nil

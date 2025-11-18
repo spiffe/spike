@@ -126,7 +126,10 @@ func getPolicyFromFlags(name, SPIFFEIDPattern, pathPattern, permsStr string) (da
 			}
 			flagList += "--" + flag
 		}
-		return policy, fmt.Errorf("required flags are missing: %s (or use --file to read from YAML)", flagList)
+		return policy, fmt.Errorf(
+			"required flags are missing: %s (or use --file to read from YAML)",
+			flagList,
+		)
 	}
 
 	// Convert comma-separated permissions to slice

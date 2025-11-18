@@ -120,7 +120,7 @@ func newPolicyGetCommand(
 			}
 
 			if policy == nil {
-				fmt.Println("Error: Got empty response from server")
+				fmt.Println("Error: Got empty response from server.")
 				return
 			}
 
@@ -131,5 +131,6 @@ func newPolicyGetCommand(
 
 	addNameFlag(cmd)
 	addFormatFlag(cmd)
+
 	return cmd
 }

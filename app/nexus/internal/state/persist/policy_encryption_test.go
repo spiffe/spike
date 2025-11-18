@@ -133,7 +133,12 @@ func TestPolicyStoreSQLite(t *testing.T) {
 	_, _ = rand.Read(key)
 
 	tmpfile := "test_policies.db"
-	defer os.Remove(tmpfile)
+	defer func(name string) {
+		err := os.Remove(name)
+		if err != nil {
+			t.Fatal(err)
+		}
+	}(tmpfile)
 
 	// Create new encrypted data store
 	ds, err := NewLiteDataStore(tmpfile, key)

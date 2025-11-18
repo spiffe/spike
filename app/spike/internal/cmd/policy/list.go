@@ -33,8 +33,10 @@ import (
 //
 // Flags:
 //   - --format: Output format ("human" or "json", default is "human")
-//   - --path-pattern: Filter policies by a resource path pattern (e.g., '^secrets/.*$')
-//   - --spiffeid-pattern: Filter policies by a SPIFFE ID pattern (e.g., '^spiffe://example\.org/service/.*$')
+//   - --path-pattern: Filter policies by a resource path pattern
+//     (e.g., '^secrets/.*$')
+//   - --spiffeid-pattern: Filter policies by a SPIFFE ID pattern
+//     (e.g., '^spiffe://example\.org/service/.*$')
 //
 // Note: --path-pattern and --spiffeid-pattern flags cannot be used together.
 //
@@ -120,5 +122,6 @@ func newPolicyListCommand(
 	cmd.MarkFlagsMutuallyExclusive("path-pattern", "spiffeid-pattern")
 
 	addFormatFlag(cmd)
+
 	return cmd
 }

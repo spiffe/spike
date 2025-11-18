@@ -4,6 +4,7 @@
 # \\\\\\
 #}
 
+* [ADR-0028: Use Human-Readable Error Messages in CLI Tools](@/architecture/adrs/adr-0028.md)
 * [ADR-0027: Separate Audit Logs from Operational Logs](@/architecture/adrs/adr-0027.md)
 * [ADR-0026: Configurable Data Directory for SPIKE Components](@/architecture/adrs/adr-0026.md)
 * [ADR-0025: Path Patterns as Key Namespaces with Regular Expression Matching](@/architecture/adrs/adr-0025.md)

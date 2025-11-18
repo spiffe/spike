@@ -7,11 +7,12 @@ package main
 import (
 	"crypto/rand"
 	"fmt"
-	"github.com/google/goexpect"
 	"log"
 	"math/big"
 	"regexp"
 	"time"
+
+	"github.com/google/goexpect"
 )
 
 func generatePassword(length int) string {

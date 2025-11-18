@@ -8,9 +8,8 @@ import (
 	stdErrors "errors"
 	"net/http"
 
-	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
-	"github.com/spiffe/spike-sdk-go/api/errors"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/log"
 
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
@@ -104,19 +103,19 @@ func RouteGetPolicy(
 
 	internalError := err != nil && !stdErrors.Is(err, state.ErrPolicyNotFound)
 	if internalError {
-		failErr := stdErrors.Join(errors.ErrQueryFailure, err)
+		failErr := stdErrors.Join(sdkErrors.ErrQueryFailure, err)
 		return net.Fail(
-			reqres.PolicyReadResponse{Err: data.ErrInternal}, w,
+			reqres.PolicyReadResponse{Err: sdkErrors.ErrCodeInternal}, w,
 			http.StatusInternalServerError, failErr, fName,
 		)
 	}
 
 	if policyFound {
-		log.Log().Info(fName, "message", data.ErrFound, "id", policy.ID)
+		log.Log().Info(fName, "message", sdkErrors.ErrCodeFound, "id", policy.ID)
 	} else {
 		log.Log().Info(
 			fName,
-			"message", data.ErrNotFound,
+			"message", sdkErrors.ErrCodeNotFound,
 			"id", policyID,
 			"err", err.Error(),
 		)

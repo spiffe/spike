@@ -39,6 +39,7 @@ sort_by = "weight"
 * Finally, fixed the flaky tests around the retry logic in SPIKE Go SDK for good.
 * Additional and comprehensive logging to all SPIKE Nexus and SPIKE Keeper API
   methods.
+* Better error handling across the entire codebase.
 
 ## [0.6.1] - 2025-10-02
 

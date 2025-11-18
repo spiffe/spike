@@ -56,7 +56,7 @@ func formatPoliciesOutput(cmd *cobra.Command, policies *[]data.Policy) string {
 
 	// Default human-readable format
 	if isEmptyList {
-		return "No policies found"
+		return "No policies found."
 	}
 
 	// The rest of the function remains the same:
@@ -109,7 +109,7 @@ func formatPolicy(cmd *cobra.Command, policy *data.Policy) string {
 	}
 
 	if policy == nil {
-		return "No policy found"
+		return "No policy found."
 	}
 
 	if format == "json" {

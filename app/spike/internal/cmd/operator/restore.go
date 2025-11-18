@@ -69,8 +69,9 @@ func newOperatorRestoreCommand(
 				fmt.Println(
 					"  You need to have a `restore` role to use this command.")
 				fmt.Println(
-					"  Please run " +
-						"`./hack/bare-metal/entry/spire-server-entry-restore-register.sh`")
+					"  Please refer https://spike.ist/operations/recovery/ " +
+						"for more info.",
+				)
 				fmt.Println("  with necessary privileges to assign this role.")
 				fmt.Println("")
 				os.Exit(1)

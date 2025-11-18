@@ -9,13 +9,15 @@ import (
 	"net/http"
 
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
-	"github.com/spiffe/spike-sdk-go/api/errors"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/log"
 
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 	"github.com/spiffe/spike/internal/journal"
 	"github.com/spiffe/spike/internal/net"
 )
+
+// TODO: replace stdErr with errors
 
 // RouteDeletePolicy handles HTTP DELETE requests to remove existing policies.
 // It processes the request body to delete a policy specified by its ID.
@@ -76,7 +78,7 @@ func RouteDeletePolicy(
 
 	err = state.DeletePolicy(policyID)
 	if err != nil {
-		failErr := stdErr.Join(errors.ErrDeletionFailed, err)
+		failErr := stdErr.Join(sdkErrors.ErrDeletionFailed, err)
 		return net.Fail(
 			reqres.PolicyDeleteInternal, w,
 			http.StatusInternalServerError, failErr, fName,

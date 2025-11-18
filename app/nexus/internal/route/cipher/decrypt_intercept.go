@@ -11,8 +11,8 @@ import (
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
-	apiErr "github.com/spiffe/spike-sdk-go/api/errors"
 	apiAuth "github.com/spiffe/spike-sdk-go/config/auth"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	sdkSpiffeid "github.com/spiffe/spike-sdk-go/spiffeid"
 
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
@@ -117,7 +117,7 @@ func guardDecryptCipherRequest(
 	if !allowed {
 		return net.Fail(
 			reqres.CipherDecryptUnauthorized,
-			w, http.StatusUnauthorized, apiErr.ErrUnauthorized, fName,
+			w, http.StatusUnauthorized, sdkErrors.ErrUnauthorized, fName,
 		)
 	}
 

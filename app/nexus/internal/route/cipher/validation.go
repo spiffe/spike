@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"net/http"
 
-	apiErr "github.com/spiffe/spike-sdk-go/api/errors"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 
 	"github.com/spiffe/spike/internal/net"
 )
@@ -55,7 +55,7 @@ func validateNonceSize[T any](
 	if len(nonce) != expectedNonceSize {
 		return net.Fail(
 			errorResponse, w,
-			http.StatusBadRequest, apiErr.ErrInvalidInput, fName,
+			http.StatusBadRequest, sdkErrors.ErrInvalidInput, fName,
 		)
 	}
 	return nil
@@ -79,7 +79,7 @@ func validateCiphertextSize[T any](
 	if len(ciphertext) > maxCiphertextSize {
 		return net.Fail(
 			errorResponse, w,
-			http.StatusBadRequest, apiErr.ErrInvalidInput, fName,
+			http.StatusBadRequest, sdkErrors.ErrInvalidInput, fName,
 		)
 	}
 	return nil
@@ -103,7 +103,7 @@ func validatePlaintextSize[T any](
 	if len(plaintext) > maxPlaintextSize {
 		return net.Fail(
 			errorResponse, w,
-			http.StatusBadRequest, apiErr.ErrInvalidInput, fName,
+			http.StatusBadRequest, sdkErrors.ErrInvalidInput, fName,
 		)
 	}
 	return nil

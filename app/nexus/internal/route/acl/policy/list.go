@@ -10,7 +10,7 @@ import (
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
-	"github.com/spiffe/spike-sdk-go/api/errors"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/log"
 
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
@@ -81,7 +81,7 @@ func RouteListPolicies(
 	case SPIFFEIDPattern != "":
 		policies, err = state.ListPoliciesBySPIFFEIDPattern(SPIFFEIDPattern)
 		if err != nil {
-			failErr := stdErrs.Join(errors.ErrQueryFailure, err)
+			failErr := stdErrs.Join(sdkErrors.ErrQueryFailure, err)
 			return net.Fail(
 				reqres.PolicyListInternal, w,
 				http.StatusInternalServerError, failErr, fName,
@@ -90,7 +90,7 @@ func RouteListPolicies(
 	case pathPattern != "":
 		policies, err = state.ListPoliciesByPathPattern(pathPattern)
 		if err != nil {
-			failErr := stdErrs.Join(errors.ErrQueryFailure, err)
+			failErr := stdErrs.Join(sdkErrors.ErrQueryFailure, err)
 			return net.Fail(
 				reqres.PolicyListInternal, w,
 				http.StatusInternalServerError, failErr, fName,
@@ -99,7 +99,7 @@ func RouteListPolicies(
 	default:
 		policies, err = state.ListPolicies()
 		if err != nil {
-			failErr := stdErrs.Join(errors.ErrQueryFailure, err)
+			failErr := stdErrs.Join(sdkErrors.ErrQueryFailure, err)
 			return net.Fail(
 				reqres.PolicyListInternal, w,
 				http.StatusInternalServerError, failErr, fName,

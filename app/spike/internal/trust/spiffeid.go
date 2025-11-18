@@ -23,14 +23,13 @@ func AuthenticateForPilot(SPIFFEID string) {
 	if !svid.IsPilot(SPIFFEID) {
 		log.Log().Error(
 			fName,
-			"message",
-			"AuthenticateForPilot: You need a 'super user' SPIFFE ID to use this command.",
+			"message", "you need a 'super user' SPIFFE ID to use this command",
+			"spiffe_id", SPIFFEID,
 		)
 		log.FatalLn(
 			fName,
-			"message",
-			"AuthenticateForPilot: You are not authorized to use this command (%s).\n",
-			SPIFFEID,
+			"message", "you are not authorized to use this command",
+			"spiffe_id", SPIFFEID,
 		)
 	}
 }
@@ -45,21 +44,19 @@ func AuthenticateForPilotRecover(SPIFFEID string) {
 	if !svid.IsPilotRecover(SPIFFEID) {
 		log.Log().Error(
 			fName,
-			"message",
-			"AuthenticateForPilotRecover: You need a 'recover' "+
-				"SPIFFE ID to use this command.",
+			"message", "You need a 'recover' SPIFFE ID to use this command",
+			"spiffe_id", SPIFFEID,
 		)
 		log.FatalLn(
 			fName,
-			"message",
-			"AuthenticateForPilotRecover: You are not authorized to use this command (%s).\n",
-			SPIFFEID,
+			"message", "you are not authorized to use this command",
+			"spiffe_id", SPIFFEID,
 		)
 	}
 }
 
-// AuthenticateForPilotRestore verifies if the given SPIFFE ID is valid for restoration.
-// Logs a fatal error and exits if the SPIFFE ID validation fails.
+// AuthenticateForPilotRestore verifies if the given SPIFFE ID is valid for
+// restoration. Logs a fatal error and exits if the SPIFFE ID validation fails.
 //
 // SPIFFEID is the SPIFFE ID string to authenticate for restore access.
 func AuthenticateForPilotRestore(SPIFFEID string) {
@@ -68,15 +65,13 @@ func AuthenticateForPilotRestore(SPIFFEID string) {
 	if !svid.IsPilotRestore(SPIFFEID) {
 		log.Log().Error(
 			fName,
-			"message",
-			"AuthenticateForPilotRestore: You need a 'restore' "+
-				"SPIFFE ID to use this command.",
+			"message", "you need a 'restore' SPIFFE ID to use this command",
+			"spiffe_id", SPIFFEID,
 		)
 		log.FatalLn(
 			fName,
-			"message",
-			"AuthenticateForPilotRecover: You are not authorized to use this command (%s).\n",
-			SPIFFEID,
+			"message", "you are not authorized to use this command",
+			"spiffe_id", SPIFFEID,
 		)
 	}
 }

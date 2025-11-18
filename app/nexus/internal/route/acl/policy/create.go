@@ -5,12 +5,12 @@
 package policy
 
 import (
-	stdErrs "errors"
+	"errors"
 	"net/http"
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
-	"github.com/spiffe/spike-sdk-go/api/errors"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/log"
 
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
@@ -88,7 +88,7 @@ func RoutePutPolicy(
 		Permissions:     permissions,
 	})
 	if err != nil {
-		failErr := stdErrs.Join(errors.ErrCreationFailed, err)
+		failErr := errors.Join(sdkErrors.ErrCreationFailed, err)
 		return net.Fail(
 			reqres.PolicyCreateInternal, w,
 			http.StatusInternalServerError, failErr, fName,

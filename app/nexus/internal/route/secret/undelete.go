@@ -9,7 +9,7 @@ import (
 	"net/http"
 
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
-	"github.com/spiffe/spike-sdk-go/api/errors"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/log"
 
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
@@ -75,7 +75,7 @@ func RouteUndeleteSecret(
 
 	err = state.UndeleteSecret(path, versions)
 	if err != nil {
-		failErr := stdErrs.Join(errors.ErrUndeleteFailed, err)
+		failErr := stdErrs.Join(sdkErrors.ErrUndeleteFailed, err)
 		return net.Fail(
 			reqres.SecretUndeleteInternal, w,
 			http.StatusInternalServerError, failErr, fName,

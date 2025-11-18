@@ -11,7 +11,7 @@ import (
 	"net/http"
 
 	"github.com/spiffe/go-spiffe/v2/spiffeid"
-	apiErr "github.com/spiffe/spike-sdk-go/api/errors"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/spiffe"
 	"github.com/spiffe/spike-sdk-go/validation"
 
@@ -59,7 +59,7 @@ func ExtractPeerSPIFFEID[T any](
 		if err == nil {
 			net.Respond(http.StatusUnauthorized, responseBody, w)
 		}
-		return nil, apiErr.ErrUnauthorized
+		return nil, sdkErrors.ErrUnauthorized
 	}
 
 	if peerSPIFFEID == nil {
@@ -69,7 +69,7 @@ func ExtractPeerSPIFFEID[T any](
 		if err == nil {
 			net.Respond(http.StatusUnauthorized, responseBody, w)
 		}
-		return nil, apiErr.ErrUnauthorized
+		return nil, sdkErrors.ErrUnauthorized
 	}
 
 	err = validation.ValidateSPIFFEID(peerSPIFFEID.String())
@@ -80,7 +80,7 @@ func ExtractPeerSPIFFEID[T any](
 		if err == nil {
 			net.Respond(http.StatusUnauthorized, responseBody, w)
 		}
-		return nil, apiErr.ErrUnauthorized
+		return nil, sdkErrors.ErrUnauthorized
 	}
 
 	return peerSPIFFEID, nil

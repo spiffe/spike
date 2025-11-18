@@ -39,6 +39,37 @@
       let AI write some tests to all the things.
     </issue>
     <issue>
+      // PermissionExecute grants the ability to execute specified resources.
+      // One such resource is encryption and decryption operations that
+      // don't necessarily persist anything but execute an internal command.
+      const PermissionExecute PolicyPermission = "execute"
+
+      ^ are we using this permission in policies properly?
+      ^ is it documented properly?
+      ^ are other permissions and where they apply documented?
+    </issue>
+    <issue>
+      env using log causes circular dependencies which we fixed by copying
+      a few functions; but instead these env value functions should return
+      errors and logging should be based on the returned error values.
+
+      those errors also should be sentinel errors that indicate fatal
+      failures.
+
+      func KeepersVal() map[string]string {
+      const fName = "KeepersVal"
+
+      p := os.Getenv(NexusKeeperPeers)
+
+      if p == "" {
+      log.FatalLn(
+      fName,
+      "message",
+      "SPIKE_NEXUS_KEEPER_PEERS must be configured in the environment",
+      )
+      }
+    </issue>
+    <issue>
       SDK should return its unique error instance instead of wrapping errors:
 
       the SDK should return:
@@ -58,6 +89,14 @@
       Then you could:
       if errors.Is(err, &sdk.Error{Code: sdk.ErrNotReady}) {
 
+    </issue>
+    <issue>
+      func FailIfError[T any](
+      and its sisters can go the the SDK.
+    </issue>
+    <issue>
+      validPermsList := "read, write, list, super"
+      SDK should define these instead.
     </issue>
     <issue>
       if err != nil || v < 0 || v > 255 {
