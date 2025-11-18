@@ -12,6 +12,8 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	spike "github.com/spiffe/spike-sdk-go/api"
+
+	"github.com/spiffe/spike/app/spike/internal/errors"
 	"github.com/spiffe/spike/app/spike/internal/stdout"
 	"github.com/spiffe/spike/app/spike/internal/trust"
 )
@@ -114,7 +116,7 @@ Examples:
 
 			err := api.UndeleteSecret(path, vv)
 			if err != nil {
-				if err.Error() == "not ready" {
+				if errors.NotReadyError(err) {
 					stdout.PrintNotReady()
 					return
 				}

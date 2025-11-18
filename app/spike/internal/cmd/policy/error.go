@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/spiffe/spike/app/spike/internal/errors"
 	"github.com/spiffe/spike/app/spike/internal/stdout"
 )
 
@@ -31,7 +32,7 @@ func handleAPIError(err error) bool {
 		return false
 	}
 
-	if err.Error() == "not ready" {
+	if errors.NotReadyError(err) {
 		stdout.PrintNotReady()
 		return true
 	}

@@ -39,6 +39,27 @@
       let AI write some tests to all the things.
     </issue>
     <issue>
+      SDK should return its unique error instance instead of wrapping errors:
+
+      the SDK should return:
+      type SDKError struct {
+      Code    ErrorCode  // e.g., "ERR_NOT_READY"
+      Message string
+      Wrapped error
+      }
+
+      func (e *SDKError) Is(target error) bool {
+      if t, ok := target.(*SDKError); ok {
+      return e.Code == t.Code
+      }
+      return false
+      }
+
+      Then you could:
+      if errors.Is(err, &sdk.Error{Code: sdk.ErrNotReady}) {
+
+    </issue>
+    <issue>
       if err != nil || v < 0 || v > 255 {
       ^ version check in spike/internal/cmd/cipher/decrypt.go
       currently we support only a single version `1`.

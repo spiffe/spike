@@ -12,6 +12,8 @@ import (
 	"strconv"
 
 	sdk "github.com/spiffe/spike-sdk-go/api"
+
+	"github.com/spiffe/spike/app/spike/internal/errors"
 	"github.com/spiffe/spike/app/spike/internal/stdout"
 )
 
@@ -82,7 +84,7 @@ func decryptStream(api *sdk.API, inFile, outFile string) error {
 	plaintext, err := api.CipherDecryptStream(in,
 		"application/octet-stream")
 	if err != nil {
-		if err.Error() == "not ready" {
+		if errors.NotReadyError(err) {
 			stdout.PrintNotReady()
 		}
 		return fmt.Errorf("failed to call decrypt endpoint: %w", err)
@@ -112,6 +114,7 @@ func decryptStream(api *sdk.API, inFile, outFile string) error {
 func decryptJSON(api *sdk.API, versionStr, nonceB64, ciphertextB64,
 	algorithm, outFile string) error {
 	v, err := strconv.Atoi(versionStr)
+	// version must be a valid byte value.
 	if err != nil || v < 0 || v > 255 {
 		return fmt.Errorf("invalid --version, must be 0-255")
 	}
@@ -142,8 +145,10 @@ func decryptJSON(api *sdk.API, versionStr, nonceB64, ciphertextB64,
 		defer func(outCloser io.Closer) {
 			err := outCloser.Close()
 			if err != nil {
-				fmt.Printf("Failed to close output file: %s\n",
-					err.Error())
+				fmt.Printf(
+					"Failed to close output file: %s\n",
+					err.Error(),
+				)
 			}
 		}(outCloser)
 	}
@@ -151,7 +156,7 @@ func decryptJSON(api *sdk.API, versionStr, nonceB64, ciphertextB64,
 	plaintext, err := api.CipherDecryptJSON(byte(v), nonce, ciphertext,
 		algorithm)
 	if err != nil {
-		if err.Error() == "not ready" {
+		if errors.NotReadyError(err) {
 			stdout.PrintNotReady()
 		}
 		return fmt.Errorf("failed to call decrypt endpoint (json): %w",

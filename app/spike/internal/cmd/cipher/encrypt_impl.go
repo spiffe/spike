@@ -11,6 +11,8 @@ import (
 	"os"
 
 	sdk "github.com/spiffe/spike-sdk-go/api"
+
+	"github.com/spiffe/spike/app/spike/internal/errors"
 	"github.com/spiffe/spike/app/spike/internal/stdout"
 )
 
@@ -81,7 +83,7 @@ func encryptStream(api *sdk.API, inFile, outFile string) error {
 	ciphertext, err := api.CipherEncryptStream(in,
 		"application/octet-stream")
 	if err != nil {
-		if err.Error() == "not ready" {
+		if errors.NotReadyError(err) {
 			stdout.PrintNotReady()
 		}
 		return fmt.Errorf("failed to call encrypt endpoint: %w", err)
@@ -136,7 +138,7 @@ func encryptJSON(api *sdk.API, plaintextB64, algorithm,
 
 	ciphertext, err := api.CipherEncryptJSON(plaintext, algorithm)
 	if err != nil {
-		if err.Error() == "not ready" {
+		if errors.NotReadyError(err) {
 			stdout.PrintNotReady()
 		}
 		return fmt.Errorf("failed to call encrypt endpoint (json): %w",
