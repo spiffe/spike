@@ -5,7 +5,6 @@
 package secret
 
 import (
-	stdErrs "errors"
 	"net/http"
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
@@ -41,13 +40,11 @@ import (
 //
 // Returns:
 //   - nil if all validations pass
-//   - apiErr.ErrUnauthorized if authentication or authorization fails
-//   - apiErr.ErrInvalidInput if path validation fails
+//   - sdkErrors.ErrUnauthorized if authentication or authorization fails
+//   - sdkErrors.ErrInvalidInput if path validation fails
 func guardGetSecretMetadataRequest(
 	request reqres.SecretMetadataRequest, w http.ResponseWriter, r *http.Request,
 ) error {
-	const fName = "guardGetSecretMetadataRequest"
-
 	peerSPIFFEID, err := auth.ExtractPeerSPIFFEID[reqres.SecretMetadataResponse](
 		r, w, reqres.SecretMetadataUnauthorized,
 	)
@@ -58,9 +55,10 @@ func guardGetSecretMetadataRequest(
 	path := request.Path
 	err = validation.ValidatePath(path)
 	if err != nil {
-		failErr := stdErrs.Join(sdkErrors.ErrInvalidInput, err)
+		failErr := sdkErrors.ErrInvalidInput.Wrap(err)
+		failErr.Msg = "invalid secret path: " + path
 		return net.Fail(
-			reqres.SecretMetadataBadInput, w, http.StatusBadRequest, failErr, fName,
+			reqres.SecretMetadataBadInput, w, http.StatusBadRequest, failErr,
 		)
 	}
 
@@ -69,9 +67,11 @@ func guardGetSecretMetadataRequest(
 		[]data.PolicyPermission{data.PermissionRead},
 	)
 	if !allowed {
+		failErr := sdkErrors.ErrUnauthorized
+		failErr.Msg = "unauthorized to read secret metadata for: " + path
 		return net.Fail(
 			reqres.SecretMetadataUnauthorized, w,
-			http.StatusUnauthorized, sdkErrors.ErrUnauthorized, fName,
+			http.StatusUnauthorized, failErr,
 		)
 	}
 

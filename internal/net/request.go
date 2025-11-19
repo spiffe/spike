@@ -6,59 +6,46 @@ package net
 
 import (
 	"encoding/json"
-	"errors"
 	"io"
 	"net/http"
 
-	apiErr "github.com/spiffe/spike-sdk-go/errors"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/log"
 	"github.com/spiffe/spike-sdk-go/net"
 )
 
 // ReadRequestBody reads the entire request body from an HTTP request.
-// It returns the body as a byte slice if successful. If there is an error
-// reading the body or if the body is nil, it writes a 400 Bad Request status
-// to the response writer and returns an empty byte slice. Any errors
-// encountered are logged.
-func ReadRequestBody(w http.ResponseWriter, r *http.Request) []byte {
+// It returns the body as a byte slice if successful, or an error if reading
+// fails. On error, it writes a 400 Bad Request status to the response writer
+// and returns the error for propagation to the caller.
+func ReadRequestBody(
+	w http.ResponseWriter, r *http.Request,
+) ([]byte, *sdkErrors.SDKError) {
 	body, err := net.RequestBody(r)
 	if err != nil {
-		log.Log().Info("readRequestBody",
-			"message", "Problem reading request body",
-			"err", err.Error())
+		failErr := sdkErrors.ErrReadFailure.Wrap(err)
+		failErr.Msg = "problem reading request body"
 
 		w.WriteHeader(http.StatusBadRequest)
-		_, err := io.WriteString(w, "")
-		if err != nil {
-			log.Log().Info("readRequestBody",
-				"message", "Problem writing response",
-				"err", err.Error())
+		_, writeErr := io.WriteString(w, "")
+		if writeErr != nil {
+			failErr = failErr.Wrap(writeErr)
+			failErr.Msg = "problem writing response"
 		}
 
-		return []byte{}
+		return nil, failErr
 	}
 
-	if body == nil {
-		log.Log().Info("readRequestBody", "message", "No request body.")
-
-		w.WriteHeader(http.StatusBadRequest)
-		_, err := io.WriteString(w, "")
-		if err != nil {
-			log.Log().Info("readRequestBody",
-				"message", "Problem writing response",
-				"err", err.Error())
-		}
-		return []byte{}
-	}
-
-	return body
+	return body, nil
 }
 
 // HandleRequestError handles HTTP request errors by writing a 400 Bad Request
 // status to the response writer. If err is nil, it returns nil. Otherwise, it
 // writes the error status and returns a joined error containing both the
 // original error and any error encountered while writing the response.
-func HandleRequestError(w http.ResponseWriter, err error) error {
+func HandleRequestError(
+	w http.ResponseWriter, err *sdkErrors.SDKError,
+) *sdkErrors.SDKError {
 	if err == nil {
 		return nil
 	}
@@ -66,7 +53,7 @@ func HandleRequestError(w http.ResponseWriter, err error) error {
 	w.WriteHeader(http.StatusBadRequest)
 	_, writeErr := io.WriteString(w, "")
 
-	return errors.Join(err, writeErr)
+	return sdkErrors.ErrBadRequest.Wrap(err).Wrap(writeErr)
 }
 
 // HandleRequest unmarshals a JSON request body into a typed request struct.
@@ -95,14 +82,18 @@ func HandleRequest[Req any, Res any](
 	w http.ResponseWriter,
 	errorResponse Res,
 ) *Req {
+	const fName = "HandleRequest"
+
 	var request Req
 
-	if err := HandleRequestError(
-		w, json.Unmarshal(requestBody, &request),
-	); err != nil {
-		log.Log().Error("HandleRequest",
-			"message", "Problem unmarshalling request",
-			"err", err.Error())
+	unmarshalErr := json.Unmarshal(requestBody, &request)
+	var sdkErr *sdkErrors.SDKError
+	if unmarshalErr != nil {
+		sdkErr = sdkErrors.ErrUnmarshalFailure.Wrap(unmarshalErr)
+	}
+
+	if err := HandleRequestError(w, sdkErr); err != nil {
+		log.ErrorErr(fName, *err)
 
 		responseBody, err := MarshalBodyAndRespondOnMarshalFail(errorResponse, w)
 		if err == nil {
@@ -134,12 +125,10 @@ func HandleRequest[Req any, Res any](
 //   - w: http.ResponseWriter - The response writer for error handling
 //   - r: *http.Request - The incoming HTTP request
 //   - errorResponse: Res - A response object to send if parsing fails
-//   - logContext: string - Optional context string for logging (e.g., function
-//     name). If empty, no additional logging is performed beyond the default.
 //
 // Returns:
 //   - *Req - A pointer to the parsed request struct, or nil if parsing failed
-//   - error - apiErr.ErrReadFailure, apiErr.ErrParseFailure, or nil
+//   - *sdkErrors.SDKError - ErrReadFailure, ErrParseFailure, or nil
 //
 // Example usage:
 //
@@ -148,7 +137,6 @@ func HandleRequest[Req any, Res any](
 //	    reqres.SecretDeleteResponse](
 //	    w, r,
 //	    reqres.SecretDeleteResponse{Err: data.ErrBadInput},
-//	    "RouteDeleteSecret",
 //	)
 //	if err != nil {
 //	    return err
@@ -157,22 +145,15 @@ func ReadAndParseRequest[Req any, Res any](
 	w http.ResponseWriter,
 	r *http.Request,
 	errorResponse Res,
-	logContext string,
-) (*Req, error) {
-	requestBody := ReadRequestBody(w, r)
-	if requestBody == nil {
-		if logContext != "" {
-			log.Log().Error(logContext, "message", "failed to read request body")
-		}
-		return nil, apiErr.ErrReadFailure
+) (*Req, *sdkErrors.SDKError) {
+	requestBody, err := ReadRequestBody(w, r)
+	if err != nil {
+		return nil, err
 	}
 
 	request := HandleRequest[Req, Res](requestBody, w, errorResponse)
 	if request == nil {
-		if logContext != "" {
-			log.Log().Error(logContext, "message", "failed to parse request body")
-		}
-		return nil, apiErr.ErrParseFailure
+		return nil, sdkErrors.ErrParseFailure
 	}
 
 	return request, nil
@@ -192,7 +173,7 @@ func ReadAndParseRequest[Req any, Res any](
 //
 // Returns:
 //   - error: nil if validation passes, error otherwise
-type GuardFunc[Req any] func(Req, http.ResponseWriter, *http.Request) error
+type GuardFunc[Req any] func(Req, http.ResponseWriter, *http.Request) *sdkErrors.SDKError
 
 // ReadParseAndGuard reads the HTTP request body, parses it, and executes
 // a guard function in a single operation. This function combines
@@ -202,8 +183,7 @@ type GuardFunc[Req any] func(Req, http.ResponseWriter, *http.Request) error
 //  1. Reads the request body from the HTTP request
 //  2. Unmarshals the body into the request type
 //  3. Executes the guard function for validation
-//  4. Logs errors if logContext is provided
-//  5. Returns the parsed request and any errors
+//  4. Returns the parsed request and any errors
 //
 // Type Parameters:
 //   - Req: The request type to unmarshal into
@@ -214,13 +194,11 @@ type GuardFunc[Req any] func(Req, http.ResponseWriter, *http.Request) error
 //   - r: *http.Request - The incoming HTTP request
 //   - errorResponse: Res - A response object to send if parsing fails
 //   - guard: GuardFunc[Req] - The guard function to execute for validation
-//   - logContext: string - Optional context string for logging (e.g., function
-//     name). If empty, no additional logging is performed beyond the default.
 //
 // Returns:
 //   - *Req - A pointer to the parsed request struct, or nil if any step failed
-//   - error - apiErr.ErrReadFailure, apiErr.ErrParseFailure, or error from
-//     guard function
+//   - *sdkErrors.SDKError - ErrReadFailure, ErrParseFailure, or error from
+//     the guard function
 //
 // Example usage:
 //
@@ -230,7 +208,6 @@ type GuardFunc[Req any] func(Req, http.ResponseWriter, *http.Request) error
 //	    w, r,
 //	    reqres.ShardPutResponse{Err: data.ErrBadInput},
 //	    guardShardPutRequest,
-//	    "RouteContribute",
 //	)
 //	if err != nil {
 //	    return err
@@ -240,136 +217,128 @@ func ReadParseAndGuard[Req any, Res any](
 	r *http.Request,
 	errorResponse Res,
 	guard GuardFunc[Req],
-	logContext string,
-) (*Req, error) {
-	request, err := ReadAndParseRequest[Req, Res](
-		w, r, errorResponse, logContext,
-	)
+) (*Req, *sdkErrors.SDKError) {
+	request, err := ReadAndParseRequest[Req, Res](w, r, errorResponse)
 	if err != nil {
 		return nil, err
 	}
 
-	err = guard(*request, w, r)
-	if err != nil {
-		if logContext != "" {
-			log.Log().Error(logContext, "message", "guard trap", "err", err.Error())
-		}
+	if err = guard(*request, w, r); err != nil {
 		return nil, err
 	}
 
 	return request, nil
 }
 
-// FailIfError is a helper function that fails a request if an error occurred
-// during validation or processing.
-//
-// This function provides a reusable pattern for validating inputs and
-// responding with appropriate error messages. If the internal error is nil,
-// the function returns nil immediately. Otherwise, it marshals the client
-// response and sends it with a 400 Bad Request status, then returns the
-// specified error to the caller.
-//
-// Type Parameters:
-//   - T: The response type to send to the client (e.g.,
-//     reqres.PolicyCreateBadInput)
-//
-// Parameters:
-//   - internalError: The error to check (e.g., from validation functions).
-//     If nil, the function returns nil immediately.
-//   - errorToRespond: The error to return to the caller (e.g.,
-//     apiErr.ErrInvalidInput)
-//   - clientResponse: The response object to send to the client if there is
-//     an error
-//   - w: The HTTP response writer for error responses
-//
-// Returns:
-//   - error: Returns errorToRespond if internalError is not nil, otherwise
-//     returns nil
-//
-// Example usage:
-//
-//	err := validation.ValidateName(name)
-//	if err := net.FailIfError(
-//	    err, apiErr.ErrInvalidInput,
-//	    reqres.PolicyCreateBadInput, w); err != nil {
-//	    return err
+//// FailIfError is a helper function that fails a request if an error occurred
+//// during validation or processing.
+////
+//// This function provides a reusable pattern for validating inputs and
+//// responding with appropriate error messages. If the internal error is nil,
+//// the function returns nil immediately. Otherwise, it marshals the client
+//// response and sends it with a 400 Bad Request status, then returns the
+//// specified error to the caller.
+////
+//// Type Parameters:
+////   - T: The response type to send to the client (e.g.,
+////     reqres.PolicyCreateBadInput)
+////
+//// Parameters:
+////   - internalError: The error to check (e.g., from validation functions).
+////     If nil, the function returns nil immediately.
+////   - errorToRespond: The error to return to the caller (e.g.,
+////     apiErr.ErrInvalidInput)
+////   - clientResponse: The response object to send to the client if there is
+////     an error
+////   - w: The HTTP response writer for error responses
+////
+//// Returns:
+////   - error: Returns errorToRespond if internalError is not nil, otherwise
+////     returns nil
+////
+//// Example usage:
+////
+////	err := validation.ValidateName(name)
+////	if err := net.FailIfError(
+////	    err, apiErr.ErrInvalidInput,
+////	    reqres.PolicyCreateBadInput, w); err != nil {
+////	    return err
+////	}
+//func FailIfError[T any](
+//	internalError error, errorToRespond error,
+//	clientResponse T, w http.ResponseWriter,
+//) error {
+//	if internalError != nil {
+//		responseBody, marshalErr := MarshalBodyAndRespondOnMarshalFail(
+//			clientResponse, w,
+//		)
+//		if alreadyResponded := marshalErr != nil; !alreadyResponded {
+//			Respond(http.StatusBadRequest, responseBody, w)
+//		}
+//		return errorToRespond
 //	}
-func FailIfError[T any](
-	internalError error, errorToRespond error,
-	clientResponse T, w http.ResponseWriter,
-) error {
-	if internalError != nil {
-		responseBody, marshalErr := MarshalBodyAndRespondOnMarshalFail(
-			clientResponse, w,
-		)
-		if alreadyResponded := marshalErr != nil; !alreadyResponded {
-			Respond(http.StatusBadRequest, responseBody, w)
-		}
-		return errorToRespond
-	}
-	return nil
-}
-
-// FailIf is a helper function that conditionally fails a request by sending
-// an error response based on a boolean condition.
+//	return nil
+//}
 //
-// This function provides a reusable pattern for conditional error responses,
-// such as authorization checks or validation conditions. If the condition is
-// true, it marshals the client response and sends it with the specified HTTP
-// status code, then returns the specified error to the caller.
-//
-// Type Parameters:
-//   - T: The response type to send to the client (e.g.,
-//     reqres.ShardPutUnauthorized)
-//
-// Parameters:
-//   - condition: If true, fail the request with an error response
-//   - clientResponse: The response object to send to the client if condition
-//     is true
-//   - w: The HTTP response writer for error responses
-//   - statusCode: The HTTP status code to send (e.g., http.StatusUnauthorized)
-//   - errorToRespond: The error to return to the caller (e.g.,
-//     apiErr.ErrUnauthorized)
-//
-// Returns:
-//   - error: Returns errorToRespond if condition is true, otherwise returns
-//     nil
-//
-// Example usage:
-//
-//	if err := net.FailIf(
-//	    !spiffeid.PeerCanTalkToKeeper(peerSPIFFEID.String()),
-//	    reqres.ShardPutUnauthorized, w,
-//	    http.StatusUnauthorized, apiErr.ErrUnauthorized,
-//	); err != nil {
-//	    return err
+//// FailIf is a helper function that conditionally fails a request by sending
+//// an error response based on a boolean condition.
+////
+//// This function provides a reusable pattern for conditional error responses,
+//// such as authorization checks or validation conditions. If the condition is
+//// true, it marshals the client response and sends it with the specified HTTP
+//// status code, then returns the specified error to the caller.
+////
+//// Type Parameters:
+////   - T: The response type to send to the client (e.g.,
+////     reqres.ShardPutUnauthorized)
+////
+//// Parameters:
+////   - condition: If true, fail the request with an error response
+////   - clientResponse: The response object to send to the client if condition
+////     is true
+////   - w: The HTTP response writer for error responses
+////   - statusCode: The HTTP status code to send (e.g., http.StatusUnauthorized)
+////   - errorToRespond: The error to return to the caller (e.g.,
+////     apiErr.ErrUnauthorized)
+////
+//// Returns:
+////   - error: Returns errorToRespond if condition is true, otherwise returns
+////     nil
+////
+//// Example usage:
+////
+////	if err := net.FailIf(
+////	    !spiffeid.PeerCanTalkToKeeper(peerSPIFFEID.String()),
+////	    reqres.ShardPutUnauthorized, w,
+////	    http.StatusUnauthorized, apiErr.ErrUnauthorized,
+////	); err != nil {
+////	    return err
+////	}
+//func FailIf[T any](
+//	condition bool,
+//	clientResponse T,
+//	w http.ResponseWriter,
+//	statusCode int,
+//	errorToRespond error,
+//) error {
+//	if condition {
+//		responseBody, marshalErr := MarshalBodyAndRespondOnMarshalFail(
+//			clientResponse, w,
+//		)
+//		if alreadyResponded := marshalErr != nil; !alreadyResponded {
+//			Respond(statusCode, responseBody, w)
+//		}
+//		return errorToRespond
 //	}
-func FailIf[T any](
-	condition bool,
-	clientResponse T,
-	w http.ResponseWriter,
-	statusCode int,
-	errorToRespond error,
-) error {
-	if condition {
-		responseBody, marshalErr := MarshalBodyAndRespondOnMarshalFail(
-			clientResponse, w,
-		)
-		if alreadyResponded := marshalErr != nil; !alreadyResponded {
-			Respond(statusCode, responseBody, w)
-		}
-		return errorToRespond
-	}
-	return nil
-}
+//	return nil
+//}
 
-// Fail sends an error response, logs the error, and returns the specified
-// error.
+// Fail sends an error response and returns the specified error.
 //
-// This function is used when you've already determined that a request should
-// fail and need to send an error response. It marshals the client response,
-// sends it with the specified HTTP status code, optionally logs the error,
-// and returns the error.
+// This function is used when a request should fail and an error response
+// needs to be sent to the client. It marshals the client response and sends
+// it with the specified HTTP status code, then returns the error to the
+// caller for propagation up the call stack.
 //
 // Type Parameters:
 //   - T: The response type to send to the client (e.g.,
@@ -381,8 +350,6 @@ func FailIf[T any](
 //   - statusCode: The HTTP status code to send (e.g., http.StatusBadRequest)
 //   - errorToReturn: The error to return to the caller (e.g.,
 //     errors.ErrInvalidInput)
-//   - logContext: Context string for logging (e.g., function name). If empty,
-//     no log is written.
 //
 // Returns:
 //   - error: Always returns errorToReturn
@@ -392,7 +359,7 @@ func FailIf[T any](
 //	if request.Shard == nil {
 //	    return net.Fail(
 //	        reqres.ShardPutBadInput, w,
-//	        http.StatusBadRequest, errors.ErrInvalidInput, fName,
+//	        http.StatusBadRequest, errors.ErrInvalidInput,
 //	    )
 //	}
 func Fail[T any](
@@ -400,7 +367,6 @@ func Fail[T any](
 	w http.ResponseWriter,
 	statusCode int,
 	errorToReturn error,
-	logContext string,
 ) error {
 	responseBody, marshalErr := MarshalBodyAndRespondOnMarshalFail(
 		clientResponse, w,
@@ -408,17 +374,14 @@ func Fail[T any](
 	if alreadyResponded := marshalErr != nil; !alreadyResponded {
 		Respond(statusCode, responseBody, w)
 	}
-	if logContext != "" {
-		log.Log().Error(logContext, "err", errorToReturn.Error())
-	}
 	return errorToReturn
 }
 
-// Success sends a success response with HTTP 200 OK and logs success.
+// Success sends a success response with HTTP 200 OK.
 //
-// This function marshals the client response, sends it with a 200 OK status,
-// and logs success. This function does not return an error for API symmetry
-// with SuccessWithResponseBody.
+// This function marshals the client response and sends it with a 200 OK
+// status. It does not return a value, maintaining API symmetry with
+// SuccessWithResponseBody (which returns the response body for cleanup).
 //
 // Type Parameters:
 //   - T: The response type to send to the client (e.g.,
@@ -427,36 +390,29 @@ func Fail[T any](
 // Parameters:
 //   - clientResponse: The response object to send to the client
 //   - w: The HTTP response writer
-//   - logContext: Context string for logging (e.g., function name). If empty,
-//     no log is written.
 //
 // Example usage:
 //
 //	state.SetShard(request.Shard)
-//	net.Success(reqres.ShardPutSuccess, w, fName)
+//	net.Success(reqres.ShardPutSuccess, w)
 //	return nil
-func Success[T any](
-	clientResponse T,
-	w http.ResponseWriter,
-	logContext string,
-) {
+func Success[T any](clientResponse T, w http.ResponseWriter) {
 	responseBody, marshalErr := MarshalBodyAndRespondOnMarshalFail(
 		clientResponse, w,
 	)
 	if alreadyResponded := marshalErr != nil; !alreadyResponded {
-		Respond(http.StatusOK, responseBody, w)
+		return
 	}
-	if logContext != "" {
-		log.Log().Info(logContext, "message", "Success")
-	}
+	Respond(http.StatusOK, responseBody, w)
 }
 
-// SuccessWithResponseBody sends a success response with HTTP 200 OK, logs
-// success, and returns the response body for cleanup.
+// SuccessWithResponseBody sends a success response with HTTP 200 OK and
+// returns the response body for cleanup.
 //
-// This variant is used when you need to explicitly clear the response body
+// This variant is used when the response body needs to be explicitly cleared
 // from memory for security reasons, such as when returning sensitive
-// cryptographic data.
+// cryptographic data. The caller is responsible for clearing the returned
+// byte slice.
 //
 // Type Parameters:
 //   - T: The response type to send to the client (e.g.,
@@ -465,34 +421,31 @@ func Success[T any](
 // Parameters:
 //   - clientResponse: The response object to send to the client
 //   - w: The HTTP response writer
-//   - logContext: Context string for logging (e.g., function name). If empty,
-//     no log is written.
 //
 // Returns:
-//   - []byte: The marshaled response body that can be cleared for security
+//   - []byte: The marshaled response body that should be cleared for security
 //
 // Example usage:
 //
 //	responseBody := net.SuccessWithResponseBody(
-//	    reqres.ShardGetResponse{Shard: sh}.Success(), w, fName,
+//	    reqres.ShardGetResponse{Shard: sh}.Success(), w,
 //	)
 //	defer func() {
 //	    mem.ClearBytes(responseBody)
 //	}()
 //	return nil
 func SuccessWithResponseBody[T any](
-	clientResponse T,
-	w http.ResponseWriter,
-	logContext string,
+	clientResponse T, w http.ResponseWriter,
 ) []byte {
 	responseBody, marshalErr := MarshalBodyAndRespondOnMarshalFail(
 		clientResponse, w,
 	)
-	if alreadyResponded := marshalErr != nil; !alreadyResponded {
-		Respond(http.StatusOK, responseBody, w)
+
+	if alreadyResponded := marshalErr != nil; alreadyResponded {
+		// Headers already sent. Just return the response body.
+		return responseBody
 	}
-	if logContext != "" {
-		log.Log().Info(logContext, "message", "Success")
-	}
+
+	Respond(http.StatusOK, responseBody, w)
 	return responseBody
 }

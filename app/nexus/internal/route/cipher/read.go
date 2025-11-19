@@ -29,9 +29,9 @@ import (
 func readJSONDecryptRequestWithoutGuard(
 	w http.ResponseWriter, r *http.Request,
 ) (reqres.CipherDecryptRequest, error) {
-	requestBody := net.ReadRequestBody(w, r)
-	if requestBody == nil {
-		return reqres.CipherDecryptRequest{}, sdkErrors.ErrReadFailure
+	requestBody, err := net.ReadRequestBody(w, r)
+	if err != nil {
+		return reqres.CipherDecryptRequest{}, err
 	}
 
 	request := net.HandleRequest[
@@ -94,9 +94,9 @@ func readStreamingDecryptRequestData(
 	}
 
 	// Read the remaining body as ciphertext
-	ciphertext := net.ReadRequestBody(w, r)
-	if ciphertext == nil {
-		return 0, nil, nil, sdkErrors.ErrReadFailure
+	ciphertext, err := net.ReadRequestBody(w, r)
+	if err != nil {
+		return 0, nil, nil, err
 	}
 
 	return version, nonce, ciphertext, nil
@@ -115,9 +115,9 @@ func readStreamingDecryptRequestData(
 func readStreamingEncryptRequestWithoutGuard(
 	w http.ResponseWriter, r *http.Request,
 ) ([]byte, error) {
-	plaintext := net.ReadRequestBody(w, r)
-	if plaintext == nil {
-		return nil, sdkErrors.ErrReadFailure
+	plaintext, err := net.ReadRequestBody(w, r)
+	if err != nil {
+		return nil, err
 	}
 
 	return plaintext, nil
@@ -136,9 +136,9 @@ func readStreamingEncryptRequestWithoutGuard(
 func readJSONEncryptRequestWithoutGuard(
 	w http.ResponseWriter, r *http.Request,
 ) (reqres.CipherEncryptRequest, error) {
-	requestBody := net.ReadRequestBody(w, r)
-	if requestBody == nil {
-		return reqres.CipherEncryptRequest{}, sdkErrors.ErrReadFailure
+	requestBody, err := net.ReadRequestBody(w, r)
+	if err != nil {
+		return reqres.CipherEncryptRequest{}, err
 	}
 
 	request := net.HandleRequest[

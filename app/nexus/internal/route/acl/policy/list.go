@@ -18,6 +18,11 @@ import (
 	"github.com/spiffe/spike/internal/net"
 )
 
+// TODO: either return an erro, or log, but not both: verify this across the codebase
+// Only exception is fatal exits.
+// When you are logging an error, you are handling it.
+// Errors shall ideally be handled once.
+
 // RouteListPolicies handles HTTP requests to retrieve policies.
 // It can list all policies or filter them by a SPIFFE ID pattern or a path
 // pattern. The function returns a list of policies matching the criteria.
@@ -58,7 +63,7 @@ import (
 func RouteListPolicies(
 	w http.ResponseWriter, r *http.Request, audit *journal.AuditEntry,
 ) error {
-	fName := "routeListPolicies"
+	fName := "RouteListPolicies"
 
 	journal.AuditRequest(fName, r, audit, journal.AuditList)
 
@@ -67,7 +72,6 @@ func RouteListPolicies(
 		w, r, reqres.PolicyListBadInput, guardListPolicyRequest, fName,
 	)
 	if alreadyResponded := err != nil; alreadyResponded {
-		log.Log().Error(fName, "message", "exit", "err", err.Error())
 		return err
 	}
 
@@ -81,7 +85,7 @@ func RouteListPolicies(
 	case SPIFFEIDPattern != "":
 		policies, err = state.ListPoliciesBySPIFFEIDPattern(SPIFFEIDPattern)
 		if err != nil {
-			failErr := stdErrs.Join(sdkErrors.ErrQueryFailure, err)
+			failErr := sdkErrors.ErrStoreQueryFailure.Wrap(err)
 			return net.Fail(
 				reqres.PolicyListInternal, w,
 				http.StatusInternalServerError, failErr, fName,
