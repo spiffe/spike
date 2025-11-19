@@ -43,7 +43,7 @@ func handleGetSecretError(err error, w http.ResponseWriter) error {
 		)
 	}
 
-	failErr := stdErrors.Join(sdkErrors.ErrQueryFailure, err)
+	failErr := sdkErrors.ErrStoreQueryFailure.Wrap(err)
 	return net.Fail(
 		reqres.SecretReadInternal, w, http.StatusInternalServerError,
 		failErr, fName,
@@ -80,7 +80,7 @@ func handleGetSecretMetadataError(err error, w http.ResponseWriter) error {
 		)
 	}
 
-	failErr := stdErrors.Join(sdkErrors.ErrQueryFailure, err)
+	failErr := sdkErrors.ErrStoreQueryFailure.Wrap(err)
 	return net.Fail(
 		reqres.SecretMetadataInternal, w,
 		http.StatusInternalServerError, failErr, fName,

@@ -11,14 +11,11 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"regexp"
 	"strings"
 	"time"
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
-	"github.com/spiffe/spike-sdk-go/log"
-
 	"github.com/spiffe/spike/app/nexus/internal/state/backend/sqlite/ddl"
 )
 
@@ -36,9 +33,7 @@ import (
 //   - Policy deletion fails
 func (s *DataStore) DeletePolicy(ctx context.Context, id string) error {
 	const fName = "DeletePolicy"
-	if ctx == nil {
-		log.FatalLn(fName, "message", sdkErrors.ErrCodeNilContext)
-	}
+	validateContext(ctx, fName)
 
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -102,9 +97,7 @@ func encryptWithNonce(s *DataStore, nonce []byte, data []byte) ([]byte, error) {
 //   - Policy storage fails
 func (s *DataStore) StorePolicy(ctx context.Context, policy data.Policy) error {
 	const fName = "StorePolicy"
-	if ctx == nil {
-		log.FatalLn(fName, "message", sdkErrors.ErrCodeNilContext)
-	}
+	validateContext(ctx, fName)
 
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -188,9 +181,7 @@ func (s *DataStore) LoadPolicy(
 	ctx context.Context, id string,
 ) (*data.Policy, error) {
 	const fName = "LoadPolicy"
-	if ctx == nil {
-		log.FatalLn(fName, "message", sdkErrors.ErrCodeNilContext)
-	}
+	validateContext(ctx, fName)
 
 	s.mu.RLock()
 	defer s.mu.RUnlock()
@@ -235,22 +226,11 @@ func (s *DataStore) LoadPolicy(
 	policy.PathPattern = string(decryptedPathPattern)
 	policy.CreatedAt = time.Unix(createdTime, 0)
 
-	permissionsStr := string(decryptedPermissions)
-	if permissionsStr != "" {
-		perms := strings.Split(permissionsStr, ",")
-		policy.Permissions = make([]data.PolicyPermission, len(perms))
-		for i, p := range perms {
-			policy.Permissions[i] = data.PolicyPermission(strings.TrimSpace(p))
-		}
-	}
+	policy.Permissions = deserializePermissions(string(decryptedPermissions))
+
 	// Compile regex
-	policy.IDRegex, err = regexp.Compile(policy.SPIFFEIDPattern)
-	if err != nil {
-		return nil, fmt.Errorf("invalid spiffeid pattern: %w", err)
-	}
-	policy.PathRegex, err = regexp.Compile(policy.PathPattern)
-	if err != nil {
-		return nil, fmt.Errorf("invalid path pattern: %w", err)
+	if err := compileRegexPatterns(&policy); err != nil {
+		return nil, err
 	}
 
 	return &policy, nil
@@ -272,18 +252,15 @@ func (s *DataStore) LoadAllPolicies(
 	ctx context.Context,
 ) (map[string]*data.Policy, error) {
 	const fName = "LoadAllPolicies"
-
-	if ctx == nil {
-		log.FatalLn(fName, "message", sdkErrors.ErrCodeNilContext)
-	}
+	validateContext(ctx, fName)
 
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
 	rows, err := s.db.QueryContext(ctx, ddl.QueryAllPolicies)
 	if err != nil {
-		failErr := sdkErrors.ErrQueryFailure
-		return nil, errors.Join(failErr, err)
+		failErr := sdkErrors.ErrStoreQueryFailed
+		return nil, failErr.Wrap(err)
 	}
 	defer func(rows *sql.Rows) {
 		err := rows.Close()
@@ -312,73 +289,63 @@ func (s *DataStore) LoadAllPolicies(
 			&nonce,
 			&createdTime,
 		); err != nil {
-			failErr := sdkErrors.ErrQueryFailure
-			return nil, errors.Join(failErr, err)
+			failErr := sdkErrors.ErrStoreQueryFailure
+			return nil, failErr.Wrap(err)
 		}
 
 		// Decrypt
 		decryptedSPIFFEIDPattern, err := s.decrypt(encryptedSPIFFEIDPattern, nonce)
 		if err != nil {
-			failMsg := sdkErrors.FailedFor(
-				"decryption", "SPIFFE ID pattern", "policy", policy.ID,
+			failMsg := fmt.Sprintf(
+				"failed to decrypt SPIFFE ID pattern for policy %s",
+				policy.ID,
 			)
-			log.Log().Warn(fName, "message", failMsg)
-			return nil, errors.Join(sdkErrors.ErrFailedForAReason, err)
+			failErr := sdkErrors.ErrCryptoDecryptionFailed
+			failErr.Msg = failMsg
+			return nil, failErr.Wrap(err)
 		}
 		decryptedPathPattern, err := s.decrypt(encryptedPathPattern, nonce)
 		if err != nil {
-			failMsg := sdkErrors.FailedFor(
-				"decryption", "path pattern", "policy", policy.ID,
+			failMsg := fmt.Sprintf(
+				"failed to decrypt path pattern for policy %s", policy.ID,
 			)
-			log.Log().Warn(fName, "message", failMsg)
-			return nil, errors.Join(sdkErrors.ErrFailedForAReason, err)
+			failErr := sdkErrors.ErrCryptoDecryptionFailed
+			failErr.Msg = failMsg
+			return nil, failErr.Wrap(err)
 		}
 		decryptedPermissions, err := s.decrypt(encryptedPermissions, nonce)
 		if err != nil {
-			failMsg := sdkErrors.FailedFor(
-				"decryption", "permissions", "policy", policy.ID,
+			failMsg := fmt.Sprintf(
+				"failed to decrypt permissions for policy %s", policy.ID,
 			)
-			log.Log().Warn(fName, "message", failMsg)
-			return nil, errors.Join(sdkErrors.ErrFailedForAReason, err)
+			failErr := sdkErrors.ErrCryptoDecryptionFailed
+			failErr.Msg = failMsg
+			return nil, failErr.Wrap(err)
 		}
 
 		policy.SPIFFEIDPattern = string(decryptedSPIFFEIDPattern)
 		policy.PathPattern = string(decryptedPathPattern)
 		policy.CreatedAt = time.Unix(createdTime, 0)
 
-		// Deserialize permissions
-		permissionsStr := string(decryptedPermissions)
-		if permissionsStr != "" {
-			perms := strings.Split(permissionsStr, ",")
-			policy.Permissions = make([]data.PolicyPermission, len(perms))
-			for i, p := range perms {
-				policy.Permissions[i] = data.PolicyPermission(strings.TrimSpace(p))
-			}
-		}
+		policy.Permissions = deserializePermissions(
+			string(decryptedPermissions),
+		)
 
 		// Compile regex
-		policy.IDRegex, err = regexp.Compile(policy.SPIFFEIDPattern)
-		if err != nil {
-			failMsg := sdkErrors.InvalidFor(
-				"SPIFFE ID pattern", "policy", policy.ID,
+		if err := compileRegexPatterns(&policy); err != nil {
+			failMsg := fmt.Sprintf(
+				"invalid pattern for policy %s", policy.ID,
 			)
-			log.Log().Warn(fName, "message", failMsg)
-			return nil, errors.Join(sdkErrors.ErrInvalidForAReason, err)
-		}
-
-		policy.PathRegex, err = regexp.Compile(policy.PathPattern)
-		if err != nil {
-			failMsg := sdkErrors.InvalidFor("path pattern", "policy", policy.ID)
-			log.Log().Warn(fName, "message", failMsg)
-			return nil, errors.Join(sdkErrors.ErrInvalidForAReason, err)
+			failErr := sdkErrors.ErrInvalidInput
+			failErr.Msg = failMsg
+			return nil, failErr.Wrap(err)
 		}
 
 		policies[policy.ID] = &policy
 	}
 
 	if err := rows.Err(); err != nil {
-		failErr := sdkErrors.ErrQueryFailure
-		return nil, errors.Join(failErr, err)
+		return nil, sdkErrors.ErrStoreQueryFailure.Wrap(err)
 	}
 
 	return policies, nil

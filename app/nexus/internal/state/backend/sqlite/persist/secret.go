@@ -39,7 +39,8 @@ func (s *DataStore) StoreSecret(
 	const fName = "StoreSecret"
 
 	if ctx == nil {
-		log.FatalLn(fName, "message", sdkErrors.ErrCodeNilContext)
+		failErr := sdkErrors.ErrNilContext
+		log.FatalErr(fName, *failErr)
 	}
 
 	s.mu.Lock()
@@ -70,35 +71,32 @@ func (s *DataStore) StoreSecret(
 		secret.Metadata.UpdatedTime, secret.Metadata.MaxVersions,
 	)
 	if err != nil {
-		failErr := sdkErrors.ErrQueryFailure
-		return errors.Join(failErr, err)
+		return sdkErrors.ErrStoreQueryFailure.Wrap(err)
 	}
 
 	// Update versions
 	for version, sv := range secret.Versions {
 		md, err := json.Marshal(sv.Data)
 		if err != nil {
-			failErr := sdkErrors.ErrMarshalFailure
-			return errors.Join(failErr, err)
+			return sdkErrors.ErrMarshalFailure.Wrap(err)
 		}
+
+		// TODO: check all errors.Join()'s and replace with Wraps.
 
 		encrypted, nonce, err := s.encrypt(md)
 		if err != nil {
-			failErr := sdkErrors.ErrCryptoEncryptionFailed
-			return errors.Join(failErr, err)
+			return sdkErrors.ErrCryptoEncryptionFailed.Wrap(err)
 		}
 
 		_, err = tx.ExecContext(ctx, ddl.QueryUpsertSecret,
 			path, version, nonce, encrypted, sv.CreatedTime, sv.DeletedTime)
 		if err != nil {
-			failErr := sdkErrors.ErrQueryFailure
-			return errors.Join(failErr, err)
+			return sdkErrors.ErrStoreQueryFailure.Wrap(err)
 		}
 	}
 
 	if err := tx.Commit(); err != nil {
-		failErr := sdkErrors.ErrTransactionCommitFailed
-		return errors.Join(failErr, err)
+		return sdkErrors.ErrTransactionCommitFailed.Wrap(err)
 	}
 
 	committed = true
@@ -123,7 +121,8 @@ func (s *DataStore) LoadSecret(
 ) (*kv.Value, error) {
 	const fName = "LoadSecret"
 	if ctx == nil {
-		log.FatalLn(fName, "message", sdkErrors.ErrCodeNilContext)
+		failErr := sdkErrors.ErrNilContext
+		log.FatalErr(fName, *failErr)
 	}
 
 	s.mu.RLock()
@@ -164,14 +163,13 @@ func (s *DataStore) LoadAllSecrets(
 	// Get all secret paths
 	rows, err := s.db.QueryContext(ctx, ddl.QueryPathsFromMetadata)
 	if err != nil {
-		failErr := sdkErrors.ErrQueryFailure
-		return nil, errors.Join(failErr, err)
+		return nil, sdkErrors.ErrStoreQueryFailed.Wrap(err)
 	}
 	defer func(rows *sql.Rows) {
 		err := rows.Close()
 		if err != nil {
 			failErr := sdkErrors.ErrFileCloseFailed
-			log.Log().Warn(fName, "message", errors.Join(failErr, err).Error())
+			log.FatalErr(fName, *failErr)
 		}
 	}(rows)
 
@@ -182,15 +180,13 @@ func (s *DataStore) LoadAllSecrets(
 	for rows.Next() {
 		var path string
 		if err := rows.Scan(&path); err != nil {
-			failErr := sdkErrors.ErrQueryFailure
-			return nil, errors.Join(failErr, err)
+			return nil, sdkErrors.ErrStoreQueryFailed.Wrap(err)
 		}
 
 		// Load the full secret for this path
 		secret, err := s.loadSecretInternal(ctx, path)
 		if err != nil {
-			failErr := sdkErrors.ErrDataLoadFailed
-			return nil, errors.Join(failErr, err)
+			return nil, sdkErrors.ErrStoreQueryFailure.Wrap(err)
 		}
 
 		if secret != nil {
@@ -199,8 +195,7 @@ func (s *DataStore) LoadAllSecrets(
 	}
 
 	if err := rows.Err(); err != nil {
-		failErr := sdkErrors.ErrQueryFailure
-		return nil, errors.Join(failErr, err)
+		return nil, sdkErrors.ErrStoreQueryFailure.Wrap(err)
 	}
 
 	return secrets, nil

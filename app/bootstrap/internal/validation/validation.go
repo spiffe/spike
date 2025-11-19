@@ -8,6 +8,7 @@ import (
 	"github.com/cloudflare/circl/group"
 	shamir "github.com/cloudflare/circl/secretsharing"
 	"github.com/spiffe/spike-sdk-go/config/env"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/log"
 )
 
@@ -34,7 +35,7 @@ import (
 // Security:
 //   - The reconstructed secret is always zeroed out to prevent memory leaks
 //   - In case of fatal errors, the reconstructed secret is explicitly zeroed
-//     before logging since deferred functions won't run after log.FatalLn
+//     before logging since deferred functions won't run after log.FatalErr
 func VerifyShamirReconstruction(secret group.Scalar, shares []shamir.Share) {
 	const fName = "VerifyShamirReconstruction"
 
@@ -53,15 +54,16 @@ func VerifyShamirReconstruction(secret group.Scalar, shares []shamir.Share) {
 		// deferred will not run in a fatal crash.
 		reconstructed.SetUint64(0)
 
-		log.FatalLn(fName, "message", "failed to recover", "err", err.Error())
+		failErr := sdkErrors.ErrShamirReconstructionFailed.Wrap(err)
+		failErr.Msg = "failed to recover root key"
+		log.FatalErr(fName, *failErr)
 	}
 	if !secret.IsEqual(reconstructed) {
 		// deferred will not run in a fatal crash.
 		reconstructed.SetUint64(0)
 
-		log.FatalLn(
-			fName,
-			"message", "recovered secret does not match original",
-		)
+		failErr := sdkErrors.ErrShamirReconstructionFailed
+		failErr.Msg = "recovered secret does not match original"
+		log.FatalErr(fName, *failErr)
 	}
 }

@@ -116,11 +116,8 @@ func TestRestoreBackingStoreFromPilotShards_InvalidShards(t *testing.T) {
 			shards := []ShamirShard{tt.setupShard()}
 
 			if tt.shouldExit {
-				// log.FatalLn calls os.Exit(), which terminates the process
-				// In a real test environment, we can't easily test this without
-				// process isolation. We skip these tests since they would terminate
-				// the test runner.
-				t.Skip("Skipping test that would call os.Exit() - function calls log.FatalLn")
+				// TODO: this can be modified with env var; fix the test.
+				t.Skip("Skipping test that would call os.Exit() - function calls log.FatalErr")
 				return
 			}
 

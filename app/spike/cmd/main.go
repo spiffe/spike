@@ -6,7 +6,6 @@ package main
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"os"
 
@@ -38,19 +37,8 @@ Consider disabling swap to enhance security.
 
 	source, SPIFFEID, err := spiffe.Source(ctx, spiffe.EndpointSocket())
 	if err != nil {
-		failErr := errors.Join(sdkErrors.ErrInitializationFailed, err)
-		msg := "unknown error"
-		// ^ This should never remain as is, unless
-		// sdkErrors.ErrInitializationFailed is set to nil in the SDK
-		// --defensive coding.
-		if failErr != nil {
-			msg = failErr.Error()
-		}
-		log.FatalLn(
-			appName,
-			"message", sdkErrors.ErrCodeInitializationFailed,
-			"err", msg,
-		)
+		failErr := sdkErrors.ErrInitializationFailed.Wrap(err)
+		log.FatalErr(appName, *failErr)
 	}
 	defer spiffe.CloseSource(source)
 

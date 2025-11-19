@@ -6,7 +6,6 @@ package base
 
 import (
 	"context"
-	"errors"
 	"regexp"
 	"time"
 
@@ -54,11 +53,7 @@ func CheckAccess(
 
 	policies, err := ListPolicies()
 	if err != nil {
-		log.Log().Warn(
-			fName,
-			"message", sdkErrors.ErrCodeResultSetFailedToLoad,
-			"err", err.Error(),
-		)
+		log.WarnErr(fName, *sdkErrors.ErrStoreResultSetFailedToLoad)
 		return false
 	}
 
@@ -107,7 +102,7 @@ func CreatePolicy(policy data.Policy) (data.Policy, error) {
 	const fName = "CreatePolicy"
 
 	if policy.Name == "" {
-		return data.Policy{}, sdkErrors.ErrPolicyInvalid
+		return data.Policy{}, sdkErrors.ErrEntityInvalid
 	}
 
 	ctx := context.Background()
@@ -115,34 +110,33 @@ func CreatePolicy(policy data.Policy) (data.Policy, error) {
 	// Check for duplicate policy name
 	allPolicies, err := persist.Backend().LoadAllPolicies(ctx)
 	if err != nil {
-		failErr := sdkErrors.ErrDataLoadFailed
-		return data.Policy{}, errors.Join(failErr, err)
+		return data.Policy{}, sdkErrors.ErrStoreLoadFailed.Wrap(err)
 	}
 
 	for _, existingPolicy := range allPolicies {
 		if existingPolicy.Name == policy.Name {
-			return data.Policy{}, sdkErrors.ErrPolicyExists
+			failErr := sdkErrors.ErrEntityExists
+			failErr.Msg = "policy with name " + policy.Name + " already exists"
+			return data.Policy{}, failErr
 		}
 	}
 
 	// Compile and validate patterns
 	idRegex, err := regexp.Compile(policy.SPIFFEIDPattern)
 	if err != nil {
-		failMsg := sdkErrors.InvalidFor(
-			"SPIFFEID pattern", "policy", policy.SPIFFEIDPattern,
-		)
-		log.Log().Warn(fName, "message", failMsg)
-		return data.Policy{}, errors.Join(sdkErrors.ErrPolicyInvalid, err)
+		failErr := sdkErrors.ErrEntityInvalid
+		failErr.Msg = "invalid SPIFFE ID pattern: " + policy.SPIFFEIDPattern +
+			" for policy " + policy.Name
+		return data.Policy{}, failErr.Wrap(err)
 	}
 	policy.IDRegex = idRegex
 
 	pathRegex, err := regexp.Compile(policy.PathPattern)
 	if err != nil {
-		failMsg := sdkErrors.InvalidFor(
-			"path pattern", "policy", policy.PathPattern,
-		)
-		log.Log().Warn(fName, "message", failMsg)
-		return data.Policy{}, errors.Join(sdkErrors.ErrPolicyInvalid, err)
+		failErr := sdkErrors.ErrEntityInvalid
+		failErr.Msg = "invalid path pattern: " + policy.PathPattern +
+			" for policy " + policy.Name
+		return data.Policy{}, failErr.Wrap(err)
 	}
 	policy.PathRegex = pathRegex
 
@@ -155,8 +149,9 @@ func CreatePolicy(policy data.Policy) (data.Policy, error) {
 	// Store directly to the backend
 	err = persist.Backend().StorePolicy(ctx, policy)
 	if err != nil {
-		failErr := sdkErrors.ErrDataSaveFailed
-		return data.Policy{}, errors.Join(failErr, err)
+		failErr := sdkErrors.ErrStoreSaveFailed
+		failErr.Msg = "failed to store policy " + policy.Name
+		return data.Policy{}, failErr.Wrap(err)
 	}
 
 	return policy, nil
@@ -176,12 +171,15 @@ func GetPolicy(id string) (data.Policy, error) {
 	// Load directly from the backend
 	policy, err := persist.Backend().LoadPolicy(ctx, id)
 	if err != nil {
-		failErr := sdkErrors.ErrDataLoadFailed
-		return data.Policy{}, errors.Join(failErr, err)
+		failErr := sdkErrors.ErrStoreLoadFailed
+		failErr.Msg = "failed to load policy with ID " + id
+		return data.Policy{}, failErr.Wrap(err)
 	}
 
 	if policy == nil {
-		return data.Policy{}, sdkErrors.ErrPolicyNotFound
+		failErr := sdkErrors.ErrEntityNotFound
+		failErr.Msg = "policy with ID " + id + " not found"
+		return data.Policy{}, failErr
 	}
 
 	return *policy, nil
@@ -201,18 +199,22 @@ func DeletePolicy(id string) error {
 	// Check if the policy exists first (to maintain the same error behavior)
 	policy, err := persist.Backend().LoadPolicy(ctx, id)
 	if err != nil {
-		failErr := sdkErrors.ErrDataLoadFailed
-		return errors.Join(failErr, err)
+		failErr := sdkErrors.ErrStoreLoadFailed
+		failErr.Msg = "failed to load policy with ID " + id
+		return failErr.Wrap(err)
 	}
 	if policy == nil {
-		return sdkErrors.ErrPolicyNotFound
+		failErr := sdkErrors.ErrEntityNotFound
+		failErr.Msg = "policy with ID " + id + " not found"
+		return failErr
 	}
 
 	// Delete the policy from the backend
 	err = persist.Backend().DeletePolicy(ctx, id)
 	if err != nil {
 		failErr := sdkErrors.ErrDeletionFailed
-		return errors.Join(failErr, err)
+		failErr.Msg = "failed to delete policy with ID " + id
+		return failErr.Wrap(err)
 	}
 
 	return nil
@@ -233,8 +235,9 @@ func ListPolicies() ([]data.Policy, error) {
 	// Load all policies from the backend
 	allPolicies, err := persist.Backend().LoadAllPolicies(ctx)
 	if err != nil {
-		failErr := sdkErrors.ErrDataLoadFailed
-		return nil, errors.Join(failErr, err)
+		failErr := sdkErrors.ErrStoreLoadFailed
+		failErr.Msg = "failed to load all policies"
+		return nil, failErr.Wrap(err)
 	}
 
 	// Convert map to slice
@@ -266,8 +269,9 @@ func ListPoliciesByPathPattern(pathPattern string) ([]data.Policy, error) {
 	// Load all policies from the backend
 	allPolicies, err := persist.Backend().LoadAllPolicies(ctx)
 	if err != nil {
-		failErr := sdkErrors.ErrDataLoadFailed
-		return nil, errors.Join(failErr, err)
+		failErr := sdkErrors.ErrStoreLoadFailed
+		failErr.Msg = "failed to load policies by pathPattern " + pathPattern
+		return nil, failErr.Wrap(err)
 	}
 
 	// Filter by pathPattern pattern
@@ -301,8 +305,9 @@ func ListPoliciesBySPIFFEIDPattern(
 	// Load all policies from the backend.
 	allPolicies, err := persist.Backend().LoadAllPolicies(ctx)
 	if err != nil {
-		failErr := sdkErrors.ErrDataLoadFailed
-		return nil, errors.Join(failErr, err)
+		failErr := sdkErrors.ErrStoreLoadFailed
+		failErr.Msg = "failed to load policies by SPIFFE ID pattern " + SPIFFEIDPattern
+		return nil, failErr.Wrap(err)
 	}
 
 	// Filter by SPIFFE ID pattern

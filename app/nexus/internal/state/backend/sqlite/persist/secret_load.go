@@ -53,7 +53,8 @@ func (s *DataStore) loadSecretInternal(
 ) (*kv.Value, error) {
 	const fName = "loadSecretInternal"
 	if ctx == nil {
-		log.FatalLn(fName, "message", sdkErrors.ErrCodeNilContext)
+		failErr := sdkErrors.ErrNilContext
+		log.FatalErr(fName, *failErr)
 	}
 
 	var secret kv.Value
@@ -70,20 +71,18 @@ func (s *DataStore) loadSecretInternal(
 			return nil, nil
 		}
 
-		failErr := sdkErrors.ErrDataLoadFailed
-		return nil, errors.Join(failErr, err)
+		return nil, sdkErrors.ErrStoreLoadFailed
 	}
 
 	// Load versions
 	rows, err := s.db.QueryContext(ctx, ddl.QuerySecretVersions, path)
 	if err != nil {
-		failErr := sdkErrors.ErrQueryFailure
-		return nil, errors.Join(failErr, err)
+		return nil, sdkErrors.ErrStoreQueryFailed.Wrap(err)
 	}
 	defer func(rows *sql.Rows) {
 		err := rows.Close()
 		if err != nil {
-			failErr := sdkErrors.ErrFileCloseFailed
+			failErr := sdkErrors.ErrFileCloseFailed.Wrap(err)
 			log.Log().Warn(fName, "message", errors.Join(failErr, err).Error())
 		}
 	}(rows)
@@ -102,14 +101,12 @@ func (s *DataStore) loadSecretInternal(
 			&version, &nonce,
 			&encrypted, &createdTime, &deletedTime,
 		); err != nil {
-			failErr := sdkErrors.ErrQueryFailure
-			return nil, errors.Join(failErr, err)
+			return nil, sdkErrors.ErrStoreQueryFailure.Wrap(err)
 		}
 
 		decrypted, err := s.decrypt(encrypted, nonce)
 		if err != nil {
-			failErr := sdkErrors.ErrCryptoDecryptionFailed
-			return nil, errors.Join(failErr, err)
+			return nil, sdkErrors.ErrCryptoDecryptionFailed.Wrap(err)
 		}
 
 		var values map[string]string
@@ -130,8 +127,7 @@ func (s *DataStore) loadSecretInternal(
 	}
 
 	if err := rows.Err(); err != nil {
-		failErr := sdkErrors.ErrQueryFailure
-		return nil, errors.Join(failErr, err)
+		return nil, sdkErrors.ErrStoreQueryFailure.Wrap(err)
 	}
 
 	return &secret, nil

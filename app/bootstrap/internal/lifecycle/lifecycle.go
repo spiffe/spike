@@ -34,7 +34,8 @@ const keyBootstrapCompletedByPod = "completed-by-pod"
 // skipped based on the current environment and state. The function follows
 // this decision logic:
 //
-//  1. If SPIKE_BOOTSTRAP_FORCE="true", always proceed (return true)
+//  0. Skip for Lite backend and In-Memory backend
+//  1. Else, if SPIKE_BOOTSTRAP_FORCE="true", always proceed (return true)
 //  2. In bare-metal environments (non-Kubernetes), always proceed
 //  3. In Kubernetes environments, check the "spike-bootstrap-state" ConfigMap:
 //     - If ConfigMap exists and bootstrap-completed="true", skip bootstrap

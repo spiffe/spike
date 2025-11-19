@@ -12,6 +12,7 @@ import (
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	spike "github.com/spiffe/spike-sdk-go/api"
 	"github.com/spiffe/spike-sdk-go/config/env"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/log"
 	tls "github.com/spiffe/spike-sdk-go/net"
 	"github.com/spiffe/spike-sdk-go/retry"
@@ -30,6 +31,8 @@ import (
 func BroadcastKeepers(ctx context.Context, api *spike.API) {
 	const fName = "BroadcastKeepers"
 
+	// TODO: nil check for all ctx context.Context args.
+
 	// RootShares() generates the root key and splits it into shares.
 	// It enforces single-call semantics and will terminate if called again.
 	rs := state.RootShares()
@@ -43,11 +46,10 @@ func BroadcastKeepers(ctx context.Context, api *spike.API) {
 			log.Log().Info(fName, "message", "retry:"+time.Now().String())
 			err := api.Contribute(keeperShare, keeperID)
 			if err != nil {
-				log.Log().Warn(
-					fName,
-					"message", "failed to send shard: will retry",
-				)
-				return false, err
+				failErr := sdkErrors.ErrPostFailed.Wrap(err)
+				failErr.Msg = "failed to send shard: will retry"
+				log.WarnErr(fName, *failErr)
+				return false, failErr
 			}
 
 			log.Log().Info(fName, "message", "shard sent successfully")

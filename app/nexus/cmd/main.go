@@ -6,9 +6,9 @@ package main
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/spiffe/spike-sdk-go/config/env"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/log"
 	"github.com/spiffe/spike-sdk-go/spiffe"
 	"github.com/spiffe/spike-sdk-go/spiffeid"
@@ -27,34 +27,40 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	log.Log().Info(
+	log.Info(
 		appName,
-		"message", "SPIFFE trust root: "+env.TrustRootVal(),
+		"message", "starting",
+		"spiffe_trust_root", env.TrustRootVal(),
 	)
 
 	source, selfSPIFFEID, err := spiffe.Source(ctx, spiffe.EndpointSocket())
 	if err != nil {
-		log.FatalLn(appName, "message", "failed to get source", "err", err.Error())
+		failErr := sdkErrors.ErrInitializationFailed.Wrap(err)
+		failErr.Msg = "failed to get SPIFFE Workload API source"
+		log.FatalErr(appName, *failErr)
 	}
 	defer spiffe.CloseSource(source)
 
-	log.Log().Info(appName, "message", "self.spiffeid: "+selfSPIFFEID)
+	log.Info(
+		appName,
+		"message", "acquired source",
+		"spiffe_id", selfSPIFFEID,
+	)
 
 	// I should be SPIKE Nexus.
 	if !spiffeid.IsNexus(selfSPIFFEID) {
-		log.FatalLn(appName,
-			"message",
-			"Authenticate: SPIFFE ID is not valid",
-			"spiffeid", selfSPIFFEID)
+		failErr := sdkErrors.ErrInitializationFailed
+		failErr.Msg = "SPIFFE ID is not valid: " + selfSPIFFEID
+		log.FatalErr(appName, *failErr)
 	}
 
 	initialization.Initialize(source)
 
-	log.Log().Info(appName, "message", fmt.Sprintf(
-		"Started service: %s v%s",
-		appName, config.NexusVersion),
+	log.Info(
+		appName,
+		"message", "started service",
+		"version", config.NexusVersion,
 	)
-
 	// Start the server:
 	net.Serve(appName, source)
 }

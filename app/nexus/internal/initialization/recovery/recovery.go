@@ -83,6 +83,8 @@ func InitializeBackingStoreFromKeepers(source *workloadapi.X509Source) {
 		return false, sdkErrors.ErrRecoveryRetryFailed
 	})
 
+	// TODO: make sure that we use the new log convenience fns (log.fn()) instead of log.Log().fn().
+
 	// This should never happen since the above loop retries forever:
 	if err != nil {
 		log.FatalLn(

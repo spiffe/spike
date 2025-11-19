@@ -36,6 +36,10 @@
   </high-level-plan>
   <task-group for="v0.6.1" theme="doc update and stabilization">
     <issue>
+      func VerifyShamirReconstruction(secret group.Scalar, shares []shamir.Share) {
+      this is generic enough to go to the sdk.
+    </issue>
+    <issue>
       let AI write some tests to all the things.
     </issue>
     <issue>

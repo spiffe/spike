@@ -113,7 +113,7 @@ func Fallback(
 	audit.Action = journal.AuditFallback
 
 	body, err := MarshalBodyAndRespondOnMarshalFail(
-		reqres.FallbackResponse{Err: sdkErrors.ErrCodeBadInput}, w,
+		reqres.FallbackResponse{Err: sdkErrors.ErrBadRequest.Code}, w,
 	)
 	if err != nil {
 		return err
@@ -161,7 +161,7 @@ func NotReady(
 	audit.Action = journal.AuditBlocked
 
 	body, err := MarshalBodyAndRespondOnMarshalFail(
-		reqres.FallbackResponse{Err: sdkErrors.ErrCodeNotReady}, w,
+		reqres.FallbackResponse{Err: sdkErrors.ErrNotReady.Code}, w,
 	)
 	if err != nil {
 		return err

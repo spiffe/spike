@@ -7,6 +7,7 @@ package main
 import (
 	"context"
 
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/log"
 	"github.com/spiffe/spike-sdk-go/spiffe"
 	"github.com/spiffe/spike-sdk-go/spiffeid"
@@ -26,23 +27,20 @@ func main() {
 
 	source, selfSPIFFEID, err := spiffe.Source(ctx, spiffe.EndpointSocket())
 	if err != nil {
-		log.FatalLn(err.Error())
+		log.FatalErr(appName, *sdkErrors.ErrInitializationFailed.Wrap(err))
 	}
 	defer spiffe.CloseSource(source)
 
 	// I should be a SPIKE Keeper.
 	if !spiffeid.IsKeeper(selfSPIFFEID) {
-		log.FatalLn(
-			appName,
-			"message", "SPIFFE ID is not valid",
-			"spiffeid", selfSPIFFEID,
-		)
+		failErr := sdkErrors.ErrInitializationFailed
+		failErr.Msg = "SPIFFE ID is not valid: " + selfSPIFFEID
+		log.FatalErr(appName, *failErr)
 	}
 
-	log.Log().Info(
+	log.Info(
 		appName,
 		"message", "started service",
-		"app", appName,
 		"version", config.KeeperVersion,
 	)
 
