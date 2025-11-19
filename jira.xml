@@ -36,6 +36,11 @@
   </high-level-plan>
   <task-group for="v0.6.1" theme="doc update and stabilization">
     <issue>
+      this is from sdk; it should come from env config
+      ReadHeaderTimeout: 10 * time.Second,
+
+    </issue>
+    <issue>
       func VerifyShamirReconstruction(secret group.Scalar, shares []shamir.Share) {
       this is generic enough to go to the sdk.
     </issue>
