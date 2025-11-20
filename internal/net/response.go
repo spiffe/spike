@@ -15,6 +15,9 @@ import (
 	"github.com/spiffe/spike/internal/journal"
 )
 
+// TODO: system.KeepAlive and system.Watch do not log by default now;
+// update call sites accordingly.
+
 // MarshalBodyAndRespondOnMarshalFail serializes a response object to JSON and
 // handles error cases.
 //
