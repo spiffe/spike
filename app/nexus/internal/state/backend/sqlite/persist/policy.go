@@ -6,11 +6,9 @@ package persist
 
 import (
 	"context"
-	"crypto/rand"
 	"database/sql"
 	"errors"
 	"fmt"
-	"io"
 	"strings"
 	"time"
 
@@ -31,7 +29,7 @@ import (
 // Returns error if:
 //   - Transaction operations fail
 //   - Policy deletion fails
-func (s *DataStore) DeletePolicy(ctx context.Context, id string) error {
+func (s *DataStore) DeletePolicy(ctx context.Context, id string) *sdkErrors.SDKError {
 	const fName = "DeletePolicy"
 	validateContext(ctx, fName)
 
@@ -66,22 +64,6 @@ func (s *DataStore) DeletePolicy(ctx context.Context, id string) error {
 	return nil
 }
 
-func generateNonce(s *DataStore) ([]byte, error) {
-	nonce := make([]byte, s.Cipher.NonceSize())
-	if _, err := io.ReadFull(rand.Reader, nonce); err != nil {
-		return nil, err
-	}
-	return nonce, nil
-}
-
-func encryptWithNonce(s *DataStore, nonce []byte, data []byte) ([]byte, error) {
-	if len(nonce) != s.Cipher.NonceSize() {
-		return nil, fmt.Errorf("invalid nonce size: got %d, want %d", len(nonce), s.Cipher.NonceSize())
-	}
-	ciphertext := s.Cipher.Seal(nil, nonce, data, nil)
-	return ciphertext, nil
-}
-
 // StorePolicy saves or updates a policy in the database.
 //
 // Uses serializable transaction isolation to ensure consistency.
@@ -95,7 +77,7 @@ func encryptWithNonce(s *DataStore, nonce []byte, data []byte) ([]byte, error) {
 // Returns error if:
 //   - Transaction operations fail
 //   - Policy storage fails
-func (s *DataStore) StorePolicy(ctx context.Context, policy data.Policy) error {
+func (s *DataStore) StorePolicy(ctx context.Context, policy data.Policy) *sdkErrors.SDKError {
 	const fName = "StorePolicy"
 	validateContext(ctx, fName)
 
@@ -179,7 +161,7 @@ func (s *DataStore) StorePolicy(ctx context.Context, policy data.Policy) error {
 //   - error: Database errors or pattern compilation errors
 func (s *DataStore) LoadPolicy(
 	ctx context.Context, id string,
-) (*data.Policy, error) {
+) (*data.Policy, *sdkErrors.SDKError) {
 	const fName = "LoadPolicy"
 	validateContext(ctx, fName)
 
@@ -187,7 +169,10 @@ func (s *DataStore) LoadPolicy(
 	defer s.mu.RUnlock()
 
 	var policy data.Policy
-	var encryptedSPIFFEIDPattern, encryptedPathPattern, encryptedPermissions, nonce []byte
+	var encryptedSPIFFEIDPattern []byte
+	var encryptedPathPattern []byte
+	var encryptedPermissions []byte
+	var nonce []byte
 	var createdTime int64
 
 	err := s.db.QueryRowContext(ctx, ddl.QueryLoadPolicy, id).Scan(
@@ -250,7 +235,7 @@ func (s *DataStore) LoadPolicy(
 //   - error: Database errors or pattern compilation errors
 func (s *DataStore) LoadAllPolicies(
 	ctx context.Context,
-) (map[string]*data.Policy, error) {
+) (map[string]*data.Policy, *sdkErrors.SDKError) {
 	const fName = "LoadAllPolicies"
 	validateContext(ctx, fName)
 

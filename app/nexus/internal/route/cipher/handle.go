@@ -108,7 +108,7 @@ func handleJSONDecrypt(
 	}
 
 	// Full guard validation (auth and request fields)
-	err = guardDecryptCipherRequest(request, peerSPIFFEID, w, r)
+	err = guardDecryptCipherRequest(*request, peerSPIFFEID, w, r)
 	if err != nil {
 		return err
 	}
@@ -217,7 +217,7 @@ func handleJSONEncrypt(
 	}
 
 	// Full guard validation (auth and request fields)
-	err = guardEncryptCipherRequest(request, peerSPIFFEID, w, r)
+	err = guardEncryptCipherRequest(*request, peerSPIFFEID, w, r)
 	if err != nil {
 		return err
 	}

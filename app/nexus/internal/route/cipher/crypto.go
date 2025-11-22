@@ -77,10 +77,10 @@ func decryptDataJSON(
 	plaintext, err := c.Open(nil, nonce, ciphertext, nil)
 	if err != nil {
 		failErr := stdErrors.Join(sdkErrors.ErrCryptoDecryptionFailed, err)
-		return nil, net.Fail(
+		net.Fail(
 			reqres.CipherDecryptInternal, w, http.StatusInternalServerError,
-			failErr, fName,
 		)
+		return nil, failErr
 	}
 
 	return plaintext, nil
@@ -131,9 +131,8 @@ func generateNonceOrFailJSON[T any](
 	nonce := make([]byte, c.NonceSize())
 	if _, err := io.ReadFull(rand.Reader, nonce); err != nil {
 		failErr := stdErrors.Join(sdkErrors.ErrCryptoNonceGenerationFailed, err)
-		return nil, net.Fail(
-			errorResponse, w, http.StatusInternalServerError, failErr, fName,
-		)
+		net.Fail(errorResponse, w, http.StatusInternalServerError)
+		return nil, failErr
 	}
 
 	return nonce, nil

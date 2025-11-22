@@ -50,37 +50,35 @@ func ExtractPeerSPIFFEID[T any](
 	r *http.Request,
 	w http.ResponseWriter,
 	errorResponse T,
-) (*spiffeid.ID, error) {
+) (*spiffeid.ID, *sdkErrors.SDKError) {
 	peerSPIFFEID, err := spiffe.IDFromRequest(r)
 	if err != nil {
-		responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
-			errorResponse, w,
-		)
-		if err == nil {
-			net.Respond(http.StatusUnauthorized, responseBody, w)
-		}
-		return nil, sdkErrors.ErrUnauthorized
-	}
+		failErr := sdkErrors.ErrSPIFFEFailedToExtractX509SVID.Wrap(err)
 
-	if peerSPIFFEID == nil {
 		responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
 			errorResponse, w,
 		)
-		if err == nil {
+		if notRespondedYet := err == nil; notRespondedYet {
 			net.Respond(http.StatusUnauthorized, responseBody, w)
 		}
-		return nil, sdkErrors.ErrUnauthorized
+
+		notAuthorizedErr := sdkErrors.ErrAccessUnauthorized.Wrap(failErr)
+		return nil, notAuthorizedErr
 	}
 
 	err = validation.ValidateSPIFFEID(peerSPIFFEID.String())
 	if err != nil {
+		failErr := sdkErrors.ErrEntityInvalid.Wrap(err) // TODO: have a SPIFFE-related error code for this.
+
 		responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
 			errorResponse, w,
 		)
-		if err == nil {
+		if notRespondedYet := err == nil; notRespondedYet {
 			net.Respond(http.StatusUnauthorized, responseBody, w)
 		}
-		return nil, sdkErrors.ErrUnauthorized
+
+		notAuthorizedErr := sdkErrors.ErrAccessUnauthorized.Wrap(failErr)
+		return nil, notAuthorizedErr
 	}
 
 	return peerSPIFFEID, nil

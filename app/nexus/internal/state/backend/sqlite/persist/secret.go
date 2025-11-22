@@ -8,7 +8,6 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
-	"errors"
 
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/kv"
@@ -24,32 +23,34 @@ import (
 //   - Stores all secret versions with their respective data encrypted using
 //     AES-GCM
 //
-// The secret data is JSON-encoded before encryption.
+// The secret data is JSON-encoded before encryption. This method is
+// thread-safe.
 //
-// Returns an error if:
-// - The transaction fails to begin or commit
-// - Data marshaling fails
-// - Encryption fails
-// - Database operations fail
+// Parameters:
+//   - ctx: Context for cancellation and timeout control
+//   - path: The secret path where the secret will be stored
+//   - secret: The secret value containing metadata and versions to store
 //
-// This method is thread-safe.
+// Returns:
+//   - *sdkErrors.SDKError: nil on success, or one of the following errors:
+//   - ErrTransactionBeginFailed: If the transaction fails to begin
+//   - ErrEntityQueryFailed: If database operations fail
+//   - ErrDataMarshalFailure: If data marshaling fails
+//   - ErrCryptoEncryptionFailed: If encryption fails
+//   - ErrTransactionCommitFailed: If the transaction fails to commit
 func (s *DataStore) StoreSecret(
 	ctx context.Context, path string, secret kv.Value,
-) error {
+) *sdkErrors.SDKError {
 	const fName = "StoreSecret"
 
-	if ctx == nil {
-		failErr := sdkErrors.ErrNilContext
-		log.FatalErr(fName, *failErr)
-	}
+	validateContext(ctx, fName)
 
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
 	tx, err := s.db.BeginTx(ctx, &sql.TxOptions{Isolation: sql.LevelSerializable})
 	if err != nil {
-		failErr := sdkErrors.ErrTransactionBeginFailed
-		return errors.Join(failErr, err)
+		return sdkErrors.ErrTransactionBeginFailed.Wrap(err)
 	}
 
 	committed := false
@@ -59,7 +60,7 @@ func (s *DataStore) StoreSecret(
 			err := tx.Rollback()
 			if err != nil {
 				failErr := sdkErrors.ErrTransactionRollbackFailed
-				log.Log().Warn(fName, "message", failErr.Error())
+				log.WarnErr(fName, *failErr)
 			}
 		}
 	}(tx)
@@ -71,17 +72,15 @@ func (s *DataStore) StoreSecret(
 		secret.Metadata.UpdatedTime, secret.Metadata.MaxVersions,
 	)
 	if err != nil {
-		return sdkErrors.ErrStoreQueryFailure.Wrap(err)
+		return sdkErrors.ErrEntityQueryFailed.Wrap(err)
 	}
 
 	// Update versions
 	for version, sv := range secret.Versions {
 		md, err := json.Marshal(sv.Data)
 		if err != nil {
-			return sdkErrors.ErrMarshalFailure.Wrap(err)
+			return sdkErrors.ErrDataMarshalFailure.Wrap(err)
 		}
-
-		// TODO: check all errors.Join()'s and replace with Wraps.
 
 		encrypted, nonce, err := s.encrypt(md)
 		if err != nil {
@@ -91,7 +90,7 @@ func (s *DataStore) StoreSecret(
 		_, err = tx.ExecContext(ctx, ddl.QueryUpsertSecret,
 			path, version, nonce, encrypted, sv.CreatedTime, sv.DeletedTime)
 		if err != nil {
-			return sdkErrors.ErrStoreQueryFailure.Wrap(err)
+			return sdkErrors.ErrEntityQueryFailed.Wrap(err)
 		}
 	}
 
@@ -109,21 +108,26 @@ func (s *DataStore) StoreSecret(
 // - Retrieves all secret versions
 // - Decrypts and unmarshals the version data
 //
-// Returns:
-//   - (nil, nil) if the secret doesn't exist
-//   - (nil, error) if any operation fails
-//   - (*kv.Secret, nil) with the decrypted secret and all its versions on
-//     success
-//
 // This method is thread-safe.
+//
+// Parameters:
+//   - ctx: Context for cancellation and timeout control
+//   - path: The secret path to load
+//
+// Returns:
+//   - *kv.Value: The decrypted secret with all its versions, or nil if the
+//     secret doesn't exist
+//   - *sdkErrors.SDKError: nil on success, or one of the following errors:
+//   - ErrEntityLoadFailed: If loading secret metadata fails
+//   - ErrEntityQueryFailed: If querying versions fails
+//   - ErrCryptoDecryptionFailed: If decrypting a version fails
+//   - ErrDataUnmarshalFailure: If unmarshaling JSON data fails
 func (s *DataStore) LoadSecret(
 	ctx context.Context, path string,
-) (*kv.Value, error) {
+) (*kv.Value, *sdkErrors.SDKError) {
 	const fName = "LoadSecret"
-	if ctx == nil {
-		failErr := sdkErrors.ErrNilContext
-		log.FatalErr(fName, *failErr)
-	}
+
+	validateContext(ctx, fName)
 
 	s.mu.RLock()
 	defer s.mu.RUnlock()
@@ -131,16 +135,26 @@ func (s *DataStore) LoadSecret(
 	return s.loadSecretInternal(ctx, path)
 }
 
-// LoadAllSecrets retrieves all secrets from the database.
-// It returns a map where the keys are secret paths and the values are the
-// corresponding secrets.
-// Each secret includes its metadata and all versions with decrypted data.
-// If an error occurs during the retrieval process, it returns nil and the
-// error. This method acquires a read lock to ensure consistent access to the
-// database.
+// LoadAllSecrets retrieves all secrets from the database. It returns a map
+// where the keys are secret paths and the values are the corresponding
+// secrets. Each secret includes its metadata and all versions with decrypted
+// data. This method is thread-safe.
 //
 // Contexts that are canceled or reach their deadline will result in the
 // operation being interrupted early and returning an error.
+//
+// Parameters:
+//   - ctx: Context for cancellation and timeout control
+//
+// Returns:
+//   - map[string]*kv.Value: A map of secret paths to their corresponding
+//     secret values, or nil if an error occurs
+//   - *sdkErrors.SDKError: nil on success, or one of the following errors:
+//   - ErrEntityQueryFailed: If querying paths, loading secrets, or scanning
+//     rows fails
+//   - ErrEntityLoadFailed: If loading secret metadata fails
+//   - ErrCryptoDecryptionFailed: If decrypting a version fails
+//   - ErrDataUnmarshalFailure: If unmarshaling JSON data fails
 //
 // Example usage:
 //
@@ -154,8 +168,10 @@ func (s *DataStore) LoadSecret(
 //	}
 func (s *DataStore) LoadAllSecrets(
 	ctx context.Context,
-) (map[string]*kv.Value, error) {
+) (map[string]*kv.Value, *sdkErrors.SDKError) {
 	fName := "LoadAllSecrets"
+
+	validateContext(ctx, fName)
 
 	s.mu.RLock()
 	defer s.mu.RUnlock()
@@ -163,13 +179,13 @@ func (s *DataStore) LoadAllSecrets(
 	// Get all secret paths
 	rows, err := s.db.QueryContext(ctx, ddl.QueryPathsFromMetadata)
 	if err != nil {
-		return nil, sdkErrors.ErrStoreQueryFailed.Wrap(err)
+		return nil, sdkErrors.ErrEntityQueryFailed.Wrap(err)
 	}
 	defer func(rows *sql.Rows) {
 		err := rows.Close()
 		if err != nil {
-			failErr := sdkErrors.ErrFileCloseFailed
-			log.FatalErr(fName, *failErr)
+			failErr := sdkErrors.ErrFSFileCloseFailed
+			log.WarnErr(fName, *failErr)
 		}
 	}(rows)
 
@@ -180,13 +196,13 @@ func (s *DataStore) LoadAllSecrets(
 	for rows.Next() {
 		var path string
 		if err := rows.Scan(&path); err != nil {
-			return nil, sdkErrors.ErrStoreQueryFailed.Wrap(err)
+			return nil, sdkErrors.ErrEntityQueryFailed.Wrap(err)
 		}
 
 		// Load the full secret for this path
 		secret, err := s.loadSecretInternal(ctx, path)
 		if err != nil {
-			return nil, sdkErrors.ErrStoreQueryFailure.Wrap(err)
+			return nil, sdkErrors.ErrEntityQueryFailed.Wrap(err)
 		}
 
 		if secret != nil {
@@ -195,7 +211,7 @@ func (s *DataStore) LoadAllSecrets(
 	}
 
 	if err := rows.Err(); err != nil {
-		return nil, sdkErrors.ErrStoreQueryFailure.Wrap(err)
+		return nil, sdkErrors.ErrEntityQueryFailed.Wrap(err)
 	}
 
 	return secrets, nil

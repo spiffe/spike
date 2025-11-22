@@ -70,7 +70,6 @@ func RouteDeletePolicy(
 		w, r, reqres.PolicyDeleteBadInput, guardPolicyDeleteRequest, fName,
 	)
 	if alreadyResponded := err != nil; alreadyResponded {
-		log.Log().Error(fName, "message", "exit", "err", err.Error())
 		return err
 	}
 

@@ -84,7 +84,6 @@ func RouteGetSecretMetadata(
 		w, r, reqres.SecretMetadataBadInput, guardGetSecretMetadataRequest, fName,
 	)
 	if alreadyResponded := err != nil; alreadyResponded {
-		log.Log().Error(fName, "message", "exit", "err", err.Error())
 		return err
 	}
 

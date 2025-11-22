@@ -8,11 +8,12 @@ import (
 	"fmt"
 	"time"
 
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike/app/nexus/internal/state/backend"
 )
 
 // ParseOptions parses and validates the provided backend options
-func ParseOptions(opts map[backend.DatabaseConfigKey]any) (*Options, error) {
+func ParseOptions(opts map[backend.DatabaseConfigKey]any) (*Options, *sdkErrors.SDKError) {
 	if opts == nil {
 		return DefaultOptions(), nil
 	}

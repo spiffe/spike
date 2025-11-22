@@ -71,7 +71,6 @@ func RouteGetSecret(
 		w, r, reqres.SecretReadBadInput, guardGetSecretRequest, fName,
 	)
 	if alreadyResponded := err != nil; alreadyResponded {
-		log.Log().Error(fName, "message", "exit", "err", err.Error())
 		return err
 	}
 

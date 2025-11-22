@@ -29,9 +29,14 @@ ensure a smooth and reliable release process.
 
 ## Coverage Report
 
-The coverage report is available at [https://spike.ist/coverage.html][coverage].
+The coverage report for **SPIKE** is available at 
+[https://spike.ist/coverage.html][coverage].
+
+The coverage report for **SPIKE Go SDK** available at 
+[https://spike.ist/sdk/coverage.html][coverage-sdk].
 
 [coverage]: https://spike.ist/coverage.html "SPIKE Coverage Report"
+[coverage-sdk]: https://spike.ist/sdk/coverage.html "SPIKE Coverage Report"
 
 We update the coverage report at every release cut.
 

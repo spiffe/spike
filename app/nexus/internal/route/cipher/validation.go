@@ -28,12 +28,8 @@ func validateVersion[T any](
 	version byte, w http.ResponseWriter, errorResponse T, fName string,
 ) error {
 	if version != spikeCipherVersion {
-		return net.Fail(
-			errorResponse, w,
-			http.StatusBadRequest,
-			fmt.Errorf("unsupported version: %v", version),
-			fName,
-		)
+		net.Fail(errorResponse, w, http.StatusBadRequest)
+		return fmt.Errorf("unsupported version: %v", version)
 	}
 	return nil
 }
@@ -53,10 +49,8 @@ func validateNonceSize[T any](
 	nonce []byte, w http.ResponseWriter, errorResponse T, fName string,
 ) error {
 	if len(nonce) != expectedNonceSize {
-		return net.Fail(
-			errorResponse, w,
-			http.StatusBadRequest, sdkErrors.ErrInvalidInput, fName,
-		)
+		net.Fail(errorResponse, w, http.StatusBadRequest)
+		return sdkErrors.ErrInvalidInput
 	}
 	return nil
 }
@@ -77,10 +71,8 @@ func validateCiphertextSize[T any](
 	ciphertext []byte, w http.ResponseWriter, errorResponse T, fName string,
 ) error {
 	if len(ciphertext) > maxCiphertextSize {
-		return net.Fail(
-			errorResponse, w,
-			http.StatusBadRequest, sdkErrors.ErrInvalidInput, fName,
-		)
+		net.Fail(errorResponse, w, http.StatusBadRequest)
+		return sdkErrors.ErrInvalidInput
 	}
 	return nil
 }
@@ -101,10 +93,8 @@ func validatePlaintextSize[T any](
 	plaintext []byte, w http.ResponseWriter, errorResponse T, fName string,
 ) error {
 	if len(plaintext) > maxPlaintextSize {
-		return net.Fail(
-			errorResponse, w,
-			http.StatusBadRequest, sdkErrors.ErrInvalidInput, fName,
-		)
+		net.Fail(errorResponse, w, http.StatusBadRequest)
+		return sdkErrors.ErrInvalidInput
 	}
 	return nil
 }

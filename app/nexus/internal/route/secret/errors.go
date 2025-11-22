@@ -33,21 +33,16 @@ import (
 //
 // Returns:
 //   - error: The wrapped error that was sent to the client
-func handleGetSecretError(err error, w http.ResponseWriter) error {
-	fName := "handleGetSecretError"
-
+func handleGetSecretError(err error, w http.ResponseWriter) *sdkErrors.SDKError {
 	if stdErrors.Is(err, sdkErrors.ErrNotFound) {
 		failErr := stdErrors.Join(sdkErrors.ErrNotFound, err)
-		return net.Fail(
-			reqres.SecretReadNotFound, w, http.StatusNotFound, failErr, fName,
-		)
+		net.Fail(reqres.SecretReadNotFound, w, http.StatusNotFound)
+		return failErr
 	}
 
 	failErr := sdkErrors.ErrStoreQueryFailure.Wrap(err)
-	return net.Fail(
-		reqres.SecretReadInternal, w, http.StatusInternalServerError,
-		failErr, fName,
-	)
+	net.Fail(reqres.SecretReadInternal, w, http.StatusInternalServerError)
+	return failErr
 }
 
 // handleGetSecretMetadataError processes errors that occur during secret
@@ -70,19 +65,13 @@ func handleGetSecretError(err error, w http.ResponseWriter) error {
 // Returns:
 //   - error: The wrapped error that was sent to the client
 func handleGetSecretMetadataError(err error, w http.ResponseWriter) error {
-	fName := "handleGetSecretMetadataError"
-
 	if stdErrors.Is(err, sdkErrors.ErrNotFound) {
 		failErr := stdErrors.Join(sdkErrors.ErrNotFound, err)
-		return net.Fail(
-			reqres.SecretMetadataNotFound, w,
-			http.StatusNotFound, failErr, fName,
-		)
+		net.Fail(reqres.SecretMetadataNotFound, w, http.StatusNotFound)
+		return failErr
 	}
 
 	failErr := sdkErrors.ErrStoreQueryFailure.Wrap(err)
-	return net.Fail(
-		reqres.SecretMetadataInternal, w,
-		http.StatusInternalServerError, failErr, fName,
-	)
+	net.Fail(reqres.SecretMetadataInternal, w, http.StatusInternalServerError)
+	return failErr
 }

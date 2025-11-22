@@ -31,31 +31,36 @@ import (
 //   - path: The secret path to load
 //
 // Returns:
-//   - *kv.Value: The complete secret with all versions and metadata.
-//     Returns nil if the secret does not exist.
-//   - error: An error if any database or decryption operation fails.
-//     Returns nil error with nil secret for non-existent paths.
+//   - *kv.Value: The complete secret with all versions and metadata, or nil if
+//     the secret does not exist
+//   - *sdkErrors.SDKError: An error if any database or decryption operation
+//     fails, or nil on success
+//
+// Possible errors:
+//   - ErrEntityLoadFailed: If loading secret metadata fails
+//   - ErrEntityQueryFailed: If querying versions fails or rows.Scan fails
+//   - ErrCryptoDecryptionFailed: If decrypting a version fails
+//   - ErrDataUnmarshalFailure: If unmarshaling JSON data fails
 //
 // Special behavior:
-//   - Returns (nil, nil) when the secret doesn't exist (sql.ErrNoRows)
+//   - Returns (nil, nil) when the secret does not exist (sql.ErrNoRows)
 //   - Returns (nil, error) for actual errors (database, decryption,
 //     unmarshaling)
-//   - Automatically handles deleted versions by setting DeletedTime when present
+//   - Automatically handles deleted versions by setting DeletedTime when
+//     present
 //
 // The function handles the following operations:
-//  1. Queries secret metadata from the `secret_metadata` table
-//  2. Fetches all versions from the `secrets` table
+//  1. Queries secret metadata from the secret_metadata table
+//  2. Fetches all versions from the secrets table
 //  3. Decrypts each version using the DataStore's cipher
-//  4. Unmarshals JSON data into `map[string]string` format
+//  4. Unmarshals JSON data into map[string]string format
 //  5. Assembles the complete kv.Value structure
 func (s *DataStore) loadSecretInternal(
 	ctx context.Context, path string,
-) (*kv.Value, error) {
+) (*kv.Value, *sdkErrors.SDKError) {
 	const fName = "loadSecretInternal"
-	if ctx == nil {
-		failErr := sdkErrors.ErrNilContext
-		log.FatalErr(fName, *failErr)
-	}
+
+	validateContext(ctx, fName) // TODO: this can be an SDK utility function and can be used across the codebase instead of just this package.
 
 	var secret kv.Value
 
@@ -71,19 +76,19 @@ func (s *DataStore) loadSecretInternal(
 			return nil, nil
 		}
 
-		return nil, sdkErrors.ErrStoreLoadFailed
+		return nil, sdkErrors.ErrEntityLoadFailed
 	}
 
 	// Load versions
 	rows, err := s.db.QueryContext(ctx, ddl.QuerySecretVersions, path)
 	if err != nil {
-		return nil, sdkErrors.ErrStoreQueryFailed.Wrap(err)
+		return nil, sdkErrors.ErrEntityQueryFailed.Wrap(err)
 	}
 	defer func(rows *sql.Rows) {
 		err := rows.Close()
 		if err != nil {
-			failErr := sdkErrors.ErrFileCloseFailed.Wrap(err)
-			log.Log().Warn(fName, "message", errors.Join(failErr, err).Error())
+			failErr := sdkErrors.ErrFSFileCloseFailed.Wrap(err)
+			log.WarnErr(fName, *failErr)
 		}
 	}(rows)
 
@@ -101,7 +106,7 @@ func (s *DataStore) loadSecretInternal(
 			&version, &nonce,
 			&encrypted, &createdTime, &deletedTime,
 		); err != nil {
-			return nil, sdkErrors.ErrStoreQueryFailure.Wrap(err)
+			return nil, sdkErrors.ErrEntityQueryFailed.Wrap(err)
 		}
 
 		decrypted, err := s.decrypt(encrypted, nonce)
@@ -111,8 +116,7 @@ func (s *DataStore) loadSecretInternal(
 
 		var values map[string]string
 		if err := json.Unmarshal(decrypted, &values); err != nil {
-			failErr := sdkErrors.ErrUnmarshalFailure
-			return nil, errors.Join(failErr, err)
+			return nil, sdkErrors.ErrDataUnmarshalFailure.Wrap(err)
 		}
 
 		sv := kv.Version{
@@ -127,7 +131,7 @@ func (s *DataStore) loadSecretInternal(
 	}
 
 	if err := rows.Err(); err != nil {
-		return nil, sdkErrors.ErrStoreQueryFailure.Wrap(err)
+		return nil, sdkErrors.ErrEntityQueryFailed.Wrap(err)
 	}
 
 	return &secret, nil

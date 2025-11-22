@@ -18,6 +18,7 @@ import (
 	"crypto/cipher"
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/kv"
 )
 
@@ -36,35 +37,35 @@ const (
 // Backend defines the interface for secret storage and management backends
 type Backend interface {
 	// Initialize initializes the backend
-	Initialize(ctx context.Context) error
+	Initialize(ctx context.Context) *sdkErrors.SDKError
 	// Close closes the backend
-	Close(ctx context.Context) error
+	Close(ctx context.Context) *sdkErrors.SDKError
 
 	// StoreSecret stores a secret at the specified path
-	StoreSecret(ctx context.Context, path string, secret kv.Value) error
+	StoreSecret(ctx context.Context, path string, secret kv.Value) *sdkErrors.SDKError
 	// LoadSecret loads a secret from the specified path
-	LoadSecret(ctx context.Context, path string) (*kv.Value, error)
+	LoadSecret(ctx context.Context, path string) (*kv.Value, *sdkErrors.SDKError)
 	// LoadAllSecrets retrieves all secrets stored in the backend.
 	// Returns a map of secret paths to their values or an error.
-	LoadAllSecrets(ctx context.Context) (map[string]*kv.Value, error)
+	LoadAllSecrets(ctx context.Context) (map[string]*kv.Value, *sdkErrors.SDKError)
 
 	// StorePolicy stores a policy object in the backend storage.
-	StorePolicy(ctx context.Context, policy data.Policy) error
+	StorePolicy(ctx context.Context, policy data.Policy) *sdkErrors.SDKError
 
 	// LoadPolicy retrieves a policy by its ID from the backend storage.
 	// It returns the policy object and an error, if any.
-	LoadPolicy(ctx context.Context, id string) (*data.Policy, error)
+	LoadPolicy(ctx context.Context, id string) (*data.Policy, *sdkErrors.SDKError)
 
 	// LoadAllPolicies retrieves all policies stored in the backend.
 	// Returns a map of policy IDs to their policy objects or an error.
-	LoadAllPolicies(ctx context.Context) (map[string]*data.Policy, error)
+	LoadAllPolicies(ctx context.Context) (map[string]*data.Policy, *sdkErrors.SDKError)
 
 	// DeletePolicy removes a policy object identified by the given ID from
 	// storage.
 	// - `ctx` is the context for managing cancellations and timeouts.
 	// - `id` is the identifier of the policy to delete.
 	// Returns an error if the operation fails.
-	DeletePolicy(ctx context.Context, id string) error
+	DeletePolicy(ctx context.Context, id string) *sdkErrors.SDKError
 
 	// GetCipher retrieves the AEAD cipher used for encryption and decryption.
 	//
@@ -93,4 +94,4 @@ type Config struct {
 }
 
 // Factory creates a new backend instance
-type Factory func(cfg Config) (Backend, error)
+type Factory func(cfg Config) (Backend, *sdkErrors.SDKError)

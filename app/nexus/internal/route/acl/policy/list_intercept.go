@@ -38,7 +38,7 @@ import (
 //   - apiErr.ErrUnauthorized if authentication or authorization fails
 func guardListPolicyRequest(
 	_ reqres.PolicyListRequest, w http.ResponseWriter, r *http.Request,
-) error {
+) *sdkErrors.SDKError {
 	const fName = "guardListPolicyRequest"
 
 	peerSPIFFEID, err := auth.ExtractPeerSPIFFEID[reqres.PolicyListResponse](

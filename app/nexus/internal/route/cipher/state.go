@@ -60,12 +60,8 @@ func getCipherOrFailJSON[T any](
 
 	c := persist.Backend().GetCipher()
 	if c == nil {
-		return nil, net.Fail(
-			errorResponse, w,
-			http.StatusInternalServerError,
-			sdkErrors.ErrCryptoCipherNotAvailable,
-			fName,
-		)
+		net.Fail(errorResponse, w, http.StatusInternalServerError)
+		return nil, sdkErrors.ErrCryptoCipherNotAvailable
 	}
 
 	return c, nil

@@ -47,7 +47,7 @@ import (
 //   - Returns appropriate HTTP status codes for different error conditions
 func RouteEncrypt(
 	w http.ResponseWriter, r *http.Request, audit *journal.AuditEntry,
-) error {
+) *sdkErrors.SDKError {
 	const fName = "RouteEncrypt"
 
 	journal.AuditRequest(fName, r, audit, journal.AuditCreate)

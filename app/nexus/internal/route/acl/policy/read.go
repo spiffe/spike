@@ -82,7 +82,7 @@ import (
 //   - Internal server error during policy retrieval
 func RouteGetPolicy(
 	w http.ResponseWriter, r *http.Request, audit *journal.AuditEntry,
-) error {
+) *sdkErrors.SDKError {
 	const fName = "RouteGetPolicy"
 
 	journal.AuditRequest(fName, r, audit, journal.AuditRead)
@@ -92,7 +92,6 @@ func RouteGetPolicy(
 		w, r, reqres.PolicyReadBadInput, guardPolicyReadRequest, fName,
 	)
 	if alreadyResponded := err != nil; alreadyResponded {
-		log.Log().Error(fName, "message", "exit", "err", err.Error())
 		return err
 	}
 

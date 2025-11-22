@@ -10,6 +10,7 @@ import (
 	"fmt"
 
 	"github.com/spiffe/spike-sdk-go/crypto"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike/app/nexus/internal/state/backend/noop"
 
 	"github.com/spiffe/spike/app/nexus/internal/state/backend"
@@ -25,7 +26,7 @@ type Store struct {
 
 // New creates a new Backend with AES-GCM encryption using the provided key.
 // Returns an error if cipher initialization fails.
-func New(rootKey *[crypto.AES256KeySize]byte) (backend.Backend, error) {
+func New(rootKey *[crypto.AES256KeySize]byte) (backend.Backend, *sdkErrors.SDKError) {
 	block, err := aes.NewCipher(rootKey[:])
 	if err != nil {
 		return nil, fmt.Errorf("failed to create cipher: %w", err)

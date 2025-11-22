@@ -44,7 +44,7 @@ import (
 //   - sdkErrors.ErrInvalidInput if path validation fails
 func guardGetSecretMetadataRequest(
 	request reqres.SecretMetadataRequest, w http.ResponseWriter, r *http.Request,
-) error {
+) *sdkErrors.SDKError {
 	peerSPIFFEID, err := auth.ExtractPeerSPIFFEID[reqres.SecretMetadataResponse](
 		r, w, reqres.SecretMetadataUnauthorized,
 	)
@@ -55,11 +55,10 @@ func guardGetSecretMetadataRequest(
 	path := request.Path
 	err = validation.ValidatePath(path)
 	if err != nil {
-		failErr := sdkErrors.ErrInvalidInput.Wrap(err)
+		failErr := sdkErrors.ErrAPIBadRequest.Wrap(err)
 		failErr.Msg = "invalid secret path: " + path
-		return net.Fail(
-			reqres.SecretMetadataBadInput, w, http.StatusBadRequest, failErr,
-		)
+		net.Fail(reqres.SecretMetadataBadRequest, w, http.StatusBadRequest)
+		return failErr
 	}
 
 	allowed := state.CheckAccess(
@@ -69,10 +68,8 @@ func guardGetSecretMetadataRequest(
 	if !allowed {
 		failErr := sdkErrors.ErrUnauthorized
 		failErr.Msg = "unauthorized to read secret metadata for: " + path
-		return net.Fail(
-			reqres.SecretMetadataUnauthorized, w,
-			http.StatusUnauthorized, failErr,
-		)
+		net.Fail(reqres.SecretMetadataUnauthorized, w, http.StatusUnauthorized)
+		return failErr
 	}
 
 	return nil

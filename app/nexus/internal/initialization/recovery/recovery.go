@@ -64,7 +64,7 @@ func InitializeBackingStoreFromKeepers(source *workloadapi.X509Source) {
 	)
 	defer cancel()
 
-	_, err := retry.Forever(ctx, func() (bool, error) {
+	_, err := retry.Forever(ctx, func() (bool, *sdkErrors.SDKError) {
 		log.Log().Info(fName, "message", "retry:"+time.Now().String())
 
 		initSuccessful := iterateKeepersAndInitializeState(

@@ -51,13 +51,13 @@ func NewInMemoryStore(cipher cipher.AEAD, maxVersions int) *Store {
 }
 
 // Initialize prepares the store for use.
-func (s *Store) Initialize(_ context.Context) error {
+func (s *Store) Initialize(_ context.Context) *sdkErrors.SDKError {
 	// Already initialized in constructor
 	return nil
 }
 
 // Close implements the closing operation for the store.
-func (s *Store) Close(_ context.Context) error {
+func (s *Store) Close(_ context.Context) *sdkErrors.SDKError {
 	// Nothing to close for in-memory store
 	return nil
 }

@@ -7,7 +7,6 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"io"
-	"time"
 
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	spike "github.com/spiffe/spike-sdk-go/api"
@@ -40,19 +39,18 @@ func BroadcastKeepers(ctx context.Context, api *spike.API) {
 	for keeperID := range env.KeepersVal() {
 		keeperShare := state.KeeperShare(rs, keeperID)
 
-		log.Log().Info(fName, "message", "iterating", "keeper ID", keeperID)
+		log.Log().Info(fName, "message", "iterating", "keeper_id", keeperID)
+		_, err := retry.Forever(ctx, func() (bool, *sdkErrors.SDKError) {
+			log.Log().Info(fName, "message", "retrying", "keeper_id", keeperID)
 
-		_, err := retry.Forever(ctx, func() (bool, error) {
-			log.Log().Info(fName, "message", "retry:"+time.Now().String())
 			err := api.Contribute(keeperShare, keeperID)
 			if err != nil {
-				failErr := sdkErrors.ErrPostFailed.Wrap(err)
+				failErr := sdkErrors.ErrAPIPostFailed.Wrap(err)
 				failErr.Msg = "failed to send shard: will retry"
 				log.WarnErr(fName, *failErr)
 				return false, failErr
 			}
 
-			log.Log().Info(fName, "message", "shard sent successfully")
 			return true, nil
 		})
 
@@ -77,72 +75,43 @@ func VerifyInitialization(ctx context.Context, api *spike.API) {
 	randomBytes := make([]byte, 32)
 	_, err := rand.Read(randomBytes)
 	if err != nil {
-		log.FatalLn(
-			fName,
-			"message", "failed to generate random text",
-			"err", err.Error(),
-		)
+		failErr := sdkErrors.ErrCryptoRandomGenerationFailed.Wrap(err)
+		log.FatalErr(fName, *failErr)
 		return
 	}
 	randomText := hex.EncodeToString(randomBytes)
-	log.Log().Info(
-		fName,
-		"message", "generated random verification text",
-		"length", len(randomText),
-	)
 
 	// Encrypt the random text with the root key
 	rootKey := state.RootKey()
 	block, err := aes.NewCipher(rootKey[:])
 	if err != nil {
-		log.FatalLn(
-			fName, "message",
-			"failed to create cipher",
-			"err", err.Error(),
-		)
+		failErr := sdkErrors.ErrCryptoFailedToCreateCipher.Wrap(err)
+		log.FatalErr(fName, *failErr)
 		return
 	}
 
 	gcm, err := cipher.NewGCM(block)
 	if err != nil {
-		log.FatalLn(
-			fName,
-			"message", "failed to create GCM",
-			"err", err.Error(),
-		)
+		failErr := sdkErrors.ErrCryptoFailedToCreateGCM.Wrap(err)
+		log.FatalErr(fName, *failErr)
 		return
 	}
 
 	nonce := make([]byte, gcm.NonceSize())
 	if _, err := io.ReadFull(rand.Reader, nonce); err != nil {
-		log.FatalLn(
-			fName,
-			"message", "failed to generate nonce",
-			"err", err.Error(),
-		)
+		failErr := sdkErrors.ErrCryptoFailedToReadNonce.Wrap(err)
+		log.FatalErr(fName, *failErr)
 		return
 	}
 
 	ciphertext := gcm.Seal(nil, nonce, []byte(randomText), nil)
-	log.Log().Info(
-		fName,
-		"message", "encrypted verification text",
-		"nonce_len", len(nonce),
-		"ciphertext_len", len(ciphertext),
-	)
 
-	_, _ = retry.Forever(ctx, func() (bool, error) {
-		log.Log().Info(
-			fName,
-			"message", "retry:"+time.Now().String(),
-		)
+	_, _ = retry.Forever(ctx, func() (bool, *sdkErrors.SDKError) {
 		err := api.Verify(randomText, nonce, ciphertext)
 		if err != nil {
-			log.Log().Warn(
-				fName,
-				"message", "failed to verify signature",
-				"err", err.Error(),
-			)
+			failErr := sdkErrors.ErrCryptoCipherVerificationFailed.Wrap(err)
+			failErr.Msg = "failed to verify initialization: will retry"
+			log.WarnErr(fName, *failErr)
 			return false, err
 		}
 		return true, nil
@@ -162,23 +131,21 @@ func AcquireSource() *workloadapi.X509Source {
 	src := tls.Source()
 	sv, err := src.GetX509SVID()
 	if err != nil {
-		log.FatalLn(fName,
-			"message", "Failed to get X.509 SVID",
-			"err", err.Error())
-		log.FatalLn(fName, "message", "Failed to acquire SVID")
+		failErr := sdkErrors.ErrSPIFFEFailedToExtractX509SVID.Wrap(err)
+		log.FatalErr(fName, *failErr)
 		return nil
 	}
 	if !svid.IsBootstrap(sv.ID.String()) {
-		log.Log().Error(
-			fName,
-			"message", "you need a bootstrap SPIFFE ID to use this command",
-		)
-		log.FatalLn(fName, "message", "command not authorized")
+		failErr := sdkErrors.ErrAccessUnauthorized
+		failErr.Msg = "bootstrap SPIFFE ID required"
+		log.FatalErr(fName, *failErr)
 		return nil
 	}
 
 	if src == nil {
-		log.FatalLn(fName, "message", "failed to acquire SVID")
+		failErr := sdkErrors.ErrSPIFFEFailedToExtractX509SVID
+		failErr.Msg = "failed to acquire X.509 SVID"
+		log.FatalErr(fName, *failErr)
 		return nil
 	}
 

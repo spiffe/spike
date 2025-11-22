@@ -30,7 +30,7 @@ func main() {
 	init := flag.Bool("init", false, "Initialize the bootstrap module")
 	flag.Parse()
 	if !*init {
-		failErr := sdkErrors.ErrInvalidInput
+		failErr := sdkErrors.ErrDataInvalidInput
 		failErr.Msg = "invalid command line arguments: usage: boostrap -init"
 		log.FatalErr(appName, *failErr)
 		return
@@ -61,7 +61,12 @@ func main() {
 	log.Info(appName, "message", "sending shards to SPIKE Keeper instances")
 
 	api := spike.NewWithSource(src)
-	defer api.Close()
+	defer func() {
+		err := api.Close()
+		warnErr := sdkErrors.ErrFSStreamCloseFailed.Wrap(err)
+		warnErr.Msg = "failed to close SPIKE API client"
+		log.WarnErr(appName, *warnErr)
+	}()
 
 	ctx := context.Background()
 

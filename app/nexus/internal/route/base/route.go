@@ -15,6 +15,7 @@ import (
 
 	"github.com/spiffe/spike-sdk-go/api/url"
 	"github.com/spiffe/spike-sdk-go/config/env"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 	"github.com/spiffe/spike/internal/journal"
@@ -31,7 +32,7 @@ import (
 //   - r: The HTTP Request containing the client's request details
 func Route(
 	w http.ResponseWriter, r *http.Request, a *journal.AuditEntry,
-) error {
+) *sdkErrors.SDKError {
 	return net.RouteFactory[url.APIAction](
 		url.APIURL(r.URL.Path),
 		url.APIAction(r.URL.Query().Get(url.KeyAPIAction)),

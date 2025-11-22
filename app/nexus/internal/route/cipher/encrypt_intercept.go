@@ -75,10 +75,8 @@ func guardEncryptCipherRequest(
 	}
 	// If not, block the request:
 	if !allowed {
-		return net.Fail(
-			reqres.CipherEncryptUnauthorized, w,
-			http.StatusUnauthorized, sdkErrors.ErrUnauthorized, fName,
-		)
+		net.Fail(reqres.CipherEncryptUnauthorized, w, http.StatusUnauthorized)
+		return sdkErrors.ErrUnauthorized
 	}
 
 	return nil

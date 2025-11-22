@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"github.com/spiffe/spike-sdk-go/config/env"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/log"
 	k8s "k8s.io/api/core/v1"
 	k8sMeta "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -168,12 +169,15 @@ func ShouldBootstrap() bool {
 //
 // If the ConfigMap already exists, it will be updated. If creation fails,
 // an update operation is attempted as a fallback.
-func MarkBootstrapComplete() error {
+func MarkBootstrapComplete() *sdkErrors.SDKError {
 	const fName = "MarkBootstrapComplete"
 
 	// Only mark complete in Kubernetes environments
 	config, err := rest.InClusterConfig()
 	if err != nil {
+		failErr := sdkErrors.ErrK8sReconciliationFailed
+		failErr.Msg = "failed to get Kubernetes config"
+
 		if errors.Is(err, rest.ErrNotInCluster) {
 			// Not in Kubernetes, nothing to mark
 			log.Log().Info(
@@ -182,12 +186,15 @@ func MarkBootstrapComplete() error {
 			)
 			return nil
 		}
-		return err
+
+		return failErr.Wrap(err)
 	}
 
 	clientset, err := kubernetes.NewForConfig(config)
 	if err != nil {
-		return err
+		failErr := sdkErrors.ErrK8sReconciliationFailed
+		failErr.Msg = "failed to create Kubernetes client"
+		return failErr.Wrap(err)
 	}
 
 	namespace := "spike"
@@ -224,12 +231,9 @@ func MarkBootstrapComplete() error {
 	}
 
 	if err != nil {
-		log.Log().Error(
-			fName,
-			"message", "failed to mark bootstrap complete",
-			"err", err.Error(),
-		)
-		return err
+		failErr := sdkErrors.ErrK8sReconciliationFailed.Wrap(err)
+		failErr.Msg = "failed to mark bootstrap complete in ConfigMap"
+		return failErr
 	}
 
 	log.Log().Info(

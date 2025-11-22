@@ -63,24 +63,18 @@ func guardVerifyRequest(
 	}
 
 	if !spiffeid.IsBootstrap(peerSPIFFEID.String()) {
-		return net.Fail(
-			reqres.BootstrapUnauthorized, w, http.StatusUnauthorized,
-			sdkErrors.ErrUnauthorized, fName,
-		)
+		net.Fail(reqres.BootstrapUnauthorized, w, http.StatusUnauthorized)
+		return sdkErrors.ErrUnauthorized
 	}
 
 	if len(request.Nonce) != expectedNonceSize {
-		return net.Fail(
-			reqres.BootstrapBadInput, w, http.StatusBadRequest,
-			sdkErrors.ErrInvalidInput, fName,
-		)
+		net.Fail(reqres.BootstrapBadInput, w, http.StatusBadRequest)
+		return sdkErrors.ErrInvalidInput
 	}
 
 	if len(request.Ciphertext) > maxCiphertextSize {
-		return net.Fail(
-			reqres.BootstrapBadInput, w, http.StatusBadRequest,
-			sdkErrors.ErrInvalidInput, fName,
-		)
+		net.Fail(reqres.BootstrapBadInput, w, http.StatusBadRequest)
+		return sdkErrors.ErrInvalidInput
 	}
 
 	return nil

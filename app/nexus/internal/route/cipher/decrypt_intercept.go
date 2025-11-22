@@ -115,10 +115,10 @@ func guardDecryptCipherRequest(
 	}
 
 	if !allowed {
-		return net.Fail(
-			reqres.CipherDecryptUnauthorized,
-			w, http.StatusUnauthorized, sdkErrors.ErrUnauthorized, fName,
+		net.Fail(
+			reqres.CipherDecryptUnauthorized, w, http.StatusUnauthorized,
 		)
+		return sdkErrors.ErrUnauthorized
 	}
 
 	return nil

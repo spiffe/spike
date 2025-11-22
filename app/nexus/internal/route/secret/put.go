@@ -48,7 +48,7 @@ import (
 // The function logs its progress at various stages using structured logging.
 func RoutePutSecret(
 	w http.ResponseWriter, r *http.Request, audit *journal.AuditEntry,
-) error {
+) *sdkErrors.SDKError {
 	const fName = "RoutePutSecret"
 
 	journal.AuditRequest(fName, r, audit, journal.AuditCreate)
@@ -59,7 +59,6 @@ func RoutePutSecret(
 		w, r, reqres.SecretPutBadInput, guardSecretPutRequest, fName,
 	)
 	if alreadyResponded := err != nil; alreadyResponded {
-		log.Log().Error(fName, "message", "exit", "err", err.Error())
 		return err
 	}
 
@@ -69,10 +68,8 @@ func RoutePutSecret(
 	err = state.UpsertSecret(path, values)
 	if err != nil {
 		failErr := stdErrs.Join(sdkErrors.ErrCreationFailed, err)
-		return net.Fail(
-			reqres.SecretPutInternal, w,
-			http.StatusInternalServerError, failErr, fName,
-		)
+		net.Fail(reqres.SecretPutInternal, w, http.StatusInternalServerError)
+		return failErr
 	}
 
 	net.Success(reqres.SecretPutSuccess.Success(), w, fName)

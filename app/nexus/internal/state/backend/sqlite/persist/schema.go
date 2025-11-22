@@ -10,21 +10,48 @@ import (
 	"os"
 
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
-	"github.com/spiffe/spike-sdk-go/log"
-
 	"github.com/spiffe/spike/app/nexus/internal/state/backend/sqlite/ddl"
 )
 
-func (s *DataStore) createDataDir() error {
-	return os.MkdirAll(s.Opts.DataDir, 0750)
-}
-
-func (s *DataStore) createTables(ctx context.Context, db *sql.DB) error {
-	const fName = "createTables"
-	if ctx == nil {
-		log.FatalLn(fName, "message", sdkErrors.ErrCodeNilContext)
+// createDataDir creates the data directory for the SQLite database if it
+// does not already exist. The directory is created with 0750 permissions,
+// allowing read, write, and execute for the owner, and read and execute for
+// the group.
+//
+// Returns:
+//   - *sdkErrors.SDKError: nil on success, or ErrFSDirectoryCreationFailed
+//     if the directory creation fails
+func (s *DataStore) createDataDir() *sdkErrors.SDKError {
+	err := os.MkdirAll(s.Opts.DataDir, 0750)
+	if err != nil {
+		return sdkErrors.ErrFSDirectoryCreationFailed.Wrap(err)
 	}
 
+	return nil
+}
+
+// createTables initializes the database schema by executing the DDL
+// statements to create all required tables for secret and policy storage.
+// This function is idempotent and can be called multiple times safely.
+//
+// Parameters:
+//   - ctx: Context for cancellation and timeout control
+//   - db: The SQLite database connection on which to create the tables
+//
+// Returns:
+//   - *sdkErrors.SDKError: nil on success, or ErrEntityQueryFailed if the
+//     schema creation fails
+func (s *DataStore) createTables(
+	ctx context.Context, db *sql.DB,
+) *sdkErrors.SDKError {
+	const fName = "createTables"
+
+	validateContext(ctx, fName)
+
 	_, err := db.ExecContext(ctx, ddl.QueryInitialize)
-	return err
+	if err != nil {
+		return sdkErrors.ErrEntityQueryFailed.Wrap(err)
+	}
+
+	return nil
 }

@@ -33,7 +33,7 @@ import (
 //   - error: apiErr.ErrUnauthorized if validation fails, nil otherwise
 func guardShardPutRequest(
 	_ reqres.ShardPutRequest, w http.ResponseWriter, r *http.Request,
-) error {
+) *sdkErrors.SDKError {
 	const fName = "guardShardPutRequest"
 
 	peerSPIFFEID, err := auth.ExtractPeerSPIFFEID[reqres.ShardPutResponse](

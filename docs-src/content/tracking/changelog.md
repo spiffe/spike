@@ -12,6 +12,22 @@ sort_by = "weight"
 
 ## Recent
 
+* SDK: Improved API consistency by standardizing policy function parameters from
+  `name` to `id` across all operations, matching internal implementation.
+* SDK: Enhanced error handling - Get methods now return `ErrAPINotFound` instead
+  of `(nil, nil)` when resources are not found, following idiomatic Go patterns
+  (similar to `os.Open`, `database/sql`).
+* SDK: Fixed critical bug in `Undelete` function that was ignoring the `versions`
+  parameter due to missing else clause.
+* SDK: Fixed resource management bug in `StreamPostWithContentType` where defer
+  was closing response body on success path, causing callers to receive closed body.
+* SDK: Added nil validation to `CreateMTLSServer` functions with fail-fast behavior
+  for configuration errors.
+* SDK: Added comprehensive godoc comments to all 55 error sentinel values.
+* SDK: Significantly increased test coverage across all SDK packages with comprehensive
+  unit and integration tests.
+* SDK: Improved documentation clarity for single return value functions, CSPRNG
+  fatal behavior, and function distinctions (ValidatePath vs ValidatePathPattern).
 * moved entities to the sdk
 * added extensive package documentation to ALL packages of SPIKE and SPIKE go SDK
 * minor bugfixes

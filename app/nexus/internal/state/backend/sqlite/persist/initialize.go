@@ -30,7 +30,7 @@ import (
 // - Table creation fails
 //
 // This method is thread-safe.
-func (s *DataStore) Initialize(ctx context.Context) error {
+func (s *DataStore) Initialize(ctx context.Context) *sdkErrors.SDKError {
 	const fName = "Initialize"
 	if ctx == nil {
 		log.FatalLn(fName, "message", sdkErrors.ErrCodeNilContext)

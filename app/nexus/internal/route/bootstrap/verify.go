@@ -65,26 +65,23 @@ func RouteVerify(
 		w, r, reqres.BootstrapBadInput, guardVerifyRequest, fName,
 	)
 	if alreadyResponded := err != nil; alreadyResponded {
-		log.Log().Error(fName, "message", "exit", "err", err.Error())
 		return err
 	}
 
 	// Get cipher from the backend
 	c := persist.Backend().GetCipher()
 	if c == nil {
-		return net.Fail(
+		net.Fail(
 			reqres.BootstrapBadInput, w, http.StatusInternalServerError,
-			sdkErrors.ErrCryptoCipherNotAvailable, fName,
 		)
+		return sdkErrors.ErrCryptoCipherNotAvailable
 	}
 
 	// Decrypt the ciphertext
 	plaintext, err := c.Open(nil, request.Nonce, request.Ciphertext, nil)
 	if err != nil {
-		return net.Fail(
-			reqres.BootstrapInternal, w, http.StatusInternalServerError,
-			sdkErrors.ErrCryptoDecryptionFailed, fName,
-		)
+		net.Fail(reqres.BootstrapInternal, w, http.StatusInternalServerError)
+		return sdkErrors.ErrCryptoDecryptionFailed
 	}
 
 	// Compute SHA-256 hash of plaintext

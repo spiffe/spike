@@ -15,7 +15,7 @@ import (
 // encrypt encrypts the given data using the DataStore's cipher.
 // It generates a random nonce and returns the ciphertext, nonce, and any
 // error that occurred during encryption.
-func (s *DataStore) encrypt(data []byte) ([]byte, []byte, error) {
+func (s *DataStore) encrypt(data []byte) ([]byte, []byte, *sdkErrors.SDKError) {
 	nonce := make([]byte, s.Cipher.NonceSize())
 	nonceErr := sdkErrors.ErrCryptoNonceGenerationFailed
 	if _, err := io.ReadFull(rand.Reader, nonce); err != nil {

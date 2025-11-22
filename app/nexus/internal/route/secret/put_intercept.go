@@ -61,9 +61,8 @@ func guardSecretPutRequest(
 	err = validation.ValidatePath(path)
 	if invalidPath := err != nil; invalidPath {
 		failErr := stdErrs.Join(sdkErrors.ErrInvalidInput, err)
-		return net.Fail(
-			reqres.SecretPutBadInput, w, http.StatusBadRequest, failErr, fName,
-		)
+		net.Fail(reqres.SecretPutBadInput, w, http.StatusBadRequest)
+		return failErr
 	}
 
 	values := request.Values
@@ -71,9 +70,8 @@ func guardSecretPutRequest(
 		err := validation.ValidateName(k)
 		if err != nil {
 			failErr := stdErrs.Join(sdkErrors.ErrInvalidInput, err)
-			return net.Fail(
-				reqres.SecretPutBadInput, w, http.StatusBadRequest, failErr, fName,
-			)
+			net.Fail(reqres.SecretPutBadInput, w, http.StatusBadRequest)
+			return failErr
 		}
 	}
 
@@ -82,10 +80,8 @@ func guardSecretPutRequest(
 		[]data.PolicyPermission{data.PermissionWrite},
 	)
 	if !allowed {
-		return net.Fail(
-			reqres.SecretPutUnauthorized, w,
-			http.StatusUnauthorized, sdkErrors.ErrUnauthorized, fName,
-		)
+		net.Fail(reqres.SecretPutUnauthorized, w, http.StatusUnauthorized)
+		return sdkErrors.ErrUnauthorized
 	}
 
 	return nil

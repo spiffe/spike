@@ -6,7 +6,6 @@ package net
 
 import (
 	"bytes"
-	"errors"
 	"io"
 	"net/http"
 
@@ -44,16 +43,17 @@ import (
 //	if err != nil {
 //	    log.Fatalf("failed to post: %v", err)
 //	}
-func Post(client *http.Client, path string, mr []byte) ([]byte, error) {
-	log.Log().Info("post", "path", path)
+func Post(
+	client *http.Client, path string, mr []byte,
+) ([]byte, *sdkErrors.SDKError) {
+	const fName = "Post"
 
 	// Create the request while preserving the mTLS client
 	req, err := http.NewRequest("POST", path, bytes.NewBuffer(mr))
 	if err != nil {
-		return nil, errors.Join(
-			errors.New("post: Failed to create request"),
-			err,
-		)
+		failErr := sdkErrors.ErrAPIPostFailed.Wrap(err)
+		failErr.Msg = "failed to create request"
+		return nil, failErr
 	}
 
 	// Set headers
@@ -62,37 +62,35 @@ func Post(client *http.Client, path string, mr []byte) ([]byte, error) {
 	// Use the existing mTLS client to make the request
 	r, err := client.Do(req)
 	if err != nil {
-		return []byte{}, errors.Join(
-			sdkErrors.ErrPeerConnection,
-			err,
-		)
+		failErr := sdkErrors.ErrNetPeerConnection.Wrap(err)
+		return nil, failErr
 	}
 
 	if r.StatusCode != http.StatusOK {
 		if r.StatusCode == http.StatusNotFound {
-			return []byte{}, sdkErrors.ErrNotFound
+			return []byte{}, sdkErrors.ErrAPINotFound
 		}
 
 		if r.StatusCode == http.StatusUnauthorized {
-			return []byte{}, sdkErrors.ErrUnauthorized
+			return []byte{}, sdkErrors.ErrAccessUnauthorized
 		}
 
-		return []byte{}, sdkErrors.ErrPeerConnection
+		return []byte{}, sdkErrors.ErrNetPeerConnection
 	}
 
 	b, err := body(r)
 	if err != nil {
-		return []byte{}, errors.Join(
-			sdkErrors.ErrReadingResponseBody,
-			err,
-		)
+		failErr := sdkErrors.ErrNetReadingResponseBody.Wrap(err)
+		return nil, failErr
 	}
 
 	defer func(b io.ReadCloser) {
 		if b == nil {
 			return
 		}
-		err = errors.Join(err, b.Close())
+		failErr := sdkErrors.ErrFSStreamCloseFailed
+		failErr.Msg = "failed to close response body"
+		log.WarnErr(fName, *failErr.Wrap(b.Close()))
 	}(r.Body)
 
 	return b, nil

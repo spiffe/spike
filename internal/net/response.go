@@ -8,15 +8,11 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/log"
 
 	"github.com/spiffe/spike/internal/journal"
 )
-
-// TODO: system.KeepAlive and system.Watch do not log by default now;
-// update call sites accordingly.
 
 // MarshalBodyAndRespondOnMarshalFail serializes a response object to JSON and
 // handles error cases.
@@ -32,30 +28,49 @@ import (
 //
 // Returns:
 //   - []byte - The marshaled JSON bytes, or nil if marshaling failed
-//   - error - apiErr.ErrMarshalFailure if marshaling failed, nil otherwise
+//   - error - sdkErrors.ErrAPIInternal if marshaling failed, nil otherwise
 func MarshalBodyAndRespondOnMarshalFail(
 	res any, w http.ResponseWriter,
-) ([]byte, error) {
+) ([]byte, *sdkErrors.SDKError) {
+	const fName = "MarshalBodyAndRespondOnMarshalFail"
+
 	body, err := json.Marshal(res)
+	// Since this function is typically called with sentinel error values,
+	// this error should, typically, never happen.
+	// That's why, instead of sending a "marshal failure" sentinel error,
+	// we return an internal sentinel error (sdkErrors.ErrAPIInternal)
 	if err != nil {
-		log.Log().Error("marshalBody",
-			"message", "Problem generating response",
-			"err", err.Error())
+		// Chain an error for detailed internal logging.
+		failErr := sdkErrors.ErrAPIInternal
+		failErr.Msg = "problem generating response"
 
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusInternalServerError)
 
-		_, err = w.Write([]byte(`{"error":"internal server error"}`))
+		internalErrJson, marshalErr := json.Marshal(failErr)
+
+		// Add extra info "after" marshaling to avoid leaking internal error details
+		failErr = failErr.Wrap(err)
+
+		if marshalErr != nil {
+			failErr = failErr.Wrap(marshalErr)
+			// Cannot marshal; try a generic message instead.
+			internalErrJson = []byte(`{"error":"internal server error"}`)
+		}
+		_, err = w.Write(internalErrJson)
 		if err != nil {
-			log.Log().Error("marshalBody",
-				"message", "Problem writing response",
-				"err", err.Error())
-			return nil, sdkErrors.ErrMarshalFailure
+			failErr = failErr.Wrap(err)
+			// At this point, we cannot respond. So there is not much to send.
+			// We cannot even send a generic error message.
+			// We can only log the error.
 		}
 
-		return nil, sdkErrors.ErrMarshalFailure
+		// Log the chained error.
+		log.ErrorErr(fName, *failErr)
+		return nil, failErr
 	}
 
+	// body marshaled successfully
 	return body, nil
 }
 
@@ -71,6 +86,8 @@ func MarshalBodyAndRespondOnMarshalFail(
 //   - body: []byte - The pre-marshaled JSON response body
 //   - w: http.ResponseWriter - The response writer to use
 func Respond(statusCode int, body []byte, w http.ResponseWriter) {
+	const fName = "Respond"
+
 	w.Header().Set("Content-Type", "application/json")
 
 	// Add cache invalidation headers
@@ -85,9 +102,11 @@ func Respond(statusCode int, body []byte, w http.ResponseWriter) {
 
 	_, err := w.Write(body)
 	if err != nil {
-		log.Log().Error("routeKeep",
-			"message", "Problem writing response",
-			"err", err.Error())
+		// At this point, we cannot respond. So there is not much to send
+		// back to the client. We can only log the error.
+		// This should rarely, if ever, happen.
+		failErr := sdkErrors.ErrAPIInternal.Wrap(err)
+		log.ErrorErr(fName, *failErr)
 	}
 }
 
@@ -107,32 +126,13 @@ func Respond(statusCode int, body []byte, w http.ResponseWriter) {
 //   - Content-Type: application/json
 //   - Body: JSON object with an error field
 func Fallback(
-	w http.ResponseWriter, r *http.Request, audit *journal.AuditEntry,
-) error {
-	log.Log().Info("fallback",
-		"method", r.Method,
-		"path", r.URL.Path,
-		"query", r.URL.RawQuery)
+	w http.ResponseWriter, _ *http.Request, audit *journal.AuditEntry,
+) *sdkErrors.SDKError {
 	audit.Action = journal.AuditFallback
 
-	body, err := MarshalBodyAndRespondOnMarshalFail(
-		reqres.FallbackResponse{Err: sdkErrors.ErrBadRequest.Code}, w,
+	return respondFallbackWithStatus(
+		w, http.StatusBadRequest, sdkErrors.ErrAPIBadRequest.Code,
 	)
-	if err != nil {
-		return err
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusBadRequest)
-
-	if _, err := w.Write(body); err != nil {
-		log.Log().Error("routeFallback",
-			"message", "Problem writing response",
-			"err", err.Error())
-		return err
-	}
-
-	return nil
 }
 
 // NotReady handles requests when the system has not initialized its backing
@@ -155,30 +155,11 @@ func Fallback(
 //   - error: Returns nil on success, or an error if response marshaling or
 //     writing fails
 func NotReady(
-	w http.ResponseWriter, r *http.Request, audit *journal.AuditEntry,
-) error {
-	log.Log().Info("not-ready",
-		"method", r.Method,
-		"path", r.URL.Path,
-		"query", r.URL.RawQuery)
+	w http.ResponseWriter, _ *http.Request, audit *journal.AuditEntry,
+) *sdkErrors.SDKError {
 	audit.Action = journal.AuditBlocked
 
-	body, err := MarshalBodyAndRespondOnMarshalFail(
-		reqres.FallbackResponse{Err: sdkErrors.ErrNotReady.Code}, w,
+	return respondFallbackWithStatus(
+		w, http.StatusServiceUnavailable, sdkErrors.ErrStateNotReady.Code,
 	)
-	if err != nil {
-		return err
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusServiceUnavailable)
-
-	if _, err := w.Write(body); err != nil {
-		log.Log().Error("routeNotReady",
-			"message", "Problem writing response",
-			"err", err.Error())
-		return err
-	}
-
-	return nil
 }

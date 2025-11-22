@@ -58,7 +58,9 @@ func UpsertSecret(path string, values map[string]string) error {
 	// backing store, so it's better to return it and exit the function.
 	currentSecret, err := persist.Backend().LoadSecret(ctx, path)
 	if err != nil {
-		return fmt.Errorf("failed to load current secret: %w", err)
+		failErr := sdkErrors.ErrEntityLoadFailed.Wrap(err)
+		failErr.Msg = "failed to load secret with path " + path
+		return failErr
 	}
 
 	now := time.Now()
@@ -234,7 +236,7 @@ func DeleteSecret(path string, versions []int) error {
 //
 //	// Restore versions 1 and 3 of a secret
 //	UndeleteSecret("app/secrets/api-key", []int{1, 3})
-func UndeleteSecret(path string, versions []int) error {
+func UndeleteSecret(path string, versions []int) *sdkErrors.SDKError {
 	const fName = "UndeleteSecret"
 
 	secret, err := loadAndValidateSecret(fName, path)
@@ -330,7 +332,7 @@ func UndeleteSecret(path string, versions []int) error {
 // Returns:
 //   - map[string]string: The secret key-value pairs
 //   - bool: Whether the secret was found
-func GetSecret(path string, version int) (map[string]string, error) {
+func GetSecret(path string, version int) (map[string]string, *sdkErrors.SDKError) {
 	const fName = "GetSecret"
 
 	secret, err := loadAndValidateSecret(fName, path)
@@ -379,7 +381,7 @@ func GetSecret(path string, version int) (map[string]string, error) {
 // Returns:
 //   - *kv.Secret: The secret type
 //   - bool: Whether the secret was found
-func GetRawSecret(path string, version int) (*kv.Value, error) {
+func GetRawSecret(path string, version int) (*kv.Value, *sdkErrors.SDKError) {
 	const fName = "GetRawSecret"
 
 	secret, err := loadAndValidateSecret(fName, path)

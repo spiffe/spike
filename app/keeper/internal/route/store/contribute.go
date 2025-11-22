@@ -9,7 +9,6 @@ import (
 
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
-	"github.com/spiffe/spike-sdk-go/log"
 	"github.com/spiffe/spike-sdk-go/security/mem"
 
 	"github.com/spiffe/spike/app/keeper/internal/state"
@@ -38,14 +37,16 @@ import (
 // Parameters:
 //   - w: http.ResponseWriter to write the HTTP response
 //   - r: *http.Request containing the incoming HTTP request
-//   - audit: *journal.AuditEntry for tracking the request for auditing purposes
+//   - audit: *journal.AuditEntry for tracking the request for auditing
+//     purposes
 //
 // Returns:
-//   - error: nil if successful, otherwise one of:
-//   - errors.ErrReadFailure if request body cannot be read
-//   - errors.ErrParseFailure if request parsing fails
-//   - errors.ErrUnauthorized if peer SPIFFE ID validation fails
-//   - errors.ErrInvalidInput if shard is nil or all zeros
+//   - *sdkErrors.SDKError: nil if successful, otherwise one of:
+//   - ErrDataReadFailure: If request body cannot be read
+//   - ErrDataParseFailure: If request parsing fails
+//   - ErrUnauthorized: If peer SPIFFE ID validation fails
+//   - ErrShamirNilShard: If shard is nil
+//   - ErrShamirEmptyShard: If shard is all zeros
 //
 // Example request body:
 //
@@ -59,7 +60,7 @@ import (
 // status if the shard content is invalid.
 func RouteContribute(
 	w http.ResponseWriter, r *http.Request, audit *journal.AuditEntry,
-) error {
+) *sdkErrors.SDKError {
 	const fName = "RouteContribute"
 
 	journal.AuditRequest(fName, r, audit, journal.AuditCreate)
@@ -67,18 +68,15 @@ func RouteContribute(
 	request, err := net.ReadParseAndGuard[
 		reqres.ShardPutRequest, reqres.ShardPutResponse,
 	](
-		w, r, reqres.ShardPutBadInput, guardShardPutRequest, fName,
+		w, r, reqres.ShardPutBadRequest, guardShardPutRequest,
 	)
 	if alreadyResponded := err != nil; alreadyResponded {
-		log.Log().Error(fName, "message", "exit", "err", err.Error())
 		return err
 	}
 
 	if request.Shard == nil {
-		return net.Fail(
-			reqres.ShardPutBadInput, w,
-			http.StatusBadRequest, sdkErrors.ErrInvalidInput, fName,
-		)
+		net.Fail(reqres.ShardPutBadRequest, w, http.StatusBadRequest)
+		return sdkErrors.ErrShamirNilShard
 	}
 
 	// Security: Zero out shard before the function exits.
@@ -91,15 +89,13 @@ func RouteContribute(
 	// indicate invalid input. Since Shard is a fixed-length array in the request,
 	// clients must send meaningful non-zero data.
 	if mem.Zeroed32(request.Shard) {
-		return net.Fail(
-			reqres.ShardPutBadInput, w,
-			http.StatusBadRequest, sdkErrors.ErrInvalidInput, fName,
-		)
+		net.Fail(reqres.ShardPutBadRequest, w, http.StatusBadRequest)
+		return sdkErrors.ErrShamirEmptyShard
 	}
 
 	// `state.SetShard` copies the shard. We can safely reset this one at [1].
 	state.SetShard(request.Shard)
 
-	net.Success(reqres.ShardPutSuccess, w, fName)
+	net.Success(reqres.ShardPutSuccess, w)
 	return nil
 }

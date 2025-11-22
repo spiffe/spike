@@ -8,7 +8,6 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"encoding/hex"
-	"errors"
 
 	"github.com/spiffe/spike-sdk-go/crypto"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
@@ -20,42 +19,50 @@ import (
 // New creates a new DataStore instance with the provided configuration.
 // It validates the encryption key and initializes the AES-GCM cipher.
 //
-// The encryption key must be 16, 24, or 32 bytes in length (for AES-128,
-// AES-192, or AES-256 respectively).
+// The encryption key must be exactly 32 bytes in length (AES-256).
 //
-// Returns an error if:
-// - The options are invalid
-// - The encryption key is malformed or has an invalid length
-// - The cipher initialization fails
-func New(cfg backend.Config) (backend.Backend, error) {
+// Parameters:
+//   - cfg: The backend configuration containing encryption key and options
+//
+// Returns:
+//   - backend.Backend: The initialized SQLite backend on success
+//   - *sdkErrors.SDKError: An error if initialization fails
+//
+// Errors returned:
+//   - ErrStoreInvalidConfiguration: If options are invalid or key is
+//     malformed
+//   - ErrCryptoInvalidEncryptionKeyLength: If key is not 32 bytes
+//   - ErrCryptoFailedToCreateCipher: If AES cipher creation fails
+//   - ErrCryptoFailedToCreateGCM: If GCM mode initialization fails
+func New(cfg backend.Config) (backend.Backend, *sdkErrors.SDKError) {
 	opts, err := persist.ParseOptions(cfg.Options)
 	if err != nil {
-		failErr := sdkErrors.ErrBackendInvalidConfiguration
-		return nil, errors.Join(failErr, err)
+		failErr := sdkErrors.ErrStoreInvalidConfiguration.Wrap(err)
+		return nil, failErr
 	}
 
 	key, err := hex.DecodeString(cfg.EncryptionKey)
 	if err != nil {
-		failErr := sdkErrors.ErrBackendInvalidEncryptionKey
-		return nil, errors.Join(failErr, err)
+		failErr := sdkErrors.ErrStoreInvalidConfiguration.Wrap(err)
+		return nil, failErr
 	}
 
 	// Validate key length
 	if len(key) != crypto.AES256KeySize {
-		failErr := sdkErrors.ErrCryptoInvalidEncryptionKeyLength
+		failErr := sdkErrors.ErrCryptoInvalidEncryptionKeyLength.Wrap(err)
 		return nil, failErr
 	}
 
 	block, err := aes.NewCipher(key)
 	if err != nil {
-		failErr := sdkErrors.ErrCryptoFailedToCreateCipher
-		return nil, errors.Join(failErr, err)
+		failErr := sdkErrors.ErrCryptoFailedToCreateCipher.Wrap(err)
+		return nil, failErr
 	}
 
 	gcm, err := cipher.NewGCM(block)
 	if err != nil {
-		failErr := sdkErrors.ErrCryptoFailedToCreateGCM
-		return nil, errors.Join(failErr, err)
+		failErr := sdkErrors.ErrCryptoFailedToCreateGCM.Wrap(err)
+		return nil, failErr
 	}
 
 	return &persist.DataStore{

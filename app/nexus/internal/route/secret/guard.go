@@ -56,9 +56,8 @@ func guardSecretRequest[TUnauth, TBadInput any](
 	err = validation.ValidatePath(path)
 	if err != nil {
 		failErr := stdErrs.Join(sdkErrors.ErrInvalidInput, err)
-		return net.Fail(
-			badInputResp, w, http.StatusBadRequest, failErr, fName,
-		)
+		net.Fail(badInputResp, w, http.StatusBadRequest)
+		return failErr
 	}
 
 	// Check access permissions
@@ -68,10 +67,8 @@ func guardSecretRequest[TUnauth, TBadInput any](
 		permissions,
 	)
 	if !allowed {
-		return net.Fail(
-			unauthorizedResp, w,
-			http.StatusUnauthorized, sdkErrors.ErrUnauthorized, fName,
-		)
+		net.Fail(unauthorizedResp, w, http.StatusUnauthorized)
+		return sdkErrors.ErrUnauthorized
 	}
 
 	return nil

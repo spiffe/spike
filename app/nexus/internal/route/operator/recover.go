@@ -44,7 +44,7 @@ import (
 // shards in the response body.
 func RouteRecover(
 	w http.ResponseWriter, r *http.Request, audit *journal.AuditEntry,
-) error {
+) *sdkErrors.SDKError {
 	const fName = "routeRecover"
 
 	journal.AuditRequest(fName, r, audit, journal.AuditCreate)
@@ -54,7 +54,6 @@ func RouteRecover(
 		w, r, reqres.RecoverBadInput, guardRecoverRequest, fName,
 	)
 	if alreadyResponded := err != nil; alreadyResponded {
-		log.Log().Error(fName, "message", "exit", "err", err.Error())
 		return err
 	}
 

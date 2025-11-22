@@ -455,7 +455,7 @@ w
       requestBody []byte,
       w http.ResponseWriter,
       r *http.Request,
-      errorResponse Res,
+      errorResponseForBadRequest Res,
       guard GuardFunc[Req], // Required parameter
       ) *Req {
       // ... existing logic ...

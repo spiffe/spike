@@ -47,7 +47,7 @@ import (
 //   - Returns appropriate HTTP status codes for different error conditions
 func RouteDecrypt(
 	w http.ResponseWriter, r *http.Request, audit *journal.AuditEntry,
-) error {
+) *sdkErrors.SDKError {
 	const fName = "routeDecrypt"
 	journal.AuditRequest(fName, r, audit, journal.AuditCreate)
 
@@ -57,14 +57,14 @@ func RouteDecrypt(
 
 	if streamModeActive {
 		// Cipher getter for streaming mode
-		getCipher := func() (cipher.AEAD, error) {
+		getCipher := func() (cipher.AEAD, *sdkErrors.SDKError) {
 			return getCipherOrFailStreaming(w)
 		}
 		return handleStreamingDecrypt(w, r, getCipher, fName)
 	}
 
 	// Cipher getter for JSON mode
-	getCipher := func() (cipher.AEAD, error) {
+	getCipher := func() (cipher.AEAD, *sdkErrors.SDKError) {
 		return getCipherOrFailJSON(
 			w, reqres.CipherDecryptResponse{Err: sdkErrors.ErrCodeInternal},
 		)

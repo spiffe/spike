@@ -98,7 +98,7 @@ func CheckAccess(
 //     and PathPattern
 //   - Generates and sets a new UUID as the policy ID
 //   - Sets CreatedAt to current time if not already set
-func CreatePolicy(policy data.Policy) (data.Policy, error) {
+func CreatePolicy(policy data.Policy) (data.Policy, *sdkErrors.SDKError) {
 	const fName = "CreatePolicy"
 
 	if policy.Name == "" {
@@ -165,7 +165,7 @@ func CreatePolicy(policy data.Policy) (data.Policy, error) {
 // Returns:
 //   - data.Policy: The retrieved policy if found
 //   - error: ErrPolicyNotFound if no policy exists with the given ID.
-func GetPolicy(id string) (data.Policy, error) {
+func GetPolicy(id string) (data.Policy, *sdkErrors.SDKError) {
 	ctx := context.Background()
 
 	// Load directly from the backend
@@ -193,7 +193,7 @@ func GetPolicy(id string) (data.Policy, error) {
 // Returns:
 //   - error: ErrPolicyNotFound if no policy exists with the given ID,
 //     nil if the deletion was successful
-func DeletePolicy(id string) error {
+func DeletePolicy(id string) *sdkErrors.SDKError {
 	ctx := context.Background()
 
 	// Check if the policy exists first (to maintain the same error behavior)
