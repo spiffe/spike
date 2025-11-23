@@ -39,9 +39,8 @@ import (
 //   - r: The HTTP request containing the peer SPIFFE ID
 //
 // Returns:
-//   - nil if all validations pass
-//   - sdkErrors.ErrUnauthorized if authentication or authorization fails
-//   - sdkErrors.ErrInvalidInput if path validation fails
+//   - *sdkErrors.SDKError: An error if authentication, authorization, or path
+//     validation fails. Returns nil if all validations pass.
 func guardGetSecretMetadataRequest(
 	request reqres.SecretMetadataRequest, w http.ResponseWriter, r *http.Request,
 ) *sdkErrors.SDKError {
@@ -55,9 +54,9 @@ func guardGetSecretMetadataRequest(
 	path := request.Path
 	err = validation.ValidatePath(path)
 	if err != nil {
+		net.Fail(reqres.SecretMetadataBadRequest, w, http.StatusBadRequest)
 		failErr := sdkErrors.ErrAPIBadRequest.Wrap(err)
 		failErr.Msg = "invalid secret path: " + path
-		net.Fail(reqres.SecretMetadataBadRequest, w, http.StatusBadRequest)
 		return failErr
 	}
 
@@ -66,9 +65,9 @@ func guardGetSecretMetadataRequest(
 		[]data.PolicyPermission{data.PermissionRead},
 	)
 	if !allowed {
-		failErr := sdkErrors.ErrUnauthorized
-		failErr.Msg = "unauthorized to read secret metadata for: " + path
 		net.Fail(reqres.SecretMetadataUnauthorized, w, http.StatusUnauthorized)
+		failErr := sdkErrors.ErrAccessUnauthorized
+		failErr.Msg = "unauthorized to read secret metadata for: " + path
 		return failErr
 	}
 

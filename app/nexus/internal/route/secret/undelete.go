@@ -60,7 +60,7 @@ func RouteUndeleteSecret(
 	request, err := net.ReadParseAndGuard[
 		reqres.SecretUndeleteRequest, reqres.SecretUndeleteResponse,
 	](
-		w, r, reqres.SecretUndeleteBadRequest, guardSecretUndeleteRequest, fName,
+		w, r, reqres.SecretUndeleteBadRequest, guardSecretUndeleteRequest,
 	)
 	if alreadyResponded := err != nil; alreadyResponded {
 		return err

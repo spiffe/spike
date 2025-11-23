@@ -39,14 +39,11 @@ import (
 //   - r: The HTTP request containing the peer SPIFFE ID
 //
 // Returns:
-//   - nil if all validations pass
-//   - apiErr.ErrUnauthorized if authentication fails or peer is not
-//     pilot-recover
+//   - *sdkErrors.SDKError: An error if authentication fails or the peer is
+//     not authorized (not pilot-recover). Returns nil if all validations pass.
 func guardRecoverRequest(
 	_ reqres.RecoverRequest, w http.ResponseWriter, r *http.Request,
-) error {
-	const fName = "guardRecoverRequest"
-
+) *sdkErrors.SDKError {
 	peerSPIFFEID, err := auth.ExtractPeerSPIFFEID[reqres.RestoreResponse](
 		r, w, reqres.RestoreUnauthorized,
 	)
@@ -54,11 +51,13 @@ func guardRecoverRequest(
 		return err
 	}
 
+	// We don't do policy checks as the recovery operation purely restricted to
+	// SPIKE Pilot.
 	if !spiffeid.IsPilotRecover(peerSPIFFEID.String()) {
-		return net.Fail(
-			reqres.RestoreResponse{Err: sdkErrors.ErrCodeUnauthorized}, w,
-			http.StatusUnauthorized, sdkErrors.ErrUnauthorized, fName,
+		net.Fail(
+			reqres.RestoreUnauthorized, w, http.StatusUnauthorized,
 		)
+		return sdkErrors.ErrAccessUnauthorized
 	}
 
 	return nil

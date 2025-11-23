@@ -31,21 +31,18 @@ import (
 //   - path: The secret path to load
 //
 // Returns:
-//   - *kv.Value: The complete secret with all versions and metadata, or nil if
-//     the secret does not exist
-//   - *sdkErrors.SDKError: An error if any database or decryption operation
-//     fails, or nil on success
+//   - *kv.Value: The complete secret with all versions and metadata
+//   - *sdkErrors.SDKError: An error if the secret is not found or any database
+//     or decryption operation fails. Returns nil on success.
 //
 // Possible errors:
+//   - ErrEntityNotFound: If the secret does not exist at the specified path
 //   - ErrEntityLoadFailed: If loading secret metadata fails
 //   - ErrEntityQueryFailed: If querying versions fails or rows.Scan fails
 //   - ErrCryptoDecryptionFailed: If decrypting a version fails
 //   - ErrDataUnmarshalFailure: If unmarshaling JSON data fails
 //
 // Special behavior:
-//   - Returns (nil, nil) when the secret does not exist (sql.ErrNoRows)
-//   - Returns (nil, error) for actual errors (database, decryption,
-//     unmarshaling)
 //   - Automatically handles deleted versions by setting DeletedTime when
 //     present
 //
@@ -73,7 +70,7 @@ func (s *DataStore) loadSecretInternal(
 		&secret.Metadata.MaxVersions)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, nil
+			return nil, sdkErrors.ErrEntityNotFound
 		}
 
 		return nil, sdkErrors.ErrEntityLoadFailed
@@ -132,6 +129,19 @@ func (s *DataStore) loadSecretInternal(
 
 	if err := rows.Err(); err != nil {
 		return nil, sdkErrors.ErrEntityQueryFailed.Wrap(err)
+	}
+
+	// Integrity check: If CurrentVersion is non-zero, it must exist in
+	// the Versions map. CurrentVersion==0 indicates a "shell secret"
+	// where all versions are deleted, which is valid.
+	if secret.Metadata.CurrentVersion != 0 {
+		if _, exists := secret.Versions[secret.Metadata.CurrentVersion]; !exists {
+			return nil, sdkErrors.ErrEntityQueryFailed.Wrap( // TODO: have a special dataintegritycheck error on the SDK for this case.
+				errors.New(
+					"data integrity violation: current version not found",
+				),
+			)
+		}
 	}
 
 	return &secret, nil

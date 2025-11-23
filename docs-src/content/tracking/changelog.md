@@ -12,6 +12,37 @@ sort_by = "weight"
 
 ## Recent
 
+* SDK: Added `HasValidVersions()` and `Empty()` helper methods to `kv.Value` for
+  checking if secrets have any non-deleted versions, useful for identifying
+  purgeable secrets.
+* SDK: Added `Destroy()` method to `kv.KV` for hard-delete operations that
+  permanently remove secret paths from storage and reclaim memory. Unlike
+  soft-delete (`Delete()`), this cannot be undone.
+* SDK: Enhanced documentation for version numbering system - version numbers
+  start at 1, and `CurrentVersion == 0` indicates all versions have been deleted.
+* SDK: Updated `Delete()` documentation to clarify soft-delete behavior and that
+  paths remain in storage even when all versions are deleted.
+* Nexus: Fixed critical bug in `UpsertSecret` where adding a new version when all
+  existing versions were deleted (CurrentVersion == 0) would create version 1,
+  potentially colliding with an existing deleted version 1. Now correctly finds
+  the highest existing version number and increments from there.
+* Nexus: Fixed bug in `UndeleteSecret` where undeleting a version higher than
+  the current `CurrentVersion` did not update `CurrentVersion` to reflect the
+  new highest active version, causing metadata inconsistency.
+* Nexus: Added `OldestVersion` tracking to `UndeleteSecret` for consistency
+  with `DeleteSecret`, ensuring metadata accurately reflects oldest non-deleted
+  version.
+* Nexus: Made `DeleteSecret` more defensive when finding new current version by
+  removing unnecessary condition, improving code clarity and robustness.
+* Nexus: Comprehensive documentation updates for all secret management functions
+  with accurate parameter names, return types, and behavioral details including
+  soft-delete semantics and metadata update logic.
+* Nexus: Enhanced backend interface documentation with proper parameter and
+  return type information, and documented `CurrentVersion == 0` behavior in
+  `LoadSecret` and `LoadAllSecrets` methods.
+* Planning: Added task for implementing `spike secret purge` command to remove
+  empty secrets (where all versions are deleted) from backend storage to prevent
+  unbounded storage growth.
 * SDK: Improved API consistency by standardizing policy function parameters from
   `name` to `id` across all operations, matching internal implementation.
 * SDK: Enhanced error handling - Get methods now return `ErrAPINotFound` instead

@@ -8,7 +8,7 @@ import (
 	"net/http"
 
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
-	"github.com/spiffe/spike-sdk-go/log"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 	"github.com/spiffe/spike/internal/journal"
@@ -17,23 +17,24 @@ import (
 
 // RouteListPaths handles requests to retrieve all available secret paths.
 //
-// This endpoint requires a valid admin JWT token for authentication.
-// The function returns a list of all paths where secrets are stored, regardless
-// of their version or deletion status.
+// This endpoint requires the peer to have list permission for the system
+// secret access path. The function returns a list of all paths where secrets
+// are stored, regardless of their version or deletion status.
 //
 // The function follows these steps:
-//  1. Validates the JWT token
+//  1. Validates peer SPIFFE ID and authorization (via guardListSecretRequest)
 //  2. Validates the request body format
 //  3. Retrieves all secret paths from the state
 //  4. Returns the list of paths
 //
 // Parameters:
-//   - w: http.ResponseWriter to write the HTTP response
-//   - r: *http.Request containing the incoming HTTP request
-//   - audit: *journal.AuditEntry for logging audit information
+//   - w: The HTTP response writer for sending the response
+//   - r: The HTTP request containing the peer SPIFFE ID
+//   - audit: The audit entry for logging audit information
 //
 // Returns:
-//   - error: if an error occurs during request processing.
+//   - *sdkErrors.SDKError: An error if validation or processing fails.
+//     Returns nil on success.
 //
 // Request body format:
 //
@@ -46,7 +47,7 @@ import (
 //	}
 //
 // Error responses:
-//   - 401 Unauthorized: Invalid or missing JWT token
+//   - 401 Unauthorized: Authentication or authorization failure
 //   - 400 Bad Request: Invalid request body format
 //
 // All operations are logged using structured logging. This endpoint only
@@ -54,20 +55,21 @@ import (
 // retrieve actual secret values.
 func RouteListPaths(
 	w http.ResponseWriter, r *http.Request, audit *journal.AuditEntry,
-) error {
+) *sdkErrors.SDKError {
 	const fName = "routeListPaths"
 
 	journal.AuditRequest(fName, r, audit, journal.AuditList)
 
 	_, err := net.ReadParseAndGuard[
 		reqres.SecretListRequest, reqres.SecretListResponse](
-		w, r, reqres.SecretListBadInput, guardListSecretRequest, fName,
+		w, r, reqres.SecretListBadRequest, guardListSecretRequest,
 	)
-	if alreadyResponded := err != nil; alreadyResponded {
+	if err != nil {
 		return err
 	}
 
-	keys := state.ListKeys()
-	net.Success(reqres.SecretListResponse{Keys: keys}.Success(), w, fName)
+	slr := reqres.SecretListSuccess
+	slr.Keys = state.ListKeys()
+	net.Success(slr, w)
 	return nil
 }

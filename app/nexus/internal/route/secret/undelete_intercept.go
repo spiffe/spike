@@ -9,6 +9,7 @@ import (
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 )
 
 // guardSecretUndeleteRequest validates a secret restoration request by
@@ -38,7 +39,7 @@ import (
 //   - apiErr.ErrInvalidInput if path validation fails
 func guardSecretUndeleteRequest(
 	request reqres.SecretUndeleteRequest, w http.ResponseWriter, r *http.Request,
-) error {
+) *sdkErrors.SDKError {
 	return guardSecretRequest(
 		request.Path,
 		[]data.PolicyPermission{data.PermissionWrite},

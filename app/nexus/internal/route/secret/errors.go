@@ -5,7 +5,6 @@
 package secret
 
 import (
-	stdErrors "errors"
 	"net/http"
 
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
@@ -18,60 +17,58 @@ import (
 // operations and sends appropriate HTTP responses.
 //
 // The function distinguishes between two types of errors:
-//   - kv.ErrItemNotFound: Returns HTTP 404 Not Found when the requested
-//     secret does not exist
-//   - Other errors: Returns HTTP 500 Internal Server Error for unexpected
-//     failures during secret retrieval
-//
-// All errors are wrapped with additional context before being returned:
-//   - Not found errors are wrapped with errors.ErrNotFound
-//   - Query failures are wrapped with errors.ErrQueryFailure
+//   - sdkErrors.ErrEntityNotFound: Returns HTTP 404 Not Found when the
+//     requested secret does not exist at the specified path or version
+//   - Other errors: Returns HTTP 500 Internal Server Error for backend or
+//     server-side failures during secret retrieval
 //
 // Parameters:
 //   - err: The error that occurred during secret retrieval
 //   - w: The HTTP response writer for sending error responses
 //
 // Returns:
-//   - error: The wrapped error that was sent to the client
-func handleGetSecretError(err error, w http.ResponseWriter) *sdkErrors.SDKError {
-	if stdErrors.Is(err, sdkErrors.ErrNotFound) {
-		failErr := stdErrors.Join(sdkErrors.ErrNotFound, err)
-		net.Fail(reqres.SecretReadNotFound, w, http.StatusNotFound)
-		return failErr
+//   - *sdkErrors.SDKError: The error that was sent to the client
+func handleGetSecretError(
+	err *sdkErrors.SDKError, w http.ResponseWriter,
+) *sdkErrors.SDKError {
+	if err == nil {
+		return nil
 	}
-
-	failErr := sdkErrors.ErrStoreQueryFailure.Wrap(err)
-	net.Fail(reqres.SecretReadInternal, w, http.StatusInternalServerError)
-	return failErr
+	if err.Is(sdkErrors.ErrEntityNotFound) {
+		net.Fail(reqres.SecretGetNotFound, w, http.StatusNotFound)
+		return err
+	}
+	// Backend or other server-side failure
+	net.Fail(reqres.SecretGetInternal, w, http.StatusInternalServerError)
+	return err
 }
 
 // handleGetSecretMetadataError processes errors that occur during secret
 // metadata retrieval operations and sends appropriate HTTP responses.
 //
 // The function distinguishes between two types of errors:
-//   - kv.ErrItemNotFound: Returns HTTP 404 Not Found when the requested
-//     secret metadata does not exist
-//   - Other errors: Returns HTTP 500 Internal Server Error for unexpected
-//     failures during metadata retrieval
-//
-// All errors are wrapped with additional context before being returned:
-//   - Not found errors are wrapped with errors.ErrNotFound
-//   - Query failures are wrapped with errors.ErrQueryFailure
+//   - sdkErrors.ErrEntityNotFound: Returns HTTP 404 Not Found when the
+//     requested secret metadata does not exist at the specified path or version
+//   - Other errors: Returns HTTP 500 Internal Server Error for backend or
+//     server-side failures during metadata retrieval
 //
 // Parameters:
 //   - err: The error that occurred during secret metadata retrieval
 //   - w: The HTTP response writer for sending error responses
 //
 // Returns:
-//   - error: The wrapped error that was sent to the client
-func handleGetSecretMetadataError(err error, w http.ResponseWriter) error {
-	if stdErrors.Is(err, sdkErrors.ErrNotFound) {
-		failErr := stdErrors.Join(sdkErrors.ErrNotFound, err)
-		net.Fail(reqres.SecretMetadataNotFound, w, http.StatusNotFound)
-		return failErr
+//   - *sdkErrors.SDKError: The error that was sent to the client
+func handleGetSecretMetadataError(
+	err *sdkErrors.SDKError, w http.ResponseWriter,
+) *sdkErrors.SDKError {
+	if err == nil {
+		return nil
 	}
-
-	failErr := sdkErrors.ErrStoreQueryFailure.Wrap(err)
+	if err.Is(sdkErrors.ErrEntityNotFound) {
+		net.Fail(reqres.SecretMetadataNotFound, w, http.StatusNotFound)
+		return err
+	}
+	// Backend or other server-side failure
 	net.Fail(reqres.SecretMetadataInternal, w, http.StatusInternalServerError)
-	return failErr
+	return err
 }

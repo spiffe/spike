@@ -12,8 +12,26 @@ import (
 	"github.com/spiffe/spike/app/nexus/internal/state/backend"
 )
 
-// ParseOptions parses and validates the provided backend options
-func ParseOptions(opts map[backend.DatabaseConfigKey]any) (*Options, *sdkErrors.SDKError) {
+// ParseOptions parses and validates database configuration options for
+// SQLite persistence. It extracts configuration values from the provided
+// options map, applies defaults for any missing or zero values, and validates
+// the resulting configuration.
+//
+// Parameters:
+//   - opts: A map of database configuration keys to values. If nil, the
+//     function returns default options without error. Supported keys include
+//     DataDir, DatabaseFile, JournalMode, BusyTimeoutMs, MaxOpenConns,
+//     MaxIdleConns, and ConnMaxLifetimeSeconds.
+//
+// Returns:
+//   - *Options: A fully populated Options struct with validated settings.
+//     Default values are applied for any missing or zero-valued fields.
+//   - *sdkErrors.SDKError: An error if validation fails. Currently, the only
+//     validation enforced is that MaxIdleConns must not exceed MaxOpenConns.
+//     Returns nil on success.
+func ParseOptions(opts map[backend.DatabaseConfigKey]any) (
+	*Options, *sdkErrors.SDKError,
+) {
 	if opts == nil {
 		return DefaultOptions(), nil
 	}
@@ -68,11 +86,13 @@ func ParseOptions(opts map[backend.DatabaseConfigKey]any) (*Options, *sdkErrors.
 
 	// Validate options
 	if sqliteOpts.MaxIdleConns > sqliteOpts.MaxOpenConns {
-		return nil,
-			fmt.Errorf(
-				"MaxIdleConns (%d) cannot be greater than MaxOpenConns (%d)",
-				sqliteOpts.MaxIdleConns, sqliteOpts.MaxOpenConns,
-			)
+		failErr := sdkErrors.ErrStoreInvalidConfiguration
+		failErr.Msg = fmt.Sprintf(
+			"MaxIdleConns (%d) cannot be greater than MaxOpenConns (%d)",
+			sqliteOpts.MaxIdleConns, sqliteOpts.MaxOpenConns,
+		)
+
+		return nil, failErr
 	}
 
 	return sqliteOpts, nil

@@ -5,6 +5,7 @@
 package secret
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
@@ -20,23 +21,25 @@ import (
 // RouteGetSecret handles requests to retrieve a secret at a specific path
 // and version.
 //
-// This endpoint requires a valid admin JWT token for authentication. The
-// function retrieves a secret based on the provided path and optional version
-// number. If no version is specified, the latest version is returned.
+// This endpoint requires the peer to have read permission for the specified
+// secret path. The function retrieves a secret based on the provided path and
+// optional version number. If no version is specified (version 0), the current
+// version is returned.
 //
 // The function follows these steps:
-//  1. Validates the JWT token
+//  1. Validates peer SPIFFE ID, authorization, and path format
 //  2. Validates and unmarshals the request body
-//  3. Attempts to retrieve the secret
+//  3. Attempts to retrieve the secret from state
 //  4. Returns the secret data or an appropriate error response
 //
 // Parameters:
-//   - w: http.ResponseWriter to write the HTTP response
-//   - r: *http.Request containing the incoming HTTP request
-//   - audit: *journal.AuditEntry for logging audit information
+//   - w: The HTTP response writer for sending the response
+//   - r: The HTTP request containing the peer SPIFFE ID
+//   - audit: The audit entry for logging audit information
 //
 // Returns:
-//   - error: if an error occurs during request processing.
+//   - *sdkErrors.SDKError: An error if validation or retrieval fails. Returns
+//     nil on success.
 //
 // Request body format:
 //
@@ -54,21 +57,21 @@ import (
 //	}
 //
 // Error responses:
-//   - 401 Unauthorized: Invalid or missing JWT token
-//   - 400 Bad Request: Invalid request body
-//   - 404 Not Found: Secret doesn't exist at specified path/version
+//   - 401 Unauthorized: Authentication or authorization failure
+//   - 400 Bad Request: Invalid request body or path format
+//   - 404 Not Found: Secret does not exist at specified path/version
 //
 // All operations are logged using structured logging.
 func RouteGetSecret(
 	w http.ResponseWriter, r *http.Request, audit *journal.AuditEntry,
-) error {
+) *sdkErrors.SDKError {
 	const fName = "routeGetSecret"
 
 	journal.AuditRequest(fName, r, audit, journal.AuditRead)
 
 	request, err := net.ReadParseAndGuard[
-		reqres.SecretReadRequest, reqres.SecretReadResponse](
-		w, r, reqres.SecretReadBadInput, guardGetSecretRequest, fName,
+		reqres.SecretGetRequest, reqres.SecretGetResponse](
+		w, r, reqres.SecretGetBadRequest, guardGetSecretRequest,
 	)
 	if alreadyResponded := err != nil; alreadyResponded {
 		return err
@@ -80,25 +83,21 @@ func RouteGetSecret(
 	secret, err := state.GetSecret(path, version)
 	secretFound := err == nil
 
-	if secretFound {
-		log.Log().Info(fName, "message", sdkErrors.ErrCodeNotFound, "path", path)
-	} else {
-		log.Log().Info(
-			fName,
-			"message", sdkErrors.ErrCodeNotFound,
-			"path", path,
-			"err", err.Error(),
+	// Extra logging to help with debugging and detecting enumeration attacks.
+	if !secretFound {
+		notFoundErr := sdkErrors.ErrAPINotFound.Wrap(err)
+		notFoundErr.Msg = fmt.Sprintf(
+			"secret not found at path: %s version: %d", path, version,
 		)
+		log.DebugErr(fName, *notFoundErr)
 	}
 
 	if !secretFound {
 		return handleGetSecretError(err, w)
 	}
 
-	net.Success(
-		reqres.SecretReadResponse{
-			Secret: data.Secret{Data: secret},
-		}.Success(), w, fName,
-	)
+	srr := reqres.SecretGetSuccess
+	srr.Secret = data.Secret{Data: secret}
+	net.Success(srr, w)
 	return nil
 }

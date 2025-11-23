@@ -41,27 +41,31 @@ func New(cfg backend.Config) (backend.Backend, *sdkErrors.SDKError) {
 		return nil, failErr
 	}
 
-	key, err := hex.DecodeString(cfg.EncryptionKey)
-	if err != nil {
-		failErr := sdkErrors.ErrStoreInvalidConfiguration.Wrap(err)
+	key, decodeErr := hex.DecodeString(cfg.EncryptionKey)
+	if decodeErr != nil {
+		failErr := sdkErrors.ErrStoreInvalidConfiguration.Wrap(decodeErr)
+		failErr.Msg = "invalid encryption key"
 		return nil, failErr
 	}
 
 	// Validate key length
 	if len(key) != crypto.AES256KeySize {
-		failErr := sdkErrors.ErrCryptoInvalidEncryptionKeyLength.Wrap(err)
+		failErr := sdkErrors.ErrCryptoInvalidEncryptionKeyLength
+		failErr.Msg = "encryption key must be exactly 32 bytes"
 		return nil, failErr
 	}
 
-	block, err := aes.NewCipher(key)
-	if err != nil {
-		failErr := sdkErrors.ErrCryptoFailedToCreateCipher.Wrap(err)
+	block, aesErr := aes.NewCipher(key)
+	if aesErr != nil {
+		failErr := sdkErrors.ErrCryptoFailedToCreateCipher.Wrap(aesErr)
+		failErr.Msg = "failed to create AES cipher"
 		return nil, failErr
 	}
 
-	gcm, err := cipher.NewGCM(block)
-	if err != nil {
-		failErr := sdkErrors.ErrCryptoFailedToCreateGCM.Wrap(err)
+	gcm, gcmErr := cipher.NewGCM(block)
+	if gcmErr != nil {
+		failErr := sdkErrors.ErrCryptoFailedToCreateGCM.Wrap(gcmErr)
+		failErr.Msg = "failed to create GCM mode"
 		return nil, failErr
 	}
 

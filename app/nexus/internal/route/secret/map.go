@@ -10,7 +10,7 @@ import (
 	"github.com/spiffe/spike-sdk-go/kv"
 )
 
-// toSecretMetadataResponse converts a key-value store secret value into
+// toSecretMetadataSuccessResponse converts a key-value store secret value into
 // a secret metadata response.
 //
 // The function transforms the internal kv.Value representation into the API
@@ -30,7 +30,7 @@ import (
 // Returns:
 //   - reqres.SecretMetadataResponse: The formatted metadata response containing
 //     version information and metadata suitable for API responses
-func toSecretMetadataResponse(
+func toSecretMetadataSuccessResponse(
 	secret *kv.Value,
 ) reqres.SecretMetadataResponse {
 	versions := make(map[int]data.SecretVersionInfo)
@@ -53,5 +53,5 @@ func toSecretMetadataResponse(
 				MaxVersions:    secret.Metadata.MaxVersions,
 			},
 		},
-	}
+	}.Success()
 }

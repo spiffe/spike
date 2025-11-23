@@ -5,7 +5,6 @@
 package secret
 
 import (
-	stdErrs "errors"
 	"net/http"
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
@@ -18,23 +17,28 @@ import (
 )
 
 // guardSecretRequest is a generic helper that validates secret requests by
-// performing authentication, authorization, and path validation.
+// performing authentication, authorization, and path validation. It extracts
+// the common validation pattern used across secret operations (get, put,
+// delete, undelete, etc.).
 //
-// This function extracts the common validation pattern used across secret
-// operations (get, put, delete, undelete, etc.).
+// On failure, this function automatically writes the appropriate HTTP error
+// response before returning the error.
+//
+// Type Parameters:
+//   - TUnauth: The response type for unauthorized access errors
+//   - TBadInput: The response type for invalid path errors
 //
 // Parameters:
-//   - path: The secret path to validate and authorize
+//   - path: The namespace path to validate and authorize
 //   - permissions: The required permissions for the operation
 //   - w: The HTTP response writer for error responses
 //   - r: The HTTP request containing the peer SPIFFE ID
 //   - unauthorizedResp: The error response to send if unauthorized
 //   - badInputResp: The error response to send if the path is invalid
-//   - fName: The function name for logging
 //
 // Returns:
-//   - nil if all validations pass
-//   - error if authentication, authorization, or validation fails
+//   - *sdkErrors.SDKError: An error if authentication, authorization, or
+//     validation fails. Returns nil if all validations pass.
 func guardSecretRequest[TUnauth, TBadInput any](
 	path string,
 	permissions []data.PolicyPermission,
@@ -42,8 +46,7 @@ func guardSecretRequest[TUnauth, TBadInput any](
 	r *http.Request,
 	unauthorizedResp TUnauth,
 	badInputResp TBadInput,
-	fName string,
-) error {
+) *sdkErrors.SDKError {
 	// Extract and validate peer SPIFFE ID
 	peerSPIFFEID, err := auth.ExtractPeerSPIFFEID[TUnauth](
 		r, w, unauthorizedResp,
@@ -52,23 +55,19 @@ func guardSecretRequest[TUnauth, TBadInput any](
 		return err
 	}
 
+	// Check access permissions
+	allowed := state.CheckAccess(peerSPIFFEID.String(), path, permissions)
+	if !allowed {
+		net.Fail(unauthorizedResp, w, http.StatusUnauthorized)
+		return sdkErrors.ErrAccessUnauthorized
+	}
+
 	// Validate path format
 	err = validation.ValidatePath(path)
 	if err != nil {
-		failErr := stdErrs.Join(sdkErrors.ErrInvalidInput, err)
 		net.Fail(badInputResp, w, http.StatusBadRequest)
+		failErr := sdkErrors.ErrAPIBadRequest.Wrap(err)
 		return failErr
-	}
-
-	// Check access permissions
-	allowed := state.CheckAccess(
-		peerSPIFFEID.String(),
-		path,
-		permissions,
-	)
-	if !allowed {
-		net.Fail(unauthorizedResp, w, http.StatusUnauthorized)
-		return sdkErrors.ErrUnauthorized
 	}
 
 	return nil

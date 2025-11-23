@@ -22,49 +22,161 @@ import (
 	"github.com/spiffe/spike-sdk-go/kv"
 )
 
+// DatabaseConfigKey represents a configuration key for database-specific
+// backend options. These keys are used in the Config.Options map to provide
+// backend-specific configuration values.
 type DatabaseConfigKey string
 
+// Database configuration keys for backend initialization.
 const (
-	KeyDataDir                DatabaseConfigKey = "data_dir"
-	KeyDatabaseFile           DatabaseConfigKey = "database_file"
-	KeyJournalMode            DatabaseConfigKey = "journal_mode"
-	KeyBusyTimeoutMs          DatabaseConfigKey = "busy_timeout_ms"
-	KeyMaxOpenConns           DatabaseConfigKey = "max_open_conns"
-	KeyMaxIdleConns           DatabaseConfigKey = "max_idle_conns"
+	// KeyDataDir specifies the directory path where database files are stored.
+	KeyDataDir DatabaseConfigKey = "data_dir"
+
+	// KeyDatabaseFile specifies the name of the database file.
+	KeyDatabaseFile DatabaseConfigKey = "database_file"
+
+	// KeyJournalMode specifies the SQLite journal mode (e.g., WAL, DELETE).
+	KeyJournalMode DatabaseConfigKey = "journal_mode"
+
+	// KeyBusyTimeoutMs specifies the timeout in milliseconds for busy
+	// database connections.
+	KeyBusyTimeoutMs DatabaseConfigKey = "busy_timeout_ms"
+
+	// KeyMaxOpenConns specifies the maximum number of open database
+	// connections.
+	KeyMaxOpenConns DatabaseConfigKey = "max_open_conns"
+
+	// KeyMaxIdleConns specifies the maximum number of idle database
+	// connections in the pool.
+	KeyMaxIdleConns DatabaseConfigKey = "max_idle_conns"
+
+	// KeyConnMaxLifetimeSeconds specifies the maximum lifetime of
+	// a connection in seconds.
 	KeyConnMaxLifetimeSeconds DatabaseConfigKey = "conn_max_lifetime_seconds"
 )
 
-// Backend defines the interface for secret storage and management backends
+// Backend defines the interface for secret and policy storage backends.
+// Implementations must provide thread-safe operations for storing, retrieving,
+// and managing secrets and policies, along with lifecycle management methods
+// for initialization and cleanup.
 type Backend interface {
-	// Initialize initializes the backend
+	// Initialize prepares the backend for use by setting up the necessary
+	// resources such as database connections, file system directories, or
+	// network connections. It must be called before any other operations.
+	//
+	// Parameters:
+	//   - ctx: Context for managing request lifetime and cancellation.
+	//
+	// Returns:
+	//   - *sdkErrors.SDKError: An error if initialization fails. Returns nil
+	//     on success.
 	Initialize(ctx context.Context) *sdkErrors.SDKError
-	// Close closes the backend
+
+	// Close releases all resources held by the backend, including database
+	// connections, file handles, or network connections. It should be called
+	// when the backend is no longer needed.
+	//
+	// Parameters:
+	//   - ctx: Context for managing request lifetime and cancellation.
+	//
+	// Returns:
+	//   - *sdkErrors.SDKError: An error if cleanup fails. Returns nil on
+	//     success.
 	Close(ctx context.Context) *sdkErrors.SDKError
 
-	// StoreSecret stores a secret at the specified path
+	// StoreSecret persists a secret at the specified path. The secret is
+	// encrypted before storage. If a secret already exists at the path, it
+	// is overwritten.
+	//
+	// Parameters:
+	//   - ctx: Context for managing request lifetime and cancellation.
+	//   - path: The namespace path where the secret will be stored.
+	//   - secret: The secret value to store.
+	//
+	// Returns:
+	//   - *sdkErrors.SDKError: An error if the operation fails. Returns nil
+	//     on success.
 	StoreSecret(ctx context.Context, path string, secret kv.Value) *sdkErrors.SDKError
-	// LoadSecret loads a secret from the specified path
+
+	// LoadSecret retrieves a secret from the specified path. The secret is
+	// automatically decrypted before being returned.
+	//
+	// The returned secret may have Metadata.CurrentVersion == 0, which
+	// indicates that all versions have been deleted (no valid version
+	// exists).
+	//
+	// Parameters:
+	//   - ctx: Context for managing request lifetime and cancellation.
+	//   - path: The namespace path of the secret to retrieve.
+	//
+	// Returns:
+	//   - *kv.Value: The decrypted secret value, or nil if not found.
+	//   - *sdkErrors.SDKError: An error if the operation fails. Returns nil
+	//     on success.
 	LoadSecret(ctx context.Context, path string) (*kv.Value, *sdkErrors.SDKError)
-	// LoadAllSecrets retrieves all secrets stored in the backend.
-	// Returns a map of secret paths to their values or an error.
+
+	// LoadAllSecrets retrieves all secrets stored in the backend. Secrets
+	// are automatically decrypted before being returned.
+	//
+	// Returned secrets may have Metadata.CurrentVersion == 0, which indicates
+	// that all versions have been deleted (no valid version exists).
+	//
+	// Parameters:
+	//   - ctx: Context for managing request lifetime and cancellation.
+	//
+	// Returns:
+	//   - map[string]*kv.Value: A map of secret paths to their decrypted
+	//     values.
+	//   - *sdkErrors.SDKError: An error if the operation fails. Returns nil
+	//     on success.
 	LoadAllSecrets(ctx context.Context) (map[string]*kv.Value, *sdkErrors.SDKError)
 
-	// StorePolicy stores a policy object in the backend storage.
+	// StorePolicy persists a policy object in the backend storage. If a
+	// policy with the same ID already exists, it is overwritten.
+	//
+	// Parameters:
+	//   - ctx: Context for managing request lifetime and cancellation.
+	//   - policy: The policy object to store.
+	//
+	// Returns:
+	//   - *sdkErrors.SDKError: An error if the operation fails. Returns nil
+	//     on success.
 	StorePolicy(ctx context.Context, policy data.Policy) *sdkErrors.SDKError
 
 	// LoadPolicy retrieves a policy by its ID from the backend storage.
-	// It returns the policy object and an error, if any.
+	//
+	// Parameters:
+	//   - ctx: Context for managing request lifetime and cancellation.
+	//   - id: The unique identifier of the policy to retrieve.
+	//
+	// Returns:
+	//   - *data.Policy: The policy object, or nil if not found.
+	//   - *sdkErrors.SDKError: An error if the operation fails. Returns nil
+	//     on success.
 	LoadPolicy(ctx context.Context, id string) (*data.Policy, *sdkErrors.SDKError)
 
 	// LoadAllPolicies retrieves all policies stored in the backend.
-	// Returns a map of policy IDs to their policy objects or an error.
+	//
+	// Parameters:
+	//   - ctx: Context for managing request lifetime and cancellation.
+	//
+	// Returns:
+	//   - map[string]*data.Policy: A map of policy IDs to their policy
+	//     objects.
+	//   - *sdkErrors.SDKError: An error if the operation fails. Returns nil
+	//     on success.
 	LoadAllPolicies(ctx context.Context) (map[string]*data.Policy, *sdkErrors.SDKError)
 
 	// DeletePolicy removes a policy object identified by the given ID from
-	// storage.
-	// - `ctx` is the context for managing cancellations and timeouts.
-	// - `id` is the identifier of the policy to delete.
-	// Returns an error if the operation fails.
+	// the backend storage.
+	//
+	// Parameters:
+	//   - ctx: Context for managing request lifetime and cancellation.
+	//   - id: The unique identifier of the policy to delete.
+	//
+	// Returns:
+	//   - *sdkErrors.SDKError: An error if the operation fails. Returns nil
+	//     on success.
 	DeletePolicy(ctx context.Context, id string) *sdkErrors.SDKError
 
 	// GetCipher retrieves the AEAD cipher used for encryption and decryption.
@@ -83,15 +195,33 @@ type Backend interface {
 	GetCipher() cipher.AEAD
 }
 
-// Config holds configuration for backend initialization
+// Config holds configuration parameters for backend initialization. It
+// provides both common settings applicable to all backend types and
+// backend-specific options.
 type Config struct {
-	// Common configuration fields
+	// EncryptionKey is the key used for encrypting and decrypting secrets.
+	// Must be 32 bytes (256 bits) for AES-256 encryption.
 	EncryptionKey string
-	Location      string // Could be a file path, S3 bucket, etc.
 
-	// Backend-specific configuration
+	// Location specifies the storage location for the backend. The
+	// interpretation depends on the backend type (e.g., file path for
+	// SQLite, S3 bucket for cloud storage).
+	Location string
+
+	// Options contains backend-specific configuration parameters. The keys
+	// and values depend on the backend implementation. For database
+	// backends, use DatabaseConfigKey constants as keys.
 	Options map[DatabaseConfigKey]any
 }
 
-// Factory creates a new backend instance
+// Factory is a function type that creates and returns a new backend instance
+// configured with the provided settings.
+//
+// Parameters:
+//   - cfg: Configuration parameters for the backend.
+//
+// Returns:
+//   - Backend: The initialized backend instance.
+//   - *sdkErrors.SDKError: An error if backend creation fails. Returns nil
+//     on success.
 type Factory func(cfg Config) (Backend, *sdkErrors.SDKError)

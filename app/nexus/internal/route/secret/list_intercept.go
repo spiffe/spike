@@ -38,17 +38,15 @@ import (
 //   - r: The HTTP request containing the peer SPIFFE ID
 //
 // Returns:
-//   - nil if all validations pass
-//   - apiErr.ErrUnauthorized if authentication or authorization fails
+//   - *sdkErrors.SDKError: An error if authentication or authorization fails.
+//     Returns nil if all validations pass.
 func guardListSecretRequest(
 	_ reqres.SecretListRequest, w http.ResponseWriter, r *http.Request,
-) error {
-	const fName = "guardListSecretRequest"
-
+) *sdkErrors.SDKError {
 	peerSPIFFEID, err := auth.ExtractPeerSPIFFEID[reqres.SecretListResponse](
 		r, w, reqres.SecretListUnauthorized,
 	)
-	if alreadyResponded := err != nil; alreadyResponded {
+	if err != nil {
 		return err
 	}
 
@@ -58,7 +56,7 @@ func guardListSecretRequest(
 	)
 	if !allowed {
 		net.Fail(reqres.SecretListUnauthorized, w, http.StatusUnauthorized)
-		return sdkErrors.ErrUnauthorized
+		return sdkErrors.ErrAccessUnauthorized
 	}
 
 	return nil

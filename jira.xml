@@ -1017,6 +1017,30 @@ w
       // return key
       //}
     </issue>
+    <issue>
+      Implement `spike secret purge` command to remove empty secrets from
+      storage.
+
+      After all versions of a secret are deleted, the secret metadata
+      remains in the backend storage indefinitely. This causes unbounded
+      storage growth.
+
+      The purge command should:
+      - Scan all secrets in the backend
+      - Identify secrets where CurrentVersion == 0 (all versions deleted)
+      - Use the backend's Destroy() method to permanently remove them
+      - Report how many secrets were purged
+
+      Usage:
+        spike secret purge              # Interactive confirmation
+        spike secret purge --force      # Skip confirmation
+        spike secret purge --dry-run    # Show what would be purged
+
+      Implementation notes:
+      - spike-sdk-go now has Value.IsEmpty() and KV.Destroy() methods
+      - SPIKE Nexus backend needs corresponding Destroy() implementation
+      - Consider adding --older-than flag for time-based purging
+    </issue>
   </task-group>
   <task-group for="SOC2-compliance">
     <issue>

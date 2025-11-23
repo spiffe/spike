@@ -9,6 +9,7 @@ import (
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 )
 
 // guardGetSecretRequest validates a secret retrieval request by performing
@@ -32,18 +33,15 @@ import (
 //   - r: The HTTP request containing the peer SPIFFE ID
 //
 // Returns:
-//   - nil if all validations pass
-//   - apiErr.ErrUnauthorized if authentication or authorization fails
-//   - apiErr.ErrInvalidInput if path validation fails
+//   - *sdkErrors.SDKError: An error if authentication, authorization, or path
+//     validation fails. Returns nil if all validations pass.
 func guardGetSecretRequest(
-	request reqres.SecretReadRequest, w http.ResponseWriter, r *http.Request,
-) error {
-	const fName = "guardGetSecretRequest"
+	request reqres.SecretGetRequest, w http.ResponseWriter, r *http.Request,
+) *sdkErrors.SDKError {
 	return guardSecretRequest(
 		request.Path,
 		[]data.PolicyPermission{data.PermissionRead},
 		w, r,
-		reqres.SecretReadUnauthorized, reqres.SecretReadBadInput,
-		fName,
+		reqres.SecretGetUnauthorized, reqres.SecretGetBadRequest,
 	)
 }

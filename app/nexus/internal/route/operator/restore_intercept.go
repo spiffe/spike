@@ -45,16 +45,12 @@ const maxShardID = 1000
 //   - r: The HTTP request containing the peer SPIFFE ID
 //
 // Returns:
-//   - nil if all validations pass
-//   - apiErr.ErrUnauthorized if authentication fails or peer is not
-//     pilot-restore
-//   - apiErr.ErrInvalidInput if shard ID is out of range or shard data is
-//     invalid
+//   - *sdkErrors.SDKError: An error if authentication fails, the peer is not
+//     authorized (not pilot-restore), the shard ID is out of range, or the
+//     shard data is invalid. Returns nil if all validations pass.
 func guardRestoreRequest(
 	request reqres.RestoreRequest, w http.ResponseWriter, r *http.Request,
-) error {
-	const fName = "guardRestoreRequest"
-
+) *sdkErrors.SDKError {
 	peerSPIFFEID, err := auth.ExtractPeerSPIFFEID[reqres.ShardGetResponse](
 		r, w, reqres.ShardGetUnauthorized,
 	)
@@ -62,18 +58,16 @@ func guardRestoreRequest(
 		return err
 	}
 
+	// We don't do policy checks as the restore operation purely restricted to
+	// SPIKE Pilot.
 	if !spiffeid.IsPilotRestore(peerSPIFFEID.String()) {
-		return net.Fail(
-			reqres.RestoreUnauthorized, w,
-			http.StatusUnauthorized, sdkErrors.ErrUnauthorized, fName,
-		)
+		net.Fail(reqres.RestoreUnauthorized, w, http.StatusUnauthorized)
+		return sdkErrors.ErrAccessUnauthorized
 	}
 
 	if request.ID < 1 || request.ID > maxShardID {
-		return net.Fail(
-			reqres.RestoreBadInput, w,
-			http.StatusBadRequest, sdkErrors.ErrInvalidInput, fName,
-		)
+		net.Fail(reqres.RestoreBadRequest, w, http.StatusBadRequest)
+		return sdkErrors.ErrAPIBadRequest
 	}
 
 	allZero := true
@@ -84,10 +78,8 @@ func guardRestoreRequest(
 		}
 	}
 	if allZero {
-		return net.Fail(
-			reqres.RestoreBadInput, w,
-			http.StatusBadRequest, sdkErrors.ErrInvalidInput, fName,
-		)
+		net.Fail(reqres.RestoreBadRequest, w, http.StatusBadRequest)
+		return sdkErrors.ErrAPIBadRequest
 	}
 
 	return nil
