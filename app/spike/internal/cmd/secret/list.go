@@ -23,7 +23,10 @@ const notFoundMessage = "No secrets found."
 // available secret paths from the system.
 //
 // Parameters:
-//   - source: X.509 source for workload API authentication
+//   - source: SPIFFE X.509 SVID source for authentication. Can be nil if the
+//     Workload API connection is unavailable, in which case the command will
+//     display an error message and return.
+//   - SPIFFEID: The SPIFFE ID to authenticate with
 //
 // Returns:
 //   - *cobra.Command: Configured list command
@@ -50,6 +53,13 @@ func newSecretListCommand(
 		Run: func(cmd *cobra.Command, args []string) {
 			trust.AuthenticateForPilot(SPIFFEID)
 
+			if source == nil {
+				cmd.PrintErrln("Error: SPIFFE X509 source is unavailable")
+				cmd.PrintErrln("The workload API may have lost connection.")
+				cmd.PrintErrln("Please check your SPIFFE agent and try again.")
+				return
+			}
+
 			api := spike.NewWithSource(source)
 
 			keys, err := api.ListSecretKeys()
@@ -59,21 +69,21 @@ func newSecretListCommand(
 					return
 				}
 
-				fmt.Println("Error listing secret keys:", err)
+				cmd.PrintErrln("Error listing secret keys:", err)
 				return
 			}
 			if keys == nil {
-				fmt.Println(notFoundMessage)
+				cmd.Println(notFoundMessage)
 				return
 			}
 
 			if len(*keys) == 0 {
-				fmt.Println(notFoundMessage)
+				cmd.Println(notFoundMessage)
 				return
 			}
 
 			for _, key := range *keys {
-				fmt.Printf("- %s\n", key)
+				cmd.Printf("- %s\n", key)
 			}
 		},
 	}

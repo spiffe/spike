@@ -39,12 +39,16 @@ import (
 // defaults to 0 (unlimited; no timeout).
 //
 // Parameters:
-//   - source *workloadapi.X509Source: An X509Source used for authenticating
-//     with SPIKE Keeper nodes
+//   - source: An X509Source used for SPIFFE-based mTLS authentication with
+//     SPIKE Keeper nodes. Can be nil. If source is nil during a retry
+//     iteration, the function will log a warning and retry. This graceful
+//     handling allows recovery from transient workload API failures where
+//     the source may be temporarily unavailable but can be restored in
+//     subsequent retry attempts.
 func InitializeBackingStoreFromKeepers(source *workloadapi.X509Source) {
 	const fName = "InitializeBackingStoreFromKeepers"
 
-	log.Log().Info(
+	log.Info(
 		fName,
 		"message", "recovering backing store using keeper shards",
 	)
@@ -65,25 +69,29 @@ func InitializeBackingStoreFromKeepers(source *workloadapi.X509Source) {
 	defer cancel()
 
 	_, err := retry.Forever(ctx, func() (bool, *sdkErrors.SDKError) {
-		log.Log().Info(fName, "message", "retry:"+time.Now().String())
+		log.Info(fName, "message", "retry:"+time.Now().String())
+
+		// Early check: avoid unnecessary function call if source is nil
+		if source == nil {
+			log.Warn(fName, "message", "X509 source is nil, will retry")
+			return false, sdkErrors.ErrRecoveryRetryFailed
+		}
 
 		initSuccessful := iterateKeepersAndInitializeState(
 			source, successfulKeeperShards,
 		)
 		if initSuccessful {
-			log.Log().Info(fName, "message", "initialization successful")
+			log.Info(fName, "message", "initialization successful")
 			return true, nil
 		}
 
-		log.Log().Warn(
+		log.Warn(
 			fName,
 			"message", "initialization unsuccessful: will retry",
 			"keepers_so_far", len(successfulKeeperShards),
 		)
 		return false, sdkErrors.ErrRecoveryRetryFailed
 	})
-
-	// TODO: make sure that we use the new log convenience fns (log.fn()) instead of log.Log().fn().
 
 	// This should never happen since the above loop retries forever:
 	if err != nil {
@@ -117,7 +125,7 @@ func InitializeBackingStoreFromKeepers(source *workloadapi.X509Source) {
 func RestoreBackingStoreFromPilotShards(shards []ShamirShard) {
 	const fName = "RestoreBackingStoreFromPilotShards"
 
-	log.Log().Info(
+	log.Info(
 		fName,
 		"message", "restoring backing store using pilot shards",
 	)
@@ -138,7 +146,7 @@ func RestoreBackingStoreFromPilotShards(shards []ShamirShard) {
 		}
 	}
 
-	log.Log().Info(
+	log.Info(
 		fName,
 		"message", "recovering backing store using pilot shards",
 		"threshold", env.ShamirThresholdVal(),
@@ -147,7 +155,7 @@ func RestoreBackingStoreFromPilotShards(shards []ShamirShard) {
 
 	// Ensure we have at least the threshold number of shards
 	if len(shards) < env.ShamirThresholdVal() {
-		log.Log().Error(
+		log.Error(
 			fName,
 			"message", "insufficient shards for recovery",
 			"provided", len(shards),
@@ -156,7 +164,7 @@ func RestoreBackingStoreFromPilotShards(shards []ShamirShard) {
 		return
 	}
 
-	log.Log().Info(
+	log.Info(
 		fName,
 		"message", "recovering backing store using pilot shards",
 	)
@@ -173,14 +181,14 @@ func RestoreBackingStoreFromPilotShards(shards []ShamirShard) {
 		mem.ClearRawBytes(rk)
 	}()
 
-	log.Log().Info(fName, "message", "initializing state and root key")
+	log.Info(fName, "message", "initializing state and root key")
 	state.Initialize(rk)
 
 	source, _, err := spiffe.Source(
 		context.Background(), spiffe.EndpointSocket(),
 	)
 	if err != nil {
-		log.Log().Info(
+		log.Error(
 			fName,
 			"message", "failed to create source",
 			"err", err.Error(),
@@ -205,22 +213,31 @@ func RestoreBackingStoreFromPilotShards(shards []ShamirShard) {
 // warning and continues with the next keeper.
 //
 // Parameters:
-//   - source *workloadapi.X509Source: An X509Source used for creating mTLS
-//     connections to keepers
+//   - source: An X509Source used for creating SPIFFE-based mTLS connections to
+//     keepers. Can be nil. If source is nil during any iteration, the function
+//     performs an early check and skips shard distribution for that iteration,
+//     logging a warning and waiting for the next scheduled interval. This
+//     graceful handling allows recovery from transient workload API failures.
 func SendShardsPeriodically(source *workloadapi.X509Source) {
 	const fName = "SendShardsPeriodically"
 
-	log.Log().Info(fName, "message", "will send shards to keepers")
+	log.Info(fName, "message", "will send shards to keepers")
 
 	ticker := time.NewTicker(env.RecoveryKeeperUpdateIntervalVal())
 	defer ticker.Stop()
 
 	for range ticker.C {
-		log.Log().Info(fName, "message", "sending shards to keepers")
+		log.Info(fName, "message", "sending shards to keepers")
+
+		// Early check: skip if source is nil
+		if source == nil {
+			log.Warn(fName, "message", "X509 source is nil: skipping shard send")
+			continue
+		}
 
 		// if no root key, then skip.
 		if state.RootKeyZero() {
-			log.Log().Warn(fName, "message", "no root key: skipping shard send")
+			log.Warn(fName, "message", "no root key: skipping shard send")
 			continue
 		}
 
@@ -273,10 +290,10 @@ func SendShardsPeriodically(source *workloadapi.X509Source) {
 //	}
 func NewPilotRecoveryShards() map[int]*[crypto.AES256KeySize]byte {
 	const fName = "NewPilotRecoveryShards"
-	log.Log().Info(fName, "message", "generating pilot recovery shards")
+	log.Info(fName, "message", "generating pilot recovery shards")
 
 	if state.RootKeyZero() {
-		log.Log().Warn(fName, "message", "no root key: skipping generation")
+		log.Warn(fName, "message", "no root key: skipping generation")
 		return nil
 	}
 
@@ -294,7 +311,7 @@ func NewPilotRecoveryShards() map[int]*[crypto.AES256KeySize]byte {
 	var result = make(map[int]*[crypto.AES256KeySize]byte)
 
 	for _, shard := range rootShards {
-		log.Log().Info(fName, "message", "generating shard", "shard_id", shard.ID)
+		log.Info(fName, "message", "generating shard", "shard_id", shard.ID)
 
 		contribution, err := shard.Value.MarshalBinary()
 		if err != nil {
@@ -332,12 +349,12 @@ func NewPilotRecoveryShards() map[int]*[crypto.AES256KeySize]byte {
 		var rs [crypto.AES256KeySize]byte
 		copy(rs[:], contribution)
 
-		log.Log().Info(fName, "message", "generated shards", "len", len(rs))
+		log.Info(fName, "message", "generated shards", "len", len(rs))
 
 		result[int(ii)] = &rs
 	}
 
-	log.Log().Info(fName,
+	log.Info(fName,
 		"message", "successfully generated pilot recovery shards")
 	return result
 }

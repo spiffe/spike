@@ -12,6 +12,44 @@ sort_by = "weight"
 
 ## Recent
 
+* Pilot: Comprehensive refactoring of CLI output handling across all commands
+  (14 files) to use Cobra's `cmd.Print*()` methods instead of `fmt.Print*()`.
+  Error messages now properly route to stderr via `cmd.PrintErrln()`/
+  `cmd.PrintErrf()`, while success and normal output routes to stdout via
+  `cmd.Println()`/`cmd.Printf()`. This improves testability, respects Cobra's
+  output configuration, and provides proper stderr/stdout separation. Updated
+  helper functions `printSecretResponse()` and `handleAPIError()` to accept
+  cmd parameter for consistent output handling.
+* Nexus: Fixed critical bug in secret route handlers where error paths were not
+  sending HTTP responses to clients. Added missing `net.Fail()` calls in
+  `put_intercept.go` (3 locations) and `undelete.go` to ensure proper error
+  responses.
+* Nexus: Fixed resource leak in `internal/net/post.go` where response body
+  close was deferred after body read instead of immediately after response
+  obtained, causing leaks when read operations failed.
+* Nexus: Improved resilience in data loading functions (`LoadAllPolicies`,
+  `LoadAllSecrets`) by changing from aggressive exit behavior to graceful
+  degradation - now logs warnings and continues processing valid entries instead
+  of abandoning entire dataset on single entry corruption.
+* Nexus: Fixed stuttery logging API throughout codebase by replacing
+  `log.Log().Info/Warn/Error()` with canonical `log.Info/Warn/Error()` patterns
+  across initialization, recovery, and state management modules.
+* Nexus: Added defensive nil source checks across concurrent/distributed systems
+  where workload API can asynchronously invalidate X509Source. Updated
+  `InitializeBackingStoreFromKeepers`, `SendShardsPeriodically`, CLI commands,
+  and server startup with proper nil handling and documentation explaining
+  retry behavior for transient failures.
+* Nexus: Optimized retry loop in `InitializeBackingStoreFromKeepers` with early
+  nil check to avoid unnecessary function call overhead when X509 source is nil.
+* Nexus: Refactored `ShardGetResponse` to return `([]byte, *sdkErrors.SDKError)`
+  instead of logging errors internally and returning empty slices, following
+  canonical Go error handling patterns.
+* Nexus: Fixed inconsistent error returns in memory backend - `LoadSecret` now
+  returns `ErrEntityNotFound` instead of `(nil, nil)` for missing secrets.
+* Nexus: Comprehensive documentation updates across 20+ files ensuring
+  consistency between function signatures, parameter types, return values, and
+  actual code behavior. Updated error type references from generic `error` to
+  specific `*sdkErrors.SDKError` types.
 * SDK: Added `HasValidVersions()` and `Empty()` helper methods to `kv.Value` for
   checking if secrets have any non-deleted versions, useful for identifying
   purgeable secrets.

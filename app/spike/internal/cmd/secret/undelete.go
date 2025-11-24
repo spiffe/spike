@@ -76,7 +76,7 @@ Examples:
 			path := args[0]
 
 			if !validSecretPath(path) {
-				fmt.Printf("Error: invalid secret path: %s\n", path)
+				cmd.PrintErrf("Error: invalid secret path: %s\n", path)
 				return
 			}
 
@@ -91,12 +91,12 @@ Examples:
 				version, err := strconv.Atoi(strings.TrimSpace(v))
 
 				if err != nil {
-					fmt.Printf("Error: invalid version number: %s\n", v)
+					cmd.PrintErrf("Error: invalid version number: %s\n", v)
 					return
 				}
 
 				if version < 0 {
-					fmt.Printf(
+					cmd.PrintErrf(
 						"Error: version numbers cannot be negative: %s\n", v,
 					)
 					return
@@ -121,11 +121,11 @@ Examples:
 					return
 				}
 
-				fmt.Printf("Error: %v\n", err)
+				cmd.PrintErrf("Error: %v\n", err)
 				return
 			}
 
-			fmt.Println("OK")
+			cmd.Println("OK")
 		},
 	}
 

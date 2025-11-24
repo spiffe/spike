@@ -16,6 +16,9 @@ import (
 	"github.com/spiffe/spike/app/spike/internal/cmd/secret"
 )
 
+// TODO: maybe add reference to mirrored go docs in the public website too,
+// since the docs are very comprehensive and accurate now.
+
 // Initialize sets up the complete SPIKE CLI command structure by registering
 // all top-level command groups with the root command. This function must be
 // called before Execute to establish the command hierarchy.
@@ -30,7 +33,9 @@ import (
 // individual command documentation for details.
 //
 // Parameters:
-//   - source: SPIFFE X.509 SVID source for workload authentication
+//   - source: SPIFFE X.509 SVID source for workload authentication. Can be nil
+//     if the Workload API connection is unavailable. Individual subcommands
+//     will check for nil and display user-friendly error messages.
 //   - SPIFFEID: The SPIFFE ID used to authenticate with SPIKE Nexus
 //
 // Example usage:
@@ -42,7 +47,7 @@ import (
 //	Initialize(source, "spiffe://example.org/pilot")
 //	Execute()
 func Initialize(source *workloadapi.X509Source, SPIFFEID string) {
-	rootCmd.AddCommand(policy.NewPolicyCommand(source, SPIFFEID))
+	rootCmd.AddCommand(policy.NewPolicyCommand(source, SPIFFEID)) // TODO: stutter. use policy.NewCommand etc maybe
 	rootCmd.AddCommand(secret.NewSecretCommand(source, SPIFFEID))
 	rootCmd.AddCommand(cipher.NewCipherCommand(source, SPIFFEID))
 	rootCmd.AddCommand(operator.NewOperatorCommand(source, SPIFFEID))
@@ -80,9 +85,10 @@ func Execute() {
 		return
 	}
 
+	// Try to write error to stderr
 	if _, err := fmt.Fprintf(os.Stderr, "%v\n", cmdErr); err != nil {
-		fmt.Println("failed to write to stderr: ", err.Error())
+		// Fallback to stdout if stderr is unavailable
+		fmt.Fprintf(os.Stdout, "Error: failed to write to stderr: %s\n", err.Error())
 	}
 	os.Exit(1)
-
 }

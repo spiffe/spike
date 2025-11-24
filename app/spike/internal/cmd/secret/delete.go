@@ -23,7 +23,10 @@ import (
 // versions of a secret at a specified path.
 //
 // Parameters:
-//   - source: X.509 source for workload API authentication
+//   - source: SPIFFE X.509 SVID source for authentication. Can be nil if the
+//     Workload API connection is unavailable, in which case the command will
+//     display an error message and return.
+//   - SPIFFEID: The SPIFFE ID to authenticate with
 //
 // The command accepts a single argument:
 //   - path: Location of the secret to delete
@@ -67,13 +70,20 @@ Examples:
 		Run: func(cmd *cobra.Command, args []string) {
 			trust.AuthenticateForPilot(SPIFFEID)
 
+			if source == nil {
+				cmd.PrintErrln("Error: SPIFFE X509 source is unavailable")
+				cmd.PrintErrln("The workload API may have lost connection.")
+				cmd.PrintErrln("Please check your SPIFFE agent and try again.")
+				return
+			}
+
 			api := spike.NewWithSource(source)
 
 			path := args[0]
 			versions, _ := cmd.Flags().GetString("versions")
 
 			if !validSecretPath(path) {
-				fmt.Printf("Error: invalid secret path: %s\n", path)
+				cmd.PrintErrf("Error: invalid secret path: %s\n", path)
 				return
 			}
 
@@ -87,12 +97,12 @@ Examples:
 				version, err := strconv.Atoi(strings.TrimSpace(v))
 
 				if err != nil {
-					fmt.Printf("Error: invalid version number: %s\n", v)
+					cmd.PrintErrf("Error: invalid version number: %s\n", v)
 					return
 				}
 
 				if version < 0 {
-					fmt.Printf(
+					cmd.PrintErrf(
 						"Error: version numbers cannot be negative: %s\n", v,
 					)
 					return
@@ -117,11 +127,11 @@ Examples:
 					return
 				}
 
-				fmt.Printf("Error: %v\n", err)
+				cmd.PrintErrf("Error: %v\n", err)
 				return
 			}
 
-			fmt.Println("OK")
+			cmd.Println("OK")
 		},
 	}
 

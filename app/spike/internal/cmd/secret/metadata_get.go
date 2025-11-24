@@ -21,7 +21,10 @@ import (
 // data from a specified path.
 //
 // Parameters:
-//   - source: X.509 source for workload API authentication
+//   - source: SPIFFE X.509 SVID source for authentication. Can be nil if the
+//     Workload API connection is unavailable, in which case the command will
+//     display an error message and return.
+//   - SPIFFEID: The SPIFFE ID to authenticate with
 //
 // The command accepts a single argument:
 //   - path: Location of the secret to retrieve
@@ -57,6 +60,13 @@ func newSecretMetadataGetCommand(
 		Run: func(cmd *cobra.Command, args []string) {
 			trust.AuthenticateForPilot(SPIFFEID)
 
+			if source == nil {
+				cmd.PrintErrln("Error: SPIFFE X509 source is unavailable")
+				cmd.PrintErrln("The workload API may have lost connection.")
+				cmd.PrintErrln("Please check your SPIFFE agent and try again.")
+				return
+			}
+
 			api := spike.NewWithSource(source)
 
 			path := args[0]
@@ -69,16 +79,16 @@ func newSecretMetadataGetCommand(
 					return
 				}
 
-				fmt.Println("Error reading secret:", err.Error())
+				cmd.PrintErrln("Error reading secret:", err.Error())
 				return
 			}
 
 			if secret == nil {
-				fmt.Println("Secret not found.")
+				cmd.Println("Secret not found.")
 				return
 			}
 
-			printSecretResponse(secret)
+			printSecretResponse(cmd, secret)
 		},
 	}
 

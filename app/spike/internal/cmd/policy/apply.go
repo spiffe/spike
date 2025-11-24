@@ -26,8 +26,10 @@ import (
 // that the system is initialized before applying a policy.
 //
 // Parameters:
-//   - source: SPIFFE X.509 SVID source for authentication
-//   - spiffeId: The SPIFFE ID to authenticate with
+//   - source: SPIFFE X.509 SVID source for authentication. Can be nil if the
+//     Workload API connection is unavailable, in which case the command will
+//     display an error message and return.
+//   - SPIFFEID: The SPIFFE ID to authenticate with
 //
 // Returns:
 //   - *cobra.Command: Configured Cobra command for policy application
@@ -149,6 +151,14 @@ func newPolicyApplyCommand(
 			}
 
 			trust.AuthenticateForPilot(SPIFFEID)
+
+			if source == nil {
+				cmd.PrintErrln("Error: SPIFFE X509 source is unavailable")
+				cmd.PrintErrln("The workload API may have lost connection.")
+				cmd.PrintErrln("Please check your SPIFFE agent and try again.")
+				return
+			}
+
 			api := spike.NewWithSource(source)
 
 			// Validate permissions

@@ -10,6 +10,7 @@ import (
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	"github.com/spiffe/spike-sdk-go/config/env"
 	"github.com/spiffe/spike-sdk-go/crypto"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/log"
 	"github.com/spiffe/spike-sdk-go/security/mem"
 
@@ -58,14 +59,26 @@ func iterateKeepersAndInitializeState(
 ) bool {
 	const fName = "iterateKeepersAndInitializeState"
 
+	// In memory mode, no recovery is needed regardless of source availability
 	if env.BackendStoreTypeVal() == env.Memory {
-		log.Log().Warn(fName, "message", "in memory mode: skipping recovery")
-		// Assume successful initialization, since initialization is not needed.
+		log.Warn(fName, "message", "in memory mode: skipping recovery")
 		return true
 	}
 
+	// For persistent backends, X509 source is required for mTLS with keepers.
+	// We warn and return false (triggering retry) rather than crashing because:
+	// 1. This function runs in retry.Forever() - designed for transient failures
+	// 2. Workload API may temporarily lose source and recover
+	// 3. Returning false allows the system to retry and recover gracefully
+	if source == nil {
+		failErr := sdkErrors.ErrSPIFFENilX509Source
+		failErr.Msg = "X509 source is nil, cannot perform mTLS with keepers"
+		log.WarnErr(fName, *failErr)
+		return false
+	}
+
 	for keeperID, keeperAPIRoot := range env.KeepersVal() {
-		log.Log().Info(
+		log.Info(
 			fName,
 			"message", "iterating keepers",
 			"id", keeperID, "url", keeperAPIRoot,
@@ -76,8 +89,15 @@ func iterateKeepersAndInitializeState(
 			continue
 		}
 
-		data := ShardGetResponse(source, u)
-		if len(data) == 0 {
+		data, err := ShardGetResponse(source, u)
+		if err != nil {
+			log.Warn(
+				fName,
+				"message", "failed to get shard from keeper",
+				"id", keeperID,
+				"url", keeperAPIRoot,
+				"err", err,
+			)
 			continue
 		}
 
@@ -89,12 +109,25 @@ func iterateKeepersAndInitializeState(
 		}
 
 		if mem.Zeroed32(res.Shard) {
-			log.Log().Info(fName, "message", "shard is zeroed")
+			log.Warn(
+				fName,
+				"message", "shard is zeroed",
+				"id", keeperID,
+				"url", keeperAPIRoot,
+			)
 			continue
 		}
 
 		successfulKeeperShards[keeperID] = res.Shard
 		if len(successfulKeeperShards) != env.ShamirThresholdVal() {
+			log.Info(
+				fName,
+				"message", "still shards remaining",
+				"id", keeperID,
+				"url", keeperAPIRoot,
+				"has", successfulKeeperShards,
+				"needs", env.ShamirThresholdVal(),
+			)
 			continue
 		}
 

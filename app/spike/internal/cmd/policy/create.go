@@ -21,8 +21,10 @@ import (
 // that the system is initialized before creating a policy.
 //
 // Parameters:
-//   - source: SPIFFE X.509 SVID source for authentication
-//   - spiffeId: The SPIFFE ID to authenticate with
+//   - source: SPIFFE X.509 SVID source for authentication. Can be nil if the
+//     Workload API connection is unavailable, in which case the command will
+//     display an error message and return.
+//   - SPIFFEID: The SPIFFE ID to authenticate with
 //
 // Returns:
 //   - *cobra.Command: Configured Cobra command for policy creation
@@ -101,41 +103,50 @@ func newPolicyCreateCommand(
 			}
 
 			if len(missingFlags) > 0 {
-				fmt.Println("Error: all flags are required")
+				cmd.PrintErrln("Error: all flags are required")
 				for _, flag := range missingFlags {
-					fmt.Printf("  --%s is missing\n", flag)
+					cmd.PrintErrf("  --%s is missing\n", flag)
 				}
 				return
 			}
 
 			trust.AuthenticateForPilot(SPIFFEID)
+
+			if source == nil {
+				cmd.PrintErrln("Error: SPIFFE X509 source is unavailable")
+				cmd.PrintErrln("The workload API may have lost connection.")
+				cmd.PrintErrln("Please check your SPIFFE agent and try again.")
+				return
+			}
+
 			api := spike.NewWithSource(source)
 
 			// Validate permissions
 			permissions, err := validatePermissions(permsStr)
 			if err != nil {
-				fmt.Printf("Error: %v\n", err)
+				cmd.PrintErrf("Error: %v\n", err)
 				return
 			}
 
 			// Check if a policy with this name already exists
 			exists, err := checkPolicyNameExists(api, name)
-			if handleAPIError(err) {
+			if handleAPIError(cmd, err) {
 				return
 			}
 
 			if exists {
-				fmt.Printf("Error: A policy with name '%s' already exists\n", name)
+				cmd.PrintErrf("Error: A policy with name '%s' already exists\n",
+					name)
 				return
 			}
 
 			// Create policy
 			err = api.CreatePolicy(name, SPIFFEIDPattern, pathPattern, permissions)
-			if handleAPIError(err) {
+			if handleAPIError(cmd, err) {
 				return
 			}
 
-			fmt.Println("Policy created successfully")
+			cmd.Println("Policy created successfully")
 		},
 	}
 

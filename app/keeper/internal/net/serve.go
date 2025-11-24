@@ -25,11 +25,19 @@ import (
 //
 // Parameters:
 //   - appName: A string identifier for the application, used in error messages
-//   - source: An X509Source that provides TLS certificates for the server
+//   - source: An X509Source that provides TLS certificates for the server.
+//     Must not be nil.
 //
 // The function does not return unless an error occurs, in which case it calls
-// log.FatalF and terminates the program.
+// log.FatalLn and terminates the program.
 func Serve(appName string, source *workloadapi.X509Source) {
+	if source == nil {
+		log.FatalLn(
+			appName,
+			"message", "X509 source is nil, cannot start TLS server",
+		)
+	}
+
 	if err := net.ServeWithPredicate(
 		source,
 		func() { routing.HandleRoute(http.Route) },

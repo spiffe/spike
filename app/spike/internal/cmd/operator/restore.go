@@ -32,10 +32,10 @@ import (
 // accepts recovery shards interactively and initiates the restoration process.
 //
 // Parameters:
-//   - source *workloadapi.X509Source: The X.509 source for SPIFFE
-//     authentication.
-//   - spiffeId string: The SPIFFE ID of the caller for role-based access
-//     control.
+//   - source: X.509 source for SPIFFE authentication. Can be nil if the
+//     Workload API connection is unavailable, in which case the command will
+//     display an error message and return.
+//   - SPIFFEID: The SPIFFE ID of the caller for role-based access control.
 //
 // Returns:
 //   - *cobra.Command: A cobra command that implements the restoration
@@ -68,15 +68,16 @@ func newOperatorRestoreCommand(
 		Short: "Restore SPIKE Nexus (do this if SPIKE Nexus cannot auto-recover)",
 		Run: func(cmd *cobra.Command, args []string) {
 			if !spiffeid.IsPilotRestore(SPIFFEID) {
-				fmt.Println("")
-				fmt.Println(
+				cmd.PrintErrln("")
+				cmd.PrintErrln(
 					"  You need to have a `restore` role to use this command.")
-				fmt.Println(
+				cmd.PrintErrln(
 					"  Please refer https://spike.ist/operations/recovery/ " +
 						"for more info.",
 				)
-				fmt.Println("  with necessary privileges to assign this role.")
-				fmt.Println("")
+				cmd.PrintErrln(
+					"  with necessary privileges to assign this role.")
+				cmd.PrintErrln("")
 				failErr := sdkErrors.ErrUnauthorized
 				failErr.Msg = "you do not have the required 'restore' role"
 				log.FatalErr(fName, *failErr)
@@ -84,8 +85,15 @@ func newOperatorRestoreCommand(
 
 			trust.AuthenticateForPilotRestore(SPIFFEID)
 
-			fmt.Println("(your input will be hidden as you paste/type it)")
-			fmt.Print("Enter recovery shard: ")
+			if source == nil {
+				cmd.PrintErrln("Error: SPIFFE X509 source is unavailable")
+				cmd.PrintErrln("The workload API may have lost connection.")
+				cmd.PrintErrln("Please check your SPIFFE agent and try again.")
+				return
+			}
+
+			cmd.Println("(your input will be hidden as you paste/type it)")
+			cmd.Print("Enter recovery shard: ")
 			shard, err := term.ReadPassword(int(os.Stdin.Fd()))
 			if err != nil {
 				_, e := fmt.Fprintf(os.Stderr, "Error reading shard: %v\n", err)
@@ -104,11 +112,11 @@ func newOperatorRestoreCommand(
 			// shard is in `spike:$id:$base64` format
 			shardParts := strings.SplitN(string(shard), ":", 3)
 			if len(shardParts) != 3 {
-				fmt.Println("")
-				fmt.Println(
+				cmd.PrintErrln("")
+				cmd.PrintErrln(
 					"Invalid shard format. Expected format: 'spike:$id:$secret'.",
 				)
-				fmt.Println("")
+				cmd.PrintErrln("")
 				failErr := sdkErrors.ErrBadRequest
 				failErr.Msg = "invalid shard format"
 				log.FatalErr(fName, *failErr)
@@ -119,13 +127,13 @@ func newOperatorRestoreCommand(
 
 			// 32 bytes encoded in hex should be 64 characters
 			if len(hexData) != 64 {
-				fmt.Println("")
-				fmt.Println(
+				cmd.PrintErrln("")
+				cmd.PrintErrln(
 					"Invalid hex shard length:", len(hexData),
 					"(expected 64 characters).",
 					"Did you miss some characters when pasting?",
 				)
-				fmt.Println("")
+				cmd.PrintErrln("")
 				failErr := sdkErrors.ErrBadRequest
 				failErr.Msg = "invalid hex shard length"
 				log.FatalErr(fName, *failErr)
@@ -145,8 +153,8 @@ func newOperatorRestoreCommand(
 			mem.ClearBytes(shard)
 
 			if err != nil {
-				fmt.Println("Failed to decode the recovery shard.")
-				fmt.Println("")
+				cmd.PrintErrln("Failed to decode the recovery shard.")
+				cmd.PrintErrln("")
 				failErr := sdkErrors.ErrBadRequest.Wrap(err)
 				failErr.Msg = "failed to decode recovery shard"
 				log.FatalErr(fName, *failErr)
@@ -156,10 +164,11 @@ func newOperatorRestoreCommand(
 				// Security: reset decodedShard immediately after use.
 				mem.ClearBytes(decodedShard)
 
-				fmt.Println("")
-				fmt.Printf("Invalid recovery shard length. Got: %d. Expected: %d.\n",
+				cmd.PrintErrln("")
+				cmd.PrintErrf(
+					"Invalid recovery shard length. Got: %d. Expected: %d.\n",
 					len(decodedShard), crypto.AES256KeySize)
-				fmt.Println("")
+				cmd.PrintErrln("")
 				failErr := sdkErrors.ErrCryptoInvalidEncryptionKeyLength
 				failErr.Msg = "invalid recovery shard length"
 				log.FatalErr(fName, *failErr)
@@ -174,9 +183,9 @@ func newOperatorRestoreCommand(
 
 			ix, err := strconv.Atoi(index)
 			if err != nil {
-				fmt.Println("")
-				fmt.Println("Invalid shard index:", index)
-				fmt.Println("")
+				cmd.PrintErrln("")
+				cmd.PrintErrln("Invalid shard index:", index)
+				cmd.PrintErrln("")
 				failErr := sdkErrors.ErrBadRequest.Wrap(err)
 				failErr.Msg = "invalid shard index"
 				log.FatalErr(fName, *failErr)
@@ -186,39 +195,40 @@ func newOperatorRestoreCommand(
 			// Security: reset shardToRestore immediately after recovery.
 			mem.ClearRawBytes(&shardToRestore)
 			if err != nil {
-				fmt.Println("")
-				fmt.Println("There was a problem talking to SPIKE Nexus.")
-				fmt.Println("")
+				cmd.PrintErrln("")
+				cmd.PrintErrln("There was a problem talking to SPIKE Nexus.")
+				cmd.PrintErrln("")
 				failErr := sdkErrors.ErrPostFailed.Wrap(err)
 				failErr.Msg = "there was a problem talking to SPIKE Nexus"
 				log.FatalErr(fName, *failErr)
 			}
 
 			if status == nil {
-				fmt.Println("")
-				fmt.Println("Didn't get any status trying to restore SPIKE Nexus.")
-				fmt.Println("Please check SPIKE Nexus logs for more info.")
-				fmt.Println("")
+				cmd.PrintErrln("")
+				cmd.PrintErrln(
+					"Didn't get any status trying to restore SPIKE Nexus.")
+				cmd.PrintErrln("Please check SPIKE Nexus logs for more info.")
+				cmd.PrintErrln("")
 				failErr := sdkErrors.ErrPostFailed
 				failErr.Msg = "bad status response from SPIKE Nexus"
 				log.FatalErr(fName, *failErr)
 			}
 
 			if status.Restored {
-				fmt.Println("")
-				fmt.Println("  SPIKE is now restored and ready to use.")
-				fmt.Println(
+				cmd.Println("")
+				cmd.Println("  SPIKE is now restored and ready to use.")
+				cmd.Println(
 					"  Please check out " +
 						" https://spike.ist/operations/recovery/ for what to do next.")
-				fmt.Println("")
+				cmd.Println("")
 			} else {
-				fmt.Println("")
-				fmt.Println(" Shards collected: ", status.ShardsCollected)
-				fmt.Println(" Shards remaining: ", status.ShardsRemaining)
-				fmt.Println(
+				cmd.Println("")
+				cmd.Println(" Shards collected: ", status.ShardsCollected)
+				cmd.Println(" Shards remaining: ", status.ShardsRemaining)
+				cmd.Println(
 					" Please run `spike operator restore` " +
 						"again to provide the remaining shards.")
-				fmt.Println("")
+				cmd.Println("")
 			}
 		},
 	}

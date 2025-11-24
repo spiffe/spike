@@ -24,11 +24,23 @@ import (
 //
 // Parameters:
 //   - appName: A string identifier for the application, used in error messages
-//   - source: An X509Source that provides TLS certificates for the server
+//   - source: An X509Source that provides TLS certificates for the server. Can
+//     be nil, but if nil at startup, the function will crash with log.FatalLn
+//     since the server cannot operate without mTLS credentials and there is no
+//     retry mechanism for server initialization. This fail-fast behavior makes
+//     configuration or initialization problems immediately obvious to operators.
 //
 // The function does not return unless an error occurs, in which case it calls
-// log.FatalF and terminates the program.
+// log.FatalLn and terminates the program.
 func Serve(appName string, source *workloadapi.X509Source) {
+	// Fail-fast if source is nil: server cannot operate without mTLS
+	if source == nil {
+		log.FatalLn(
+			appName,
+			"message", "X509 source is nil, cannot start TLS server",
+		)
+	}
+
 	if err := net.Serve(
 		source,
 		func() { routing.HandleRoute(http.Route) },

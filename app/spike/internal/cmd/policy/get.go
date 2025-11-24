@@ -21,8 +21,10 @@ import (
 // that the system is initialized before retrieving policy information.
 //
 // Parameters:
-//   - source: SPIFFE X.509 SVID source for authentication
-//   - spiffeId: The SPIFFE ID to authenticate with
+//   - source: SPIFFE X.509 SVID source for authentication. Can be nil if the
+//     Workload API connection is unavailable, in which case the command will
+//     display an error message and return.
+//   - SPIFFEID: The SPIFFE ID to authenticate with
 //
 // Returns:
 //   - *cobra.Command: Configured Cobra command for policy retrieval
@@ -98,34 +100,42 @@ func newPolicyGetCommand(
         Use --format=json to get the output in JSON format.`,
 		Run: func(cmd *cobra.Command, args []string) {
 			trust.AuthenticateForPilot(SPIFFEID)
+
+			if source == nil {
+				cmd.PrintErrln("Error: SPIFFE X509 source is unavailable")
+				cmd.PrintErrln("The workload API may have lost connection.")
+				cmd.PrintErrln("Please check your SPIFFE agent and try again.")
+				return
+			}
+
 			api := spike.NewWithSource(source)
 
 			// If the first argument is provided without the `--name` flag, it could
 			// be misinterpreted as trying to use policy name directly
 			if len(args) > 0 && !cmd.Flags().Changed("name") {
-				fmt.Println("Note: To look up a policy by name, use --name flag:")
-				fmt.Printf("  spike policy get --name=%s\n\n", args[0])
-				fmt.Printf("Attempting to use '%s' as policy ID...\n", args[0])
+				cmd.Println("Note: To look up a policy by name, use --name flag:")
+				cmd.Printf("  spike policy get --name=%s\n\n", args[0])
+				cmd.Printf("Attempting to use '%s' as policy ID...\n", args[0])
 			}
 
 			policyID, err := sendGetPolicyIDRequest(cmd, args, api)
 			if err != nil {
-				fmt.Printf("Error: %v\n", err)
+				cmd.PrintErrf("Error: %v\n", err)
 				return
 			}
 
 			policy, err := api.GetPolicy(policyID)
-			if handleAPIError(err) {
+			if handleAPIError(cmd, err) {
 				return
 			}
 
 			if policy == nil {
-				fmt.Println("Error: Got empty response from server.")
+				cmd.PrintErrln("Error: Got empty response from server.")
 				return
 			}
 
 			output := formatPolicy(cmd, policy)
-			fmt.Println(output)
+			cmd.Println(output)
 		},
 	}
 

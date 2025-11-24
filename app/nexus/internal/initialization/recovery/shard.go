@@ -9,29 +9,28 @@ import (
 
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
-	"github.com/spiffe/spike-sdk-go/log"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	network "github.com/spiffe/spike-sdk-go/net"
 	"github.com/spiffe/spike-sdk-go/predicate"
 
 	"github.com/spiffe/spike/internal/net"
 )
 
-func ShardGetResponse(source *workloadapi.X509Source, u string) []byte {
-	const fName = "ShardGetResponse"
-
+func ShardGetResponse(
+	source *workloadapi.X509Source, u string,
+) ([]byte, *sdkErrors.SDKError) {
 	if source == nil {
-		log.Log().Warn(fName, "message", "source is nil")
-		return []byte{}
+		failErr := sdkErrors.ErrSPIFFENilX509Source
+		failErr.Msg = "X509 source is nil"
+		return nil, failErr
 	}
 
 	shardRequest := reqres.ShardGetRequest{}
 	md, err := json.Marshal(shardRequest)
 	if err != nil {
-		log.Log().Warn(fName,
-			"message", "failed to marshal request",
-			"err", err,
-		)
-		return []byte{}
+		failErr := sdkErrors.ErrDataMarshalFailure.Wrap(err)
+		failErr.Msg = "failed to marshal shard request"
+		return nil, failErr
 	}
 
 	client, err := network.CreateMTLSClientWithPredicate(
@@ -40,27 +39,21 @@ func ShardGetResponse(source *workloadapi.X509Source, u string) []byte {
 		predicate.AllowKeeper,
 	)
 	if err != nil {
-		log.Log().Warn(
-			fName,
-			"message", "failed to create mTLS client",
-			"err", err,
-		)
-		return []byte{}
+		failErr := sdkErrors.ErrNetClientCreationFailed.Wrap(err)
+		failErr.Msg = "failed to create mTLS client"
+		return nil, failErr
 	}
 
 	data, err := net.Post(client, u, md)
 	if err != nil {
-		log.Log().Warn(
-			fName,
-			"message", "failed to post",
-			"err", err,
-		)
+		return nil, err
 	}
 
 	if len(data) == 0 {
-		log.Log().Info(fName, "message", "mo data")
-		return []byte{}
+		failErr := sdkErrors.ErrDataEmpty
+		failErr.Msg = "received empty shard data from keeper"
+		return nil, failErr
 	}
 
-	return data
+	return data, nil
 }

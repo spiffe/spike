@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/spf13/cobra"
 	"github.com/spiffe/spike/app/spike/internal/errors"
 	"github.com/spiffe/spike/app/spike/internal/stdout"
 )
@@ -16,6 +17,7 @@ import (
 // It helps standardize error handling across policy commands.
 //
 // Parameters:
+//   - cmd: Cobra command for output
 //   - err: The error returned from an API call
 //
 // Returns:
@@ -24,10 +26,10 @@ import (
 // Usage example:
 //
 //	policies, err := api.ListPolicies()
-//	if handleAPIError(err) {
+//	if handleAPIError(cmd, err) {
 //	    return
 //	}
-func handleAPIError(err error) bool {
+func handleAPIError(cmd *cobra.Command, err error) bool {
 	if err == nil {
 		return false
 	}
@@ -39,12 +41,12 @@ func handleAPIError(err error) bool {
 
 	if strings.Contains(err.Error(), "unexpected end of JSON") ||
 		strings.Contains(err.Error(), "parsing") {
-		fmt.Println("Error: Failed to parse API response. " +
+		cmd.PrintErrln("Error: Failed to parse API response. " +
 			"The server may be unavailable or returned an invalid response.")
-		fmt.Printf("Technical details: %v\n", err)
+		cmd.PrintErrf("Technical details: %v\n", err)
 		return true
 	}
 
-	fmt.Printf("Error: %v\n", err)
+	cmd.PrintErrf("Error: %v\n", err)
 	return true
 }
