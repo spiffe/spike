@@ -5,13 +5,10 @@
 package secret
 
 import (
-	stdErrs "errors"
 	"net/http"
 
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
-	"github.com/spiffe/spike-sdk-go/log"
-
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 	"github.com/spiffe/spike/internal/journal"
 	"github.com/spiffe/spike/internal/net"
@@ -20,10 +17,11 @@ import (
 // RoutePutSecret handles HTTP requests to create or update secrets at a
 // specified path.
 //
-// This endpoint requires a valid admin JWT token for authentication. It accepts
-// a PUT request with a JSON body containing the secret path and values to
-// store. The function performs an upsert operation, creating a new secret if it
-// doesn't exist or updating an existing one.
+// This endpoint requires authentication via SPIFFE ID and write permission for
+// the specified secret path. It accepts a PUT request with a JSON body
+// containing the secret path and values to store. The function performs an
+// upsert operation, creating a new secret if it doesn't exist or updating an
+// existing one.
 //
 // Parameters:
 //   - w: http.ResponseWriter to write the HTTP response
@@ -31,7 +29,9 @@ import (
 //   - audit: *journal.AuditEntry for logging audit information
 //
 // Returns:
-//   - error: if an error occurs during request processing.
+//   - nil if the secret is successfully created or updated
+//   - sdkErrors.ErrAPIPostFailed if the upsert operation fails
+//   - SDK errors from request parsing or validation
 //
 // Request body format:
 //
@@ -43,7 +43,8 @@ import (
 // Responses:
 //   - 200 OK: Secret successfully created or updated
 //   - 400 Bad Request: Invalid request body or parameters
-//   - 401 Unauthorized: Invalid or missing JWT token
+//   - 401 Unauthorized: Missing SPIFFE ID or insufficient permissions
+//   - 500 Internal Server Error: Database operation failure
 //
 // The function logs its progress at various stages using structured logging.
 func RoutePutSecret(
@@ -56,7 +57,7 @@ func RoutePutSecret(
 	request, err := net.ReadParseAndGuard[
 		reqres.SecretPutRequest, reqres.SecretPutResponse,
 	](
-		w, r, reqres.SecretPutBadInput, guardSecretPutRequest, fName,
+		w, r, reqres.SecretPutBadRequest, guardSecretPutRequest,
 	)
 	if alreadyResponded := err != nil; alreadyResponded {
 		return err
@@ -67,11 +68,11 @@ func RoutePutSecret(
 
 	err = state.UpsertSecret(path, values)
 	if err != nil {
-		failErr := stdErrs.Join(sdkErrors.ErrCreationFailed, err)
+		failErr := sdkErrors.ErrAPIPostFailed.Wrap(err)
 		net.Fail(reqres.SecretPutInternal, w, http.StatusInternalServerError)
 		return failErr
 	}
 
-	net.Success(reqres.SecretPutSuccess.Success(), w, fName)
+	net.Success(reqres.SecretPutSuccess, w)
 	return nil
 }

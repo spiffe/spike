@@ -5,7 +5,6 @@
 package secret
 
 import (
-	stdErrs "errors"
 	"net/http"
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
@@ -13,9 +12,9 @@ import (
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/validation"
 	"github.com/spiffe/spike/internal/auth"
+	"github.com/spiffe/spike/internal/net"
 
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
-	"github.com/spiffe/spike/internal/net"
 )
 
 // guardSecretPutRequest validates a secret storage request by performing
@@ -33,7 +32,7 @@ import (
 // secret path to enable fine-grained access control.
 //
 // If any validation fails, an appropriate error response is written to the
-// ResponseWriter and an error is returned.
+// ResponseWriter, and an error is returned.
 //
 // Parameters:
 //   - request: The secret put request containing the path and values
@@ -42,13 +41,12 @@ import (
 //
 // Returns:
 //   - nil if all validations pass
-//   - apiErr.ErrUnauthorized if authentication or authorization fails
-//   - apiErr.ErrInvalidInput if path or key name validation fails
+//   - sdkErrors.ErrAccessUnauthorized if authorization fails
+//   - sdkErrors.ErrAPIBadRequest if path or key name validation fails
+//   - SDK errors from authentication if peer SPIFFE ID extraction fails
 func guardSecretPutRequest(
 	request reqres.SecretPutRequest, w http.ResponseWriter, r *http.Request,
-) error {
-	const fName = "guardSecretPutRequest"
-
+) *sdkErrors.SDKError {
 	peerSPIFFEID, err := auth.ExtractPeerSPIFFEID[reqres.SecretPutResponse](
 		r, w, reqres.SecretPutUnauthorized,
 	)
@@ -60,8 +58,9 @@ func guardSecretPutRequest(
 
 	err = validation.ValidatePath(path)
 	if invalidPath := err != nil; invalidPath {
-		failErr := stdErrs.Join(sdkErrors.ErrInvalidInput, err)
-		net.Fail(reqres.SecretPutBadInput, w, http.StatusBadRequest)
+		net.Fail(reqres.SecretPutBadRequest, w, http.StatusBadRequest)
+		failErr := sdkErrors.ErrAPIBadRequest.Wrap(err)
+		failErr.Msg = "invalid secret path: " + path
 		return failErr
 	}
 
@@ -69,8 +68,9 @@ func guardSecretPutRequest(
 	for k := range values {
 		err := validation.ValidateName(k)
 		if err != nil {
-			failErr := stdErrs.Join(sdkErrors.ErrInvalidInput, err)
-			net.Fail(reqres.SecretPutBadInput, w, http.StatusBadRequest)
+			net.Fail(reqres.SecretPutBadRequest, w, http.StatusBadRequest)
+			failErr := sdkErrors.ErrAPIBadRequest.Wrap(err)
+			failErr.Msg = "invalid key name: " + k
 			return failErr
 		}
 	}
@@ -81,7 +81,9 @@ func guardSecretPutRequest(
 	)
 	if !allowed {
 		net.Fail(reqres.SecretPutUnauthorized, w, http.StatusUnauthorized)
-		return sdkErrors.ErrUnauthorized
+		failErr := sdkErrors.ErrAccessUnauthorized
+		failErr.Msg = "unauthorized to write secret: " + path
+		return failErr
 	}
 
 	return nil

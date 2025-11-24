@@ -15,9 +15,20 @@ import (
 )
 
 // ReadRequestBodyAndRespondOnFail reads the entire request body from an HTTP
-// request. It returns the body as a byte slice if successful, or an error if
-// reading fails. On error, it writes a 400 Bad Request status to the response
-// writer and returns the error for propagation to the caller.
+// request.
+//
+// On error, this function writes a 400 Bad Request status to the response
+// writer and returns the error for propagation to the caller. If writing the
+// error response fails, it returns a 500 Internal Server Error.
+//
+// Parameters:
+//   - w: http.ResponseWriter - The response writer for error handling
+//   - r: *http.Request - The incoming HTTP request
+//
+// Returns:
+//   - []byte: The request body as a byte slice, or nil if reading failed
+//   - *sdkErrors.SDKError: sdkErrors.ErrDataReadFailure if reading fails,
+//     nil on success
 func ReadRequestBodyAndRespondOnFail(
 	w http.ResponseWriter, r *http.Request,
 ) ([]byte, *sdkErrors.SDKError) {

@@ -17,8 +17,8 @@ import (
 //
 // The function performs the following validations in order:
 //   - Extracts and validates the peer SPIFFE ID from the request
-//   - Validates the secret path format
 //   - Checks if the peer has write permission for the specified secret path
+//   - Validates the secret path format
 //
 // Write permission is required for undelete operations following the principle
 // that restoration is a write operation on the secret resource. The
@@ -26,7 +26,7 @@ import (
 // fine-grained access control.
 //
 // If any validation fails, an appropriate error response is written to the
-// ResponseWriter and an error is returned.
+// ResponseWriter, and an error is returned.
 //
 // Parameters:
 //   - request: The secret undelete request containing the secret path
@@ -35,8 +35,9 @@ import (
 //
 // Returns:
 //   - nil if all validations pass
-//   - apiErr.ErrUnauthorized if authentication or authorization fails
-//   - apiErr.ErrInvalidInput if path validation fails
+//   - sdkErrors.ErrAccessUnauthorized if authorization fails
+//   - sdkErrors.ErrAPIBadRequest if path validation fails
+//   - SDK errors from authentication if peer SPIFFE ID extraction fails
 func guardSecretUndeleteRequest(
 	request reqres.SecretUndeleteRequest, w http.ResponseWriter, r *http.Request,
 ) *sdkErrors.SDKError {
@@ -44,7 +45,6 @@ func guardSecretUndeleteRequest(
 		request.Path,
 		[]data.PolicyPermission{data.PermissionWrite},
 		w, r,
-		reqres.SecretUndeleteUnauthorized, reqres.SecretUndeleteBadInput,
-		"guardSecretUndeleteRequest",
+		reqres.SecretUndeleteUnauthorized, reqres.SecretUndeleteBadRequest,
 	)
 }

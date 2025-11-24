@@ -27,8 +27,9 @@ import (
 //   - w: http.ResponseWriter - The response writer for error handling
 //
 // Returns:
-//   - []byte - The marshaled JSON bytes, or nil if marshaling failed
-//   - error - sdkErrors.ErrAPIInternal if marshaling failed, nil otherwise
+//   - []byte: The marshaled JSON bytes, or nil if marshaling failed
+//   - *sdkErrors.SDKError: sdkErrors.ErrAPIInternal if marshaling failed,
+//     nil otherwise
 func MarshalBodyAndRespondOnMarshalFail(
 	res any, w http.ResponseWriter,
 ) ([]byte, *sdkErrors.SDKError) {
@@ -120,11 +121,16 @@ func Respond(statusCode int, body []byte, w http.ResponseWriter) {
 // Parameters:
 //   - w: http.ResponseWriter - The response writer
 //   - r: *http.Request - The incoming request
+//   - audit: *journal.AuditEntry - The audit log entry for this request
 //
 // The response always includes:
 //   - Status: 400 Bad Request
 //   - Content-Type: application/json
 //   - Body: JSON object with an error field
+//
+// Returns:
+//   - *sdkErrors.SDKError: nil on success, or sdkErrors.ErrAPIInternal if
+//     response marshaling or writing fails
 func Fallback(
 	w http.ResponseWriter, _ *http.Request, audit *journal.AuditEntry,
 ) *sdkErrors.SDKError {
@@ -136,7 +142,7 @@ func Fallback(
 }
 
 // NotReady handles requests when the system has not initialized its backing
-// store with a root key by returning a 400 Bad Request.
+// store with a root key by returning a 503 Service Unavailable.
 //
 // This function uses MarshalBodyAndRespondOnMarshalFail to generate the
 // response and handles any errors during response writing.
@@ -147,13 +153,13 @@ func Fallback(
 //   - audit: *journal.AuditEntry - The audit log entry for this request
 //
 // The response always includes:
-//   - Status: 400 Bad Request
+//   - Status: 503 Service Unavailable
 //   - Content-Type: application/json
-//   - Body: JSON object with an error field containing ErrLowEntropy
+//   - Body: JSON object with an error field containing ErrStateNotReady
 //
 // Returns:
-//   - error: Returns nil on success, or an error if response marshaling or
-//     writing fails
+//   - *sdkErrors.SDKError: nil on success, or sdkErrors.ErrAPIInternal if
+//     response marshaling or writing fails
 func NotReady(
 	w http.ResponseWriter, _ *http.Request, audit *journal.AuditEntry,
 ) *sdkErrors.SDKError {

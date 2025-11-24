@@ -65,12 +65,6 @@ func createCipher() cipher.AEAD {
 func InitializeBackend(rootKey *[crypto.AES256KeySize]byte) {
 	const fName = "InitializeBackend"
 
-	log.Log().Info(
-		fName,
-		"message", "initializing backend",
-		"storeType", env.BackendStoreTypeVal(),
-	)
-
 	// Root key is not needed, nor used in in-memory stores.
 	// For in-memory stores, ensure that it is always nil, as the alternative
 	// might mean a logic, or initialization-flow bug, and an unnecessary
@@ -78,27 +72,21 @@ func InitializeBackend(rootKey *[crypto.AES256KeySize]byte) {
 	// In other store types, ensure it is set for security.
 	if env.BackendStoreTypeVal() == env.Memory {
 		if rootKey != nil {
-			log.FatalLn(fName,
-				"message", sdkErrors.ErrCodeInitializationFailed,
-				"store_type", env.BackendStoreTypeVal(),
-				"err", sdkErrors.ErrCodeRootKeyNotEmpty,
-			)
+			failErr := sdkErrors.ErrRootKeyNotEmpty
+			failErr.Msg = "root key should be nil for memory store type"
+			log.FatalErr(fName, *failErr)
 		}
 	} else {
 		if rootKey == nil {
-			log.FatalLn(fName,
-				"message", sdkErrors.ErrCodeInitializationFailed,
-				"store_type", env.BackendStoreTypeVal(),
-				"err", sdkErrors.ErrCodeRootKeyEmpty,
-			)
+			failErr := sdkErrors.ErrRootKeyEmpty
+			failErr.Msg = "root key cannot be nil"
+			log.FatalErr(fName, *failErr)
 		}
 
 		if mem.Zeroed32(rootKey) {
-			log.FatalLn(fName,
-				"message", sdkErrors.ErrCodeInitializationFailed,
-				"store_type", env.BackendStoreTypeVal(),
-				"err", sdkErrors.ErrCodeRootKeyEmpty,
-			)
+			failErr := sdkErrors.ErrRootKeyEmpty
+			failErr.Msg = "root key cannot be empty"
+			log.FatalErr(fName, *failErr)
 		}
 	}
 
@@ -117,8 +105,4 @@ func InitializeBackend(rootKey *[crypto.AES256KeySize]byte) {
 	default:
 		be = initializeInMemoryBackend()
 	}
-
-	log.Log().Info(
-		fName, "message", "backend initialized", "storeType", storeType,
-	)
 }

@@ -6,20 +6,29 @@ package persist
 
 import (
 	"crypto/rand"
-	"errors"
 	"io"
 
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 )
 
+// TODO: these are generic enough to move to the SDK.
+
 // encrypt encrypts the given data using the DataStore's cipher.
-// It generates a random nonce and returns the ciphertext, nonce, and any
-// error that occurred during encryption.
+// It generates a random nonce for each encryption operation to ensure
+// uniqueness.
+//
+// Parameters:
+//   - data: The plaintext data to encrypt
+//
+// Returns:
+//   - []byte: The encrypted ciphertext
+//   - []byte: The generated nonce used for encryption
+//   - *sdkErrors.SDKError: nil on success, or
+//     sdkErrors.ErrCryptoNonceGenerationFailed if nonce generation fails
 func (s *DataStore) encrypt(data []byte) ([]byte, []byte, *sdkErrors.SDKError) {
 	nonce := make([]byte, s.Cipher.NonceSize())
-	nonceErr := sdkErrors.ErrCryptoNonceGenerationFailed
 	if _, err := io.ReadFull(rand.Reader, nonce); err != nil {
-		failErr := errors.Join(nonceErr, err)
+		failErr := sdkErrors.ErrCryptoNonceGenerationFailed.Wrap(err)
 		return nil, nil, failErr
 	}
 	ciphertext := s.Cipher.Seal(nil, nonce, data, nil)
@@ -27,13 +36,22 @@ func (s *DataStore) encrypt(data []byte) ([]byte, []byte, *sdkErrors.SDKError) {
 }
 
 // decrypt decrypts the given ciphertext using the DataStore's cipher
-// and the provided nonce. It returns the plaintext and any error that
-// occurred during decryption.
-func (s *DataStore) decrypt(ciphertext, nonce []byte) ([]byte, error) {
+// and the provided nonce.
+//
+// Parameters:
+//   - ciphertext: The encrypted data to decrypt
+//   - nonce: The nonce that was used during encryption
+//
+// Returns:
+//   - []byte: The decrypted plaintext data
+//   - *sdkErrors.SDKError: nil on success, or
+//     sdkErrors.ErrCryptoDecryptionFailed if decryption fails
+func (s *DataStore) decrypt(
+	ciphertext, nonce []byte,
+) ([]byte, *sdkErrors.SDKError) {
 	plaintext, err := s.Cipher.Open(nil, nonce, ciphertext, nil)
-	decryptErr := sdkErrors.ErrCryptoDecryptionFailed
 	if err != nil {
-		failErr := errors.Join(decryptErr, err)
+		failErr := sdkErrors.ErrCryptoDecryptionFailed.Wrap(err)
 		return nil, failErr
 	}
 	return plaintext, nil

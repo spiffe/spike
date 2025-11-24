@@ -68,10 +68,10 @@ func (s *Store) Initialize(_ context.Context) *sdkErrors.SDKError {
 //
 // Returns:
 //   - *kv.Value: Always returns nil
-//   - error: Always returns nil
+//   - *sdkErrors.SDKError: Always returns nil
 func (s *Store) LoadSecret(
 	_ context.Context, _ string,
-) (*kv.Value, error) {
+) (*kv.Value, *sdkErrors.SDKError) {
 	return nil, nil
 }
 
@@ -85,9 +85,9 @@ func (s *Store) LoadSecret(
 //
 // Returns:
 //   - map[string]*kv.Value: Always returns nil
-//   - error: Always returns nil
+//   - *sdkErrors.SDKError: Always returns nil
 func (s *Store) LoadAllSecrets(_ context.Context) (
-	map[string]*kv.Value, error,
+	map[string]*kv.Value, *sdkErrors.SDKError,
 ) {
 	return nil, nil
 }

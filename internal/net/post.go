@@ -25,15 +25,17 @@ import (
 //
 // Returns:
 //   - []byte: The response body if the request is successful.
-//   - error: An error if any of the following occur:
-//   - Connection failure during POST request
-//   - Non-200 status code in response
-//   - Failure to read response body
-//   - Failure to close response body
+//   - *sdkErrors.SDKError: An error if any of the following occur:
+//   - sdkErrors.ErrAPIPostFailed if request creation fails
+//   - sdkErrors.ErrNetPeerConnection if connection fails or non-success
+//     status
+//   - sdkErrors.ErrAPINotFound if status is 404
+//   - sdkErrors.ErrAccessUnauthorized if status is 401
+//   - sdkErrors.ErrNetReadingResponseBody if reading response fails
 //
 // The function ensures proper cleanup by always attempting to close the
-// response body, even if an error occurs during reading. Any error from closing
-// the body is joined with any existing error using errors.Join.
+// response body via a deferred function. Close errors are logged but not
+// returned to the caller.
 //
 // Example:
 //
@@ -66,16 +68,28 @@ func Post(
 		return nil, failErr
 	}
 
+	// Ensure the response body is always closed to prevent resource leaks
+	defer func(b io.ReadCloser) {
+		if b == nil {
+			return
+		}
+		if closeErr := b.Close(); closeErr != nil {
+			failErr := sdkErrors.ErrFSStreamCloseFailed.Wrap(closeErr)
+			failErr.Msg = "failed to close response body"
+			log.WarnErr(fName, *failErr)
+		}
+	}(r.Body)
+
 	if r.StatusCode != http.StatusOK {
 		if r.StatusCode == http.StatusNotFound {
-			return []byte{}, sdkErrors.ErrAPINotFound
+			return nil, sdkErrors.ErrAPINotFound
 		}
 
 		if r.StatusCode == http.StatusUnauthorized {
-			return []byte{}, sdkErrors.ErrAccessUnauthorized
+			return nil, sdkErrors.ErrAccessUnauthorized
 		}
 
-		return []byte{}, sdkErrors.ErrNetPeerConnection
+		return nil, sdkErrors.ErrNetPeerConnection
 	}
 
 	b, err := body(r)
@@ -83,15 +97,6 @@ func Post(
 		failErr := sdkErrors.ErrNetReadingResponseBody.Wrap(err)
 		return nil, failErr
 	}
-
-	defer func(b io.ReadCloser) {
-		if b == nil {
-			return
-		}
-		failErr := sdkErrors.ErrFSStreamCloseFailed
-		failErr.Msg = "failed to close response body"
-		log.WarnErr(fName, *failErr.Wrap(b.Close()))
-	}(r.Body)
 
 	return b, nil
 }

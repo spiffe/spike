@@ -140,6 +140,11 @@ func (s *DataStore) LoadSecret(
 // secrets. Each secret includes its metadata and all versions with decrypted
 // data. This method is thread-safe.
 //
+// If any individual secret fails to load or decrypt (due to corruption or
+// invalid data), the error is logged as a warning and that secret is skipped.
+// This allows the system to continue operating with valid secrets even when
+// some secrets are corrupted.
+//
 // Contexts that are canceled or reach their deadline will result in the
 // operation being interrupted early and returning an error.
 //
@@ -148,13 +153,11 @@ func (s *DataStore) LoadSecret(
 //
 // Returns:
 //   - map[string]*kv.Value: A map of secret paths to their corresponding
-//     secret values, or nil if an error occurs
-//   - *sdkErrors.SDKError: nil on success, or one of the following errors:
-//   - ErrEntityQueryFailed: If querying paths, loading secrets, or scanning
-//     rows fails
-//   - ErrEntityLoadFailed: If loading secret metadata fails
-//   - ErrCryptoDecryptionFailed: If decrypting a version fails
-//   - ErrDataUnmarshalFailure: If unmarshaling JSON data fails
+//     secret values. May be incomplete if some secrets failed to load (check
+//     logs for warnings).
+//   - *sdkErrors.SDKError: nil on success, or an error if the database query
+//     itself fails or if iterating over rows fails. Individual secret load
+//     failures do not cause the function to return an error.
 //
 // Example usage:
 //
@@ -196,13 +199,19 @@ func (s *DataStore) LoadAllSecrets(
 	for rows.Next() {
 		var path string
 		if err := rows.Scan(&path); err != nil {
-			return nil, sdkErrors.ErrEntityQueryFailed.Wrap(err)
+			failErr := sdkErrors.ErrEntityQueryFailed.Wrap(err)
+			failErr.Msg = "failed to scan secret path row, skipping"
+			log.WarnErr(fName, *failErr)
+			continue
 		}
 
 		// Load the full secret for this path
 		secret, err := s.loadSecretInternal(ctx, path)
 		if err != nil {
-			return nil, sdkErrors.ErrEntityQueryFailed.Wrap(err)
+			failErr := sdkErrors.ErrEntityLoadFailed.Wrap(err)
+			failErr.Msg = "failed to load secret at path " + path + ", skipping"
+			log.WarnErr(fName, *failErr)
+			continue
 		}
 
 		if secret != nil {

@@ -5,12 +5,10 @@
 package secret
 
 import (
-	stdErrs "errors"
 	"net/http"
 
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
-	"github.com/spiffe/spike-sdk-go/log"
 
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 	"github.com/spiffe/spike/internal/journal"
@@ -20,14 +18,13 @@ import (
 // RouteUndeleteSecret handles HTTP requests to restore previously deleted
 // secrets.
 //
-// This endpoint requires a valid admin JWT token for authentication. It accepts
-// a POST request with a JSON body containing a path to the secret and
-// optionally specific versions to undelete. If no versions are specified,
-// an empty version list is used.
+// This endpoint requires authentication via SPIFFE ID and undelete permission
+// for the specified secret path. It accepts a POST request with a JSON body
+// containing a path to the secret and optionally specific versions to undelete.
+// If no versions are specified, an empty version list is used.
 //
-// The function validates the JWT, reads and unmarshals the request body,
-// processes the undelete operation, and returns a "200 OK" response upon
-// success.
+// The function validates the request, processes the undelete operation, and
+// returns a "200 OK" response upon success.
 //
 // Parameters:
 //   - w: http.ResponseWriter to write the HTTP response
@@ -35,7 +32,9 @@ import (
 //   - audit: *journal.AuditEntry for logging audit information
 //
 // Returns:
-//   - error: if an error occurs during request processing.
+//   - nil if the secret is successfully undeleted
+//   - sdkErrors.ErrAPIPostFailed if the undelete operation fails
+//   - SDK errors from request parsing or validation
 //
 // Request body format:
 //
@@ -47,12 +46,13 @@ import (
 // Responses:
 //   - 200 OK: Secret successfully undeleted
 //   - 400 Bad Request: Invalid request body or parameters
-//   - 401 Unauthorized: Invalid or missing JWT token
+//   - 401 Unauthorized: Missing SPIFFE ID or insufficient permissions
+//   - 500 Internal Server Error: Database operation failure
 //
 // The function logs its progress at various stages using structured logging.
 func RouteUndeleteSecret(
 	w http.ResponseWriter, r *http.Request, audit *journal.AuditEntry,
-) error {
+) *sdkErrors.SDKError {
 	const fName = "routeUndeleteSecret"
 
 	journal.AuditRequest(fName, r, audit, journal.AuditUndelete)
@@ -74,7 +74,7 @@ func RouteUndeleteSecret(
 
 	err = state.UndeleteSecret(path, versions)
 	if err != nil {
-		failErr := stdErrs.Join(sdkErrors.ErrAPIPostFailed, err)
+		failErr := sdkErrors.ErrAPIPostFailed.Wrap(err)
 		net.Fail(reqres.SecretUndeleteInternal, w, http.StatusInternalServerError)
 		return failErr
 	}

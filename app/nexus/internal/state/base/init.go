@@ -24,6 +24,12 @@ import (
 func Initialize(r *[crypto.AES256KeySize]byte) {
 	const fName = "Initialize"
 
+	log.Log().Info(
+		fName,
+		"message", "initializing state",
+		"backendType", env.BackendStoreTypeVal(),
+	)
+
 	// Locks on a mutex; so only a single process can access it.
 	persist.InitializeBackend(r)
 
@@ -31,16 +37,24 @@ func Initialize(r *[crypto.AES256KeySize]byte) {
 	if env.BackendStoreTypeVal() == env.Memory {
 		log.Log().Info(
 			fName,
-			"message", sdkErrors.ErrCodeRootKeySkipCreationForInMemoryMode,
+			"message", "state initialized (in-memory mode, root key not used)",
+			"backendType", env.BackendStoreTypeVal(),
 		)
 		return
 	}
 
 	if r == nil || mem.Zeroed32(r) {
-		log.FatalLn(fName, "message", sdkErrors.ErrCodeRootKeyEmpty)
+		failErr := sdkErrors.ErrRootKeyEmpty
+		log.FatalErr(fName, *failErr)
 	}
 
 	// Update the internal root key.
 	// Locks on a mutex; so only a single process can modify the root key.
 	SetRootKey(r)
+
+	log.Info(
+		fName,
+		"message", "state initialized",
+		"backendType", env.BackendStoreTypeVal(),
+	)
 }

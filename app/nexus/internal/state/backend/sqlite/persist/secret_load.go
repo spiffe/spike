@@ -106,6 +106,9 @@ func (s *DataStore) loadSecretInternal(
 			return nil, sdkErrors.ErrEntityQueryFailed.Wrap(err)
 		}
 
+		// TODO: some of these are integrity check errors and shall be logged as such
+		// with a dedicated sentinel error kind.
+
 		decrypted, err := s.decrypt(encrypted, nonce)
 		if err != nil {
 			return nil, sdkErrors.ErrCryptoDecryptionFailed.Wrap(err)
