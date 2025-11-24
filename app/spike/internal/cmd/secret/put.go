@@ -5,12 +5,12 @@
 package secret
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/spf13/cobra"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	spike "github.com/spiffe/spike-sdk-go/api"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 
 	"github.com/spiffe/spike/app/spike/internal/errors"
 	"github.com/spiffe/spike/app/spike/internal/stdout"
@@ -41,7 +41,7 @@ import (
 //	spike secret put secret/config host=localhost port=8080
 //
 // The command execution flow:
-//  1. Verify X509 source is available (workload API connection active)
+//  1. Verify the X509 source is available (workload API connection active)
 //  2. Authenticate the pilot using SPIFFE ID
 //  3. Validate the secret path format
 //  4. Parse all key-value pairs from arguments
@@ -97,7 +97,7 @@ func newSecretPutCommand(
 
 			err := api.PutSecret(path, values)
 			if err != nil {
-				if errors.NotReadyError(err) {
+				if err.Is(sdkErrors.ErrStateNotReady) {
 					stdout.PrintNotReady()
 					return
 				}

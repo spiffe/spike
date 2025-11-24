@@ -6,15 +6,14 @@ package secret
 
 import (
 	"encoding/json"
-	"fmt"
 	"slices"
 
 	"github.com/spf13/cobra"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	spike "github.com/spiffe/spike-sdk-go/api"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"gopkg.in/yaml.v3"
 
-	"github.com/spiffe/spike/app/spike/internal/errors"
 	"github.com/spiffe/spike/app/spike/internal/stdout"
 	"github.com/spiffe/spike/app/spike/internal/trust"
 )
@@ -55,14 +54,14 @@ func newSecretGetCommand(
 		Use:   "get <path> [key]",
 		Short: "Get secrets from the specified path",
 		Args:  cobra.RangeArgs(1, 2),
-		RunE: func(cmd *cobra.Command, args []string) error {
+		Run: func(cmd *cobra.Command, args []string) {
 			trust.AuthenticateForPilot(SPIFFEID)
 
 			if source == nil {
 				cmd.PrintErrln("Error: SPIFFE X509 source is unavailable")
 				cmd.PrintErrln("The workload API may have lost connection.")
 				cmd.PrintErrln("Please check your SPIFFE agent and try again.")
-				return fmt.Errorf("SPIFFE X509 source is unavailable")
+				return
 			}
 
 			api := spike.NewWithSource(source)
@@ -73,78 +72,111 @@ func newSecretGetCommand(
 
 			if !slices.Contains([]string{"plain",
 				"yaml", "json", "y", "p", "j"}, format) {
-				return fmt.Errorf("invalid format specified: %s", format)
+				cmd.PrintErrf("Error: invalid format specified: %s\n", format)
+				return
 			}
 
 			if !validSecretPath(path) {
-				return fmt.Errorf("invalid secret path: %s", path)
+				cmd.PrintErrf("Error: invalid secret path: %s\n", path)
+				return
 			}
 
 			secret, err := api.GetSecretVersion(path, version)
 			if err != nil {
-				if errors.NotReadyError(err) {
+				if err.Is(sdkErrors.ErrStateNotReady) {
 					stdout.PrintNotReady()
-					return fmt.Errorf("server not ready")
+					return
 				}
 
-				return fmt.Errorf("failure reading secret: %v", err.Error())
+				cmd.PrintErrf("Error: failure reading secret: %v\n", err.Error())
+				return
 			}
 
 			if secret == nil {
-				return fmt.Errorf("secret not found")
+				cmd.PrintErrln("Error: secret not found")
+				return
 			}
 
 			if secret.Data == nil {
-				return fmt.Errorf("secret has no data")
+				cmd.PrintErrln("Error: secret has no data")
+				return
 			}
 
+			// TODO: this part may benefit from some refactoring; similar code can be extracted into helper functions.
+
 			d := secret.Data
-			found := false
+
 			if format == "plain" || format == "p" {
+				found := false
 				for k, v := range d {
 					if len(args) < 2 || args[1] == "" {
-						fmt.Printf("%s: %s\n", k, v)
+						cmd.Printf("%s: %s\n", k, v)
 						found = true
 					} else if args[1] == k {
-						fmt.Printf("%s\n", v)
+						cmd.Printf("%s\n", v)
 						found = true
 						break
 					}
 				}
 				if !found {
-					return fmt.Errorf("key not found")
+					cmd.PrintErrln("Error: key not found")
+					return
 				}
-			} else {
-				var b []byte
-				if len(args) < 2 || args[1] == "" {
-					if format == "yaml" || format == "y" {
-						b, err = yaml.Marshal(d)
-					} else {
-						b, err = json.MarshalIndent(d, "", "    ")
-					}
-					found = true
-				} else {
-					for k, v := range d {
-						if args[1] == k {
-							if format == "yaml" || format == "y" {
-								b, err = yaml.Marshal(v)
-							} else {
-								b, err = json.Marshal(v)
-							}
-							found = true
-							break
-						}
-					}
-				}
-				if err != nil {
-					return fmt.Errorf("failed to marshal data: %w", err)
-				}
-				if !found {
-					return fmt.Errorf("key not found")
-				}
-				fmt.Printf("%s\n", string(b))
+
+				return
 			}
-			return nil
+
+			if len(args) < 2 || args[1] == "" {
+				if format == "yaml" || format == "y" {
+					b, marshalErr := yaml.Marshal(d)
+					if marshalErr != nil {
+						cmd.PrintErrf("Error: failed to marshal data: %v\n",
+							marshalErr)
+						return
+					}
+
+					cmd.Printf("%s\n", string(b))
+					return
+				}
+
+				b, marshalErr := json.MarshalIndent(d, "", "    ")
+				if marshalErr != nil {
+					cmd.PrintErrf("Error: failed to marshal data: %v\n",
+						marshalErr)
+					return
+				}
+
+				cmd.Printf("%s\n", string(b))
+				return
+			}
+
+			for k, v := range d {
+				if args[1] == k {
+					if format == "yaml" || format == "y" {
+						b, marshalErr := yaml.Marshal(v)
+						if marshalErr != nil {
+							cmd.PrintErrf("Error: failed to marshal data: %v\n",
+								marshalErr)
+							return
+						}
+
+						cmd.Printf("%s\n", string(b))
+						return
+					}
+
+					b, marshalErr := json.Marshal(v)
+					if marshalErr != nil {
+						cmd.PrintErrf("Error: failed to marshal data: %v\n",
+							marshalErr)
+						return
+					}
+
+					cmd.Printf("%s\n", string(b))
+					return
+				}
+			}
+
+			cmd.PrintErrln("Error: key not found")
 		},
 	}
 

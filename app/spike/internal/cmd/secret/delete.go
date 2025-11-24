@@ -12,6 +12,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	spike "github.com/spiffe/spike-sdk-go/api"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 
 	"github.com/spiffe/spike/app/spike/internal/errors"
 	"github.com/spiffe/spike/app/spike/internal/stdout"
@@ -122,7 +123,7 @@ Examples:
 
 			err := api.DeleteSecretVersions(path, vv)
 			if err != nil {
-				if errors.NotReadyError(err) {
+				if err.Is(sdkErrors.ErrStateNotReady) {
 					stdout.PrintNotReady()
 					return
 				}
