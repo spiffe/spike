@@ -44,7 +44,8 @@ func initializeSqliteBackend(rootKey *[32]byte) backend.Backend {
 
 	opts := map[backend.DatabaseConfigKey]any{}
 
-	opts[backend.KeyDataDir] = config.NexusDataFolder()
+	// Use the alias function to enable future path provider injection.
+	opts[backend.KeyDataDir] = config.SpikeNexusDataFolder()
 	opts[backend.KeyDatabaseFile] = dbName
 	opts[backend.KeyJournalMode] = env.DatabaseJournalModeVal()
 	opts[backend.KeyBusyTimeoutMs] = env.DatabaseBusyTimeoutMsVal()

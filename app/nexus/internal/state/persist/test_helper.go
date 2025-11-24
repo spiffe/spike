@@ -68,3 +68,14 @@ func withEnvironment(_ TestingInterface, key, value string, testFunc func()) {
 
 	testFunc()
 }
+
+// withIsolatedDataDir assigns a unique temporary data directory for the
+// Nexus backend per test to prevent filesystem races when using sqlite/lite.
+// It relies on Go's t.TempDir() for automatic cleanup.
+func withIsolatedDataDir(t *testing.T, fn func()) {
+	dir := t.TempDir()
+	// Prefer t.Setenv if available (Go 1.17+). We set SPIKE_NEXUS_DATA_DIR so
+	// config.NexusDataFolder() resolves to an isolated path.
+	t.Setenv("SPIKE_NEXUS_DATA_DIR", dir)
+	fn()
+}

@@ -149,6 +149,14 @@ func NexusDataFolder() string {
 	return dataPath
 }
 
+// SpikeNexusDataFolder is an alias kept for backward compatibility with
+// earlier code and upcoming dependency injection support. Prefer using
+// SpikeNexusDataFolder in new code so tests can later swap the provider.
+// (Will be wired to a PathProvider in a subsequent change.)
+func SpikeNexusDataFolder() string {
+	return NexusDataFolder()
+}
+
 // PilotRecoveryFolder returns the path to the directory where the
 // recovery shards will be stored as a result of the `spike recover`
 // command.

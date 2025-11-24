@@ -93,20 +93,17 @@ func TestInitializeBackend_Memory_WithNonNilKey_ShouldFatal(t *testing.T) {
 
 func TestInitializeBackend_SQLite_WithValidKey(t *testing.T) {
 	withEnvironment(t, "SPIKE_NEXUS_BACKEND_STORE", "sqlite", func() {
-		key := createTestKey(t)
-
-		// This should succeed
-		InitializeBackend(key)
-
-		backend := Backend()
-		if backend == nil {
-			t.Fatal("Backend is nil after initialization")
-		}
-
-		// For SQLite, we expect a different type than memory
-		if _, ok := backend.(*memory.Store); ok {
-			t.Error("Expected non-memory backend for sqlite store type")
-		}
+		withIsolatedDataDir(t, func() {
+			key := createTestKey(t)
+			InitializeBackend(key)
+			backend := Backend()
+			if backend == nil {
+				 t.Fatal("Backend is nil after initialization")
+			}
+			if _, ok := backend.(*memory.Store); ok {
+				t.Error("Expected non-memory backend for sqlite store type")
+			}
+		})
 	})
 }
 
@@ -134,20 +131,17 @@ func TestInitializeBackend_SQLite_WithZeroKey_ShouldPanic(t *testing.T) {
 
 func TestInitializeBackend_Lite_WithValidKey(t *testing.T) {
 	withEnvironment(t, "SPIKE_NEXUS_BACKEND_STORE", "lite", func() {
-		key := createTestKey(t)
-
-		// This should succeed
-		InitializeBackend(key)
-
-		backend := Backend()
-		if backend == nil {
-			t.Fatal("Backend is nil after initialization")
-		}
-
-		// For lite, we expect a different type than memory
-		if _, ok := backend.(*memory.Store); ok {
-			t.Error("Expected non-memory backend for lite store type")
-		}
+		withIsolatedDataDir(t, func() {
+			key := createTestKey(t)
+			InitializeBackend(key)
+			backend := Backend()
+			if backend == nil {
+				 t.Fatal("Backend is nil after initialization")
+			}
+			if _, ok := backend.(*memory.Store); ok {
+				t.Error("Expected non-memory backend for lite store type")
+			}
+		})
 	})
 }
 
@@ -238,33 +232,37 @@ func TestInitializeBackend_SwitchBetweenTypes(t *testing.T) {
 
 func TestInitializeBackend_KeyValidation_PartiallyZero(t *testing.T) {
 	withEnvironment(t, "SPIKE_NEXUS_BACKEND_STORE", "sqlite", func() {
-		// Create a key that's mostly zero but has one non-zero byte
-		partialKey := &[crypto.AES256KeySize]byte{}
-		partialKey[0] = 1 // Only the first byte is non-zero
+		withIsolatedDataDir(t, func() {
+			// Create a key that's mostly zero but has one non-zero byte
+			partialKey := &[crypto.AES256KeySize]byte{}
+			partialKey[0] = 1 // Only the first byte is non-zero
 
-		// This should succeed - it's not all zeros
-		InitializeBackend(partialKey)
+			// This should succeed - it's not all zeros
+			InitializeBackend(partialKey)
 
-		backend := Backend()
-		if backend == nil {
-			t.Fatal("Backend is nil after initialization")
-		}
+			backend := Backend()
+			if backend == nil {
+				 t.Fatal("Backend is nil after initialization")
+			}
+		})
 	})
 }
 
 func TestInitializeBackend_KeyValidation_LastByteNonZero(t *testing.T) {
 	withEnvironment(t, "SPIKE_NEXUS_BACKEND_STORE", "sqlite", func() {
-		// Create a key that's mostly zero but has the last byte non-zero
-		partialKey := &[crypto.AES256KeySize]byte{}
-		partialKey[crypto.AES256KeySize-1] = 255 // Only the last byte is non-zero
+		withIsolatedDataDir(t, func() {
+			// Create a key that's mostly zero but has the last byte non-zero
+			partialKey := &[crypto.AES256KeySize]byte{}
+			partialKey[crypto.AES256KeySize-1] = 255 // Only the last byte is non-zero
 
-		// This should succeed - it's not all zeros
-		InitializeBackend(partialKey)
+			// This should succeed - it's not all zeros
+			InitializeBackend(partialKey)
 
-		backend := Backend()
-		if backend == nil {
-			t.Fatal("Backend is nil after initialization")
-		}
+			backend := Backend()
+			if backend == nil {
+				 t.Fatal("Backend is nil after initialization")
+			}
+		})
 	})
 }
 
