@@ -9,7 +9,6 @@ import (
 
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
-	"github.com/spiffe/spike-sdk-go/log"
 	"github.com/spiffe/spike-sdk-go/security/mem"
 
 	"github.com/spiffe/spike/app/keeper/internal/state"
@@ -51,7 +50,7 @@ import (
 // if the peer is not SPIKE Nexus.
 func RouteShard(
 	w http.ResponseWriter, r *http.Request, audit *journal.AuditEntry,
-) error {
+) *sdkErrors.SDKError {
 	const fName = "RouteShard"
 
 	journal.AuditRequest(fName, r, audit, journal.AuditRead)
@@ -59,7 +58,7 @@ func RouteShard(
 	_, err := net.ReadParseAndGuard[
 		reqres.ShardGetRequest, reqres.ShardGetResponse,
 	](
-		w, r, reqres.ShardGetBadInput, guardShardGetRequest, fName,
+		w, r, reqres.ShardGetResponse{}.BadRequest(), guardShardGetRequest,
 	)
 	if alreadyResponded := err != nil; alreadyResponded {
 		return err
@@ -72,14 +71,14 @@ func RouteShard(
 	sh := state.ShardNoSync()
 
 	if mem.Zeroed32(sh) {
-		return net.Fail(
-			reqres.ShardGetBadInput, w,
-			http.StatusBadRequest, sdkErrors.ErrInvalidInput, fName,
+		net.Fail(
+			reqres.ShardGetResponse{}.BadRequest(), w, http.StatusBadRequest,
 		)
+		return sdkErrors.ErrDataInvalidInput
 	}
 
 	responseBody := net.SuccessWithResponseBody(
-		reqres.ShardGetResponse{Shard: sh}.Success(), w, fName,
+		reqres.ShardGetResponse{Shard: sh}.Success(), w,
 	)
 	// Security: Reset response body before function exits.
 	defer func() {

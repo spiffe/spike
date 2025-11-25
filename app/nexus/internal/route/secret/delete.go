@@ -60,7 +60,7 @@ func RouteDeleteSecret(
 
 	request, err := net.ReadParseAndGuard[
 		reqres.SecretDeleteRequest, reqres.SecretDeleteResponse](
-		w, r, reqres.SecretDeleteBadRequest, guardDeleteSecretRequest,
+		w, r, reqres.SecretDeleteResponse{}.BadRequest(), guardDeleteSecretRequest,
 	)
 	if alreadyResponded := err != nil; alreadyResponded {
 		return err
@@ -77,14 +77,18 @@ func RouteDeleteSecret(
 	if err != nil {
 		// Distinguish between client errors (not found) and server errors
 		if err.Is(sdkErrors.ErrEntityNotFound) {
-			net.Fail(reqres.SecretDeleteNotFound, w, http.StatusNotFound)
+			net.Fail(
+				reqres.SecretDeleteResponse{}.NotFound(), w, http.StatusNotFound,
+			)
 			return err
 		}
 		// Backend or other server-side failure
-		net.Fail(reqres.SecretDeleteInternal, w, http.StatusInternalServerError)
+		net.Fail(
+			reqres.SecretDeleteResponse{}.Internal(), w, http.StatusInternalServerError,
+		)
 		return sdkErrors.ErrAPIPostFailed.Wrap(err)
 	}
 
-	net.Success(reqres.SecretDeleteSuccess, w)
+	net.Success(reqres.SecretDeleteResponse{}.Success(), w)
 	return nil
 }

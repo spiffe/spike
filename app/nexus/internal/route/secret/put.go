@@ -57,7 +57,7 @@ func RoutePutSecret(
 	request, err := net.ReadParseAndGuard[
 		reqres.SecretPutRequest, reqres.SecretPutResponse,
 	](
-		w, r, reqres.SecretPutBadRequest, guardSecretPutRequest,
+		w, r, reqres.SecretPutResponse{}.BadRequest(), guardSecretPutRequest,
 	)
 	if alreadyResponded := err != nil; alreadyResponded {
 		return err
@@ -69,10 +69,12 @@ func RoutePutSecret(
 	err = state.UpsertSecret(path, values)
 	if err != nil {
 		failErr := sdkErrors.ErrAPIPostFailed.Wrap(err)
-		net.Fail(reqres.SecretPutInternal, w, http.StatusInternalServerError)
+		net.Fail(
+			reqres.SecretPutResponse{}.Internal(), w, http.StatusInternalServerError,
+		)
 		return failErr
 	}
 
-	net.Success(reqres.SecretPutSuccess, w)
+	net.Success(reqres.SecretPutResponse{}.Success(), w)
 	return nil
 }

@@ -5,23 +5,16 @@
 package policy
 
 import (
-	stdErrs "errors"
 	"net/http"
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
-	"github.com/spiffe/spike-sdk-go/log"
-
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
+
 	"github.com/spiffe/spike/internal/journal"
 	"github.com/spiffe/spike/internal/net"
 )
-
-// TODO: either return an erro, or log, but not both: verify this across the codebase
-// Only exception is fatal exits.
-// When you are logging an error, you are handling it.
-// Errors shall ideally be handled once.
 
 // RouteListPolicies handles HTTP requests to retrieve policies.
 // It can list all policies or filter them by a SPIFFE ID pattern or a path
@@ -37,7 +30,7 @@ import (
 //   - audit: Audit entry for logging the policy list action
 //
 // Returns:
-//   - error: nil on successful retrieval, error otherwise
+//   - *sdkErrors.SDKError: nil on successful retrieval, error otherwise
 //
 // Example request body (list all):
 //
@@ -58,18 +51,19 @@ import (
 // Possible errors:
 //   - Failed to read request body
 //   - Failed to parse request body
-//   - `spiffe_id_pattern` and `path_pattern` used together
+//   - `spiffe_id_pattern` and `path_pattern` used together (validated by the
+//     request guard)
 //   - Failed to marshal response body
 func RouteListPolicies(
 	w http.ResponseWriter, r *http.Request, audit *journal.AuditEntry,
-) error {
+) *sdkErrors.SDKError {
 	fName := "RouteListPolicies"
 
 	journal.AuditRequest(fName, r, audit, journal.AuditList)
 
 	request, err := net.ReadParseAndGuard[
 		reqres.PolicyListRequest, reqres.PolicyListResponse](
-		w, r, reqres.PolicyListBadInput, guardListPolicyRequest, fName,
+		w, r, reqres.PolicyListResponse{}.BadRequest(), guardListPolicyRequest,
 	)
 	if alreadyResponded := err != nil; alreadyResponded {
 		return err
@@ -83,34 +77,42 @@ func RouteListPolicies(
 	// Note that Go's default switch behavior will not fall through.
 	switch {
 	case SPIFFEIDPattern != "":
-		policies, err = state.ListPoliciesBySPIFFEIDPattern(SPIFFEIDPattern)
-		if err != nil {
-			failErr := sdkErrors.ErrStoreQueryFailure.Wrap(err)
-			return net.Fail(
-				reqres.PolicyListInternal, w,
-				http.StatusInternalServerError, failErr, fName,
+		pp, listErr := state.ListPoliciesBySPIFFEIDPattern(SPIFFEIDPattern)
+		if listErr != nil {
+			failErr := sdkErrors.ErrEntityQueryFailed.Wrap(listErr)
+			net.Fail(
+				reqres.PolicyListResponse{}.Internal(), w,
+				http.StatusInternalServerError,
 			)
+			return failErr
 		}
+		policies = pp
 	case pathPattern != "":
-		policies, err = state.ListPoliciesByPathPattern(pathPattern)
-		if err != nil {
-			failErr := stdErrs.Join(sdkErrors.ErrQueryFailure, err)
-			return net.Fail(
-				reqres.PolicyListInternal, w,
-				http.StatusInternalServerError, failErr, fName,
+		pp, listErr := state.ListPoliciesByPathPattern(pathPattern)
+		if listErr != nil {
+			failErr := sdkErrors.ErrEntityQueryFailed.Wrap(listErr)
+			net.Fail(
+				reqres.PolicyListResponse{}.Internal(), w,
+				http.StatusInternalServerError,
 			)
+			return failErr
 		}
+		policies = pp
 	default:
-		policies, err = state.ListPolicies()
-		if err != nil {
-			failErr := stdErrs.Join(sdkErrors.ErrQueryFailure, err)
-			return net.Fail(
-				reqres.PolicyListInternal, w,
-				http.StatusInternalServerError, failErr, fName,
+		pp, listErr := state.ListPolicies()
+		if listErr != nil {
+			failErr := sdkErrors.ErrEntityQueryFailed.Wrap(listErr)
+			net.Fail(
+				reqres.PolicyListResponse{}.Internal(), w,
+				http.StatusInternalServerError,
 			)
+			return failErr
 		}
+		policies = pp
 	}
 
-	net.Success(reqres.PolicyListResponse{Policies: policies}.Success(), w, fName)
+	sr := reqres.PolicyListResponse{}.Success()
+	sr.Policies = policies
+	net.Success(sr, w)
 	return nil
 }

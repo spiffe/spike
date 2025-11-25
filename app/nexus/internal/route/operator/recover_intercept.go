@@ -45,7 +45,7 @@ func guardRecoverRequest(
 	_ reqres.RecoverRequest, w http.ResponseWriter, r *http.Request,
 ) *sdkErrors.SDKError {
 	peerSPIFFEID, err := auth.ExtractPeerSPIFFEID[reqres.RestoreResponse](
-		r, w, reqres.RestoreUnauthorized,
+		r, w, reqres.RestoreResponse{}.Unauthorized(),
 	)
 	if alreadyResponded := err != nil; alreadyResponded {
 		return err
@@ -55,7 +55,7 @@ func guardRecoverRequest(
 	// SPIKE Pilot.
 	if !spiffeid.IsPilotRecover(peerSPIFFEID.String()) {
 		net.Fail(
-			reqres.RestoreUnauthorized, w, http.StatusUnauthorized,
+			reqres.RestoreResponse{}.Unauthorized(), w, http.StatusUnauthorized,
 		)
 		return sdkErrors.ErrAccessUnauthorized
 	}

@@ -277,7 +277,7 @@ func UndeleteSecret(path string, versions []int) *sdkErrors.SDKError {
 			if highestDeleted > 0 {
 				versions = []int{highestDeleted}
 			} else {
-				failErr := *sdkErrors.ErrEntityNotFound // copy
+				failErr := *sdkErrors.ErrEntityNotFound.Clone()
 				failErr.Msg = fmt.Sprintf(
 					"could not find any secret to undelete at path %s for versions %v",
 					path, versions,
@@ -315,7 +315,7 @@ func UndeleteSecret(path string, versions []int) *sdkErrors.SDKError {
 	}
 
 	if !anyUndeleted {
-		failErr := *sdkErrors.ErrEntityNotFound // copy
+		failErr := *sdkErrors.ErrEntityNotFound.Clone()
 		failErr.Msg = fmt.Sprintf(
 			"could not find any secret to undelete at path %s for versions %v",
 			path, versions,
@@ -373,7 +373,7 @@ func GetSecret(
 	if version == 0 {
 		version = secret.Metadata.CurrentVersion
 		if version == 0 {
-			failErr := *sdkErrors.ErrEntityNotFound // copy
+			failErr := *sdkErrors.ErrEntityNotFound.Clone()
 			failErr.Msg = fmt.Sprintf("secret with path %s is empty", path)
 			return nil, &failErr
 		}
@@ -382,7 +382,7 @@ func GetSecret(
 	// Get the specific version
 	v, exists := secret.Versions[version]
 	if !exists {
-		failErr := *sdkErrors.ErrEntityNotFound // copy
+		failErr := *sdkErrors.ErrEntityNotFound.Clone()
 		failErr.Msg = fmt.Sprintf(
 			"secret with path %s not found for version %v",
 			path, version,
@@ -392,7 +392,7 @@ func GetSecret(
 
 	// Check if the version is deleted
 	if v.DeletedTime != nil {
-		failErr := *sdkErrors.ErrEntityNotFound // copy
+		failErr := *sdkErrors.ErrEntityNotFound.Clone()
 		failErr.Msg = fmt.Sprintf(
 			"secret with path %s is marked deleted for version %v",
 			path, version,
@@ -429,7 +429,7 @@ func GetRawSecret(path string, version int) (*kv.Value, *sdkErrors.SDKError) {
 		// Explicitly switch to the current version if the version is 0
 		checkVersion = secret.Metadata.CurrentVersion
 		if emptySecret := checkVersion == 0; emptySecret {
-			failErr := *sdkErrors.ErrEntityNotFound // copy
+			failErr := *sdkErrors.ErrEntityNotFound.Clone()
 			failErr.Msg = fmt.Sprintf("secret with path %s is empty", path)
 			return nil, &failErr
 		}
@@ -437,7 +437,7 @@ func GetRawSecret(path string, version int) (*kv.Value, *sdkErrors.SDKError) {
 
 	v, exists := secret.Versions[checkVersion]
 	if !exists {
-		failErr := *sdkErrors.ErrEntityNotFound // copy
+		failErr := *sdkErrors.ErrEntityNotFound.Clone()
 		failErr.Msg = fmt.Sprintf(
 			"secret with path %s not found for version %v",
 			path, checkVersion,
@@ -446,7 +446,7 @@ func GetRawSecret(path string, version int) (*kv.Value, *sdkErrors.SDKError) {
 	}
 
 	if v.DeletedTime != nil {
-		failErr := *sdkErrors.ErrEntityNotFound // copy
+		failErr := *sdkErrors.ErrEntityNotFound.Clone()
 		failErr.Msg = fmt.Sprintf(
 			"secret with path %s is marked deleted for version %v",
 			path, checkVersion,

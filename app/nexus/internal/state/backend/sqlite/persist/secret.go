@@ -59,7 +59,7 @@ func (s *DataStore) StoreSecret(
 		if !committed {
 			err := tx.Rollback()
 			if err != nil {
-				failErr := *sdkErrors.ErrTransactionRollbackFailed // copy
+				failErr := *sdkErrors.ErrTransactionRollbackFailed.Clone()
 				log.WarnErr(fName, failErr)
 			}
 		}
@@ -187,7 +187,7 @@ func (s *DataStore) LoadAllSecrets(
 	defer func(rows *sql.Rows) {
 		err := rows.Close()
 		if err != nil {
-			failErr := *sdkErrors.ErrFSFileCloseFailed // copy
+			failErr := *sdkErrors.ErrFSFileCloseFailed.Clone()
 			log.WarnErr(fName, failErr)
 		}
 	}(rows)

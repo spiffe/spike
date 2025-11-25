@@ -583,7 +583,7 @@ func TestPolicyCreateCommandRegistration(t *testing.T) {
 	source := &workloadapi.X509Source{}
 	SPIFFEIDPattern := "^spiffe://example\\.org/spike$"
 
-	policyCmd := NewPolicyCommand(source, SPIFFEIDPattern)
+	policyCmd := NewCommand(source, SPIFFEIDPattern)
 
 	var createCmd *cobra.Command
 	for _, cmd := range policyCmd.Commands() {

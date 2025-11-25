@@ -32,7 +32,7 @@ func getCipherOrFailStreaming(
 
 	if c == nil {
 		http.Error(
-			w, string(sdkErrors.ErrCodeCryptoCipherNotAvailable),
+			w, string(sdkErrors.ErrCryptoCipherNotAvailable.Code),
 			http.StatusInternalServerError,
 		)
 		return nil, sdkErrors.ErrCryptoCipherNotAvailable

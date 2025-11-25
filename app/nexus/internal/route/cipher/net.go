@@ -45,12 +45,12 @@ func respondStreamingDecrypt(
 // Returns:
 //   - error: An error if the response fails to send
 func respondJSONDecrypt(
-	plaintext []byte, w http.ResponseWriter, fName string,
+	plaintext []byte, w http.ResponseWriter, _ string,
 ) error {
 	net.Success(
 		reqres.CipherDecryptResponse{
 			Plaintext: plaintext,
-		}.Success(), w, fName,
+		}.Success(), w,
 	)
 	return nil
 }
@@ -97,14 +97,14 @@ func respondStreamingEncrypt(
 // Returns:
 //   - error: An error if the response fails to send
 func respondJSONEncrypt(
-	nonce, ciphertext []byte, w http.ResponseWriter, fName string,
+	nonce, ciphertext []byte, w http.ResponseWriter, _ string,
 ) error {
 	net.Success(
 		reqres.CipherEncryptResponse{
 			Version:    spikeCipherVersion,
 			Nonce:      nonce,
 			Ciphertext: ciphertext,
-		}.Success(), w, fName,
+		}.Success(), w,
 	)
 	return nil
 }

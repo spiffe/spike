@@ -28,14 +28,13 @@ import (
 //   - r *http.Request: The HTTP request containing peer SPIFFE ID
 //
 // Returns:
-//   - error: apiErr.ErrUnauthorized if validation fails, nil otherwise
+//   - *sdkErrors.SDKError: sdkErrors.ErrAccessUnauthorized if validation fails,
+//     nil otherwise
 func guardShardGetRequest(
 	_ reqres.ShardGetRequest, w http.ResponseWriter, r *http.Request,
-) error {
-	const fName = "guardShardGetRequest"
-
+) *sdkErrors.SDKError {
 	peerSPIFFEID, err := auth.ExtractPeerSPIFFEID[reqres.ShardGetResponse](
-		r, w, reqres.ShardGetUnauthorized,
+		r, w, reqres.ShardGetResponse{}.Unauthorized(),
 	)
 	if alreadyResponded := err != nil; alreadyResponded {
 		return err
@@ -43,10 +42,10 @@ func guardShardGetRequest(
 
 	// Only SPIKE Nexus is authorized to retrieve shards from SPIKE Keeper.
 	if !spiffeid.IsNexus(peerSPIFFEID.String()) {
-		return net.Fail(
-			reqres.ShardGetUnauthorized, w,
-			http.StatusUnauthorized, sdkErrors.ErrUnauthorized, fName,
+		net.Fail(
+			reqres.ShardGetResponse{}.Unauthorized(), w, http.StatusUnauthorized,
 		)
+		return sdkErrors.ErrAccessUnauthorized
 	}
 
 	return nil

@@ -58,7 +58,7 @@ var (
 // the restoration process using RestoreBackingStoreFromPilotShards.
 func RouteRestore(
 	w http.ResponseWriter, r *http.Request, audit *journal.AuditEntry,
-) error {
+) *sdkErrors.SDKError {
 	const fName = "routeRestore"
 
 	journal.AuditRequest(fName, r, audit, journal.AuditCreate)
@@ -70,7 +70,7 @@ func RouteRestore(
 
 	request, err := net.ReadParseAndGuard[
 		reqres.RestoreRequest, reqres.RestoreResponse](
-		w, r, reqres.RestoreBadInput, guardRestoreRequest, fName,
+		w, r, reqres.RestoreResponse{}.BadRequest(), guardRestoreRequest,
 	)
 	if alreadyResponded := err != nil; alreadyResponded {
 		return err
@@ -83,17 +83,17 @@ func RouteRestore(
 	currentShardCount := len(shards)
 
 	if currentShardCount >= env.ShamirThresholdVal() {
-		return net.Fail(
+		net.Fail(
 			reqres.RestoreResponse{
 				RestorationStatus: data.RestorationStatus{
 					ShardsCollected: currentShardCount,
 					ShardsRemaining: 0,
 					Restored:        true,
 				},
-				Err: sdkErrors.ErrCodeBadInput,
-			}, w,
-			http.StatusBadRequest, sdkErrors.ErrInvalidInput, fName,
+				Err: sdkErrors.ErrAPIBadRequest.Code,
+			}, w, http.StatusBadRequest,
 		)
+		return sdkErrors.ErrDataInvalidInput
 	}
 
 	for _, shard := range shards {
@@ -102,18 +102,17 @@ func RouteRestore(
 		}
 
 		// Duplicate shard found.
-
-		return net.Fail(
+		net.Fail(
 			reqres.RestoreResponse{
 				RestorationStatus: data.RestorationStatus{
 					ShardsCollected: currentShardCount,
 					ShardsRemaining: env.ShamirThresholdVal() - currentShardCount,
 					Restored:        currentShardCount == env.ShamirThresholdVal(),
 				},
-				Err: sdkErrors.ErrCodeBadInput,
-			}, w,
-			http.StatusBadRequest, sdkErrors.ErrInvalidInput, fName,
+				Err: sdkErrors.ErrAPIBadRequest.Code,
+			}, w, http.StatusBadRequest,
 		)
+		return sdkErrors.ErrDataInvalidInput
 	}
 
 	shards = append(shards, recovery.ShamirShard{
@@ -144,7 +143,7 @@ func RouteRestore(
 				ShardsRemaining: env.ShamirThresholdVal() - currentShardCount,
 				Restored:        currentShardCount == env.ShamirThresholdVal(),
 			},
-		}.Success(), w, fName,
+		}.Success(), w,
 	)
 	return nil
 }

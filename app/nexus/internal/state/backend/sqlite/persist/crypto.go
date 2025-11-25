@@ -11,8 +11,6 @@ import (
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 )
 
-// TODO: these are generic enough to move to the SDK.
-
 // encrypt encrypts the given data using the DataStore's cipher.
 // It generates a random nonce for each encryption operation to ensure
 // uniqueness.

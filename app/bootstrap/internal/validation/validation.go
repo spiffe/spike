@@ -62,7 +62,7 @@ func VerifyShamirReconstruction(secret group.Scalar, shares []shamir.Share) {
 		// deferred will not run in a fatal crash.
 		reconstructed.SetUint64(0)
 
-		failErr := *sdkErrors.ErrShamirReconstructionFailed // copy
+		failErr := *sdkErrors.ErrShamirReconstructionFailed.Clone()
 		failErr.Msg = "recovered secret does not match original"
 		log.FatalErr(fName, failErr)
 	}

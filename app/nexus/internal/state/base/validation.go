@@ -55,20 +55,21 @@ func contains(permissions []data.PolicyPermission,
 	return false
 }
 
-// hasAllPermissions checks whether the "haves" permissions satisfy all the
+// verifyPermissions checks whether the "haves" permissions satisfy all the
 // required "wants" permissions.
 //
-// The "Super" permission grants all permissions. If "Super" is present in the
-// haves, this function returns true regardless of the wants.
+// The "Super" permission acts as a wildcard that grants all permissions.
+// If "Super" is present in haves, this function returns true regardless of
+// the wants.
 //
 // Parameters:
 //   - haves: The permissions that are available
 //   - wants: The permissions that are required
 //
 // Returns:
-//   - true if all required permissions are satisfied
+//   - true if all required permissions are satisfied (or Super is present)
 //   - false if any required permission is missing
-func hasAllPermissions(
+func verifyPermissions(
 	haves []data.PolicyPermission,
 	wants []data.PolicyPermission,
 ) bool {

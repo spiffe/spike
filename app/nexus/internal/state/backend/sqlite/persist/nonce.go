@@ -49,15 +49,13 @@ func generateNonce(s *DataStore) ([]byte, *sdkErrors.SDKError) {
 //
 // Returns:
 //   - []byte: The encrypted ciphertext, or nil if an error occurs
-//   - *sdkErrors.SDKError: nil on success, or ErrCryptoNonceGenerationFailed
+//   - *sdkErrors.SDKError: nil on success, or ErrCryptoNonceSizeMismatch
 //     if the nonce size does not match the cipher's requirements
 func encryptWithNonce(
 	s *DataStore, nonce []byte, data []byte,
 ) ([]byte, *sdkErrors.SDKError) {
 	if len(nonce) != s.Cipher.NonceSize() {
-		// TODO: this does not reflect the actual error;
-		// create an ErrCryptoNonceSizeMismatch instead.
-		failErr := *sdkErrors.ErrCryptoNonceGenerationFailed // copy
+		failErr := *sdkErrors.ErrCryptoNonceSizeMismatch.Clone()
 		failErr.Msg = fmt.Sprintf(
 			"invalid nonce size: got %d, want %d",
 			len(nonce), s.Cipher.NonceSize(),

@@ -48,7 +48,7 @@ func guardSecretPutRequest(
 	request reqres.SecretPutRequest, w http.ResponseWriter, r *http.Request,
 ) *sdkErrors.SDKError {
 	peerSPIFFEID, err := auth.ExtractPeerSPIFFEID[reqres.SecretPutResponse](
-		r, w, reqres.SecretPutUnauthorized,
+		r, w, reqres.SecretPutResponse{}.Unauthorized(),
 	)
 	if alreadyResponded := err != nil; alreadyResponded {
 		return err
@@ -58,7 +58,7 @@ func guardSecretPutRequest(
 
 	err = validation.ValidatePath(path)
 	if invalidPath := err != nil; invalidPath {
-		net.Fail(reqres.SecretPutBadRequest, w, http.StatusBadRequest)
+		net.Fail(reqres.SecretPutResponse{}.BadRequest(), w, http.StatusBadRequest)
 		failErr := sdkErrors.ErrAPIBadRequest.Wrap(err)
 		failErr.Msg = "invalid secret path: " + path
 		return failErr
@@ -68,7 +68,7 @@ func guardSecretPutRequest(
 	for k := range values {
 		err := validation.ValidateName(k)
 		if err != nil {
-			net.Fail(reqres.SecretPutBadRequest, w, http.StatusBadRequest)
+			net.Fail(reqres.SecretPutResponse{}.BadRequest(), w, http.StatusBadRequest)
 			failErr := sdkErrors.ErrAPIBadRequest.Wrap(err)
 			failErr.Msg = "invalid key name: " + k
 			return failErr
@@ -80,8 +80,8 @@ func guardSecretPutRequest(
 		[]data.PolicyPermission{data.PermissionWrite},
 	)
 	if !allowed {
-		net.Fail(reqres.SecretPutUnauthorized, w, http.StatusUnauthorized)
-		failErr := *sdkErrors.ErrAccessUnauthorized // copy
+		net.Fail(reqres.SecretPutResponse{}.Unauthorized(), w, http.StatusUnauthorized)
+		failErr := *sdkErrors.ErrAccessUnauthorized.Clone()
 		failErr.Msg = "unauthorized to write secret: " + path
 		return &failErr
 	}

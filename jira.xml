@@ -36,6 +36,12 @@
   </high-level-plan>
   <task-group for="v0.6.1" theme="doc update and stabilization">
     <issue>
+      Refactor app/spike/internal/cmd/secret/get.go to extract repeated
+      marshaling logic (yaml.Marshal, json.Marshal, json.MarshalIndent) into
+      helper functions. The same marshal-and-print pattern is duplicated
+      multiple times for different format types.
+    </issue>
+    <issue>
       format inconsistencies.
 
       for policies we have json and human
@@ -2127,6 +2133,19 @@ w
       In highly reliable systems, you might want the bootstrap to keep trying
       forever, but even then, it's valuable to have observability into how
       long it's been trying and an option to break the loop if needed.
+    </issue>
+    <issue>
+      app/nexus/internal/state/backend/sqlite/persist/crypto.go
+      these are generic enough to move to the SDK.
+    </issue>
+    <issue>
+      validateContext(ctx, fName)
+      this can be an SDK utility function and can be used across the codebase instead of just this package.
+
+    </issue>
+    <issue>
+      // maybe add reference to mirrored go docs in the public website too,
+      // since the docs are very comprehensive and accurate now.
     </issue>
     <issue>
       pattern-based random secret generation

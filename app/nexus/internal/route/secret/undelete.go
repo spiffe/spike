@@ -60,7 +60,7 @@ func RouteUndeleteSecret(
 	request, err := net.ReadParseAndGuard[
 		reqres.SecretUndeleteRequest, reqres.SecretUndeleteResponse,
 	](
-		w, r, reqres.SecretUndeleteBadRequest, guardSecretUndeleteRequest,
+		w, r, reqres.SecretUndeleteResponse{}.BadRequest(), guardSecretUndeleteRequest,
 	)
 	if alreadyResponded := err != nil; alreadyResponded {
 		return err
@@ -75,10 +75,12 @@ func RouteUndeleteSecret(
 	err = state.UndeleteSecret(path, versions)
 	if err != nil {
 		failErr := sdkErrors.ErrAPIPostFailed.Wrap(err)
-		net.Fail(reqres.SecretUndeleteInternal, w, http.StatusInternalServerError)
+		net.Fail(
+			reqres.SecretUndeleteResponse{}.Internal(), w, http.StatusInternalServerError,
+		)
 		return failErr
 	}
 
-	net.Success(reqres.SecretUndeleteSuccess, w)
+	net.Success(reqres.SecretUndeleteResponse{}.Success(), w)
 	return nil
 }

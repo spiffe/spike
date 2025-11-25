@@ -9,7 +9,7 @@ import (
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 )
 
-// NewCipherCommand creates a new top-level command for cryptographic
+// NewCommand creates a new top-level command for cryptographic
 // operations. It acts as a parent for all cipher-related subcommands:
 // encrypt and decrypt.
 //
@@ -40,7 +40,7 @@ import (
 // Each subcommand supports multiple input/output modes including files,
 // stdin/stdout streams, and base64-encoded strings. See the individual
 // command documentation for details.
-func NewCipherCommand(
+func NewCommand(
 	source *workloadapi.X509Source, SPIFFEID string,
 ) *cobra.Command {
 	cmd := &cobra.Command{

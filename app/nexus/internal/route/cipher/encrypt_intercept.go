@@ -55,7 +55,7 @@ func guardEncryptCipherRequest(
 
 	// Validate plaintext size to prevent DoS attacks
 	if err := validatePlaintextSize(
-		request.Plaintext, w, reqres.CipherEncryptBadInput, fName,
+		request.Plaintext, w, reqres.CipherEncryptResponse{}.BadRequest(), fName,
 	); err != nil {
 		return err
 	}
@@ -75,8 +75,10 @@ func guardEncryptCipherRequest(
 	}
 	// If not, block the request:
 	if !allowed {
-		net.Fail(reqres.CipherEncryptUnauthorized, w, http.StatusUnauthorized)
-		return sdkErrors.ErrUnauthorized
+		net.Fail(
+			reqres.CipherEncryptResponse{}.Unauthorized(), w, http.StatusUnauthorized,
+		)
+		return sdkErrors.ErrAccessUnauthorized
 	}
 
 	return nil

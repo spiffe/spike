@@ -107,7 +107,7 @@ func decryptJSON(cmd *cobra.Command, api *sdk.API, versionStr, nonceB64,
 	// version must be a valid byte value.
 	if err != nil || v < 0 || v > 255 {
 		cmd.PrintErrln("Error: invalid --version, must be 0-255")
-		warnErr := *sdkErrors.ErrDataInvalidInput
+		warnErr := *sdkErrors.ErrDataInvalidInput.Clone()
 		warnErr.Msg = "invalid --version, must be 0-255"
 		log.WarnErr(fName, warnErr)
 		return

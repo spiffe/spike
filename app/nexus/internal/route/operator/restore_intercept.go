@@ -52,7 +52,7 @@ func guardRestoreRequest(
 	request reqres.RestoreRequest, w http.ResponseWriter, r *http.Request,
 ) *sdkErrors.SDKError {
 	peerSPIFFEID, err := auth.ExtractPeerSPIFFEID[reqres.ShardGetResponse](
-		r, w, reqres.ShardGetUnauthorized,
+		r, w, reqres.ShardGetResponse{}.Unauthorized(),
 	)
 	if alreadyResponded := err != nil; alreadyResponded {
 		return err
@@ -61,12 +61,12 @@ func guardRestoreRequest(
 	// We don't do policy checks as the restore operation purely restricted to
 	// SPIKE Pilot.
 	if !spiffeid.IsPilotRestore(peerSPIFFEID.String()) {
-		net.Fail(reqres.RestoreUnauthorized, w, http.StatusUnauthorized)
+		net.Fail(reqres.RestoreResponse{}.Unauthorized(), w, http.StatusUnauthorized)
 		return sdkErrors.ErrAccessUnauthorized
 	}
 
 	if request.ID < 1 || request.ID > maxShardID {
-		net.Fail(reqres.RestoreBadRequest, w, http.StatusBadRequest)
+		net.Fail(reqres.RestoreResponse{}.BadRequest(), w, http.StatusBadRequest)
 		return sdkErrors.ErrAPIBadRequest
 	}
 
@@ -78,7 +78,7 @@ func guardRestoreRequest(
 		}
 	}
 	if allZero {
-		net.Fail(reqres.RestoreBadRequest, w, http.StatusBadRequest)
+		net.Fail(reqres.RestoreResponse{}.BadRequest(), w, http.StatusBadRequest)
 		return sdkErrors.ErrAPIBadRequest
 	}
 

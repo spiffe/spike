@@ -42,6 +42,7 @@ func guardGetSecretRequest(
 		request.Path,
 		[]data.PolicyPermission{data.PermissionRead},
 		w, r,
-		reqres.SecretGetUnauthorized, reqres.SecretGetBadRequest,
+		reqres.SecretGetResponse{}.Unauthorized(),
+		reqres.SecretGetResponse{}.BadRequest(),
 	)
 }

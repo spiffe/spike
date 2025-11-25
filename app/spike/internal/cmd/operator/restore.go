@@ -77,7 +77,7 @@ func newOperatorRestoreCommand(
 				cmd.PrintErrln(
 					"  with necessary privileges to assign this role.")
 				cmd.PrintErrln("")
-				failErr := *sdkErrors.ErrAccessUnauthorized // copy
+				failErr := *sdkErrors.ErrAccessUnauthorized.Clone()
 				failErr.Msg = "you do not have the required 'restore' role"
 				log.FatalErr(fName, failErr)
 			}
@@ -113,7 +113,7 @@ func newOperatorRestoreCommand(
 					"Invalid shard format. Expected format: 'spike:$id:$secret'.",
 				)
 				cmd.PrintErrln("")
-				failErr := *sdkErrors.ErrAPIBadRequest // copy
+				failErr := *sdkErrors.ErrAPIBadRequest.Clone()
 				failErr.Msg = "invalid shard format"
 				log.FatalErr(fName, failErr)
 			}
@@ -130,7 +130,7 @@ func newOperatorRestoreCommand(
 					"Did you miss some characters when pasting?",
 				)
 				cmd.PrintErrln("")
-				failErr := *sdkErrors.ErrAPIBadRequest // copy
+				failErr := *sdkErrors.ErrAPIBadRequest.Clone()
 				failErr.Msg = "invalid hex shard length"
 				log.FatalErr(fName, failErr)
 			}
@@ -165,7 +165,7 @@ func newOperatorRestoreCommand(
 					"Invalid recovery shard length. Got: %d. Expected: %d.\n",
 					len(decodedShard), crypto.AES256KeySize)
 				cmd.PrintErrln("")
-				failErr := *sdkErrors.ErrCryptoInvalidEncryptionKeyLength // copy
+				failErr := *sdkErrors.ErrCryptoInvalidEncryptionKeyLength.Clone()
 				failErr.Msg = "invalid recovery shard length"
 				log.FatalErr(fName, failErr)
 			}
@@ -205,7 +205,7 @@ func newOperatorRestoreCommand(
 					"Didn't get any status trying to restore SPIKE Nexus.")
 				cmd.PrintErrln("Please check SPIKE Nexus logs for more info.")
 				cmd.PrintErrln("")
-				failErr := *sdkErrors.ErrAPIPostFailed // copy
+				failErr := *sdkErrors.ErrAPIPostFailed.Clone()
 				failErr.Msg = "bad status response from SPIKE Nexus"
 				log.FatalErr(fName, failErr)
 			}

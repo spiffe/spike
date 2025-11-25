@@ -34,8 +34,8 @@ import (
 //   - audit: Audit entry for logging the policy read action
 //
 // Returns:
-//   - error: nil on successful retrieval or policy not found, error on system
-//     failures
+//   - *sdkErrors.SDKError: nil on successful retrieval, ErrEntityNotFound if
+//     policy not found, other errors on system failures
 //
 // Example request body:
 //
@@ -89,7 +89,7 @@ func RouteGetPolicy(
 
 	request, err := net.ReadParseAndGuard[
 		reqres.PolicyReadRequest, reqres.PolicyReadResponse](
-		w, r, reqres.PolicyReadBadInput, guardPolicyReadRequest, fName,
+		w, r, reqres.PolicyReadResponse{}.BadRequest(), guardPolicyReadRequest,
 	)
 	if alreadyResponded := err != nil; alreadyResponded {
 		return err
@@ -100,37 +100,24 @@ func RouteGetPolicy(
 	policy, err := state.GetPolicy(policyID)
 	policyFound := err == nil
 
-	internalError := err != nil && !stdErrors.Is(err, sdkErrors.ErrPolicyNotFound)
+	internalError := err != nil && !stdErrors.Is(err, sdkErrors.ErrEntityNotFound)
 	if internalError {
-		failErr := stdErrors.Join(sdkErrors.ErrQueryFailure, err)
-		return net.Fail(
-			reqres.PolicyReadResponse{Err: sdkErrors.ErrCodeInternal}, w,
-			http.StatusInternalServerError, failErr, fName,
+		net.Fail(
+			reqres.PolicyReadResponse{}.Internal(), w, http.StatusInternalServerError,
 		)
-	}
-
-	if policyFound {
-		log.Log().Info(fName, "message", sdkErrors.ErrCodeFound, "id", policy.ID)
-	} else {
-		log.Log().Info(
-			fName,
-			"message", sdkErrors.ErrCodeNotFound,
-			"id", policyID,
-			"err", err.Error(),
-		)
+		return sdkErrors.ErrEntityQueryFailed.Wrap(err)
 	}
 
 	if !policyFound {
-		// TODO: if we have ErrPolicyNotFound, then we should also have
-		// ErrSecretNotFound, and ErrSecretMetaDataNotFound and get rid of
-		// the generic ErrNotFound.
-		// Same for ErrFound, if any.
-		return net.Fail(
-			reqres.PolicyReadNotFound, w,
-			http.StatusNotFound, sdkErrors.ErrPolicyNotFound, fName,
+		notFoundErr := *sdkErrors.ErrAPINotFound.Clone()
+		notFoundErr.Msg = "policy not found with id: " + policyID
+		log.InfoErr(fName, notFoundErr)
+		net.Fail(
+			reqres.PolicyReadResponse{}.NotFound(), w, http.StatusNotFound,
 		)
+		return sdkErrors.ErrEntityNotFound
 	}
 
-	net.Success(reqres.PolicyReadResponse{Policy: policy}, w, fName)
+	net.Success(reqres.PolicyReadResponse{Policy: policy}.Success(), w)
 	return nil
 }

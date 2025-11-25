@@ -27,13 +27,13 @@ func main() {
 
 	source, selfSPIFFEID, err := spiffe.Source(ctx, spiffe.EndpointSocket())
 	if err != nil {
-		log.FatalErr(appName, *sdkErrors.ErrInitializationFailed.Wrap(err))
+		log.FatalErr(appName, *sdkErrors.ErrStateInitializationFailed.Wrap(err))
 	}
 	defer spiffe.CloseSource(source)
 
 	// I should be a SPIKE Keeper.
 	if !spiffeid.IsKeeper(selfSPIFFEID) {
-		failErr := *sdkErrors.ErrInitializationFailed // copy
+		failErr := *sdkErrors.ErrStateInitializationFailed.Clone()
 		failErr.Msg = "SPIFFE ID is not valid: " + selfSPIFFEID
 		log.FatalErr(appName, failErr)
 	}

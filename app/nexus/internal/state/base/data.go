@@ -82,12 +82,12 @@ func SetRootKey(rk *[crypto.AES256KeySize]byte) {
 	log.Log().Info(fName, "message", "setting root key")
 
 	if rk == nil {
-		log.Log().Warn(fName, "message", sdkErrors.ErrCodeRootKeyEmpty)
+		log.Log().Warn(fName, "message", sdkErrors.ErrRootKeyEmpty.Code)
 		return
 	}
 
 	if mem.Zeroed32(rk) {
-		log.Log().Warn(fName, "message", sdkErrors.ErrCodeRootKeyEmpty)
+		log.Log().Warn(fName, "message", sdkErrors.ErrRootKeyEmpty.Code)
 		return
 	}
 

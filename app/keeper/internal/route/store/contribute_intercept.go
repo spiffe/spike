@@ -15,8 +15,6 @@ import (
 	"github.com/spiffe/spike/internal/net"
 )
 
-// TODO: replace apiErr in comments too.
-
 // guardShardPutRequest validates that the peer contributing a shard is either
 // SPIKE Bootstrap or SPIKE Nexus. This prevents unauthorized modification of
 // shard data stored in SPIKE Keeper.
@@ -30,14 +28,13 @@ import (
 //   - r *http.Request: The HTTP request containing peer SPIFFE ID
 //
 // Returns:
-//   - error: apiErr.ErrUnauthorized if validation fails, nil otherwise
+//   - *sdkErrors.SDKError: ErrAccessUnauthorized if validation fails,
+//     nil otherwise
 func guardShardPutRequest(
 	_ reqres.ShardPutRequest, w http.ResponseWriter, r *http.Request,
 ) *sdkErrors.SDKError {
-	const fName = "guardShardPutRequest"
-
 	peerSPIFFEID, err := auth.ExtractPeerSPIFFEID[reqres.ShardPutResponse](
-		r, w, reqres.ShardPutUnauthorized,
+		r, w, reqres.ShardPutResponse{}.Unauthorized(),
 	)
 	if alreadyResponded := err != nil; alreadyResponded {
 		return err
@@ -45,10 +42,10 @@ func guardShardPutRequest(
 
 	// Allow both Bootstrap (initial setup) and Nexus (periodic updates)
 	if !spiffeid.PeerCanTalkToKeeper(peerSPIFFEID.String()) {
-		return net.Fail(
-			reqres.ShardPutUnauthorized, w,
-			http.StatusUnauthorized, sdkErrors.ErrUnauthorized, fName,
+		net.Fail(
+			reqres.ShardPutResponse{}.Unauthorized(), w, http.StatusUnauthorized,
 		)
+		return sdkErrors.ErrAccessUnauthorized
 	}
 
 	return nil

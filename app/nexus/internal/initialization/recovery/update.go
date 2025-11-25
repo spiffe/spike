@@ -81,7 +81,7 @@ func sendShardsToKeepers(
 		}
 
 		if share.ID.IsZero() {
-			warnErr := *sdkErrors.ErrEntityNotFound // copy
+			warnErr := *sdkErrors.ErrEntityNotFound.Clone()
 			warnErr.Msg = "failed to find share for keeper"
 			log.WarnErr(fName, warnErr)
 			continue
@@ -106,7 +106,7 @@ func sendShardsToKeepers(
 
 		if len(contribution) != crypto.AES256KeySize {
 			// Log before clearing (contribution length is needed for logging).
-			warnErr := *sdkErrors.ErrDataInvalidInput // copy
+			warnErr := *sdkErrors.ErrDataInvalidInput.Clone()
 			warnErr.Msg = "invalid contribution length"
 			log.WarnErr(fName, warnErr)
 

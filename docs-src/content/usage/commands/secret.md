@@ -198,18 +198,20 @@ spike secret put secrets/application/config host=localhost port=8080 debug=true
 ### `spike secret get`
 
 ```bash
-spike secret get <path> [--version=<version>]
+spike secret get <path> [key] [--version=<version>] [--format=<format>]
 ```
 
-Retrieves and displays the key-value pairs stored at the specified secret path. 
-By default, it returns the current (latest) version, but a specific version can 
-be requested.
+Retrieves and displays the key-value pairs stored at the specified secret path.
+By default, it returns the current (latest) version, but a specific version can
+be requested. Optionally, you can specify a single key to retrieve only that
+value.
 
 #### Flags:
 
-| Flag              | Description                                                    |
-|-------------------|----------------------------------------------------------------|
-| `--version`, `-v` | Specific version to retrieve (default: 0, the current version) |
+| Flag              | Description                                                     |
+|-------------------|-----------------------------------------------------------------|
+| `--version`, `-v` | Specific version to retrieve (default: 0, the current version)  |
+| `--format`, `-f`  | Output format: `plain`, `p`, `yaml`, `y`, `json`, `j` (default: `plain`) |
 
 #### Examples:
 
@@ -219,6 +221,15 @@ spike secret get secrets/database/creds
 
 # Get a specific version of a secret
 spike secret get secrets/database/creds --version=2
+
+# Get a specific key from a secret
+spike secret get secrets/database/creds username
+
+# Get secret in JSON format
+spike secret get secrets/database/creds --format=json
+
+# Get secret in YAML format
+spike secret get secrets/database/creds -f yaml
 ```
 
 ### `spike secret delete`

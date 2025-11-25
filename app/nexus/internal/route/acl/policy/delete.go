@@ -5,7 +5,6 @@
 package policy
 
 import (
-	stdErr "errors"
 	"net/http"
 
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
@@ -16,8 +15,6 @@ import (
 	"github.com/spiffe/spike/internal/journal"
 	"github.com/spiffe/spike/internal/net"
 )
-
-// TODO: replace stdErr with errors
 
 // RouteDeletePolicy handles HTTP DELETE requests to remove existing policies.
 // It processes the request body to delete a policy specified by its ID.
@@ -34,7 +31,7 @@ import (
 //   - audit: Audit entry for logging the policy deletion action
 //
 // Returns:
-//   - error: nil on successful policy deletion, error otherwise
+//   - *sdkErrors.SDKError: nil on successful policy deletion, error otherwise
 //
 // Example request body:
 //
@@ -59,7 +56,7 @@ import (
 //   - Failed to delete policy (internal server error)
 func RouteDeletePolicy(
 	w http.ResponseWriter, r *http.Request, audit *journal.AuditEntry,
-) error {
+) *sdkErrors.SDKError {
 	const fName = "RouteDeletePolicy"
 
 	journal.AuditRequest(fName, r, audit, journal.AuditDelete)
@@ -67,7 +64,7 @@ func RouteDeletePolicy(
 	request, err := net.ReadParseAndGuard[
 		reqres.PolicyDeleteRequest, reqres.PolicyDeleteResponse,
 	](
-		w, r, reqres.PolicyDeleteBadInput, guardPolicyDeleteRequest, fName,
+		w, r, reqres.PolicyDeleteResponse{}.BadRequest(), guardPolicyDeleteRequest,
 	)
 	if alreadyResponded := err != nil; alreadyResponded {
 		return err
@@ -77,13 +74,14 @@ func RouteDeletePolicy(
 
 	err = state.DeletePolicy(policyID)
 	if err != nil {
-		failErr := stdErr.Join(sdkErrors.ErrDeletionFailed, err)
-		return net.Fail(
-			reqres.PolicyDeleteInternal, w,
-			http.StatusInternalServerError, failErr, fName,
+		log.WarnErr(fName, *err)
+		net.Fail(
+			reqres.PolicyDeleteResponse{}.Internal(), w,
+			http.StatusInternalServerError,
 		)
+		return sdkErrors.ErrObjectDeletionFailed.Wrap(err)
 	}
 
-	net.Success(reqres.PolicyDeleteSuccess, w, fName)
+	net.Success(reqres.PolicyDeleteResponse{}.Success(), w)
 	return nil
 }

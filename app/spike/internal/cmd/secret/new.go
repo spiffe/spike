@@ -9,7 +9,7 @@ import (
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 )
 
-// NewSecretCommand creates a new top-level command for managing secrets
+// NewCommand creates a new top-level command for managing secrets
 // within the SPIKE ecosystem. It acts as a parent for all secret-related
 // subcommands that provide CRUD operations on secrets.
 //
@@ -49,7 +49,7 @@ import (
 //
 // Each subcommand has its own set of flags and arguments. See the individual
 // command documentation for details.
-func NewSecretCommand(
+func NewCommand(
 	source *workloadapi.X509Source, SPIFFEID string,
 ) *cobra.Command {
 	cmd := &cobra.Command{

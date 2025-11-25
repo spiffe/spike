@@ -9,7 +9,7 @@ import (
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 )
 
-// NewOperatorCommand creates a new cobra.Command for managing SPIKE admin
+// NewCommand creates a new cobra.Command for managing SPIKE admin
 // operations. It initializes an "operator" command with subcommands for
 // recovery and restore operations.
 //
@@ -21,7 +21,7 @@ import (
 //
 // Returns:
 //   - *cobra.Command: A configured cobra command for operator management
-func NewOperatorCommand(
+func NewCommand(
 	source *workloadapi.X509Source, SPIFFEID string,
 ) *cobra.Command {
 	cmd := &cobra.Command{

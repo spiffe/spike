@@ -42,12 +42,10 @@ import (
 //   - apiErr.ErrUnauthorized if authentication or authorization fails
 //   - apiErr.ErrInvalidInput if any input validation fails
 func guardPolicyCreateRequest(
-	request reqres.PolicyCreateRequest, w http.ResponseWriter, r *http.Request,
+	request reqres.PolicyPutRequest, w http.ResponseWriter, r *http.Request,
 ) *sdkErrors.SDKError {
-	const fName = "guardPolicyCreateRequest"
-
-	peerSPIFFEID, err := auth.ExtractPeerSPIFFEID[reqres.PolicyCreateResponse](
-		r, w, reqres.PolicyCreateUnauthorized,
+	peerSPIFFEID, err := auth.ExtractPeerSPIFFEID[reqres.PolicyPutResponse](
+		r, w, reqres.PolicyPutResponse{}.Unauthorized(),
 	)
 	if alreadyResponded := err != nil; alreadyResponded {
 		return err
@@ -59,10 +57,10 @@ func guardPolicyCreateRequest(
 		[]data.PolicyPermission{data.PermissionWrite},
 	)
 	if !allowed {
-		return net.Fail(
-			reqres.PolicyCreateUnauthorized, w,
-			http.StatusUnauthorized, sdkErrors.ErrUnauthorized, fName,
+		net.Fail(
+			reqres.PolicyPutResponse{}.Unauthorized(), w, http.StatusUnauthorized,
 		)
+		return sdkErrors.ErrAccessUnauthorized
 	}
 
 	name := request.Name
@@ -71,31 +69,31 @@ func guardPolicyCreateRequest(
 	permissions := request.Permissions
 
 	if err := validation.ValidateName(name); err != nil {
-		return net.Fail(
-			reqres.PolicyCreateBadInput, w,
-			http.StatusBadRequest, sdkErrors.ErrInvalidInput, fName,
+		net.Fail(
+			reqres.PolicyPutResponse{}.BadRequest(), w, http.StatusBadRequest,
 		)
+		return sdkErrors.ErrDataInvalidInput
 	}
 
 	if err := validation.ValidateSPIFFEIDPattern(SPIFFEIDPattern); err != nil {
-		return net.Fail(
-			reqres.PolicyCreateBadInput, w,
-			http.StatusBadRequest, sdkErrors.ErrInvalidInput, fName,
+		net.Fail(
+			reqres.PolicyPutResponse{}.BadRequest(), w, http.StatusBadRequest,
 		)
+		return sdkErrors.ErrDataInvalidInput
 	}
 
 	if err := validation.ValidatePathPattern(pathPattern); err != nil {
-		return net.Fail(
-			reqres.PolicyCreateBadInput, w,
-			http.StatusBadRequest, sdkErrors.ErrInvalidInput, fName,
+		net.Fail(
+			reqres.PolicyPutResponse{}.BadRequest(), w, http.StatusBadRequest,
 		)
+		return sdkErrors.ErrDataInvalidInput
 	}
 
 	if err := validation.ValidatePermissions(permissions); err != nil {
-		return net.Fail(
-			reqres.PolicyCreateBadInput, w,
-			http.StatusBadRequest, sdkErrors.ErrInvalidInput, fName,
+		net.Fail(
+			reqres.PolicyPutResponse{}.BadRequest(), w, http.StatusBadRequest,
 		)
+		return sdkErrors.ErrDataInvalidInput
 	}
 
 	return nil

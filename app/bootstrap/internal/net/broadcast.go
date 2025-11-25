@@ -136,14 +136,14 @@ func AcquireSource() *workloadapi.X509Source {
 		return nil
 	}
 	if !svid.IsBootstrap(sv.ID.String()) {
-		failErr := *sdkErrors.ErrAccessUnauthorized // copy
+		failErr := *sdkErrors.ErrAccessUnauthorized.Clone()
 		failErr.Msg = "bootstrap SPIFFE ID required"
 		log.FatalErr(fName, failErr)
 		return nil
 	}
 
 	if src == nil {
-		failErr := *sdkErrors.ErrSPIFFEFailedToExtractX509SVID // copy
+		failErr := *sdkErrors.ErrSPIFFEFailedToExtractX509SVID.Clone()
 		failErr.Msg = "failed to acquire X.509 SVID"
 		log.FatalErr(fName, failErr)
 		return nil

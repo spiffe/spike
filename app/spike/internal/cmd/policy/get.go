@@ -109,7 +109,7 @@ func newPolicyGetCommand(
 				c.PrintErrln("Error: SPIFFE X509 source is unavailable")
 				c.PrintErrln("The workload API may have lost connection.")
 				c.PrintErrln("Please check your SPIFFE agent and try again.")
-				warnErr := *sdkErrors.ErrSPIFFENilX509Source // copy
+				warnErr := *sdkErrors.ErrSPIFFENilX509Source.Clone()
 				warnErr.Msg = "SPIFFE X509 source is unavailable"
 				log.WarnErr(fName, warnErr)
 				return
@@ -141,7 +141,7 @@ func newPolicyGetCommand(
 
 			if policy == nil {
 				c.PrintErrln("Error: Got empty response from server.")
-				warnErr := *sdkErrors.ErrEntityNotFound // copy
+				warnErr := *sdkErrors.ErrEntityNotFound.Clone()
 				warnErr.Msg = "got empty response from server"
 				log.WarnErr(fName, warnErr)
 				return

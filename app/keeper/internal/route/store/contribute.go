@@ -68,14 +68,14 @@ func RouteContribute(
 	request, err := net.ReadParseAndGuard[
 		reqres.ShardPutRequest, reqres.ShardPutResponse,
 	](
-		w, r, reqres.ShardPutBadRequest, guardShardPutRequest,
+		w, r, reqres.ShardPutResponse{}.BadRequest(), guardShardPutRequest,
 	)
 	if alreadyResponded := err != nil; alreadyResponded {
 		return err
 	}
 
 	if request.Shard == nil {
-		net.Fail(reqres.ShardPutBadRequest, w, http.StatusBadRequest)
+		net.Fail(reqres.ShardPutResponse{}.BadRequest(), w, http.StatusBadRequest)
 		return sdkErrors.ErrShamirNilShard
 	}
 
@@ -89,13 +89,13 @@ func RouteContribute(
 	// indicate invalid input. Since Shard is a fixed-length array in the request,
 	// clients must send meaningful non-zero data.
 	if mem.Zeroed32(request.Shard) {
-		net.Fail(reqres.ShardPutBadRequest, w, http.StatusBadRequest)
+		net.Fail(reqres.ShardPutResponse{}.BadRequest(), w, http.StatusBadRequest)
 		return sdkErrors.ErrShamirEmptyShard
 	}
 
 	// `state.SetShard` copies the shard. We can safely reset this one at [1].
 	state.SetShard(request.Shard)
 
-	net.Success(reqres.ShardPutSuccess, w)
+	net.Success(reqres.ShardPutResponse{}.Success(), w)
 	return nil
 }

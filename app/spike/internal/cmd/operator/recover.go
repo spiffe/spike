@@ -74,7 +74,7 @@ func newOperatorRecoverCommand(
 				cmd.PrintErrln(
 					"  with necessary privileges to assign this role.")
 				cmd.PrintErrln("")
-				failErr := *sdkErrors.ErrAccessUnauthorized
+				failErr := *sdkErrors.ErrAccessUnauthorized.Clone()
 				failErr.Msg = "you do not have the required 'recover' role"
 				log.FatalErr(fName, failErr)
 			}
@@ -85,7 +85,7 @@ func newOperatorRecoverCommand(
 				cmd.PrintErrln("Error: SPIFFE X509 source is unavailable")
 				cmd.PrintErrln("The workload API may have lost connection.")
 				cmd.PrintErrln("Please check your SPIFFE agent and try again.")
-				warnErr := *sdkErrors.ErrSPIFFENilX509Source
+				warnErr := *sdkErrors.ErrSPIFFENilX509Source.Clone()
 				warnErr.Msg = "SPIFFE X509 source is unavailable"
 				log.WarnErr(fName, warnErr)
 				return
@@ -133,7 +133,7 @@ func newOperatorRecoverCommand(
 					cmd.PrintErrln("  Please try again later.")
 					cmd.PrintErrln("  If the problem persists, check SPIKE logs.")
 					cmd.PrintErrln("")
-					warnErr := *sdkErrors.ErrDataInvalidInput
+					warnErr := *sdkErrors.ErrDataInvalidInput.Clone()
 					warnErr.Msg = "empty shard found"
 					log.WarnErr(fName, warnErr)
 					return
@@ -163,7 +163,7 @@ func newOperatorRecoverCommand(
 				cmd.PrintErrln(
 					"    Path does not exist or is not a directory.")
 				cmd.PrintErrln("")
-				failErr := *sdkErrors.ErrDataInvalidInput
+				failErr := *sdkErrors.ErrDataInvalidInput.Clone()
 				failErr.Msg = "invalid recovery directory path"
 				log.FatalErr(fName, failErr)
 			}
@@ -178,7 +178,7 @@ func newOperatorRecoverCommand(
 				cmd.PrintErrln("    Invalid recovery directory path.")
 				cmd.PrintErrln("    Path contains suspicious components.")
 				cmd.PrintErrln("")
-				failErr := *sdkErrors.ErrDataInvalidInput
+				failErr := *sdkErrors.ErrDataInvalidInput.Clone()
 				failErr.Msg = "path contains suspicious components"
 				log.FatalErr(fName, failErr)
 			}

@@ -78,7 +78,7 @@ func decryptDataJSON(
 	if err != nil {
 		failErr := stdErrors.Join(sdkErrors.ErrCryptoDecryptionFailed, err)
 		net.Fail(
-			reqres.CipherDecryptInternal, w, http.StatusInternalServerError,
+			reqres.CipherDecryptResponse{}.Internal(), w, http.StatusInternalServerError,
 		)
 		return nil, failErr
 	}
@@ -103,7 +103,7 @@ func generateNonceOrFailStreaming(
 	if _, err := io.ReadFull(rand.Reader, nonce); err != nil {
 		failErr := stdErrors.Join(sdkErrors.ErrCryptoNonceGenerationFailed, err)
 		http.Error(
-			w, string(sdkErrors.ErrCodeCryptoNonceGenerationFailed),
+			w, string(sdkErrors.ErrCryptoNonceGenerationFailed.Code),
 			http.StatusInternalServerError,
 		)
 		return nil, failErr
@@ -185,7 +185,7 @@ func encryptDataStreaming(
 func encryptDataJSON(
 	plaintext []byte, c cipher.AEAD, w http.ResponseWriter, fName string,
 ) ([]byte, []byte, error) {
-	nonce, err := generateNonceOrFailJSON(c, w, reqres.CipherEncryptInternal)
+	nonce, err := generateNonceOrFailJSON(c, w, reqres.CipherEncryptResponse{}.Internal())
 	if err != nil {
 		return nil, nil, err
 	}

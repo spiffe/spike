@@ -48,33 +48,38 @@ const maxCiphertextSize = 65536
 //
 // Returns:
 //   - nil if all validations pass
-//   - apiErr.ErrUnauthorized if authentication fails or peer is not bootstrap
-//   - apiErr.ErrInvalidInput if nonce or ciphertext validation fails
+//   - sdkErrors.ErrAccessUnauthorized if authentication fails or peer is not
+//     bootstrap
+//   - sdkErrors.ErrDataInvalidInput if nonce or ciphertext validation fails
 func guardVerifyRequest(
 	request reqres.BootstrapVerifyRequest, w http.ResponseWriter, r *http.Request,
-) error {
-	const fName = "guardVerifyRequest"
-
+) *sdkErrors.SDKError {
 	peerSPIFFEID, err := auth.ExtractPeerSPIFFEID[reqres.BootstrapVerifyResponse](
-		r, w, reqres.BootstrapUnauthorized,
+		r, w, reqres.BootstrapVerifyResponse{}.Unauthorized(),
 	)
 	if alreadyResponded := err != nil; alreadyResponded {
 		return err
 	}
 
 	if !spiffeid.IsBootstrap(peerSPIFFEID.String()) {
-		net.Fail(reqres.BootstrapUnauthorized, w, http.StatusUnauthorized)
-		return sdkErrors.ErrUnauthorized
+		net.Fail(
+			reqres.BootstrapVerifyResponse{}.Unauthorized(), w, http.StatusUnauthorized,
+		)
+		return sdkErrors.ErrAccessUnauthorized
 	}
 
 	if len(request.Nonce) != expectedNonceSize {
-		net.Fail(reqres.BootstrapBadInput, w, http.StatusBadRequest)
-		return sdkErrors.ErrInvalidInput
+		net.Fail(
+			reqres.BootstrapVerifyResponse{}.BadRequest(), w, http.StatusBadRequest,
+		)
+		return sdkErrors.ErrDataInvalidInput
 	}
 
 	if len(request.Ciphertext) > maxCiphertextSize {
-		net.Fail(reqres.BootstrapBadInput, w, http.StatusBadRequest)
-		return sdkErrors.ErrInvalidInput
+		net.Fail(
+			reqres.BootstrapVerifyResponse{}.BadRequest(), w, http.StatusBadRequest,
+		)
+		return sdkErrors.ErrDataInvalidInput
 	}
 
 	return nil

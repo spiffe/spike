@@ -61,14 +61,20 @@ func RouteEncrypt(
 		getCipher := func() (cipher.AEAD, error) {
 			return getCipherOrFailStreaming(w)
 		}
-		return handleStreamingEncrypt(w, r, getCipher, fName)
+		if err := handleStreamingEncrypt(w, r, getCipher, fName); err != nil {
+			return sdkErrors.ErrCryptoEncryptionFailed.Wrap(err)
+		}
+		return nil
 	}
 
 	// Cipher getter for JSON mode
 	getCipher := func() (cipher.AEAD, error) {
 		return getCipherOrFailJSON(
-			w, reqres.CipherEncryptResponse{Err: sdkErrors.ErrCodeInternal},
+			w, reqres.CipherEncryptResponse{Err: sdkErrors.ErrAPIInternal.Code},
 		)
 	}
-	return handleJSONEncrypt(w, r, getCipher, fName)
+	if err := handleJSONEncrypt(w, r, getCipher, fName); err != nil {
+		return sdkErrors.ErrCryptoEncryptionFailed.Wrap(err)
+	}
+	return nil
 }

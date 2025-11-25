@@ -29,12 +29,15 @@ import (
 //     display an error message and return.
 //   - SPIFFEID: The SPIFFE ID to authenticate with
 //
-// The command accepts a single argument:
-//   - path: Location of the secret to retrieve
+// Arguments:
+//   - path: Location of the secret to retrieve (required)
+//   - key: Optional specific key to retrieve from the secret
 //
 // Flags:
 //   - --version, -v (int): Specific version of the secret to retrieve
 //     (default 0) where 0 represents the current version
+//   - --format, -f (string): Output format. Valid options: plain, p, yaml, y,
+//     json, j (default "plain")
 //
 // Returns:
 //   - *cobra.Command: Configured get command
@@ -79,7 +82,7 @@ func newSecretGetCommand(
 			if !slices.Contains([]string{"plain",
 				"yaml", "json", "y", "p", "j"}, format) {
 				cmd.PrintErrf("Error: invalid format specified: %s\n", format)
-				warnErr := *sdkErrors.ErrDataInvalidInput
+				warnErr := *sdkErrors.ErrDataInvalidInput.Clone()
 				warnErr.Msg = "invalid format specified"
 				log.WarnErr(fName, warnErr)
 				return
@@ -87,7 +90,7 @@ func newSecretGetCommand(
 
 			if !validSecretPath(path) {
 				cmd.PrintErrf("Error: invalid secret path: %s\n", path)
-				warnErr := *sdkErrors.ErrDataInvalidInput
+				warnErr := *sdkErrors.ErrDataInvalidInput.Clone()
 				warnErr.Msg = "invalid secret path"
 				log.WarnErr(fName, warnErr)
 				return
@@ -100,7 +103,7 @@ func newSecretGetCommand(
 
 			if secret == nil {
 				cmd.PrintErrln("Error: secret not found")
-				warnErr := *sdkErrors.ErrEntityNotFound
+				warnErr := *sdkErrors.ErrEntityNotFound.Clone()
 				warnErr.Msg = "secret not found"
 				log.WarnErr(fName, warnErr)
 				return
@@ -108,13 +111,11 @@ func newSecretGetCommand(
 
 			if secret.Data == nil {
 				cmd.PrintErrln("Error: secret has no data")
-				warnErr := *sdkErrors.ErrEntityNotFound
+				warnErr := *sdkErrors.ErrEntityNotFound.Clone()
 				warnErr.Msg = "secret has no data"
 				log.WarnErr(fName, warnErr)
 				return
 			}
-
-			// TODO: this part may benefit from some refactoring; similar code can be extracted into helper functions.
 
 			d := secret.Data
 
@@ -132,7 +133,7 @@ func newSecretGetCommand(
 				}
 				if !found {
 					cmd.PrintErrln("Error: key not found")
-					warnErr := *sdkErrors.ErrEntityNotFound
+					warnErr := *sdkErrors.ErrEntityNotFound.Clone()
 					warnErr.Msg = "key not found"
 					log.WarnErr(fName, warnErr)
 					return
@@ -204,7 +205,7 @@ func newSecretGetCommand(
 			}
 
 			cmd.PrintErrln("Error: key not found")
-			warnErr := *sdkErrors.ErrEntityNotFound
+			warnErr := *sdkErrors.ErrEntityNotFound.Clone()
 			warnErr.Msg = "key not found"
 			log.WarnErr(fName, warnErr)
 		},

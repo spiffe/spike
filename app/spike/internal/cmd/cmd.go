@@ -16,9 +16,6 @@ import (
 	"github.com/spiffe/spike/app/spike/internal/cmd/secret"
 )
 
-// TODO: maybe add reference to mirrored go docs in the public website too,
-// since the docs are very comprehensive and accurate now.
-
 // Initialize sets up the complete SPIKE CLI command structure by registering
 // all top-level command groups with the root command. This function must be
 // called before Execute to establish the command hierarchy.
@@ -47,10 +44,10 @@ import (
 //	Initialize(source, "spiffe://example.org/pilot")
 //	Execute()
 func Initialize(source *workloadapi.X509Source, SPIFFEID string) {
-	rootCmd.AddCommand(policy.NewPolicyCommand(source, SPIFFEID)) // TODO: stutter. use policy.NewCommand etc maybe
-	rootCmd.AddCommand(secret.NewSecretCommand(source, SPIFFEID))
-	rootCmd.AddCommand(cipher.NewCipherCommand(source, SPIFFEID))
-	rootCmd.AddCommand(operator.NewOperatorCommand(source, SPIFFEID))
+	rootCmd.AddCommand(policy.NewCommand(source, SPIFFEID))
+	rootCmd.AddCommand(secret.NewCommand(source, SPIFFEID))
+	rootCmd.AddCommand(cipher.NewCommand(source, SPIFFEID))
+	rootCmd.AddCommand(operator.NewCommand(source, SPIFFEID))
 }
 
 // Execute runs the root command and processes the entire command execution

@@ -82,13 +82,11 @@ func (s *DataStore) Initialize(ctx context.Context) *sdkErrors.SDKError {
 
 	// Create tables
 	if err := s.createTables(ctx, db); err != nil {
-		failErr := err
 		closeErr := db.Close()
 		if closeErr != nil {
-			failErr := failErr.Wrap(closeErr)
-			return failErr
+			return err.Wrap(closeErr)
 		}
-		return failErr
+		return err
 	}
 
 	s.db = db
@@ -115,7 +113,7 @@ func (s *DataStore) Close(_ context.Context) *sdkErrors.SDKError {
 		err = s.db.Close()
 	})
 	if err != nil {
-		return sdkErrors.ErrFSFileCloseFailed.Wrap(err) // TODO: maybe ErrStoreCloseFailed?
+		return sdkErrors.ErrStoreCloseFailed.Wrap(err)
 	}
 	return nil
 }

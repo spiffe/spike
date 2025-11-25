@@ -13,6 +13,7 @@ import (
 	"net/http"
 
 	"github.com/spiffe/spike-sdk-go/api/url"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 
 	"github.com/spiffe/spike/app/keeper/internal/route/store"
 	"github.com/spiffe/spike/internal/journal"
@@ -30,7 +31,7 @@ import (
 //   - audit: The AuditEntry containing the client's audit information
 func Route(
 	w http.ResponseWriter, r *http.Request, audit *journal.AuditEntry,
-) error {
+) *sdkErrors.SDKError {
 	return net.RouteFactory[url.APIAction](
 		url.APIURL(r.URL.Path),
 		url.APIAction(r.URL.Query().Get(url.KeyAPIAction)),

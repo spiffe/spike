@@ -15,6 +15,7 @@ import (
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/log"
+
 	"github.com/spiffe/spike/app/nexus/internal/state/backend/sqlite/ddl"
 )
 
@@ -34,6 +35,7 @@ func (s *DataStore) DeletePolicy(
 	ctx context.Context, id string,
 ) *sdkErrors.SDKError {
 	const fName = "DeletePolicy"
+
 	validateContext(ctx, fName)
 
 	s.mu.Lock()
@@ -140,9 +142,6 @@ func (s *DataStore) StorePolicy(
 		s, nonce, []byte(policy.PathPattern),
 	)
 
-	// TODO: some of these are integrity check errors and shall be logged as such
-	// with a dedicated sentinel error kind.
-
 	if err != nil {
 		failErr := sdkErrors.ErrCryptoEncryptionFailed.Wrap(err)
 		failErr.Msg = fmt.Sprintf(
@@ -233,9 +232,6 @@ func (s *DataStore) LoadPolicy(
 		return nil, failErr
 	}
 
-	// TODO: some of these are integrity check errors and shall be logged as such
-	// with a dedicated sentinel error kind.
-
 	// Decrypt
 	decryptedSPIFFEIDPattern, err := s.decrypt(encryptedSPIFFEIDPattern, nonce)
 	if err != nil {
@@ -313,7 +309,7 @@ func (s *DataStore) LoadAllPolicies(
 		err := rows.Close()
 		if err != nil {
 			failErr := sdkErrors.ErrFSFileCloseFailed.Wrap(err)
-			failErr.Msg = fmt.Sprintf("failed to close rows")
+			failErr.Msg = "failed to close rows"
 			log.WarnErr(fName, *failErr)
 		}
 	}(rows)

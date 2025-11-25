@@ -24,8 +24,8 @@ import (
 //   - r: The HTTP request containing the JSON data
 //
 // Returns:
-//   - reqres.CipherDecryptRequest: The parsed request
-//   - error: An error if reading or parsing fails
+//   - *reqres.CipherDecryptRequest: The parsed request
+//   - *sdkErrors.SDKError: An error if reading or parsing fails
 func readJSONDecryptRequestWithoutGuard(
 	w http.ResponseWriter, r *http.Request,
 ) (*reqres.CipherDecryptRequest, *sdkErrors.SDKError) {
@@ -37,7 +37,7 @@ func readJSONDecryptRequestWithoutGuard(
 	request, err := net.UnmarshalAndRespondOnFail[
 		reqres.CipherDecryptRequest, reqres.CipherDecryptResponse](
 		requestBody, w,
-		reqres.CipherDecryptBadRequest,
+		reqres.CipherDecryptResponse{}.BadRequest(),
 	)
 	if err != nil {
 		return nil, err
@@ -45,8 +45,6 @@ func readJSONDecryptRequestWithoutGuard(
 
 	return request, nil
 }
-
-// const spikeCipherVersion = 0x01 // TODO: get this from cipher/net.go
 
 // readStreamingDecryptRequestData reads the binary data from a streaming mode
 // decryption request (version, nonce, ciphertext).
@@ -65,7 +63,7 @@ func readJSONDecryptRequestWithoutGuard(
 //   - version: The protocol version byte
 //   - nonce: The nonce bytes
 //   - ciphertext: The encrypted data
-//   - error: An error if reading fails
+//   - *sdkErrors.SDKError: An error if reading fails
 func readStreamingDecryptRequestData(
 	w http.ResponseWriter, r *http.Request, c cipher.AEAD,
 ) (byte, []byte, []byte, *sdkErrors.SDKError) {
@@ -75,7 +73,7 @@ func readStreamingDecryptRequestData(
 	ver := make([]byte, 1)
 	n, err := io.ReadFull(r.Body, ver)
 	if err != nil || n != 1 {
-		failErr := *sdkErrors.ErrCryptoFailedToReadVersion // copy
+		failErr := *sdkErrors.ErrCryptoFailedToReadVersion.Clone()
 		log.WarnErr(fName, failErr)
 		http.Error(
 			w, string(failErr.Code), http.StatusBadRequest,
@@ -87,7 +85,7 @@ func readStreamingDecryptRequestData(
 
 	// Validate version matches the expected value
 	if version != spikeCipherVersion {
-		failErr := sdkErrors.ErrCryptoCipherVerificationFailed // TODO: new error ErrCryptoUnsupportedVersion
+		failErr := sdkErrors.ErrCryptoUnsupportedCipherVersion.Clone()
 		log.WarnErr(fName, *failErr)
 		http.Error(
 			w, string(failErr.Code), http.StatusBadRequest,
@@ -100,7 +98,7 @@ func readStreamingDecryptRequestData(
 	nonce := make([]byte, bytesToRead)
 	n, err = io.ReadFull(r.Body, nonce)
 	if err != nil || n != bytesToRead {
-		failErr := *sdkErrors.ErrCryptoFailedToReadNonce // copy
+		failErr := *sdkErrors.ErrCryptoFailedToReadNonce.Clone()
 		log.WarnErr(fName, failErr)
 		http.Error(
 			w, string(failErr.Code), http.StatusBadRequest,
@@ -111,7 +109,7 @@ func readStreamingDecryptRequestData(
 	// Read the remaining body as ciphertext
 	ciphertext, err := io.ReadAll(r.Body)
 	if err != nil {
-		failErr := sdkErrors.ErrDataReadFailure.Wrap(err) // TODO: new err ErrCryptoFailedToReadCiphertext
+		failErr := sdkErrors.ErrDataReadFailure.Wrap(err)
 		failErr.Msg = "failed to read ciphertext"
 		log.WarnErr(fName, *failErr)
 		http.Error(
@@ -132,10 +130,10 @@ func readStreamingDecryptRequestData(
 //
 // Returns:
 //   - plaintext: The plaintext data to encrypt
-//   - error: An error if reading fails
+//   - *sdkErrors.SDKError: An error if reading fails
 func readStreamingEncryptRequestWithoutGuard(
 	w http.ResponseWriter, r *http.Request,
-) ([]byte, error) {
+) ([]byte, *sdkErrors.SDKError) {
 	plaintext, err := net.ReadRequestBodyAndRespondOnFail(w, r)
 	if err != nil {
 		return nil, err
@@ -152,8 +150,8 @@ func readStreamingEncryptRequestWithoutGuard(
 //   - r: The HTTP request containing the JSON data
 //
 // Returns:
-//   - reqres.CipherEncryptRequest: The parsed request
-//   - error: An error if reading or parsing fails
+//   - *reqres.CipherEncryptRequest: The parsed request
+//   - *sdkErrors.SDKError: An error if reading or parsing fails
 func readJSONEncryptRequestWithoutGuard(
 	w http.ResponseWriter, r *http.Request,
 ) (*reqres.CipherEncryptRequest, *sdkErrors.SDKError) {
@@ -165,7 +163,7 @@ func readJSONEncryptRequestWithoutGuard(
 	request, err := net.UnmarshalAndRespondOnFail[
 		reqres.CipherEncryptRequest, reqres.CipherEncryptResponse](
 		requestBody, w,
-		reqres.CipherEncryptBadRequest,
+		reqres.CipherEncryptResponse{}.BadRequest(),
 	)
 	if err != nil {
 		return nil, err

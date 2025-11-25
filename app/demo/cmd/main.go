@@ -18,7 +18,11 @@ func main() {
 	// ./examples/consume-secrets/demo-register-entry.sh
 
 	// https://pkg.go.dev/github.com/spiffe/spike-sdk-go/api#New
-	api := spike.New() // Use the default Workload API Socket
+	api, err := spike.New() // Use the default Workload API Socket
+	if err != nil {
+		fmt.Println("Error connecting to SPIKE Nexus:", err.Error())
+		return
+	}
 
 	fmt.Println("Connected to SPIKE Nexus.")
 
@@ -30,7 +34,7 @@ func main() {
 
 	// Create a Secret
 	// https://pkg.go.dev/github.com/spiffe/spike-sdk-go/api#PutSecret
-	err := api.PutSecret(path, map[string]string{
+	err = api.PutSecret(path, map[string]string{
 		"username": "SPIKE",
 		"password": "SPIKE_Rocks",
 	})

@@ -5,7 +5,6 @@
 package policy
 
 import (
-	stdErrs "errors"
 	"net/http"
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
@@ -13,9 +12,9 @@ import (
 	cfg "github.com/spiffe/spike-sdk-go/config/auth"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/validation"
-	"github.com/spiffe/spike/internal/auth"
 
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
+	"github.com/spiffe/spike/internal/auth"
 	"github.com/spiffe/spike/internal/net"
 )
 
@@ -36,16 +35,14 @@ import (
 //   - r: The HTTP request containing the peer SPIFFE ID
 //
 // Returns:
-//   - nil if all validations pass
-//   - apiErr.ErrUnauthorized if authentication or authorization fails
-//   - apiErr.ErrInvalidInput if policy ID validation fails
+//   - *sdkErrors.SDKError: nil if all validations pass,
+//     ErrAccessUnauthorized if authentication or authorization fails,
+//     ErrDataInvalidInput if policy ID validation fails
 func guardPolicyDeleteRequest(
 	request reqres.PolicyDeleteRequest, w http.ResponseWriter, r *http.Request,
 ) *sdkErrors.SDKError {
-	const fName = "guardPolicyDeleteRequest"
-
 	peerSPIFFEID, err := auth.ExtractPeerSPIFFEID[reqres.PolicyDeleteResponse](
-		r, w, reqres.PolicyDeleteUnauthorized,
+		r, w, reqres.PolicyDeleteResponse{}.Unauthorized(),
 	)
 	if alreadyResponded := err != nil; alreadyResponded {
 		return err
@@ -55,11 +52,10 @@ func guardPolicyDeleteRequest(
 
 	err = validation.ValidatePolicyID(policyID)
 	if invalidPolicy := err != nil; invalidPolicy {
-		failErr := stdErrs.Join(sdkErrors.ErrInvalidInput, err)
-		return net.Fail(
-			reqres.PolicyDeleteBadInput, w,
-			http.StatusBadRequest, failErr, fName,
+		net.Fail(
+			reqres.PolicyDeleteResponse{}.BadRequest(), w, http.StatusBadRequest,
 		)
+		return sdkErrors.ErrDataInvalidInput.Wrap(err)
 	}
 
 	allowed := state.CheckAccess(
@@ -67,10 +63,10 @@ func guardPolicyDeleteRequest(
 		[]data.PolicyPermission{data.PermissionWrite},
 	)
 	if !allowed {
-		return net.Fail(
-			reqres.PolicyDeleteUnauthorized, w,
-			http.StatusUnauthorized, sdkErrors.ErrUnauthorized, fName,
+		net.Fail(
+			reqres.PolicyDeleteResponse{}.Unauthorized(), w, http.StatusUnauthorized,
 		)
+		return sdkErrors.ErrAccessUnauthorized
 	}
 
 	return nil

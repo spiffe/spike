@@ -68,7 +68,7 @@ func InitializeBackingStoreFromKeepers(source *workloadapi.X509Source) {
 
 		// Early check: avoid unnecessary function call if source is nil
 		if source == nil {
-			warnErr := *sdkErrors.ErrSPIFFENilX509Source // copy
+			warnErr := *sdkErrors.ErrSPIFFENilX509Source.Clone()
 			warnErr.Msg = "X509 source is nil, will retry"
 			log.WarnErr(fName, warnErr)
 			return false, sdkErrors.ErrRecoveryRetryFailed
@@ -82,7 +82,7 @@ func InitializeBackingStoreFromKeepers(source *workloadapi.X509Source) {
 			return true, nil
 		}
 
-		warnErr := *sdkErrors.ErrRecoveryRetryFailed // copy
+		warnErr := *sdkErrors.ErrRecoveryRetryFailed.Clone()
 		warnErr.Msg = "initialization unsuccessful: will retry"
 		log.WarnErr(fName, warnErr)
 		return false, sdkErrors.ErrRecoveryRetryFailed
@@ -130,7 +130,7 @@ func RestoreBackingStoreFromPilotShards(shards []ShamirShard) {
 
 		// Security: Crash immediately if data is corrupt.
 		if value == nil || mem.Zeroed32(value) || id == 0 {
-			failErr := *sdkErrors.ErrShamirNilShard // copy
+			failErr := *sdkErrors.ErrShamirNilShard.Clone()
 			failErr.Msg = "bad input: ID or Value of a shard is zero"
 			log.FatalErr(fName, failErr)
 			return
@@ -146,7 +146,7 @@ func RestoreBackingStoreFromPilotShards(shards []ShamirShard) {
 
 	// Ensure we have at least the threshold number of shards
 	if len(shards) < env.ShamirThresholdVal() {
-		failErr := *sdkErrors.ErrShamirNotEnoughShards // copy
+		failErr := *sdkErrors.ErrShamirNotEnoughShards.Clone()
 		failErr.Msg = "insufficient shards for recovery"
 		log.FatalErr(fName, failErr)
 		return
@@ -160,7 +160,7 @@ func RestoreBackingStoreFromPilotShards(shards []ShamirShard) {
 	// Recover the root key using the threshold number of shards
 	rk := ComputeRootKeyFromShards(shards)
 	if rk == nil || mem.Zeroed32(rk) {
-		failErr := *sdkErrors.ErrShamirReconstructionFailed // copy
+		failErr := *sdkErrors.ErrShamirReconstructionFailed.Clone()
 		failErr.Msg = "failed to recover the root key"
 		log.FatalErr(fName, failErr)
 	}
@@ -223,7 +223,7 @@ func SendShardsPeriodically(source *workloadapi.X509Source) {
 
 		// Early check: skip if source is nil
 		if source == nil {
-			warnErr := *sdkErrors.ErrSPIFFENilX509Source // copy
+			warnErr := *sdkErrors.ErrSPIFFENilX509Source.Clone()
 			warnErr.Msg = "X509 source is nil: skipping shard send"
 			log.WarnErr(fName, warnErr)
 			continue
@@ -237,7 +237,7 @@ func SendShardsPeriodically(source *workloadapi.X509Source) {
 
 		keepers := env.KeepersVal()
 		if len(keepers) < env.ShamirSharesVal() {
-			failErr := *sdkErrors.ErrShamirNotEnoughShards // copy
+			failErr := *sdkErrors.ErrShamirNotEnoughShards.Clone()
 			failErr.Msg = "not enough keepers configured"
 			log.FatalErr(fName, failErr)
 		}
@@ -318,7 +318,7 @@ func NewPilotRecoveryShards() map[int]*[crypto.AES256KeySize]byte {
 		}
 
 		if len(contribution) != crypto.AES256KeySize {
-			failErr := *sdkErrors.ErrDataInvalidInput // copy
+			failErr := *sdkErrors.ErrDataInvalidInput.Clone()
 			failErr.Msg = "length of shard is unexpected"
 			log.FatalErr(fName, failErr)
 			return nil
@@ -336,7 +336,7 @@ func NewPilotRecoveryShards() map[int]*[crypto.AES256KeySize]byte {
 		ii := bigInt.Uint64()
 
 		if len(contribution) != crypto.AES256KeySize {
-			failErr := *sdkErrors.ErrDataInvalidInput // copy
+			failErr := *sdkErrors.ErrDataInvalidInput.Clone()
 			failErr.Msg = "length of shard is unexpected"
 			log.FatalErr(fName, failErr)
 			return nil

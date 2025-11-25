@@ -46,11 +46,11 @@ func validateVersion[T any](
 //   - nil if the nonce size is valid
 //   - error if the nonce size is invalid
 func validateNonceSize[T any](
-	nonce []byte, w http.ResponseWriter, errorResponse T, fName string,
+	nonce []byte, w http.ResponseWriter, errorResponse T, _ string,
 ) error {
 	if len(nonce) != expectedNonceSize {
 		net.Fail(errorResponse, w, http.StatusBadRequest)
-		return sdkErrors.ErrInvalidInput
+		return sdkErrors.ErrDataInvalidInput
 	}
 	return nil
 }
@@ -68,11 +68,11 @@ func validateNonceSize[T any](
 //   - nil if the ciphertext size is valid
 //   - error if the ciphertext is too large
 func validateCiphertextSize[T any](
-	ciphertext []byte, w http.ResponseWriter, errorResponse T, fName string,
+	ciphertext []byte, w http.ResponseWriter, errorResponse T, _ string,
 ) error {
 	if len(ciphertext) > maxCiphertextSize {
 		net.Fail(errorResponse, w, http.StatusBadRequest)
-		return sdkErrors.ErrInvalidInput
+		return sdkErrors.ErrDataInvalidInput
 	}
 	return nil
 }
@@ -90,11 +90,11 @@ func validateCiphertextSize[T any](
 //   - nil if the plaintext size is valid
 //   - error if the plaintext is too large
 func validatePlaintextSize[T any](
-	plaintext []byte, w http.ResponseWriter, errorResponse T, fName string,
+	plaintext []byte, w http.ResponseWriter, errorResponse T, _ string,
 ) error {
 	if len(plaintext) > maxPlaintextSize {
 		net.Fail(errorResponse, w, http.StatusBadRequest)
-		return sdkErrors.ErrInvalidInput
+		return sdkErrors.ErrDataInvalidInput
 	}
 	return nil
 }

@@ -37,7 +37,7 @@ Consider disabling swap to enhance security.
 
 	source, SPIFFEID, err := spiffe.Source(ctx, spiffe.EndpointSocket())
 	if err != nil {
-		failErr := sdkErrors.ErrInitializationFailed.Wrap(err)
+		failErr := sdkErrors.ErrStateInitializationFailed.Wrap(err)
 		log.FatalErr(appName, *failErr)
 	}
 	defer spiffe.CloseSource(source)

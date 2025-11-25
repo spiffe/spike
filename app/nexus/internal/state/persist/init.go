@@ -72,19 +72,19 @@ func InitializeBackend(rootKey *[crypto.AES256KeySize]byte) {
 	// In other store types, ensure it is set for security.
 	if env.BackendStoreTypeVal() == env.Memory {
 		if rootKey != nil {
-			failErr := *sdkErrors.ErrRootKeyNotEmpty // copy
+			failErr := *sdkErrors.ErrRootKeyNotEmpty.Clone()
 			failErr.Msg = "root key should be nil for memory store type"
 			log.FatalErr(fName, failErr)
 		}
 	} else {
 		if rootKey == nil {
-			failErr := *sdkErrors.ErrRootKeyEmpty // copy
+			failErr := *sdkErrors.ErrRootKeyEmpty.Clone()
 			failErr.Msg = "root key cannot be nil"
 			log.FatalErr(fName, failErr)
 		}
 
 		if mem.Zeroed32(rootKey) {
-			failErr := *sdkErrors.ErrRootKeyEmpty // copy
+			failErr := *sdkErrors.ErrRootKeyEmpty.Clone()
 			failErr.Msg = "root key cannot be empty"
 			log.FatalErr(fName, failErr)
 		}

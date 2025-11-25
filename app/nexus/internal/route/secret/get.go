@@ -71,7 +71,7 @@ func RouteGetSecret(
 
 	request, err := net.ReadParseAndGuard[
 		reqres.SecretGetRequest, reqres.SecretGetResponse](
-		w, r, reqres.SecretGetBadRequest, guardGetSecretRequest,
+		w, r, reqres.SecretGetResponse{}.BadRequest(), guardGetSecretRequest,
 	)
 	if alreadyResponded := err != nil; alreadyResponded {
 		return err
@@ -96,7 +96,7 @@ func RouteGetSecret(
 		return handleGetSecretError(err, w)
 	}
 
-	srr := reqres.SecretGetSuccess
+	srr := reqres.SecretGetResponse{}.Success()
 	srr.Secret = data.Secret{Data: secret}
 	net.Success(srr, w)
 	return nil

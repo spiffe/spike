@@ -70,7 +70,7 @@ func RoutePutPolicy(
 	request, err := net.ReadParseAndGuard[
 		reqres.PolicyPutRequest, reqres.PolicyPutResponse,
 	](
-		w, r, reqres.PolicyPutBadRequest, guardPolicyCreateRequest,
+		w, r, reqres.PolicyPutResponse{}.BadRequest(), guardPolicyCreateRequest,
 	)
 	if alreadyResponded := err != nil; alreadyResponded {
 		return err
@@ -91,13 +91,13 @@ func RoutePutPolicy(
 		failErr := sdkErrors.ErrObjectCreationFailed.Wrap(err)
 		failErr.Msg = "failed to upsert policy"
 		net.Fail(
-			reqres.PolicyPutInternal, w,
+			reqres.PolicyPutResponse{}.Internal(), w,
 			http.StatusInternalServerError,
 		)
 		return failErr
 	}
 
-	pps := reqres.PolicyPutSuccess
+	pps := reqres.PolicyPutResponse{}.Success()
 	pps.ID = policy.ID
 	net.Success(pps, w)
 	return nil

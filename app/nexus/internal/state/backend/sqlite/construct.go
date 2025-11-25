@@ -50,7 +50,7 @@ func New(cfg backend.Config) (backend.Backend, *sdkErrors.SDKError) {
 
 	// Validate key length
 	if len(key) != crypto.AES256KeySize {
-		failErr := *sdkErrors.ErrCryptoInvalidEncryptionKeyLength // copy
+		failErr := *sdkErrors.ErrCryptoInvalidEncryptionKeyLength.Clone()
 		failErr.Msg = "encryption key must be exactly 32 bytes"
 		return nil, &failErr
 	}

@@ -51,7 +51,7 @@ func RouteRecover(
 
 	_, err := net.ReadParseAndGuard[
 		reqres.RecoverRequest, reqres.RecoverResponse](
-		w, r, reqres.RecoverBadInput, guardRecoverRequest, fName,
+		w, r, reqres.RecoverResponse{}.BadRequest(), guardRecoverRequest,
 	)
 	if alreadyResponded := err != nil; alreadyResponded {
 		return err
@@ -67,8 +67,8 @@ func RouteRecover(
 	}()
 
 	if len(shards) < env.ShamirThresholdVal() {
-		log.Log().Error(fName, "message", sdkErrors.ErrCodeShamirNotEnoughShards)
-		return sdkErrors.ErrInvalidInput
+		log.Log().Error(fName, "message", sdkErrors.ErrShamirNotEnoughShards.Code)
+		return sdkErrors.ErrDataInvalidInput
 	}
 
 	// Track seen indices to check for duplicates
@@ -76,9 +76,9 @@ func RouteRecover(
 
 	for idx, shard := range shards {
 		if seenIndices[idx] {
-			log.Log().Error(fName, "message", sdkErrors.ErrCodeShamirDuplicateIndex)
+			log.Log().Error(fName, "message", sdkErrors.ErrShamirDuplicateIndex.Code)
 			// Duplicate index.
-			return sdkErrors.ErrInvalidInput
+			return sdkErrors.ErrDataInvalidInput
 		}
 
 		// We cannot check for duplicate values, because although it's
@@ -89,8 +89,8 @@ func RouteRecover(
 
 		// Check for nil pointers
 		if shard == nil {
-			log.Log().Error(fName, "message", sdkErrors.ErrCodeShamirNilShard)
-			return sdkErrors.ErrInvalidInput
+			log.Log().Error(fName, "message", sdkErrors.ErrShamirNilShard.Code)
+			return sdkErrors.ErrDataInvalidInput
 		}
 
 		// Check for empty shards (all zeros)
@@ -102,19 +102,19 @@ func RouteRecover(
 			}
 		}
 		if zeroed {
-			log.Log().Error(fName, "message", sdkErrors.ErrCodeShamirEmptyShard)
-			return sdkErrors.ErrInvalidInput
+			log.Log().Error(fName, "message", sdkErrors.ErrShamirEmptyShard.Code)
+			return sdkErrors.ErrDataInvalidInput
 		}
 
 		// Verify shard index is within valid range:
 		if idx < 1 || idx > env.ShamirSharesVal() {
-			log.Log().Error(fName, "message", sdkErrors.ErrCodeShamirInvalidIndex)
-			return sdkErrors.ErrInvalidInput
+			log.Log().Error(fName, "message", sdkErrors.ErrShamirInvalidIndex.Code)
+			return sdkErrors.ErrDataInvalidInput
 		}
 	}
 
 	responseBody := net.SuccessWithResponseBody(
-		reqres.RecoverResponse{Shards: shards}.Success(), w, fName,
+		reqres.RecoverResponse{Shards: shards}.Success(), w,
 	)
 	defer func() {
 		mem.ClearBytes(responseBody)

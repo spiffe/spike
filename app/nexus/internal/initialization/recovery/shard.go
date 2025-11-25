@@ -20,7 +20,7 @@ func ShardGetResponse(
 	source *workloadapi.X509Source, u string,
 ) ([]byte, *sdkErrors.SDKError) {
 	if source == nil {
-		failErr := sdkErrors.ErrSPIFFENilX509Source
+		failErr := sdkErrors.ErrSPIFFENilX509Source.Clone()
 		failErr.Msg = "X509 source is nil"
 		return nil, failErr
 	}
@@ -33,24 +33,19 @@ func ShardGetResponse(
 		return nil, failErr
 	}
 
-	client, err := network.CreateMTLSClientWithPredicate(
+	client := network.CreateMTLSClientWithPredicate(
 		source,
 		// Security: Only get shards from SPIKE Keepers.
 		predicate.AllowKeeper,
 	)
-	if err != nil {
-		failErr := sdkErrors.ErrNetClientCreationFailed.Wrap(err)
-		failErr.Msg = "failed to create mTLS client"
-		return nil, failErr
-	}
 
-	data, err := net.Post(client, u, md)
-	if err != nil {
-		return nil, err
+	data, postErr := net.Post(client, u, md)
+	if postErr != nil {
+		return nil, postErr
 	}
 
 	if len(data) == 0 {
-		failErr := *sdkErrors.ErrDataEmpty // copy
+		failErr := *sdkErrors.ErrAPIEmptyPayload.Clone()
 		failErr.Msg = "received empty shard data from keeper"
 		return nil, &failErr
 	}

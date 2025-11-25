@@ -45,6 +45,7 @@ func guardSecretUndeleteRequest(
 		request.Path,
 		[]data.PolicyPermission{data.PermissionWrite},
 		w, r,
-		reqres.SecretUndeleteUnauthorized, reqres.SecretUndeleteBadRequest,
+		reqres.SecretUndeleteResponse{}.Unauthorized(),
+		reqres.SecretUndeleteResponse{}.BadRequest(),
 	)
 }

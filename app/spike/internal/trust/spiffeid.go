@@ -21,7 +21,7 @@ import (
 func AuthenticateForPilot(SPIFFEID string) {
 	const fName = "AuthenticateForPilot"
 	if !svid.IsPilot(SPIFFEID) {
-		failErr := *sdkErrors.ErrAccessUnauthorized
+		failErr := *sdkErrors.ErrAccessUnauthorized.Clone()
 		failErr.Msg = "you need a 'pilot' SPIFFE ID to use this command"
 		log.FatalErr(fName, failErr)
 	}
@@ -34,7 +34,7 @@ func AuthenticateForPilot(SPIFFEID string) {
 func AuthenticateForPilotRecover(SPIFFEID string) {
 	const fName = "AuthenticateForPilotRecover"
 	if !svid.IsPilotRecover(SPIFFEID) {
-		failErr := *sdkErrors.ErrAccessUnauthorized
+		failErr := *sdkErrors.ErrAccessUnauthorized.Clone()
 		failErr.Msg = "you need a 'recover' SPIFFE ID to use this command"
 		log.FatalErr(fName, failErr)
 	}
@@ -47,7 +47,7 @@ func AuthenticateForPilotRecover(SPIFFEID string) {
 func AuthenticateForPilotRestore(SPIFFEID string) {
 	const fName = "AuthenticateForPilotRestore"
 	if !svid.IsPilotRestore(SPIFFEID) {
-		failErr := *sdkErrors.ErrAccessUnauthorized
+		failErr := *sdkErrors.ErrAccessUnauthorized.Clone()
 		failErr.Msg = "you need a 'restore' SPIFFE ID to use this command"
 		log.FatalErr(fName, failErr)
 	}

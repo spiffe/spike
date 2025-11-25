@@ -34,8 +34,8 @@ import (
 //
 // Returns:
 //   - *spiffeid.ID: The extracted SPIFFE ID if successful
-//   - error: apiErr.ErrUnauthorized if extraction fails or ID is nil,
-//     nil otherwise
+//   - *sdkErrors.SDKError: ErrAccessUnauthorized if extraction fails or ID is
+//     invalid, nil otherwise
 //
 // Example usage:
 //
@@ -68,7 +68,7 @@ func ExtractPeerSPIFFEID[T any](
 
 	err = validation.ValidateSPIFFEID(peerSPIFFEID.String())
 	if err != nil {
-		failErr := sdkErrors.ErrEntityInvalid.Wrap(err) // TODO: have a SPIFFE-related error code for this.
+		failErr := sdkErrors.ErrSPIFFEInvalidSPIFFEID.Wrap(err)
 
 		responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
 			errorResponse, w,

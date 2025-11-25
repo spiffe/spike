@@ -97,7 +97,7 @@ func openOutput(outFile string) (io.Writer, func(), *sdkErrors.SDKError) {
 		if err != nil {
 			// Using ErrFSFileOpenFailed for file creation errors as well,
 			// since it represents file access failures in general
-			failErr := sdkErrors.ErrFSFileOpenFailed.Wrap(err) // TODO: create a separate error type for file creation errors
+			failErr := sdkErrors.ErrFSFileOpenFailed.Wrap(err)
 			failErr.Msg = fmt.Sprintf("failed to create output file: %s", outFile)
 
 			return nil, nil, failErr

@@ -132,7 +132,6 @@ func ShouldBootstrap() bool {
 		return true
 	}
 
-	// TODO: to constants.
 	bootstrapCompleted := cm.Data[keyBootstrapCompleted] == k8sTrue
 	completedAt := cm.Data[keyBootstrapCompletedAt]
 	completedByPod := cm.Data[keyBootstrapCompletedByPod]
@@ -152,7 +151,7 @@ func ShouldBootstrap() bool {
 		return false
 	}
 
-	// Boostrap not completed: proceed with bootstrap
+	// Bootstrap not completed: proceed with bootstrap
 	return true
 }
 
@@ -175,9 +174,6 @@ func MarkBootstrapComplete() *sdkErrors.SDKError {
 	// Only mark complete in Kubernetes environments
 	config, err := rest.InClusterConfig()
 	if err != nil {
-		failErr := sdkErrors.ErrK8sReconciliationFailed
-		failErr.Msg = "failed to get Kubernetes config"
-
 		if errors.Is(err, rest.ErrNotInCluster) {
 			// Not in Kubernetes, nothing to mark
 			log.Log().Info(
@@ -187,12 +183,14 @@ func MarkBootstrapComplete() *sdkErrors.SDKError {
 			return nil
 		}
 
+		failErr := sdkErrors.ErrK8sReconciliationFailed.Clone()
+		failErr.Msg = "failed to get Kubernetes config"
 		return failErr.Wrap(err)
 	}
 
 	clientset, err := kubernetes.NewForConfig(config)
 	if err != nil {
-		failErr := sdkErrors.ErrK8sReconciliationFailed
+		failErr := sdkErrors.ErrK8sReconciliationFailed.Clone()
 		failErr.Msg = "failed to create Kubernetes client"
 		return failErr.Wrap(err)
 	}

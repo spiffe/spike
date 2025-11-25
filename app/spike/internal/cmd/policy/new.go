@@ -5,7 +5,7 @@ import (
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 )
 
-// NewPolicyCommand creates a new top-level command for working with policies.
+// NewCommand creates a new top-level command for working with policies.
 // It acts as a parent for all policy-related subcommands: create, list, get,
 // and delete.
 //
@@ -40,7 +40,7 @@ import (
 //
 // Each subcommand has its own set of flags and arguments. See the individual
 // command documentation for details.
-func NewPolicyCommand(
+func NewCommand(
 	source *workloadapi.X509Source, SPIFFEID string,
 ) *cobra.Command {
 	cmd := &cobra.Command{

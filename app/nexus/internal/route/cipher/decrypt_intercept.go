@@ -36,7 +36,7 @@ func extractAndValidateSPIFFEID(
 ) (*spiffeid.ID, error) {
 	peerSPIFFEID, err := auth.ExtractPeerSPIFFEID[reqres.CipherDecryptResponse](
 		r, w, reqres.CipherDecryptResponse{
-			Err: sdkErrors.ErrCodeUnauthorized,
+			Err: sdkErrors.ErrAccessUnauthorized.Code,
 		})
 	if alreadyResponded := err != nil; alreadyResponded {
 		return nil, err
@@ -81,21 +81,21 @@ func guardDecryptCipherRequest(
 
 	// Validate version
 	if err := validateVersion(
-		request.Version, w, reqres.CipherDecryptBadInput, fName,
+		request.Version, w, reqres.CipherDecryptResponse{}.BadRequest(), fName,
 	); err != nil {
 		return err
 	}
 
 	// Validate nonce size
 	if err := validateNonceSize(
-		request.Nonce, w, reqres.CipherDecryptBadInput, fName,
+		request.Nonce, w, reqres.CipherDecryptResponse{}.BadRequest(), fName,
 	); err != nil {
 		return err
 	}
 
 	// Validate ciphertext size to prevent DoS attacks
 	if err := validateCiphertextSize(
-		request.Ciphertext, w, reqres.CipherDecryptBadInput, fName,
+		request.Ciphertext, w, reqres.CipherDecryptResponse{}.BadRequest(), fName,
 	); err != nil {
 		return err
 	}
@@ -116,9 +116,9 @@ func guardDecryptCipherRequest(
 
 	if !allowed {
 		net.Fail(
-			reqres.CipherDecryptUnauthorized, w, http.StatusUnauthorized,
+			reqres.CipherDecryptResponse{}.Unauthorized(), w, http.StatusUnauthorized,
 		)
-		return sdkErrors.ErrUnauthorized
+		return sdkErrors.ErrAccessUnauthorized
 	}
 
 	return nil

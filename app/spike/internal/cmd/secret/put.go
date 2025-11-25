@@ -81,7 +81,7 @@ func newSecretPutCommand(
 
 			if !validSecretPath(path) {
 				cmd.PrintErrf("Error: invalid secret path: %s\n", path)
-				warnErr := *sdkErrors.ErrDataInvalidInput
+				warnErr := *sdkErrors.ErrDataInvalidInput.Clone()
 				warnErr.Msg = "invalid secret path"
 				log.WarnErr(fName, warnErr)
 				return
@@ -94,7 +94,7 @@ func newSecretPutCommand(
 					cmd.PrintErrf("Error: invalid key-value pair format: %s\n", kv)
 					continue
 				}
-				kvs := strings.Split(kv, "=")
+				kvs := strings.SplitN(kv, "=", 2)
 				values[kvs[0]] = kvs[1]
 			}
 

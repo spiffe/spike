@@ -65,12 +65,12 @@ func initializeSqliteBackend(rootKey *[32]byte) backend.Backend {
 	// Initialize SQLite backend
 	dbBackend, err := sqlite.New(cfg)
 	if err != nil {
-		failErr := errors.Join(sdkErrors.ErrCreationFailed, err)
+		failErr := errors.Join(sdkErrors.ErrObjectCreationFailed, err)
 		// Log error but don't fail initialization
 		// The system can still work with just in-memory state
 		log.Log().Warn(
 			fName,
-			"message", sdkErrors.ErrCodeCreationFailed,
+			"message", sdkErrors.ErrObjectCreationFailed.Code,
 			"err", failErr,
 		)
 		return nil
@@ -82,9 +82,9 @@ func initializeSqliteBackend(rootKey *[32]byte) backend.Backend {
 	defer cancel()
 
 	if err := dbBackend.Initialize(ctxC); err != nil {
-		failErr := errors.Join(sdkErrors.ErrInitializationFailed, err)
+		failErr := errors.Join(sdkErrors.ErrStateInitializationFailed, err)
 		log.Log().Warn(
-			fName, "message", sdkErrors.ErrInitializationFailed, "err", failErr,
+			fName, "message", sdkErrors.ErrStateInitializationFailed, "err", failErr,
 		)
 		return nil
 	}

@@ -47,7 +47,7 @@ func validateDataDirectory(dir string) *sdkErrors.SDKError {
 	fName := "validateDataDirectory"
 
 	if dir == "" {
-		failErr := *sdkErrors.ErrFSInvalidDirectory // copy
+		failErr := *sdkErrors.ErrFSInvalidDirectory.Clone()
 		failErr.Msg = "directory path cannot be empty"
 		return &failErr
 	}
@@ -55,15 +55,24 @@ func validateDataDirectory(dir string) *sdkErrors.SDKError {
 	// Resolve to an absolute path
 	absPath, err := filepath.Abs(dir)
 	if err != nil {
-		failErr := *sdkErrors.ErrFSInvalidDirectory // copy
+		failErr := *sdkErrors.ErrFSInvalidDirectory.Clone()
 		failErr.Msg = fmt.Sprintf("failed to resolve directory path: %s", err)
 		return &failErr
 	}
 
 	// Check for restricted paths
 	for _, restricted := range restrictedPaths {
+		if restricted == "/" {
+			// Special case: only block the exact root path, not all paths
+			if absPath == "/" {
+				failErr := *sdkErrors.ErrFSInvalidDirectory.Clone()
+				failErr.Msg = "path is restricted for security reasons"
+				return &failErr
+			}
+			continue
+		}
 		if absPath == restricted || strings.HasPrefix(absPath, restricted+"/") {
-			failErr := *sdkErrors.ErrFSInvalidDirectory // copy
+			failErr := *sdkErrors.ErrFSInvalidDirectory.Clone()
 			failErr.Msg = "path is restricted for security reasons"
 			return &failErr
 		}
@@ -83,22 +92,21 @@ func validateDataDirectory(dir string) *sdkErrors.SDKError {
 	info, err := os.Stat(absPath)
 	if err != nil {
 		if !os.IsNotExist(err) {
-			// copy; TODO: new error type: ErrFSDirectoryDoesNotExist
-			failErr := *sdkErrors.ErrFSInvalidDirectory
+			failErr := *sdkErrors.ErrFSDirectoryDoesNotExist.Clone()
 			failErr.Msg = fmt.Sprintf("failed to check directory: %s", err)
 			return &failErr
 		}
 		// Directory doesn't exist, check if the parent exists, and we can create it
 		parentDir := filepath.Dir(absPath)
 		if _, err := os.Stat(parentDir); err != nil {
-			failErr := *sdkErrors.ErrFSParentDirectoryDoesNotExist // copy
+			failErr := *sdkErrors.ErrFSParentDirectoryDoesNotExist.Clone()
 			failErr.Msg = fmt.Sprintf("parent directory does not exist: %s", err)
 			return &failErr
 		}
 	} else {
 		// Directory exists, check if it's actually a directory
 		if !info.IsDir() {
-			failErr := *sdkErrors.ErrFSFileIsNotADirectory // copy
+			failErr := *sdkErrors.ErrFSFileIsNotADirectory.Clone()
 			failErr.Msg = fmt.Sprintf("path is not a directory: %s", absPath)
 			return &failErr
 		}
@@ -332,7 +340,7 @@ func ValidatePermissions(permsStr string) (
 	perms := make([]data.PolicyPermission, 0, len(permissions))
 	for _, perm := range permissions {
 		if !validPermission(perm) {
-			failErr := *sdkErrors.ErrAccessInvalidPermission // copy
+			failErr := *sdkErrors.ErrAccessInvalidPermission.Clone()
 			failErr.Msg = fmt.Sprintf(
 				"invalid permission: '%s'. valid permissions: '%s'",
 				perm, validPermissionsList(),
@@ -343,7 +351,7 @@ func ValidatePermissions(permsStr string) (
 	}
 
 	if len(perms) == 0 {
-		failErr := *sdkErrors.ErrAccessInvalidPermission // copy
+		failErr := *sdkErrors.ErrAccessInvalidPermission.Clone()
 		failErr.Msg = "no valid permissions specified" +
 			". valid permissions are: " + validPermissionsList()
 		return nil, &failErr

@@ -44,7 +44,7 @@ func Initialize(r *[crypto.AES256KeySize]byte) {
 	}
 
 	if r == nil || mem.Zeroed32(r) {
-		failErr := *sdkErrors.ErrRootKeyEmpty // copy
+		failErr := *sdkErrors.ErrRootKeyEmpty.Clone()
 		log.FatalErr(fName, failErr)
 	}
 

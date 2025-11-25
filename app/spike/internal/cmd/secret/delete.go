@@ -89,7 +89,7 @@ Examples:
 
 			if !validSecretPath(path) {
 				cmd.PrintErrf("Error: invalid secret path: %s\n", path)
-				warnErr := *sdkErrors.ErrDataInvalidInput
+				warnErr := *sdkErrors.ErrDataInvalidInput.Clone()
 				warnErr.Msg = "invalid secret path"
 				log.WarnErr(fName, warnErr)
 				return
@@ -115,7 +115,7 @@ Examples:
 					cmd.PrintErrf(
 						"Error: version numbers cannot be negative: %s\n", v,
 					)
-					warnErr := *sdkErrors.ErrDataInvalidInput
+					warnErr := *sdkErrors.ErrDataInvalidInput.Clone()
 					warnErr.Msg = "version numbers cannot be negative"
 					log.WarnErr(fName, warnErr)
 					return

@@ -44,7 +44,7 @@ func guardListSecretRequest(
 	_ reqres.SecretListRequest, w http.ResponseWriter, r *http.Request,
 ) *sdkErrors.SDKError {
 	peerSPIFFEID, err := auth.ExtractPeerSPIFFEID[reqres.SecretListResponse](
-		r, w, reqres.SecretListUnauthorized,
+		r, w, reqres.SecretListResponse{}.Unauthorized(),
 	)
 	if err != nil {
 		return err
@@ -55,7 +55,7 @@ func guardListSecretRequest(
 		[]data.PolicyPermission{data.PermissionList},
 	)
 	if !allowed {
-		net.Fail(reqres.SecretListUnauthorized, w, http.StatusUnauthorized)
+		net.Fail(reqres.SecretListResponse{}.Unauthorized(), w, http.StatusUnauthorized)
 		return sdkErrors.ErrAccessUnauthorized
 	}
 

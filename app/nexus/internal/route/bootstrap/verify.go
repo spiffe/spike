@@ -55,14 +55,14 @@ import (
 //   - Returns ErrUnauthorized if request is not from Bootstrap
 func RouteVerify(
 	w http.ResponseWriter, r *http.Request, audit *journal.AuditEntry,
-) error {
+) *sdkErrors.SDKError {
 	const fName = "routeVerify"
 
 	journal.AuditRequest(fName, r, audit, journal.AuditCreate)
 
 	request, err := net.ReadParseAndGuard[
 		reqres.BootstrapVerifyRequest, reqres.BootstrapVerifyResponse](
-		w, r, reqres.BootstrapBadInput, guardVerifyRequest, fName,
+		w, r, reqres.BootstrapVerifyResponse{}.BadRequest(), guardVerifyRequest,
 	)
 	if alreadyResponded := err != nil; alreadyResponded {
 		return err
@@ -72,15 +72,17 @@ func RouteVerify(
 	c := persist.Backend().GetCipher()
 	if c == nil {
 		net.Fail(
-			reqres.BootstrapBadInput, w, http.StatusInternalServerError,
+			reqres.BootstrapVerifyResponse{}.Internal(), w, http.StatusInternalServerError,
 		)
 		return sdkErrors.ErrCryptoCipherNotAvailable
 	}
 
 	// Decrypt the ciphertext
-	plaintext, err := c.Open(nil, request.Nonce, request.Ciphertext, nil)
-	if err != nil {
-		net.Fail(reqres.BootstrapInternal, w, http.StatusInternalServerError)
+	plaintext, decryptErr := c.Open(nil, request.Nonce, request.Ciphertext, nil)
+	if decryptErr != nil {
+		net.Fail(
+			reqres.BootstrapVerifyResponse{}.Internal(), w, http.StatusInternalServerError,
+		)
 		return sdkErrors.ErrCryptoDecryptionFailed
 	}
 
@@ -90,7 +92,7 @@ func RouteVerify(
 
 	log.Log().Info(
 		fName,
-		"message", sdkErrors.ErrCodeCryptoCipherVerificationSuccess,
+		"message", sdkErrors.ErrCryptoCipherVerificationSuccess.Code,
 		"plaintext_len", len(plaintext),
 		"hash_hex", hashHex,
 	)
@@ -98,7 +100,7 @@ func RouteVerify(
 	net.Success(
 		reqres.BootstrapVerifyResponse{
 			Hash: hashHex,
-		}.Success(), w, fName,
+		}.Success(), w,
 	)
 	return nil
 }

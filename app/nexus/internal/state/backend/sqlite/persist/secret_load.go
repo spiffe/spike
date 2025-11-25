@@ -57,7 +57,7 @@ func (s *DataStore) loadSecretInternal(
 ) (*kv.Value, *sdkErrors.SDKError) {
 	const fName = "loadSecretInternal"
 
-	validateContext(ctx, fName) // TODO: this can be an SDK utility function and can be used across the codebase instead of just this package.
+	validateContext(ctx, fName)
 
 	var secret kv.Value
 
@@ -106,9 +106,6 @@ func (s *DataStore) loadSecretInternal(
 			return nil, sdkErrors.ErrEntityQueryFailed.Wrap(err)
 		}
 
-		// TODO: some of these are integrity check errors and shall be logged as such
-		// with a dedicated sentinel error kind.
-
 		decrypted, err := s.decrypt(encrypted, nonce)
 		if err != nil {
 			return nil, sdkErrors.ErrCryptoDecryptionFailed.Wrap(err)
@@ -139,7 +136,7 @@ func (s *DataStore) loadSecretInternal(
 	// where all versions are deleted, which is valid.
 	if secret.Metadata.CurrentVersion != 0 {
 		if _, exists := secret.Versions[secret.Metadata.CurrentVersion]; !exists {
-			return nil, sdkErrors.ErrEntityQueryFailed.Wrap( // TODO: have a special dataintegritycheck error on the SDK for this case.
+			return nil, sdkErrors.ErrStoreIntegrityCheckFailed.Wrap(
 				errors.New(
 					"data integrity violation: current version not found",
 				),

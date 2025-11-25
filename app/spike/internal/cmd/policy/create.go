@@ -125,7 +125,7 @@ func newPolicyCreateCommand(
 				for _, flag := range missingFlags {
 					c.PrintErrf("  --%s is missing\n", flag)
 				}
-				warnErr := *sdkErrors.ErrDataInvalidInput
+				warnErr := *sdkErrors.ErrDataInvalidInput.Clone()
 				warnErr.Msg = "missing required flags"
 				log.WarnErr(fName, warnErr)
 				return
@@ -150,7 +150,7 @@ func newPolicyCreateCommand(
 			if exists {
 				c.PrintErrf("Error: A policy with name '%s' already exists\n",
 					name)
-				warnErr := *sdkErrors.ErrEntityInvalid
+				warnErr := *sdkErrors.ErrEntityInvalid.Clone()
 				warnErr.Msg = "policy with this name already exists"
 				log.WarnErr(fName, warnErr)
 				return

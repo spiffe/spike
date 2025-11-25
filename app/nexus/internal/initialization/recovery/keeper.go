@@ -71,7 +71,7 @@ func iterateKeepersAndInitializeState(
 	// 2. Workload API may temporarily lose source and recover
 	// 3. Returning false allows the system to retry and recover gracefully
 	if source == nil {
-		failErr := sdkErrors.ErrSPIFFENilX509Source
+		failErr := sdkErrors.ErrSPIFFENilX509Source.Clone()
 		failErr.Msg = "X509 source is nil, cannot perform mTLS with keepers"
 		log.WarnErr(fName, *failErr)
 		return false
@@ -105,7 +105,7 @@ func iterateKeepersAndInitializeState(
 		}
 
 		if mem.Zeroed32(res.Shard) {
-			warnErr := *sdkErrors.ErrShamirEmptyShard // copy
+			warnErr := *sdkErrors.ErrShamirEmptyShard.Clone()
 			warnErr.Msg = "shard is zeroed"
 			log.WarnErr(fName, warnErr)
 			continue
@@ -150,7 +150,7 @@ func iterateKeepersAndInitializeState(
 
 		// Security: Crash if there is a problem with root key recovery.
 		if rk == nil || mem.Zeroed32(rk) {
-			failErr := *sdkErrors.ErrShamirReconstructionFailed // copy
+			failErr := *sdkErrors.ErrShamirReconstructionFailed.Clone()
 			failErr.Msg = "failed to recover the root key"
 			log.FatalErr(fName, failErr)
 		}

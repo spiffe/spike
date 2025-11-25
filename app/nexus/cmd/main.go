@@ -35,7 +35,7 @@ func main() {
 
 	source, selfSPIFFEID, err := spiffe.Source(ctx, spiffe.EndpointSocket())
 	if err != nil {
-		failErr := sdkErrors.ErrInitializationFailed.Wrap(err)
+		failErr := sdkErrors.ErrStateInitializationFailed.Wrap(err)
 		failErr.Msg = "failed to get SPIFFE Workload API source"
 		log.FatalErr(appName, *failErr)
 	}
@@ -49,7 +49,7 @@ func main() {
 
 	// I should be SPIKE Nexus.
 	if !spiffeid.IsNexus(selfSPIFFEID) {
-		failErr := *sdkErrors.ErrInitializationFailed // copy
+		failErr := *sdkErrors.ErrStateInitializationFailed.Clone()
 		failErr.Msg = "SPIFFE ID is not valid: " + selfSPIFFEID
 		log.FatalErr(appName, failErr)
 	}

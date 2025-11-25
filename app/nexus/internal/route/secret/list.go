@@ -62,13 +62,13 @@ func RouteListPaths(
 
 	_, err := net.ReadParseAndGuard[
 		reqres.SecretListRequest, reqres.SecretListResponse](
-		w, r, reqres.SecretListBadRequest, guardListSecretRequest,
+		w, r, reqres.SecretListResponse{}.BadRequest(), guardListSecretRequest,
 	)
 	if err != nil {
 		return err
 	}
 
-	slr := reqres.SecretListSuccess
+	slr := reqres.SecretListResponse{}.Success()
 	slr.Keys = state.ListKeys()
 	net.Success(slr, w)
 	return nil

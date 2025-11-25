@@ -44,13 +44,10 @@ import (
 //	spike secret undelete db/pwd -v 1,2,3  # Restores specific versions
 //	spike secret undelete db/pwd -v 0,1,2  # Restores current version plus 1,2
 //
-// The command performs trust to ensure:
+// The command performs validation to ensure:
 //   - Exactly one path argument is provided
 //   - Version numbers are valid non-negative integers
 //   - Version strings are properly formatted
-//
-// Note: Command currently provides feedback about intended operations
-// but actual restoration functionality is pending implementation
 func newSecretUndeleteCommand(
 	source *workloadapi.X509Source, SPIFFEID string,
 ) *cobra.Command {
@@ -89,7 +86,7 @@ Examples:
 
 			if !validSecretPath(path) {
 				cmd.PrintErrf("Error: invalid secret path: %s\n", path)
-				warnErr := *sdkErrors.ErrDataInvalidInput
+				warnErr := *sdkErrors.ErrDataInvalidInput.Clone()
 				warnErr.Msg = "invalid secret path"
 				log.WarnErr(fName, warnErr)
 				return
@@ -101,8 +98,9 @@ Examples:
 			}
 
 			// Parse and validate versions
-			versionList := strings.Split(versions, ",")
-			for _, v := range versionList {
+			versionStrs := strings.Split(versions, ",")
+			vv := make([]int, 0, len(versionStrs))
+			for _, v := range versionStrs {
 				version, err := strconv.Atoi(strings.TrimSpace(v))
 
 				if err != nil {
@@ -117,22 +115,13 @@ Examples:
 					cmd.PrintErrf(
 						"Error: version numbers cannot be negative: %s\n", v,
 					)
-					warnErr := *sdkErrors.ErrDataInvalidInput
+					warnErr := *sdkErrors.ErrDataInvalidInput.Clone()
 					warnErr.Msg = "version numbers cannot be negative"
 					log.WarnErr(fName, warnErr)
 					return
 				}
-			}
 
-			var vv []int
-			for _, v := range versionList {
-				iv, err := strconv.Atoi(v)
-				if err == nil {
-					vv = append(vv, iv)
-				}
-			}
-			if vv == nil {
-				vv = []int{}
+				vv = append(vv, version)
 			}
 
 			err := api.UndeleteSecret(path, vv)

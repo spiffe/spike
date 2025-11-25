@@ -42,7 +42,7 @@ func MarshalBodyAndRespondOnMarshalFail(
 	// we return an internal sentinel error (sdkErrors.ErrAPIInternal)
 	if err != nil {
 		// Chain an error for detailed internal logging.
-		failErr := *sdkErrors.ErrAPIInternal // copy
+		failErr := *sdkErrors.ErrAPIInternal.Clone()
 		failErr.Msg = "problem generating response"
 
 		w.Header().Set("Content-Type", "application/json")
