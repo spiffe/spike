@@ -26,8 +26,6 @@ CREATE TABLE IF NOT EXISTS policies (
     updated_time INTEGER NOT NULL
 );
 
-
-
 CREATE TABLE IF NOT EXISTS secrets (
 	path TEXT NOT NULL,
 	version INTEGER NOT NULL,
