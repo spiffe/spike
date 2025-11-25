@@ -1,0 +1,48 @@
+name: Docs Link Check
+
+on:
+  pull_request:
+    paths: ["docs/**", ".github/workflows/docs-link-check.yaml"]
+  push:
+    branches: [main]
+    paths: ["docs/**"]
+
+jobs:
+  lychee:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Restore lychee cache
+        uses: actions/cache@v4
+        with:
+          path: .lycheecache
+          key: cache-lychee-${{ github.sha }}
+          restore-keys: cache-lychee-
+
+      - name: Link Checker
+        id: lychee
+        uses: lycheeverse/lychee-action@v2
+        with:
+          args: >-
+            --base-url https://spike.ist
+            --cache --max-cache-age 1d
+            --timeout 60 --max-retries 3 --retry-wait-time 3
+            --accept 200,206,403,429
+            docs
+          format: markdown
+          output: ./lychee/out.md
+          fail: false
+
+      - name: Upload report artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lychee-report
+          path: ./lychee/out.md
+
+      - name: Comment on PR with report
+        if: ${{ github.event_name == 'pull_request' }}
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          path: ./lychee/out.md
