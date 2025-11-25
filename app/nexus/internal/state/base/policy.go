@@ -175,12 +175,6 @@ func UpsertPolicy(policy data.Policy) (data.Policy, *sdkErrors.SDKError) {
 	return policy, nil
 }
 
-// CreatePolicy is an alias for UpsertPolicy for backward compatibility.
-// Deprecated: Use UpsertPolicy instead.
-func CreatePolicy(policy data.Policy) (data.Policy, *sdkErrors.SDKError) {
-	return UpsertPolicy(policy)
-}
-
 // GetPolicy retrieves a policy by its ID from the policy store.
 //
 // Parameters:
