@@ -18,6 +18,9 @@ import (
 	"github.com/spiffe/spike/app/nexus/internal/state/persist"
 )
 
+// TODO: after refactoring and ensuring package builds, check the code for logical consistency and doc alignment.
+// especially access check and policy upsert semantics.
+
 // CheckAccess determines if a given SPIFFE ID has the required permissions for
 // a specific path. It first checks if the ID belongs to SPIKE Pilot (which has
 // unrestricted access), then evaluates against all defined policies. Policies
