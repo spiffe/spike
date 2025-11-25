@@ -1,7 +1,6 @@
 package secret
 
 import (
-	"fmt"
 	"strings"
 	"time"
 

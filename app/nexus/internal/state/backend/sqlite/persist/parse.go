@@ -86,13 +86,13 @@ func ParseOptions(opts map[backend.DatabaseConfigKey]any) (
 
 	// Validate options
 	if sqliteOpts.MaxIdleConns > sqliteOpts.MaxOpenConns {
-		failErr := sdkErrors.ErrStoreInvalidConfiguration
+		failErr := *sdkErrors.ErrStoreInvalidConfiguration // copy
 		failErr.Msg = fmt.Sprintf(
 			"MaxIdleConns (%d) cannot be greater than MaxOpenConns (%d)",
 			sqliteOpts.MaxIdleConns, sqliteOpts.MaxOpenConns,
 		)
 
-		return nil, failErr
+		return nil, &failErr
 	}
 
 	return sqliteOpts, nil

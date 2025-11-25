@@ -33,9 +33,9 @@ func main() {
 
 	// I should be a SPIKE Keeper.
 	if !spiffeid.IsKeeper(selfSPIFFEID) {
-		failErr := sdkErrors.ErrInitializationFailed
+		failErr := *sdkErrors.ErrInitializationFailed // copy
 		failErr.Msg = "SPIFFE ID is not valid: " + selfSPIFFEID
-		log.FatalErr(appName, *failErr)
+		log.FatalErr(appName, failErr)
 	}
 
 	log.Info(

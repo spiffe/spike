@@ -218,9 +218,9 @@ func (s *Store) StorePolicy(
 	defer s.policyMu.Unlock()
 
 	if policy.ID == "" {
-		failErr := sdkErrors.ErrEntityInvalid
+		failErr := *sdkErrors.ErrEntityInvalid // copy
 		failErr.Msg = "policy ID cannot be empty"
-		return failErr
+		return &failErr
 	}
 
 	s.policies[policy.ID] = &policy

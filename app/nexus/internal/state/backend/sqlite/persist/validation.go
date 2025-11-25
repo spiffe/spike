@@ -28,7 +28,7 @@ import (
 //   - Returns normally if ctx is valid
 func validateContext(ctx context.Context, fName string) {
 	if ctx == nil {
-		failErr := sdkErrors.ErrNilContext
-		log.FatalErr(fName, *failErr)
+		failErr := *sdkErrors.ErrNilContext // copy
+		log.FatalErr(fName, failErr)
 	}
 }

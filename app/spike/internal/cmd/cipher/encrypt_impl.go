@@ -6,12 +6,13 @@ package cipher
 
 import (
 	"encoding/base64"
-	"fmt"
 	"os"
 
+	"github.com/spf13/cobra"
 	sdk "github.com/spiffe/spike-sdk-go/api"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
+	"github.com/spiffe/spike-sdk-go/log"
 
-	"github.com/spiffe/spike/app/spike/internal/errors"
 	"github.com/spiffe/spike/app/spike/internal/stdout"
 )
 
@@ -19,87 +20,115 @@ import (
 // stdin and writing the encrypted ciphertext to a file or stdout.
 //
 // Parameters:
+//   - cmd: Cobra command for output
 //   - api: The SPIKE SDK API client
 //   - inFile: Input file path (empty string means stdin)
 //   - outFile: Output file path (empty string means stdout)
 //
-// Returns:
-//   - error if encryption or I/O operations fail
-func encryptStream(api *sdk.API, inFile, outFile string) error {
+// The function prints errors directly to stderr and returns without error
+// propagation, following the CLI command pattern.
+func encryptStream(cmd *cobra.Command, api *sdk.API, inFile, outFile string) {
+	const fName = "encryptStream"
+
 	// Validate input file exists before attempting encryption.
 	if inFile != "" {
 		if _, err := os.Stat(inFile); err != nil {
 			if os.IsNotExist(err) {
-				return fmt.Errorf("input file does not exist: %s",
+				cmd.PrintErrf("Error: input file does not exist: %s\n",
 					inFile)
+				warnErr := sdkErrors.ErrDataInvalidInput.Wrap(err)
+				warnErr.Msg = "input file does not exist"
+				log.WarnErr(fName, *warnErr)
+				return
 			}
-			return fmt.Errorf("cannot access input file: %w", err)
+
+			cmd.PrintErrf("Error: cannot access input file: %s\n", inFile)
+			warnErr := sdkErrors.ErrDataInvalidInput.Wrap(err)
+			warnErr.Msg = "cannot access input file"
+			log.WarnErr(fName, *warnErr)
+			return
 		}
 	}
 
 	in, cleanupIn, err := openInput(inFile)
 	if err != nil {
-		return err
+		cmd.PrintErrf("Error: %v\n", err)
+		warnErr := sdkErrors.ErrDataInvalidInput.Wrap(err)
+		warnErr.Msg = "failed to open input"
+		log.WarnErr(fName, *warnErr)
+		return
 	}
 	defer cleanupIn()
 
 	out, cleanupOut, err := openOutput(outFile)
 	if err != nil {
-		return err
+		cmd.PrintErrf("Error: %v\n", err)
+		warnErr := sdkErrors.ErrDataInvalidInput.Wrap(err)
+		warnErr.Msg = "failed to open output"
+		log.WarnErr(fName, *warnErr)
+		return
 	}
 	defer cleanupOut()
 
-	ciphertext, err := api.CipherEncryptStream(in, "application/octet-stream")
-	if err != nil {
-		if errors.NotReadyError(err) {
-			stdout.PrintNotReady()
-		}
-		return fmt.Errorf("failed to call encrypt endpoint: %w", err)
+	ciphertext, apiErr := api.CipherEncryptStream(in)
+	if stdout.HandleAPIError(cmd, apiErr) {
+		return
 	}
 
 	if _, err := out.Write(ciphertext); err != nil {
-		return fmt.Errorf("failed to write output: %w", err)
+		cmd.PrintErrf("Error: failed to write ciphertext: %v\n", err)
+		warnErr := sdkErrors.ErrDataInvalidInput.Wrap(err)
+		warnErr.Msg = "failed to write ciphertext"
+		log.WarnErr(fName, *warnErr)
+		return
 	}
-
-	return nil
 }
 
 // encryptJSON performs JSON-based encryption using base64-encoded plaintext
 // and writes the encrypted result to a file or stdout.
 //
 // Parameters:
+//   - cmd: Cobra command for output
 //   - api: The SPIKE SDK API client
 //   - plaintextB64: Base64-encoded plaintext
 //   - algorithm: Algorithm hint for encryption
 //   - outFile: Output file path (empty string means stdout)
 //
-// Returns:
-//   - error if validation, encryption, or I/O operations fail
-func encryptJSON(api *sdk.API, plaintextB64, algorithm,
-	outFile string) error {
+// The function prints errors directly to stderr and returns without error
+// propagation, following the CLI command pattern.
+func encryptJSON(cmd *cobra.Command, api *sdk.API, plaintextB64, algorithm,
+	outFile string) {
+	const fName = "encryptJSON"
+
 	plaintext, err := base64.StdEncoding.DecodeString(plaintextB64)
 	if err != nil {
-		return fmt.Errorf("invalid --plaintext base64: %w", err)
+		cmd.PrintErrln("Error: invalid --plaintext base64")
+		warnErr := sdkErrors.ErrDataInvalidInput.Wrap(err)
+		warnErr.Msg = "invalid --plaintext base64"
+		log.WarnErr(fName, *warnErr)
+		return
 	}
 
 	out, cleanupOut, err := openOutput(outFile)
 	if err != nil {
-		return err
+		cmd.PrintErrf("Error: %v\n", err)
+		warnErr := sdkErrors.ErrDataInvalidInput.Wrap(err)
+		warnErr.Msg = "failed to open output"
+		log.WarnErr(fName, *warnErr)
+		return
 	}
 	defer cleanupOut()
 
-	ciphertext, err := api.CipherEncryptJSON(plaintext, algorithm)
-	if err != nil {
-		if errors.NotReadyError(err) {
-			stdout.PrintNotReady()
-		}
-		return fmt.Errorf("failed to call encrypt endpoint (json): %w",
-			err)
+	ciphertext, apiErr := api.CipherEncrypt(plaintext, algorithm)
+	if stdout.HandleAPIError(cmd, apiErr) {
+		return
 	}
 
 	if _, err := out.Write(ciphertext); err != nil {
-		return fmt.Errorf("failed to write ciphertext: %w", err)
+		cmd.PrintErrf("Error: failed to write ciphertext: %v\n", err)
+		warnErr := sdkErrors.ErrDataInvalidInput.Wrap(err)
+		warnErr.Msg = "failed to write ciphertext"
+		log.WarnErr(fName, *warnErr)
+		return
 	}
-
-	return nil
 }

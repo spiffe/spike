@@ -5,59 +5,16 @@
 package policy
 
 import (
-	"fmt"
-	"strings"
-
 	spike "github.com/spiffe/spike-sdk-go/api"
-	"github.com/spiffe/spike-sdk-go/api/entity/data"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
+
+	"github.com/spiffe/spike/internal/config"
 )
 
-// validatePermissions validates policy permissions from a comma-separated
-// string and returns a slice of PolicyPermission values. Only "read", "write",
-// "list", and "super" are valid permissions. It returns an error if any
-// permission is invalid or if the string contains no valid permissions.
-//
-// Parameters:
-//   - permsStr: Comma-separated string of permissions (e.g., "read,write,list")
-//
-// Returns:
-//   - []data.PolicyPermission: Validated policy permissions
-//   - error: An error if any permission is invalid
-func validatePermissions(permsStr string) ([]data.PolicyPermission, error) {
-	validPerms := map[string]bool{
-		"read":  true,
-		"write": true,
-		"list":  true,
-		"super": true,
-	}
-
-	var permissions []string
-	for _, p := range strings.Split(permsStr, ",") {
-		perm := strings.TrimSpace(p)
-		if perm != "" {
-			permissions = append(permissions, perm)
-		}
-	}
-
-	perms := make([]data.PolicyPermission, 0, len(permissions))
-	for _, perm := range permissions {
-		if _, ok := validPerms[perm]; !ok {
-			validPermsList := "read, write, list, super"
-			return nil, fmt.Errorf(
-				"invalid permission '%s'. Valid permissions are: %s",
-				perm, validPermsList)
-		}
-		perms = append(perms, data.PolicyPermission(perm))
-	}
-
-	if len(perms) == 0 {
-		return nil,
-			fmt.Errorf("no valid permissions specified. " +
-				"Valid permissions are: read, write, list, super")
-	}
-
-	return perms, nil
-}
+// validatePermissions is a wrapper around config.ValidatePermissions that
+// validates policy permissions from a comma-separated string.
+// See config.ValidatePermissions for details.
+var validatePermissions = config.ValidatePermissions
 
 // checkPolicyNameExists checks if a policy with the given name already exists.
 //
@@ -67,8 +24,10 @@ func validatePermissions(permsStr string) ([]data.PolicyPermission, error) {
 //
 // Returns:
 //   - bool: true if a policy with the name exists, false otherwise
-//   - error: An error if there's an issue with the API call
-func checkPolicyNameExists(api *spike.API, name string) (bool, error) {
+//   - *sdkErrors.SDKError: An error if there is an issue with the API call
+func checkPolicyNameExists(
+	api *spike.API, name string,
+) (bool, *sdkErrors.SDKError) {
 	policies, err := api.ListPolicies("", "")
 	if err != nil {
 		return false, err

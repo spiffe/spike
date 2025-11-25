@@ -88,7 +88,9 @@ func Execute() {
 	// Try to write error to stderr
 	if _, err := fmt.Fprintf(os.Stderr, "%v\n", cmdErr); err != nil {
 		// Fallback to stdout if stderr is unavailable
-		fmt.Fprintf(os.Stdout, "Error: failed to write to stderr: %s\n", err.Error())
+		_, _ = fmt.Fprintf(
+			os.Stdout, "Error: failed to write to stderr: %s\n", err.Error(),
+		)
 	}
 	os.Exit(1)
 }

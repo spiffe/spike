@@ -5,15 +5,15 @@
 package secret
 
 import (
-	"fmt"
 	"strconv"
 	"strings"
 
 	"github.com/spf13/cobra"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	spike "github.com/spiffe/spike-sdk-go/api"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
+	"github.com/spiffe/spike-sdk-go/log"
 
-	"github.com/spiffe/spike/app/spike/internal/errors"
 	"github.com/spiffe/spike/app/spike/internal/stdout"
 	"github.com/spiffe/spike/app/spike/internal/trust"
 )
@@ -54,10 +54,12 @@ import (
 func newSecretUndeleteCommand(
 	source *workloadapi.X509Source, SPIFFEID string,
 ) *cobra.Command {
+	const fName = "newSecretUndeleteCommand"
+
 	var undeleteCmd = &cobra.Command{
 		Use:   "undelete <path>",
 		Short: "Undelete secrets at the specified path",
-		Long: `Undelete secrets at the specified path. 
+		Long: `Undelete secrets at the specified path.
 Specify versions using -v or --versions flag with comma-separated values.
 Version 0 refers to the current/latest version.
 If no version is specified, defaults to undeleting the current version.
@@ -65,11 +67,21 @@ If no version is specified, defaults to undeleting the current version.
 Examples:
   spike secret undelete secret/ella           # Undeletes current version
   spike secret undelete secret/ella -v 1,2,3  # Undeletes specific versions
-  spike secret undelete secret/ella -v 0,1,2  
+  spike secret undelete secret/ella -v 0,1,2
   # Undeletes current version plus versions 1 and 2`,
 		Args: cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			trust.AuthenticateForPilot(SPIFFEID)
+
+			if source == nil {
+				cmd.PrintErrln("Error: SPIFFE X509 source is unavailable")
+				cmd.PrintErrln("The workload API may have lost connection.")
+				cmd.PrintErrln("Please check your SPIFFE agent and try again.")
+				warnErr := *sdkErrors.ErrSPIFFENilX509Source
+				warnErr.Msg = "SPIFFE X509 source is unavailable"
+				log.WarnErr(fName, warnErr)
+				return
+			}
 
 			api := spike.NewWithSource(source)
 
@@ -77,6 +89,9 @@ Examples:
 
 			if !validSecretPath(path) {
 				cmd.PrintErrf("Error: invalid secret path: %s\n", path)
+				warnErr := *sdkErrors.ErrDataInvalidInput
+				warnErr.Msg = "invalid secret path"
+				log.WarnErr(fName, warnErr)
 				return
 			}
 
@@ -92,6 +107,9 @@ Examples:
 
 				if err != nil {
 					cmd.PrintErrf("Error: invalid version number: %s\n", v)
+					warnErr := sdkErrors.ErrDataInvalidInput.Wrap(err)
+					warnErr.Msg = "invalid version number"
+					log.WarnErr(fName, *warnErr)
 					return
 				}
 
@@ -99,6 +117,9 @@ Examples:
 					cmd.PrintErrf(
 						"Error: version numbers cannot be negative: %s\n", v,
 					)
+					warnErr := *sdkErrors.ErrDataInvalidInput
+					warnErr.Msg = "version numbers cannot be negative"
+					log.WarnErr(fName, warnErr)
 					return
 				}
 			}
@@ -115,13 +136,7 @@ Examples:
 			}
 
 			err := api.UndeleteSecret(path, vv)
-			if err != nil {
-				if errors.NotReadyError(err) {
-					stdout.PrintNotReady()
-					return
-				}
-
-				cmd.PrintErrf("Error: %v\n", err)
+			if stdout.HandleAPIError(cmd, err) {
 				return
 			}
 

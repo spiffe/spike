@@ -80,26 +80,31 @@ func CheckAccess(
 	return false
 }
 
-// CreatePolicy creates a new policy in the system after validating and
-// preparing it. The function compiles regex patterns, generates a UUID, and
-// sets the creation timestamp before storing the policy.
+// UpsertPolicy creates a new policy or updates an existing one with the same
+// name. The function compiles regex patterns, generates a UUID for new policies,
+// and sets timestamps appropriately before storing the policy.
+//
+// This function follows upsert semantics consistent with UpsertSecret:
+//   - If no policy with the given name exists, a new policy is created
+//   - If a policy with the same name exists, it is updated (ID and CreatedAt
+//     are preserved from the existing policy)
 //
 // Parameters:
-//   - policy: The policy to create. Must have a non-empty Name field.
-//     SpiffeIdPattern and PathPattern MUST be valid regular expressions.
+//   - policy: The policy to create or update. Must have a non-empty Name field.
+//     SPIFFEIDPattern and PathPattern MUST be valid regular expressions.
 //
 // Returns:
-//   - data.Policy: The created policy, including generated ID and timestamps
-//   - error: ErrInvalidPolicy if policy name is empty, or regex compilation
-//     errors for invalid patterns
+//   - data.Policy: The created or updated policy, including ID and timestamps
+//   - *sdkErrors.SDKError: ErrEntityInvalid if the policy name is empty or
+//     regex patterns are invalid, ErrStoreLoadFailed or ErrStoreSaveFailed
+//     for backend errors
 //
-// The function performs the following modifications to the input policy:
-//   - Compiles and stores regex patterns for non-wildcard SpiffeIdPattern
-//     and PathPattern
-//   - Generates and sets a new UUID as the policy ID
-//   - Sets CreatedAt to current time if not already set
-func CreatePolicy(policy data.Policy) (data.Policy, *sdkErrors.SDKError) {
-	const fName = "CreatePolicy"
+// The function performs the following:
+//   - Compiles and stores regex patterns for SPIFFEIDPattern and PathPattern
+//   - For new policies: generates a UUID, sets CreatedAt and UpdatedAt
+//   - For existing policies: preserves ID and CreatedAt, updates UpdatedAt
+func UpsertPolicy(policy data.Policy) (data.Policy, *sdkErrors.SDKError) {
+	const fName = "UpsertPolicy"
 
 	if policy.Name == "" {
 		return data.Policy{}, sdkErrors.ErrEntityInvalid
@@ -107,24 +112,24 @@ func CreatePolicy(policy data.Policy) (data.Policy, *sdkErrors.SDKError) {
 
 	ctx := context.Background()
 
-	// Check for duplicate policy name
+	// Check for existing policy with the same name
 	allPolicies, err := persist.Backend().LoadAllPolicies(ctx)
 	if err != nil {
 		return data.Policy{}, sdkErrors.ErrStoreLoadFailed.Wrap(err)
 	}
 
-	for _, existingPolicy := range allPolicies {
-		if existingPolicy.Name == policy.Name {
-			failErr := sdkErrors.ErrEntityExists
-			failErr.Msg = "policy with name " + policy.Name + " already exists"
-			return data.Policy{}, failErr
+	var existingPolicy *data.Policy
+	for _, p := range allPolicies {
+		if p.Name == policy.Name {
+			existingPolicy = &p
+			break
 		}
 	}
 
 	// Compile and validate patterns
 	idRegex, err := regexp.Compile(policy.SPIFFEIDPattern)
 	if err != nil {
-		failErr := sdkErrors.ErrEntityInvalid
+		failErr := *sdkErrors.ErrEntityInvalid // copy
 		failErr.Msg = "invalid SPIFFE ID pattern: " + policy.SPIFFEIDPattern +
 			" for policy " + policy.Name
 		return data.Policy{}, failErr.Wrap(err)
@@ -133,28 +138,44 @@ func CreatePolicy(policy data.Policy) (data.Policy, *sdkErrors.SDKError) {
 
 	pathRegex, err := regexp.Compile(policy.PathPattern)
 	if err != nil {
-		failErr := sdkErrors.ErrEntityInvalid
+		failErr := *sdkErrors.ErrEntityInvalid // copy
 		failErr.Msg = "invalid path pattern: " + policy.PathPattern +
 			" for policy " + policy.Name
 		return data.Policy{}, failErr.Wrap(err)
 	}
 	policy.PathRegex = pathRegex
 
-	// Generate ID and set creation time
-	policy.ID = uuid.New().String()
-	if policy.CreatedAt.IsZero() {
-		policy.CreatedAt = time.Now()
+	now := time.Now()
+
+	if existingPolicy != nil {
+		// Update existing policy: preserve ID and CreatedAt, set UpdatedAt
+		policy.ID = existingPolicy.ID
+		policy.CreatedAt = existingPolicy.CreatedAt
+		policy.UpdatedAt = now
+	} else {
+		// New policy: generate ID and set creation time
+		policy.ID = uuid.New().String()
+		if policy.CreatedAt.IsZero() {
+			policy.CreatedAt = now
+		}
+		policy.UpdatedAt = now
 	}
 
-	// Store directly to the backend
+	// Store to the backend
 	err = persist.Backend().StorePolicy(ctx, policy)
 	if err != nil {
-		failErr := sdkErrors.ErrStoreSaveFailed
+		failErr := *sdkErrors.ErrStoreSaveFailed // copy
 		failErr.Msg = "failed to store policy " + policy.Name
 		return data.Policy{}, failErr.Wrap(err)
 	}
 
 	return policy, nil
+}
+
+// CreatePolicy is an alias for UpsertPolicy for backward compatibility.
+// Deprecated: Use UpsertPolicy instead.
+func CreatePolicy(policy data.Policy) (data.Policy, *sdkErrors.SDKError) {
+	return UpsertPolicy(policy)
 }
 
 // GetPolicy retrieves a policy by its ID from the policy store.
@@ -171,15 +192,15 @@ func GetPolicy(id string) (data.Policy, *sdkErrors.SDKError) {
 	// Load directly from the backend
 	policy, err := persist.Backend().LoadPolicy(ctx, id)
 	if err != nil {
-		failErr := sdkErrors.ErrStoreLoadFailed
+		failErr := *sdkErrors.ErrStoreLoadFailed // copy
 		failErr.Msg = "failed to load policy with ID " + id
 		return data.Policy{}, failErr.Wrap(err)
 	}
 
 	if policy == nil {
-		failErr := sdkErrors.ErrEntityNotFound
+		failErr := *sdkErrors.ErrEntityNotFound // copy
 		failErr.Msg = "policy with ID " + id + " not found"
-		return data.Policy{}, failErr
+		return data.Policy{}, &failErr
 	}
 
 	return *policy, nil
@@ -199,20 +220,20 @@ func DeletePolicy(id string) *sdkErrors.SDKError {
 	// Check if the policy exists first (to maintain the same error behavior)
 	policy, err := persist.Backend().LoadPolicy(ctx, id)
 	if err != nil {
-		failErr := sdkErrors.ErrStoreLoadFailed
+		failErr := *sdkErrors.ErrStoreLoadFailed // copy
 		failErr.Msg = "failed to load policy with ID " + id
 		return failErr.Wrap(err)
 	}
 	if policy == nil {
-		failErr := sdkErrors.ErrEntityNotFound
+		failErr := *sdkErrors.ErrEntityNotFound // copy
 		failErr.Msg = "policy with ID " + id + " not found"
-		return failErr
+		return &failErr
 	}
 
 	// Delete the policy from the backend
 	err = persist.Backend().DeletePolicy(ctx, id)
 	if err != nil {
-		failErr := sdkErrors.ErrDeletionFailed
+		failErr := *sdkErrors.ErrDeletionFailed // copy
 		failErr.Msg = "failed to delete policy with ID " + id
 		return failErr.Wrap(err)
 	}
@@ -235,7 +256,7 @@ func ListPolicies() ([]data.Policy, error) {
 	// Load all policies from the backend
 	allPolicies, err := persist.Backend().LoadAllPolicies(ctx)
 	if err != nil {
-		failErr := sdkErrors.ErrStoreLoadFailed
+		failErr := *sdkErrors.ErrStoreLoadFailed // copy
 		failErr.Msg = "failed to load all policies"
 		return nil, failErr.Wrap(err)
 	}
@@ -269,7 +290,7 @@ func ListPoliciesByPathPattern(pathPattern string) ([]data.Policy, error) {
 	// Load all policies from the backend
 	allPolicies, err := persist.Backend().LoadAllPolicies(ctx)
 	if err != nil {
-		failErr := sdkErrors.ErrStoreLoadFailed
+		failErr := *sdkErrors.ErrStoreLoadFailed // copy
 		failErr.Msg = "failed to load policies by pathPattern " + pathPattern
 		return nil, failErr.Wrap(err)
 	}
@@ -305,7 +326,7 @@ func ListPoliciesBySPIFFEIDPattern(
 	// Load all policies from the backend.
 	allPolicies, err := persist.Backend().LoadAllPolicies(ctx)
 	if err != nil {
-		failErr := sdkErrors.ErrStoreLoadFailed
+		failErr := *sdkErrors.ErrStoreLoadFailed // copy
 		failErr.Msg = "failed to load policies by SPIFFE ID pattern " + SPIFFEIDPattern
 		return nil, failErr.Wrap(err)
 	}

@@ -15,6 +15,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	spike "github.com/spiffe/spike-sdk-go/api"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/log"
 	"github.com/spiffe/spike-sdk-go/security/mem"
 	"github.com/spiffe/spike-sdk-go/spiffeid"
@@ -57,6 +58,8 @@ import (
 func newOperatorRecoverCommand(
 	source *workloadapi.X509Source, SPIFFEID string,
 ) *cobra.Command {
+	const fName = "newOperatorRecoverCommand"
+
 	var recoverCmd = &cobra.Command{
 		Use:   "recover",
 		Short: "Recover SPIKE Nexus (do this while SPIKE Nexus is healthy)",
@@ -66,11 +69,14 @@ func newOperatorRecoverCommand(
 				cmd.PrintErrln(
 					"  You need to have a `recover` role to use this command.")
 				cmd.PrintErrln(
-					"  Please refer https://spike.ist/operations/recovery/ for more info.`")
+					"  Please refer https://spike.ist/operations/recovery/ " +
+						"for more info.")
 				cmd.PrintErrln(
 					"  with necessary privileges to assign this role.")
 				cmd.PrintErrln("")
-				log.FatalLn("Aborting.")
+				failErr := *sdkErrors.ErrAccessUnauthorized
+				failErr.Msg = "you do not have the required 'recover' role"
+				log.FatalErr(fName, failErr)
 			}
 
 			trust.AuthenticateForPilotRecover(SPIFFEID)
@@ -79,12 +85,15 @@ func newOperatorRecoverCommand(
 				cmd.PrintErrln("Error: SPIFFE X509 source is unavailable")
 				cmd.PrintErrln("The workload API may have lost connection.")
 				cmd.PrintErrln("Please check your SPIFFE agent and try again.")
+				warnErr := *sdkErrors.ErrSPIFFENilX509Source
+				warnErr.Msg = "SPIFFE X509 source is unavailable"
+				log.WarnErr(fName, warnErr)
 				return
 			}
 
 			api := spike.NewWithSource(source)
 
-			shards, err := api.Recover()
+			shards, apiErr := api.Recover()
 			// Security: clean the shards when we no longer need them.
 			defer func() {
 				for _, shard := range shards {
@@ -92,8 +101,11 @@ func newOperatorRecoverCommand(
 				}
 			}()
 
-			if err != nil {
-				log.FatalLn(err.Error())
+			if apiErr != nil {
+				cmd.PrintErrln("")
+				cmd.PrintErrln("  Failed to retrieve recovery shards.")
+				cmd.PrintErrln("")
+				log.FatalErr(fName, *apiErr)
 			}
 
 			if shards == nil {
@@ -103,7 +115,6 @@ func newOperatorRecoverCommand(
 				cmd.PrintErrln("  Please try again later.")
 				cmd.PrintErrln("  If the problem persists, check SPIKE logs.")
 				cmd.PrintErrln("")
-
 				return
 			}
 
@@ -121,6 +132,11 @@ func newOperatorRecoverCommand(
 					cmd.PrintErrln("  Cannot save recovery shards.")
 					cmd.PrintErrln("  Please try again later.")
 					cmd.PrintErrln("  If the problem persists, check SPIKE logs.")
+					cmd.PrintErrln("")
+					warnErr := *sdkErrors.ErrDataInvalidInput
+					warnErr.Msg = "empty shard found"
+					log.WarnErr(fName, warnErr)
+					return
 				}
 			}
 
@@ -134,7 +150,9 @@ func newOperatorRecoverCommand(
 				cmd.PrintErrln("    Error resolving recovery directory path.")
 				cmd.PrintErrln("    " + err.Error())
 				cmd.PrintErrln("")
-				log.FatalLn("Aborting.")
+				failErr := sdkErrors.ErrDataInvalidInput.Wrap(err)
+				failErr.Msg = "error resolving recovery directory path"
+				log.FatalErr(fName, *failErr)
 			}
 
 			// Verify the path exists and is a directory
@@ -145,7 +163,9 @@ func newOperatorRecoverCommand(
 				cmd.PrintErrln(
 					"    Path does not exist or is not a directory.")
 				cmd.PrintErrln("")
-				log.FatalLn("Aborting.")
+				failErr := *sdkErrors.ErrDataInvalidInput
+				failErr.Msg = "invalid recovery directory path"
+				log.FatalErr(fName, failErr)
 			}
 
 			// Ensure the cleaned path doesn't contain suspicious components
@@ -158,7 +178,9 @@ func newOperatorRecoverCommand(
 				cmd.PrintErrln("    Invalid recovery directory path.")
 				cmd.PrintErrln("    Path contains suspicious components.")
 				cmd.PrintErrln("")
-				log.FatalLn("Aborting.")
+				failErr := *sdkErrors.ErrDataInvalidInput
+				failErr.Msg = "path contains suspicious components"
+				log.FatalErr(fName, failErr)
 			}
 
 			// Ensure the recover directory is clean by
@@ -171,7 +193,9 @@ func newOperatorRecoverCommand(
 				if err != nil {
 					cmd.PrintErrf("Failed to read recover directory %s: %s\n",
 						recoverDir, err.Error())
-					log.FatalLn(err.Error())
+					failErr := sdkErrors.ErrDataInvalidInput.Wrap(err)
+					failErr.Msg = "failed to read recover directory"
+					log.FatalErr(fName, *failErr)
 				}
 
 				for _, file := range files {
@@ -206,6 +230,9 @@ func newOperatorRecoverCommand(
 
 				if err != nil {
 					cmd.PrintErrf("Failed to save shard %d: %s\n", i, err.Error())
+					failErr := sdkErrors.ErrDataInvalidInput.Wrap(err)
+					failErr.Msg = "failed to save recovery shard"
+					log.FatalErr(fName, *failErr)
 				}
 			}
 

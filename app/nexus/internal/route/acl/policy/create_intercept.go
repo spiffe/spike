@@ -43,7 +43,7 @@ import (
 //   - apiErr.ErrInvalidInput if any input validation fails
 func guardPolicyCreateRequest(
 	request reqres.PolicyCreateRequest, w http.ResponseWriter, r *http.Request,
-) error {
+) *sdkErrors.SDKError {
 	const fName = "guardPolicyCreateRequest"
 
 	peerSPIFFEID, err := auth.ExtractPeerSPIFFEID[reqres.PolicyCreateResponse](

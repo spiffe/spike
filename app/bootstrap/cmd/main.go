@@ -30,9 +30,9 @@ func main() {
 	init := flag.Bool("init", false, "Initialize the bootstrap module")
 	flag.Parse()
 	if !*init {
-		failErr := sdkErrors.ErrDataInvalidInput
+		failErr := *sdkErrors.ErrDataInvalidInput // copy
 		failErr.Msg = "invalid command line arguments: usage: boostrap -init"
-		log.FatalErr(appName, *failErr)
+		log.FatalErr(appName, failErr)
 		return
 	}
 

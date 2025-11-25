@@ -5,11 +5,13 @@
 package policy
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	spike "github.com/spiffe/spike-sdk-go/api"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
+	"github.com/spiffe/spike-sdk-go/log"
+
+	"github.com/spiffe/spike/app/spike/internal/stdout"
 	"github.com/spiffe/spike/app/spike/internal/trust"
 )
 
@@ -88,6 +90,8 @@ import (
 func newPolicyGetCommand(
 	source *workloadapi.X509Source, SPIFFEID string,
 ) *cobra.Command {
+	const fName = "newPolicyGetCommand"
+
 	cmd := &cobra.Command{
 		Use:   "get [policy-id]",
 		Short: "Get policy details",
@@ -98,13 +102,16 @@ func newPolicyGetCommand(
         - A policy name with the --name flag: spike policy get --name=my-policy
 
         Use --format=json to get the output in JSON format.`,
-		Run: func(cmd *cobra.Command, args []string) {
+		Run: func(c *cobra.Command, args []string) {
 			trust.AuthenticateForPilot(SPIFFEID)
 
 			if source == nil {
-				cmd.PrintErrln("Error: SPIFFE X509 source is unavailable")
-				cmd.PrintErrln("The workload API may have lost connection.")
-				cmd.PrintErrln("Please check your SPIFFE agent and try again.")
+				c.PrintErrln("Error: SPIFFE X509 source is unavailable")
+				c.PrintErrln("The workload API may have lost connection.")
+				c.PrintErrln("Please check your SPIFFE agent and try again.")
+				warnErr := *sdkErrors.ErrSPIFFENilX509Source // copy
+				warnErr.Msg = "SPIFFE X509 source is unavailable"
+				log.WarnErr(fName, warnErr)
 				return
 			}
 
@@ -112,30 +119,36 @@ func newPolicyGetCommand(
 
 			// If the first argument is provided without the `--name` flag, it could
 			// be misinterpreted as trying to use policy name directly
-			if len(args) > 0 && !cmd.Flags().Changed("name") {
-				cmd.Println("Note: To look up a policy by name, use --name flag:")
-				cmd.Printf("  spike policy get --name=%s\n\n", args[0])
-				cmd.Printf("Attempting to use '%s' as policy ID...\n", args[0])
+			if len(args) > 0 && !c.Flags().Changed("name") {
+				c.Println("Note: To look up a policy by name, use --name flag:")
+				c.Printf("  spike policy get --name=%s\n\n", args[0])
+				c.Printf("Attempting to use '%s' as policy ID...\n", args[0])
 			}
 
-			policyID, err := sendGetPolicyIDRequest(cmd, args, api)
+			policyID, err := sendGetPolicyIDRequest(c, args, api)
 			if err != nil {
-				cmd.PrintErrf("Error: %v\n", err)
+				c.PrintErrf("Error: %v\n", err)
+				warnErr := sdkErrors.ErrDataInvalidInput.Wrap(err)
+				warnErr.Msg = "failed to get policy ID"
+				log.WarnErr(fName, *warnErr)
 				return
 			}
 
-			policy, err := api.GetPolicy(policyID)
-			if handleAPIError(cmd, err) {
+			policy, apiErr := api.GetPolicy(policyID)
+			if stdout.HandleAPIError(c, apiErr) {
 				return
 			}
 
 			if policy == nil {
-				cmd.PrintErrln("Error: Got empty response from server.")
+				c.PrintErrln("Error: Got empty response from server.")
+				warnErr := *sdkErrors.ErrEntityNotFound // copy
+				warnErr.Msg = "got empty response from server"
+				log.WarnErr(fName, warnErr)
 				return
 			}
 
-			output := formatPolicy(cmd, policy)
-			cmd.Println(output)
+			output := formatPolicy(c, policy)
+			c.Println(output)
 		},
 	}
 

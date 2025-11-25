@@ -12,6 +12,16 @@ sort_by = "weight"
 
 ## Recent
 
+* Nexus: Changed policy operations from create-only to upsert semantics for
+  consistency with secret operations. `state.CreatePolicy` is now
+  `state.UpsertPolicy`. If a policy with the same name exists, it is updated
+  (preserving ID and CreatedAt); otherwise, a new policy is created.
+* SDK: Added `UpdatedAt` field to `Policy` struct to track when policies are
+  modified. Removed unused `CreatedBy` field.
+* Nexus: Standardized error handling across recovery modules to use
+  `log.WarnErr`/`log.FatalErr` with SDK error types instead of generic
+  `log.Warn`/`log.FatalLn` calls. This provides searchable error codes and
+  consistent error patterns.
 * Pilot: Comprehensive refactoring of CLI output handling across all commands
   (14 files) to use Cobra's `cmd.Print*()` methods instead of `fmt.Print*()`.
   Error messages now properly route to stderr via `cmd.PrintErrln()`/

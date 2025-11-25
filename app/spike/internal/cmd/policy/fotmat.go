@@ -79,9 +79,9 @@ func formatPoliciesOutput(cmd *cobra.Command, policies *[]data.Policy) string {
 			strings.Join(perms, ", ")))
 		result.WriteString(fmt.Sprintf("Created At: %s\n",
 			policy.CreatedAt.Format(time.RFC3339)))
-		if policy.CreatedBy != "" {
-			result.WriteString(fmt.Sprintf("Created By: %s\n",
-				policy.CreatedBy))
+		if !policy.UpdatedAt.IsZero() {
+			result.WriteString(fmt.Sprintf("Updated At: %s\n",
+				policy.UpdatedAt.Format(time.RFC3339)))
 		}
 		result.WriteString("--------\n\n")
 	}
@@ -141,8 +141,9 @@ func formatPolicy(cmd *cobra.Command, policy *data.Policy) string {
 	result.WriteString(fmt.Sprintf("Created At: %s\n",
 		policy.CreatedAt.Format(time.RFC3339)))
 
-	if policy.CreatedBy != "" {
-		result.WriteString(fmt.Sprintf("Created By: %s\n", policy.CreatedBy))
+	if !policy.UpdatedAt.IsZero() {
+		result.WriteString(fmt.Sprintf("Updated At: %s\n",
+			policy.UpdatedAt.Format(time.RFC3339)))
 	}
 
 	return result.String()

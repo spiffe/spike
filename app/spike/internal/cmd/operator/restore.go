@@ -6,7 +6,6 @@ package operator
 
 import (
 	"encoding/hex"
-	"fmt"
 	"os"
 	"strconv"
 	"strings"
@@ -46,7 +45,7 @@ import (
 //   - Authenticates the restoration request.
 //   - Prompts the user to enter a recovery shard (input is hidden for
 //     security).
-//   - Sends the shard to the SPIKE API to contribute to restoration.
+//   - Sends the shard to SPIKE Nexus to contribute to restoration.
 //   - Reports the status of the restoration process to the user.
 //
 // The command will abort with a fatal error if:
@@ -78,9 +77,9 @@ func newOperatorRestoreCommand(
 				cmd.PrintErrln(
 					"  with necessary privileges to assign this role.")
 				cmd.PrintErrln("")
-				failErr := sdkErrors.ErrUnauthorized
+				failErr := *sdkErrors.ErrAccessUnauthorized // copy
 				failErr.Msg = "you do not have the required 'restore' role"
-				log.FatalErr(fName, *failErr)
+				log.FatalErr(fName, failErr)
 			}
 
 			trust.AuthenticateForPilotRestore(SPIFFEID)
@@ -96,12 +95,9 @@ func newOperatorRestoreCommand(
 			cmd.Print("Enter recovery shard: ")
 			shard, err := term.ReadPassword(int(os.Stdin.Fd()))
 			if err != nil {
-				_, e := fmt.Fprintf(os.Stderr, "Error reading shard: %v\n", err)
-				if e != nil {
-					return
-				}
-				fmt.Println("")
-				failErr := sdkErrors.ErrBadRequest.Wrap(err).Wrap(e)
+				cmd.Println("") // newline after hidden input
+				cmd.PrintErrf("Error reading shard: %v\n", err)
+				failErr := sdkErrors.ErrAPIBadRequest.Wrap(err)
 				log.FatalErr(fName, *failErr)
 			}
 
@@ -109,7 +105,7 @@ func newOperatorRestoreCommand(
 
 			var shardToRestore [crypto.AES256KeySize]byte
 
-			// shard is in `spike:$id:$base64` format
+			// shard is in `spike:$id:$hex` format
 			shardParts := strings.SplitN(string(shard), ":", 3)
 			if len(shardParts) != 3 {
 				cmd.PrintErrln("")
@@ -117,9 +113,9 @@ func newOperatorRestoreCommand(
 					"Invalid shard format. Expected format: 'spike:$id:$secret'.",
 				)
 				cmd.PrintErrln("")
-				failErr := sdkErrors.ErrBadRequest
+				failErr := *sdkErrors.ErrAPIBadRequest // copy
 				failErr.Msg = "invalid shard format"
-				log.FatalErr(fName, *failErr)
+				log.FatalErr(fName, failErr)
 			}
 
 			index := shardParts[1]
@@ -134,9 +130,9 @@ func newOperatorRestoreCommand(
 					"Did you miss some characters when pasting?",
 				)
 				cmd.PrintErrln("")
-				failErr := sdkErrors.ErrBadRequest
+				failErr := *sdkErrors.ErrAPIBadRequest // copy
 				failErr.Msg = "invalid hex shard length"
-				log.FatalErr(fName, *failErr)
+				log.FatalErr(fName, failErr)
 			}
 
 			decodedShard, err := hex.DecodeString(hexData)
@@ -155,7 +151,7 @@ func newOperatorRestoreCommand(
 			if err != nil {
 				cmd.PrintErrln("Failed to decode the recovery shard.")
 				cmd.PrintErrln("")
-				failErr := sdkErrors.ErrBadRequest.Wrap(err)
+				failErr := sdkErrors.ErrAPIBadRequest.Wrap(err)
 				failErr.Msg = "failed to decode recovery shard"
 				log.FatalErr(fName, *failErr)
 			}
@@ -169,9 +165,9 @@ func newOperatorRestoreCommand(
 					"Invalid recovery shard length. Got: %d. Expected: %d.\n",
 					len(decodedShard), crypto.AES256KeySize)
 				cmd.PrintErrln("")
-				failErr := sdkErrors.ErrCryptoInvalidEncryptionKeyLength
+				failErr := *sdkErrors.ErrCryptoInvalidEncryptionKeyLength // copy
 				failErr.Msg = "invalid recovery shard length"
-				log.FatalErr(fName, *failErr)
+				log.FatalErr(fName, failErr)
 			}
 
 			for i := 0; i < crypto.AES256KeySize; i++ {
@@ -186,7 +182,7 @@ func newOperatorRestoreCommand(
 				cmd.PrintErrln("")
 				cmd.PrintErrln("Invalid shard index:", index)
 				cmd.PrintErrln("")
-				failErr := sdkErrors.ErrBadRequest.Wrap(err)
+				failErr := sdkErrors.ErrAPIBadRequest.Wrap(err)
 				failErr.Msg = "invalid shard index"
 				log.FatalErr(fName, *failErr)
 			}
@@ -198,7 +194,7 @@ func newOperatorRestoreCommand(
 				cmd.PrintErrln("")
 				cmd.PrintErrln("There was a problem talking to SPIKE Nexus.")
 				cmd.PrintErrln("")
-				failErr := sdkErrors.ErrPostFailed.Wrap(err)
+				failErr := sdkErrors.ErrAPIPostFailed.Wrap(err)
 				failErr.Msg = "there was a problem talking to SPIKE Nexus"
 				log.FatalErr(fName, *failErr)
 			}
@@ -209,9 +205,9 @@ func newOperatorRestoreCommand(
 					"Didn't get any status trying to restore SPIKE Nexus.")
 				cmd.PrintErrln("Please check SPIKE Nexus logs for more info.")
 				cmd.PrintErrln("")
-				failErr := sdkErrors.ErrPostFailed
+				failErr := *sdkErrors.ErrAPIPostFailed // copy
 				failErr.Msg = "bad status response from SPIKE Nexus"
-				log.FatalErr(fName, *failErr)
+				log.FatalErr(fName, failErr)
 			}
 
 			if status.Restored {

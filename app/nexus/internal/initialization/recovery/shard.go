@@ -50,9 +50,9 @@ func ShardGetResponse(
 	}
 
 	if len(data) == 0 {
-		failErr := sdkErrors.ErrDataEmpty
+		failErr := *sdkErrors.ErrDataEmpty // copy
 		failErr.Msg = "received empty shard data from keeper"
-		return nil, failErr
+		return nil, &failErr
 	}
 
 	return data, nil

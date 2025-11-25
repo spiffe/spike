@@ -66,9 +66,9 @@ func guardGetSecretMetadataRequest(
 	)
 	if !allowed {
 		net.Fail(reqres.SecretMetadataUnauthorized, w, http.StatusUnauthorized)
-		failErr := sdkErrors.ErrAccessUnauthorized
+		failErr := *sdkErrors.ErrAccessUnauthorized // copy
 		failErr.Msg = "unauthorized to read secret metadata for: " + path
-		return failErr
+		return &failErr
 	}
 
 	return nil

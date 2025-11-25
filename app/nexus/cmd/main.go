@@ -49,9 +49,9 @@ func main() {
 
 	// I should be SPIKE Nexus.
 	if !spiffeid.IsNexus(selfSPIFFEID) {
-		failErr := sdkErrors.ErrInitializationFailed
+		failErr := *sdkErrors.ErrInitializationFailed // copy
 		failErr.Msg = "SPIFFE ID is not valid: " + selfSPIFFEID
-		log.FatalErr(appName, *failErr)
+		log.FatalErr(appName, failErr)
 	}
 
 	initialization.Initialize(source)

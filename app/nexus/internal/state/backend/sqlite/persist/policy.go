@@ -168,7 +168,8 @@ func (s *DataStore) StorePolicy(
 		encryptedSpiffeID,
 		encryptedPathPattern,
 		encryptedPermissions,
-		time.Now().Unix(),
+		policy.CreatedAt.Unix(),
+		policy.UpdatedAt.Unix(),
 	)
 
 	if err != nil {
@@ -212,6 +213,7 @@ func (s *DataStore) LoadPolicy(
 	var encryptedPermissions []byte
 	var nonce []byte
 	var createdTime int64
+	var updatedTime int64
 
 	err := s.db.QueryRowContext(ctx, ddl.QueryLoadPolicy, id).Scan(
 		&policy.ID,
@@ -221,6 +223,7 @@ func (s *DataStore) LoadPolicy(
 		&encryptedPermissions,
 		&nonce,
 		&createdTime,
+		&updatedTime,
 	)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -263,6 +266,7 @@ func (s *DataStore) LoadPolicy(
 	policy.SPIFFEIDPattern = string(decryptedSPIFFEIDPattern)
 	policy.PathPattern = string(decryptedPathPattern)
 	policy.CreatedAt = time.Unix(createdTime, 0)
+	policy.UpdatedAt = time.Unix(updatedTime, 0)
 
 	policy.Permissions = deserializePermissions(string(decryptedPermissions))
 
@@ -323,6 +327,7 @@ func (s *DataStore) LoadAllPolicies(
 		var encryptedPermissions []byte
 		var nonce []byte
 		var createdTime int64
+		var updatedTime int64
 
 		if err := rows.Scan(
 			&policy.ID,
@@ -332,6 +337,7 @@ func (s *DataStore) LoadAllPolicies(
 			&encryptedPermissions,
 			&nonce,
 			&createdTime,
+			&updatedTime,
 		); err != nil {
 			failErr := sdkErrors.ErrEntityQueryFailed.Wrap(err)
 			failErr.Msg = "failed to scan policy row, skipping"
@@ -374,6 +380,7 @@ func (s *DataStore) LoadAllPolicies(
 		policy.SPIFFEIDPattern = string(decryptedSPIFFEIDPattern)
 		policy.PathPattern = string(decryptedPathPattern)
 		policy.CreatedAt = time.Unix(createdTime, 0)
+		policy.UpdatedAt = time.Unix(updatedTime, 0)
 
 		policy.Permissions = deserializePermissions(
 			string(decryptedPermissions),

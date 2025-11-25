@@ -5,11 +5,13 @@
 package policy
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	spike "github.com/spiffe/spike-sdk-go/api"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
+	"github.com/spiffe/spike-sdk-go/log"
+
+	"github.com/spiffe/spike/app/spike/internal/stdout"
 	"github.com/spiffe/spike/app/spike/internal/trust"
 )
 
@@ -95,33 +97,39 @@ import (
 func newPolicyListCommand(
 	source *workloadapi.X509Source, SPIFFEID string,
 ) *cobra.Command {
+	const fName = "newPolicyListCommand"
+
 	var (
 		pathPattern     string
 		SPIFFEIDPattern string
 	)
 	cmd := &cobra.Command{
-		Use:   "list",
-		Short: "List policies, optionally filtering by path pattern or SPIFFE ID pattern",
-		Args:  cobra.NoArgs,
-		Run: func(cmd *cobra.Command, args []string) {
+		Use: "list",
+		Short: "List policies, optionally filtering by path pattern or " +
+			"SPIFFE ID pattern",
+		Args: cobra.NoArgs,
+		Run: func(c *cobra.Command, args []string) {
 			trust.AuthenticateForPilot(SPIFFEID)
 
 			if source == nil {
-				cmd.PrintErrln("Error: SPIFFE X509 source is unavailable")
-				cmd.PrintErrln("The workload API may have lost connection.")
-				cmd.PrintErrln("Please check your SPIFFE agent and try again.")
+				c.PrintErrln("Error: SPIFFE X509 source is unavailable")
+				c.PrintErrln("The workload API may have lost connection.")
+				c.PrintErrln("Please check your SPIFFE agent and try again.")
+				warnErr := *sdkErrors.ErrSPIFFENilX509Source
+				warnErr.Msg = "SPIFFE X509 source is unavailable"
+				log.WarnErr(fName, warnErr)
 				return
 			}
 
 			api := spike.NewWithSource(source)
 
 			policies, err := api.ListPolicies(SPIFFEIDPattern, pathPattern)
-			if handleAPIError(cmd, err) {
+			if stdout.HandleAPIError(c, err) {
 				return
 			}
 
-			output := formatPoliciesOutput(cmd, policies)
-			cmd.Println(output)
+			output := formatPoliciesOutput(c, policies)
+			c.Println(output)
 		},
 	}
 

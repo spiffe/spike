@@ -5,39 +5,40 @@
 package policy
 
 import (
-	"errors"
 	"net/http"
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
-	"github.com/spiffe/spike-sdk-go/log"
-
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 	"github.com/spiffe/spike/internal/journal"
 	"github.com/spiffe/spike/internal/net"
 )
 
-// RoutePutPolicy handles HTTP PUT requests for creating new policies.
-// It processes the request body to create a policy with the specified name,
+// RoutePutPolicy handles HTTP requests for creating or updating policies.
+// It processes the request body to upsert a policy with the specified name,
 // SPIFFE ID pattern, path pattern, and permissions.
 //
+// This handler follows upsert semantics consistent with secret operations:
+//   - If no policy with the given name exists, a new policy is created
+//   - If a policy with the same name exists, it is updated
+//
 // The function expects a JSON request body containing:
-//   - Name: policy name
-//   - SpiffeIdPattern: SPIFFE ID matching pattern
-//   - PathPattern: path matching pattern
+//   - Name: policy name (used as the unique identifier for upsert)
+//   - SPIFFEIDPattern: SPIFFE ID matching pattern (regex)
+//   - PathPattern: path matching pattern (regex)
 //   - Permissions: set of allowed permissions
 //
-// On success, it returns a JSON response with the created policy's ID.
+// On success, it returns a JSON response with the policy's ID.
 // On failure, it returns an appropriate error response with status code.
 //
 // Parameters:
 //   - w: HTTP response writer for sending the response
-//   - r: HTTP request containing the policy creation data
-//   - audit: Audit entry for logging the policy creation action
+//   - r: HTTP request containing the policy data
+//   - audit: Audit entry for logging the policy upsert action
 //
 // Returns:
-//   - error: nil on successful policy creation, error otherwise
+//   - *sdkErrors.SDKError: nil on successful policy upsert, error otherwise
 //
 // Example request body:
 //
@@ -61,15 +62,15 @@ import (
 //	}
 func RoutePutPolicy(
 	w http.ResponseWriter, r *http.Request, audit *journal.AuditEntry,
-) error {
+) *sdkErrors.SDKError {
 	const fName = "RoutePutPolicy"
 
 	journal.AuditRequest(fName, r, audit, journal.AuditCreate)
 
 	request, err := net.ReadParseAndGuard[
-		reqres.PolicyCreateRequest, reqres.PolicyCreateResponse,
+		reqres.PolicyPutRequest, reqres.PolicyPutResponse,
 	](
-		w, r, reqres.PolicyCreateBadInput, guardPolicyCreateRequest, fName,
+		w, r, reqres.PolicyPutBadRequest, guardPolicyCreateRequest,
 	)
 	if alreadyResponded := err != nil; alreadyResponded {
 		return err
@@ -80,20 +81,24 @@ func RoutePutPolicy(
 	pathPattern := request.PathPattern
 	permissions := request.Permissions
 
-	policy, err := state.CreatePolicy(data.Policy{
+	policy, err := state.UpsertPolicy(data.Policy{
 		Name:            name,
 		SPIFFEIDPattern: SPIFFEIDPattern,
 		PathPattern:     pathPattern,
 		Permissions:     permissions,
 	})
 	if err != nil {
-		failErr := errors.Join(sdkErrors.ErrCreationFailed, err)
-		return net.Fail(
-			reqres.PolicyCreateInternal, w,
-			http.StatusInternalServerError, failErr, fName,
+		failErr := sdkErrors.ErrObjectCreationFailed.Wrap(err)
+		failErr.Msg = "failed to upsert policy"
+		net.Fail(
+			reqres.PolicyPutInternal, w,
+			http.StatusInternalServerError,
 		)
+		return failErr
 	}
 
-	net.Success(reqres.PolicyCreateResponse{ID: policy.ID}.Success(), w, fName)
+	pps := reqres.PolicyPutSuccess
+	pps.ID = policy.ID
+	net.Success(pps, w)
 	return nil
 }

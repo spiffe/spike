@@ -44,8 +44,8 @@ func Initialize(r *[crypto.AES256KeySize]byte) {
 	}
 
 	if r == nil || mem.Zeroed32(r) {
-		failErr := sdkErrors.ErrRootKeyEmpty
-		log.FatalErr(fName, *failErr)
+		failErr := *sdkErrors.ErrRootKeyEmpty // copy
+		log.FatalErr(fName, failErr)
 	}
 
 	// Update the internal root key.

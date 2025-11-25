@@ -9,8 +9,8 @@
 package trust
 
 import (
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/log"
-
 	svid "github.com/spiffe/spike-sdk-go/spiffeid"
 )
 
@@ -21,16 +21,9 @@ import (
 func AuthenticateForPilot(SPIFFEID string) {
 	const fName = "AuthenticateForPilot"
 	if !svid.IsPilot(SPIFFEID) {
-		log.Log().Error(
-			fName,
-			"message", "you need a 'super user' SPIFFE ID to use this command",
-			"spiffe_id", SPIFFEID,
-		)
-		log.FatalLn(
-			fName,
-			"message", "you are not authorized to use this command",
-			"spiffe_id", SPIFFEID,
-		)
+		failErr := *sdkErrors.ErrAccessUnauthorized
+		failErr.Msg = "you need a 'pilot' SPIFFE ID to use this command"
+		log.FatalErr(fName, failErr)
 	}
 }
 
@@ -40,18 +33,10 @@ func AuthenticateForPilot(SPIFFEID string) {
 // SPIFFEID is the SPIFFE ID string to authenticate for pilot recover access.
 func AuthenticateForPilotRecover(SPIFFEID string) {
 	const fName = "AuthenticateForPilotRecover"
-
 	if !svid.IsPilotRecover(SPIFFEID) {
-		log.Log().Error(
-			fName,
-			"message", "You need a 'recover' SPIFFE ID to use this command",
-			"spiffe_id", SPIFFEID,
-		)
-		log.FatalLn(
-			fName,
-			"message", "you are not authorized to use this command",
-			"spiffe_id", SPIFFEID,
-		)
+		failErr := *sdkErrors.ErrAccessUnauthorized
+		failErr.Msg = "you need a 'recover' SPIFFE ID to use this command"
+		log.FatalErr(fName, failErr)
 	}
 }
 
@@ -61,17 +46,9 @@ func AuthenticateForPilotRecover(SPIFFEID string) {
 // SPIFFEID is the SPIFFE ID string to authenticate for restore access.
 func AuthenticateForPilotRestore(SPIFFEID string) {
 	const fName = "AuthenticateForPilotRestore"
-
 	if !svid.IsPilotRestore(SPIFFEID) {
-		log.Log().Error(
-			fName,
-			"message", "you need a 'restore' SPIFFE ID to use this command",
-			"spiffe_id", SPIFFEID,
-		)
-		log.FatalLn(
-			fName,
-			"message", "you are not authorized to use this command",
-			"spiffe_id", SPIFFEID,
-		)
+		failErr := *sdkErrors.ErrAccessUnauthorized
+		failErr.Msg = "you need a 'restore' SPIFFE ID to use this command"
+		log.FatalErr(fName, failErr)
 	}
 }

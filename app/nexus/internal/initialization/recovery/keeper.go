@@ -91,13 +91,9 @@ func iterateKeepersAndInitializeState(
 
 		data, err := ShardGetResponse(source, u)
 		if err != nil {
-			log.Warn(
-				fName,
-				"message", "failed to get shard from keeper",
-				"id", keeperID,
-				"url", keeperAPIRoot,
-				"err", err,
-			)
+			warnErr := sdkErrors.ErrNetPeerConnection.Wrap(err)
+			warnErr.Msg = "failed to get shard from keeper"
+			log.WarnErr(fName, *warnErr)
 			continue
 		}
 
@@ -109,12 +105,9 @@ func iterateKeepersAndInitializeState(
 		}
 
 		if mem.Zeroed32(res.Shard) {
-			log.Warn(
-				fName,
-				"message", "shard is zeroed",
-				"id", keeperID,
-				"url", keeperAPIRoot,
-			)
+			warnErr := *sdkErrors.ErrShamirEmptyShard // copy
+			warnErr.Msg = "shard is zeroed"
+			log.WarnErr(fName, warnErr)
 			continue
 		}
 
@@ -141,11 +134,9 @@ func iterateKeepersAndInitializeState(
 			if err != nil {
 				// This is a configuration error; we cannot recover from it,
 				// and it may cause further security issues. Crash immediately.
-				log.FatalLn(
-					fName,
-					"message", "failed to convert keeper ID to int",
-					"err", err.Error(),
-				)
+				failErr := sdkErrors.ErrDataInvalidInput.Wrap(err)
+				failErr.Msg = "failed to convert keeper ID to int"
+				log.FatalErr(fName, *failErr)
 				return false
 			}
 
@@ -159,7 +150,9 @@ func iterateKeepersAndInitializeState(
 
 		// Security: Crash if there is a problem with root key recovery.
 		if rk == nil || mem.Zeroed32(rk) {
-			log.FatalLn(fName, "message", "failed to recover the root key")
+			failErr := *sdkErrors.ErrShamirReconstructionFailed // copy
+			failErr.Msg = "failed to recover the root key"
+			log.FatalErr(fName, failErr)
 		}
 
 		// It is okay to zero out `rk` after calling this function because we

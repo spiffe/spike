@@ -277,12 +277,12 @@ func UndeleteSecret(path string, versions []int) *sdkErrors.SDKError {
 			if highestDeleted > 0 {
 				versions = []int{highestDeleted}
 			} else {
-				failErr := sdkErrors.ErrEntityNotFound
+				failErr := *sdkErrors.ErrEntityNotFound // copy
 				failErr.Msg = fmt.Sprintf(
 					"could not find any secret to undelete at path %s for versions %v",
 					path, versions,
 				)
-				return failErr
+				return &failErr
 			}
 		} else {
 			versions = []int{currentVersion}
@@ -315,12 +315,12 @@ func UndeleteSecret(path string, versions []int) *sdkErrors.SDKError {
 	}
 
 	if !anyUndeleted {
-		failErr := sdkErrors.ErrEntityNotFound
+		failErr := *sdkErrors.ErrEntityNotFound // copy
 		failErr.Msg = fmt.Sprintf(
 			"could not find any secret to undelete at path %s for versions %v",
 			path, versions,
 		)
-		return failErr
+		return &failErr
 	}
 
 	// Update CurrentVersion if we undeleted a higher version than current
@@ -373,31 +373,31 @@ func GetSecret(
 	if version == 0 {
 		version = secret.Metadata.CurrentVersion
 		if version == 0 {
-			failErr := sdkErrors.ErrEntityNotFound
+			failErr := *sdkErrors.ErrEntityNotFound // copy
 			failErr.Msg = fmt.Sprintf("secret with path %s is empty", path)
-			return nil, failErr
+			return nil, &failErr
 		}
 	}
 
 	// Get the specific version
 	v, exists := secret.Versions[version]
 	if !exists {
-		failErr := sdkErrors.ErrEntityNotFound
+		failErr := *sdkErrors.ErrEntityNotFound // copy
 		failErr.Msg = fmt.Sprintf(
 			"secret with path %s not found for version %v",
 			path, version,
 		)
-		return nil, failErr
+		return nil, &failErr
 	}
 
 	// Check if the version is deleted
 	if v.DeletedTime != nil {
-		failErr := sdkErrors.ErrEntityNotFound
+		failErr := *sdkErrors.ErrEntityNotFound // copy
 		failErr.Msg = fmt.Sprintf(
 			"secret with path %s is marked deleted for version %v",
 			path, version,
 		)
-		return nil, failErr
+		return nil, &failErr
 	}
 
 	return v.Data, nil
@@ -429,29 +429,29 @@ func GetRawSecret(path string, version int) (*kv.Value, *sdkErrors.SDKError) {
 		// Explicitly switch to the current version if the version is 0
 		checkVersion = secret.Metadata.CurrentVersion
 		if emptySecret := checkVersion == 0; emptySecret {
-			failErr := sdkErrors.ErrEntityNotFound
+			failErr := *sdkErrors.ErrEntityNotFound // copy
 			failErr.Msg = fmt.Sprintf("secret with path %s is empty", path)
-			return nil, failErr
+			return nil, &failErr
 		}
 	}
 
 	v, exists := secret.Versions[checkVersion]
 	if !exists {
-		failErr := sdkErrors.ErrEntityNotFound
+		failErr := *sdkErrors.ErrEntityNotFound // copy
 		failErr.Msg = fmt.Sprintf(
 			"secret with path %s not found for version %v",
 			path, checkVersion,
 		)
-		return nil, failErr
+		return nil, &failErr
 	}
 
 	if v.DeletedTime != nil {
-		failErr := sdkErrors.ErrEntityNotFound
+		failErr := *sdkErrors.ErrEntityNotFound // copy
 		failErr.Msg = fmt.Sprintf(
 			"secret with path %s is marked deleted for version %v",
 			path, checkVersion,
 		)
-		return nil, failErr
+		return nil, &failErr
 	}
 
 	// Return the full secret, since we've validated the requested

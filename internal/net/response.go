@@ -42,7 +42,7 @@ func MarshalBodyAndRespondOnMarshalFail(
 	// we return an internal sentinel error (sdkErrors.ErrAPIInternal)
 	if err != nil {
 		// Chain an error for detailed internal logging.
-		failErr := sdkErrors.ErrAPIInternal
+		failErr := *sdkErrors.ErrAPIInternal // copy
 		failErr.Msg = "problem generating response"
 
 		w.Header().Set("Content-Type", "application/json")
@@ -51,24 +51,24 @@ func MarshalBodyAndRespondOnMarshalFail(
 		internalErrJson, marshalErr := json.Marshal(failErr)
 
 		// Add extra info "after" marshaling to avoid leaking internal error details
-		failErr = failErr.Wrap(err)
+		wrappedErr := failErr.Wrap(err)
 
 		if marshalErr != nil {
-			failErr = failErr.Wrap(marshalErr)
+			wrappedErr = wrappedErr.Wrap(marshalErr)
 			// Cannot marshal; try a generic message instead.
 			internalErrJson = []byte(`{"error":"internal server error"}`)
 		}
 		_, err = w.Write(internalErrJson)
 		if err != nil {
-			failErr = failErr.Wrap(err)
+			wrappedErr = wrappedErr.Wrap(err)
 			// At this point, we cannot respond. So there is not much to send.
 			// We cannot even send a generic error message.
 			// We can only log the error.
 		}
 
 		// Log the chained error.
-		log.ErrorErr(fName, *failErr)
-		return nil, failErr
+		log.ErrorErr(fName, *wrappedErr)
+		return nil, wrappedErr
 	}
 
 	// body marshaled successfully

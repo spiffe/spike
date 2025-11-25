@@ -8,6 +8,9 @@ import (
 	"fmt"
 	"io"
 	"os"
+
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
+	"github.com/spiffe/spike-sdk-go/log"
 )
 
 // openInput opens a file for reading or returns stdin if no file is
@@ -31,14 +34,17 @@ import (
 //	    return err
 //	}
 //	defer cleanup()
-func openInput(inFile string) (io.ReadCloser, func(), error) {
+func openInput(inFile string) (io.ReadCloser, func(), *sdkErrors.SDKError) {
+	const fName = "openInput"
+
 	var in io.ReadCloser
 
 	if inFile != "" {
 		f, err := os.Open(inFile)
 		if err != nil {
-			return nil, nil,
-				fmt.Errorf("failed to open input file: %w", err)
+			failErr := sdkErrors.ErrFSFileOpenFailed.Wrap(err)
+			failErr.Msg = fmt.Sprintf("failed to open input file: %s", inFile)
+			return nil, nil, failErr
 		}
 		in = f
 	} else {
@@ -49,7 +55,9 @@ func openInput(inFile string) (io.ReadCloser, func(), error) {
 		if in != os.Stdin {
 			err := in.Close()
 			if err != nil {
-				fmt.Printf("Failed to close input file: %s\n", err.Error())
+				failErr := sdkErrors.ErrFSFileCloseFailed.Wrap(err)
+				failErr.Msg = fmt.Sprintf("failed to close input file: %s", inFile)
+				log.WarnErr(fName, *failErr)
 			}
 		}
 	}
@@ -66,7 +74,7 @@ func openInput(inFile string) (io.ReadCloser, func(), error) {
 // Returns:
 //   - io.Writer: Writer for the output destination
 //   - func(): Cleanup function to close the file (safe to call always)
-//   - error: File creation errors
+//   - *sdkErrors.SDKError: File creation errors
 //
 // The cleanup function is safe to call even if stdout is used (it will only
 // close actual files, not stdout).
@@ -78,15 +86,21 @@ func openInput(inFile string) (io.ReadCloser, func(), error) {
 //	    return err
 //	}
 //	defer cleanup()
-func openOutput(outFile string) (io.Writer, func(), error) {
+func openOutput(outFile string) (io.Writer, func(), *sdkErrors.SDKError) {
+	const fName = "openOutput"
+
 	var out io.Writer
 	var outCloser io.Closer
 
 	if outFile != "" {
 		f, err := os.Create(outFile)
 		if err != nil {
-			return nil, nil,
-				fmt.Errorf("failed to create output file: %w", err)
+			// Using ErrFSFileOpenFailed for file creation errors as well,
+			// since it represents file access failures in general
+			failErr := sdkErrors.ErrFSFileOpenFailed.Wrap(err) // TODO: create a separate error type for file creation errors
+			failErr.Msg = fmt.Sprintf("failed to create output file: %s", outFile)
+
+			return nil, nil, failErr
 		}
 		out = f
 		outCloser = f
@@ -98,8 +112,9 @@ func openOutput(outFile string) (io.Writer, func(), error) {
 		if outCloser != nil {
 			err := outCloser.Close()
 			if err != nil {
-				fmt.Printf("Failed to close output file: %s\n",
-					err.Error())
+				failErr := sdkErrors.ErrFSFileCloseFailed.Wrap(err)
+				failErr.Msg = fmt.Sprintf("failed to close output file: %s", outFile)
+				log.WarnErr(fName, *failErr)
 			}
 		}
 	}

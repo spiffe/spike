@@ -48,24 +48,19 @@ import (
 func InitializeBackingStoreFromKeepers(source *workloadapi.X509Source) {
 	const fName = "InitializeBackingStoreFromKeepers"
 
-	log.Info(
-		fName,
-		"message", "recovering backing store using keeper shards",
-	)
+	log.Info(fName, "message", "recovering backing store using keeper shards")
 
 	successfulKeeperShards := make(map[string]*[crypto.AES256KeySize]byte)
 	// Security: Ensure the shards are zeroed out after use.
 	defer func() {
 		for id := range successfulKeeperShards {
-			// Note: you cannot simply use `mem.ClearRawBytes(successfulKeeperShards)`
+			// Note: We cannot simply use `mem.ClearRawBytes(successfulKeeperShards)`
 			// because it will reset the pointer but not the data it points to.
 			mem.ClearRawBytes(successfulKeeperShards[id])
 		}
 	}()
 
-	ctx, cancel := context.WithCancel(
-		context.Background(),
-	)
+	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
 	_, err := retry.Forever(ctx, func() (bool, *sdkErrors.SDKError) {
@@ -73,7 +68,9 @@ func InitializeBackingStoreFromKeepers(source *workloadapi.X509Source) {
 
 		// Early check: avoid unnecessary function call if source is nil
 		if source == nil {
-			log.Warn(fName, "message", "X509 source is nil, will retry")
+			warnErr := *sdkErrors.ErrSPIFFENilX509Source // copy
+			warnErr.Msg = "X509 source is nil, will retry"
+			log.WarnErr(fName, warnErr)
 			return false, sdkErrors.ErrRecoveryRetryFailed
 		}
 
@@ -85,21 +82,17 @@ func InitializeBackingStoreFromKeepers(source *workloadapi.X509Source) {
 			return true, nil
 		}
 
-		log.Warn(
-			fName,
-			"message", "initialization unsuccessful: will retry",
-			"keepers_so_far", len(successfulKeeperShards),
-		)
+		warnErr := *sdkErrors.ErrRecoveryRetryFailed // copy
+		warnErr.Msg = "initialization unsuccessful: will retry"
+		log.WarnErr(fName, warnErr)
 		return false, sdkErrors.ErrRecoveryRetryFailed
 	})
 
 	// This should never happen since the above loop retries forever:
 	if err != nil {
-		log.FatalLn(
-			fName,
-			"message", "initialization failed",
-			"err", err.Error(),
-		)
+		failErr := sdkErrors.ErrRecoveryFailed.Wrap(err)
+		failErr.Msg = "initialization failed"
+		log.FatalErr(fName, *failErr)
 	}
 }
 
@@ -137,11 +130,9 @@ func RestoreBackingStoreFromPilotShards(shards []ShamirShard) {
 
 		// Security: Crash immediately if data is corrupt.
 		if value == nil || mem.Zeroed32(value) || id == 0 {
-			log.FatalLn(
-				fName,
-				"message",
-				"bad input: ID or Value of a shard is zero: exiting recovery",
-			)
+			failErr := *sdkErrors.ErrShamirNilShard // copy
+			failErr.Msg = "bad input: ID or Value of a shard is zero"
+			log.FatalErr(fName, failErr)
 			return
 		}
 	}
@@ -155,12 +146,9 @@ func RestoreBackingStoreFromPilotShards(shards []ShamirShard) {
 
 	// Ensure we have at least the threshold number of shards
 	if len(shards) < env.ShamirThresholdVal() {
-		log.Error(
-			fName,
-			"message", "insufficient shards for recovery",
-			"provided", len(shards),
-			"required", env.ShamirThresholdVal(),
-		)
+		failErr := *sdkErrors.ErrShamirNotEnoughShards // copy
+		failErr.Msg = "insufficient shards for recovery"
+		log.FatalErr(fName, failErr)
 		return
 	}
 
@@ -171,9 +159,10 @@ func RestoreBackingStoreFromPilotShards(shards []ShamirShard) {
 
 	// Recover the root key using the threshold number of shards
 	rk := ComputeRootKeyFromShards(shards)
-
 	if rk == nil || mem.Zeroed32(rk) {
-		log.FatalLn(fName, "message", "failed to recover the root key")
+		failErr := *sdkErrors.ErrShamirReconstructionFailed // copy
+		failErr.Msg = "failed to recover the root key"
+		log.FatalErr(fName, failErr)
 	}
 
 	// Security: Ensure the root key is zeroed out after use.
@@ -188,14 +177,17 @@ func RestoreBackingStoreFromPilotShards(shards []ShamirShard) {
 		context.Background(), spiffe.EndpointSocket(),
 	)
 	if err != nil {
-		log.Error(
-			fName,
-			"message", "failed to create source",
-			"err", err.Error(),
-		)
+		failErr := sdkErrors.ErrSPIFFEFailedToCreateX509Source.Wrap(err)
+		failErr.Msg = "failed to create SPIFFE source"
+		log.FatalErr(fName, *failErr)
 		return
 	}
-	defer spiffe.CloseSource(source)
+	defer func() {
+		err := spiffe.CloseSource(source)
+		if err != nil {
+			log.WarnErr(fName, *err)
+		}
+	}()
 
 	// Don't wait for the next cycle in `SendShardsPeriodically`.
 	// Send the shards asap.
@@ -231,11 +223,13 @@ func SendShardsPeriodically(source *workloadapi.X509Source) {
 
 		// Early check: skip if source is nil
 		if source == nil {
-			log.Warn(fName, "message", "X509 source is nil: skipping shard send")
+			warnErr := *sdkErrors.ErrSPIFFENilX509Source // copy
+			warnErr.Msg = "X509 source is nil: skipping shard send"
+			log.WarnErr(fName, warnErr)
 			continue
 		}
 
-		// if no root key, then skip.
+		// If no root key, then skip.
 		if state.RootKeyZero() {
 			log.Warn(fName, "message", "no root key: skipping shard send")
 			continue
@@ -243,7 +237,9 @@ func SendShardsPeriodically(source *workloadapi.X509Source) {
 
 		keepers := env.KeepersVal()
 		if len(keepers) < env.ShamirSharesVal() {
-			log.FatalLn(fName, "message", "not enough keepers")
+			failErr := *sdkErrors.ErrShamirNotEnoughShards // copy
+			failErr.Msg = "not enough keepers configured"
+			log.FatalErr(fName, failErr)
 		}
 
 		sendShardsToKeepers(source, keepers)
@@ -266,7 +262,7 @@ func SendShardsPeriodically(source *workloadapi.X509Source) {
 //
 // Security and Error Handling:
 //
-// This function employs a fail-fast strategy with log.FatalLn for any errors
+// This function employs a fail-fast strategy with log.FatalErr for any errors
 // during shard generation. This is intentional and critical for security:
 //   - Shard generation failures indicate memory corruption, crypto library bugs,
 //     or corrupted internal state
@@ -315,26 +311,24 @@ func NewPilotRecoveryShards() map[int]*[crypto.AES256KeySize]byte {
 
 		contribution, err := shard.Value.MarshalBinary()
 		if err != nil {
-			log.FatalLn(
-				fName,
-				"message", "failed to marshal shard",
-				"err", err.Error(),
-			)
+			failErr := sdkErrors.ErrDataMarshalFailure.Wrap(err)
+			failErr.Msg = "failed to marshal shard"
+			log.FatalErr(fName, *failErr)
 			return nil
 		}
 
 		if len(contribution) != crypto.AES256KeySize {
-			log.FatalLn(fName, "message", "length of shard is unexpected")
+			failErr := *sdkErrors.ErrDataInvalidInput // copy
+			failErr.Msg = "length of shard is unexpected"
+			log.FatalErr(fName, failErr)
 			return nil
 		}
 
 		bb, err := shard.ID.MarshalBinary()
 		if err != nil {
-			log.FatalLn(
-				fName,
-				"message", "failed to marshal shard ID",
-				"err", err.Error(),
-			)
+			failErr := sdkErrors.ErrDataMarshalFailure.Wrap(err)
+			failErr.Msg = "failed to marshal shard ID"
+			log.FatalErr(fName, *failErr)
 			return nil
 		}
 
@@ -342,7 +336,9 @@ func NewPilotRecoveryShards() map[int]*[crypto.AES256KeySize]byte {
 		ii := bigInt.Uint64()
 
 		if len(contribution) != crypto.AES256KeySize {
-			log.FatalLn(fName, "message", "length of shard is unexpected")
+			failErr := *sdkErrors.ErrDataInvalidInput // copy
+			failErr.Msg = "length of shard is unexpected"
+			log.FatalErr(fName, failErr)
 			return nil
 		}
 

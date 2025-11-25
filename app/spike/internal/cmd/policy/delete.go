@@ -6,13 +6,16 @@ package policy
 
 import (
 	"bufio"
-	"fmt"
 	"os"
 	"strings"
 
 	"github.com/spf13/cobra"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	spike "github.com/spiffe/spike-sdk-go/api"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
+	"github.com/spiffe/spike-sdk-go/log"
+
+	"github.com/spiffe/spike/app/spike/internal/stdout"
 	"github.com/spiffe/spike/app/spike/internal/trust"
 )
 
@@ -68,54 +71,63 @@ import (
 func newPolicyDeleteCommand(
 	source *workloadapi.X509Source, SPIFFEID string,
 ) *cobra.Command {
+	const fName = "newPolicyDeleteCommand"
+
 	cmd := &cobra.Command{
 		Use:   "delete [policy-id]",
 		Short: "Delete a policy",
 		Long: `Delete a policy by ID or name.
-        
+
         You can provide either:
         - A policy ID as an argument: spike policy delete abc123
-        - A policy name with the --name flag: 
+        - A policy name with the --name flag:
           spike policy delete --name=my-policy`,
-		Run: func(cmd *cobra.Command, args []string) {
+		Run: func(c *cobra.Command, args []string) {
 			trust.AuthenticateForPilot(SPIFFEID)
 
 			if source == nil {
-				cmd.PrintErrln("Error: SPIFFE X509 source is unavailable")
-				cmd.PrintErrln("The workload API may have lost connection.")
-				cmd.PrintErrln("Please check your SPIFFE agent and try again.")
+				c.PrintErrln("Error: SPIFFE X509 source is unavailable")
+				c.PrintErrln("The workload API may have lost connection.")
+				c.PrintErrln("Please check your SPIFFE agent and try again.")
+				warnErr := *sdkErrors.ErrSPIFFENilX509Source
+				warnErr.Msg = "SPIFFE X509 source is unavailable"
+				log.WarnErr(fName, warnErr)
 				return
 			}
 
 			api := spike.NewWithSource(source)
 
-			policyID, err := sendGetPolicyIDRequest(cmd, args, api)
+			policyID, err := sendGetPolicyIDRequest(c, args, api)
 			if err != nil {
-				cmd.PrintErrf("Error: %v\n", err)
+				c.PrintErrf("Error: %v\n", err)
+				warnErr := sdkErrors.ErrDataInvalidInput.Wrap(err)
+				warnErr.Msg = "failed to get policy ID"
+				log.WarnErr(fName, *warnErr)
 				return
 			}
 
 			// Confirm deletion
-			cmd.Printf("Are you sure you want to "+
+			c.Printf("Are you sure you want to "+
 				"delete policy with ID '%s'? (y/N): ", policyID)
 			reader := bufio.NewReader(os.Stdin)
 			confirm, _ := reader.ReadString('\n')
 			confirm = strings.TrimSpace(confirm)
 
 			if confirm != "y" && confirm != "Y" {
-				cmd.Println("Operation canceled.")
+				c.Println("Operation canceled.")
 				return
 			}
 
-			err = api.DeletePolicy(policyID)
-			if handleAPIError(cmd, err) {
+			deleteErr := api.DeletePolicy(policyID)
+			if stdout.HandleAPIError(c, deleteErr) {
 				return
 			}
 
-			cmd.Println("Policy deleted successfully.")
+			c.Println("Policy deleted successfully.")
 		},
 	}
 
 	addNameFlag(cmd)
+
 	return cmd
 }

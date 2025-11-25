@@ -41,7 +41,7 @@ import (
 //   - apiErr.ErrInvalidInput if policy ID validation fails
 func guardPolicyReadRequest(
 	request reqres.PolicyReadRequest, w http.ResponseWriter, r *http.Request,
-) error {
+) *sdkErrors.SDKError {
 	const fName = "guardPolicyReadRequest"
 
 	peerSPIFFEID, err := auth.ExtractPeerSPIFFEID[reqres.PolicyReadResponse](

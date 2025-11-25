@@ -5,12 +5,14 @@
 package policy
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	spike "github.com/spiffe/spike-sdk-go/api"
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
+	"github.com/spiffe/spike-sdk-go/log"
+
+	"github.com/spiffe/spike/app/spike/internal/stdout"
 	"github.com/spiffe/spike/app/spike/internal/trust"
 )
 
@@ -65,8 +67,8 @@ import (
 // Example YAML file structure:
 //
 //	name: web-service-policy
-//	spiffeid: ^spiffe://example\.org/web-service/.*$
-//	path: ^secrets/web/database$
+//	spiffeidPattern: ^spiffe://example\.org/web-service/.*$
+//	pathPattern: ^secrets/web/database$
 //	permissions:
 //	  - read
 //	  - write
@@ -74,10 +76,8 @@ import (
 // The command will:
 //  1. Validate that all required parameters are provided (either via
 //     flags or file)
-//  2. Normalize the path pattern (remove trailing slashes)
-//  3. Check if the system is initialized
-//  4. Validate permissions and convert to the expected format
-//  5. Apply the policy using upsert semantics (create if new, update if exists)
+//  2. Validate permissions and convert to the expected format
+//  3. Apply the policy using upsert semantics (create if new, update if exists)
 //
 // Error conditions:
 //   - Missing required flags (when not using --file)
@@ -90,6 +90,8 @@ import (
 func newPolicyApplyCommand(
 	source *workloadapi.X509Source, SPIFFEID string,
 ) *cobra.Command {
+	const fName = "newPolicyApplyCommand"
+
 	var (
 		name            string
 		pathPattern     string
@@ -116,26 +118,47 @@ func newPolicyApplyCommand(
 
         Valid permissions: read, write, list, super`,
 		Args: cobra.NoArgs,
-		Run: func(cmd *cobra.Command, args []string) {
+		Run: func(c *cobra.Command, args []string) {
+			trust.AuthenticateForPilot(SPIFFEID)
+
+			if source == nil {
+				c.PrintErrln("Error: SPIFFE X509 source is unavailable")
+				c.PrintErrln("The workload API may have lost connection.")
+				c.PrintErrln("Please check your SPIFFE agent and try again.")
+				warnErr := *sdkErrors.ErrSPIFFENilX509Source
+				warnErr.Msg = "SPIFFE X509 source is unavailable"
+				log.WarnErr(fName, warnErr)
+				return
+			}
+
+			api := spike.NewWithSource(source)
+
 			var policy data.PolicySpec
-			var err error
 
 			// Determine if we're using file-based or flag-based input
 			if filePath != "" {
 				// Read policy from the YAML file
-				policy, err = readPolicyFromFile(filePath)
+				p, err := readPolicyFromFile(filePath)
 				if err != nil {
-					fmt.Printf("Error reading policy file: %v\n", err)
+					c.PrintErrf("Error reading policy file: %v\n", err)
+					warnErr := sdkErrors.ErrDataInvalidInput.Wrap(err)
+					warnErr.Msg = "error reading policy file"
+					log.WarnErr(fName, *warnErr)
 					return
 				}
+				policy = p
 			} else {
 				// Use flag-based input
-				policy, err = getPolicyFromFlags(name, SPIFFEIDPattern,
+				p, err := getPolicyFromFlags(name, SPIFFEIDPattern,
 					pathPattern, permsStr)
 				if err != nil {
-					fmt.Printf("Error: %v\n", err)
+					c.PrintErrf("Error: %v\n", err)
+					warnErr := sdkErrors.ErrDataInvalidInput.Wrap(err)
+					warnErr.Msg = "invalid policy flags"
+					log.WarnErr(fName, *warnErr)
 					return
 				}
+				policy = p
 			}
 
 			// Convert permissions slice to comma-separated string
@@ -150,32 +173,24 @@ func newPolicyApplyCommand(
 				}
 			}
 
-			trust.AuthenticateForPilot(SPIFFEID)
-
-			if source == nil {
-				cmd.PrintErrln("Error: SPIFFE X509 source is unavailable")
-				cmd.PrintErrln("The workload API may have lost connection.")
-				cmd.PrintErrln("Please check your SPIFFE agent and try again.")
-				return
-			}
-
-			api := spike.NewWithSource(source)
-
 			// Validate permissions
 			permissions, err := validatePermissions(ps)
 			if err != nil {
-				fmt.Printf("Error: %v\n", err)
+				c.PrintErrf("Error: %v\n", err)
+				warnErr := sdkErrors.ErrDataInvalidInput.Wrap(err)
+				warnErr.Msg = "invalid permissions"
+				log.WarnErr(fName, *warnErr)
 				return
 			}
 
 			// Apply policy using upsert semantics
-			err = api.CreatePolicy(policy.Name, policy.SpiffeIDPattern,
+			policyErr := api.CreatePolicy(policy.Name, policy.SpiffeIDPattern,
 				policy.PathPattern, permissions)
-			if handleAPIError(err) {
+			if stdout.HandleAPIError(c, policyErr) {
 				return
 			}
 
-			fmt.Printf("Policy '%s' applied successfully\n", policy.Name)
+			c.Printf("Policy '%s' applied successfully\n", policy.Name)
 		},
 	}
 

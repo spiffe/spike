@@ -81,9 +81,9 @@ func guardSecretPutRequest(
 	)
 	if !allowed {
 		net.Fail(reqres.SecretPutUnauthorized, w, http.StatusUnauthorized)
-		failErr := sdkErrors.ErrAccessUnauthorized
+		failErr := *sdkErrors.ErrAccessUnauthorized // copy
 		failErr.Msg = "unauthorized to write secret: " + path
-		return failErr
+		return &failErr
 	}
 
 	return nil

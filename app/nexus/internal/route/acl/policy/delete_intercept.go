@@ -41,7 +41,7 @@ import (
 //   - apiErr.ErrInvalidInput if policy ID validation fails
 func guardPolicyDeleteRequest(
 	request reqres.PolicyDeleteRequest, w http.ResponseWriter, r *http.Request,
-) error {
+) *sdkErrors.SDKError {
 	const fName = "guardPolicyDeleteRequest"
 
 	peerSPIFFEID, err := auth.ExtractPeerSPIFFEID[reqres.PolicyDeleteResponse](

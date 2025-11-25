@@ -5,7 +5,6 @@
 package secret
 
 import (
-	"fmt"
 	"strconv"
 	"strings"
 
@@ -13,8 +12,8 @@ import (
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	spike "github.com/spiffe/spike-sdk-go/api"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
+	"github.com/spiffe/spike-sdk-go/log"
 
-	"github.com/spiffe/spike/app/spike/internal/errors"
 	"github.com/spiffe/spike/app/spike/internal/stdout"
 	"github.com/spiffe/spike/app/spike/internal/trust"
 )
@@ -54,10 +53,12 @@ import (
 func newSecretDeleteCommand(
 	source *workloadapi.X509Source, SPIFFEID string,
 ) *cobra.Command {
+	const fName = "newSecretDeleteCommand"
+
 	var deleteCmd = &cobra.Command{
 		Use:   "delete <path>",
 		Short: "Delete secrets at the specified path",
-		Long: `Delete secrets at the specified path. 
+		Long: `Delete secrets at the specified path.
 Specify versions using -v or --versions flag with comma-separated values.
 Version 0 refers to the current/latest version.
 If no version is specified, defaults to deleting the current version.
@@ -65,7 +66,7 @@ If no version is specified, defaults to deleting the current version.
 Examples:
   spike secret delete secret/apocalyptica          # Deletes current version
   spike secret delete secret/apocalyptica -v 1,2,3 # Deletes specific versions
-  spike secret delete secret/apocalyptica -v 0,1,2 
+  spike secret delete secret/apocalyptica -v 0,1,2
   # Deletes current version plus versions 1 and 2`,
 		Args: cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
@@ -75,6 +76,9 @@ Examples:
 				cmd.PrintErrln("Error: SPIFFE X509 source is unavailable")
 				cmd.PrintErrln("The workload API may have lost connection.")
 				cmd.PrintErrln("Please check your SPIFFE agent and try again.")
+				warnErr := *sdkErrors.ErrSPIFFENilX509Source
+				warnErr.Msg = "SPIFFE X509 source is unavailable"
+				log.WarnErr(fName, warnErr)
 				return
 			}
 
@@ -85,6 +89,9 @@ Examples:
 
 			if !validSecretPath(path) {
 				cmd.PrintErrf("Error: invalid secret path: %s\n", path)
+				warnErr := *sdkErrors.ErrDataInvalidInput
+				warnErr.Msg = "invalid secret path"
+				log.WarnErr(fName, warnErr)
 				return
 			}
 
@@ -96,9 +103,11 @@ Examples:
 			versionList := strings.Split(versions, ",")
 			for _, v := range versionList {
 				version, err := strconv.Atoi(strings.TrimSpace(v))
-
 				if err != nil {
 					cmd.PrintErrf("Error: invalid version number: %s\n", v)
+					warnErr := sdkErrors.ErrDataInvalidInput.Wrap(err)
+					warnErr.Msg = "invalid version number"
+					log.WarnErr(fName, *warnErr)
 					return
 				}
 
@@ -106,6 +115,9 @@ Examples:
 					cmd.PrintErrf(
 						"Error: version numbers cannot be negative: %s\n", v,
 					)
+					warnErr := *sdkErrors.ErrDataInvalidInput
+					warnErr.Msg = "version numbers cannot be negative"
+					log.WarnErr(fName, warnErr)
 					return
 				}
 			}
@@ -122,13 +134,7 @@ Examples:
 			}
 
 			err := api.DeleteSecretVersions(path, vv)
-			if err != nil {
-				if err.Is(sdkErrors.ErrStateNotReady) {
-					stdout.PrintNotReady()
-					return
-				}
-
-				cmd.PrintErrf("Error: %v\n", err)
+			if stdout.HandleAPIError(cmd, err) {
 				return
 			}
 

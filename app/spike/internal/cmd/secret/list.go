@@ -5,18 +5,15 @@
 package secret
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	spike "github.com/spiffe/spike-sdk-go/api"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
+	"github.com/spiffe/spike-sdk-go/log"
 
-	"github.com/spiffe/spike/app/spike/internal/errors"
 	"github.com/spiffe/spike/app/spike/internal/stdout"
 	"github.com/spiffe/spike/app/spike/internal/trust"
 )
-
-const notFoundMessage = "No secrets found."
 
 // newSecretListCommand creates and returns a new cobra.Command for listing all
 // secret paths. It configures a command that retrieves and displays all
@@ -47,6 +44,9 @@ const notFoundMessage = "No secrets found."
 func newSecretListCommand(
 	source *workloadapi.X509Source, SPIFFEID string,
 ) *cobra.Command {
+	const fName = "newSecretListCommand"
+	const notFoundMessage = "No secrets found."
+
 	var listCmd = &cobra.Command{
 		Use:   "list",
 		Short: "List all secret paths",
@@ -57,19 +57,16 @@ func newSecretListCommand(
 				cmd.PrintErrln("Error: SPIFFE X509 source is unavailable")
 				cmd.PrintErrln("The workload API may have lost connection.")
 				cmd.PrintErrln("Please check your SPIFFE agent and try again.")
+				warnErr := *sdkErrors.ErrSPIFFENilX509Source
+				warnErr.Msg = "SPIFFE X509 source is unavailable"
+				log.WarnErr(fName, warnErr)
 				return
 			}
 
 			api := spike.NewWithSource(source)
 
 			keys, err := api.ListSecretKeys()
-			if err != nil {
-				if errors.NotReadyError(err) {
-					stdout.PrintNotReady()
-					return
-				}
-
-				cmd.PrintErrln("Error listing secret keys:", err)
+			if stdout.HandleAPIError(cmd, err) {
 				return
 			}
 			if keys == nil {

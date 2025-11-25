@@ -36,6 +36,22 @@
   </high-level-plan>
   <task-group for="v0.6.1" theme="doc update and stabilization">
     <issue>
+      format inconsistencies.
+
+      for policies we have json and human
+      for secrets we have
+      if !slices.Contains([]string{"plain",
+      "yaml", "json", "y", "p", "j"}, format) {
+
+      and not all operations honor the format parameter anyway.
+
+      anything that provides an output (except for error messages) should
+      honor the format parameter
+      human->human-friendly (human, h :: alias: plain, p)
+      json->valid json (json, j)
+      yaml->valid yaml (yaml, y)
+    </issue>
+    <issue>
       this is from sdk; it should come from env config
       ReadHeaderTimeout: 10 * time.Second,
 

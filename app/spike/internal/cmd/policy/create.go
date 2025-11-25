@@ -5,11 +5,13 @@
 package policy
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	spike "github.com/spiffe/spike-sdk-go/api"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
+	"github.com/spiffe/spike-sdk-go/log"
+
+	"github.com/spiffe/spike/app/spike/internal/stdout"
 	"github.com/spiffe/spike/app/spike/internal/trust"
 )
 
@@ -31,7 +33,8 @@ import (
 //
 // Command flags:
 //   - --name: Name of the policy (required)
-//   - --spiffeid-pattern: SPIFFE ID regex pattern for workload matching (required)
+//   - --spiffeid-pattern: SPIFFE ID regex pattern for workload matching
+//     (required)
 //   - --path-pattern: Path regex pattern for access control (required)
 //   - --permissions: Comma-separated list of permissions (required)
 //
@@ -66,6 +69,8 @@ import (
 func newPolicyCreateCommand(
 	source *workloadapi.X509Source, SPIFFEID string,
 ) *cobra.Command {
+	const fName = "newPolicyCreateCommand"
+
 	var (
 		name            string
 		pathPattern     string
@@ -79,13 +84,26 @@ func newPolicyCreateCommand(
 		Long: `Create a new policy that grants specific permissions to workloads.
 
         Example:
-        spike policy create --name=db-access 
-          --path-pattern="^db/.*$" --spiffeid-pattern="^spiffe://example\.org/service/.*$" 
+        spike policy create --name=db-access
+          --path-pattern="^db/.*$" --spiffeid-pattern="^spiffe://example\.org/service/.*$"
           --permissions="read,write"
 
         Valid permissions: read, write, list, super`,
 		Args: cobra.NoArgs,
-		Run: func(cmd *cobra.Command, args []string) {
+		Run: func(c *cobra.Command, args []string) {
+			trust.AuthenticateForPilot(SPIFFEID)
+
+			if source == nil {
+				c.PrintErrln("Error: SPIFFE X509 source is unavailable")
+				c.PrintErrln("The workload API may have lost connection.")
+				c.PrintErrln("Please check your SPIFFE agent and try again.")
+				warnErr := *sdkErrors.ErrSPIFFENilX509Source
+				warnErr.Msg = "SPIFFE X509 source is unavailable"
+				log.WarnErr(fName, warnErr)
+				return
+			}
+
+			api := spike.NewWithSource(source)
 
 			// Check if all required flags are provided
 			var missingFlags []string
@@ -103,50 +121,49 @@ func newPolicyCreateCommand(
 			}
 
 			if len(missingFlags) > 0 {
-				cmd.PrintErrln("Error: all flags are required")
+				c.PrintErrln("Error: all flags are required")
 				for _, flag := range missingFlags {
-					cmd.PrintErrf("  --%s is missing\n", flag)
+					c.PrintErrf("  --%s is missing\n", flag)
 				}
+				warnErr := *sdkErrors.ErrDataInvalidInput
+				warnErr.Msg = "missing required flags"
+				log.WarnErr(fName, warnErr)
 				return
 			}
-
-			trust.AuthenticateForPilot(SPIFFEID)
-
-			if source == nil {
-				cmd.PrintErrln("Error: SPIFFE X509 source is unavailable")
-				cmd.PrintErrln("The workload API may have lost connection.")
-				cmd.PrintErrln("Please check your SPIFFE agent and try again.")
-				return
-			}
-
-			api := spike.NewWithSource(source)
 
 			// Validate permissions
 			permissions, err := validatePermissions(permsStr)
 			if err != nil {
-				cmd.PrintErrf("Error: %v\n", err)
+				c.PrintErrf("Error: %v\n", err)
+				warnErr := sdkErrors.ErrDataInvalidInput.Wrap(err)
+				warnErr.Msg = "invalid permissions"
+				log.WarnErr(fName, *warnErr)
 				return
 			}
 
 			// Check if a policy with this name already exists
-			exists, err := checkPolicyNameExists(api, name)
-			if handleAPIError(cmd, err) {
+			exists, apiErr := checkPolicyNameExists(api, name)
+			if stdout.HandleAPIError(c, apiErr) {
 				return
 			}
 
 			if exists {
-				cmd.PrintErrf("Error: A policy with name '%s' already exists\n",
+				c.PrintErrf("Error: A policy with name '%s' already exists\n",
 					name)
+				warnErr := *sdkErrors.ErrEntityInvalid
+				warnErr.Msg = "policy with this name already exists"
+				log.WarnErr(fName, warnErr)
 				return
 			}
 
 			// Create policy
-			err = api.CreatePolicy(name, SPIFFEIDPattern, pathPattern, permissions)
-			if handleAPIError(cmd, err) {
+			apiErr = api.CreatePolicy(name, SPIFFEIDPattern,
+				pathPattern, permissions)
+			if stdout.HandleAPIError(c, apiErr) {
 				return
 			}
 
-			cmd.Println("Policy created successfully")
+			c.Println("Policy created successfully")
 		},
 	}
 

@@ -15,6 +15,7 @@ import (
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	apiUrl "github.com/spiffe/spike-sdk-go/api/url"
 	"github.com/spiffe/spike-sdk-go/crypto"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/log"
 	network "github.com/spiffe/spike-sdk-go/net"
 	"github.com/spiffe/spike-sdk-go/predicate"
@@ -48,29 +49,15 @@ func sendShardsToKeepers(
 		u, err := url.JoinPath(
 			keeperAPIRoot, string(apiUrl.KeeperContribute),
 		)
-
 		if err != nil {
-			log.Log().Warn(
-				fName, "message", "failed to join path", "url", keeperAPIRoot,
-			)
-			continue
-		}
-
-		// Security: Only SPIKE Keeper can send shards to SPIKE Nexus
-		client, err := network.CreateMTLSClientWithPredicate(
-			source, predicate.AllowKeeper,
-		)
-		if err != nil {
-			log.Log().Warn(
-				fName,
-				"message", "failed to create mTLS client",
-				"err", err,
-			)
+			warnErr := sdkErrors.ErrAPIBadRequest.Wrap(err)
+			warnErr.Msg = "failed to join path"
+			log.WarnErr(fName, *warnErr)
 			continue
 		}
 
 		if state.RootKeyZero() {
-			log.Log().Warn(fName, "message", "rootKey is zero: moving on")
+			log.Warn(fName, "message", "rootKey is zero: moving on")
 			continue
 		}
 
@@ -81,11 +68,9 @@ func sendShardsToKeepers(
 		for _, sr := range rootShares {
 			kid, err := strconv.Atoi(keeperID)
 			if err != nil {
-				log.Log().Warn(
-					fName,
-					"message", "failed to convert keeper id to int",
-					"err", err,
-				)
+				warnErr := sdkErrors.ErrDataInvalidInput.Wrap(err)
+				warnErr.Msg = "failed to convert keeper id to int"
+				log.WarnErr(fName, *warnErr)
 				continue
 			}
 
@@ -96,11 +81,9 @@ func sendShardsToKeepers(
 		}
 
 		if share.ID.IsZero() {
-			log.Log().Warn(
-				fName,
-				"message", "failed to find share for keeper",
-				"keeper_id", keeperID,
-			)
+			warnErr := *sdkErrors.ErrEntityNotFound // copy
+			warnErr.Msg = "failed to find share for keeper"
+			log.WarnErr(fName, warnErr)
 			continue
 		}
 
@@ -108,61 +91,32 @@ func sendShardsToKeepers(
 
 		contribution, err := share.Value.MarshalBinary()
 		if err != nil {
-			log.Log().Warn(
-				fName,
-				"message", "failed to marshal share",
-				"err", err.Error(),
-				"keeper_id", keeperID,
-			)
+			warnErr := sdkErrors.ErrDataMarshalFailure.Wrap(err)
+			warnErr.Msg = "failed to marshal share"
+			log.WarnErr(fName, *warnErr)
 
-			// Security: Ensure that the contribution is zeroed out before
-			// the next iteration.
+			// Security: Ensure sensitive data is zeroed out.
 			mem.ClearBytes(contribution)
-
-			// Security: Ensure that the share is zeroed out before
-			// the next iteration.
 			share.Value.SetUint64(0)
-
-			// Security: Ensure that the rootShares are zeroed out before
-			// the function returns.
 			for i := range rootShares {
 				rootShares[i].Value.SetUint64(0)
 			}
-
-			log.Log().Warn(
-				fName,
-				"message", "failed to marshal share",
-				"err", err.Error(),
-				"keeper_id", keeperID,
-			)
 			continue
 		}
 
 		if len(contribution) != crypto.AES256KeySize {
-			// Security: Ensure that the contribution is zeroed out before
-			// the next iteration.
-			//
-			// Note that you cannot do `mem.ClearRawBytes(contribution)` because
-			// the contribution is a slice, not a struct; we use `mem.ClearBytes()`
-			// instead.
+			// Log before clearing (contribution length is needed for logging).
+			warnErr := *sdkErrors.ErrDataInvalidInput // copy
+			warnErr.Msg = "invalid contribution length"
+			log.WarnErr(fName, warnErr)
+
+			// Security: Ensure sensitive data is zeroed out.
+			// Note: use mem.ClearBytes() for slices, not mem.ClearRawBytes().
 			mem.ClearBytes(contribution)
-
-			// Security: Ensure that the share is zeroed out before
-			// the next iteration.
 			share.Value.SetUint64(0)
-
-			// Security: Ensure that the rootShares are zeroed out before
-			// the function returns.
 			for i := range rootShares {
 				rootShares[i].Value.SetUint64(0)
 			}
-
-			log.Log().Warn(
-				fName,
-				"message", "invalid contribution length",
-				"len", len(contribution),
-				"keeper_id", keeperID,
-			)
 			continue
 		}
 
@@ -176,45 +130,37 @@ func sendShardsToKeepers(
 
 		md, err := json.Marshal(scr)
 
-		// Security: Erase scr.Shard when no longer in use.
+		// Security: Erase sensitive data when no longer in use.
 		mem.ClearRawBytes(scr.Shard)
-
-		// Security: Ensure that the contribution is zeroed out before
-		// the next iteration.
 		mem.ClearBytes(contribution)
-
-		// Security: Ensure that the share is zeroed out before
-		// the next iteration.
 		share.Value.SetUint64(0)
-
-		// Security: Ensure that the rootShares are zeroed out before
-		// the function returns.
 		for i := range rootShares {
 			rootShares[i].Value.SetUint64(0)
 		}
 
 		if err != nil {
-			log.Log().Warn(
-				fName,
-				"message", "failed to marshal request",
-				"err", err.Error(),
-				"keeper_id", keeperID,
-			)
+			warnErr := sdkErrors.ErrDataMarshalFailure.Wrap(err)
+			warnErr.Msg = "failed to marshal request"
+			log.WarnErr(fName, *warnErr)
 			continue
 		}
 
+		// Security: Only SPIKE Keeper can send shards to SPIKE Nexus.
+		// Create the client just before use to avoid unnecessary allocation
+		// if earlier checks fail.
+		client := network.CreateMTLSClientWithPredicate(
+			source, predicate.AllowKeeper,
+		)
+
 		_, err = net.Post(client, u, md)
-		// Security: Ensure that the md is zeroed out before
-		// the next iteration.
+
+		// Security: Ensure that md is zeroed out.
 		mem.ClearBytes(md)
 
 		if err != nil {
-			log.Log().Warn(
-				fName,
-				"message", "failed to post",
-				"err", err.Error(),
-				"keeper_id", keeperID,
-			)
+			warnErr := sdkErrors.ErrAPIPostFailed.Wrap(err)
+			warnErr.Msg = "failed to post shard to keeper"
+			log.WarnErr(fName, *warnErr)
 			continue
 		}
 	}
