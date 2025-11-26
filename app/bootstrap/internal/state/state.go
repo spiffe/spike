@@ -13,6 +13,7 @@ import (
 	shamir "github.com/cloudflare/circl/secretsharing"
 	"github.com/spiffe/spike-sdk-go/config/env"
 	"github.com/spiffe/spike-sdk-go/crypto"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/log"
 
 	"github.com/spiffe/spike/app/bootstrap/internal/validation"
@@ -51,12 +52,9 @@ func RootShares() []shamir.Share {
 	// Ensure this function is only called once per process.
 	rootSharesGeneratedMu.Lock()
 	if rootSharesGenerated {
-		log.FatalLn(
-			fName,
-			"message", "RootShares() called more than once",
-			"err", "This is a critical error that would "+
-				"generate different root keys and break the system",
-		)
+		failErr := sdkErrors.ErrStateIntegrityCheck.Clone()
+		failErr.Msg = "RootShares() called more than once"
+		log.FatalErr(fName, *failErr)
 	}
 	rootSharesGenerated = true
 	rootSharesGeneratedMu.Unlock()
@@ -65,7 +63,8 @@ func RootShares() []shamir.Share {
 	defer rootKeySeedMu.Unlock()
 
 	if _, err := rand.Read(rootKeySeed[:]); err != nil {
-		log.FatalLn(fName, "message", "key seed failure", "err", err.Error())
+		failErr := sdkErrors.ErrCryptoRandomGenerationFailed.Wrap(err)
+		log.FatalErr(fName, *failErr)
 	}
 
 	// Initialize parameters
@@ -73,21 +72,11 @@ func RootShares() []shamir.Share {
 	t := uint(env.ShamirThresholdVal() - 1) // Need t+1 shares to reconstruct
 	n := uint(env.ShamirSharesVal())        // Total number of shares
 
-	log.Log().Info(
-		fName,
-		"message", "generating Shamir shares",
-		"t", t, "n", n,
-	)
-
 	// Create a secret from our 32-byte key:
 	rootSecret := g.NewScalar()
-
 	if err := rootSecret.UnmarshalBinary(rootKeySeed[:]); err != nil {
-		log.FatalLn(
-			fName,
-			"message", "key unmarshal failure",
-			"err", err.Error(),
-		)
+		failErr := sdkErrors.ErrDataUnmarshalFailure.Wrap(err)
+		log.FatalErr(fName, *failErr)
 	}
 
 	// To compute identical shares, we need an identical seed for the random
@@ -99,15 +88,14 @@ func RootShares() []shamir.Share {
 	reader := crypto.NewDeterministicReader(rootKeySeed[:])
 	ss := shamir.New(reader, t, rootSecret)
 
-	log.Log().Info(fName, "message", "generated Shamir shares")
+	computedShares := ss.Share(n)
 
-	rs := ss.Share(n)
+	// TODO: move this validation to a common internal package since nexus can benefit from it too.
 
 	// Security: Ensure the root key and shares are zeroed out after use.
-	validation.VerifyShamirReconstruction(rootSecret, rs)
+	validation.VerifyShamirReconstruction(rootSecret, computedShares)
 
-	log.Log().Info(fName, "message", "successfully generated shards")
-	return rs
+	return computedShares
 }
 
 // RootKey returns a pointer to the root key seed used for encryption.

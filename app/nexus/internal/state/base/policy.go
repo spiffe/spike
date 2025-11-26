@@ -223,7 +223,7 @@ func DeletePolicy(id string) *sdkErrors.SDKError {
 	// Delete the policy from the backend
 	deleteErr := persist.Backend().DeletePolicy(ctx, id)
 	if deleteErr != nil {
-		failErr := *sdkErrors.ErrObjectDeletionFailed.Clone()
+		failErr := *sdkErrors.ErrEntityDeletionFailed.Clone()
 		failErr.Msg = "failed to delete policy with ID " + id
 		return failErr.Wrap(deleteErr)
 	}

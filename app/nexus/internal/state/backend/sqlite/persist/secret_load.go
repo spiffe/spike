@@ -136,7 +136,7 @@ func (s *DataStore) loadSecretInternal(
 	// where all versions are deleted, which is valid.
 	if secret.Metadata.CurrentVersion != 0 {
 		if _, exists := secret.Versions[secret.Metadata.CurrentVersion]; !exists {
-			return nil, sdkErrors.ErrStoreIntegrityCheckFailed.Wrap(
+			return nil, sdkErrors.ErrStateIntegrityCheck.Wrap(
 				errors.New(
 					"data integrity violation: current version not found",
 				),

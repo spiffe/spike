@@ -84,6 +84,10 @@ func iterateKeepersAndInitializeState(
 			"id", keeperID, "url", keeperAPIRoot,
 		)
 
+		// TODO:
+		// 1. shardURL should return an error instead.
+		// 2. if shardURL returns an error, it is a confiuguration problem, irrecoverable,
+		//    and maybe it makes sense to crash?
 		u := shardURL(keeperAPIRoot)
 		if u == "" {
 			continue
@@ -93,21 +97,24 @@ func iterateKeepersAndInitializeState(
 		if err != nil {
 			warnErr := sdkErrors.ErrNetPeerConnection.Wrap(err)
 			warnErr.Msg = "failed to get shard from keeper"
-			log.WarnErr(fName, *warnErr)
+			log.WarnErr(fName, *warnErr) // just log: will retry
 			continue
 		}
 
-		res := unmarshalShardResponse(data)
+		res, unmarshalErr := unmarshalShardResponse(data)
 		// Security: Reset data before the function exits.
 		mem.ClearBytes(data)
-		if res == nil {
+		if unmarshalErr != nil {
+			failErr := unmarshalErr.Clone()
+			failErr.Msg = "failed to unmarshal shard response"
+			log.WarnErr(fName, *failErr) // just log: will retry
 			continue
 		}
 
 		if mem.Zeroed32(res.Shard) {
 			warnErr := *sdkErrors.ErrShamirEmptyShard.Clone()
 			warnErr.Msg = "shard is zeroed"
-			log.WarnErr(fName, warnErr)
+			log.WarnErr(fName, warnErr) // just log: will retry
 			continue
 		}
 

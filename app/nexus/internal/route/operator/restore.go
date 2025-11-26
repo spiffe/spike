@@ -64,7 +64,7 @@ func RouteRestore(
 	journal.AuditRequest(fName, r, audit, journal.AuditCreate)
 
 	if env.BackendStoreTypeVal() == env.Memory {
-		log.Log().Info(fName, "message", "skipping restoration: in-memory mode")
+		log.Info(fName, "message", "skipping restoration: in-memory mode")
 		return nil
 	}
 

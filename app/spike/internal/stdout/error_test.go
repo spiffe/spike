@@ -136,8 +136,8 @@ func TestHandleAPIError_PolicyErrors(t *testing.T) {
 			wantMessage: "Error: Operation failed.",
 		},
 		{
-			name:        "ErrObjectCreationFailed",
-			err:         sdkErrors.ErrObjectCreationFailed,
+			name:        "ErrEntityCreationFailed",
+			err:         sdkErrors.ErrEntityCreationFailed,
 			wantMessage: "Error: Failed to create resource.",
 		},
 	}

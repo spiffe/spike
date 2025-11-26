@@ -48,7 +48,7 @@ func handlePolicyError(c *cobra.Command, err *sdkErrors.SDKError) bool {
 	case err.Is(sdkErrors.ErrAPIPostFailed):
 		c.PrintErrln("Error: Operation failed.")
 		return true
-	case err.Is(sdkErrors.ErrObjectCreationFailed):
+	case err.Is(sdkErrors.ErrEntityCreationFailed):
 		c.PrintErrln("Error: Failed to create resource.")
 		return true
 	}

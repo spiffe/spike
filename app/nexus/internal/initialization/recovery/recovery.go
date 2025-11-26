@@ -177,7 +177,7 @@ func RestoreBackingStoreFromPilotShards(shards []ShamirShard) {
 		context.Background(), spiffe.EndpointSocket(),
 	)
 	if err != nil {
-		failErr := sdkErrors.ErrSPIFFEFailedToCreateX509Source.Wrap(err)
+		failErr := sdkErrors.ErrSPIFFEUnableToFetchX509Source.Wrap(err)
 		failErr.Msg = "failed to create SPIFFE source"
 		log.FatalErr(fName, *failErr)
 		return

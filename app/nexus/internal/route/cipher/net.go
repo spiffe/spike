@@ -8,7 +8,7 @@ import (
 	"net/http"
 
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
-	"github.com/spiffe/spike-sdk-go/log"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 
 	"github.com/spiffe/spike/internal/net"
 )
@@ -30,7 +30,6 @@ func respondStreamingDecrypt(
 	if _, err := w.Write(plaintext); err != nil {
 		return err
 	}
-	log.Log().Info(fName, "message", "streaming decryption successful")
 	return nil
 }
 
@@ -70,18 +69,17 @@ func respondJSONDecrypt(
 //   - error: An error if the response fails to send
 func respondStreamingEncrypt(
 	nonce, ciphertext []byte, w http.ResponseWriter, fName string,
-) error {
+) *sdkErrors.SDKError {
 	w.Header().Set("Content-Type", headerValueOctetStream)
 	if _, err := w.Write([]byte{spikeCipherVersion}); err != nil {
-		return err
+		return sdkErrors.ErrFSStreamWriteFailed.Wrap(err)
 	}
 	if _, err := w.Write(nonce); err != nil {
-		return err
+		return sdkErrors.ErrFSStreamWriteFailed.Wrap(err)
 	}
 	if _, err := w.Write(ciphertext); err != nil {
-		return err
+		return sdkErrors.ErrFSStreamWriteFailed.Wrap(err)
 	}
-	log.Log().Info(fName, "message", "streaming encryption successful")
 	return nil
 }
 

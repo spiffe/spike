@@ -33,7 +33,7 @@ import (
 //
 // Policy-specific errors:
 //   - ErrEntityNotFound, ErrEntityInvalid, ErrAPIPostFailed,
-//     ErrObjectCreationFailed
+//     ErrEntityCreationFailed
 //
 // Cipher-specific errors:
 //   - ErrCryptoEncryptionFailed, ErrCryptoDecryptionFailed,

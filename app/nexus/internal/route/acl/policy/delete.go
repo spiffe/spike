@@ -79,7 +79,7 @@ func RouteDeletePolicy(
 			reqres.PolicyDeleteResponse{}.Internal(), w,
 			http.StatusInternalServerError,
 		)
-		return sdkErrors.ErrObjectDeletionFailed.Wrap(err)
+		return sdkErrors.ErrEntityDeletionFailed.Wrap(err)
 	}
 
 	net.Success(reqres.PolicyDeleteResponse{}.Success(), w)

@@ -49,7 +49,7 @@ func ShouldBootstrap() bool {
 
 	// Memory backend doesn't need bootstrap.
 	if env.BackendStoreTypeVal() == env.Memory {
-		log.Log().Info(
+		log.Info(
 			fName,
 			"message", "skipping bootstrap for in-memory backend",
 		)
@@ -58,7 +58,7 @@ func ShouldBootstrap() bool {
 
 	// Lite backend doesn't need bootstrap.
 	if env.BackendStoreTypeVal() == env.Lite {
-		log.Log().Info(
+		log.Info(
 			fName,
 			"message", "skipping bootstrap for lite backend",
 		)
@@ -67,7 +67,7 @@ func ShouldBootstrap() bool {
 
 	// Check if we're forcing the bootstrap
 	if os.Getenv(env.BootstrapForce) == k8sTrue {
-		log.Log().Info(fName, "message", "force bootstrap enabled")
+		log.Info(fName, "message", "force bootstrap enabled")
 		return true
 	}
 
@@ -80,7 +80,7 @@ func ShouldBootstrap() bool {
 		// We're not in Kubernetes (bare-metal scenario)
 		// Bootstrap should proceed in non-k8s environments
 		if errors.Is(err, rest.ErrNotInCluster) {
-			log.Log().Info(
+			log.Info(
 				fName,
 				"message",
 				"not running in Kubernetes: proceeding with bootstrap",
@@ -89,23 +89,18 @@ func ShouldBootstrap() bool {
 		}
 
 		// Some other error. Skip bootstrap.
-		log.Log().Error(
-			fName,
-			"message",
-			"could not determine cluster config: skipping bootstrap",
-			"err", err.Error(),
-		)
+		failErr := sdkErrors.ErrK8sReconciliationFailed.Clone() // TODO: ErrK8sClientFailed?
+		failErr.Msg = "failed to get Kubernetes config: skipping bootstrap"
+		log.WarnErr(fName, *failErr)
 		return false
 	}
 
 	// We're in Kubernetes---check the ConfigMap
 	clientset, err := kubernetes.NewForConfig(cfg)
 	if err != nil {
-		log.Log().Error(fName,
-			"message",
-			"failed to create Kubernetes client: skipping bootstrap",
-			"err", err.Error(),
-		)
+		failErr := sdkErrors.ErrK8sReconciliationFailed.Clone() // TODO: ErrK8sClientFailed?
+		failErr.Msg = "failed to create Kubernetes client: skipping bootstrap"
+		log.WarnErr(fName, *failErr)
 		// Can't check state, skip bootstrap.
 		return false
 	}
@@ -122,13 +117,10 @@ func ShouldBootstrap() bool {
 		k8sMeta.GetOptions{},
 	)
 	if err != nil {
+		failErr := sdkErrors.ErrK8sReconciliationFailed.Wrap(err)
 		// ConfigMap doesn't exist or can't read it - proceed with bootstrap
-		log.Log().Info(
-			fName,
-			"message",
-			"ConfigMap not found or not readable: proceeding with bootstrap",
-			"err", err.Error(),
-		)
+		failErr.Msg = "failed to get ConfigMap: proceeding with bootstrap"
+		log.WarnErr(fName, *failErr)
 		return true
 	}
 
@@ -141,7 +133,7 @@ func ShouldBootstrap() bool {
 			"completed at %s by pod %s",
 			completedAt, completedByPod,
 		)
-		log.Log().Info(
+		log.Info(
 			fName,
 			"message", "skipping bootstrap based on ConfigMap state",
 			keyBootstrapCompletedAt, completedAt,
@@ -174,23 +166,23 @@ func MarkBootstrapComplete() *sdkErrors.SDKError {
 	// Only mark complete in Kubernetes environments
 	config, err := rest.InClusterConfig()
 	if err != nil {
-		if errors.Is(err, rest.ErrNotInCluster) {
+		if errors.Is(err, rest.ErrNotInCluster) { // TODO: ErrK8sNotInCluster
 			// Not in Kubernetes, nothing to mark
-			log.Log().Info(
+			log.Info(
 				fName,
 				"message", "not in Kubernetes: skipping completion marker",
 			)
 			return nil
 		}
 
-		failErr := sdkErrors.ErrK8sReconciliationFailed.Clone()
+		failErr := sdkErrors.ErrK8sReconciliationFailed.Clone() // TODO: ErrK8sClientFailed?
 		failErr.Msg = "failed to get Kubernetes config"
 		return failErr.Wrap(err)
 	}
 
 	clientset, err := kubernetes.NewForConfig(config)
 	if err != nil {
-		failErr := sdkErrors.ErrK8sReconciliationFailed.Clone()
+		failErr := sdkErrors.ErrK8sReconciliationFailed.Clone() // TODO: ErrK8sClientFailed?
 		failErr.Msg = "failed to create Kubernetes client"
 		return failErr.Wrap(err)
 	}
@@ -199,10 +191,9 @@ func MarkBootstrapComplete() *sdkErrors.SDKError {
 	if nsBytes, err := os.ReadFile(k8sServiceAccountNamespace); err == nil {
 		namespace = string(nsBytes)
 	} else {
-		log.Log().Warn(
-			fName,
-			"message", "failed to read service account namespace: using default",
-		)
+		failErr := sdkErrors.ErrK8sReconciliationFailed.Wrap(err) // TODO: ErrK8sLookupFailed?
+		failErr.Msg = "failed to read service account namespace: using default: " + namespace
+		log.WarnErr(fName, *failErr)
 	}
 
 	// Create ConfigMap marking bootstrap as complete
@@ -234,9 +225,11 @@ func MarkBootstrapComplete() *sdkErrors.SDKError {
 		return failErr
 	}
 
-	log.Log().Info(
+	log.Info(
 		fName,
 		"message", "marked bootstrap as complete in ConfigMap",
 	)
 	return nil
 }
+
+// TODO: after replacing errors; check this file for logical consistency and documentation.

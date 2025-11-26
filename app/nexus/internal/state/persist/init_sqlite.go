@@ -7,7 +7,6 @@ package persist
 import (
 	"context"
 	"encoding/hex"
-	"errors"
 
 	"github.com/spiffe/spike-sdk-go/config/env"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
@@ -65,14 +64,11 @@ func initializeSqliteBackend(rootKey *[32]byte) backend.Backend {
 	// Initialize SQLite backend
 	dbBackend, err := sqlite.New(cfg)
 	if err != nil {
-		failErr := errors.Join(sdkErrors.ErrObjectCreationFailed, err)
+		failErr := sdkErrors.ErrStateInitializationFailed.Wrap(err)
+		failErr.Msg = "failed to create SQLite backend"
 		// Log error but don't fail initialization
 		// The system can still work with just in-memory state
-		log.Log().Warn(
-			fName,
-			"message", sdkErrors.ErrObjectCreationFailed.Code,
-			"err", failErr,
-		)
+		log.WarnErr(fName, *failErr)
 		return nil
 	}
 
@@ -82,10 +78,9 @@ func initializeSqliteBackend(rootKey *[32]byte) backend.Backend {
 	defer cancel()
 
 	if err := dbBackend.Initialize(ctxC); err != nil {
-		failErr := errors.Join(sdkErrors.ErrStateInitializationFailed, err)
-		log.Log().Warn(
-			fName, "message", sdkErrors.ErrStateInitializationFailed, "err", failErr,
-		)
+		failErr := sdkErrors.ErrStateInitializationFailed.Wrap(err)
+		failErr.Msg = "failed to initialize SQLite backend"
+		log.WarnErr(fName, *failErr)
 		return nil
 	}
 

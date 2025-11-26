@@ -41,7 +41,8 @@ func SetShard(s *[crypto.AES256KeySize]byte) {
 
 	// Do not reset the shard if the new value is zero.
 	if zeroed {
-		log.Log().Info(fName, "message", "zero value: skipping setting shard")
+		// TODO: do we need a log here at all?
+		log.Warn(fName, "message", "zero value: skipping setting shard")
 		return
 	}
 

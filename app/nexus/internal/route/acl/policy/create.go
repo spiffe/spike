@@ -88,7 +88,7 @@ func RoutePutPolicy(
 		Permissions:     permissions,
 	})
 	if err != nil {
-		failErr := sdkErrors.ErrObjectCreationFailed.Wrap(err)
+		failErr := sdkErrors.ErrEntityCreationFailed.Wrap(err)
 		failErr.Msg = "failed to upsert policy"
 		net.Fail(
 			reqres.PolicyPutResponse{}.Internal(), w,

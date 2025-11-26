@@ -21,7 +21,7 @@ import (
 const appName = "SPIKE Bootstrap"
 
 func main() {
-	log.Log().Info(
+	log.Info(
 		appName,
 		"message", "starting",
 		"version", config.BootstrapVersion,

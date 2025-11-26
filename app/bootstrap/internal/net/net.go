@@ -5,11 +5,9 @@
 package net
 
 import (
-	"crypto/sha256"
-	"fmt"
 	"net/http"
 
-	"github.com/spiffe/spike-sdk-go/log"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike/internal/net"
 )
 
@@ -18,24 +16,10 @@ import (
 // sending shard contribution requests to keepers in a secure manner. It
 // will terminate the program with exit code 1 if the POST request fails.
 func PutShardContributionRequest(
-	client *http.Client, u string, md []byte, keeperID string,
-) error {
-	const fName = "PutShardContributionRequest"
-
-	log.Log().Info(
-		fName,
-		"message", "sending shard contribution request",
-		"payload_sha", fmt.Sprintf("%x", sha256.Sum256(md)),
-	)
-
-	_, err := net.Post(client, u, md)
+	client *http.Client, u string, md []byte,
+) *sdkErrors.SDKError {
+	_, err := net.Post(client, u, md) // TODO: if this is just net.Post; why have a separate function?
 	if err != nil {
-		log.Log().Info(
-			fName,
-			"message", "failed to post",
-			"err", err,
-			"keeper_id", keeperID,
-		)
 		return err
 	}
 

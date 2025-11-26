@@ -39,9 +39,9 @@ func BroadcastKeepers(ctx context.Context, api *spike.API) {
 	for keeperID := range env.KeepersVal() {
 		keeperShare := state.KeeperShare(rs, keeperID)
 
-		log.Log().Info(fName, "message", "iterating", "keeper_id", keeperID)
+		log.Info(fName, "message", "iterating", "keeper_id", keeperID)
 		_, err := retry.Forever(ctx, func() (bool, *sdkErrors.SDKError) {
-			log.Log().Info(fName, "message", "retrying", "keeper_id", keeperID)
+			log.Info(fName, "message", "retrying", "keeper_id", keeperID)
 
 			err := api.Contribute(keeperShare, keeperID)
 			if err != nil {
@@ -56,7 +56,9 @@ func BroadcastKeepers(ctx context.Context, api *spike.API) {
 
 		// This should never happen since the above loop retries forever:
 		if err != nil {
-			log.FatalLn(fName, "message", "initialization failed", "err", err)
+			failErr := sdkErrors.ErrStateInitializationFailed.Wrap(err)
+			failErr.Msg = "failed to send shards: will terminate"
+			log.FatalErr(fName, *failErr)
 		}
 	}
 }

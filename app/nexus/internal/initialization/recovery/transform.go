@@ -8,7 +8,7 @@ import (
 	"encoding/json"
 
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
-	"github.com/spiffe/spike-sdk-go/log"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 )
 
 // unmarshalShardResponse deserializes JSON data into a ShardGetResponse
@@ -24,16 +24,17 @@ import (
 // Returns:
 //   - *reqres.ShardGetResponse: A pointer to the deserialized response
 //     containing the shard data, or nil if unmarshaling fails
-func unmarshalShardResponse(data []byte) *reqres.ShardGetResponse {
-	const fName = "unmarshalShardResponse"
+func unmarshalShardResponse(data []byte) (*reqres.ShardGetResponse, *sdkErrors.SDKError) {
+	// TODO: update docs.
 
 	var res reqres.ShardGetResponse
 
 	err := json.Unmarshal(data, &res)
 	if err != nil {
-		log.Log().Info(fName, "message", "failed to unmarshal response", "err", err)
-		return nil
+		failErr := sdkErrors.ErrDataUnmarshalFailure.Wrap(err)
+		failErr.Msg = "failed to unmarshal response"
+		return nil, failErr
 	}
 
-	return &res
+	return &res, nil
 }

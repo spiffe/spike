@@ -41,19 +41,13 @@ func PrintBanner(appName, appVersion string) {
 // is logged only if SPIKE_SHOW_MEMORY_WARNING is enabled.
 func LogMemLock(appName string) {
 	if mem.Lock() {
-		log.Log().Info(
-			appName,
-			"message", "successfully locked memory",
-		)
+		log.Info(appName, "message", "successfully locked memory")
 		return
 	}
 	if !env.ShowMemoryWarningVal() {
 		return
 	}
-	log.Log().Info(
-		appName,
-		"message", "memory is not locked: please disable swap",
-	)
+	log.Info(appName, "message", "memory is not locked: please disable swap")
 }
 
 // Preamble performs standard application initialization output by printing

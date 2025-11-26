@@ -8,7 +8,6 @@ import (
 	"net/url"
 
 	apiUrl "github.com/spiffe/spike-sdk-go/api/url"
-	"github.com/spiffe/spike-sdk-go/log"
 )
 
 // shardURL constructs the full URL for the keeper shard endpoint by joining
@@ -30,12 +29,8 @@ import (
 //	url := shardURL("https://keeper.example.com:8443")
 //	// Returns: "https://keeper.example.com:8443/v1/shard"
 func shardURL(keeperAPIRoot string) string {
-	const fName = "shardURL"
 	u, err := url.JoinPath(keeperAPIRoot, string(apiUrl.KeeperShard))
 	if err != nil {
-		log.Log().Warn(
-			fName, "message", "failed to join path", "url", keeperAPIRoot,
-		)
 		return ""
 	}
 	return u

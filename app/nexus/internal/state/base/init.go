@@ -24,7 +24,7 @@ import (
 func Initialize(r *[crypto.AES256KeySize]byte) {
 	const fName = "Initialize"
 
-	log.Log().Info(
+	log.Info(
 		fName,
 		"message", "initializing state",
 		"backendType", env.BackendStoreTypeVal(),
@@ -35,7 +35,7 @@ func Initialize(r *[crypto.AES256KeySize]byte) {
 
 	// The in-memory store does not use a root key to operate.
 	if env.BackendStoreTypeVal() == env.Memory {
-		log.Log().Info(
+		log.Info(
 			fName,
 			"message", "state initialized (in-memory mode, root key not used)",
 			"backendType", env.BackendStoreTypeVal(),

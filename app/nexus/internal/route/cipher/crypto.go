@@ -35,7 +35,8 @@ func decryptDataStreaming(
 	nonce, ciphertext []byte, c cipher.AEAD, w http.ResponseWriter,
 	fName string,
 ) ([]byte, error) {
-	log.Log().Info(
+	// TODO: does this log really necessary at this point?
+	log.Info(
 		fName,
 		"message", "decrypt",
 		"len_nonce", len(nonce),
@@ -67,7 +68,8 @@ func decryptDataJSON(
 	nonce, ciphertext []byte, c cipher.AEAD, w http.ResponseWriter,
 	fName string,
 ) ([]byte, error) {
-	log.Log().Info(
+	// TODO: is this log really necessary at this point?
+	log.Info(
 		fName,
 		"message", "decrypt",
 		"len_nonce", len(nonce),
@@ -159,7 +161,8 @@ func encryptDataStreaming(
 		return nil, nil, err
 	}
 
-	log.Log().Info(
+	// TODO: do we really need to log this?
+	log.Info(
 		fName,
 		"message", "encrypt",
 		"len_nonce", len(nonce),
@@ -190,7 +193,8 @@ func encryptDataJSON(
 		return nil, nil, err
 	}
 
-	log.Log().Info(
+	// TODO: same here; do we really need to log this?
+	log.Info(
 		fName,
 		"message", "encrypt",
 		"len_nonce", len(nonce),

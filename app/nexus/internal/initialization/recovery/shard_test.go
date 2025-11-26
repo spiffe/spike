@@ -140,9 +140,9 @@ func TestUnmarshalShardResponse_ValidInput(t *testing.T) {
 	}
 
 	// Test unmarshaling
-	result := unmarshalShardResponse(data)
+	result, uerr := unmarshalShardResponse(data)
 
-	if result == nil {
+	if uerr != nil {
 		t.Fatal("Expected non-nil result")
 	}
 
@@ -190,7 +190,7 @@ func TestUnmarshalShardResponse_InvalidInput(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := unmarshalShardResponse(tt.data)
+			result, _ := unmarshalShardResponse(tt.data)
 
 			// Invalid input should return nil
 			if result != nil {

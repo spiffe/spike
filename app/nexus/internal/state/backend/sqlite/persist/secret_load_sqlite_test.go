@@ -257,14 +257,14 @@ func TestDataStore_loadSecretInternal_EmptyVersionsResult(t *testing.T) {
 		// Execute the function
 		secret, loadErr := store.loadSecretInternal(ctx, path)
 
-		// Verify results: should fail with ErrStoreIntegrityCheckFailed because
+		// Verify results: should fail with ErrStateIntegrityCheck because
 		// CurrentVersion=1 but version 1 doesn't exist in the Versions map.
 		if loadErr == nil {
-			t.Error("Expected ErrStoreIntegrityCheckFailed for inconsistent state")
+			t.Error("Expected ErrStateIntegrityCheck for inconsistent state")
 		}
 
-		if loadErr != nil && !loadErr.Is(sdkErrors.ErrStoreIntegrityCheckFailed) {
-			t.Errorf("Expected ErrStoreIntegrityCheckFailed, got: %v", loadErr)
+		if loadErr != nil && !loadErr.Is(sdkErrors.ErrStateIntegrityCheck) {
+			t.Errorf("Expected ErrStateIntegrityCheck, got: %v", loadErr)
 		}
 
 		if secret != nil {

@@ -79,16 +79,17 @@ func RootKeyZero() bool {
 func SetRootKey(rk *[crypto.AES256KeySize]byte) {
 	fName := "SetRootKey"
 
-	log.Log().Info(fName, "message", "setting root key")
+	log.Info(fName, "message", "setting root key") // TODO: do we need these logs. existence of the root key is evidence of it being set anyway.
 
 	if rk == nil {
-		log.Log().Warn(fName, "message", sdkErrors.ErrRootKeyEmpty.Code)
+		failErr := *sdkErrors.ErrRootKeyMissing.Clone()
+		log.FatalErr(fName, failErr) // TODO: check if this is too strict; in-memory mode may be sending nil keys so we need to check for mode here too.
 		return
 	}
 
 	if mem.Zeroed32(rk) {
-		log.Log().Warn(fName, "message", sdkErrors.ErrRootKeyEmpty.Code)
-		return
+		failErr := *sdkErrors.ErrRootKeyEmpty.Clone()
+		log.FatalErr(fName, failErr) // TODO: same as above.
 	}
 
 	rootKeyMu.Lock()
@@ -98,5 +99,5 @@ func SetRootKey(rk *[crypto.AES256KeySize]byte) {
 		rootKey[i] = rk[i]
 	}
 
-	log.Log().Info(fName, "message", "root key set")
+	log.Info(fName, "message", "root key set")
 }
