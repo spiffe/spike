@@ -13,6 +13,7 @@ import (
 
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/spiffe/spike-sdk-go/config/env"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike/app/nexus/internal/state/backend/sqlite/ddl"
 	"github.com/spiffe/spike/internal/config"
 )
@@ -216,9 +217,13 @@ func TestDataStore_loadSecretInternal_SecretNotFound(t *testing.T) {
 		// Execute the function
 		secret, err := store.loadSecretInternal(ctx, path)
 
-		// Verify results
-		if err != nil {
-			t.Errorf("loadSecretInternal should not return error for non-existent secret: %v", err)
+		// Verify results: should return ErrEntityNotFound for non-existent secret
+		if err == nil {
+			t.Error("Expected ErrEntityNotFound for non-existent secret")
+		}
+
+		if err != nil && !err.Is(sdkErrors.ErrEntityNotFound) {
+			t.Errorf("Expected ErrEntityNotFound, got: %v", err)
 		}
 
 		if secret != nil {
@@ -238,7 +243,8 @@ func TestDataStore_loadSecretInternal_EmptyVersionsResult(t *testing.T) {
 		ctx := context.Background()
 		path := "test/empty/versions"
 
-		// Insert metadata but no versions (inconsistent state)
+		// Insert metadata but no versions (inconsistent state).
+		// CurrentVersion=1 but no actual version 1 exists.
 		createdTime := time.Now().Add(-24 * time.Hour).Truncate(time.Second)
 		updatedTime := time.Now().Add(-1 * time.Hour).Truncate(time.Second)
 
@@ -249,25 +255,20 @@ func TestDataStore_loadSecretInternal_EmptyVersionsResult(t *testing.T) {
 		}
 
 		// Execute the function
-		secret, err := store.loadSecretInternal(ctx, path)
+		secret, loadErr := store.loadSecretInternal(ctx, path)
 
-		// Verify results - this should succeed but return a secret with no versions
-		if err != nil {
-			t.Errorf("loadSecretInternal should not fail with empty versions: %v", err)
+		// Verify results: should fail with ErrStoreIntegrityCheckFailed because
+		// CurrentVersion=1 but version 1 doesn't exist in the Versions map.
+		if loadErr == nil {
+			t.Error("Expected ErrStoreIntegrityCheckFailed for inconsistent state")
 		}
 
-		if secret == nil {
-			t.Fatal("Expected non-nil secret even with no versions")
+		if loadErr != nil && !loadErr.Is(sdkErrors.ErrStoreIntegrityCheckFailed) {
+			t.Errorf("Expected ErrStoreIntegrityCheckFailed, got: %v", loadErr)
 		}
 
-		// Check that metadata is preserved
-		if secret.Metadata.CurrentVersion != 1 {
-			t.Errorf("Expected current version 1, got %d", secret.Metadata.CurrentVersion)
-		}
-
-		// Check that the `versions` map is empty
-		if len(secret.Versions) != 0 {
-			t.Errorf("Expected no versions, got %d", len(secret.Versions))
+		if secret != nil {
+			t.Error("Expected nil secret for integrity check failure")
 		}
 	})
 }
@@ -305,10 +306,10 @@ func TestDataStore_loadSecretInternal_CorruptedData(t *testing.T) {
 		}
 
 		// Execute the function
-		secret, err := store.loadSecretInternal(ctx, path)
+		secret, loadErr := store.loadSecretInternal(ctx, path)
 
-		// Verify results - should fail due to the decryption error
-		if err == nil {
+		// Verify results - should fail with ErrCryptoDecryptionFailed
+		if loadErr == nil {
 			t.Error("Expected error for corrupted encrypted data")
 		}
 
@@ -316,24 +317,10 @@ func TestDataStore_loadSecretInternal_CorruptedData(t *testing.T) {
 			t.Error("Expected nil secret on decryption error")
 		}
 
-		if err != nil && !contains(err.Error(), "failed to decrypt secret version") {
-			t.Errorf("Expected decryption error, got: %v", err)
+		if loadErr != nil && !loadErr.Is(sdkErrors.ErrCryptoDecryptionFailed) {
+			t.Errorf("Expected ErrCryptoDecryptionFailed, got: %v", loadErr)
 		}
 	})
-}
-
-// Helper function to check if a string contains a substring
-func contains(s, substr string) bool {
-	return len(s) >= len(substr) && (s == substr || containsSubstring(s, substr))
-}
-
-func containsSubstring(s, substr string) bool {
-	for i := 0; i <= len(s)-len(substr); i++ {
-		if s[i:i+len(substr)] == substr {
-			return true
-		}
-	}
-	return false
 }
 
 // Benchmark test for performance with real SQLite

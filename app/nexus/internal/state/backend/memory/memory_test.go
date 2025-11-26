@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/kv"
 	"github.com/spiffe/spike/app/nexus/internal/state/backend"
 )
@@ -144,9 +145,13 @@ func TestInMemoryStore_LoadNonExistentSecret(t *testing.T) {
 	// Try to load a secret that doesn't exist
 	loadedSecret, err := store.LoadSecret(ctx, "nonexistent/path")
 
-	// Should not return error for a non-existent secret
+	// Should return ErrEntityNotFound for a non-existent secret
 	if err == nil {
-		t.Log("LoadSecret returned nil error for non-existent secret (expected behavior)")
+		t.Error("Expected ErrEntityNotFound for non-existent secret")
+	}
+
+	if err != nil && !err.Is(sdkErrors.ErrEntityNotFound) {
+		t.Errorf("Expected ErrEntityNotFound, got: %v", err)
 	}
 
 	// Should return nil secret
@@ -315,14 +320,14 @@ func TestInMemoryStore_StorePolicyEmptyID(t *testing.T) {
 		Permissions:     []data.PolicyPermission{data.PermissionRead},
 	}
 
-	// Store the policy - should fail
+	// Store the policy - should fail with ErrEntityInvalid
 	err := store.StorePolicy(ctx, policy)
 	if err == nil {
 		t.Error("Expected error when storing policy with empty ID")
 	}
 
-	if err != nil && err.Error() != "policy ID cannot be empty" {
-		t.Errorf("Expected specific error message, got: %v", err)
+	if err != nil && !err.Is(sdkErrors.ErrEntityInvalid) {
+		t.Errorf("Expected ErrEntityInvalid, got: %v", err)
 	}
 }
 
@@ -334,8 +339,13 @@ func TestInMemoryStore_LoadNonExistentPolicy(t *testing.T) {
 	// Try to load a policy that doesn't exist
 	loadedPolicy, err := store.LoadPolicy(ctx, "nonexistent-policy")
 
-	if err != nil {
-		t.Errorf("LoadPolicy should not return error for non-existent policy: %v", err)
+	// Should return ErrEntityNotFound for a non-existent policy
+	if err == nil {
+		t.Error("Expected ErrEntityNotFound for non-existent policy")
+	}
+
+	if err != nil && !err.Is(sdkErrors.ErrEntityNotFound) {
+		t.Errorf("Expected ErrEntityNotFound, got: %v", err)
 	}
 
 	if loadedPolicy != nil {
@@ -464,10 +474,10 @@ func TestInMemoryStore_DeletePolicy(t *testing.T) {
 		t.Errorf("DeletePolicy failed: %v", err)
 	}
 
-	// Verify policy no longer exists
+	// Verify policy no longer exists (LoadPolicy returns ErrEntityNotFound)
 	deletedPolicy, err := store.LoadPolicy(ctx, policy.ID)
-	if err != nil {
-		t.Errorf("LoadPolicy after deletion failed: %v", err)
+	if err == nil || !err.Is(sdkErrors.ErrEntityNotFound) {
+		t.Errorf("Expected ErrEntityNotFound after deletion, got: %v", err)
 	}
 
 	if deletedPolicy != nil {

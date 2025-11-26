@@ -2239,6 +2239,16 @@ w
   </later>
   <future>
     <issue>
+      UpsertPolicy calls LoadAllPolicies to find a policy by name, which is
+      O(n) and inefficient as the number of policies grows. Add a
+      LoadPolicyByName method to the backend interface that performs an
+      indexed lookup directly (SQLite can use an index on the name column).
+      This would make the lookup O(1) instead of O(n).
+
+      Location: app/nexus/internal/state/base/policy.go (UpsertPolicy function)
+      Backend interface: app/nexus/internal/state/backend/interface.go
+    </issue>
+    <issue>
       Make vSecM uses helm only (you can override images if needed,
       to test with local images. -- that will be better than
       generating local manifests and maintaining them separately)

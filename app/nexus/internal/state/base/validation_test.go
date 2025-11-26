@@ -47,7 +47,7 @@ func TestContains_EmptySlice(t *testing.T) {
 	}
 }
 
-func TestHasAllPermissions_SuperPermissionJoker(t *testing.T) {
+func TestVerifyPermissions_SuperPermissionJoker(t *testing.T) {
 	// Test that super permission acts as a joker and grants all permissions
 	testCases := []struct {
 		name     string
@@ -95,7 +95,7 @@ func TestHasAllPermissions_SuperPermissionJoker(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			result := hasAllPermissions(tc.haves, tc.wants)
+			result := verifyPermissions(tc.haves, tc.wants)
 			if result != tc.expected {
 				t.Errorf("Expected %v, got %v for case: %s", tc.expected, result, tc.name)
 			}
@@ -103,7 +103,7 @@ func TestHasAllPermissions_SuperPermissionJoker(t *testing.T) {
 	}
 }
 
-func TestHasAllPermissions_SpecificPermissions(t *testing.T) {
+func TestVerifyPermissions_SpecificPermissions(t *testing.T) {
 	// Test normal permission checking (without super)
 	testCases := []struct {
 		name     string
@@ -157,7 +157,7 @@ func TestHasAllPermissions_SpecificPermissions(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			result := hasAllPermissions(tc.haves, tc.wants)
+			result := verifyPermissions(tc.haves, tc.wants)
 			if result != tc.expected {
 				t.Errorf("Expected %v, got %v for case: %s", tc.expected, result, tc.name)
 			}
@@ -165,7 +165,7 @@ func TestHasAllPermissions_SpecificPermissions(t *testing.T) {
 	}
 }
 
-func TestHasAllPermissions_SuperWithOtherPermissions(t *testing.T) {
+func TestVerifyPermissions_SuperWithOtherPermissions(t *testing.T) {
 	// Test edge cases where super is combined with other permissions
 	testCases := []struct {
 		name     string
@@ -195,7 +195,7 @@ func TestHasAllPermissions_SuperWithOtherPermissions(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			result := hasAllPermissions(tc.haves, tc.wants)
+			result := verifyPermissions(tc.haves, tc.wants)
 			if result != tc.expected {
 				t.Errorf("Expected %v, got %v for case: %s", tc.expected, result, tc.name)
 			}
@@ -218,27 +218,27 @@ func BenchmarkContains(b *testing.B) {
 	}
 }
 
-func BenchmarkHasAllPermissions_WithSuper(b *testing.B) {
+func BenchmarkVerifyPermissions_WithSuper(b *testing.B) {
 	haves := []data.PolicyPermission{data.PermissionSuper}
 	wants := []data.PolicyPermission{data.PermissionRead, data.PermissionWrite, data.PermissionList}
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		hasAllPermissions(haves, wants)
+		verifyPermissions(haves, wants)
 	}
 }
 
-func BenchmarkHasAllPermissions_WithoutSuper(b *testing.B) {
+func BenchmarkVerifyPermissions_WithoutSuper(b *testing.B) {
 	haves := []data.PolicyPermission{data.PermissionRead, data.PermissionWrite, data.PermissionList}
 	wants := []data.PolicyPermission{data.PermissionRead, data.PermissionWrite}
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		hasAllPermissions(haves, wants)
+		verifyPermissions(haves, wants)
 	}
 }
 
-func BenchmarkHasAllPermissions_LargePermissionSet(b *testing.B) {
+func BenchmarkVerifyPermissions_LargePermissionSet(b *testing.B) {
 	// Test with a larger set of permissions to see performance impact
 	haves := []data.PolicyPermission{
 		data.PermissionRead, data.PermissionWrite, data.PermissionList,
@@ -250,6 +250,6 @@ func BenchmarkHasAllPermissions_LargePermissionSet(b *testing.B) {
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		hasAllPermissions(haves, wants)
+		verifyPermissions(haves, wants)
 	}
 }

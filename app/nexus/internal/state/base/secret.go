@@ -49,15 +49,18 @@ import (
 func UpsertSecret(path string, values map[string]string) *sdkErrors.SDKError {
 	ctx := context.Background()
 
-	// Load the current secret (if it exists) to handle versioning
-	// Backend does NOT return an error if the secret is not found and returns
-	// `nil` instead. Any other error means there is a problem with the
-	// backing store, so it's better to return it and exit the function.
+	// Load the current secret (if it exists) to handle versioning.
+	// ErrEntityNotFound means the secret doesn't exist yet, which is fine for
+	// upsert semantics. Any other error indicates a backend problem.
 	currentSecret, err := persist.Backend().LoadSecret(ctx, path)
 	if err != nil {
-		failErr := sdkErrors.ErrEntityLoadFailed.Wrap(err)
-		failErr.Msg = "failed to load secret with path " + path
-		return failErr
+		if !err.Is(sdkErrors.ErrEntityNotFound) {
+			failErr := sdkErrors.ErrEntityLoadFailed.Wrap(err)
+			failErr.Msg = "failed to load secret with path " + path
+			return failErr
+		}
+		// Secret doesn't exist: currentSecret remains nil, and we'll create it
+		currentSecret = nil
 	}
 
 	now := time.Now()

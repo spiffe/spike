@@ -12,6 +12,7 @@ import (
 	"testing"
 
 	appEnv "github.com/spiffe/spike-sdk-go/config/env"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike/app/nexus/internal/state/persist"
 )
 
@@ -706,21 +707,21 @@ func TestSecretOperations_ConcurrentAccess(t *testing.T) {
 		// Note: This is a simple test since the memory backend is not truly concurrent-safe,
 		// But it tests the API works correctly in sequence
 
-		operations := []func() error{
-			func() error {
+		operations := []func() *sdkErrors.SDKError{
+			func() *sdkErrors.SDKError {
 				return UpsertSecret(path, map[string]string{"counter": "1"})
 			},
-			func() error {
+			func() *sdkErrors.SDKError {
 				_, err := GetSecret(path, 0)
 				return err
 			},
-			func() error {
+			func() *sdkErrors.SDKError {
 				return DeleteSecret(path, []int{1})
 			},
-			func() error {
+			func() *sdkErrors.SDKError {
 				return UndeleteSecret(path, []int{1})
 			},
-			func() error {
+			func() *sdkErrors.SDKError {
 				_, err := GetRawSecret(path, 0)
 				return err
 			},

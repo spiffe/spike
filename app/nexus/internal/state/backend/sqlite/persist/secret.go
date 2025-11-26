@@ -77,20 +77,20 @@ func (s *DataStore) StoreSecret(
 
 	// Update versions
 	for version, sv := range secret.Versions {
-		md, err := json.Marshal(sv.Data)
-		if err != nil {
-			return sdkErrors.ErrDataMarshalFailure.Wrap(err)
+		md, marshalErr := json.Marshal(sv.Data)
+		if marshalErr != nil {
+			return sdkErrors.ErrDataMarshalFailure.Wrap(marshalErr)
 		}
 
-		encrypted, nonce, err := s.encrypt(md)
-		if err != nil {
-			return sdkErrors.ErrCryptoEncryptionFailed.Wrap(err)
+		encrypted, nonce, encryptErr := s.encrypt(md)
+		if encryptErr != nil {
+			return sdkErrors.ErrCryptoEncryptionFailed.Wrap(encryptErr)
 		}
 
-		_, err = tx.ExecContext(ctx, ddl.QueryUpsertSecret,
+		_, execErr := tx.ExecContext(ctx, ddl.QueryUpsertSecret,
 			path, version, nonce, encrypted, sv.CreatedTime, sv.DeletedTime)
-		if err != nil {
-			return sdkErrors.ErrEntityQueryFailed.Wrap(err)
+		if execErr != nil {
+			return sdkErrors.ErrEntityQueryFailed.Wrap(execErr)
 		}
 	}
 

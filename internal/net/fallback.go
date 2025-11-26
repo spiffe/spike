@@ -11,6 +11,20 @@ import (
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 )
 
+// respondFallbackWithStatus writes a fallback JSON response with the given HTTP
+// status code and error code. It sets appropriate headers to prevent caching.
+//
+// This function is used when the primary response handling fails or when a
+// generic error response needs to be sent.
+//
+// Parameters:
+//   - w: The HTTP response writer
+//   - status: The HTTP status code to return
+//   - code: The error code to include in the response body
+//
+// Returns:
+//   - *sdkErrors.SDKError: An error if marshaling or writing fails,
+//     nil on success
 func respondFallbackWithStatus(
 	w http.ResponseWriter, status int, code sdkErrors.ErrorCode,
 ) *sdkErrors.SDKError {

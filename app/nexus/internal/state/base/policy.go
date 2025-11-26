@@ -240,7 +240,8 @@ func DeletePolicy(id string) *sdkErrors.SDKError {
 //     slice if no policies exist. The order of policies in the returned slice
 //     is non-deterministic due to the concurrent nature of the underlying
 //     store.
-func ListPolicies() ([]data.Policy, error) {
+//   - *sdkErrors.SDKError: ErrEntityLoadFailed if loading fails, nil on success
+func ListPolicies() ([]data.Policy, *sdkErrors.SDKError) {
 	ctx := context.Background()
 
 	// Load all policies from the backend
@@ -274,7 +275,8 @@ func ListPolicies() ([]data.Policy, error) {
 //     empty slice if no policies match. The order of policies in the returned
 //     slice is non-deterministic due to the concurrent nature of the underlying
 //     store.
-func ListPoliciesByPathPattern(pathPattern string) ([]data.Policy, error) {
+//   - *sdkErrors.SDKError: ErrEntityLoadFailed if loading fails, nil on success
+func ListPoliciesByPathPattern(pathPattern string) ([]data.Policy, *sdkErrors.SDKError) {
 	ctx := context.Background()
 
 	// Load all policies from the backend
@@ -308,9 +310,10 @@ func ListPoliciesByPathPattern(pathPattern string) ([]data.Policy, error) {
 //     an empty slice if no policies match. The order of policies in the
 //     returned slice is non-deterministic due to the concurrent nature of the
 //     underlying store.
+//   - *sdkErrors.SDKError: ErrEntityLoadFailed if loading fails, nil on success
 func ListPoliciesBySPIFFEIDPattern(
 	SPIFFEIDPattern string,
-) ([]data.Policy, error) {
+) ([]data.Policy, *sdkErrors.SDKError) {
 	ctx := context.Background()
 
 	// Load all policies from the backend.

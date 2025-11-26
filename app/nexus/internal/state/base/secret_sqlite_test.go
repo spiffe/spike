@@ -14,6 +14,7 @@ import (
 
 	"github.com/spiffe/spike-sdk-go/config/env"
 	"github.com/spiffe/spike-sdk-go/crypto"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/kv"
 
 	"github.com/spiffe/spike/app/nexus/internal/state/persist"
@@ -121,15 +122,18 @@ func TestSQLiteSecret_NewSecret(t *testing.T) {
 			"database": "prod_db",
 		}
 
-		// Verify LoadSecret returns nil for non-existent secret
-		secretBeforeUpsert, err := backend.LoadSecret(ctx, path)
-		if err != nil {
-			t.Fatalf("Unexpected error from LoadSecret before upsert: %v", err)
+		// Verify LoadSecret returns ErrEntityNotFound for non-existent secret
+		secretBeforeUpsert, loadErr := backend.LoadSecret(ctx, path)
+		if loadErr == nil {
+			t.Fatalf("Expected error from LoadSecret before upsert, got nil")
+		}
+		if !loadErr.Is(sdkErrors.ErrEntityNotFound) {
+			t.Fatalf("Expected ErrEntityNotFound, got: %v", loadErr)
 		}
 		if secretBeforeUpsert != nil {
 			t.Fatalf("Expected LoadSecret to return nil for non-existent secret, got: %+v", secretBeforeUpsert)
 		}
-		t.Logf("✅ LoadSecret correctly returned nil for non-existent pathPattern")
+		t.Logf("LoadSecret correctly returned ErrEntityNotFound for non-existent path")
 
 		err = UpsertSecret(path, values)
 		if err != nil {

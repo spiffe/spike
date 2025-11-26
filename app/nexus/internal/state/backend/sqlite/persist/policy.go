@@ -123,37 +123,37 @@ func (s *DataStore) StorePolicy(
 	}
 
 	// Encryption
-	nonce, err := generateNonce(s)
-	if err != nil {
-		return sdkErrors.ErrCryptoNonceGenerationFailed.Wrap(err)
+	nonce, nonceErr := generateNonce(s)
+	if nonceErr != nil {
+		return sdkErrors.ErrCryptoNonceGenerationFailed.Wrap(nonceErr)
 	}
-	encryptedSpiffeID, err := encryptWithNonce(
+	encryptedSpiffeID, encErr := encryptWithNonce(
 		s, nonce, []byte(policy.SPIFFEIDPattern),
 	)
-	if err != nil {
-		failErr := sdkErrors.ErrCryptoEncryptionFailed.Wrap(err)
+	if encErr != nil {
+		failErr := sdkErrors.ErrCryptoEncryptionFailed.Wrap(encErr)
 		failErr.Msg = fmt.Sprintf(
 			"failed to encrypt SPIFFE ID pattern for policy %s", policy.ID,
 		)
 		return failErr
 	}
 
-	encryptedPathPattern, err := encryptWithNonce(
+	encryptedPathPattern, pathErr := encryptWithNonce(
 		s, nonce, []byte(policy.PathPattern),
 	)
 
-	if err != nil {
-		failErr := sdkErrors.ErrCryptoEncryptionFailed.Wrap(err)
+	if pathErr != nil {
+		failErr := sdkErrors.ErrCryptoEncryptionFailed.Wrap(pathErr)
 		failErr.Msg = fmt.Sprintf(
 			"failed to encrypt path pattern for policy %s", policy.ID,
 		)
 		return failErr
 	}
-	encryptedPermissions, err := encryptWithNonce(
+	encryptedPermissions, permErr := encryptWithNonce(
 		s, nonce, []byte(permissionsStr),
 	)
-	if err != nil {
-		failErr := sdkErrors.ErrCryptoEncryptionFailed.Wrap(err)
+	if permErr != nil {
+		failErr := sdkErrors.ErrCryptoEncryptionFailed.Wrap(permErr)
 		failErr.Msg = fmt.Sprintf(
 			"failed to encrypt permissions for policy %s", policy.ID,
 		)
@@ -233,25 +233,25 @@ func (s *DataStore) LoadPolicy(
 	}
 
 	// Decrypt
-	decryptedSPIFFEIDPattern, err := s.decrypt(encryptedSPIFFEIDPattern, nonce)
-	if err != nil {
-		failErr := sdkErrors.ErrCryptoDecryptionFailed.Wrap(err)
+	decryptedSPIFFEIDPattern, decryptErr := s.decrypt(encryptedSPIFFEIDPattern, nonce)
+	if decryptErr != nil {
+		failErr := sdkErrors.ErrCryptoDecryptionFailed.Wrap(decryptErr)
 		failErr.Msg = fmt.Sprintf(
 			"failed to decrypt SPIFFE ID pattern for policy %s", policy.ID,
 		)
 		return nil, failErr
 	}
-	decryptedPathPattern, err := s.decrypt(encryptedPathPattern, nonce)
-	if err != nil {
-		failErr := sdkErrors.ErrCryptoDecryptionFailed.Wrap(err)
+	decryptedPathPattern, decryptErr := s.decrypt(encryptedPathPattern, nonce)
+	if decryptErr != nil {
+		failErr := sdkErrors.ErrCryptoDecryptionFailed.Wrap(decryptErr)
 		failErr.Msg = fmt.Sprintf(
 			"failed to decrypt path pattern for policy %s", policy.ID,
 		)
 		return nil, failErr
 	}
-	decryptedPermissions, err := s.decrypt(encryptedPermissions, nonce)
-	if err != nil {
-		failErr := sdkErrors.ErrCryptoDecryptionFailed.Wrap(err)
+	decryptedPermissions, decryptErr := s.decrypt(encryptedPermissions, nonce)
+	if decryptErr != nil {
+		failErr := sdkErrors.ErrCryptoDecryptionFailed.Wrap(decryptErr)
 		failErr.Msg = fmt.Sprintf(
 			"failed to decrypt permissions for policy %s", policy.ID,
 		)
@@ -342,9 +342,9 @@ func (s *DataStore) LoadAllPolicies(
 		}
 
 		// Decrypt
-		decryptedSPIFFEIDPattern, err := s.decrypt(encryptedSPIFFEIDPattern, nonce)
-		if err != nil {
-			failErr := sdkErrors.ErrCryptoDecryptionFailed.Wrap(err)
+		decryptedSPIFFEIDPattern, decryptErr := s.decrypt(encryptedSPIFFEIDPattern, nonce)
+		if decryptErr != nil {
+			failErr := sdkErrors.ErrCryptoDecryptionFailed.Wrap(decryptErr)
 			failErr.Msg = fmt.Sprintf(
 				"failed to decrypt SPIFFE ID pattern for policy %s, skipping",
 				policy.ID,
@@ -352,9 +352,9 @@ func (s *DataStore) LoadAllPolicies(
 			log.WarnErr(fName, *failErr)
 			continue
 		}
-		decryptedPathPattern, err := s.decrypt(encryptedPathPattern, nonce)
-		if err != nil {
-			failErr := sdkErrors.ErrCryptoDecryptionFailed.Wrap(err)
+		decryptedPathPattern, decryptErr := s.decrypt(encryptedPathPattern, nonce)
+		if decryptErr != nil {
+			failErr := sdkErrors.ErrCryptoDecryptionFailed.Wrap(decryptErr)
 			failErr.Msg = fmt.Sprintf(
 				"failed to decrypt path pattern for policy %s, skipping",
 				policy.ID,
@@ -362,9 +362,9 @@ func (s *DataStore) LoadAllPolicies(
 			log.WarnErr(fName, *failErr)
 			continue
 		}
-		decryptedPermissions, err := s.decrypt(encryptedPermissions, nonce)
-		if err != nil {
-			failErr := sdkErrors.ErrCryptoDecryptionFailed.Wrap(err)
+		decryptedPermissions, decryptErr := s.decrypt(encryptedPermissions, nonce)
+		if decryptErr != nil {
+			failErr := sdkErrors.ErrCryptoDecryptionFailed.Wrap(decryptErr)
 			failErr.Msg = fmt.Sprintf(
 				"failed to decrypt permissions for policy %s, skipping",
 				policy.ID,

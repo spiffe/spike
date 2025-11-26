@@ -28,14 +28,13 @@ func TestSQLitePolicy_CreateAndGet(t *testing.T) {
 
 		rootKey := createTestRootKey(t)
 		resetRootKey()
-		persist.InitializeBackend(rootKey)
 		Initialize(rootKey)
 
 		defer func() {
 			_ = persist.Backend().Close(ctx)
 		}()
 
-		// Create a test policy
+		// Create a test policyd
 		policy := data.Policy{
 			Name:            "test-policy",
 			SPIFFEIDPattern: "^spiffe://example\\.org/workload$",
@@ -43,7 +42,7 @@ func TestSQLitePolicy_CreateAndGet(t *testing.T) {
 			Permissions:     []data.PolicyPermission{data.PermissionRead, data.PermissionList},
 		}
 
-		createdPolicy, err := CreatePolicy(policy)
+		createdPolicy, err := UpsertPolicy(policy)
 		if err != nil {
 			t.Fatalf("Failed to create policy: %v", err)
 		}
@@ -88,14 +87,13 @@ func TestSQLitePolicy_Persistence(t *testing.T) {
 
 		rootKey := createTestRootKey(t)
 		resetRootKey()
-		persist.InitializeBackend(rootKey)
 		Initialize(rootKey)
 
 		defer func() {
 			_ = persist.Backend().Close(ctx)
 		}()
 
-		_, err := CreatePolicy(policy)
+		_, err := UpsertPolicy(policy)
 		if err != nil {
 			t.Fatalf("Failed to create policy in first session: %v", err)
 		}
@@ -107,7 +105,6 @@ func TestSQLitePolicy_Persistence(t *testing.T) {
 
 		rootKey := createTestRootKey(t) // Same key as the first session
 		resetRootKey()
-		persist.InitializeBackend(rootKey)
 		Initialize(rootKey)
 
 		defer func() {
@@ -158,7 +155,6 @@ func TestSQLitePolicy_ListPolicies(t *testing.T) {
 
 		rootKey := createTestRootKey(t)
 		resetRootKey()
-		persist.InitializeBackend(rootKey)
 		Initialize(rootKey)
 
 		defer func() {
@@ -188,7 +184,7 @@ func TestSQLitePolicy_ListPolicies(t *testing.T) {
 		}
 
 		for _, policy := range policies {
-			_, err := CreatePolicy(policy)
+			_, err := UpsertPolicy(policy)
 			if err != nil {
 				t.Fatalf("Failed to create policy %s: %v", policy.Name, err)
 			}
@@ -224,7 +220,6 @@ func TestSQLitePolicy_DeletePolicy(t *testing.T) {
 
 		rootKey := createTestRootKey(t)
 		resetRootKey()
-		persist.InitializeBackend(rootKey)
 		Initialize(rootKey)
 
 		defer func() {
@@ -240,7 +235,7 @@ func TestSQLitePolicy_DeletePolicy(t *testing.T) {
 				PathPattern:     fmt.Sprintf("^%s/.*$", policyName),
 				Permissions:     []data.PolicyPermission{data.PermissionRead},
 			}
-			_, err := CreatePolicy(policy)
+			_, err := UpsertPolicy(policy)
 			if err != nil {
 				t.Fatalf("Failed to create policy %s: %v", policyName, err)
 			}
@@ -309,7 +304,6 @@ func TestSQLitePolicy_CreateMultiplePolicies(t *testing.T) {
 
 		rootKey := createTestRootKey(t)
 		resetRootKey()
-		persist.InitializeBackend(rootKey)
 		Initialize(rootKey)
 
 		defer func() {
@@ -324,7 +318,7 @@ func TestSQLitePolicy_CreateMultiplePolicies(t *testing.T) {
 			Permissions:     []data.PolicyPermission{data.PermissionRead},
 		}
 
-		createdFirst, err := CreatePolicy(firstPolicy)
+		createdFirst, err := UpsertPolicy(firstPolicy)
 		if err != nil {
 			t.Fatalf("Failed to create first policy: %v", err)
 		}
@@ -337,7 +331,7 @@ func TestSQLitePolicy_CreateMultiplePolicies(t *testing.T) {
 			Permissions:     []data.PolicyPermission{data.PermissionWrite, data.PermissionList},
 		}
 
-		createdSecond, err := CreatePolicy(secondPolicy)
+		createdSecond, err := UpsertPolicy(secondPolicy)
 		if err != nil {
 			t.Fatalf("Failed to create second policy: %v", err)
 		}
@@ -381,9 +375,9 @@ func TestSQLitePolicy_CreateMultiplePolicies(t *testing.T) {
 		}
 
 		// Verify both policies exist in the list
-		allPolicies, err := ListPolicies()
-		if err != nil {
-			t.Fatalf("Failed to list all policies: %v", err)
+		allPolicies, listErr := ListPolicies()
+		if listErr != nil {
+			t.Fatalf("Failed to list all policies: %v", listErr)
 		}
 		if len(allPolicies) != 2 {
 			t.Errorf("Expected 2 policies, got %d", len(allPolicies))
@@ -398,7 +392,6 @@ func TestSQLitePolicy_SpecialCharactersAndLongData(t *testing.T) {
 
 		rootKey := createTestRootKey(t)
 		resetRootKey()
-		persist.InitializeBackend(rootKey)
 		Initialize(rootKey)
 
 		defer func() {
@@ -414,7 +407,7 @@ func TestSQLitePolicy_SpecialCharactersAndLongData(t *testing.T) {
 				data.PermissionWrite, data.PermissionList},
 		}
 
-		createdPolicy, err := CreatePolicy(policy)
+		createdPolicy, err := UpsertPolicy(policy)
 		if err != nil {
 			t.Fatalf("Failed to create policy with special characters: %v", err)
 		}
@@ -463,14 +456,13 @@ func TestSQLitePolicy_EncryptionWithDifferentKeys(t *testing.T) {
 		cleanupSQLiteDatabase(t)
 
 		resetRootKey()
-		persist.InitializeBackend(key1)
 		Initialize(key1)
 
 		defer func() {
 			_ = persist.Backend().Close(ctx)
 		}()
 
-		createdPolicy, err := CreatePolicy(policy)
+		createdPolicy, err := UpsertPolicy(policy)
 		if err != nil {
 			t.Fatalf("Failed to create policy with key1: %v", err)
 		}
@@ -487,7 +479,6 @@ func TestSQLitePolicy_EncryptionWithDifferentKeys(t *testing.T) {
 		ctx := context.Background()
 
 		resetRootKey()
-		persist.InitializeBackend(key2)
 		Initialize(key2)
 
 		defer func() {
@@ -508,7 +499,6 @@ func TestSQLitePolicy_EncryptionWithDifferentKeys(t *testing.T) {
 		ctx := context.Background()
 
 		resetRootKey()
-		persist.InitializeBackend(key1)
 		Initialize(key1)
 
 		defer func() {
@@ -547,7 +537,6 @@ func TestSQLitePolicy_ErrorHandling(t *testing.T) {
 
 		rootKey := createTestRootKey(t)
 		resetRootKey()
-		persist.InitializeBackend(rootKey)
 		Initialize(rootKey)
 
 		defer func() {
@@ -574,7 +563,7 @@ func TestSQLitePolicy_ErrorHandling(t *testing.T) {
 			Permissions:     []data.PolicyPermission{data.PermissionRead},
 		}
 
-		_, err = CreatePolicy(emptyNamePolicy)
+		_, err = UpsertPolicy(emptyNamePolicy)
 		if err == nil {
 			t.Error("Expected error when creating policy with empty name, got nil")
 		}
@@ -616,7 +605,6 @@ func BenchmarkSQLiteCreatePolicy(b *testing.B) {
 	}
 
 	resetRootKey()
-	persist.InitializeBackend(rootKey)
 	Initialize(rootKey)
 
 	b.ResetTimer()
@@ -628,7 +616,7 @@ func BenchmarkSQLiteCreatePolicy(b *testing.B) {
 			Permissions:     []data.PolicyPermission{data.PermissionRead},
 		}
 
-		_, err := CreatePolicy(policy)
+		_, err := UpsertPolicy(policy)
 		if err != nil {
 			b.Fatalf("Benchmark failed: %v", err)
 		}
@@ -669,7 +657,6 @@ func BenchmarkSQLiteGetPolicy(b *testing.B) {
 	}
 
 	resetRootKey()
-	persist.InitializeBackend(rootKey)
 	Initialize(rootKey)
 
 	// Create a policy to benchmark against
@@ -680,7 +667,7 @@ func BenchmarkSQLiteGetPolicy(b *testing.B) {
 		PathPattern:     "benchmark/.*",
 		Permissions:     []data.PolicyPermission{data.PermissionRead},
 	}
-	_, _ = CreatePolicy(policy)
+	_, _ = UpsertPolicy(policy)
 
 	// Get the policy ID before starting benchmark
 	allPolicies, err := ListPolicies()

@@ -106,14 +106,14 @@ func (s *DataStore) loadSecretInternal(
 			return nil, sdkErrors.ErrEntityQueryFailed.Wrap(err)
 		}
 
-		decrypted, err := s.decrypt(encrypted, nonce)
-		if err != nil {
-			return nil, sdkErrors.ErrCryptoDecryptionFailed.Wrap(err)
+		decrypted, decryptErr := s.decrypt(encrypted, nonce)
+		if decryptErr != nil {
+			return nil, sdkErrors.ErrCryptoDecryptionFailed.Wrap(decryptErr)
 		}
 
 		var values map[string]string
-		if err := json.Unmarshal(decrypted, &values); err != nil {
-			return nil, sdkErrors.ErrDataUnmarshalFailure.Wrap(err)
+		if unmarshalErr := json.Unmarshal(decrypted, &values); unmarshalErr != nil {
+			return nil, sdkErrors.ErrDataUnmarshalFailure.Wrap(unmarshalErr)
 		}
 
 		sv := kv.Version{

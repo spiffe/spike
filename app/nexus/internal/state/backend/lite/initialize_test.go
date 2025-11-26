@@ -11,6 +11,7 @@ import (
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/crypto"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/kv"
 	"github.com/spiffe/spike/app/nexus/internal/state/backend"
 )
@@ -284,9 +285,9 @@ func TestDataStore_CipherFunctionality(t *testing.T) {
 	}
 
 	// Decrypt
-	decrypted, err := cipher.Open(nil, nonce, ciphertext, nil)
-	if err != nil {
-		t.Errorf("Decryption failed: %v", err)
+	decrypted, decryptErr := cipher.Open(nil, nonce, ciphertext, nil)
+	if decryptErr != nil {
+		t.Errorf("Decryption failed: %v", decryptErr)
 	}
 
 	if string(decrypted) != string(plaintext) {
@@ -380,12 +381,12 @@ func TestDataStore_EmbeddedNoopStore(t *testing.T) {
 		Permissions:     []data.PolicyPermission{data.PermissionRead},
 	}
 
-	methods := []func() error{
-		func() error { return liteStore.Initialize(ctx) },
-		func() error { return liteStore.Close(ctx) },
-		func() error { return liteStore.StoreSecret(ctx, "path", testSecret) },
-		func() error { return liteStore.StorePolicy(ctx, testPolicy) },
-		func() error { return liteStore.DeletePolicy(ctx, "id") },
+	methods := []func() *sdkErrors.SDKError{
+		func() *sdkErrors.SDKError { return liteStore.Initialize(ctx) },
+		func() *sdkErrors.SDKError { return liteStore.Close(ctx) },
+		func() *sdkErrors.SDKError { return liteStore.StoreSecret(ctx, "path", testSecret) },
+		func() *sdkErrors.SDKError { return liteStore.StorePolicy(ctx, testPolicy) },
+		func() *sdkErrors.SDKError { return liteStore.DeletePolicy(ctx, "id") },
 	}
 
 	for i, method := range methods {
