@@ -8,6 +8,8 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/spiffe/spike-sdk-go/config/env"
 )
 
 type testErrorResponse struct {
@@ -100,7 +102,7 @@ func TestValidateCiphertextSize_ValidSize(t *testing.T) {
 	}{
 		{"small", 100},
 		{"medium", 1000},
-		{"at max", maxCiphertextSize},
+		{"at max", env.CryptoMaxCiphertextSizeVal()},
 	}
 
 	for _, tt := range tests {
@@ -126,7 +128,7 @@ func TestValidateCiphertextSize_ValidSize(t *testing.T) {
 func TestValidateCiphertextSize_TooLarge(t *testing.T) {
 	w := httptest.NewRecorder()
 	errResp := testErrorResponse{Err: "ciphertext too large"}
-	ciphertext := make([]byte, maxCiphertextSize+1)
+	ciphertext := make([]byte, env.CryptoMaxCiphertextSizeVal()+1)
 
 	err := validateCiphertextSize(ciphertext, w, errResp, "test")
 
@@ -147,7 +149,7 @@ func TestValidatePlaintextSize_ValidSize(t *testing.T) {
 	}{
 		{"small", 100},
 		{"medium", 1000},
-		{"at max", maxPlaintextSize},
+		{"at max", env.CryptoMaxPlaintextSizeVal()},
 	}
 
 	for _, tt := range tests {
@@ -173,7 +175,7 @@ func TestValidatePlaintextSize_ValidSize(t *testing.T) {
 func TestValidatePlaintextSize_TooLarge(t *testing.T) {
 	w := httptest.NewRecorder()
 	errResp := testErrorResponse{Err: "plaintext too large"}
-	plaintext := make([]byte, maxPlaintextSize+1)
+	plaintext := make([]byte, env.CryptoMaxPlaintextSizeVal()+1)
 
 	err := validatePlaintextSize(plaintext, w, errResp, "test")
 
@@ -196,9 +198,9 @@ func TestCipherConstants(t *testing.T) {
 
 	// maxPlaintextSize should be 16 bytes less than maxCiphertextSize
 	// to account for the AES-GCM authentication tag
-	if maxPlaintextSize != maxCiphertextSize-16 {
+	if env.CryptoMaxPlaintextSizeVal() != env.CryptoMaxCiphertextSizeVal()-16 {
 		t.Errorf("maxPlaintextSize = %d, want %d (maxCiphertextSize - 16)",
-			maxPlaintextSize, maxCiphertextSize-16)
+			env.CryptoMaxCiphertextSizeVal(), env.CryptoMaxCiphertextSizeVal()-16)
 	}
 
 	// Verify version byte

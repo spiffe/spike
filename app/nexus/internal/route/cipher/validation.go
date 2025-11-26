@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/spiffe/spike-sdk-go/config/env"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 
 	"github.com/spiffe/spike/internal/net"
@@ -70,7 +71,7 @@ func validateNonceSize[T any](
 func validateCiphertextSize[T any](
 	ciphertext []byte, w http.ResponseWriter, errorResponse T, _ string,
 ) error {
-	if len(ciphertext) > maxCiphertextSize {
+	if len(ciphertext) > env.CryptoMaxCiphertextSizeVal() {
 		net.Fail(errorResponse, w, http.StatusBadRequest)
 		return sdkErrors.ErrDataInvalidInput
 	}
@@ -92,7 +93,7 @@ func validateCiphertextSize[T any](
 func validatePlaintextSize[T any](
 	plaintext []byte, w http.ResponseWriter, errorResponse T, _ string,
 ) error {
-	if len(plaintext) > maxPlaintextSize {
+	if len(plaintext) > env.CryptoMaxPlaintextSizeVal() {
 		net.Fail(errorResponse, w, http.StatusBadRequest)
 		return sdkErrors.ErrDataInvalidInput
 	}

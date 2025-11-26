@@ -8,6 +8,7 @@ import (
 	"net/http"
 
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
+	"github.com/spiffe/spike-sdk-go/config/env"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/spiffeid"
 	"github.com/spiffe/spike/internal/auth"
@@ -17,11 +18,6 @@ import (
 
 // (AES-GCM standard nonce is 12 bytes)
 const expectedNonceSize = 12
-
-// Limit cipherText size to prevent DoS attacks
-// The maximum possible size is 68,719,476,704
-// The limit comes from GCM's 32-bit counter.
-const maxCiphertextSize = 65536
 
 // guardVerifyRequest validates a bootstrap verification request by performing
 // authentication and input validation checks.
@@ -75,7 +71,10 @@ func guardVerifyRequest(
 		return sdkErrors.ErrDataInvalidInput
 	}
 
-	if len(request.Ciphertext) > maxCiphertextSize {
+	// Limit cipherText size to prevent DoS attacks
+	// The maximum possible size is 68,719,476,704
+	// The limit comes from GCM's 32-bit counter.
+	if len(request.Ciphertext) > env.CryptoMaxCiphertextSizeVal() {
 		net.Fail(
 			reqres.BootstrapVerifyResponse{}.BadRequest(), w, http.StatusBadRequest,
 		)

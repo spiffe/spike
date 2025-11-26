@@ -40,6 +40,45 @@ mentioned and suggest updates in that table.
 - `os.Exit(0)` for successful early termination (`--help`, `--version`)
 - Libraries should return errors, **not** call `os.Exit()`.
 
+SDKError sentinel values are used across the codebase. One thing to remember is
+these sentinels are global variables, and they are "mutable."  Use the `.Clone()`
+method if you want to create an error with a different message or code to use
+locally. We **try** not to return plain `error`s within the codebase and instead
+use `*sdkErrors.SDKError`.
+
+### Avoiding Error Shadowing
+
+```go
+// BAD: If `err` already exists as `error` type, this creates typed nil
+encrypted, nonce, err := s.encrypt(md)
+
+// GOOD: Use distinct variable names
+encrypted, nonce, encryptErr := s.encrypt(md)
+```
+
+### Testing Functions That Call log.FatalErr and its variants (log.Fatal, log.FatalLn)
+
+- `SPIKE_STACK_TRACES_ON_LOG_FATAL=true`: Makes `log.FatalErr` panic instead of 
+  `os.Exit(1)`, allowing tests to recover
+
+
+```go
+func TestSomethingThatFatals(t *testing.T) {
+    // Enable panic mode for recovery
+    t.Setenv("SPIKE_STACK_TRACES_ON_LOG_FATAL", "true")
+
+    defer func() {
+        if r := recover(); r == nil {
+            t.Error("Expected panic from log.FatalErr")
+        }
+    }()
+
+    FunctionThatCallsFatalErr()
+
+    t.Error("Should have panicked")
+}
+```
+
 ### Architecture
 - SPIKE Nexus: Secret management service
 - SPIKE Pilot: CLI tool for users

@@ -42,8 +42,6 @@ import (
 func newSecretListCommand(
 	source *workloadapi.X509Source, SPIFFEID string,
 ) *cobra.Command {
-	const notFoundMessage = "No secrets found."
-
 	var listCmd = &cobra.Command{
 		Use:   "list",
 		Short: "List all secret paths",
@@ -62,12 +60,12 @@ func newSecretListCommand(
 				return
 			}
 			if keys == nil {
-				cmd.Println(notFoundMessage)
+				cmd.Println("No secrets found.")
 				return
 			}
 
 			if len(*keys) == 0 {
-				cmd.Println(notFoundMessage)
+				cmd.Println("No secrets found.")
 				return
 			}
 
