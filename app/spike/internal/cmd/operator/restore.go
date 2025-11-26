@@ -14,8 +14,6 @@ import (
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	spike "github.com/spiffe/spike-sdk-go/api"
 	"github.com/spiffe/spike-sdk-go/crypto"
-	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
-	"github.com/spiffe/spike-sdk-go/log"
 	"github.com/spiffe/spike-sdk-go/security/mem"
 	"github.com/spiffe/spike-sdk-go/spiffeid"
 	"golang.org/x/term"
@@ -60,34 +58,20 @@ import (
 func newOperatorRestoreCommand(
 	source *workloadapi.X509Source, SPIFFEID string,
 ) *cobra.Command {
-	const fName = "newOperatorRestoreCommand"
-
 	var restoreCmd = &cobra.Command{
 		Use:   "restore",
 		Short: "Restore SPIKE Nexus (do this if SPIKE Nexus cannot auto-recover)",
 		Run: func(cmd *cobra.Command, args []string) {
 			if !spiffeid.IsPilotRestore(SPIFFEID) {
-				cmd.PrintErrln("")
-				cmd.PrintErrln(
-					"  You need to have a `restore` role to use this command.")
-				cmd.PrintErrln(
-					"  Please refer https://spike.ist/operations/recovery/ " +
-						"for more info.",
-				)
-				cmd.PrintErrln(
-					"  with necessary privileges to assign this role.")
-				cmd.PrintErrln("")
-				failErr := *sdkErrors.ErrAccessUnauthorized.Clone()
-				failErr.Msg = "you do not have the required 'restore' role"
-				log.FatalErr(fName, failErr)
+				cmd.PrintErrln("Error: You need the 'restore' role.")
+				cmd.PrintErrln("See https://spike.ist/operations/recovery/")
+				return
 			}
 
 			trust.AuthenticateForPilotRestore(SPIFFEID)
 
 			if source == nil {
-				cmd.PrintErrln("Error: SPIFFE X509 source is unavailable")
-				cmd.PrintErrln("The workload API may have lost connection.")
-				cmd.PrintErrln("Please check your SPIFFE agent and try again.")
+				cmd.PrintErrln("Error: SPIFFE X509 source is unavailable.")
 				return
 			}
 
@@ -96,9 +80,8 @@ func newOperatorRestoreCommand(
 			shard, err := term.ReadPassword(int(os.Stdin.Fd()))
 			if err != nil {
 				cmd.Println("") // newline after hidden input
-				cmd.PrintErrf("Error reading shard: %v\n", err)
-				failErr := sdkErrors.ErrAPIBadRequest.Wrap(err)
-				log.FatalErr(fName, *failErr)
+				cmd.PrintErrf("Error: %v\n", err)
+				return
 			}
 
 			api := spike.NewWithSource(source)
@@ -108,14 +91,8 @@ func newOperatorRestoreCommand(
 			// shard is in `spike:$id:$hex` format
 			shardParts := strings.SplitN(string(shard), ":", 3)
 			if len(shardParts) != 3 {
-				cmd.PrintErrln("")
-				cmd.PrintErrln(
-					"Invalid shard format. Expected format: 'spike:$id:$secret'.",
-				)
-				cmd.PrintErrln("")
-				failErr := *sdkErrors.ErrAPIBadRequest.Clone()
-				failErr.Msg = "invalid shard format"
-				log.FatalErr(fName, failErr)
+				cmd.PrintErrln("Error: Invalid shard format.")
+				return
 			}
 
 			index := shardParts[1]
@@ -123,16 +100,9 @@ func newOperatorRestoreCommand(
 
 			// 32 bytes encoded in hex should be 64 characters
 			if len(hexData) != 64 {
-				cmd.PrintErrln("")
-				cmd.PrintErrln(
-					"Invalid hex shard length:", len(hexData),
-					"(expected 64 characters).",
-					"Did you miss some characters when pasting?",
-				)
-				cmd.PrintErrln("")
-				failErr := *sdkErrors.ErrAPIBadRequest.Clone()
-				failErr.Msg = "invalid hex shard length"
-				log.FatalErr(fName, failErr)
+				cmd.PrintErrf("Error: Invalid hex shard length: %d (expected 64).\n",
+					len(hexData))
+				return
 			}
 
 			decodedShard, err := hex.DecodeString(hexData)
@@ -149,25 +119,16 @@ func newOperatorRestoreCommand(
 			mem.ClearBytes(shard)
 
 			if err != nil {
-				cmd.PrintErrln("Failed to decode the recovery shard.")
-				cmd.PrintErrln("")
-				failErr := sdkErrors.ErrAPIBadRequest.Wrap(err)
-				failErr.Msg = "failed to decode recovery shard"
-				log.FatalErr(fName, *failErr)
+				cmd.PrintErrln("Error: Failed to decode recovery shard.")
+				return
 			}
 
 			if len(decodedShard) != crypto.AES256KeySize {
 				// Security: reset decodedShard immediately after use.
 				mem.ClearBytes(decodedShard)
-
-				cmd.PrintErrln("")
-				cmd.PrintErrf(
-					"Invalid recovery shard length. Got: %d. Expected: %d.\n",
+				cmd.PrintErrf("Error: Invalid shard length: %d (expected %d).\n",
 					len(decodedShard), crypto.AES256KeySize)
-				cmd.PrintErrln("")
-				failErr := *sdkErrors.ErrCryptoInvalidEncryptionKeyLength.Clone()
-				failErr.Msg = "invalid recovery shard length"
-				log.FatalErr(fName, failErr)
+				return
 			}
 
 			for i := 0; i < crypto.AES256KeySize; i++ {
@@ -179,43 +140,28 @@ func newOperatorRestoreCommand(
 
 			ix, err := strconv.Atoi(index)
 			if err != nil {
-				cmd.PrintErrln("")
-				cmd.PrintErrln("Invalid shard index:", index)
-				cmd.PrintErrln("")
-				failErr := sdkErrors.ErrAPIBadRequest.Wrap(err)
-				failErr.Msg = "invalid shard index"
-				log.FatalErr(fName, *failErr)
+				cmd.PrintErrf("Error: Invalid shard index: %s\n", index)
+				return
 			}
 
 			status, err := api.Restore(ix, &shardToRestore)
 			// Security: reset shardToRestore immediately after recovery.
 			mem.ClearRawBytes(&shardToRestore)
 			if err != nil {
-				cmd.PrintErrln("")
-				cmd.PrintErrln("There was a problem talking to SPIKE Nexus.")
-				cmd.PrintErrln("")
-				failErr := sdkErrors.ErrAPIPostFailed.Wrap(err)
-				failErr.Msg = "there was a problem talking to SPIKE Nexus"
-				log.FatalErr(fName, *failErr)
+				cmd.PrintErrln("Error: Failed to communicate with SPIKE Nexus.")
+				return
 			}
 
 			if status == nil {
-				cmd.PrintErrln("")
-				cmd.PrintErrln(
-					"Didn't get any status trying to restore SPIKE Nexus.")
-				cmd.PrintErrln("Please check SPIKE Nexus logs for more info.")
-				cmd.PrintErrln("")
-				failErr := *sdkErrors.ErrAPIPostFailed.Clone()
-				failErr.Msg = "bad status response from SPIKE Nexus"
-				log.FatalErr(fName, failErr)
+				cmd.PrintErrln("Error: No status returned from SPIKE Nexus.")
+				return
 			}
 
 			if status.Restored {
 				cmd.Println("")
 				cmd.Println("  SPIKE is now restored and ready to use.")
 				cmd.Println(
-					"  Please check out " +
-						" https://spike.ist/operations/recovery/ for what to do next.")
+					"  See https://spike.ist/operations/recovery/ for next steps.")
 				cmd.Println("")
 			} else {
 				cmd.Println("")

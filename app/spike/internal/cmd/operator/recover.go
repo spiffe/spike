@@ -15,8 +15,6 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	spike "github.com/spiffe/spike-sdk-go/api"
-	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
-	"github.com/spiffe/spike-sdk-go/log"
 	"github.com/spiffe/spike-sdk-go/security/mem"
 	"github.com/spiffe/spike-sdk-go/spiffeid"
 
@@ -58,36 +56,20 @@ import (
 func newOperatorRecoverCommand(
 	source *workloadapi.X509Source, SPIFFEID string,
 ) *cobra.Command {
-	const fName = "newOperatorRecoverCommand"
-
 	var recoverCmd = &cobra.Command{
 		Use:   "recover",
 		Short: "Recover SPIKE Nexus (do this while SPIKE Nexus is healthy)",
 		Run: func(cmd *cobra.Command, args []string) {
 			if !spiffeid.IsPilotRecover(SPIFFEID) {
-				cmd.PrintErrln("")
-				cmd.PrintErrln(
-					"  You need to have a `recover` role to use this command.")
-				cmd.PrintErrln(
-					"  Please refer https://spike.ist/operations/recovery/ " +
-						"for more info.")
-				cmd.PrintErrln(
-					"  with necessary privileges to assign this role.")
-				cmd.PrintErrln("")
-				failErr := *sdkErrors.ErrAccessUnauthorized.Clone()
-				failErr.Msg = "you do not have the required 'recover' role"
-				log.FatalErr(fName, failErr)
+				cmd.PrintErrln("Error: You need the 'recover' role.")
+				cmd.PrintErrln("See https://spike.ist/operations/recovery/")
+				return
 			}
 
 			trust.AuthenticateForPilotRecover(SPIFFEID)
 
 			if source == nil {
-				cmd.PrintErrln("Error: SPIFFE X509 source is unavailable")
-				cmd.PrintErrln("The workload API may have lost connection.")
-				cmd.PrintErrln("Please check your SPIFFE agent and try again.")
-				warnErr := *sdkErrors.ErrSPIFFENilX509Source.Clone()
-				warnErr.Msg = "SPIFFE X509 source is unavailable"
-				log.WarnErr(fName, warnErr)
+				cmd.PrintErrln("Error: SPIFFE X509 source is unavailable.")
 				return
 			}
 
@@ -102,19 +84,12 @@ func newOperatorRecoverCommand(
 			}()
 
 			if apiErr != nil {
-				cmd.PrintErrln("")
-				cmd.PrintErrln("  Failed to retrieve recovery shards.")
-				cmd.PrintErrln("")
-				log.FatalErr(fName, *apiErr)
+				cmd.PrintErrln("Error: Failed to retrieve recovery shards.")
+				return
 			}
 
 			if shards == nil {
-				cmd.PrintErrln("")
-				cmd.PrintErrln("  No shards found.")
-				cmd.PrintErrln("  Cannot save recovery shards.")
-				cmd.PrintErrln("  Please try again later.")
-				cmd.PrintErrln("  If the problem persists, check SPIKE logs.")
-				cmd.PrintErrln("")
+				cmd.PrintErrln("Error: No shards found.")
 				return
 			}
 
@@ -127,15 +102,7 @@ func newOperatorRecoverCommand(
 					}
 				}
 				if emptyShard {
-					cmd.PrintErrln("")
-					cmd.PrintErrln("  Empty shard found.")
-					cmd.PrintErrln("  Cannot save recovery shards.")
-					cmd.PrintErrln("  Please try again later.")
-					cmd.PrintErrln("  If the problem persists, check SPIKE logs.")
-					cmd.PrintErrln("")
-					warnErr := *sdkErrors.ErrDataInvalidInput.Clone()
-					warnErr.Msg = "empty shard found"
-					log.WarnErr(fName, warnErr)
+					cmd.PrintErrln("Error: Empty shard found.")
 					return
 				}
 			}
@@ -146,68 +113,40 @@ func newOperatorRecoverCommand(
 			// Clean the path to normalize it
 			cleanPath, err := filepath.Abs(filepath.Clean(recoverDir))
 			if err != nil {
-				cmd.PrintErrln("")
-				cmd.PrintErrln("    Error resolving recovery directory path.")
-				cmd.PrintErrln("    " + err.Error())
-				cmd.PrintErrln("")
-				failErr := sdkErrors.ErrDataInvalidInput.Wrap(err)
-				failErr.Msg = "error resolving recovery directory path"
-				log.FatalErr(fName, *failErr)
+				cmd.PrintErrf("Error: %v\n", err)
+				return
 			}
 
 			// Verify the path exists and is a directory
 			fileInfo, err := os.Stat(cleanPath)
 			if err != nil || !fileInfo.IsDir() {
-				cmd.PrintErrln("")
-				cmd.PrintErrln("    Invalid recovery directory path.")
-				cmd.PrintErrln(
-					"    Path does not exist or is not a directory.")
-				cmd.PrintErrln("")
-				failErr := *sdkErrors.ErrDataInvalidInput.Clone()
-				failErr.Msg = "invalid recovery directory path"
-				log.FatalErr(fName, failErr)
+				cmd.PrintErrln("Error: Invalid recovery directory path.")
+				return
 			}
 
 			// Ensure the cleaned path doesn't contain suspicious components
-			// This helps catch any attempts at path traversal that survived
-			// cleaning
 			if strings.Contains(cleanPath, "..") ||
 				strings.Contains(cleanPath, "./") ||
 				strings.Contains(cleanPath, "//") {
-				cmd.PrintErrln("")
-				cmd.PrintErrln("    Invalid recovery directory path.")
-				cmd.PrintErrln("    Path contains suspicious components.")
-				cmd.PrintErrln("")
-				failErr := *sdkErrors.ErrDataInvalidInput.Clone()
-				failErr.Msg = "path contains suspicious components"
-				log.FatalErr(fName, failErr)
+				cmd.PrintErrln("Error: Invalid recovery directory path.")
+				return
 			}
 
 			// Ensure the recover directory is clean by
 			// deleting any existing recovery files.
-			// We are NOT warning the user about this operation because
-			// the admin ought to have securely backed up the shards and
-			// deleted them from the recover directory anyway.
 			if _, err := os.Stat(recoverDir); err == nil {
 				files, err := os.ReadDir(recoverDir)
 				if err != nil {
-					cmd.PrintErrf("Failed to read recover directory %s: %s\n",
-						recoverDir, err.Error())
-					failErr := sdkErrors.ErrDataInvalidInput.Wrap(err)
-					failErr.Msg = "failed to read recover directory"
-					log.FatalErr(fName, *failErr)
+					cmd.PrintErrf("Error: Failed to read recover directory: %v\n",
+						err)
+					return
 				}
 
 				for _, file := range files {
 					if file.Name() != "" && filepath.Ext(file.Name()) == ".txt" &&
 						strings.HasPrefix(file.Name(), "spike.recovery") {
 						filePath := filepath.Join(recoverDir, file.Name())
-						err := os.Remove(filePath)
-						if err != nil {
-							cmd.PrintErrf(
-								"Failed to delete old recovery file %s: %s\n",
-								filePath, err.Error())
-						}
+						_ = os.Remove(filePath)
 					}
 				}
 			}
@@ -229,10 +168,8 @@ func newOperatorRecoverCommand(
 				runtime.GC()
 
 				if err != nil {
-					cmd.PrintErrf("Failed to save shard %d: %s\n", i, err.Error())
-					failErr := sdkErrors.ErrDataInvalidInput.Wrap(err)
-					failErr.Msg = "failed to save recovery shard"
-					log.FatalErr(fName, *failErr)
+					cmd.PrintErrf("Error: Failed to save shard %d: %v\n", i, err)
+					return
 				}
 			}
 

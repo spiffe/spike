@@ -8,8 +8,6 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	spike "github.com/spiffe/spike-sdk-go/api"
-	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
-	"github.com/spiffe/spike-sdk-go/log"
 
 	"github.com/spiffe/spike/app/spike/internal/stdout"
 	"github.com/spiffe/spike/app/spike/internal/trust"
@@ -69,8 +67,6 @@ import (
 func newPolicyCreateCommand(
 	source *workloadapi.X509Source, SPIFFEID string,
 ) *cobra.Command {
-	const fName = "newPolicyCreateCommand"
-
 	var (
 		name            string
 		pathPattern     string
@@ -94,12 +90,7 @@ func newPolicyCreateCommand(
 			trust.AuthenticateForPilot(SPIFFEID)
 
 			if source == nil {
-				c.PrintErrln("Error: SPIFFE X509 source is unavailable")
-				c.PrintErrln("The workload API may have lost connection.")
-				c.PrintErrln("Please check your SPIFFE agent and try again.")
-				warnErr := *sdkErrors.ErrSPIFFENilX509Source
-				warnErr.Msg = "SPIFFE X509 source is unavailable"
-				log.WarnErr(fName, warnErr)
+				c.PrintErrln("Error: SPIFFE X509 source is unavailable.")
 				return
 			}
 
@@ -121,13 +112,10 @@ func newPolicyCreateCommand(
 			}
 
 			if len(missingFlags) > 0 {
-				c.PrintErrln("Error: all flags are required")
+				c.PrintErrln("Error: All flags are required.")
 				for _, flag := range missingFlags {
 					c.PrintErrf("  --%s is missing\n", flag)
 				}
-				warnErr := *sdkErrors.ErrDataInvalidInput.Clone()
-				warnErr.Msg = "missing required flags"
-				log.WarnErr(fName, warnErr)
 				return
 			}
 
@@ -135,9 +123,6 @@ func newPolicyCreateCommand(
 			permissions, err := validatePermissions(permsStr)
 			if err != nil {
 				c.PrintErrf("Error: %v\n", err)
-				warnErr := sdkErrors.ErrDataInvalidInput.Wrap(err)
-				warnErr.Msg = "invalid permissions"
-				log.WarnErr(fName, *warnErr)
 				return
 			}
 
@@ -148,11 +133,7 @@ func newPolicyCreateCommand(
 			}
 
 			if exists {
-				c.PrintErrf("Error: A policy with name '%s' already exists\n",
-					name)
-				warnErr := *sdkErrors.ErrEntityInvalid.Clone()
-				warnErr.Msg = "policy with this name already exists"
-				log.WarnErr(fName, warnErr)
+				c.PrintErrf("Error: Policy '%s' already exists.\n", name)
 				return
 			}
 
@@ -163,7 +144,7 @@ func newPolicyCreateCommand(
 				return
 			}
 
-			c.Println("Policy created successfully")
+			c.Println("Policy created successfully.")
 		},
 	}
 

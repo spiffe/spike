@@ -9,8 +9,6 @@ import (
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	spike "github.com/spiffe/spike-sdk-go/api"
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
-	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
-	"github.com/spiffe/spike-sdk-go/log"
 
 	"github.com/spiffe/spike/app/spike/internal/stdout"
 	"github.com/spiffe/spike/app/spike/internal/trust"
@@ -90,8 +88,6 @@ import (
 func newPolicyApplyCommand(
 	source *workloadapi.X509Source, SPIFFEID string,
 ) *cobra.Command {
-	const fName = "newPolicyApplyCommand"
-
 	var (
 		name            string
 		pathPattern     string
@@ -122,12 +118,7 @@ func newPolicyApplyCommand(
 			trust.AuthenticateForPilot(SPIFFEID)
 
 			if source == nil {
-				c.PrintErrln("Error: SPIFFE X509 source is unavailable")
-				c.PrintErrln("The workload API may have lost connection.")
-				c.PrintErrln("Please check your SPIFFE agent and try again.")
-				warnErr := *sdkErrors.ErrSPIFFENilX509Source
-				warnErr.Msg = "SPIFFE X509 source is unavailable"
-				log.WarnErr(fName, warnErr)
+				c.PrintErrln("Error: SPIFFE X509 source is unavailable.")
 				return
 			}
 
@@ -141,9 +132,6 @@ func newPolicyApplyCommand(
 				p, err := readPolicyFromFile(filePath)
 				if err != nil {
 					c.PrintErrf("Error reading policy file: %v\n", err)
-					warnErr := sdkErrors.ErrDataInvalidInput.Wrap(err)
-					warnErr.Msg = "error reading policy file"
-					log.WarnErr(fName, *warnErr)
 					return
 				}
 				policy = p
@@ -153,9 +141,6 @@ func newPolicyApplyCommand(
 					pathPattern, permsStr)
 				if err != nil {
 					c.PrintErrf("Error: %v\n", err)
-					warnErr := sdkErrors.ErrDataInvalidInput.Wrap(err)
-					warnErr.Msg = "invalid policy flags"
-					log.WarnErr(fName, *warnErr)
 					return
 				}
 				policy = p
@@ -177,9 +162,6 @@ func newPolicyApplyCommand(
 			permissions, err := validatePermissions(ps)
 			if err != nil {
 				c.PrintErrf("Error: %v\n", err)
-				warnErr := sdkErrors.ErrDataInvalidInput.Wrap(err)
-				warnErr.Msg = "invalid permissions"
-				log.WarnErr(fName, *warnErr)
 				return
 			}
 

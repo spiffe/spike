@@ -11,8 +11,6 @@ import (
 
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
-	"github.com/spiffe/spike-sdk-go/log"
-
 	"github.com/spiffe/spike/app/nexus/internal/state/persist"
 	"github.com/spiffe/spike/internal/journal"
 	"github.com/spiffe/spike/internal/net"
@@ -89,13 +87,6 @@ func RouteVerify(
 	// Compute SHA-256 hash of plaintext
 	hash := sha256.Sum256(plaintext)
 	hashHex := hex.EncodeToString(hash[:])
-
-	log.Log().Info(
-		fName,
-		"message", sdkErrors.ErrCryptoCipherVerificationSuccess.Code,
-		"plaintext_len", len(plaintext),
-		"hash_hex", hashHex,
-	)
 
 	net.Success(
 		reqres.BootstrapVerifyResponse{

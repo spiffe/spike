@@ -8,8 +8,6 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	spike "github.com/spiffe/spike-sdk-go/api"
-	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
-	"github.com/spiffe/spike-sdk-go/log"
 
 	"github.com/spiffe/spike/app/spike/internal/stdout"
 	"github.com/spiffe/spike/app/spike/internal/trust"
@@ -44,7 +42,6 @@ import (
 func newSecretListCommand(
 	source *workloadapi.X509Source, SPIFFEID string,
 ) *cobra.Command {
-	const fName = "newSecretListCommand"
 	const notFoundMessage = "No secrets found."
 
 	var listCmd = &cobra.Command{
@@ -54,12 +51,7 @@ func newSecretListCommand(
 			trust.AuthenticateForPilot(SPIFFEID)
 
 			if source == nil {
-				cmd.PrintErrln("Error: SPIFFE X509 source is unavailable")
-				cmd.PrintErrln("The workload API may have lost connection.")
-				cmd.PrintErrln("Please check your SPIFFE agent and try again.")
-				warnErr := *sdkErrors.ErrSPIFFENilX509Source
-				warnErr.Msg = "SPIFFE X509 source is unavailable"
-				log.WarnErr(fName, warnErr)
+				cmd.PrintErrln("Error: SPIFFE X509 source is unavailable.")
 				return
 			}
 

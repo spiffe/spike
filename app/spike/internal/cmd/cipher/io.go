@@ -10,7 +10,6 @@ import (
 	"os"
 
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
-	"github.com/spiffe/spike-sdk-go/log"
 )
 
 // openInput opens a file for reading or returns stdin if no file is
@@ -35,8 +34,6 @@ import (
 //	}
 //	defer cleanup()
 func openInput(inFile string) (io.ReadCloser, func(), *sdkErrors.SDKError) {
-	const fName = "openInput"
-
 	var in io.ReadCloser
 
 	if inFile != "" {
@@ -53,12 +50,8 @@ func openInput(inFile string) (io.ReadCloser, func(), *sdkErrors.SDKError) {
 
 	cleanup := func() {
 		if in != os.Stdin {
-			err := in.Close()
-			if err != nil {
-				failErr := sdkErrors.ErrFSFileCloseFailed.Wrap(err)
-				failErr.Msg = fmt.Sprintf("failed to close input file: %s", inFile)
-				log.WarnErr(fName, *failErr)
-			}
+			// Best-effort close; nothing actionable if it fails.
+			_ = in.Close()
 		}
 	}
 
@@ -87,8 +80,6 @@ func openInput(inFile string) (io.ReadCloser, func(), *sdkErrors.SDKError) {
 //	}
 //	defer cleanup()
 func openOutput(outFile string) (io.Writer, func(), *sdkErrors.SDKError) {
-	const fName = "openOutput"
-
 	var out io.Writer
 	var outCloser io.Closer
 
@@ -99,7 +90,6 @@ func openOutput(outFile string) (io.Writer, func(), *sdkErrors.SDKError) {
 			// since it represents file access failures in general
 			failErr := sdkErrors.ErrFSFileOpenFailed.Wrap(err)
 			failErr.Msg = fmt.Sprintf("failed to create output file: %s", outFile)
-
 			return nil, nil, failErr
 		}
 		out = f
@@ -110,12 +100,8 @@ func openOutput(outFile string) (io.Writer, func(), *sdkErrors.SDKError) {
 
 	cleanup := func() {
 		if outCloser != nil {
-			err := outCloser.Close()
-			if err != nil {
-				failErr := sdkErrors.ErrFSFileCloseFailed.Wrap(err)
-				failErr.Msg = fmt.Sprintf("failed to close output file: %s", outFile)
-				log.WarnErr(fName, *failErr)
-			}
+			// Best-effort close; nothing actionable if it fails.
+			_ = outCloser.Close()
 		}
 	}
 

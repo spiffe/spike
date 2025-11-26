@@ -810,6 +810,21 @@ w
       update the guides: PSP is not a thing anymore; better update it
       to Pod Security Standards.
     </issue>
+    <issue>
+      CLI debug logging to file.
+
+      Currently, the spike CLI (spike policy, spike secret, etc.) does not
+      have any structured logging for debugging purposes. When errors occur,
+      only user-friendly messages are shown.
+
+      Consider adding an optional file-based logging mechanism for the CLI
+      that can be enabled via an environment variable (e.g., SPIKE_CLI_LOG)
+      or a flag (e.g., --debug-log=/path/to/file). This would help with
+      troubleshooting without cluttering the terminal output.
+
+      The logs should be structured (JSON) and include error codes, timestamps,
+      and context information.
+    </issue>
 
   </task-group>
   <task-group for="v0.6.3">

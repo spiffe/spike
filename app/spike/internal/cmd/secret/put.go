@@ -10,8 +10,6 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	spike "github.com/spiffe/spike-sdk-go/api"
-	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
-	"github.com/spiffe/spike-sdk-go/log"
 
 	"github.com/spiffe/spike/app/spike/internal/stdout"
 	"github.com/spiffe/spike/app/spike/internal/trust"
@@ -56,8 +54,6 @@ import (
 func newSecretPutCommand(
 	source *workloadapi.X509Source, SPIFFEID string,
 ) *cobra.Command {
-	const fName = "newSecretPutCommand"
-
 	var putCmd = &cobra.Command{
 		Use:   "put <path> <key=value>...",
 		Short: "Put secrets at the specified path",
@@ -66,12 +62,7 @@ func newSecretPutCommand(
 			trust.AuthenticateForPilot(SPIFFEID)
 
 			if source == nil {
-				cmd.PrintErrln("Error: SPIFFE X509 source is unavailable")
-				cmd.PrintErrln("The workload API may have lost connection.")
-				cmd.PrintErrln("Please check your SPIFFE agent and try again.")
-				warnErr := *sdkErrors.ErrSPIFFENilX509Source
-				warnErr.Msg = "SPIFFE X509 source is unavailable"
-				log.WarnErr(fName, warnErr)
+				cmd.PrintErrln("Error: SPIFFE X509 source is unavailable.")
 				return
 			}
 
@@ -80,10 +71,7 @@ func newSecretPutCommand(
 			path := args[0]
 
 			if !validSecretPath(path) {
-				cmd.PrintErrf("Error: invalid secret path: %s\n", path)
-				warnErr := *sdkErrors.ErrDataInvalidInput.Clone()
-				warnErr.Msg = "invalid secret path"
-				log.WarnErr(fName, warnErr)
+				cmd.PrintErrf("Error: Invalid secret path: %s\n", path)
 				return
 			}
 
@@ -91,7 +79,7 @@ func newSecretPutCommand(
 			values := make(map[string]string)
 			for _, kv := range kvPairs {
 				if !strings.Contains(kv, "=") {
-					cmd.PrintErrf("Error: invalid key-value pair format: %s\n", kv)
+					cmd.PrintErrf("Error: Invalid key-value pair: %s\n", kv)
 					continue
 				}
 				kvs := strings.SplitN(kv, "=", 2)

@@ -135,6 +135,10 @@ sort_by = "weight"
 * Additional and comprehensive logging to all SPIKE Nexus and SPIKE Keeper API
   methods.
 * Better error handling across the entire codebase.
+* Pilot: Reduced CLI verbosity by removing structured JSON log output from all
+  commands (policy, secret, cipher, operator). The CLI now outputs clean,
+  concise error messages to stderr without internal debug logs cluttering the
+  terminal.
 
 ## [0.6.1] - 2025-10-02
 

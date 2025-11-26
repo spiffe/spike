@@ -11,8 +11,6 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	spike "github.com/spiffe/spike-sdk-go/api"
-	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
-	"github.com/spiffe/spike-sdk-go/log"
 	"gopkg.in/yaml.v3"
 
 	"github.com/spiffe/spike/app/spike/internal/stdout"
@@ -54,8 +52,6 @@ import (
 func newSecretGetCommand(
 	source *workloadapi.X509Source, SPIFFEID string,
 ) *cobra.Command {
-	const fName = "newSecretGetCommand"
-
 	var getCmd = &cobra.Command{
 		Use:   "get <path> [key]",
 		Short: "Get secrets from the specified path",
@@ -64,12 +60,7 @@ func newSecretGetCommand(
 			trust.AuthenticateForPilot(SPIFFEID)
 
 			if source == nil {
-				cmd.PrintErrln("Error: SPIFFE X509 source is unavailable")
-				cmd.PrintErrln("The workload API may have lost connection.")
-				cmd.PrintErrln("Please check your SPIFFE agent and try again.")
-				warnErr := *sdkErrors.ErrSPIFFENilX509Source
-				warnErr.Msg = "SPIFFE X509 source is unavailable"
-				log.WarnErr(fName, warnErr)
+				cmd.PrintErrln("Error: SPIFFE X509 source is unavailable.")
 				return
 			}
 
@@ -81,18 +72,12 @@ func newSecretGetCommand(
 
 			if !slices.Contains([]string{"plain",
 				"yaml", "json", "y", "p", "j"}, format) {
-				cmd.PrintErrf("Error: invalid format specified: %s\n", format)
-				warnErr := *sdkErrors.ErrDataInvalidInput.Clone()
-				warnErr.Msg = "invalid format specified"
-				log.WarnErr(fName, warnErr)
+				cmd.PrintErrf("Error: Invalid format: %s\n", format)
 				return
 			}
 
 			if !validSecretPath(path) {
-				cmd.PrintErrf("Error: invalid secret path: %s\n", path)
-				warnErr := *sdkErrors.ErrDataInvalidInput.Clone()
-				warnErr.Msg = "invalid secret path"
-				log.WarnErr(fName, warnErr)
+				cmd.PrintErrf("Error: Invalid secret path: %s\n", path)
 				return
 			}
 
@@ -102,18 +87,12 @@ func newSecretGetCommand(
 			}
 
 			if secret == nil {
-				cmd.PrintErrln("Error: secret not found")
-				warnErr := *sdkErrors.ErrEntityNotFound.Clone()
-				warnErr.Msg = "secret not found"
-				log.WarnErr(fName, warnErr)
+				cmd.PrintErrln("Error: Secret not found.")
 				return
 			}
 
 			if secret.Data == nil {
-				cmd.PrintErrln("Error: secret has no data")
-				warnErr := *sdkErrors.ErrEntityNotFound.Clone()
-				warnErr.Msg = "secret has no data"
-				log.WarnErr(fName, warnErr)
+				cmd.PrintErrln("Error: Secret has no data.")
 				return
 			}
 
@@ -132,13 +111,8 @@ func newSecretGetCommand(
 					}
 				}
 				if !found {
-					cmd.PrintErrln("Error: key not found")
-					warnErr := *sdkErrors.ErrEntityNotFound.Clone()
-					warnErr.Msg = "key not found"
-					log.WarnErr(fName, warnErr)
-					return
+					cmd.PrintErrln("Error: Key not found.")
 				}
-
 				return
 			}
 
@@ -146,11 +120,7 @@ func newSecretGetCommand(
 				if format == "yaml" || format == "y" {
 					b, marshalErr := yaml.Marshal(d)
 					if marshalErr != nil {
-						cmd.PrintErrf("Error: failed to marshal data: %v\n",
-							marshalErr)
-						warnErr := sdkErrors.ErrDataMarshalFailure.Wrap(marshalErr)
-						warnErr.Msg = "failed to marshal data"
-						log.WarnErr(fName, *warnErr)
+						cmd.PrintErrf("Error: %v\n", marshalErr)
 						return
 					}
 
@@ -160,11 +130,7 @@ func newSecretGetCommand(
 
 				b, marshalErr := json.MarshalIndent(d, "", "    ")
 				if marshalErr != nil {
-					cmd.PrintErrf("Error: failed to marshal data: %v\n",
-						marshalErr)
-					warnErr := sdkErrors.ErrDataMarshalFailure.Wrap(marshalErr)
-					warnErr.Msg = "failed to marshal data"
-					log.WarnErr(fName, *warnErr)
+					cmd.PrintErrf("Error: %v\n", marshalErr)
 					return
 				}
 
@@ -177,11 +143,7 @@ func newSecretGetCommand(
 					if format == "yaml" || format == "y" {
 						b, marshalErr := yaml.Marshal(v)
 						if marshalErr != nil {
-							cmd.PrintErrf("Error: failed to marshal data: %v\n",
-								marshalErr)
-							warnErr := sdkErrors.ErrDataMarshalFailure.Wrap(marshalErr)
-							warnErr.Msg = "failed to marshal data"
-							log.WarnErr(fName, *warnErr)
+							cmd.PrintErrf("Error: %v\n", marshalErr)
 							return
 						}
 
@@ -191,11 +153,7 @@ func newSecretGetCommand(
 
 					b, marshalErr := json.Marshal(v)
 					if marshalErr != nil {
-						cmd.PrintErrf("Error: failed to marshal data: %v\n",
-							marshalErr)
-						warnErr := sdkErrors.ErrDataMarshalFailure.Wrap(marshalErr)
-						warnErr.Msg = "failed to marshal data"
-						log.WarnErr(fName, *warnErr)
+						cmd.PrintErrf("Error: %v\n", marshalErr)
 						return
 					}
 
@@ -204,10 +162,7 @@ func newSecretGetCommand(
 				}
 			}
 
-			cmd.PrintErrln("Error: key not found")
-			warnErr := *sdkErrors.ErrEntityNotFound.Clone()
-			warnErr.Msg = "key not found"
-			log.WarnErr(fName, warnErr)
+			cmd.PrintErrln("Error: Key not found.")
 		},
 	}
 

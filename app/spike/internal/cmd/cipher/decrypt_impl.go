@@ -11,8 +11,6 @@ import (
 
 	"github.com/spf13/cobra"
 	sdk "github.com/spiffe/spike-sdk-go/api"
-	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
-	"github.com/spiffe/spike-sdk-go/log"
 
 	"github.com/spiffe/spike/app/spike/internal/stdout"
 )
@@ -29,23 +27,14 @@ import (
 // The function prints errors directly to stderr and returns without error
 // propagation, following the CLI command pattern.
 func decryptStream(cmd *cobra.Command, api *sdk.API, inFile, outFile string) {
-	const fName = "decryptStream"
-
 	// Validate input file exists before attempting decryption.
 	if inFile != "" {
 		if _, err := os.Stat(inFile); err != nil {
 			if os.IsNotExist(err) {
-				cmd.PrintErrf("Error: input file does not exist: %s\n",
-					inFile)
-				warnErr := sdkErrors.ErrDataInvalidInput.Wrap(err)
-				warnErr.Msg = "input file does not exist"
-				log.WarnErr(fName, *warnErr)
+				cmd.PrintErrf("Error: Input file does not exist: %s\n", inFile)
 				return
 			}
-			cmd.PrintErrf("Error: cannot access input file: %s\n", inFile)
-			warnErr := sdkErrors.ErrDataInvalidInput.Wrap(err)
-			warnErr.Msg = "cannot access input file"
-			log.WarnErr(fName, *warnErr)
+			cmd.PrintErrf("Error: Cannot access input file: %s\n", inFile)
 			return
 		}
 	}
@@ -53,9 +42,6 @@ func decryptStream(cmd *cobra.Command, api *sdk.API, inFile, outFile string) {
 	in, cleanupIn, err := openInput(inFile)
 	if err != nil {
 		cmd.PrintErrf("Error: %v\n", err)
-		warnErr := sdkErrors.ErrDataInvalidInput.Wrap(err)
-		warnErr.Msg = "failed to open input"
-		log.WarnErr(fName, *warnErr)
 		return
 	}
 	defer cleanupIn()
@@ -63,9 +49,6 @@ func decryptStream(cmd *cobra.Command, api *sdk.API, inFile, outFile string) {
 	out, cleanupOut, err := openOutput(outFile)
 	if err != nil {
 		cmd.PrintErrf("Error: %v\n", err)
-		warnErr := sdkErrors.ErrDataInvalidInput.Wrap(err)
-		warnErr.Msg = "failed to open output"
-		log.WarnErr(fName, *warnErr)
 		return
 	}
 	defer cleanupOut()
@@ -75,11 +58,8 @@ func decryptStream(cmd *cobra.Command, api *sdk.API, inFile, outFile string) {
 		return
 	}
 
-	if _, err := out.Write(plaintext); err != nil {
-		cmd.PrintErrf("Error: failed to write output: %v\n", err)
-		warnErr := sdkErrors.ErrDataInvalidInput.Wrap(err)
-		warnErr.Msg = "failed to write output"
-		log.WarnErr(fName, *warnErr)
+	if _, writeErr := out.Write(plaintext); writeErr != nil {
+		cmd.PrintErrf("Error: Failed to write output: %v\n", writeErr)
 		return
 	}
 }
@@ -101,42 +81,28 @@ func decryptStream(cmd *cobra.Command, api *sdk.API, inFile, outFile string) {
 // propagation, following the CLI command pattern.
 func decryptJSON(cmd *cobra.Command, api *sdk.API, versionStr, nonceB64,
 	ciphertextB64, algorithm, outFile string) {
-	const fName = "decryptJSON"
-
 	v, err := strconv.Atoi(versionStr)
 	// version must be a valid byte value.
 	if err != nil || v < 0 || v > 255 {
-		cmd.PrintErrln("Error: invalid --version, must be 0-255")
-		warnErr := *sdkErrors.ErrDataInvalidInput.Clone()
-		warnErr.Msg = "invalid --version, must be 0-255"
-		log.WarnErr(fName, warnErr)
+		cmd.PrintErrln("Error: Invalid --version, must be 0-255.")
 		return
 	}
 
 	nonce, err := base64.StdEncoding.DecodeString(nonceB64)
 	if err != nil {
-		cmd.PrintErrln("Error: invalid --nonce base64")
-		warnErr := sdkErrors.ErrDataInvalidInput.Wrap(err)
-		warnErr.Msg = "invalid --nonce base64"
-		log.WarnErr(fName, *warnErr)
+		cmd.PrintErrln("Error: Invalid --nonce base64.")
 		return
 	}
 
 	ciphertext, err := base64.StdEncoding.DecodeString(ciphertextB64)
 	if err != nil {
-		cmd.PrintErrln("Error: invalid --ciphertext base64")
-		warnErr := sdkErrors.ErrDataInvalidInput.Wrap(err)
-		warnErr.Msg = "invalid --ciphertext base64"
-		log.WarnErr(fName, *warnErr)
+		cmd.PrintErrln("Error: Invalid --ciphertext base64.")
 		return
 	}
 
 	out, cleanupOut, err := openOutput(outFile)
 	if err != nil {
 		cmd.PrintErrf("Error: %v\n", err)
-		warnErr := sdkErrors.ErrDataInvalidInput.Wrap(err)
-		warnErr.Msg = "failed to open output"
-		log.WarnErr(fName, *warnErr)
 		return
 	}
 	defer cleanupOut()
@@ -148,11 +114,8 @@ func decryptJSON(cmd *cobra.Command, api *sdk.API, versionStr, nonceB64,
 		return
 	}
 
-	if _, err := out.Write(plaintext); err != nil {
-		cmd.PrintErrf("Error: failed to write plaintext: %v\n", err)
-		warnErr := sdkErrors.ErrDataInvalidInput.Wrap(err)
-		warnErr.Msg = "failed to write plaintext"
-		log.WarnErr(fName, *warnErr)
+	if _, writeErr := out.Write(plaintext); writeErr != nil {
+		cmd.PrintErrf("Error: Failed to write plaintext: %v\n", writeErr)
 		return
 	}
 }

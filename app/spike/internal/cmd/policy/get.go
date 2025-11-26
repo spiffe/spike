@@ -8,8 +8,6 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	spike "github.com/spiffe/spike-sdk-go/api"
-	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
-	"github.com/spiffe/spike-sdk-go/log"
 
 	"github.com/spiffe/spike/app/spike/internal/stdout"
 	"github.com/spiffe/spike/app/spike/internal/trust"
@@ -90,8 +88,6 @@ import (
 func newPolicyGetCommand(
 	source *workloadapi.X509Source, SPIFFEID string,
 ) *cobra.Command {
-	const fName = "newPolicyGetCommand"
-
 	cmd := &cobra.Command{
 		Use:   "get [policy-id]",
 		Short: "Get policy details",
@@ -106,31 +102,15 @@ func newPolicyGetCommand(
 			trust.AuthenticateForPilot(SPIFFEID)
 
 			if source == nil {
-				c.PrintErrln("Error: SPIFFE X509 source is unavailable")
-				c.PrintErrln("The workload API may have lost connection.")
-				c.PrintErrln("Please check your SPIFFE agent and try again.")
-				warnErr := *sdkErrors.ErrSPIFFENilX509Source.Clone()
-				warnErr.Msg = "SPIFFE X509 source is unavailable"
-				log.WarnErr(fName, warnErr)
+				c.PrintErrln("Error: SPIFFE X509 source is unavailable.")
 				return
 			}
 
 			api := spike.NewWithSource(source)
 
-			// If the first argument is provided without the `--name` flag, it could
-			// be misinterpreted as trying to use policy name directly
-			if len(args) > 0 && !c.Flags().Changed("name") {
-				c.Println("Note: To look up a policy by name, use --name flag:")
-				c.Printf("  spike policy get --name=%s\n\n", args[0])
-				c.Printf("Attempting to use '%s' as policy ID...\n", args[0])
-			}
-
 			policyID, err := sendGetPolicyIDRequest(c, args, api)
 			if err != nil {
 				c.PrintErrf("Error: %v\n", err)
-				warnErr := sdkErrors.ErrDataInvalidInput.Wrap(err)
-				warnErr.Msg = "failed to get policy ID"
-				log.WarnErr(fName, *warnErr)
 				return
 			}
 
@@ -140,10 +120,7 @@ func newPolicyGetCommand(
 			}
 
 			if policy == nil {
-				c.PrintErrln("Error: Got empty response from server.")
-				warnErr := *sdkErrors.ErrEntityNotFound.Clone()
-				warnErr.Msg = "got empty response from server"
-				log.WarnErr(fName, warnErr)
+				c.PrintErrln("Error: Empty response from server.")
 				return
 			}
 
