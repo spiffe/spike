@@ -8,16 +8,13 @@ import (
 	"net/http"
 
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
+	"github.com/spiffe/spike-sdk-go/config/env"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/spiffeid"
 	"github.com/spiffe/spike/internal/auth"
 
 	"github.com/spiffe/spike/internal/net"
 )
-
-// It's unlikely to have 1000 SPIKE Keepers across the board.
-// The indexes start from 1 and increase one-by-one by design.
-const maxShardID = 1000
 
 // guardRestoreRequest validates a system restore request by performing
 // authentication, authorization, and input validation checks.
@@ -65,7 +62,7 @@ func guardRestoreRequest(
 		return sdkErrors.ErrAccessUnauthorized
 	}
 
-	if request.ID < 1 || request.ID > maxShardID {
+	if request.ID < 1 || request.ID > env.ShamirMaxShareCountVal() {
 		net.Fail(reqres.RestoreResponse{}.BadRequest(), w, http.StatusBadRequest)
 		return sdkErrors.ErrAPIBadRequest
 	}
