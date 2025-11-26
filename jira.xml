@@ -69,6 +69,173 @@
     <issue>
       let AI write some tests to all the things.
     </issue>
+    <issue priority="medium" category="testing">
+      CLI Command Testing Guidance
+
+      This issue documents strategies for testing SPIKE CLI commands with
+      varying levels of complexity.
+
+      == UNIT TESTING (No Mocking Required) ==
+
+      The following helper functions can be tested directly without mocking:
+
+      1. Policy Commands (app/spike/internal/cmd/policy/):
+         - filter.go: validUUID() - UUID validation
+         - fotmat.go: formatPoliciesOutput(), formatPolicy() - output formatting
+         - validation.go: validatePolicySpec() - policy spec validation
+         - create.go: readPolicyFromFile(), getPolicyFromFlags() - input parsing
+
+      2. Secret Commands (app/spike/internal/cmd/secret/):
+         - validation.go: validSecretPath() - path validation
+         - print.go: formatTime(), printSecretResponse() - output formatting
+
+      3. Cipher Commands (app/spike/internal/cmd/cipher/):
+         - io.go: openInput(), openOutput() - file I/O handling
+
+      Example test pattern for pure functions:
+      ```go
+      func TestValidUUID(t *testing.T) {
+          tests := []struct {
+              name     string
+              uuid     string
+              expected bool
+          }{
+              {"valid UUID", "123e4567-e89b-12d3-a456-426614174000", true},
+              {"invalid", "not-a-uuid", false},
+          }
+          for _, tt := range tests {
+              t.Run(tt.name, func(t *testing.T) {
+                  if validUUID(tt.uuid) != tt.expected {
+                      t.Errorf("validUUID(%q) = %v, want %v",
+                          tt.uuid, !tt.expected, tt.expected)
+                  }
+              })
+          }
+      }
+      ```
+
+      == HTTP-LEVEL MOCKING (For API Calls) ==
+
+      To test command Run functions that call the SDK API, use httptest.Server
+      to mock SPIKE Nexus responses:
+
+      ```go
+      func TestSecretGetCommand_Success(t *testing.T) {
+          // Create mock server
+          server := httptest.NewTLSServer(http.HandlerFunc(
+              func(w http.ResponseWriter, r *http.Request) {
+                  // Verify request
+                  if r.URL.Path != "/v1/store/secret" {
+                      t.Errorf("unexpected path: %s", r.URL.Path)
+                  }
+
+                  // Return mock response
+                  resp := reqres.SecretReadResponse{
+                      Data: map[string]string{"key": "value"},
+                  }
+                  json.NewEncoder(w).Encode(resp)
+              },
+          ))
+          defer server.Close()
+
+          // Configure SDK to use mock server URL
+          // (requires setting SPIKE_NEXUS_API_URL env var or similar)
+          t.Setenv("SPIKE_NEXUS_API_URL", server.URL)
+
+          // Execute command and verify output
+          // ...
+      }
+      ```
+
+      Challenges with HTTP mocking:
+      - SDK uses mTLS, so mock server needs proper TLS config
+      - May need to mock X509Source or bypass SPIFFE validation
+      - Consider creating test helpers for common mock scenarios
+
+      == INTEGRATION TESTING (With Real SPIKE Nexus) ==
+
+      For full end-to-end testing, use the existing start.sh to spin up
+      a real SPIKE environment. The integration_test.go pattern in the
+      policy package shows this approach:
+
+      1. Start SPIKE via start.sh (SPIRE + Nexus + Keeper)
+      2. Wait for initialization
+      3. Run actual CLI commands
+      4. Verify results
+
+      ```go
+      // +build integration
+
+      func TestPolicyCreateIntegration(t *testing.T) {
+          if os.Getenv("SPIKE_INTEGRATION_TEST") == "" {
+              t.Skip("Skipping integration test")
+          }
+
+          // Use actual spike CLI binary or SDK
+          api, err := spike.New()
+          if err != nil {
+              t.Fatalf("Failed to create API client: %v", err)
+          }
+          defer api.Close()
+
+          // Create policy
+          err = api.CreatePolicy(data.PolicySpec{
+              Name: "test-policy",
+              // ...
+          })
+          if err != nil {
+              t.Fatalf("CreatePolicy failed: %v", err)
+          }
+
+          // Verify policy exists
+          policies, _ := api.ListPolicies("", "")
+          // Assert...
+      }
+      ```
+
+      Run integration tests with:
+      ```bash
+      # Start SPIKE environment first
+      ./hack/start.sh
+
+      # Run integration tests
+      SPIKE_INTEGRATION_TEST=1 go test -tags=integration ./...
+      ```
+
+      == TESTING log.FatalErr CALLS ==
+
+      Functions that call log.FatalErr can be tested using the panic
+      recovery pattern:
+
+      ```go
+      func TestAuthenticateForPilot_InvalidID(t *testing.T) {
+          // Enable panic mode for FatalErr
+          t.Setenv("SPIKE_STACK_TRACES_ON_LOG_FATAL", "true")
+
+          defer func() {
+              if r := recover(); r == nil {
+                  t.Error("Expected panic for invalid ID")
+              }
+          }()
+
+          AuthenticateForPilot("invalid-spiffe-id")
+          t.Error("Should have panicked")
+      }
+      ```
+
+      == RECOMMENDED APPROACH ==
+
+      1. Start with unit tests for pure helper functions (high value, low effort)
+      2. Add HTTP-level mocks for critical API paths
+      3. Use integration tests for end-to-end validation in CI
+
+      Current coverage after unit tests:
+      - policy commands: ~48%
+      - secret commands: ~10%
+      - cipher commands: ~18%
+
+      Target: 60%+ coverage for command packages through unit + mock tests.
+    </issue>
     <issue>
       // PermissionExecute grants the ability to execute specified resources.
       // One such resource is encryption and decryption operations that
