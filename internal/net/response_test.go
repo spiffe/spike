@@ -9,6 +9,8 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 )
 
 type testResponse struct {
@@ -135,5 +137,103 @@ func TestRespond_DifferentStatusCodes(t *testing.T) {
 				t.Errorf("Respond() status = %d, want %d", w.Code, tt.statusCode)
 			}
 		})
+	}
+}
+
+// mockErrorResponse implements ErrorResponder for testing HandleError.
+type mockErrorResponse struct {
+	Err string `json:"err"`
+}
+
+func (m mockErrorResponse) NotFound() mockErrorResponse {
+	return mockErrorResponse{Err: "not_found"}
+}
+
+func (m mockErrorResponse) Internal() mockErrorResponse {
+	return mockErrorResponse{Err: "internal"}
+}
+
+func TestHandleError_NilError(t *testing.T) {
+	w := httptest.NewRecorder()
+
+	result := HandleError(nil, w, mockErrorResponse{})
+
+	if result != nil {
+		t.Errorf("HandleError(nil) = %v, want nil", result)
+	}
+
+	// Response should not have been written
+	if w.Code != http.StatusOK {
+		t.Errorf("HandleError(nil) wrote response, status = %d", w.Code)
+	}
+}
+
+func TestHandleError_NotFoundError(t *testing.T) {
+	w := httptest.NewRecorder()
+
+	err := sdkErrors.ErrEntityNotFound
+	result := HandleError(err, w, mockErrorResponse{})
+
+	if result == nil {
+		t.Error("HandleError() returned nil for not found error")
+	}
+
+	if w.Code != http.StatusNotFound {
+		t.Errorf("HandleError() status = %d, want %d",
+			w.Code, http.StatusNotFound)
+	}
+}
+
+func TestHandleError_OtherError(t *testing.T) {
+	w := httptest.NewRecorder()
+
+	err := sdkErrors.ErrAPIBadRequest
+	result := HandleError(err, w, mockErrorResponse{})
+
+	if result == nil {
+		t.Error("HandleError() returned nil for other error")
+	}
+
+	if w.Code != http.StatusInternalServerError {
+		t.Errorf("HandleError() status = %d, want %d",
+			w.Code, http.StatusInternalServerError)
+	}
+}
+
+func TestHandleError_WrappedNotFoundError(t *testing.T) {
+	w := httptest.NewRecorder()
+
+	// Create a wrapped not found error
+	wrappedErr := sdkErrors.ErrEntityNotFound.Wrap(sdkErrors.ErrAPIBadRequest)
+	result := HandleError(wrappedErr, w, mockErrorResponse{})
+
+	if result == nil {
+		t.Error("HandleError() returned nil for wrapped not found error")
+	}
+
+	// Should still be recognized as not found
+	if w.Code != http.StatusNotFound {
+		t.Errorf("HandleError() status = %d, want %d",
+			w.Code, http.StatusNotFound)
+	}
+}
+
+func TestHandleInternalError(t *testing.T) {
+	w := httptest.NewRecorder()
+
+	err := sdkErrors.ErrCryptoCipherNotAvailable
+	result := HandleInternalError(err, w, mockErrorResponse{})
+
+	if result == nil {
+		t.Error("HandleInternalError() returned nil")
+	}
+
+	if result != err {
+		t.Error("HandleInternalError() should return the same error")
+	}
+
+	if w.Code != http.StatusInternalServerError {
+		t.Errorf("HandleInternalError() status = %d, want %d",
+			w.Code, http.StatusInternalServerError)
 	}
 }

@@ -97,18 +97,7 @@ func RouteGetPolicy(
 
 	policy, policyErr := state.GetPolicy(policyID)
 	if policyErr != nil {
-		if policyErr.Is(sdkErrors.ErrEntityNotFound) {
-			net.Fail(
-				reqres.PolicyReadResponse{}.NotFound(), w, http.StatusNotFound,
-			)
-			return policyErr
-		}
-
-		net.Fail(
-			reqres.PolicyReadResponse{}.Internal(), w,
-			http.StatusInternalServerError,
-		)
-		return policyErr
+		return net.HandleError(policyErr, w, reqres.PolicyReadResponse{})
 	}
 
 	net.Success(reqres.PolicyReadResponse{Policy: policy}.Success(), w)

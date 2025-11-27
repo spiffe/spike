@@ -68,7 +68,6 @@ func RouteDeleteSecret(
 	}
 
 	path := request.Path
-
 	versions := request.Versions
 	if len(versions) == 0 {
 		versions = []int{}
@@ -76,20 +75,7 @@ func RouteDeleteSecret(
 
 	deleteErr := state.DeleteSecret(path, versions)
 	if deleteErr != nil {
-		// Distinguish between client errors (not found) and server errors
-		if deleteErr.Is(sdkErrors.ErrEntityNotFound) {
-			net.Fail(
-				reqres.SecretDeleteResponse{}.NotFound(), w,
-				http.StatusNotFound,
-			)
-			return deleteErr
-		}
-		// Backend or other server-side failure
-		net.Fail(
-			reqres.SecretDeleteResponse{}.Internal(), w,
-			http.StatusInternalServerError,
-		)
-		return deleteErr
+		return net.HandleError(deleteErr, w, reqres.SecretDeleteResponse{})
 	}
 
 	net.Success(reqres.SecretDeleteResponse{}.Success(), w)

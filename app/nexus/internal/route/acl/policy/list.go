@@ -74,38 +74,20 @@ func RouteListPolicies(
 	SPIFFEIDPattern := request.SPIFFEIDPattern
 	pathPattern := request.PathPattern
 
+	var listErr *sdkErrors.SDKError
+
 	// Note that Go's default switch behavior will not fall through.
 	switch {
 	case SPIFFEIDPattern != "":
-		pp, listErr := state.ListPoliciesBySPIFFEIDPattern(SPIFFEIDPattern)
-		if listErr != nil {
-			net.Fail(
-				reqres.PolicyListResponse{}.Internal(), w,
-				http.StatusInternalServerError,
-			)
-			return listErr
-		}
-		policies = pp
+		policies, listErr = state.ListPoliciesBySPIFFEIDPattern(SPIFFEIDPattern)
 	case pathPattern != "":
-		pp, listErr := state.ListPoliciesByPathPattern(pathPattern)
-		if listErr != nil {
-			net.Fail(
-				reqres.PolicyListResponse{}.Internal(), w,
-				http.StatusInternalServerError,
-			)
-			return listErr
-		}
-		policies = pp
+		policies, listErr = state.ListPoliciesByPathPattern(pathPattern)
 	default:
-		pp, listErr := state.ListPolicies()
-		if listErr != nil {
-			net.Fail(
-				reqres.PolicyListResponse{}.Internal(), w,
-				http.StatusInternalServerError,
-			)
-			return listErr
-		}
-		policies = pp
+		policies, listErr = state.ListPolicies()
+	}
+
+	if listErr != nil {
+		return net.HandleError(listErr, w, reqres.PolicyListResponse{})
 	}
 
 	net.Success(reqres.PolicyListResponse{Policies: policies}.Success(), w)

@@ -9,6 +9,7 @@ import (
 
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
+
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 	"github.com/spiffe/spike/internal/journal"
 	"github.com/spiffe/spike/internal/net"
@@ -68,10 +69,7 @@ func RoutePutSecret(
 
 	upsertErr := state.UpsertSecret(path, values)
 	if upsertErr != nil {
-		net.Fail(
-			reqres.SecretPutResponse{}.Internal(), w, http.StatusInternalServerError,
-		)
-		return upsertErr
+		return net.HandleError(upsertErr, w, reqres.SecretPutResponse{})
 	}
 
 	net.Success(reqres.SecretPutResponse{}.Success(), w)

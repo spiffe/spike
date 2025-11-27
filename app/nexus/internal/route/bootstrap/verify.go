@@ -70,21 +70,19 @@ func RouteVerify(
 	// Get cipher from the backend
 	c := persist.Backend().GetCipher()
 	if c == nil {
-		net.Fail(
-			reqres.BootstrapVerifyResponse{}.Internal(), w,
-			http.StatusInternalServerError,
+		return net.HandleInternalError(
+			sdkErrors.ErrCryptoCipherNotAvailable, w,
+			reqres.BootstrapVerifyResponse{},
 		)
-		return sdkErrors.ErrCryptoCipherNotAvailable
 	}
 
 	// Decrypt the ciphertext
 	plaintext, decryptErr := c.Open(nil, request.Nonce, request.Ciphertext, nil)
 	if decryptErr != nil {
-		net.Fail(
-			reqres.BootstrapVerifyResponse{}.Internal(), w,
-			http.StatusInternalServerError,
+		return net.HandleInternalError(
+			sdkErrors.ErrCryptoDecryptionFailed, w,
+			reqres.BootstrapVerifyResponse{},
 		)
-		return sdkErrors.ErrCryptoDecryptionFailed
 	}
 
 	// Compute SHA-256 hash of plaintext

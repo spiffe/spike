@@ -10,8 +10,8 @@ import (
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/spiffeid"
-	"github.com/spiffe/spike/internal/auth"
 
+	"github.com/spiffe/spike/internal/auth"
 	"github.com/spiffe/spike/internal/net"
 )
 

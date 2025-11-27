@@ -93,7 +93,7 @@ func RouteGetSecret(
 	}
 
 	if !secretFound {
-		return handleGetSecretError(getErr, w)
+		return net.HandleError(getErr, w, reqres.SecretGetResponse{})
 	}
 
 	net.Success(reqres.SecretGetResponse{

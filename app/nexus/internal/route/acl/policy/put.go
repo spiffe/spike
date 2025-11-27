@@ -89,11 +89,7 @@ func RoutePutPolicy(
 		Permissions:     permissions,
 	})
 	if upsertErr != nil {
-		net.Fail(
-			reqres.PolicyPutResponse{}.Internal(), w,
-			http.StatusInternalServerError,
-		)
-		return upsertErr
+		return net.HandleError(upsertErr, w, reqres.PolicyPutResponse{})
 	}
 
 	net.Success(reqres.PolicyPutResponse{ID: policy.ID}.Success(), w)

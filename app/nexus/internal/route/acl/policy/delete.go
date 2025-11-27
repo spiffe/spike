@@ -84,18 +84,7 @@ func RouteDeletePolicy(
 
 	deleteErr := state.DeletePolicy(policyID)
 	if deleteErr != nil {
-		if deleteErr.Is(sdkErrors.ErrEntityNotFound) {
-			net.Fail(
-				reqres.PolicyDeleteResponse{}.NotFound(), w, http.StatusNotFound,
-			)
-			return deleteErr
-		}
-
-		net.Fail(
-			reqres.PolicyDeleteResponse{}.Internal(), w,
-			http.StatusInternalServerError,
-		)
-		return deleteErr
+		return net.HandleError(deleteErr, w, reqres.PolicyDeleteResponse{})
 	}
 
 	net.Success(reqres.PolicyDeleteResponse{}.Success(), w)

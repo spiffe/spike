@@ -11,10 +11,10 @@ import (
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/validation"
-	"github.com/spiffe/spike/internal/auth"
-	"github.com/spiffe/spike/internal/net"
 
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
+	"github.com/spiffe/spike/internal/auth"
+	"github.com/spiffe/spike/internal/net"
 )
 
 // guardSecretPutRequest validates a secret storage request by performing

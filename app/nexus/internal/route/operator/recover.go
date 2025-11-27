@@ -67,8 +67,9 @@ func RouteRecover(
 	}()
 
 	if len(shards) < env.ShamirThresholdVal() {
-		failErr := sdkErrors.ErrShamirNotEnoughShards
-		return failErr
+		return net.HandleInternalError(
+			sdkErrors.ErrShamirNotEnoughShards, w, reqres.RecoverResponse{},
+		)
 	}
 
 	// Track seen indices to check for duplicates
@@ -76,9 +77,9 @@ func RouteRecover(
 
 	for idx, shard := range shards {
 		if seenIndices[idx] {
-			failErr := sdkErrors.ErrShamirDuplicateIndex
+			failErr := sdkErrors.ErrShamirDuplicateIndex.Clone()
 			failErr.Msg = fmt.Sprint("duplicate shard index: ", idx)
-			return failErr
+			return net.HandleInternalError(failErr, w, reqres.RecoverResponse{})
 		}
 
 		// We cannot check for duplicate values, because although it's
@@ -89,7 +90,9 @@ func RouteRecover(
 
 		// Check for nil pointers
 		if shard == nil {
-			return sdkErrors.ErrShamirNilShard
+			return net.HandleInternalError(
+				sdkErrors.ErrShamirNilShard, w, reqres.RecoverResponse{},
+			)
 		}
 
 		// Check for empty shards (all zeros)
@@ -101,12 +104,16 @@ func RouteRecover(
 			}
 		}
 		if zeroed {
-			return sdkErrors.ErrShamirEmptyShard
+			return net.HandleInternalError(
+				sdkErrors.ErrShamirEmptyShard, w, reqres.RecoverResponse{},
+			)
 		}
 
 		// Verify shard index is within valid range:
 		if idx < 1 || idx > env.ShamirSharesVal() {
-			return sdkErrors.ErrShamirInvalidIndex
+			return net.HandleInternalError(
+				sdkErrors.ErrShamirInvalidIndex, w, reqres.RecoverResponse{},
+			)
 		}
 	}
 
