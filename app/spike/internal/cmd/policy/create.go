@@ -121,8 +121,7 @@ func newPolicyCreateCommand(
 
 			// Validate permissions
 			permissions, err := validatePermissions(permsStr)
-			if err != nil {
-				c.PrintErrf("Error: %v\n", err)
+			if stdout.HandleAPIError(c, err) {
 				return
 			}
 

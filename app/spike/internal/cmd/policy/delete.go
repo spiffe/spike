@@ -89,8 +89,7 @@ func newPolicyDeleteCommand(
 			api := spike.NewWithSource(source)
 
 			policyID, err := sendGetPolicyIDRequest(c, args, api)
-			if err != nil {
-				c.PrintErrf("Error: %v\n", err)
+			if stdout.HandleAPIError(c, err) {
 				return
 			}
 

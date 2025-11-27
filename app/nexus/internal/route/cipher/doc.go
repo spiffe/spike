@@ -83,13 +83,17 @@
 // ## Function Organization
 //
 // Request handling is organized into focused functions:
-//   - decrypt_intercept.go: Authentication and authorization guards
-//   - encrypt_intercept.go: Authentication and authorization guards
-//   - read.go: Request parsing (WithoutGuard variants)
+//   - config.go: Constants (version byte, content-type headers, nonce size)
+//   - crypto.go: Cryptographic operations (encrypt/decrypt data)
+//   - decrypt.go: RouteDecrypt HTTP handler entry point
+//   - decrypt_intercept.go: Decryption guards and SPIFFE ID extraction
+//   - encrypt.go: RouteEncrypt HTTP handler entry point
+//   - encrypt_intercept.go: Encryption guards and SPIFFE ID extraction
 //   - handle.go: Request orchestration (implements flows above)
-//   - crypto.go: Cryptographic operations
-//   - validation.go: Request field validation
 //   - net.go: Response formatting
+//   - read.go: Request parsing (WithoutGuard variants)
+//   - state.go: Cipher retrieval from backend
+//   - validation.go: Request field validation (version, nonce size)
 //
 // ## Adding Request Validation
 //

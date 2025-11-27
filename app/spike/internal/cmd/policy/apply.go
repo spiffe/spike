@@ -137,10 +137,9 @@ func newPolicyApplyCommand(
 				policy = p
 			} else {
 				// Use flag-based input
-				p, err := getPolicyFromFlags(name, SPIFFEIDPattern,
+				p, flagErr := getPolicyFromFlags(name, SPIFFEIDPattern,
 					pathPattern, permsStr)
-				if err != nil {
-					c.PrintErrf("Error: %v\n", err)
+				if stdout.HandleAPIError(c, flagErr) {
 					return
 				}
 				policy = p
@@ -159,9 +158,8 @@ func newPolicyApplyCommand(
 			}
 
 			// Validate permissions
-			permissions, err := validatePermissions(ps)
-			if err != nil {
-				c.PrintErrf("Error: %v\n", err)
+			permissions, permErr := validatePermissions(ps)
+			if stdout.HandleAPIError(c, permErr) {
 				return
 			}
 
