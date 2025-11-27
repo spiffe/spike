@@ -18,25 +18,30 @@ import (
 // attempting to recover the secret using the minimum required number of shares
 // and comparing the result with the original secret.
 //
+// This function is intended for validating newly generated shares, not for
+// restore operations. During a restore, the original secret is unknown, and
+// successful reconstruction via secretsharing.Recover() is itself proof that
+// the shards are mathematically valid.
+//
 // Parameters:
-//   - secret group.Scalar: The original secret to verify against
-//   - shares []shamir.Share: The generated secret shares to verify
+//   - secret group.Scalar: The original secret to verify against.
+//   - shares []shamir.Share: The generated secret shares to verify.
 //
 // The function will:
-//   - Calculate the threshold (t) from the environment configuration
-//   - Attempt to reconstruct the secret using exactly t+1 shares
-//   - Compare the reconstructed secret with the original
-//   - Zero out the reconstructed secret regardless of success or failure
+//   - Calculate the threshold (t) from the environment configuration.
+//   - Attempt to reconstruct the secret using exactly t+1 shares.
+//   - Compare the reconstructed secret with the original.
+//   - Zero out the reconstructed secret regardless of success or failure.
 //
 // If the verification fails, the function will:
-//   - Log a fatal error and exit if recovery fails
-//   - Log a fatal error and exit if the recovered secret doesn't match the
-//     original
+//   - Log a fatal error and exit if recovery fails.
+//   - Log a fatal error and exit if the recovered secret does not match the
+//     original.
 //
 // Security:
-//   - The reconstructed secret is always zeroed out to prevent memory leaks
+//   - The reconstructed secret is always zeroed out to prevent memory leaks.
 //   - In case of fatal errors, the reconstructed secret is explicitly zeroed
-//     before logging since deferred functions won't run after log.FatalErr
+//     before logging since deferred functions will not run after log.FatalErr.
 func VerifyShamirReconstruction(secret group.Scalar, shares []shamir.Share) {
 	const fName = "VerifyShamirReconstruction"
 

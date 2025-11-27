@@ -9,111 +9,11 @@ package config
 
 import (
 	"fmt"
-	"os"
-	"path/filepath"
 	"strings"
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
-	"github.com/spiffe/spike-sdk-go/config/env"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
-	"github.com/spiffe/spike-sdk-go/log"
-
-	"github.com/spiffe/spike/app"
 )
-
-var NexusVersion = app.Version
-var PilotVersion = app.Version
-var KeeperVersion = app.Version
-var BootstrapVersion = app.Version
-
-// restrictedPaths contains system directories that should not be used
-// for data storage for security and operational reasons.
-var restrictedPaths = []string{
-	"/", "/etc", "/sys", "/proc", "/dev", "/bin", "/sbin",
-	"/usr", "/lib", "/lib64", "/boot", "/root",
-}
-
-// validateDataDirectory checks if a directory path is valid and safe to use
-// for storing SPIKE data. It ensures the directory exists or can be created,
-// has proper permissions, and is not in a restricted location.
-//
-// Parameters:
-//   - dir: The directory path to validate.
-//
-// Returns:
-//   - *sdkErrors.SDKError: An error if the directory is invalid, restricted,
-//     or cannot be accessed. Returns nil if the directory is valid.
-func validateDataDirectory(dir string) *sdkErrors.SDKError {
-	fName := "validateDataDirectory"
-
-	if dir == "" {
-		failErr := *sdkErrors.ErrFSInvalidDirectory.Clone()
-		failErr.Msg = "directory path cannot be empty"
-		return &failErr
-	}
-
-	// Resolve to an absolute path
-	absPath, err := filepath.Abs(dir)
-	if err != nil {
-		failErr := *sdkErrors.ErrFSInvalidDirectory.Clone()
-		failErr.Msg = fmt.Sprintf("failed to resolve directory path: %s", err)
-		return &failErr
-	}
-
-	// Check for restricted paths
-	for _, restricted := range restrictedPaths {
-		if restricted == "/" {
-			// Special case: only block the exact root path, not all paths
-			if absPath == "/" {
-				failErr := *sdkErrors.ErrFSInvalidDirectory.Clone()
-				failErr.Msg = "path is restricted for security reasons"
-				return &failErr
-			}
-			continue
-		}
-		if absPath == restricted || strings.HasPrefix(absPath, restricted+"/") {
-			failErr := *sdkErrors.ErrFSInvalidDirectory.Clone()
-			failErr.Msg = "path is restricted for security reasons"
-			return &failErr
-		}
-	}
-
-	// Check if using /tmp without user isolation
-	if strings.HasPrefix(absPath, "/tmp/") && !strings.Contains(
-		absPath, os.Getenv("USER"),
-	) {
-		log.Warn(fName,
-			"message", "Using /tmp without user isolation is not recommended",
-			"path", absPath,
-		)
-	}
-
-	// Check if the directory exists
-	info, err := os.Stat(absPath)
-	if err != nil {
-		if !os.IsNotExist(err) {
-			failErr := *sdkErrors.ErrFSDirectoryDoesNotExist.Clone()
-			failErr.Msg = fmt.Sprintf("failed to check directory: %s", err)
-			return &failErr
-		}
-		// Directory doesn't exist, check if the parent exists, and we can create it
-		parentDir := filepath.Dir(absPath)
-		if _, err := os.Stat(parentDir); err != nil {
-			failErr := *sdkErrors.ErrFSParentDirectoryDoesNotExist.Clone()
-			failErr.Msg = fmt.Sprintf("parent directory does not exist: %s", err)
-			return &failErr
-		}
-	} else {
-		// Directory exists, check if it's actually a directory
-		if !info.IsDir() {
-			failErr := *sdkErrors.ErrFSFileIsNotADirectory.Clone()
-			failErr.Msg = fmt.Sprintf("path is not a directory: %s", absPath)
-			return &failErr
-		}
-	}
-
-	return nil
-}
 
 // NexusDataFolder returns the path to the directory where Nexus stores
 // its encrypted backup for its secrets and other data.
@@ -123,75 +23,16 @@ func validateDataDirectory(dir string) *sdkErrors.SDKError {
 // If the home directory is unavailable, it falls back to
 // /tmp/.spike-$USER/data.
 //
+// The directory is created once on the first call and cached for following
+// calls.
+//
 // Returns:
 //   - string: The absolute path to the Nexus data directory.
 func NexusDataFolder() string {
-	const fName = "NexusDataFolder"
-
-	// Check for custom data directory from the environment
-	if customDir := os.Getenv("SPIKE_NEXUS_DATA_DIR"); customDir != "" {
-		if err := validateDataDirectory(customDir); err == nil {
-			// Ensure the directory exists with proper permissions
-			dataPath := filepath.Join(customDir, "data")
-			if err := os.MkdirAll(dataPath, 0700); err != nil {
-				failErr := sdkErrors.ErrFSDirectoryCreationFailed.Wrap(err)
-				failErr.Msg = fmt.Sprintf(
-					"failed to create custom data directory: %s", err,
-				)
-				log.WarnErr(fName, *failErr)
-			} else {
-				return dataPath
-			}
-		} else {
-			failErr := sdkErrors.ErrFSInvalidDirectory.Wrap(err)
-			failErr.Msg = fmt.Sprintf(
-				"invalid custom data directory: %s. using default", customDir,
-			)
-			log.WarnErr(fName, *failErr)
-		}
-	}
-
-	// Fall back to home directory
-	homeDir, err := os.UserHomeDir()
-	if err != nil {
-		// Fall back to temp with user isolation
-		user := os.Getenv("USER")
-
-		if user == "" {
-			user = "spike" // TODO: constant.
-		}
-
-		tempDir := fmt.Sprintf("/tmp/.spike-%s", user)
-		dataPath := filepath.Join(tempDir, "data")
-		err = os.MkdirAll(dataPath, 0700)
-
-		if err != nil {
-			failErr := sdkErrors.ErrFSDirectoryCreationFailed.Wrap(err)
-			failErr.Msg = fmt.Sprintf(
-				"failed to create temp data directory: %s", err,
-			)
-			log.FatalErr(fName, *failErr)
-		}
-
-		return dataPath
-	}
-
-	spikeDir := filepath.Join(homeDir, ".spike") // TODO: constant.
-	dataPath := filepath.Join(spikeDir, "data")  // TODO: constant.
-
-	// Create the directory if it doesn't exist
-	// 0700 because we want to restrict access to the directory
-	// but allow the user to create db files in it.
-	err = os.MkdirAll(dataPath, 0700)
-	if err != nil {
-		failErr := sdkErrors.ErrFSDirectoryCreationFailed.Wrap(err)
-		failErr.Msg = fmt.Sprintf(
-			"failed to create spike data directory: %s", err,
-		)
-		log.FatalErr(fName, *failErr)
-	}
-
-	return dataPath
+	nexusDataOnce.Do(func() {
+		nexusDataPath = initNexusDataFolder()
+	})
+	return nexusDataPath
 }
 
 // PilotRecoveryFolder returns the path to the directory where the
@@ -203,63 +44,15 @@ func NexusDataFolder() string {
 // ~/.spike/recover. If the home directory is unavailable, it falls back to
 // /tmp/.spike-$USER/recover.
 //
+// The directory is created once on first call and cached for subsequent calls.
+//
 // Returns:
 //   - string: The absolute path to the Pilot recovery directory.
 func PilotRecoveryFolder() string {
-	const fName = "PilotRecoveryFolder"
-
-	// Check for custom recovery directory from environment
-	if customDir := os.Getenv(env.PilotRecoveryDir); customDir != "" { // TODO: don't we have an env package that has helpers for these?
-		if err := validateDataDirectory(customDir); err == nil {
-			// Ensure the directory exists with proper permissions
-			recoverPath := filepath.Join(customDir, "recover")
-			if err := os.MkdirAll(recoverPath, 0700); err != nil {
-				warnErr := sdkErrors.ErrFSDirectoryCreationFailed.Wrap(err)
-				warnErr.Msg = "failed to create custom recovery directory"
-				log.WarnErr(fName, *warnErr)
-			} else {
-				return recoverPath
-			}
-		} else {
-			warnErr := sdkErrors.ErrFSInvalidDirectory.Wrap(err)
-			warnErr.Msg = "invalid custom recovery directory"
-			log.WarnErr(fName, *warnErr)
-		}
-	}
-
-	// Fall back to home directory
-	homeDir, err := os.UserHomeDir()
-	if err != nil {
-		// Fall back to temp with user isolation
-		user := os.Getenv("USER")
-		if user == "" {
-			user = "spike"
-		}
-		tempDir := fmt.Sprintf("/tmp/.spike-%s", user)
-		recoverPath := filepath.Join(tempDir, "recover")
-		err = os.MkdirAll(recoverPath, 0700)
-		if err != nil {
-			failErr := sdkErrors.ErrFSDirectoryCreationFailed.Wrap(err)
-			failErr.Msg = "failed to create temp recovery directory"
-			log.FatalErr(fName, *failErr)
-		}
-		return recoverPath
-	}
-
-	spikeDir := filepath.Join(homeDir, ".spike")
-	recoverPath := filepath.Join(spikeDir, "recover")
-
-	// Create the directory if it doesn't exist
-	// 0700 because we want to restrict access to the directory
-	// but allow the user to create recovery files in it.
-	err = os.MkdirAll(recoverPath, 0700)
-	if err != nil {
-		failErr := sdkErrors.ErrFSDirectoryCreationFailed.Wrap(err)
-		failErr.Msg = "failed to create spike recovery directory"
-		log.FatalErr(fName, *failErr)
-	}
-
-	return recoverPath
+	pilotRecoveryOnce.Do(func() {
+		pilotRecoveryPath = initPilotRecoveryFolder()
+	})
+	return pilotRecoveryPath
 }
 
 // ValidPermissions contains the set of valid policy permissions supported by

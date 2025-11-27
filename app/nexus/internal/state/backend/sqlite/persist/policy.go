@@ -91,6 +91,7 @@ func (s *DataStore) StorePolicy(
 	ctx context.Context, policy data.Policy,
 ) *sdkErrors.SDKError {
 	const fName = "StorePolicy"
+
 	validation.CheckContext(ctx, fName)
 
 	s.mu.Lock()
@@ -202,6 +203,7 @@ func (s *DataStore) LoadPolicy(
 	ctx context.Context, id string,
 ) (*data.Policy, *sdkErrors.SDKError) {
 	const fName = "LoadPolicy"
+
 	validation.CheckContext(ctx, fName)
 
 	s.mu.RLock()
@@ -299,6 +301,7 @@ func (s *DataStore) LoadAllPolicies(
 	ctx context.Context,
 ) (map[string]*data.Policy, *sdkErrors.SDKError) {
 	const fName = "LoadAllPolicies"
+
 	validation.CheckContext(ctx, fName)
 
 	s.mu.RLock()

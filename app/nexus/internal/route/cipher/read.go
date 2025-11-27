@@ -73,12 +73,12 @@ func readStreamingDecryptRequestData(
 	ver := make([]byte, 1)
 	n, err := io.ReadFull(r.Body, ver)
 	if err != nil || n != 1 {
-		failErr := *sdkErrors.ErrCryptoFailedToReadVersion.Clone()
-		log.WarnErr(fName, failErr)
+		failErr := sdkErrors.ErrCryptoFailedToReadVersion.Clone()
+		log.WarnErr(fName, *failErr)
 		http.Error(
 			w, string(failErr.Code), http.StatusBadRequest,
 		)
-		return 0, nil, nil, &failErr
+		return 0, nil, nil, failErr
 	}
 
 	version := ver[0]
@@ -98,12 +98,12 @@ func readStreamingDecryptRequestData(
 	nonce := make([]byte, bytesToRead)
 	n, err = io.ReadFull(r.Body, nonce)
 	if err != nil || n != bytesToRead {
-		failErr := *sdkErrors.ErrCryptoFailedToReadNonce.Clone()
-		log.WarnErr(fName, failErr)
+		failErr := sdkErrors.ErrCryptoFailedToReadNonce.Clone()
+		log.WarnErr(fName, *failErr)
 		http.Error(
 			w, string(failErr.Code), http.StatusBadRequest,
 		)
-		return 0, nil, nil, &failErr
+		return 0, nil, nil, failErr
 	}
 
 	// Read the remaining body as ciphertext
