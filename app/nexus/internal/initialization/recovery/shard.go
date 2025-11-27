@@ -16,7 +16,24 @@ import (
 	"github.com/spiffe/spike/internal/net"
 )
 
-func ShardGetResponse(
+// shardGetResponse retrieves a shard from a SPIKE Keeper via mTLS POST request.
+// It creates an mTLS client using the provided X509 source with a predicate
+// that only allows communication with SPIKE Keeper instances.
+//
+// Parameters:
+//   - source: X509Source for mTLS authentication with the keeper
+//   - u: The URL of the keeper's shard retrieval endpoint
+//
+// Returns:
+//   - []byte: The raw shard response data from the keeper
+//   - *sdkErrors.SDKError: An error if the request fails, nil on success
+//
+// The function will return an error if:
+//   - The X509 source is nil
+//   - The request marshaling fails
+//   - The POST request fails
+//   - The response is empty
+func shardGetResponse(
 	source *workloadapi.X509Source, u string,
 ) ([]byte, *sdkErrors.SDKError) {
 	if source == nil {

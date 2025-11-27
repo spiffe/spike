@@ -13,11 +13,12 @@ import (
 	"github.com/spiffe/spike-sdk-go/config/env"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/log"
-	tls "github.com/spiffe/spike-sdk-go/net"
 	"github.com/spiffe/spike-sdk-go/retry"
+	"github.com/spiffe/spike-sdk-go/spiffe"
 	svid "github.com/spiffe/spike-sdk-go/spiffeid"
 
 	"github.com/spiffe/spike/app/bootstrap/internal/state"
+	"github.com/spiffe/spike/internal/validation"
 )
 
 // BroadcastKeepers distributes root key shares to all configured SPIKE Keeper
@@ -27,10 +28,14 @@ import (
 // delivered. If a keeper fails to receive its share, the function logs a
 // warning and retries. The function terminates the application if the retry
 // mechanism fails unexpectedly.
+//
+// Parameters:
+//   - ctx: Context for cancellation and timeout control
+//   - api: SPIKE API client for communicating with keepers
 func BroadcastKeepers(ctx context.Context, api *spike.API) {
 	const fName = "BroadcastKeepers"
 
-	// TODO: nil check for all ctx context.Context args.
+	validation.CheckContext(ctx, fName)
 
 	// RootShares() generates the root key and splits it into shares.
 	// It enforces single-call semantics and will terminate if called again.
@@ -39,9 +44,9 @@ func BroadcastKeepers(ctx context.Context, api *spike.API) {
 	for keeperID := range env.KeepersVal() {
 		keeperShare := state.KeeperShare(rs, keeperID)
 
-		log.Info(fName, "message", "iterating", "keeper_id", keeperID)
+		log.Debug(fName, "message", "iterating", "keeper_id", keeperID)
 		_, err := retry.Forever(ctx, func() (bool, *sdkErrors.SDKError) {
-			log.Info(fName, "message", "retrying", "keeper_id", keeperID)
+			log.Debug(fName, "message", "retrying", "keeper_id", keeperID)
 
 			err := api.Contribute(keeperShare, keeperID)
 			if err != nil {
@@ -70,8 +75,14 @@ func BroadcastKeepers(ctx context.Context, api *spike.API) {
 // Nexus for verification. The function retries indefinitely until the
 // verification succeeds. It terminates the application if any cryptographic
 // operations fail.
+//
+// Parameters:
+//   - ctx: Context for cancellation and timeout control
+//   - api: SPIKE API client for verification requests
 func VerifyInitialization(ctx context.Context, api *spike.API) {
 	const fName = "VerifyInitialization"
+
+	validation.CheckContext(ctx, fName)
 
 	// Generate random text for verification
 	randomBytes := make([]byte, 32)
@@ -85,23 +96,23 @@ func VerifyInitialization(ctx context.Context, api *spike.API) {
 
 	// Encrypt the random text with the root key
 	rootKey := state.RootKey()
-	block, err := aes.NewCipher(rootKey[:])
-	if err != nil {
-		failErr := sdkErrors.ErrCryptoFailedToCreateCipher.Wrap(err)
+	block, aesErr := aes.NewCipher(rootKey[:])
+	if aesErr != nil {
+		failErr := sdkErrors.ErrCryptoFailedToCreateCipher.Wrap(aesErr)
 		log.FatalErr(fName, *failErr)
 		return
 	}
 
-	gcm, err := cipher.NewGCM(block)
-	if err != nil {
-		failErr := sdkErrors.ErrCryptoFailedToCreateGCM.Wrap(err)
+	gcm, gcmErr := cipher.NewGCM(block)
+	if gcmErr != nil {
+		failErr := sdkErrors.ErrCryptoFailedToCreateGCM.Wrap(gcmErr)
 		log.FatalErr(fName, *failErr)
 		return
 	}
 
 	nonce := make([]byte, gcm.NonceSize())
-	if _, err := io.ReadFull(rand.Reader, nonce); err != nil {
-		failErr := sdkErrors.ErrCryptoFailedToReadNonce.Wrap(err)
+	if _, nonceErr := io.ReadFull(rand.Reader, nonce); nonceErr != nil {
+		failErr := sdkErrors.ErrCryptoFailedToReadNonce.Wrap(nonceErr)
 		log.FatalErr(fName, *failErr)
 		return
 	}
@@ -127,26 +138,28 @@ func VerifyInitialization(ctx context.Context, api *spike.API) {
 // SPIFFE ID, the function terminates the application. This function is used
 // to ensure that only authorized SPIKE Bootstrap workloads can perform
 // initialization operations.
+//
+// Returns:
+//   - *workloadapi.X509Source: The validated X.509 SVID source, or nil if
+//     acquisition fails (the function terminates the application on failure)
 func AcquireSource() *workloadapi.X509Source {
 	const fName = "AcquireSource"
 
-	src := tls.Source()
-	sv, err := src.GetX509SVID()
+	ctx, cancel := context.WithTimeout(
+		context.Background(),
+		env.SPIFFESourceTimeoutVal(),
+	)
+	defer cancel()
+
+	src, spiffeID, err := spiffe.Source(ctx, spiffe.EndpointSocket())
 	if err != nil {
-		failErr := sdkErrors.ErrSPIFFEFailedToExtractX509SVID.Wrap(err)
-		log.FatalErr(fName, *failErr)
-		return nil
-	}
-	if !svid.IsBootstrap(sv.ID.String()) {
-		failErr := *sdkErrors.ErrAccessUnauthorized.Clone()
-		failErr.Msg = "bootstrap SPIFFE ID required"
-		log.FatalErr(fName, failErr)
+		log.FatalErr(fName, *err)
 		return nil
 	}
 
-	if src == nil {
-		failErr := *sdkErrors.ErrSPIFFEFailedToExtractX509SVID.Clone()
-		failErr.Msg = "failed to acquire X.509 SVID"
+	if !svid.IsBootstrap(spiffeID) {
+		failErr := *sdkErrors.ErrAccessUnauthorized.Clone()
+		failErr.Msg = "bootstrap SPIFFE ID required"
 		log.FatalErr(fName, failErr)
 		return nil
 	}

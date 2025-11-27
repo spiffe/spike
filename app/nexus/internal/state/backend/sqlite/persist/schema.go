@@ -10,7 +10,9 @@ import (
 	"os"
 
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
+
 	"github.com/spiffe/spike/app/nexus/internal/state/backend/sqlite/ddl"
+	"github.com/spiffe/spike/internal/validation"
 )
 
 // createDataDir creates the data directory for the SQLite database if it
@@ -47,7 +49,7 @@ func (s *DataStore) createTables(
 ) *sdkErrors.SDKError {
 	const fName = "createTables"
 
-	validateContext(ctx, fName)
+	validation.CheckContext(ctx, fName)
 
 	_, err := db.ExecContext(ctx, ddl.QueryInitialize)
 	if err != nil {

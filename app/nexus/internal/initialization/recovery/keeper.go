@@ -100,7 +100,7 @@ func iterateKeepersAndInitializeState(
 			continue
 		}
 
-		data, err := ShardGetResponse(source, u)
+		data, err := shardGetResponse(source, u)
 		if err != nil {
 			warnErr := sdkErrors.ErrNetPeerConnection.Wrap(err)
 			warnErr.Msg = "failed to get shard from keeper"
@@ -146,8 +146,17 @@ func iterateKeepersAndInitializeState(
 		for ix, shard := range successfulKeeperShards {
 			id, err := strconv.Atoi(ix)
 			if err != nil {
-				// This is a configuration error; we cannot recover from it,
-				// and it may cause further security issues. Crash immediately.
+				// Unlike URL misconfiguration (which we tolerate above), an
+				// unparseable keeper ID is fatal because:
+				// 1. We've already collected threshold shards. Skipping one now
+				//    means we'd need to re-fetch, but the same ID will fail
+				//    again.
+				// 2. The keeper ID is used as the Shamir shard index. Using a
+				//    wrong index produces an incorrect root key, which is worse
+				//    than crashing.
+				// 3. This same ID was used during bootstrap to store the shard.
+				//    If it was valid then but invalid now, the configuration
+				//    has been corrupted.
 				failErr := sdkErrors.ErrDataInvalidInput.Wrap(err)
 				failErr.Msg = "failed to convert keeper ID to int"
 				log.FatalErr(fName, *failErr)

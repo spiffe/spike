@@ -14,6 +14,7 @@ import (
 	"github.com/spiffe/spike-sdk-go/log"
 
 	"github.com/spiffe/spike/app/nexus/internal/state/backend/sqlite/ddl"
+	"github.com/spiffe/spike/internal/validation"
 )
 
 // StoreSecret stores a secret at the specified path with its metadata and
@@ -43,7 +44,7 @@ func (s *DataStore) StoreSecret(
 ) *sdkErrors.SDKError {
 	const fName = "StoreSecret"
 
-	validateContext(ctx, fName)
+	validation.CheckContext(ctx, fName)
 
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -127,7 +128,7 @@ func (s *DataStore) LoadSecret(
 ) (*kv.Value, *sdkErrors.SDKError) {
 	const fName = "LoadSecret"
 
-	validateContext(ctx, fName)
+	validation.CheckContext(ctx, fName)
 
 	s.mu.RLock()
 	defer s.mu.RUnlock()
@@ -174,7 +175,7 @@ func (s *DataStore) LoadAllSecrets(
 ) (map[string]*kv.Value, *sdkErrors.SDKError) {
 	fName := "LoadAllSecrets"
 
-	validateContext(ctx, fName)
+	validation.CheckContext(ctx, fName)
 
 	s.mu.RLock()
 	defer s.mu.RUnlock()

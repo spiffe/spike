@@ -26,31 +26,36 @@ import (
 )
 
 // sendShardsToKeepers distributes shares of the root key to all keeper nodes.
-// Note that we recompute shares for each keeper rather than computing them once
-// and distributing them. This is safe because:
+// Shares are recomputed for each keeper rather than computed once and
+// distributed. This is safe because:
 //  1. computeShares() uses a deterministic random reader seeded with the
 //     root key
 //  2. Given the same root key, it will always produce identical shares
-//  3. findShare() ensures each keeper receives its designated share
-//     This approach simplifies the code flow and maintains consistency across
-//     potential system restarts or failures.
+//  3. Each keeper receives its designated share based on keeper ID
 //
-// Note that sendSharesToKeepers optimistically moves on to the next SPIKE
-// Keeper in the list on error. This is okay, because SPIKE Nexus may not
-// need all keepers to be healthy all at once, and since we periodically
-// send shards to keepers, provided there is no configuration mistake,
-// all SPIKE Keepers will get their shards eventually.
+// This approach simplifies the code flow and maintains consistency across
+// potential system restarts or failures.
+//
+// The function optimistically moves on to the next SPIKE Keeper in the list on
+// error. This is acceptable because SPIKE Nexus does not need all keepers to be
+// healthy simultaneously. Since shards are sent periodically, all SPIKE Keepers
+// will eventually receive their shards provided there is no configuration
+// error.
+//
+// Parameters:
+//   - source: X509Source for mTLS authentication with keepers
+//   - keepers: Map of keeper IDs to their API root URLs
 func sendShardsToKeepers(
 	source *workloadapi.X509Source, keepers map[string]string,
 ) {
 	const fName = "sendShardsToKeepers"
 
 	for keeperID, keeperAPIRoot := range keepers {
-		u, err := url.JoinPath(
+		u, urlErr := url.JoinPath(
 			keeperAPIRoot, string(apiUrl.KeeperContribute),
 		)
-		if err != nil {
-			warnErr := sdkErrors.ErrAPIBadRequest.Wrap(err)
+		if urlErr != nil {
+			warnErr := sdkErrors.ErrAPIBadRequest.Wrap(urlErr)
 			warnErr.Msg = "failed to join path"
 			log.WarnErr(fName, *warnErr)
 			continue
@@ -62,13 +67,12 @@ func sendShardsToKeepers(
 		}
 
 		rootSecret, rootShares := computeShares()
-		sanityCheck(rootSecret, rootShares)
 
 		var share secretsharing.Share
 		for _, sr := range rootShares {
-			kid, err := strconv.Atoi(keeperID)
-			if err != nil {
-				warnErr := sdkErrors.ErrDataInvalidInput.Wrap(err)
+			kid, atoiErr := strconv.Atoi(keeperID)
+			if atoiErr != nil {
+				warnErr := sdkErrors.ErrDataInvalidInput.Wrap(atoiErr)
 				warnErr.Msg = "failed to convert keeper id to int"
 				log.WarnErr(fName, *warnErr)
 				continue
@@ -89,9 +93,9 @@ func sendShardsToKeepers(
 
 		rootSecret.SetUint64(0)
 
-		contribution, err := share.Value.MarshalBinary()
-		if err != nil {
-			warnErr := sdkErrors.ErrDataMarshalFailure.Wrap(err)
+		contribution, marshalErr := share.Value.MarshalBinary()
+		if marshalErr != nil {
+			warnErr := sdkErrors.ErrDataMarshalFailure.Wrap(marshalErr)
 			warnErr.Msg = "failed to marshal share"
 			log.WarnErr(fName, *warnErr)
 
@@ -128,7 +132,7 @@ func sendShardsToKeepers(
 		copy(shard[:], contribution)
 		scr.Shard = shard
 
-		md, err := json.Marshal(scr)
+		md, jsonErr := json.Marshal(scr)
 
 		// Security: Erase sensitive data when no longer in use.
 		mem.ClearRawBytes(scr.Shard)
@@ -138,8 +142,8 @@ func sendShardsToKeepers(
 			rootShares[i].Value.SetUint64(0)
 		}
 
-		if err != nil {
-			warnErr := sdkErrors.ErrDataMarshalFailure.Wrap(err)
+		if jsonErr != nil {
+			warnErr := sdkErrors.ErrDataMarshalFailure.Wrap(jsonErr)
 			warnErr.Msg = "failed to marshal request"
 			log.WarnErr(fName, *warnErr)
 			continue
@@ -152,13 +156,13 @@ func sendShardsToKeepers(
 			source, predicate.AllowKeeper,
 		)
 
-		_, err = net.Post(client, u, md)
+		_, postErr := net.Post(client, u, md)
 
 		// Security: Ensure that md is zeroed out.
 		mem.ClearBytes(md)
 
-		if err != nil {
-			warnErr := sdkErrors.ErrAPIPostFailed.Wrap(err)
+		if postErr != nil {
+			warnErr := sdkErrors.ErrAPIPostFailed.Wrap(postErr)
 			warnErr.Msg = "failed to post shard to keeper"
 			log.WarnErr(fName, *warnErr)
 			continue

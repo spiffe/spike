@@ -7,6 +7,7 @@ package net
 import (
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	"github.com/spiffe/spike-sdk-go/config/env"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/log"
 	"github.com/spiffe/spike-sdk-go/net"
 	"github.com/spiffe/spike-sdk-go/predicate"
@@ -32,10 +33,7 @@ import (
 // log.FatalLn and terminates the program.
 func Serve(appName string, source *workloadapi.X509Source) {
 	if source == nil {
-		log.FatalLn(
-			appName,
-			"message", "X509 source is nil, cannot start TLS server",
-		)
+		log.FatalErr(appName, *sdkErrors.ErrSPIFFENilX509Source)
 	}
 
 	if err := net.ServeWithPredicate(
@@ -46,10 +44,6 @@ func Serve(appName string, source *workloadapi.X509Source) {
 		predicate.AllowKeeperPeer,
 		env.KeeperTLSPortVal(),
 	); err != nil {
-		log.FatalLn(
-			appName,
-			"message", "failed to serve",
-			"err", err.Error(),
-		)
+		log.FatalErr(appName, *err)
 	}
 }

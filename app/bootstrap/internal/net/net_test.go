@@ -7,7 +7,6 @@ package net
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -30,9 +29,9 @@ func TestShardContributionRequestMarshaling(t *testing.T) {
 	scr.Shard = shard
 
 	// Test marshaling
-	payload, err := json.Marshal(scr)
-	if err != nil {
-		t.Fatalf("Failed to marshal ShardPutRequest: %v", err)
+	payload, marshalErr := json.Marshal(scr)
+	if marshalErr != nil {
+		t.Fatalf("Failed to marshal ShardPutRequest: %v", marshalErr)
 	}
 
 	if len(payload) == 0 {
@@ -41,9 +40,9 @@ func TestShardContributionRequestMarshaling(t *testing.T) {
 
 	// Test unmarshaling
 	var unmarshaled reqres.ShardPutRequest
-	err = json.Unmarshal(payload, &unmarshaled)
-	if err != nil {
-		t.Fatalf("Failed to unmarshal payload: %v", err)
+	unmarshalErr := json.Unmarshal(payload, &unmarshaled)
+	if unmarshalErr != nil {
+		t.Fatalf("Failed to unmarshal payload: %v", unmarshalErr)
 	}
 
 	if unmarshaled.Shard == nil {
@@ -58,105 +57,20 @@ func TestShardContributionRequestMarshaling(t *testing.T) {
 	}
 }
 
-func TestPostHTTPInteraction(t *testing.T) {
-	tests := []struct {
-		name           string
-		serverResponse func(w http.ResponseWriter, r *http.Request)
-		payload        []byte
-		expectError    bool
-	}{
-		{
-			name: "successful post request",
-			serverResponse: func(w http.ResponseWriter, r *http.Request) {
-				if r.Method != http.MethodPost {
-					t.Errorf("Expected POST method, got %s", r.Method)
-					w.WriteHeader(http.StatusMethodNotAllowed)
-					return
-				}
-
-				// Verify the Content-Type header if needed
-				contentType := r.Header.Get("Content-Type")
-				if contentType != "application/json" && contentType != "" {
-					// Content-Type might not be set, which is okay for this test
-					fmt.Println("Content-Type header:", contentType)
-				}
-
-				body, err := io.ReadAll(r.Body)
-				if err != nil {
-					t.Errorf("Failed to read body: %v", err)
-					w.WriteHeader(http.StatusBadRequest)
-					return
-				}
-
-				expectedPayload := []byte("test payload")
-				if !bytes.Equal(body, expectedPayload) {
-					t.Errorf("Expected payload %s, got %s", string(expectedPayload), string(body))
-					w.WriteHeader(http.StatusBadRequest)
-					return
-				}
-
-				w.WriteHeader(http.StatusOK)
-				_, _ = w.Write([]byte("success"))
-			},
-			payload:     []byte("test payload"),
-			expectError: false,
-		},
-		{
-			name: "server returns 500 error",
-			serverResponse: func(w http.ResponseWriter, r *http.Request) {
-				w.WriteHeader(http.StatusInternalServerError)
-				_, _ = w.Write([]byte("internal server error"))
-			},
-			payload:     []byte("test payload"),
-			expectError: true,
-		},
-		{
-			name: "server returns 404 error",
-			serverResponse: func(w http.ResponseWriter, r *http.Request) {
-				w.WriteHeader(http.StatusNotFound)
-				_, _ = w.Write([]byte("not found"))
-			},
-			payload:     []byte("test payload"),
-			expectError: true,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			server := httptest.NewServer(http.HandlerFunc(tt.serverResponse))
-			defer server.Close()
-
-			if tt.expectError {
-				// FIX-ME: after fixing Log.FatalLn and friends to panic,
-				// The PutShardContributionRequest function calls os.Exit(1) on error, which we can't easily test
-				// without significant refactoring. In a real scenario, you'd want to
-				// refactor the function to return errors instead of calling os.Exit.
-				t.Skip("Skipping test that would cause os.Exit - needs refactoring for testability")
-			} else {
-				// This should work without calling os.Exit
-				err := PutShardContributionRequest(server.Client(), server.URL, tt.payload)
-				if err != nil {
-					return
-				}
-			}
-		})
-	}
-}
-
 func TestShardContributionRequestStructure(t *testing.T) {
 	// Test that we can create and work with ShardPutRequest
 	scr := reqres.ShardPutRequest{}
 
 	// Test with nil shard (should be valid)
-	payload, err := json.Marshal(scr)
-	if err != nil {
-		t.Fatalf("Failed to marshal empty ShardPutRequest: %v", err)
+	payload, marshalErr := json.Marshal(scr)
+	if marshalErr != nil {
+		t.Fatalf("Failed to marshal empty ShardPutRequest: %v", marshalErr)
 	}
 
 	var unmarshaled reqres.ShardPutRequest
-	err = json.Unmarshal(payload, &unmarshaled)
-	if err != nil {
-		t.Fatalf("Failed to unmarshal empty payload: %v", err)
+	unmarshalErr := json.Unmarshal(payload, &unmarshaled)
+	if unmarshalErr != nil {
+		t.Fatalf("Failed to unmarshal empty payload: %v", unmarshalErr)
 	}
 
 	// Test with valid shard
@@ -166,14 +80,14 @@ func TestShardContributionRequestStructure(t *testing.T) {
 	}
 	scr.Shard = validShard
 
-	payload, err = json.Marshal(scr)
-	if err != nil {
-		t.Fatalf("Failed to marshal ShardPutRequest with shard: %v", err)
+	payload, marshalErr = json.Marshal(scr)
+	if marshalErr != nil {
+		t.Fatalf("Failed to marshal ShardPutRequest with shard: %v", marshalErr)
 	}
 
-	err = json.Unmarshal(payload, &unmarshaled)
-	if err != nil {
-		t.Fatalf("Failed to unmarshal payload with shard: %v", err)
+	unmarshalErr = json.Unmarshal(payload, &unmarshaled)
+	if unmarshalErr != nil {
+		t.Fatalf("Failed to unmarshal payload with shard: %v", unmarshalErr)
 	}
 
 	if unmarshaled.Shard == nil {
@@ -197,7 +111,7 @@ func TestCryptoConstants(t *testing.T) {
 }
 
 func TestHTTPClientInteraction(t *testing.T) {
-	// Test HTTP client behavior that PutShardContributionRequest() relies on
+	// Test HTTP client behavior for shard contribution requests
 	testPayload := []byte(`{"shard": "test data"}`)
 
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -206,14 +120,15 @@ func TestHTTPClientInteraction(t *testing.T) {
 			t.Errorf("Expected POST method, got %s", r.Method)
 		}
 
-		body, err := io.ReadAll(r.Body)
-		if err != nil {
-			t.Errorf("Failed to read request body: %v", err)
+		body, readErr := io.ReadAll(r.Body)
+		if readErr != nil {
+			t.Errorf("Failed to read request body: %v", readErr)
 			return
 		}
 
 		if !bytes.Equal(body, testPayload) {
-			t.Errorf("Request body mismatch. Expected: %s, Got: %s", string(testPayload), string(body))
+			t.Errorf("Request body mismatch. Expected: %s, Got: %s",
+				string(testPayload), string(body))
 		}
 
 		w.WriteHeader(http.StatusOK)
@@ -221,16 +136,18 @@ func TestHTTPClientInteraction(t *testing.T) {
 	}))
 	defer server.Close()
 
-	// Test the successful HTTP POST (this mimics what PutShardContributionRequest() does internally)
+	// Test a successful HTTP POST request
 	client := server.Client()
-	req, err := http.NewRequest(http.MethodPost, server.URL, bytes.NewReader(testPayload))
-	if err != nil {
-		t.Fatalf("Failed to create request: %v", err)
+	req, reqErr := http.NewRequest(
+		http.MethodPost, server.URL, bytes.NewReader(testPayload),
+	)
+	if reqErr != nil {
+		t.Fatalf("Failed to create request: %v", reqErr)
 	}
 
-	resp, err := client.Do(req)
-	if err != nil {
-		t.Fatalf("Failed to send request: %v", err)
+	resp, doErr := client.Do(req)
+	if doErr != nil {
+		t.Fatalf("Failed to send request: %v", doErr)
 	}
 	defer func(Body io.ReadCloser) {
 		_ = Body.Close()
@@ -240,9 +157,9 @@ func TestHTTPClientInteraction(t *testing.T) {
 		t.Errorf("Expected status 200, got %d", resp.StatusCode)
 	}
 
-	respBody, err := io.ReadAll(resp.Body)
-	if err != nil {
-		t.Fatalf("Failed to read response: %v", err)
+	respBody, readErr := io.ReadAll(resp.Body)
+	if readErr != nil {
+		t.Fatalf("Failed to read response: %v", readErr)
 	}
 
 	if string(respBody) != "OK" {

@@ -25,7 +25,7 @@ func TestErrRecoveryRetryFailed(t *testing.T) {
 	// Test that it can be cloned and wrapped (common SDK error operations)
 	cloned := sdkErrors.ErrRecoveryRetryFailed.Clone()
 	if cloned == nil {
-		t.Error("Clone should return a non-nil error")
+		t.Fatal("Clone should return a non-nil error")
 	}
 
 	// Test Is() method works for error comparison
@@ -35,7 +35,7 @@ func TestErrRecoveryRetryFailed(t *testing.T) {
 }
 
 func TestRestoreBackingStoreFromPilotShards_InsufficientShards(t *testing.T) {
-	// Use t.Setenv for automatic cleanup after test
+	// Use t.Setenv for automatic cleanup after the test
 	t.Setenv("SPIKE_STACK_TRACES_ON_LOG_FATAL", "true")
 	t.Setenv(env.NexusShamirThreshold, "3")
 
@@ -69,10 +69,12 @@ func TestRestoreBackingStoreFromPilotShards_InsufficientShards(t *testing.T) {
 }
 
 func TestRestoreBackingStoreFromPilotShards_InvalidShards(t *testing.T) {
+	// Enable panic mode so we can recover and verify FatalErr behavior
+	t.Setenv("SPIKE_STACK_TRACES_ON_LOG_FATAL", "true")
+
 	tests := []struct {
 		name       string
 		setupShard func() ShamirShard
-		shouldExit bool
 	}{
 		{
 			name: "nil value shard",
@@ -82,7 +84,6 @@ func TestRestoreBackingStoreFromPilotShards_InvalidShards(t *testing.T) {
 					Value: nil,
 				}
 			},
-			shouldExit: true,
 		},
 		{
 			name: "zero ID shard",
@@ -94,7 +95,6 @@ func TestRestoreBackingStoreFromPilotShards_InvalidShards(t *testing.T) {
 					Value: testData,
 				}
 			},
-			shouldExit: true,
 		},
 		{
 			name: "zeroed value shard",
@@ -105,7 +105,6 @@ func TestRestoreBackingStoreFromPilotShards_InvalidShards(t *testing.T) {
 					Value: testData,
 				}
 			},
-			shouldExit: true,
 		},
 	}
 
@@ -113,13 +112,15 @@ func TestRestoreBackingStoreFromPilotShards_InvalidShards(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			shards := []ShamirShard{tt.setupShard()}
 
-			if tt.shouldExit {
-				// TODO: this can be modified with env var; fix the test.
-				t.Skip("Skipping test that would call os.Exit() - function calls log.FatalErr")
-				return
-			}
+			defer func() {
+				if r := recover(); r == nil {
+					t.Error("Expected panic from log.FatalErr for invalid shard")
+				}
+			}()
 
 			RestoreBackingStoreFromPilotShards(shards)
+
+			t.Error("Function should have panicked for invalid shard")
 		})
 	}
 }

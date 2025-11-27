@@ -12,11 +12,11 @@ import (
 	"github.com/spiffe/spike-sdk-go/log"
 	"github.com/spiffe/spike-sdk-go/spiffe"
 	"github.com/spiffe/spike-sdk-go/spiffeid"
-	"github.com/spiffe/spike/internal/out"
 
 	"github.com/spiffe/spike/app/nexus/internal/initialization"
 	"github.com/spiffe/spike/app/nexus/internal/net"
 	"github.com/spiffe/spike/internal/config"
+	"github.com/spiffe/spike/internal/out"
 )
 
 const appName = "SPIKE Nexus"
@@ -39,7 +39,12 @@ func main() {
 		failErr.Msg = "failed to get SPIFFE Workload API source"
 		log.FatalErr(appName, *failErr)
 	}
-	defer spiffe.CloseSource(source)
+	defer func() {
+		err := spiffe.CloseSource(source)
+		if err != nil {
+			log.WarnErr(appName, *err)
+		}
+	}()
 
 	log.Info(
 		appName,

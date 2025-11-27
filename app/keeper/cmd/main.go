@@ -29,7 +29,14 @@ func main() {
 	if err != nil {
 		log.FatalErr(appName, *sdkErrors.ErrStateInitializationFailed.Wrap(err))
 	}
-	defer spiffe.CloseSource(source)
+	defer func() {
+		closeErr := spiffe.CloseSource(source)
+		if closeErr != nil {
+			log.WarnErr(
+				appName, *sdkErrors.ErrSPIFFEFailedToCloseX509Source.Wrap(closeErr),
+			)
+		}
+	}()
 
 	// I should be a SPIKE Keeper.
 	if !spiffeid.IsKeeper(selfSPIFFEID) {

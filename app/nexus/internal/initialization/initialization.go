@@ -65,12 +65,9 @@ func Initialize(source *workloadapi.X509Source) {
 	devMode := env.BackendStoreTypeVal() == env.Memory
 
 	if devMode {
-		log.Warn(fName, "message", "in-memory store will be used")
-		log.Warn(fName, "message", "will not use SPIKE Keepers")
 		log.Warn(
 			fName,
-			"message",
-			"this mode is NOT recommended for production use",
+			"message", "in-memory mode: no SPIKE Keepers, not for production",
 		)
 
 		// `nil` will skip root key initialization and simply initializes an

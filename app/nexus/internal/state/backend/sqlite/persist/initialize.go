@@ -12,6 +12,8 @@ import (
 
 	"github.com/spiffe/spike-sdk-go/config/env"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
+
+	"github.com/spiffe/spike/internal/validation"
 )
 
 // Initialize prepares the DataStore for use by creating the data directory,
@@ -41,7 +43,7 @@ import (
 func (s *DataStore) Initialize(ctx context.Context) *sdkErrors.SDKError {
 	const fName = "Initialize"
 
-	validateContext(ctx, fName)
+	validation.CheckContext(ctx, fName)
 
 	s.mu.Lock()
 	defer s.mu.Unlock()

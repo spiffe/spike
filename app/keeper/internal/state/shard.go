@@ -11,7 +11,6 @@ import (
 	"sync"
 
 	"github.com/spiffe/spike-sdk-go/crypto"
-	"github.com/spiffe/spike-sdk-go/log"
 )
 
 var shard [crypto.AES256KeySize]byte
@@ -26,8 +25,6 @@ var shardMutex sync.RWMutex
 //
 // Thread-safe through shardMutex.
 func SetShard(s *[crypto.AES256KeySize]byte) {
-	const fName = "SetShard"
-
 	shardMutex.Lock()
 	defer shardMutex.Unlock()
 
@@ -41,8 +38,6 @@ func SetShard(s *[crypto.AES256KeySize]byte) {
 
 	// Do not reset the shard if the new value is zero.
 	if zeroed {
-		// TODO: do we need a log here at all?
-		log.Warn(fName, "message", "zero value: skipping setting shard")
 		return
 	}
 
