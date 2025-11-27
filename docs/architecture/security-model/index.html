@@ -139,6 +139,10 @@
                     <a href="https://spike.ist/community/presentations/">Presentations and Demos</a>
                 </li>
 
+                <li >
+                    <a href="https://spike.ist/community/resources/">Resources</a>
+                </li>
+
                 </ul>
     <input class="tree-toggle" type="checkbox" id="getting-started"
                />
@@ -178,6 +182,10 @@
 
                 <li >
                     <a href="https://spike.ist/development/bare-metal/">SPIKE on Linux</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/development/api-docs/">API Documentation</a>
                 </li>
 
                 </ul>
@@ -228,6 +236,9 @@
                                                     </li>
                                                 <li>
                                                         <a href="https://spike.ist/architecture/security-model/#workload-access">Workload Access</a>
+                                                    </li>
+                                                <li>
+                                                        <a href="https://spike.ist/architecture/security-model/#operation-access-control-model">Operation Access Control Model</a>
                                                     </li>
                                                 <li>
                                                         <a href="https://spike.ist/architecture/security-model/#administrative-access">Administrative Access</a>
@@ -971,6 +982,43 @@ read-only or full access</em>) on specific secret paths for each workload.</li>
 </ul>
 <p>This ensures that workloads only access or modify the secrets they are
 explicitly permitted to, in accordance with their predefined policies.</p>
+<h2 id="operation-access-control-model">Operation Access Control Model</h2>
+<p><strong>SPIKE</strong> employs two distinct access control mechanisms depending on the
+criticality of operations:</p>
+<h3 id="policy-controlled-operations">Policy-Controlled Operations</h3>
+<p>Most operations are governed by <strong>SPIKE</strong>’s policy system, allowing flexible,
+fine-grained access control. Administrators can grant permissions to any
+workload through policy configuration. These operations include:</p>
+<ul>
+<li><strong>Secret Management</strong>: <code>get</code>, <code>put</code>, <code>delete</code>, <code>undelete</code>, <code>list</code>,
+<code>metadata</code></li>
+<li><strong>Policy Management</strong>: <code>create</code>, <code>get</code>, <code>delete</code>, <code>list</code></li>
+<li><strong>Cipher Operations</strong>: <code>encrypt</code>, <code>decrypt</code></li>
+<li><strong>ACL Operations</strong>: <code>get</code>, <code>list</code></li>
+<li><strong>Bootstrap Operations</strong>: <code>contribute</code>, <code>verify</code></li>
+</ul>
+<h3 id="hard-coded-restricted-operations">Hard-Coded Restricted Operations</h3>
+<p><strong>Recovery and restoration operations are restricted exclusively to SPIKE
+Pilot</strong> through hard-coded SPIFFE ID validation at the SDK level. These
+operations cannot be delegated through policies:</p>
+<ul>
+<li><strong>Recovery</strong> (<code>recover</code>): Retrieves Shamir secret shards from SPIKE Keepers</li>
+<li><strong>Restoration</strong> (<code>restore</code>): Submits shards to rebuild the root encryption
+key</li>
+</ul>
+<p><strong>Rationale</strong>: Recovery operations bypass all policy controls and directly
+manipulate root cryptographic material. If compromised, they could enable
+decryption of all secrets in the system. Unlike other operations that work
+within the policy framework, recovery operations reconstruct the very key that
+protects the policies themselves, creating a circular dependency that makes
+policy-based control inappropriate.</p>
+<p><strong>Enforcement</strong>: The SDK validates the caller’s SPIFFE ID using
+<code>spiffeid.IsPilot()</code> and fatally terminates any unauthorized attempts via
+<code>log.FatalErr()</code>. This provides defense-in-depth alongside SPIKE Nexus’s own
+validation.</p>
+<p><strong>See Also</strong>: <a href="https://spike.ist/architecture/adrs/adr-0029/">ADR-0029: Restrict Recovery and Restoration Operations to SPIKE
+Pilot</a> for detailed rationale and design
+decisions.</p>
 <h2 id="administrative-access">Administrative Access</h2>
 <p>Although <strong>SPIKE</strong> uses policy-based access to secrets and administrative
 operations, <strong>SPIKE Nexus</strong> recognizes certain builtin SPIFFE IDs and assigns

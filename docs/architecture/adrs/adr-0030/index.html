@@ -1,0 +1,1207 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="/main.css">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link rel="icon" href="https://spike.ist/assets/spike-favicon-16x16.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+    <title> SPIKE | ADR-0030: Minimal Error Messages in API Responses </title>
+</head>
+<body>
+
+<main>
+    
+    <nav>
+  <script>
+    fetch('https://api.github.com/repos/spiffe/spike/releases/latest')
+        .then(response => response.json())
+        .then(data => {
+            const release = document.getElementById('release');
+            const icon = '<i class="bx bx-package"></i>';
+            release.href = data.name ? data.html_url : 'https://api.github.com/repos/spiffe/spike/releases';
+            release.innerHTML = icon + (data.name ? ' ' + data.name : ' Releases');
+        });
+</script>
+<div id="banner">
+    <a href="https://spike.ist">
+        <img id="banner-image" src="https://spike.ist/assets/spike-banner.png" alt="logo" />
+    </a>
+    <div id="banner-body">
+        <a class="banner-title" href="https://spike.ist">
+            SPIKE
+        </a>
+        <span class="banner-tagline">
+            Secure your secrets<br> with SPIFFE.
+        </span>
+        <a id="release" class="banner-link" href="https://github.com/spiffe/spike/releases">
+            <i class='bx bx-package'></i>
+        </a>
+        <a href="https://github.com/spiffe/spike" class="banner-link">
+            <i class='bx bxl-github'></i> GitHub
+        </a>
+
+    </div>
+</div>
+<style>
+   /* Banner on top of the nav */
+   #banner {
+        position: sticky;
+        background-color: var(--bg-primary);
+        z-index: 100;
+        top: 0;
+        display: flex;
+        flex-direction: row;
+        padding: 1rem;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        margin-bottom: 1rem;
+    }
+
+    #banner img {
+        width: 100px;
+        height: auto;
+    }
+
+    #banner-body {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        justify-content: space-between;
+        margin-left: 1rem;
+    }
+
+    .banner-title {
+        font-size: 1.75rem;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        margin-bottom: -15px;
+        font-family: var(--brand-font-family);
+    }
+    .banner-tagline {
+        font-size: 0.875rem;
+        color: var(--text-muted);
+        font-style: italic;
+    }
+
+    .banner-link {
+        display: flex;
+        gap: 0.5rem;
+        min-width: 84px;
+        font-size: 0.875rem;
+        font-weight: 300;
+        padding: 0.25rem 0.75rem;
+        border-radius: 4px;
+        background-color: var(--bg-interactive);
+        transition: all 0.2s ease;
+    }
+
+    .banner-link i {
+        font-size: 1.125rem;
+        color: var(--spike-blue);
+    }
+
+    .banner-link:hover {
+        background-color: var(--spike-blue);
+    }
+</style> <div id="trees">
+    <input class="tree-toggle" type="checkbox" id="about"
+               />
+        <label class="tree-toggle-label "
+               for="about">About</label>
+
+        <ul class="subtree">
+            <li >
+                    <a href="https://spike.ist/about/intro/">About SPIKE</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/about/project-status/">Project Maturity</a>
+                </li>
+
+                </ul>
+    <input class="tree-toggle" type="checkbox" id="community"
+               />
+        <label class="tree-toggle-label "
+               for="community">Community</label>
+
+        <ul class="subtree">
+            <li >
+                    <a href="https://spike.ist/community/hello/">Hello Universe</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/community/contact/">Contact Us</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/community/presentations/">Presentations and Demos</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/community/resources/">Resources</a>
+                </li>
+
+                </ul>
+    <input class="tree-toggle" type="checkbox" id="getting-started"
+               />
+        <label class="tree-toggle-label "
+               for="getting-started">Getting Started</label>
+
+        <ul class="subtree">
+            <li >
+                    <a href="https://spike.ist/getting-started/quickstart/">SPIKE Quickstart Guide</a>
+                </li>
+
+                </ul>
+    <input class="tree-toggle" type="checkbox" id="using-spike"
+               />
+        <label class="tree-toggle-label "
+               for="using-spike">Using SPIKE</label>
+
+        <ul class="subtree">
+            <li >
+                    <a href="https://spike.ist/usage/configuration/">Configuring SPIKE</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/usage/cli/">SPIKE CLI</a>
+                </li>
+
+                </ul>
+    <input class="tree-toggle" type="checkbox" id="developing-spike"
+               />
+        <label class="tree-toggle-label "
+               for="developing-spike">Developing SPIKE</label>
+
+        <ul class="subtree">
+            <li >
+                    <a href="https://spike.ist/development/local-deployment/">SPIKE on Kubernetes</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/development/bare-metal/">SPIKE on Linux</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/development/api-docs/">API Documentation</a>
+                </li>
+
+                </ul>
+    <input class="tree-toggle" type="checkbox" id="spike-architecture"
+               checked/>
+        <label class="tree-toggle-label "
+               for="spike-architecture">SPIKE Architecture</label>
+
+        <ul class="subtree">
+            <li >
+                    <a href="https://spike.ist/architecture/system-overview/">System Overview</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/architecture/security-model/">SPIKE Security Model</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/architecture/architectural-decision-records/">ADRs</a>
+                </li>
+
+                </ul>
+    <input class="tree-toggle" type="checkbox" id="tracking"
+               />
+        <label class="tree-toggle-label "
+               for="tracking">Tracking</label>
+
+        <ul class="subtree">
+            <li >
+                    <a href="https://spike.ist/tracking/changelog/">Changelog</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/tracking/snapshots/">Documentation Snapshots</a>
+                </li>
+
+                </ul>
+    <input class="tree-toggle" type="checkbox" id="operations"
+               />
+        <label class="tree-toggle-label "
+               for="operations">Operations</label>
+
+        <ul class="subtree">
+            <li >
+                    <a href="https://spike.ist/operations/build/">SPIKE Cross-Platform Build</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/operations/production/">SPIKE Production Setup</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/operations/recovery/">SPIKE Recovery Procedures</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/operations/backup/">SPIKE Backup and Restore</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/operations/release/">SPIKE Relase Management</a>
+                </li>
+
+                </ul>
+    </div>
+<style>
+    /* Navigation tree structure */
+    #trees {
+        padding: 0 1rem;
+    }
+
+    .tree-toggle {
+        display: none;
+    }
+
+    .tree-toggle:checked + .tree-toggle-label + .subtree {
+        display: block;
+    }
+
+    .tree-toggle-label {
+        display: block;
+        padding: 0.75rem 1rem;
+        margin: 0.25rem 0;
+        border-radius: 6px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .tree-toggle-label:hover {
+        background-color: rgba(0, 0, 0, 0.05);
+    }
+
+    .tree-toggle-label::before {
+        content: '▸';
+        display: inline-block;
+        margin-right: 0.5rem;
+        transition: transform 0.2s ease;
+    }
+
+    .tree-toggle:checked + .tree-toggle-label::before {
+        transform: rotate(90deg);
+    }
+
+    .subtree {
+        display: none;
+        margin: 0;
+        padding: 0 0 0 1rem;
+        list-style: none;
+    }
+
+    .subtree li {
+        margin: 0.25rem 0;
+    }
+
+    .subtree li a {
+        display: block;
+        padding: 0.5rem 1rem;
+        text-decoration: none;
+        border-radius: 4px;
+        font-size: 0.9375rem;
+        transition: all 0.2s ease;
+    }
+
+    .subtree li a:hover {
+        background-color: rgba(0, 0, 0, 0.05);
+    }
+
+    .subtree li.active a {
+        font-weight: 600;
+        background-color: rgba(0, 0, 0, 0.05);
+    }
+
+    /* Table of contents styling */
+    #toc {
+        margin: 0.5rem 0 0.5rem 1.5rem;
+        padding: 0;
+        list-style: none;
+        font-size: 0.875rem;
+    }
+
+    #toc li {
+        margin: 0.25rem 0;
+    }
+
+    #toc li a {
+        padding: 0.375rem 0.75rem;
+        opacity: 0.8;
+    }
+
+    #toc li a:hover {
+        opacity: 1;
+    }
+
+    #toc ul {
+        margin: 0.25rem 0 0.25rem 1rem;
+        padding: 0;
+        list-style: none;
+    }
+</style>
+</nav>
+<style>
+  nav {
+    position: sticky;
+    width: 300px;
+    height: 100vh;
+    top: 0;
+    max-height: 100vh;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 0, 0, 0.3) transparent;
+    z-index: 100;
+    box-shadow: 5px 0 20px var(--shadow-color);
+    border-right: 1px solid var(--border-color);
+    transition: transform 0.4s ease-in-out;
+    background-color: var(--bg-primary);
+  }
+
+  nav::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  nav::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  nav::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.3);
+    border-radius: 4px;
+    border: 2px solid transparent;
+  }
+
+  @media (max-width: 1300px) {
+    .nav-toggle {
+      display: none;
+    }
+
+    nav {
+      position: fixed;
+      transform: translateX(-100%);
+      width: 85%;
+      max-width: 300px;
+      height: calc(100vh - 57px);
+      top: 57px;
+    }
+
+    nav.active {
+      transform: translateX(0);
+    }
+  }
+</style>
+
+
+    <div class="content">
+        <div class="header">
+  <div class="header-content">
+    <button
+      id="mobile-nav-toggle"
+      aria-label="Toggle navigation"
+      class="mobile-only"
+    >
+      <i class="bx bx-menu"></i>
+    </button>
+    <script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const searchInput = document.querySelector(".search-input");
+    const overlay = document.querySelector(".overlay");
+    const searchResults = document.querySelector(".search-results");
+
+    function closeSearch() {
+      overlay.style.display = "none";
+      searchResults.style.display = "none";
+      searchInput.blur();
+    }
+
+    function openSearch() {
+      overlay.style.display = "block";
+      searchResults.style.display = "block";
+    }
+
+    searchInput.addEventListener("focus", openSearch);
+    overlay.addEventListener("click", closeSearch);
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        closeSearch();
+      }
+    });
+  });
+</script>
+<div class="overlay"></div>
+<input class="search-input" type="text" placeholder="Search..." />
+<div class="search-results">
+  <div class="search-results__header">
+    <span class="search-results__count">Waiting for input...</span>
+  </div>
+  <div class="search-results__items"></div>
+</div>
+
+<style>
+  .search-input {
+    width: 100%;
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background-color: var(--bg-interactive);
+    color: var(--text-primary);
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+    z-index: 101;
+  }
+
+  .search-input:focus {
+    outline: none;
+    border-color: var(--spike-blue);
+    background-color: var(--bg-primary);
+    box-shadow: 0 0 0 2px rgba(var(--spike-blue-rgb), 0.2);
+  }
+
+  .search-input::placeholder {
+    color: var(--text-muted);
+  }
+
+  .overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 100;
+  }
+
+  .search-results {
+    display: none;
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 100%;
+    max-width: 700px;
+    margin: 0.5rem auto;
+    background: var(--bg-primary);
+    border-radius: 8px;
+    box-shadow: 0px 4px 8px 3px rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--border-color);
+    z-index: 102;
+  }
+
+  .search-results__header {
+    padding: 0.75rem 1rem;
+    color: var(--text-muted);
+    font-size: 0.875rem;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .search-results__items {
+    max-height: 60vh;
+    overflow-y: auto;
+  }
+
+  .search-results__item {
+    display: block;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--border-color);
+    transition: background-color 0.2s ease;
+  }
+
+  .search-results__item:hover {
+    background-color: var(--bg-interactive);
+  }
+
+  .search-results__title {
+    color: var(--spike-blue);
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+  }
+
+  .search-results__preview {
+    color: var(--text-secondary);
+    font-size: 0.8125rem;
+    line-height: 1.4;
+  }
+
+  .search-results__preview b {
+    color: var(--spike-dark-green);
+    font-weight: 600;
+  }
+
+  .search-results__items::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  .search-results__items::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 4px;
+  }
+
+  /* Empty state */
+  .search-results__empty {
+    padding: 2rem 1rem;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.875rem;
+  }
+</style>
+
+    <a
+      href="https://github.com/spiffe/spike"
+      target="_blank"
+      rel="noopener"
+      class="github-star"
+    >
+      <i class="bx bx-star"></i>
+      <span>Star <strong>SPIKE</strong> on <strong>GitHub</strong></span>
+    </a>
+    <button id="theme-toggle" aria-label="Toggle theme">
+      <i class="bx bx-sun light-icon"></i>
+      <i class="bx bx-moon dark-icon"></i>
+    </button>
+  </div>
+</div>
+
+<style>
+  .header {
+    position: sticky;
+    top: 0;
+    background-color: var(--bg-primary);
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color);
+    box-shadow: 0 4px 6px -1px var(--shadow-color),
+      0 2px 4px -1px var(--shadow-color);
+    z-index: 101;
+  }
+
+  .header-content {
+    max-width: 800px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  #mobile-nav-toggle {
+    display: none;
+    background: none;
+    border: none;
+    padding: 0.5rem;
+    cursor: pointer;
+    color: var(--text-primary);
+    font-size: 1.5rem;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+  }
+
+  #mobile-nav-toggle i {
+    pointer-events: none;
+    display: block;
+  }
+
+  #mobile-nav-toggle:hover {
+    background-color: var(--bg-interactive);
+  }
+
+  @media (max-width: 1300px) {
+    #mobile-nav-toggle {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+    }
+  }
+
+  #theme-toggle {
+    background: none;
+    border: none;
+    padding: 0.5rem;
+    cursor: pointer;
+    color: var(--text-primary);
+    font-size: 1.25rem;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  #theme-toggle:hover {
+    background-color: var(--bg-interactive);
+  }
+
+  #theme-toggle:active {
+    background-color: var(--bg-secondary);
+  }
+
+  /* Show/hide icons based on theme */
+  [data-theme="dark"] .light-icon,
+  :root:not([data-theme="dark"]) .dark-icon {
+    display: none;
+  }
+
+  /* GitHub Star Button */
+  .github-star {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    color: white;
+    text-decoration: none;
+    background: linear-gradient(
+      135deg,
+      var(--spike-blue),
+      var(--spike-dark-green)
+    );
+    border-radius: 20px;
+    transition: all 0.2s ease;
+    font-size: 0.875rem;
+    white-space: nowrap;
+  }
+
+  .github-star:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(var(--spike-blue-rgb), 0.3);
+  }
+
+  .github-star i {
+    font-size: 1.1rem;
+    animation: starBounce 2s infinite;
+    color: #ffd700;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+  }
+
+  @keyframes starBounce {
+    0%,
+    100% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.2);
+    }
+  }
+
+  .github-star span {
+    white-space: nowrap;
+  }
+
+  @media (max-width: 768px) {
+    .github-star span {
+      display: none;
+    }
+
+    .github-star {
+      padding: 0.5rem;
+    }
+  }
+</style>
+
+<script>
+  // Theme toggle functionality
+  document.addEventListener("DOMContentLoaded", () => {
+    const themeToggle = document.getElementById("theme-toggle");
+
+    // Function to set theme
+    function setTheme(theme) {
+      document.documentElement.setAttribute("data-theme", theme);
+      localStorage.setItem("theme", theme);
+      
+      // Update banner image based on theme
+      const bannerImage = document.getElementById("banner-image");
+      if (bannerImage) {
+        bannerImage.src = theme === "dark" 
+          ? "/assets/spike-banner-dark-thin.png"
+          : "/assets/spike-banner-light-thin.png";
+      }
+    }
+
+    // Initialize theme
+    const savedTheme = localStorage.getItem("theme");
+    setTheme(savedTheme ? savedTheme : "dark");
+    // Discard system theme changes; the landing page is always dark, so
+    // it's better to transition to a dark-by-default theme.
+    // } else if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+    //   setTheme("dark");
+    // }
+
+    // Toggle theme on button click
+    themeToggle.addEventListener("click", () => {
+      const currentTheme = document.documentElement.getAttribute("data-theme");
+      const newTheme = currentTheme === "dark" ? "light" : "dark";
+      setTheme(newTheme);
+    });
+
+    // Discard system-theme changes.
+    // window
+    //   .matchMedia("(prefers-color-scheme: dark)")
+    //   .addEventListener("change", (e) => {
+    //     if (!localStorage.getItem("theme")) {
+    //       setTheme(e.matches ? "dark" : "light");
+    //     }
+    //   });
+  });
+</script>
+
+
+        <article>
+            
+        <h1 id="adr-0030-minimal-error-messages-in-api-responses">ADR-0030: Minimal Error Messages in API Responses</h1>
+<br style="clear:both" />
+<ul>
+<li>Status: accepted</li>
+<li>Date: 2025-11-22</li>
+<li>Tags: Security, API Design, Error Handling, Information Disclosure</li>
+</ul>
+<h2 id="context">Context</h2>
+<p>SPIKE Nexus exposes an HTTP API that workloads use to interact with the secret
+management system. When operations fail, the API must communicate errors to
+clients. The design of error responses involves a fundamental trade-off between
+security and diagnostics:</p>
+<ol>
+<li><strong>Detailed error messages</strong> provide rich diagnostic information to clients,
+making debugging easier, but risk information leakage</li>
+<li><strong>Minimal error messages</strong> provide only error codes, maintaining security
+but offering limited client-side diagnostics</li>
+</ol>
+<p>For a security-critical secret management system, we need to determine the
+appropriate balance between these concerns.</p>
+<h2 id="decision">Decision</h2>
+<p>SPIKE Nexus API responses will return <strong>error codes only, with no descriptive
+error messages</strong> to clients.</p>
+<p>Specifically:</p>
+<ul>
+<li>API responses contain only structured error codes (e.g., <code>NOT_FOUND</code>,
+<code>UNAUTHORIZED</code>, <code>BAD_REQUEST</code>)</li>
+<li>No additional error message fields, stack traces, or diagnostic information</li>
+<li>All detailed error context is logged server-side with full audit trail</li>
+<li>Clients must interpret errors based solely on:
+<ul>
+<li>HTTP status codes (404, 401, 400, 500)</li>
+<li>Structured error code enumerations</li>
+<li>Request parameters they provided</li>
+</ul>
+</li>
+</ul>
+<h2 id="rationale">Rationale</h2>
+<h3 id="security-preventing-information-leakage">Security: Preventing Information Leakage</h3>
+<p>Error messages can reveal sensitive information about the system:</p>
+<p><strong>Path existence enumeration:</strong></p>
+<pre style="background-color:#2b303b;color:#c0c5ce;"><code><span>❌ &quot;Secret &#39;secrets/admin/root-password&#39; not found&quot;
+</span><span>   → Reveals path structure even when denied
+</span><span>
+</span><span>✓  NOT_FOUND
+</span><span>   → Reveals nothing about whether path exists or is unauthorized
+</span></code></pre>
+<p><strong>Permission structure disclosure:</strong></p>
+<pre style="background-color:#2b303b;color:#c0c5ce;"><code><span>❌ &quot;Permission denied for path &#39;secrets/database&#39;&quot;
+</span><span>   → Leaks information about permission boundaries
+</span><span>
+</span><span>✓  UNAUTHORIZED
+</span><span>   → No information about what paths exist or their structure
+</span></code></pre>
+<p><strong>Implementation details:</strong></p>
+<pre style="background-color:#2b303b;color:#c0c5ce;"><code><span>❌ &quot;Database query failed: table &#39;secrets&#39; locked&quot;
+</span><span>   → Leaks internal architecture details
+</span><span>
+</span><span>✓  INTERNAL_SERVER_ERROR
+</span><span>   → No information about internal implementation
+</span></code></pre>
+<p><strong>Stack traces (the “one bad commit” risk):</strong></p>
+<pre style="background-color:#2b303b;color:#c0c5ce;"><code><span>❌ Adding an ErrMsg field creates risk of accidentally including:
+</span><span>   - File paths
+</span><span>   - Internal function names
+</span><span>   - SQL queries
+</span><span>   - Configuration details
+</span><span>
+</span><span>✓  No message field = no risk of accidental disclosure
+</span></code></pre>
+<h3 id="defense-against-enumeration-attacks">Defense Against Enumeration Attacks</h3>
+<p>Minimal errors prevent attackers from probing the system:</p>
+<table><thead><tr><th>Attack Vector</th><th>Detailed Messages</th><th>Minimal Codes</th></tr></thead><tbody>
+<tr><td>Path enumeration</td><td>“Path X not found” vs “Path Y unauthorized” reveals valid paths</td><td>All failures return same code</td></tr>
+<tr><td>Permission probing</td><td>Messages reveal permission boundaries</td><td>No distinction between not-found and unauthorized</td></tr>
+<tr><td>Version detection</td><td>Stack traces reveal library versions</td><td>No version information leaked</td></tr>
+<tr><td>Schema discovery</td><td>Error messages reveal data structure</td><td>No schema information exposed</td></tr>
+</tbody></table>
+<h3 id="api-design-clean-and-stable">API Design: Clean and Stable</h3>
+<p>Error codes provide better API stability than messages:</p>
+<p><strong>Programmatic handling:</strong></p>
+<pre data-lang="go" style="background-color:#2b303b;color:#c0c5ce;" class="language-go "><code class="language-go" data-lang="go"><span style="color:#65737e;">// Client can reliably handle specific errors
+</span><span style="color:#b48ead;">switch </span><span style="color:#bf616a;">response</span><span>.</span><span style="color:#bf616a;">Err </span><span>{
+</span><span style="color:#b48ead;">case </span><span style="color:#bf616a;">data</span><span>.</span><span style="color:#bf616a;">ErrNotFound</span><span>:
+</span><span>    </span><span style="color:#65737e;">// Handle missing secret
+</span><span style="color:#b48ead;">case </span><span style="color:#bf616a;">data</span><span>.</span><span style="color:#bf616a;">ErrUnauthorized</span><span>:
+</span><span>    </span><span style="color:#65737e;">// Handle permission denied
+</span><span>}
+</span></code></pre>
+<p><strong>No versioning issues:</strong></p>
+<ul>
+<li>Error codes remain stable across versions</li>
+<li>No message format changes breaking clients</li>
+<li>No localization complexity</li>
+<li>Consistent parsing and handling</li>
+</ul>
+<p><strong>Testability:</strong></p>
+<ul>
+<li>Deterministic error codes are easy to test</li>
+<li>No string matching or regex required</li>
+<li>Clear expected outcomes in test cases</li>
+</ul>
+<h3 id="operational-model-server-side-context">Operational Model: Server-Side Context</h3>
+<p>SPIKE’s architecture provides full diagnostics where they belong:</p>
+<p><strong>Audit logging captures everything:</strong></p>
+<pre style="background-color:#2b303b;color:#c0c5ce;"><code><span>Server log:
+</span><span>[req_abc123] [SPIFFE: spiffe://example.org/workload/app]
+</span><span>Failed to read secret &#39;secrets/db/password&#39;: permission denied
+</span><span>Policy check failed: path pattern &#39;^secrets/admin/.*&#39; required
+</span></code></pre>
+<p><strong>Client receives:</strong></p>
+<pre data-lang="json" style="background-color:#2b303b;color:#c0c5ce;" class="language-json "><code class="language-json" data-lang="json"><span>{
+</span><span>  &quot;</span><span style="color:#a3be8c;">err</span><span>&quot;: &quot;</span><span style="color:#a3be8c;">UNAUTHORIZED</span><span>&quot;
+</span><span>}
+</span></code></pre>
+<p><strong>Clear separation of concerns:</strong></p>
+<ul>
+<li><strong>Clients</strong>: Get actionable error codes for programmatic handling</li>
+<li><strong>Operators</strong>: Have server access and can see full audit logs with context</li>
+<li><strong>Authorized users</strong>: Can correlate their requests with server logs if needed</li>
+<li><strong>Unauthorized users</strong>: Get nothing useful for reconnaissance</li>
+</ul>
+<h3 id="industry-validation">Industry Validation</h3>
+<p>Security-critical systems follow this pattern:</p>
+<p><strong>HashiCorp Vault:</strong></p>
+<pre style="background-color:#2b303b;color:#c0c5ce;"><code><span>API Response: {&quot;errors&quot;:[&quot;permission denied&quot;]}
+</span><span>Server logs:  Detailed context with paths, policies, tokens
+</span></code></pre>
+<p><strong>AWS Secrets Manager:</strong></p>
+<pre style="background-color:#2b303b;color:#c0c5ce;"><code><span>API Response: Generic error codes
+</span><span>CloudTrail:   Full audit trail with all context
+</span></code></pre>
+<p><strong>Kubernetes Secrets API:</strong></p>
+<pre style="background-color:#2b303b;color:#c0c5ce;"><code><span>API Response: Standard error codes
+</span><span>Audit logs:   Complete request/response details
+</span></code></pre>
+<p>All separate client-facing errors from server-side diagnostics.</p>
+<h2 id="alternatives-considered">Alternatives Considered</h2>
+<h3 id="alternative-1-include-generic-error-messages">Alternative 1: Include Generic Error Messages</h3>
+<p>Provide generic messages without sensitive details:</p>
+<pre data-lang="json" style="background-color:#2b303b;color:#c0c5ce;" class="language-json "><code class="language-json" data-lang="json"><span>{
+</span><span>  &quot;</span><span style="color:#a3be8c;">err</span><span>&quot;: &quot;</span><span style="color:#a3be8c;">NOT_FOUND</span><span>&quot;,
+</span><span>  &quot;</span><span style="color:#a3be8c;">message</span><span>&quot;: &quot;</span><span style="color:#a3be8c;">Secret not found</span><span>&quot;
+</span><span>}
+</span></code></pre>
+<p><strong>Rejected because:</strong></p>
+<ul>
+<li>Adds API surface complexity with minimal benefit</li>
+<li>Generic messages don’t provide actionable information beyond the code</li>
+<li>Risk of messages accidentally becoming more detailed over time</li>
+<li>The error code already conveys the same information</li>
+<li>No clear line between “safe” and “unsafe” detail levels</li>
+</ul>
+<h3 id="alternative-2-detailed-messages-for-authenticated-users">Alternative 2: Detailed Messages for Authenticated Users</h3>
+<p>Provide detailed errors only to authenticated, authorized users:</p>
+<pre data-lang="json" style="background-color:#2b303b;color:#c0c5ce;" class="language-json "><code class="language-json" data-lang="json"><span>{
+</span><span>  &quot;</span><span style="color:#a3be8c;">err</span><span>&quot;: &quot;</span><span style="color:#a3be8c;">UNAUTHORIZED</span><span>&quot;,
+</span><span>  &quot;</span><span style="color:#a3be8c;">message</span><span>&quot;: &quot;</span><span style="color:#a3be8c;">Policy &#39;db-read&#39; denies access to &#39;secrets/db/password&#39;</span><span>&quot;
+</span><span>}
+</span></code></pre>
+<p><strong>Rejected because:</strong></p>
+<ul>
+<li>Still risks information leakage (policy names, path details)</li>
+<li>Adds complexity to determine what details are “safe”</li>
+<li>Authentication doesn’t mean users should see internal details</li>
+<li>Creates inconsistent error handling logic</li>
+<li>Server-side logs already provide this for operators</li>
+</ul>
+<h3 id="alternative-3-request-ids-for-correlation">Alternative 3: Request IDs for Correlation</h3>
+<p>Include correlation IDs so clients can reference server logs:</p>
+<pre data-lang="json" style="background-color:#2b303b;color:#c0c5ce;" class="language-json "><code class="language-json" data-lang="json"><span>{
+</span><span>  &quot;</span><span style="color:#a3be8c;">err</span><span>&quot;: &quot;</span><span style="color:#a3be8c;">NOT_FOUND</span><span>&quot;,
+</span><span>  &quot;</span><span style="color:#a3be8c;">requestId</span><span>&quot;: &quot;</span><span style="color:#a3be8c;">req_abc123</span><span>&quot;
+</span><span>}
+</span></code></pre>
+<p><strong>Considered acceptable but not required because:</strong></p>
+<ul>
+<li>SPIKE’s audit logging already provides correlation via SPIFFE ID and
+timestamp</li>
+<li>Users with legitimate need for diagnostics have server log access</li>
+<li>Adding request IDs provides minimal benefit over existing correlation
+methods</li>
+<li>Can be added later if operational experience shows clear need</li>
+<li>Keeping responses minimal is preferred for initial implementation</li>
+</ul>
+<p><strong>Status:</strong> May be reconsidered based on operational feedback</p>
+<h2 id="consequences">Consequences</h2>
+<h3 id="positive">Positive</h3>
+<ul>
+<li><strong>Security by design</strong>: Information leakage is prevented at the API layer</li>
+<li><strong>Enumeration protection</strong>: Attackers cannot probe system structure via
+errors</li>
+<li><strong>No accidental disclosure</strong>: Impossible to leak stack traces or
+implementation details</li>
+<li><strong>Clean API surface</strong>: Simple, stable error code enumeration</li>
+<li><strong>Programmatic handling</strong>: Clients can reliably switch on error codes</li>
+<li><strong>Stable interface</strong>: Error codes don’t change; messages would</li>
+<li><strong>Clear security model</strong>: “If you’re authorized, the code tells you
+everything. If you’re not, you get nothing.”</li>
+</ul>
+<h3 id="negative">Negative</h3>
+<ul>
+<li><strong>Limited client diagnostics</strong>: Clients cannot see detailed error reasons</li>
+<li><strong>Operator workflow</strong>: Users must correlate client errors with server logs
+for debugging</li>
+<li><strong>Learning curve</strong>: New users might expect more detailed error messages</li>
+<li><strong>Script debugging</strong>: Wrapper scripts get less information for error
+handling</li>
+</ul>
+<h3 id="neutral">Neutral</h3>
+<ul>
+<li><strong>Consistent with design</strong>: SPIKE already has comprehensive audit logging</li>
+<li><strong>Expected for security systems</strong>: Users familiar with Vault, etc., expect
+this pattern</li>
+<li><strong>Operational requirement</strong>: Operators need server access anyway for secret
+management</li>
+</ul>
+<h2 id="implementation-details">Implementation Details</h2>
+<h3 id="response-structure">Response Structure</h3>
+<p>All error responses follow this structure:</p>
+<pre data-lang="go" style="background-color:#2b303b;color:#c0c5ce;" class="language-go "><code class="language-go" data-lang="go"><span style="color:#b48ead;">type </span><span>ErrorResponse </span><span style="color:#b48ead;">struct </span><span>{
+</span><span>    </span><span style="color:#bf616a;">Err data</span><span>.</span><span style="color:#b48ead;">ErrorCode </span><span>`</span><span style="color:#a3be8c;">json:&quot;err&quot;</span><span>`
+</span><span>    </span><span style="color:#65737e;">// No message, details, or stack trace fields
+</span><span>}
+</span></code></pre>
+<h3 id="error-codes">Error Codes</h3>
+<p>Standard error codes returned:</p>
+<table><thead><tr><th>HTTP Status</th><th>Error Code</th><th>Meaning</th></tr></thead><tbody>
+<tr><td>200</td><td><code>null</code></td><td>Success</td></tr>
+<tr><td>400</td><td><code>BAD_REQUEST</code></td><td>Invalid request format or parameters</td></tr>
+<tr><td>401</td><td><code>UNAUTHORIZED</code></td><td>Authentication or authorization failure</td></tr>
+<tr><td>404</td><td><code>NOT_FOUND</code></td><td>Resource does not exist (or unauthorized)</td></tr>
+<tr><td>500</td><td><code>INTERNAL_SERVER_ERROR</code></td><td>Backend or server-side failure</td></tr>
+</tbody></table>
+<p>Note: 404 is used for both “not found” and “not authorized” to prevent
+enumeration.</p>
+<h3 id="server-side-logging">Server-Side Logging</h3>
+<p>All errors are logged with full context:</p>
+<pre data-lang="go" style="background-color:#2b303b;color:#c0c5ce;" class="language-go "><code class="language-go" data-lang="go"><span style="color:#65737e;">// Handler logs detailed context
+</span><span style="color:#bf616a;">log</span><span>.</span><span style="color:#bf616a;">DebugErr</span><span>(</span><span style="color:#bf616a;">fName</span><span>, </span><span style="color:#bf616a;">sdkErrors</span><span>.</span><span style="color:#bf616a;">ErrAPINotFound</span><span>.</span><span style="color:#bf616a;">Wrap</span><span>(</span><span style="color:#bf616a;">err</span><span>))
+</span><span style="color:#65737e;">// Audit trail captures request details
+</span><span style="color:#bf616a;">journal</span><span>.</span><span style="color:#bf616a;">AuditRequest</span><span>(</span><span style="color:#bf616a;">fName</span><span>, </span><span style="color:#bf616a;">r</span><span>, </span><span style="color:#bf616a;">audit</span><span>, </span><span style="color:#bf616a;">journal</span><span>.</span><span style="color:#bf616a;">AuditRead</span><span>)
+</span><span>
+</span><span style="color:#65737e;">// Client receives only:
+</span><span style="color:#bf616a;">net</span><span>.</span><span style="color:#bf616a;">Fail</span><span>(</span><span style="color:#bf616a;">reqres</span><span>.</span><span style="color:#bf616a;">SecretGetNotFound</span><span>, </span><span style="color:#bf616a;">w</span><span>, </span><span style="color:#bf616a;">http</span><span>.</span><span style="color:#bf616a;">StatusNotFound</span><span>)
+</span></code></pre>
+<h3 id="error-handling-pattern">Error Handling Pattern</h3>
+<p>All route handlers follow this pattern:</p>
+<pre data-lang="go" style="background-color:#2b303b;color:#c0c5ce;" class="language-go "><code class="language-go" data-lang="go"><span style="color:#b48ead;">func </span><span style="color:#8fa1b3;">RouteGetSecret</span><span>(</span><span style="color:#bf616a;">w http</span><span>.</span><span style="color:#b48ead;">ResponseWriter</span><span>, </span><span style="color:#bf616a;">r </span><span>*</span><span style="color:#bf616a;">http</span><span>.</span><span style="color:#b48ead;">Request</span><span>,
+</span><span>    </span><span style="color:#bf616a;">audit </span><span>*</span><span style="color:#bf616a;">journal</span><span>.</span><span style="color:#b48ead;">AuditEntry</span><span>) *</span><span style="color:#bf616a;">sdkErrors</span><span>.</span><span style="color:#b48ead;">SDKError </span><span>{
+</span><span>
+</span><span>    </span><span style="color:#bf616a;">secret</span><span>, </span><span style="color:#bf616a;">err </span><span>:= </span><span style="color:#bf616a;">state</span><span>.</span><span style="color:#bf616a;">GetSecret</span><span>(</span><span style="color:#bf616a;">path</span><span>, </span><span style="color:#bf616a;">version</span><span>)
+</span><span>    </span><span style="color:#b48ead;">if </span><span style="color:#bf616a;">err </span><span>!= </span><span style="color:#d08770;">nil </span><span>{
+</span><span>        </span><span style="color:#65737e;">// Server-side: Log full context
+</span><span>        </span><span style="color:#bf616a;">log</span><span>.</span><span style="color:#bf616a;">DebugErr</span><span>(&quot;</span><span style="color:#a3be8c;">RouteGetSecret</span><span>&quot;, </span><span style="color:#bf616a;">err</span><span>)
+</span><span>
+</span><span>        </span><span style="color:#65737e;">// Client-side: Return only code
+</span><span>        </span><span style="color:#b48ead;">if </span><span style="color:#bf616a;">err</span><span>.</span><span style="color:#bf616a;">Is</span><span>(</span><span style="color:#bf616a;">sdkErrors</span><span>.</span><span style="color:#bf616a;">ErrEntityNotFound</span><span>) {
+</span><span>            </span><span style="color:#bf616a;">net</span><span>.</span><span style="color:#bf616a;">Fail</span><span>(</span><span style="color:#bf616a;">reqres</span><span>.</span><span style="color:#bf616a;">SecretGetNotFound</span><span>, </span><span style="color:#bf616a;">w</span><span>, </span><span style="color:#bf616a;">http</span><span>.</span><span style="color:#bf616a;">StatusNotFound</span><span>)
+</span><span>        } </span><span style="color:#b48ead;">else </span><span>{
+</span><span>            </span><span style="color:#bf616a;">net</span><span>.</span><span style="color:#bf616a;">Fail</span><span>(</span><span style="color:#bf616a;">reqres</span><span>.</span><span style="color:#bf616a;">SecretGetInternal</span><span>, </span><span style="color:#bf616a;">w</span><span>,
+</span><span>                </span><span style="color:#bf616a;">http</span><span>.</span><span style="color:#bf616a;">StatusInternalServerError</span><span>)
+</span><span>        }
+</span><span>        </span><span style="color:#b48ead;">return </span><span style="color:#bf616a;">err
+</span><span>    }
+</span><span>
+</span><span>    </span><span style="color:#65737e;">// Success response
+</span><span>    </span><span style="color:#bf616a;">net</span><span>.</span><span style="color:#bf616a;">Success</span><span>(</span><span style="color:#bf616a;">reqres</span><span>.</span><span style="color:#bf616a;">SecretGetSuccess</span><span>, </span><span style="color:#bf616a;">w</span><span>)
+</span><span>    </span><span style="color:#b48ead;">return </span><span style="color:#d08770;">nil
+</span><span>}
+</span></code></pre>
+<h3 id="client-interpretation">Client Interpretation</h3>
+<p>Clients use error codes programmatically:</p>
+<pre data-lang="go" style="background-color:#2b303b;color:#c0c5ce;" class="language-go "><code class="language-go" data-lang="go"><span style="color:#65737e;">// Client code
+</span><span style="color:#bf616a;">resp</span><span>, </span><span style="color:#bf616a;">err </span><span>:= </span><span style="color:#bf616a;">nexus</span><span>.</span><span style="color:#bf616a;">GetSecret</span><span>(</span><span style="color:#bf616a;">ctx</span><span>, </span><span style="color:#bf616a;">path</span><span>, </span><span style="color:#bf616a;">version</span><span>)
+</span><span style="color:#b48ead;">if </span><span style="color:#bf616a;">err </span><span>!= </span><span style="color:#d08770;">nil </span><span>{
+</span><span>    </span><span style="color:#b48ead;">switch </span><span style="color:#bf616a;">resp</span><span>.</span><span style="color:#bf616a;">Err </span><span>{
+</span><span>    </span><span style="color:#b48ead;">case </span><span style="color:#bf616a;">data</span><span>.</span><span style="color:#bf616a;">ErrNotFound</span><span>:
+</span><span>        </span><span style="color:#65737e;">// Secret doesn&#39;t exist or not authorized
+</span><span>    </span><span style="color:#b48ead;">case </span><span style="color:#bf616a;">data</span><span>.</span><span style="color:#bf616a;">ErrUnauthorized</span><span>:
+</span><span>        </span><span style="color:#65737e;">// Authentication failed
+</span><span>    </span><span style="color:#b48ead;">case </span><span style="color:#bf616a;">data</span><span>.</span><span style="color:#bf616a;">ErrInternal</span><span>:
+</span><span>        </span><span style="color:#65737e;">// Server error - retry or escalate
+</span><span>    }
+</span><span>}
+</span></code></pre>
+<h2 id="future-enhancements">Future Enhancements</h2>
+<h3 id="correlation-ids">Correlation IDs</h3>
+<p>If operational experience shows a clear need, we may add request correlation
+IDs to API responses:</p>
+<pre data-lang="json" style="background-color:#2b303b;color:#c0c5ce;" class="language-json "><code class="language-json" data-lang="json"><span>{
+</span><span>  &quot;</span><span style="color:#a3be8c;">err</span><span>&quot;: &quot;</span><span style="color:#a3be8c;">NOT_FOUND</span><span>&quot;,
+</span><span>  &quot;</span><span style="color:#a3be8c;">requestId</span><span>&quot;: &quot;</span><span style="color:#a3be8c;">req_abc123</span><span>&quot;
+</span><span>}
+</span></code></pre>
+<p><strong>Benefits:</strong></p>
+<ul>
+<li>Users can reference specific requests when asking operators for help</li>
+<li>Operators can quickly locate relevant log entries</li>
+<li>No security information is leaked (ID is opaque)</li>
+<li>Improves support workflow without compromising security</li>
+</ul>
+<p><strong>Current status:</strong></p>
+<ul>
+<li>Not implemented in initial version</li>
+<li>Existing correlation via SPIFFE ID and timestamp is sufficient</li>
+<li>Will reconsider based on operational feedback and support burden</li>
+<li>Can be added non-breaking if needed</li>
+</ul>
+<p><strong>Evaluation criteria:</strong></p>
+<ul>
+<li>Frequency of users needing operator assistance for error diagnosis</li>
+<li>Time spent by operators correlating client errors with server logs</li>
+<li>User feedback on debugging difficulty</li>
+<li>Comparison with alternative approaches (timestamp-based correlation,
+SPIFFE ID filtering)</li>
+</ul>
+<h2 id="references">References</h2>
+<ul>
+<li><a href="https://owasp.org/www-community/Improper_Error_Handling">OWASP: Information Exposure Through Error
+Messages</a></li>
+<li><a href="https://cwe.mitre.org/data/definitions/209.html">CWE-209: Information Exposure Through an Error
+Message</a></li>
+<li><a href="https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-53r5.pdf">NIST SP 800-53: Security and Privacy Controls
+(SI-11: Error Handling)</a></li>
+<li><a href="https://www.vaultproject.io/api/system/health">HashiCorp Vault API documentation</a></li>
+</ul>
+<h2 id="related-adrs">Related ADRs</h2>
+<ul>
+<li><a href="https://spike.ist/architecture/adrs/adr-0030/@architecture/ads/adr-0028.md">ADR-0028: Use Human-Readable Error Messages in CLI Tools (different
+audience: humans vs. API clients)</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0030/@architecture/ads/adr-0029.md">ADR-0029: Restrict Recovery and Restoration Operations to SPIKE Pilot
+(related security-critical design decision)</a></li>
+</ul>
+<hr />
+<ul>
+<li><a href="https://spike.ist/architecture/adrs/adr-0032/">ADR-0032: Standard 12-Byte Nonce Size for AES-GCM</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0031/">ADR-0031: AST-Based Test Enforcement for Route Guard Functions</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0030/">ADR-0030: Minimal Error Messages in API Responses</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0029/">ADR-0029: Restrict Recovery and Restoration Operations to SPIKE Pilot</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0028/">ADR-0028: Use Human-Readable Error Messages in CLI Tools</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0027/">ADR-0027: Separate Audit Logs from Operational Logs</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0026/">ADR-0026: Configurable Data Directory for SPIKE Components</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0025/">ADR-0025: Path Patterns as Key Namespaces with Regular Expression Matching</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0024/">ADR-0024: Transition from In-Memory Cache to Direct Backend Storage for High Availability</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0023/">ADR-0023: Decision Against Implementing Lock/Unlock Mechanism in SPIKE Nexus</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0022/">ADR-0022: Continuous Polling of SPIKE Keepers Despite 404 Response</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0021/">ADR-0021: SPIKE Keeper as a Stateless Shard Holder</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0020/">ADR-0020: Switch to Zola for Documentation System</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0019/">ADR-0019: Plugin-Based Storage Backend Architecture</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0018/">ADR-0018: Administrative Access to SPIKE</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0017/">ADR-0017: Synchronous Persistence for SPIKE Secrets Store</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0016/">ADR-0016: Memory-First Secrets Store</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0015/">ADR-0015: Use Singular Form for File and Package Naming</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0014/">ADR-0014: Maintaining SQLite as SPIKE’s Primary Storage Backend</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0013/">ADR-0013: S3-Compatible Storage as SPIKE’s Backing Store</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0012/">ADR-0012: HTTP Methods for SPIKE API</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0011/">ADR-0011: PostgreSQL as SPIKE’s Backing Store</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0010/">ADR-0010: Session Token Storage Strategy for SPIKE Nexus</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0009/">ADR-0009: Multi-Administrator Support System</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0008/">ADR-0008: Administrative Access Control System</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0007/">ADR-0007: Root Key Lifecycle and Management Strategy</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0006/">ADR-0006: Trust Boundary Definition and Security Assumptions</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0005/">ADR-0005: Use SPIFFE mTLS for Inter-Component Authentication and Communication</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0004/">ADR-0004: SPIKE Keeper Minimalist Design Approach</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0003/">ADR-0003: Root Key Management and Storage Strategy</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0002/">ADR-0002: Use Docsify for Documentation System</a></li>
+<li><a href="https://spike.ist/architecture/adrs/adr-0001/">ADR-0001: Display Secrets in Plain Text in SPIKE Pilot Admin CLI</a></li>
+</ul>
+<hr />
+<ul>
+<li><a href="https://spike.ist/architecture/system-overview/"><strong>SPIKE</strong> System Overview</a></li>
+<li><a href="https://spike.ist/architecture/security-model/"><strong>SPIKE</strong> Security Model</a></li>
+<li><a href="https://spike.ist/architecture/architectural-decision-records/"><strong>SPIKE</strong> Architectural Decision Records</a></li>
+</ul>
+
+    
+        </article>
+
+        <footer id="footer">
+            Copyright © 2024-present <strong>SPIKE Contributors</strong>.<br>
+            <strong>SPIKE</strong>'s code
+            is distributed under <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache (v2.0)</a>.
+            <br>
+            The documentation on this website
+            is distributed under <a href="https://creativecommons.org/licenses/by/4.0/">CC-BY-4.0</a>.
+            <br><br>
+            We <strong>do not</strong> collect your data.
+            This site <strong>does not</strong> use any tracking cookies or scripts.
+        </footer>
+    </div>
+
+</main>
+
+
+    <script type="text/javascript" src="https://spike.ist/elasticlunr.min.js" defer></script>
+    <script type="text/javascript" src="https://spike.ist/search_index.en.js" defer></script>
+<script type="text/javascript" src="https://spike.ist/js.js" defer></script>
+</body>
+</html>
+<style>
+body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    font-family: var(--font-family);
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+}
+
+main {
+    width: 100vw;
+    max-width: 1920px;
+    display: flex;
+    flex-direction: row;
+    overflow: hidden;
+}
+
+#footer {
+    text-align: center;
+    padding: 2rem;
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    border-top: 1px solid var(--border-color);
+    margin-top: 2rem;
+}
+
+.content {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    height: 100vh;
+    overflow-y: auto;
+    background-color: var(--bg-primary);
+    line-height: 1.6;
+    border-left: 1px solid var(--border-color);
+}
+
+#footer a {
+    color: var(--spike-blue);
+    text-decoration: none;
+    transition: all 0.2s ease;
+    border-bottom: 1px solid transparent;
+    font-weight: 500;
+
+}
+
+#footer a:hover {
+    border-bottom-color: var(--spike-blue);
+}
+
+</style>

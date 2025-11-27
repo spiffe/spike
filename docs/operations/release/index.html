@@ -139,6 +139,10 @@
                     <a href="https://spike.ist/community/presentations/">Presentations and Demos</a>
                 </li>
 
+                <li >
+                    <a href="https://spike.ist/community/resources/">Resources</a>
+                </li>
+
                 </ul>
     <input class="tree-toggle" type="checkbox" id="getting-started"
                />
@@ -178,6 +182,10 @@
 
                 <li >
                     <a href="https://spike.ist/development/bare-metal/">SPIKE on Linux</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/development/api-docs/">API Documentation</a>
                 </li>
 
                 </ul>
@@ -762,10 +770,23 @@ through the release and testing process.</p>
 managing the release cuts of <strong>SPIKE</strong>. It provides detailed instructions to
 ensure a smooth and reliable release process.</p>
 <h2 id="coverage-report">Coverage Report</h2>
-<p>The coverage report is available at <a href="https://spike.ist/coverage.html" title="SPIKE Coverage Report">https://spike.ist/coverage.html</a>.</p>
+<p>The coverage report for <strong>SPIKE</strong> is available at
+<a href="https://spike.ist/coverage.html" title="SPIKE Coverage Report">https://spike.ist/coverage.html</a>.</p>
+<p>The coverage report for <strong>SPIKE Go SDK</strong> available at
+<a href="https://spike.ist/sdk/coverage.html" title="SPIKE Coverage Report">https://spike.ist/sdk/coverage.html</a>.</p>
 <p>We update the coverage report at every release cut.</p>
 <p>If you want to increase test coverage, you are more than welcome to contribute
 to the project.</p>
+<h3 id="generating-coverage-reports">Generating Coverage Reports</h3>
+<p>To generate and publish the <strong>SPIKE</strong> coverage report, run <code>make docs</code> from the
+SPIKE repository root. This generates the coverage report and publishes it to
+<code>./docs/coverage.html</code>.</p>
+<p>To generate and publish the <strong>SPIKE Go SDK</strong> coverage report:</p>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#96b5b4;">cd</span><span> /path/to/spike-sdk-go
+</span><span style="color:#bf616a;">make</span><span> coverage/publish
+</span></code></pre>
+<p>This runs the SDK tests with coverage profiling and publishes the HTML report
+to the SPIKE documentation directory at <code>./docs/sdk/coverage.html</code>.</p>
 <h2 id="before-every-release">Before Every Release</h2>
 <p>Before every release:</p>
 <ol>
@@ -782,6 +803,8 @@ too, then press <code>Ctrl+C</code> to stop.</li>
 (<code>docs-src/content/tracking/changelog.md</code>).</li>
 <li>Run <code>make docs</code> to generate and publish the documentation, including the
 coverage report.</li>
+<li>From the <code>spike-sdk-go</code> repository, run <code>make coverage/publish</code> to generate
+and publish the SDK coverage report.</li>
 </ol>
 <p>Release process:</p>
 <ul>

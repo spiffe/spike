@@ -97,6 +97,24 @@
         <loc>https://spike.ist/architecture/adrs/adr-0026/</loc>
     </url>
     <url>
+        <loc>https://spike.ist/architecture/adrs/adr-0027/</loc>
+    </url>
+    <url>
+        <loc>https://spike.ist/architecture/adrs/adr-0028/</loc>
+    </url>
+    <url>
+        <loc>https://spike.ist/architecture/adrs/adr-0029/</loc>
+    </url>
+    <url>
+        <loc>https://spike.ist/architecture/adrs/adr-0030/</loc>
+    </url>
+    <url>
+        <loc>https://spike.ist/architecture/adrs/adr-0031/</loc>
+    </url>
+    <url>
+        <loc>https://spike.ist/architecture/adrs/adr-0032/</loc>
+    </url>
+    <url>
         <loc>https://spike.ist/architecture/architectural-decision-records/</loc>
     </url>
     <url>
@@ -118,7 +136,13 @@
         <loc>https://spike.ist/community/presentations/</loc>
     </url>
     <url>
+        <loc>https://spike.ist/community/resources/</loc>
+    </url>
+    <url>
         <loc>https://spike.ist/development/</loc>
+    </url>
+    <url>
+        <loc>https://spike.ist/development/api-docs/</loc>
     </url>
     <url>
         <loc>https://spike.ist/development/bare-metal/</loc>
@@ -131,6 +155,9 @@
     </url>
     <url>
         <loc>https://spike.ist/getting-started/quickstart/</loc>
+    </url>
+    <url>
+        <loc>https://spike.ist/internals/nil-source-handling-and-go-concurrency/</loc>
     </url>
     <url>
         <loc>https://spike.ist/operations/</loc>
@@ -167,6 +194,9 @@
     </url>
     <url>
         <loc>https://spike.ist/usage/commands/</loc>
+    </url>
+    <url>
+        <loc>https://spike.ist/usage/commands/cipher/</loc>
     </url>
     <url>
         <loc>https://spike.ist/usage/commands/operator/</loc>
