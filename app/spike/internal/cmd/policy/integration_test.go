@@ -86,14 +86,14 @@ func TestPolicySpecValidation(t *testing.T) {
 
 			// Test using readPolicyFromFile validation logic
 			// Create a temporary file with this policy
-			tempDir, err := os.MkdirTemp("", "spike-validation-test")
-			if err != nil {
-				t.Fatalf("Failed to create temp directory: %v", err)
+			tempDir, mkdirErr := os.MkdirTemp("", "spike-validation-test")
+			if mkdirErr != nil {
+				t.Fatalf("Failed to create temp directory: %v", mkdirErr)
 			}
 			defer func(path string) {
-				err := os.RemoveAll(path)
-				if err != nil {
-					t.Logf("Failed to remove temp directory: %v", err)
+				rmErr := os.RemoveAll(path)
+				if rmErr != nil {
+					t.Logf("Failed to remove temp directory: %v", rmErr)
 				}
 			}(tempDir)
 
@@ -106,16 +106,17 @@ func TestPolicySpecValidation(t *testing.T) {
 			}
 
 			filePath := filepath.Join(tempDir, "test-policy.yaml")
-			err = os.WriteFile(filePath, []byte(yamlContent), 0644)
-			if err != nil {
-				t.Fatalf("Failed to create test file: %v", err)
+			if writeErr := os.WriteFile(
+				filePath, []byte(yamlContent), 0644,
+			); writeErr != nil {
+				t.Fatalf("Failed to create test file: %v", writeErr)
 			}
 
-			_, err = readPolicyFromFile(filePath)
-			isValid := err == nil
+			_, readErr := readPolicyFromFile(filePath)
+			isValid := readErr == nil
 
 			if tt.valid && !isValid {
-				t.Errorf("Expected policy to be valid, but got error: %v", err)
+				t.Errorf("Expected policy to be valid, but got error: %v", readErr)
 			}
 			if !tt.valid && isValid {
 				t.Errorf("Expected policy to be invalid, but it was accepted")
@@ -194,22 +195,23 @@ permissions:
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			filePath := filepath.Join(tempDir, tt.name+".yaml")
-			err := os.WriteFile(filePath, []byte(tt.yamlContent), 0644)
-			if err != nil {
-				t.Fatalf("Failed to create test file: %v", err)
+			if writeErr := os.WriteFile(
+				filePath, []byte(tt.yamlContent), 0644,
+			); writeErr != nil {
+				t.Fatalf("Failed to create test file: %v", writeErr)
 			}
 
-			policy, err := readPolicyFromFile(filePath)
+			policy, readErr := readPolicyFromFile(filePath)
 
 			if tt.expectError {
-				if err == nil {
+				if readErr == nil {
 					t.Errorf("Expected error but got none")
 				}
 				return
 			}
 
-			if err != nil {
-				t.Errorf("Unexpected error: %v", err)
+			if readErr != nil {
+				t.Errorf("Unexpected error: %v", readErr)
 				return
 			}
 

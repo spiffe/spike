@@ -81,20 +81,18 @@ func RoutePutPolicy(
 	pathPattern := request.PathPattern
 	permissions := request.Permissions
 
-	policy, err := state.UpsertPolicy(data.Policy{
+	policy, upsertErr := state.UpsertPolicy(data.Policy{
 		Name:            name,
 		SPIFFEIDPattern: SPIFFEIDPattern,
 		PathPattern:     pathPattern,
 		Permissions:     permissions,
 	})
-	if err != nil {
-		failErr := sdkErrors.ErrEntityCreationFailed.Wrap(err)
-		failErr.Msg = "failed to upsert policy"
+	if upsertErr != nil {
 		net.Fail(
 			reqres.PolicyPutResponse{}.Internal(), w,
 			http.StatusInternalServerError,
 		)
-		return failErr
+		return upsertErr
 	}
 
 	pps := reqres.PolicyPutResponse{}.Success()

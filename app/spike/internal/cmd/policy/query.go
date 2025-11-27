@@ -5,11 +5,11 @@
 package policy
 
 import (
-	"fmt"
 	"os"
 	"strings"
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"gopkg.in/yaml.v3"
 )
 
@@ -28,7 +28,7 @@ import (
 //
 // Returns:
 //   - data.PolicySpec: Parsed policy specification
-//   - error: File reading, parsing, or validation errors
+//   - *sdkErrors.SDKError: File reading, parsing, or validation errors
 //
 // Example YAML format:
 //
@@ -38,38 +38,54 @@ import (
 //	permissions:
 //	  - read
 //	  - write
-func readPolicyFromFile(filePath string) (data.PolicySpec, error) {
+func readPolicyFromFile(
+	filePath string,
+) (data.PolicySpec, *sdkErrors.SDKError) {
 	var policy data.PolicySpec
 
 	// Check if the file exists:
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {
-		return policy, fmt.Errorf("file %s does not exist", filePath)
+		failErr := sdkErrors.ErrFSFileOpenFailed.Clone()
+		failErr.Msg = "file " + filePath + " does not exist"
+		return policy, failErr
 	}
 
 	// Read file content
 	df, err := os.ReadFile(filePath)
 	if err != nil {
-		return policy, fmt.Errorf("failed to read file %s: %v", filePath, err)
+		failErr := sdkErrors.ErrFSStreamReadFailed.Wrap(err)
+		failErr.Msg = "failed to read file " + filePath
+		return policy, failErr
 	}
 
 	// Parse YAML
 	err = yaml.Unmarshal(df, &policy)
 	if err != nil {
-		return policy, fmt.Errorf("failed to parse YAML file %s: %v", filePath, err)
+		failErr := sdkErrors.ErrDataUnmarshalFailure.Wrap(err)
+		failErr.Msg = "failed to parse YAML file " + filePath
+		return policy, failErr
 	}
 
 	// Validate required fields
 	if policy.Name == "" {
-		return policy, fmt.Errorf("policy name is required in YAML file")
+		failErr := sdkErrors.ErrDataInvalidInput.Clone()
+		failErr.Msg = "policy name is required in YAML file"
+		return policy, failErr
 	}
 	if policy.SpiffeIDPattern == "" {
-		return policy, fmt.Errorf("spiffeidPattern is required in YAML file")
+		failErr := sdkErrors.ErrDataInvalidInput.Clone()
+		failErr.Msg = "spiffeidPattern is required in YAML file"
+		return policy, failErr
 	}
 	if policy.PathPattern == "" {
-		return policy, fmt.Errorf("pathPattern is required in YAML file")
+		failErr := sdkErrors.ErrDataInvalidInput.Clone()
+		failErr.Msg = "pathPattern is required in YAML file"
+		return policy, failErr
 	}
 	if len(policy.Permissions) == 0 {
-		return policy, fmt.Errorf("permissions are required in YAML file")
+		failErr := sdkErrors.ErrDataInvalidInput.Clone()
+		failErr.Msg = "permissions are required in YAML file"
+		return policy, failErr
 	}
 
 	return policy, nil
@@ -90,7 +106,7 @@ func readPolicyFromFile(filePath string) (data.PolicySpec, error) {
 //
 // Returns:
 //   - data.PolicySpec: Constructed policy specification
-//   - error: Validation errors if required flags are missing
+//   - *sdkErrors.SDKError: Validation errors if required flags are missing
 //
 // Example usage:
 //
@@ -100,7 +116,9 @@ func readPolicyFromFile(filePath string) (data.PolicySpec, error) {
 //	    "^secrets/.*$",
 //	    "read,write,delete",
 //	)
-func getPolicyFromFlags(name, SPIFFEIDPattern, pathPattern, permsStr string) (data.PolicySpec, error) {
+func getPolicyFromFlags(
+	name, SPIFFEIDPattern, pathPattern, permsStr string,
+) (data.PolicySpec, *sdkErrors.SDKError) {
 	var policy data.PolicySpec
 
 	// Check if all required flags are provided
@@ -126,10 +144,10 @@ func getPolicyFromFlags(name, SPIFFEIDPattern, pathPattern, permsStr string) (da
 			}
 			flagList += "--" + flag
 		}
-		return policy, fmt.Errorf(
-			"required flags are missing: %s (or use --file to read from YAML)",
-			flagList,
-		)
+		failErr := sdkErrors.ErrDataInvalidInput.Clone()
+		failErr.Msg = "required flags are missing: " + flagList +
+			" (or use --file to read from YAML)"
+		return policy, failErr
 	}
 
 	// Convert comma-separated permissions to slice

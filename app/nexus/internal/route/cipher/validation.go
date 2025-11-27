@@ -5,7 +5,6 @@
 package cipher
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/spiffe/spike-sdk-go/config/env"
@@ -20,17 +19,16 @@ import (
 //   - version: The protocol version byte to validate
 //   - w: The HTTP response writer for error responses
 //   - errorResponse: The error response to send on failure
-//   - fName: The function name for logging
 //
 // Returns:
 //   - nil if the version is valid
-//   - error if the version is unsupported
+//   - *sdkErrors.SDKError if the version is unsupported
 func validateVersion[T any](
-	version byte, w http.ResponseWriter, errorResponse T, fName string,
-) error {
+	version byte, w http.ResponseWriter, errorResponse T,
+) *sdkErrors.SDKError {
 	if version != spikeCipherVersion {
 		net.Fail(errorResponse, w, http.StatusBadRequest)
-		return fmt.Errorf("unsupported version: %v", version)
+		return sdkErrors.ErrCryptoUnsupportedCipherVersion
 	}
 	return nil
 }
@@ -41,14 +39,13 @@ func validateVersion[T any](
 //   - nonce: The nonce bytes to validate
 //   - w: The HTTP response writer for error responses
 //   - errorResponse: The error response to send on failure
-//   - fName: The function name for logging
 //
 // Returns:
 //   - nil if the nonce size is valid
-//   - error if the nonce size is invalid
+//   - *sdkErrors.SDKError if the nonce size is invalid
 func validateNonceSize[T any](
-	nonce []byte, w http.ResponseWriter, errorResponse T, _ string,
-) error {
+	nonce []byte, w http.ResponseWriter, errorResponse T,
+) *sdkErrors.SDKError {
 	if len(nonce) != expectedNonceSize {
 		net.Fail(errorResponse, w, http.StatusBadRequest)
 		return sdkErrors.ErrDataInvalidInput
@@ -63,14 +60,13 @@ func validateNonceSize[T any](
 //   - ciphertext: The ciphertext bytes to validate
 //   - w: The HTTP response writer for error responses
 //   - errorResponse: The error response to send on failure
-//   - fName: The function name for logging
 //
 // Returns:
 //   - nil if the ciphertext size is valid
-//   - error if the ciphertext is too large
+//   - *sdkErrors.SDKError if the ciphertext is too large
 func validateCiphertextSize[T any](
-	ciphertext []byte, w http.ResponseWriter, errorResponse T, _ string,
-) error {
+	ciphertext []byte, w http.ResponseWriter, errorResponse T,
+) *sdkErrors.SDKError {
 	if len(ciphertext) > env.CryptoMaxCiphertextSizeVal() {
 		net.Fail(errorResponse, w, http.StatusBadRequest)
 		return sdkErrors.ErrDataInvalidInput
@@ -85,14 +81,13 @@ func validateCiphertextSize[T any](
 //   - plaintext: The plaintext bytes to validate
 //   - w: The HTTP response writer for error responses
 //   - errorResponse: The error response to send on failure
-//   - fName: The function name for logging
 //
 // Returns:
 //   - nil if the plaintext size is valid
-//   - error if the plaintext is too large
+//   - *sdkErrors.SDKError if the plaintext is too large
 func validatePlaintextSize[T any](
-	plaintext []byte, w http.ResponseWriter, errorResponse T, _ string,
-) error {
+	plaintext []byte, w http.ResponseWriter, errorResponse T,
+) *sdkErrors.SDKError {
 	if len(plaintext) > env.CryptoMaxPlaintextSizeVal() {
 		net.Fail(errorResponse, w, http.StatusBadRequest)
 		return sdkErrors.ErrDataInvalidInput

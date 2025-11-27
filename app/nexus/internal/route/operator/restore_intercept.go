@@ -11,8 +11,8 @@ import (
 	"github.com/spiffe/spike-sdk-go/config/env"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/spiffeid"
-	"github.com/spiffe/spike/internal/auth"
 
+	"github.com/spiffe/spike/internal/auth"
 	"github.com/spiffe/spike/internal/net"
 )
 
@@ -58,12 +58,17 @@ func guardRestoreRequest(
 	// We don't do policy checks as the restore operation purely restricted to
 	// SPIKE Pilot.
 	if !spiffeid.IsPilotRestore(peerSPIFFEID.String()) {
-		net.Fail(reqres.RestoreResponse{}.Unauthorized(), w, http.StatusUnauthorized)
+		net.Fail(
+			reqres.RestoreResponse{}.Unauthorized(), w,
+			http.StatusUnauthorized,
+		)
 		return sdkErrors.ErrAccessUnauthorized
 	}
 
 	if request.ID < 1 || request.ID > env.ShamirMaxShareCountVal() {
-		net.Fail(reqres.RestoreResponse{}.BadRequest(), w, http.StatusBadRequest)
+		net.Fail(
+			reqres.RestoreResponse{}.BadRequest(), w, http.StatusBadRequest,
+		)
 		return sdkErrors.ErrAPIBadRequest
 	}
 

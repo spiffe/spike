@@ -590,6 +590,12 @@ w
       if !allowed {
     </issue>
     <issue>
+      implement this sometime:
+      ci/wip-draft.txt
+      and find a place to run it every commit; could be github actions; but also
+      can take a long time, so could be a dedicated toy server too.
+    </issue>
+    <issue>
       func guardDecryptSecretRequest(
       _ reqres.SecretDecryptRequest, w http.ResponseWriter, r *http.Request,
       ) error {

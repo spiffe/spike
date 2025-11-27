@@ -66,13 +66,12 @@ func RoutePutSecret(
 	values := request.Values
 	path := request.Path
 
-	err = state.UpsertSecret(path, values)
-	if err != nil {
-		failErr := sdkErrors.ErrAPIPostFailed.Wrap(err)
+	upsertErr := state.UpsertSecret(path, values)
+	if upsertErr != nil {
 		net.Fail(
 			reqres.SecretPutResponse{}.Internal(), w, http.StatusInternalServerError,
 		)
-		return failErr
+		return upsertErr
 	}
 
 	net.Success(reqres.SecretPutResponse{}.Success(), w)

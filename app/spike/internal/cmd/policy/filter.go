@@ -5,12 +5,12 @@
 package policy
 
 import (
-	"fmt"
 	"regexp"
 	"strings"
 
 	"github.com/spf13/cobra"
 	spike "github.com/spiffe/spike-sdk-go/api"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 )
 
 // findPolicyByName searches for a policy with the given name and returns its
@@ -23,8 +23,11 @@ import (
 //
 // Returns:
 //   - string: The policy ID if found
-//   - error: An error if the policy is not found or there's an API issue
-func findPolicyByName(api *spike.API, name string) (string, error) {
+//   - *sdkErrors.SDKError: An error if the policy is not found or there's an
+//     API issue
+func findPolicyByName(
+	api *spike.API, name string,
+) (string, *sdkErrors.SDKError) {
 	policies, err := api.ListPolicies("", "")
 	if err != nil {
 		return "", err
@@ -38,7 +41,9 @@ func findPolicyByName(api *spike.API, name string) (string, error) {
 		}
 	}
 
-	return "", fmt.Errorf("no policy found with name '%s'", name)
+	failErr := sdkErrors.ErrEntityNotFound.Clone()
+	failErr.Msg = "no policy found with name: " + name
+	return "", failErr
 }
 
 const uuidRegex = `^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$`
@@ -61,11 +66,11 @@ func validUUID(uuid string) bool {
 //
 // Returns:
 //   - string: The policy ID
-//   - error: An error if the policy cannot be found or if neither ID nor name
-//     is provided
+//   - *sdkErrors.SDKError: An error if the policy cannot be found or if neither
+//     ID nor name is provided
 func sendGetPolicyIDRequest(cmd *cobra.Command,
 	args []string, api *spike.API,
-) (string, error) {
+) (string, *sdkErrors.SDKError) {
 	var policyID string
 
 	name, _ := cmd.Flags().GetString("name")
@@ -74,7 +79,9 @@ func sendGetPolicyIDRequest(cmd *cobra.Command,
 		policyID = args[0]
 
 		if !validUUID(policyID) {
-			return "", fmt.Errorf("invalid policy ID '%s'", policyID)
+			failErr := sdkErrors.ErrDataInvalidInput.Clone()
+			failErr.Msg = "invalid policy ID: " + policyID
+			return "", failErr
 		}
 
 	} else if name != "" {
@@ -84,9 +91,9 @@ func sendGetPolicyIDRequest(cmd *cobra.Command,
 		}
 		policyID = id
 	} else {
-		return "", fmt.Errorf(
-			"either policy ID as argument or --name flag is required",
-		)
+		failErr := sdkErrors.ErrDataInvalidInput.Clone()
+		failErr.Msg = "either policy ID as argument or --name flag is required"
+		return "", failErr
 	}
 
 	return policyID, nil

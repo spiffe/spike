@@ -55,7 +55,10 @@ func guardListSecretRequest(
 		[]data.PolicyPermission{data.PermissionList},
 	)
 	if !allowed {
-		net.Fail(reqres.SecretListResponse{}.Unauthorized(), w, http.StatusUnauthorized)
+		net.Fail(
+			reqres.SecretListResponse{}.Unauthorized(), w,
+			http.StatusUnauthorized,
+		)
 		return sdkErrors.ErrAccessUnauthorized
 	}
 

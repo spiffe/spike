@@ -100,7 +100,7 @@
 //	    peerSPIFFEID *spiffeid.ID,
 //	    w http.ResponseWriter,
 //	    r *http.Request,
-//	) error {
+//	) *sdkErrors.SDKError {
 //	    // Add validation here:
 //	    if len(request.Ciphertext) > maxCiphertextSize {
 //	        return net.Fail(...)

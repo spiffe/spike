@@ -46,15 +46,38 @@ method if you want to create an error with a different message or code to use
 locally. We **try** not to return plain `error`s within the codebase and instead
 use `*sdkErrors.SDKError`.
 
-### Avoiding Error Shadowing
+### Avoiding Error Shadowing with `*sdkErrors.SDKError`
+
+When a variable is first declared as type `error` (e.g., from `os.WriteFile`),
+and then `:=` is used to assign a `*sdkErrors.SDKError` to it, Go reuses the
+existing `error`-typed variable. A nil `*sdkErrors.SDKError` assigned to an
+`error` interface becomes a non-nil interface holding a nil pointer, causing
+`err == nil` to return `false` even when the error is actually nil.
 
 ```go
-// BAD: If `err` already exists as `error` type, this creates typed nil
-encrypted, nonce, err := s.encrypt(md)
+// BAD: `err` is typed as `error` from WriteFile, then reused for SDKError
+err := os.WriteFile(path, data, 0644)  // err is type `error`
+if err != nil { ... }
 
-// GOOD: Use distinct variable names
-encrypted, nonce, encryptErr := s.encrypt(md)
+result, err := functionReturningSDKError()  // err is STILL type `error`
+if err == nil {  // This may be FALSE even when SDKError is nil!
+    // Won't execute because error interface holds (*SDKError)(nil)
+}
+
+// GOOD: Use distinct variable names to avoid type confusion
+if writeErr := os.WriteFile(path, data, 0644); writeErr != nil {
+    return writeErr
+}
+
+result, readErr := functionReturningSDKError()
+if readErr == nil {  // Works correctly
+    // Executes as expected
+}
 ```
+
+This is a common source of test failures. Always use distinct error variable
+names when mixing standard library calls (which return `error`) with SDK
+functions (which return `*sdkErrors.SDKError`).
 
 ### Testing Functions That Call log.FatalErr and its variants (log.Fatal, log.FatalLn)
 

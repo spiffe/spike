@@ -6,7 +6,6 @@ package persist
 
 import (
 	"github.com/spiffe/spike-sdk-go/crypto"
-	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/log"
 
 	"github.com/spiffe/spike/app/nexus/internal/state/backend"
@@ -48,8 +47,8 @@ func initializeLiteBackend(
 
 	dbBackend, err := lite.New(rootKey)
 	if err != nil {
-		failErr := sdkErrors.ErrStateInitializationFailed.Wrap(err)
-		log.FatalErr(fName, *failErr)
+		err.Msg = "failed to initialize lite backend"
+		log.FatalErr(fName, *err)
 	}
 
 	return dbBackend

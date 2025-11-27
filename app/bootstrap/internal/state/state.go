@@ -6,6 +6,7 @@ package state
 
 import (
 	"crypto/rand"
+	"fmt"
 	"strconv"
 	"sync"
 
@@ -16,7 +17,7 @@ import (
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/log"
 
-	"github.com/spiffe/spike/app/bootstrap/internal/validation"
+	cipher "github.com/spiffe/spike/internal/crypto"
 )
 
 var (
@@ -39,13 +40,18 @@ var (
 // set to (ShamirThreshold - 1), meaning t+1 shares are required for
 // reconstruction. A deterministic reader seeded with the root key is used to
 // ensure identical share generation across restarts, which is critical for
-// synchronization after crashes. The function performs security validation and
-// zeroing of sensitive data after use.
+// synchronization after crashes. The function verifies that the generated
+// shares can reconstruct the original secret before returning.
 //
-// CRITICAL: This function MUST be called exactly once per process. Calling it
-// multiple times will generate different root keys, breaking the cryptographic
-// guarantees of the system. The function will terminate the application if
-// called more than once.
+// Security behavior:
+// The application will crash (via log.FatalErr) if:
+//   - Called more than once per process (would generate different root keys)
+//   - Random number generation fails
+//   - Root secret unmarshaling fails
+//   - Share reconstruction verification fails
+//
+// Returns:
+//   - []shamir.Share: The generated Shamir secret shares
 func RootShares() []shamir.Share {
 	const fName = "rootShares"
 
@@ -90,10 +96,9 @@ func RootShares() []shamir.Share {
 
 	computedShares := ss.Share(n)
 
-	// TODO: move this validation to a common internal package since nexus can benefit from it too.
-
-	// Security: Ensure the root key and shares are zeroed out after use.
-	validation.VerifyShamirReconstruction(rootSecret, computedShares)
+	// Verify the generated shares can reconstruct the original secret.
+	// This crashes via log.FatalErr if reconstruction fails.
+	cipher.VerifyShamirReconstruction(rootSecret, computedShares)
 
 	return computedShares
 }
@@ -115,9 +120,19 @@ func RootKey() *[crypto.AES256KeySize]byte {
 // Keeper ID. It searches through the provided root shares to locate the share
 // with an ID matching the given keeperID (converted from string to integer).
 // The function uses P256 scalar comparison to match share IDs with the Keeper
-// identifier. The function will terminate the program with exit code 1 if the
-// Keeper ID cannot be converted to an integer or if no matching share is found
-// for the specified keeper.
+// identifier.
+//
+// Security behavior:
+// The application will crash (via log.FatalErr) if:
+//   - The keeperID cannot be converted to an integer
+//   - No matching share is found for the specified keeper ID
+//
+// Parameters:
+//   - rootShares: The Shamir secret shares to search through
+//   - keeperID: The string identifier of the keeper (must be numeric)
+//
+// Returns:
+//   - shamir.Share: The share corresponding to the keeper ID
 func KeeperShare(
 	rootShares []shamir.Share, keeperID string,
 ) shamir.Share {
@@ -127,12 +142,11 @@ func KeeperShare(
 	for _, sr := range rootShares {
 		kid, err := strconv.Atoi(keeperID)
 		if err != nil {
-			log.FatalLn(
-				fName,
-				"message", "failed to convert keeper id to int",
-				"keeper_id", keeperID,
-				"err", err.Error(),
+			failErr := sdkErrors.ErrShamirInvalidIndex.Wrap(err)
+			failErr.Msg = fmt.Sprintf(
+				"failed to convert keeper ID to int: '%s'", keeperID,
 			)
+			log.FatalErr(fName, *failErr)
 		}
 
 		if sr.ID.IsEqual(group.P256.NewScalar().SetUint64(uint64(kid))) {
@@ -142,11 +156,9 @@ func KeeperShare(
 	}
 
 	if share.ID.IsZero() {
-		log.FatalLn(
-			fName,
-			"message", "failed to find share for keeper",
-			"keeper_id", keeperID,
-		)
+		failErr := sdkErrors.ErrShamirInvalidIndex.Clone()
+		failErr.Msg = fmt.Sprintf("no share found for keeper ID: '%s'", keeperID)
+		log.FatalErr(fName, *failErr)
 	}
 
 	return share

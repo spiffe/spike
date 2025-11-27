@@ -50,12 +50,10 @@ func guardEncryptCipherRequest(
 	peerSPIFFEID *spiffeid.ID,
 	w http.ResponseWriter,
 	_ *http.Request,
-) error {
-	const fName = "guardEncryptCipherRequest"
-
+) *sdkErrors.SDKError {
 	// Validate plaintext size to prevent DoS attacks
 	if err := validatePlaintextSize(
-		request.Plaintext, w, reqres.CipherEncryptResponse{}.BadRequest(), fName,
+		request.Plaintext, w, reqres.CipherEncryptResponse{}.BadRequest(),
 	); err != nil {
 		return err
 	}

@@ -52,12 +52,14 @@ func guardGetSecretMetadataRequest(
 	}
 
 	path := request.Path
-	err = validation.ValidatePath(path)
-	if err != nil {
-		net.Fail(reqres.SecretMetadataResponse{}.BadRequest(), w, http.StatusBadRequest)
-		failErr := sdkErrors.ErrAPIBadRequest.Wrap(err)
-		failErr.Msg = "invalid secret path: " + path
-		return failErr
+	pathErr := validation.ValidatePath(path)
+	if pathErr != nil {
+		net.Fail(
+			reqres.SecretMetadataResponse{}.BadRequest(), w,
+			http.StatusBadRequest,
+		)
+		pathErr.Msg = "invalid secret path: " + path
+		return pathErr
 	}
 
 	allowed := state.CheckAccess(
@@ -65,7 +67,10 @@ func guardGetSecretMetadataRequest(
 		[]data.PolicyPermission{data.PermissionRead},
 	)
 	if !allowed {
-		net.Fail(reqres.SecretMetadataResponse{}.Unauthorized(), w, http.StatusUnauthorized)
+		net.Fail(
+			reqres.SecretMetadataResponse{}.Unauthorized(), w,
+			http.StatusUnauthorized,
+		)
 		failErr := *sdkErrors.ErrAccessUnauthorized.Clone()
 		failErr.Msg = "unauthorized to read secret metadata for: " + path
 		return &failErr

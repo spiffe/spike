@@ -19,16 +19,16 @@ import (
 // Parameters:
 //   - plaintext: The decrypted data to send
 //   - w: The HTTP response writer
-//   - fName: The function name for logging
 //
 // Returns:
-//   - error: An error if the response fails to send
+//   - *sdkErrors.SDKError: An error if the response fails to send, nil on
+//     success
 func respondStreamingDecrypt(
-	plaintext []byte, w http.ResponseWriter, fName string,
-) error {
+	plaintext []byte, w http.ResponseWriter,
+) *sdkErrors.SDKError {
 	w.Header().Set("Content-Type", "application/octet-stream")
 	if _, err := w.Write(plaintext); err != nil {
-		return err
+		return sdkErrors.ErrFSStreamWriteFailed.Wrap(err)
 	}
 	return nil
 }
@@ -39,13 +39,12 @@ func respondStreamingDecrypt(
 // Parameters:
 //   - plaintext: The decrypted data to send
 //   - w: The HTTP response writer
-//   - fName: The function name for logging
 //
 // Returns:
-//   - error: An error if the response fails to send
+//   - *sdkErrors.SDKError: Always nil (included for interface consistency)
 func respondJSONDecrypt(
-	plaintext []byte, w http.ResponseWriter, _ string,
-) error {
+	plaintext []byte, w http.ResponseWriter,
+) *sdkErrors.SDKError {
 	net.Success(
 		reqres.CipherDecryptResponse{
 			Plaintext: plaintext,
@@ -63,12 +62,12 @@ func respondJSONDecrypt(
 //   - nonce: The nonce bytes
 //   - ciphertext: The encrypted data to send
 //   - w: The HTTP response writer
-//   - fName: The function name for logging
 //
 // Returns:
-//   - error: An error if the response fails to send
+//   - *sdkErrors.SDKError: An error if the response fails to send, nil on
+//     success
 func respondStreamingEncrypt(
-	nonce, ciphertext []byte, w http.ResponseWriter, fName string,
+	nonce, ciphertext []byte, w http.ResponseWriter,
 ) *sdkErrors.SDKError {
 	w.Header().Set("Content-Type", headerValueOctetStream)
 	if _, err := w.Write([]byte{spikeCipherVersion}); err != nil {
@@ -90,13 +89,12 @@ func respondStreamingEncrypt(
 //   - nonce: The nonce bytes
 //   - ciphertext: The encrypted data to send
 //   - w: The HTTP response writer
-//   - fName: The function name for logging
 //
 // Returns:
-//   - error: An error if the response fails to send
+//   - error: Always nil (included for interface consistency)
 func respondJSONEncrypt(
-	nonce, ciphertext []byte, w http.ResponseWriter, _ string,
-) error {
+	nonce, ciphertext []byte, w http.ResponseWriter,
+) *sdkErrors.SDKError {
 	net.Success(
 		reqres.CipherEncryptResponse{
 			Version:    spikeCipherVersion,

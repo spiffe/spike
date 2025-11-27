@@ -84,12 +84,19 @@ func iterateKeepersAndInitializeState(
 			"id", keeperID, "url", keeperAPIRoot,
 		)
 
-		// TODO:
-		// 1. shardURL should return an error instead.
-		// 2. if shardURL returns an error, it is a confiuguration problem, irrecoverable,
-		//    and maybe it makes sense to crash?
-		u := shardURL(keeperAPIRoot)
-		if u == "" {
+		// Configuration errors (malformed keeper URLs) are logged but not fatal.
+		// Rationale:
+		// 1. Availability: If threshold=3 and we have 4 valid + 2 invalid URLs,
+		//    recovery can still succeed with the valid keepers.
+		// 2. Graceful degradation: The system becomes operational despite partial
+		//    misconfiguration; operators can fix the env var and restart later.
+		// 3. Consistency: Similar to the network errors or unmarshal failures below,
+		//    a bad URL means this keeper is unavailable, not a fatal condition.
+		// 4. The Shamir threshold mechanism already protects against insufficient
+		//    shards.
+		u, urlErr := shardURL(keeperAPIRoot)
+		if urlErr != nil {
+			log.WarnErr(fName, *urlErr)
 			continue
 		}
 

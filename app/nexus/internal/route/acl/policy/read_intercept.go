@@ -50,12 +50,13 @@ func guardPolicyReadRequest(
 
 	policyID := request.ID
 
-	err = validation.ValidatePolicyID(policyID)
-	if err != nil {
+	validationErr := validation.ValidatePolicyID(policyID)
+	if validationErr != nil {
 		net.Fail(
 			reqres.PolicyReadResponse{}.BadRequest(), w, http.StatusBadRequest,
 		)
-		return sdkErrors.ErrDataInvalidInput.Wrap(err)
+		validationErr.Msg = "invalid policy ID: " + policyID
+		return validationErr
 	}
 
 	allowed := state.CheckAccess(

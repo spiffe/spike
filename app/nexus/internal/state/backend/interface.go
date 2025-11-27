@@ -96,7 +96,9 @@ type Backend interface {
 	// Returns:
 	//   - *sdkErrors.SDKError: An error if the operation fails. Returns nil
 	//     on success.
-	StoreSecret(ctx context.Context, path string, secret kv.Value) *sdkErrors.SDKError
+	StoreSecret(
+		ctx context.Context, path string, secret kv.Value,
+	) *sdkErrors.SDKError
 
 	// LoadSecret retrieves a secret from the specified path. The secret is
 	// automatically decrypted before being returned.
@@ -129,7 +131,9 @@ type Backend interface {
 	//     values.
 	//   - *sdkErrors.SDKError: An error if the operation fails. Returns nil
 	//     on success.
-	LoadAllSecrets(ctx context.Context) (map[string]*kv.Value, *sdkErrors.SDKError)
+	LoadAllSecrets(
+		ctx context.Context,
+	) (map[string]*kv.Value, *sdkErrors.SDKError)
 
 	// StorePolicy persists a policy object in the backend storage. If a
 	// policy with the same ID already exists, it is overwritten.
@@ -153,7 +157,9 @@ type Backend interface {
 	//   - *data.Policy: The policy object, or nil if not found.
 	//   - *sdkErrors.SDKError: An error if the operation fails. Returns nil
 	//     on success.
-	LoadPolicy(ctx context.Context, id string) (*data.Policy, *sdkErrors.SDKError)
+	LoadPolicy(
+		ctx context.Context, id string,
+	) (*data.Policy, *sdkErrors.SDKError)
 
 	// LoadAllPolicies retrieves all policies stored in the backend.
 	//
@@ -165,7 +171,9 @@ type Backend interface {
 	//     objects.
 	//   - *sdkErrors.SDKError: An error if the operation fails. Returns nil
 	//     on success.
-	LoadAllPolicies(ctx context.Context) (map[string]*data.Policy, *sdkErrors.SDKError)
+	LoadAllPolicies(
+		ctx context.Context,
+	) (map[string]*data.Policy, *sdkErrors.SDKError)
 
 	// DeletePolicy removes a policy object identified by the given ID from
 	// the backend storage.

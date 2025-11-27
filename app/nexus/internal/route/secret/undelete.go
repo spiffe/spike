@@ -72,13 +72,12 @@ func RouteUndeleteSecret(
 		versions = []int{}
 	}
 
-	err = state.UndeleteSecret(path, versions)
-	if err != nil {
-		failErr := sdkErrors.ErrAPIPostFailed.Wrap(err)
+	undeleteErr := state.UndeleteSecret(path, versions)
+	if undeleteErr != nil {
 		net.Fail(
 			reqres.SecretUndeleteResponse{}.Internal(), w, http.StatusInternalServerError,
 		)
-		return failErr
+		return undeleteErr
 	}
 
 	net.Success(reqres.SecretUndeleteResponse{}.Success(), w)

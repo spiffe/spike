@@ -48,11 +48,11 @@ var (
 //   - Any error returned by guardRestoreRequest: For request validation
 //     failures.
 //
-// The function responds with:
-//   - HTTP 400 Bad Request: If all required shards have already been collected
-//     or if the provided shard is invalid.
-//   - HTTP 200 OK: If the shard is successfully added, including status
-//     information about the restoration progress.
+// The function responds with HTTP 200 OK in all successful cases:
+//   - Shard successfully added to the collection
+//   - Restoration already complete (additional shards acknowledged but ignored)
+//   - Duplicate shard received (acknowledged but ignored, status shows remaining
+//     shards needed)
 //
 // When the last required shard is added, the function automatically triggers
 // the restoration process using RestoreBackingStoreFromPilotShards.
@@ -82,18 +82,21 @@ func RouteRestore(
 	// Check if we already have enough shards
 	currentShardCount := len(shards)
 
-	if currentShardCount >= env.ShamirThresholdVal() {
-		net.Fail(
+	threshold := env.ShamirThresholdVal()
+	restored := currentShardCount >= threshold
+
+	if restored {
+		// Already restored; acknowledge and ignore additional shards.
+		net.Success(
 			reqres.RestoreResponse{
 				RestorationStatus: data.RestorationStatus{
 					ShardsCollected: currentShardCount,
 					ShardsRemaining: 0,
-					Restored:        true,
+					Restored:        restored,
 				},
-				Err: sdkErrors.ErrAPIBadRequest.Code,
-			}, w, http.StatusBadRequest,
+			}.Success(), w,
 		)
-		return sdkErrors.ErrDataInvalidInput
+		return nil
 	}
 
 	for _, shard := range shards {
@@ -101,18 +104,17 @@ func RouteRestore(
 			continue
 		}
 
-		// Duplicate shard found.
-		net.Fail(
+		// Duplicate shard; acknowledge and ignore.
+		net.Success(
 			reqres.RestoreResponse{
 				RestorationStatus: data.RestorationStatus{
 					ShardsCollected: currentShardCount,
-					ShardsRemaining: env.ShamirThresholdVal() - currentShardCount,
-					Restored:        currentShardCount == env.ShamirThresholdVal(),
+					ShardsRemaining: threshold - currentShardCount,
+					Restored:        restored,
 				},
-				Err: sdkErrors.ErrAPIBadRequest.Code,
-			}, w, http.StatusBadRequest,
+			}.Success(), w,
 		)
-		return sdkErrors.ErrDataInvalidInput
+		return nil
 	}
 
 	shards = append(shards, recovery.ShamirShard{
@@ -127,7 +129,8 @@ func RouteRestore(
 	// RouteRestore cleans this up when it is no longer necessary.
 
 	// Trigger restoration if we have collected all shards
-	if currentShardCount == env.ShamirThresholdVal() {
+	restored = currentShardCount >= threshold
+	if restored {
 		recovery.RestoreBackingStoreFromPilotShards(shards)
 		// Security: Zero out all shards since we have finished restoration:
 		for i := range shards {
@@ -140,8 +143,8 @@ func RouteRestore(
 		reqres.RestoreResponse{
 			RestorationStatus: data.RestorationStatus{
 				ShardsCollected: currentShardCount,
-				ShardsRemaining: env.ShamirThresholdVal() - currentShardCount,
-				Restored:        currentShardCount == env.ShamirThresholdVal(),
+				ShardsRemaining: threshold - currentShardCount,
+				Restored:        restored,
 			},
 		}.Success(), w,
 	)

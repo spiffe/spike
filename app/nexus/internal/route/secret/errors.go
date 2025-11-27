@@ -35,11 +35,17 @@ func handleGetSecretError(
 		return nil
 	}
 	if err.Is(sdkErrors.ErrEntityNotFound) {
-		net.Fail(reqres.SecretGetResponse{}.NotFound(), w, http.StatusNotFound)
+		net.Fail(
+			reqres.SecretGetResponse{}.NotFound(), w,
+			http.StatusNotFound,
+		)
 		return err
 	}
 	// Backend or other server-side failure
-	net.Fail(reqres.SecretGetResponse{}.Internal(), w, http.StatusInternalServerError)
+	net.Fail(
+		reqres.SecretGetResponse{}.Internal(), w,
+		http.StatusInternalServerError,
+	)
 	return err
 }
 
@@ -65,10 +71,16 @@ func handleGetSecretMetadataError(
 		return nil
 	}
 	if err.Is(sdkErrors.ErrEntityNotFound) {
-		net.Fail(reqres.SecretMetadataResponse{}.NotFound(), w, http.StatusNotFound)
+		net.Fail(
+			reqres.SecretMetadataResponse{}.NotFound(), w,
+			http.StatusNotFound,
+		)
 		return err
 	}
 	// Backend or other server-side failure
-	net.Fail(reqres.SecretMetadataResponse{}.Internal(), w, http.StatusInternalServerError)
+	net.Fail(
+		reqres.SecretMetadataResponse{}.Internal(), w,
+		http.StatusInternalServerError,
+	)
 	return err
 }

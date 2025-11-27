@@ -57,23 +57,17 @@ func RouteDecrypt(
 
 	if streamModeActive {
 		// Cipher getter for streaming mode
-		getCipher := func() (cipher.AEAD, error) {
+		getCipher := func() (cipher.AEAD, *sdkErrors.SDKError) {
 			return getCipherOrFailStreaming(w)
 		}
-		if err := handleStreamingDecrypt(w, r, getCipher, fName); err != nil {
-			return sdkErrors.ErrCryptoDecryptionFailed.Wrap(err)
-		}
-		return nil
+		return handleStreamingDecrypt(w, r, getCipher)
 	}
 
 	// Cipher getter for JSON mode
-	getCipher := func() (cipher.AEAD, error) {
+	getCipher := func() (cipher.AEAD, *sdkErrors.SDKError) {
 		return getCipherOrFailJSON(
 			w, reqres.CipherDecryptResponse{Err: sdkErrors.ErrAPIInternal.Code},
 		)
 	}
-	if err := handleJSONDecrypt(w, r, getCipher, fName); err != nil {
-		return sdkErrors.ErrCryptoDecryptionFailed.Wrap(err)
-	}
-	return nil
+	return handleJSONDecrypt(w, r, getCipher)
 }

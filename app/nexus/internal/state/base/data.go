@@ -66,30 +66,39 @@ func RootKeyZero() bool {
 }
 
 // SetRootKey updates the root key with the provided value.
-// This function does not own its parameter; the `rk` argument can
-// be (and should be) cleaned up after calling this function without
-// impacting the saved root key.
 //
-// To ensure the system always has a legitimate root key, the operation is a
-// no-op if rk is nil or zeroed out. When that happens, the function logs
-// a warning.
+// This function does not own its parameter; the `rk` argument can be (and
+// should be) cleaned up after calling this function without impacting the
+// saved root key.
+//
+// Security behavior:
+// The application will crash (via log.FatalErr) if rk is nil or contains only
+// zero bytes. This is a defense-in-depth measure: the caller (Initialize)
+// already validates the key, but if somehow an invalid key reaches this
+// function, crashing is the correct response. Operating with a nil or zero
+// root key would mean secrets are unencrypted or encrypted with a predictable
+// key, which is a critical security failure.
+//
+// Note: For in-memory backends, this function should not be called at all.
+// The Initialize function handles this by returning early for memory backends.
 //
 // Parameters:
-//   - rk: Pointer to a 32-byte array containing the new root key value
+//   - rk: Pointer to a 32-byte array containing the new root key value.
+//     Must be non-nil and non-zero.
 func SetRootKey(rk *[crypto.AES256KeySize]byte) {
 	fName := "SetRootKey"
 
-	log.Info(fName, "message", "setting root key") // TODO: do we need these logs. existence of the root key is evidence of it being set anyway.
+	log.Info(fName, "message", "setting root key")
 
 	if rk == nil {
 		failErr := *sdkErrors.ErrRootKeyMissing.Clone()
-		log.FatalErr(fName, failErr) // TODO: check if this is too strict; in-memory mode may be sending nil keys so we need to check for mode here too.
+		log.FatalErr(fName, failErr)
 		return
 	}
 
 	if mem.Zeroed32(rk) {
 		failErr := *sdkErrors.ErrRootKeyEmpty.Clone()
-		log.FatalErr(fName, failErr) // TODO: same as above.
+		log.FatalErr(fName, failErr)
 	}
 
 	rootKeyMu.Lock()

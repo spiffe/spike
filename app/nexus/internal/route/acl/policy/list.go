@@ -79,34 +79,31 @@ func RouteListPolicies(
 	case SPIFFEIDPattern != "":
 		pp, listErr := state.ListPoliciesBySPIFFEIDPattern(SPIFFEIDPattern)
 		if listErr != nil {
-			failErr := sdkErrors.ErrEntityQueryFailed.Wrap(listErr)
 			net.Fail(
 				reqres.PolicyListResponse{}.Internal(), w,
 				http.StatusInternalServerError,
 			)
-			return failErr
+			return listErr
 		}
 		policies = pp
 	case pathPattern != "":
 		pp, listErr := state.ListPoliciesByPathPattern(pathPattern)
 		if listErr != nil {
-			failErr := sdkErrors.ErrEntityQueryFailed.Wrap(listErr)
 			net.Fail(
 				reqres.PolicyListResponse{}.Internal(), w,
 				http.StatusInternalServerError,
 			)
-			return failErr
+			return listErr
 		}
 		policies = pp
 	default:
 		pp, listErr := state.ListPolicies()
 		if listErr != nil {
-			failErr := sdkErrors.ErrEntityQueryFailed.Wrap(listErr)
 			net.Fail(
 				reqres.PolicyListResponse{}.Internal(), w,
 				http.StatusInternalServerError,
 			)
-			return failErr
+			return listErr
 		}
 		policies = pp
 	}

@@ -20,7 +20,7 @@ func TestValidateVersion_ValidVersion(t *testing.T) {
 	w := httptest.NewRecorder()
 	errResp := testErrorResponse{Err: "invalid version"}
 
-	err := validateVersion(spikeCipherVersion, w, errResp, "test")
+	err := validateVersion(spikeCipherVersion, w, errResp)
 
 	if err != nil {
 		t.Errorf("validateVersion() error = %v, want nil", err)
@@ -35,7 +35,7 @@ func TestValidateVersion_InvalidVersion(t *testing.T) {
 	w := httptest.NewRecorder()
 	errResp := testErrorResponse{Err: "invalid version"}
 
-	err := validateVersion(byte('9'), w, errResp, "test")
+	err := validateVersion(byte('9'), w, errResp)
 
 	if err == nil {
 		t.Error("validateVersion() expected error for invalid version")
@@ -53,7 +53,7 @@ func TestValidateNonceSize_ValidNonce(t *testing.T) {
 	// expectedNonceSize is 12 bytes for AES-GCM
 	nonce := make([]byte, expectedNonceSize)
 
-	err := validateNonceSize(nonce, w, errResp, "test")
+	err := validateNonceSize(nonce, w, errResp)
 
 	if err != nil {
 		t.Errorf("validateNonceSize() error = %v, want nil", err)
@@ -81,7 +81,7 @@ func TestValidateNonceSize_InvalidNonce(t *testing.T) {
 			errResp := testErrorResponse{Err: "invalid nonce"}
 			nonce := make([]byte, tt.nonceSize)
 
-			err := validateNonceSize(nonce, w, errResp, "test")
+			err := validateNonceSize(nonce, w, errResp)
 
 			if err == nil {
 				t.Error("validateNonceSize() expected error for invalid nonce size")
@@ -111,7 +111,7 @@ func TestValidateCiphertextSize_ValidSize(t *testing.T) {
 			errResp := testErrorResponse{Err: "ciphertext too large"}
 			ciphertext := make([]byte, tt.size)
 
-			err := validateCiphertextSize(ciphertext, w, errResp, "test")
+			err := validateCiphertextSize(ciphertext, w, errResp)
 
 			if err != nil {
 				t.Errorf("validateCiphertextSize() error = %v, want nil", err)
@@ -130,7 +130,7 @@ func TestValidateCiphertextSize_TooLarge(t *testing.T) {
 	errResp := testErrorResponse{Err: "ciphertext too large"}
 	ciphertext := make([]byte, env.CryptoMaxCiphertextSizeVal()+1)
 
-	err := validateCiphertextSize(ciphertext, w, errResp, "test")
+	err := validateCiphertextSize(ciphertext, w, errResp)
 
 	if err == nil {
 		t.Error("validateCiphertextSize() expected error for oversized ciphertext")
@@ -158,7 +158,7 @@ func TestValidatePlaintextSize_ValidSize(t *testing.T) {
 			errResp := testErrorResponse{Err: "plaintext too large"}
 			plaintext := make([]byte, tt.size)
 
-			err := validatePlaintextSize(plaintext, w, errResp, "test")
+			err := validatePlaintextSize(plaintext, w, errResp)
 
 			if err != nil {
 				t.Errorf("validatePlaintextSize() error = %v, want nil", err)
@@ -177,7 +177,7 @@ func TestValidatePlaintextSize_TooLarge(t *testing.T) {
 	errResp := testErrorResponse{Err: "plaintext too large"}
 	plaintext := make([]byte, env.CryptoMaxPlaintextSizeVal()+1)
 
-	err := validatePlaintextSize(plaintext, w, errResp, "test")
+	err := validatePlaintextSize(plaintext, w, errResp)
 
 	if err == nil {
 		t.Error("validatePlaintextSize() expected error for oversized plaintext")

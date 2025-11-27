@@ -27,7 +27,7 @@ import (
 //   - error: An error if the cipher is unavailable, nil otherwise
 func getCipherOrFailStreaming(
 	w http.ResponseWriter,
-) (cipher.AEAD, error) {
+) (cipher.AEAD, *sdkErrors.SDKError) {
 	c := persist.Backend().GetCipher()
 
 	if c == nil {
@@ -55,7 +55,7 @@ func getCipherOrFailStreaming(
 //   - error: An error if the cipher is unavailable, nil otherwise
 func getCipherOrFailJSON[T any](
 	w http.ResponseWriter, errorResponse T,
-) (cipher.AEAD, error) {
+) (cipher.AEAD, *sdkErrors.SDKError) {
 	const fName = "getCipherOrFailJSON"
 
 	c := persist.Backend().GetCipher()

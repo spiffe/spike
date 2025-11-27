@@ -5,7 +5,6 @@
 package policy
 
 import (
-	stdErrors "errors"
 	"net/http"
 
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
@@ -97,15 +96,15 @@ func RouteGetPolicy(
 
 	policyID := request.ID
 
-	policy, err := state.GetPolicy(policyID)
-	policyFound := err == nil
+	policy, policyErr := state.GetPolicy(policyID)
+	policyFound := policyErr == nil
 
-	internalError := err != nil && !stdErrors.Is(err, sdkErrors.ErrEntityNotFound)
+	internalError := policyErr != nil && !policyErr.Is(sdkErrors.ErrEntityNotFound)
 	if internalError {
 		net.Fail(
 			reqres.PolicyReadResponse{}.Internal(), w, http.StatusInternalServerError,
 		)
-		return sdkErrors.ErrEntityQueryFailed.Wrap(err)
+		return err
 	}
 
 	if !policyFound {

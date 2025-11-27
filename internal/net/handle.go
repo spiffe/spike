@@ -12,7 +12,17 @@ import (
 
 // Handler is a function type that processes HTTP requests with audit
 // logging support.
-type Handler func(http.ResponseWriter, *http.Request, *journal.AuditEntry) *sdkErrors.SDKError
+//
+// Parameters:
+//   - w: HTTP response writer for sending the response
+//   - r: HTTP request containing the incoming request data
+//   - audit: Audit entry for logging the request lifecycle
+//
+// Returns:
+//   - *sdkErrors.SDKError: nil on success, error on failure
+type Handler func(
+	w http.ResponseWriter, r *http.Request, audit *journal.AuditEntry,
+) *sdkErrors.SDKError
 
 // HandleRoute wraps an HTTP handler with audit logging functionality.
 // It creates and manages audit log entries for the request lifecycle,

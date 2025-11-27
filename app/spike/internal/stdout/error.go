@@ -9,6 +9,9 @@ import (
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 )
 
+const commandGroupPolicy = "policy"
+const commandGroupCipher = "cipher"
+
 // HandleAPIError processes API errors and prints appropriate user-friendly
 // messages. It detects the command group (policy, secret, cipher) from the
 // Cobra command path and handles group-specific errors accordingly.
@@ -87,11 +90,11 @@ func HandleAPIError(c *cobra.Command, err *sdkErrors.SDKError) bool {
 	// Command-group-specific errors
 	group := getCommandGroup(c)
 	switch group {
-	case "policy":
+	case commandGroupPolicy:
 		if handlePolicyError(c, err) {
 			return true
 		}
-	case "cipher":
+	case commandGroupCipher:
 		if handleCipherError(c, err) {
 			return true
 		}

@@ -80,12 +80,12 @@ func RouteGetSecret(
 	version := request.Version
 	path := request.Path
 
-	secret, err := state.GetSecret(path, version)
-	secretFound := err == nil
+	secret, getErr := state.GetSecret(path, version)
+	secretFound := getErr == nil
 
 	// Extra logging to help with debugging and detecting enumeration attacks.
 	if !secretFound {
-		notFoundErr := sdkErrors.ErrAPINotFound.Wrap(err)
+		notFoundErr := sdkErrors.ErrAPINotFound.Wrap(getErr)
 		notFoundErr.Msg = fmt.Sprintf(
 			"secret not found at path: %s version: %d", path, version,
 		)
@@ -93,11 +93,11 @@ func RouteGetSecret(
 	}
 
 	if !secretFound {
-		return handleGetSecretError(err, w)
+		return handleGetSecretError(getErr, w)
 	}
 
-	srr := reqres.SecretGetResponse{}.Success()
-	srr.Secret = data.Secret{Data: secret}
-	net.Success(srr, w)
+	net.Success(reqres.SecretGetResponse{
+		Secret: data.Secret{Data: secret},
+	}.Success(), w)
 	return nil
 }

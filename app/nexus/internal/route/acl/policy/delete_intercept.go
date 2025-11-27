@@ -50,12 +50,13 @@ func guardPolicyDeleteRequest(
 
 	policyID := request.ID
 
-	err = validation.ValidatePolicyID(policyID)
-	if invalidPolicy := err != nil; invalidPolicy {
+	validationErr := validation.ValidatePolicyID(policyID)
+	if invalidPolicy := validationErr != nil; invalidPolicy {
 		net.Fail(
 			reqres.PolicyDeleteResponse{}.BadRequest(), w, http.StatusBadRequest,
 		)
-		return sdkErrors.ErrDataInvalidInput.Wrap(err)
+		validationErr.Msg = "invalid policy ID: " + policyID
+		return validationErr
 	}
 
 	allowed := state.CheckAccess(

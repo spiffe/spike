@@ -15,8 +15,7 @@ import (
 // structure.
 //
 // This function is used during the recovery process to parse HTTP responses
-// from SPIKE Keeper instances when retrieving Shamir secret shards. If the
-// JSON unmarshaling fails, the error is logged and nil is returned.
+// from SPIKE Keeper instances when retrieving Shamir secret shards.
 //
 // Parameters:
 //   - data: The raw JSON response body from a keeper shard endpoint
@@ -24,9 +23,10 @@ import (
 // Returns:
 //   - *reqres.ShardGetResponse: A pointer to the deserialized response
 //     containing the shard data, or nil if unmarshaling fails
-func unmarshalShardResponse(data []byte) (*reqres.ShardGetResponse, *sdkErrors.SDKError) {
-	// TODO: update docs.
-
+//   - *sdkErrors.SDKError: An error if JSON unmarshaling fails, nil on success
+func unmarshalShardResponse(data []byte) (
+	*reqres.ShardGetResponse, *sdkErrors.SDKError,
+) {
 	var res reqres.ShardGetResponse
 
 	err := json.Unmarshal(data, &res)

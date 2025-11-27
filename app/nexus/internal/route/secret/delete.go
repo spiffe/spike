@@ -73,20 +73,22 @@ func RouteDeleteSecret(
 		versions = []int{}
 	}
 
-	err = state.DeleteSecret(path, versions)
-	if err != nil {
+	deleteErr := state.DeleteSecret(path, versions)
+	if deleteErr != nil {
 		// Distinguish between client errors (not found) and server errors
-		if err.Is(sdkErrors.ErrEntityNotFound) {
+		if deleteErr.Is(sdkErrors.ErrEntityNotFound) {
 			net.Fail(
-				reqres.SecretDeleteResponse{}.NotFound(), w, http.StatusNotFound,
+				reqres.SecretDeleteResponse{}.NotFound(), w,
+				http.StatusNotFound,
 			)
-			return err
+			return deleteErr
 		}
 		// Backend or other server-side failure
 		net.Fail(
-			reqres.SecretDeleteResponse{}.Internal(), w, http.StatusInternalServerError,
+			reqres.SecretDeleteResponse{}.Internal(), w,
+			http.StatusInternalServerError,
 		)
-		return sdkErrors.ErrAPIPostFailed.Wrap(err)
+		return deleteErr
 	}
 
 	net.Success(reqres.SecretDeleteResponse{}.Success(), w)

@@ -8,6 +8,7 @@ import (
 	"net/url"
 
 	apiUrl "github.com/spiffe/spike-sdk-go/api/url"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 )
 
 // shardURL constructs the full URL for the keeper shard endpoint by joining
@@ -21,17 +22,19 @@ import (
 //     (e.g., "https://keeper.example.com:8443")
 //
 // Returns:
-//   - string: The complete URL to the shard endpoint, or an empty string if
-//     the URL construction fails
+//   - string: The complete URL to the shard endpoint, or empty string on error
+//   - *sdkErrors.SDKError: An error if URL construction fails, nil on success
 //
 // Example:
 //
-//	url := shardURL("https://keeper.example.com:8443")
-//	// Returns: "https://keeper.example.com:8443/v1/shard"
-func shardURL(keeperAPIRoot string) string {
+//	url, err := shardURL("https://keeper.example.com:8443")
+//	// Returns: "https://keeper.example.com:8443/v1/shard", nil
+func shardURL(keeperAPIRoot string) (string, *sdkErrors.SDKError) {
 	u, err := url.JoinPath(keeperAPIRoot, string(apiUrl.KeeperShard))
 	if err != nil {
-		return ""
+		failErr := sdkErrors.ErrDataInvalidInput.Wrap(err)
+		failErr.Msg = "failed to construct shard URL from keeper API root"
+		return "", failErr
 	}
-	return u
+	return u, nil
 }

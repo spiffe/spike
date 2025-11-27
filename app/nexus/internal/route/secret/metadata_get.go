@@ -85,7 +85,8 @@ func RouteGetSecretMetadata(
 	request, err := net.ReadParseAndGuard[
 		reqres.SecretMetadataRequest, reqres.SecretMetadataResponse,
 	](
-		w, r, reqres.SecretMetadataResponse{}.BadRequest(), guardGetSecretMetadataRequest,
+		w, r, reqres.SecretMetadataResponse{}.BadRequest(),
+		guardGetSecretMetadataRequest,
 	)
 	if alreadyResponded := err != nil; alreadyResponded {
 		return err
@@ -94,9 +95,9 @@ func RouteGetSecretMetadata(
 	path := request.Path
 	version := request.Version
 
-	rawSecret, err := state.GetRawSecret(path, version)
-	if err != nil {
-		return handleGetSecretMetadataError(err, w)
+	rawSecret, getErr := state.GetRawSecret(path, version)
+	if getErr != nil {
+		return handleGetSecretMetadataError(getErr, w)
 	}
 
 	net.Success(toSecretMetadataSuccessResponse(rawSecret), w)

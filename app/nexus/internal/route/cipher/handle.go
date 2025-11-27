@@ -9,6 +9,7 @@ import (
 	"net/http"
 
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 )
 
 // handleStreamingDecrypt processes a complete streaming mode decryption
@@ -22,14 +23,13 @@ import (
 //   - w: The HTTP response writer
 //   - r: The HTTP request
 //   - getCipher: Function to retrieve the cipher after authentication
-//   - fName: The function name for logging
 //
 // Returns:
-//   - error: An error if any step fails
+//   - *sdkErrors.SDKError: An error if any step fails
 func handleStreamingDecrypt(
 	w http.ResponseWriter, r *http.Request,
-	getCipher func() (cipher.AEAD, error), fName string,
-) error {
+	getCipher func() (cipher.AEAD, *sdkErrors.SDKError),
+) *sdkErrors.SDKError {
 	// NOTE: since we are dealing with streaming data, we cannot directly use
 	// the request parameter validation patterns that we employ in the JSON/REST
 	// payloads. We need to read the entire stream and generate a request
@@ -42,17 +42,17 @@ func handleStreamingDecrypt(
 	}
 
 	// Get cipher only after SPIFFE ID validation passes
-	c, err := getCipher()
-	if err != nil {
-		return err
+	c, cipherErr := getCipher()
+	if cipherErr != nil {
+		return cipherErr
 	}
 
 	// Read request data (now that we have cipher for nonce size)
-	version, nonce, ciphertext, err := readStreamingDecryptRequestData(
+	version, nonce, ciphertext, readErr := readStreamingDecryptRequestData(
 		w, r, c,
 	)
-	if err != nil {
-		return err
+	if readErr != nil {
+		return readErr
 	}
 
 	// Construct request object for guard validation
@@ -63,17 +63,17 @@ func handleStreamingDecrypt(
 	}
 
 	// Full guard validation (auth and request fields)
-	err = guardDecryptCipherRequest(request, peerSPIFFEID, w, r)
-	if err != nil {
-		return err
+	guardErr := guardDecryptCipherRequest(request, peerSPIFFEID, w, r)
+	if guardErr != nil {
+		return guardErr
 	}
 
-	plaintext, err := decryptDataStreaming(nonce, ciphertext, c, w, fName)
-	if err != nil {
-		return err
+	plaintext, decryptErr := decryptDataStreaming(nonce, ciphertext, c, w)
+	if decryptErr != nil {
+		return decryptErr
 	}
 
-	return respondStreamingDecrypt(plaintext, w, fName)
+	return respondStreamingDecrypt(plaintext, w)
 }
 
 // handleJSONDecrypt processes a complete JSON mode decryption request,
@@ -87,14 +87,13 @@ func handleStreamingDecrypt(
 //   - w: The HTTP response writer
 //   - r: The HTTP request
 //   - getCipher: Function to retrieve the cipher after authentication
-//   - fName: The function name for logging
 //
 // Returns:
-//   - error: An error if any step fails
+//   - *sdkErrors.SDKError: An error if any step fails
 func handleJSONDecrypt(
 	w http.ResponseWriter, r *http.Request,
-	getCipher func() (cipher.AEAD, error), fName string,
-) error {
+	getCipher func() (cipher.AEAD, *sdkErrors.SDKError),
+) *sdkErrors.SDKError {
 	// Extract and validate SPIFFE ID before accessing cipher
 	peerSPIFFEID, err := extractAndValidateSPIFFEID(w, r)
 	if err != nil {
@@ -102,31 +101,31 @@ func handleJSONDecrypt(
 	}
 
 	// Parse request (doesn't need cipher)
-	request, err := readJSONDecryptRequestWithoutGuard(w, r)
-	if err != nil {
-		return err
+	request, readErr := readJSONDecryptRequestWithoutGuard(w, r)
+	if readErr != nil {
+		return readErr
 	}
 
 	// Full guard validation (auth and request fields)
-	err = guardDecryptCipherRequest(*request, peerSPIFFEID, w, r)
-	if err != nil {
-		return err
+	guardErr := guardDecryptCipherRequest(*request, peerSPIFFEID, w, r)
+	if guardErr != nil {
+		return guardErr
 	}
 
 	// Get cipher only after auth passes
-	c, err := getCipher()
-	if err != nil {
-		return err
+	c, cipherErr := getCipher()
+	if cipherErr != nil {
+		return cipherErr
 	}
 
-	plaintext, err := decryptDataJSON(
-		request.Nonce, request.Ciphertext, c, w, fName,
+	plaintext, decryptErr := decryptDataJSON(
+		request.Nonce, request.Ciphertext, c, w,
 	)
-	if err != nil {
-		return err
+	if decryptErr != nil {
+		return decryptErr
 	}
 
-	return respondJSONDecrypt(plaintext, w, fName)
+	return respondJSONDecrypt(plaintext, w)
 }
 
 // handleStreamingEncrypt processes a complete streaming mode encryption
@@ -140,14 +139,13 @@ func handleJSONDecrypt(
 //   - w: The HTTP response writer
 //   - r: The HTTP request
 //   - getCipher: Function to retrieve the cipher after authentication
-//   - fName: The function name for logging
 //
 // Returns:
-//   - error: An error if any step fails
+//   - *sdkErrors.SDKError: An error if any step fails
 func handleStreamingEncrypt(
 	w http.ResponseWriter, r *http.Request,
-	getCipher func() (cipher.AEAD, error), fName string,
-) error {
+	getCipher func() (cipher.AEAD, *sdkErrors.SDKError),
+) *sdkErrors.SDKError {
 	// Extract and validate SPIFFE ID before accessing cipher
 	peerSPIFFEID, err := extractAndValidateSPIFFEID(w, r)
 	if err != nil {
@@ -155,9 +153,9 @@ func handleStreamingEncrypt(
 	}
 
 	// Read plaintext (doesn't need cipher)
-	plaintext, err := readStreamingEncryptRequestWithoutGuard(w, r)
-	if err != nil {
-		return err
+	plaintext, readErr := readStreamingEncryptRequestWithoutGuard(w, r)
+	if readErr != nil {
+		return readErr
 	}
 
 	// Construct request object for guard validation
@@ -166,23 +164,23 @@ func handleStreamingEncrypt(
 	}
 
 	// Full guard validation (auth and request fields)
-	err = guardEncryptCipherRequest(request, peerSPIFFEID, w, r)
-	if err != nil {
-		return err
+	guardErr := guardEncryptCipherRequest(request, peerSPIFFEID, w, r)
+	if guardErr != nil {
+		return guardErr
 	}
 
 	// Get cipher only after auth passes
-	c, err := getCipher()
-	if err != nil {
-		return err
+	c, cipherErr := getCipher()
+	if cipherErr != nil {
+		return cipherErr
 	}
 
-	nonce, ciphertext, err := encryptDataStreaming(plaintext, c, w, fName)
-	if err != nil {
-		return err
+	nonce, ciphertext, encryptErr := encryptDataStreaming(plaintext, c, w)
+	if encryptErr != nil {
+		return encryptErr
 	}
 
-	return respondStreamingEncrypt(nonce, ciphertext, w, fName)
+	return respondStreamingEncrypt(nonce, ciphertext, w)
 }
 
 // handleJSONEncrypt processes a complete JSON mode encryption request,
@@ -196,14 +194,13 @@ func handleStreamingEncrypt(
 //   - w: The HTTP response writer
 //   - r: The HTTP request
 //   - getCipher: Function to retrieve the cipher after authentication
-//   - fName: The function name for logging
 //
 // Returns:
-//   - error: An error if any step fails
+//   - *sdkErrors.SDKError: An error if any step fails
 func handleJSONEncrypt(
 	w http.ResponseWriter, r *http.Request,
-	getCipher func() (cipher.AEAD, error), fName string,
-) error {
+	getCipher func() (cipher.AEAD, *sdkErrors.SDKError),
+) *sdkErrors.SDKError {
 	// Extract and validate SPIFFE ID before accessing cipher
 	peerSPIFFEID, err := extractAndValidateSPIFFEID(w, r)
 	if err != nil {
@@ -211,29 +208,29 @@ func handleJSONEncrypt(
 	}
 
 	// Parse request (doesn't need cipher)
-	request, err := readJSONEncryptRequestWithoutGuard(w, r)
-	if err != nil {
-		return err
+	request, jsonErr := readJSONEncryptRequestWithoutGuard(w, r)
+	if jsonErr != nil {
+		return jsonErr
 	}
 
 	// Full guard validation (auth and request fields)
-	err = guardEncryptCipherRequest(*request, peerSPIFFEID, w, r)
-	if err != nil {
-		return err
+	guardErr := guardEncryptCipherRequest(*request, peerSPIFFEID, w, r)
+	if guardErr != nil {
+		return guardErr
 	}
 
 	// Get cipher only after auth passes
-	c, err := getCipher()
-	if err != nil {
-		return err
+	c, cipherErr := getCipher()
+	if cipherErr != nil {
+		return cipherErr
 	}
 
-	nonce, ciphertext, err := encryptDataJSON(
-		request.Plaintext, c, w, fName,
+	nonce, ciphertext, encryptErr := encryptDataJSON(
+		request.Plaintext, c, w,
 	)
-	if err != nil {
-		return err
+	if encryptErr != nil {
+		return encryptErr
 	}
 
-	return respondJSONEncrypt(nonce, ciphertext, w, fName)
+	return respondJSONEncrypt(nonce, ciphertext, w)
 }

@@ -82,24 +82,25 @@ permissions:
 		t.Run(tt.name, func(t *testing.T) {
 			// Create a test file:
 			filePath := filepath.Join(tempDir, tt.fileName)
-			err := os.WriteFile(filePath, []byte(tt.fileContent), 0644)
-			if err != nil {
-				t.Fatalf("Failed to create test file: %v", err)
+			if writeErr := os.WriteFile(
+				filePath, []byte(tt.fileContent), 0644,
+			); writeErr != nil {
+				t.Fatalf("Failed to create test file: %v", writeErr)
 			}
 
 			// Test reading the policy
-			_, err = readPolicyFromFile(filePath)
+			_, readErr := readPolicyFromFile(filePath)
 
 			if tt.wantErr {
-				if err == nil {
+				if readErr == nil {
 					t.Errorf("readPolicyFromFile() expected error but got none")
 					return
 				}
 				if tt.errContains != "" {
 					// Check if error contains expected substring
 					found := false
-					if err != nil && len(err.Error()) > 0 {
-						errorStr := err.Error()
+					if readErr != nil && len(readErr.Error()) > 0 {
+						errorStr := readErr.Error()
 						if len(errorStr) >= len(tt.errContains) {
 							for i := 0; i <= len(errorStr)-len(tt.errContains); i++ {
 								if errorStr[i:i+len(tt.errContains)] == tt.errContains {
@@ -112,14 +113,14 @@ permissions:
 					if !found {
 						t.Errorf(
 							"readPolicyFromFile() expected error containing "+
-								"'%s', got '%v'", tt.errContains, err)
+								"'%s', got '%v'", tt.errContains, readErr)
 					}
 				}
 				return
 			}
 
-			if err != nil {
-				t.Errorf("readPolicyFromFile() unexpected error: %v", err)
+			if readErr != nil {
+				t.Errorf("readPolicyFromFile() unexpected error: %v", readErr)
 				return
 			}
 		})

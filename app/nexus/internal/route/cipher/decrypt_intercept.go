@@ -33,7 +33,7 @@ import (
 //   - error: An error if extraction or validation fails
 func extractAndValidateSPIFFEID(
 	w http.ResponseWriter, r *http.Request,
-) (*spiffeid.ID, error) {
+) (*spiffeid.ID, *sdkErrors.SDKError) {
 	peerSPIFFEID, err := auth.ExtractPeerSPIFFEID[reqres.CipherDecryptResponse](
 		r, w, reqres.CipherDecryptResponse{
 			Err: sdkErrors.ErrAccessUnauthorized.Code,
@@ -76,26 +76,24 @@ func guardDecryptCipherRequest(
 	peerSPIFFEID *spiffeid.ID,
 	w http.ResponseWriter,
 	_ *http.Request,
-) error {
-	const fName = "guardDecryptCipherRequest"
-
+) *sdkErrors.SDKError {
 	// Validate version
 	if err := validateVersion(
-		request.Version, w, reqres.CipherDecryptResponse{}.BadRequest(), fName,
+		request.Version, w, reqres.CipherDecryptResponse{}.BadRequest(),
 	); err != nil {
 		return err
 	}
 
 	// Validate nonce size
 	if err := validateNonceSize(
-		request.Nonce, w, reqres.CipherDecryptResponse{}.BadRequest(), fName,
+		request.Nonce, w, reqres.CipherDecryptResponse{}.BadRequest(),
 	); err != nil {
 		return err
 	}
 
 	// Validate ciphertext size to prevent DoS attacks
 	if err := validateCiphertextSize(
-		request.Ciphertext, w, reqres.CipherDecryptResponse{}.BadRequest(), fName,
+		request.Ciphertext, w, reqres.CipherDecryptResponse{}.BadRequest(),
 	); err != nil {
 		return err
 	}

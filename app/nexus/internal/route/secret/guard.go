@@ -63,11 +63,11 @@ func guardSecretRequest[TUnauth, TBadInput any](
 	}
 
 	// Validate path format
-	err = validation.ValidatePath(path)
-	if err != nil {
+	pathErr := validation.ValidatePath(path)
+	if pathErr != nil {
 		net.Fail(badInputResp, w, http.StatusBadRequest)
-		failErr := sdkErrors.ErrAPIBadRequest.Wrap(err)
-		return failErr
+		pathErr.Msg = "invalid secret path: " + path
+		return pathErr
 	}
 
 	return nil

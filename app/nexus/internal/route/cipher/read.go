@@ -34,13 +34,13 @@ func readJSONDecryptRequestWithoutGuard(
 		return nil, err
 	}
 
-	request, err := net.UnmarshalAndRespondOnFail[
+	request, unmarshalErr := net.UnmarshalAndRespondOnFail[
 		reqres.CipherDecryptRequest, reqres.CipherDecryptResponse](
 		requestBody, w,
 		reqres.CipherDecryptResponse{}.BadRequest(),
 	)
-	if err != nil {
-		return nil, err
+	if unmarshalErr != nil {
+		return nil, unmarshalErr
 	}
 
 	return request, nil
@@ -107,9 +107,9 @@ func readStreamingDecryptRequestData(
 	}
 
 	// Read the remaining body as ciphertext
-	ciphertext, err := io.ReadAll(r.Body)
-	if err != nil {
-		failErr := sdkErrors.ErrDataReadFailure.Wrap(err)
+	ciphertext, readErr := io.ReadAll(r.Body)
+	if readErr != nil {
+		failErr := sdkErrors.ErrDataReadFailure.Wrap(readErr)
 		failErr.Msg = "failed to read ciphertext"
 		log.WarnErr(fName, *failErr)
 		http.Error(
@@ -160,13 +160,13 @@ func readJSONEncryptRequestWithoutGuard(
 		return nil, err
 	}
 
-	request, err := net.UnmarshalAndRespondOnFail[
+	request, unmarshalErr := net.UnmarshalAndRespondOnFail[
 		reqres.CipherEncryptRequest, reqres.CipherEncryptResponse](
 		requestBody, w,
 		reqres.CipherEncryptResponse{}.BadRequest(),
 	)
-	if err != nil {
-		return nil, err
+	if unmarshalErr != nil {
+		return nil, unmarshalErr
 	}
 
 	return request, nil

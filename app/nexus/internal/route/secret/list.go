@@ -68,8 +68,9 @@ func RouteListPaths(
 		return err
 	}
 
-	slr := reqres.SecretListResponse{}.Success()
-	slr.Keys = state.ListKeys()
+	slr := reqres.SecretListResponse{
+		Keys: state.ListKeys(),
+	}.Success()
 	net.Success(slr, w)
 	return nil
 }

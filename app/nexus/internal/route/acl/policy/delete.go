@@ -9,8 +9,6 @@ import (
 
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
-	"github.com/spiffe/spike-sdk-go/log"
-
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 	"github.com/spiffe/spike/internal/journal"
 	"github.com/spiffe/spike/internal/net"
@@ -74,12 +72,11 @@ func RouteDeletePolicy(
 
 	err = state.DeletePolicy(policyID)
 	if err != nil {
-		log.WarnErr(fName, *err)
 		net.Fail(
 			reqres.PolicyDeleteResponse{}.Internal(), w,
 			http.StatusInternalServerError,
 		)
-		return sdkErrors.ErrEntityDeletionFailed.Wrap(err)
+		return err
 	}
 
 	net.Success(reqres.PolicyDeleteResponse{}.Success(), w)

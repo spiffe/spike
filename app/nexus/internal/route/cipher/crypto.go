@@ -7,14 +7,11 @@ package cipher
 import (
 	"crypto/cipher"
 	"crypto/rand"
-	stdErrors "errors"
-	"fmt"
 	"io"
 	"net/http"
 
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
-	"github.com/spiffe/spike-sdk-go/log"
 
 	"github.com/spiffe/spike/internal/net"
 )
@@ -26,27 +23,17 @@ import (
 //   - ciphertext: The encrypted data
 //   - c: The cipher to use for decryption
 //   - w: The HTTP response writer for error responses
-//   - fName: The function name for logging
 //
 // Returns:
 //   - plaintext: The decrypted data if successful
-//   - error: An error if decryption fails
+//   - *sdkErrors.SDKError: An error if decryption fails
 func decryptDataStreaming(
 	nonce, ciphertext []byte, c cipher.AEAD, w http.ResponseWriter,
-	fName string,
-) ([]byte, error) {
-	// TODO: does this log really necessary at this point?
-	log.Info(
-		fName,
-		"message", "decrypt",
-		"len_nonce", len(nonce),
-		"len_ciphertext", len(ciphertext),
-	)
-
+) ([]byte, *sdkErrors.SDKError) {
 	plaintext, err := c.Open(nil, nonce, ciphertext, nil)
 	if err != nil {
 		http.Error(w, "decryption failed", http.StatusBadRequest)
-		return nil, fmt.Errorf("decryption failed: %w", err)
+		return nil, sdkErrors.ErrCryptoDecryptionFailed.Wrap(err)
 	}
 
 	return plaintext, nil
@@ -59,30 +46,20 @@ func decryptDataStreaming(
 //   - ciphertext: The encrypted data
 //   - c: The cipher to use for decryption
 //   - w: The HTTP response writer for error responses
-//   - fName: The function name for logging
 //
 // Returns:
 //   - plaintext: The decrypted data if successful
-//   - error: An error if decryption fails
+//   - *sdkErrors.SDKError: An error if decryption fails
 func decryptDataJSON(
 	nonce, ciphertext []byte, c cipher.AEAD, w http.ResponseWriter,
-	fName string,
-) ([]byte, error) {
-	// TODO: is this log really necessary at this point?
-	log.Info(
-		fName,
-		"message", "decrypt",
-		"len_nonce", len(nonce),
-		"len_ciphertext", len(ciphertext),
-	)
-
+) ([]byte, *sdkErrors.SDKError) {
 	plaintext, err := c.Open(nil, nonce, ciphertext, nil)
 	if err != nil {
-		failErr := stdErrors.Join(sdkErrors.ErrCryptoDecryptionFailed, err)
 		net.Fail(
-			reqres.CipherDecryptResponse{}.Internal(), w, http.StatusInternalServerError,
+			reqres.CipherDecryptResponse{}.Internal(), w,
+			http.StatusInternalServerError,
 		)
-		return nil, failErr
+		return nil, sdkErrors.ErrCryptoDecryptionFailed.Wrap(err)
 	}
 
 	return plaintext, nil
@@ -97,18 +74,17 @@ func decryptDataJSON(
 //
 // Returns:
 //   - nonce: The generated nonce bytes if successful
-//   - error: An error if nonce generation fails
+//   - *sdkErrors.SDKError: An error if nonce generation fails
 func generateNonceOrFailStreaming(
 	c cipher.AEAD, w http.ResponseWriter,
-) ([]byte, error) {
+) ([]byte, *sdkErrors.SDKError) {
 	nonce := make([]byte, c.NonceSize())
 	if _, err := io.ReadFull(rand.Reader, nonce); err != nil {
-		failErr := stdErrors.Join(sdkErrors.ErrCryptoNonceGenerationFailed, err)
 		http.Error(
 			w, string(sdkErrors.ErrCryptoNonceGenerationFailed.Code),
 			http.StatusInternalServerError,
 		)
-		return nil, failErr
+		return nil, sdkErrors.ErrCryptoNonceGenerationFailed.Wrap(err)
 	}
 
 	return nonce, nil
@@ -124,17 +100,14 @@ func generateNonceOrFailStreaming(
 //
 // Returns:
 //   - nonce: The generated nonce bytes if successful
-//   - error: An error if nonce generation fails
+//   - *sdkErrors.SDKError: An error if nonce generation fails
 func generateNonceOrFailJSON[T any](
 	c cipher.AEAD, w http.ResponseWriter, errorResponse T,
-) ([]byte, error) {
-	const fName = "generateNonceOrFailJSON"
-
+) ([]byte, *sdkErrors.SDKError) {
 	nonce := make([]byte, c.NonceSize())
 	if _, err := io.ReadFull(rand.Reader, nonce); err != nil {
-		failErr := stdErrors.Join(sdkErrors.ErrCryptoNonceGenerationFailed, err)
 		net.Fail(errorResponse, w, http.StatusInternalServerError)
-		return nil, failErr
+		return nil, sdkErrors.ErrCryptoNonceGenerationFailed.Wrap(err)
 	}
 
 	return nonce, nil
@@ -147,27 +120,19 @@ func generateNonceOrFailJSON[T any](
 //   - plaintext: The data to encrypt
 //   - c: The cipher to use for encryption
 //   - w: The HTTP response writer for error responses
-//   - fName: The function name for logging
 //
 // Returns:
 //   - nonce: The generated nonce bytes
 //   - ciphertext: The encrypted data
-//   - error: An error if nonce generation fails
+//   - *sdkErrors.SDKError: An error if nonce generation fails
 func encryptDataStreaming(
-	plaintext []byte, c cipher.AEAD, w http.ResponseWriter, fName string,
-) ([]byte, []byte, error) {
+	plaintext []byte, c cipher.AEAD, w http.ResponseWriter,
+) ([]byte, []byte, *sdkErrors.SDKError) {
 	nonce, err := generateNonceOrFailStreaming(c, w)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	// TODO: do we really need to log this?
-	log.Info(
-		fName,
-		"message", "encrypt",
-		"len_nonce", len(nonce),
-		"len_plaintext", len(plaintext),
-	)
 	ciphertext := c.Seal(nil, nonce, plaintext, nil)
 	return nonce, ciphertext, nil
 }
@@ -179,27 +144,21 @@ func encryptDataStreaming(
 //   - plaintext: The data to encrypt
 //   - c: The cipher to use for encryption
 //   - w: The HTTP response writer for error responses
-//   - fName: The function name for logging
 //
 // Returns:
 //   - nonce: The generated nonce bytes
 //   - ciphertext: The encrypted data
-//   - error: An error if nonce generation fails
+//   - *sdkErrors.SDKError: An error if nonce generation fails
 func encryptDataJSON(
-	plaintext []byte, c cipher.AEAD, w http.ResponseWriter, fName string,
-) ([]byte, []byte, error) {
-	nonce, err := generateNonceOrFailJSON(c, w, reqres.CipherEncryptResponse{}.Internal())
+	plaintext []byte, c cipher.AEAD, w http.ResponseWriter,
+) ([]byte, []byte, *sdkErrors.SDKError) {
+	nonce, err := generateNonceOrFailJSON(
+		c, w, reqres.CipherEncryptResponse{}.Internal(),
+	)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	// TODO: same here; do we really need to log this?
-	log.Info(
-		fName,
-		"message", "encrypt",
-		"len_nonce", len(nonce),
-		"len_plaintext", len(plaintext),
-	)
 	ciphertext := c.Seal(nil, nonce, plaintext, nil)
 	return nonce, ciphertext, nil
 }
