@@ -9,7 +9,6 @@ import (
 
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
-	"github.com/spiffe/spike-sdk-go/log"
 
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 	"github.com/spiffe/spike/internal/journal"
@@ -97,24 +96,19 @@ func RouteGetPolicy(
 	policyID := request.ID
 
 	policy, policyErr := state.GetPolicy(policyID)
-	policyFound := policyErr == nil
+	if policyErr != nil {
+		if policyErr.Is(sdkErrors.ErrEntityNotFound) {
+			net.Fail(
+				reqres.PolicyReadResponse{}.NotFound(), w, http.StatusNotFound,
+			)
+			return policyErr
+		}
 
-	internalError := policyErr != nil && !policyErr.Is(sdkErrors.ErrEntityNotFound)
-	if internalError {
 		net.Fail(
-			reqres.PolicyReadResponse{}.Internal(), w, http.StatusInternalServerError,
+			reqres.PolicyReadResponse{}.Internal(), w,
+			http.StatusInternalServerError,
 		)
-		return err
-	}
-
-	if !policyFound {
-		notFoundErr := *sdkErrors.ErrAPINotFound.Clone()
-		notFoundErr.Msg = "policy not found with id: " + policyID
-		log.InfoErr(fName, notFoundErr)
-		net.Fail(
-			reqres.PolicyReadResponse{}.NotFound(), w, http.StatusNotFound,
-		)
-		return sdkErrors.ErrEntityNotFound
+		return policyErr
 	}
 
 	net.Success(reqres.PolicyReadResponse{Policy: policy}.Success(), w)

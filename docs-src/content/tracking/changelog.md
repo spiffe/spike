@@ -12,6 +12,26 @@ sort_by = "weight"
 
 ## Recent
 
+* Code Quality: Eliminated error variable shadowing across the codebase. Error
+  variables now use descriptive names (`atoiErr`, `nonceErr`, `openErr`,
+  `restoreErr`, etc.) instead of reusing `err`. This prevents subtle bugs where
+  a later error could inadvertently shadow an earlier one, and improves code
+  readability by making error sources explicit.
+* Code Quality: Fixed linter issues including `spikeDbName` to `spikeDBName`
+  (ST1003), `internalErrJson` to `internalErrJSON` (ST1003), and replaced
+  `io.WriteString(w, string(bytes))` with `w.Write(bytes)` (SA6006).
+* Crypto: Consolidated GCM nonce size constant (`crypto.GCMNonceSize`) to
+  `internal/crypto/gcm.go`. This removes duplication across cipher and bootstrap
+  packages and documents the decision to use the NIST-recommended 12-byte
+  standard. See ADR-0032.
+* Nexus: Fixed bug in `RouteDeletePolicy` that returned HTTP 500 for all errors
+  including "not found". Now correctly returns HTTP 404 when the policy does not
+  exist.
+* Nexus, Keeper: Added AST-based tests to enforce guard function usage in all
+  route handlers. The tests scan route handler files and verify each `Route*`
+  function calls either `net.ReadParseAndGuard` or a guard function directly.
+  This prevents contributors from accidentally adding routes without
+  authorization checks. See ADR-0031.
 * Nexus: Changed policy operations from create-only to upsert semantics for
   consistency with secret operations. `state.CreatePolicy` is now
   `state.UpsertPolicy`. If a policy with the same name exists, it is updated

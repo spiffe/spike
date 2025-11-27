@@ -138,16 +138,16 @@ func newOperatorRestoreCommand(
 			// Security: reset decodedShard immediately after use.
 			mem.ClearBytes(decodedShard)
 
-			ix, err := strconv.Atoi(index)
-			if err != nil {
+			ix, atoiErr := strconv.Atoi(index)
+			if atoiErr != nil {
 				cmd.PrintErrf("Error: Invalid shard index: %s\n", index)
 				return
 			}
 
-			status, err := api.Restore(ix, &shardToRestore)
+			status, restoreErr := api.Restore(ix, &shardToRestore)
 			// Security: reset shardToRestore immediately after recovery.
 			mem.ClearRawBytes(&shardToRestore)
-			if err != nil {
+			if restoreErr != nil {
 				cmd.PrintErrln("Error: Failed to communicate with SPIKE Nexus.")
 				return
 			}

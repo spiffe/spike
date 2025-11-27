@@ -80,7 +80,9 @@ func guardRestoreRequest(
 		}
 	}
 	if allZero {
-		net.Fail(reqres.RestoreResponse{}.BadRequest(), w, http.StatusBadRequest)
+		net.Fail(
+			reqres.RestoreResponse{}.BadRequest(), w, http.StatusBadRequest,
+		)
 		return sdkErrors.ErrAPIBadRequest
 	}
 

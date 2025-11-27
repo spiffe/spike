@@ -48,7 +48,7 @@ func MarshalBodyAndRespondOnMarshalFail(
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusInternalServerError)
 
-		internalErrJson, marshalErr := json.Marshal(failErr)
+		internalErrJSON, marshalErr := json.Marshal(failErr)
 
 		// Add extra info "after" marshaling to avoid leaking internal error details
 		wrappedErr := failErr.Wrap(err)
@@ -56,9 +56,9 @@ func MarshalBodyAndRespondOnMarshalFail(
 		if marshalErr != nil {
 			wrappedErr = wrappedErr.Wrap(marshalErr)
 			// Cannot marshal; try a generic message instead.
-			internalErrJson = []byte(`{"error":"internal server error"}`)
+			internalErrJSON = []byte(`{"error":"internal server error"}`)
 		}
-		_, err = w.Write(internalErrJson)
+		_, err = w.Write(internalErrJSON)
 		if err != nil {
 			wrappedErr = wrappedErr.Wrap(err)
 			// At this point, we cannot respond. So there is not much to send.

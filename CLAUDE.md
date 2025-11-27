@@ -113,12 +113,35 @@ func TestSomethingThatFatals(t *testing.T) {
 - Encryption keys are `crypto.AES256KeySize` byte (32 bytes)
 - Schema in `app/nexus/internal/state/backend/sqlite/ddl/statements.go`
 
+### Test Pattern: Return After t.Fatal
+
+When `t.Fatal` guards a pointer that is dereferenced afterward, add an explicit
+`return` after the `t.Fatal` call. While `t.Fatal` stops the test, the compiler
+and staticcheck (SA5011) cannot prove control flow stops, so they warn about
+possible nil pointer dereference.
+
+```go
+// BAD: staticcheck SA5011 warns about possible nil pointer dereference
+if result == nil {
+    t.Fatal("Expected non-nil result")
+}
+result.DoSomething()  // SA5011: possible nil pointer dereference
+
+// GOOD: explicit return satisfies static analysis
+if result == nil {
+    t.Fatal("Expected non-nil result")
+    return
+}
+result.DoSomething()  // No warning
+```
+
 ### Common Mistakes to Avoid
 1. Don't invent environment variables---check existing code first
-2. Use regex patterns, not globs, for SPIFFE ID / path pattern matching  
+2. Use regex patterns, not globs, for SPIFFE ID / path pattern matching
 3. Don't assume libraries exist---check imports/dependencies
 4. Follow existing naming conventions and file organization
 5. Test files should mirror the structure they're testing
+6. Add `return` after `t.Fatal` when subsequent code dereferences the pointer
 
 ## Project Structure
 ```

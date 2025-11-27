@@ -10,11 +10,12 @@ import (
 
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
+
 	"github.com/spiffe/spike/internal/journal"
 )
 
 // RouteDecrypt handles HTTP requests to decrypt ciphertext data using the
-// SPIKE Nexus's cipher. This endpoint provides decryption-as-a-service
+// SPIKE Nexus cipher. This endpoint provides decryption-as-a-service
 // functionality without persisting any data.
 //
 // The function supports two modes based on Content-Type:
@@ -39,12 +40,18 @@ import (
 // Access control is enforced through guardDecryptSecretRequest for JSON mode.
 // Streaming mode may have different permission requirements.
 //
-// Errors:
-//   - Returns ErrReadFailure if request body cannot be read
-//   - Returns ErrParseFailure if JSON request cannot be parsed
-//   - Returns ErrBadInput if version is not supported or nonce size is invalid
-//   - Returns ErrInternal if cipher is unavailable or decryption fails
-//   - Returns appropriate HTTP status codes for different error conditions
+// Parameters:
+//   - w: HTTP response writer for sending the decrypted response
+//   - r: HTTP request containing ciphertext data to decrypt
+//   - audit: Audit entry for logging the decryption request
+//
+// Returns:
+//   - *sdkErrors.SDKError: nil on success, or one of:
+//   - ErrDataReadFailure if request body cannot be read
+//   - ErrDataParseFailure if JSON request cannot be parsed
+//   - ErrDataInvalidInput if version is unsupported or nonce size is invalid
+//   - ErrStateBackendNotReady if cipher is unavailable
+//   - ErrCryptoDecryptFailed if decryption fails
 func RouteDecrypt(
 	w http.ResponseWriter, r *http.Request, audit *journal.AuditEntry,
 ) *sdkErrors.SDKError {

@@ -115,7 +115,9 @@ func TestAudit_OutputsValidJSON(t *testing.T) {
 	w.Close()
 	os.Stdout = oldStdout
 	var buf bytes.Buffer
-	io.Copy(&buf, r)
+	if _, copyErr := io.Copy(&buf, r); copyErr != nil {
+		t.Fatalf("Failed to copy stdout: %v", copyErr)
+	}
 	output := buf.String()
 
 	// Verify output is valid JSON
@@ -159,7 +161,9 @@ func TestAuditRequest_SetsFieldsCorrectly(t *testing.T) {
 	w.Close()
 	os.Stdout = oldStdout
 	var buf bytes.Buffer
-	io.Copy(&buf, r)
+	if _, copyErr := io.Copy(&buf, r); copyErr != nil {
+		t.Fatalf("Failed to copy stdout: %v", copyErr)
+	}
 	output := buf.String()
 
 	// Verify the audit entry was updated

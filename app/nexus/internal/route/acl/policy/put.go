@@ -10,6 +10,7 @@ import (
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
+
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 	"github.com/spiffe/spike/internal/journal"
 	"github.com/spiffe/spike/internal/net"
@@ -95,8 +96,6 @@ func RoutePutPolicy(
 		return upsertErr
 	}
 
-	pps := reqres.PolicyPutResponse{}.Success()
-	pps.ID = policy.ID
-	net.Success(pps, w)
+	net.Success(reqres.PolicyPutResponse{ID: policy.ID}.Success(), w)
 	return nil
 }

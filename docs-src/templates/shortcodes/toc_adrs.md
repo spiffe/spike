@@ -4,6 +4,8 @@
 # \\\\\\
 #}
 
+* [ADR-0032: Standard 12-Byte Nonce Size for AES-GCM](@/architecture/adrs/adr-0032.md)
+* [ADR-0031: AST-Based Test Enforcement for Route Guard Functions](@/architecture/adrs/adr-0031.md)
 * [ADR-0030: Minimal Error Messages in API Responses](@/architecture/adrs/adr-0030.md)
 * [ADR-0029: Restrict Recovery and Restoration Operations to SPIKE Pilot](@/architecture/adrs/adr-0029.md)
 * [ADR-0028: Use Human-Readable Error Messages in CLI Tools](@/architecture/adrs/adr-0028.md)

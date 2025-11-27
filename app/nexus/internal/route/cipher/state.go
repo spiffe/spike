@@ -56,8 +56,6 @@ func getCipherOrFailStreaming(
 func getCipherOrFailJSON[T any](
 	w http.ResponseWriter, errorResponse T,
 ) (cipher.AEAD, *sdkErrors.SDKError) {
-	const fName = "getCipherOrFailJSON"
-
 	c := persist.Backend().GetCipher()
 	if c == nil {
 		net.Fail(errorResponse, w, http.StatusInternalServerError)

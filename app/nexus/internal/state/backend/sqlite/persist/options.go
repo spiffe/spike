@@ -38,13 +38,13 @@ type Options struct {
 }
 
 const spikeDataFolderName = ".spike"
-const spikeDbName = "spike.db"
+const spikeDBName = "spike.db"
 
 // DefaultOptions returns the default SQLite options
 func DefaultOptions() *Options {
 	return &Options{
 		DataDir:         spikeDataFolderName,
-		DatabaseFile:    spikeDbName,
+		DatabaseFile:    spikeDBName,
 		JournalMode:     env.DatabaseJournalModeVal(),
 		BusyTimeoutMs:   env.DatabaseBusyTimeoutMsVal(),
 		MaxOpenConns:    env.DatabaseMaxOpenConnsVal(),

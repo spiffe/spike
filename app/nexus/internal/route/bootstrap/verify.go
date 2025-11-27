@@ -11,6 +11,7 @@ import (
 
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
+
 	"github.com/spiffe/spike/app/nexus/internal/state/persist"
 	"github.com/spiffe/spike/internal/journal"
 	"github.com/spiffe/spike/internal/net"
@@ -70,7 +71,8 @@ func RouteVerify(
 	c := persist.Backend().GetCipher()
 	if c == nil {
 		net.Fail(
-			reqres.BootstrapVerifyResponse{}.Internal(), w, http.StatusInternalServerError,
+			reqres.BootstrapVerifyResponse{}.Internal(), w,
+			http.StatusInternalServerError,
 		)
 		return sdkErrors.ErrCryptoCipherNotAvailable
 	}
@@ -79,7 +81,8 @@ func RouteVerify(
 	plaintext, decryptErr := c.Open(nil, request.Nonce, request.Ciphertext, nil)
 	if decryptErr != nil {
 		net.Fail(
-			reqres.BootstrapVerifyResponse{}.Internal(), w, http.StatusInternalServerError,
+			reqres.BootstrapVerifyResponse{}.Internal(), w,
+			http.StatusInternalServerError,
 		)
 		return sdkErrors.ErrCryptoDecryptionFailed
 	}

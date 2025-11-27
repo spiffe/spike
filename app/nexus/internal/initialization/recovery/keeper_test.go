@@ -325,8 +325,8 @@ func TestShardMapOperations(t *testing.T) {
 	}
 
 	// Test retrieving shards
-	retrievedShard1 := shardMap["keeper1"]
-	if retrievedShard1 == nil {
+	retrievedShard1, ok := shardMap["keeper1"]
+	if !ok || retrievedShard1 == nil {
 		t.Fatal("Expected to retrieve shard for keeper1")
 	}
 	if retrievedShard1[0] != 1 {

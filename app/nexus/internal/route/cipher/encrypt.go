@@ -15,7 +15,7 @@ import (
 )
 
 // RouteEncrypt handles HTTP requests to encrypt plaintext data using the
-// SPIKE Nexus's cipher. This endpoint provides encryption-as-a-service
+// SPIKE Nexus cipher. This endpoint provides encryption-as-a-service
 // functionality without persisting any data.
 //
 // The function supports two modes based on Content-Type:
@@ -40,11 +40,17 @@ import (
 // Access control is enforced through guardEncryptSecretRequest for JSON mode.
 // Streaming mode may have different permission requirements.
 //
-// Errors:
-//   - Returns ErrReadFailure if the request body cannot be read
-//   - Returns ErrParseFailure if JSON request cannot be parsed
-//   - Returns ErrInternal if cipher is unavailable or nonce generation fails
-//   - Returns appropriate HTTP status codes for different error conditions
+// Parameters:
+//   - w: HTTP response writer for sending the encrypted response
+//   - r: HTTP request containing plaintext data to encrypt
+//   - audit: Audit entry for logging the encryption request
+//
+// Returns:
+//   - *sdkErrors.SDKError: nil on success, or one of:
+//   - ErrDataReadFailure if request body cannot be read
+//   - ErrDataParseFailure if JSON request cannot be parsed
+//   - ErrStateBackendNotReady if cipher is unavailable
+//   - ErrCryptoNonceGenerationFailed if nonce generation fails
 func RouteEncrypt(
 	w http.ResponseWriter, r *http.Request, audit *journal.AuditEntry,
 ) *sdkErrors.SDKError {

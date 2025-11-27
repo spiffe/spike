@@ -240,6 +240,7 @@ func TestSQLiteSecret_SimpleVersioning(t *testing.T) {
 		}
 		if secret1 == nil {
 			t.Fatal("Secret should exist after first upsert")
+			return
 		}
 		t.Logf("After first upsert - CurrentVersion: %d, Versions: %v",
 			secret1.Metadata.CurrentVersion, getVersionNumbers(secret1))
@@ -259,6 +260,7 @@ func TestSQLiteSecret_SimpleVersioning(t *testing.T) {
 		}
 		if secret2 == nil {
 			t.Fatal("Secret should exist after second upsert")
+			return
 		}
 		t.Logf("After second upsert - CurrentVersion: %d, Versions: %v",
 			secret2.Metadata.CurrentVersion, getVersionNumbers(secret2))

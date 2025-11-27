@@ -4,9 +4,11 @@
 
 package cipher
 
+import "github.com/spiffe/spike/internal/crypto"
+
 const spikeCipherVersion = byte('1')
 const headerKeyContentType = "Content-Type"
 const headerValueOctetStream = "application/octet-stream"
 
-// AES-GCM standard nonce size is 12 bytes
-const expectedNonceSize = 12
+// expectedNonceSize is the standard AES-GCM nonce size. See ADR-0032.
+const expectedNonceSize = crypto.GCMNonceSize

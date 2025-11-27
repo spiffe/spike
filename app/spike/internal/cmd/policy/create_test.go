@@ -451,6 +451,7 @@ func TestNewPolicyCreateCommand(t *testing.T) {
 
 	if cmd == nil {
 		t.Fatal("Expected command to be created, got nil")
+		return
 	}
 
 	if cmd.Use != "create" {

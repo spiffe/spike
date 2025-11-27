@@ -6,7 +6,6 @@ package net
 
 import (
 	"encoding/json"
-	"io"
 	"net/http"
 
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
@@ -45,7 +44,7 @@ func ReadRequestBodyAndRespondOnFail(
 		if err != nil {
 			// Cannot even parse a generic struct, this is an internal error.
 			w.WriteHeader(http.StatusInternalServerError)
-			_, writeErr := io.WriteString(w, string(failJSON))
+			_, writeErr := w.Write(failJSON)
 			if writeErr != nil {
 				// Cannot even write the error response, this is a critical error.
 				failErr = failErr.Wrap(writeErr)
@@ -58,7 +57,7 @@ func ReadRequestBodyAndRespondOnFail(
 		}
 
 		w.WriteHeader(http.StatusBadRequest)
-		_, writeErr := io.WriteString(w, string(failJSON))
+		_, writeErr := w.Write(failJSON)
 		if writeErr != nil {
 			failErr = failErr.Wrap(writeErr)
 			failErr.Msg = "problem writing response"

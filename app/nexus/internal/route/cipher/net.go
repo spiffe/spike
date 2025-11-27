@@ -26,7 +26,7 @@ import (
 func respondStreamingDecrypt(
 	plaintext []byte, w http.ResponseWriter,
 ) *sdkErrors.SDKError {
-	w.Header().Set("Content-Type", "application/octet-stream")
+	w.Header().Set(headerKeyContentType, headerValueOctetStream)
 	if _, err := w.Write(plaintext); err != nil {
 		return sdkErrors.ErrFSStreamWriteFailed.Wrap(err)
 	}
@@ -69,7 +69,7 @@ func respondJSONDecrypt(
 func respondStreamingEncrypt(
 	nonce, ciphertext []byte, w http.ResponseWriter,
 ) *sdkErrors.SDKError {
-	w.Header().Set("Content-Type", headerValueOctetStream)
+	w.Header().Set(headerKeyContentType, headerValueOctetStream)
 	if _, err := w.Write([]byte{spikeCipherVersion}); err != nil {
 		return sdkErrors.ErrFSStreamWriteFailed.Wrap(err)
 	}

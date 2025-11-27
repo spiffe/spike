@@ -224,6 +224,7 @@ func TestRootKeyNoLock_ReturnsPointer(t *testing.T) {
 	// Verify pointer is not nil
 	if ptr == nil {
 		t.Fatal("RootKeyNoLock should not return nil")
+		return
 	}
 
 	// Verify it points to correct data

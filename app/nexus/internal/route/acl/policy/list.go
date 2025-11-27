@@ -10,8 +10,8 @@ import (
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
-	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 
+	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 	"github.com/spiffe/spike/internal/journal"
 	"github.com/spiffe/spike/internal/net"
 )
@@ -108,8 +108,6 @@ func RouteListPolicies(
 		policies = pp
 	}
 
-	sr := reqres.PolicyListResponse{}.Success()
-	sr.Policies = policies
-	net.Success(sr, w)
+	net.Success(reqres.PolicyListResponse{Policies: policies}.Success(), w)
 	return nil
 }

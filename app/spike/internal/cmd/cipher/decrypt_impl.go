@@ -39,16 +39,16 @@ func decryptStream(cmd *cobra.Command, api *sdk.API, inFile, outFile string) {
 		}
 	}
 
-	in, cleanupIn, err := openInput(inFile)
-	if err != nil {
-		cmd.PrintErrf("Error: %v\n", err)
+	in, cleanupIn, inputErr := openInput(inFile)
+	if inputErr != nil {
+		cmd.PrintErrf("Error: %v\n", inputErr)
 		return
 	}
 	defer cleanupIn()
 
-	out, cleanupOut, err := openOutput(outFile)
-	if err != nil {
-		cmd.PrintErrf("Error: %v\n", err)
+	out, cleanupOut, outputErr := openOutput(outFile)
+	if outputErr != nil {
+		cmd.PrintErrf("Error: %v\n", outputErr)
 		return
 	}
 	defer cleanupOut()
@@ -81,28 +81,28 @@ func decryptStream(cmd *cobra.Command, api *sdk.API, inFile, outFile string) {
 // propagation, following the CLI command pattern.
 func decryptJSON(cmd *cobra.Command, api *sdk.API, versionStr, nonceB64,
 	ciphertextB64, algorithm, outFile string) {
-	v, err := strconv.Atoi(versionStr)
+	v, atoiErr := strconv.Atoi(versionStr)
 	// version must be a valid byte value.
-	if err != nil || v < 0 || v > 255 {
+	if atoiErr != nil || v < 0 || v > 255 {
 		cmd.PrintErrln("Error: Invalid --version, must be 0-255.")
 		return
 	}
 
-	nonce, err := base64.StdEncoding.DecodeString(nonceB64)
-	if err != nil {
+	nonce, nonceErr := base64.StdEncoding.DecodeString(nonceB64)
+	if nonceErr != nil {
 		cmd.PrintErrln("Error: Invalid --nonce base64.")
 		return
 	}
 
-	ciphertext, err := base64.StdEncoding.DecodeString(ciphertextB64)
-	if err != nil {
+	ciphertext, ciphertextErr := base64.StdEncoding.DecodeString(ciphertextB64)
+	if ciphertextErr != nil {
 		cmd.PrintErrln("Error: Invalid --ciphertext base64.")
 		return
 	}
 
-	out, cleanupOut, err := openOutput(outFile)
-	if err != nil {
-		cmd.PrintErrf("Error: %v\n", err)
+	out, cleanupOut, openErr := openOutput(outFile)
+	if openErr != nil {
+		cmd.PrintErrf("Error: %v\n", openErr)
 		return
 	}
 	defer cleanupOut()

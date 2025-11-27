@@ -76,9 +76,9 @@ func RouteRecover(
 
 	for idx, shard := range shards {
 		if seenIndices[idx] {
-			failer := sdkErrors.ErrShamirDuplicateIndex
-			failer.Msg = fmt.Sprint("duplicate shard index: ", idx)
-			return failer
+			failErr := sdkErrors.ErrShamirDuplicateIndex
+			failErr.Msg = fmt.Sprint("duplicate shard index: ", idx)
+			return failErr
 		}
 
 		// We cannot check for duplicate values, because although it's

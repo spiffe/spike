@@ -57,11 +57,12 @@ func TestDataStore_loadSecretInternal_Success(t *testing.T) {
 
 		// Verify results
 		if err != nil {
-			t.Errorf("loadSecretInternal failed: %v", err)
+			t.Fatalf("loadSecretInternal failed: %v", err)
 		}
 
 		if secret == nil {
 			t.Fatal("Expected non-nil secret")
+			return
 		}
 
 		// Check metadata
@@ -154,11 +155,12 @@ func TestDataStore_loadSecretInternal_MultipleVersions(t *testing.T) {
 
 		// Verify results
 		if err != nil {
-			t.Errorf("loadSecretInternal failed: %v", err)
+			t.Fatalf("loadSecretInternal failed: %v", err)
 		}
 
 		if secret == nil {
 			t.Fatal("Expected non-nil secret")
+			return
 		}
 
 		// Check metadata

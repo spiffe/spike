@@ -40,7 +40,12 @@ Consider disabling swap to enhance security.
 		failErr := sdkErrors.ErrStateInitializationFailed.Wrap(err)
 		log.FatalErr(appName, *failErr)
 	}
-	defer spiffe.CloseSource(source)
+	defer func() {
+		if closeErr := spiffe.CloseSource(source); closeErr != nil {
+			warnErr := sdkErrors.ErrSPIFFEFailedToCloseX509Source.Wrap(closeErr)
+			log.WarnErr(appName, *warnErr)
+		}
+	}()
 
 	cmd.Initialize(source, SPIFFEID)
 	cmd.Execute()

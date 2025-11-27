@@ -9,6 +9,7 @@ import (
 
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
+
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 	"github.com/spiffe/spike/internal/journal"
 	"github.com/spiffe/spike/internal/net"
@@ -41,17 +42,28 @@ import (
 //
 //	{}
 //
+// Example not found response:
+//
+//	{
+//	    "err": "not_found"
+//	}
+//
 // Example error response:
 //
 //	{
 //	    "err": "Internal server error"
 //	}
 //
+// HTTP Status Codes:
+//   - 200: Policy deleted successfully
+//   - 404: Policy not found
+//   - 500: Internal server error
+//
 // Possible errors:
 //   - Failed to read request body
 //   - Failed to parse request body
-//   - Failed to marshal response body
-//   - Failed to delete policy (internal server error)
+//   - Policy not found
+//   - Internal server error during policy deletion
 func RouteDeletePolicy(
 	w http.ResponseWriter, r *http.Request, audit *journal.AuditEntry,
 ) *sdkErrors.SDKError {
@@ -70,13 +82,20 @@ func RouteDeletePolicy(
 
 	policyID := request.ID
 
-	err = state.DeletePolicy(policyID)
-	if err != nil {
+	deleteErr := state.DeletePolicy(policyID)
+	if deleteErr != nil {
+		if deleteErr.Is(sdkErrors.ErrEntityNotFound) {
+			net.Fail(
+				reqres.PolicyDeleteResponse{}.NotFound(), w, http.StatusNotFound,
+			)
+			return deleteErr
+		}
+
 		net.Fail(
 			reqres.PolicyDeleteResponse{}.Internal(), w,
 			http.StatusInternalServerError,
 		)
-		return err
+		return deleteErr
 	}
 
 	net.Success(reqres.PolicyDeleteResponse{}.Success(), w)

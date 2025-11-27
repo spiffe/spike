@@ -38,16 +38,16 @@ func encryptStream(cmd *cobra.Command, api *sdk.API, inFile, outFile string) {
 		}
 	}
 
-	in, cleanupIn, err := openInput(inFile)
-	if err != nil {
-		cmd.PrintErrf("Error: %v\n", err)
+	in, cleanupIn, inputErr := openInput(inFile)
+	if inputErr != nil {
+		cmd.PrintErrf("Error: %v\n", inputErr)
 		return
 	}
 	defer cleanupIn()
 
-	out, cleanupOut, err := openOutput(outFile)
-	if err != nil {
-		cmd.PrintErrf("Error: %v\n", err)
+	out, cleanupOut, outputErr := openOutput(outFile)
+	if outputErr != nil {
+		cmd.PrintErrf("Error: %v\n", outputErr)
 		return
 	}
 	defer cleanupOut()
@@ -83,9 +83,9 @@ func encryptJSON(cmd *cobra.Command, api *sdk.API, plaintextB64, algorithm,
 		return
 	}
 
-	out, cleanupOut, err := openOutput(outFile)
-	if err != nil {
-		cmd.PrintErrf("Error: %v\n", err)
+	out, cleanupOut, openErr := openOutput(outFile)
+	if openErr != nil {
+		cmd.PrintErrf("Error: %v\n", openErr)
 		return
 	}
 	defer cleanupOut()

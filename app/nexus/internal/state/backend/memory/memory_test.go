@@ -27,18 +27,19 @@ func TestNewInMemoryStore(t *testing.T) {
 	// Verify store was created properly
 	if store == nil {
 		t.Fatal("Expected non-nil Store")
+		return
 	}
 
 	if store.secretStore == nil {
-		t.Error("Expected non-nil secretStore")
+		t.Fatal("Expected non-nil secretStore")
 	}
 
 	if store.policies == nil {
-		t.Error("Expected non-nil policies map")
+		t.Fatal("Expected non-nil policies map")
 	}
 
 	if store.cipher != testCipher {
-		t.Error("Expected cipher to be set correctly")
+		t.Fatal("Expected cipher to be set correctly")
 	}
 
 	// Verify it implements Backend interface
@@ -116,6 +117,7 @@ func TestInMemoryStore_StoreAndLoadSecret(t *testing.T) {
 
 	if loadedSecret == nil {
 		t.Fatal("Expected non-nil loaded secret")
+		return
 	}
 
 	// Verify the loaded secret matches the stored one
@@ -279,6 +281,7 @@ func TestInMemoryStore_StoreAndLoadPolicy(t *testing.T) {
 
 	if loadedPolicy == nil {
 		t.Fatal("Expected non-nil loaded policy")
+		return
 	}
 
 	// Verify the loaded policy matches the stored one

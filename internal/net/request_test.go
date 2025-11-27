@@ -31,11 +31,12 @@ func TestUnmarshalAndRespondOnFail_Success(t *testing.T) {
 	)
 
 	if err != nil {
-		t.Errorf("UnmarshalAndRespondOnFail() error = %v, want nil", err)
+		t.Fatalf("UnmarshalAndRespondOnFail() error = %v, want nil", err)
 	}
 
 	if result == nil {
 		t.Fatal("UnmarshalAndRespondOnFail() result is nil")
+		return
 	}
 
 	if result.Name != "test" {

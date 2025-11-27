@@ -7,11 +7,39 @@ package cipher
 import (
 	"net/http"
 
+	"github.com/spiffe/go-spiffe/v2/spiffeid"
+	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	"github.com/spiffe/spike-sdk-go/config/env"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 
+	"github.com/spiffe/spike/internal/auth"
 	"github.com/spiffe/spike/internal/net"
 )
+
+// extractAndValidateSPIFFEID extracts and validates the peer SPIFFE ID from
+// the request without performing authorization checks. This is used as the
+// first step before accessing sensitive resources like the cipher.
+//
+// Parameters:
+//   - w: The HTTP response writer for error responses
+//   - r: The HTTP request containing the peer SPIFFE ID
+//
+// Returns:
+//   - *spiffeid.ID: The validated peer SPIFFE ID (pointer)
+//   - error: An error if extraction or validation fails
+func extractAndValidateSPIFFEID(
+	w http.ResponseWriter, r *http.Request,
+) (*spiffeid.ID, *sdkErrors.SDKError) {
+	peerSPIFFEID, err := auth.ExtractPeerSPIFFEID[reqres.CipherDecryptResponse](
+		r, w, reqres.CipherDecryptResponse{
+			Err: sdkErrors.ErrAccessUnauthorized.Code,
+		})
+	if alreadyResponded := err != nil; alreadyResponded {
+		return nil, err
+	}
+
+	return peerSPIFFEID, nil
+}
 
 // validateVersion validates that the protocol version is supported.
 //
