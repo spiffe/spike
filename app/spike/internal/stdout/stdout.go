@@ -7,25 +7,53 @@
 // status messages to users.
 package stdout
 
-import "fmt"
-import "os"
+import (
+	"fmt"
+	"os"
+	"sync"
+)
 
-// PrintNotReady prints a message indicating that SPIKE is not initialized
-// and provides instructions for troubleshooting and recovery.
-// The message includes suggestions to wait, check logs, and information about
-// manual bootstrapping if the initialization problem persists.
+// notReadyCallCount tracks how many times PrintNotReady has been called.
+// This enables progressive messaging: brief on first call, detailed on
+// subsequent calls.
+var (
+	notReadyCallCount int
+	notReadyMu        sync.Mutex
+)
+
+// PrintNotReady prints a message indicating that SPIKE is not initialized.
+//
+// On the first call, it prints a brief message suggesting the user wait.
+// On subsequent calls, it prints a more detailed message with troubleshooting
+// steps and recovery instructions. This progressive approach avoids alarming
+// users during normal startup delays while still providing help when there
+// is a real problem.
 func PrintNotReady() {
-	if _, err := fmt.Fprintln(os.Stderr, `!
-!	SPIKE is not initialized.
-!	Wait a few seconds and try again.
-!	Also, check out SPIKE Nexus logs.
-!
-!	If the problem persists, you may need to
-!	manually bootstrap via 'spike operator restore'.
-!
-!	Please check out https://spike.ist/ for additional
-!	recovery and restoration information.
-!`); err != nil {
+	notReadyMu.Lock()
+	notReadyCallCount++
+	count := notReadyCallCount
+	notReadyMu.Unlock()
+
+	var msg string
+	if count == 1 {
+		msg = `
+  SPIKE is not ready yet. Please wait a moment and try again.
+`
+	} else {
+		msg = `
+  SPIKE is not initialized.
+  Wait a few seconds and try again.
+  Also, check out SPIKE Nexus logs.
+
+  If the problem persists, you may need to
+  manually bootstrap via 'spike operator restore'.
+
+  Please check out https://spike.ist/ for additional
+  recovery and restoration information.
+`
+	}
+
+	if _, err := fmt.Fprint(os.Stderr, msg); err != nil {
 		fmt.Println("failed to write to stderr: ", err.Error())
 	}
 }

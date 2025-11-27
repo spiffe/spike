@@ -6,6 +6,7 @@ package net
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -228,7 +229,7 @@ func TestHandleInternalError(t *testing.T) {
 		t.Error("HandleInternalError() returned nil")
 	}
 
-	if result != err {
+	if !errors.Is(result, err) {
 		t.Error("HandleInternalError() should return the same error")
 	}
 

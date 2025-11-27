@@ -70,7 +70,7 @@ architecture and design philosophy.
 ## A Note on Security
 
 We take **SPIKE**'s security seriously. If you believe you have
-found a vulnerability, please responsibily disclose it to 
+found a vulnerability, please responsibly disclose it to
 [security@spike.ist](mailto:security@spike.ist).
 
 See [SECURITY.md](SECURITY.md) for additional details.
@@ -93,18 +93,21 @@ and let us change the world together 🤘.
 Here are the important folders and files in this repository:
 
 * `./app`: Contains **SPIKE** components' source code:
-  * `./app/keeper`: **SPIKE** Keeper
-  * `./app/nexus`: **SPIKE** Nexus
-  * `./app/spike`: **SPIKE** Pilot
-  * `./app/bootstrap`: **SPIKE** Bootstrap
-* `./config`: Contains configuration files to run SPIRE in a development
-  environment.
-* `./docs-src`: Public documentation.
-  * `./docs`: Generated documentation.
-* `./hack`: Useful scripts to build and test the project.
-* `./examples`: Examples of how to use **SPIKE**.
-* `./makefiles`: Makefiles for building and testing **SPIKE**.
+  * `./app/nexus`: **SPIKE** Nexus (secrets store)
+  * `./app/keeper`: **SPIKE** Keeper (root key redundancy)
+  * `./app/spike`: **SPIKE** Pilot (CLI)
+  * `./app/bootstrap`: **SPIKE** Bootstrap (initialization)
+  * `./app/demo`: Demo workloads for testing
 * `./internal`: Internal modules shared among **SPIKE** components.
+* `./config`: Configuration files to run SPIRE in development.
+* `./docs-src`: Documentation source files.
+  * `./docs`: Generated documentation.
+* `./hack`: Scripts for building and testing.
+* `./examples`: Usage examples.
+* `./makefiles`: Makefiles for building and testing.
+* `./ci`: CI/CD configuration.
+* `./dockerfiles`: Container build files.
+* `./assets`: Images and other static assets.
 
 ## Code Of Conduct
 

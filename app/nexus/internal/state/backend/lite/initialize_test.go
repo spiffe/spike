@@ -19,14 +19,14 @@ import (
 func TestNew_ValidKey(t *testing.T) {
 	// Create a valid AES-256 key
 	rootKey := &[crypto.AES256KeySize]byte{}
-	if _, err := rand.Read(rootKey[:]); err != nil {
-		t.Fatalf("Failed to generate random key: %v", err)
+	if _, randErr := rand.Read(rootKey[:]); randErr != nil {
+		t.Fatalf("Failed to generate random key: %v", randErr)
 	}
 
 	// Create new lite backend
-	ds, err := New(rootKey)
-	if err != nil {
-		t.Errorf("Expected no error with valid key, got: %v", err)
+	ds, newErr := New(rootKey)
+	if newErr != nil {
+		t.Errorf("Expected no error with valid key, got: %v", newErr)
 	}
 
 	if ds == nil {
@@ -123,13 +123,13 @@ func TestNew_ZeroKey(t *testing.T) {
 func TestDataStore_GetCipher(t *testing.T) {
 	// Create a valid key
 	rootKey := &[crypto.AES256KeySize]byte{}
-	if _, err := rand.Read(rootKey[:]); err != nil {
-		t.Fatalf("Failed to generate random key: %v", err)
+	if _, randErr := rand.Read(rootKey[:]); randErr != nil {
+		t.Fatalf("Failed to generate random key: %v", randErr)
 	}
 
-	ds, err := New(rootKey)
-	if err != nil {
-		t.Fatalf("Failed to create Store: %v", err)
+	ds, newErr := New(rootKey)
+	if newErr != nil {
+		t.Fatalf("Failed to create Store: %v", newErr)
 	}
 
 	liteStore := ds.(*Store)

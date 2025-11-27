@@ -2,15 +2,27 @@
 //  \\\\\ Copyright 2024-present SPIKE contributors.
 // \\\\\\\ SPDX-License-Identifier: Apache-2.0
 
-// Package backend provides the interfaces and configurations necessary for
-// implementing a secure and flexible storage backend for managing secrets and
-// policies. It includes definitions for interactions like initializing
-// backends, storing, retrieving, and deleting secrets and policies, as well as
-// abstractions for backend configuration and factory creation.
+// Package backend defines the storage interface for SPIKE Nexus.
 //
-// The backend package is designed to be extensible, allowing implementation of
-// various storage mechanisms such as file-based, SQL databases, or cloud-based
-// solutions.
+// This package provides the Backend interface that all storage implementations
+// must satisfy. SPIKE Nexus uses this interface to persist secrets and policies
+// with encryption at rest.
+//
+// Available implementations:
+//   - sqlite: Persistent encrypted storage using SQLite (production use)
+//   - memory: In-memory storage for development and testing
+//   - noop: No-op implementation for embedding in other backends
+//   - lite: Encryption-only backend (embeds noop, provides cipher for
+//     encryption-as-a-service)
+//
+// The Backend interface provides:
+//   - Secret storage with versioning and soft-delete support
+//   - Policy storage for SPIFFE ID and path-based access control
+//   - Cipher access for encryption-as-a-service endpoints
+//   - Lifecycle management (Initialize/Close)
+//
+// All implementations must be thread-safe. Secrets and policies are encrypted
+// using AES-256-GCM before storage.
 package backend
 
 import (

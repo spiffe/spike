@@ -2,16 +2,6 @@
 //  \\\\\ Copyright 2024-present SPIKE contributors.
 // \\\\\\\ SPDX-License-Identifier: Apache-2.0
 
-// Package memory implements an in-memory storage backend for managing
-// secrets and policies in the SPIKE system. This package provides a
-// fully functional in-memory implementation, `Store`, which is suitable
-// for development, testing, or scenarios where persistent storage is
-// not required.
-//
-// The `Store` provides thread-safe implementations for interfaces related
-// to storing and retrieving secrets and policies. Unlike the noop backend,
-// this implementation actually stores data in memory using the kv package
-// and maintains the proper state throughout the application lifecycle.
 package memory
 
 import (

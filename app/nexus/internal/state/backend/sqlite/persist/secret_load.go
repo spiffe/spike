@@ -63,14 +63,14 @@ func (s *DataStore) loadSecretInternal(
 	var secret kv.Value
 
 	// Load metadata
-	err := s.db.QueryRowContext(ctx, ddl.QuerySecretMetadata, path).Scan(
+	metaErr := s.db.QueryRowContext(ctx, ddl.QuerySecretMetadata, path).Scan(
 		&secret.Metadata.CurrentVersion,
 		&secret.Metadata.OldestVersion,
 		&secret.Metadata.CreatedTime,
 		&secret.Metadata.UpdatedTime,
 		&secret.Metadata.MaxVersions)
-	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
+	if metaErr != nil {
+		if errors.Is(metaErr, sql.ErrNoRows) {
 			return nil, sdkErrors.ErrEntityNotFound
 		}
 
@@ -78,14 +78,14 @@ func (s *DataStore) loadSecretInternal(
 	}
 
 	// Load versions
-	rows, err := s.db.QueryContext(ctx, ddl.QuerySecretVersions, path)
-	if err != nil {
-		return nil, sdkErrors.ErrEntityQueryFailed.Wrap(err)
+	rows, queryErr := s.db.QueryContext(ctx, ddl.QuerySecretVersions, path)
+	if queryErr != nil {
+		return nil, sdkErrors.ErrEntityQueryFailed.Wrap(queryErr)
 	}
 	defer func(rows *sql.Rows) {
-		err := rows.Close()
-		if err != nil {
-			failErr := sdkErrors.ErrFSFileCloseFailed.Wrap(err)
+		closeErr := rows.Close()
+		if closeErr != nil {
+			failErr := sdkErrors.ErrFSFileCloseFailed.Wrap(closeErr)
 			log.WarnErr(fName, *failErr)
 		}
 	}(rows)
@@ -100,11 +100,11 @@ func (s *DataStore) loadSecretInternal(
 			deletedTime sql.NullTime
 		)
 
-		if err := rows.Scan(
+		if scanErr := rows.Scan(
 			&version, &nonce,
 			&encrypted, &createdTime, &deletedTime,
-		); err != nil {
-			return nil, sdkErrors.ErrEntityQueryFailed.Wrap(err)
+		); scanErr != nil {
+			return nil, sdkErrors.ErrEntityQueryFailed.Wrap(scanErr)
 		}
 
 		decrypted, decryptErr := s.decrypt(encrypted, nonce)
@@ -128,8 +128,8 @@ func (s *DataStore) loadSecretInternal(
 		secret.Versions[version] = sv
 	}
 
-	if err := rows.Err(); err != nil {
-		return nil, sdkErrors.ErrEntityQueryFailed.Wrap(err)
+	if rowsErr := rows.Err(); rowsErr != nil {
+		return nil, sdkErrors.ErrEntityQueryFailed.Wrap(rowsErr)
 	}
 
 	// Integrity check: If CurrentVersion is non-zero, it must exist in

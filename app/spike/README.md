@@ -4,20 +4,16 @@
 
 **SPIKE Pilot** is the command-line interface for the **SPIKE** system.
 
-It is a binary named `spike`.
-
-It is helpful to define an alias to `spike` for ease of use:
+The binary is named `spike`. You can define an alias for convenience:
 
 ```bash
 # ~/.bashrc
-
-# Define an alias to where your `spike` binary is:
-alias spike=$HOME/WORKSPACE/spike-git-repo/spike
+alias spike=$HOME/WORKSPACE/spike/spike
 ```
 
 ## Getting Help
 
-Simply typing `spike` will show a summary of available commands.
+Running `spike` without arguments shows available commands:
 
 ```text
 Usage: spike [command] [flags]
@@ -40,23 +36,24 @@ Subcommands:
   put         Create or update a secret
   get         Retrieve a secret value
   list        List all secret paths
-  delete      Soft-delete a secret (can be recovered)
-  undelete    Restore a soft-deleted secret
-  metadata    Retrieve secret metadata
+  delete      Soft-delete secret versions (can be recovered)
+  undelete    Restore soft-deleted versions
+  metadata    Retrieve secret metadata (versions, timestamps)
 ```
 
 **Examples:**
 
 ```bash
-spike secret put secrets/db/password username=admin password=secret
-spike secret get secrets/db/password
-spike secret get secrets/db/password -v 2          # Get specific version
-spike secret get secrets/db/password username      # Get specific key
+spike secret put secrets/db/creds username=admin password=secret
+spike secret get secrets/db/creds
+spike secret get secrets/db/creds --version 2      # Get specific version
+spike secret get secrets/db/creds username         # Get specific key
 spike secret list
-spike secret delete secrets/db/password
-spike secret delete secrets/db/password -v 1,2,3   # Delete specific versions
-spike secret undelete secrets/db/password
-spike secret metadata get secrets/db/password
+spike secret list secrets/db                       # Filter by prefix
+spike secret delete secrets/db/creds
+spike secret delete secrets/db/creds --versions 1,2,3
+spike secret undelete secrets/db/creds --versions 1,2
+spike secret metadata get secrets/db/creds
 ```
 
 ### Policy Management
@@ -66,10 +63,10 @@ spike policy <subcommand>
 
 Subcommands:
   create      Create a new policy
-  apply       Apply a policy from a YAML file
+  apply       Create or update a policy (upsert)
   list        List all policies
-  get         Get details of a specific policy by ID or name
-  delete      Delete a policy by ID or name
+  get         Get details of a specific policy
+  delete      Delete a policy
 ```
 
 **Examples:**
@@ -77,14 +74,14 @@ Subcommands:
 ```bash
 spike policy list
 spike policy get abc123
-spike policy get --name=my-policy
-spike policy create --name=new-policy \
-    --path-pattern="^secrets/.*$" \
-    --spiffeid-pattern="^spiffe://example\.org/.*$" \
-    --permissions=read,write
-spike policy apply -f policy.yaml
+spike policy get --name my-policy
+spike policy create --name new-policy \
+    --path-pattern "^secrets/.*$" \
+    --spiffeid-pattern "^spiffe://example\.org/.*$" \
+    --permissions read,write
+spike policy apply --file policy.yaml
 spike policy delete abc123
-spike policy delete --name=my-policy
+spike policy delete --name my-policy
 ```
 
 ### Cipher Operations
@@ -100,9 +97,14 @@ Subcommands:
 **Examples:**
 
 ```bash
-spike cipher encrypt --in secret.txt --out secret.enc
-spike cipher decrypt --in secret.enc --out secret.txt
+# Stream mode (file or stdin/stdout)
+spike cipher encrypt --file secret.txt --out secret.enc
+spike cipher decrypt --file secret.enc --out secret.txt
 echo "sensitive data" | spike cipher encrypt | spike cipher decrypt
+
+# JSON mode (base64 input/output)
+spike cipher encrypt --plaintext $(echo -n "secret" | base64)
+spike cipher decrypt --ciphertext <base64> --nonce <base64> --version <n>
 ```
 
 ### Operator Functions
@@ -111,12 +113,12 @@ echo "sensitive data" | spike cipher encrypt | spike cipher decrypt
 spike operator <subcommand>
 
 Subcommands:
-  recover     Recover Shamir shards from SPIKE Keeper
-  restore     Restore SPIKE Nexus using recovery shards
+  recover     Retrieve recovery shards (while SPIKE Nexus is healthy)
+  restore     Submit recovery shards (to restore a failed SPIKE Nexus)
 ```
 
-These commands are used for disaster recovery scenarios when SPIKE Nexus
-needs to be restored from Shamir secret shards.
+These commands are for disaster recovery when SPIKE Nexus cannot auto-recover
+via SPIKE Keeper. See https://spike.ist/operations/recovery/ for details.
 
 ## Notes
 
@@ -124,7 +126,5 @@ needs to be restored from Shamir secret shards.
   not filesystem paths. They should **not** start with a forward slash.
 - Policy patterns use **regex**, not globs (e.g., `^secrets/.*$` not
   `secrets/*`).
-- The CLI is a constant work in progress, so what you see above might be
-  slightly different from the version that you are using.
 
-For additional help, [check the official documentation](https://spike.ist/).
+For additional help, see the [official documentation](https://spike.ist/).

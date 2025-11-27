@@ -15,6 +15,7 @@ import (
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/kv"
+
 	"github.com/spiffe/spike/app/nexus/internal/state/backend"
 )
 

@@ -52,16 +52,16 @@ func readAndParseRequest[Req any, Res any](
 	r *http.Request,
 	errorResponse Res,
 ) (*Req, *sdkErrors.SDKError) {
-	requestBody, err := ReadRequestBodyAndRespondOnFail(w, r)
-	if err != nil {
-		return nil, err
+	requestBody, readErr := ReadRequestBodyAndRespondOnFail(w, r)
+	if readErr != nil {
+		return nil, readErr
 	}
 
-	request, err := UnmarshalAndRespondOnFail[Req, Res](
+	request, unmarshalErr := UnmarshalAndRespondOnFail[Req, Res](
 		requestBody, w, errorResponse,
 	)
-	if err != nil {
-		failErr := sdkErrors.ErrDataParseFailure.Wrap(err)
+	if unmarshalErr != nil {
+		failErr := sdkErrors.ErrDataParseFailure.Wrap(unmarshalErr)
 		failErr.Msg = "problem parsing request body"
 		return nil, failErr
 	}

@@ -2,13 +2,6 @@
 //  \\\\\ Copyright 2024-present SPIKE contributors.
 // \\\\\\\ SPDX-License-Identifier: Apache-2.0
 
-// Package lite provides an encryption-only backend that does not persist data.
-//
-// This package implements a lightweight backend that provides AES-GCM
-// encryption services without any storage functionality. It embeds the noop
-// backend for storage operations and only provides encryption capabilities.
-// This is useful when encryption is needed, but data persistence is handled
-// in-memory or by another layer.
 package lite
 
 import (
@@ -53,15 +46,15 @@ type Store struct {
 func New(rootKey *[crypto.AES256KeySize]byte) (
 	backend.Backend, *sdkErrors.SDKError,
 ) {
-	block, err := aes.NewCipher(rootKey[:])
-	if err != nil {
-		failErr := sdkErrors.ErrCryptoFailedToCreateCipher.Wrap(err)
+	block, cipherErr := aes.NewCipher(rootKey[:])
+	if cipherErr != nil {
+		failErr := sdkErrors.ErrCryptoFailedToCreateCipher.Wrap(cipherErr)
 		return nil, failErr
 	}
 
-	gcm, err := cipher.NewGCM(block)
-	if err != nil {
-		failErr := sdkErrors.ErrCryptoFailedToCreateGCM.Wrap(err)
+	gcm, gcmErr := cipher.NewGCM(block)
+	if gcmErr != nil {
+		failErr := sdkErrors.ErrCryptoFailedToCreateGCM.Wrap(gcmErr)
 		return nil, failErr
 	}
 

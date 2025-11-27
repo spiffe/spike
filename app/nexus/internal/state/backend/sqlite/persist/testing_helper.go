@@ -90,14 +90,14 @@ func cleanupSQLiteDatabase(t *testing.T) {
 func createTestDataStore(t TestingInterface) *DataStore {
 	rootKey := createTestRootKey(t)
 
-	block, err := aes.NewCipher(rootKey[:])
-	if err != nil {
-		t.Fatalf("Failed to create cipher: %v", err)
+	block, cipherErr := aes.NewCipher(rootKey[:])
+	if cipherErr != nil {
+		t.Fatalf("Failed to create cipher: %v", cipherErr)
 	}
 
-	gcm, err := cipher.NewGCM(block)
-	if err != nil {
-		t.Fatalf("Failed to create GCM: %v", err)
+	gcm, gcmErr := cipher.NewGCM(block)
+	if gcmErr != nil {
+		t.Fatalf("Failed to create GCM: %v", gcmErr)
 	}
 
 	// Use DefaultOptions and override the data directory for testing
@@ -114,8 +114,8 @@ func createTestDataStore(t TestingInterface) *DataStore {
 
 	// Initialize the database
 	ctx := context.Background()
-	if err := store.Initialize(ctx); err != nil {
-		t.Fatalf("Failed to initialize datastore: %v", err)
+	if initErr := store.Initialize(ctx); initErr != nil {
+		t.Fatalf("Failed to initialize datastore: %v", initErr)
 	}
 
 	dbPath := filepath.Join(opts.DataDir, opts.DatabaseFile)
@@ -128,11 +128,11 @@ func storeTestSecretDirectly(t TestingInterface, store *DataStore, path string,
 	ctx := context.Background()
 
 	// Insert metadata
-	_, err := store.db.ExecContext(ctx, ddl.QueryUpdateSecretMetadata,
+	_, metaErr := store.db.ExecContext(ctx, ddl.QueryUpdateSecretMetadata,
 		path, metadata.CurrentVersion, metadata.OldestVersion,
 		metadata.CreatedTime, metadata.UpdatedTime, metadata.MaxVersions)
-	if err != nil {
-		t.Fatalf("Failed to insert metadata: %v", err)
+	if metaErr != nil {
+		t.Fatalf("Failed to insert metadata: %v", metaErr)
 	}
 
 	// Insert versions
@@ -150,8 +150,8 @@ func storeTestSecretDirectly(t TestingInterface, store *DataStore, path string,
 		jsonData += `}`
 
 		nonce := make([]byte, store.Cipher.NonceSize())
-		if _, err := rand.Read(nonce); err != nil {
-			t.Fatalf("Failed to generate nonce: %v", err)
+		if _, randErr := rand.Read(nonce); randErr != nil {
+			t.Fatalf("Failed to generate nonce: %v", randErr)
 		}
 
 		encrypted := store.Cipher.Seal(nil, nonce, []byte(jsonData), nil)
@@ -164,10 +164,10 @@ func storeTestSecretDirectly(t TestingInterface, store *DataStore, path string,
 			deletedTime = &deleted
 		}
 
-		_, err := store.db.ExecContext(ctx, ddl.QueryUpsertSecret,
+		_, execErr := store.db.ExecContext(ctx, ddl.QueryUpsertSecret,
 			path, version, nonce, encrypted, createdTime, deletedTime)
-		if err != nil {
-			t.Fatalf("Failed to insert version %d: %v", version, err)
+		if execErr != nil {
+			t.Fatalf("Failed to insert version %d: %v", version, execErr)
 		}
 	}
 }

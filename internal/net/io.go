@@ -17,11 +17,11 @@ import (
 //
 // Note: This function does not close the response body. The caller is
 // responsible for closing r.Body after calling this function.
-func body(r *http.Response) (bod []byte, err error) {
-	body, err := io.ReadAll(r.Body)
-	if err != nil {
-		return nil, err
+func body(r *http.Response) ([]byte, error) {
+	data, readErr := io.ReadAll(r.Body)
+	if readErr != nil {
+		return nil, readErr
 	}
 
-	return body, err
+	return data, nil
 }

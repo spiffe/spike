@@ -2,19 +2,46 @@
 //  \\\\\ Copyright 2024-present SPIKE contributors.
 // \\\\\\\ SPDX-License-Identifier: Apache-2.0
 
-// Package secret provides functionality to securely manage secrets within the
-// SPIKE ecosystem.
+// Package secret implements SPIKE CLI commands for managing secrets.
 //
-// This package includes commands for CRUD operations on secrets, leveraging
-// SPIFFE identities for secure interactions with the SPIKE API. It abstracts
-// the complexity of managing secret versions and ensuring trust, enabling
-// developers to focus on their core application logic.
+// Secrets in SPIKE are versioned key-value pairs stored in SPIKE Nexus with
+// AES-256-GCM encryption at rest. Access is controlled by policies that match
+// SPIFFE IDs and path patterns. All operations use SPIFFE-based authentication.
 //
-// The package is built using the cobra library to enable a command-line
-// interface for secret management operations.
+// Available commands:
 //
-// Key Features:
-// - Secure management of secrets and versions
-// - SPIFFE-based authentication
-// - Easy-to-use CLI commands for secret operations
+//   - put: Store a secret with one or more key-value pairs at a path. Creates
+//     a new version if the secret already exists.
+//   - get: Retrieve a secret's values. Supports fetching specific versions.
+//   - list: List secret paths, optionally filtered by a path prefix.
+//   - delete: Soft-delete secret versions. Deleted versions can be recovered.
+//   - undelete: Restore previously soft-deleted versions.
+//   - metadata-get: Retrieve secret metadata (versions, timestamps) without
+//     the actual values.
+//
+// Secret paths:
+//
+// Paths are namespace identifiers, not filesystem paths. They should not start
+// with a forward slash:
+//
+//	spike secret put secrets/db/password ...   # correct
+//	spike secret put /secrets/db/password ...  # incorrect
+//
+// Versioning:
+//
+// Each put operation creates a new version. Version 0 always refers to the
+// current (latest) version. Older versions can be retrieved, deleted, or
+// restored individually.
+//
+// Example usage:
+//
+//	spike secret put secrets/db/creds user=admin pass=secret
+//	spike secret get secrets/db/creds
+//	spike secret get secrets/db/creds --version 1
+//	spike secret list secrets/db
+//	spike secret delete secrets/db/creds --versions 1,2
+//	spike secret undelete secrets/db/creds --versions 1,2
+//	spike secret metadata-get secrets/db/creds
+//
+// See https://spike.ist/usage/commands/ for detailed CLI documentation.
 package secret

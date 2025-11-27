@@ -51,9 +51,9 @@ func Post(
 	const fName = "Post"
 
 	// Create the request while preserving the mTLS client
-	req, err := http.NewRequest("POST", path, bytes.NewBuffer(mr))
-	if err != nil {
-		failErr := sdkErrors.ErrAPIPostFailed.Wrap(err)
+	req, reqErr := http.NewRequest("POST", path, bytes.NewBuffer(mr))
+	if reqErr != nil {
+		failErr := sdkErrors.ErrAPIPostFailed.Wrap(reqErr)
 		failErr.Msg = "failed to create request"
 		return nil, failErr
 	}
@@ -62,9 +62,9 @@ func Post(
 	req.Header.Set("Content-Type", "application/json")
 
 	// Use the existing mTLS client to make the request
-	r, err := client.Do(req)
-	if err != nil {
-		failErr := sdkErrors.ErrNetPeerConnection.Wrap(err)
+	r, doErr := client.Do(req)
+	if doErr != nil {
+		failErr := sdkErrors.ErrNetPeerConnection.Wrap(doErr)
 		return nil, failErr
 	}
 
@@ -92,9 +92,9 @@ func Post(
 		return nil, sdkErrors.ErrNetPeerConnection
 	}
 
-	b, err := body(r)
-	if err != nil {
-		failErr := sdkErrors.ErrNetReadingResponseBody.Wrap(err)
+	b, bodyErr := body(r)
+	if bodyErr != nil {
+		failErr := sdkErrors.ErrNetReadingResponseBody.Wrap(bodyErr)
 		return nil, failErr
 	}
 
