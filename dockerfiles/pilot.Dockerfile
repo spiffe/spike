@@ -2,7 +2,7 @@
 #  \\\\\ Copyright 2024-present SPIKE contributors.
 # \\\\\\\ SPDX-License-Identifier: Apache-2.0
 
-FROM --platform=$BUILDPLATFORM golang:1.25.2 AS builder
+FROM --platform=$BUILDPLATFORM golang:1.25.3 AS builder
 ARG BUILDPLATFORM
 ARG TARGETPLATFORM
 ARG TARGETOS
