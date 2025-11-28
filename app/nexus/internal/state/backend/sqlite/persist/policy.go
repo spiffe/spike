@@ -97,7 +97,9 @@ func (s *DataStore) StorePolicy(
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	tx, beginErr := s.db.BeginTx(ctx, &sql.TxOptions{Isolation: sql.LevelSerializable})
+	tx, beginErr := s.db.BeginTx(
+		ctx, &sql.TxOptions{Isolation: sql.LevelSerializable},
+	)
 	if beginErr != nil {
 		failErr := sdkErrors.ErrTransactionBeginFailed.Wrap(beginErr)
 		return failErr
@@ -360,7 +362,9 @@ func (s *DataStore) LoadAllPolicies(
 			log.WarnErr(fName, *failErr)
 			continue
 		}
-		decryptedPathPattern, pathDecryptErr := s.decrypt(encryptedPathPattern, nonce)
+		decryptedPathPattern, pathDecryptErr := s.decrypt(
+			encryptedPathPattern, nonce,
+		)
 		if pathDecryptErr != nil {
 			failErr := sdkErrors.ErrCryptoDecryptionFailed.Wrap(pathDecryptErr)
 			failErr.Msg = fmt.Sprintf(
@@ -370,7 +374,9 @@ func (s *DataStore) LoadAllPolicies(
 			log.WarnErr(fName, *failErr)
 			continue
 		}
-		decryptedPermissions, permDecryptErr := s.decrypt(encryptedPermissions, nonce)
+		decryptedPermissions, permDecryptErr := s.decrypt(
+			encryptedPermissions, nonce,
+		)
 		if permDecryptErr != nil {
 			failErr := sdkErrors.ErrCryptoDecryptionFailed.Wrap(permDecryptErr)
 			failErr.Msg = fmt.Sprintf(

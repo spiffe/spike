@@ -72,6 +72,7 @@ const (
 // and managing secrets and policies, along with lifecycle management methods
 // for initialization and cleanup.
 type Backend interface {
+
 	// Initialize prepares the backend for use by setting up the necessary
 	// resources such as database connections, file system directories, or
 	// network connections. It must be called before any other operations.
@@ -219,6 +220,7 @@ type Backend interface {
 // provides both common settings applicable to all backend types and
 // backend-specific options.
 type Config struct {
+
 	// EncryptionKey is the key used for encrypting and decrypting secrets.
 	// Must be 32 bytes (256 bits) for AES-256 encryption.
 	EncryptionKey string

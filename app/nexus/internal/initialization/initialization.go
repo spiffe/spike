@@ -33,7 +33,7 @@ import (
 //     for SPIFFE-based mTLS authentication when communicating with SPIKE
 //     Keepers. Can be nil. Only used for SQLite and Lite backend types.
 //     For memory backend, this parameter is ignored. For SQLite/Lite backends,
-//     if source is nil, the recovery functions will log warnings and retry
+//     if the source is nil, the recovery functions will log warnings and retry
 //     until a valid source becomes available.
 //
 // Backend type configuration is determined by env.BackendStoreType().

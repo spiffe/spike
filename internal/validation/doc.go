@@ -18,7 +18,7 @@
 //
 //	func SomeOperation(ctx context.Context) error {
 //	    validation.CheckContext(ctx, "SomeOperation")
-//	    // ... proceed knowing ctx is valid
+//	    // ... proceed, knowing ctx is valid
 //	}
 //
 // This package is internal to SPIKE and should not be imported by external

@@ -10,7 +10,7 @@
 // Request handling:
 //
 //   - HandleRoute: Wraps HTTP handlers with audit logging, generating trail
-//     IDs and recording request lifecycle events.
+//     IDs, and recording request lifecycle events.
 //   - Handler: Function type for request handlers with audit support.
 //
 // Response utilities:

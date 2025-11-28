@@ -72,12 +72,12 @@ func TestPrintSecretResponse_EmptyMetadata(t *testing.T) {
 
 	output := buf.String()
 
-	// Empty metadata should not print Metadata section
+	// Empty metadata should not print the Metadata section
 	if strings.Contains(output, "Metadata:") {
 		t.Error("Should not print Metadata section when metadata is empty")
 	}
 
-	// Empty versions should not print Versions section
+	// Empty versions should not print the Versions section
 	if strings.Contains(output, "Secret Versions:") {
 		t.Error("Should not print Versions section when versions is empty")
 	}
@@ -239,7 +239,7 @@ func TestPrintSecretResponse_SeparatorLength(t *testing.T) {
 
 	output := buf.String()
 
-	// Check that separator is exactly 50 dashes
+	// Check that the separator is exactly 50 dashes
 	expectedSeparator := strings.Repeat("-", 50)
 	if !strings.Contains(output, expectedSeparator) {
 		t.Error("Separator should be exactly 50 dashes")

@@ -36,6 +36,10 @@
   </high-level-plan>
   <task-group for="v0.6.1" theme="doc update and stabilization">
     <issue>
+      go through internal files, some of them are generic enough to graduate
+      to the SDK.
+    </issue>
+    <issue>
       start.sh should test recovery and restore
       start.sh should test encryption and decryption
     </issue>

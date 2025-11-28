@@ -14,18 +14,9 @@ import (
 )
 
 func TestTryCustomNexusDataDir(t *testing.T) {
-	// Save original env var and restore after test.
-	originalVal := os.Getenv(env.NexusDataDir)
-	defer func() {
-		if originalVal == "" {
-			os.Unsetenv(env.NexusDataDir)
-		} else {
-			os.Setenv(env.NexusDataDir, originalVal)
-		}
-	}()
-
 	t.Run("empty env var returns empty string", func(t *testing.T) {
-		os.Unsetenv(env.NexusDataDir)
+		// Ensure the env var is not set for this test
+		t.Setenv(env.NexusDataDir, "")
 		result := tryCustomNexusDataDir("test")
 		if result != "" {
 			t.Errorf("expected empty string, got %q", result)
@@ -34,7 +25,7 @@ func TestTryCustomNexusDataDir(t *testing.T) {
 
 	t.Run("invalid directory returns empty string", func(t *testing.T) {
 		// Use a restricted path.
-		os.Setenv(env.NexusDataDir, "/etc")
+		t.Setenv(env.NexusDataDir, "/etc")
 		result := tryCustomNexusDataDir("test")
 		if result != "" {
 			t.Errorf("expected empty string for restricted path, got %q", result)
@@ -42,7 +33,7 @@ func TestTryCustomNexusDataDir(t *testing.T) {
 	})
 
 	t.Run("non-existent parent returns empty string", func(t *testing.T) {
-		os.Setenv(env.NexusDataDir, "/nonexistent/path/to/dir")
+		t.Setenv(env.NexusDataDir, "/nonexistent/path/to/dir")
 		result := tryCustomNexusDataDir("test")
 		if result != "" {
 			t.Errorf("expected empty string for non-existent path, got %q", result)
@@ -51,7 +42,7 @@ func TestTryCustomNexusDataDir(t *testing.T) {
 
 	t.Run("valid directory creates data subdirectory", func(t *testing.T) {
 		tempDir := t.TempDir()
-		os.Setenv(env.NexusDataDir, tempDir)
+		t.Setenv(env.NexusDataDir, tempDir)
 
 		result := tryCustomNexusDataDir("test")
 
@@ -77,18 +68,8 @@ func TestTryCustomNexusDataDir(t *testing.T) {
 }
 
 func TestTryCustomPilotRecoveryDir(t *testing.T) {
-	// Save original env var and restore after test.
-	originalVal := os.Getenv(env.PilotRecoveryDir)
-	defer func() {
-		if originalVal == "" {
-			os.Unsetenv(env.PilotRecoveryDir)
-		} else {
-			os.Setenv(env.PilotRecoveryDir, originalVal)
-		}
-	}()
-
 	t.Run("empty env var returns empty string", func(t *testing.T) {
-		os.Unsetenv(env.PilotRecoveryDir)
+		t.Setenv(env.PilotRecoveryDir, "")
 		result := tryCustomPilotRecoveryDir("test")
 		if result != "" {
 			t.Errorf("expected empty string, got %q", result)
@@ -96,7 +77,7 @@ func TestTryCustomPilotRecoveryDir(t *testing.T) {
 	})
 
 	t.Run("invalid directory returns empty string", func(t *testing.T) {
-		os.Setenv(env.PilotRecoveryDir, "/etc")
+		t.Setenv(env.PilotRecoveryDir, "/etc")
 		result := tryCustomPilotRecoveryDir("test")
 		if result != "" {
 			t.Errorf("expected empty string for restricted path, got %q", result)
@@ -105,7 +86,7 @@ func TestTryCustomPilotRecoveryDir(t *testing.T) {
 
 	t.Run("valid directory creates recover subdirectory", func(t *testing.T) {
 		tempDir := t.TempDir()
-		os.Setenv(env.PilotRecoveryDir, tempDir)
+		t.Setenv(env.PilotRecoveryDir, tempDir)
 
 		result := tryCustomPilotRecoveryDir("test")
 
@@ -148,9 +129,9 @@ func TestTryHomeNexusDataDir(t *testing.T) {
 		}
 
 		// Verify the directory exists.
-		info, err := os.Stat(result)
-		if err != nil {
-			t.Errorf("directory was not created: %v", err)
+		info, statErr := os.Stat(result)
+		if statErr != nil {
+			t.Errorf("directory was not created: %v", statErr)
 		}
 		if !info.IsDir() {
 			t.Error("path is not a directory")
@@ -174,9 +155,9 @@ func TestTryHomePilotRecoveryDir(t *testing.T) {
 		}
 
 		// Verify the directory exists.
-		info, err := os.Stat(result)
-		if err != nil {
-			t.Errorf("directory was not created: %v", err)
+		info, statErr := os.Stat(result)
+		if statErr != nil {
+			t.Errorf("directory was not created: %v", statErr)
 		}
 		if !info.IsDir() {
 			t.Error("path is not a directory")
@@ -185,12 +166,8 @@ func TestTryHomePilotRecoveryDir(t *testing.T) {
 }
 
 func TestCreateTempNexusDataDir(t *testing.T) {
-	// Save and restore USER env var.
-	originalUser := os.Getenv("USER")
-	defer os.Setenv("USER", originalUser)
-
 	t.Run("creates directory with USER env var", func(t *testing.T) {
-		os.Setenv("USER", "testuser")
+		t.Setenv("USER", "testuser")
 		result := createTempNexusDataDir("test")
 
 		expectedPath := "/tmp/.spike-testuser/data"
@@ -213,11 +190,13 @@ func TestCreateTempNexusDataDir(t *testing.T) {
 		}
 
 		// Clean up.
-		os.RemoveAll("/tmp/.spike-testuser")
+		if removeErr := os.RemoveAll("/tmp/.spike-testuser"); removeErr != nil {
+			t.Logf("failed to clean up test directory: %v", removeErr)
+		}
 	})
 
 	t.Run("uses 'spike' when USER is empty", func(t *testing.T) {
-		os.Setenv("USER", "")
+		t.Setenv("USER", "")
 		result := createTempNexusDataDir("test")
 
 		expectedPath := "/tmp/.spike-spike/data"
@@ -226,16 +205,15 @@ func TestCreateTempNexusDataDir(t *testing.T) {
 		}
 
 		// Clean up.
-		os.RemoveAll("/tmp/.spike-spike")
+		if removeErr := os.RemoveAll("/tmp/.spike-spike"); removeErr != nil {
+			t.Logf("failed to clean up test directory: %v", removeErr)
+		}
 	})
 }
 
 func TestCreateTempPilotRecoveryDir(t *testing.T) {
-	originalUser := os.Getenv("USER")
-	defer os.Setenv("USER", originalUser)
-
 	t.Run("creates directory with USER env var", func(t *testing.T) {
-		os.Setenv("USER", "testuser2")
+		t.Setenv("USER", "testuser2")
 		result := createTempPilotRecoveryDir("test")
 
 		expectedPath := "/tmp/.spike-testuser2/recover"
@@ -258,11 +236,13 @@ func TestCreateTempPilotRecoveryDir(t *testing.T) {
 		}
 
 		// Clean up.
-		os.RemoveAll("/tmp/.spike-testuser2")
+		if removeErr := os.RemoveAll("/tmp/.spike-testuser2"); removeErr != nil {
+			t.Logf("failed to clean up test directory: %v", removeErr)
+		}
 	})
 
 	t.Run("uses 'spike' when USER is empty", func(t *testing.T) {
-		os.Setenv("USER", "")
+		t.Setenv("USER", "")
 		result := createTempPilotRecoveryDir("test")
 
 		expectedPath := "/tmp/.spike-spike/recover"
@@ -271,7 +251,9 @@ func TestCreateTempPilotRecoveryDir(t *testing.T) {
 		}
 
 		// Clean up.
-		os.RemoveAll("/tmp/.spike-spike")
+		if removeErr := os.RemoveAll("/tmp/.spike-spike"); removeErr != nil {
+			t.Logf("failed to clean up test directory: %v", removeErr)
+		}
 	})
 }
 
@@ -281,29 +263,20 @@ func TestInitNexusDataFolder_ResolutionOrder(t *testing.T) {
 	// 2. ~/.spike/data (home)
 	// 3. /tmp/.spike-$USER/data (temp fallback)
 
-	originalVal := os.Getenv(env.NexusDataDir)
-	defer func() {
-		if originalVal == "" {
-			os.Unsetenv(env.NexusDataDir)
-		} else {
-			os.Setenv(env.NexusDataDir, originalVal)
-		}
-	}()
-
 	t.Run("custom dir takes priority over home", func(t *testing.T) {
 		tempDir := t.TempDir()
-		os.Setenv(env.NexusDataDir, tempDir)
+		t.Setenv(env.NexusDataDir, tempDir)
 
 		result := initNexusDataFolder()
 
-		// Should use custom directory, not home.
+		// Should use a custom directory, not home.
 		if !strings.HasPrefix(result, tempDir) {
 			t.Errorf("expected path under %q, got %q", tempDir, result)
 		}
 	})
 
 	t.Run("home dir used when custom not set", func(t *testing.T) {
-		os.Unsetenv(env.NexusDataDir)
+		t.Setenv(env.NexusDataDir, "")
 
 		homeDir, err := os.UserHomeDir()
 		if err != nil {
@@ -320,18 +293,9 @@ func TestInitNexusDataFolder_ResolutionOrder(t *testing.T) {
 }
 
 func TestInitPilotRecoveryFolder_ResolutionOrder(t *testing.T) {
-	originalVal := os.Getenv(env.PilotRecoveryDir)
-	defer func() {
-		if originalVal == "" {
-			os.Unsetenv(env.PilotRecoveryDir)
-		} else {
-			os.Setenv(env.PilotRecoveryDir, originalVal)
-		}
-	}()
-
 	t.Run("custom dir takes priority over home", func(t *testing.T) {
 		tempDir := t.TempDir()
-		os.Setenv(env.PilotRecoveryDir, tempDir)
+		t.Setenv(env.PilotRecoveryDir, tempDir)
 
 		result := initPilotRecoveryFolder()
 
@@ -341,7 +305,7 @@ func TestInitPilotRecoveryFolder_ResolutionOrder(t *testing.T) {
 	})
 
 	t.Run("home dir used when custom not set", func(t *testing.T) {
-		os.Unsetenv(env.PilotRecoveryDir)
+		t.Setenv(env.PilotRecoveryDir, "")
 
 		homeDir, err := os.UserHomeDir()
 		if err != nil {
@@ -361,31 +325,17 @@ func TestDirectoryPermissions(t *testing.T) {
 	// Verify that all created directories have 0700 permissions.
 	tempDir := t.TempDir()
 
-	originalNexusDir := os.Getenv(env.NexusDataDir)
-	originalRecoveryDir := os.Getenv(env.PilotRecoveryDir)
-	defer func() {
-		if originalNexusDir == "" {
-			os.Unsetenv(env.NexusDataDir)
-		} else {
-			os.Setenv(env.NexusDataDir, originalNexusDir)
-		}
-		if originalRecoveryDir == "" {
-			os.Unsetenv(env.PilotRecoveryDir)
-		} else {
-			os.Setenv(env.PilotRecoveryDir, originalRecoveryDir)
-		}
-	}()
-
 	t.Run("nexus data dir has 0700 permissions", func(t *testing.T) {
 		customDir := filepath.Join(tempDir, "nexus-test")
 		if err := os.MkdirAll(customDir, 0755); err != nil {
 			t.Fatalf("failed to create test directory: %v", err)
 		}
-		os.Setenv(env.NexusDataDir, customDir)
+		t.Setenv(env.NexusDataDir, customDir)
 
 		result := tryCustomNexusDataDir("test")
 		if result == "" {
 			t.Fatal("expected non-empty result")
+			return
 		}
 
 		info, err := os.Stat(result)
@@ -403,11 +353,12 @@ func TestDirectoryPermissions(t *testing.T) {
 		if err := os.MkdirAll(customDir, 0755); err != nil {
 			t.Fatalf("failed to create test directory: %v", err)
 		}
-		os.Setenv(env.PilotRecoveryDir, customDir)
+		t.Setenv(env.PilotRecoveryDir, customDir)
 
 		result := tryCustomPilotRecoveryDir("test")
 		if result == "" {
 			t.Fatal("expected non-empty result")
+			return
 		}
 
 		info, err := os.Stat(result)

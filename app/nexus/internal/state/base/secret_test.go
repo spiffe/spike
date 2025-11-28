@@ -13,6 +13,7 @@ import (
 
 	appEnv "github.com/spiffe/spike-sdk-go/config/env"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
+
 	"github.com/spiffe/spike/app/nexus/internal/state/persist"
 )
 
@@ -27,15 +28,15 @@ func TestUpsertSecret_NewSecret(t *testing.T) {
 			"password": "secret123",
 		}
 
-		err := UpsertSecret(path, values)
-		if err != nil {
-			t.Fatalf("Failed to upsert new secret: %v", err)
+		upsertErr := UpsertSecret(path, values)
+		if upsertErr != nil {
+			t.Fatalf("Failed to upsert new secret: %v", upsertErr)
 		}
 
 		// Verify the secret was created
-		retrievedValues, err := GetSecret(path, 0) // 0 = current version
-		if err != nil {
-			t.Fatalf("Failed to retrieve secret: %v", err)
+		retrievedValues, getErr := GetSecret(path, 0) // 0 = current version
+		if getErr != nil {
+			t.Fatalf("Failed to retrieve secret: %v", getErr)
 		}
 
 		if !reflect.DeepEqual(retrievedValues, values) {
@@ -43,9 +44,9 @@ func TestUpsertSecret_NewSecret(t *testing.T) {
 		}
 
 		// Verify metadata
-		rawSecret, err := GetRawSecret(path, 0)
-		if err != nil {
-			t.Fatalf("Failed to retrieve raw secret: %v", err)
+		rawSecret, getRawErr := GetRawSecret(path, 0)
+		if getRawErr != nil {
+			t.Fatalf("Failed to retrieve raw secret: %v", getRawErr)
 		}
 
 		if rawSecret.Metadata.CurrentVersion != 1 {
@@ -71,9 +72,9 @@ func TestUpsertSecret_ExistingSecret(t *testing.T) {
 		initialValues := map[string]string{
 			"key1": "value1",
 		}
-		err := UpsertSecret(path, initialValues)
-		if err != nil {
-			t.Fatalf("Failed to create initial secret: %v", err)
+		createErr := UpsertSecret(path, initialValues)
+		if createErr != nil {
+			t.Fatalf("Failed to create initial secret: %v", createErr)
 		}
 
 		// Update with new values
@@ -81,15 +82,15 @@ func TestUpsertSecret_ExistingSecret(t *testing.T) {
 			"key1": "updated_value1",
 			"key2": "value2",
 		}
-		err = UpsertSecret(path, updatedValues)
-		if err != nil {
-			t.Fatalf("Failed to update secret: %v", err)
+		updateErr := UpsertSecret(path, updatedValues)
+		if updateErr != nil {
+			t.Fatalf("Failed to update secret: %v", updateErr)
 		}
 
 		// Verify the current version has updated values
-		currentValues, err := GetSecret(path, 0)
-		if err != nil {
-			t.Fatalf("Failed to retrieve current version: %v", err)
+		currentValues, getCurrentErr := GetSecret(path, 0)
+		if getCurrentErr != nil {
+			t.Fatalf("Failed to retrieve current version: %v", getCurrentErr)
 		}
 
 		if !reflect.DeepEqual(currentValues, updatedValues) {
@@ -97,9 +98,9 @@ func TestUpsertSecret_ExistingSecret(t *testing.T) {
 		}
 
 		// Verify the previous version still exists
-		previousValues, err := GetSecret(path, 1)
-		if err != nil {
-			t.Fatalf("Failed to retrieve previous version: %v", err)
+		previousValues, getPrevErr := GetSecret(path, 1)
+		if getPrevErr != nil {
+			t.Fatalf("Failed to retrieve previous version: %v", getPrevErr)
 		}
 
 		if !reflect.DeepEqual(previousValues, initialValues) {
@@ -107,9 +108,9 @@ func TestUpsertSecret_ExistingSecret(t *testing.T) {
 		}
 
 		// Verify metadata
-		rawSecret, err := GetRawSecret(path, 0)
-		if err != nil {
-			t.Fatalf("Failed to retrieve raw secret: %v", err)
+		rawSecret, getRawErr := GetRawSecret(path, 0)
+		if getRawErr != nil {
+			t.Fatalf("Failed to retrieve raw secret: %v", getRawErr)
 		}
 
 		if rawSecret.Metadata.CurrentVersion != 2 {
@@ -134,16 +135,16 @@ func TestUpsertSecret_VersionPruning(t *testing.T) {
 				values := map[string]string{
 					"version": fmt.Sprintf("v%d", i),
 				}
-				err := UpsertSecret(path, values)
-				if err != nil {
-					t.Fatalf("Failed to create version %d: %v", i, err)
+				upsertErr := UpsertSecret(path, values)
+				if upsertErr != nil {
+					t.Fatalf("Failed to create version %d: %v", i, upsertErr)
 				}
 			}
 
 			// Verify only 3 versions remain (versions 3, 4, 5)
-			rawSecret, err := GetRawSecret(path, 0)
-			if err != nil {
-				t.Fatalf("Failed to retrieve raw secret: %v", err)
+			rawSecret, getRawErr := GetRawSecret(path, 0)
+			if getRawErr != nil {
+				t.Fatalf("Failed to retrieve raw secret: %v", getRawErr)
 			}
 
 			if len(rawSecret.Versions) != 3 {
@@ -162,21 +163,24 @@ func TestUpsertSecret_VersionPruning(t *testing.T) {
 
 			// Verify old versions are gone
 			for version := 1; version <= 2; version++ {
-				_, err := GetSecret(path, version)
-				if err == nil {
+				_, getErr := GetSecret(path, version)
+				if getErr == nil {
 					t.Errorf("Expected version %d to be pruned", version)
 				}
 			}
 
 			// Verify remaining versions exist
 			for version := 3; version <= 5; version++ {
-				values, err := GetSecret(path, version)
-				if err != nil {
-					t.Errorf("Version %d should exist: %v", version, err)
+				values, getErr := GetSecret(path, version)
+				if getErr != nil {
+					t.Errorf("Version %d should exist: %v", version, getErr)
 				}
 				expectedValue := fmt.Sprintf("v%d", version)
 				if values["version"] != expectedValue {
-					t.Errorf("Expected version %d to have value %s, got %s", version, expectedValue, values["version"])
+					t.Errorf(
+						"Expected version %d to have value %s, got %s",
+						version, expectedValue, values["version"],
+					)
 				}
 			}
 		})
@@ -195,26 +199,29 @@ func TestDeleteSecret_CurrentVersion(t *testing.T) {
 			values := map[string]string{
 				"version": fmt.Sprintf("v%d", i),
 			}
-			err := UpsertSecret(path, values)
-			if err != nil {
-				t.Fatalf("Failed to create version %d: %v", i, err)
+			upsertErr := UpsertSecret(path, values)
+			if upsertErr != nil {
+				t.Fatalf("Failed to create version %d: %v", i, upsertErr)
 			}
 		}
 
 		// Delete the current version (should be version 3)
-		err := DeleteSecret(path, []int{0}) // 0 = current version
-		if err != nil {
-			t.Fatalf("Failed to delete current version: %v", err)
+		deleteErr := DeleteSecret(path, []int{0}) // 0 = current version
+		if deleteErr != nil {
+			t.Fatalf("Failed to delete current version: %v", deleteErr)
 		}
 
 		// Verify current version is now 2
-		rawSecret, err := GetRawSecret(path, 0)
-		if err != nil {
-			t.Fatalf("Failed to retrieve raw secret: %v", err)
+		rawSecret, getRawErr := GetRawSecret(path, 0)
+		if getRawErr != nil {
+			t.Fatalf("Failed to retrieve raw secret: %v", getRawErr)
 		}
 
 		if rawSecret.Metadata.CurrentVersion != 2 {
-			t.Errorf("Expected current version to be 2, got %d", rawSecret.Metadata.CurrentVersion)
+			t.Errorf(
+				"Expected current version to be 2, got %d",
+				rawSecret.Metadata.CurrentVersion,
+			)
 		}
 
 		// Verify version 3 is marked as deleted
@@ -227,9 +234,9 @@ func TestDeleteSecret_CurrentVersion(t *testing.T) {
 		}
 
 		// Verify version 2 is accessible
-		values, err := GetSecret(path, 0)
-		if err != nil {
-			t.Fatalf("Failed to get current version: %v", err)
+		values, getErr := GetSecret(path, 0)
+		if getErr != nil {
+			t.Fatalf("Failed to get current version: %v", getErr)
 		}
 		if values["version"] != "v2" {
 			t.Errorf("Expected current version to be v2, got %s", values["version"])
@@ -249,26 +256,29 @@ func TestDeleteSecret_SpecificVersions(t *testing.T) {
 			values := map[string]string{
 				"version": fmt.Sprintf("v%d", i),
 			}
-			err := UpsertSecret(path, values)
-			if err != nil {
-				t.Fatalf("Failed to create version %d: %v", i, err)
+			upsertErr := UpsertSecret(path, values)
+			if upsertErr != nil {
+				t.Fatalf("Failed to create version %d: %v", i, upsertErr)
 			}
 		}
 
 		// Delete specific versions (1 and 3)
-		err := DeleteSecret(path, []int{1, 3})
-		if err != nil {
-			t.Fatalf("Failed to delete specific versions: %v", err)
+		deleteErr := DeleteSecret(path, []int{1, 3})
+		if deleteErr != nil {
+			t.Fatalf("Failed to delete specific versions: %v", deleteErr)
 		}
 
 		// Verify the current version is still 4
-		rawSecret, err := GetRawSecret(path, 0)
-		if err != nil {
-			t.Fatalf("Failed to retrieve raw secret: %v", err)
+		rawSecret, getRawErr := GetRawSecret(path, 0)
+		if getRawErr != nil {
+			t.Fatalf("Failed to retrieve raw secret: %v", getRawErr)
 		}
 
 		if rawSecret.Metadata.CurrentVersion != 4 {
-			t.Errorf("Expected current version to remain 4, got %d", rawSecret.Metadata.CurrentVersion)
+			t.Errorf(
+				"Expected current version to remain 4, got %d",
+				rawSecret.Metadata.CurrentVersion,
+			)
 		}
 
 		// Verify versions 1 and 3 are marked as deleted
@@ -284,9 +294,9 @@ func TestDeleteSecret_SpecificVersions(t *testing.T) {
 
 		// Verify versions 2 and 4 are still accessible
 		for _, version := range []int{2, 4} {
-			values, err := GetSecret(path, version)
-			if err != nil {
-				t.Errorf("Version %d should still be accessible: %v", version, err)
+			values, getErr := GetSecret(path, version)
+			if getErr != nil {
+				t.Errorf("Version %d should still be accessible: %v", version, getErr)
 			}
 			expectedValue := fmt.Sprintf("v%d", version)
 			if values["version"] != expectedValue {
@@ -308,34 +318,40 @@ func TestDeleteSecret_AllVersions(t *testing.T) {
 			values := map[string]string{
 				"version": fmt.Sprintf("v%d", i),
 			}
-			err := UpsertSecret(path, values)
-			if err != nil {
-				t.Fatalf("Failed to create version %d: %v", i, err)
+			upsertErr := UpsertSecret(path, values)
+			if upsertErr != nil {
+				t.Fatalf("Failed to create version %d: %v", i, upsertErr)
 			}
 		}
 
 		// Delete all versions
-		err := DeleteSecret(path, []int{1, 2, 3})
-		if err != nil {
-			t.Fatalf("Failed to delete all versions: %v", err)
+		deleteErr := DeleteSecret(path, []int{1, 2, 3})
+		if deleteErr != nil {
+			t.Fatalf("Failed to delete all versions: %v", deleteErr)
 		}
 
 		// Verify the current version is 0 (no active versions)
-		_, err = GetRawSecret(path, 0)
-		if err == nil {
-			t.Error("Expected error when trying to get current version of fully deleted secret")
+		_, getRawErr := GetRawSecret(path, 0)
+		if getRawErr == nil {
+			t.Error(
+				"Expected error when trying to get current version " +
+					"of fully deleted secret",
+			)
 		}
 
 		// Try to get the raw secret without version validation
-		ctx := persist.Backend()
+		be := persist.Backend()
 		// Do not pass a nil context even if the function allows it.
-		secret, err := ctx.LoadSecret(context.TODO(), path)
-		if err != nil {
-			t.Fatalf("Failed to load raw secret: %v", err)
+		secret, loadErr := be.LoadSecret(context.TODO(), path)
+		if loadErr != nil {
+			t.Fatalf("Failed to load raw secret: %v", loadErr)
 		}
 
 		if secret.Metadata.CurrentVersion != 0 {
-			t.Errorf("Expected current version to be 0, got %d", secret.Metadata.CurrentVersion)
+			t.Errorf(
+				"Expected current version to be 0, got %d",
+				secret.Metadata.CurrentVersion,
+			)
 		}
 
 		// Verify all versions are marked as deleted
@@ -375,46 +391,49 @@ func TestUndeleteSecret_SpecificVersions(t *testing.T) {
 			values := map[string]string{
 				"version": fmt.Sprintf("v%d", i),
 			}
-			err := UpsertSecret(path, values)
-			if err != nil {
-				t.Fatalf("Failed to create version %d: %v", i, err)
+			upsertErr := UpsertSecret(path, values)
+			if upsertErr != nil {
+				t.Fatalf("Failed to create version %d: %v", i, upsertErr)
 			}
 		}
 
 		// Delete versions 1 and 2
-		err := DeleteSecret(path, []int{1, 2})
-		if err != nil {
-			t.Fatalf("Failed to delete versions: %v", err)
+		deleteErr := DeleteSecret(path, []int{1, 2})
+		if deleteErr != nil {
+			t.Fatalf("Failed to delete versions: %v", deleteErr)
 		}
 
 		// Undelete version 1
-		err = UndeleteSecret(path, []int{1})
-		if err != nil {
-			t.Fatalf("Failed to undelete version 1: %v", err)
+		undeleteErr := UndeleteSecret(path, []int{1})
+		if undeleteErr != nil {
+			t.Fatalf("Failed to undelete version 1: %v", undeleteErr)
 		}
 
 		// Verify version 1 is now accessible
-		values, err := GetSecret(path, 1)
-		if err != nil {
-			t.Errorf("Version 1 should be accessible after undelete: %v", err)
+		values, getV1Err := GetSecret(path, 1)
+		if getV1Err != nil {
+			t.Errorf("Version 1 should be accessible after undelete: %v", getV1Err)
 		}
 		if values["version"] != "v1" {
 			t.Errorf("Expected version 1 to have value v1, got %s", values["version"])
 		}
 
 		// Verify version 2 is still deleted
-		_, err = GetSecret(path, 2)
-		if err == nil {
+		_, getV2Err := GetSecret(path, 2)
+		if getV2Err == nil {
 			t.Error("Version 2 should still be deleted")
 		}
 
 		// Verify the current version is still 3
-		currentValues, err := GetSecret(path, 0)
-		if err != nil {
-			t.Fatalf("Failed to get current version: %v", err)
+		currentValues, getCurrentErr := GetSecret(path, 0)
+		if getCurrentErr != nil {
+			t.Fatalf("Failed to get current version: %v", getCurrentErr)
 		}
 		if currentValues["version"] != "v3" {
-			t.Errorf("Expected current version to be v3, got %s", currentValues["version"])
+			t.Errorf(
+				"Expected current version to be v3, got %s",
+				currentValues["version"],
+			)
 		}
 	})
 }
@@ -431,37 +450,40 @@ func TestUndeleteSecret_AllDeleted(t *testing.T) {
 			values := map[string]string{
 				"version": fmt.Sprintf("v%d", i),
 			}
-			err := UpsertSecret(path, values)
-			if err != nil {
-				t.Fatalf("Failed to create version %d: %v", i, err)
+			upsertErr := UpsertSecret(path, values)
+			if upsertErr != nil {
+				t.Fatalf("Failed to create version %d: %v", i, upsertErr)
 			}
 		}
 
 		// Delete all versions
-		err := DeleteSecret(path, []int{1, 2, 3})
-		if err != nil {
-			t.Fatalf("Failed to delete all versions: %v", err)
+		deleteErr := DeleteSecret(path, []int{1, 2, 3})
+		if deleteErr != nil {
+			t.Fatalf("Failed to delete all versions: %v", deleteErr)
 		}
 
 		// Undelete without specifying versions (should undelete highest)
-		err = UndeleteSecret(path, []int{})
-		if err != nil {
-			t.Fatalf("Failed to undelete: %v", err)
+		undeleteErr := UndeleteSecret(path, []int{})
+		if undeleteErr != nil {
+			t.Fatalf("Failed to undelete: %v", undeleteErr)
 		}
 
 		// Verify version 3 is current and accessible
-		rawSecret, err := GetRawSecret(path, 0)
-		if err != nil {
-			t.Fatalf("Failed to get raw secret: %v", err)
+		rawSecret, getRawErr := GetRawSecret(path, 0)
+		if getRawErr != nil {
+			t.Fatalf("Failed to get raw secret: %v", getRawErr)
 		}
 
 		if rawSecret.Metadata.CurrentVersion != 3 {
-			t.Errorf("Expected current version to be 3, got %d", rawSecret.Metadata.CurrentVersion)
+			t.Errorf(
+				"Expected current version to be 3, got %d",
+				rawSecret.Metadata.CurrentVersion,
+			)
 		}
 
-		values, err := GetSecret(path, 0)
-		if err != nil {
-			t.Errorf("Current version should be accessible: %v", err)
+		values, getErr := GetSecret(path, 0)
+		if getErr != nil {
+			t.Errorf("Current version should be accessible: %v", getErr)
 		}
 		if values["version"] != "v3" {
 			t.Errorf("Expected current version to be v3, got %s", values["version"])
@@ -491,15 +513,15 @@ func TestGetSecret_CurrentVersion(t *testing.T) {
 			"key": "value",
 		}
 
-		err := UpsertSecret(path, values)
-		if err != nil {
-			t.Fatalf("Failed to create secret: %v", err)
+		upsertErr := UpsertSecret(path, values)
+		if upsertErr != nil {
+			t.Fatalf("Failed to create secret: %v", upsertErr)
 		}
 
 		// Get current version (version 0)
-		retrievedValues, err := GetSecret(path, 0)
-		if err != nil {
-			t.Fatalf("Failed to get current version: %v", err)
+		retrievedValues, getErr := GetSecret(path, 0)
+		if getErr != nil {
+			t.Fatalf("Failed to get current version: %v", getErr)
 		}
 
 		if !reflect.DeepEqual(retrievedValues, values) {
@@ -524,22 +546,25 @@ func TestGetSecret_SpecificVersion(t *testing.T) {
 			}
 			expectedValues[i] = values
 
-			err := UpsertSecret(path, values)
-			if err != nil {
-				t.Fatalf("Failed to create version %d: %v", i, err)
+			upsertErr := UpsertSecret(path, values)
+			if upsertErr != nil {
+				t.Fatalf("Failed to create version %d: %v", i, upsertErr)
 			}
 		}
 
 		// Retrieve each version specifically
 		for version := 1; version <= 3; version++ {
-			retrievedValues, err := GetSecret(path, version)
-			if err != nil {
-				t.Errorf("Failed to get version %d: %v", version, err)
+			retrievedValues, getErr := GetSecret(path, version)
+			if getErr != nil {
+				t.Errorf("Failed to get version %d: %v", version, getErr)
 				continue
 			}
 
 			if !reflect.DeepEqual(retrievedValues, expectedValues[version]) {
-				t.Errorf("Version %d: expected %v, got %v", version, expectedValues[version], retrievedValues)
+				t.Errorf(
+					"Version %d: expected %v, got %v",
+					version, expectedValues[version], retrievedValues,
+				)
 			}
 		}
 	})
@@ -567,14 +592,14 @@ func TestGetSecret_NonExistentVersion(t *testing.T) {
 			"key": "value",
 		}
 
-		err := UpsertSecret(path, values)
-		if err != nil {
-			t.Fatalf("Failed to create secret: %v", err)
+		upsertErr := UpsertSecret(path, values)
+		if upsertErr != nil {
+			t.Fatalf("Failed to create secret: %v", upsertErr)
 		}
 
 		// Try to get a non-existent version
-		_, err = GetSecret(path, 999)
-		if err == nil {
+		_, getErr := GetSecret(path, 999)
+		if getErr == nil {
 			t.Error("Expected error when getting non-existent version")
 		}
 	})
@@ -590,20 +615,20 @@ func TestGetSecret_DeletedVersion(t *testing.T) {
 			"key": "value",
 		}
 
-		err := UpsertSecret(path, values)
-		if err != nil {
-			t.Fatalf("Failed to create secret: %v", err)
+		upsertErr := UpsertSecret(path, values)
+		if upsertErr != nil {
+			t.Fatalf("Failed to create secret: %v", upsertErr)
 		}
 
 		// Delete version 1
-		err = DeleteSecret(path, []int{1})
-		if err != nil {
-			t.Fatalf("Failed to delete version 1: %v", err)
+		deleteErr := DeleteSecret(path, []int{1})
+		if deleteErr != nil {
+			t.Fatalf("Failed to delete version 1: %v", deleteErr)
 		}
 
 		// Try to get a deleted version
-		_, err = GetSecret(path, 1)
-		if err == nil {
+		_, getErr := GetSecret(path, 1)
+		if getErr == nil {
 			t.Error("Expected error when getting deleted version")
 		}
 	})
@@ -621,16 +646,16 @@ func TestGetRawSecret_WithMetadata(t *testing.T) {
 			values := map[string]string{
 				"version": fmt.Sprintf("v%d", i),
 			}
-			err := UpsertSecret(path, values)
-			if err != nil {
-				t.Fatalf("Failed to create version %d: %v", i, err)
+			upsertErr := UpsertSecret(path, values)
+			if upsertErr != nil {
+				t.Fatalf("Failed to create version %d: %v", i, upsertErr)
 			}
 		}
 
 		// Get raw secret
-		rawSecret, err := GetRawSecret(path, 0)
-		if err != nil {
-			t.Fatalf("Failed to get raw secret: %v", err)
+		rawSecret, getRawErr := GetRawSecret(path, 0)
+		if getRawErr != nil {
+			t.Fatalf("Failed to get raw secret: %v", getRawErr)
 		}
 
 		// Verify metadata
@@ -671,20 +696,20 @@ func TestGetRawSecret_AllVersionsDeleted(t *testing.T) {
 			"key": "value",
 		}
 
-		err := UpsertSecret(path, values)
-		if err != nil {
-			t.Fatalf("Failed to create secret: %v", err)
+		upsertErr := UpsertSecret(path, values)
+		if upsertErr != nil {
+			t.Fatalf("Failed to create secret: %v", upsertErr)
 		}
 
 		// Delete all versions
-		err = DeleteSecret(path, []int{1})
-		if err != nil {
-			t.Fatalf("Failed to delete version: %v", err)
+		deleteErr := DeleteSecret(path, []int{1})
+		if deleteErr != nil {
+			t.Fatalf("Failed to delete version: %v", deleteErr)
 		}
 
 		// Try to get raw secret when all versions are deleted
-		_, err = GetRawSecret(path, 0)
-		if err == nil {
+		_, getRawErr := GetRawSecret(path, 0)
+		if getRawErr == nil {
 			t.Error("Expected error when all versions are deleted")
 		}
 	})
@@ -698,9 +723,9 @@ func TestSecretOperations_ConcurrentAccess(t *testing.T) {
 		path := "/test/concurrent"
 
 		// Create the initial secret
-		err := UpsertSecret(path, map[string]string{"counter": "0"})
-		if err != nil {
-			t.Fatalf("Failed to create initial secret: %v", err)
+		upsertErr := UpsertSecret(path, map[string]string{"counter": "0"})
+		if upsertErr != nil {
+			t.Fatalf("Failed to create initial secret: %v", upsertErr)
 		}
 
 		// Test that multiple operations work correctly
@@ -743,15 +768,15 @@ func TestSecretOperations_EmptyValues(t *testing.T) {
 		path := "/test/empty-values"
 
 		// Test with an empty map
-		err := UpsertSecret(path, map[string]string{})
-		if err != nil {
-			t.Fatalf("Failed to create secret with empty values: %v", err)
+		upsertEmptyErr := UpsertSecret(path, map[string]string{})
+		if upsertEmptyErr != nil {
+			t.Fatalf("Failed to create secret with empty values: %v", upsertEmptyErr)
 		}
 
 		// Retrieve and verify
-		values, err := GetSecret(path, 0)
-		if err != nil {
-			t.Fatalf("Failed to get secret with empty values: %v", err)
+		values, getEmptyErr := GetSecret(path, 0)
+		if getEmptyErr != nil {
+			t.Fatalf("Failed to get secret with empty values: %v", getEmptyErr)
 		}
 
 		if len(values) != 0 {
@@ -759,14 +784,14 @@ func TestSecretOperations_EmptyValues(t *testing.T) {
 		}
 
 		// Test with a nil map
-		err = UpsertSecret(path, nil)
-		if err != nil {
-			t.Fatalf("Failed to create secret with nil values: %v", err)
+		upsertNilErr := UpsertSecret(path, nil)
+		if upsertNilErr != nil {
+			t.Fatalf("Failed to create secret with nil values: %v", upsertNilErr)
 		}
 
-		values, err = GetSecret(path, 0) // Should be version 2 now
-		if err != nil {
-			t.Fatalf("Failed to get secret with nil values: %v", err)
+		values, getNilErr := GetSecret(path, 0) // Should be version 2 now
+		if getNilErr != nil {
+			t.Fatalf("Failed to get secret with nil values: %v", getNilErr)
 		}
 
 		if values == nil {
@@ -789,23 +814,28 @@ func TestSecretOperations_LargeValues(t *testing.T) {
 		largeValues := make(map[string]string)
 		for i := 0; i < 100; i++ {
 			key := fmt.Sprintf("key_%03d", i)
-			value := fmt.Sprintf("value_%03d_with_some_longer_content_to_make_it_bigger", i)
+			value := fmt.Sprintf(
+				"value_%03d_with_some_longer_content_to_make_it_bigger", i,
+			)
 			largeValues[key] = value
 		}
 
-		err := UpsertSecret(path, largeValues)
-		if err != nil {
-			t.Fatalf("Failed to create large secret: %v", err)
+		upsertErr := UpsertSecret(path, largeValues)
+		if upsertErr != nil {
+			t.Fatalf("Failed to create large secret: %v", upsertErr)
 		}
 
 		// Retrieve and verify
-		retrievedValues, err := GetSecret(path, 0)
-		if err != nil {
-			t.Fatalf("Failed to get large secret: %v", err)
+		retrievedValues, getErr := GetSecret(path, 0)
+		if getErr != nil {
+			t.Fatalf("Failed to get large secret: %v", getErr)
 		}
 
 		if len(retrievedValues) != len(largeValues) {
-			t.Errorf("Expected %d keys, got %d", len(largeValues), len(retrievedValues))
+			t.Errorf(
+				"Expected %d keys, got %d",
+				len(largeValues), len(retrievedValues),
+			)
 		}
 
 		if !reflect.DeepEqual(retrievedValues, largeValues) {
@@ -839,14 +869,20 @@ func TestSecretOperations_SpecialCharacters(t *testing.T) {
 					"quotes":        `Both "double" and 'single' quotes`,
 				}
 
-				err := UpsertSecret(path, values)
-				if err != nil {
-					t.Fatalf("Failed to create secret with special characters: %v", err)
+				upsertErr := UpsertSecret(path, values)
+				if upsertErr != nil {
+					t.Fatalf(
+						"Failed to create secret with special characters: %v",
+						upsertErr,
+					)
 				}
 
-				retrievedValues, err := GetSecret(path, 0)
-				if err != nil {
-					t.Fatalf("Failed to get secret with special characters: %v", err)
+				retrievedValues, getErr := GetSecret(path, 0)
+				if getErr != nil {
+					t.Fatalf(
+						"Failed to get secret with special characters: %v",
+						getErr,
+					)
 				}
 
 				if !reflect.DeepEqual(retrievedValues, values) {

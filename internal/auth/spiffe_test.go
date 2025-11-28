@@ -43,7 +43,7 @@ func createMockRequest(spiffeID string) *http.Request {
 		URIs: []*url.URL{spiffeURL},
 	}
 
-	// Create mock TLS connection state
+	// Create a mock TLS connection state
 	req.TLS = &tls.ConnectionState{
 		PeerCertificates: []*x509.Certificate{cert},
 	}
@@ -99,7 +99,7 @@ func TestExtractPeerSPIFFEID_ValidSPIFFEID(t *testing.T) {
 			peerID.String(), validSPIFFEID)
 	}
 
-	// Response should not have been written for success case
+	// Response should not have been written for the success case
 	if w.Code != http.StatusOK {
 		t.Errorf("ExtractPeerSPIFFEID() wrote response on success, status = %d",
 			w.Code)

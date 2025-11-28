@@ -23,7 +23,7 @@ import (
 // If the home directory is unavailable, it falls back to
 // /tmp/.spike-$USER/data.
 //
-// The directory is created once on the first call and cached for following
+// The directory is created once on the first call and cached for the following
 // calls.
 //
 // Returns:
@@ -44,7 +44,8 @@ func NexusDataFolder() string {
 // ~/.spike/recover. If the home directory is unavailable, it falls back to
 // /tmp/.spike-$USER/recover.
 //
-// The directory is created once on first call and cached for subsequent calls.
+// The directory is created once on the first call and cached for subsequent
+// calls.
 //
 // Returns:
 //   - string: The absolute path to the Pilot recovery directory.

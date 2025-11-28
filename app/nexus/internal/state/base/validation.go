@@ -10,6 +10,7 @@ import (
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/kv"
+
 	"github.com/spiffe/spike/app/nexus/internal/state/persist"
 )
 
@@ -67,7 +68,7 @@ func contains(permissions []data.PolicyPermission,
 //   - wants: The permissions that are required
 //
 // Returns:
-//   - true if all required permissions are satisfied (or Super is present)
+//   - true if all required permissions are satisfied (or "super" is present)
 //   - false if any required permission is missing
 func verifyPermissions(
 	haves []data.PolicyPermission,

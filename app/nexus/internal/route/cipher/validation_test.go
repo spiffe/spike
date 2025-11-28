@@ -191,6 +191,8 @@ func TestValidatePlaintextSize_TooLarge(t *testing.T) {
 
 func TestCipherConstants(t *testing.T) {
 	// Verify AES-GCM standard values
+
+	//goland:noinspection GoBoolExpressions
 	if expectedNonceSize != 12 {
 		t.Errorf("expectedNonceSize = %d, want 12 (AES-GCM standard)",
 			expectedNonceSize)

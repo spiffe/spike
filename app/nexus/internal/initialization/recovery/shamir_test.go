@@ -450,7 +450,7 @@ func TestShamirRecoveryValidation(t *testing.T) {
 		t.Error("Cleaned up secret should be zero")
 	}
 
-	// Test with wrong number of shares (too few)
+	// Test with the wrong number of shares (too few)
 	_, err = shamir.Recover(threshold, shares[:threshold])
 	if err == nil {
 		t.Error("Recovery should fail with insufficient shares")

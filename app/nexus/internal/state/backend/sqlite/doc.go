@@ -27,7 +27,7 @@
 // For non-persistent scenarios, use the memory backend. For encryption-only
 // without local storage, use the lite backend.
 //
-// The actual persistence implementation is in the persist subpackage.
+// The actual persistence implementation is in the `persist` subpackage.
 package sqlite
 
 import (

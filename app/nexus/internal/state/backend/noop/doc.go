@@ -10,7 +10,8 @@
 //
 // Use this backend when:
 //   - Testing components that depend on a backend without actual storage
-//   - Embedding in other backends to provide default no-op behavior (e.g., lite)
+//   - Embedding in other backends to provide default no-op behavior
+//     (e.g., lite)
 //   - Placeholder during development before a real backend is configured
 //
 // Key characteristics:

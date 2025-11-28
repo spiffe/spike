@@ -259,8 +259,8 @@ func SendShardsPeriodically(source *workloadapi.X509Source) {
 //
 // This function employs a fail-fast strategy with log.FatalErr for any errors
 // during shard generation. This is intentional and critical for security:
-//   - Shard generation failures indicate memory corruption, crypto library bugs,
-//     or corrupted internal state
+//   - Shard generation failures indicate memory corruption, crypto library
+//     bugs, or corrupted internal state
 //   - Continuing to operate with corrupted shards could propagate invalid
 //     recovery data to operators
 //   - An operator storing broken shards would discover they are useless only

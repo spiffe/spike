@@ -14,7 +14,7 @@ import (
 )
 
 // notReadyCallCount tracks how many times PrintNotReady has been called.
-// This enables progressive messaging: brief on first call, detailed on
+// This enables progressive messaging: brief on the first call, detailed on
 // subsequent calls.
 var (
 	notReadyCallCount int

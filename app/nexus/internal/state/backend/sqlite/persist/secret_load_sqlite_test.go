@@ -219,7 +219,7 @@ func TestDataStore_loadSecretInternal_SecretNotFound(t *testing.T) {
 		// Execute the function
 		secret, err := store.loadSecretInternal(ctx, path)
 
-		// Verify results: should return ErrEntityNotFound for non-existent secret
+		// Verify results: should return ErrEntityNotFound for the non-existent secret
 		if err == nil {
 			t.Error("Expected ErrEntityNotFound for non-existent secret")
 		}

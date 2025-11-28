@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/spiffe/spike-sdk-go/crypto"
+
 	"github.com/spiffe/spike/internal/config"
 )
 

@@ -92,7 +92,10 @@ func TestAuditState_Constants(t *testing.T) {
 func TestAudit_OutputsValidJSON(t *testing.T) {
 	// Capture stdout
 	oldStdout := os.Stdout
-	r, w, _ := os.Pipe()
+	r, w, pipeErr := os.Pipe()
+	if pipeErr != nil {
+		t.Fatalf("Failed to create pipe: %v", pipeErr)
+	}
 	os.Stdout = w
 
 	entry := AuditEntry{
@@ -112,7 +115,9 @@ func TestAudit_OutputsValidJSON(t *testing.T) {
 	Audit(entry)
 
 	// Restore stdout and read output
-	w.Close()
+	if closeErr := w.Close(); closeErr != nil {
+		t.Logf("Failed to close write pipe: %v", closeErr)
+	}
 	os.Stdout = oldStdout
 	var buf bytes.Buffer
 	if _, copyErr := io.Copy(&buf, r); copyErr != nil {
@@ -144,7 +149,10 @@ func TestAudit_OutputsValidJSON(t *testing.T) {
 func TestAuditRequest_SetsFieldsCorrectly(t *testing.T) {
 	// Capture stdout
 	oldStdout := os.Stdout
-	r, w, _ := os.Pipe()
+	r, w, pipeErr := os.Pipe()
+	if pipeErr != nil {
+		t.Fatalf("Failed to create pipe: %v", pipeErr)
+	}
 	os.Stdout = w
 
 	req := httptest.NewRequest("GET", "/v1/secrets?path=db/creds", nil)
@@ -158,7 +166,9 @@ func TestAuditRequest_SetsFieldsCorrectly(t *testing.T) {
 	AuditRequest("TestFunction", req, audit, AuditRead)
 
 	// Restore stdout and read output
-	w.Close()
+	if closeErr := w.Close(); closeErr != nil {
+		t.Logf("Failed to close write pipe: %v", closeErr)
+	}
 	os.Stdout = oldStdout
 	var buf bytes.Buffer
 	if _, copyErr := io.Copy(&buf, r); copyErr != nil {
@@ -210,12 +220,12 @@ func TestAuditLogLine_JSONStructure(t *testing.T) {
 		t.Fatalf("Failed to unmarshal JSON: %v", err)
 	}
 
-	// Check "time" field exists
+	// Check the "time" field exists
 	if _, ok := decoded["time"]; !ok {
 		t.Error("JSON missing 'time' field")
 	}
 
-	// Check "audit" field exists
+	// Check the "audit" field exists
 	if _, ok := decoded["audit"]; !ok {
 		t.Error("JSON missing 'audit' field")
 	}

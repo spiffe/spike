@@ -176,7 +176,7 @@ func TestToSecretMetadataSuccessResponse_ResponseIsSuccess(t *testing.T) {
 
 	response := toSecretMetadataSuccessResponse(secret)
 
-	// The response should have empty error (success)
+	// The response should have an empty error message (success)
 	if response.Err != "" {
 		t.Errorf("toSecretMetadataSuccessResponse() Err = %q, want empty",
 			response.Err)

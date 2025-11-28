@@ -143,7 +143,7 @@ func ShouldBootstrap() bool {
 		return false
 	}
 
-	// Bootstrap not completed: proceed with bootstrap
+	// Bootstrap is not completed: proceed with bootstrap
 	return true
 }
 
@@ -188,7 +188,9 @@ func MarkBootstrapComplete() *sdkErrors.SDKError {
 	}
 
 	namespace := "spike"
-	if nsBytes, readErr := os.ReadFile(k8sServiceAccountNamespace); readErr == nil {
+	if nsBytes, readErr := os.ReadFile(
+		k8sServiceAccountNamespace,
+	); readErr == nil {
 		namespace = string(nsBytes)
 	} else {
 		failErr := sdkErrors.ErrK8sReconciliationFailed.Wrap(readErr)
@@ -231,5 +233,3 @@ func MarkBootstrapComplete() *sdkErrors.SDKError {
 	)
 	return nil
 }
-
-// TODO: after replacing errors; check this file for logical consistency and documentation.

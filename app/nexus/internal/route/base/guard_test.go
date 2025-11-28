@@ -238,7 +238,7 @@ func invokesGuard(funcDecl *ast.FuncDecl) bool {
 }
 
 // extractFunctionName extracts the function name from a call expression.
-// Returns empty string if the name cannot be determined.
+// Returns an empty string if the name cannot be determined.
 func extractFunctionName(callExpr *ast.CallExpr) string {
 	switch fn := callExpr.Fun.(type) {
 	case *ast.Ident:

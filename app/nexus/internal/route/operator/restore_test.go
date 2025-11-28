@@ -177,7 +177,7 @@ func TestRouteRestore_TooManyShards(t *testing.T) {
 		t.Fatalf("Failed to marshal test request: %v", err)
 	}
 
-	//req := httptest.NewRequest(http.MethodPost, "/restore", bytes.NewReader(requestBody))
+	// req := httptest.NewRequest(http.MethodPost, "/restore", bytes.NewReader(requestBody))
 	// Note: This test will fail guard validation due to missing SPIFFE context
 	// We're testing the logic path, not the actual HTTP processing
 	// w := httptest.NewRecorder()
@@ -232,9 +232,9 @@ func TestRouteRestore_DuplicateShard(t *testing.T) {
 		t.Fatalf("Failed to marshal test request: %v", err)
 	}
 
-	//req := httptest.NewRequest(http.MethodPost, "/restore", bytes.NewReader(requestBody))
-	//w := httptest.NewRecorder()
-	//audit := &journal.AuditEntry{}
+	// req := httptest.NewRequest(http.MethodPost, "/restore", bytes.NewReader(requestBody))
+	// w := httptest.NewRecorder()
+	// audit := &journal.AuditEntry{}
 
 	// This test will fail guard validation due to missing SPIFFE context
 	t.Skip("Skipping test that requires SPIFFE infrastructure for guard validation")

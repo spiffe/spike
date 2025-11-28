@@ -59,6 +59,7 @@ func Route(
 
 			// No backing store: We cannot store or retrieve secrets
 			// or policies directly.
+			// SPIKE is effectively a "crypto as a service" now.
 			return routeWithNoBackingStore(a, p)
 		})(w, r, a)
 }

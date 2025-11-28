@@ -14,26 +14,25 @@ import (
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/log"
 	"github.com/spiffe/spike-sdk-go/security/mem"
-
-	"github.com/spiffe/spike/app/nexus/internal/state/backend"
 )
-
-var be backend.Backend
 
 func createCipher() cipher.AEAD {
 	key := make([]byte, crypto.AES256KeySize) // AES-256 key
-	if _, err := rand.Read(key); err != nil {
-		log.FatalLn("createCipher", "message", "Failed to generate test key", "err", err)
+	if _, randErr := rand.Read(key); randErr != nil {
+		log.FatalLn("createCipher", "message",
+			"Failed to generate test key", "err", randErr)
 	}
 
-	block, err := aes.NewCipher(key)
-	if err != nil {
-		log.FatalLn("createCipher", "message", "Failed to create cipher", "err", err)
+	block, cipherErr := aes.NewCipher(key)
+	if cipherErr != nil {
+		log.FatalLn("createCipher", "message",
+			"Failed to create cipher", "err", cipherErr)
 	}
 
-	gcm, err := cipher.NewGCM(block)
-	if err != nil {
-		log.FatalLn("createCipher", "message", "Failed to create GCM", "err", err)
+	gcm, gcmErr := cipher.NewGCM(block)
+	if gcmErr != nil {
+		log.FatalLn("createCipher", "message",
+			"Failed to create GCM", "err", gcmErr)
 	}
 
 	return gcm
@@ -105,4 +104,7 @@ func InitializeBackend(rootKey *[crypto.AES256KeySize]byte) {
 	default:
 		be = initializeInMemoryBackend()
 	}
+
+	// Store the backend atomically for safe concurrent access.
+	backendPtr.Store(&be)
 }

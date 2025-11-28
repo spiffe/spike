@@ -5,7 +5,6 @@
 package trust
 
 import (
-	"os"
 	"testing"
 )
 
@@ -127,10 +126,4 @@ func TestAuthenticateForPilotRestore_InvalidID(t *testing.T) {
 
 	AuthenticateForPilotRestore(invalidID)
 	t.Error("Should have panicked before reaching here")
-}
-
-func TestMain(m *testing.M) {
-	// Ensure SPIKE_STACK_TRACES_ON_LOG_FATAL is set for all tests
-	os.Setenv("SPIKE_STACK_TRACES_ON_LOG_FATAL", "true")
-	os.Exit(m.Run())
 }

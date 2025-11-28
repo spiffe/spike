@@ -49,7 +49,8 @@ import (
 //   - *sdkErrors.SDKError: nil on success, or one of:
 //   - ErrDataReadFailure if request body cannot be read
 //   - ErrDataParseFailure if JSON request cannot be parsed
-//   - ErrDataInvalidInput if version is unsupported or nonce size is invalid
+//   - ErrDataInvalidInput if the version is unsupported or nonce size is
+//     invalid
 //   - ErrStateBackendNotReady if cipher is unavailable
 //   - ErrCryptoDecryptFailed if decryption fails
 func RouteDecrypt(

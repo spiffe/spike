@@ -5,22 +5,11 @@
 package base
 
 import (
-	"sync"
-
 	"github.com/spiffe/spike-sdk-go/crypto"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/security/mem"
 
 	"github.com/spiffe/spike-sdk-go/log"
-)
-
-// Global variables related to the root key with thread-safety protection.
-var (
-	// rootKey is a 32-byte array that stores the cryptographic root key.
-	// It is initialized to zeroes by default.
-	rootKey [crypto.AES256KeySize]byte
-	// rootKeyMu provides mutual exclusion for access to the root key.
-	rootKeyMu sync.RWMutex
 )
 
 // RootKeyNoLock returns a copy of the root key without acquiring the lock.

@@ -21,6 +21,10 @@ import (
 // the application name, version, log level, and FIPS 140.3 status. The banner
 // is only printed if the SPIKE_BANNER_ENABLED environment variable is set to
 // true.
+//
+// Parameters:
+//   - appName: The name of the application (e.g., "SPIKE Nexus")
+//   - appVersion: The version string of the application (e.g., "1.0.0")
 func PrintBanner(appName, appVersion string) {
 	if !env.BannerEnabledVal() {
 		return
@@ -39,6 +43,9 @@ func PrintBanner(appName, appVersion string) {
 // data from being swapped to disk. It logs the result of the operation. If
 // memory locking succeeds, a success message is logged. If it fails, a warning
 // is logged only if SPIKE_SHOW_MEMORY_WARNING is enabled.
+//
+// Parameters:
+//   - appName: The name of the application, used as a prefix in log messages
 func LogMemLock(appName string) {
 	if mem.Lock() {
 		log.Info(appName, "message", "successfully locked memory")
@@ -53,6 +60,10 @@ func LogMemLock(appName string) {
 // Preamble performs standard application initialization output by printing
 // the application banner and attempting to lock memory. This function should
 // be called during application startup.
+//
+// Parameters:
+//   - appName: The name of the application (e.g., "SPIKE Nexus")
+//   - appVersion: The version string of the application (e.g., "1.0.0")
 func Preamble(appName, appVersion string) {
 	PrintBanner(appName, appVersion)
 	LogMemLock(appName)

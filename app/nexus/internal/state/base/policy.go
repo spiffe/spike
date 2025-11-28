@@ -122,21 +122,21 @@ func UpsertPolicy(policy data.Policy) (data.Policy, *sdkErrors.SDKError) {
 	}
 
 	// Compile and validate patterns
-	idRegex, compileErr := regexp.Compile(policy.SPIFFEIDPattern)
-	if compileErr != nil {
-		failErr := *sdkErrors.ErrEntityInvalid.Clone()
-		failErr.Msg = "invalid SPIFFE ID pattern: " + policy.SPIFFEIDPattern +
+	idRegex, idCompileErr := regexp.Compile(policy.SPIFFEIDPattern)
+	if idCompileErr != nil {
+		idPatternErr := sdkErrors.ErrEntityInvalid.Clone()
+		idPatternErr.Msg = "invalid SPIFFE ID pattern: " + policy.SPIFFEIDPattern +
 			" for policy " + policy.Name
-		return data.Policy{}, failErr.Wrap(compileErr)
+		return data.Policy{}, idPatternErr.Wrap(idCompileErr)
 	}
 	policy.IDRegex = idRegex
 
-	pathRegex, compileErr := regexp.Compile(policy.PathPattern)
-	if compileErr != nil {
-		failErr := *sdkErrors.ErrEntityInvalid.Clone()
-		failErr.Msg = "invalid path pattern: " + policy.PathPattern +
+	pathRegex, pathCompileErr := regexp.Compile(policy.PathPattern)
+	if pathCompileErr != nil {
+		pathPatternErr := sdkErrors.ErrEntityInvalid.Clone()
+		pathPatternErr.Msg = "invalid path pattern: " + policy.PathPattern +
 			" for policy " + policy.Name
-		return data.Policy{}, failErr.Wrap(compileErr)
+		return data.Policy{}, pathPatternErr.Wrap(pathCompileErr)
 	}
 	policy.PathRegex = pathRegex
 
@@ -159,9 +159,9 @@ func UpsertPolicy(policy data.Policy) (data.Policy, *sdkErrors.SDKError) {
 	// Store to the backend
 	storeErr := persist.Backend().StorePolicy(ctx, policy)
 	if storeErr != nil {
-		failErr := *sdkErrors.ErrEntitySaveFailed.Clone()
-		failErr.Msg = "failed to store policy " + policy.Name
-		return data.Policy{}, failErr.Wrap(storeErr)
+		saveErr := sdkErrors.ErrEntitySaveFailed.Clone()
+		saveErr.Msg = "failed to store policy " + policy.Name
+		return data.Policy{}, saveErr.Wrap(storeErr)
 	}
 
 	return policy, nil
@@ -182,15 +182,15 @@ func GetPolicy(id string) (data.Policy, *sdkErrors.SDKError) {
 	// Load directly from the backend
 	policy, loadErr := persist.Backend().LoadPolicy(ctx, id)
 	if loadErr != nil {
-		failErr := *sdkErrors.ErrEntityLoadFailed.Clone()
-		failErr.Msg = "failed to load policy with ID " + id
-		return data.Policy{}, failErr.Wrap(loadErr)
+		getPolicyErr := sdkErrors.ErrEntityLoadFailed.Clone()
+		getPolicyErr.Msg = "failed to load policy with ID " + id
+		return data.Policy{}, getPolicyErr.Wrap(loadErr)
 	}
 
 	if policy == nil {
-		failErr := *sdkErrors.ErrEntityNotFound.Clone()
-		failErr.Msg = "policy with ID " + id + " not found"
-		return data.Policy{}, &failErr
+		notFoundErr := sdkErrors.ErrEntityNotFound.Clone()
+		notFoundErr.Msg = "policy with ID " + id + " not found"
+		return data.Policy{}, notFoundErr
 	}
 
 	return *policy, nil
@@ -210,22 +210,22 @@ func DeletePolicy(id string) *sdkErrors.SDKError {
 	// Check if the policy exists first (to maintain the same error behavior)
 	policy, loadErr := persist.Backend().LoadPolicy(ctx, id)
 	if loadErr != nil {
-		failErr := *sdkErrors.ErrEntityLoadFailed.Clone()
-		failErr.Msg = "failed to load policy with ID " + id
-		return failErr.Wrap(loadErr)
+		loadPolicyErr := sdkErrors.ErrEntityLoadFailed.Clone()
+		loadPolicyErr.Msg = "failed to load policy with ID " + id
+		return loadPolicyErr.Wrap(loadErr)
 	}
 	if policy == nil {
-		failErr := *sdkErrors.ErrEntityNotFound.Clone()
-		failErr.Msg = "policy with ID " + id + " not found"
-		return &failErr
+		notFoundErr := sdkErrors.ErrEntityNotFound.Clone()
+		notFoundErr.Msg = "policy with ID " + id + " not found"
+		return notFoundErr
 	}
 
 	// Delete the policy from the backend
 	deleteErr := persist.Backend().DeletePolicy(ctx, id)
 	if deleteErr != nil {
-		failErr := *sdkErrors.ErrEntityDeletionFailed.Clone()
-		failErr.Msg = "failed to delete policy with ID " + id
-		return failErr.Wrap(deleteErr)
+		deletePolicyErr := sdkErrors.ErrEntityDeletionFailed.Clone()
+		deletePolicyErr.Msg = "failed to delete policy with ID " + id
+		return deletePolicyErr.Wrap(deleteErr)
 	}
 
 	return nil
@@ -247,9 +247,9 @@ func ListPolicies() ([]data.Policy, *sdkErrors.SDKError) {
 	// Load all policies from the backend
 	allPolicies, loadErr := persist.Backend().LoadAllPolicies(ctx)
 	if loadErr != nil {
-		failErr := *sdkErrors.ErrEntityLoadFailed.Clone()
-		failErr.Msg = "failed to load all policies"
-		return nil, failErr.Wrap(loadErr)
+		listPoliciesErr := sdkErrors.ErrEntityLoadFailed.Clone()
+		listPoliciesErr.Msg = "failed to load all policies"
+		return nil, listPoliciesErr.Wrap(loadErr)
 	}
 
 	// Convert map to slice
@@ -276,15 +276,17 @@ func ListPolicies() ([]data.Policy, *sdkErrors.SDKError) {
 //     slice is non-deterministic due to the concurrent nature of the underlying
 //     store.
 //   - *sdkErrors.SDKError: ErrEntityLoadFailed if loading fails, nil on success
-func ListPoliciesByPathPattern(pathPattern string) ([]data.Policy, *sdkErrors.SDKError) {
+func ListPoliciesByPathPattern(
+	pathPattern string,
+) ([]data.Policy, *sdkErrors.SDKError) {
 	ctx := context.Background()
 
 	// Load all policies from the backend
 	allPolicies, loadErr := persist.Backend().LoadAllPolicies(ctx)
 	if loadErr != nil {
-		failErr := *sdkErrors.ErrEntityLoadFailed.Clone()
-		failErr.Msg = "failed to load policies by pathPattern " + pathPattern
-		return nil, failErr.Wrap(loadErr)
+		listByPathErr := sdkErrors.ErrEntityLoadFailed.Clone()
+		listByPathErr.Msg = "failed to load policies by pathPattern " + pathPattern
+		return nil, listByPathErr.Wrap(loadErr)
 	}
 
 	// Filter by pathPattern pattern
@@ -319,9 +321,10 @@ func ListPoliciesBySPIFFEIDPattern(
 	// Load all policies from the backend.
 	allPolicies, loadErr := persist.Backend().LoadAllPolicies(ctx)
 	if loadErr != nil {
-		failErr := *sdkErrors.ErrEntityLoadFailed.Clone()
-		failErr.Msg = "failed to load policies by SPIFFE ID pattern " + SPIFFEIDPattern
-		return nil, failErr.Wrap(loadErr)
+		listByIDErr := sdkErrors.ErrEntityLoadFailed.Clone()
+		listByIDErr.Msg = "failed to load policies" +
+			" by SPIFFE ID pattern " + SPIFFEIDPattern
+		return nil, listByIDErr.Wrap(loadErr)
 	}
 
 	// Filter by SPIFFE ID pattern

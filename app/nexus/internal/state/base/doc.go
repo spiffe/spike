@@ -33,6 +33,6 @@
 // matching policies. A policy matches when its SPIFFE ID pattern and path
 // pattern both match the request, and it grants the required permissions.
 //
-// This package delegates storage operations to the persist package, which in
+// This package delegates storage operations to the `persist` package, which in
 // turn uses the configured backend (sqlite, memory, lite, or noop).
 package base

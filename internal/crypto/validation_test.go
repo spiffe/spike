@@ -29,7 +29,7 @@ func createValidShares(t *testing.T, threshold, numShares uint) (
 }
 
 func TestVerifyShamirReconstruction_ValidShares(t *testing.T) {
-	// Set environment to use panic instead of os.Exit
+	// Set the environment to use panic instead of os.Exit
 	t.Setenv("SPIKE_STACK_TRACES_ON_LOG_FATAL", "true")
 	// Set Shamir threshold to match our test
 	t.Setenv("SPIKE_NEXUS_SHAMIR_THRESHOLD", "2")
@@ -47,7 +47,7 @@ func TestVerifyShamirReconstruction_ValidShares(t *testing.T) {
 }
 
 func TestVerifyShamirReconstruction_InvalidShares_RecoveryFails(t *testing.T) {
-	// Set environment to use panic instead of os.Exit
+	// Set the environment to use panic instead of os.Exit
 	t.Setenv("SPIKE_STACK_TRACES_ON_LOG_FATAL", "true")
 	// Set Shamir threshold
 	t.Setenv("SPIKE_NEXUS_SHAMIR_THRESHOLD", "2")
@@ -77,7 +77,7 @@ func TestVerifyShamirReconstruction_InvalidShares_RecoveryFails(t *testing.T) {
 }
 
 func TestVerifyShamirReconstruction_WrongSecret(t *testing.T) {
-	// Set environment to use panic instead of os.Exit
+	// Set the environment to use panic instead of os.Exit
 	t.Setenv("SPIKE_STACK_TRACES_ON_LOG_FATAL", "true")
 	// Set Shamir threshold
 	t.Setenv("SPIKE_NEXUS_SHAMIR_THRESHOLD", "2")
@@ -102,9 +102,9 @@ func TestVerifyShamirReconstruction_WrongSecret(t *testing.T) {
 }
 
 func TestVerifyShamirReconstruction_InsufficientShares(t *testing.T) {
-	// Set environment to use panic instead of os.Exit
+	// Set the environment to use panic instead of os.Exit
 	t.Setenv("SPIKE_STACK_TRACES_ON_LOG_FATAL", "true")
-	// Set threshold higher than available shares
+	// Set the threshold higher than available shares
 	t.Setenv("SPIKE_NEXUS_SHAMIR_THRESHOLD", "5")
 
 	// Create only 3 shares but require 5

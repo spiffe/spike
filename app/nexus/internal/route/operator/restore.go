@@ -51,8 +51,8 @@ var (
 // The function responds with HTTP 200 OK in all successful cases:
 //   - Shard successfully added to the collection
 //   - Restoration already complete (additional shards acknowledged but ignored)
-//   - Duplicate shard received (acknowledged but ignored, status shows remaining
-//     shards needed)
+//   - Duplicate shard received (acknowledged but ignored, status shows
+//     the remaining shards needed)
 //
 // When the last required shard is added, the function automatically triggers
 // the restoration process using RestoreBackingStoreFromPilotShards.

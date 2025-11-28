@@ -52,7 +52,10 @@ func TestShardContributionRequestMarshaling(t *testing.T) {
 	// Verify the shard data matches our input
 	for i, b := range unmarshaled.Shard {
 		if b != validShard[i] {
-			t.Errorf("Shard data mismatch at index %d: expected %d, got %d", i, validShard[i], b)
+			t.Errorf(
+				"Shard data mismatch at index %d: expected %d, got %d",
+				i, validShard[i], b,
+			)
 		}
 	}
 }
@@ -99,7 +102,10 @@ func TestCryptoConstants(t *testing.T) {
 	// Verify the crypto constant we depend on
 	// noinspection GoBoolExpressions
 	if crypto.AES256KeySize != 32 {
-		t.Errorf("Expected AES256KeySize to be 32 bytes, got %d", crypto.AES256KeySize)
+		t.Errorf(
+			"Expected AES256KeySize to be 32 bytes, got %d",
+			crypto.AES256KeySize,
+		)
 	}
 
 	// Test that our shard array type has the correct size
@@ -114,26 +120,28 @@ func TestHTTPClientInteraction(t *testing.T) {
 	// Test HTTP client behavior for shard contribution requests
 	testPayload := []byte(`{"shard": "test data"}`)
 
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Verify the request structure
-		if r.Method != http.MethodPost {
-			t.Errorf("Expected POST method, got %s", r.Method)
-		}
+	server := httptest.NewServer(http.HandlerFunc(
+		func(w http.ResponseWriter, r *http.Request,
+		) {
+			// Verify the request structure
+			if r.Method != http.MethodPost {
+				t.Errorf("Expected POST method, got %s", r.Method)
+			}
 
-		body, readErr := io.ReadAll(r.Body)
-		if readErr != nil {
-			t.Errorf("Failed to read request body: %v", readErr)
-			return
-		}
+			body, readErr := io.ReadAll(r.Body)
+			if readErr != nil {
+				t.Errorf("Failed to read request body: %v", readErr)
+				return
+			}
 
-		if !bytes.Equal(body, testPayload) {
-			t.Errorf("Request body mismatch. Expected: %s, Got: %s",
-				string(testPayload), string(body))
-		}
+			if !bytes.Equal(body, testPayload) {
+				t.Errorf("Request body mismatch. Expected: %s, Got: %s",
+					string(testPayload), string(body))
+			}
 
-		w.WriteHeader(http.StatusOK)
-		_, _ = w.Write([]byte("OK"))
-	}))
+			w.WriteHeader(http.StatusOK)
+			_, _ = w.Write([]byte("OK"))
+		}))
 	defer server.Close()
 
 	// Test a successful HTTP POST request

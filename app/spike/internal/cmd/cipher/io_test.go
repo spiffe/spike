@@ -226,7 +226,7 @@ func TestOpenOutput_OverwritesExistingFile(t *testing.T) {
 	_, _ = out.Write([]byte(newContent))
 	cleanup()
 
-	// Verify file was overwritten (not appended)
+	// Verify the file was overwritten (not appended)
 	data, _ := os.ReadFile(tempFile)
 	if string(data) != newContent {
 		t.Errorf("File content = %q, want %q (file should be overwritten)",

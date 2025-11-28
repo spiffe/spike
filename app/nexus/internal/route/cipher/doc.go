@@ -91,7 +91,7 @@
 //   - encrypt_intercept.go: Encryption guards and SPIFFE ID extraction
 //   - handle.go: Request orchestration (implements flows above)
 //   - net.go: Response formatting
-//   - read.go: Request parsing (WithoutGuard variants)
+//   - get.go: Request parsing (WithoutGuard variants)
 //   - state.go: Cipher retrieval from backend
 //   - validation.go: Request field validation (version, nonce size)
 //
