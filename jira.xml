@@ -1013,6 +1013,40 @@ w
 
   </task-group>
   <task-group for="v0.6.3">
+    <issue priority="high" category="bug" repo="spike-sdk-go">
+      SDK Recover/Restore functions use wrong SPIFFE ID check
+
+      The SDK's `Recover` function in
+      `spike-sdk-go/api/internal/impl/operator/recover.go` checks for generic
+      pilot identity instead of the recover role.
+
+      == Bug Location ==
+
+      recover.go line 100:
+        if !spiffeid.IsPilot(selfSPIFFEID) {
+
+      == Expected ==
+
+        if !spiffeid.IsPilotRecover(selfSPIFFEID) {
+
+      == Impact ==
+
+      The `spike operator recover` command fails with:
+        "recovery can only be performed from SPIKE Pilot"
+
+      Even when the caller has the correct recover role SPIFFE ID:
+        spiffe://spike.ist/spike/pilot/role/recover
+
+      The SDK is checking for the generic pilot ID:
+        spiffe://spike.ist/spike/pilot
+
+      == Files ==
+      - spike-sdk-go/api/internal/impl/operator/recover.go:100
+
+      == Notes ==
+      The same bug likely exists in the `Restore` function. Check
+      `spike-sdk-go/api/internal/impl/operator/restore.go` for similar issue.
+    </issue>
     <issue priority="medium" category="bug">
       spike cipher JSON mode: encrypt discards version and nonce
 
