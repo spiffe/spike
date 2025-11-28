@@ -32,7 +32,7 @@ func TestNewSecretDeleteCommand(t *testing.T) {
 			"'Delete secrets at the specified path', got '%s'", cmd.Short)
 	}
 
-	// Check if the versions flag is present
+	// Check if the `versions` flag is present
 	flag := cmd.Flags().Lookup("versions")
 	if flag == nil {
 		t.Error("Expected flag 'versions' to be present")
@@ -52,7 +52,7 @@ func TestNewSecretDeleteCommandWithNilSource(t *testing.T) {
 		return
 	}
 
-	// Command should still be created; nil source is handled at runtime
+	// Command should still be created; the nil source is handled at runtime
 	if cmd.Use != "delete <path>" {
 		t.Errorf("Expected command use to be 'delete <path>', got '%s'",
 			cmd.Use)

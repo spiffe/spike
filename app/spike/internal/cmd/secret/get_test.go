@@ -52,7 +52,7 @@ func TestNewSecretGetCommandWithNilSource(t *testing.T) {
 		return
 	}
 
-	// Command should still be created; nil source is handled at runtime
+	// Command should still be created; the nil source is handled at runtime
 	if cmd.Use != "get <path> [key]" {
 		t.Errorf("Expected command use to be 'get <path> [key]', got '%s'",
 			cmd.Use)

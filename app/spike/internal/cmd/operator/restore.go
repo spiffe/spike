@@ -77,10 +77,10 @@ func newOperatorRestoreCommand(
 
 			cmd.Println("(your input will be hidden as you paste/type it)")
 			cmd.Print("Enter recovery shard: ")
-			shard, err := term.ReadPassword(int(os.Stdin.Fd()))
-			if err != nil {
+			shard, readErr := term.ReadPassword(int(os.Stdin.Fd()))
+			if readErr != nil {
 				cmd.Println("") // newline after hidden input
-				cmd.PrintErrf("Error: %v\n", err)
+				cmd.PrintErrf("Error: %v\n", readErr)
 				return
 			}
 
@@ -105,7 +105,7 @@ func newOperatorRestoreCommand(
 				return
 			}
 
-			decodedShard, err := hex.DecodeString(hexData)
+			decodedShard, decodeErr := hex.DecodeString(hexData)
 
 			// Security: Use `defer` for cleanup to ensure it happens even in
 			// error paths
@@ -118,7 +118,7 @@ func newOperatorRestoreCommand(
 			// Security: reset shard immediately after use.
 			mem.ClearBytes(shard)
 
-			if err != nil {
+			if decodeErr != nil {
 				cmd.PrintErrln("Error: Failed to decode recovery shard.")
 				return
 			}

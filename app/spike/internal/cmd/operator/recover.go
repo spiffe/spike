@@ -111,15 +111,15 @@ func newOperatorRecoverCommand(
 			recoverDir := config.PilotRecoveryFolder()
 
 			// Clean the path to normalize it
-			cleanPath, err := filepath.Abs(filepath.Clean(recoverDir))
-			if err != nil {
-				cmd.PrintErrf("Error: %v\n", err)
+			cleanPath, absErr := filepath.Abs(filepath.Clean(recoverDir))
+			if absErr != nil {
+				cmd.PrintErrf("Error: %v\n", absErr)
 				return
 			}
 
 			// Verify the path exists and is a directory
-			fileInfo, err := os.Stat(cleanPath)
-			if err != nil || !fileInfo.IsDir() {
+			fileInfo, statErr := os.Stat(cleanPath)
+			if statErr != nil || !fileInfo.IsDir() {
 				cmd.PrintErrln("Error: Invalid recovery directory path.")
 				return
 			}
@@ -134,11 +134,11 @@ func newOperatorRecoverCommand(
 
 			// Ensure the recover directory is clean by
 			// deleting any existing recovery files.
-			if _, err := os.Stat(recoverDir); err == nil {
-				files, err := os.ReadDir(recoverDir)
-				if err != nil {
+			if _, dirStatErr := os.Stat(recoverDir); dirStatErr == nil {
+				files, readErr := os.ReadDir(recoverDir)
+				if readErr != nil {
 					cmd.PrintErrf("Error: Failed to read recover directory: %v\n",
-						err)
+						readErr)
 					return
 				}
 
@@ -160,15 +160,16 @@ func newOperatorRecoverCommand(
 				out := fmt.Sprintf("spike:%d:%s", i, encodedShard)
 
 				// 0600 to be more restrictive.
-				err := os.WriteFile(filePath, []byte(out), 0600)
+				writeErr := os.WriteFile(filePath, []byte(out), 0600)
 
 				// Security: Hint gc to reclaim memory.
 				encodedShard = "" // nolint:ineffassign
 				out = ""          // nolint:ineffassign
 				runtime.GC()
 
-				if err != nil {
-					cmd.PrintErrf("Error: Failed to save shard %d: %v\n", i, err)
+				if writeErr != nil {
+					cmd.PrintErrf("Error: Failed to save shard %d: %v\n",
+						i, writeErr)
 					return
 				}
 			}

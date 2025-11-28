@@ -49,7 +49,7 @@ func TestNewPolicyDeleteCommandWithNilSource(t *testing.T) {
 		return
 	}
 
-	// Command should still be created; nil source is handled at runtime
+	// Command should still be created; the nil source is handled at runtime
 	if cmd.Use != "delete [policy-id]" {
 		t.Errorf("Expected command use to be 'delete [policy-id]', got '%s'",
 			cmd.Use)

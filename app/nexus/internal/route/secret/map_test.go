@@ -142,8 +142,8 @@ func TestToSecretMetadataSuccessResponse_MultipleVersions(t *testing.T) {
 	}
 
 	// Check version 2 (not deleted)
-	v2, ok := response.SecretMetadata.Versions[2]
-	if !ok {
+	v2, v2Ok := response.SecretMetadata.Versions[2]
+	if !v2Ok {
 		t.Fatal("missing version 2")
 	}
 	if v2.DeletedTime != nil {
@@ -151,8 +151,8 @@ func TestToSecretMetadataSuccessResponse_MultipleVersions(t *testing.T) {
 	}
 
 	// Check version 3 (current)
-	v3, ok := response.SecretMetadata.Versions[3]
-	if !ok {
+	v3, v3Ok := response.SecretMetadata.Versions[3]
+	if !v3Ok {
 		t.Fatal("missing version 3")
 	}
 	if v3.Version != 3 {

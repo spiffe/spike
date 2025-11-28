@@ -9,8 +9,8 @@
 //
 // The package supports three backend configurations:
 //
-//   - sqlite: Production mode with SQLite persistence. Recovers root key from
-//     SPIKE Keepers and starts periodic shard synchronization.
+//   - sqlite: Production mode with SQLite persistence. Recovers the root key
+//     from SPIKE Keepers and starts periodic shard synchronization.
 //   - lite: Lightweight mode with SQLite persistence but without root key
 //     encryption. Still uses Keepers for consistency.
 //   - memory: Development mode with in-memory storage. No Keepers required,
@@ -25,7 +25,7 @@
 //  4. Start a background goroutine for periodic shard distribution
 //
 // For memory backend:
-//  1. Initialize an empty in-memory store without root key
+//  1. Initialize an empty in-memory store without the root key
 //  2. Log warnings about non-production use
 //
 // # Subpackages

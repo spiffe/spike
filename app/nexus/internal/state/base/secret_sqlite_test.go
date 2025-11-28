@@ -31,7 +31,8 @@ func createTestRootKey(_ *testing.T) *[crypto.AES256KeySize]byte {
 	return key
 }
 
-// cleanupSQLiteDatabase removes the existing SQLite database to ensure a clean test state
+// cleanupSQLiteDatabase removes the existing SQLite database to ensure
+// a clean test state
 func cleanupSQLiteDatabase(t *testing.T) {
 	dataDir := config.NexusDataFolder()
 	dbPath := filepath.Join(dataDir, "spike.db")

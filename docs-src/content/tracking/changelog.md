@@ -160,6 +160,24 @@ sort_by = "weight"
   concise error messages to stderr without internal debug logs cluttering the
   terminal.
 
+## [0.8.0] - 2025-11-28
+
+### Added 
+
+TBD
+
+### Changed
+
+TBD
+
+### Fixed 
+
+TBD
+
+### Security
+
+TBD
+
 ## [0.6.1] - 2025-10-02
 
 This is a patch release to align with the changes in the upstream helm charts.

@@ -132,10 +132,10 @@ func TestUpsertSecret_VersionPruning(t *testing.T) {
 
 			// Create 5 versions (more than max of 3)
 			for i := 1; i <= 5; i++ {
-				values := map[string]string{
+				versionValues := map[string]string{
 					"version": fmt.Sprintf("v%d", i),
 				}
-				upsertErr := UpsertSecret(path, values)
+				upsertErr := UpsertSecret(path, versionValues)
 				if upsertErr != nil {
 					t.Fatalf("Failed to create version %d: %v", i, upsertErr)
 				}
@@ -196,10 +196,10 @@ func TestDeleteSecret_CurrentVersion(t *testing.T) {
 
 		// Create multiple versions
 		for i := 1; i <= 3; i++ {
-			values := map[string]string{
+			versionValues := map[string]string{
 				"version": fmt.Sprintf("v%d", i),
 			}
-			upsertErr := UpsertSecret(path, values)
+			upsertErr := UpsertSecret(path, versionValues)
 			if upsertErr != nil {
 				t.Fatalf("Failed to create version %d: %v", i, upsertErr)
 			}
@@ -388,10 +388,10 @@ func TestUndeleteSecret_SpecificVersions(t *testing.T) {
 
 		// Create and then delete multiple versions
 		for i := 1; i <= 3; i++ {
-			values := map[string]string{
+			versionValues := map[string]string{
 				"version": fmt.Sprintf("v%d", i),
 			}
-			upsertErr := UpsertSecret(path, values)
+			upsertErr := UpsertSecret(path, versionValues)
 			if upsertErr != nil {
 				t.Fatalf("Failed to create version %d: %v", i, upsertErr)
 			}
@@ -410,12 +410,13 @@ func TestUndeleteSecret_SpecificVersions(t *testing.T) {
 		}
 
 		// Verify version 1 is now accessible
-		values, getV1Err := GetSecret(path, 1)
+		v1Values, getV1Err := GetSecret(path, 1)
 		if getV1Err != nil {
 			t.Errorf("Version 1 should be accessible after undelete: %v", getV1Err)
 		}
-		if values["version"] != "v1" {
-			t.Errorf("Expected version 1 to have value v1, got %s", values["version"])
+		if v1Values["version"] != "v1" {
+			t.Errorf("Expected version 1 to have value v1, got %s",
+				v1Values["version"])
 		}
 
 		// Verify version 2 is still deleted

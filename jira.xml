@@ -36,6 +36,10 @@
   </high-level-plan>
   <task-group for="v0.6.1" theme="doc update and stabilization">
     <issue>
+      change the image on the landing page; the CLI commands etc has changed
+      and the image does not reflect the recent cli.
+    </issue>
+    <issue>
       go through internal files, some of them are generic enough to graduate
       to the SDK.
     </issue>

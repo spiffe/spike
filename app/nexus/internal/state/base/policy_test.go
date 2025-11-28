@@ -278,7 +278,7 @@ func TestUpsertPolicy_UpdateExisting(t *testing.T) {
 			t.Fatalf("Failed to create first policy: %v", createErr)
 		}
 
-		// Upsert policy with same name but different permissions
+		// Upsert policy with the same name but different permissions
 		policy.Permissions = []data.PolicyPermission{
 			data.PermissionRead, data.PermissionWrite}
 		updatedPolicy, updateErr := UpsertPolicy(policy)

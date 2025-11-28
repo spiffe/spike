@@ -1,8 +1,4 @@
-```text
-  \\
- \\\\ SPIKE: Secure your secrets with SPIFFE. — https://spike.ist/
-\\\\\\
-```
+![SPIKE](../../assets/spike-banner-lg.png)
 
 ## SPIKE Demo Workload
 

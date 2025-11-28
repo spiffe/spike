@@ -29,11 +29,14 @@
 //
 // # Key Functions
 //
-//   - InitializeBackingStoreFromKeepers: Recovers root key from Keeper shards
-//   - RestoreBackingStoreFromPilotShards: Recovers root key from operator shards
+//   - InitializeBackingStoreFromKeepers: Recovers the root key from Keeper
+//     shards
+//   - RestoreBackingStoreFromPilotShards: Recovers the root key from operator
+//     shards
 //   - SendShardsPeriodically: Distributes shards to Keepers on a schedule
 //   - NewPilotRecoveryShards: Generates recovery shards for operators
-//   - ComputeRootKeyFromShards: Reconstructs root key using Shamir's algorithm
+//   - ComputeRootKeyFromShards: Reconstructs the root key using Shamir's
+//     algorithm
 //
 // # Security Considerations
 //

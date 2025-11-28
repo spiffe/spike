@@ -104,7 +104,7 @@ func TestVerifyPermissions_SuperPermissionJoker(t *testing.T) {
 }
 
 func TestVerifyPermissions_SpecificPermissions(t *testing.T) {
-	// Test normal permission checking (without super)
+	// Test normal permission checking (without `super`)
 	testCases := []struct {
 		name     string
 		haves    []data.PolicyPermission
@@ -166,7 +166,7 @@ func TestVerifyPermissions_SpecificPermissions(t *testing.T) {
 }
 
 func TestVerifyPermissions_SuperWithOtherPermissions(t *testing.T) {
-	// Test edge cases where super is combined with other permissions
+	// Test edge cases where `super` is combined with other permissions
 	testCases := []struct {
 		name     string
 		haves    []data.PolicyPermission
@@ -177,13 +177,13 @@ func TestVerifyPermissions_SuperWithOtherPermissions(t *testing.T) {
 			name:     "super and read, wants write",
 			haves:    []data.PolicyPermission{data.PermissionSuper, data.PermissionRead},
 			wants:    []data.PolicyPermission{data.PermissionWrite},
-			expected: true, // super should grant write even though we don't explicitly have it
+			expected: true, // `super` should grant `write` even though we don't explicitly have it
 		},
 		{
 			name:     "read and super, wants multiple",
 			haves:    []data.PolicyPermission{data.PermissionRead, data.PermissionSuper},
 			wants:    []data.PolicyPermission{data.PermissionWrite, data.PermissionList},
-			expected: true, // super should grant all
+			expected: true, // `super` should grant all
 		},
 		{
 			name:     "multiple permissions including super",

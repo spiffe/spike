@@ -43,7 +43,7 @@ func TestNewSecretPutCommandWithNilSource(t *testing.T) {
 		return
 	}
 
-	// Command should still be created; nil source is handled at runtime
+	// Command should still be created; the nil source is handled at runtime
 	if cmd.Use != "put <path> <key=value>..." {
 		t.Errorf("Expected command use to be 'put <path> <key=value>...', "+
 			"got '%s'", cmd.Use)

@@ -29,7 +29,8 @@ import (
 //     be nil, but if nil at startup, the function will crash with log.FatalErr
 //     since the server cannot operate without mTLS credentials and there is no
 //     retry mechanism for server initialization. This fail-fast behavior makes
-//     configuration or initialization problems immediately obvious to operators.
+//     configuration or initialization problems immediately obvious to
+//     operators.
 //
 // The function does not return unless an error occurs, in which case it calls
 // log.FatalErr and terminates the program.

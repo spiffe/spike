@@ -42,7 +42,9 @@ func (s *DataStore) DeletePolicy(
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	tx, beginErr := s.db.BeginTx(ctx, &sql.TxOptions{Isolation: sql.LevelSerializable})
+	tx, beginErr := s.db.BeginTx(
+		ctx, &sql.TxOptions{Isolation: sql.LevelSerializable},
+	)
 	if beginErr != nil {
 		failErr := sdkErrors.ErrTransactionBeginFailed.Wrap(beginErr)
 		return failErr
