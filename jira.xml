@@ -1013,6 +1013,54 @@ w
 
   </task-group>
   <task-group for="v0.6.3">
+    <issue priority="medium" category="bug">
+      spike cipher JSON mode: encrypt discards version and nonce
+
+      The JSON mode encrypt/decrypt cannot round-trip because critical data
+      is lost during encryption output.
+
+      == Problem ==
+
+      When using JSON mode encryption:
+        spike cipher encrypt --plaintext "$BASE64_PLAINTEXT"
+
+      The API returns a CipherEncryptResponse with:
+        - Version (byte)
+        - Nonce ([]byte)
+        - Ciphertext ([]byte)
+
+      But the CLI (encrypt_impl.go:encryptJSON) only writes the Ciphertext
+      to output, discarding Version and Nonce.
+
+      To decrypt in JSON mode, the user needs:
+        spike cipher decrypt --version V --nonce NONCE_B64 --ciphertext CT_B64
+
+      Since version and nonce are never output, JSON encrypt → JSON decrypt
+      cannot work.
+
+      == Streaming Mode Works ==
+
+      Streaming mode works correctly because the server packages
+      version+nonce+ciphertext into a single binary blob that round-trips.
+
+      == Proposed Fix ==
+
+      Option 1: Output structured JSON from encrypt:
+        {
+          "version": 1,
+          "nonce": "base64...",
+          "ciphertext": "base64..."
+        }
+
+      Option 2: Output the same binary format as streaming mode.
+
+      Option 3: Remove JSON mode flags if streaming covers all use cases.
+
+      == Files ==
+      - app/spike/internal/cmd/cipher/encrypt_impl.go (encryptJSON function)
+      - app/spike/internal/cmd/cipher/decrypt_impl.go (decryptJSON function)
+      - SDK: api/entity/v1/reqres/cipher.go (CipherEncryptResponse struct)
+    </issue>
     <issue waitingFor="upstreamHelmCharts">
       after helm-charts changes are merged, verify that the quickstart
       guide still works.

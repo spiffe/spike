@@ -327,6 +327,89 @@ else
   echo "Policy verification passed."
 fi
 
+echo ""
+echo "Verifying cipher (streaming mode - stdin/stdout)..."
+CIPHER_TEST_INPUT="Hello SPIKE Cipher Streaming Test"
+CIPHER_STREAM_OUTPUT=$(echo "$CIPHER_TEST_INPUT" | spike cipher encrypt | spike cipher decrypt 2>&1)
+CIPHER_STREAM_EXIT_CODE=$?
+
+CIPHER_STREAM_VALIDATION_FAILED=false
+
+if [ $CIPHER_STREAM_EXIT_CODE -ne 0 ]; then
+  echo "WARNING: Cipher streaming test failed with exit code $CIPHER_STREAM_EXIT_CODE"
+  echo "Output:"
+  echo "$CIPHER_STREAM_OUTPUT"
+  CIPHER_STREAM_VALIDATION_FAILED=true
+fi
+
+if [ "$CIPHER_STREAM_OUTPUT" != "$CIPHER_TEST_INPUT" ]; then
+  echo "WARNING: Cipher streaming decrypt output doesn't match input"
+  echo "Expected: $CIPHER_TEST_INPUT"
+  echo "Got: $CIPHER_STREAM_OUTPUT"
+  CIPHER_STREAM_VALIDATION_FAILED=true
+fi
+
+if [ "$CIPHER_STREAM_VALIDATION_FAILED" = true ]; then
+  echo ""
+  echo "=========================================="
+  echo "CIPHER STREAMING VALIDATION FAILED (debug mode - continuing anyway)"
+  echo "=========================================="
+else
+  echo "Cipher streaming mode verification passed."
+fi
+
+echo ""
+echo "Verifying cipher (file mode)..."
+CIPHER_FILE_INPUT="Hello SPIKE Cipher File Test with special chars: @#$%"
+CIPHER_TEMP_IN=$(mktemp)
+CIPHER_TEMP_ENC=$(mktemp)
+CIPHER_TEMP_DEC=$(mktemp)
+trap 'rm -f $CIPHER_TEMP_IN $CIPHER_TEMP_ENC $CIPHER_TEMP_DEC' EXIT
+
+# Write input to file
+echo -n "$CIPHER_FILE_INPUT" > "$CIPHER_TEMP_IN"
+
+CIPHER_FILE_VALIDATION_FAILED=false
+
+# Encrypt file to file
+spike cipher encrypt -f "$CIPHER_TEMP_IN" -o "$CIPHER_TEMP_ENC" 2>&1
+CIPHER_FILE_ENCRYPT_EXIT_CODE=$?
+
+if [ $CIPHER_FILE_ENCRYPT_EXIT_CODE -ne 0 ]; then
+  echo "WARNING: Cipher file encrypt failed with exit code $CIPHER_FILE_ENCRYPT_EXIT_CODE"
+  CIPHER_FILE_VALIDATION_FAILED=true
+fi
+
+# Decrypt file to file
+spike cipher decrypt -f "$CIPHER_TEMP_ENC" -o "$CIPHER_TEMP_DEC" 2>&1
+CIPHER_FILE_DECRYPT_EXIT_CODE=$?
+
+if [ $CIPHER_FILE_DECRYPT_EXIT_CODE -ne 0 ]; then
+  echo "WARNING: Cipher file decrypt failed with exit code $CIPHER_FILE_DECRYPT_EXIT_CODE"
+  CIPHER_FILE_VALIDATION_FAILED=true
+fi
+
+# Compare output
+CIPHER_FILE_OUTPUT=$(cat "$CIPHER_TEMP_DEC")
+if [ "$CIPHER_FILE_OUTPUT" != "$CIPHER_FILE_INPUT" ]; then
+  echo "WARNING: Cipher file decrypt output doesn't match input"
+  echo "Expected: $CIPHER_FILE_INPUT"
+  echo "Got: $CIPHER_FILE_OUTPUT"
+  CIPHER_FILE_VALIDATION_FAILED=true
+fi
+
+# Clean up temp files
+rm -f "$CIPHER_TEMP_IN" "$CIPHER_TEMP_ENC" "$CIPHER_TEMP_DEC"
+
+if [ "$CIPHER_FILE_VALIDATION_FAILED" = true ]; then
+  echo ""
+  echo "=========================================="
+  echo "CIPHER FILE VALIDATION FAILED (debug mode - continuing anyway)"
+  echo "=========================================="
+else
+  echo "Cipher file mode verification passed."
+fi
+
 echo "Done. Will sleep a bit..."
 sleep 5
 
