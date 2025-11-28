@@ -229,6 +229,9 @@
                                                         <a href="https://spike.ist/tracking/changelog/#recent">Recent</a>
                                                     </li>
                                                 <li>
+                                                        <a href="https://spike.ist/tracking/changelog/#0-8-0-2025-11-28">[0.8.0] - 2025-11-28</a>
+                                                    </li>
+                                                <li>
                                                         <a href="https://spike.ist/tracking/changelog/#0-6-1-2025-10-02">[0.6.1] - 2025-10-02</a>
                                                     </li>
                                                 <li>
@@ -238,7 +241,7 @@
                                                         <a href="https://spike.ist/tracking/changelog/#0-5-1-2025-09-14">[0.5.1] - 2025-09-14</a>
                                                     </li>
                                                 <li>
-                                                        <a href="https://spike.ist/tracking/changelog/#changed-1">Changed</a>
+                                                        <a href="https://spike.ist/tracking/changelog/#changed-2">Changed</a>
                                                     </li>
                                                 <li>
                                                         <a href="https://spike.ist/tracking/changelog/#0-5-0-2025-09-11">[0.5.0] - 2025-09-11</a>
@@ -809,37 +812,83 @@
             
         <h1 id="spike-changelog">SPIKE Changelog</h1>
 <h2 id="recent">Recent</h2>
+<p>TBD</p>
+<h2 id="0-8-0-2025-11-28">[0.8.0] - 2025-11-28</h2>
+<h3 id="added">Added</h3>
 <ul>
-<li>Code Quality: Eliminated error variable shadowing across the codebase. Error
-variables now use descriptive names (<code>atoiErr</code>, <code>nonceErr</code>, <code>openErr</code>,
-<code>restoreErr</code>, etc.) instead of reusing <code>err</code>. This prevents subtle bugs where
-a later error could inadvertently shadow an earlier one, and improves code
-readability by making error sources explicit.</li>
-<li>Code Quality: Fixed linter issues including <code>spikeDbName</code> to <code>spikeDBName</code>
-(ST1003), <code>internalErrJson</code> to <code>internalErrJSON</code> (ST1003), and replaced
-<code>io.WriteString(w, string(bytes))</code> with <code>w.Write(bytes)</code> (SA6006).</li>
-<li>Crypto: Consolidated GCM nonce size constant (<code>crypto.GCMNonceSize</code>) to
-<code>internal/crypto/gcm.go</code>. This removes duplication across cipher and bootstrap
-packages and documents the decision to use the NIST-recommended 12-byte
-standard. See ADR-0032.</li>
-<li>Nexus: Fixed bug in <code>RouteDeletePolicy</code> that returned HTTP 500 for all errors
-including “not found”. Now correctly returns HTTP 404 when the policy does not
-exist.</li>
+<li>Additional and comprehensive logging to all SPIKE Nexus and SPIKE Keeper API
+methods.</li>
+<li>Better error handling across the entire codebase.</li>
+<li>Pilot: Reduced CLI verbosity by removing structured JSON log output from
+all commands (policy, secret, cipher, operator). The CLI now outputs clean,
+concise error messages to stderr without internal debug logs cluttering the
+terminal.</li>
+<li>“Encryption as a service” support for SPIKE Pilot. There is an outstanding
+issue for JSON mode; however, streaming mode works as expected.</li>
+<li><code>make start</code> includes additional smoke tests to ensure all SPIKE components are
+in good shape and ready to roll.</li>
+<li>Added extensive package documentation to ALL packages of SPIKE and
+SPIKE Go SGK.</li>
+<li>SDK: Improved documentation clarity for single return value functions, CSPRNG
+fatal behavior, and function distinctions (ValidatePath vs
+ValidatePathPattern).</li>
+<li>SDK: Significantly increased test coverage across all SDK packages with
+comprehensive unit and integration tests.</li>
+<li>SDK: Enhanced documentation for version numbering system - version numbers
+start at 1, and <code>CurrentVersion == 0</code> indicates all versions have been deleted.</li>
+<li>SDK: Updated <code>Delete()</code> documentation to clarify soft-delete behavior and that
+paths remain in storage even when all versions are deleted.</li>
+<li>SDK: Added <code>HasValidVersions()</code> and <code>Empty()</code> helper methods to <code>kv.Value</code> for
+checking if secrets have any non-deleted versions, useful for identifying
+purgeable secrets.</li>
+<li>SDK: Added <code>Destroy()</code> method to <code>kv.KV</code> for hard-delete operations that
+permanently remove secret paths from storage and reclaim memory. Unlike
+soft-delete (<code>Delete()</code>), this cannot be undone.</li>
+<li>Nexus: Comprehensive documentation updates across ALL files ensuring
+consistency between function signatures, parameter types, return values, and
+actual code behavior. Updated error type references from generic <code>error</code> to
+specific <code>*sdkErrors.SDKError</code> types.</li>
+<li>Nexus: Added defensive nil source checks across concurrent/distributed systems
+where workload API can asynchronously invalidate X509Source. Updated
+<code>InitializeBackingStoreFromKeepers</code>, <code>SendShardsPeriodically</code>, CLI commands,
+and server startup with proper nil handling and documentation explaining
+retry behavior for transient failures.</li>
 <li>Nexus, Keeper: Added AST-based tests to enforce guard function usage in all
 route handlers. The tests scan route handler files and verify each <code>Route*</code>
 function calls either <code>net.ReadParseAndGuard</code> or a guard function directly.
 This prevents contributors from accidentally adding routes without
 authorization checks. See ADR-0031.</li>
-<li>Nexus: Changed policy operations from create-only to upsert semantics for
-consistency with secret operations. <code>state.CreatePolicy</code> is now
-<code>state.UpsertPolicy</code>. If a policy with the same name exists, it is updated
-(preserving ID and CreatedAt); otherwise, a new policy is created.</li>
-<li>SDK: Added <code>UpdatedAt</code> field to <code>Policy</code> struct to track when policies are
-modified. Removed unused <code>CreatedBy</code> field.</li>
-<li>Nexus: Standardized error handling across recovery modules to use
-<code>log.WarnErr</code>/<code>log.FatalErr</code> with SDK error types instead of generic
-<code>log.Warn</code>/<code>log.FatalLn</code> calls. This provides searchable error codes and
-consistent error patterns.</li>
+</ul>
+<h3 id="changed">Changed</h3>
+<ul>
+<li><strong>BREAKING</strong>: SDK now returns typed sentinel errors instead of generic <code>error</code>
+values.</li>
+<li><strong>BREAKING</strong>: SDK: Enhanced error handling - Get methods now return
+<code>ErrAPINotFound</code> instead of <code>(nil, nil)</code> when resources are not found,
+following idiomatic Go patterns (similar to <code>os.Open</code>, <code>database/sql</code>).</li>
+<li>SDK: Improved API consistency by standardizing policy function
+parameters from <code>name</code> to <code>id</code> across all operations, matching internal
+implementation.</li>
+<li>Nexus: Enhanced backend interface documentation with proper parameter and
+return type information, and documented <code>CurrentVersion == 0</code> behavior in
+<code>LoadSecret</code> and <code>LoadAllSecrets</code> methods.</li>
+<li>Nexus: Comprehensive documentation updates for all secret management functions
+with accurate parameter names, return types, and behavioral details including
+soft-delete semantics and metadata update logic.</li>
+<li>Nexus: Made <code>DeleteSecret</code> more defensive when finding the new current version
+by removing unnecessary condition, improving code clarity and robustness.</li>
+<li><strong>BREAKING</strong>: Nexus: Fixed inconsistent error returns in memory backend -
+<code>LoadSecret</code> now returns <code>ErrEntityNotFound</code> instead of <code>(nil, nil)</code> for
+missing secrets.</li>
+<li>Nexus: Optimized retry loop in <code>InitializeBackingStoreFromKeepers</code> with early
+nil check to avoid unnecessary function call overhead when X509 source is nil.</li>
+<li>Nexus: Refactored <code>ShardGetResponse</code> to return <code>([]byte, *sdkErrors.SDKError)</code>
+instead of logging errors internally and returning empty slices, following
+canonical Go error handling patterns.</li>
+<li>Nexus: Improved resilience in data loading functions (<code>LoadAllPolicies</code>,
+<code>LoadAllSecrets</code>) by changing from aggressive exit behavior to graceful
+degradation - now logs warnings and continues processing valid entries instead
+of abandoning entire dataset on single entry corruption.</li>
 <li>Pilot: Comprehensive refactoring of CLI output handling across all commands
 (14 files) to use Cobra’s <code>cmd.Print*()</code> methods instead of <code>fmt.Print*()</code>.
 Error messages now properly route to stderr via <code>cmd.PrintErrln()</code>/
@@ -848,115 +897,87 @@ Error messages now properly route to stderr via <code>cmd.PrintErrln()</code>/
 output configuration, and provides proper stderr/stdout separation. Updated
 helper functions <code>printSecretResponse()</code> and <code>handleAPIError()</code> to accept
 cmd parameter for consistent output handling.</li>
-<li>Nexus: Fixed critical bug in secret route handlers where error paths were not
-sending HTTP responses to clients. Added missing <code>net.Fail()</code> calls in
-<code>put_intercept.go</code> (3 locations) and <code>undelete.go</code> to ensure proper error
-responses.</li>
-<li>Nexus: Fixed resource leak in <code>internal/net/post.go</code> where response body
-close was deferred after body read instead of immediately after response
-obtained, causing leaks when read operations failed.</li>
-<li>Nexus: Improved resilience in data loading functions (<code>LoadAllPolicies</code>,
-<code>LoadAllSecrets</code>) by changing from aggressive exit behavior to graceful
-degradation - now logs warnings and continues processing valid entries instead
-of abandoning entire dataset on single entry corruption.</li>
-<li>Nexus: Fixed stuttery logging API throughout codebase by replacing
-<code>log.Log().Info/Warn/Error()</code> with canonical <code>log.Info/Warn/Error()</code> patterns
-across initialization, recovery, and state management modules.</li>
-<li>Nexus: Added defensive nil source checks across concurrent/distributed systems
-where workload API can asynchronously invalidate X509Source. Updated
-<code>InitializeBackingStoreFromKeepers</code>, <code>SendShardsPeriodically</code>, CLI commands,
-and server startup with proper nil handling and documentation explaining
-retry behavior for transient failures.</li>
-<li>Nexus: Optimized retry loop in <code>InitializeBackingStoreFromKeepers</code> with early
-nil check to avoid unnecessary function call overhead when X509 source is nil.</li>
-<li>Nexus: Refactored <code>ShardGetResponse</code> to return <code>([]byte, *sdkErrors.SDKError)</code>
-instead of logging errors internally and returning empty slices, following
-canonical Go error handling patterns.</li>
-<li>Nexus: Fixed inconsistent error returns in memory backend - <code>LoadSecret</code> now
-returns <code>ErrEntityNotFound</code> instead of <code>(nil, nil)</code> for missing secrets.</li>
-<li>Nexus: Comprehensive documentation updates across 20+ files ensuring
-consistency between function signatures, parameter types, return values, and
-actual code behavior. Updated error type references from generic <code>error</code> to
-specific <code>*sdkErrors.SDKError</code> types.</li>
-<li>SDK: Added <code>HasValidVersions()</code> and <code>Empty()</code> helper methods to <code>kv.Value</code> for
-checking if secrets have any non-deleted versions, useful for identifying
-purgeable secrets.</li>
-<li>SDK: Added <code>Destroy()</code> method to <code>kv.KV</code> for hard-delete operations that
-permanently remove secret paths from storage and reclaim memory. Unlike
-soft-delete (<code>Delete()</code>), this cannot be undone.</li>
-<li>SDK: Enhanced documentation for version numbering system - version numbers
-start at 1, and <code>CurrentVersion == 0</code> indicates all versions have been deleted.</li>
-<li>SDK: Updated <code>Delete()</code> documentation to clarify soft-delete behavior and that
-paths remain in storage even when all versions are deleted.</li>
+<li>SDK: Added <code>UpdatedAt</code> field to <code>Policy</code> struct to track when policies are
+modified. Removed unused <code>CreatedBy</code> field.</li>
+<li>Nexus: Standardized error handling across recovery modules to use
+<code>log.WarnErr</code>/<code>log.FatalErr</code> with SDK error types instead of generic
+<code>log.Warn</code>/<code>log.FatalLn</code> calls. This provides searchable error codes and
+consistent error patterns.</li>
+<li><strong>BREAKING</strong>: Nexus: Changed policy operations from create-only to upsert
+semantics for consistency with secret operations. <code>state.CreatePolicy</code> is now
+<code>state.UpsertPolicy</code>. If a policy with the same name exists, it is updated
+(preserving ID and CreatedAt); otherwise, a new policy is created.</li>
+<li>Code Quality: Eliminated error variable shadowing across the codebase. Error
+variables now use descriptive names (<code>atoiErr</code>, <code>nonceErr</code>, <code>openErr</code>,
+<code>restoreErr</code>, etc.) instead of reusing <code>err</code>. This prevents subtle bugs where
+a later error could inadvertently shadow an earlier one, and improves code
+readability by making error sources explicit.</li>
+</ul>
+<h3 id="fixed">Fixed</h3>
+<ul>
+<li>Finally, fixed the flaky tests around the retry logic in SPIKE Go SDK for
+good.</li>
+<li>Various other bugfixes, refactorings, and security improvements.</li>
+<li>SDK: Added nil validation to <code>CreateMTLSServer</code> functions with fail-fast
+behavior for configuration errors.</li>
+<li>SDK: Fixed resource management bug in <code>StreamPostWithContentType</code> where defer
+was closing response body on success path, causing callers to receive closed
+body.</li>
+<li>SDK: Fixed critical bug in <code>Undelete</code> function that was ignoring the <code>versions</code>
+parameter due to missing else clause.</li>
+<li>Nexus: Added <code>OldestVersion</code> tracking to <code>UndeleteSecret</code> for consistency
+with <code>DeleteSecret</code>, ensuring metadata accurately reflects oldest non-deleted
+version.</li>
+<li>Nexus: Fixed bug in <code>UndeleteSecret</code> where undeleting a version higher than
+the current <code>CurrentVersion</code> did not update <code>CurrentVersion</code> to reflect the
+new highest active version, causing metadata inconsistency.</li>
 <li>Nexus: Fixed critical bug in <code>UpsertSecret</code> where adding a new version when all
 existing versions were deleted (CurrentVersion == 0) would create version 1,
 potentially colliding with an existing deleted version 1. Now correctly finds
 the highest existing version number and increments from there.</li>
-<li>Nexus: Fixed bug in <code>UndeleteSecret</code> where undeleting a version higher than
-the current <code>CurrentVersion</code> did not update <code>CurrentVersion</code> to reflect the
-new highest active version, causing metadata inconsistency.</li>
-<li>Nexus: Added <code>OldestVersion</code> tracking to <code>UndeleteSecret</code> for consistency
-with <code>DeleteSecret</code>, ensuring metadata accurately reflects oldest non-deleted
-version.</li>
-<li>Nexus: Made <code>DeleteSecret</code> more defensive when finding new current version by
-removing unnecessary condition, improving code clarity and robustness.</li>
-<li>Nexus: Comprehensive documentation updates for all secret management functions
-with accurate parameter names, return types, and behavioral details including
-soft-delete semantics and metadata update logic.</li>
-<li>Nexus: Enhanced backend interface documentation with proper parameter and
-return type information, and documented <code>CurrentVersion == 0</code> behavior in
-<code>LoadSecret</code> and <code>LoadAllSecrets</code> methods.</li>
-<li>Planning: Added task for implementing <code>spike secret purge</code> command to remove
-empty secrets (where all versions are deleted) from backend storage to prevent
-unbounded storage growth.</li>
-<li>SDK: Improved API consistency by standardizing policy function parameters from
-<code>name</code> to <code>id</code> across all operations, matching internal implementation.</li>
-<li>SDK: Enhanced error handling - Get methods now return <code>ErrAPINotFound</code> instead
-of <code>(nil, nil)</code> when resources are not found, following idiomatic Go patterns
-(similar to <code>os.Open</code>, <code>database/sql</code>).</li>
-<li>SDK: Fixed critical bug in <code>Undelete</code> function that was ignoring the <code>versions</code>
-parameter due to missing else clause.</li>
-<li>SDK: Fixed resource management bug in <code>StreamPostWithContentType</code> where defer
-was closing response body on success path, causing callers to receive closed body.</li>
-<li>SDK: Added nil validation to <code>CreateMTLSServer</code> functions with fail-fast behavior
-for configuration errors.</li>
-<li>SDK: Added comprehensive godoc comments to all 55 error sentinel values.</li>
-<li>SDK: Significantly increased test coverage across all SDK packages with comprehensive
-unit and integration tests.</li>
-<li>SDK: Improved documentation clarity for single return value functions, CSPRNG
-fatal behavior, and function distinctions (ValidatePath vs ValidatePathPattern).</li>
-<li>moved entities to the sdk</li>
-<li>added extensive package documentation to ALL packages of SPIKE and SPIKE go SDK</li>
-<li>minor bugfixes</li>
+<li>Nexus: Fixed resource leak in <code>internal/net/post.go</code> where response body
+close was deferred after body read instead of immediately after response
+obtained, causing leaks when read operations failed.</li>
+<li>Nexus: Fixed critical bug in secret route handlers where error paths were not
+sending HTTP responses to clients. Added missing <code>net.Fail()</code> calls in
+<code>put_intercept.go</code> (3 locations) and <code>undelete.go</code> to ensure proper error
+responses.</li>
+<li>Nexus: Fixed bug in <code>RouteDeletePolicy</code> that returned HTTP 500 for all errors
+including “not found”. Now correctly returns HTTP 404 when the policy does not
+exist</li>
+</ul>
+<h3 id="security">Security</h3>
+<ul>
 <li>PoP validation after bootstrap sequence to ensure SPIKE Nexus has initialized
 properly.</li>
-<li>Update Go version to <code>1.25.2</code>.</li>
-<li><code>make start</code> includes additional smoke tests to ensure all SPIKE components are
-in good shape and ready to roll.</li>
-<li>encryption as a service support for SPIKE Pilot.</li>
+<li>Update SPIKE Components’ Go version to <code>1.25.3</code>.</li>
 <li><code>log.FatalLn</code> exits cleanly by default to avoid leaking sensitive information
 via stack traces in production. Stack traces can be enabled for
 development/testing by setting <code>SPIKE_STACK_TRACES_ON_LOG_FATAL=true</code>.</li>
-<li>Security: SDK upgrade to Go 1.25.3 to fix GO-2025-4007.</li>
-<li>Security: Fixed error handling inconsistency in <code>NewPilotRecoveryShards</code> to
+<li>SDK upgrade to Go 1.25.3 to fix <code>GO-2025-4007</code>.</li>
+<li>Fixed error handling inconsistency in <code>NewPilotRecoveryShards</code> to
 ensure fail-fast behavior on shard generation failures. The function now
 consistently uses <code>log.FatalLn</code> for all critical errors during shard
 marshaling to prevent silent generation of corrupted recovery material.</li>
-<li>Security: Added SPIFFE ID validation to SPIKE Keeper shard endpoints.
+<li>Added SPIFFE ID validation to SPIKE Keeper shard endpoints.
 The <code>RouteShard</code> endpoint now validates that only SPIKE Nexus can retrieve
 shards during recovery operations. The <code>RouteContribute</code> endpoint validates
 that only SPIKE Bootstrap (during initial setup) or SPIKE Nexus (during
 periodic updates) can contribute shards. This prevents unauthorized access
 to sensitive shard data.</li>
-<li>Various other bugfixes, refactorings, and security improvements.</li>
-<li>Finally, fixed the flaky tests around the retry logic in SPIKE Go SDK for good.</li>
-<li>Additional and comprehensive logging to all SPIKE Nexus and SPIKE Keeper API
-methods.</li>
-<li>Better error handling across the entire codebase.</li>
-<li>Pilot: Reduced CLI verbosity by removing structured JSON log output from all
-commands (policy, secret, cipher, operator). The CLI now outputs clean,
-concise error messages to stderr without internal debug logs cluttering the
-terminal.</li>
+<li>Crypto: Consolidated GCM nonce size constant (<code>crypto.GCMNonceSize</code>) to
+<code>internal/crypto/gcm.go</code>. This removes duplication across cipher and bootstrap
+packages and documents the decision to use the NIST-recommended 12-byte
+standard. See ADR-0032.</li>
+<li>Fixed <a href="https://github.com/spiffe/spike/security/dependabot/7"><code>CWE-117</code>: go-viper’s mapstructure May Leak Sensitive Information in
+Logs When Processing Malformed
+Data</a></li>
+<li>Fixed <a href="https://github.com/spiffe/spike/security/dependabot/9"><code>CVE-2025-58181</code>: golang.org/x/crypto/ssh allows an attacker to cause
+unbounded memory
+consumption</a></li>
+<li>Fixed <a href="https://github.com/spiffe/spike/security/dependabot/9"><code>CVE-2025-47914</code>: golang.org/x/crypto/ssh/agent vulnerable to panic if
+message is malformed due to out of bounds
+read</a></li>
 </ul>
 <h2 id="0-6-1-2025-10-02">[0.6.1] - 2025-10-02</h2>
 <p>This is a patch release to align with the changes in the upstream helm charts.</p>
@@ -964,7 +985,7 @@ terminal.</li>
 <p>This was a security release where the main focus was hardening SPIKE SDK mTLS
 implementation. In addition, we created a configurable SPIKE backing store
 directory to enable future HA development.</p>
-<h3 id="added">Added</h3>
+<h3 id="added-1">Added</h3>
 <ul>
 <li>Added <code>SPIKE_TRUST_ROOT_BOOTSTRAP</code> to enable SPIKE Bootstrap to be used
 in different trust boundaries.</li>
@@ -972,24 +993,24 @@ in different trust boundaries.</li>
 SPIKE Nexus backing store.</li>
 <li>Added convenience methods to the SPIKE Go SDK.</li>
 </ul>
-<h3 id="changed">Changed</h3>
+<h3 id="changed-1">Changed</h3>
 <ul>
 <li>Improvements to the SPIKE Go SDK.</li>
 <li>Stricter SPIFFE ID validation. SPIKE SDK now ensures that the API client
 only talks to SPIKE Nexus as the server.</li>
 </ul>
-<h3 id="fixed">Fixed</h3>
+<h3 id="fixed-1">Fixed</h3>
 <ul>
 <li>Minor bug fixes.</li>
 <li>Fixed flaky unit tests.</li>
 </ul>
-<h3 id="security">Security</h3>
+<h3 id="security-1">Security</h3>
 <ul>
 <li>SPIKE Go SDK clients are hardened to only talk to SPIKE Nexus as the
 server during mTLS.</li>
 </ul>
 <h2 id="0-5-1-2025-09-14">[0.5.1] - 2025-09-14</h2>
-<h2 id="changed-1">Changed</h2>
+<h2 id="changed-2">Changed</h2>
 <ul>
 <li>Updated SPIKE Bootstrap to be more robust by adding exponential backoff while
 waiting for SPIKE Keepers to be ready.</li>
@@ -1000,7 +1021,7 @@ SPIFFE Helm Charts that have not been published yet.</li>
 <p>This is still a <strong>prerelease</strong> version; however, it includes major changes
 and improvements. We will cut a stable release once we have <strong>SPIKE Bootstrap</strong>
 included in the SPIFFE Helm Charts.</p>
-<h3 id="added-1">Added</h3>
+<h3 id="added-2">Added</h3>
 <ul>
 <li>Updates to documentation and usage examples.</li>
 <li>Updates to the SPIKE Go SDK around the logging API.</li>
@@ -1009,7 +1030,7 @@ included in the SPIFFE Helm Charts.</p>
 linters before submitting a PR.</li>
 <li>Enhancements to bare-metal installation scripts.</li>
 </ul>
-<h3 id="changed-2">Changed</h3>
+<h3 id="changed-3">Changed</h3>
 <ul>
 <li>Updated Go version to <code>1.25.1</code></li>
 <li>Updated <strong>SPIKE Bootstrap</strong> to be more robust and enabled it to work on
@@ -1021,13 +1042,13 @@ highlights the project’s vision and goals.</li>
 <li>Moved environment variable names to the SPIKE Go SDK as constants to prevent
 typos and to make it easier to use the SDK.</li>
 </ul>
-<h3 id="fixed-1">Fixed</h3>
+<h3 id="fixed-2">Fixed</h3>
 <ul>
 <li>Bug fixes and stability improvements.</li>
 <li>Fixed failing unit tests on CI (that’s a temporary fix that runs tests
 sequentially instead of in parallel; we will fix that soon)</li>
 </ul>
-<h3 id="security-1">Security</h3>
+<h3 id="security-2">Security</h3>
 <ul>
 <li>Along with secrets, SPIKE Nexus now encrypts policies at rest too.</li>
 </ul>
@@ -1048,7 +1069,7 @@ integration initiatives. The most significant change is the introduction of a
 had been inside <strong>SPIKE Nexus</strong>’ initialization workflow before. And that
 enables us an opportunity to run <strong>SPIKE Nexus</strong> in HA mode without designing
 elaborate, and potentially error-prone, consensus algorithms.</p>
-<h3 id="added-2">Added</h3>
+<h3 id="added-3">Added</h3>
 <ul>
 <li><strong>FIPS 140.3 Compliance</strong>: FIPS is now enabled at <strong>build time</strong>, and it’s
 enforced everywhere. We are using <code>GOFIPS140=v1.0.0</code>, the modern way of
@@ -1066,7 +1087,7 @@ we fully implement and polish SPIKE Lite, we will also update documentation
 and use cases to allow users to understand the benefits and liabilities of
 SPIKE Lite and why they might want to use one over the other.</li>
 </ul>
-<h3 id="changed-3">Changed</h3>
+<h3 id="changed-4">Changed</h3>
 <ul>
 <li>Better alignment with idiomatic Go practices. SPIKE and SPIKE Go SDK code
 has been refactored to better align with common Go idioms and conventions.
@@ -1079,14 +1100,14 @@ to begin its lifecycle. The user guides and relevant documentation have been
 updated to reflect this change.</li>
 <li>Updated Go to the latest version (<code>1.24.6</code>).</li>
 </ul>
-<h3 id="fixed-2">Fixed</h3>
+<h3 id="fixed-3">Fixed</h3>
 <ul>
 <li>Fixed a bug related to Windows builds. SPIKE Nexus, SPIKE Pilot, and SPIKE
 Keeper can now be built as Windows binaries too.</li>
 <li>Various refactorings, improvements, code cleanup, and bug fixes.</li>
 </ul>
 <h2 id="0-4-2-2025-07-19">[0.4.2] - 2025-07-19</h2>
-<h3 id="added-3">Added</h3>
+<h3 id="added-4">Added</h3>
 <ul>
 <li>Ability to configure to not how SPIKE banner on startup.</li>
 <li>Ability to configure to show a warning if memory locking is not
@@ -1097,20 +1118,20 @@ available on the system.</li>
 Charts</a> and can
 <a href="https://vimeo.com/v0lkan/spike-federation">federate secrets across clusters</a></li>
 </ul>
-<h3 id="changed-4">Changed</h3>
+<h3 id="changed-5">Changed</h3>
 <ul>
 <li>Moved logging to SPIKE SDK. VSecM v2 will share the same logging setup.</li>
 <li><code>spike policy</code> command now accepts file input; you can design your policies
 as <code>yaml</code> files and then <code>spike policy apply -f</code> them.</li>
 </ul>
-<h3 id="security-2">Security</h3>
+<h3 id="security-3">Security</h3>
 <ul>
 <li>Fixed <a href="https://github.com/spiffe/spike/security/dependabot/6"><code>GHSA-fv92-fjc5-jj9h</code>: <code>mapstructure</code> May Leak Sensitive Information
 in Logs When Processing Malformed
 Data</a></li>
 </ul>
 <h2 id="0-4-1-2025-06-01-prerelease">[0.4.1] - 2025-06-01 (<em>prerelease</em>)</h2>
-<h3 id="added-4">Added</h3>
+<h3 id="added-5">Added</h3>
 <ul>
 <li>Initial support for Kubernetes deployments.</li>
 <li>Better shard sanitization during recovery procedures.</li>
@@ -1119,7 +1140,7 @@ Data</a></li>
 <li>Added the ability to optionally skip database schema creation during SPIKE
 initialization.</li>
 </ul>
-<h3 id="changed-5">Changed</h3>
+<h3 id="changed-6">Changed</h3>
 <ul>
 <li><strong>BREAKING</strong>: SDK validation methods now take trust root as an argument.</li>
 <li><strong>BREAKING</strong>: <code>SPIKE_NEXUS_KEEPER_URL</code> is now a comma-delimited list of URLs
@@ -1130,13 +1151,13 @@ deployment scenarios.</li>
 <li>SPIKE now uses GitHub Container Registry to store its container image
 (instead of Docker Hub).</li>
 </ul>
-<h3 id="fixed-3">Fixed</h3>
+<h3 id="fixed-4">Fixed</h3>
 <ul>
 <li>Fixed a bug where the doomsday recovery procedure was not immediately
 restoring the data.</li>
 </ul>
 <h2 id="0-4-0-2025-04-16">[0.4.0] - 2025-04-16</h2>
-<h3 id="added-5">Added</h3>
+<h3 id="added-6">Added</h3>
 <ul>
 <li>Added more configuration options to SPIKE Nexus.</li>
 <li>Updated documentation around security and production hardening.</li>
@@ -1144,7 +1165,7 @@ restoring the data.</li>
 a release only after all tests pass. These tests are manual for now but
 can be automated later down the line.</li>
 </ul>
-<h3 id="fixed-4">Fixed</h3>
+<h3 id="fixed-5">Fixed</h3>
 <ul>
 <li>Fixed a bug related to policies not recovering after a SPIKE Nexus crash.
 Now, both secrets and policies recover without an issue.</li>
@@ -1156,7 +1177,7 @@ and secrets.</li>
 up when no longer needed (but not before).</li>
 <li>Various bug fixes and improvements.</li>
 </ul>
-<h3 id="changed-6">Changed</h3>
+<h3 id="changed-7">Changed</h3>
 <ul>
 <li>Moved some common reusable code to <code>spike-sdk-go</code>.</li>
 <li>Various changes and improvements in SPIKE Go SDK.</li>
@@ -1167,7 +1188,7 @@ better (i.e., it’s not creation of an entity or a DAO, but rather it’s
 the start of an audit trail).</li>
 <li>Improved <code>spike policy</code> commands with better UX and error handling.</li>
 </ul>
-<h3 id="security-3">Security</h3>
+<h3 id="security-4">Security</h3>
 <ul>
 <li>Added cache invalidation headers to all API responses.</li>
 <li>For added security, we strip symbols during the build process now.</li>
@@ -1177,7 +1198,7 @@ the start of an audit trail).</li>
 <li><a href="https://github.com/spiffe/spike/security/dependabot/4">Fixed <code>CVE-2025-22870</code>: HTTP Proxy bypass using IPv6 Zone IDs in golang.org/x/net</a></li>
 </ul>
 <h2 id="0-3-1-2025-03-04">[0.3.1] - 2025-03-04</h2>
-<h3 id="added-6">Added</h3>
+<h3 id="added-7">Added</h3>
 <ul>
 <li>SPIKE Nexus now accepts a dynamic number of SPIKE Keepers and Shamir share
 threshold (defaults to 3 keepers, and minimum 2 shares (out of 3) to
@@ -1187,7 +1208,7 @@ complete: We will work on that.</li>
 <li>Various documentation updates.</li>
 <li>Minor bug fixes in initialization scripts.</li>
 </ul>
-<h3 id="changed-7">Changed</h3>
+<h3 id="changed-8">Changed</h3>
 <ul>
 <li>Secrets now rehydrate from the backing store immediately after SPIKE
 Nexus crashes. Former implementation was using an optimistic algorithm
@@ -1196,7 +1217,7 @@ calls to <code>spike secret list</code> return an empty collection. This impleme
 fixes that issue and also ensures that SPIKE Nexus’ memory continues to
 be the primary source of truth (by design).</li>
 </ul>
-<h3 id="security-4">Security</h3>
+<h3 id="security-5">Security</h3>
 <ul>
 <li>SPIKE Nexus now securely erases the old root key and shards from memory after
 it is no longer necessary. Before, it was left to the garbage collector to
@@ -1207,7 +1228,7 @@ memory protection.</li>
 <h2 id="0-3-0-2025-02-20">[0.3.0] - 2025-02-20</h2>
 <p>This release was focused around bugfixes, stability, documentation, and
 disaster recovery.</p>
-<h3 id="added-7">Added</h3>
+<h3 id="added-8">Added</h3>
 <ul>
 <li>Documentation: SPIKE Production Hardening Guide is complete and ready for
 consumption (<em>it was in draft mode before</em>).</li>
@@ -1222,7 +1243,7 @@ we would like to be; yet we have to start somewhere :).</li>
 and design decisions transparently.</li>
 <li>Started working on containerization (<em>though it’s still a work in progress</em>).</li>
 </ul>
-<h3 id="changed-8">Changed</h3>
+<h3 id="changed-9">Changed</h3>
 <ul>
 <li>SPIKE Website has undergone a major overhaul.</li>
 <li>Documentation updates, especially around security and disaster recovery.</li>
@@ -1233,7 +1254,7 @@ templateability, and consistency to the overall documentation.</li>
 <li>Significant updates in <a href="https://github.com/spiffe/spike-sdk-go">SPIKE go SDK</a>.</li>
 </ul>
 <h2 id="0-2-1-2025-01-23">[0.2.1] - 2025-01-23</h2>
-<h3 id="added-8">Added</h3>
+<h3 id="added-9">Added</h3>
 <ul>
 <li>Enabled policy-based access control.</li>
 <li>The root key that SPIKE Nexus generates is now split into several Shamir
@@ -1251,13 +1272,13 @@ updating and improving it along the way.</li>
 <li>Implemented a Secret Metadata API.</li>
 <li>Implemented exponential retries across several API-consuming methods.</li>
 </ul>
-<h3 id="changed-9">Changed</h3>
+<h3 id="changed-10">Changed</h3>
 <ul>
 <li><strong>BREAKING</strong>: changed the CLI usage. Instead of <code>spike get</code>, for example, we
 now use <code>spike secret get</code>. The reason for this change is that we introduced
 a <code>policy</code> command (i.e. <code>spike policy get</code>).</li>
 </ul>
-<h3 id="security-5">Security</h3>
+<h3 id="security-6">Security</h3>
 <ul>
 <li><a href="https://github.com/spiffe/spike/security/dependabot/1">Fixed <code>CVE-2024-45337</code>: Misuse of ServerConfig.PublicKeyCallback may cause
 authorization bypass in golang.org/x/crypto</a></li>
@@ -1265,7 +1286,7 @@ authorization bypass in golang.org/x/crypto</a></li>
 <code>golang.org/x/net/htm</code></a></li>
 </ul>
 <h2 id="0-2-0-2024-11-22">[0.2.0] - 2024-11-22</h2>
-<h3 id="added-9">Added</h3>
+<h3 id="added-10">Added</h3>
 <ul>
 <li>Added configuration options for SPIKE Nexus and SPIKE Keeper.</li>
 <li>Documentation updates.</li>
@@ -1277,7 +1298,7 @@ authorization bypass in golang.org/x/crypto</a></li>
 <li>Created initial smoke/integration tests.</li>
 <li>Stability improvements.</li>
 </ul>
-<h3 id="changed-10">Changed</h3>
+<h3 id="changed-11">Changed</h3>
 <ul>
 <li>Removed password authentication for admin users. Admin users’ SVIDs
 are good enough to authenticate them.</li>
@@ -1285,7 +1306,7 @@ are good enough to authenticate them.</li>
 (<em>the neat thing about passwords is: you don’t need them</em>).</li>
 </ul>
 <h2 id="0-1-0-2024-11-06">[0.1.0] - 2024-11-06</h2>
-<h3 id="added-10">Added</h3>
+<h3 id="added-11">Added</h3>
 <ul>
 <li>Implemented <code>put</code>, <code>read</code>, <code>delete</code>, <code>undelete</code>, and <code>list</code> functionalities.</li>
 <li>Created initial documentation, README, and related files.</li>
