@@ -77,8 +77,8 @@ func initializeSqliteBackend(rootKey *[32]byte) backend.Backend {
 	)
 	defer cancel()
 
-	if err := dbBackend.Initialize(ctxC); err != nil {
-		failErr := sdkErrors.ErrStateInitializationFailed.Wrap(err)
+	if initErr := dbBackend.Initialize(ctxC); initErr != nil {
+		failErr := sdkErrors.ErrStateInitializationFailed.Wrap(initErr)
 		failErr.Msg = "failed to initialize SQLite backend"
 		log.WarnErr(fName, *failErr)
 		return nil
