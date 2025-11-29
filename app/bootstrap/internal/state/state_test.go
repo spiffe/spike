@@ -13,6 +13,7 @@ import (
 
 	"github.com/cloudflare/circl/group"
 	shamir "github.com/cloudflare/circl/secretsharing"
+
 	"github.com/spiffe/spike-sdk-go/config/env"
 	"github.com/spiffe/spike-sdk-go/crypto"
 )
@@ -26,6 +27,7 @@ func TestRootSharesGeneration(t *testing.T) {
 		_ = os.Unsetenv("SPIKE_NEXUS_SHAMIR_THRESHOLD")
 	}()
 
+	resetRootSharesForTesting()
 	shares := RootShares()
 
 	// Test basic properties
@@ -74,7 +76,9 @@ func TestRootSharesConsistency(t *testing.T) {
 
 	// Generate shares multiple times - they should be different each time
 	// due to different random root keys
+	resetRootSharesForTesting()
 	shares1 := RootShares()
+	resetRootSharesForTesting()
 	shares2 := RootShares()
 
 	if len(shares1) != 3 || len(shares2) != 3 {
@@ -246,6 +250,7 @@ func TestEnvironmentVariableHandling(t *testing.T) {
 	_ = os.Unsetenv(env.NexusShamirThreshold)
 
 	// This should use default values (defined in env package)
+	resetRootSharesForTesting()
 	shares := RootShares()
 
 	// We can't predict the exact default values without reading the env package,
@@ -294,6 +299,33 @@ func TestShareIDConversion(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestRootSharesSingleCallEnforcement(t *testing.T) {
+	// Enable stack traces on fatal to make log.FatalLn panic instead of exit
+	// Use t.Setenv() for proper test isolation in parallel execution
+	t.Setenv("SPIKE_STACK_TRACES_ON_LOG_FATAL", "true")
+
+	// Set required env vars
+	t.Setenv("SPIKE_NEXUS_SHAMIR_SHARES", "3")
+	t.Setenv("SPIKE_NEXUS_SHAMIR_THRESHOLD", "2")
+
+	// Reset and call RootShares() the first time (should succeed)
+	resetRootSharesForTesting()
+	shares := RootShares()
+	if len(shares) != 3 {
+		t.Fatalf("Expected 3 shares, got %d", len(shares))
+	}
+
+	// Call RootShares() a second time (should panic via log.FatalLn)
+	defer func() {
+		if r := recover(); r == nil {
+			t.Error("RootShares() should panic when called more than once")
+		}
+	}()
+
+	_ = RootShares() // This MUST panic
+	t.Error("Should not reach this line - RootShares() must panic on second call")
 }
 
 func TestShareValidation(t *testing.T) {

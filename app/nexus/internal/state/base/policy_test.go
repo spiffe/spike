@@ -14,6 +14,8 @@ import (
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/config/env"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
+
 	"github.com/spiffe/spike/app/nexus/internal/state/persist"
 )
 
@@ -54,9 +56,9 @@ func TestCheckAccess_SuperPermission(t *testing.T) {
 			Permissions:     []data.PolicyPermission{data.PermissionSuper},
 		}
 
-		createdPolicy, err := CreatePolicy(superPolicy)
-		if err != nil {
-			t.Fatalf("Failed to create super policy: %v", err)
+		createdPolicy, createErr := UpsertPolicy(superPolicy)
+		if createErr != nil {
+			t.Fatalf("Failed to create super policy: %v", createErr)
 		}
 
 		// Test that super permission grants all access
@@ -75,9 +77,9 @@ func TestCheckAccess_SuperPermission(t *testing.T) {
 		}
 
 		// Clean up
-		err = DeletePolicy(createdPolicy.ID)
-		if err != nil {
-			t.Errorf("Failed to clean up policy: %v", err)
+		deleteErr := DeletePolicy(createdPolicy.ID)
+		if deleteErr != nil {
+			t.Errorf("Failed to clean up policy: %v", deleteErr)
 		}
 	})
 }
@@ -96,9 +98,9 @@ func TestCheckAccess_SpecificPatterns(t *testing.T) {
 				data.PermissionRead, data.PermissionWrite},
 		}
 
-		createdPolicy, err := CreatePolicy(specificPolicy)
-		if err != nil {
-			t.Fatalf("Failed to create specific policy: %v", err)
+		createdPolicy, createErr := UpsertPolicy(specificPolicy)
+		if createErr != nil {
+			t.Fatalf("Failed to create specific policy: %v", createErr)
 		}
 
 		testCases := []struct {
@@ -156,9 +158,9 @@ func TestCheckAccess_SpecificPatterns(t *testing.T) {
 		}
 
 		// Clean up
-		err = DeletePolicy(createdPolicy.ID)
-		if err != nil {
-			t.Errorf("Failed to clean up policy: %v", err)
+		deleteErr := DeletePolicy(createdPolicy.ID)
+		if deleteErr != nil {
+			t.Errorf("Failed to clean up policy: %v", deleteErr)
 		}
 	})
 }
@@ -181,7 +183,7 @@ func TestCheckAccess_LoadPoliciesError(t *testing.T) {
 	})
 }
 
-func TestCreatePolicy_ValidPolicy(t *testing.T) {
+func TestUpsertPolicy_ValidPolicy(t *testing.T) {
 	withEnvironment(t, "SPIKE_NEXUS_BACKEND_STORE", "memory", func() {
 		resetBackendForTest()
 		persist.InitializeBackend(nil)
@@ -194,9 +196,9 @@ func TestCreatePolicy_ValidPolicy(t *testing.T) {
 				data.PermissionRead, data.PermissionWrite},
 		}
 
-		createdPolicy, err := CreatePolicy(policy)
-		if err != nil {
-			t.Fatalf("Failed to create policy: %v", err)
+		createdPolicy, createErr := UpsertPolicy(policy)
+		if createErr != nil {
+			t.Fatalf("Failed to create policy: %v", createErr)
 		}
 
 		// Verify policy was created with expected fields
@@ -229,14 +231,14 @@ func TestCreatePolicy_ValidPolicy(t *testing.T) {
 		}
 
 		// Clean up
-		err = DeletePolicy(createdPolicy.ID)
-		if err != nil {
-			t.Errorf("Failed to clean up policy: %v", err)
+		deleteErr := DeletePolicy(createdPolicy.ID)
+		if deleteErr != nil {
+			t.Errorf("Failed to clean up policy: %v", deleteErr)
 		}
 	})
 }
 
-func TestCreatePolicy_InvalidName(t *testing.T) {
+func TestUpsertPolicy_InvalidName(t *testing.T) {
 	withEnvironment(t, "SPIKE_NEXUS_BACKEND_STORE", "memory", func() {
 		resetBackendForTest()
 		persist.InitializeBackend(nil)
@@ -248,52 +250,65 @@ func TestCreatePolicy_InvalidName(t *testing.T) {
 			Permissions:     []data.PolicyPermission{data.PermissionRead},
 		}
 
-		_, err := CreatePolicy(policy)
-		if err == nil {
+		_, createErr := UpsertPolicy(policy)
+		if createErr == nil {
 			t.Error("Expected error for empty policy name")
 		}
-		if !errors.Is(err, ErrInvalidPolicy) {
-			t.Errorf("Expected ErrInvalidPolicy, got %v", err)
+		if !errors.Is(createErr, sdkErrors.ErrEntityInvalid) {
+			t.Errorf("Expected ErrEntityInvalid, got %v", createErr)
 		}
 	})
 }
 
-func TestCreatePolicy_DuplicateName(t *testing.T) {
+func TestUpsertPolicy_UpdateExisting(t *testing.T) {
 	withEnvironment(t, "SPIKE_NEXUS_BACKEND_STORE", "memory", func() {
 		resetBackendForTest()
 		persist.InitializeBackend(nil)
 
 		policy := data.Policy{
-			Name:            "duplicate-policy",
+			Name:            "upsert-test-policy",
 			SPIFFEIDPattern: ".*",
 			PathPattern:     ".*",
 			Permissions:     []data.PolicyPermission{data.PermissionRead},
 		}
 
 		// Create first policy
-		createdPolicy1, err := CreatePolicy(policy)
-		if err != nil {
-			t.Fatalf("Failed to create first policy: %v", err)
+		createdPolicy1, createErr := UpsertPolicy(policy)
+		if createErr != nil {
+			t.Fatalf("Failed to create first policy: %v", createErr)
 		}
 
-		// Try to create policy with same name
-		_, err = CreatePolicy(policy)
-		if err == nil {
-			t.Error("Expected error for duplicate policy name")
+		// Upsert policy with the same name but different permissions
+		policy.Permissions = []data.PolicyPermission{
+			data.PermissionRead, data.PermissionWrite}
+		updatedPolicy, updateErr := UpsertPolicy(policy)
+		if updateErr != nil {
+			t.Fatalf("Failed to upsert policy: %v", updateErr)
 		}
-		if !errors.Is(err, ErrPolicyExists) {
-			t.Errorf("Expected ErrPolicyExists, got %v", err)
+
+		// Verify upsert preserved ID and CreatedAt
+		if updatedPolicy.ID != createdPolicy1.ID {
+			t.Errorf("Expected ID to be preserved, got %s, want %s",
+				updatedPolicy.ID, createdPolicy1.ID)
+		}
+		if !updatedPolicy.CreatedAt.Equal(createdPolicy1.CreatedAt) {
+			t.Errorf("Expected CreatedAt to be preserved")
+		}
+
+		// Verify permissions were updated
+		if len(updatedPolicy.Permissions) != 2 {
+			t.Errorf("Expected 2 permissions, got %d", len(updatedPolicy.Permissions))
 		}
 
 		// Clean up
-		err = DeletePolicy(createdPolicy1.ID)
-		if err != nil {
-			t.Errorf("Failed to clean up policy: %v", err)
+		deleteErr := DeletePolicy(createdPolicy1.ID)
+		if deleteErr != nil {
+			t.Errorf("Failed to clean up policy: %v", deleteErr)
 		}
 	})
 }
 
-func TestCreatePolicy_InvalidRegexPatterns(t *testing.T) {
+func TestUpsertPolicy_InvalidRegexPatterns(t *testing.T) {
 	withEnvironment(t, "SPIKE_NEXUS_BACKEND_STORE", "memory", func() {
 		resetBackendForTest()
 		persist.InitializeBackend(nil)
@@ -333,17 +348,19 @@ func TestCreatePolicy_InvalidRegexPatterns(t *testing.T) {
 					Permissions:     []data.PolicyPermission{data.PermissionRead},
 				}
 
-				createdPolicy, err := CreatePolicy(policy)
+				createdPolicy, createErr := UpsertPolicy(policy)
 				if tc.expectError {
-					if err == nil {
+					if createErr == nil {
 						t.Error("Expected error for invalid regex pattern")
 					}
-					if err != nil && !ErrorIs(err, ErrInvalidPolicy) {
-						t.Errorf("Expected ErrInvalidPolicy to be in error chain, got %v", err)
+					if createErr != nil &&
+						!errors.Is(createErr, sdkErrors.ErrEntityInvalid) {
+						t.Errorf("Expected ErrEntityInvalid in error chain, got %v",
+							createErr)
 					}
 				} else {
-					if err != nil {
-						t.Errorf("Unexpected error for valid patterns: %v", err)
+					if createErr != nil {
+						t.Errorf("Unexpected error for valid patterns: %v", createErr)
 					} else {
 						// Clean up successful creation
 						_ = DeletePolicy(createdPolicy.ID)
@@ -354,7 +371,7 @@ func TestCreatePolicy_InvalidRegexPatterns(t *testing.T) {
 	})
 }
 
-func TestCreatePolicy_PreserveCreatedAt(t *testing.T) {
+func TestUpsertPolicy_PreserveCreatedAt(t *testing.T) {
 	withEnvironment(t, "SPIKE_NEXUS_BACKEND_STORE", "memory", func() {
 		resetBackendForTest()
 		persist.InitializeBackend(nil)
@@ -368,19 +385,20 @@ func TestCreatePolicy_PreserveCreatedAt(t *testing.T) {
 			CreatedAt:       customTime,
 		}
 
-		createdPolicy, err := CreatePolicy(policy)
-		if err != nil {
-			t.Fatalf("Failed to create policy: %v", err)
+		createdPolicy, createErr := UpsertPolicy(policy)
+		if createErr != nil {
+			t.Fatalf("Failed to create policy: %v", createErr)
 		}
 
 		if !createdPolicy.CreatedAt.Equal(customTime) {
-			t.Errorf("Expected CreatedAt %v, got %v", customTime, createdPolicy.CreatedAt)
+			t.Errorf("Expected CreatedAt %v, got %v",
+				customTime, createdPolicy.CreatedAt)
 		}
 
 		// Clean up
-		err = DeletePolicy(createdPolicy.ID)
-		if err != nil {
-			t.Errorf("Failed to clean up policy: %v", err)
+		deleteErr := DeletePolicy(createdPolicy.ID)
+		if deleteErr != nil {
+			t.Errorf("Failed to clean up policy: %v", deleteErr)
 		}
 	})
 }
@@ -398,15 +416,15 @@ func TestGetPolicy_ExistingPolicy(t *testing.T) {
 			Permissions:     []data.PolicyPermission{data.PermissionRead},
 		}
 
-		createdPolicy, err := CreatePolicy(policy)
-		if err != nil {
-			t.Fatalf("Failed to create policy: %v", err)
+		createdPolicy, createErr := UpsertPolicy(policy)
+		if createErr != nil {
+			t.Fatalf("Failed to create policy: %v", createErr)
 		}
 
 		// Get the policy
-		retrievedPolicy, err := GetPolicy(createdPolicy.ID)
-		if err != nil {
-			t.Fatalf("Failed to get policy: %v", err)
+		retrievedPolicy, getErr := GetPolicy(createdPolicy.ID)
+		if getErr != nil {
+			t.Fatalf("Failed to get policy: %v", getErr)
 		}
 
 		// Verify the retrieved policy matches
@@ -420,9 +438,9 @@ func TestGetPolicy_ExistingPolicy(t *testing.T) {
 		}
 
 		// Clean up
-		err = DeletePolicy(createdPolicy.ID)
-		if err != nil {
-			t.Errorf("Failed to clean up policy: %v", err)
+		deleteErr := DeletePolicy(createdPolicy.ID)
+		if deleteErr != nil {
+			t.Errorf("Failed to clean up policy: %v", deleteErr)
 		}
 	})
 }
@@ -433,12 +451,12 @@ func TestGetPolicy_NonExistentPolicy(t *testing.T) {
 		persist.InitializeBackend(nil)
 
 		// Try to get a non-existent policy
-		_, err := GetPolicy("non-existent-id")
-		if err == nil {
+		_, getErr := GetPolicy("non-existent-id")
+		if getErr == nil {
 			t.Error("Expected error for non-existent policy")
 		}
-		if !errors.Is(err, ErrPolicyNotFound) {
-			t.Errorf("Expected ErrPolicyNotFound, got %v", err)
+		if !errors.Is(getErr, sdkErrors.ErrEntityNotFound) {
+			t.Errorf("Expected ErrEntityNotFound, got %v", getErr)
 		}
 	})
 }
@@ -456,21 +474,21 @@ func TestDeletePolicy_ExistingPolicy(t *testing.T) {
 			Permissions:     []data.PolicyPermission{data.PermissionRead},
 		}
 
-		createdPolicy, err := CreatePolicy(policy)
-		if err != nil {
-			t.Fatalf("Failed to create policy: %v", err)
+		createdPolicy, createErr := UpsertPolicy(policy)
+		if createErr != nil {
+			t.Fatalf("Failed to create policy: %v", createErr)
 		}
 
 		// Delete the policy
-		err = DeletePolicy(createdPolicy.ID)
-		if err != nil {
-			t.Fatalf("Failed to delete policy: %v", err)
+		deleteErr := DeletePolicy(createdPolicy.ID)
+		if deleteErr != nil {
+			t.Fatalf("Failed to delete policy: %v", deleteErr)
 		}
 
 		// Verify the policy is gone
-		_, err = GetPolicy(createdPolicy.ID)
-		if !errors.Is(err, ErrPolicyNotFound) {
-			t.Errorf("Expected ErrPolicyNotFound after deletion, got %v", err)
+		_, getErr := GetPolicy(createdPolicy.ID)
+		if !errors.Is(getErr, sdkErrors.ErrEntityNotFound) {
+			t.Errorf("Expected ErrEntityNotFound after deletion, got %v", getErr)
 		}
 	})
 }
@@ -481,12 +499,12 @@ func TestDeletePolicy_NonExistentPolicy(t *testing.T) {
 		persist.InitializeBackend(nil)
 
 		// Try to delete a non-existent policy
-		err := DeletePolicy("non-existent-id")
-		if err == nil {
+		deleteErr := DeletePolicy("non-existent-id")
+		if deleteErr == nil {
 			t.Error("Expected error for non-existent policy")
 		}
-		if !errors.Is(err, ErrPolicyNotFound) {
-			t.Errorf("Expected ErrPolicyNotFound, got %v", err)
+		if !errors.Is(deleteErr, sdkErrors.ErrEntityNotFound) {
+			t.Errorf("Expected ErrEntityNotFound, got %v", deleteErr)
 		}
 	})
 }
@@ -496,9 +514,9 @@ func TestListPolicies_EmptyStore(t *testing.T) {
 		resetBackendForTest()
 		persist.InitializeBackend(nil)
 
-		policies, err := ListPolicies()
-		if err != nil {
-			t.Fatalf("Failed to list policies: %v", err)
+		policies, listErr := ListPolicies()
+		if listErr != nil {
+			t.Fatalf("Failed to list policies: %v", listErr)
 		}
 
 		if len(policies) != 0 {
@@ -524,17 +542,17 @@ func TestListPolicies_MultiplePolicies(t *testing.T) {
 				Permissions:     []data.PolicyPermission{data.PermissionRead},
 			}
 
-			createdPolicy, err := CreatePolicy(policy)
-			if err != nil {
-				t.Fatalf("Failed to create policy %s: %v", name, err)
+			createdPolicy, createErr := UpsertPolicy(policy)
+			if createErr != nil {
+				t.Fatalf("Failed to create policy %s: %v", name, createErr)
 			}
 			createdPolicies = append(createdPolicies, createdPolicy)
 		}
 
 		// List policies
-		policies, err := ListPolicies()
-		if err != nil {
-			t.Fatalf("Failed to list policies: %v", err)
+		policies, listErr := ListPolicies()
+		if listErr != nil {
+			t.Fatalf("Failed to list policies: %v", listErr)
 		}
 
 		if len(policies) != len(policyNames) {
@@ -555,9 +573,9 @@ func TestListPolicies_MultiplePolicies(t *testing.T) {
 
 		// Clean up
 		for _, policy := range createdPolicies {
-			err = DeletePolicy(policy.ID)
-			if err != nil {
-				t.Errorf("Failed to clean up policy %s: %v", policy.Name, err)
+			deleteErr := DeletePolicy(policy.ID)
+			if deleteErr != nil {
+				t.Errorf("Failed to clean up policy %s: %v", policy.Name, deleteErr)
 			}
 		}
 	})
@@ -594,17 +612,17 @@ func TestListPoliciesByPath_MatchingPolicies(t *testing.T) {
 
 		createdPolicies := make([]data.Policy, 0, len(policies))
 		for _, policy := range policies {
-			createdPolicy, err := CreatePolicy(policy)
-			if err != nil {
-				t.Fatalf("Failed to create policy %s: %v", policy.Name, err)
+			createdPolicy, createErr := UpsertPolicy(policy)
+			if createErr != nil {
+				t.Fatalf("Failed to create policy %s: %v", policy.Name, createErr)
 			}
 			createdPolicies = append(createdPolicies, createdPolicy)
 		}
 
 		// List policies by pathPattern
-		matchingPolicies, err := ListPoliciesByPathPattern(pathPattern)
-		if err != nil {
-			t.Fatalf("Failed to list policies by pathPattern: %v", err)
+		matchingPolicies, listErr := ListPoliciesByPathPattern(pathPattern)
+		if listErr != nil {
+			t.Fatalf("Failed to list policies by pathPattern: %v", listErr)
 		}
 
 		if len(matchingPolicies) != 2 {
@@ -633,9 +651,9 @@ func TestListPoliciesByPath_MatchingPolicies(t *testing.T) {
 
 		// Clean up
 		for _, policy := range createdPolicies {
-			err = DeletePolicy(policy.ID)
-			if err != nil {
-				t.Errorf("Failed to clean up policy %s: %v", policy.Name, err)
+			deleteErr := DeletePolicy(policy.ID)
+			if deleteErr != nil {
+				t.Errorf("Failed to clean up policy %s: %v", policy.Name, deleteErr)
 			}
 		}
 	})
@@ -654,15 +672,15 @@ func TestListPoliciesByPath_NoMatches(t *testing.T) {
 			Permissions:     []data.PolicyPermission{data.PermissionRead},
 		}
 
-		createdPolicy, err := CreatePolicy(policy)
-		if err != nil {
-			t.Fatalf("Failed to create policy: %v", err)
+		createdPolicy, createErr := UpsertPolicy(policy)
+		if createErr != nil {
+			t.Fatalf("Failed to create policy: %v", createErr)
 		}
 
 		// List policies with a non-matching pathPattern
-		matchingPolicies, err := ListPoliciesByPathPattern("other/.*")
-		if err != nil {
-			t.Fatalf("Failed to list policies by pathPattern: %v", err)
+		matchingPolicies, listErr := ListPoliciesByPathPattern("other/.*")
+		if listErr != nil {
+			t.Fatalf("Failed to list policies by pathPattern: %v", listErr)
 		}
 
 		if len(matchingPolicies) != 0 {
@@ -670,9 +688,9 @@ func TestListPoliciesByPath_NoMatches(t *testing.T) {
 		}
 
 		// Clean up
-		err = DeletePolicy(createdPolicy.ID)
-		if err != nil {
-			t.Errorf("Failed to clean up policy: %v", err)
+		deleteErr := DeletePolicy(createdPolicy.ID)
+		if deleteErr != nil {
+			t.Errorf("Failed to clean up policy: %v", deleteErr)
 		}
 	})
 }
@@ -708,17 +726,17 @@ func TestListPoliciesBySPIFFEID_MatchingPolicies(t *testing.T) {
 
 		createdPolicies := make([]data.Policy, 0, len(policies))
 		for _, policy := range policies {
-			createdPolicy, err := CreatePolicy(policy)
-			if err != nil {
-				t.Fatalf("Failed to create policy %s: %v", policy.Name, err)
+			createdPolicy, createErr := UpsertPolicy(policy)
+			if createErr != nil {
+				t.Fatalf("Failed to create policy %s: %v", policy.Name, createErr)
 			}
 			createdPolicies = append(createdPolicies, createdPolicy)
 		}
 
 		// List policies by SPIFFE ID
-		matchingPolicies, err := ListPoliciesBySPIFFEIDPattern(spiffeIDPattern)
-		if err != nil {
-			t.Fatalf("Failed to list policies by SPIFFE ID: %v", err)
+		matchingPolicies, listErr := ListPoliciesBySPIFFEIDPattern(spiffeIDPattern)
+		if listErr != nil {
+			t.Fatalf("Failed to list policies by SPIFFE ID: %v", listErr)
 		}
 
 		if len(matchingPolicies) != 2 {
@@ -748,9 +766,9 @@ func TestListPoliciesBySPIFFEID_MatchingPolicies(t *testing.T) {
 
 		// Clean up
 		for _, policy := range createdPolicies {
-			err = DeletePolicy(policy.ID)
-			if err != nil {
-				t.Errorf("Failed to clean up policy %s: %v", policy.Name, err)
+			deleteErr := DeletePolicy(policy.ID)
+			if deleteErr != nil {
+				t.Errorf("Failed to clean up policy %s: %v", policy.Name, deleteErr)
 			}
 		}
 	})
@@ -769,15 +787,15 @@ func TestListPoliciesBySPIFFEID_NoMatches(t *testing.T) {
 			Permissions:     []data.PolicyPermission{data.PermissionRead},
 		}
 
-		createdPolicy, err := CreatePolicy(policy)
-		if err != nil {
-			t.Fatalf("Failed to create policy: %v", err)
+		createdPolicy, createErr := UpsertPolicy(policy)
+		if createErr != nil {
+			t.Fatalf("Failed to create policy: %v", createErr)
 		}
 
 		// List policies with non-matching SPIFFE ID
-		matchingPolicies, err := ListPoliciesBySPIFFEIDPattern("spiffe://other\\.org/.*")
-		if err != nil {
-			t.Fatalf("Failed to list policies by SPIFFE ID: %v", err)
+		matchingPolicies, listErr := ListPoliciesBySPIFFEIDPattern("spiffe://other\\.org/.*")
+		if listErr != nil {
+			t.Fatalf("Failed to list policies by SPIFFE ID: %v", listErr)
 		}
 
 		if len(matchingPolicies) != 0 {
@@ -785,9 +803,9 @@ func TestListPoliciesBySPIFFEID_NoMatches(t *testing.T) {
 		}
 
 		// Clean up
-		err = DeletePolicy(createdPolicy.ID)
-		if err != nil {
-			t.Errorf("Failed to clean up policy: %v", err)
+		deleteErr := DeletePolicy(createdPolicy.ID)
+		if deleteErr != nil {
+			t.Errorf("Failed to clean up policy: %v", deleteErr)
 		}
 	})
 }
@@ -805,9 +823,9 @@ func TestPolicyRegexCompilation(t *testing.T) {
 			Permissions:     []data.PolicyPermission{data.PermissionRead},
 		}
 
-		createdPolicy, err := CreatePolicy(policy)
-		if err != nil {
-			t.Fatalf("Failed to create policy: %v", err)
+		createdPolicy, createErr := UpsertPolicy(policy)
+		if createErr != nil {
+			t.Fatalf("Failed to create policy: %v", createErr)
 		}
 
 		// Test the compiled regexes work correctly
@@ -817,24 +835,29 @@ func TestPolicyRegexCompilation(t *testing.T) {
 			shouldMatch bool
 		}{
 			{"spiffe://example.org/service-123", "app/service-test/config", true},
-			{"spiffe://example.org/service-abc", "app/service-test/config", false}, // invalid spiffeid
-			{"spiffe://example.org/service-123", "app/service-123/config", false},  // invalid pathPattern (numbers instead of letters)
-			{"spiffe://other.org/service-123", "app/service-test/config", false},   // wrong domain
+			// invalid spiffeid:
+			{"spiffe://example.org/service-abc", "app/service-test/config", false},
+			// invalid pathPattern (numbers instead of letters):
+			{"spiffe://example.org/service-123", "app/service-123/config", false},
+			// wrong domain:
+			{"spiffe://other.org/service-123", "app/service-test/config", false},
 		}
 
 		for i, tc := range testCases {
 			t.Run(fmt.Sprintf("regex_test_%d", i), func(t *testing.T) {
-				result := CheckAccess(tc.SPIFFEID, tc.path, []data.PolicyPermission{data.PermissionRead})
+				result := CheckAccess(tc.SPIFFEID, tc.path,
+					[]data.PolicyPermission{data.PermissionRead})
 				if result != tc.shouldMatch {
-					t.Errorf("Expected %v for SPIFFEID %s and path %s", tc.shouldMatch, tc.SPIFFEID, tc.path)
+					t.Errorf("Expected %v for SPIFFEID %s and path %s",
+						tc.shouldMatch, tc.SPIFFEID, tc.path)
 				}
 			})
 		}
 
 		// Clean up
-		err = DeletePolicy(createdPolicy.ID)
-		if err != nil {
-			t.Errorf("Failed to clean up policy: %v", err)
+		deleteErr := DeletePolicy(createdPolicy.ID)
+		if deleteErr != nil {
+			t.Errorf("Failed to clean up policy: %v", deleteErr)
 		}
 	})
 }
@@ -862,7 +885,7 @@ func BenchmarkCheckAccess_WildcardPolicy(b *testing.B) {
 		Permissions:     []data.PolicyPermission{data.PermissionRead},
 	}
 
-	createdPolicy, _ := CreatePolicy(policy)
+	createdPolicy, _ := UpsertPolicy(policy)
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -873,7 +896,7 @@ func BenchmarkCheckAccess_WildcardPolicy(b *testing.B) {
 	_ = DeletePolicy(createdPolicy.ID)
 }
 
-func BenchmarkCreatePolicy(b *testing.B) {
+func BenchmarkUpsertPolicy(b *testing.B) {
 	original := os.Getenv(env.NexusBackendStore)
 	_ = os.Setenv(env.NexusBackendStore, "memory")
 	defer func() {
@@ -898,7 +921,7 @@ func BenchmarkCreatePolicy(b *testing.B) {
 			Permissions:     []data.PolicyPermission{data.PermissionRead},
 		}
 
-		createdPolicy, _ := CreatePolicy(policy)
+		createdPolicy, _ := UpsertPolicy(policy)
 		createdPolicies = append(createdPolicies, createdPolicy.ID)
 	}
 	b.StopTimer()
@@ -932,7 +955,7 @@ func BenchmarkListPolicies(b *testing.B) {
 			PathPattern:     ".*",
 			Permissions:     []data.PolicyPermission{data.PermissionRead},
 		}
-		createdPolicy, _ := CreatePolicy(policy)
+		createdPolicy, _ := UpsertPolicy(policy)
 		createdPolicies = append(createdPolicies, createdPolicy.ID)
 	}
 
@@ -946,11 +969,4 @@ func BenchmarkListPolicies(b *testing.B) {
 	for _, id := range createdPolicies {
 		_ = DeletePolicy(id)
 	}
-}
-
-// Helper function to check if an error contains a specific error in its chain
-func ErrorIs(err, target error) bool {
-	return err != nil && (errors.Is(err, target) ||
-		(err.Error() != "" &&
-			target.Error() != "" && err.Error() == target.Error()))
 }

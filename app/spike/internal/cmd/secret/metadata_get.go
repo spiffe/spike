@@ -5,11 +5,10 @@
 package secret
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	spike "github.com/spiffe/spike-sdk-go/api"
+
 	"github.com/spiffe/spike/app/spike/internal/stdout"
 	"github.com/spiffe/spike/app/spike/internal/trust"
 )
@@ -19,7 +18,10 @@ import (
 // data from a specified path.
 //
 // Parameters:
-//   - source: X.509 source for workload API authentication
+//   - source: SPIFFE X.509 SVID source for authentication. Can be nil if the
+//     Workload API connection is unavailable, in which case the command will
+//     display an error message and return.
+//   - SPIFFEID: The SPIFFE ID to authenticate with
 //
 // The command accepts a single argument:
 //   - path: Location of the secret to retrieve
@@ -55,28 +57,27 @@ func newSecretMetadataGetCommand(
 		Run: func(cmd *cobra.Command, args []string) {
 			trust.AuthenticateForPilot(SPIFFEID)
 
+			if source == nil {
+				cmd.PrintErrln("Error: SPIFFE X509 source is unavailable.")
+				return
+			}
+
 			api := spike.NewWithSource(source)
 
 			path := args[0]
 			version, _ := cmd.Flags().GetInt("version")
 
 			secret, err := api.GetSecretMetadata(path, version)
-			if err != nil {
-				if err.Error() == "not ready" {
-					stdout.PrintNotReady()
-					return
-				}
-
-				fmt.Println("Error reading secret:", err.Error())
+			if stdout.HandleAPIError(cmd, err) {
 				return
 			}
 
 			if secret == nil {
-				fmt.Println("Secret not found.")
+				cmd.Println("Secret not found.")
 				return
 			}
 
-			printSecretResponse(secret)
+			printSecretResponse(cmd, secret)
 		},
 	}
 

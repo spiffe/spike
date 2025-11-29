@@ -9,6 +9,7 @@ import (
 	"encoding/hex"
 
 	"github.com/spiffe/spike-sdk-go/config/env"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/log"
 
 	"github.com/spiffe/spike/app/nexus/internal/state/backend"
@@ -63,12 +64,11 @@ func initializeSqliteBackend(rootKey *[32]byte) backend.Backend {
 	// Initialize SQLite backend
 	dbBackend, err := sqlite.New(cfg)
 	if err != nil {
+		failErr := sdkErrors.ErrStateInitializationFailed.Wrap(err)
+		failErr.Msg = "failed to create SQLite backend"
 		// Log error but don't fail initialization
 		// The system can still work with just in-memory state
-		log.Log().Warn(fName,
-			"message", "Failed to create SQLite backend",
-			"err", err.Error(),
-		)
+		log.WarnErr(fName, *failErr)
 		return nil
 	}
 
@@ -77,11 +77,10 @@ func initializeSqliteBackend(rootKey *[32]byte) backend.Backend {
 	)
 	defer cancel()
 
-	if err := dbBackend.Initialize(ctxC); err != nil {
-		log.Log().Warn(fName,
-			"message", "Failed to initialize SQLite backend",
-			"err", err.Error(),
-		)
+	if initErr := dbBackend.Initialize(ctxC); initErr != nil {
+		failErr := sdkErrors.ErrStateInitializationFailed.Wrap(initErr)
+		failErr.Msg = "failed to initialize SQLite backend"
+		log.WarnErr(fName, *failErr)
 		return nil
 	}
 

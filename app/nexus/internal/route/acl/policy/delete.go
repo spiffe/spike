@@ -7,10 +7,8 @@ package policy
 import (
 	"net/http"
 
-	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
-	"github.com/spiffe/spike-sdk-go/api/errors"
-	"github.com/spiffe/spike-sdk-go/log"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 	"github.com/spiffe/spike/internal/journal"
@@ -32,7 +30,7 @@ import (
 //   - audit: Audit entry for logging the policy deletion action
 //
 // Returns:
-//   - error: nil on successful policy deletion, error otherwise
+//   - *sdkErrors.SDKError: nil on successful policy deletion, error otherwise
 //
 // Example request body:
 //
@@ -44,66 +42,51 @@ import (
 //
 //	{}
 //
+// Example not found response:
+//
+//	{
+//	    "err": "not_found"
+//	}
+//
 // Example error response:
 //
 //	{
 //	    "err": "Internal server error"
 //	}
 //
+// HTTP Status Codes:
+//   - 200: Policy deleted successfully
+//   - 404: Policy not found
+//   - 500: Internal server error
+//
 // Possible errors:
 //   - Failed to read request body
 //   - Failed to parse request body
-//   - Failed to marshal response body
-//   - Failed to delete policy (internal server error)
+//   - Policy not found
+//   - Internal server error during policy deletion
 func RouteDeletePolicy(
 	w http.ResponseWriter, r *http.Request, audit *journal.AuditEntry,
-) error {
-	const fName = "routeDeletePolicy"
+) *sdkErrors.SDKError {
+	const fName = "RouteDeletePolicy"
+
 	journal.AuditRequest(fName, r, audit, journal.AuditDelete)
 
-	requestBody := net.ReadRequestBody(w, r)
-	if requestBody == nil {
-		return errors.ErrReadFailure
-	}
-
-	request := net.HandleRequest[
-		reqres.PolicyDeleteRequest, reqres.PolicyDeleteResponse](
-		requestBody, w,
-		reqres.PolicyDeleteResponse{Err: data.ErrBadInput},
+	request, err := net.ReadParseAndGuard[
+		reqres.PolicyDeleteRequest, reqres.PolicyDeleteResponse,
+	](
+		w, r, reqres.PolicyDeleteResponse{}.BadRequest(), guardPolicyDeleteRequest,
 	)
-	if request == nil {
-		return errors.ErrParseFailure
+	if alreadyResponded := err != nil; alreadyResponded {
+		return err
 	}
 
 	policyID := request.ID
 
-	err := guardDeletePolicyRequest(*request, w, r)
-	if err != nil {
-		return err
+	deleteErr := state.DeletePolicy(policyID)
+	if deleteErr != nil {
+		return net.HandleError(deleteErr, w, reqres.PolicyDeleteResponse{})
 	}
 
-	err = state.DeletePolicy(policyID)
-	if err != nil {
-		log.Log().Warn(fName, "message", "Failed to delete policy", "err", err)
-
-		responseBody := net.MarshalBody(reqres.PolicyDeleteResponse{
-			Err: data.ErrInternal,
-		}, w)
-		if responseBody == nil {
-			return errors.ErrMarshalFailure
-		}
-
-		net.Respond(http.StatusInternalServerError, responseBody, w)
-		log.Log().Error(fName, "message", data.ErrInternal)
-		return err
-	}
-
-	responseBody := net.MarshalBody(reqres.PolicyDeleteResponse{}, w)
-	if responseBody == nil {
-		return errors.ErrMarshalFailure
-	}
-
-	net.Respond(http.StatusOK, responseBody, w)
-	log.Log().Info(fName, "message", data.ErrSuccess)
+	net.Success(reqres.PolicyDeleteResponse{}.Success(), w)
 	return nil
 }

@@ -6,29 +6,51 @@ package persist
 
 import (
 	"crypto/rand"
-	"fmt"
 	"io"
+
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 )
 
 // encrypt encrypts the given data using the DataStore's cipher.
-// It generates a random nonce and returns the ciphertext, nonce, and any
-// error that occurred during encryption.
-func (s *DataStore) encrypt(data []byte) ([]byte, []byte, error) {
+// It generates a random nonce for each encryption operation to ensure
+// uniqueness.
+//
+// Parameters:
+//   - data: The plaintext data to encrypt
+//
+// Returns:
+//   - []byte: The encrypted ciphertext
+//   - []byte: The generated nonce used for encryption
+//   - *sdkErrors.SDKError: nil on success, or
+//     sdkErrors.ErrCryptoNonceGenerationFailed if nonce generation fails
+func (s *DataStore) encrypt(data []byte) ([]byte, []byte, *sdkErrors.SDKError) {
 	nonce := make([]byte, s.Cipher.NonceSize())
 	if _, err := io.ReadFull(rand.Reader, nonce); err != nil {
-		return nil, nil, fmt.Errorf("failed to generate nonce: %w", err)
+		failErr := sdkErrors.ErrCryptoNonceGenerationFailed.Wrap(err)
+		return nil, nil, failErr
 	}
 	ciphertext := s.Cipher.Seal(nil, nonce, data, nil)
 	return ciphertext, nonce, nil
 }
 
 // decrypt decrypts the given ciphertext using the DataStore's cipher
-// and the provided nonce. It returns the plaintext and any error that
-// occurred during decryption.
-func (s *DataStore) decrypt(ciphertext, nonce []byte) ([]byte, error) {
+// and the provided nonce.
+//
+// Parameters:
+//   - ciphertext: The encrypted data to decrypt
+//   - nonce: The nonce that was used during encryption
+//
+// Returns:
+//   - []byte: The decrypted plaintext data
+//   - *sdkErrors.SDKError: nil on success, or
+//     sdkErrors.ErrCryptoDecryptionFailed if decryption fails
+func (s *DataStore) decrypt(
+	ciphertext, nonce []byte,
+) ([]byte, *sdkErrors.SDKError) {
 	plaintext, err := s.Cipher.Open(nil, nonce, ciphertext, nil)
 	if err != nil {
-		return nil, fmt.Errorf("failed to decrypt data: %w", err)
+		failErr := sdkErrors.ErrCryptoDecryptionFailed.Wrap(err)
+		return nil, failErr
 	}
 	return plaintext, nil
 }

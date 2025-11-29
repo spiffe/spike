@@ -139,6 +139,10 @@
                     <a href="https://spike.ist/community/presentations/">Presentations and Demos</a>
                 </li>
 
+                <li >
+                    <a href="https://spike.ist/community/resources/">Resources</a>
+                </li>
+
                 </ul>
     <input class="tree-toggle" type="checkbox" id="getting-started"
                />
@@ -181,6 +185,10 @@
 
                 <li >
                     <a href="https://spike.ist/development/bare-metal/">SPIKE on Linux</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/development/api-docs/">API Documentation</a>
                 </li>
 
                 </ul>
@@ -772,6 +780,7 @@ see might be different based on the version you use.</p>
 </span><span>  </span><span style="color:#bf616a;">spike </span><span style="color:#b48ead;">[</span><span>command</span><span style="color:#b48ead;">]
 </span><span>
 </span><span style="color:#bf616a;">Available</span><span> Commands:
+</span><span>  </span><span style="color:#bf616a;">cipher</span><span>      Encrypt and decrypt data using SPIKE Nexus
 </span><span>  </span><span style="color:#bf616a;">completion</span><span>  Generate the autocompletion script for the specified shell
 </span><span>  </span><span style="color:#96b5b4;">help</span><span>        Help about any command
 </span><span>  </span><span style="color:#bf616a;">operator</span><span>    Manage admin operations
@@ -823,11 +832,12 @@ using the <code>--help</code> flag:</p>
 </span><span style="color:#bf616a;">Get</span><span> secrets from the specified path
 </span><span>
 </span><span style="color:#bf616a;">Usage:
-</span><span>  </span><span style="color:#bf616a;">spike</span><span> secret get &lt;path&gt; </span><span style="color:#b48ead;">[</span><span>flags</span><span style="color:#b48ead;">]
+</span><span>  </span><span style="color:#bf616a;">spike</span><span> secret get &lt;path&gt; </span><span style="color:#b48ead;">[</span><span>key</span><span style="color:#b48ead;">] [</span><span>flags</span><span style="color:#b48ead;">]
 </span><span>
 </span><span style="color:#bf616a;">Flags:
-</span><span>  </span><span style="color:#bf616a;">-h, --help</span><span>          help for get
-</span><span>  </span><span style="color:#bf616a;">-v, --version</span><span> int   Specific version to retrieve
+</span><span>  </span><span style="color:#bf616a;">-f, --format</span><span> string   Format to use: plain, p, yaml, y, json, j (default &quot;</span><span style="color:#a3be8c;">plain</span><span>&quot;)
+</span><span>  </span><span style="color:#bf616a;">-h, --help</span><span>            help for get
+</span><span>  </span><span style="color:#bf616a;">-v, --version</span><span> int     Specific version to retrieve
 </span></code></pre>
 <p>Now that we know how to use the <code>spike secret get</code> command, let’s try it.</p>
 <pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">spike</span><span> (main)</span><span style="color:#bf616a;">$</span><span> spike secret get tenants/acme/db/creds

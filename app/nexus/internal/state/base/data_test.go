@@ -109,29 +109,49 @@ func TestSetRootKey_NilKey(t *testing.T) {
 	// Reset to a clean state
 	resetRootKey()
 
-	// Attempt to set nil key
+	// Enable panic mode for log.FatalErr so we can test error handling
+	t.Setenv("SPIKE_STACK_TRACES_ON_LOG_FATAL", "true")
+
+	defer func() {
+		if r := recover(); r == nil {
+			t.Error("SetRootKey(nil) should panic with FatalErr")
+		}
+		// Root key should remain zero after the panic
+		if !RootKeyZero() {
+			t.Error("Root key should remain zero when setting nil key")
+		}
+	}()
+
+	// Attempt to set nil key - this should cause log.FatalErr to panic
 	SetRootKey(nil)
 
-	// Verify the key remains zero (operation should be no-op)
-	if !RootKeyZero() {
-		t.Error("Root key should remain zero when setting nil key")
-	}
+	t.Error("Should have panicked before reaching this point")
 }
 
 func TestSetRootKey_ZeroKey(t *testing.T) {
 	// Reset to a clean state
 	resetRootKey()
 
+	// Enable panic mode for log.FatalErr so we can test error handling
+	t.Setenv("SPIKE_STACK_TRACES_ON_LOG_FATAL", "true")
+
+	defer func() {
+		if r := recover(); r == nil {
+			t.Error("SetRootKey(zeroKey) should panic with FatalErr")
+		}
+		// Root key should remain zero after the panic
+		if !RootKeyZero() {
+			t.Error("Root key should remain zero when setting zero key")
+		}
+	}()
+
 	// Create a zero key
 	zeroKey := &[crypto.AES256KeySize]byte{} // All zeros
 
-	// Attempt to set a zero key
+	// Attempt to set a zero key - this should cause log.FatalErr to panic
 	SetRootKey(zeroKey)
 
-	// Verify the key remains zero (operation should be no-op)
-	if !RootKeyZero() {
-		t.Error("Root key should remain zero when setting zero key")
-	}
+	t.Error("Should have panicked before reaching this point")
 }
 
 func TestSetRootKey_OverwriteExistingKey(t *testing.T) {
@@ -204,6 +224,7 @@ func TestRootKeyNoLock_ReturnsPointer(t *testing.T) {
 	// Verify pointer is not nil
 	if ptr == nil {
 		t.Fatal("RootKeyNoLock should not return nil")
+		return
 	}
 
 	// Verify it points to correct data
@@ -261,12 +282,14 @@ func TestConcurrentRootKeyAccess(t *testing.T) {
 	wg.Wait()
 
 	// Test concurrent writes using SetRootKey
+	// Note: Use goroutineID+1 to avoid creating zero-pattern keys which would
+	// trigger FatalErr (zero keys are rejected for security reasons)
 	wg.Add(numGoroutines)
 	for i := 0; i < numGoroutines; i++ {
 		go func(goroutineID int) {
 			defer wg.Done()
 			for j := 0; j < 10; j++ { // Fewer operations for writes
-				testKey := createPatternKey(byte(goroutineID))
+				testKey := createPatternKey(byte(goroutineID + 1))
 				SetRootKey(testKey)
 			}
 		}(i)
@@ -318,11 +341,13 @@ func TestMixedConcurrentOperations(t *testing.T) {
 	}()
 
 	// Goroutine performing writes
+	// Note: Use (i%255)+1 to avoid creating zero-pattern keys which would
+	// trigger FatalErr (zero keys are rejected for security reasons)
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
 		for i := 0; i < 50; i++ {
-			testKey := createPatternKey(byte(i % 256))
+			testKey := createPatternKey(byte((i % 255) + 1))
 			SetRootKey(testKey)
 			time.Sleep(5 * time.Microsecond)
 		}
@@ -354,6 +379,7 @@ func TestMixedConcurrentOperations(t *testing.T) {
 func TestRootKeyStateTransitions(t *testing.T) {
 	// Reset to a clean state
 	resetRootKey()
+	defer resetRootKey()
 
 	// The initial state should be zero
 	if !RootKeyZero() {
@@ -365,19 +391,6 @@ func TestRootKeyStateTransitions(t *testing.T) {
 	SetRootKey(validKey)
 	if RootKeyZero() {
 		t.Error("After setting valid key, should not be zero")
-	}
-
-	// Try to set nil - should remain non-zero
-	SetRootKey(nil)
-	if RootKeyZero() {
-		t.Error("Setting nil should not change existing valid key to zero")
-	}
-
-	// Try to set a zero key - should remain non-zero
-	zeroKey := &[crypto.AES256KeySize]byte{}
-	SetRootKey(zeroKey)
-	if RootKeyZero() {
-		t.Error("Setting zero key should not change existing valid key to zero")
 	}
 
 	// Set another valid key - should overwrite
@@ -393,14 +406,12 @@ func TestRootKeyStateTransitions(t *testing.T) {
 		t.Errorf("New key should be set: expected 0x77, got 0x%02X", rootKey[0])
 	}
 	rootKeyMu.RUnlock()
-
-	// Clean up
-	resetRootKey()
 }
 
 func TestRootKeyMemoryOperations(t *testing.T) {
 	// Reset to a clean state
 	resetRootKey()
+	defer resetRootKey()
 
 	// Test mem.Zeroed32 integration
 	testKey := &[crypto.AES256KeySize]byte{}
@@ -416,15 +427,8 @@ func TestRootKeyMemoryOperations(t *testing.T) {
 		t.Error("Non-zero key should not be detected as zeroed")
 	}
 
-	// SetRootKey should reject zeroed keys
-	zeroKey := &[crypto.AES256KeySize]byte{}
-	SetRootKey(zeroKey)
-	if !RootKeyZero() {
-		t.Error("SetRootKey should reject zero key")
-	}
-
-	// Clean up
-	resetRootKey()
+	// Note: SetRootKey now calls log.FatalErr for zero keys, which is tested
+	// separately in TestSetRootKey_ZeroKey using panic recovery.
 }
 
 func TestRootKeyDataIntegrity(t *testing.T) {

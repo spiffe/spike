@@ -139,6 +139,10 @@
                     <a href="https://spike.ist/community/presentations/">Presentations and Demos</a>
                 </li>
 
+                <li >
+                    <a href="https://spike.ist/community/resources/">Resources</a>
+                </li>
+
                 </ul>
     <input class="tree-toggle" type="checkbox" id="getting-started"
                />
@@ -181,6 +185,10 @@
 
                 <li >
                     <a href="https://spike.ist/development/bare-metal/">SPIKE on Linux</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/development/api-docs/">API Documentation</a>
                 </li>
 
                 </ul>
@@ -752,36 +760,53 @@
 <p>The following table lists the environment variables that you can use to
 configure the SPIKE components:</p>
 <table><thead><tr><th>Component</th><th>Environment Variable</th><th>Description</th><th>Default Value</th></tr></thead><tbody>
+<tr><td>All</td><td><code>SPIFFE_ENDPOINT_SOCKET</code></td><td>The Unix domain socket path used for SPIFFE Workload API</td><td><code>"unix:///tmp/spire-agent/public/api.sock"</code></td></tr>
+<tr><td>All</td><td><code>SPIKE_BANNER_ENABLED</code></td><td>Whether to display the SPIKE banner on startup. Set to <code>true</code> to enable.</td><td><code>true</code></td></tr>
+<tr><td>All</td><td><code>SPIKE_HTTP_CLIENT_DIALER_KEEP_ALIVE</code></td><td>Keep-alive duration for HTTP client’s network dialer connections.</td><td><code>"30s"</code></td></tr>
+<tr><td>All</td><td><code>SPIKE_HTTP_CLIENT_DIALER_TIMEOUT</code></td><td>Timeout for establishing new HTTP client network connections.</td><td><code>"30s"</code></td></tr>
+<tr><td>All</td><td><code>SPIKE_HTTP_CLIENT_EXPECT_CONTINUE_TIMEOUT</code></td><td>Timeout for HTTP client to wait for Expect: 100-continue responses from servers.</td><td><code>"5s"</code></td></tr>
+<tr><td>All</td><td><code>SPIKE_HTTP_CLIENT_IDLE_CONN_TIMEOUT</code></td><td>Maximum duration an idle HTTP connection will remain open before closing.</td><td><code>"30s"</code></td></tr>
+<tr><td>All</td><td><code>SPIKE_HTTP_CLIENT_MAX_CONNS_PER_HOST</code></td><td>Maximum number of HTTP connections allowed per host.</td><td><code>10</code></td></tr>
+<tr><td>All</td><td><code>SPIKE_HTTP_CLIENT_MAX_IDLE_CONNS</code></td><td>Maximum number of idle HTTP connections across all hosts.</td><td><code>100</code></td></tr>
+<tr><td>All</td><td><code>SPIKE_HTTP_CLIENT_MAX_IDLE_CONNS_PER_HOST</code></td><td>Maximum number of idle HTTP connections per host.</td><td><code>10</code></td></tr>
+<tr><td>All</td><td><code>SPIKE_HTTP_CLIENT_RESPONSE_HEADER_TIMEOUT</code></td><td>Timeout for HTTP client waiting for server’s response headers.</td><td><code>"10s"</code></td></tr>
+<tr><td>All</td><td><code>SPIKE_HTTP_CLIENT_TIMEOUT</code></td><td>Overall timeout for HTTP client requests (includes connection, request, and response time).</td><td><code>"60s"</code></td></tr>
+<tr><td>All</td><td><code>SPIKE_HTTP_CLIENT_TLS_HANDSHAKE_TIMEOUT</code></td><td>Timeout for completing TLS handshakes in HTTP client connections.</td><td><code>"10s"</code></td></tr>
+<tr><td>All</td><td><code>SPIKE_HTTP_SERVER_READ_HEADER_TIMEOUT</code></td><td>Timeout for reading HTTP request headers on the server side. Helps prevent slowloris attacks.</td><td><code>"10s"</code></td></tr>
+<tr><td>All</td><td><code>SPIKE_NEXUS_API_URL</code></td><td>The URL where SPIKE Nexus can be reached</td><td><code>"https://localhost:8553"</code></td></tr>
+<tr><td>All</td><td><code>SPIKE_SPIFFE_SOURCE_TIMEOUT</code></td><td>Timeout for creating SPIFFE X509Source and fetching initial SVID from Workload API. Prevents indefinite blocking on socket issues.</td><td><code>"30s"</code></td></tr>
+<tr><td>All</td><td><code>SPIKE_STACK_TRACES_ON_LOG_FATAL</code></td><td>Whether to print stack traces when <code>log.FatalLn</code> is called. Set to <code>true</code> to enable for development/testing. Disabled by default for production safety.</td><td><code>false</code></td></tr>
+<tr><td>All</td><td><code>SPIKE_SYSTEM_LOG_LEVEL</code></td><td>The log level for all SPIKE components (<code>"DEBUG"</code>, <code>"INFO"</code>, <code>"WARN"</code>, <code>"ERROR"</code>).</td><td><code>"WARN"</code></td></tr>
+<tr><td>All</td><td><code>SPIKE_TRUST_ROOT</code></td><td>The SPIFFE trust root used within the SPIKE trust boundary. Can be a single entry, or a comma-delimited list of suitable trust roots.</td><td><code>"spike.ist"</code></td></tr>
+<tr><td>All</td><td><code>SPIKE_TRUST_ROOT_BOOTSTRAP</code></td><td>The SPIFFE trust root used for SPIKE Bootstrap. Can be a single entry, or a comma-delimited list of suitable trust roots.</td><td><code>"spike.ist"</code></td></tr>
+<tr><td>All</td><td><code>SPIKE_TRUST_ROOT_KEEPER</code></td><td>The SPIFFE trust root used for SPIKE Keeper instances. Can be a single entry, or a comma-delimited list of suitable trust roots.</td><td><code>"spike.ist"</code></td></tr>
+<tr><td>All</td><td><code>SPIKE_TRUST_ROOT_LITE_WORKLOAD</code></td><td>The SPIFFE trust root used for lite workload instances. Can be a single entry, or a comma-delimited list of suitable trust roots.</td><td><code>"spike.ist"</code></td></tr>
+<tr><td>All</td><td><code>SPIKE_TRUST_ROOT_NEXUS</code></td><td>The SPIFFE trust root used for SPIKE Nexus instances. Can be a single entry, or a comma-delimited list of suitable trust roots.</td><td><code>"spike.ist"</code></td></tr>
+<tr><td>All</td><td><code>SPIKE_TRUST_ROOT_PILOT</code></td><td>The SPIFFE trust root used for SPIKE Pilot instances. Can be a single entry, or a comma-delimited list of suitable trust roots.</td><td><code>"spike.ist"</code></td></tr>
 <tr><td>SPIKE Bootstrap</td><td><code>SPIKE_BOOTSTRAP_FORCE</code></td><td>Whether to force SPIKE Bootstrap to run even if the system has already bootstrapped before.</td><td><code>false</code></td></tr>
 <tr><td>SPIKE Keeper</td><td><code>SPIKE_KEEPER_TLS_PORT</code></td><td>The TLS port the current SPIKE Keeper instance listens on.</td><td><code>":8443"</code></td></tr>
-<tr><td>SPIKE Nexus</td><td><code>SPIKE_NEXUS_KEEPER_PEERS</code></td><td>A mapping that contains a comma-delimited list of URLs for all SPIKE Keepers that SPIKE Nexus knows about.</td><td>“” (check <code>./hack/bare-metal/startup/start-nexus.sh</code> for usage examples.</td></tr>
-<tr><td>SPIKE Nexus</td><td><code>SPIKE_NEXUS_TLS_PORT</code></td><td>The TLS port SPIKE Nexus listens on.</td><td><code>":8553"</code></td></tr>
-<tr><td>SPIKE Nexus</td><td><code>SPIKE_NEXUS_MAX_SECRET_VERSIONS</code></td><td>The maximum number of versions of a secret that SPIKE Nexus stores.</td><td><code>10</code></td></tr>
 <tr><td>SPIKE Nexus</td><td><code>SPIKE_NEXUS_BACKEND_STORE</code></td><td>The backend store SPIKE Nexus uses to store secrets (memory, lite, sqlite).</td><td><code>"sqlite"</code></td></tr>
-<tr><td>SPIKE Nexus</td><td><code>SPIKE_NEXUS_DB_OPERATION_TIMEOUT</code></td><td>The timeout for database operations.</td><td><code>"15s"</code></td></tr>
-<tr><td>SPIKE Nexus</td><td><code>SPIKE_NEXUS_DB_JOURNAL_MODE</code></td><td>The journal mode for the SQLite database.</td><td><code>"WAL"</code></td></tr>
+<tr><td>SPIKE Nexus</td><td><code>SPIKE_NEXUS_CRYPTO_MAX_CIPHERTEXT_SIZE</code></td><td>The maximum allowed ciphertext size in bytes for encryption operations.</td><td><code>65536</code></td></tr>
+<tr><td>SPIKE Nexus</td><td><code>SPIKE_NEXUS_DATA_DIR</code></td><td>Custom directory for Nexus data storage. Falls back to <code>~/.spike/data</code> or <code>/tmp/.spike-$USER/data</code>.</td><td><code>""</code></td></tr>
 <tr><td>SPIKE Nexus</td><td><code>SPIKE_NEXUS_DB_BUSY_TIMEOUT_MS</code></td><td>The timeout for the database to wait for a lock.</td><td><code>1000</code></td></tr>
-<tr><td>SPIKE Nexus</td><td><code>SPIKE_NEXUS_DB_MAX_OPEN_CONNS</code></td><td>The maximum number of open connections to the database.</td><td><code>10</code></td></tr>
-<tr><td>SPIKE Nexus</td><td><code>SPIKE_NEXUS_DB_MAX_IDLE_CONNS</code></td><td>The maximum number of idle connections to the database.</td><td><code>5</code></td></tr>
 <tr><td>SPIKE Nexus</td><td><code>SPIKE_NEXUS_DB_CONN_MAX_LIFETIME</code></td><td>The maximum lifetime of a database connection.</td><td><code>"1h"</code></td></tr>
 <tr><td>SPIKE Nexus</td><td><code>SPIKE_NEXUS_DB_INITIALIZATION_TIMEOUT</code></td><td>The maximum initialization time for SPIKE Nexus DB before bailing out</td><td><code>30s</code></td></tr>
+<tr><td>SPIKE Nexus</td><td><code>SPIKE_NEXUS_DB_JOURNAL_MODE</code></td><td>The journal mode for the SQLite database.</td><td><code>"WAL"</code></td></tr>
+<tr><td>SPIKE Nexus</td><td><code>SPIKE_NEXUS_DB_MAX_IDLE_CONNS</code></td><td>The maximum number of idle connections to the database.</td><td><code>5</code></td></tr>
+<tr><td>SPIKE Nexus</td><td><code>SPIKE_NEXUS_DB_MAX_OPEN_CONNS</code></td><td>The maximum number of open connections to the database.</td><td><code>10</code></td></tr>
+<tr><td>SPIKE Nexus</td><td><code>SPIKE_NEXUS_DB_OPERATION_TIMEOUT</code></td><td>The timeout for database operations.</td><td><code>"15s"</code></td></tr>
 <tr><td>SPIKE Nexus</td><td><code>SPIKE_NEXUS_DB_SKIP_SCHEMA_CREATION</code></td><td>If set to <code>true</code>, skip creating SPIKE Nexus backing store. When set to <code>true</code>, the operator will manually have to create the initial backing store.</td><td><code>false</code></td></tr>
+<tr><td>SPIKE Nexus</td><td><code>SPIKE_NEXUS_KEEPER_PEERS</code></td><td>A mapping that contains a comma-delimited list of URLs for all SPIKE Keepers that SPIKE Nexus knows about.</td><td>“” (check <code>./hack/bare-metal/startup/start-nexus.sh</code> for usage examples.</td></tr>
+<tr><td>SPIKE Nexus</td><td><code>SPIKE_NEXUS_KEEPER_UPDATE_INTERVAL</code></td><td>The duration between SPIKE Nexus updates SPIKE Keepers with the relevant shard information.</td><td><code>5m</code></td></tr>
+<tr><td>SPIKE Nexus</td><td><code>SPIKE_NEXUS_MAX_SECRET_VERSIONS</code></td><td>The maximum number of versions of a secret that SPIKE Nexus stores.</td><td><code>10</code></td></tr>
 <tr><td>SPIKE Nexus</td><td><code>SPIKE_NEXUS_PBKDF2_ITERATION_COUNT</code></td><td>The number of iterations for the PBKDF2 key derivation function.</td><td><code>600000</code></td></tr>
 <tr><td>SPIKE Nexus</td><td><code>SPIKE_NEXUS_RECOVERY_MAX_INTERVAL</code></td><td>Maximum interval between retries the recovery operation’s backing off algorithm</td><td><code>60s</code></td></tr>
+<tr><td>SPIKE Nexus</td><td><code>SPIKE_NEXUS_SHAMIR_MAX_SHARE_COUNT</code></td><td>The maximum allowed number of shares in Shamir’s Secret Sharing. Also limits the maximum number of SPIKE Keeper instances a deployment can support.</td><td><code>1000</code></td></tr>
 <tr><td>SPIKE Nexus</td><td><code>SPIKE_NEXUS_SHAMIR_SHARES</code></td><td>The total number of shares used for secret sharding, this should be equal to the number of SPIKE Keepers too.</td><td><code>3</code></td></tr>
 <tr><td>SPIKE Nexus</td><td><code>SPIKE_NEXUS_SHAMIR_THRESHOLD</code></td><td>The minimum number of shares to be able to reconstruct the root key.</td><td><code>2</code></td></tr>
-<tr><td>SPIKE Nexus</td><td><code>SPIKE_NEXUS_KEEPER_UPDATE_INTERVAL</code></td><td>The duration between SPIKE Nexus updates SPIKE Keepers with the relevant shard information.</td><td><code>5m</code></td></tr>
+<tr><td>SPIKE Nexus</td><td><code>SPIKE_NEXUS_TLS_PORT</code></td><td>The TLS port SPIKE Nexus listens on.</td><td><code>":8553"</code></td></tr>
+<tr><td>SPIKE Pilot</td><td><code>SPIKE_PILOT_RECOVERY_DIR</code></td><td>Custom directory for Pilot recovery shards. Falls back to <code>~/.spike/recover</code> or <code>/tmp/.spike-$USER/recover</code>.</td><td><code>""</code></td></tr>
 <tr><td>SPIKE Pilot</td><td><code>SPIKE_PILOT_SHOW_MEMORY_WARNING</code></td><td>Whether to show a warning when the system cannot lock memory for security.</td><td><code>false</code></td></tr>
-<tr><td>All</td><td><code>SPIKE_SYSTEM_LOG_LEVEL</code></td><td>The log level for all SPIKE components (<code>"DEBUG"</code>, <code>"INFO"</code>, <code>"WARN"</code>, <code>"ERROR"</code>).</td><td><code>"WARN"</code></td></tr>
-<tr><td>All</td><td><code>SPIKE_NEXUS_API_URL</code></td><td>The URL where SPIKE Nexus can be reached</td><td><code>"https://localhost:8553"</code></td></tr>
-<tr><td>All</td><td><code>SPIKE_TRUST_ROOT</code></td><td>The SPIFFE trust root used within the SPIKE trust boundary. Can be a single entry, or a comma-delimited list of suitable trust roots.</td><td><code>"spike.ist"</code></td></tr>
-<tr><td>All</td><td><code>SPIKE_TRUST_ROOT_KEEPER</code></td><td>The SPIFFE trust root used for SPIKE Keeper instances. Can be a single entry, or a comma-delimited list of suitable trust roots.</td><td><code>"spike.ist"</code></td></tr>
-<tr><td>All</td><td><code>SPIKE_TRUST_ROOT_PILOT</code></td><td>The SPIFFE trust root used for SPIKE Pilot instances. Can be a single entry, or a comma-delimited list of suitable trust roots.</td><td><code>"spike.ist"</code></td></tr>
-<tr><td>All</td><td><code>SPIKE_TRUST_ROOT_NEXUS</code></td><td>The SPIFFE trust root used for SPIKE Nexus instances. Can be a single entry, or a comma-delimited list of suitable trust roots.</td><td><code>"spike.ist"</code></td></tr>
-<tr><td>All</td><td><code>SPIKE_TRUST_ROOT_LITE_WORKLOAD</code></td><td>The SPIFFE trust root used for lite workload instances. Can be a single entry, or a comma-delimited list of suitable trust roots.</td><td><code>"spike.ist"</code></td></tr>
-<tr><td>All</td><td><code>SPIKE_TRUST_ROOT_BOOTSTRAP</code></td><td>The SPIFFE trust root used for SPIKE Bootstrap. Can be a single entry, or a comma-delimited list of suitable trust roots.</td><td><code>"spike.ist"</code></td></tr>
-<tr><td>All</td><td><code>SPIKE_BANNER_ENABLED</code></td><td>Whether to display the SPIKE banner on startup. Set to <code>true</code> to enable.</td><td><code>true</code></td></tr>
-<tr><td>All</td><td><code>SPIFFE_ENDPOINT_SOCKET</code></td><td>The Unix domain socket path used for SPIFFE Workload API</td><td><code>"unix:///tmp/spire-agent/public/api.sock"</code></td></tr>
 </tbody></table>
 <p>We’ll add more configuration options in the future. Stay tuned.</p>
 <p>&nbsp;</p>

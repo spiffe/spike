@@ -9,6 +9,7 @@ import (
 	"github.com/cloudflare/circl/secretsharing"
 	"github.com/spiffe/spike-sdk-go/config/env"
 	"github.com/spiffe/spike-sdk-go/crypto"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/log"
 	"github.com/spiffe/spike-sdk-go/security/mem"
 )
@@ -67,9 +68,11 @@ func ComputeRootKeyFromShards(ss []ShamirShard) *[crypto.AES256KeySize]byte {
 		share.ID.SetUint64(shamirShard.ID)
 
 		// Unmarshal the binary data
-		err := share.Value.UnmarshalBinary(shamirShard.Value[:])
-		if err != nil {
-			log.FatalLn(fName + ": Failed to unmarshal share: " + err.Error())
+		unmarshalErr := share.Value.UnmarshalBinary(shamirShard.Value[:])
+		if unmarshalErr != nil {
+			failErr := sdkErrors.ErrDataUnmarshalFailure.Wrap(unmarshalErr)
+			failErr.Msg = "failed to unmarshal shard"
+			log.FatalErr(fName, *failErr)
 		}
 
 		shares = append(shares, share)
@@ -79,41 +82,51 @@ func ComputeRootKeyFromShards(ss []ShamirShard) *[crypto.AES256KeySize]byte {
 	// The first parameter to Recover is threshold-1
 	// We need the threshold from the environment
 	threshold := env.ShamirThresholdVal()
-	reconstructed, err := secretsharing.Recover(uint(threshold-1), shares)
-	if err != nil {
+	reconstructed, recoverErr := secretsharing.Recover(uint(threshold-1), shares)
+	if recoverErr != nil {
 		// Security: Reset shares.
-		// Defer won't get called because `log.FatalLn` terminates the program.
+		// Defer won't get called because log.FatalErr terminates the program.
 		for _, s := range shares {
 			s.ID.SetUint64(0)
 			s.Value.SetUint64(0)
 		}
 
-		log.FatalLn(fName + ": Failed to recover: " + err.Error())
+		failErr := sdkErrors.ErrShamirReconstructionFailed.Wrap(recoverErr)
+		failErr.Msg = "failed to recover secret"
+		log.FatalErr(fName, *failErr)
 	}
 
 	if reconstructed == nil {
 		// Security: Reset shares.
-		// Defer won't get called because `log.FatalLn` terminates the program.
+		// Defer won't get called because log.FatalErr terminates the program.
 		for _, s := range shares {
 			s.ID.SetUint64(0)
 			s.Value.SetUint64(0)
 		}
 
-		log.FatalLn(fName + ": Failed to reconstruct the root key")
+		failErr := *sdkErrors.ErrShamirReconstructionFailed.Clone()
+		failErr.Msg = "failed to reconstruct the root key"
+		log.FatalErr(fName, failErr)
 	}
 
 	if reconstructed != nil {
-		binaryRec, err := reconstructed.MarshalBinary()
-		if err != nil {
+		binaryRec, marshalErr := reconstructed.MarshalBinary()
+		if marshalErr != nil {
 			// Security: Zero out:
 			reconstructed.SetUint64(0)
 
-			log.FatalLn(fName + ": Failed to marshal: " + err.Error())
+			failErr := sdkErrors.ErrDataMarshalFailure.Wrap(marshalErr)
+			failErr.Msg = "failed to marshal reconstructed key"
+			log.FatalErr(fName, *failErr)
+
 			return &[crypto.AES256KeySize]byte{}
 		}
 
 		if len(binaryRec) != crypto.AES256KeySize {
-			log.FatalLn(fName + ": Reconstructed root key has incorrect length")
+			failErr := *sdkErrors.ErrDataInvalidInput.Clone()
+			failErr.Msg = "reconstructed root key has incorrect length"
+			log.FatalErr(fName, failErr)
+
 			return &[crypto.AES256KeySize]byte{}
 		}
 

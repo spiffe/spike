@@ -10,6 +10,7 @@ import (
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	"github.com/spiffe/spike-sdk-go/config/env"
 	"github.com/spiffe/spike-sdk-go/crypto"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/log"
 	"github.com/spiffe/spike-sdk-go/security/mem"
 
@@ -58,40 +59,82 @@ func iterateKeepersAndInitializeState(
 ) bool {
 	const fName = "iterateKeepersAndInitializeState"
 
+	// In memory mode, no recovery is needed regardless of source availability
 	if env.BackendStoreTypeVal() == env.Memory {
-		log.Log().Warn(fName, "message", "In memory mode; skipping recovery")
-		// Assume successful initialization, since initialization is not needed.
+		log.Warn(fName, "message", "in memory mode: skipping recovery")
 		return true
 	}
 
+	// For persistent backends, X509 source is required for mTLS with keepers.
+	// We warn and return false (triggering retry) rather than crashing because:
+	// 1. This function runs in retry.Forever() - designed for transient failures
+	// 2. Workload API may temporarily lose source and recover
+	// 3. Returning false allows the system to retry and recover gracefully
+	if source == nil {
+		failErr := sdkErrors.ErrSPIFFENilX509Source.Clone()
+		failErr.Msg = "X509 source is nil, cannot perform mTLS with keepers"
+		log.WarnErr(fName, *failErr)
+		return false
+	}
+
 	for keeperID, keeperAPIRoot := range env.KeepersVal() {
-		log.Log().Info(fName, "id", keeperID, "url", keeperAPIRoot)
+		log.Info(
+			fName,
+			"message", "iterating keepers",
+			"id", keeperID, "url", keeperAPIRoot,
+		)
 
-		u := shardURL(keeperAPIRoot)
-		if u == "" {
+		// Configuration errors (malformed keeper URLs) are logged but not fatal.
+		// Rationale:
+		// 1. Availability: If threshold=3 and we have 4 valid + 2 invalid URLs,
+		//    recovery can still succeed with the valid keepers.
+		// 2. Graceful degradation: The system becomes operational despite partial
+		//    misconfiguration; operators can fix the env var and restart later.
+		// 3. Consistency: Similar to the network errors or unmarshal failures below,
+		//    a bad URL means this keeper is unavailable, not a fatal condition.
+		// 4. The Shamir threshold mechanism already protects against insufficient
+		//    shards.
+		u, urlErr := shardURL(keeperAPIRoot)
+		if urlErr != nil {
+			log.WarnErr(fName, *urlErr)
 			continue
 		}
 
-		data := ShardGetResponse(source, u)
-		if len(data) == 0 {
+		data, err := shardGetResponse(source, u)
+		if err != nil {
+			warnErr := sdkErrors.ErrNetPeerConnection.Wrap(err)
+			warnErr.Msg = "failed to get shard from keeper"
+			log.WarnErr(fName, *warnErr) // just log: will retry
 			continue
 		}
 
-		res := unmarshalShardResponse(data)
+		res, unmarshalErr := unmarshalShardResponse(data)
 		// Security: Reset data before the function exits.
 		mem.ClearBytes(data)
-
-		if res == nil {
+		if unmarshalErr != nil {
+			failErr := unmarshalErr.Clone()
+			failErr.Msg = "failed to unmarshal shard response"
+			log.WarnErr(fName, *failErr) // just log: will retry
 			continue
 		}
 
 		if mem.Zeroed32(res.Shard) {
-			log.Log().Info(fName, "message", "Shard is zeroed")
+			warnErr := *sdkErrors.ErrShamirEmptyShard.Clone()
+			warnErr.Msg = "shard is zeroed"
+			log.WarnErr(fName, warnErr) // just log: will retry
 			continue
 		}
 
 		successfulKeeperShards[keeperID] = res.Shard
 		if len(successfulKeeperShards) != env.ShamirThresholdVal() {
+			log.Info(
+				fName,
+				"message", "still shards remaining",
+				"id", keeperID,
+				"url", keeperAPIRoot,
+				"has", successfulKeeperShards,
+				"needs", env.ShamirThresholdVal(),
+			)
 			continue
 		}
 
@@ -103,11 +146,20 @@ func iterateKeepersAndInitializeState(
 		for ix, shard := range successfulKeeperShards {
 			id, err := strconv.Atoi(ix)
 			if err != nil {
-				// This is a configuration error; we cannot recover from it,
-				// and it may cause further security issues. Crash immediately.
-				log.FatalLn(
-					fName, "message", "Failed to convert keeper ID to int", "err", err,
-				)
+				// Unlike URL misconfiguration (which we tolerate above), an
+				// unparseable keeper ID is fatal because:
+				// 1. We've already collected threshold shards. Skipping one now
+				//    means we'd need to re-fetch, but the same ID will fail
+				//    again.
+				// 2. The keeper ID is used as the Shamir shard index. Using a
+				//    wrong index produces an incorrect root key, which is worse
+				//    than crashing.
+				// 3. This same ID was used during bootstrap to store the shard.
+				//    If it was valid then but invalid now, the configuration
+				//    has been corrupted.
+				failErr := sdkErrors.ErrDataInvalidInput.Wrap(err)
+				failErr.Msg = "failed to convert keeper ID to int"
+				log.FatalErr(fName, *failErr)
 				return false
 			}
 
@@ -121,7 +173,9 @@ func iterateKeepersAndInitializeState(
 
 		// Security: Crash if there is a problem with root key recovery.
 		if rk == nil || mem.Zeroed32(rk) {
-			log.FatalLn(fName, "message", "Failed to recover root key")
+			failErr := *sdkErrors.ErrShamirReconstructionFailed.Clone()
+			failErr.Msg = "failed to recover the root key"
+			log.FatalErr(fName, failErr)
 		}
 
 		// It is okay to zero out `rk` after calling this function because we

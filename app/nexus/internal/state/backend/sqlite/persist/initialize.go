@@ -6,44 +6,55 @@ package persist
 
 import (
 	"context"
-	"crypto/cipher"
 	"database/sql"
-	"errors"
 	"fmt"
 	"path/filepath"
 
 	"github.com/spiffe/spike-sdk-go/config/env"
-	"github.com/spiffe/spike-sdk-go/log"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
+
+	"github.com/spiffe/spike/internal/validation"
 )
 
-// Initialize prepares the DataStore for use by:
-// - Creating the necessary data directory
-// - Opening the SQLite database connection
-// - Configuring connection pool settings
-// - Creating required database tables
+// Initialize prepares the DataStore for use by creating the data directory,
+// opening the SQLite database connection, configuring connection pool
+// settings, and creating required database tables.
 //
-// It returns an error if:
-// - The backend is already initialized
-// - The data directory creation fails
-// - The database connection fails
-// - Table creation fails
+// The initialization process follows these steps:
+//   - Validates that the backend is not already initialized
+//   - Creates the data directory if it does not exist
+//   - Opens a SQLite database connection with the configured journal mode
+//     and busy timeout
+//   - Configures connection pool settings (max open/idle connections and
+//     connection lifetime)
+//   - Creates database tables unless SPIKE_DATABASE_SKIP_SCHEMA_CREATION
+//     is set
 //
-// This method is thread-safe.
-func (s *DataStore) Initialize(ctx context.Context) error {
+// Parameters:
+//   - ctx: Context for managing request lifetime and cancellation.
+//
+// Returns:
+//   - *sdkErrors.SDKError: An error if the backend is already initialized,
+//     the data directory creation fails, the database connection fails, or
+//     table creation fails. Returns nil on success.
+//
+// This method is thread-safe and uses a mutex to prevent concurrent
+// initialization attempts.
+func (s *DataStore) Initialize(ctx context.Context) *sdkErrors.SDKError {
 	const fName = "Initialize"
-	if ctx == nil {
-		log.FatalLn(fName, "message", "nil context")
-	}
+
+	validation.CheckContext(ctx, fName)
 
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
 	if s.db != nil {
-		return errors.New("backend already initialized")
+		return sdkErrors.ErrStateAlreadyInitialized
 	}
 
 	if err := s.createDataDir(); err != nil {
-		return fmt.Errorf("failed to create data directory: %w", err)
+		failErr := sdkErrors.ErrFSDirectoryCreationFailed.Wrap(err)
+		return failErr
 	}
 
 	dbPath := filepath.Join(s.Opts.DataDir, s.Opts.DatabaseFile)
@@ -53,11 +64,11 @@ func (s *DataStore) Initialize(ctx context.Context) error {
 	db, err := sql.Open(
 		"sqlite3",
 		fmt.Sprintf("%s?_journal_mode=%s&_busy_timeout=%d",
-			dbPath,
-			s.Opts.JournalMode,
-			s.Opts.BusyTimeoutMs))
+			dbPath, s.Opts.JournalMode, s.Opts.BusyTimeoutMs),
+	)
 	if err != nil {
-		return fmt.Errorf("failed to open database: %w", err)
+		failErr := sdkErrors.ErrFSFileOpenFailed.Wrap(err)
+		return failErr
 	}
 
 	// Set connection pool settings
@@ -75,28 +86,36 @@ func (s *DataStore) Initialize(ctx context.Context) error {
 	if err := s.createTables(ctx, db); err != nil {
 		closeErr := db.Close()
 		if closeErr != nil {
-			return closeErr
+			return err.Wrap(closeErr)
 		}
-		return fmt.Errorf("failed to create tables: %w", err)
+		return err
 	}
 
 	s.db = db
 	return nil
 }
 
-// Close safely closes the database connection.
-// It ensures the database is closed only once even if called multiple times.
+// Close safely closes the database connection. It ensures the database is
+// closed only once, even if called multiple times, by using sync.Once.
 //
-// Returns any error encountered while closing the database connection.
-func (s *DataStore) Close(_ context.Context) error {
+// Parameters:
+//   - ctx: Context parameter (currently unused but maintained for interface
+//     compatibility).
+//
+// Returns:
+//   - *sdkErrors.SDKError: An error if closing the database connection
+//     fails, wrapped in ErrFSFileCloseFailed. Returns nil on success.
+//     Later calls always return nil since the close operation only
+//     executes once.
+//
+// This method is thread-safe.
+func (s *DataStore) Close(_ context.Context) *sdkErrors.SDKError {
 	var err error
 	s.closeOnce.Do(func() {
 		err = s.db.Close()
 	})
-	return err
-}
-
-// GetCipher retrieves the AEAD cipher instance from the DataStore.
-func (s *DataStore) GetCipher() cipher.AEAD {
-	return s.Cipher
+	if err != nil {
+		return sdkErrors.ErrStoreCloseFailed.Wrap(err)
+	}
+	return nil
 }

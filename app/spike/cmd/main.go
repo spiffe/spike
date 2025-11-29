@@ -10,6 +10,7 @@ import (
 	"os"
 
 	"github.com/spiffe/spike-sdk-go/config/env"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/log"
 	"github.com/spiffe/spike-sdk-go/security/mem"
 	"github.com/spiffe/spike-sdk-go/spiffe"
@@ -36,9 +37,15 @@ Consider disabling swap to enhance security.
 
 	source, SPIFFEID, err := spiffe.Source(ctx, spiffe.EndpointSocket())
 	if err != nil {
-		log.FatalLn(appName, "message", "failed to get source", "err", err.Error())
+		failErr := sdkErrors.ErrStateInitializationFailed.Wrap(err)
+		log.FatalErr(appName, *failErr)
 	}
-	defer spiffe.CloseSource(source)
+	defer func() {
+		if closeErr := spiffe.CloseSource(source); closeErr != nil {
+			warnErr := sdkErrors.ErrSPIFFEFailedToCloseX509Source.Wrap(closeErr)
+			log.WarnErr(appName, *warnErr)
+		}
+	}()
 
 	cmd.Initialize(source, SPIFFEID)
 	cmd.Execute()

@@ -139,21 +139,22 @@ permissions: [
 		t.Run(tt.name, func(t *testing.T) {
 			// Create a test file:
 			filePath := filepath.Join(tempDir, tt.fileName)
-			err := os.WriteFile(filePath, []byte(tt.fileContent), 0644)
-			if err != nil {
-				t.Fatalf("Failed to create test file: %v", err)
+			if writeErr := os.WriteFile(
+				filePath, []byte(tt.fileContent), 0644,
+			); writeErr != nil {
+				t.Fatalf("Failed to create test file: %v", writeErr)
 			}
 
 			// Test the function
-			got, err := readPolicyFromFile(filePath)
+			got, readErr := readPolicyFromFile(filePath)
 
 			// Check error expectations
 			if tt.wantErr {
-				if err == nil {
+				if readErr == nil {
 					t.Errorf("readPolicyFromFile() expected error but got none")
 					return
 				}
-				if tt.errContains != "" && err.Error() == "" {
+				if tt.errContains != "" && readErr.Error() == "" {
 					t.Errorf("readPolicyFromFile() "+
 						"expected error containing '%s', got empty error",
 						tt.errContains)
@@ -162,8 +163,8 @@ permissions: [
 				if tt.errContains != "" {
 					// Check if error contains expected substring
 					found := false
-					if err != nil && len(err.Error()) > 0 {
-						errorStr := err.Error()
+					if readErr != nil && len(readErr.Error()) > 0 {
+						errorStr := readErr.Error()
 						if len(errorStr) >= len(tt.errContains) {
 							for i := 0; i <= len(errorStr)-len(tt.errContains); i++ {
 								if errorStr[i:i+len(tt.errContains)] == tt.errContains {
@@ -176,15 +177,15 @@ permissions: [
 					if !found {
 						t.Errorf("readPolicyFromFile() "+
 							"expected error containing '%s', got '%v'",
-							tt.errContains, err)
+							tt.errContains, readErr)
 					}
 				}
 				return
 			}
 
 			// Check the success case:
-			if err != nil {
-				t.Errorf("readPolicyFromFile() unexpected error: %v", err)
+			if readErr != nil {
+				t.Errorf("readPolicyFromFile() unexpected error: %v", readErr)
 				return
 			}
 
@@ -450,6 +451,7 @@ func TestNewPolicyCreateCommand(t *testing.T) {
 
 	if cmd == nil {
 		t.Fatal("Expected command to be created, got nil")
+		return
 	}
 
 	if cmd.Use != "create" {
@@ -583,7 +585,7 @@ func TestPolicyCreateCommandRegistration(t *testing.T) {
 	source := &workloadapi.X509Source{}
 	SPIFFEIDPattern := "^spiffe://example\\.org/spike$"
 
-	policyCmd := NewPolicyCommand(source, SPIFFEIDPattern)
+	policyCmd := NewCommand(source, SPIFFEIDPattern)
 
 	var createCmd *cobra.Command
 	for _, cmd := range policyCmd.Commands() {

@@ -7,10 +7,8 @@ package store
 import (
 	"net/http"
 
-	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
-	"github.com/spiffe/spike-sdk-go/api/errors"
-	"github.com/spiffe/spike-sdk-go/log"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/security/mem"
 
 	"github.com/spiffe/spike/app/keeper/internal/state"
@@ -19,25 +17,36 @@ import (
 )
 
 // RouteContribute handles HTTP requests for the shard contributions in the
-// system. It processes incoming shard data, decodes it from Base64 encoding,
-// and stores it in the system state.
+// system. It processes incoming shard data and stores it in the system state.
 //
-// The function expects a Base64-encoded shard and a keeper ID in the request
-// body. It performs the following operations:
+// Security:
+//
+// This endpoint validates that the peer is either SPIKE Bootstrap or SPIKE
+// Nexus using SPIFFE ID verification. SPIKE Bootstrap contributes shards
+// during initial system setup, while SPIKE Nexus contributes shards during
+// periodic updates. Unauthorized requests receive a 401 Unauthorized response.
+//
+// The function expects a shard in the request body. It performs the following
+// operations:
 //   - Reads and validates the request body
-//   - Decodes the Base64-encoded shard
-//   - Stores the decoded shard in the system state
+//   - Validates the peer SPIFFE ID
+//   - Validates the shard is not nil or all zeros
+//   - Stores the shard in the system state
 //   - Logs the operation for auditing purposes
 //
 // Parameters:
 //   - w: http.ResponseWriter to write the HTTP response
 //   - r: *http.Request containing the incoming HTTP request
-//   - audit: *journal.AuditEntry for tracking the request for auditing purposes
+//   - audit: *journal.AuditEntry for tracking the request for auditing
+//     purposes
 //
 // Returns:
-//   - error: nil if successful, otherwise one of:
-//   - errors.ErrReadFailure if request body cannot be read
-//   - errors.ErrParseFailure if request parsing fails or shard decoding fails
+//   - *sdkErrors.SDKError: nil if successful, otherwise one of:
+//   - ErrDataReadFailure: If request body cannot be read
+//   - ErrDataParseFailure: If request parsing fails
+//   - ErrUnauthorized: If peer SPIFFE ID validation fails
+//   - ErrShamirNilShard: If shard is nil
+//   - ErrShamirEmptyShard: If shard is all zeros
 //
 // Example request body:
 //
@@ -46,35 +55,28 @@ import (
 //	  "keeperId": "uniqueIdentifier"
 //	}
 //
-// The function returns a 200 OK status with an empty response body on success,
-// or a 400 Bad Request status with an error message if the shard content is
-// invalid.
+// The function returns a 200 OK status on success, a 401 Unauthorized status
+// if the peer is not SPIKE Bootstrap or SPIKE Nexus, or a 400 Bad Request
+// status if the shard content is invalid.
 func RouteContribute(
 	w http.ResponseWriter, r *http.Request, audit *journal.AuditEntry,
-) error {
-	const fName = "routeContribute"
+) *sdkErrors.SDKError {
+	const fName = "RouteContribute"
+
 	journal.AuditRequest(fName, r, audit, journal.AuditCreate)
 
-	requestBody := net.ReadRequestBody(w, r)
-	if requestBody == nil {
-		return errors.ErrReadFailure
-	}
-
-	request := net.HandleRequest[
-		reqres.ShardPutRequest, reqres.ShardPutResponse](
-		requestBody, w,
-		reqres.ShardPutResponse{Err: data.ErrBadInput},
+	request, err := net.ReadParseAndGuard[
+		reqres.ShardPutRequest, reqres.ShardPutResponse,
+	](
+		w, r, reqres.ShardPutResponse{}.BadRequest(), guardShardPutRequest,
 	)
-	if request == nil {
-		return errors.ErrParseFailure
+	if alreadyResponded := err != nil; alreadyResponded {
+		return err
 	}
 
 	if request.Shard == nil {
-		responseBody := net.MarshalBody(reqres.ShardPutResponse{
-			Err: data.ErrBadInput,
-		}, w)
-		net.Respond(http.StatusBadRequest, responseBody, w)
-		return errors.ErrInvalidInput
+		net.Fail(reqres.ShardPutResponse{}.BadRequest(), w, http.StatusBadRequest)
+		return sdkErrors.ErrShamirNilShard
 	}
 
 	// Security: Zero out shard before the function exits.
@@ -87,20 +89,13 @@ func RouteContribute(
 	// indicate invalid input. Since Shard is a fixed-length array in the request,
 	// clients must send meaningful non-zero data.
 	if mem.Zeroed32(request.Shard) {
-		responseBody := net.MarshalBody(reqres.ShardPutResponse{
-			Err: data.ErrBadInput,
-		}, w)
-		net.Respond(http.StatusBadRequest, responseBody, w)
-		return errors.ErrInvalidInput
+		net.Fail(reqres.ShardPutResponse{}.BadRequest(), w, http.StatusBadRequest)
+		return sdkErrors.ErrShamirEmptyShard
 	}
 
 	// `state.SetShard` copies the shard. We can safely reset this one at [1].
 	state.SetShard(request.Shard)
 
-	responseBody := net.MarshalBody(reqres.ShardPutResponse{}, w)
-	net.Respond(http.StatusOK, responseBody, w)
-
-	log.Log().Info(fName, "message", data.ErrSuccess)
-
+	net.Success(reqres.ShardPutResponse{}.Success(), w)
 	return nil
 }

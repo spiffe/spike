@@ -5,12 +5,12 @@
 package policy
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	spike "github.com/spiffe/spike-sdk-go/api"
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
+
+	"github.com/spiffe/spike/app/spike/internal/stdout"
 	"github.com/spiffe/spike/app/spike/internal/trust"
 )
 
@@ -26,8 +26,10 @@ import (
 // that the system is initialized before applying a policy.
 //
 // Parameters:
-//   - source: SPIFFE X.509 SVID source for authentication
-//   - spiffeId: The SPIFFE ID to authenticate with
+//   - source: SPIFFE X.509 SVID source for authentication. Can be nil if the
+//     Workload API connection is unavailable, in which case the command will
+//     display an error message and return.
+//   - SPIFFEID: The SPIFFE ID to authenticate with
 //
 // Returns:
 //   - *cobra.Command: Configured Cobra command for policy application
@@ -63,8 +65,8 @@ import (
 // Example YAML file structure:
 //
 //	name: web-service-policy
-//	spiffeid: ^spiffe://example\.org/web-service/.*$
-//	path: ^secrets/web/database$
+//	spiffeidPattern: ^spiffe://example\.org/web-service/.*$
+//	pathPattern: ^secrets/web/database$
 //	permissions:
 //	  - read
 //	  - write
@@ -72,10 +74,8 @@ import (
 // The command will:
 //  1. Validate that all required parameters are provided (either via
 //     flags or file)
-//  2. Normalize the path pattern (remove trailing slashes)
-//  3. Check if the system is initialized
-//  4. Validate permissions and convert to the expected format
-//  5. Apply the policy using upsert semantics (create if new, update if exists)
+//  2. Validate permissions and convert to the expected format
+//  3. Apply the policy using upsert semantics (create if new, update if exists)
 //
 // Error conditions:
 //   - Missing required flags (when not using --file)
@@ -114,26 +114,35 @@ func newPolicyApplyCommand(
 
         Valid permissions: read, write, list, super`,
 		Args: cobra.NoArgs,
-		Run: func(cmd *cobra.Command, args []string) {
+		Run: func(c *cobra.Command, args []string) {
+			trust.AuthenticateForPilot(SPIFFEID)
+
+			if source == nil {
+				c.PrintErrln("Error: SPIFFE X509 source is unavailable.")
+				return
+			}
+
+			api := spike.NewWithSource(source)
+
 			var policy data.PolicySpec
-			var err error
 
 			// Determine if we're using file-based or flag-based input
 			if filePath != "" {
 				// Read policy from the YAML file
-				policy, err = readPolicyFromFile(filePath)
+				p, err := readPolicyFromFile(filePath)
 				if err != nil {
-					fmt.Printf("Error reading policy file: %v\n", err)
+					c.PrintErrf("Error reading policy file: %v\n", err)
 					return
 				}
+				policy = p
 			} else {
 				// Use flag-based input
-				policy, err = getPolicyFromFlags(name, SPIFFEIDPattern,
+				p, flagErr := getPolicyFromFlags(name, SPIFFEIDPattern,
 					pathPattern, permsStr)
-				if err != nil {
-					fmt.Printf("Error: %v\n", err)
+				if stdout.HandleAPIError(c, flagErr) {
 					return
 				}
+				policy = p
 			}
 
 			// Convert permissions slice to comma-separated string
@@ -148,24 +157,20 @@ func newPolicyApplyCommand(
 				}
 			}
 
-			trust.AuthenticateForPilot(SPIFFEID)
-			api := spike.NewWithSource(source)
-
 			// Validate permissions
-			permissions, err := validatePermissions(ps)
-			if err != nil {
-				fmt.Printf("Error: %v\n", err)
+			permissions, permErr := validatePermissions(ps)
+			if stdout.HandleAPIError(c, permErr) {
 				return
 			}
 
 			// Apply policy using upsert semantics
-			err = api.CreatePolicy(policy.Name, policy.SpiffeIDPattern,
+			policyErr := api.CreatePolicy(policy.Name, policy.SpiffeIDPattern,
 				policy.PathPattern, permissions)
-			if handleAPIError(err) {
+			if stdout.HandleAPIError(c, policyErr) {
 				return
 			}
 
-			fmt.Printf("Policy '%s' applied successfully\n", policy.Name)
+			c.Printf("Policy '%s' applied successfully\n", policy.Name)
 		},
 	}
 

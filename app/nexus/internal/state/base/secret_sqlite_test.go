@@ -14,6 +14,7 @@ import (
 
 	"github.com/spiffe/spike-sdk-go/config/env"
 	"github.com/spiffe/spike-sdk-go/crypto"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/kv"
 
 	"github.com/spiffe/spike/app/nexus/internal/state/persist"
@@ -30,7 +31,8 @@ func createTestRootKey(_ *testing.T) *[crypto.AES256KeySize]byte {
 	return key
 }
 
-// cleanupSQLiteDatabase removes the existing SQLite database to ensure a clean test state
+// cleanupSQLiteDatabase removes the existing SQLite database to ensure
+// a clean test state
 func cleanupSQLiteDatabase(t *testing.T) {
 	dataDir := config.NexusDataFolder()
 	dbPath := filepath.Join(dataDir, "spike.db")
@@ -101,13 +103,15 @@ func TestSQLiteSecret_NewSecret(t *testing.T) {
 			_ = persist.Backend().Close(ctx)
 		}()
 
-		// Check what secrets exist immediately after initialization (should be empty for clean DB)
+		// Check what secrets exist immediately after initialization
+		// (should be empty for clean DB)
 		backend := persist.Backend()
-		allSecrets, err := backend.LoadAllSecrets(ctx)
-		if err != nil {
-			t.Fatalf("Failed to load all secrets after init: %v", err)
+		allSecrets, loadAllErr := backend.LoadAllSecrets(ctx)
+		if loadAllErr != nil {
+			t.Fatalf("Failed to load all secrets after init: %v", loadAllErr)
 		}
-		t.Logf("Found %d existing secrets after initialization (expected 0)", len(allSecrets))
+		t.Logf("Found %d existing secrets after initialization (expected 0)",
+			len(allSecrets))
 		if len(allSecrets) != 0 {
 			for path := range allSecrets {
 				t.Logf("  - Unexpected secret at pathPattern: %s", path)
@@ -121,25 +125,30 @@ func TestSQLiteSecret_NewSecret(t *testing.T) {
 			"database": "prod_db",
 		}
 
-		// Verify LoadSecret returns nil for non-existent secret
-		secretBeforeUpsert, err := backend.LoadSecret(ctx, path)
-		if err != nil {
-			t.Fatalf("Unexpected error from LoadSecret before upsert: %v", err)
+		// Verify LoadSecret returns ErrEntityNotFound for non-existent secret
+		secretBeforeUpsert, loadErr := backend.LoadSecret(ctx, path)
+		if loadErr == nil {
+			t.Fatalf("Expected error from LoadSecret before upsert, got nil")
+		}
+		if !loadErr.Is(sdkErrors.ErrEntityNotFound) {
+			t.Fatalf("Expected ErrEntityNotFound, got: %v", loadErr)
 		}
 		if secretBeforeUpsert != nil {
-			t.Fatalf("Expected LoadSecret to return nil for non-existent secret, got: %+v", secretBeforeUpsert)
+			t.Fatalf("Expected LoadSecret to return nil for non-existent secret,"+
+				" got: %+v", secretBeforeUpsert)
 		}
-		t.Logf("✅ LoadSecret correctly returned nil for non-existent pathPattern")
+		t.Logf("LoadSecret correctly returned ErrEntityNotFound" +
+			" for non-existent path")
 
-		err = UpsertSecret(path, values)
-		if err != nil {
-			t.Fatalf("Failed to upsert new secret to SQLite: %v", err)
+		upsertErr := UpsertSecret(path, values)
+		if upsertErr != nil {
+			t.Fatalf("Failed to upsert new secret to SQLite: %v", upsertErr)
 		}
 
 		// Verify the secret was created and encrypted
-		retrievedValues, err := GetSecret(path, 0)
-		if err != nil {
-			t.Fatalf("Failed to retrieve secret from SQLite: %v", err)
+		retrievedValues, getErr := GetSecret(path, 0)
+		if getErr != nil {
+			t.Fatalf("Failed to retrieve secret from SQLite: %v", getErr)
 		}
 
 		if !reflect.DeepEqual(retrievedValues, values) {
@@ -147,7 +156,7 @@ func TestSQLiteSecret_NewSecret(t *testing.T) {
 		}
 
 		// Verify the database file was created
-		if _, err := os.Stat(dbPath); os.IsNotExist(err) {
+		if _, statErr := os.Stat(dbPath); os.IsNotExist(statErr) {
 			t.Error("SQLite database file should have been created")
 		}
 	})
@@ -174,9 +183,9 @@ func TestSQLiteSecret_Persistence(t *testing.T) {
 			_ = persist.Backend().Close(ctx)
 		}()
 
-		err := UpsertSecret(path, values)
-		if err != nil {
-			t.Fatalf("Failed to create secret in first session: %v", err)
+		upsertErr := UpsertSecret(path, values)
+		if upsertErr != nil {
+			t.Fatalf("Failed to create secret in first session: %v", upsertErr)
 		}
 	})
 
@@ -193,13 +202,14 @@ func TestSQLiteSecret_Persistence(t *testing.T) {
 			_ = persist.Backend().Close(ctx)
 		}()
 
-		retrievedValues, err := GetSecret(path, 0)
-		if err != nil {
-			t.Fatalf("Failed to retrieve secret in second session: %v", err)
+		retrievedValues, getErr := GetSecret(path, 0)
+		if getErr != nil {
+			t.Fatalf("Failed to retrieve secret in second session: %v", getErr)
 		}
 
 		if !reflect.DeepEqual(retrievedValues, values) {
-			t.Errorf("Expected persistent values %v, got %v", values, retrievedValues)
+			t.Errorf("Expected persistent values %v, got %v",
+				values, retrievedValues)
 		}
 	})
 }
@@ -224,18 +234,19 @@ func TestSQLiteSecret_SimpleVersioning(t *testing.T) {
 		// Create the first version
 		t.Log("Creating first version...")
 		values1 := map[string]string{"data": "version1"}
-		err := UpsertSecret(path, values1)
-		if err != nil {
-			t.Fatalf("Failed to create first version: %v", err)
+		upsertErr1 := UpsertSecret(path, values1)
+		if upsertErr1 != nil {
+			t.Fatalf("Failed to create first version: %v", upsertErr1)
 		}
 
 		// Verify the first version using backend directly
-		secret1, err := persist.Backend().LoadSecret(ctx, path)
-		if err != nil {
-			t.Fatalf("Failed to load secret from backend: %v", err)
+		secret1, loadErr1 := persist.Backend().LoadSecret(ctx, path)
+		if loadErr1 != nil {
+			t.Fatalf("Failed to load secret from backend: %v", loadErr1)
 		}
 		if secret1 == nil {
 			t.Fatal("Secret should exist after first upsert")
+			return
 		}
 		t.Logf("After first upsert - CurrentVersion: %d, Versions: %v",
 			secret1.Metadata.CurrentVersion, getVersionNumbers(secret1))
@@ -243,26 +254,28 @@ func TestSQLiteSecret_SimpleVersioning(t *testing.T) {
 		// Create a second version
 		t.Log("Creating second version...")
 		values2 := map[string]string{"data": "version2"}
-		err = UpsertSecret(path, values2)
-		if err != nil {
-			t.Fatalf("Failed to create second version: %v", err)
+		upsertErr2 := UpsertSecret(path, values2)
+		if upsertErr2 != nil {
+			t.Fatalf("Failed to create second version: %v", upsertErr2)
 		}
 
 		// Verify the second version using backend directly
-		secret2, err := persist.Backend().LoadSecret(ctx, path)
-		if err != nil {
-			t.Fatalf("Failed to load secret from backend after second upsert: %v", err)
+		secret2, loadErr2 := persist.Backend().LoadSecret(ctx, path)
+		if loadErr2 != nil {
+			t.Fatalf("Failed to load secret from backend after second upsert: %v",
+				loadErr2)
 		}
 		if secret2 == nil {
 			t.Fatal("Secret should exist after second upsert")
+			return
 		}
 		t.Logf("After second upsert - CurrentVersion: %d, Versions: %v",
 			secret2.Metadata.CurrentVersion, getVersionNumbers(secret2))
 
 		// Test GetSecret with version 0 (current)
-		currentValues, err := GetSecret(path, 0)
-		if err != nil {
-			t.Fatalf("Failed to get current version: %v", err)
+		currentValues, getCurrentErr := GetSecret(path, 0)
+		if getCurrentErr != nil {
+			t.Fatalf("Failed to get current version: %v", getCurrentErr)
 		}
 		if currentValues["data"] != "version2" {
 			t.Errorf("Expected current version to be 'version2', got %s",
@@ -270,9 +283,9 @@ func TestSQLiteSecret_SimpleVersioning(t *testing.T) {
 		}
 
 		// Test GetSecret with version 1
-		version1Values, err := GetSecret(path, 1)
-		if err != nil {
-			t.Fatalf("Failed to get version 1: %v", err)
+		version1Values, getV1Err := GetSecret(path, 1)
+		if getV1Err != nil {
+			t.Fatalf("Failed to get version 1: %v", getV1Err)
 		}
 		if version1Values["data"] != "version1" {
 			t.Errorf("Expected version 1 to be 'version1', got %s",
@@ -280,9 +293,9 @@ func TestSQLiteSecret_SimpleVersioning(t *testing.T) {
 		}
 
 		// Test GetSecret with version 2
-		version2Values, err := GetSecret(path, 2)
-		if err != nil {
-			t.Fatalf("Failed to get version 2: %v", err)
+		version2Values, getV2Err := GetSecret(path, 2)
+		if getV2Err != nil {
+			t.Fatalf("Failed to get version 2: %v", getV2Err)
 		}
 		if version2Values["data"] != "version2" {
 			t.Errorf("Expected version 2 to be 'version2', got %s",
@@ -323,16 +336,16 @@ func TestSQLiteSecret_VersionPersistence(t *testing.T) {
 				"version": fmt.Sprintf("v%d", i),
 				"data":    fmt.Sprintf("data-%d", i),
 			}
-			err := UpsertSecret(path, values)
-			if err != nil {
-				t.Fatalf("Failed to create version %d: %v", i, err)
+			upsertErr := UpsertSecret(path, values)
+			if upsertErr != nil {
+				t.Fatalf("Failed to create version %d: %v", i, upsertErr)
 			}
 		}
 
 		// Verify all versions were created in the first session
-		rawSecret, err := GetRawSecret(path, 0)
-		if err != nil {
-			t.Fatalf("Failed to get raw secret in first session: %v", err)
+		rawSecret, getRawErr := GetRawSecret(path, 0)
+		if getRawErr != nil {
+			t.Fatalf("Failed to get raw secret in first session: %v", getRawErr)
 		}
 		t.Logf("First session - Current version: %d",
 			rawSecret.Metadata.CurrentVersion)
@@ -356,9 +369,9 @@ func TestSQLiteSecret_VersionPersistence(t *testing.T) {
 		}()
 
 		// First, get the raw secret to understand what versions exist
-		rawSecret, err := GetRawSecret(path, 0)
-		if err != nil {
-			t.Fatalf("Failed to get raw secret: %v", err)
+		rawSecret, getRawErr := GetRawSecret(path, 0)
+		if getRawErr != nil {
+			t.Fatalf("Failed to get raw secret: %v", getRawErr)
 		}
 
 		t.Logf("Second session - Current version: %d",
@@ -370,9 +383,9 @@ func TestSQLiteSecret_VersionPersistence(t *testing.T) {
 
 		// Check each version
 		for version := 1; version <= 3; version++ {
-			values, err := GetSecret(path, version)
-			if err != nil {
-				t.Errorf("Failed to get version %d: %v", version, err)
+			values, getErr := GetSecret(path, version)
+			if getErr != nil {
+				t.Errorf("Failed to get version %d: %v", version, getErr)
 				continue
 			}
 
@@ -415,9 +428,9 @@ func TestSQLiteSecret_EncryptionWithDifferentKeys(t *testing.T) {
 			_ = persist.Backend().Close(ctx)
 		}()
 
-		err := UpsertSecret(path, values)
-		if err != nil {
-			t.Fatalf("Failed to create secret with key1: %v", err)
+		upsertErr := UpsertSecret(path, values)
+		if upsertErr != nil {
+			t.Fatalf("Failed to create secret with key1: %v", upsertErr)
 		}
 	})
 
@@ -438,13 +451,17 @@ func TestSQLiteSecret_EncryptionWithDifferentKeys(t *testing.T) {
 			_ = persist.Backend().Close(ctx)
 		}()
 
-		// This should either fail or return decrypted garbage (depending on implementation)
-		_, err := GetSecret(path, 0)
-		// We expect this to fail with the wrong key, but exact behavior depends on implementation
-		if err == nil {
-			t.Log("Note: GetSecret succeeded with wrong key - this might indicate encryption issue")
+		// This should either fail or return decrypted garbage
+		// (depending on implementation)
+		_, getErr := GetSecret(path, 0)
+		// We expect this to fail with the wrong key, but exact behavior
+		// depends on implementation
+		if getErr == nil {
+			t.Log("Note: GetSecret succeeded with wrong key" +
+				" - this might indicate encryption issue")
 		} else {
-			t.Logf("Expected behavior: GetSecret failed with wrong key: %v", err)
+			t.Logf("Expected behavior: GetSecret failed with wrong key: %v",
+				getErr)
 		}
 	})
 
@@ -460,13 +477,14 @@ func TestSQLiteSecret_EncryptionWithDifferentKeys(t *testing.T) {
 			_ = persist.Backend().Close(ctx)
 		}()
 
-		retrievedValues, err := GetSecret(path, 0)
-		if err != nil {
-			t.Fatalf("Failed to retrieve with original key: %v", err)
+		retrievedValues, getErr := GetSecret(path, 0)
+		if getErr != nil {
+			t.Fatalf("Failed to retrieve with original key: %v", getErr)
 		}
 
 		if !reflect.DeepEqual(retrievedValues, values) {
-			t.Errorf("Values changed with original key: expected %v, got %v", values, retrievedValues)
+			t.Errorf("Values changed with original key: expected %v, got %v",
+				values, retrievedValues)
 		}
 	})
 }

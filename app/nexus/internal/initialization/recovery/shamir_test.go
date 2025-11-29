@@ -153,9 +153,9 @@ func TestShamirInsufficientShares(t *testing.T) {
 
 	// Should succeed with sufficient shares
 	sufficientShares := shares[:threshold+1]
-	reconstructed, err := shamir.Recover(threshold, sufficientShares)
-	if err != nil {
-		t.Errorf("Should succeed with sufficient shares: %v", err)
+	reconstructed, shamirErr := shamir.Recover(threshold, sufficientShares)
+	if shamirErr != nil {
+		t.Errorf("Should succeed with sufficient shares: %v", shamirErr)
 		return
 	}
 
@@ -208,9 +208,9 @@ func TestShamirShareStructure(t *testing.T) {
 			t.Errorf("Share %d ID bytes should not be empty", i)
 		}
 
-		valueBytes, err := share.Value.MarshalBinary()
-		if err != nil {
-			t.Errorf("Failed to marshal share %d Value: %v", i, err)
+		valueBytes, marshalErr := share.Value.MarshalBinary()
+		if marshalErr != nil {
+			t.Errorf("Failed to marshal share %d Value: %v", i, marshalErr)
 		}
 		if len(valueBytes) != crypto.AES256KeySize {
 			t.Errorf("Share %d Value should be %d bytes, got %d",
@@ -433,9 +433,9 @@ func TestShamirRecoveryValidation(t *testing.T) {
 	shares := ss.Share(numShares)
 
 	// Test successful recovery
-	reconstructed, err := shamir.Recover(threshold, shares[:threshold+1])
-	if err != nil {
-		t.Errorf("Recovery should succeed: %v", err)
+	reconstructed, shamirErr := shamir.Recover(threshold, shares[:threshold+1])
+	if shamirErr != nil {
+		t.Errorf("Recovery should succeed: %v", shamirErr)
 		return
 	}
 
@@ -450,7 +450,7 @@ func TestShamirRecoveryValidation(t *testing.T) {
 		t.Error("Cleaned up secret should be zero")
 	}
 
-	// Test with wrong number of shares (too few)
+	// Test with the wrong number of shares (too few)
 	_, err = shamir.Recover(threshold, shares[:threshold])
 	if err == nil {
 		t.Error("Recovery should fail with insufficient shares")

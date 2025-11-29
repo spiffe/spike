@@ -9,13 +9,14 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"time"
 
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/kv"
 	"github.com/spiffe/spike-sdk-go/log"
 
 	"github.com/spiffe/spike/app/nexus/internal/state/backend/sqlite/ddl"
+	"github.com/spiffe/spike/internal/validation"
 )
 
 // loadSecretInternal retrieves a secret and all its versions from the database
@@ -31,56 +32,61 @@ import (
 //   - path: The secret path to load
 //
 // Returns:
-//   - *kv.Value: The complete secret with all versions and metadata.
-//     Returns nil if the secret does not exist.
-//   - error: An error if any database or decryption operation fails.
-//     Returns nil error with nil secret for non-existent paths.
+//   - *kv.Value: The complete secret with all versions and metadata
+//   - *sdkErrors.SDKError: An error if the secret is not found or any database
+//     or decryption operation fails. Returns nil on success.
+//
+// Possible errors:
+//   - ErrEntityNotFound: If the secret does not exist at the specified path
+//   - ErrEntityLoadFailed: If loading secret metadata fails
+//   - ErrEntityQueryFailed: If querying versions fails or rows.Scan fails
+//   - ErrCryptoDecryptionFailed: If decrypting a version fails
+//   - ErrDataUnmarshalFailure: If unmarshaling JSON data fails
 //
 // Special behavior:
-//   - Returns (nil, nil) when the secret doesn't exist (sql.ErrNoRows)
-//   - Returns (nil, error) for actual errors (database, decryption,
-//     unmarshaling)
-//   - Automatically handles deleted versions by setting DeletedTime when present
+//   - Automatically handles deleted versions by setting DeletedTime when
+//     present
 //
 // The function handles the following operations:
-//  1. Queries secret metadata from the `secret_metadata` table
-//  2. Fetches all versions from the `secrets` table
+//  1. Queries secret metadata from the secret_metadata table
+//  2. Fetches all versions from the secrets table
 //  3. Decrypts each version using the DataStore's cipher
 //  4. Unmarshals JSON data into map[string]string format
 //  5. Assembles the complete kv.Value structure
 func (s *DataStore) loadSecretInternal(
 	ctx context.Context, path string,
-) (*kv.Value, error) {
+) (*kv.Value, *sdkErrors.SDKError) {
 	const fName = "loadSecretInternal"
-	if ctx == nil {
-		log.FatalLn(fName, "message", "nil context")
-	}
+
+	validation.CheckContext(ctx, fName)
 
 	var secret kv.Value
 
 	// Load metadata
-	err := s.db.QueryRowContext(ctx, ddl.QuerySecretMetadata, path).Scan(
+	metaErr := s.db.QueryRowContext(ctx, ddl.QuerySecretMetadata, path).Scan(
 		&secret.Metadata.CurrentVersion,
 		&secret.Metadata.OldestVersion,
 		&secret.Metadata.CreatedTime,
 		&secret.Metadata.UpdatedTime,
 		&secret.Metadata.MaxVersions)
-	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, nil
+	if metaErr != nil {
+		if errors.Is(metaErr, sql.ErrNoRows) {
+			return nil, sdkErrors.ErrEntityNotFound
 		}
-		return nil, fmt.Errorf("failed to load secret metadata: %w", err)
+
+		return nil, sdkErrors.ErrEntityLoadFailed
 	}
 
 	// Load versions
-	rows, err := s.db.QueryContext(ctx, ddl.QuerySecretVersions, path)
-	if err != nil {
-		return nil, fmt.Errorf("failed to query secret versions: %w", err)
+	rows, queryErr := s.db.QueryContext(ctx, ddl.QuerySecretVersions, path)
+	if queryErr != nil {
+		return nil, sdkErrors.ErrEntityQueryFailed.Wrap(queryErr)
 	}
 	defer func(rows *sql.Rows) {
-		err := rows.Close()
-		if err != nil {
-			fmt.Printf("failed to close rows: %v\n", err)
+		closeErr := rows.Close()
+		if closeErr != nil {
+			failErr := sdkErrors.ErrFSFileCloseFailed.Wrap(closeErr)
+			log.WarnErr(fName, *failErr)
 		}
 	}(rows)
 
@@ -94,21 +100,21 @@ func (s *DataStore) loadSecretInternal(
 			deletedTime sql.NullTime
 		)
 
-		if err := rows.Scan(
+		if scanErr := rows.Scan(
 			&version, &nonce,
 			&encrypted, &createdTime, &deletedTime,
-		); err != nil {
-			return nil, fmt.Errorf("failed to scan secret version: %w", err)
+		); scanErr != nil {
+			return nil, sdkErrors.ErrEntityQueryFailed.Wrap(scanErr)
 		}
 
-		decrypted, err := s.decrypt(encrypted, nonce)
-		if err != nil {
-			return nil, fmt.Errorf("failed to decrypt secret version: %w", err)
+		decrypted, decryptErr := s.decrypt(encrypted, nonce)
+		if decryptErr != nil {
+			return nil, sdkErrors.ErrCryptoDecryptionFailed.Wrap(decryptErr)
 		}
 
 		var values map[string]string
-		if err := json.Unmarshal(decrypted, &values); err != nil {
-			return nil, fmt.Errorf("failed to unmarshal secret values: %w", err)
+		if unmarshalErr := json.Unmarshal(decrypted, &values); unmarshalErr != nil {
+			return nil, sdkErrors.ErrDataUnmarshalFailure.Wrap(unmarshalErr)
 		}
 
 		sv := kv.Version{
@@ -122,8 +128,21 @@ func (s *DataStore) loadSecretInternal(
 		secret.Versions[version] = sv
 	}
 
-	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("failed to iterate secret versions: %w", err)
+	if rowsErr := rows.Err(); rowsErr != nil {
+		return nil, sdkErrors.ErrEntityQueryFailed.Wrap(rowsErr)
+	}
+
+	// Integrity check: If CurrentVersion is non-zero, it must exist in
+	// the Versions map. CurrentVersion==0 indicates a "shell secret"
+	// where all versions are deleted, which is valid.
+	if secret.Metadata.CurrentVersion != 0 {
+		if _, exists := secret.Versions[secret.Metadata.CurrentVersion]; !exists {
+			return nil, sdkErrors.ErrStateIntegrityCheck.Wrap(
+				errors.New(
+					"data integrity violation: current version not found",
+				),
+			)
+		}
 	}
 
 	return &secret, nil

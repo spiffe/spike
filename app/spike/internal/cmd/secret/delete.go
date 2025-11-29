@@ -5,8 +5,6 @@
 package secret
 
 import (
-	"fmt"
-	"regexp"
 	"strconv"
 	"strings"
 
@@ -18,20 +16,15 @@ import (
 	"github.com/spiffe/spike/app/spike/internal/trust"
 )
 
-const validPath = `^[a-zA-Z0-9._\-/()?+*|[\]{}\\]+$`
-
-// Helper function to validate secret paths
-func validSecretPath(path string) bool {
-	r := regexp.MustCompile(validPath)
-	return r.MatchString(path)
-}
-
 // newSecretDeleteCommand creates and returns a new cobra.Command for deleting
 // secrets. It configures a command that allows users to delete one or more
 // versions of a secret at a specified path.
 //
 // Parameters:
-//   - source: X.509 source for workload API authentication
+//   - source: SPIFFE X.509 SVID source for authentication. Can be nil if the
+//     Workload API connection is unavailable, in which case the command will
+//     display an error message and return.
+//   - SPIFFEID: The SPIFFE ID to authenticate with
 //
 // The command accepts a single argument:
 //   - path: Location of the secret to delete
@@ -61,7 +54,7 @@ func newSecretDeleteCommand(
 	var deleteCmd = &cobra.Command{
 		Use:   "delete <path>",
 		Short: "Delete secrets at the specified path",
-		Long: `Delete secrets at the specified path. 
+		Long: `Delete secrets at the specified path.
 Specify versions using -v or --versions flag with comma-separated values.
 Version 0 refers to the current/latest version.
 If no version is specified, defaults to deleting the current version.
@@ -69,11 +62,16 @@ If no version is specified, defaults to deleting the current version.
 Examples:
   spike secret delete secret/apocalyptica          # Deletes current version
   spike secret delete secret/apocalyptica -v 1,2,3 # Deletes specific versions
-  spike secret delete secret/apocalyptica -v 0,1,2 
+  spike secret delete secret/apocalyptica -v 0,1,2
   # Deletes current version plus versions 1 and 2`,
 		Args: cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			trust.AuthenticateForPilot(SPIFFEID)
+
+			if source == nil {
+				cmd.PrintErrln("Error: SPIFFE X509 source is unavailable.")
+				return
+			}
 
 			api := spike.NewWithSource(source)
 
@@ -81,7 +79,7 @@ Examples:
 			versions, _ := cmd.Flags().GetString("versions")
 
 			if !validSecretPath(path) {
-				fmt.Printf("Error: invalid secret path: %s\n", path)
+				cmd.PrintErrf("Error: Invalid secret path: %s\n", path)
 				return
 			}
 
@@ -93,16 +91,13 @@ Examples:
 			versionList := strings.Split(versions, ",")
 			for _, v := range versionList {
 				version, err := strconv.Atoi(strings.TrimSpace(v))
-
 				if err != nil {
-					fmt.Printf("Error: invalid version number: %s\n", v)
+					cmd.PrintErrf("Error: Invalid version number: %s\n", v)
 					return
 				}
 
 				if version < 0 {
-					fmt.Printf(
-						"Error: version numbers cannot be negative: %s\n", v,
-					)
+					cmd.PrintErrf("Error: Negative version number: %s\n", v)
 					return
 				}
 			}
@@ -119,17 +114,11 @@ Examples:
 			}
 
 			err := api.DeleteSecretVersions(path, vv)
-			if err != nil {
-				if err.Error() == "not ready" {
-					stdout.PrintNotReady()
-					return
-				}
-
-				fmt.Printf("Error: %v\n", err)
+			if stdout.HandleAPIError(cmd, err) {
 				return
 			}
 
-			fmt.Println("OK")
+			cmd.Println("OK")
 		},
 	}
 

@@ -9,8 +9,8 @@
 package trust
 
 import (
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/log"
-
 	svid "github.com/spiffe/spike-sdk-go/spiffeid"
 )
 
@@ -21,17 +21,9 @@ import (
 func AuthenticateForPilot(SPIFFEID string) {
 	const fName = "AuthenticateForPilot"
 	if !svid.IsPilot(SPIFFEID) {
-		log.Log().Error(
-			fName,
-			"message",
-			"AuthenticateForPilot: You need a 'super user' SPIFFE ID to use this command.",
-		)
-		log.FatalLn(
-			fName,
-			"message",
-			"AuthenticateForPilot: You are not authorized to use this command (%s).\n",
-			SPIFFEID,
-		)
+		failErr := *sdkErrors.ErrAccessUnauthorized.Clone()
+		failErr.Msg = "you need a 'pilot' SPIFFE ID to use this command"
+		log.FatalErr(fName, failErr)
 	}
 }
 
@@ -41,42 +33,22 @@ func AuthenticateForPilot(SPIFFEID string) {
 // SPIFFEID is the SPIFFE ID string to authenticate for pilot recover access.
 func AuthenticateForPilotRecover(SPIFFEID string) {
 	const fName = "AuthenticateForPilotRecover"
-
 	if !svid.IsPilotRecover(SPIFFEID) {
-		log.Log().Error(
-			fName,
-			"message",
-			"AuthenticateForPilotRecover: You need a 'recover' "+
-				"SPIFFE ID to use this command.",
-		)
-		log.FatalLn(
-			fName,
-			"message",
-			"AuthenticateForPilotRecover: You are not authorized to use this command (%s).\n",
-			SPIFFEID,
-		)
+		failErr := *sdkErrors.ErrAccessUnauthorized.Clone()
+		failErr.Msg = "you need a 'recover' SPIFFE ID to use this command"
+		log.FatalErr(fName, failErr)
 	}
 }
 
-// AuthenticateForPilotRestore verifies if the given SPIFFE ID is valid for restoration.
-// Logs a fatal error and exits if the SPIFFE ID validation fails.
+// AuthenticateForPilotRestore verifies if the given SPIFFE ID is valid for
+// restoration. Logs a fatal error and exits if the SPIFFE ID validation fails.
 //
 // SPIFFEID is the SPIFFE ID string to authenticate for restore access.
 func AuthenticateForPilotRestore(SPIFFEID string) {
 	const fName = "AuthenticateForPilotRestore"
-
 	if !svid.IsPilotRestore(SPIFFEID) {
-		log.Log().Error(
-			fName,
-			"message",
-			"AuthenticateForPilotRestore: You need a 'restore' "+
-				"SPIFFE ID to use this command.",
-		)
-		log.FatalLn(
-			fName,
-			"message",
-			"AuthenticateForPilotRecover: You are not authorized to use this command (%s).\n",
-			SPIFFEID,
-		)
+		failErr := *sdkErrors.ErrAccessUnauthorized.Clone()
+		failErr.Msg = "you need a 'restore' SPIFFE ID to use this command"
+		log.FatalErr(fName, failErr)
 	}
 }

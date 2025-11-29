@@ -7,52 +7,69 @@ package operator
 import (
 	"net/http"
 
-	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
-	apiErr "github.com/spiffe/spike-sdk-go/api/errors"
-	"github.com/spiffe/spike-sdk-go/spiffe"
+	"github.com/spiffe/spike-sdk-go/config/env"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/spiffeid"
 
+	"github.com/spiffe/spike/internal/auth"
 	"github.com/spiffe/spike/internal/net"
 )
 
+// guardRestoreRequest validates a system restore request by performing
+// authentication, authorization, and input validation checks.
+//
+// This function implements strict authorization and validation for system
+// restore operations, which are critical administrative functions that restore
+// the system state from Shamir secret shares.
+//
+// The function performs the following validations in order:
+//   - Extracts and validates the peer SPIFFE ID from the request
+//   - Verifies the peer has a pilot-restore SPIFFE ID (operator role)
+//   - Validates the shard ID is within valid range (1-1000)
+//   - Validates the shard data is not all zeros (must contain meaningful data)
+//
+// Only identities with the pilot-restore role are authorized to perform system
+// restore operations. The shard ID range reflects the practical limit of SPIKE
+// Keeper instances in a deployment.
+//
+// If any validation fails, an appropriate error response is written to the
+// ResponseWriter and an error is returned.
+//
+// Parameters:
+//   - request: The restore request containing shard ID and shard data
+//   - w: The HTTP response writer for error responses
+//   - r: The HTTP request containing the peer SPIFFE ID
+//
+// Returns:
+//   - *sdkErrors.SDKError: An error if authentication fails, the peer is not
+//     authorized (not pilot-restore), the shard ID is out of range, or the
+//     shard data is invalid. Returns nil if all validations pass.
 func guardRestoreRequest(
 	request reqres.RestoreRequest, w http.ResponseWriter, r *http.Request,
-) error {
-	peerSPIFFEID, err := spiffe.IDFromRequest(r)
-	if err != nil {
-		responseBody := net.MarshalBody(reqres.RestoreResponse{
-			Err: data.ErrUnauthorized,
-		}, w)
-		net.Respond(http.StatusUnauthorized, responseBody, w)
-		return apiErr.ErrUnauthorized
+) *sdkErrors.SDKError {
+	peerSPIFFEID, err := auth.ExtractPeerSPIFFEID[reqres.ShardGetResponse](
+		r, w, reqres.ShardGetResponse{}.Unauthorized(),
+	)
+	if alreadyResponded := err != nil; alreadyResponded {
+		return err
 	}
 
-	if peerSPIFFEID == nil {
-		responseBody := net.MarshalBody(reqres.RestoreResponse{
-			Err: data.ErrUnauthorized,
-		}, w)
-		net.Respond(http.StatusUnauthorized, responseBody, w)
-		return apiErr.ErrUnauthorized
-	}
-
+	// We don't do policy checks as the restore operation purely restricted to
+	// SPIKE Pilot.
 	if !spiffeid.IsPilotRestore(peerSPIFFEID.String()) {
-		responseBody := net.MarshalBody(reqres.RestoreResponse{
-			Err: data.ErrUnauthorized,
-		}, w)
-		net.Respond(http.StatusUnauthorized, responseBody, w)
-		return apiErr.ErrUnauthorized
+		net.Fail(
+			reqres.RestoreResponse{}.Unauthorized(), w,
+			http.StatusUnauthorized,
+		)
+		return sdkErrors.ErrAccessUnauthorized
 	}
 
-	// It's unlikely to have 1000 SPIKE Keepers across the board.
-	// The indexes start from 1 and increase one-by-one by design.
-	const maxShardID = 1000
-	if request.ID < 1 || request.ID > maxShardID {
-		responseBody := net.MarshalBody(reqres.RestoreResponse{
-			Err: data.ErrBadInput,
-		}, w)
-		net.Respond(http.StatusUnauthorized, responseBody, w)
-		return apiErr.ErrInvalidInput
+	if request.ID < 1 || request.ID > env.ShamirMaxShareCountVal() {
+		net.Fail(
+			reqres.RestoreResponse{}.BadRequest(), w, http.StatusBadRequest,
+		)
+		return sdkErrors.ErrAPIBadRequest
 	}
 
 	allZero := true
@@ -63,11 +80,10 @@ func guardRestoreRequest(
 		}
 	}
 	if allZero {
-		responseBody := net.MarshalBody(reqres.RestoreResponse{
-			Err: data.ErrBadInput,
-		}, w)
-		net.Respond(http.StatusUnauthorized, responseBody, w)
-		return apiErr.ErrInvalidInput
+		net.Fail(
+			reqres.RestoreResponse{}.BadRequest(), w, http.StatusBadRequest,
+		)
+		return sdkErrors.ErrAPIBadRequest
 	}
 
 	return nil

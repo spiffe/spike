@@ -6,7 +6,6 @@ package operator
 
 import (
 	"encoding/hex"
-	"fmt"
 	"os"
 	"strconv"
 	"strings"
@@ -15,7 +14,6 @@ import (
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	spike "github.com/spiffe/spike-sdk-go/api"
 	"github.com/spiffe/spike-sdk-go/crypto"
-	"github.com/spiffe/spike-sdk-go/log"
 	"github.com/spiffe/spike-sdk-go/security/mem"
 	"github.com/spiffe/spike-sdk-go/spiffeid"
 	"golang.org/x/term"
@@ -31,10 +29,10 @@ import (
 // accepts recovery shards interactively and initiates the restoration process.
 //
 // Parameters:
-//   - source *workloadapi.X509Source: The X.509 source for SPIFFE
-//     authentication.
-//   - spiffeId string: The SPIFFE ID of the caller for role-based access
-//     control.
+//   - source: X.509 source for SPIFFE authentication. Can be nil if the
+//     Workload API connection is unavailable, in which case the command will
+//     display an error message and return.
+//   - SPIFFEID: The SPIFFE ID of the caller for role-based access control.
 //
 // Returns:
 //   - *cobra.Command: A cobra command that implements the restoration
@@ -45,7 +43,7 @@ import (
 //   - Authenticates the restoration request.
 //   - Prompts the user to enter a recovery shard (input is hidden for
 //     security).
-//   - Sends the shard to the SPIKE API to contribute to restoration.
+//   - Sends the shard to SPIKE Nexus to contribute to restoration.
 //   - Reports the status of the restoration process to the user.
 //
 // The command will abort with a fatal error if:
@@ -65,42 +63,36 @@ func newOperatorRestoreCommand(
 		Short: "Restore SPIKE Nexus (do this if SPIKE Nexus cannot auto-recover)",
 		Run: func(cmd *cobra.Command, args []string) {
 			if !spiffeid.IsPilotRestore(SPIFFEID) {
-				fmt.Println("")
-				fmt.Println(
-					"  You need to have a `restore` role to use this command.")
-				fmt.Println(
-					"  Please run " +
-						"`./hack/bare-metal/entry/spire-server-entry-restore-register.sh`")
-				fmt.Println("  with necessary privileges to assign this role.")
-				fmt.Println("")
-				os.Exit(1)
+				cmd.PrintErrln("Error: You need the 'restore' role.")
+				cmd.PrintErrln("See https://spike.ist/operations/recovery/")
+				return
 			}
 
 			trust.AuthenticateForPilotRestore(SPIFFEID)
 
-			fmt.Println("(your input will be hidden as you paste/type it)")
-			fmt.Print("Enter recovery shard: ")
-			shard, err := term.ReadPassword(int(os.Stdin.Fd()))
-			if err != nil {
-				_, e := fmt.Fprintf(os.Stderr, "Error reading shard: %v\n", err)
-				if e != nil {
-					return
-				}
-				os.Exit(1)
+			if source == nil {
+				cmd.PrintErrln("Error: SPIFFE X509 source is unavailable.")
+				return
+			}
+
+			cmd.Println("(your input will be hidden as you paste/type it)")
+			cmd.Print("Enter recovery shard: ")
+			shard, readErr := term.ReadPassword(int(os.Stdin.Fd()))
+			if readErr != nil {
+				cmd.Println("") // newline after hidden input
+				cmd.PrintErrf("Error: %v\n", readErr)
+				return
 			}
 
 			api := spike.NewWithSource(source)
 
 			var shardToRestore [crypto.AES256KeySize]byte
 
-			// shard is in `spike:$id:$base64` format
+			// shard is in `spike:$id:$hex` format
 			shardParts := strings.SplitN(string(shard), ":", 3)
 			if len(shardParts) != 3 {
-				fmt.Println("")
-				fmt.Println(
-					"Invalid shard format. Expected format: `spike:$id:$secret`.",
-				)
-				os.Exit(1)
+				cmd.PrintErrln("Error: Invalid shard format.")
+				return
 			}
 
 			index := shardParts[1]
@@ -108,16 +100,12 @@ func newOperatorRestoreCommand(
 
 			// 32 bytes encoded in hex should be 64 characters
 			if len(hexData) != 64 {
-				fmt.Println("")
-				fmt.Println(
-					"Invalid hex shard length:", len(hexData),
-					"(expected 64 characters).",
-					"Did you miss some characters when pasting?",
-				)
-				os.Exit(1)
+				cmd.PrintErrf("Error: Invalid hex shard length: %d (expected 64).\n",
+					len(hexData))
+				return
 			}
 
-			decodedShard, err := hex.DecodeString(hexData)
+			decodedShard, decodeErr := hex.DecodeString(hexData)
 
 			// Security: Use `defer` for cleanup to ensure it happens even in
 			// error paths
@@ -130,19 +118,17 @@ func newOperatorRestoreCommand(
 			// Security: reset shard immediately after use.
 			mem.ClearBytes(shard)
 
-			if err != nil {
-				fmt.Println("")
-				fmt.Println("Failed to decode recovery shard: ", err.Error())
-				os.Exit(1)
+			if decodeErr != nil {
+				cmd.PrintErrln("Error: Failed to decode recovery shard.")
+				return
 			}
 
 			if len(decodedShard) != crypto.AES256KeySize {
 				// Security: reset decodedShard immediately after use.
 				mem.ClearBytes(decodedShard)
-
-				fmt.Println("")
-				fmt.Println("Invalid recovery shard length: ", len(decodedShard))
-				os.Exit(1)
+				cmd.PrintErrf("Error: Invalid shard length: %d (expected %d).\n",
+					len(decodedShard), crypto.AES256KeySize)
+				return
 			}
 
 			for i := 0; i < crypto.AES256KeySize; i++ {
@@ -152,45 +138,39 @@ func newOperatorRestoreCommand(
 			// Security: reset decodedShard immediately after use.
 			mem.ClearBytes(decodedShard)
 
-			ix, err := strconv.Atoi(index)
-			if err != nil {
-				fmt.Println("")
-				fmt.Println("Invalid shard index: ", err.Error())
-				os.Exit(1)
+			ix, atoiErr := strconv.Atoi(index)
+			if atoiErr != nil {
+				cmd.PrintErrf("Error: Invalid shard index: %s\n", index)
+				return
 			}
 
-			status, err := api.Restore(ix, &shardToRestore)
-
+			status, restoreErr := api.Restore(ix, &shardToRestore)
 			// Security: reset shardToRestore immediately after recovery.
 			mem.ClearRawBytes(&shardToRestore)
-
-			if err != nil {
-				log.FatalLn(err.Error())
+			if restoreErr != nil {
+				cmd.PrintErrln("Error: Failed to communicate with SPIKE Nexus.")
+				return
 			}
 
 			if status == nil {
-				fmt.Println("")
-				fmt.Println("Didn't get any status while trying to restore SPIKE.")
-				os.Exit(1)
+				cmd.PrintErrln("Error: No status returned from SPIKE Nexus.")
+				return
 			}
 
 			if status.Restored {
-				fmt.Println("")
-				fmt.Println("  SPIKE is now restored and ready to use.")
-				fmt.Println(
-					"  Please run " +
-						"`./hack/bare-metal/entry/spire-server-entry-su-register.sh`")
-				fmt.Println(
-					"  with necessary privileges to start using SPIKE as a superuser.")
-				fmt.Println("")
+				cmd.Println("")
+				cmd.Println("  SPIKE is now restored and ready to use.")
+				cmd.Println(
+					"  See https://spike.ist/operations/recovery/ for next steps.")
+				cmd.Println("")
 			} else {
-				fmt.Println("")
-				fmt.Println(" Shards collected: ", status.ShardsCollected)
-				fmt.Println(" Shards remaining: ", status.ShardsRemaining)
-				fmt.Println(
+				cmd.Println("")
+				cmd.Println(" Shards collected: ", status.ShardsCollected)
+				cmd.Println(" Shards remaining: ", status.ShardsRemaining)
+				cmd.Println(
 					" Please run `spike operator restore` " +
 						"again to provide the remaining shards.")
-				fmt.Println("")
+				cmd.Println("")
 			}
 		},
 	}

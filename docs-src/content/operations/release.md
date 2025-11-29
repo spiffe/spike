@@ -29,14 +29,35 @@ ensure a smooth and reliable release process.
 
 ## Coverage Report
 
-The coverage report is available at [https://spike.ist/coverage.html][coverage].
+The coverage report for **SPIKE** is available at 
+[https://spike.ist/coverage.html][coverage].
+
+The coverage report for **SPIKE Go SDK** available at 
+[https://spike.ist/sdk/coverage.html][coverage-sdk].
 
 [coverage]: https://spike.ist/coverage.html "SPIKE Coverage Report"
+[coverage-sdk]: https://spike.ist/sdk/coverage.html "SPIKE Coverage Report"
 
 We update the coverage report at every release cut.
 
 If you want to increase test coverage, you are more than welcome to contribute
 to the project.
+
+### Generating Coverage Reports
+
+To generate and publish the **SPIKE** coverage report, run `make docs` from the
+SPIKE repository root. This generates the coverage report and publishes it to
+`./docs/coverage.html`.
+
+To generate and publish the **SPIKE Go SDK** coverage report:
+
+```bash
+cd /path/to/spike-sdk-go
+make coverage/publish
+```
+
+This runs the SDK tests with coverage profiling and publishes the HTML report
+to the SPIKE documentation directory at `./docs/sdk/coverage.html`.
 
 ## Before Every Release
 
@@ -55,6 +76,8 @@ Before every release:
     (`docs-src/content/tracking/changelog.md`). 
 8.  Run `make docs` to generate and publish the documentation, including the
     coverage report.
+9.  From the `spike-sdk-go` repository, run `make coverage/publish` to generate
+    and publish the SDK coverage report.
 
 Release process:
 

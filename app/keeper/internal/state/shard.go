@@ -8,13 +8,8 @@
 package state
 
 import (
-	"sync"
-
 	"github.com/spiffe/spike-sdk-go/crypto"
 )
-
-var shard [crypto.AES256KeySize]byte
-var shardMutex sync.RWMutex
 
 // SetShard safely updates the global shard value under a write lock.
 // Although the value is a pointer type, it creates a copy. The value `s`

@@ -5,13 +5,12 @@
 package operator
 
 import (
+	"fmt"
 	"net/http"
 
-	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
-	"github.com/spiffe/spike-sdk-go/api/errors"
 	"github.com/spiffe/spike-sdk-go/config/env"
-	"github.com/spiffe/spike-sdk-go/log"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/security/mem"
 
 	"github.com/spiffe/spike/app/nexus/internal/initialization/recovery"
@@ -45,33 +44,19 @@ import (
 // shards in the response body.
 func RouteRecover(
 	w http.ResponseWriter, r *http.Request, audit *journal.AuditEntry,
-) error {
+) *sdkErrors.SDKError {
 	const fName = "routeRecover"
+
 	journal.AuditRequest(fName, r, audit, journal.AuditCreate)
 
-	requestBody := net.ReadRequestBody(w, r)
-	if requestBody == nil {
-		log.Log().Warn(fName, "message", "requestBody is nil")
-		return errors.ErrReadFailure
-	}
-
-	request := net.HandleRequest[
+	_, err := net.ReadParseAndGuard[
 		reqres.RecoverRequest, reqres.RecoverResponse](
-		requestBody, w,
-		reqres.RecoverResponse{Err: data.ErrBadInput},
+		w, r, reqres.RecoverResponse{}.BadRequest(), guardRecoverRequest,
 	)
-	if request == nil {
-		log.Log().Warn(fName, "message", "request is nil")
-		return errors.ErrParseFailure
-	}
-
-	err := guardRecoverRequest(*request, w, r)
-	if err != nil {
+	if alreadyResponded := err != nil; alreadyResponded {
 		return err
 	}
 
-	log.Log().Info(fName,
-		"message", "request is valid. Recovery shards requested.")
 	shards := recovery.NewPilotRecoveryShards()
 
 	// Security: reset shards before the function exits.
@@ -82,8 +67,9 @@ func RouteRecover(
 	}()
 
 	if len(shards) < env.ShamirThresholdVal() {
-		log.Log().Error(fName, "message", "not enough shards. Exiting.")
-		return errors.ErrNotFound
+		return net.HandleInternalError(
+			sdkErrors.ErrShamirNotEnoughShards, w, reqres.RecoverResponse{},
+		)
 	}
 
 	// Track seen indices to check for duplicates
@@ -91,9 +77,9 @@ func RouteRecover(
 
 	for idx, shard := range shards {
 		if seenIndices[idx] {
-			log.Log().Error(fName, "message", "duplicate index. Exiting.")
-			// Duplicate index.
-			return errors.ErrInvalidInput
+			failErr := sdkErrors.ErrShamirDuplicateIndex.Clone()
+			failErr.Msg = fmt.Sprint("duplicate shard index: ", idx)
+			return net.HandleInternalError(failErr, w, reqres.RecoverResponse{})
 		}
 
 		// We cannot check for duplicate values, because although it's
@@ -104,8 +90,9 @@ func RouteRecover(
 
 		// Check for nil pointers
 		if shard == nil {
-			log.Log().Error(fName, "message", "nil shard. Exiting.")
-			return errors.ErrInvalidInput
+			return net.HandleInternalError(
+				sdkErrors.ErrShamirNilShard, w, reqres.RecoverResponse{},
+			)
 		}
 
 		// Check for empty shards (all zeros)
@@ -117,26 +104,24 @@ func RouteRecover(
 			}
 		}
 		if zeroed {
-			log.Log().Error(fName, "message", "zeroed shard. Exiting.")
-			return errors.ErrInvalidInput
+			return net.HandleInternalError(
+				sdkErrors.ErrShamirEmptyShard, w, reqres.RecoverResponse{},
+			)
 		}
 
 		// Verify shard index is within valid range:
 		if idx < 1 || idx > env.ShamirSharesVal() {
-			log.Log().Error(fName, "message", "invalid index. Exiting.")
-			return errors.ErrInvalidInput
+			return net.HandleInternalError(
+				sdkErrors.ErrShamirInvalidIndex, w, reqres.RecoverResponse{},
+			)
 		}
 	}
 
-	responseBody := net.MarshalBody(reqres.RecoverResponse{
-		Shards: shards,
-	}, w)
-	// Security: Clean up response body before exit.
+	responseBody := net.SuccessWithResponseBody(
+		reqres.RecoverResponse{Shards: shards}.Success(), w,
+	)
 	defer func() {
 		mem.ClearBytes(responseBody)
 	}()
-
-	net.Respond(http.StatusOK, responseBody, w)
-	log.Log().Info(fName, "message", data.ErrSuccess)
 	return nil
 }

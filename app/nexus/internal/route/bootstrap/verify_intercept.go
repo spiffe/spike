@@ -7,61 +7,82 @@ package bootstrap
 import (
 	"net/http"
 
-	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
-	apiErr "github.com/spiffe/spike-sdk-go/api/errors"
-	"github.com/spiffe/spike-sdk-go/spiffe"
+	"github.com/spiffe/spike-sdk-go/config/env"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/spiffeid"
 
+	"github.com/spiffe/spike/internal/auth"
+	"github.com/spiffe/spike/internal/crypto"
 	"github.com/spiffe/spike/internal/net"
 )
 
+// expectedNonceSize is the standard AES-GCM nonce size. See ADR-0032.
+const expectedNonceSize = crypto.GCMNonceSize
+
+// guardVerifyRequest validates a bootstrap verification request by performing
+// authentication and input validation checks.
+//
+// This function ensures that only authorized bootstrap instances can verify
+// the system initialization by validating cryptographic parameters and peer
+// identity.
+//
+// The function performs the following validations in order:
+//   - Extracts and validates the peer SPIFFE ID from the request
+//   - Verifies the peer has a bootstrap SPIFFE ID
+//   - Validates the nonce size (must be 12 bytes for AES-GCM standard)
+//   - Validates the ciphertext size (must not exceed 1024 bytes to prevent DoS
+//     attacks)
+//
+// If any validation fails, an appropriate error response is written to the
+// ResponseWriter and an error is returned.
+//
+// Parameters:
+//   - request: The bootstrap verification request containing nonce and
+//     ciphertext
+//   - w: The HTTP response writer for error responses
+//   - r: The HTTP request containing the peer SPIFFE ID
+//
+// Returns:
+//   - nil if all validations pass
+//   - sdkErrors.ErrAccessUnauthorized if authentication fails or peer is not
+//     bootstrap
+//   - sdkErrors.ErrDataInvalidInput if nonce or ciphertext validation fails
 func guardVerifyRequest(
 	request reqres.BootstrapVerifyRequest, w http.ResponseWriter, r *http.Request,
-) error {
-	peerSPIFFEID, err := spiffe.IDFromRequest(r)
-	if err != nil {
-		responseBody := net.MarshalBody(reqres.BootstrapVerifyResponse{
-			Err: data.ErrUnauthorized,
-		}, w)
-		net.Respond(http.StatusUnauthorized, responseBody, w)
-		return apiErr.ErrUnauthorized
-	}
-
-	if peerSPIFFEID == nil {
-		responseBody := net.MarshalBody(reqres.BootstrapVerifyResponse{
-			Err: data.ErrUnauthorized,
-		}, w)
-		net.Respond(http.StatusUnauthorized, responseBody, w)
-		return apiErr.ErrUnauthorized
+) *sdkErrors.SDKError {
+	peerSPIFFEID, err := auth.ExtractPeerSPIFFEID[reqres.BootstrapVerifyResponse](
+		r, w, reqres.BootstrapVerifyResponse{}.Unauthorized(),
+	)
+	if alreadyResponded := err != nil; alreadyResponded {
+		return err
 	}
 
 	if !spiffeid.IsBootstrap(peerSPIFFEID.String()) {
-		responseBody := net.MarshalBody(reqres.BootstrapVerifyResponse{
-			Err: data.ErrUnauthorized,
-		}, w)
-		net.Respond(http.StatusUnauthorized, responseBody, w)
-		return apiErr.ErrUnauthorized
+		net.Fail(
+			reqres.BootstrapVerifyResponse{}.Unauthorized(), w,
+			http.StatusUnauthorized,
+		)
+		return sdkErrors.ErrAccessUnauthorized
 	}
 
-	// Validate nonce size (AES-GCM standard nonce is 12 bytes)
-	const expectedNonceSize = 12
 	if len(request.Nonce) != expectedNonceSize {
-		responseBody := net.MarshalBody(reqres.BootstrapVerifyResponse{
-			Err: data.ErrBadInput,
-		}, w)
-		net.Respond(http.StatusBadRequest, responseBody, w)
-		return apiErr.ErrInvalidInput
+		net.Fail(
+			reqres.BootstrapVerifyResponse{}.BadRequest(), w,
+			http.StatusBadRequest,
+		)
+		return sdkErrors.ErrDataInvalidInput
 	}
 
-	// Validate ciphertext size to prevent DoS attacks
-	const maxCiphertextSize = 1024
-	if len(request.Ciphertext) > maxCiphertextSize {
-		responseBody := net.MarshalBody(reqres.BootstrapVerifyResponse{
-			Err: data.ErrBadInput,
-		}, w)
-		net.Respond(http.StatusBadRequest, responseBody, w)
-		return apiErr.ErrInvalidInput
+	// Limit cipherText size to prevent DoS attacks
+	// The maximum possible size is 68,719,476,704
+	// The limit comes from GCM's 32-bit counter.
+	if len(request.Ciphertext) > env.CryptoMaxCiphertextSizeVal() {
+		net.Fail(
+			reqres.BootstrapVerifyResponse{}.BadRequest(), w,
+			http.StatusBadRequest,
+		)
+		return sdkErrors.ErrDataInvalidInput
 	}
 
 	return nil

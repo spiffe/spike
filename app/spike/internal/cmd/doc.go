@@ -2,16 +2,46 @@
 //  \\\\\ Copyright 2024-present SPIKE contributors.
 // \\\\\\\ SPDX-License-Identifier: Apache-2.0
 
-// Package cmd provides the entry point for the CLI application, including the
-// initialization and execution mechanisms for SPIKE's secret and policy
-// management commands. It integrates with the SPIFFE Workload API to enable
-// secure and authenticated communication for secret operations.
+// Package cmd provides the command-line interface for SPIKE Pilot, the CLI
+// tool for interacting with SPIKE Nexus. It implements the root command and
+// orchestrates all subcommand groups.
 //
-// The package includes the following functionalities:
-//   - Command initialization and configuration for 'policy' and 'secret'
-//     related operations
-//   - Execution of the root command with error handling
+// The package exposes two primary functions:
 //
-// Each command uses SPIFFE's X.509 source for authentication and builds
-// a secure environment for managing secrets and policies.
+//   - Initialize: Registers all command groups with the root command
+//   - Execute: Runs the CLI and handles the command execution lifecycle
+//
+// # Command Groups
+//
+// The following command groups are available:
+//
+//   - secret: Create, read, update, and delete secrets with versioning support
+//   - policy: Manage access control policies for workload authorization
+//   - cipher: Encrypt and decrypt data using SPIKE's cryptographic services
+//   - operator: Perform administrative operations such as recovery and restore
+//
+// # Authentication
+//
+// All commands authenticate using SPIFFE X.509 SVIDs obtained from the
+// Workload API. The SPIFFE ID identifies the workload to SPIKE Nexus, which
+// enforces access control based on configured policies.
+//
+// # Usage
+//
+// The typical initialization pattern:
+//
+//	func main() {
+//	    source, SPIFFEID, err := spiffe.Source(ctx)
+//	    if err != nil {
+//	        log.Fatal(err)
+//	    }
+//	    cmd.Initialize(source, SPIFFEID)
+//	    cmd.Execute()
+//	}
+//
+// # Error Handling
+//
+// Execute terminates the process with exit code 1 on any command error.
+// Errors are written to stderr; if stderr is unavailable, stdout is used
+// as a fallback.
 package cmd

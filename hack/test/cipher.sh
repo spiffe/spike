@@ -2,8 +2,8 @@
 
 set -euo pipefail
 
-if [[ -z "${SPIKE_NEXUS_URL:-}" ]]; then
-  echo "SPIKE_NEXUS_URL must be set to run this test" >&2
+if [[ -z "${SPIKE_NEXUS_API_URL:-}" ]]; then
+  echo "SPIKE_NEXUS_API_URL must be set to run this test" >&2
   exit 1
 fi
 

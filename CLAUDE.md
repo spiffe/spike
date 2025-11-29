@@ -40,6 +40,68 @@ mentioned and suggest updates in that table.
 - `os.Exit(0)` for successful early termination (`--help`, `--version`)
 - Libraries should return errors, **not** call `os.Exit()`.
 
+SDKError sentinel values are used across the codebase. One thing to remember is
+these sentinels are global variables, and they are "mutable."  Use the `.Clone()`
+method if you want to create an error with a different message or code to use
+locally. We **try** not to return plain `error`s within the codebase and instead
+use `*sdkErrors.SDKError`.
+
+### Avoiding Error Shadowing with `*sdkErrors.SDKError`
+
+When a variable is first declared as type `error` (e.g., from `os.WriteFile`),
+and then `:=` is used to assign a `*sdkErrors.SDKError` to it, Go reuses the
+existing `error`-typed variable. A nil `*sdkErrors.SDKError` assigned to an
+`error` interface becomes a non-nil interface holding a nil pointer, causing
+`err == nil` to return `false` even when the error is actually nil.
+
+```go
+// BAD: `err` is typed as `error` from WriteFile, then reused for SDKError
+err := os.WriteFile(path, data, 0644)  // err is type `error`
+if err != nil { ... }
+
+result, err := functionReturningSDKError()  // err is STILL type `error`
+if err == nil {  // This may be FALSE even when SDKError is nil!
+    // Won't execute because error interface holds (*SDKError)(nil)
+}
+
+// GOOD: Use distinct variable names to avoid type confusion
+if writeErr := os.WriteFile(path, data, 0644); writeErr != nil {
+    return writeErr
+}
+
+result, readErr := functionReturningSDKError()
+if readErr == nil {  // Works correctly
+    // Executes as expected
+}
+```
+
+This is a common source of test failures. Always use distinct error variable
+names when mixing standard library calls (which return `error`) with SDK
+functions (which return `*sdkErrors.SDKError`).
+
+### Testing Functions That Call log.FatalErr and its variants (log.Fatal, log.FatalLn)
+
+- `SPIKE_STACK_TRACES_ON_LOG_FATAL=true`: Makes `log.FatalErr` panic instead of 
+  `os.Exit(1)`, allowing tests to recover
+
+
+```go
+func TestSomethingThatFatals(t *testing.T) {
+    // Enable panic mode for recovery
+    t.Setenv("SPIKE_STACK_TRACES_ON_LOG_FATAL", "true")
+
+    defer func() {
+        if r := recover(); r == nil {
+            t.Error("Expected panic from log.FatalErr")
+        }
+    }()
+
+    FunctionThatCallsFatalErr()
+
+    t.Error("Should have panicked")
+}
+```
+
 ### Architecture
 - SPIKE Nexus: Secret management service
 - SPIKE Pilot: CLI tool for users
@@ -51,12 +113,35 @@ mentioned and suggest updates in that table.
 - Encryption keys are `crypto.AES256KeySize` byte (32 bytes)
 - Schema in `app/nexus/internal/state/backend/sqlite/ddl/statements.go`
 
+### Test Pattern: Return After t.Fatal
+
+When `t.Fatal` guards a pointer that is dereferenced afterward, add an explicit
+`return` after the `t.Fatal` call. While `t.Fatal` stops the test, the compiler
+and staticcheck (SA5011) cannot prove control flow stops, so they warn about
+possible nil pointer dereference.
+
+```go
+// BAD: staticcheck SA5011 warns about possible nil pointer dereference
+if result == nil {
+    t.Fatal("Expected non-nil result")
+}
+result.DoSomething()  // SA5011: possible nil pointer dereference
+
+// GOOD: explicit return satisfies static analysis
+if result == nil {
+    t.Fatal("Expected non-nil result")
+    return
+}
+result.DoSomething()  // No warning
+```
+
 ### Common Mistakes to Avoid
 1. Don't invent environment variables---check existing code first
-2. Use regex patterns, not globs, for SPIFFE ID / path pattern matching  
+2. Use regex patterns, not globs, for SPIFFE ID / path pattern matching
 3. Don't assume libraries exist---check imports/dependencies
 4. Follow existing naming conventions and file organization
 5. Test files should mirror the structure they're testing
+6. Add `return` after `t.Fatal` when subsequent code dereferences the pointer
 
 ## Project Structure
 ```

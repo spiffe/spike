@@ -96,3 +96,7 @@ bootstrap-linux-arm64.sum.txt
 /docs-src/public
 /spiffe-rendered.yaml
 /spire-crds-rendered.yaml
+
+# Claude
+/PLAN.md
+/TEST_COVERAGE_ANALYSIS.md

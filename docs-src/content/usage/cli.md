@@ -43,6 +43,7 @@ Usage:
   spike [command]
 
 Available Commands:
+  cipher      Encrypt and decrypt data using SPIKE Nexus
   completion  Generate the autocompletion script for the specified shell
   help        Help about any command
   operator    Manage admin operations
@@ -106,11 +107,12 @@ spike (main)$ spike secret get --help
 Get secrets from the specified path
 
 Usage:
-  spike secret get <path> [flags]
+  spike secret get <path> [key] [flags]
 
 Flags:
-  -h, --help          help for get
-  -v, --version int   Specific version to retrieve
+  -f, --format string   Format to use: plain, p, yaml, y, json, j (default "plain")
+  -h, --help            help for get
+  -v, --version int     Specific version to retrieve
 ```
 
 Now that we know how to use the `spike secret get` command, let's try it.

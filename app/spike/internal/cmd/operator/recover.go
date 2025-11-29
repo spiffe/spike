@@ -15,7 +15,6 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	spike "github.com/spiffe/spike-sdk-go/api"
-	"github.com/spiffe/spike-sdk-go/log"
 	"github.com/spiffe/spike-sdk-go/security/mem"
 	"github.com/spiffe/spike-sdk-go/spiffeid"
 
@@ -32,10 +31,10 @@ import (
 // be used to restore the system in case of a catastrophic failure.
 //
 // Parameters:
-//   - source *workloadapi.X509Source: The X.509 source for SPIFFE
-//     authentication.
-//   - spiffeId string: The SPIFFE ID of the caller for role-based access
-//     control.
+//   - source: X.509 source for SPIFFE authentication. Can be nil if the
+//     Workload API connection is unavailable, in which case the command will
+//     display an error message and return.
+//   - SPIFFEID: The SPIFFE ID of the caller for role-based access control.
 //
 // Returns:
 //   - *cobra.Command: A cobra command that implements the recovery
@@ -62,20 +61,21 @@ func newOperatorRecoverCommand(
 		Short: "Recover SPIKE Nexus (do this while SPIKE Nexus is healthy)",
 		Run: func(cmd *cobra.Command, args []string) {
 			if !spiffeid.IsPilotRecover(SPIFFEID) {
-				fmt.Println("")
-				fmt.Println("  You need to have a `recover` role to use this command.")
-				fmt.Println(
-					"  Please run `./hack/bare-metal/entry/spire-server-entry-recover-register.sh`")
-				fmt.Println("  with necessary privileges to assign this role.")
-				fmt.Println("")
-				log.FatalLn("Aborting.")
+				cmd.PrintErrln("Error: You need the 'recover' role.")
+				cmd.PrintErrln("See https://spike.ist/operations/recovery/")
+				return
 			}
 
 			trust.AuthenticateForPilotRecover(SPIFFEID)
 
+			if source == nil {
+				cmd.PrintErrln("Error: SPIFFE X509 source is unavailable.")
+				return
+			}
+
 			api := spike.NewWithSource(source)
 
-			shards, err := api.Recover()
+			shards, apiErr := api.Recover()
 			// Security: clean the shards when we no longer need them.
 			defer func() {
 				for _, shard := range shards {
@@ -83,18 +83,13 @@ func newOperatorRecoverCommand(
 				}
 			}()
 
-			if err != nil {
-				log.FatalLn(err.Error())
+			if apiErr != nil {
+				cmd.PrintErrln("Error: Failed to retrieve recovery shards.")
+				return
 			}
 
 			if shards == nil {
-				fmt.Println("")
-				fmt.Println("  No shards found.")
-				fmt.Println("  Cannot save recovery shards.")
-				fmt.Println("  Please try again later.")
-				fmt.Println("  If the problem persists, check SPIKE logs.")
-				fmt.Println("")
-
+				cmd.PrintErrln("Error: No shards found.")
 				return
 			}
 
@@ -107,11 +102,8 @@ func newOperatorRecoverCommand(
 					}
 				}
 				if emptyShard {
-					fmt.Println("")
-					fmt.Println("  Empty shard found.")
-					fmt.Println("  Cannot save recovery shards.")
-					fmt.Println("  Please try again later.")
-					fmt.Println("  If the problem persists, check SPIKE logs.")
+					cmd.PrintErrln("Error: Empty shard found.")
+					return
 				}
 			}
 
@@ -119,59 +111,42 @@ func newOperatorRecoverCommand(
 			recoverDir := config.PilotRecoveryFolder()
 
 			// Clean the path to normalize it
-			cleanPath, err := filepath.Abs(filepath.Clean(recoverDir))
-			if err != nil {
-				fmt.Println("")
-				fmt.Println("    Error resolving recovery directory path.")
-				fmt.Println("    " + err.Error())
-				fmt.Println("")
-				log.FatalLn("Aborting.")
+			cleanPath, absErr := filepath.Abs(filepath.Clean(recoverDir))
+			if absErr != nil {
+				cmd.PrintErrf("Error: %v\n", absErr)
+				return
 			}
 
 			// Verify the path exists and is a directory
-			fileInfo, err := os.Stat(cleanPath)
-			if err != nil || !fileInfo.IsDir() {
-				fmt.Println("")
-				fmt.Println("    Invalid recovery directory path.")
-				fmt.Println("    Path does not exist or is not a directory.")
-				fmt.Println("")
-				log.FatalLn("Aborting.")
+			fileInfo, statErr := os.Stat(cleanPath)
+			if statErr != nil || !fileInfo.IsDir() {
+				cmd.PrintErrln("Error: Invalid recovery directory path.")
+				return
 			}
 
 			// Ensure the cleaned path doesn't contain suspicious components
-			// This helps catch any attempts at path traversal that survived cleaning
 			if strings.Contains(cleanPath, "..") ||
 				strings.Contains(cleanPath, "./") ||
 				strings.Contains(cleanPath, "//") {
-				fmt.Println("")
-				fmt.Println("    Invalid recovery directory path.")
-				fmt.Println("    Path contains suspicious components.")
-				fmt.Println("")
-				log.FatalLn("Aborting.")
+				cmd.PrintErrln("Error: Invalid recovery directory path.")
+				return
 			}
 
 			// Ensure the recover directory is clean by
 			// deleting any existing recovery files.
-			// We are NOT warning the user about this operation because
-			// the admin ought to have securely backed up the shards and
-			// deleted them from the recover directory anyway.
-			if _, err := os.Stat(recoverDir); err == nil {
-				files, err := os.ReadDir(recoverDir)
-				if err != nil {
-					fmt.Printf("Failed to read recover directory %s: %s\n",
-						recoverDir, err.Error())
-					log.FatalLn(err.Error())
+			if _, dirStatErr := os.Stat(recoverDir); dirStatErr == nil {
+				files, readErr := os.ReadDir(recoverDir)
+				if readErr != nil {
+					cmd.PrintErrf("Error: Failed to read recover directory: %v\n",
+						readErr)
+					return
 				}
 
 				for _, file := range files {
 					if file.Name() != "" && filepath.Ext(file.Name()) == ".txt" &&
 						strings.HasPrefix(file.Name(), "spike.recovery") {
 						filePath := filepath.Join(recoverDir, file.Name())
-						err := os.Remove(filePath)
-						if err != nil {
-							fmt.Printf("Failed to delete old recovery file %s: %s\n",
-								filePath, err.Error())
-						}
+						_ = os.Remove(filePath)
 					}
 				}
 			}
@@ -185,33 +160,36 @@ func newOperatorRecoverCommand(
 				out := fmt.Sprintf("spike:%d:%s", i, encodedShard)
 
 				// 0600 to be more restrictive.
-				err := os.WriteFile(filePath, []byte(out), 0600)
+				writeErr := os.WriteFile(filePath, []byte(out), 0600)
 
 				// Security: Hint gc to reclaim memory.
 				encodedShard = "" // nolint:ineffassign
 				out = ""          // nolint:ineffassign
 				runtime.GC()
 
-				if err != nil {
-					fmt.Printf("Failed to save shard %d: %s\n", i, err.Error())
+				if writeErr != nil {
+					cmd.PrintErrf("Error: Failed to save shard %d: %v\n",
+						i, writeErr)
+					return
 				}
 			}
 
-			fmt.Println("")
-			fmt.Println("  SPIKE Recovery shards saved to the recovery directory:")
-			fmt.Println("  " + recoverDir)
-			fmt.Println("")
-			fmt.Println("  Please make sure that:")
-			fmt.Println("    1. You encrypt these shards and keep them safe.")
-			fmt.Println("    2. Securely erase the shards from the")
-			fmt.Println("       recovery directory after you encrypt them")
-			fmt.Println("       and save them to a safe location.")
-			fmt.Println("")
-			fmt.Println(
+			cmd.Println("")
+			cmd.Println(
+				"  SPIKE Recovery shards saved to the recovery directory:")
+			cmd.Println("  " + recoverDir)
+			cmd.Println("")
+			cmd.Println("  Please make sure that:")
+			cmd.Println("    1. You encrypt these shards and keep them safe.")
+			cmd.Println("    2. Securely erase the shards from the")
+			cmd.Println("       recovery directory after you encrypt them")
+			cmd.Println("       and save them to a safe location.")
+			cmd.Println("")
+			cmd.Println(
 				"  If you lose these shards, you will not be able to recover")
-			fmt.Println(
+			cmd.Println(
 				"  SPIKE Nexus in the unlikely event of a total system crash.")
-			fmt.Println("")
+			cmd.Println("")
 		},
 	}
 

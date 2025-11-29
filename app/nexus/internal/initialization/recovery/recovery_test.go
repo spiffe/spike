@@ -5,47 +5,39 @@
 package recovery
 
 import (
-	"errors"
 	"os"
 	"testing"
 
 	"github.com/spiffe/spike-sdk-go/config/env"
 	"github.com/spiffe/spike-sdk-go/crypto"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 )
 
-func TestErrRecoveryRetry(t *testing.T) {
-	// Test that the error variable is properly defined
-	if ErrRecoveryRetry == nil {
-		t.Error("ErrRecoveryRetry should not be nil")
+func TestErrRecoveryRetryFailed(t *testing.T) {
+	// Test that the SDK error variable is properly defined
+	if sdkErrors.ErrRecoveryRetryFailed == nil {
+		t.Error("ErrRecoveryRetryFailed should not be nil")
 	}
 
-	// Test error message
-	expectedMsg := "recovery failed; retrying"
-	if ErrRecoveryRetry.Error() != expectedMsg {
-		t.Errorf("Expected error message '%s', got '%s'",
-			expectedMsg, ErrRecoveryRetry.Error())
+	// Test that the error implements the error interface
+	var _ error = sdkErrors.ErrRecoveryRetryFailed
+
+	// Test that it can be cloned and wrapped (common SDK error operations)
+	cloned := sdkErrors.ErrRecoveryRetryFailed.Clone()
+	if cloned == nil {
+		t.Fatal("Clone should return a non-nil error")
 	}
 
-	// Test error comparison
-	testErr := errors.New("recovery failed; retrying")
-	if ErrRecoveryRetry.Error() != testErr.Error() {
-		t.Error("Error messages should match")
+	// Test Is() method works for error comparison
+	if !cloned.Is(sdkErrors.ErrRecoveryRetryFailed) {
+		t.Error("Cloned error should match original via Is()")
 	}
 }
 
 func TestRestoreBackingStoreFromPilotShards_InsufficientShards(t *testing.T) {
-	// Save original environment variables
-	originalThreshold := os.Getenv(env.NexusShamirThreshold)
-	defer func() {
-		if originalThreshold != "" {
-			_ = os.Setenv(env.NexusShamirThreshold, originalThreshold)
-		} else {
-			_ = os.Unsetenv(env.NexusShamirThreshold)
-		}
-	}()
-
-	// Set the threshold to 3
-	_ = os.Setenv(env.NexusShamirThreshold, "3")
+	// Use t.Setenv for automatic cleanup after the test
+	t.Setenv("SPIKE_STACK_TRACES_ON_LOG_FATAL", "true")
+	t.Setenv(env.NexusShamirThreshold, "3")
 
 	// Create insufficient shards (only 2, but the threshold is 3)
 	shards := make([]ShamirShard, 2)
@@ -62,19 +54,27 @@ func TestRestoreBackingStoreFromPilotShards_InsufficientShards(t *testing.T) {
 		}
 	}
 
-	// This should return early due to insufficient shards
-	// The function logs an error and returns (doesn't crash)
+	// The function calls log.FatalErr when there are insufficient shards.
+	// With SPIKE_STACK_TRACES_ON_LOG_FATAL=true, it panics instead of os.Exit,
+	// allowing us to recover and verify the behavior.
+	defer func() {
+		if r := recover(); r == nil {
+			t.Error("Expected panic from log.FatalErr for insufficient shards")
+		}
+	}()
+
 	RestoreBackingStoreFromPilotShards(shards)
 
-	// Test should complete without crashing
-	t.Log("Function returned without crashing for insufficient shards")
+	t.Error("Function should have panicked for insufficient shards")
 }
 
 func TestRestoreBackingStoreFromPilotShards_InvalidShards(t *testing.T) {
+	// Enable panic mode so we can recover and verify FatalErr behavior
+	t.Setenv("SPIKE_STACK_TRACES_ON_LOG_FATAL", "true")
+
 	tests := []struct {
 		name       string
 		setupShard func() ShamirShard
-		shouldExit bool
 	}{
 		{
 			name: "nil value shard",
@@ -84,7 +84,6 @@ func TestRestoreBackingStoreFromPilotShards_InvalidShards(t *testing.T) {
 					Value: nil,
 				}
 			},
-			shouldExit: true,
 		},
 		{
 			name: "zero ID shard",
@@ -96,7 +95,6 @@ func TestRestoreBackingStoreFromPilotShards_InvalidShards(t *testing.T) {
 					Value: testData,
 				}
 			},
-			shouldExit: true,
 		},
 		{
 			name: "zeroed value shard",
@@ -107,7 +105,6 @@ func TestRestoreBackingStoreFromPilotShards_InvalidShards(t *testing.T) {
 					Value: testData,
 				}
 			},
-			shouldExit: true,
 		},
 	}
 
@@ -115,16 +112,15 @@ func TestRestoreBackingStoreFromPilotShards_InvalidShards(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			shards := []ShamirShard{tt.setupShard()}
 
-			if tt.shouldExit {
-				// log.FatalLn calls os.Exit(), which terminates the process
-				// In a real test environment, we can't easily test this without
-				// process isolation. We skip these tests since they would terminate
-				// the test runner.
-				t.Skip("Skipping test that would call os.Exit() - function calls log.FatalLn")
-				return
-			}
+			defer func() {
+				if r := recover(); r == nil {
+					t.Error("Expected panic from log.FatalErr for invalid shard")
+				}
+			}()
 
 			RestoreBackingStoreFromPilotShards(shards)
+
+			t.Error("Function should have panicked for invalid shard")
 		})
 	}
 }

@@ -5,21 +5,11 @@
 package base
 
 import (
-	"sync"
-
 	"github.com/spiffe/spike-sdk-go/crypto"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/security/mem"
 
 	"github.com/spiffe/spike-sdk-go/log"
-)
-
-// Global variables related to the root key with thread-safety protection.
-var (
-	// rootKey is a 32-byte array that stores the cryptographic root key.
-	// It is initialized to zeroes by default.
-	rootKey [crypto.AES256KeySize]byte
-	// rootKeyMu provides mutual exclusion for access to the root key.
-	rootKeyMu sync.RWMutex
 )
 
 // RootKeyNoLock returns a copy of the root key without acquiring the lock.
@@ -65,28 +55,39 @@ func RootKeyZero() bool {
 }
 
 // SetRootKey updates the root key with the provided value.
-// This function does not own its parameter; the `rk` argument can
-// be (and should be) cleaned up after calling this function without
-// impacting the saved root key.
 //
-// To ensure the system always has a legitimate root key, the operation is a
-// no-op if rk is nil or zeroed out. When that happens, the function logs
-// a warning.
+// This function does not own its parameter; the `rk` argument can be (and
+// should be) cleaned up after calling this function without impacting the
+// saved root key.
+//
+// Security behavior:
+// The application will crash (via log.FatalErr) if rk is nil or contains only
+// zero bytes. This is a defense-in-depth measure: the caller (Initialize)
+// already validates the key, but if somehow an invalid key reaches this
+// function, crashing is the correct response. Operating with a nil or zero
+// root key would mean secrets are unencrypted or encrypted with a predictable
+// key, which is a critical security failure.
+//
+// Note: For in-memory backends, this function should not be called at all.
+// The Initialize function handles this by returning early for memory backends.
 //
 // Parameters:
-//   - rk: Pointer to a 32-byte array containing the new root key value
+//   - rk: Pointer to a 32-byte array containing the new root key value.
+//     Must be non-nil and non-zero.
 func SetRootKey(rk *[crypto.AES256KeySize]byte) {
 	fName := "SetRootKey"
-	log.Log().Info(fName, "message", "Setting root key")
+
+	log.Info(fName, "message", "setting root key")
 
 	if rk == nil {
-		log.Log().Warn(fName, "message", "Root key is nil. Skipping update.")
+		failErr := *sdkErrors.ErrRootKeyMissing.Clone()
+		log.FatalErr(fName, failErr)
 		return
 	}
 
 	if mem.Zeroed32(rk) {
-		log.Log().Warn(fName, "message", "Root key is zeroed. Skipping update.")
-		return
+		failErr := *sdkErrors.ErrRootKeyEmpty.Clone()
+		log.FatalErr(fName, failErr)
 	}
 
 	rootKeyMu.Lock()
@@ -96,5 +97,5 @@ func SetRootKey(rk *[crypto.AES256KeySize]byte) {
 		rootKey[i] = rk[i]
 	}
 
-	log.Log().Info(fName, "message", "Root key set")
+	log.Info(fName, "message", "root key set")
 }

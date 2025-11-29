@@ -13,7 +13,9 @@ import (
 	"time"
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/kv"
+
 	"github.com/spiffe/spike/app/nexus/internal/state/backend"
 )
 
@@ -26,18 +28,19 @@ func TestNewInMemoryStore(t *testing.T) {
 	// Verify store was created properly
 	if store == nil {
 		t.Fatal("Expected non-nil Store")
+		return
 	}
 
 	if store.secretStore == nil {
-		t.Error("Expected non-nil secretStore")
+		t.Fatal("Expected non-nil secretStore")
 	}
 
 	if store.policies == nil {
-		t.Error("Expected non-nil policies map")
+		t.Fatal("Expected non-nil policies map")
 	}
 
 	if store.cipher != testCipher {
-		t.Error("Expected cipher to be set correctly")
+		t.Fatal("Expected cipher to be set correctly")
 	}
 
 	// Verify it implements Backend interface
@@ -49,10 +52,10 @@ func TestInMemoryStore_Initialize(t *testing.T) {
 	store := NewInMemoryStore(testCipher, 10)
 
 	ctx := context.Background()
-	err := store.Initialize(ctx)
+	initErr := store.Initialize(ctx)
 
-	if err != nil {
-		t.Errorf("Initialize should not return error: %v", err)
+	if initErr != nil {
+		t.Errorf("Initialize should not return error: %v", initErr)
 	}
 }
 
@@ -61,10 +64,10 @@ func TestInMemoryStore_Close(t *testing.T) {
 	store := NewInMemoryStore(testCipher, 10)
 
 	ctx := context.Background()
-	err := store.Close(ctx)
+	closeErr := store.Close(ctx)
 
-	if err != nil {
-		t.Errorf("Close should not return error: %v", err)
+	if closeErr != nil {
+		t.Errorf("Close should not return error: %v", closeErr)
 	}
 }
 
@@ -102,19 +105,20 @@ func TestInMemoryStore_StoreAndLoadSecret(t *testing.T) {
 	path := "test/secret/path"
 
 	// Store the secret
-	err := store.StoreSecret(ctx, path, secret)
-	if err != nil {
-		t.Errorf("StoreSecret failed: %v", err)
+	storeErr := store.StoreSecret(ctx, path, secret)
+	if storeErr != nil {
+		t.Errorf("StoreSecret failed: %v", storeErr)
 	}
 
 	// Load the secret
-	loadedSecret, err := store.LoadSecret(ctx, path)
-	if err != nil {
-		t.Errorf("LoadSecret failed: %v", err)
+	loadedSecret, loadErr := store.LoadSecret(ctx, path)
+	if loadErr != nil {
+		t.Errorf("LoadSecret failed: %v", loadErr)
 	}
 
 	if loadedSecret == nil {
 		t.Fatal("Expected non-nil loaded secret")
+		return
 	}
 
 	// Verify the loaded secret matches the stored one
@@ -142,11 +146,15 @@ func TestInMemoryStore_LoadNonExistentSecret(t *testing.T) {
 	ctx := context.Background()
 
 	// Try to load a secret that doesn't exist
-	loadedSecret, err := store.LoadSecret(ctx, "nonexistent/path")
+	loadedSecret, loadErr := store.LoadSecret(ctx, "nonexistent/path")
 
-	// Should not return error for a non-existent secret
-	if err == nil {
-		t.Log("LoadSecret returned nil error for non-existent secret (expected behavior)")
+	// Should return ErrEntityNotFound for a non-existent secret
+	if loadErr == nil {
+		t.Error("Expected ErrEntityNotFound for non-existent secret")
+	}
+
+	if loadErr != nil && !loadErr.Is(sdkErrors.ErrEntityNotFound) {
+		t.Errorf("Expected ErrEntityNotFound, got: %v", loadErr)
 	}
 
 	// Should return nil secret
@@ -190,16 +198,16 @@ func TestInMemoryStore_LoadAllSecrets(t *testing.T) {
 
 	// Store all secrets
 	for path, secret := range secrets {
-		err := store.StoreSecret(ctx, path, secret)
-		if err != nil {
-			t.Errorf("Failed to store secret at %s: %v", path, err)
+		storeErr := store.StoreSecret(ctx, path, secret)
+		if storeErr != nil {
+			t.Errorf("Failed to store secret at %s: %v", path, storeErr)
 		}
 	}
 
 	// Load all secrets
-	allSecrets, err := store.LoadAllSecrets(ctx)
-	if err != nil {
-		t.Errorf("LoadAllSecrets failed: %v", err)
+	allSecrets, loadErr := store.LoadAllSecrets(ctx)
+	if loadErr != nil {
+		t.Errorf("LoadAllSecrets failed: %v", loadErr)
 	}
 
 	if len(allSecrets) != len(secrets) {
@@ -236,9 +244,9 @@ func TestInMemoryStore_LoadAllSecretsEmpty(t *testing.T) {
 	ctx := context.Background()
 
 	// Load all secrets from the empty store
-	allSecrets, err := store.LoadAllSecrets(ctx)
-	if err != nil {
-		t.Errorf("LoadAllSecrets failed: %v", err)
+	allSecrets, loadErr := store.LoadAllSecrets(ctx)
+	if loadErr != nil {
+		t.Errorf("LoadAllSecrets failed: %v", loadErr)
 	}
 
 	if len(allSecrets) != 0 {
@@ -261,19 +269,20 @@ func TestInMemoryStore_StoreAndLoadPolicy(t *testing.T) {
 	}
 
 	// Store the policy
-	err := store.StorePolicy(ctx, policy)
-	if err != nil {
-		t.Errorf("StorePolicy failed: %v", err)
+	storeErr := store.StorePolicy(ctx, policy)
+	if storeErr != nil {
+		t.Errorf("StorePolicy failed: %v", storeErr)
 	}
 
 	// Load the policy
-	loadedPolicy, err := store.LoadPolicy(ctx, policy.ID)
-	if err != nil {
-		t.Errorf("LoadPolicy failed: %v", err)
+	loadedPolicy, loadErr := store.LoadPolicy(ctx, policy.ID)
+	if loadErr != nil {
+		t.Errorf("LoadPolicy failed: %v", loadErr)
 	}
 
 	if loadedPolicy == nil {
 		t.Fatal("Expected non-nil loaded policy")
+		return
 	}
 
 	// Verify the loaded policy matches the stored one
@@ -315,14 +324,14 @@ func TestInMemoryStore_StorePolicyEmptyID(t *testing.T) {
 		Permissions:     []data.PolicyPermission{data.PermissionRead},
 	}
 
-	// Store the policy - should fail
-	err := store.StorePolicy(ctx, policy)
-	if err == nil {
+	// Store the policy - should fail with ErrEntityInvalid
+	storeErr := store.StorePolicy(ctx, policy)
+	if storeErr == nil {
 		t.Error("Expected error when storing policy with empty ID")
 	}
 
-	if err != nil && err.Error() != "policy ID cannot be empty" {
-		t.Errorf("Expected specific error message, got: %v", err)
+	if storeErr != nil && !storeErr.Is(sdkErrors.ErrEntityInvalid) {
+		t.Errorf("Expected ErrEntityInvalid, got: %v", storeErr)
 	}
 }
 
@@ -332,10 +341,15 @@ func TestInMemoryStore_LoadNonExistentPolicy(t *testing.T) {
 	ctx := context.Background()
 
 	// Try to load a policy that doesn't exist
-	loadedPolicy, err := store.LoadPolicy(ctx, "nonexistent-policy")
+	loadedPolicy, loadErr := store.LoadPolicy(ctx, "nonexistent-policy")
 
-	if err != nil {
-		t.Errorf("LoadPolicy should not return error for non-existent policy: %v", err)
+	// Should return ErrEntityNotFound for a non-existent policy
+	if loadErr == nil {
+		t.Error("Expected ErrEntityNotFound for non-existent policy")
+	}
+
+	if loadErr != nil && !loadErr.Is(sdkErrors.ErrEntityNotFound) {
+		t.Errorf("Expected ErrEntityNotFound, got: %v", loadErr)
 	}
 
 	if loadedPolicy != nil {
@@ -376,16 +390,16 @@ func TestInMemoryStore_LoadAllPolicies(t *testing.T) {
 
 	// Store all policies
 	for _, policy := range policies {
-		err := store.StorePolicy(ctx, policy)
-		if err != nil {
-			t.Errorf("Failed to store policy %s: %v", policy.ID, err)
+		storeErr := store.StorePolicy(ctx, policy)
+		if storeErr != nil {
+			t.Errorf("Failed to store policy %s: %v", policy.ID, storeErr)
 		}
 	}
 
 	// Load all policies
-	allPolicies, err := store.LoadAllPolicies(ctx)
-	if err != nil {
-		t.Errorf("LoadAllPolicies failed: %v", err)
+	allPolicies, loadErr := store.LoadAllPolicies(ctx)
+	if loadErr != nil {
+		t.Errorf("LoadAllPolicies failed: %v", loadErr)
 	}
 
 	if len(allPolicies) != len(policies) {
@@ -423,9 +437,9 @@ func TestInMemoryStore_LoadAllPoliciesEmpty(t *testing.T) {
 	ctx := context.Background()
 
 	// Load all policies from the empty store
-	allPolicies, err := store.LoadAllPolicies(ctx)
-	if err != nil {
-		t.Errorf("LoadAllPolicies failed: %v", err)
+	allPolicies, loadErr := store.LoadAllPolicies(ctx)
+	if loadErr != nil {
+		t.Errorf("LoadAllPolicies failed: %v", loadErr)
 	}
 
 	if len(allPolicies) != 0 {
@@ -447,27 +461,27 @@ func TestInMemoryStore_DeletePolicy(t *testing.T) {
 		Permissions:     []data.PolicyPermission{data.PermissionRead},
 	}
 
-	err := store.StorePolicy(ctx, policy)
-	if err != nil {
-		t.Fatalf("Failed to store test policy: %v", err)
+	storeErr := store.StorePolicy(ctx, policy)
+	if storeErr != nil {
+		t.Fatalf("Failed to store test policy: %v", storeErr)
 	}
 
 	// Verify policy exists
-	loadedPolicy, err := store.LoadPolicy(ctx, policy.ID)
-	if err != nil || loadedPolicy == nil {
+	loadedPolicy, loadErr := store.LoadPolicy(ctx, policy.ID)
+	if loadErr != nil || loadedPolicy == nil {
 		t.Fatal("Policy should exist before deletion")
 	}
 
 	// Delete the policy
-	err = store.DeletePolicy(ctx, policy.ID)
-	if err != nil {
-		t.Errorf("DeletePolicy failed: %v", err)
+	deleteErr := store.DeletePolicy(ctx, policy.ID)
+	if deleteErr != nil {
+		t.Errorf("DeletePolicy failed: %v", deleteErr)
 	}
 
-	// Verify policy no longer exists
-	deletedPolicy, err := store.LoadPolicy(ctx, policy.ID)
-	if err != nil {
-		t.Errorf("LoadPolicy after deletion failed: %v", err)
+	// Verify policy no longer exists (LoadPolicy returns ErrEntityNotFound)
+	deletedPolicy, loadAfterDeleteErr := store.LoadPolicy(ctx, policy.ID)
+	if loadAfterDeleteErr == nil || !loadAfterDeleteErr.Is(sdkErrors.ErrEntityNotFound) {
+		t.Errorf("Expected ErrEntityNotFound after deletion, got: %v", loadAfterDeleteErr)
 	}
 
 	if deletedPolicy != nil {
@@ -481,11 +495,11 @@ func TestInMemoryStore_DeleteNonExistentPolicy(t *testing.T) {
 	ctx := context.Background()
 
 	// Delete a policy that doesn't exist
-	err := store.DeletePolicy(ctx, "nonexistent-policy")
+	deleteErr := store.DeletePolicy(ctx, "nonexistent-policy")
 
 	// Should not return error
-	if err != nil {
-		t.Errorf("DeletePolicy should not return error for non-existent policy: %v", err)
+	if deleteErr != nil {
+		t.Errorf("DeletePolicy should not return error for non-existent policy: %v", deleteErr)
 	}
 }
 
@@ -525,9 +539,9 @@ func TestInMemoryStore_ConcurrentSecretOperations(t *testing.T) {
 	wg.Wait()
 
 	// Verify all secrets were stored
-	allSecrets, err := store.LoadAllSecrets(ctx)
-	if err != nil {
-		t.Errorf("LoadAllSecrets after concurrent writes failed: %v", err)
+	allSecrets, loadErr := store.LoadAllSecrets(ctx)
+	if loadErr != nil {
+		t.Errorf("LoadAllSecrets after concurrent writes failed: %v", loadErr)
 	}
 
 	expectedCount := numGoroutines * secretsPerGoroutine
@@ -572,9 +586,9 @@ func TestInMemoryStore_ConcurrentPolicyOperations(t *testing.T) {
 	wg.Wait()
 
 	// Verify all policies were stored
-	allPolicies, err := store.LoadAllPolicies(ctx)
-	if err != nil {
-		t.Errorf("LoadAllPolicies after concurrent writes failed: %v", err)
+	allPolicies, loadErr := store.LoadAllPolicies(ctx)
+	if loadErr != nil {
+		t.Errorf("LoadAllPolicies after concurrent writes failed: %v", loadErr)
 	}
 
 	expectedCount := numGoroutines * policiesPerGoroutine
@@ -638,14 +652,14 @@ func TestInMemoryStore_MixedConcurrentOperations(t *testing.T) {
 	wg.Wait()
 
 	// Verify the final state
-	secrets, err := store.LoadAllSecrets(ctx)
-	if err != nil {
-		t.Errorf("Final LoadAllSecrets failed: %v", err)
+	secrets, loadSecretsErr := store.LoadAllSecrets(ctx)
+	if loadSecretsErr != nil {
+		t.Errorf("Final LoadAllSecrets failed: %v", loadSecretsErr)
 	}
 
-	policies, err := store.LoadAllPolicies(ctx)
-	if err != nil {
-		t.Errorf("Final LoadAllPolicies failed: %v", err)
+	policies, loadPoliciesErr := store.LoadAllPolicies(ctx)
+	if loadPoliciesErr != nil {
+		t.Errorf("Final LoadAllPolicies failed: %v", loadPoliciesErr)
 	}
 
 	if len(secrets) != 5 {
@@ -676,15 +690,15 @@ func TestInMemoryStore_MaxVersionsConfig(t *testing.T) {
 		},
 	}
 
-	err := store.StoreSecret(ctx, "test/versions", secret)
-	if err != nil {
-		t.Errorf("StoreSecret failed: %v", err)
+	storeErr := store.StoreSecret(ctx, "test/versions", secret)
+	if storeErr != nil {
+		t.Errorf("StoreSecret failed: %v", storeErr)
 	}
 
 	// Load it back to verify it worked
-	loadedSecret, err := store.LoadSecret(ctx, "test/versions")
-	if err != nil {
-		t.Errorf("LoadSecret failed: %v", err)
+	loadedSecret, loadErr := store.LoadSecret(ctx, "test/versions")
+	if loadErr != nil {
+		t.Errorf("LoadSecret failed: %v", loadErr)
 	}
 
 	if loadedSecret == nil {

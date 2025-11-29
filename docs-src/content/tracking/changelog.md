@@ -12,13 +12,174 @@ sort_by = "weight"
 
 ## Recent
 
-* moved entities to the sdk
-* added extensive package documentation to ALL packages of SPIKE and SPIKE go SDK
-* minor bugfixes
-* PoP validation after bootstrap sequence to ensure SPIKE Nexus has initialized properly.
-* Update Go version to `1.25.2`.
+TBD
+
+## [0.8.0] - 2025-11-28
+
+### Added 
+
+* Additional and comprehensive logging to all SPIKE Nexus and SPIKE Keeper API
+  methods.
+* Better error handling across the entire codebase.
+* Pilot: Reduced CLI verbosity by removing structured JSON log output from 
+  all commands (policy, secret, cipher, operator). The CLI now outputs clean,
+  concise error messages to stderr without internal debug logs cluttering the
+  terminal.
+* "Encryption as a service" support for SPIKE Pilot. There is an outstanding
+  issue for JSON mode; however, streaming mode works as expected.
 * `make start` includes additional smoke tests to ensure all SPIKE components are
   in good shape and ready to roll.
+* Added extensive package documentation to ALL packages of SPIKE and 
+  SPIKE Go SGK.
+* SDK: Improved documentation clarity for single return value functions, CSPRNG
+  fatal behavior, and function distinctions (ValidatePath vs 
+  ValidatePathPattern).
+* SDK: Significantly increased test coverage across all SDK packages with
+  comprehensive unit and integration tests.
+* SDK: Enhanced documentation for version numbering system - version numbers
+  start at 1, and `CurrentVersion == 0` indicates all versions have been deleted.
+* SDK: Updated `Delete()` documentation to clarify soft-delete behavior and that
+  paths remain in storage even when all versions are deleted.
+* SDK: Added `HasValidVersions()` and `Empty()` helper methods to `kv.Value` for
+  checking if secrets have any non-deleted versions, useful for identifying
+  purgeable secrets.
+* SDK: Added `Destroy()` method to `kv.KV` for hard-delete operations that
+  permanently remove secret paths from storage and reclaim memory. Unlike
+  soft-delete (`Delete()`), this cannot be undone.
+* Nexus: Comprehensive documentation updates across ALL files ensuring
+  consistency between function signatures, parameter types, return values, and
+  actual code behavior. Updated error type references from generic `error` to
+  specific `*sdkErrors.SDKError` types.
+* Nexus: Added defensive nil source checks across concurrent/distributed systems
+  where workload API can asynchronously invalidate X509Source. Updated
+  `InitializeBackingStoreFromKeepers`, `SendShardsPeriodically`, CLI commands,
+  and server startup with proper nil handling and documentation explaining
+  retry behavior for transient failures.
+* Nexus, Keeper: Added AST-based tests to enforce guard function usage in all
+  route handlers. The tests scan route handler files and verify each `Route*`
+  function calls either `net.ReadParseAndGuard` or a guard function directly.
+  This prevents contributors from accidentally adding routes without
+  authorization checks. See ADR-0031.
+
+### Changed
+
+* **BREAKING**: SDK now returns typed sentinel errors instead of generic `error`
+  values.
+* **BREAKING**: SDK: Enhanced error handling - Get methods now return 
+  `ErrAPINotFound` instead of `(nil, nil)` when resources are not found, 
+  following idiomatic Go patterns (similar to `os.Open`, `database/sql`).
+* SDK: Improved API consistency by standardizing policy function 
+  parameters from `name` to `id` across all operations, matching internal 
+  implementation.
+* Nexus: Enhanced backend interface documentation with proper parameter and
+  return type information, and documented `CurrentVersion == 0` behavior in
+  `LoadSecret` and `LoadAllSecrets` methods.
+* Nexus: Comprehensive documentation updates for all secret management functions
+  with accurate parameter names, return types, and behavioral details including
+  soft-delete semantics and metadata update logic.
+* Nexus: Made `DeleteSecret` more defensive when finding the new current version 
+  by removing unnecessary condition, improving code clarity and robustness.
+* **BREAKING**: Nexus: Fixed inconsistent error returns in memory backend - 
+  `LoadSecret` now returns `ErrEntityNotFound` instead of `(nil, nil)` for 
+  missing secrets.
+* Nexus: Optimized retry loop in `InitializeBackingStoreFromKeepers` with early
+  nil check to avoid unnecessary function call overhead when X509 source is nil.
+* Nexus: Refactored `ShardGetResponse` to return `([]byte, *sdkErrors.SDKError)`
+  instead of logging errors internally and returning empty slices, following
+  canonical Go error handling patterns.
+* Nexus: Improved resilience in data loading functions (`LoadAllPolicies`,
+  `LoadAllSecrets`) by changing from aggressive exit behavior to graceful
+  degradation - now logs warnings and continues processing valid entries instead
+  of abandoning entire dataset on single entry corruption.
+* Pilot: Comprehensive refactoring of CLI output handling across all commands
+  (14 files) to use Cobra's `cmd.Print*()` methods instead of `fmt.Print*()`.
+  Error messages now properly route to stderr via `cmd.PrintErrln()`/
+  `cmd.PrintErrf()`, while success and normal output routes to stdout via
+  `cmd.Println()`/`cmd.Printf()`. This improves testability, respects Cobra's
+  output configuration, and provides proper stderr/stdout separation. Updated
+  helper functions `printSecretResponse()` and `handleAPIError()` to accept
+  cmd parameter for consistent output handling.
+* SDK: Added `UpdatedAt` field to `Policy` struct to track when policies are
+  modified. Removed unused `CreatedBy` field.
+* Nexus: Standardized error handling across recovery modules to use
+  `log.WarnErr`/`log.FatalErr` with SDK error types instead of generic
+  `log.Warn`/`log.FatalLn` calls. This provides searchable error codes and
+  consistent error patterns.
+* **BREAKING**: Nexus: Changed policy operations from create-only to upsert 
+  semantics for consistency with secret operations. `state.CreatePolicy` is now
+  `state.UpsertPolicy`. If a policy with the same name exists, it is updated
+  (preserving ID and CreatedAt); otherwise, a new policy is created.
+* Code Quality: Eliminated error variable shadowing across the codebase. Error
+  variables now use descriptive names (`atoiErr`, `nonceErr`, `openErr`,
+  `restoreErr`, etc.) instead of reusing `err`. This prevents subtle bugs where
+  a later error could inadvertently shadow an earlier one, and improves code
+  readability by making error sources explicit.
+
+### Fixed 
+
+* Finally, fixed the flaky tests around the retry logic in SPIKE Go SDK for 
+  good.
+* Various other bugfixes, refactorings, and security improvements.
+* SDK: Added nil validation to `CreateMTLSServer` functions with fail-fast 
+  behavior for configuration errors.
+* SDK: Fixed resource management bug in `StreamPostWithContentType` where defer
+  was closing response body on success path, causing callers to receive closed 
+  body.
+* SDK: Fixed critical bug in `Undelete` function that was ignoring the `versions`
+  parameter due to missing else clause.
+* Nexus: Added `OldestVersion` tracking to `UndeleteSecret` for consistency
+  with `DeleteSecret`, ensuring metadata accurately reflects oldest non-deleted
+  version.
+* Nexus: Fixed bug in `UndeleteSecret` where undeleting a version higher than
+  the current `CurrentVersion` did not update `CurrentVersion` to reflect the
+  new highest active version, causing metadata inconsistency.
+* Nexus: Fixed critical bug in `UpsertSecret` where adding a new version when all
+  existing versions were deleted (CurrentVersion == 0) would create version 1,
+  potentially colliding with an existing deleted version 1. Now correctly finds
+  the highest existing version number and increments from there.
+* Nexus: Fixed resource leak in `internal/net/post.go` where response body
+  close was deferred after body read instead of immediately after response
+  obtained, causing leaks when read operations failed.
+* Nexus: Fixed critical bug in secret route handlers where error paths were not
+  sending HTTP responses to clients. Added missing `net.Fail()` calls in
+  `put_intercept.go` (3 locations) and `undelete.go` to ensure proper error
+  responses.
+* Nexus: Fixed bug in `RouteDeletePolicy` that returned HTTP 500 for all errors
+  including "not found". Now correctly returns HTTP 404 when the policy does not
+  exist
+
+### Security
+
+* PoP validation after bootstrap sequence to ensure SPIKE Nexus has initialized
+  properly.
+* Update SPIKE Components' Go version to `1.25.3`.
+* `log.FatalLn` exits cleanly by default to avoid leaking sensitive information
+  via stack traces in production. Stack traces can be enabled for
+  development/testing by setting `SPIKE_STACK_TRACES_ON_LOG_FATAL=true`.
+* SDK upgrade to Go 1.25.3 to fix `GO-2025-4007`.
+* Fixed error handling inconsistency in `NewPilotRecoveryShards` to
+  ensure fail-fast behavior on shard generation failures. The function now
+  consistently uses `log.FatalLn` for all critical errors during shard
+  marshaling to prevent silent generation of corrupted recovery material.
+* Added SPIFFE ID validation to SPIKE Keeper shard endpoints.
+  The `RouteShard` endpoint now validates that only SPIKE Nexus can retrieve
+  shards during recovery operations. The `RouteContribute` endpoint validates
+  that only SPIKE Bootstrap (during initial setup) or SPIKE Nexus (during
+  periodic updates) can contribute shards. This prevents unauthorized access
+  to sensitive shard data.
+* Crypto: Consolidated GCM nonce size constant (`crypto.GCMNonceSize`) to
+  `internal/crypto/gcm.go`. This removes duplication across cipher and bootstrap
+  packages and documents the decision to use the NIST-recommended 12-byte
+  standard. See ADR-0032.
+* Fixed [`CWE-117`: go-viper's mapstructure May Leak Sensitive Information in 
+Logs When Processing Malformed 
+Data](https://github.com/spiffe/spike/security/dependabot/7)
+* Fixed [`CVE-2025-58181`: golang.org/x/crypto/ssh allows an attacker to cause 
+unbounded memory 
+consumption](https://github.com/spiffe/spike/security/dependabot/9)
+* Fixed [`CVE-2025-47914`: golang.org/x/crypto/ssh/agent vulnerable to panic if
+message is malformed due to out of bounds 
+read](https://github.com/spiffe/spike/security/dependabot/9)
 
 ## [0.6.1] - 2025-10-02
 

@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/spiffe/spike-sdk-go/crypto"
+
 	"github.com/spiffe/spike/app/nexus/internal/state/backend/memory"
 )
 
@@ -269,30 +270,37 @@ func TestInitializeBackend_KeyValidation_LastByteNonZero(t *testing.T) {
 }
 
 func TestInitializeBackend_ConcurrentAccess(t *testing.T) {
+	// Note: The backend initialization is not designed for concurrent access.
+	// In production, InitializeBackend is called once at startup before
+	// any concurrent access. This test verifies that sequential
+	// initialization followed by concurrent reads works correctly.
 	withEnvironment(t, "SPIKE_NEXUS_BACKEND_STORE", "memory", func() {
+		// Initialize once (as would happen at startup)
+		InitializeBackend(nil)
+
 		const numGoroutines = 10
 		done := make(chan bool, numGoroutines)
+		errors := make(chan string, numGoroutines)
 
-		// Start multiple goroutines trying to initialize simultaneously
+		// Start multiple goroutines reading the backend concurrently
 		for i := 0; i < numGoroutines; i++ {
 			go func() {
 				defer func() {
 					if r := recover(); r != nil {
-						t.Errorf("Goroutine panicked: %v", r)
+						errors <- "goroutine panicked"
 					}
 					done <- true
 				}()
 
-				InitializeBackend(nil)
 				backend := Backend()
 
 				if backend == nil {
-					t.Error("Backend is nil in goroutine")
+					errors <- "backend is nil in goroutine"
 					return
 				}
 
 				if _, ok := backend.(*memory.Store); !ok {
-					t.Errorf("Expected memory backend in goroutine, got %T", backend)
+					errors <- "expected memory backend in goroutine"
 				}
 			}()
 		}
@@ -300,6 +308,12 @@ func TestInitializeBackend_ConcurrentAccess(t *testing.T) {
 		// Wait for all goroutines to complete
 		for i := 0; i < numGoroutines; i++ {
 			<-done
+		}
+
+		// Check for any errors
+		close(errors)
+		for errMsg := range errors {
+			t.Error(errMsg)
 		}
 	})
 }

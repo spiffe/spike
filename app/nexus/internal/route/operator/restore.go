@@ -10,8 +10,8 @@ import (
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
-	"github.com/spiffe/spike-sdk-go/api/errors"
 	"github.com/spiffe/spike-sdk-go/config/env"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/log"
 	"github.com/spiffe/spike-sdk-go/security/mem"
 
@@ -48,42 +48,31 @@ var (
 //   - Any error returned by guardRestoreRequest: For request validation
 //     failures.
 //
-// The function responds with:
-//   - HTTP 400 Bad Request: If all required shards have already been collected
-//     or if the provided shard is invalid.
-//   - HTTP 200 OK: If the shard is successfully added, including status
-//     information about the restoration progress.
+// The function responds with HTTP 200 OK in all successful cases:
+//   - Shard successfully added to the collection
+//   - Restoration already complete (additional shards acknowledged but ignored)
+//   - Duplicate shard received (acknowledged but ignored, status shows
+//     the remaining shards needed)
 //
 // When the last required shard is added, the function automatically triggers
 // the restoration process using RestoreBackingStoreFromPilotShards.
 func RouteRestore(
 	w http.ResponseWriter, r *http.Request, audit *journal.AuditEntry,
-) error {
+) *sdkErrors.SDKError {
 	const fName = "routeRestore"
 
 	journal.AuditRequest(fName, r, audit, journal.AuditCreate)
 
 	if env.BackendStoreTypeVal() == env.Memory {
-		log.Log().Info(fName, "message", "skipping restoration in memory mode")
+		log.Info(fName, "message", "skipping restoration: in-memory mode")
 		return nil
 	}
 
-	requestBody := net.ReadRequestBody(w, r)
-	if requestBody == nil {
-		return errors.ErrReadFailure
-	}
-
-	request := net.HandleRequest[
+	request, err := net.ReadParseAndGuard[
 		reqres.RestoreRequest, reqres.RestoreResponse](
-		requestBody, w,
-		reqres.RestoreResponse{Err: data.ErrBadInput},
+		w, r, reqres.RestoreResponse{}.BadRequest(), guardRestoreRequest,
 	)
-	if request == nil {
-		return errors.ErrParseFailure
-	}
-
-	err := guardRestoreRequest(*request, w, r)
-	if err != nil {
+	if alreadyResponded := err != nil; alreadyResponded {
 		return err
 	}
 
@@ -93,19 +82,20 @@ func RouteRestore(
 	// Check if we already have enough shards
 	currentShardCount := len(shards)
 
-	if currentShardCount >= env.ShamirThresholdVal() {
-		responseBody := net.MarshalBody(reqres.RestoreResponse{
-			RestorationStatus: data.RestorationStatus{
-				ShardsCollected: currentShardCount,
-				ShardsRemaining: 0,
-				Restored:        true,
-			},
-			Err: data.ErrBadInput,
-		}, w)
-		if responseBody == nil {
-			return errors.ErrMarshalFailure
-		}
-		net.Respond(http.StatusBadRequest, responseBody, w)
+	threshold := env.ShamirThresholdVal()
+	restored := currentShardCount >= threshold
+
+	if restored {
+		// Already restored; acknowledge and ignore additional shards.
+		net.Success(
+			reqres.RestoreResponse{
+				RestorationStatus: data.RestorationStatus{
+					ShardsCollected: currentShardCount,
+					ShardsRemaining: 0,
+					Restored:        restored,
+				},
+			}.Success(), w,
+		)
 		return nil
 	}
 
@@ -114,21 +104,16 @@ func RouteRestore(
 			continue
 		}
 
-		// Duplicate shard found.
-
-		responseBody := net.MarshalBody(reqres.RestoreResponse{
-			RestorationStatus: data.RestorationStatus{
-				ShardsCollected: currentShardCount,
-				ShardsRemaining: env.ShamirThresholdVal() - currentShardCount,
-				Restored:        currentShardCount == env.ShamirThresholdVal(),
-			},
-			Err: data.ErrBadInput,
-		}, w)
-		if responseBody == nil {
-			return errors.ErrMarshalFailure
-		}
-
-		net.Respond(http.StatusBadRequest, responseBody, w)
+		// Duplicate shard; acknowledge and ignore.
+		net.Success(
+			reqres.RestoreResponse{
+				RestorationStatus: data.RestorationStatus{
+					ShardsCollected: currentShardCount,
+					ShardsRemaining: threshold - currentShardCount,
+					Restored:        restored,
+				},
+			}.Success(), w,
+		)
 		return nil
 	}
 
@@ -144,7 +129,8 @@ func RouteRestore(
 	// RouteRestore cleans this up when it is no longer necessary.
 
 	// Trigger restoration if we have collected all shards
-	if currentShardCount == env.ShamirThresholdVal() {
+	restored = currentShardCount >= threshold
+	if restored {
 		recovery.RestoreBackingStoreFromPilotShards(shards)
 		// Security: Zero out all shards since we have finished restoration:
 		for i := range shards {
@@ -153,18 +139,14 @@ func RouteRestore(
 		}
 	}
 
-	responseBody := net.MarshalBody(reqres.RestoreResponse{
-		RestorationStatus: data.RestorationStatus{
-			ShardsCollected: currentShardCount,
-			ShardsRemaining: env.ShamirThresholdVal() - currentShardCount,
-			Restored:        currentShardCount == env.ShamirThresholdVal(),
-		},
-	}, w)
-	if responseBody == nil {
-		return errors.ErrMarshalFailure
-	}
-
-	net.Respond(http.StatusOK, responseBody, w)
-	log.Log().Info(fName, "message", data.ErrSuccess)
+	net.Success(
+		reqres.RestoreResponse{
+			RestorationStatus: data.RestorationStatus{
+				ShardsCollected: currentShardCount,
+				ShardsRemaining: threshold - currentShardCount,
+				Restored:        restored,
+			},
+		}.Success(), w,
+	)
 	return nil
 }

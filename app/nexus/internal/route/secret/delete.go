@@ -7,10 +7,8 @@ package secret
 import (
 	"net/http"
 
-	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
-	"github.com/spiffe/spike-sdk-go/api/errors"
-	"github.com/spiffe/spike-sdk-go/log"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 	"github.com/spiffe/spike/internal/journal"
@@ -18,28 +16,28 @@ import (
 )
 
 // RouteDeleteSecret handles HTTP DELETE requests for secret deletion
-// operations. It validates the JWT token, processes the deletion request,
-// and manages the secret deletion workflow.
+// operations. It authenticates the peer, validates permissions, processes
+// the deletion request, and manages the secret deletion workflow.
 //
 // The function expects a request body containing a path and optional version
-// numbers of the secrets to be deleted. If no versions are specified, an empty
-// slice is used.
+// numbers of the secrets to be deleted. If no versions are specified, the
+// current version is deleted.
 //
 // Parameters:
 //   - w: http.ResponseWriter for writing the HTTP response
-//   - r: *http.Request containing the incoming HTTP request details
-//   - audit: *journal.AuditEntry for logging audit information about the deletion
-//     operation
+//   - r: *http.Request containing the incoming HTTP request with peer SPIFFE ID
+//   - audit: *journal.AuditEntry for logging audit information about the
+//     deletion operation
 //
 // Returns:
-//   - error: Returns nil on successful execution, or an error describing what
-//     went wrong
+//   - *sdkErrors.SDKError: Returns nil on successful execution, or an error
+//     describing what went wrong
 //
 // The function performs the following steps:
-//  1. Validates the JWT token against the admin token
+//  1. Authenticates the peer via SPIFFE ID and validates write permissions
 //  2. Reads and parses the request body
-//  3. Processes the secret deletion
-//  4. Returns a JSON response
+//  3. Processes the secret deletion (soft-delete operation)
+//  4. Returns an appropriate JSON response
 //
 // Example request body:
 //
@@ -48,56 +46,38 @@ import (
 //	    "versions": [1, 2, 3]
 //	}
 //
-// Possible errors:
-//   - "invalid or missing JWT token": When JWT validation fails
-//   - "failed to read request body": When request body cannot be read
-//   - "failed to parse request body": When request body is invalid
-//   - "failed to marshal response body": When response cannot be serialized
+// Response codes:
+//   - 200 OK: Secret successfully deleted
+//   - 400 Bad Request: Invalid request body or path format
+//   - 401 Unauthorized: Authentication or authorization failure
+//   - 404 Not Found: Secret does not exist at the specified path
+//   - 500 Internal Server Error: Backend or server-side failure
 func RouteDeleteSecret(
 	w http.ResponseWriter, r *http.Request, audit *journal.AuditEntry,
-) error {
-	const fName = "routeDeleteSecret"
+) *sdkErrors.SDKError {
+	const fName = "RouteDeleteSecret"
+
 	journal.AuditRequest(fName, r, audit, journal.AuditDelete)
 
-	requestBody := net.ReadRequestBody(w, r)
-	if requestBody == nil {
-		return errors.ErrReadFailure
-	}
-
-	request := net.HandleRequest[
+	request, err := net.ReadParseAndGuard[
 		reqres.SecretDeleteRequest, reqres.SecretDeleteResponse](
-		requestBody, w,
-		reqres.SecretDeleteResponse{Err: data.ErrBadInput},
+		w, r, reqres.SecretDeleteResponse{}.BadRequest(), guardDeleteSecretRequest,
 	)
-	if request == nil {
-		return errors.ErrParseFailure
-	}
-
-	err := guardDeleteSecretRequest(*request, w, r)
-	if err != nil {
+	if alreadyResponded := err != nil; alreadyResponded {
 		return err
 	}
 
 	path := request.Path
-
 	versions := request.Versions
 	if len(versions) == 0 {
 		versions = []int{}
 	}
 
-	err = state.DeleteSecret(path, versions)
-	if err != nil {
-		log.Log().Error(fName, "message", "Failed to delete secret", "err", err)
-	} else {
-		log.Log().Info(fName, "message", "Secret deleted")
+	deleteErr := state.DeleteSecret(path, versions)
+	if deleteErr != nil {
+		return net.HandleError(deleteErr, w, reqres.SecretDeleteResponse{})
 	}
 
-	responseBody := net.MarshalBody(reqres.SecretDeleteResponse{}, w)
-	if responseBody == nil {
-		return errors.ErrMarshalFailure
-	}
-
-	net.Respond(http.StatusOK, responseBody, w)
-	log.Log().Info(fName, "message", data.ErrSuccess)
+	net.Success(reqres.SecretDeleteResponse{}.Success(), w)
 	return nil
 }

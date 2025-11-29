@@ -9,66 +9,39 @@ import (
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
-	apiErr "github.com/spiffe/spike-sdk-go/api/errors"
-	"github.com/spiffe/spike-sdk-go/spiffe"
-	"github.com/spiffe/spike-sdk-go/validation"
-
-	state "github.com/spiffe/spike/app/nexus/internal/state/base"
-	"github.com/spiffe/spike/internal/net"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 )
 
+// guardDeleteSecretRequest validates a secret deletion request by performing
+// authentication, authorization, and input validation checks.
+//
+// The function performs the following validations in order:
+//   - Extracts and validates the peer SPIFFE ID from the request
+//   - Validates the secret path format
+//   - Checks if the peer has write permission for the specified secret path
+//
+// Write permission is required for delete operations following the principle
+// that deletion is a write operation on the secret resource.
+//
+// If any validation fails, an appropriate error response is written to the
+// ResponseWriter and an error is returned.
+//
+// Parameters:
+//   - request: The secret deletion request containing the secret path
+//   - w: The HTTP response writer for error responses
+//   - r: The HTTP request containing the peer SPIFFE ID
+//
+// Returns:
+//   - *sdkErrors.SDKError: An error if authentication, authorization, or path
+//     validation fails. Returns nil if all validations pass.
 func guardDeleteSecretRequest(
 	request reqres.SecretDeleteRequest, w http.ResponseWriter, r *http.Request,
-) error {
-	path := request.Path
-
-	sid, err := spiffe.IDFromRequest(r)
-	if err != nil {
-		responseBody := net.MarshalBody(reqres.SecretDeleteResponse{
-			Err: data.ErrUnauthorized,
-		}, w)
-		net.Respond(http.StatusUnauthorized, responseBody, w)
-		return apiErr.ErrUnauthorized
-	}
-
-	if sid == nil {
-		responseBody := net.MarshalBody(reqres.SecretDeleteResponse{
-			Err: data.ErrUnauthorized,
-		}, w)
-		net.Respond(http.StatusUnauthorized, responseBody, w)
-		return apiErr.ErrUnauthorized
-	}
-
-	err = validation.ValidateSPIFFEID(sid.String())
-	if err != nil {
-		responseBody := net.MarshalBody(reqres.SecretDeleteResponse{
-			Err: data.ErrUnauthorized,
-		}, w)
-		net.Respond(http.StatusUnauthorized, responseBody, w)
-		return apiErr.ErrUnauthorized
-	}
-
-	err = validation.ValidatePath(path)
-	if err != nil {
-		responseBody := net.MarshalBody(reqres.SecretDeleteResponse{
-			Err: data.ErrBadInput,
-		}, w)
-		net.Respond(http.StatusBadRequest, responseBody, w)
-		return apiErr.ErrInvalidInput
-	}
-
-	allowed := state.CheckAccess(
-		sid.String(),
-		path,
+) *sdkErrors.SDKError {
+	return guardSecretRequest(
+		request.Path,
 		[]data.PolicyPermission{data.PermissionWrite},
+		w, r,
+		reqres.SecretDeleteResponse{}.Unauthorized(),
+		reqres.SecretDeleteResponse{}.BadRequest(),
 	)
-	if !allowed {
-		responseBody := net.MarshalBody(reqres.SecretDeleteResponse{
-			Err: data.ErrUnauthorized,
-		}, w)
-		net.Respond(http.StatusUnauthorized, responseBody, w)
-		return apiErr.ErrUnauthorized
-	}
-
-	return nil
 }

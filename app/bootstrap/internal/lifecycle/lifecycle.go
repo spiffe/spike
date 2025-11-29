@@ -2,9 +2,9 @@
 //  \\\\\ Copyright 2024-present SPIKE contributors.
 // \\\\\\\ SPDX-License-Identifier: Apache-2.0
 
-// Package lifecycle provides utilities for managing bootstrap state in Kubernetes
-// environments. It handles coordination between multiple bootstrap instances
-// to ensure bootstrap operations run exactly once per cluster.
+// Package lifecycle provides utilities for managing bootstrap state in
+// Kubernetes environments. It handles coordination between multiple bootstrap
+// instances to ensure bootstrap operations run exactly once per cluster.
 package lifecycle
 
 import (
@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"github.com/spiffe/spike-sdk-go/config/env"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/log"
 	k8s "k8s.io/api/core/v1"
 	k8sMeta "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -24,12 +25,18 @@ import (
 
 const k8sTrue = "true"
 const k8sServiceAccountNamespace = "/var/run/secrets/kubernetes.io/serviceaccount/namespace"
+const hostNameEnvVar = "HOSTNAME"
+
+const keyBootstrapCompleted = "bootstrap-completed"
+const keyBootstrapCompletedAt = "completed-at"
+const keyBootstrapCompletedByPod = "completed-by-pod"
 
 // ShouldBootstrap determines whether the bootstrap process should be
 // skipped based on the current environment and state. The function follows
 // this decision logic:
 //
-//  1. If SPIKE_BOOTSTRAP_FORCE="true", always proceed (return true)
+//  0. Skip for Lite backend and In-Memory backend
+//  1. Else, if SPIKE_BOOTSTRAP_FORCE="true", always proceed (return true)
 //  2. In bare-metal environments (non-Kubernetes), always proceed
 //  3. In Kubernetes environments, check the "spike-bootstrap-state" ConfigMap:
 //     - If ConfigMap exists and bootstrap-completed="true", skip bootstrap
@@ -38,25 +45,29 @@ const k8sServiceAccountNamespace = "/var/run/secrets/kubernetes.io/serviceaccoun
 // The function returns false if bootstrap should be skipped, true if it
 // should proceed.
 func ShouldBootstrap() bool {
-	const fName = "bootstrap.shouldSkipBootstrap"
+	const fName = "ShouldBootstrap"
 
 	// Memory backend doesn't need bootstrap.
 	if env.BackendStoreTypeVal() == env.Memory {
-		log.Log().Info(fName,
-			"message", "Skipping bootstrap for 'in memory' backend")
+		log.Info(
+			fName,
+			"message", "skipping bootstrap for in-memory backend",
+		)
 		return false
 	}
 
 	// Lite backend doesn't need bootstrap.
 	if env.BackendStoreTypeVal() == env.Lite {
-		log.Log().Info(fName,
-			"message", "Skipping bootstrap for 'lite' backend")
+		log.Info(
+			fName,
+			"message", "skipping bootstrap for lite backend",
+		)
 		return false
 	}
 
-	// Check if we're forcing bootstrap
+	// Check if we're forcing the bootstrap
 	if os.Getenv(env.BootstrapForce) == k8sTrue {
-		log.Log().Info(fName, "message", "Force bootstrap enabled")
+		log.Info(fName, "message", "force bootstrap enabled")
 		return true
 	}
 
@@ -64,73 +75,75 @@ func ShouldBootstrap() bool {
 	// InClusterConfig looks for:
 	// - KUBERNETES_SERVICE_HOST env var
 	// - /var/run/secrets/kubernetes.io/serviceaccount/token
-	cfg, err := rest.InClusterConfig()
-	if err != nil {
+	cfg, cfgErr := rest.InClusterConfig()
+	if cfgErr != nil {
 		// We're not in Kubernetes (bare-metal scenario)
 		// Bootstrap should proceed in non-k8s environments
-		if errors.Is(err, rest.ErrNotInCluster) {
-			log.Log().Info(fName,
-				"message", "Not running in Kubernetes, proceeding with bootstrap",
+		if errors.Is(cfgErr, rest.ErrNotInCluster) {
+			log.Info(
+				fName,
+				"message",
+				"not running in Kubernetes: proceeding with bootstrap",
 			)
 			return true
 		}
 
 		// Some other error. Skip bootstrap.
-		log.Log().Error(fName,
-			"message",
-			"Could not determine cluster config. Skipping bootstrap",
-			"err", err.Error())
+		failErr := sdkErrors.ErrK8sClientFailed.Clone()
+		failErr.Msg = "failed to get Kubernetes config: skipping bootstrap"
+		log.WarnErr(fName, *failErr)
 		return false
 	}
 
-	// We're in Kubernetes - check the ConfigMap
-	clientset, err := kubernetes.NewForConfig(cfg)
-	if err != nil {
-		log.Log().Error(fName,
-			"message",
-			"Failed to create Kubernetes client. SKIPPING bootstrap.",
-			"err", err.Error())
+	// We're in Kubernetes---check the ConfigMap
+	clientset, clientErr := kubernetes.NewForConfig(cfg)
+	if clientErr != nil {
+		failErr := sdkErrors.ErrK8sClientFailed.Clone()
+		failErr.Msg = "failed to create Kubernetes client: skipping bootstrap"
+		log.WarnErr(fName, *failErr)
 		// Can't check state, skip bootstrap.
 		return false
 	}
 
 	namespace := "spike"
 	// Read namespace from the service account if not specified
-	if nsBytes, err := os.ReadFile(k8sServiceAccountNamespace); err == nil {
+	if nsBytes, readErr := os.ReadFile(k8sServiceAccountNamespace); readErr == nil {
 		namespace = string(nsBytes)
 	}
 
-	cm, err := clientset.CoreV1().ConfigMaps(namespace).Get(
+	cm, getErr := clientset.CoreV1().ConfigMaps(namespace).Get(
 		context.Background(),
 		env.BootstrapConfigMapNameVal(),
 		k8sMeta.GetOptions{},
 	)
-	if err != nil {
+	if getErr != nil {
+		failErr := sdkErrors.ErrK8sReconciliationFailed.Wrap(getErr)
 		// ConfigMap doesn't exist or can't read it - proceed with bootstrap
-		log.Log().Info(fName,
-			"message",
-			"ConfigMap not found or not readable, proceeding with bootstrap",
-			"err", err.Error())
+		failErr.Msg = "failed to get ConfigMap: proceeding with bootstrap"
+		log.WarnErr(fName, *failErr)
 		return true
 	}
 
-	bootstrapCompleted := cm.Data["bootstrap-completed"] == k8sTrue
-	completedAt := cm.Data["completed-at"]
-	completedByPod := cm.Data["completed-by-pod"]
+	bootstrapCompleted := cm.Data[keyBootstrapCompleted] == k8sTrue
+	completedAt := cm.Data[keyBootstrapCompletedAt]
+	completedByPod := cm.Data[keyBootstrapCompletedByPod]
 
 	if bootstrapCompleted {
-		reason := fmt.Sprintf("completed at %s by pod %s",
-			completedAt, completedByPod)
-		log.Log().Info(fName,
-			"message", "Skipping bootstrap based on ConfigMap state",
-			"completed-at", completedAt,
-			"completed-by-pod", completedByPod,
+		reason := fmt.Sprintf(
+			"completed at %s by pod %s",
+			completedAt, completedByPod,
+		)
+		log.Info(
+			fName,
+			"message", "skipping bootstrap based on ConfigMap state",
+			keyBootstrapCompletedAt, completedAt,
+			keyBootstrapCompletedByPod, completedByPod,
 			"reason", reason,
 		)
 		return false
 	}
 
-	// Boostrap not completed---proceed with bootstrap
+	// Bootstrap is not completed: proceed with bootstrap
 	return true
 }
 
@@ -147,29 +160,43 @@ func ShouldBootstrap() bool {
 //
 // If the ConfigMap already exists, it will be updated. If creation fails,
 // an update operation is attempted as a fallback.
-func MarkBootstrapComplete() error {
-	const fName = "bootstrap.markBootstrapComplete"
+func MarkBootstrapComplete() *sdkErrors.SDKError {
+	const fName = "MarkBootstrapComplete"
 
 	// Only mark complete in Kubernetes environments
-	config, err := rest.InClusterConfig()
-	if err != nil {
-		if errors.Is(err, rest.ErrNotInCluster) {
+	config, cfgErr := rest.InClusterConfig()
+	if cfgErr != nil {
+		if errors.Is(cfgErr, rest.ErrNotInCluster) {
 			// Not in Kubernetes, nothing to mark
-			log.Log().Info(fName,
-				"message", "Not in Kubernetes, skipping completion marker")
+			log.Info(
+				fName,
+				"message", "not in Kubernetes: skipping completion marker",
+			)
 			return nil
 		}
-		return err
+
+		failErr := sdkErrors.ErrK8sReconciliationFailed.Clone()
+		failErr.Msg = "failed to get Kubernetes config"
+		return failErr.Wrap(cfgErr)
 	}
 
-	clientset, err := kubernetes.NewForConfig(config)
-	if err != nil {
-		return err
+	clientset, clientErr := kubernetes.NewForConfig(config)
+	if clientErr != nil {
+		failErr := sdkErrors.ErrK8sReconciliationFailed.Clone()
+		failErr.Msg = "failed to create Kubernetes client"
+		return failErr.Wrap(clientErr)
 	}
 
 	namespace := "spike"
-	if nsBytes, err := os.ReadFile(k8sServiceAccountNamespace); err == nil {
+	if nsBytes, readErr := os.ReadFile(
+		k8sServiceAccountNamespace,
+	); readErr == nil {
 		namespace = string(nsBytes)
+	} else {
+		failErr := sdkErrors.ErrK8sReconciliationFailed.Wrap(readErr)
+		failErr.Msg = "failed to read service account namespace: using default: " +
+			namespace
+		log.WarnErr(fName, *failErr)
 	}
 
 	// Create ConfigMap marking bootstrap as complete
@@ -178,30 +205,31 @@ func MarkBootstrapComplete() error {
 			Name: env.BootstrapConfigMapNameVal(),
 		},
 		Data: map[string]string{
-			"bootstrap-completed": k8sTrue,
-			"completed-at":        time.Now().UTC().Format(time.RFC3339),
-			"completed-by-pod":    os.Getenv("HOSTNAME"),
+			keyBootstrapCompleted:      k8sTrue,
+			keyBootstrapCompletedAt:    time.Now().UTC().Format(time.RFC3339),
+			keyBootstrapCompletedByPod: os.Getenv(hostNameEnvVar),
 		},
 	}
 
 	ctx := context.Background()
-	_, err = clientset.CoreV1().ConfigMaps(
+	_, createErr := clientset.CoreV1().ConfigMaps(
 		namespace,
 	).Create(ctx, cm, k8sMeta.CreateOptions{})
-	if err != nil {
+	if createErr != nil {
 		// Try to update if it already exists
-		_, err = clientset.CoreV1().ConfigMaps(
+		_, updateErr := clientset.CoreV1().ConfigMaps(
 			namespace,
 		).Update(ctx, cm, k8sMeta.UpdateOptions{})
+		if updateErr != nil {
+			failErr := sdkErrors.ErrK8sReconciliationFailed.Wrap(updateErr)
+			failErr.Msg = "failed to mark bootstrap complete in ConfigMap"
+			return failErr
+		}
 	}
 
-	if err != nil {
-		log.Log().Error(fName,
-			"message", "Failed to mark bootstrap complete", "err", err.Error())
-		return err
-	}
-
-	log.Log().Info(fName,
-		"message", "Marked bootstrap as complete in ConfigMap")
+	log.Info(
+		fName,
+		"message", "marked bootstrap as complete in ConfigMap",
+	)
 	return nil
 }

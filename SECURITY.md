@@ -21,7 +21,7 @@ and we will also have a support plan for various major versions.
 We are very thankful for—and if desired, happy to credit—security researchers 
 and users who report vulnerabilities to the SPIKE community.
 
-Please send your vulnerability reports to [security@spike.ist](mailto:spike.ist).
+Please send your vulnerability reports to [security@spike.ist](mailto:security@spike.ist).
 
 We don't have an official turnover time, but if nobody gets back
 to you within a week, please send another email.

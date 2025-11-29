@@ -5,11 +5,11 @@
 package policy
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	spike "github.com/spiffe/spike-sdk-go/api"
+
+	"github.com/spiffe/spike/app/spike/internal/stdout"
 	"github.com/spiffe/spike/app/spike/internal/trust"
 )
 
@@ -21,15 +21,18 @@ import (
 // that the system is initialized before creating a policy.
 //
 // Parameters:
-//   - source: SPIFFE X.509 SVID source for authentication
-//   - spiffeId: The SPIFFE ID to authenticate with
+//   - source: SPIFFE X.509 SVID source for authentication. Can be nil if the
+//     Workload API connection is unavailable, in which case the command will
+//     display an error message and return.
+//   - SPIFFEID: The SPIFFE ID to authenticate with
 //
 // Returns:
 //   - *cobra.Command: Configured Cobra command for policy creation
 //
 // Command flags:
 //   - --name: Name of the policy (required)
-//   - --spiffeid-pattern: SPIFFE ID regex pattern for workload matching (required)
+//   - --spiffeid-pattern: SPIFFE ID regex pattern for workload matching
+//     (required)
 //   - --path-pattern: Path regex pattern for access control (required)
 //   - --permissions: Comma-separated list of permissions (required)
 //
@@ -77,13 +80,21 @@ func newPolicyCreateCommand(
 		Long: `Create a new policy that grants specific permissions to workloads.
 
         Example:
-        spike policy create --name=db-access 
-          --path-pattern="^db/.*$" --spiffeid-pattern="^spiffe://example\.org/service/.*$" 
+        spike policy create --name=db-access
+          --path-pattern="^db/.*$" --spiffeid-pattern="^spiffe://example\.org/service/.*$"
           --permissions="read,write"
 
         Valid permissions: read, write, list, super`,
 		Args: cobra.NoArgs,
-		Run: func(cmd *cobra.Command, args []string) {
+		Run: func(c *cobra.Command, args []string) {
+			trust.AuthenticateForPilot(SPIFFEID)
+
+			if source == nil {
+				c.PrintErrln("Error: SPIFFE X509 source is unavailable.")
+				return
+			}
+
+			api := spike.NewWithSource(source)
 
 			// Check if all required flags are provided
 			var missingFlags []string
@@ -101,41 +112,38 @@ func newPolicyCreateCommand(
 			}
 
 			if len(missingFlags) > 0 {
-				fmt.Println("Error: all flags are required")
+				c.PrintErrln("Error: All flags are required.")
 				for _, flag := range missingFlags {
-					fmt.Printf("  --%s is missing\n", flag)
+					c.PrintErrf("  --%s is missing\n", flag)
 				}
 				return
 			}
 
-			trust.AuthenticateForPilot(SPIFFEID)
-			api := spike.NewWithSource(source)
-
 			// Validate permissions
 			permissions, err := validatePermissions(permsStr)
-			if err != nil {
-				fmt.Printf("Error: %v\n", err)
+			if stdout.HandleAPIError(c, err) {
 				return
 			}
 
 			// Check if a policy with this name already exists
-			exists, err := checkPolicyNameExists(api, name)
-			if handleAPIError(err) {
+			exists, apiErr := checkPolicyNameExists(api, name)
+			if stdout.HandleAPIError(c, apiErr) {
 				return
 			}
 
 			if exists {
-				fmt.Printf("Error: A policy with name '%s' already exists\n", name)
+				c.PrintErrf("Error: Policy '%s' already exists.\n", name)
 				return
 			}
 
 			// Create policy
-			err = api.CreatePolicy(name, SPIFFEIDPattern, pathPattern, permissions)
-			if handleAPIError(err) {
+			apiErr = api.CreatePolicy(name, SPIFFEIDPattern,
+				pathPattern, permissions)
+			if stdout.HandleAPIError(c, apiErr) {
 				return
 			}
 
-			fmt.Println("Policy created successfully")
+			c.Println("Policy created successfully.")
 		},
 	}
 

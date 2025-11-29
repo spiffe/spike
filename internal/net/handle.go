@@ -1,3 +1,7 @@
+//	  \\ SPIKE: Secure your secrets with SPIFFE. — https://spike.ist/
+//	\\\\\ Copyright 2024-present SPIKE contributors.
+// \\\\\\\ SPDX-License-Identifier: Apache-2.0
+
 package net
 
 import (
@@ -5,13 +9,24 @@ import (
 	"time"
 
 	"github.com/spiffe/spike-sdk-go/crypto"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 
 	"github.com/spiffe/spike/internal/journal"
 )
 
 // Handler is a function type that processes HTTP requests with audit
 // logging support.
-type Handler func(http.ResponseWriter, *http.Request, *journal.AuditEntry) error
+//
+// Parameters:
+//   - w: HTTP response writer for sending the response
+//   - r: HTTP request containing the incoming request data
+//   - audit: Audit entry for logging the request lifecycle
+//
+// Returns:
+//   - *sdkErrors.SDKError: nil on success, error on failure
+type Handler func(
+	w http.ResponseWriter, r *http.Request, audit *journal.AuditEntry,
+) *sdkErrors.SDKError
 
 // HandleRoute wraps an HTTP handler with audit logging functionality.
 // It creates and manages audit log entries for the request lifecycle,
@@ -31,8 +46,10 @@ func HandleRoute(h Handler) {
 		writer http.ResponseWriter, request *http.Request,
 	) {
 		now := time.Now()
+		id := crypto.ID()
+
 		entry := journal.AuditEntry{
-			TrailID:   crypto.ID(),
+			TrailID:   id,
 			Timestamp: now,
 			UserID:    "",
 			Action:    journal.AuditEnter,

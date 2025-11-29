@@ -9,8 +9,7 @@ import (
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
-	"github.com/spiffe/spike-sdk-go/api/errors"
-	"github.com/spiffe/spike-sdk-go/log"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 	"github.com/spiffe/spike/internal/journal"
@@ -31,7 +30,7 @@ import (
 //   - audit: Audit entry for logging the policy list action
 //
 // Returns:
-//   - error: nil on successful retrieval, error otherwise
+//   - *sdkErrors.SDKError: nil on successful retrieval, error otherwise
 //
 // Example request body (list all):
 //
@@ -52,30 +51,21 @@ import (
 // Possible errors:
 //   - Failed to read request body
 //   - Failed to parse request body
-//   - `spiffe_id_pattern` and `path_pattern` used together
+//   - `spiffe_id_pattern` and `path_pattern` used together (validated by the
+//     request guard)
 //   - Failed to marshal response body
 func RouteListPolicies(
 	w http.ResponseWriter, r *http.Request, audit *journal.AuditEntry,
-) error {
-	fName := "routeListPolicies"
+) *sdkErrors.SDKError {
+	fName := "RouteListPolicies"
+
 	journal.AuditRequest(fName, r, audit, journal.AuditList)
 
-	requestBody := net.ReadRequestBody(w, r)
-	if requestBody == nil {
-		return errors.ErrReadFailure
-	}
-
-	request := net.HandleRequest[
+	request, err := net.ReadParseAndGuard[
 		reqres.PolicyListRequest, reqres.PolicyListResponse](
-		requestBody, w,
-		reqres.PolicyListResponse{Err: data.ErrBadInput},
+		w, r, reqres.PolicyListResponse{}.BadRequest(), guardListPolicyRequest,
 	)
-	if request == nil {
-		return errors.ErrParseFailure
-	}
-
-	err := guardListPolicyRequest(*request, w, r)
-	if err != nil {
+	if alreadyResponded := err != nil; alreadyResponded {
 		return err
 	}
 
@@ -84,32 +74,22 @@ func RouteListPolicies(
 	SPIFFEIDPattern := request.SPIFFEIDPattern
 	pathPattern := request.PathPattern
 
+	var listErr *sdkErrors.SDKError
+
+	// Note that Go's default switch behavior will not fall through.
 	switch {
 	case SPIFFEIDPattern != "":
-		policies, err = state.ListPoliciesBySPIFFEIDPattern(SPIFFEIDPattern)
-		if err != nil {
-			return err
-		}
+		policies, listErr = state.ListPoliciesBySPIFFEIDPattern(SPIFFEIDPattern)
 	case pathPattern != "":
-		policies, err = state.ListPoliciesByPathPattern(pathPattern)
-		if err != nil {
-			return err
-		}
+		policies, listErr = state.ListPoliciesByPathPattern(pathPattern)
 	default:
-		policies, err = state.ListPolicies()
-		if err != nil {
-			return err
-		}
+		policies, listErr = state.ListPolicies()
 	}
 
-	responseBody := net.MarshalBody(reqres.PolicyListResponse{
-		Policies: policies,
-	}, w)
-	if responseBody == nil {
-		return errors.ErrMarshalFailure
+	if listErr != nil {
+		return net.HandleError(listErr, w, reqres.PolicyListResponse{})
 	}
 
-	net.Respond(http.StatusOK, responseBody, w)
-	log.Log().Info(fName, "message", data.ErrSuccess)
+	net.Success(reqres.PolicyListResponse{Policies: policies}.Success(), w)
 	return nil
 }

@@ -8,56 +8,65 @@ import (
 	"context"
 	"crypto/fips140"
 	"flag"
-	"fmt"
 
 	spike "github.com/spiffe/spike-sdk-go/api"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/log"
-	"github.com/spiffe/spike/app/bootstrap/internal/net"
 
 	"github.com/spiffe/spike/app/bootstrap/internal/lifecycle"
+	"github.com/spiffe/spike/app/bootstrap/internal/net"
 	"github.com/spiffe/spike/internal/config"
 )
 
-func main() {
-	const fName = "bootstrap.main"
+const appName = "SPIKE Bootstrap"
 
-	log.Log().Info(fName, "message",
-		"Starting SPIKE bootstrap...",
+func main() {
+	log.Info(
+		appName,
+		"message", "starting",
 		"version", config.BootstrapVersion,
 	)
 
 	init := flag.Bool("init", false, "Initialize the bootstrap module")
 	flag.Parse()
 	if !*init {
-		fmt.Println("")
-		fmt.Println("Usage: bootstrap -init")
-		fmt.Println("")
-		log.FatalLn(fName, "message", "Invalid command line arguments")
+		failErr := *sdkErrors.ErrDataInvalidInput.Clone()
+		failErr.Msg = "invalid command line arguments: usage: boostrap -init"
+		log.FatalErr(appName, failErr)
 		return
 	}
 
-	skip := !lifecycle.ShouldBootstrap() // Kubernetes or bare-metal check.
+	//  0. Skip bootstrap for Lite backend and In-Memory backend
+	//  1. Else, if SPIKE_BOOTSTRAP_FORCE="true", always proceed (return true)
+	//  2. In bare-metal environments (non-Kubernetes), always proceed
+	//  3. In Kubernetes environments, check the "spike-bootstrap-state"
+	//     ConfigMap:
+	//     - If ConfigMap exists and bootstrap-completed="true", skip bootstrap
+	//     - Otherwise, proceed with bootstrap
+	skip := !lifecycle.ShouldBootstrap()
 	if skip {
-		log.Log().Info(fName,
-			"message", "Skipping bootstrap.",
-		)
-		fmt.Println("Bootstrap skipped. Check the logs for more information.")
+		log.Warn(appName, "message", "skipping bootstrap")
 		return
 	}
 
-	log.Log().Info(
-		fName, "FIPS 140.3 enabled", fips140.Enabled(),
+	log.Info(
+		appName,
+		"message", "FIPS 140.3 Status",
+		"enabled", fips140.Enabled(),
 	)
 
 	// Panics if it cannot acquire the source.
 	src := net.AcquireSource()
 
-	log.Log().Info(
-		fName, "message", "Sending shards to SPIKE Keeper instances...",
-	)
+	log.Info(appName, "message", "sending shards to SPIKE Keeper instances")
 
 	api := spike.NewWithSource(src)
-	defer api.Close()
+	defer func() {
+		err := api.Close()
+		warnErr := sdkErrors.ErrFSStreamCloseFailed.Wrap(err)
+		warnErr.Msg = "failed to close SPIKE API client"
+		log.WarnErr(appName, *warnErr)
+	}()
 
 	ctx := context.Background()
 
@@ -65,21 +74,21 @@ func main() {
 	// dispatched successfully.
 	net.BroadcastKeepers(ctx, api)
 
-	log.Log().Info(fName, "message", "Sent shards to SPIKE Keeper instances.")
+	log.Info(appName, "message", "sent shards to SPIKE Keeper instances")
 
 	// Verify that SPIKE Nexus has been properly initialized by sending an
 	// encrypted payload and verifying the hash of the decrypted plaintext.
 	// Retries verification until successful.
 	net.VerifyInitialization(ctx, api)
 
-	// Bootstrap verification is complete. Mark bootstrap as "done".
+	// Bootstrap verification is complete. Mark the bootstrap as "done".
 
 	// Mark completion in Kubernetes
 	if err := lifecycle.MarkBootstrapComplete(); err != nil {
-		// Log but don't fail - bootstrap itself succeeded
-		log.Log().Warn(fName, "message",
-			"Could not mark bootstrap complete in ConfigMap", "err", err.Error())
+		warnErr := sdkErrors.ErrK8sReconciliationFailed.Wrap(err)
+		warnErr.Msg = "failed to mark bootstrap complete in ConfigMap"
+		log.WarnErr(appName, *warnErr)
 	}
 
-	fmt.Println("Bootstrap completed successfully!")
+	log.Info("bootstrap completed successfully")
 }

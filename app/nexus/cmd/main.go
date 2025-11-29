@@ -6,70 +6,66 @@ package main
 
 import (
 	"context"
-	"crypto/fips140"
-	"fmt"
 
 	"github.com/spiffe/spike-sdk-go/config/env"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/log"
-	"github.com/spiffe/spike-sdk-go/security/mem"
 	"github.com/spiffe/spike-sdk-go/spiffe"
 	"github.com/spiffe/spike-sdk-go/spiffeid"
 
 	"github.com/spiffe/spike/app/nexus/internal/initialization"
 	"github.com/spiffe/spike/app/nexus/internal/net"
 	"github.com/spiffe/spike/internal/config"
+	"github.com/spiffe/spike/internal/out"
 )
 
 const appName = "SPIKE Nexus"
 
 func main() {
-	if env.BannerEnabledVal() {
-		fmt.Printf(`
-   \\ SPIKE: Secure your secrets with SPIFFE. — https://spike.ist/
- \\\\\ Copyright 2024-present SPIKE contributors.
-\\\\\\\ SPDX-License-Identifier: Apache-2.0`+"\n\n"+
-			"%s v%s. | LOG LEVEL: %s; FIPS 140.3 Enabled: %v\n\n",
-			appName, config.KeeperVersion, log.Level(), fips140.Enabled(),
-		)
-	}
-
-	if mem.Lock() {
-		log.Log().Info(appName, "message", "Successfully locked memory.")
-	} else {
-		log.Log().Info(appName,
-			"message", "Memory is not locked. Please disable swap.")
-	}
+	out.Preamble(appName, config.NexusVersion)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	log.Log().Info(appName,
-		"message", "SPIFFE Trust Domain: "+env.TrustRootVal(),
+	log.Info(
+		appName,
+		"message", "starting",
+		"spiffe_trust_root", env.TrustRootVal(),
 	)
 
 	source, selfSPIFFEID, err := spiffe.Source(ctx, spiffe.EndpointSocket())
 	if err != nil {
-		log.FatalLn(appName, "message", "failed to get source", "err", err.Error())
+		failErr := sdkErrors.ErrStateInitializationFailed.Wrap(err)
+		failErr.Msg = "failed to get SPIFFE Workload API source"
+		log.FatalErr(appName, *failErr)
 	}
-	defer spiffe.CloseSource(source)
+	defer func() {
+		err := spiffe.CloseSource(source)
+		if err != nil {
+			log.WarnErr(appName, *err)
+		}
+	}()
 
-	log.Log().Info(appName, "message", "self.spiffeid: "+selfSPIFFEID)
+	log.Info(
+		appName,
+		"message", "acquired source",
+		"spiffe_id", selfSPIFFEID,
+	)
 
 	// I should be SPIKE Nexus.
 	if !spiffeid.IsNexus(selfSPIFFEID) {
-		log.FatalLn(appName,
-			"message",
-			"Authenticate: SPIFFE ID is not valid",
-			"spiffeid", selfSPIFFEID)
+		failErr := *sdkErrors.ErrStateInitializationFailed.Clone()
+		failErr.Msg = "SPIFFE ID is not valid: " + selfSPIFFEID
+		log.FatalErr(appName, failErr)
 	}
 
 	initialization.Initialize(source)
 
-	log.Log().Info(appName, "message", fmt.Sprintf(
-		"Started service: %s v%s",
-		appName, config.NexusVersion),
+	log.Info(
+		appName,
+		"message", "started service",
+		"version", config.NexusVersion,
 	)
-
 	// Start the server:
 	net.Serve(appName, source)
 }

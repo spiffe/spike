@@ -13,35 +13,47 @@ import (
 func main() {
 	fmt.Println("SPIKE Demo")
 
-	// Make sure you register the demo app SPIRE Server registration entry first:
+	// Make sure you register the demo app SPIRE Server registration entry
+	// first:
 	// ./examples/consume-secrets/demo-register-entry.sh
 
 	// https://pkg.go.dev/github.com/spiffe/spike-sdk-go/api#New
-	api := spike.New() // Use the default Workload API Socket
+	api, connErr := spike.New() // Use the default Workload API Socket
+	if connErr != nil {
+		fmt.Println("Error connecting to SPIKE Nexus:", connErr.Error())
+		return
+	}
 
 	fmt.Println("Connected to SPIKE Nexus.")
 
 	// https://pkg.go.dev/github.com/spiffe/spike-sdk-go/api#Close
-	defer api.Close() // Close the connection when done
+	defer func() {
+		// Close the connection when done
+		closeErr := api.Close()
+		if closeErr != nil {
+			fmt.Println("Error closing connection:", closeErr.Error())
+		}
+	}()
 
+	// The path to store/retrieve/update the secret.
 	path := "tenants/demo/db/creds"
 
 	// Create a Secret
 	// https://pkg.go.dev/github.com/spiffe/spike-sdk-go/api#PutSecret
-	err := api.PutSecret(path, map[string]string{
+	putErr := api.PutSecret(path, map[string]string{
 		"username": "SPIKE",
 		"password": "SPIKE_Rocks",
 	})
-	if err != nil {
-		fmt.Println("Error writing secret:", err.Error())
+	if putErr != nil {
+		fmt.Println("Error writing secret:", putErr.Error())
 		return
 	}
 
 	// Read the Secret
 	// https://pkg.go.dev/github.com/spiffe/spike-sdk-go/api#GetSecret
-	secret, err := api.GetSecret(path)
-	if err != nil {
-		fmt.Println("Error reading secret:", err.Error())
+	secret, getErr := api.GetSecret(path)
+	if getErr != nil {
+		fmt.Println("Error reading secret:", getErr.Error())
 		return
 	}
 
@@ -51,9 +63,7 @@ func main() {
 	}
 
 	fmt.Println("Secret found:")
-
-	data := secret.Data
-	for k, v := range data {
+	for k, v := range secret.Data {
 		fmt.Printf("%s: %s\n", k, v)
 	}
 }

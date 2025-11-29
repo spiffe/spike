@@ -202,6 +202,50 @@ specify what a workload is allowed to do with the secrets managed by
 This ensures that workloads only access or modify the secrets they are
 explicitly permitted to, in accordance with their predefined policies.
 
+## Operation Access Control Model
+
+**SPIKE** employs two distinct access control mechanisms depending on the
+criticality of operations:
+
+### Policy-Controlled Operations
+
+Most operations are governed by **SPIKE**'s policy system, allowing flexible,
+fine-grained access control. Administrators can grant permissions to any
+workload through policy configuration. These operations include:
+
+* **Secret Management**: `get`, `put`, `delete`, `undelete`, `list`,
+  `metadata`
+* **Policy Management**: `create`, `get`, `delete`, `list`
+* **Cipher Operations**: `encrypt`, `decrypt`
+* **ACL Operations**: `get`, `list`
+* **Bootstrap Operations**: `contribute`, `verify`
+
+### Hard-Coded Restricted Operations
+
+**Recovery and restoration operations are restricted exclusively to SPIKE
+Pilot** through hard-coded SPIFFE ID validation at the SDK level. These
+operations cannot be delegated through policies:
+
+* **Recovery** (`recover`): Retrieves Shamir secret shards from SPIKE Keepers
+* **Restoration** (`restore`): Submits shards to rebuild the root encryption
+  key
+
+**Rationale**: Recovery operations bypass all policy controls and directly
+manipulate root cryptographic material. If compromised, they could enable
+decryption of all secrets in the system. Unlike other operations that work
+within the policy framework, recovery operations reconstruct the very key that
+protects the policies themselves, creating a circular dependency that makes
+policy-based control inappropriate.
+
+**Enforcement**: The SDK validates the caller's SPIFFE ID using
+`spiffeid.IsPilot()` and fatally terminates any unauthorized attempts via
+`log.FatalErr()`. This provides defense-in-depth alongside SPIKE Nexus's own
+validation.
+
+**See Also**: [ADR-0029: Restrict Recovery and Restoration Operations to SPIKE
+Pilot](@/architecture/adrs/adr-0029.md) for detailed rationale and design
+decisions.
+
 ## Administrative Access
 
 Although **SPIKE** uses policy-based access to secrets and administrative

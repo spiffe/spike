@@ -7,14 +7,10 @@ package bootstrap
 import (
 	"crypto/sha256"
 	"encoding/hex"
-	"fmt"
 	"net/http"
 
-	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
-	apiErr "github.com/spiffe/spike-sdk-go/api/errors"
-	"github.com/spiffe/spike-sdk-go/log"
-	"github.com/spiffe/spike/app/nexus/internal/state/base"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 
 	"github.com/spiffe/spike/app/nexus/internal/state/persist"
 	"github.com/spiffe/spike/internal/journal"
@@ -58,79 +54,45 @@ import (
 //   - Returns ErrUnauthorized if request is not from Bootstrap
 func RouteVerify(
 	w http.ResponseWriter, r *http.Request, audit *journal.AuditEntry,
-) error {
+) *sdkErrors.SDKError {
 	const fName = "routeVerify"
+
 	journal.AuditRequest(fName, r, audit, journal.AuditCreate)
 
-	requestBody := net.ReadRequestBody(w, r)
-	if requestBody == nil {
-		log.Log().Warn(fName, "message", "requestBody is nil")
-		return apiErr.ErrReadFailure
-	}
-
-	request := net.HandleRequest[
+	request, err := net.ReadParseAndGuard[
 		reqres.BootstrapVerifyRequest, reqres.BootstrapVerifyResponse](
-		requestBody, w,
-		reqres.BootstrapVerifyResponse{Err: data.ErrBadInput},
+		w, r, reqres.BootstrapVerifyResponse{}.BadRequest(), guardVerifyRequest,
 	)
-	if request == nil {
-		log.Log().Warn(fName, "message", "request is nil")
-		return apiErr.ErrParseFailure
-	}
-
-	err := guardVerifyRequest(*request, w, r)
-	if err != nil {
+	if alreadyResponded := err != nil; alreadyResponded {
 		return err
 	}
 
 	// Get cipher from the backend
 	c := persist.Backend().GetCipher()
 	if c == nil {
-		log.Log().Error(fName, "message", "cipher not available")
-		responseBody := net.MarshalBody(reqres.BootstrapVerifyResponse{
-			Err: data.ErrInternal,
-		}, w)
-		if responseBody == nil {
-			return apiErr.ErrMarshalFailure
-		}
-		net.Respond(http.StatusInternalServerError, responseBody, w)
-		return fmt.Errorf("cipher not available")
+		return net.HandleInternalError(
+			sdkErrors.ErrCryptoCipherNotAvailable, w,
+			reqres.BootstrapVerifyResponse{},
+		)
 	}
 
 	// Decrypt the ciphertext
-	fmt.Println("nonce", hex.EncodeToString(request.Nonce))
-	fmt.Println("ciphertext", hex.EncodeToString(request.Ciphertext))
-	fmt.Println("rootKey", hex.EncodeToString(base.RootKeyNoLock()[:]))
-	plaintext, err := c.Open(nil, request.Nonce, request.Ciphertext, nil)
-	if err != nil {
-		log.Log().Error(fName, "message", "decryption failed", "err",
-			err.Error())
-		responseBody := net.MarshalBody(reqres.BootstrapVerifyResponse{
-			Err: data.ErrInternal,
-		}, w)
-		if responseBody == nil {
-			return apiErr.ErrMarshalFailure
-		}
-		net.Respond(http.StatusBadRequest, responseBody, w)
-		return fmt.Errorf("decryption failed: %w", err)
+	plaintext, decryptErr := c.Open(nil, request.Nonce, request.Ciphertext, nil)
+	if decryptErr != nil {
+		return net.HandleInternalError(
+			sdkErrors.ErrCryptoDecryptionFailed, w,
+			reqres.BootstrapVerifyResponse{},
+		)
 	}
 
 	// Compute SHA-256 hash of plaintext
 	hash := sha256.Sum256(plaintext)
 	hashHex := hex.EncodeToString(hash[:])
 
-	log.Log().Info(fName, "message", "verification successful",
-		"plaintext_len", len(plaintext), "hash", hashHex)
-
-	responseBody := net.MarshalBody(reqres.BootstrapVerifyResponse{
-		Hash: hashHex,
-		Err:  data.ErrSuccess,
-	}, w)
-	if responseBody == nil {
-		return apiErr.ErrMarshalFailure
-	}
-
-	net.Respond(http.StatusOK, responseBody, w)
-	log.Log().Info(fName, "message", data.ErrSuccess)
+	net.Success(
+		reqres.BootstrapVerifyResponse{
+			Hash: hashHex,
+		}.Success(), w,
+	)
 	return nil
 }

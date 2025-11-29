@@ -23,33 +23,33 @@ import (
 //     The backend will use this key directly for encryption operations.
 //
 // Returns:
-//   - A backend.Backend interface implementation if successful
-//   - nil if initialization fails
+//   - backend.Backend: An initialized Lite backend instance
 //
 // Error Handling:
-// If the backend creation fails, the function logs a warning and returns nil
-// rather than propagating the error. This allows the system to gracefully
-// degrade to using only in-memory state without blocking startup.
+// If the backend creation fails, the function calls log.FatalErr() which
+// terminates the program. This is a fatal error because the system cannot
+// operate without a properly initialized backend when Lite mode is
+// configured.
 //
 // Example:
 //
 //	var rootKey [32]byte
 //	// ... populate rootKey with secure random data ...
 //	backend := initializeLiteBackend(&rootKey)
-//	if backend == nil {
-//	    // Handle fallback to in-memory only operation
-//	}
+//	// backend is guaranteed to be valid; function exits on error
 //
 // Note: Unlike the SQLite backend, the Lite backend does not require a
 // separate Initialize() call or timeout configuration.
-func initializeLiteBackend(rootKey *[crypto.AES256KeySize]byte) backend.Backend {
+func initializeLiteBackend(
+	rootKey *[crypto.AES256KeySize]byte,
+) backend.Backend {
 	const fName = "initializeLiteBackend"
+
 	dbBackend, err := lite.New(rootKey)
 	if err != nil {
-		log.FatalLn(fName, "message", "Failed to create Lite backend",
-			"err", err.Error(),
-		)
-		return nil
+		err.Msg = "failed to initialize lite backend"
+		log.FatalErr(fName, *err)
 	}
+
 	return dbBackend
 }

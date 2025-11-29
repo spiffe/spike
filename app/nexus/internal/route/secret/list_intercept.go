@@ -9,55 +9,57 @@ import (
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
-	apiErr "github.com/spiffe/spike-sdk-go/api/errors"
-	"github.com/spiffe/spike-sdk-go/config/auth"
-	"github.com/spiffe/spike-sdk-go/spiffe"
-	"github.com/spiffe/spike-sdk-go/validation"
+	apiAuth "github.com/spiffe/spike-sdk-go/config/auth"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
+	"github.com/spiffe/spike/internal/auth"
 	"github.com/spiffe/spike/internal/net"
 )
 
+// guardListSecretRequest validates a secret listing request by performing
+// authentication and authorization checks.
+//
+// The function performs the following validations in order:
+//   - Extracts and validates the peer SPIFFE ID from the request
+//   - Checks if the peer has list permission for the system secret access path
+//
+// List permission is required to enumerate secrets in the system. The
+// authorization check is performed against the system-level secret access path
+// to control which identities can discover what secrets exist.
+//
+// If any validation fails, an appropriate error response is written to the
+// ResponseWriter and an error is returned.
+//
+// Parameters:
+//   - request: The secret list request (currently unused, reserved for future
+//     validation needs)
+//   - w: The HTTP response writer for error responses
+//   - r: The HTTP request containing the peer SPIFFE ID
+//
+// Returns:
+//   - *sdkErrors.SDKError: An error if authentication or authorization fails.
+//     Returns nil if all validations pass.
 func guardListSecretRequest(
 	_ reqres.SecretListRequest, w http.ResponseWriter, r *http.Request,
-) error {
-
-	sid, err := spiffe.IDFromRequest(r)
+) *sdkErrors.SDKError {
+	peerSPIFFEID, err := auth.ExtractPeerSPIFFEID[reqres.SecretListResponse](
+		r, w, reqres.SecretListResponse{}.Unauthorized(),
+	)
 	if err != nil {
-		responseBody := net.MarshalBody(reqres.SecretListResponse{
-			Err: data.ErrUnauthorized,
-		}, w)
-		net.Respond(http.StatusUnauthorized, responseBody, w)
-		return apiErr.ErrUnauthorized
-	}
-
-	if sid == nil {
-		responseBody := net.MarshalBody(reqres.SecretListResponse{
-			Err: data.ErrUnauthorized,
-		}, w)
-		net.Respond(http.StatusUnauthorized, responseBody, w)
-		return apiErr.ErrUnauthorized
-	}
-
-	err = validation.ValidateSPIFFEID(sid.String())
-	if err != nil {
-		responseBody := net.MarshalBody(reqres.SecretListResponse{
-			Err: data.ErrUnauthorized,
-		}, w)
-		net.Respond(http.StatusUnauthorized, responseBody, w)
-		return apiErr.ErrUnauthorized
+		return err
 	}
 
 	allowed := state.CheckAccess(
-		sid.String(), auth.PathSystemSecretAccess,
+		peerSPIFFEID.String(), apiAuth.PathSystemSecretAccess,
 		[]data.PolicyPermission{data.PermissionList},
 	)
 	if !allowed {
-		responseBody := net.MarshalBody(reqres.SecretListResponse{
-			Err: data.ErrUnauthorized,
-		}, w)
-		net.Respond(http.StatusUnauthorized, responseBody, w)
-		return apiErr.ErrUnauthorized
+		net.Fail(
+			reqres.SecretListResponse{}.Unauthorized(), w,
+			http.StatusUnauthorized,
+		)
+		return sdkErrors.ErrAccessUnauthorized
 	}
 
 	return nil

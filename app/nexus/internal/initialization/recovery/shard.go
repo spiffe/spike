@@ -6,85 +6,66 @@ package recovery
 
 import (
 	"encoding/json"
-	"net/url"
 
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
-	apiUrl "github.com/spiffe/spike-sdk-go/api/url"
-	"github.com/spiffe/spike-sdk-go/log"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	network "github.com/spiffe/spike-sdk-go/net"
 	"github.com/spiffe/spike-sdk-go/predicate"
 
 	"github.com/spiffe/spike/internal/net"
 )
 
-func shardURL(keeperAPIRoot string) string {
-	const fName = "shardURL"
-
-	u, err := url.JoinPath(keeperAPIRoot, string(apiUrl.KeeperShard))
-	if err != nil {
-		log.Log().Warn(
-			fName, "message", "Failed to join path", "url", keeperAPIRoot,
-		)
-		return ""
-	}
-	return u
-}
-
-func ShardGetResponse(source *workloadapi.X509Source, u string) []byte {
-	const fName = "ShardGetResponse"
-
+// shardGetResponse retrieves a shard from a SPIKE Keeper via mTLS POST request.
+// It creates an mTLS client using the provided X509 source with a predicate
+// that only allows communication with SPIKE Keeper instances.
+//
+// Parameters:
+//   - source: X509Source for mTLS authentication with the keeper
+//   - u: The URL of the keeper's shard retrieval endpoint
+//
+// Returns:
+//   - []byte: The raw shard response data from the keeper
+//   - *sdkErrors.SDKError: An error if the request fails, nil on success
+//
+// The function will return an error if:
+//   - The X509 source is nil
+//   - The request marshaling fails
+//   - The POST request fails
+//   - The response is empty
+func shardGetResponse(
+	source *workloadapi.X509Source, u string,
+) ([]byte, *sdkErrors.SDKError) {
 	if source == nil {
-		log.Log().Warn(fName, "message", "Source is nil")
-		return []byte{}
+		failErr := sdkErrors.ErrSPIFFENilX509Source.Clone()
+		failErr.Msg = "X509 source is nil"
+		return nil, failErr
 	}
 
 	shardRequest := reqres.ShardGetRequest{}
 	md, err := json.Marshal(shardRequest)
 	if err != nil {
-		log.Log().Warn(fName,
-			"message", "Failed to marshal request",
-			"err", err)
-		return []byte{}
+		failErr := sdkErrors.ErrDataMarshalFailure.Wrap(err)
+		failErr.Msg = "failed to marshal shard request"
+		return nil, failErr
 	}
 
-	client, err := network.CreateMTLSClientWithPredicate(
+	client := network.CreateMTLSClientWithPredicate(
 		source,
 		// Security: Only get shards from SPIKE Keepers.
 		predicate.AllowKeeper,
 	)
 
-	if err != nil {
-		log.Log().Warn(fName,
-			"message", "Failed to create mTLS client",
-			"err", err)
-		return []byte{}
-	}
-
-	data, err := net.Post(client, u, md)
-	if err != nil {
-		log.Log().Warn(fName,
-			"message", "Failed to post",
-			"err", err)
+	data, postErr := net.Post(client, u, md)
+	if postErr != nil {
+		return nil, postErr
 	}
 
 	if len(data) == 0 {
-		log.Log().Info(fName, "message", "No data")
-		return []byte{}
+		failErr := *sdkErrors.ErrAPIEmptyPayload.Clone()
+		failErr.Msg = "received empty shard data from keeper"
+		return nil, &failErr
 	}
 
-	return data
-}
-
-func unmarshalShardResponse(data []byte) *reqres.ShardGetResponse {
-	const fName = "unmarshalShardResponse"
-
-	var res reqres.ShardGetResponse
-	err := json.Unmarshal(data, &res)
-	if err != nil {
-		log.Log().Info(fName, "message",
-			"Failed to unmarshal response", "err", err)
-		return nil
-	}
-	return &res
+	return data, nil
 }

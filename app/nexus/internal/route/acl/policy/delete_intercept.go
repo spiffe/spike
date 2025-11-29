@@ -9,69 +9,65 @@ import (
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
-	apiErr "github.com/spiffe/spike-sdk-go/api/errors"
-	"github.com/spiffe/spike-sdk-go/config/auth"
-	"github.com/spiffe/spike-sdk-go/spiffe"
+	cfg "github.com/spiffe/spike-sdk-go/config/auth"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/validation"
 
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
+	"github.com/spiffe/spike/internal/auth"
 	"github.com/spiffe/spike/internal/net"
 )
 
-func guardDeletePolicyRequest(
+// guardPolicyDeleteRequest validates a policy deletion request by performing
+// authentication, authorization, and input validation checks.
+//
+// The function performs the following validations in order:
+//   - Extracts and validates the peer SPIFFE ID from the request
+//   - Validates the policy ID format
+//   - Checks if the peer has write permission for the policy access path
+//
+// If any validation fails, an appropriate error response is written to the
+// ResponseWriter and an error is returned.
+//
+// Parameters:
+//   - request: The policy deletion request containing the policy ID
+//   - w: The HTTP response writer for error responses
+//   - r: The HTTP request containing the peer SPIFFE ID
+//
+// Returns:
+//   - *sdkErrors.SDKError: nil if all validations pass,
+//     ErrAccessUnauthorized if authentication or authorization fails,
+//     ErrDataInvalidInput if policy ID validation fails
+func guardPolicyDeleteRequest(
 	request reqres.PolicyDeleteRequest, w http.ResponseWriter, r *http.Request,
-) error {
+) *sdkErrors.SDKError {
+	peerSPIFFEID, err := auth.ExtractPeerSPIFFEID[reqres.PolicyDeleteResponse](
+		r, w, reqres.PolicyDeleteResponse{}.Unauthorized(),
+	)
+	if alreadyResponded := err != nil; alreadyResponded {
+		return err
+	}
+
 	policyID := request.ID
 
-	sid, err := spiffe.IDFromRequest(r)
-	if err != nil {
-		responseBody := net.MarshalBody(reqres.PolicyDeleteResponse{
-			Err: data.ErrUnauthorized,
-		}, w)
-		net.Respond(http.StatusUnauthorized, responseBody, w)
-		return apiErr.ErrUnauthorized
-	}
-
-	if sid == nil {
-		responseBody := net.MarshalBody(reqres.PolicyDeleteResponse{
-			Err: data.ErrUnauthorized,
-		}, w)
-		net.Respond(http.StatusUnauthorized, responseBody, w)
-		return apiErr.ErrUnauthorized
-	}
-
-	err = validation.ValidateSPIFFEID(sid.String())
-	if err != nil {
-		responseBody := net.MarshalBody(reqres.PolicyDeleteResponse{
-			Err: data.ErrUnauthorized,
-		}, w)
-		net.Respond(http.StatusUnauthorized, responseBody, w)
-		return apiErr.ErrUnauthorized
-	}
-
-	err = validation.ValidatePolicyID(policyID)
-	if err != nil {
-		responseBody := net.MarshalBody(reqres.PolicyDeleteResponse{
-			Err: data.ErrBadInput,
-		}, w)
-		if responseBody == nil {
-			return apiErr.ErrMarshalFailure
-		}
-
-		net.Respond(http.StatusBadRequest, responseBody, w)
-		return apiErr.ErrInvalidInput
+	validationErr := validation.ValidatePolicyID(policyID)
+	if invalidPolicy := validationErr != nil; invalidPolicy {
+		net.Fail(
+			reqres.PolicyDeleteResponse{}.BadRequest(), w, http.StatusBadRequest,
+		)
+		validationErr.Msg = "invalid policy ID: " + policyID
+		return validationErr
 	}
 
 	allowed := state.CheckAccess(
-		sid.String(), auth.PathSystemPolicyAccess,
+		peerSPIFFEID.String(), cfg.PathSystemPolicyAccess,
 		[]data.PolicyPermission{data.PermissionWrite},
 	)
 	if !allowed {
-		responseBody := net.MarshalBody(reqres.PolicyDeleteResponse{
-			Err: data.ErrUnauthorized,
-		}, w)
-		net.Respond(http.StatusUnauthorized, responseBody, w)
-		return apiErr.ErrUnauthorized
+		net.Fail(
+			reqres.PolicyDeleteResponse{}.Unauthorized(), w, http.StatusUnauthorized,
+		)
+		return sdkErrors.ErrAccessUnauthorized
 	}
 
 	return nil

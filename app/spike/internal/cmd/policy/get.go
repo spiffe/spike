@@ -5,11 +5,11 @@
 package policy
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	spike "github.com/spiffe/spike-sdk-go/api"
+
+	"github.com/spiffe/spike/app/spike/internal/stdout"
 	"github.com/spiffe/spike/app/spike/internal/trust"
 )
 
@@ -21,8 +21,10 @@ import (
 // that the system is initialized before retrieving policy information.
 //
 // Parameters:
-//   - source: SPIFFE X.509 SVID source for authentication
-//   - spiffeId: The SPIFFE ID to authenticate with
+//   - source: SPIFFE X.509 SVID source for authentication. Can be nil if the
+//     Workload API connection is unavailable, in which case the command will
+//     display an error message and return.
+//   - SPIFFEID: The SPIFFE ID to authenticate with
 //
 // Returns:
 //   - *cobra.Command: Configured Cobra command for policy retrieval
@@ -96,40 +98,38 @@ func newPolicyGetCommand(
         - A policy name with the --name flag: spike policy get --name=my-policy
 
         Use --format=json to get the output in JSON format.`,
-		Run: func(cmd *cobra.Command, args []string) {
+		Run: func(c *cobra.Command, args []string) {
 			trust.AuthenticateForPilot(SPIFFEID)
-			api := spike.NewWithSource(source)
 
-			// If the first argument is provided without the `--name` flag, it could
-			// be misinterpreted as trying to use policy name directly
-			if len(args) > 0 && !cmd.Flags().Changed("name") {
-				fmt.Println("Note: To look up a policy by name, use --name flag:")
-				fmt.Printf("  spike policy get --name=%s\n\n", args[0])
-				fmt.Printf("Attempting to use '%s' as policy ID...\n", args[0])
-			}
-
-			policyID, err := sendGetPolicyIDRequest(cmd, args, api)
-			if err != nil {
-				fmt.Printf("Error: %v\n", err)
+			if source == nil {
+				c.PrintErrln("Error: SPIFFE X509 source is unavailable.")
 				return
 			}
 
-			policy, err := api.GetPolicy(policyID)
-			if handleAPIError(err) {
+			api := spike.NewWithSource(source)
+
+			policyID, err := sendGetPolicyIDRequest(c, args, api)
+			if stdout.HandleAPIError(c, err) {
+				return
+			}
+
+			policy, apiErr := api.GetPolicy(policyID)
+			if stdout.HandleAPIError(c, apiErr) {
 				return
 			}
 
 			if policy == nil {
-				fmt.Println("Error: Got empty response from server")
+				c.PrintErrln("Error: Empty response from server.")
 				return
 			}
 
-			output := formatPolicy(cmd, policy)
-			fmt.Println(output)
+			output := formatPolicy(c, policy)
+			c.Println(output)
 		},
 	}
 
 	addNameFlag(cmd)
 	addFormatFlag(cmd)
+
 	return cmd
 }

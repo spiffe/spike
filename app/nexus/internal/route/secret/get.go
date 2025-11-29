@@ -5,11 +5,12 @@
 package secret
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
-	apiErr "github.com/spiffe/spike-sdk-go/api/errors"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/log"
 
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
@@ -20,23 +21,25 @@ import (
 // RouteGetSecret handles requests to retrieve a secret at a specific path
 // and version.
 //
-// This endpoint requires a valid admin JWT token for authentication. The
-// function retrieves a secret based on the provided path and optional version
-// number. If no version is specified, the latest version is returned.
+// This endpoint requires the peer to have read permission for the specified
+// secret path. The function retrieves a secret based on the provided path and
+// optional version number. If no version is specified (version 0), the current
+// version is returned.
 //
 // The function follows these steps:
-//  1. Validates the JWT token
+//  1. Validates peer SPIFFE ID, authorization, and path format
 //  2. Validates and unmarshals the request body
-//  3. Attempts to retrieve the secret
+//  3. Attempts to retrieve the secret from state
 //  4. Returns the secret data or an appropriate error response
 //
 // Parameters:
-//   - w: http.ResponseWriter to write the HTTP response
-//   - r: *http.Request containing the incoming HTTP request
-//   - audit: *journal.AuditEntry for logging audit information
+//   - w: The HTTP response writer for sending the response
+//   - r: The HTTP request containing the peer SPIFFE ID
+//   - audit: The audit entry for logging audit information
 //
 // Returns:
-//   - error: if an error occurs during request processing.
+//   - *sdkErrors.SDKError: An error if validation or retrieval fails. Returns
+//     nil on success.
 //
 // Request body format:
 //
@@ -54,55 +57,47 @@ import (
 //	}
 //
 // Error responses:
-//   - 401 Unauthorized: Invalid or missing JWT token
-//   - 400 Bad Request: Invalid request body
-//   - 404 Not Found: Secret doesn't exist at specified path/version
+//   - 401 Unauthorized: Authentication or authorization failure
+//   - 400 Bad Request: Invalid request body or path format
+//   - 404 Not Found: Secret does not exist at specified path/version
 //
 // All operations are logged using structured logging.
 func RouteGetSecret(
 	w http.ResponseWriter, r *http.Request, audit *journal.AuditEntry,
-) error {
+) *sdkErrors.SDKError {
 	const fName = "routeGetSecret"
+
 	journal.AuditRequest(fName, r, audit, journal.AuditRead)
 
-	requestBody := net.ReadRequestBody(w, r)
-	if requestBody == nil {
-		return apiErr.ErrReadFailure
-	}
-
-	request := net.HandleRequest[
-		reqres.SecretReadRequest, reqres.SecretReadResponse](
-		requestBody, w,
-		reqres.SecretReadResponse{Err: data.ErrBadInput},
+	request, err := net.ReadParseAndGuard[
+		reqres.SecretGetRequest, reqres.SecretGetResponse](
+		w, r, reqres.SecretGetResponse{}.BadRequest(), guardGetSecretRequest,
 	)
-	if request == nil {
-		return apiErr.ErrParseFailure
+	if alreadyResponded := err != nil; alreadyResponded {
+		return err
 	}
 
 	version := request.Version
 	path := request.Path
 
-	err := guardGetSecretRequest(*request, w, r)
-	if err != nil {
-		return err
+	secret, getErr := state.GetSecret(path, version)
+	secretFound := getErr == nil
+
+	// Extra logging to help with debugging and detecting enumeration attacks.
+	if !secretFound {
+		notFoundErr := sdkErrors.ErrAPINotFound.Wrap(getErr)
+		notFoundErr.Msg = fmt.Sprintf(
+			"secret not found at path: %s version: %d", path, version,
+		)
+		log.DebugErr(fName, *notFoundErr)
 	}
 
-	secret, err := state.GetSecret(path, version)
-	if err == nil {
-		log.Log().Info(fName, "message", "Secret found")
-	}
-	if err != nil {
-		return handleGetSecretError(err, w)
+	if !secretFound {
+		return net.HandleError(getErr, w, reqres.SecretGetResponse{})
 	}
 
-	responseBody := net.MarshalBody(reqres.SecretReadResponse{
+	net.Success(reqres.SecretGetResponse{
 		Secret: data.Secret{Data: secret},
-	}, w)
-	if responseBody == nil {
-		return apiErr.ErrMarshalFailure
-	}
-
-	net.Respond(http.StatusOK, responseBody, w)
-	log.Log().Info("routeGetSecret", "message", data.ErrSuccess)
+	}.Success(), w)
 	return nil
 }

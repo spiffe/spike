@@ -28,6 +28,7 @@
       * encrypt policy info: https://github.com/spiffe/spike/pull/223
       * ConfigMap: https://github.com/spiffe/spike/pull/228
       * status: https://github.com/spiffe/spike/pull/222
+      * cipher validation to start.sh: https://github.com/spiffe/spike/issues/242
       --
       * key rotation: https://github.com/spiffe/spike/issues/229
       * secure UI: https://github.com/spiffe/spike/issues/230
@@ -35,10 +36,486 @@
   </high-level-plan>
   <task-group for="v0.6.1" theme="doc update and stabilization">
     <issue>
-      Assign the "add cipher validation to start.sh" task to Murat.
+      change the image on the landing page; the CLI commands etc has changed
+      and the image does not reflect the recent cli.
     </issue>
     <issue>
-      Follow-up on outstanding PRs (in spike and SDK).
+      go through internal files, some of them are generic enough to graduate
+      to the SDK.
+    </issue>
+    <issue>
+      start.sh should test recovery and restore
+      start.sh should test encryption and decryption
+    </issue>
+    <issue>
+      Refactor app/spike/internal/cmd/secret/get.go to extract repeated
+      marshaling logic (yaml.Marshal, json.Marshal, json.MarshalIndent) into
+      helper functions. The same marshal-and-print pattern is duplicated
+      multiple times for different format types.
+    </issue>
+    <issue>
+      format inconsistencies.
+
+      for policies we have json and human
+      for secrets we have
+      if !slices.Contains([]string{"plain",
+      "yaml", "json", "y", "p", "j"}, format) {
+
+      and not all operations honor the format parameter anyway.
+
+      anything that provides an output (except for error messages) should
+      honor the format parameter
+      human->human-friendly (human, h :: alias: plain, p)
+      json->valid json (json, j)
+      yaml->valid yaml (yaml, y)
+    </issue>
+    <issue>
+      this is from sdk; it should come from env config
+      ReadHeaderTimeout: 10 * time.Second,
+
+    </issue>
+    <issue>
+      func VerifyShamirReconstruction(secret group.Scalar, shares []shamir.Share) {
+      this is generic enough to go to the sdk.
+    </issue>
+    <issue>
+      let AI write some tests to all the things.
+    </issue>
+    <issue priority="medium" category="testing">
+      CLI Command Testing Guidance
+
+      This issue documents strategies for testing SPIKE CLI commands with
+      varying levels of complexity.
+
+      == UNIT TESTING (No Mocking Required) ==
+
+      The following helper functions can be tested directly without mocking:
+
+      1. Policy Commands (app/spike/internal/cmd/policy/):
+         - filter.go: validUUID() - UUID validation
+         - fotmat.go: formatPoliciesOutput(), formatPolicy() - output formatting
+         - validation.go: validatePolicySpec() - policy spec validation
+         - create.go: readPolicyFromFile(), getPolicyFromFlags() - input parsing
+
+      2. Secret Commands (app/spike/internal/cmd/secret/):
+         - validation.go: validSecretPath() - path validation
+         - print.go: formatTime(), printSecretResponse() - output formatting
+
+      3. Cipher Commands (app/spike/internal/cmd/cipher/):
+         - io.go: openInput(), openOutput() - file I/O handling
+
+      Example test pattern for pure functions:
+      ```go
+      func TestValidUUID(t *testing.T) {
+          tests := []struct {
+              name     string
+              uuid     string
+              expected bool
+          }{
+              {"valid UUID", "123e4567-e89b-12d3-a456-426614174000", true},
+              {"invalid", "not-a-uuid", false},
+          }
+          for _, tt := range tests {
+              t.Run(tt.name, func(t *testing.T) {
+                  if validUUID(tt.uuid) != tt.expected {
+                      t.Errorf("validUUID(%q) = %v, want %v",
+                          tt.uuid, !tt.expected, tt.expected)
+                  }
+              })
+          }
+      }
+      ```
+
+      == HTTP-LEVEL MOCKING (For API Calls) ==
+
+      To test command Run functions that call the SDK API, use httptest.Server
+      to mock SPIKE Nexus responses:
+
+      ```go
+      func TestSecretGetCommand_Success(t *testing.T) {
+          // Create mock server
+          server := httptest.NewTLSServer(http.HandlerFunc(
+              func(w http.ResponseWriter, r *http.Request) {
+                  // Verify request
+                  if r.URL.Path != "/v1/store/secret" {
+                      t.Errorf("unexpected path: %s", r.URL.Path)
+                  }
+
+                  // Return mock response
+                  resp := reqres.SecretReadResponse{
+                      Data: map[string]string{"key": "value"},
+                  }
+                  json.NewEncoder(w).Encode(resp)
+              },
+          ))
+          defer server.Close()
+
+          // Configure SDK to use mock server URL
+          // (requires setting SPIKE_NEXUS_API_URL env var or similar)
+          t.Setenv("SPIKE_NEXUS_API_URL", server.URL)
+
+          // Execute command and verify output
+          // ...
+      }
+      ```
+
+      Challenges with HTTP mocking:
+      - SDK uses mTLS, so mock server needs proper TLS config
+      - May need to mock X509Source or bypass SPIFFE validation
+      - Consider creating test helpers for common mock scenarios
+
+      == INTEGRATION TESTING (With Real SPIKE Nexus) ==
+
+      For full end-to-end testing, use the existing start.sh to spin up
+      a real SPIKE environment. The integration_test.go pattern in the
+      policy package shows this approach:
+
+      1. Start SPIKE via start.sh (SPIRE + Nexus + Keeper)
+      2. Wait for initialization
+      3. Run actual CLI commands
+      4. Verify results
+
+      ```go
+      // +build integration
+
+      func TestPolicyCreateIntegration(t *testing.T) {
+          if os.Getenv("SPIKE_INTEGRATION_TEST") == "" {
+              t.Skip("Skipping integration test")
+          }
+
+          // Use actual spike CLI binary or SDK
+          api, err := spike.New()
+          if err != nil {
+              t.Fatalf("Failed to create API client: %v", err)
+          }
+          defer api.Close()
+
+          // Create policy
+          err = api.CreatePolicy(data.PolicySpec{
+              Name: "test-policy",
+              // ...
+          })
+          if err != nil {
+              t.Fatalf("CreatePolicy failed: %v", err)
+          }
+
+          // Verify policy exists
+          policies, _ := api.ListPolicies("", "")
+          // Assert...
+      }
+      ```
+
+      Run integration tests with:
+      ```bash
+      # Start SPIKE environment first
+      ./hack/start.sh
+
+      # Run integration tests
+      SPIKE_INTEGRATION_TEST=1 go test -tags=integration ./...
+      ```
+
+      == TESTING log.FatalErr CALLS ==
+
+      Functions that call log.FatalErr can be tested using the panic
+      recovery pattern:
+
+      ```go
+      func TestAuthenticateForPilot_InvalidID(t *testing.T) {
+          // Enable panic mode for FatalErr
+          t.Setenv("SPIKE_STACK_TRACES_ON_LOG_FATAL", "true")
+
+          defer func() {
+              if r := recover(); r == nil {
+                  t.Error("Expected panic for invalid ID")
+              }
+          }()
+
+          AuthenticateForPilot("invalid-spiffe-id")
+          t.Error("Should have panicked")
+      }
+      ```
+
+      == RECOMMENDED APPROACH ==
+
+      1. Start with unit tests for pure helper functions (high value, low effort)
+      2. Add HTTP-level mocks for critical API paths
+      3. Use integration tests for end-to-end validation in CI
+
+      Current coverage after unit tests:
+      - policy commands: ~48%
+      - secret commands: ~10%
+      - cipher commands: ~18%
+
+      Target: 60%+ coverage for command packages through unit + mock tests.
+    </issue>
+    <issue>
+      // PermissionExecute grants the ability to execute specified resources.
+      // One such resource is encryption and decryption operations that
+      // don't necessarily persist anything but execute an internal command.
+      const PermissionExecute PolicyPermission = "execute"
+
+      ^ are we using this permission in policies properly?
+      ^ is it documented properly?
+      ^ are other permissions and where they apply documented?
+    </issue>
+    <issue>
+      env using log causes circular dependencies which we fixed by copying
+      a few functions; but instead these env value functions should return
+      errors and logging should be based on the returned error values.
+
+      those errors also should be sentinel errors that indicate fatal
+      failures.
+
+      func KeepersVal() map[string]string {
+      const fName = "KeepersVal"
+
+      p := os.Getenv(NexusKeeperPeers)
+
+      if p == "" {
+      log.FatalLn(
+      fName,
+      "message",
+      "SPIKE_NEXUS_KEEPER_PEERS must be configured in the environment",
+      )
+      }
+    </issue>
+    <issue>
+      SDK should return its unique error instance instead of wrapping errors:
+
+      the SDK should return:
+      type SDKError struct {
+      Code    ErrorCode  // e.g., "ERR_NOT_READY"
+      Message string
+      Wrapped error
+      }
+
+      func (e *SDKError) Is(target error) bool {
+      if t, ok := target.(*SDKError); ok {
+      return e.Code == t.Code
+      }
+      return false
+      }
+
+      Then you could:
+      if errors.Is(err, &sdk.Error{Code: sdk.ErrNotReady}) {
+
+    </issue>
+    <issue>
+      func FailIfError[T any](
+      and its sisters can go the the SDK.
+    </issue>
+    <issue>
+      validPermsList := "read, write, list, super"
+      SDK should define these instead.
+    </issue>
+    <issue>
+      if err != nil || v < 0 || v > 255 {
+      ^ version check in spike/internal/cmd/cipher/decrypt.go
+      currently we support only a single version `1`.
+    </issue>
+    <issue>
+      these can be made generic and added to the SDK:
+      app/nexus/internal/state/base/validation.go
+    </issue>
+    <issue>
+      // It's unlikely to have 1000 SPIKE Keepers across the board.
+      // The indexes start from 1 and increase one-by-one by design.
+      const maxShardID = 1000
+      to env var configuration.
+    </issue>
+    <issue>
+      add some more description etc to SPIKE go SDK github repo.
+      also the social media banners on both repos needs an overhaul.
+    </issue>
+    <issue>
+      configure these from env
+      // (AES-GCM standard nonce is 12 bytes)
+      const expectedNonceSize = 12
+
+      // Limit cipherText size to prevent DoS attacks
+      // The maximum possible size is 68,719,476,704
+      // The limit comes from GCM's 32-bit counter.
+      const maxCiphertextSize = 65536
+    </issue>
+
+    <issue>
+      internal/net/request.go
+      ^ can be SDK candidates.
+
+      func VerifyShamirReconstruction(secret group.Scalar, shares []shamir.Share) {
+      can go to sdk.
+    </issue>
+    <issue>
+      lease object; may be used for SPIKE HA setup:
+      https://msalinas92.medium.com/deep-dive-into-kubernetes-leases-robust-leader-election-for-daemonsets-with-go-examples-f3b9a8858c49
+      if needed.
+    </issue>
+    <issue>
+      audit log separation (ADR-0027)
+      also audit thigns to do:
+      1. Make audit entries immutable - Have handlers return audit details rather than mutating the entry.
+      2. Distinguish audit event types - Add an EventType field (lifecycle vs operation) to differentiate enter/exit from actual operations.
+      3. Populate or remove unused fields - Either extract SPIFFE ID/UserID/SessionID everywhere, or remove them until you're ready to implement.
+      4. Fix Resource semantics - Resource should be the actual entity (secret path, policy name), not query params. Maybe add a separate QueryParams field if needed.
+      5. Consider structured event nesting - Something like:
+      type AuditEvent struct {
+      TrailID   string
+      RequestEvent  AuditEntry  // enter/exit
+      Operations []AuditEntry  // what happened inside
+      }
+      6. Add audit configuration - Sampling rates, verbosity levels, field inclusion/exclusion for different deployment scenarios.
+    </issue>
+    <issue>
+      additioanl memory clearing for the sdk:
+      https://github.com/spiffe/spike/issues/243
+    </issue>
+    <issue>
+      VSecM has a missing video:
+      vsecm missing video(s)
+      https://vsecm.com/documentation/getting-started/overview/
+    </issue>
+    <issue>
+      add oom guard
+
+      package memory
+
+      const CgroupPath = "/sys/fs/cgroup/"
+      const MemLimitFile = "memory/memory.limit_in_bytes"
+      const MemUsageFile = "memory/memory.usage_in_bytes"
+      const MemMaxFile = "memory.max"
+      const MemCurrentFile = "memory.current"
+
+
+      type Watcher struct {
+      memMax uint64
+      memCurrentPath string
+      memThreshold uint8
+      interval time.Duration
+      ctx context.Context
+      cancel context.CancelFunc
+      }
+
+      func readUint(path string) (uint64, error) {
+      b, err := os.ReadFile(path)
+      if err != nil {
+      return 0, err
+      }
+      return strconv.ParseUint(strings.TrimSpace(string(b)), 10, 64)
+      }
+
+      func discover(memMaxPath, memCurrentPath string) (string, string, error) {
+      if memMaxPath == "" {
+      maxPathV1 := filepath.Join(CgroupPath, MemLimitFile)
+      maxPathV2 := filepath.Join(CgroupPath, MemMaxFile)
+
+      if _, err := os.Lstat(maxPathV2); err == nil {
+      memMaxPath = maxPathV2
+      } else if _, err = os.Lstat(maxPathV1); err == nil {
+      memMaxPath = maxPathV1
+      }
+      }
+      if memCurrentPath == "" {
+      currentPathV1 := filepath.Join(CgroupPath, MemUsageFile)
+      currentPathV2 := filepath.Join(CgroupPath, MemCurrentFile)
+      if _, err := os.Lstat(currentPathV2); err == nil {
+      memCurrentPath = currentPathV2
+      } else if _, err = os.Lstat(currentPathV1); err == nil {
+      memCurrentPath = currentPathV1
+      }
+      }
+
+      if memMaxPath == "" && memCurrentPath == "" {
+      err
+      }
+      if memMaxPath == "" {
+      err
+      }
+      if memCurrentPath == "" {
+      err
+      }
+
+      return memMaxPath, memCurrentPath, nil
+      }
+
+      func (w *Watcher) run(ctx context.Context) {
+      t := time.NewTicker(w.interval)
+      defer t.Stop()
+
+      for {
+      select {
+      case <-ctx.Done():
+      log
+      return
+      case <-t.C:
+      current, err := readUint(w.memCurrentPath)
+      if err != nil {
+      log
+      continue
+      }
+
+      currentPercentage := float64(current) / float64(w.memMax) * 100
+      if currentPercentage >= float64(w.memThreshold) {
+      log
+      w.cancel()
+      return
+      }
+      log
+      }
+      }
+      }
+
+      func New(memMaxPath, memCurrentPath string, memThreshold uint8, interval time.Duration) (*Watcher, error) {
+      if memThreshold < 1 || memThreshold > 100 {
+      return nil, err
+      }
+
+      if minInterval := 50 * time.Millisecond; interval < minInterval {
+      return nil, err
+      }
+
+      memMaxPath, memCurrentPath, err = discover(memMaxPath, memCurrentPath)
+      if err != nil {
+      return nil, err
+      }
+
+      if _, err = os.Lstat(memCurrentPath); err != nil {
+      return nil, err
+      }
+
+      memMax, err := readUint(memMaxPath)
+      if err != nil {
+      return nil, err
+      }
+
+      return &Watcher{
+      memMax: memMax,
+      memCurrentPath: memCurrentPath,
+      memThreshold: memThreshold,
+      interval: interval,
+      }, nil
+      }
+
+      func (w *Watcher) Watch(ctx context.Context) context.Context {
+      sync.Once.Do(func() {
+      w.ctx, w.cancel = context.WithCancel(ctx)
+      go w.run(ctx)
+      })
+      return w.ctx
+      }
+    </issue>
+    <issue>
+      import "errors"
+
+      // IsOneOf returns true if err is equal to any of the errs.
+      func IsOneOf(err error, errs ...error) bool {
+      for _, e := range errs {
+      if errors.Is(err, e) {
+      return true
+      }
+      }
+      return false
+      }
+w
     </issue>
     <issue>
       review the code related to the `spike cipher` command; refactoring beaver may find some tweaking there.
@@ -118,11 +595,17 @@
       // Lite Workloads are always allowed:
       allowed := false
       if spiffeid.IsLiteWorkload(
-      env.TrustRootForLiteWorkload(), sid.String()) {
+      env.TrustRootForLiteWorkload(), peerSPIFFEID.String()) {
       allowed = true
       }
       // If not, do a policy check to determine if the request is allowed:
       if !allowed {
+    </issue>
+    <issue>
+      implement this sometime:
+      ci/wip-draft.txt
+      and find a place to run it every commit; could be github actions; but also
+      can take a long time, so could be a dedicated toy server too.
     </issue>
     <issue>
       func guardDecryptSecretRequest(
@@ -131,7 +614,7 @@
       // TDO: some of these flows can be factored out if we keep the `request`
       // a generic parameter. That will deduplicate some of the validation code.
 
-      sid, err := spiffe.IdFromRequest(r)
+      peerSPIFFEID, err := spiffe.IdFromRequest(r)
       if err != nil {
       responseBody := net.MarshalBody(reqres.SecretDecryptResponse{
       Err: data.ErrUnauthorized,
@@ -179,7 +662,7 @@
       requestBody []byte,
       w http.ResponseWriter,
       r *http.Request,
-      errorResponse Res,
+      errorResponseForBadRequest Res,
       guard GuardFunc[Req], // Required parameter
       ) *Req {
       // ... existing logic ...
@@ -339,13 +822,7 @@
     <issue>
       add `-trimpath` and `-a` to go build.
     </issue>
-    <issue>
-      log.FatalLn panics by design, but then it prints the stack trace.
-      For better security, disable this if SPIKE is in production mode
-      (can be controlled via an environment variable)
-      or maybe a different env var and the default behaviour is not to
-      dump the stack.
-    </issue>
+>
     <issue>
       during bootstrap retry; if a single keeper fails, it will retry it
       indefinitely without giving chance to other keepers.
@@ -403,7 +880,7 @@
       // Lite Workloads are always allowed:
       allowed := false
       if spiffeid.IsLiteWorkload(
-      env.TrustRootForLiteWorkload(), sid.String()) {
+      env.TrustRootForLiteWorkload(), peerSPIFFEID.String()) {
       allowed = true
       }
     </issue>
@@ -518,9 +995,106 @@
       update the guides: PSP is not a thing anymore; better update it
       to Pod Security Standards.
     </issue>
+    <issue>
+      CLI debug logging to file.
+
+      Currently, the spike CLI (spike policy, spike secret, etc.) does not
+      have any structured logging for debugging purposes. When errors occur,
+      only user-friendly messages are shown.
+
+      Consider adding an optional file-based logging mechanism for the CLI
+      that can be enabled via an environment variable (e.g., SPIKE_CLI_LOG)
+      or a flag (e.g., --debug-log=/path/to/file). This would help with
+      troubleshooting without cluttering the terminal output.
+
+      The logs should be structured (JSON) and include error codes, timestamps,
+      and context information.
+    </issue>
 
   </task-group>
   <task-group for="v0.6.3">
+    <issue priority="high" category="bug" repo="spike-sdk-go">
+      SDK Recover/Restore functions use wrong SPIFFE ID check
+
+      The SDK's `Recover` function in
+      `spike-sdk-go/api/internal/impl/operator/recover.go` checks for generic
+      pilot identity instead of the recover role.
+
+      == Bug Location ==
+
+      recover.go line 100:
+        if !spiffeid.IsPilot(selfSPIFFEID) {
+
+      == Expected ==
+
+        if !spiffeid.IsPilotRecover(selfSPIFFEID) {
+
+      == Impact ==
+
+      The `spike operator recover` command fails with:
+        "recovery can only be performed from SPIKE Pilot"
+
+      Even when the caller has the correct recover role SPIFFE ID:
+        spiffe://spike.ist/spike/pilot/role/recover
+
+      The SDK is checking for the generic pilot ID:
+        spiffe://spike.ist/spike/pilot
+
+      == Files ==
+      - spike-sdk-go/api/internal/impl/operator/recover.go:100
+
+      == Notes ==
+      The same bug likely exists in the `Restore` function. Check
+      `spike-sdk-go/api/internal/impl/operator/restore.go` for similar issue.
+    </issue>
+    <issue priority="medium" category="bug">
+      spike cipher JSON mode: encrypt discards version and nonce
+
+      The JSON mode encrypt/decrypt cannot round-trip because critical data
+      is lost during encryption output.
+
+      == Problem ==
+
+      When using JSON mode encryption:
+        spike cipher encrypt --plaintext "$BASE64_PLAINTEXT"
+
+      The API returns a CipherEncryptResponse with:
+        - Version (byte)
+        - Nonce ([]byte)
+        - Ciphertext ([]byte)
+
+      But the CLI (encrypt_impl.go:encryptJSON) only writes the Ciphertext
+      to output, discarding Version and Nonce.
+
+      To decrypt in JSON mode, the user needs:
+        spike cipher decrypt --version V --nonce NONCE_B64 --ciphertext CT_B64
+
+      Since version and nonce are never output, JSON encrypt → JSON decrypt
+      cannot work.
+
+      == Streaming Mode Works ==
+
+      Streaming mode works correctly because the server packages
+      version+nonce+ciphertext into a single binary blob that round-trips.
+
+      == Proposed Fix ==
+
+      Option 1: Output structured JSON from encrypt:
+        {
+          "version": 1,
+          "nonce": "base64...",
+          "ciphertext": "base64..."
+        }
+
+      Option 2: Output the same binary format as streaming mode.
+
+      Option 3: Remove JSON mode flags if streaming covers all use cases.
+
+      == Files ==
+      - app/spike/internal/cmd/cipher/encrypt_impl.go (encryptJSON function)
+      - app/spike/internal/cmd/cipher/decrypt_impl.go (decryptJSON function)
+      - SDK: api/entity/v1/reqres/cipher.go (CipherEncryptResponse struct)
+    </issue>
     <issue waitingFor="upstreamHelmCharts">
       after helm-charts changes are merged, verify that the quickstart
       guide still works.
@@ -685,7 +1259,7 @@
     <issue>
       Need to think about this; I'm not sure we need a UI at all.
       I am getting more fond of Claude Code model of triggering a web-device-PKCE
-      auth flow and then doing everything through the CLI.
+      cfg flow and then doing everything through the CLI.
 
       For VSecM: create a UI that directly talks to SPIKE; depracate all VSecM
       secret model. also delete most of the folders. start with a clean slate
@@ -746,6 +1320,30 @@
       // }
       // return key
       //}
+    </issue>
+    <issue>
+      Implement `spike secret purge` command to remove empty secrets from
+      storage.
+
+      After all versions of a secret are deleted, the secret metadata
+      remains in the backend storage indefinitely. This causes unbounded
+      storage growth.
+
+      The purge command should:
+      - Scan all secrets in the backend
+      - Identify secrets where CurrentVersion == 0 (all versions deleted)
+      - Use the backend's Destroy() method to permanently remove them
+      - Report how many secrets were purged
+
+      Usage:
+        spike secret purge              # Interactive confirmation
+        spike secret purge --force      # Skip confirmation
+        spike secret purge --dry-run    # Show what would be purged
+
+      Implementation notes:
+      - spike-sdk-go now has Value.IsEmpty() and KV.Destroy() methods
+      - SPIKE Nexus backend needs corresponding Destroy() implementation
+      - Consider adding --older-than flag for time-based purging
     </issue>
   </task-group>
   <task-group for="SOC2-compliance">
@@ -1819,6 +2417,19 @@
       long it's been trying and an option to break the loop if needed.
     </issue>
     <issue>
+      app/nexus/internal/state/backend/sqlite/persist/crypto.go
+      these are generic enough to move to the SDK.
+    </issue>
+    <issue>
+      validateContext(ctx, fName)
+      this can be an SDK utility function and can be used across the codebase instead of just this package.
+
+    </issue>
+    <issue>
+      // maybe add reference to mirrored go docs in the public website too,
+      // since the docs are very comprehensive and accurate now.
+    </issue>
+    <issue>
       pattern-based random secret generation
       VSecM already does it; leverage it from it.
       Or, alternatively, move the code to SPIKE SDK and let VSecM use it
@@ -1909,6 +2520,16 @@
     </issue>
   </later>
   <future>
+    <issue>
+      UpsertPolicy calls LoadAllPolicies to find a policy by name, which is
+      O(n) and inefficient as the number of policies grows. Add a
+      LoadPolicyByName method to the backend interface that performs an
+      indexed lookup directly (SQLite can use an index on the name column).
+      This would make the lookup O(1) instead of O(n).
+
+      Location: app/nexus/internal/state/base/policy.go (UpsertPolicy function)
+      Backend interface: app/nexus/internal/state/backend/interface.go
+    </issue>
     <issue>
       Make vSecM uses helm only (you can override images if needed,
       to test with local images. -- that will be better than
@@ -2247,7 +2868,7 @@
       it may however verify the part of spiffeID "after" the trust root.
 
       // I should be a SPIKE Keeper.
-      if !auth.IsKeeper(selfSpiffeid) {
+      if !cfg.IsKeeper(selfSpiffeid) {
       log.FatalF("Authenticate: SPIFFE ID %s is not valid.\n", selfSpiffeid)
       }
 

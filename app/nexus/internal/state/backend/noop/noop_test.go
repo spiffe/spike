@@ -500,20 +500,22 @@ func TestNoopStore_MultipleInstances(t *testing.T) {
 	for i, store := range stores {
 		t.Run(fmt.Sprintf("instance_%d", i), func(t *testing.T) {
 			// Initialize
-			err := store.Initialize(ctx)
-			if err != nil {
-				t.Errorf("Initialize failed on instance %d: %v", i, err)
+			initErr := store.Initialize(ctx)
+			if initErr != nil {
+				t.Errorf("Initialize failed on instance %d: %v", i, initErr)
 			}
 
 			// Test secret operations
-			secret, err := store.LoadSecret(ctx, "test/path")
-			if err != nil || secret != nil {
-				t.Errorf("LoadSecret failed on instance %d: err=%v, secret=%v", i, err, secret)
+			secret, loadSecretErr := store.LoadSecret(ctx, "test/path")
+			if loadSecretErr != nil || secret != nil {
+				t.Errorf("LoadSecret failed on instance %d: err=%v, secret=%v",
+					i, loadSecretErr, secret)
 			}
 
-			secrets, err := store.LoadAllSecrets(ctx)
-			if err != nil || secrets != nil {
-				t.Errorf("LoadAllSecrets failed on instance %d: err=%v, secrets=%v", i, err, secrets)
+			secrets, loadAllSecretsErr := store.LoadAllSecrets(ctx)
+			if loadAllSecretsErr != nil || secrets != nil {
+				t.Errorf("LoadAllSecrets failed on instance %d: err=%v, secrets=%v",
+					i, loadAllSecretsErr, secrets)
 			}
 
 			testSecret := kv.Value{
@@ -524,20 +526,22 @@ func TestNoopStore_MultipleInstances(t *testing.T) {
 					},
 				},
 			}
-			err = store.StoreSecret(ctx, "test/path", testSecret)
-			if err != nil {
-				t.Errorf("StoreSecret failed on instance %d: %v", i, err)
+			storeSecretErr := store.StoreSecret(ctx, "test/path", testSecret)
+			if storeSecretErr != nil {
+				t.Errorf("StoreSecret failed on instance %d: %v", i, storeSecretErr)
 			}
 
 			// Test policy operations
-			policy, err := store.LoadPolicy(ctx, "test-policy")
-			if err != nil || policy != nil {
-				t.Errorf("LoadPolicy failed on instance %d: err=%v, policy=%v", i, err, policy)
+			policy, loadPolicyErr := store.LoadPolicy(ctx, "test-policy")
+			if loadPolicyErr != nil || policy != nil {
+				t.Errorf("LoadPolicy failed on instance %d: err=%v, policy=%v",
+					i, loadPolicyErr, policy)
 			}
 
-			policies, err := store.LoadAllPolicies(ctx)
-			if err != nil || policies != nil {
-				t.Errorf("LoadAllPolicies failed on instance %d: err=%v, policies=%v", i, err, policies)
+			policies, loadAllPoliciesErr := store.LoadAllPolicies(ctx)
+			if loadAllPoliciesErr != nil || policies != nil {
+				t.Errorf("LoadAllPolicies failed on instance %d: err=%v, policies=%v",
+					i, loadAllPoliciesErr, policies)
 			}
 
 			testPolicy := data.Policy{
@@ -547,14 +551,14 @@ func TestNoopStore_MultipleInstances(t *testing.T) {
 				PathPattern:     "^test/.*$",
 				Permissions:     []data.PolicyPermission{data.PermissionRead},
 			}
-			err = store.StorePolicy(ctx, testPolicy)
-			if err != nil {
-				t.Errorf("StorePolicy failed on instance %d: %v", i, err)
+			storePolicyErr := store.StorePolicy(ctx, testPolicy)
+			if storePolicyErr != nil {
+				t.Errorf("StorePolicy failed on instance %d: %v", i, storePolicyErr)
 			}
 
-			err = store.DeletePolicy(ctx, "test-policy")
-			if err != nil {
-				t.Errorf("DeletePolicy failed on instance %d: %v", i, err)
+			deletePolicyErr := store.DeletePolicy(ctx, "test-policy")
+			if deletePolicyErr != nil {
+				t.Errorf("DeletePolicy failed on instance %d: %v", i, deletePolicyErr)
 			}
 
 			// Test cipher
@@ -564,9 +568,9 @@ func TestNoopStore_MultipleInstances(t *testing.T) {
 			}
 
 			// Close
-			err = store.Close(ctx)
-			if err != nil {
-				t.Errorf("Close failed on instance %d: %v", i, err)
+			closeErr := store.Close(ctx)
+			if closeErr != nil {
+				t.Errorf("Close failed on instance %d: %v", i, closeErr)
 			}
 		})
 	}

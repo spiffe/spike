@@ -323,7 +323,7 @@ func TestBackendStoreTypeValidation(t *testing.T) {
 			isValidForBootstrap := validType == env.Sqlite || validType == env.Lite
 			isMemoryMode := validType == env.Memory
 
-			// These should be mutually exclusive except both false is possible
+			// These should be mutually exclusive except "both false" is possible
 			if isValidForBootstrap && isMemoryMode {
 				t.Error("A type cannot be both bootstrap-required and memory mode")
 			}

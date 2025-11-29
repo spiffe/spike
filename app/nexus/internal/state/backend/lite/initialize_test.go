@@ -11,6 +11,7 @@ import (
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/crypto"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/kv"
 	"github.com/spiffe/spike/app/nexus/internal/state/backend"
 )
@@ -18,14 +19,14 @@ import (
 func TestNew_ValidKey(t *testing.T) {
 	// Create a valid AES-256 key
 	rootKey := &[crypto.AES256KeySize]byte{}
-	if _, err := rand.Read(rootKey[:]); err != nil {
-		t.Fatalf("Failed to generate random key: %v", err)
+	if _, randErr := rand.Read(rootKey[:]); randErr != nil {
+		t.Fatalf("Failed to generate random key: %v", randErr)
 	}
 
 	// Create new lite backend
-	ds, err := New(rootKey)
-	if err != nil {
-		t.Errorf("Expected no error with valid key, got: %v", err)
+	ds, newErr := New(rootKey)
+	if newErr != nil {
+		t.Errorf("Expected no error with valid key, got: %v", newErr)
 	}
 
 	if ds == nil {
@@ -63,8 +64,8 @@ func TestNew_InvalidKey(t *testing.T) {
 			// Create invalid key of wrong size
 			invalidKey := make([]byte, tt.keySize)
 			if len(invalidKey) > 0 {
-				if _, err := rand.Read(invalidKey); err != nil {
-					t.Fatalf("Failed to generate random key: %v", err)
+				if _, randErr := rand.Read(invalidKey); randErr != nil {
+					t.Fatalf("Failed to generate random key: %v", randErr)
 				}
 			}
 
@@ -75,8 +76,8 @@ func TestNew_InvalidKey(t *testing.T) {
 			// This should fail for keys that aren't valid AES-256
 			if tt.keySize < 16 {
 				// Keys smaller than AES-128 should fail
-				ds, err := New(&testKey)
-				if err == nil {
+				ds, newErr := New(&testKey)
+				if newErr == nil {
 					t.Errorf("Expected error with invalid key size %d, got nil", tt.keySize)
 				}
 				if ds != nil {
@@ -86,9 +87,9 @@ func TestNew_InvalidKey(t *testing.T) {
 				// For this test, even though we're testing "invalid" keys,
 				// AES-256 key size is fixed, so this will actually work
 				// The test is more about the error handling path
-				ds, err := New(&testKey)
-				if err != nil {
-					t.Logf("Key creation failed as expected: %v", err)
+				ds, newErr := New(&testKey)
+				if newErr != nil {
+					t.Logf("Key creation failed as expected: %v", newErr)
 				} else if ds != nil {
 					t.Logf("Key creation succeeded (valid AES-256 key)")
 				}
@@ -101,9 +102,9 @@ func TestNew_ZeroKey(t *testing.T) {
 	// Test with an all-zero key
 	zeroKey := &[crypto.AES256KeySize]byte{} // All zeros
 
-	ds, err := New(zeroKey)
-	if err != nil {
-		t.Errorf("Zero key should be valid for AES (though not secure), got error: %v", err)
+	ds, newErr := New(zeroKey)
+	if newErr != nil {
+		t.Errorf("Zero key should be valid for AES (though not secure), got error: %v", newErr)
 	}
 
 	if ds == nil {
@@ -122,13 +123,13 @@ func TestNew_ZeroKey(t *testing.T) {
 func TestDataStore_GetCipher(t *testing.T) {
 	// Create a valid key
 	rootKey := &[crypto.AES256KeySize]byte{}
-	if _, err := rand.Read(rootKey[:]); err != nil {
-		t.Fatalf("Failed to generate random key: %v", err)
+	if _, randErr := rand.Read(rootKey[:]); randErr != nil {
+		t.Fatalf("Failed to generate random key: %v", randErr)
 	}
 
-	ds, err := New(rootKey)
-	if err != nil {
-		t.Fatalf("Failed to create Store: %v", err)
+	ds, newErr := New(rootKey)
+	if newErr != nil {
+		t.Fatalf("Failed to create Store: %v", newErr)
 	}
 
 	liteStore := ds.(*Store)
@@ -148,41 +149,41 @@ func TestDataStore_GetCipher(t *testing.T) {
 func TestDataStore_Implements_Backend_Interface(t *testing.T) {
 	// Create a valid key
 	rootKey := &[crypto.AES256KeySize]byte{}
-	if _, err := rand.Read(rootKey[:]); err != nil {
-		t.Fatalf("Failed to generate random key: %v", err)
+	if _, randErr := rand.Read(rootKey[:]); randErr != nil {
+		t.Fatalf("Failed to generate random key: %v", randErr)
 	}
 
-	ds, err := New(rootKey)
-	if err != nil {
-		t.Fatalf("Failed to create Store: %v", err)
+	ds, newErr := New(rootKey)
+	if newErr != nil {
+		t.Fatalf("Failed to create Store: %v", newErr)
 	}
 
 	// Test that it implements all Backend interface methods
 	ctx := context.Background()
 
 	// Test Initialize (inherited from Store)
-	if err := ds.Initialize(ctx); err != nil {
-		t.Errorf("Initialize should not return error: %v", err)
+	if initErr := ds.Initialize(ctx); initErr != nil {
+		t.Errorf("Initialize should not return error: %v", initErr)
 	}
 
 	// Test Close (inherited from Store)
-	if err := ds.Close(ctx); err != nil {
-		t.Errorf("Close should not return error: %v", err)
+	if closeErr := ds.Close(ctx); closeErr != nil {
+		t.Errorf("Close should not return error: %v", closeErr)
 	}
 
 	// Test LoadSecret (inherited from Store)
-	secret, err := ds.LoadSecret(ctx, "test/path")
-	if err != nil {
-		t.Errorf("LoadSecret should not return error: %v", err)
+	secret, loadSecretErr := ds.LoadSecret(ctx, "test/path")
+	if loadSecretErr != nil {
+		t.Errorf("LoadSecret should not return error: %v", loadSecretErr)
 	}
 	if secret != nil {
 		t.Error("LoadSecret should return nil (noop implementation)")
 	}
 
 	// Test LoadAllSecrets (inherited from Store)
-	secrets, err := ds.LoadAllSecrets(ctx)
-	if err != nil {
-		t.Errorf("LoadAllSecrets should not return error: %v", err)
+	secrets, loadAllSecretsErr := ds.LoadAllSecrets(ctx)
+	if loadAllSecretsErr != nil {
+		t.Errorf("LoadAllSecrets should not return error: %v", loadAllSecretsErr)
 	}
 	if secrets != nil {
 		t.Error("LoadAllSecrets should return nil (noop implementation)")
@@ -197,24 +198,24 @@ func TestDataStore_Implements_Backend_Interface(t *testing.T) {
 			},
 		},
 	}
-	err = ds.StoreSecret(ctx, "test/path", testSecret)
-	if err != nil {
-		t.Errorf("StoreSecret should not return error: %v", err)
+	storeSecretErr := ds.StoreSecret(ctx, "test/path", testSecret)
+	if storeSecretErr != nil {
+		t.Errorf("StoreSecret should not return error: %v", storeSecretErr)
 	}
 
 	// Test LoadPolicy (inherited from Store)
-	policy, err := ds.LoadPolicy(ctx, "test-policy-id")
-	if err != nil {
-		t.Errorf("LoadPolicy should not return error: %v", err)
+	policy, loadPolicyErr := ds.LoadPolicy(ctx, "test-policy-id")
+	if loadPolicyErr != nil {
+		t.Errorf("LoadPolicy should not return error: %v", loadPolicyErr)
 	}
 	if policy != nil {
 		t.Error("LoadPolicy should return nil (noop implementation)")
 	}
 
 	// Test LoadAllPolicies (inherited from Store)
-	policies, err := ds.LoadAllPolicies(ctx)
-	if err != nil {
-		t.Errorf("LoadAllPolicies should not return error: %v", err)
+	policies, loadAllPoliciesErr := ds.LoadAllPolicies(ctx)
+	if loadAllPoliciesErr != nil {
+		t.Errorf("LoadAllPolicies should not return error: %v", loadAllPoliciesErr)
 	}
 	if policies != nil {
 		t.Error("LoadAllPolicies should return nil (noop implementation)")
@@ -228,15 +229,15 @@ func TestDataStore_Implements_Backend_Interface(t *testing.T) {
 		PathPattern:     "^test/.*$",
 		Permissions:     []data.PolicyPermission{data.PermissionRead},
 	}
-	err = ds.StorePolicy(ctx, testPolicy)
-	if err != nil {
-		t.Errorf("StorePolicy should not return error: %v", err)
+	storePolicyErr := ds.StorePolicy(ctx, testPolicy)
+	if storePolicyErr != nil {
+		t.Errorf("StorePolicy should not return error: %v", storePolicyErr)
 	}
 
 	// Test DeletePolicy (inherited from Store)
-	err = ds.DeletePolicy(ctx, "test-policy-id")
-	if err != nil {
-		t.Errorf("DeletePolicy should not return error: %v", err)
+	deletePolicyErr := ds.DeletePolicy(ctx, "test-policy-id")
+	if deletePolicyErr != nil {
+		t.Errorf("DeletePolicy should not return error: %v", deletePolicyErr)
 	}
 
 	// Test GetCipher (overridden in Store)
@@ -249,13 +250,13 @@ func TestDataStore_Implements_Backend_Interface(t *testing.T) {
 func TestDataStore_CipherFunctionality(t *testing.T) {
 	// Create a valid key
 	rootKey := &[crypto.AES256KeySize]byte{}
-	if _, err := rand.Read(rootKey[:]); err != nil {
-		t.Fatalf("Failed to generate random key: %v", err)
+	if _, randErr := rand.Read(rootKey[:]); randErr != nil {
+		t.Fatalf("Failed to generate random key: %v", randErr)
 	}
 
-	ds, err := New(rootKey)
-	if err != nil {
-		t.Fatalf("Failed to create Store: %v", err)
+	ds, newErr := New(rootKey)
+	if newErr != nil {
+		t.Fatalf("Failed to create Store: %v", newErr)
 	}
 
 	liteStore := ds.(*Store)
@@ -273,8 +274,8 @@ func TestDataStore_CipherFunctionality(t *testing.T) {
 	// Test encryption/decryption functionality
 	plaintext := []byte("Hello, SPIKE!")
 	nonce := make([]byte, cipher.NonceSize())
-	if _, err := rand.Read(nonce); err != nil {
-		t.Fatalf("Failed to generate nonce: %v", err)
+	if _, randErr := rand.Read(nonce); randErr != nil {
+		t.Fatalf("Failed to generate nonce: %v", randErr)
 	}
 
 	// Encrypt
@@ -284,9 +285,9 @@ func TestDataStore_CipherFunctionality(t *testing.T) {
 	}
 
 	// Decrypt
-	decrypted, err := cipher.Open(nil, nonce, ciphertext, nil)
-	if err != nil {
-		t.Errorf("Decryption failed: %v", err)
+	decrypted, decryptErr := cipher.Open(nil, nonce, ciphertext, nil)
+	if decryptErr != nil {
+		t.Errorf("Decryption failed: %v", decryptErr)
 	}
 
 	if string(decrypted) != string(plaintext) {
@@ -300,11 +301,11 @@ func TestDataStore_DifferentKeys_ProduceDifferentCiphers(t *testing.T) {
 	key1 := &[crypto.AES256KeySize]byte{}
 	key2 := &[crypto.AES256KeySize]byte{}
 
-	if _, err := rand.Read(key1[:]); err != nil {
-		t.Fatalf("Failed to generate first key: %v", err)
+	if _, randErr := rand.Read(key1[:]); randErr != nil {
+		t.Fatalf("Failed to generate first key: %v", randErr)
 	}
-	if _, err := rand.Read(key2[:]); err != nil {
-		t.Fatalf("Failed to generate second key: %v", err)
+	if _, randErr := rand.Read(key2[:]); randErr != nil {
+		t.Fatalf("Failed to generate second key: %v", randErr)
 	}
 
 	// Ensure keys are different
@@ -313,11 +314,11 @@ func TestDataStore_DifferentKeys_ProduceDifferentCiphers(t *testing.T) {
 	}
 
 	// Create two DataStores
-	ds1, err1 := New(key1)
-	ds2, err2 := New(key2)
+	ds1, newErr1 := New(key1)
+	ds2, newErr2 := New(key2)
 
-	if err1 != nil || err2 != nil {
-		t.Fatalf("Failed to create DataStores: %v, %v", err1, err2)
+	if newErr1 != nil || newErr2 != nil {
+		t.Fatalf("Failed to create DataStores: %v, %v", newErr1, newErr2)
 	}
 
 	cipher1 := ds1.GetCipher()
@@ -326,8 +327,8 @@ func TestDataStore_DifferentKeys_ProduceDifferentCiphers(t *testing.T) {
 	// Test that they produce different encrypted output for the same input
 	plaintext := []byte("test data")
 	nonce := make([]byte, cipher1.NonceSize())
-	if _, err := rand.Read(nonce); err != nil {
-		t.Fatalf("Failed to generate nonce: %v", err)
+	if _, randErr := rand.Read(nonce); randErr != nil {
+		t.Fatalf("Failed to generate nonce: %v", randErr)
 	}
 
 	ciphertext1 := cipher1.Seal(nil, nonce, plaintext, nil)
@@ -339,8 +340,8 @@ func TestDataStore_DifferentKeys_ProduceDifferentCiphers(t *testing.T) {
 	}
 
 	// Verify cipher1 cannot decrypt cipher2's output
-	_, err := cipher1.Open(nil, nonce, ciphertext2, nil)
-	if err == nil {
+	_, openErr := cipher1.Open(nil, nonce, ciphertext2, nil)
+	if openErr == nil {
 		t.Error("Cipher with different key should not be able to decrypt ciphertext")
 	}
 }
@@ -348,13 +349,13 @@ func TestDataStore_DifferentKeys_ProduceDifferentCiphers(t *testing.T) {
 func TestDataStore_EmbeddedNoopStore(t *testing.T) {
 	// Test that Store properly embeds Store
 	rootKey := &[crypto.AES256KeySize]byte{}
-	if _, err := rand.Read(rootKey[:]); err != nil {
-		t.Fatalf("Failed to generate random key: %v", err)
+	if _, randErr := rand.Read(rootKey[:]); randErr != nil {
+		t.Fatalf("Failed to generate random key: %v", randErr)
 	}
 
-	ds, err := New(rootKey)
-	if err != nil {
-		t.Fatalf("Failed to create Store: %v", err)
+	ds, newErr := New(rootKey)
+	if newErr != nil {
+		t.Fatalf("Failed to create Store: %v", newErr)
 	}
 
 	liteStore := ds.(*Store)
@@ -380,12 +381,12 @@ func TestDataStore_EmbeddedNoopStore(t *testing.T) {
 		Permissions:     []data.PolicyPermission{data.PermissionRead},
 	}
 
-	methods := []func() error{
-		func() error { return liteStore.Initialize(ctx) },
-		func() error { return liteStore.Close(ctx) },
-		func() error { return liteStore.StoreSecret(ctx, "path", testSecret) },
-		func() error { return liteStore.StorePolicy(ctx, testPolicy) },
-		func() error { return liteStore.DeletePolicy(ctx, "id") },
+	methods := []func() *sdkErrors.SDKError{
+		func() *sdkErrors.SDKError { return liteStore.Initialize(ctx) },
+		func() *sdkErrors.SDKError { return liteStore.Close(ctx) },
+		func() *sdkErrors.SDKError { return liteStore.StoreSecret(ctx, "path", testSecret) },
+		func() *sdkErrors.SDKError { return liteStore.StorePolicy(ctx, testPolicy) },
+		func() *sdkErrors.SDKError { return liteStore.DeletePolicy(ctx, "id") },
 	}
 
 	for i, method := range methods {
@@ -398,13 +399,13 @@ func TestDataStore_EmbeddedNoopStore(t *testing.T) {
 func TestDataStore_GCMProperties(t *testing.T) {
 	// Test that the cipher is specifically GCM
 	rootKey := &[crypto.AES256KeySize]byte{}
-	if _, err := rand.Read(rootKey[:]); err != nil {
-		t.Fatalf("Failed to generate random key: %v", err)
+	if _, randErr := rand.Read(rootKey[:]); randErr != nil {
+		t.Fatalf("Failed to generate random key: %v", randErr)
 	}
 
-	ds, err := New(rootKey)
-	if err != nil {
-		t.Fatalf("Failed to create Store: %v", err)
+	ds, newErr := New(rootKey)
+	if newErr != nil {
+		t.Fatalf("Failed to create Store: %v", newErr)
 	}
 
 	cipher := ds.GetCipher()
@@ -430,13 +431,13 @@ func TestDataStore_MemoryManagement(t *testing.T) {
 	// Create multiple instances
 	for i := 0; i < 5; i++ {
 		keys[i] = &[crypto.AES256KeySize]byte{}
-		if _, err := rand.Read(keys[i][:]); err != nil {
-			t.Fatalf("Failed to generate key %d: %v", i, err)
+		if _, randErr := rand.Read(keys[i][:]); randErr != nil {
+			t.Fatalf("Failed to generate key %d: %v", i, randErr)
 		}
 
-		ds, err := New(keys[i])
-		if err != nil {
-			t.Fatalf("Failed to create Store %d: %v", i, err)
+		ds, newErr := New(keys[i])
+		if newErr != nil {
+			t.Fatalf("Failed to create Store %d: %v", i, newErr)
 		}
 		dss[i] = ds
 	}

@@ -1,0 +1,1216 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="/main.css">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link rel="icon" href="https://spike.ist/assets/spike-favicon-16x16.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+    <title> SPIKE | ADR-0027: Separate Audit Logs from Operational Logs </title>
+</head>
+<body>
+
+<main>
+    
+    <nav>
+  <script>
+    fetch('https://api.github.com/repos/spiffe/spike/releases/latest')
+        .then(response => response.json())
+        .then(data => {
+            const release = document.getElementById('release');
+            const icon = '<i class="bx bx-package"></i>';
+            release.href = data.name ? data.html_url : 'https://api.github.com/repos/spiffe/spike/releases';
+            release.innerHTML = icon + (data.name ? ' ' + data.name : ' Releases');
+        });
+</script>
+<div id="banner">
+    <a href="https://spike.ist">
+        <img id="banner-image" src="https://spike.ist/assets/spike-banner.png" alt="logo" />
+    </a>
+    <div id="banner-body">
+        <a class="banner-title" href="https://spike.ist">
+            SPIKE
+        </a>
+        <span class="banner-tagline">
+            Secure your secrets<br> with SPIFFE.
+        </span>
+        <a id="release" class="banner-link" href="https://github.com/spiffe/spike/releases">
+            <i class='bx bx-package'></i>
+        </a>
+        <a href="https://github.com/spiffe/spike" class="banner-link">
+            <i class='bx bxl-github'></i> GitHub
+        </a>
+
+    </div>
+</div>
+<style>
+   /* Banner on top of the nav */
+   #banner {
+        position: sticky;
+        background-color: var(--bg-primary);
+        z-index: 100;
+        top: 0;
+        display: flex;
+        flex-direction: row;
+        padding: 1rem;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        margin-bottom: 1rem;
+    }
+
+    #banner img {
+        width: 100px;
+        height: auto;
+    }
+
+    #banner-body {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        justify-content: space-between;
+        margin-left: 1rem;
+    }
+
+    .banner-title {
+        font-size: 1.75rem;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        margin-bottom: -15px;
+        font-family: var(--brand-font-family);
+    }
+    .banner-tagline {
+        font-size: 0.875rem;
+        color: var(--text-muted);
+        font-style: italic;
+    }
+
+    .banner-link {
+        display: flex;
+        gap: 0.5rem;
+        min-width: 84px;
+        font-size: 0.875rem;
+        font-weight: 300;
+        padding: 0.25rem 0.75rem;
+        border-radius: 4px;
+        background-color: var(--bg-interactive);
+        transition: all 0.2s ease;
+    }
+
+    .banner-link i {
+        font-size: 1.125rem;
+        color: var(--spike-blue);
+    }
+
+    .banner-link:hover {
+        background-color: var(--spike-blue);
+    }
+</style> <div id="trees">
+    <input class="tree-toggle" type="checkbox" id="about"
+               />
+        <label class="tree-toggle-label "
+               for="about">About</label>
+
+        <ul class="subtree">
+            <li >
+                    <a href="https://spike.ist/about/intro/">About SPIKE</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/about/project-status/">Project Maturity</a>
+                </li>
+
+                </ul>
+    <input class="tree-toggle" type="checkbox" id="community"
+               />
+        <label class="tree-toggle-label "
+               for="community">Community</label>
+
+        <ul class="subtree">
+            <li >
+                    <a href="https://spike.ist/community/hello/">Hello Universe</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/community/contact/">Contact Us</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/community/presentations/">Presentations and Demos</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/community/resources/">Resources</a>
+                </li>
+
+                </ul>
+    <input class="tree-toggle" type="checkbox" id="getting-started"
+               />
+        <label class="tree-toggle-label "
+               for="getting-started">Getting Started</label>
+
+        <ul class="subtree">
+            <li >
+                    <a href="https://spike.ist/getting-started/quickstart/">SPIKE Quickstart Guide</a>
+                </li>
+
+                </ul>
+    <input class="tree-toggle" type="checkbox" id="using-spike"
+               />
+        <label class="tree-toggle-label "
+               for="using-spike">Using SPIKE</label>
+
+        <ul class="subtree">
+            <li >
+                    <a href="https://spike.ist/usage/configuration/">Configuring SPIKE</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/usage/cli/">SPIKE CLI</a>
+                </li>
+
+                </ul>
+    <input class="tree-toggle" type="checkbox" id="developing-spike"
+               />
+        <label class="tree-toggle-label "
+               for="developing-spike">Developing SPIKE</label>
+
+        <ul class="subtree">
+            <li >
+                    <a href="https://spike.ist/development/local-deployment/">SPIKE on Kubernetes</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/development/bare-metal/">SPIKE on Linux</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/development/api-docs/">API Documentation</a>
+                </li>
+
+                </ul>
+    <input class="tree-toggle" type="checkbox" id="spike-architecture"
+               checked/>
+        <label class="tree-toggle-label "
+               for="spike-architecture">SPIKE Architecture</label>
+
+        <ul class="subtree">
+            <li >
+                    <a href="https://spike.ist/architecture/system-overview/">System Overview</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/architecture/security-model/">SPIKE Security Model</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/architecture/architectural-decision-records/">ADRs</a>
+                </li>
+
+                </ul>
+    <input class="tree-toggle" type="checkbox" id="tracking"
+               />
+        <label class="tree-toggle-label "
+               for="tracking">Tracking</label>
+
+        <ul class="subtree">
+            <li >
+                    <a href="https://spike.ist/tracking/changelog/">Changelog</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/tracking/snapshots/">Documentation Snapshots</a>
+                </li>
+
+                </ul>
+    <input class="tree-toggle" type="checkbox" id="operations"
+               />
+        <label class="tree-toggle-label "
+               for="operations">Operations</label>
+
+        <ul class="subtree">
+            <li >
+                    <a href="https://spike.ist/operations/build/">SPIKE Cross-Platform Build</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/operations/production/">SPIKE Production Setup</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/operations/recovery/">SPIKE Recovery Procedures</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/operations/backup/">SPIKE Backup and Restore</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/operations/release/">SPIKE Relase Management</a>
+                </li>
+
+                </ul>
+    </div>
+<style>
+    /* Navigation tree structure */
+    #trees {
+        padding: 0 1rem;
+    }
+
+    .tree-toggle {
+        display: none;
+    }
+
+    .tree-toggle:checked + .tree-toggle-label + .subtree {
+        display: block;
+    }
+
+    .tree-toggle-label {
+        display: block;
+        padding: 0.75rem 1rem;
+        margin: 0.25rem 0;
+        border-radius: 6px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .tree-toggle-label:hover {
+        background-color: rgba(0, 0, 0, 0.05);
+    }
+
+    .tree-toggle-label::before {
+        content: '▸';
+        display: inline-block;
+        margin-right: 0.5rem;
+        transition: transform 0.2s ease;
+    }
+
+    .tree-toggle:checked + .tree-toggle-label::before {
+        transform: rotate(90deg);
+    }
+
+    .subtree {
+        display: none;
+        margin: 0;
+        padding: 0 0 0 1rem;
+        list-style: none;
+    }
+
+    .subtree li {
+        margin: 0.25rem 0;
+    }
+
+    .subtree li a {
+        display: block;
+        padding: 0.5rem 1rem;
+        text-decoration: none;
+        border-radius: 4px;
+        font-size: 0.9375rem;
+        transition: all 0.2s ease;
+    }
+
+    .subtree li a:hover {
+        background-color: rgba(0, 0, 0, 0.05);
+    }
+
+    .subtree li.active a {
+        font-weight: 600;
+        background-color: rgba(0, 0, 0, 0.05);
+    }
+
+    /* Table of contents styling */
+    #toc {
+        margin: 0.5rem 0 0.5rem 1.5rem;
+        padding: 0;
+        list-style: none;
+        font-size: 0.875rem;
+    }
+
+    #toc li {
+        margin: 0.25rem 0;
+    }
+
+    #toc li a {
+        padding: 0.375rem 0.75rem;
+        opacity: 0.8;
+    }
+
+    #toc li a:hover {
+        opacity: 1;
+    }
+
+    #toc ul {
+        margin: 0.25rem 0 0.25rem 1rem;
+        padding: 0;
+        list-style: none;
+    }
+</style>
+</nav>
+<style>
+  nav {
+    position: sticky;
+    width: 300px;
+    height: 100vh;
+    top: 0;
+    max-height: 100vh;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 0, 0, 0.3) transparent;
+    z-index: 100;
+    box-shadow: 5px 0 20px var(--shadow-color);
+    border-right: 1px solid var(--border-color);
+    transition: transform 0.4s ease-in-out;
+    background-color: var(--bg-primary);
+  }
+
+  nav::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  nav::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  nav::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.3);
+    border-radius: 4px;
+    border: 2px solid transparent;
+  }
+
+  @media (max-width: 1300px) {
+    .nav-toggle {
+      display: none;
+    }
+
+    nav {
+      position: fixed;
+      transform: translateX(-100%);
+      width: 85%;
+      max-width: 300px;
+      height: calc(100vh - 57px);
+      top: 57px;
+    }
+
+    nav.active {
+      transform: translateX(0);
+    }
+  }
+</style>
+
+
+    <div class="content">
+        <div class="header">
+  <div class="header-content">
+    <button
+      id="mobile-nav-toggle"
+      aria-label="Toggle navigation"
+      class="mobile-only"
+    >
+      <i class="bx bx-menu"></i>
+    </button>
+    <script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const searchInput = document.querySelector(".search-input");
+    const overlay = document.querySelector(".overlay");
+    const searchResults = document.querySelector(".search-results");
+
+    function closeSearch() {
+      overlay.style.display = "none";
+      searchResults.style.display = "none";
+      searchInput.blur();
+    }
+
+    function openSearch() {
+      overlay.style.display = "block";
+      searchResults.style.display = "block";
+    }
+
+    searchInput.addEventListener("focus", openSearch);
+    overlay.addEventListener("click", closeSearch);
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        closeSearch();
+      }
+    });
+  });
+</script>
+<div class="overlay"></div>
+<input class="search-input" type="text" placeholder="Search..." />
+<div class="search-results">
+  <div class="search-results__header">
+    <span class="search-results__count">Waiting for input...</span>
+  </div>
+  <div class="search-results__items"></div>
+</div>
+
+<style>
+  .search-input {
+    width: 100%;
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background-color: var(--bg-interactive);
+    color: var(--text-primary);
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+    z-index: 101;
+  }
+
+  .search-input:focus {
+    outline: none;
+    border-color: var(--spike-blue);
+    background-color: var(--bg-primary);
+    box-shadow: 0 0 0 2px rgba(var(--spike-blue-rgb), 0.2);
+  }
+
+  .search-input::placeholder {
+    color: var(--text-muted);
+  }
+
+  .overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 100;
+  }
+
+  .search-results {
+    display: none;
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 100%;
+    max-width: 700px;
+    margin: 0.5rem auto;
+    background: var(--bg-primary);
+    border-radius: 8px;
+    box-shadow: 0px 4px 8px 3px rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--border-color);
+    z-index: 102;
+  }
+
+  .search-results__header {
+    padding: 0.75rem 1rem;
+    color: var(--text-muted);
+    font-size: 0.875rem;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .search-results__items {
+    max-height: 60vh;
+    overflow-y: auto;
+  }
+
+  .search-results__item {
+    display: block;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--border-color);
+    transition: background-color 0.2s ease;
+  }
+
+  .search-results__item:hover {
+    background-color: var(--bg-interactive);
+  }
+
+  .search-results__title {
+    color: var(--spike-blue);
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+  }
+
+  .search-results__preview {
+    color: var(--text-secondary);
+    font-size: 0.8125rem;
+    line-height: 1.4;
+  }
+
+  .search-results__preview b {
+    color: var(--spike-dark-green);
+    font-weight: 600;
+  }
+
+  .search-results__items::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  .search-results__items::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 4px;
+  }
+
+  /* Empty state */
+  .search-results__empty {
+    padding: 2rem 1rem;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.875rem;
+  }
+</style>
+
+    <a
+      href="https://github.com/spiffe/spike"
+      target="_blank"
+      rel="noopener"
+      class="github-star"
+    >
+      <i class="bx bx-star"></i>
+      <span>Star <strong>SPIKE</strong> on <strong>GitHub</strong></span>
+    </a>
+    <button id="theme-toggle" aria-label="Toggle theme">
+      <i class="bx bx-sun light-icon"></i>
+      <i class="bx bx-moon dark-icon"></i>
+    </button>
+  </div>
+</div>
+
+<style>
+  .header {
+    position: sticky;
+    top: 0;
+    background-color: var(--bg-primary);
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color);
+    box-shadow: 0 4px 6px -1px var(--shadow-color),
+      0 2px 4px -1px var(--shadow-color);
+    z-index: 101;
+  }
+
+  .header-content {
+    max-width: 800px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  #mobile-nav-toggle {
+    display: none;
+    background: none;
+    border: none;
+    padding: 0.5rem;
+    cursor: pointer;
+    color: var(--text-primary);
+    font-size: 1.5rem;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+  }
+
+  #mobile-nav-toggle i {
+    pointer-events: none;
+    display: block;
+  }
+
+  #mobile-nav-toggle:hover {
+    background-color: var(--bg-interactive);
+  }
+
+  @media (max-width: 1300px) {
+    #mobile-nav-toggle {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+    }
+  }
+
+  #theme-toggle {
+    background: none;
+    border: none;
+    padding: 0.5rem;
+    cursor: pointer;
+    color: var(--text-primary);
+    font-size: 1.25rem;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  #theme-toggle:hover {
+    background-color: var(--bg-interactive);
+  }
+
+  #theme-toggle:active {
+    background-color: var(--bg-secondary);
+  }
+
+  /* Show/hide icons based on theme */
+  [data-theme="dark"] .light-icon,
+  :root:not([data-theme="dark"]) .dark-icon {
+    display: none;
+  }
+
+  /* GitHub Star Button */
+  .github-star {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    color: white;
+    text-decoration: none;
+    background: linear-gradient(
+      135deg,
+      var(--spike-blue),
+      var(--spike-dark-green)
+    );
+    border-radius: 20px;
+    transition: all 0.2s ease;
+    font-size: 0.875rem;
+    white-space: nowrap;
+  }
+
+  .github-star:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(var(--spike-blue-rgb), 0.3);
+  }
+
+  .github-star i {
+    font-size: 1.1rem;
+    animation: starBounce 2s infinite;
+    color: #ffd700;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+  }
+
+  @keyframes starBounce {
+    0%,
+    100% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.2);
+    }
+  }
+
+  .github-star span {
+    white-space: nowrap;
+  }
+
+  @media (max-width: 768px) {
+    .github-star span {
+      display: none;
+    }
+
+    .github-star {
+      padding: 0.5rem;
+    }
+  }
+</style>
+
+<script>
+  // Theme toggle functionality
+  document.addEventListener("DOMContentLoaded", () => {
+    const themeToggle = document.getElementById("theme-toggle");
+
+    // Function to set theme
+    function setTheme(theme) {
+      document.documentElement.setAttribute("data-theme", theme);
+      localStorage.setItem("theme", theme);
+      
+      // Update banner image based on theme
+      const bannerImage = document.getElementById("banner-image");
+      if (bannerImage) {
+        bannerImage.src = theme === "dark" 
+          ? "/assets/spike-banner-dark-thin.png"
+          : "/assets/spike-banner-light-thin.png";
+      }
+    }
+
+    // Initialize theme
+    const savedTheme = localStorage.getItem("theme");
+    setTheme(savedTheme ? savedTheme : "dark");
+    // Discard system theme changes; the landing page is always dark, so
+    // it's better to transition to a dark-by-default theme.
+    // } else if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+    //   setTheme("dark");
+    // }
+
+    // Toggle theme on button click
+    themeToggle.addEventListener("click", () => {
+      const currentTheme = document.documentElement.getAttribute("data-theme");
+      const newTheme = currentTheme === "dark" ? "light" : "dark";
+      setTheme(newTheme);
+    });
+
+    // Discard system-theme changes.
+    // window
+    //   .matchMedia("(prefers-color-scheme: dark)")
+    //   .addEventListener("change", (e) => {
+    //     if (!localStorage.getItem("theme")) {
+    //       setTheme(e.matches ? "dark" : "light");
+    //     }
+    //   });
+  });
+</script>
+
+
+        <article>
+            
+        <h1 id="adr-0027-separate-audit-logs-from-operational-logs">ADR-0027: Separate Audit Logs from Operational Logs</h1>
+<ul>
+<li><strong>Status</strong>: accepted</li>
+<li><strong>Date</strong>: 2025-11-13</li>
+<li><strong>Tags</strong>: Security, Compliance, Observability, Kubernetes</li>
+</ul>
+<h2 id="context-and-problem-statement">Context and Problem Statement</h2>
+<p>Currently, SPIKE sends both audit logs and operational logs to stdout without
+differentiation. This creates challenges for:</p>
+<ul>
+<li>Compliance requirements that mandate immutable audit trails with specific
+retention policies</li>
+<li>Security teams needing to route audit events to SIEM systems</li>
+<li>Different access controls between audit and operational logs</li>
+<li>Performance optimization as audit logs have different characteristics
+than operational logs</li>
+</ul>
+<p>We need to determine the most effective way to separate audit logs from
+operational logs while maintaining simplicity and Kubernetes-native practices.</p>
+<h2 id="decision-drivers">Decision Drivers</h2>
+<ul>
+<li><strong>Compliance requirements</strong>: Audit logs often need years of retention
+versus days/weeks for operational logs</li>
+<li><strong>Security isolation</strong>: Audit logs require stricter access controls and
+tamper-evident storage</li>
+<li><strong>Operational simplicity</strong>: Solution should work seamlessly in Kubernetes
+environments</li>
+<li><strong>Performance considerations</strong>: Different log volumes and processing
+requirements</li>
+<li><strong>Integration flexibility</strong>: Easy routing to different backends
+(SIEM versus observability stacks)</li>
+</ul>
+<h2 id="current-implementation">Current Implementation</h2>
+<p>SPIKE currently implements a basic audit logging system that outputs to stdout
+alongside operational logs. The implementation consists of:</p>
+<h3 id="architecture">Architecture</h3>
+<ol>
+<li>
+<p><strong>Wrapper-Based Auditing</strong> (<code>internal/net/handle.go</code>):</p>
+<ul>
+<li><code>HandleRoute()</code> wraps all HTTP handlers with audit logging</li>
+<li>Automatically creates an <code>AuditEntry</code> for each request</li>
+<li>Logs two events per request: entry (<code>AuditEnter</code>) and exit
+(<code>AuditExit</code>)</li>
+<li>Tracks request duration and completion state (<code>AuditSuccess</code> or
+<code>AuditErrored</code>)</li>
+<li>Generates unique trail IDs using <code>crypto.ID()</code></li>
+</ul>
+</li>
+<li>
+<p><strong>Route-Level Auditing</strong> (e.g.,
+<code>app/keeper/internal/route/store/contribute.go</code>):</p>
+<ul>
+<li>Each route handler receives an <code>*journal.AuditEntry</code> parameter</li>
+<li><code>journal.AuditRequest()</code> logs specific actions (create, read, delete,
+list, etc.)</li>
+<li>Updates the audit entry with component name, path, resource, and action</li>
+<li>Provides fine-grained operation tracking within the request lifecycle</li>
+</ul>
+</li>
+<li>
+<p><strong>Audit Entry Structure</strong> (<code>internal/journal/audit.go</code>):</p>
+<pre data-lang="go" style="background-color:#2b303b;color:#c0c5ce;" class="language-go "><code class="language-go" data-lang="go"><span style="color:#b48ead;">type </span><span>AuditEntry </span><span style="color:#b48ead;">struct </span><span>{
+</span><span>    </span><span style="color:#bf616a;">Component  </span><span style="color:#b48ead;">string        </span><span style="color:#65737e;">// Component that performed the action
+</span><span>    </span><span style="color:#bf616a;">TrailID    </span><span style="color:#b48ead;">string        </span><span style="color:#65737e;">// Unique trail identifier
+</span><span>    </span><span style="color:#bf616a;">Timestamp  time</span><span>.</span><span style="color:#b48ead;">Time     </span><span style="color:#65737e;">// When the action occurred
+</span><span>    </span><span style="color:#bf616a;">UserID     </span><span style="color:#b48ead;">string        </span><span style="color:#65737e;">// User identifier
+</span><span>    </span><span style="color:#bf616a;">Action     </span><span style="color:#b48ead;">AuditAction   </span><span style="color:#65737e;">// Operation performed
+</span><span>    </span><span style="color:#bf616a;">Path       </span><span style="color:#b48ead;">string        </span><span style="color:#65737e;">// URL path
+</span><span>    </span><span style="color:#bf616a;">Resource   </span><span style="color:#b48ead;">string        </span><span style="color:#65737e;">// Resource acted upon (query params)
+</span><span>    </span><span style="color:#bf616a;">SessionID  </span><span style="color:#b48ead;">string        </span><span style="color:#65737e;">// Session identifier
+</span><span>    </span><span style="color:#bf616a;">State      </span><span style="color:#b48ead;">AuditState    </span><span style="color:#65737e;">// Entry state (created/success/errored)
+</span><span>    </span><span style="color:#bf616a;">Err        </span><span style="color:#b48ead;">string        </span><span style="color:#65737e;">// Error message if failed
+</span><span>    </span><span style="color:#bf616a;">Duration   time</span><span>.</span><span style="color:#b48ead;">Duration </span><span style="color:#65737e;">// Request processing time
+</span><span>}
+</span></code></pre>
+</li>
+<li>
+<p><strong>Output Mechanism</strong>:</p>
+<ul>
+<li><code>journal.Audit()</code> marshals entries to JSON</li>
+<li>Outputs to stdout via <code>fmt.Println()</code></li>
+<li>Crashes with <code>log.FatalLn()</code> if JSON marshaling fails (fail-secure)</li>
+</ul>
+</li>
+</ol>
+<h3 id="audit-actions">Audit Actions</h3>
+<p>The system defines specific audit actions:</p>
+<ul>
+<li><code>AuditEnter</code> / <code>AuditExit</code>: Request lifecycle</li>
+<li><code>AuditCreate</code>: Resource creation</li>
+<li><code>AuditRead</code>: Resource retrieval</li>
+<li><code>AuditList</code>: Resource listing</li>
+<li><code>AuditDelete</code>: Resource deletion</li>
+<li><code>AuditUndelete</code>: Resource restoration</li>
+<li><code>AuditFallback</code>: Undefined route access</li>
+<li><code>AuditBlocked</code>: Blocked/unauthorized access</li>
+</ul>
+<h3 id="current-limitations">Current Limitations</h3>
+<ol>
+<li><strong>No separation</strong>: Audit logs mix with operational logs on stdout</li>
+<li><strong>No tamper detection</strong>: Events lack HMAC signatures</li>
+<li><strong>No guaranteed delivery</strong>: Uses stdout without delivery confirmation</li>
+<li><strong>Limited metadata</strong>: Missing SPIFFE ID, source IP, and other security
+context</li>
+<li><strong>Single output</strong>: Cannot route to multiple destinations simultaneously</li>
+</ol>
+<h2 id="considered-options">Considered Options</h2>
+<ol>
+<li><strong>Use stderr for audit logs</strong> (stdout for operational)</li>
+<li><strong>Structured logging with type field</strong> (both to stdout)</li>
+<li><strong>Dedicated audit sidecar pattern</strong></li>
+<li><strong>Direct audit system integration</strong> (separate API calls)</li>
+<li><strong>Pluggable audit devices</strong> (Vault-style architecture)</li>
+</ol>
+<h2 id="decision">Decision</h2>
+<p>Implement a <strong>two-phase approach</strong>:</p>
+<p><strong>Phase 1 (Immediate)</strong>: Use stderr for audit logs while keeping operational
+logs on stdout, with structured JSON format and clear prefixes.</p>
+<p><strong>Phase 2 (Future)</strong>: Evolve to pluggable audit devices.</p>
+<h2 id="rationale">Rationale</h2>
+<h3 id="phase-1-justification">Phase 1 Justification</h3>
+<ul>
+<li><strong>Immediate value</strong>: Can be implemented quickly with minimal changes</li>
+<li><strong>Kubernetes-native</strong>: Works with existing log collectors (Fluentd/Fluent Bit)</li>
+<li><strong>Clear separation</strong>: File descriptors provide OS-level isolation</li>
+</ul>
+<h3 id="phase-2-justification">Phase 2 Justification</h3>
+<ul>
+<li><strong>Enterprise readiness</strong>: Matches proven patterns for log collection and
+routing</li>
+<li><strong>Flexibility</strong>: Supports file, socket, syslog, and custom backends</li>
+<li><strong>Guaranteed delivery</strong>: Can implement blocking behavior when audit fails</li>
+<li><strong>Compliance</strong>: Better suits enterprise audit requirements</li>
+</ul>
+<h3 id="why-not-other-options">Why Not Other Options</h3>
+<ul>
+<li><strong>Structured logging only</strong>: Doesn’t provide strong enough separation for
+compliance</li>
+<li><strong>Sidecar pattern</strong>: Adds complexity without clear benefits over stderr
+approach</li>
+<li><strong>Direct integration only</strong>: Less flexible, harder to adapt to different
+environments</li>
+</ul>
+<h2 id="implementation-details">Implementation Details</h2>
+<h3 id="phase-1-implementation">Phase 1 Implementation</h3>
+<p>Phase 1 builds on the existing audit infrastructure by redirecting audit
+output to stderr while enhancing the <code>AuditEntry</code> structure:</p>
+<pre data-lang="go" style="background-color:#2b303b;color:#c0c5ce;" class="language-go "><code class="language-go" data-lang="go"><span style="color:#65737e;">// Enhanced audit entry for Phase 1
+</span><span style="color:#b48ead;">type </span><span>AuditEntry </span><span style="color:#b48ead;">struct </span><span>{
+</span><span>    </span><span style="color:#65737e;">// Existing fields (keep current structure)
+</span><span>    </span><span style="color:#bf616a;">Component  </span><span style="color:#b48ead;">string
+</span><span>    </span><span style="color:#bf616a;">TrailID    </span><span style="color:#b48ead;">string
+</span><span>    </span><span style="color:#bf616a;">Timestamp  time</span><span>.</span><span style="color:#b48ead;">Time
+</span><span>    </span><span style="color:#bf616a;">UserID     </span><span style="color:#b48ead;">string
+</span><span>    </span><span style="color:#bf616a;">Action     </span><span style="color:#b48ead;">AuditAction
+</span><span>    </span><span style="color:#bf616a;">Path       </span><span style="color:#b48ead;">string
+</span><span>    </span><span style="color:#bf616a;">Resource   </span><span style="color:#b48ead;">string
+</span><span>    </span><span style="color:#bf616a;">SessionID  </span><span style="color:#b48ead;">string
+</span><span>    </span><span style="color:#bf616a;">State      </span><span style="color:#b48ead;">AuditState
+</span><span>    </span><span style="color:#bf616a;">Err        </span><span style="color:#b48ead;">string
+</span><span>    </span><span style="color:#bf616a;">Duration   time</span><span>.</span><span style="color:#b48ead;">Duration
+</span><span>
+</span><span>    </span><span style="color:#65737e;">// New fields for Phase 1
+</span><span>    </span><span style="color:#bf616a;">SPIFFEID  </span><span style="color:#b48ead;">string </span><span>`</span><span style="color:#a3be8c;">json:&quot;spiffe_id,omitempty&quot;</span><span>`
+</span><span>    </span><span style="color:#bf616a;">SourceIP  </span><span style="color:#b48ead;">string </span><span>`</span><span style="color:#a3be8c;">json:&quot;src_ip,omitempty&quot;</span><span>`
+</span><span>    </span><span style="color:#bf616a;">Signature </span><span style="color:#b48ead;">string </span><span>`</span><span style="color:#a3be8c;">json:&quot;sig,omitempty&quot;</span><span>` </span><span style="color:#65737e;">// HMAC for tamper detection
+</span><span>}
+</span><span>
+</span><span style="color:#65737e;">// Modified audit logger for Phase 1
+</span><span style="color:#b48ead;">func </span><span style="color:#8fa1b3;">Audit</span><span>(</span><span style="color:#bf616a;">entry </span><span style="color:#b48ead;">AuditEntry</span><span>) {
+</span><span>    </span><span style="color:#bf616a;">audit </span><span>:= </span><span style="color:#bf616a;">AuditLogLine</span><span>{
+</span><span>        </span><span style="color:#bf616a;">Timestamp</span><span>:  </span><span style="color:#bf616a;">time</span><span>.</span><span style="color:#bf616a;">Now</span><span>(),
+</span><span>        </span><span style="color:#bf616a;">AuditEntry</span><span>: </span><span style="color:#bf616a;">entry</span><span>,
+</span><span>    }
+</span><span>
+</span><span>    </span><span style="color:#bf616a;">body</span><span>, </span><span style="color:#bf616a;">err </span><span>:= </span><span style="color:#bf616a;">json</span><span>.</span><span style="color:#bf616a;">Marshal</span><span>(</span><span style="color:#bf616a;">audit</span><span>)
+</span><span>    </span><span style="color:#b48ead;">if </span><span style="color:#bf616a;">err </span><span>!= </span><span style="color:#d08770;">nil </span><span>{
+</span><span>        </span><span style="color:#bf616a;">logger</span><span>.</span><span style="color:#bf616a;">FatalLn</span><span>(&quot;</span><span style="color:#a3be8c;">Audit</span><span>&quot;,
+</span><span>            &quot;</span><span style="color:#a3be8c;">message</span><span>&quot;, &quot;</span><span style="color:#a3be8c;">Problem marshalling audit entry</span><span>&quot;,
+</span><span>            &quot;</span><span style="color:#a3be8c;">err</span><span>&quot;, </span><span style="color:#bf616a;">err</span><span>.</span><span style="color:#bf616a;">Error</span><span>())
+</span><span>        </span><span style="color:#b48ead;">return
+</span><span>    }
+</span><span>
+</span><span>    </span><span style="color:#65737e;">// Change from fmt.Println() to stderr output
+</span><span>    </span><span style="color:#bf616a;">fmt</span><span>.</span><span style="color:#bf616a;">Fprintf</span><span>(</span><span style="color:#bf616a;">os</span><span>.</span><span style="color:#bf616a;">Stderr</span><span>, &quot;</span><span style="color:#d08770;">%s</span><span style="color:#96b5b4;">\n</span><span>&quot;, </span><span style="color:#bf616a;">string</span><span>(</span><span style="color:#bf616a;">body</span><span>))
+</span><span>}
+</span><span>
+</span><span style="color:#65737e;">// Operational logs continue to stdout via logger.Log()
+</span></code></pre>
+<p><strong>Key Changes from Current Implementation:</strong></p>
+<ol>
+<li>Change <code>fmt.Println()</code> to <code>fmt.Fprintf(os.Stderr, ...)</code> in
+<code>journal.Audit()</code></li>
+<li>Add SPIFFE ID field (extract from request context in <code>HandleRoute()</code>)</li>
+<li>Add source IP field (extract from <code>http.Request</code>)</li>
+<li>Optional HMAC signing for tamper detection</li>
+</ol>
+<h3 id="phase-2-architecture">Phase 2 Architecture</h3>
+<p>Phase 2 extends the audit system with pluggable devices while maintaining
+backward compatibility with the existing <code>journal.Audit()</code> interface:</p>
+<pre data-lang="go" style="background-color:#2b303b;color:#c0c5ce;" class="language-go "><code class="language-go" data-lang="go"><span style="color:#65737e;">// Pluggable audit device interface (future)
+</span><span style="color:#b48ead;">type </span><span>AuditDevice </span><span style="color:#b48ead;">interface </span><span>{
+</span><span>    </span><span style="color:#8fa1b3;">Write</span><span>(</span><span style="color:#bf616a;">entry </span><span style="color:#b48ead;">AuditEntry</span><span>) </span><span style="color:#b48ead;">error
+</span><span>    </span><span style="color:#8fa1b3;">Close</span><span>() </span><span style="color:#b48ead;">error
+</span><span>}
+</span><span>
+</span><span style="color:#b48ead;">type </span><span>AuditManager </span><span style="color:#b48ead;">struct </span><span>{
+</span><span>    </span><span style="color:#bf616a;">devices  </span><span>[]</span><span style="color:#b48ead;">AuditDevice
+</span><span>    </span><span style="color:#bf616a;">blocking </span><span style="color:#b48ead;">bool </span><span style="color:#65737e;">// If true, operations fail when audit fails
+</span><span>    </span><span style="color:#bf616a;">hmacKey  </span><span>[]</span><span style="color:#b48ead;">byte
+</span><span>}
+</span><span>
+</span><span style="color:#65737e;">// Modified Audit function to support multiple devices
+</span><span style="color:#b48ead;">func </span><span style="color:#8fa1b3;">Audit</span><span>(</span><span style="color:#bf616a;">entry </span><span style="color:#b48ead;">AuditEntry</span><span>) {
+</span><span>    </span><span style="color:#65737e;">// Existing stderr output (backward compatibility)
+</span><span>    </span><span style="color:#bf616a;">audit </span><span>:= </span><span style="color:#bf616a;">AuditLogLine</span><span>{
+</span><span>        </span><span style="color:#bf616a;">Timestamp</span><span>:  </span><span style="color:#bf616a;">time</span><span>.</span><span style="color:#bf616a;">Now</span><span>(),
+</span><span>        </span><span style="color:#bf616a;">AuditEntry</span><span>: </span><span style="color:#bf616a;">entry</span><span>,
+</span><span>    }
+</span><span>
+</span><span>    </span><span style="color:#bf616a;">body</span><span>, </span><span style="color:#bf616a;">err </span><span>:= </span><span style="color:#bf616a;">json</span><span>.</span><span style="color:#bf616a;">Marshal</span><span>(</span><span style="color:#bf616a;">audit</span><span>)
+</span><span>    </span><span style="color:#b48ead;">if </span><span style="color:#bf616a;">err </span><span>!= </span><span style="color:#d08770;">nil </span><span>{
+</span><span>        </span><span style="color:#bf616a;">logger</span><span>.</span><span style="color:#bf616a;">FatalLn</span><span>(&quot;</span><span style="color:#a3be8c;">Audit</span><span>&quot;,
+</span><span>            &quot;</span><span style="color:#a3be8c;">message</span><span>&quot;, &quot;</span><span style="color:#a3be8c;">Problem marshalling audit entry</span><span>&quot;,
+</span><span>            &quot;</span><span style="color:#a3be8c;">err</span><span>&quot;, </span><span style="color:#bf616a;">err</span><span>.</span><span style="color:#bf616a;">Error</span><span>())
+</span><span>        </span><span style="color:#b48ead;">return
+</span><span>    }
+</span><span>
+</span><span>    </span><span style="color:#bf616a;">fmt</span><span>.</span><span style="color:#bf616a;">Fprintf</span><span>(</span><span style="color:#bf616a;">os</span><span>.</span><span style="color:#bf616a;">Stderr</span><span>, &quot;</span><span style="color:#d08770;">%s</span><span style="color:#96b5b4;">\n</span><span>&quot;, </span><span style="color:#bf616a;">string</span><span>(</span><span style="color:#bf616a;">body</span><span>))
+</span><span>
+</span><span>    </span><span style="color:#65737e;">// New: Write to pluggable devices
+</span><span>    </span><span style="color:#b48ead;">if </span><span style="color:#bf616a;">auditManager </span><span>!= </span><span style="color:#d08770;">nil </span><span>{
+</span><span>        </span><span style="color:#b48ead;">for </span><span style="color:#bf616a;">_</span><span>, </span><span style="color:#bf616a;">device </span><span>:= </span><span style="color:#b48ead;">range </span><span style="color:#bf616a;">auditManager</span><span>.</span><span style="color:#bf616a;">devices </span><span>{
+</span><span>            </span><span style="color:#b48ead;">if </span><span style="color:#bf616a;">err </span><span>:= </span><span style="color:#bf616a;">device</span><span>.</span><span style="color:#bf616a;">Write</span><span>(</span><span style="color:#bf616a;">entry</span><span>); </span><span style="color:#bf616a;">err </span><span>!= </span><span style="color:#d08770;">nil </span><span>{
+</span><span>                </span><span style="color:#b48ead;">if </span><span style="color:#bf616a;">auditManager</span><span>.</span><span style="color:#bf616a;">blocking </span><span>{
+</span><span>                    </span><span style="color:#bf616a;">logger</span><span>.</span><span style="color:#bf616a;">FatalLn</span><span>(&quot;</span><span style="color:#a3be8c;">Audit</span><span>&quot;,
+</span><span>                        &quot;</span><span style="color:#a3be8c;">message</span><span>&quot;, &quot;</span><span style="color:#a3be8c;">Critical audit device failure</span><span>&quot;,
+</span><span>                        &quot;</span><span style="color:#a3be8c;">err</span><span>&quot;, </span><span style="color:#bf616a;">err</span><span>.</span><span style="color:#bf616a;">Error</span><span>())
+</span><span>                }
+</span><span>                </span><span style="color:#bf616a;">logger</span><span>.</span><span style="color:#bf616a;">Log</span><span>().</span><span style="color:#bf616a;">Warn</span><span>(&quot;</span><span style="color:#a3be8c;">Audit</span><span>&quot;,
+</span><span>                    &quot;</span><span style="color:#a3be8c;">message</span><span>&quot;, &quot;</span><span style="color:#a3be8c;">Audit device write failed</span><span>&quot;,
+</span><span>                    &quot;</span><span style="color:#a3be8c;">err</span><span>&quot;, </span><span style="color:#bf616a;">err</span><span>.</span><span style="color:#bf616a;">Error</span><span>())
+</span><span>            }
+</span><span>        }
+</span><span>    }
+</span><span>}
+</span><span>
+</span><span style="color:#65737e;">// Device implementations
+</span><span style="color:#b48ead;">type </span><span>FileAuditDevice </span><span style="color:#b48ead;">struct </span><span>{ </span><span style="color:#65737e;">/* ... */ </span><span>}
+</span><span style="color:#b48ead;">type </span><span>SocketAuditDevice </span><span style="color:#b48ead;">struct </span><span>{ </span><span style="color:#65737e;">/* ... */ </span><span>}
+</span><span style="color:#b48ead;">type </span><span>SyslogAuditDevice </span><span style="color:#b48ead;">struct </span><span>{ </span><span style="color:#65737e;">/* ... */ </span><span>}
+</span></code></pre>
+<h3 id="migration-path">Migration Path</h3>
+<p><strong>Current → Phase 1:</strong></p>
+<ol>
+<li>Modify <code>internal/journal/audit.go</code>:
+<ul>
+<li>Change <code>fmt.Println()</code> to <code>fmt.Fprintf(os.Stderr, ...)</code></li>
+<li>Add SPIFFE ID and SourceIP fields to <code>AuditEntry</code></li>
+</ul>
+</li>
+<li>Modify <code>internal/net/handle.go</code>:
+<ul>
+<li>Extract SPIFFE ID from request context</li>
+<li>Extract source IP from <code>http.Request.RemoteAddr</code></li>
+<li>Populate new fields in <code>AuditEntry</code></li>
+</ul>
+</li>
+<li>Update Kubernetes log collectors to route stderr separately</li>
+<li>Optional: Implement HMAC signing for tamper detection</li>
+</ol>
+<p><strong>Phase 1 → Phase 2:</strong></p>
+<ol>
+<li>Create <code>AuditDevice</code> interface and implementations</li>
+<li>Add <code>AuditManager</code> initialization in service startup code</li>
+<li>Modify <code>journal.Audit()</code> to write to configured devices</li>
+<li>Add configuration for audit device selection and options</li>
+<li>Maintain stderr output for backward compatibility</li>
+</ol>
+<h3 id="sample-kubernetes-configuration">Sample Kubernetes Configuration</h3>
+<pre data-lang="yaml" style="background-color:#2b303b;color:#c0c5ce;" class="language-yaml "><code class="language-yaml" data-lang="yaml"><span style="color:#65737e;"># Fluentd/Fluent Bit routing based on stream
+</span><span style="color:#a3be8c;">&lt;source&gt;
+</span><span>  @</span><span style="color:#a3be8c;">type tail
+</span><span>  </span><span style="color:#a3be8c;">path /var/log/containers/*.log
+</span><span>  </span><span style="color:#a3be8c;">&lt;parse&gt;
+</span><span>    @</span><span style="color:#a3be8c;">type multi_format
+</span><span>    </span><span style="color:#a3be8c;">&lt;pattern&gt;
+</span><span>      </span><span style="color:#a3be8c;">format regexp
+</span><span>      </span><span style="color:#a3be8c;">expression /^(?&lt;time&gt;.+) (?&lt;stream&gt;stdout|stderr) (?&lt;log&gt;.*)$/
+</span><span>    </span><span style="color:#a3be8c;">&lt;/pattern&gt;
+</span><span>  </span><span style="color:#a3be8c;">&lt;/parse&gt;
+</span><span style="color:#a3be8c;">&lt;/source&gt;
+</span><span>
+</span><span style="color:#a3be8c;">&lt;filter **&gt;
+</span><span>  @</span><span style="color:#a3be8c;">type record_transformer
+</span><span>  </span><span style="color:#a3be8c;">&lt;record&gt;
+</span><span>    </span><span style="color:#bf616a;">log_type ${tag_parts[0] == &#39;stderr&#39; ? &#39;audit&#39; </span><span>: &#39;</span><span style="color:#a3be8c;">operational</span><span>&#39;}
+</span><span>  </span><span style="color:#a3be8c;">&lt;/record&gt;
+</span><span style="color:#a3be8c;">&lt;/filter&gt;
+</span><span>
+</span><span style="color:#a3be8c;">&lt;match audit.**&gt;
+</span><span>  @</span><span style="color:#a3be8c;">type elasticsearch
+</span><span>  </span><span style="color:#a3be8c;">index_name audit-logs
+</span><span>  </span><span style="color:#65737e;"># Immutable index settings
+</span><span style="color:#a3be8c;">&lt;/match&gt;
+</span></code></pre>
+<h2 id="implementation-status">Implementation Status</h2>
+<h3 id="what-works-today-current">What Works Today (Current)</h3>
+<ul>
+<li>✅ Structured audit logging with <code>AuditEntry</code> and <code>AuditLogLine</code></li>
+<li>✅ Automatic request lifecycle tracking (enter/exit)</li>
+<li>✅ Wrapper-based auditing via <code>HandleRoute()</code></li>
+<li>✅ Route-level audit actions (create, read, delete, list, etc.)</li>
+<li>✅ Unique trail IDs for request correlation</li>
+<li>✅ Request duration tracking</li>
+<li>✅ Success/error state tracking</li>
+<li>✅ JSON-formatted output</li>
+<li>✅ Fail-secure behavior (crashes on marshal failure)</li>
+</ul>
+<h3 id="what-needs-implementation">What Needs Implementation</h3>
+<ul>
+<li>
+<p>❌ <strong>Phase 1</strong>:</p>
+<ul>
+<li>Separation of audit logs to stderr</li>
+<li>SPIFFE ID capture in audit entries</li>
+<li>Source IP capture in audit entries</li>
+<li>HMAC signatures for tamper detection</li>
+<li>Kubernetes log routing configuration examples</li>
+</ul>
+</li>
+<li>
+<p>❌ <strong>Phase 2</strong>:</p>
+<ul>
+<li>Pluggable audit device interface</li>
+<li>File, socket, and syslog device implementations</li>
+<li>Blocking/non-blocking device behavior configuration</li>
+<li>Multi-destination audit delivery</li>
+<li>Guaranteed delivery mechanisms</li>
+</ul>
+</li>
+</ul>
+<h2 id="consequences">Consequences</h2>
+<h3 id="positive">Positive</h3>
+<ul>
+<li><strong>Existing foundation</strong>: Current implementation provides solid base for
+enhancement</li>
+<li><strong>Proven patterns</strong>: Wrapper-based and route-level auditing work well</li>
+<li><strong>Immediate compliance improvement</strong>: Phase 1 separation enables better
+audit trail management</li>
+<li><strong>Simple migration path</strong>: Changes build incrementally on existing code</li>
+<li><strong>Kubernetes-friendly</strong>: Works with existing tooling</li>
+<li><strong>Future-proof</strong>: Phase 2 provides enterprise-grade capabilities</li>
+<li><strong>SPIFFE integration</strong>: Natural fit with existing SPIFFE-based auth</li>
+<li><strong>Tamper detection</strong>: Optional HMAC signatures on audit events</li>
+</ul>
+<h3 id="negative">Negative</h3>
+<ul>
+<li><strong>Current mixing</strong>: Audit and operational logs currently indistinguishable
+on stdout</li>
+<li><strong>Missing context</strong>: SPIFFE ID and source IP not currently captured</li>
+<li><strong>Two-phase complexity</strong>: Requires planning for migration</li>
+<li><strong>Stderr convention</strong>: Some tools expect only errors on stderr</li>
+<li><strong>Configuration overhead</strong>: More complex log routing rules</li>
+<li><strong>Potential performance impact</strong>: Audit devices could block operations</li>
+</ul>
+<h2 id="references">References</h2>
+<h3 id="external">External</h3>
+<ul>
+<li>SPIFFE Audit Considerations: https://spiffe.io/docs/latest/planning/audit/</li>
+<li>Kubernetes Logging Architecture: https://kubernetes.io/docs/concepts/cluster-administration/logging/</li>
+</ul>
+<h3 id="current-implementation-code">Current Implementation Code</h3>
+<ul>
+<li><code>internal/journal/audit.go</code> - Core audit entry structure and logging</li>
+<li><code>internal/net/handle.go</code> - HTTP handler wrapper with automatic auditing</li>
+<li><code>app/keeper/internal/route/store/contribute.go</code> - Example of route-level
+auditing</li>
+<li><code>app/nexus/internal/route/secret/delete.go</code> - Example of operation-specific
+audit actions</li>
+<li><code>app/nexus/internal/route/acl/policy/create.go</code> - Example of policy
+operation auditing</li>
+</ul>
+
+    
+        </article>
+
+        <footer id="footer">
+            Copyright © 2024-present <strong>SPIKE Contributors</strong>.<br>
+            <strong>SPIKE</strong>'s code
+            is distributed under <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache (v2.0)</a>.
+            <br>
+            The documentation on this website
+            is distributed under <a href="https://creativecommons.org/licenses/by/4.0/">CC-BY-4.0</a>.
+            <br><br>
+            We <strong>do not</strong> collect your data.
+            This site <strong>does not</strong> use any tracking cookies or scripts.
+        </footer>
+    </div>
+
+</main>
+
+
+    <script type="text/javascript" src="https://spike.ist/elasticlunr.min.js" defer></script>
+    <script type="text/javascript" src="https://spike.ist/search_index.en.js" defer></script>
+<script type="text/javascript" src="https://spike.ist/js.js" defer></script>
+</body>
+</html>
+<style>
+body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    font-family: var(--font-family);
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+}
+
+main {
+    width: 100vw;
+    max-width: 1920px;
+    display: flex;
+    flex-direction: row;
+    overflow: hidden;
+}
+
+#footer {
+    text-align: center;
+    padding: 2rem;
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    border-top: 1px solid var(--border-color);
+    margin-top: 2rem;
+}
+
+.content {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    height: 100vh;
+    overflow-y: auto;
+    background-color: var(--bg-primary);
+    line-height: 1.6;
+    border-left: 1px solid var(--border-color);
+}
+
+#footer a {
+    color: var(--spike-blue);
+    text-decoration: none;
+    transition: all 0.2s ease;
+    border-bottom: 1px solid transparent;
+    font-weight: 500;
+
+}
+
+#footer a:hover {
+    border-bottom-color: var(--spike-blue);
+}
+
+</style>

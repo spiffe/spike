@@ -11,28 +11,28 @@ import (
 
 	"github.com/spiffe/spike-sdk-go/config/env"
 	"github.com/spiffe/spike-sdk-go/crypto"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/log"
 	"github.com/spiffe/spike-sdk-go/security/mem"
-
-	"github.com/spiffe/spike/app/nexus/internal/state/backend"
 )
-
-var be backend.Backend
 
 func createCipher() cipher.AEAD {
 	key := make([]byte, crypto.AES256KeySize) // AES-256 key
-	if _, err := rand.Read(key); err != nil {
-		log.FatalLn("createCipher", "message", "Failed to generate test key", "err", err)
+	if _, randErr := rand.Read(key); randErr != nil {
+		log.FatalLn("createCipher", "message",
+			"Failed to generate test key", "err", randErr)
 	}
 
-	block, err := aes.NewCipher(key)
-	if err != nil {
-		log.FatalLn("createCipher", "message", "Failed to create cipher", "err", err)
+	block, cipherErr := aes.NewCipher(key)
+	if cipherErr != nil {
+		log.FatalLn("createCipher", "message",
+			"Failed to create cipher", "err", cipherErr)
 	}
 
-	gcm, err := cipher.NewGCM(block)
-	if err != nil {
-		log.FatalLn("createCipher", "message", "Failed to create GCM", "err", err)
+	gcm, gcmErr := cipher.NewGCM(block)
+	if gcmErr != nil {
+		log.FatalLn("createCipher", "message",
+			"Failed to create GCM", "err", gcmErr)
 	}
 
 	return gcm
@@ -62,10 +62,7 @@ func createCipher() cipher.AEAD {
 // Note: This function modifies the package-level be variable. Later calls
 // will reinitialize the backend, potentially losing any existing state.
 func InitializeBackend(rootKey *[crypto.AES256KeySize]byte) {
-	const fName = "initializeBackend"
-
-	log.Log().Info(fName,
-		"message", "Initializing backend", "storeType", env.BackendStoreTypeVal())
+	const fName = "InitializeBackend"
 
 	// Root key is not needed, nor used in in-memory stores.
 	// For in-memory stores, ensure that it is always nil, as the alternative
@@ -74,24 +71,21 @@ func InitializeBackend(rootKey *[crypto.AES256KeySize]byte) {
 	// In other store types, ensure it is set for security.
 	if env.BackendStoreTypeVal() == env.Memory {
 		if rootKey != nil {
-			log.FatalLn(fName,
-				"message", "In-memory store can only be initialized with nil root key",
-				"err", "root key is not nil",
-			)
+			failErr := *sdkErrors.ErrRootKeyNotEmpty.Clone()
+			failErr.Msg = "root key should be nil for memory store type"
+			log.FatalErr(fName, failErr)
 		}
 	} else {
 		if rootKey == nil {
-			log.FatalLn(fName,
-				"message", "Failed to initialize backend",
-				"err", "root key is nil",
-			)
+			failErr := *sdkErrors.ErrRootKeyEmpty.Clone()
+			failErr.Msg = "root key cannot be nil"
+			log.FatalErr(fName, failErr)
 		}
 
 		if mem.Zeroed32(rootKey) {
-			log.FatalLn(fName,
-				"message", "Failed to initialize backend",
-				"err", "root key is all zeroes",
-			)
+			failErr := *sdkErrors.ErrRootKeyEmpty.Clone()
+			failErr.Msg = "root key cannot be empty"
+			log.FatalErr(fName, failErr)
 		}
 	}
 
@@ -111,7 +105,6 @@ func InitializeBackend(rootKey *[crypto.AES256KeySize]byte) {
 		be = initializeInMemoryBackend()
 	}
 
-	log.Log().Info(
-		fName, "message", "Backend initialized", "storeType", storeType,
-	)
+	// Store the backend atomically for safe concurrent access.
+	backendPtr.Store(&be)
 }

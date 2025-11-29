@@ -39,8 +39,15 @@ Everyone is welcome to join the **SPIKE** Contributor Sync:
 
 Open Source is better together.
 
-[Join **SPIFFE**’s Slack Workspace](https://slack.spiffe.io/) and let us change the
+[Join **SPIFFE**'s Slack Workspace](https://slack.spiffe.io/) and let us change the
 world together 🤘.
+
+## Report a Security Vulnerability
+
+If you have found a security vulnerability, please
+[follow this guideline][security] to responsibly disclose it.
+
+[security]: https://github.com/spiffe/spike/blob/main/SECURITY.md "SPIKE Security Policy"
 
 ## Empower Our Journey ✊
 
@@ -52,6 +59,23 @@ incredible technology.
 ## Thank You ❤️
 
 Thanks so much for your interest: It means a lot 🙏
+
+<p>&nbsp;</p>
+
+----
+
+## Türkçe Konuşanlar İçin
+
+Özgür yazılım birlikte olunca güzel 🤗.
+
+Eğer **SPIKE** ile ilgili bir sorun varsa, projeye katkıda bulunmak istiyorsan
+veya başka bir konuda yardıma ihtiyacın varsa, dil engeli olmadan bize
+ulaşabilirsin.
+
+[Kampus Discord Sunucusu][discord]'nda **SPIKE** kanalında buluşalım ve birlikte
+dünyayı daha güvenli hale getirelim 🤘.
+
+[discord]: https://discord.gg/kampus "Kampus Discord"
 
 <p>&nbsp;</p>
 

@@ -5,12 +5,12 @@
 package secret
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/spf13/cobra"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	spike "github.com/spiffe/spike-sdk-go/api"
+
 	"github.com/spiffe/spike/app/spike/internal/stdout"
 	"github.com/spiffe/spike/app/spike/internal/trust"
 )
@@ -20,13 +20,17 @@ import (
 // specified path.
 //
 // Parameters:
-//   - source: X.509 source for workload API authentication
+//   - source: SPIFFE X.509 SVID source for authentication. Can be nil if the
+//     Workload API connection is unavailable, in which case the command will
+//     display an error message and return.
+//   - SPIFFEID: The SPIFFE ID to authenticate with
 //
 // Returns:
 //   - *cobra.Command: Configured put command
 //
 // Arguments:
-//  1. path: Location where the secret will be stored
+//  1. path: Location where the secret will be stored (namespace format, no
+//     leading slash)
 //  2. key=value pairs: One or more key-value pairs in the format "key=value"
 //
 // Example Usage:
@@ -34,18 +38,19 @@ import (
 //	spike secret put secret/myapp username=admin password=secret
 //	spike secret put secret/config host=localhost port=8080
 //
-// The command will:
-//  1. Verify SPIKE initialization status via admin token
-//  2. Parse all key-value pairs from arguments
-//  3. Store the collected key-value pairs at the specified path
+// The command execution flow:
+//  1. Verify the X509 source is available (workload API connection active)
+//  2. Authenticate the pilot using SPIFFE ID
+//  3. Validate the secret path format
+//  4. Parse all key-value pairs from arguments
+//  5. Store the key-value pairs at the specified path via SPIKE API
 //
 // Error cases:
-//   - SPIKE not initialized: Prompts user to run 'spike init'
-//   - Invalid key-value format: Reports the malformed pair
-//   - Network/storage errors: Displays error message
-//
-// Note: Current admin token verification will be replaced with
-// temporary token authentication in future versions
+//   - X509 source unavailable: Workload API connection lost
+//   - Invalid secret path: Path format validation failed
+//   - Invalid key-value format: Malformed pair (continues with other pairs)
+//   - SPIKE not ready: Backend not initialized, prompts to wait
+//   - Network/API errors: Connection or storage failures
 func newSecretPutCommand(
 	source *workloadapi.X509Source, SPIFFEID string,
 ) *cobra.Command {
@@ -56,12 +61,17 @@ func newSecretPutCommand(
 		Run: func(cmd *cobra.Command, args []string) {
 			trust.AuthenticateForPilot(SPIFFEID)
 
+			if source == nil {
+				cmd.PrintErrln("Error: SPIFFE X509 source is unavailable.")
+				return
+			}
+
 			api := spike.NewWithSource(source)
 
 			path := args[0]
 
 			if !validSecretPath(path) {
-				fmt.Printf("Error: invalid secret path: %s\n", path)
+				cmd.PrintErrf("Error: Invalid secret path: %s\n", path)
 				return
 			}
 
@@ -69,30 +79,24 @@ func newSecretPutCommand(
 			values := make(map[string]string)
 			for _, kv := range kvPairs {
 				if !strings.Contains(kv, "=") {
-					fmt.Printf("Error: invalid key-value pair format: %s\n", kv)
+					cmd.PrintErrf("Error: Invalid key-value pair: %s\n", kv)
 					continue
 				}
-				kvs := strings.Split(kv, "=")
+				kvs := strings.SplitN(kv, "=", 2)
 				values[kvs[0]] = kvs[1]
 			}
 
 			if len(values) == 0 {
-				fmt.Println("OK")
+				cmd.Println("OK")
 				return
 			}
 
 			err := api.PutSecret(path, values)
-			if err != nil {
-				if err.Error() == "not ready" {
-					stdout.PrintNotReady()
-					return
-				}
-
-				fmt.Printf("Error: %v\n", err)
+			if stdout.HandleAPIError(cmd, err) {
 				return
 			}
 
-			fmt.Println("OK")
+			cmd.Println("OK")
 		},
 	}
 

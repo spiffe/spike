@@ -5,11 +5,11 @@
 package policy
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	spike "github.com/spiffe/spike-sdk-go/api"
+
+	"github.com/spiffe/spike/app/spike/internal/stdout"
 	"github.com/spiffe/spike/app/spike/internal/trust"
 )
 
@@ -21,8 +21,10 @@ import (
 // that the system is initialized before listing policies.
 //
 // Parameters:
-//   - source: SPIFFE X.509 SVID source for authentication
-//   - spiffeId: The SPIFFE ID to authenticate with
+//   - source: SPIFFE X.509 SVID source for authentication. Can be nil if the
+//     Workload API connection is unavailable, in which case the command will
+//     display an error message and return.
+//   - SPIFFEID: The SPIFFE ID to authenticate with
 //
 // Returns:
 //   - *cobra.Command: Configured Cobra command for policy listing
@@ -33,8 +35,10 @@ import (
 //
 // Flags:
 //   - --format: Output format ("human" or "json", default is "human")
-//   - --path-pattern: Filter policies by a resource path pattern (e.g., '^secrets/.*$')
-//   - --spiffeid-pattern: Filter policies by a SPIFFE ID pattern (e.g., '^spiffe://example\.org/service/.*$')
+//   - --path-pattern: Filter policies by a resource path pattern
+//     (e.g., '^secrets/.*$')
+//   - --spiffeid-pattern: Filter policies by a SPIFFE ID pattern
+//     (e.g., '^spiffe://example\.org/service/.*$')
 //
 // Note: --path-pattern and --spiffeid-pattern flags cannot be used together.
 //
@@ -96,20 +100,27 @@ func newPolicyListCommand(
 		SPIFFEIDPattern string
 	)
 	cmd := &cobra.Command{
-		Use:   "list",
-		Short: "List policies, optionally filtering by path pattern or SPIFFE ID pattern",
-		Args:  cobra.NoArgs,
-		Run: func(cmd *cobra.Command, args []string) {
+		Use: "list",
+		Short: "List policies, optionally filtering by path pattern or " +
+			"SPIFFE ID pattern",
+		Args: cobra.NoArgs,
+		Run: func(c *cobra.Command, args []string) {
 			trust.AuthenticateForPilot(SPIFFEID)
-			api := spike.NewWithSource(source)
 
-			policies, err := api.ListPolicies(SPIFFEIDPattern, pathPattern)
-			if handleAPIError(err) {
+			if source == nil {
+				c.PrintErrln("Error: SPIFFE X509 source is unavailable.")
 				return
 			}
 
-			output := formatPoliciesOutput(cmd, policies)
-			fmt.Println(output)
+			api := spike.NewWithSource(source)
+
+			policies, err := api.ListPolicies(SPIFFEIDPattern, pathPattern)
+			if stdout.HandleAPIError(c, err) {
+				return
+			}
+
+			output := formatPoliciesOutput(c, policies)
+			c.Println(output)
 		},
 	}
 
@@ -120,5 +131,6 @@ func newPolicyListCommand(
 	cmd.MarkFlagsMutuallyExclusive("path-pattern", "spiffeid-pattern")
 
 	addFormatFlag(cmd)
+
 	return cmd
 }

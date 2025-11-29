@@ -15,6 +15,7 @@ import (
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	apiUrl "github.com/spiffe/spike-sdk-go/api/url"
 	"github.com/spiffe/spike-sdk-go/crypto"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/log"
 	network "github.com/spiffe/spike-sdk-go/net"
 	"github.com/spiffe/spike-sdk-go/predicate"
@@ -25,63 +26,55 @@ import (
 )
 
 // sendShardsToKeepers distributes shares of the root key to all keeper nodes.
-// Note that we recompute shares for each keeper rather than computing them once
-// and distributing them. This is safe because:
+// Shares are recomputed for each keeper rather than computed once and
+// distributed. This is safe because:
 //  1. computeShares() uses a deterministic random reader seeded with the
 //     root key
 //  2. Given the same root key, it will always produce identical shares
-//  3. findShare() ensures each keeper receives its designated share
-//     This approach simplifies the code flow and maintains consistency across
-//     potential system restarts or failures.
+//  3. Each keeper receives its designated share based on keeper ID
 //
-// Note that sendSharesToKeepers optimistically moves on to the next SPIKE
-// Keeper in the list on error. This is okay, because SPIKE Nexus may not
-// need all keepers to be healthy all at once, and since we periodically
-// send shards to keepers, provided there is no configuration mistake,
-// all SPIKE Keepers will get their shards eventually.
+// This approach simplifies the code flow and maintains consistency across
+// potential system restarts or failures.
+//
+// The function optimistically moves on to the next SPIKE Keeper in the list on
+// error. This is acceptable because SPIKE Nexus does not need all keepers to be
+// healthy simultaneously. Since shards are sent periodically, all SPIKE Keepers
+// will eventually receive their shards provided there is no configuration
+// error.
+//
+// Parameters:
+//   - source: X509Source for mTLS authentication with keepers
+//   - keepers: Map of keeper IDs to their API root URLs
 func sendShardsToKeepers(
 	source *workloadapi.X509Source, keepers map[string]string,
 ) {
 	const fName = "sendShardsToKeepers"
 
 	for keeperID, keeperAPIRoot := range keepers {
-		u, err := url.JoinPath(
+		u, urlErr := url.JoinPath(
 			keeperAPIRoot, string(apiUrl.KeeperContribute),
 		)
-
-		if err != nil {
-			log.Log().Warn(
-				fName, "message", "Failed to join path", "url", keeperAPIRoot,
-			)
-			continue
-		}
-
-		// Security: Only SPIKE Keeper can send shards to SPIKE Nexus
-		client, err := network.CreateMTLSClientWithPredicate(
-			source, predicate.AllowKeeper,
-		)
-
-		if err != nil {
-			log.Log().Warn(fName,
-				"message", "Failed to create mTLS client",
-				"err", err)
+		if urlErr != nil {
+			warnErr := sdkErrors.ErrAPIBadRequest.Wrap(urlErr)
+			warnErr.Msg = "failed to join path"
+			log.WarnErr(fName, *warnErr)
 			continue
 		}
 
 		if state.RootKeyZero() {
-			log.Log().Warn(fName, "message", "rootKey is zero; moving on...")
+			log.Warn(fName, "message", "rootKey is zero: moving on")
 			continue
 		}
 
 		rootSecret, rootShares := computeShares()
-		sanityCheck(rootSecret, rootShares)
 
 		var share secretsharing.Share
 		for _, sr := range rootShares {
-			kid, err := strconv.Atoi(keeperID)
-			if err != nil {
-				log.Log().Warn(
-					fName, "message", "Failed to convert keeper id to int", "err", err)
+			kid, atoiErr := strconv.Atoi(keeperID)
+			if atoiErr != nil {
+				warnErr := sdkErrors.ErrDataInvalidInput.Wrap(atoiErr)
+				warnErr.Msg = "failed to convert keeper id to int"
+				log.WarnErr(fName, *warnErr)
 				continue
 			}
 
@@ -92,60 +85,42 @@ func sendShardsToKeepers(
 		}
 
 		if share.ID.IsZero() {
-			log.Log().Warn(fName,
-				"message", "Failed to find share for keeper", "keeper_id", keeperID)
+			warnErr := *sdkErrors.ErrEntityNotFound.Clone()
+			warnErr.Msg = "failed to find share for keeper"
+			log.WarnErr(fName, warnErr)
 			continue
 		}
 
 		rootSecret.SetUint64(0)
 
-		contribution, err := share.Value.MarshalBinary()
-		if err != nil {
-			log.Log().Warn(fName, "message", "Failed to marshal share",
-				"err", err, "keeper_id", keeperID)
+		contribution, marshalErr := share.Value.MarshalBinary()
+		if marshalErr != nil {
+			warnErr := sdkErrors.ErrDataMarshalFailure.Wrap(marshalErr)
+			warnErr.Msg = "failed to marshal share"
+			log.WarnErr(fName, *warnErr)
 
-			// Security: Ensure that the contribution is zeroed out before
-			// the next iteration.
+			// Security: Ensure sensitive data is zeroed out.
 			mem.ClearBytes(contribution)
-
-			// Security: Ensure that the share is zeroed out before
-			// the next iteration.
 			share.Value.SetUint64(0)
-
-			// Security: Ensure that the rootShares are zeroed out before
-			// the function returns.
 			for i := range rootShares {
 				rootShares[i].Value.SetUint64(0)
 			}
-
-			log.Log().Warn(fName,
-				"message", "Failed to marshal share",
-				"err", err, "keeper_id", keeperID)
 			continue
 		}
 
 		if len(contribution) != crypto.AES256KeySize {
-			// Security: Ensure that the contribution is zeroed out before
-			// the next iteration.
-			//
-			// Note that you cannot do `mem.ClearRawBytes(contribution)` because
-			// the contribution is a slice, not a struct; we use `mem.ClearBytes()`
-			// instead.
+			// Log before clearing (contribution length is needed for logging).
+			warnErr := *sdkErrors.ErrDataInvalidInput.Clone()
+			warnErr.Msg = "invalid contribution length"
+			log.WarnErr(fName, warnErr)
+
+			// Security: Ensure sensitive data is zeroed out.
+			// Note: use mem.ClearBytes() for slices, not mem.ClearRawBytes().
 			mem.ClearBytes(contribution)
-
-			// Security: Ensure that the share is zeroed out before
-			// the next iteration.
 			share.Value.SetUint64(0)
-
-			// Security: Ensure that the rootShares are zeroed out before
-			// the function returns.
 			for i := range rootShares {
 				rootShares[i].Value.SetUint64(0)
 			}
-
-			log.Log().Warn(fName,
-				"message", "invalid contribution length",
-				"len", len(contribution), "keeper_id", keeperID)
 			continue
 		}
 
@@ -157,41 +132,39 @@ func sendShardsToKeepers(
 		copy(shard[:], contribution)
 		scr.Shard = shard
 
-		md, err := json.Marshal(scr)
+		md, jsonErr := json.Marshal(scr)
 
-		// Security: Erase scr.Shard when no longer in use.
+		// Security: Erase sensitive data when no longer in use.
 		mem.ClearRawBytes(scr.Shard)
-
-		// Security: Ensure that the contribution is zeroed out before
-		// the next iteration.
 		mem.ClearBytes(contribution)
-
-		// Security: Ensure that the share is zeroed out before
-		// the next iteration.
 		share.Value.SetUint64(0)
-
-		// Security: Ensure that the rootShares are zeroed out before
-		// the function returns.
 		for i := range rootShares {
 			rootShares[i].Value.SetUint64(0)
 		}
 
-		if err != nil {
-			log.Log().Warn(fName,
-				"message", "Failed to marshal request",
-				"err", err, "keeper_id", keeperID)
+		if jsonErr != nil {
+			warnErr := sdkErrors.ErrDataMarshalFailure.Wrap(jsonErr)
+			warnErr.Msg = "failed to marshal request"
+			log.WarnErr(fName, *warnErr)
 			continue
 		}
 
-		_, err = net.Post(client, u, md)
-		// Security: Ensure that the md is zeroed out before
-		// the next iteration.
+		// Security: Only SPIKE Keeper can send shards to SPIKE Nexus.
+		// Create the client just before use to avoid unnecessary allocation
+		// if earlier checks fail.
+		client := network.CreateMTLSClientWithPredicate(
+			source, predicate.AllowKeeper,
+		)
+
+		_, postErr := net.Post(client, u, md)
+
+		// Security: Ensure that md is zeroed out.
 		mem.ClearBytes(md)
 
-		if err != nil {
-			log.Log().Warn(fName, "message",
-				"Failed to post",
-				"err", err, "keeper_id", keeperID)
+		if postErr != nil {
+			warnErr := sdkErrors.ErrAPIPostFailed.Wrap(postErr)
+			warnErr.Msg = "failed to post shard to keeper"
+			log.WarnErr(fName, *warnErr)
 			continue
 		}
 	}

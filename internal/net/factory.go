@@ -29,7 +29,7 @@ import (
 //   - Handler: Route handler function or Fallback for non-POST methods
 func RouteFactory[ApiAction any](p url.APIURL, a ApiAction, m string,
 	switchyard func(a ApiAction, p url.APIURL) Handler) Handler {
-	log.Log().Info("route.factory", "path", p, "action", a, "method", m)
+	log.Info("RouteFactory", "path", p, "action", a, "method", m)
 
 	// We only accept POST requests -- See ADR-0012.
 	if m != http.MethodPost {

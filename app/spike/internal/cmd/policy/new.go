@@ -5,7 +5,7 @@ import (
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 )
 
-// NewPolicyCommand creates a new top-level command for working with policies.
+// NewCommand creates a new top-level command for working with policies.
 // It acts as a parent for all policy-related subcommands: create, list, get,
 // and delete.
 //
@@ -14,8 +14,10 @@ import (
 // path patterns.
 //
 // Parameters:
-//   - source: SPIFFE X.509 SVID source for authentication
-//   - spiffeId: The SPIFFE ID to authenticate with
+//   - source: SPIFFE X.509 SVID source for authentication. Can be nil if the
+//     Workload API connection is unavailable. Subcommands will check for nil
+//     and display user-friendly error messages instead of crashing.
+//   - SPIFFEID: The SPIFFE ID to authenticate with
 //
 // Returns:
 //   - *cobra.Command: Configured top-level Cobra command for policy management
@@ -38,7 +40,7 @@ import (
 //
 // Each subcommand has its own set of flags and arguments. See the individual
 // command documentation for details.
-func NewPolicyCommand(
+func NewCommand(
 	source *workloadapi.X509Source, SPIFFEID string,
 ) *cobra.Command {
 	cmd := &cobra.Command{

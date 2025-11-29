@@ -17,6 +17,7 @@ The **GitHub** repository contains the latest documentation of **SPIKE** already
 Here are the links to point-in-time documentation snapshots at each release:
 
 * [current](https://github.com/spiffe/spike/tree/main/docs)
+* [v0.6.0](https://github.com/spiffe/spike/tree/v0.8.0/docs)
 * [v0.6.0](https://github.com/spiffe/spike/tree/v0.6.0/docs)
 * [v0.5.0](https://github.com/spiffe/spike/tree/v0.5.0/docs)
 * [v0.4.3](https://github.com/spiffe/spike/tree/v0.4.3/docs)

@@ -9,17 +9,19 @@ import (
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 )
 
-// NewOperatorCommand creates a new cobra.Command for managing SPIKE admin
+// NewCommand creates a new cobra.Command for managing SPIKE admin
 // operations. It initializes an "operator" command with subcommands for
 // recovery and restore operations.
 //
 // Parameters:
-//   - source: An X509Source used for SPIFFE authentication
-//   - spiffeId: The SPIFFE ID associated with the operator
+//   - source: An X509Source used for SPIFFE authentication. Can be nil if the
+//     Workload API connection is unavailable. Subcommands will check for nil
+//     and display user-friendly error messages instead of crashing.
+//   - SPIFFEID: The SPIFFE ID associated with the operator
 //
 // Returns:
 //   - *cobra.Command: A configured cobra command for operator management
-func NewOperatorCommand(
+func NewCommand(
 	source *workloadapi.X509Source, SPIFFEID string,
 ) *cobra.Command {
 	cmd := &cobra.Command{

@@ -28,15 +28,19 @@ import (
 // 3. Invalid backend type:
 //   - Terminates the program with a fatal error
 //
-// The source parameter provides the X.509 certificates and private keys
-// needed for SPIFFE-based authentication when communicating with SPIKE Keepers.
-// This parameter is only used for SQLite and Lite backend types.
+// Parameters:
+//   - source: An X509Source that provides X.509 certificates and private keys
+//     for SPIFFE-based mTLS authentication when communicating with SPIKE
+//     Keepers. Can be nil. Only used for SQLite and Lite backend types.
+//     For memory backend, this parameter is ignored. For SQLite/Lite backends,
+//     if the source is nil, the recovery functions will log warnings and retry
+//     until a valid source becomes available.
 //
 // Backend type configuration is determined by env.BackendStoreType().
 // Valid backend types are: 'sqlite', 'lite', or 'memory'.
 //
-// Note: This function will call log.Fatal and terminate the program if an
-// invalid backend store type is configured.
+// The function will call log.FatalLn and terminate the program if an invalid
+// backend store type is configured.
 func Initialize(source *workloadapi.X509Source) {
 	const fName = "Initialize"
 
@@ -61,11 +65,10 @@ func Initialize(source *workloadapi.X509Source) {
 	devMode := env.BackendStoreTypeVal() == env.Memory
 
 	if devMode {
-		log.Log().Warn(fName, "message", "In-memory store will be used.")
-		log.Log().Warn(fName, "message", "Will not use SPIKE Keepers.")
-		log.Log().Warn(fName,
-			"message",
-			"This mode is NOT recommended for production use.")
+		log.Warn(
+			fName,
+			"message", "in-memory mode: no SPIKE Keepers, not for production",
+		)
 
 		// `nil` will skip root key initialization and simply initializes an
 		// in-memory backing store.
@@ -76,8 +79,10 @@ func Initialize(source *workloadapi.X509Source) {
 	// Unknown store type.
 	// Better to crash, since this is likely a configuration failure.
 	log.FatalLn(
-		fName, "message",
-		"Invalid backend store type: '"+env.BackendStoreTypeVal()+"'."+
-			" Please set SPIKE_BACKEND_STORE_TYPE to 'sqlite', 'lite', or 'memory'.",
+		fName,
+		"message",
+		"invalid backend store type",
+		"type", env.BackendStoreTypeVal(),
+		"valid_types", "sqlite, lite, memory",
 	)
 }

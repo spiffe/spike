@@ -13,18 +13,18 @@ import (
 
 func createTestCipher(t *testing.T) cipher.AEAD {
 	key := make([]byte, 32) // AES-256 key
-	if _, err := rand.Read(key); err != nil {
-		t.Fatalf("Failed to generate test key: %v", err)
+	if _, randErr := rand.Read(key); randErr != nil {
+		t.Fatalf("Failed to generate test key: %v", randErr)
 	}
 
-	block, err := aes.NewCipher(key)
-	if err != nil {
-		t.Fatalf("Failed to create cipher: %v", err)
+	block, cipherErr := aes.NewCipher(key)
+	if cipherErr != nil {
+		t.Fatalf("Failed to create cipher: %v", cipherErr)
 	}
 
-	gcm, err := cipher.NewGCM(block)
-	if err != nil {
-		t.Fatalf("Failed to create GCM: %v", err)
+	gcm, gcmErr := cipher.NewGCM(block)
+	if gcmErr != nil {
+		t.Fatalf("Failed to create GCM: %v", gcmErr)
 	}
 
 	return gcm
