@@ -3080,4 +3080,747 @@ w
       Encourage to create users instead of relying on the system user.
     </issue>
   </future>
+  <performance-optimization>
+    <issue priority="high" category="performance">
+      Implement in-memory policy caching with cache invalidation.
+
+      PROBLEM:
+      Currently, every authorization check (CheckAccess) performs a full
+      database query to load ALL policies, decrypts them, and compiles
+      regex patterns. This causes significant performance overhead:
+      - Database query on every authorization check
+      - Decryption of all policies on every check
+      - Regex compilation on every check
+      - High database load in high-volume systems
+
+      SOLUTION:
+      Implement an in-memory policy cache with the following design:
+
+      1. Cache Structure:
+         - Concurrent-safe map (sync.RWMutex or sync.Map)
+         - Store compiled Policy objects with pre-compiled regex patterns
+         - Key: policy ID, Value: *data.Policy (with IDRegex, PathRegex)
+
+      2. Cache Population:
+         - Load policies from database at Nexus startup
+         - Decrypt and compile regex patterns once during load
+         - Store in cache for fast access
+
+      3. Cache Invalidation:
+         - Invalidate entire cache on UpsertPolicy
+         - Invalidate specific entry on DeletePolicy
+         - Reload policies from database after invalidation
+
+      4. Authorization Flow:
+         - CheckAccess reads from cache (no database query)
+         - Use pre-compiled regex patterns for fast matching
+         - No decryption overhead
+
+      EXPECTED PERFORMANCE IMPROVEMENT:
+      - Policy checks: From milliseconds to microseconds
+      - Eliminates database query per authorization check
+      - Eliminates decryption overhead per check
+      - Eliminates regex compilation overhead per check
+
+      FILES TO MODIFY:
+      - app/nexus/internal/state/base/policy.go: CheckAccess, ListPolicies
+      - app/nexus/internal/state/base/global.go: Add policy cache variable
+      - app/nexus/internal/state/persist/global.go: Cache management
+
+      RELATED:
+      - Documentation incorrectly claimed policy caching existed
+      - Fixed in commit: [to be added]
+      - Diagrams updated to reflect actual behavior
+
+      TESTING:
+      - Unit tests for cache invalidation
+      - Concurrent access tests (race detector)
+      - Performance benchmarks before/after
+    </issue>
+  </performance-optimization>
+  <security>
+    <issue priority="low-medium" category="security-crypto">
+      Fix AES-GCM nonce reuse vulnerability in policy encryption.
+
+      VULNERABILITY:
+      Policy encryption reuses the same nonce for encrypting three
+      different fields (SPIFFE ID pattern, path pattern, permissions)
+      within a single policy. This violates the fundamental security
+      requirement of AES-GCM: never reuse a (key, nonce) pair for
+      different plaintexts.
+
+      LOCATION:
+      app/nexus/internal/state/backend/sqlite/persist/policy.go:132-167
+
+      CURRENT CODE:
+      ```go
+      nonce, nonceErr := generateNonce(s)  // One nonce
+      encryptedSpiffeID := encryptWithNonce(s, nonce, spiffeID)
+      encryptedPathPattern := encryptWithNonce(s, nonce, pathPattern)
+      encryptedPermissions := encryptWithNonce(s, nonce, permissions)
+      ```
+
+      SECURITY IMPACT:
+      1. Confidentiality: Attacker can XOR ciphertexts to derive
+         C1 ⊕ C2 = P1 ⊕ P2, revealing plaintext relationships
+
+      2. Known-plaintext attack: If attacker can guess one field
+         (e.g., common SPIFFE ID patterns), they can recover the
+         keystream and decrypt other fields
+
+      3. Authentication: GCM authentication guarantees weakened
+
+      4. Pattern analysis: Repeated patterns in policies become
+         visible through ciphertext analysis
+
+      SEVERITY: LOW-MEDIUM (Revised from initial CRITICAL assessment)
+
+      REALISTIC THREAT ASSESSMENT:
+      - Requires database file access (already inside trust boundary)
+      - Limited to 3 fields within a single policy (not cumulative)
+      - Policy metadata is structural info, not high-value secrets
+      - No cross-policy attack surface (each policy has unique nonce)
+      - XOR attack reveals P1⊕P2, but with only 3 short fields,
+        information leakage is minimal
+      - If attacker has DB access, they likely already know policy
+        structure from context
+      - Defense-in-depth: file permissions, access control, encrypted
+        storage
+
+      COMPARISON TO BEST PRACTICES:
+      - Violates AES-GCM strict nonce uniqueness requirement
+      - Would fail cryptographic audit
+      - Should be fixed for compliance and best practices
+      - NOT an immediate security emergency
+
+      RECOMMENDATION:
+      - Document the issue (done)
+      - Fix during next schema migration (not urgent)
+      - Acceptable for current deployments given limited impact
+      - Include fix in next major version
+
+      SOLUTION:
+      Use unique nonce for each field:
+
+      ```go
+      nonce1, _ := generateNonce(s)
+      encryptedSpiffeID := encryptWithNonce(s, nonce1, spiffeID)
+
+      nonce2, _ := generateNonce(s)
+      encryptedPathPattern := encryptWithNonce(s, nonce2, pathPattern)
+
+      nonce3, _ := generateNonce(s)
+      encryptedPermissions := encryptWithNonce(s, nonce3, permissions)
+
+      // Store all three nonces
+      ```
+
+      DATABASE SCHEMA CHANGES REQUIRED:
+      Add two columns to policies table:
+      - nonce_path_pattern BLOB
+      - nonce_permissions BLOB
+
+      Current schema only has single 'nonce' column.
+      Rename to 'nonce_spiffe_id_pattern' for clarity.
+
+      MIGRATION STRATEGY:
+      1. Add new columns (nullable initially)
+      2. Migration script: Re-encrypt all existing policies with
+         three nonces
+      3. Make new columns NOT NULL
+      4. Update code to use three nonces
+      5. Test decryption of old and new policies
+
+      FILES TO MODIFY:
+      - app/nexus/internal/state/backend/sqlite/ddl/statements.go
+      - app/nexus/internal/state/backend/sqlite/persist/policy.go
+      - Migration script for existing policies
+
+      TESTING:
+      - Verify each field uses unique nonce
+      - Test migration from old schema to new schema
+      - Cryptographic tests: verify no nonce reuse
+      - Round-trip encryption/decryption tests
+
+      REFERENCES:
+      - NIST SP 800-38D (GCM): "The total number of invocations of
+        the authenticated encryption function shall not exceed 2^32"
+        for a given (key, nonce) pair
+      - RFC 5116: "Nonce requirements: The nonce MUST be unique"
+
+      RELATED:
+      - Documentation updated to note this security issue
+      - See claude_diagrams_07_encryption_flows.md Section 6
+    </issue>
+  </security>
+  <feature-request>
+    <issue priority="medium" category="api-feature">
+      Add hard delete (destroy) API for secrets, following Vault KV2 model.
+
+      CURRENT STATE:
+      SPIKE only supports soft delete for secrets:
+      - `spike secret delete path` sets `deleted_time` (soft delete)
+      - `spike secret undelete path` clears `deleted_time` (restore)
+      - Physical deletion only happens automatically during version pruning
+        when MaxVersions is exceeded
+
+      VAULT KV2 COMPARISON:
+      HashiCorp Vault KV2 provides two-tier deletion:
+      1. `vault kv delete` - Soft delete (marks as deleted, recoverable)
+      2. `vault kv destroy` - Hard delete (permanent, irrecoverable)
+
+      This gives operators explicit control over data permanence.
+
+      PROPOSED FEATURE:
+      Add `spike secret destroy` command (or `--destroy` flag):
+
+      CLI:
+      ```bash
+      # Soft delete (current behavior)
+      spike secret delete secrets/db/creds
+
+      # Hard delete (new feature)
+      spike secret destroy secrets/db/creds --versions 1,2,3
+
+      # Or alternative flag syntax
+      spike secret delete secrets/db/creds --destroy --versions 1,2,3
+      ```
+
+      API:
+      POST /v1/secrets/destroy
+      {
+        "path": "secrets/db/creds",
+        "versions": [1, 2, 3]  // Empty array = destroy all versions
+      }
+
+      BEHAVIOR:
+      - Physically removes version data from database (DELETE FROM secrets)
+      - Updates secret_metadata (adjust oldest_version, current_version)
+      - If all versions destroyed, optionally remove metadata row
+      - Irreversible - cannot be undone with undelete
+      - Requires "delete" or new "destroy" permission in policies
+
+      USE CASES:
+
+      1. **Compliance & Data Governance:**
+         - GDPR "right to be forgotten" requirements
+         - Data retention policies requiring permanent deletion
+         - Regulatory requirements for data sanitization
+         - Audit trails showing explicit destruction
+
+      2. **Security Incident Response:**
+         - Compromised credentials must be eliminated beyond recovery
+         - Leaked secrets need permanent removal
+         - Prevent potential forensic recovery of sensitive data
+
+      3. **Storage Management:**
+         - Explicitly free up database space
+         - Remove secrets that will never be needed again
+         - Clean up test/development data permanently
+
+      4. **Operational Clarity:**
+         - Clear intent: "never recover this" vs "temporarily hide this"
+         - Distinguish between "hide from view" and "erase permanently"
+         - Align with industry standard (Vault KV2 behavior)
+
+      DESIGN CONSIDERATIONS:
+
+      1. **Safety Mechanisms:**
+         - Require explicit version numbers (no "destroy all" without
+           confirmation)
+         - Add `--force` flag for non-interactive destruction
+         - Log destruction events prominently (audit trail)
+         - Consider "cool-down" period or delayed destruction option
+
+      2. **Permission Model:**
+         Option A: Reuse "delete" permission (destroy is just stronger
+         delete)
+         Option B: Add new "destroy" permission (finer-grained control)
+         Recommendation: Option B for better separation of concerns
+
+      3. **Metadata Handling:**
+         - If all versions destroyed, keep metadata with empty versions
+           list?
+         - Or completely remove metadata row (path disappears entirely)?
+         - Recommendation: Keep metadata skeleton for audit trail
+
+      4. **Interaction with Pruning:**
+         - Pruning continues to work automatically
+         - Destroyed versions are already gone (no conflict)
+         - Update MaxVersions logic to handle empty/sparse version sets
+
+      IMPLEMENTATION PLAN:
+
+      Phase 1: Backend support
+      - Add DestroySecret() function in app/nexus/internal/state/base/
+      - Implement physical deletion in SQLite backend
+      - Add tests for destruction scenarios
+
+      Phase 2: API endpoint
+      - Add POST /v1/secrets/destroy route
+      - Add policy checks (new "destroy" permission or reuse "delete")
+      - Add request validation and error handling
+
+      Phase 3: CLI command
+      - Add `spike secret destroy` command
+      - Add --versions, --force flags
+      - Add confirmation prompts for safety
+
+      Phase 4: Documentation
+      - Update API docs
+      - Update secret lifecycle diagrams (add destroy state)
+      - Add examples and best practices
+      - Document permission requirements
+
+      FILES TO MODIFY:
+      - app/nexus/internal/state/base/secret.go: Add DestroySecret()
+      - app/nexus/internal/state/backend/sqlite/persist/secret.go:
+        Physical deletion
+      - app/nexus/internal/route/secret/destroy.go: New route handler
+      - app/spike/internal/cmd/secret/destroy.go: New CLI command
+      - Policy permission model (add "destroy" permission?)
+
+      ALTERNATIVE CONSIDERED:
+      Keep current model (soft delete + automatic pruning only)
+
+      Pros:
+      - Simpler model, less API surface
+      - Prevents accidental permanent data loss
+      - Automatic cleanup handles most cases
+
+      Cons:
+      - No explicit control for compliance scenarios
+      - Diverges from industry standard (Vault KV2)
+      - Cannot immediately free up space on demand
+      - Harder to prove data was permanently deleted (audit/compliance)
+
+      RECOMMENDATION:
+      Implement the feature. Benefits for compliance, security incidents,
+      and alignment with Vault KV2 outweigh the added complexity. Add
+      safety mechanisms (confirmation, audit logs) to prevent accidents.
+
+      RELATED:
+      - Documentation corrected to remove references to non-existent
+        `--hard` flag
+      - See claude_diagrams_11_secret_lifecycle.md
+      - Similar to Vault KV2 destroy command
+    </issue>
+  </feature-request>
+  <documentation>
+    <issue priority="low" category="security-clarification">
+      Document SPIFFE trust model: Workloads with multiple SVIDs
+
+      CONTEXT:
+      A workload can be registered in SPIRE with multiple SPIFFE IDs
+      (multiple registration entries matching the same selectors). The
+      SPIRE Workload API returns multiple X.509-SVIDs to such workloads,
+      and the workload chooses which SVID to present during mTLS connections.
+
+      EXAMPLE:
+      Registration entries with same selectors:
+      ```bash
+      # Entry 1
+      spire-server entry create \
+        -spiffeID spiffe://example.org/app/lowprivilege \
+        -selector unix:uid:1000 \
+        -hint internal
+
+      # Entry 2
+      spire-server entry create \
+        -spiffeID spiffe://example.org/app/admin \
+        -selector unix:uid:1000 \
+        -hint external
+      ```
+
+      Same workload (UID 1000) receives BOTH SVIDs and can choose which
+      to present when connecting to SPIKE Nexus.
+
+      SPIKE's BEHAVIOR:
+      - SPIKE extracts SPIFFE ID from presented client certificate
+        (via spiffe.IDFromRequest -> IDFromCert)
+      - SPIKE enforces policies based on that SPIFFE ID
+      - SPIKE has NO control over which SVID the client chooses
+      - SPIKE trusts that SPIRE only issues SVIDs to authorized workloads
+
+      TRUST MODEL:
+      SPIKE's security relies on:
+      1. SPIRE correctly attesting workload identity (via selectors)
+      2. SPIRE only issuing SVIDs to authorized workloads
+      3. Cryptographic validation of presented certificates
+      4. Operators configuring SPIRE registration correctly
+
+      SPIKE does NOT:
+      - Query SPIRE to verify "should this workload have this SPIFFE ID?"
+      - Re-implement workload attestation
+      - Restrict which SVID a multi-SVID workload can use
+
+      WHY THIS IS CORRECT:
+      - Separation of concerns: Identity issuance (SPIRE) vs authorization
+        (SPIKE)
+      - If SPIRE issued an SVID, the workload IS authorized for that
+        identity
+      - SPIFFE trust model: Trust the issuing authority (SPIRE)
+      - Industry standard practice (same as Vault, Istio, etc.)
+
+      POTENTIAL CONFUSION:
+      Operators might think:
+      - "Workload should only use one identity at a time"
+      - "SPIKE should prevent workload from using admin SVID"
+      - "Multiple SVIDs create privilege escalation risk"
+
+      CLARIFICATION:
+      - If a workload has multiple SVIDs, operator INTENDED this
+      - Hint field guides workload choice, doesn't restrict it
+      - If undesired, fix SPIRE configuration (different selectors)
+
+      OPERATIONAL GUIDANCE:
+
+      Best Practices:
+      1. Use different selectors for different privilege levels:
+         ✅ Admin workload: kubernetes:sa:admin-service
+         ✅ User workload: kubernetes:sa:user-service
+         ❌ Both: unix:uid:1000 (too broad)
+
+      2. Avoid multiple high/low privilege SVIDs for same selectors
+         unless intentional (e.g., internal/external routing)
+
+      3. Use SPIRE's hint field for intended purpose:
+         - Guide workload behavior
+         - Document identity purpose
+         - NOT for access control (that's SPIKE's job)
+
+      4. Audit SPIRE registration entries:
+         - Check for overlapping selectors
+         - Verify selector specificity
+         - Review multiple entries per workload
+
+      DOCUMENTATION TO ADD:
+
+      Location: docs-src/content/operations/security.md (or similar)
+
+      Section: "SPIFFE Trust Model and Multiple SVIDs"
+
+      Content:
+      - Explain SPIKE trusts SPIRE for identity issuance
+      - Describe how multiple SVIDs work
+      - Clarify SPIKE's role vs SPIRE's role
+      - Provide selector best practices
+      - Show examples of correct/incorrect configurations
+      - Explain hint field purpose
+
+      Location: docs-src/content/architecture/security.md
+
+      Section: "Identity Verification"
+
+      Content:
+      - Document that SPIKE extracts SPIFFE ID from client cert
+      - Note that workload chooses which SVID to present
+      - Explain trust boundary between SPIKE and SPIRE
+      - Reference SPIFFE X.509-SVID standard
+
+      RELATED SPIFFE SPEC:
+
+      X.509-SVID Standard:
+      - "An X.509 SVID MUST contain exactly one URI SAN"
+      - Each SVID = one identity
+      - Multiple SVIDs = multiple separate certificates
+
+      Workload API Standard:
+      - X509SVIDResponse can contain multiple X509SVID messages
+      - Hint field: "operator-specified string to provide guidance"
+      - "First SVID in list is default identity"
+      - Workload responsible for SVID selection
+
+      NOT A SECURITY BUG:
+      This is working as designed per SPIFFE standard. SPIKE correctly
+      validates presented certificates and enforces policies. The
+      "risk" of multiple SVIDs is an operational configuration concern,
+      not a code defect.
+
+      ACTION ITEMS:
+      1. Document SPIFFE trust model in security docs
+      2. Add section on multiple SVIDs and workload behavior
+      3. Provide SPIRE registration best practices
+      4. Consider adding debug logging: "Authenticated as SPIFFE ID X"
+      5. Maybe add warning if unusual patterns detected (optional)
+
+      OPTIONAL ENHANCEMENT (Future):
+      Could add SPIRE Server API integration to cross-check registration
+      entries, but this:
+      - Adds complexity and coupling
+      - Duplicates SPIRE's attestation
+      - Goes against SPIFFE separation of concerns
+      - Not recommended unless specific compliance requirement
+
+      PRIORITY: Low
+      - Not a bug, working as designed
+      - Documentation/education issue
+      - Helps operators understand trust model
+    </issue>
+  </documentation>
+  <examples>
+    <issue priority="medium" category="demo-application">
+      Create advanced demo workload showcasing multiple SVIDs with hint-based
+      selection.
+
+      PURPOSE:
+      Demonstrate SPIFFE's multiple-SVID-per-workload feature and educate
+      operators on proper SPIRE configuration, hint field usage, and SPIKE's
+      trust model.
+
+      MOTIVATION:
+      - Multiple SVIDs per workload is a valid SPIFFE pattern but rarely
+        demonstrated
+      - Operators may be confused about how SPIKE handles this scenario
+      - Good opportunity to show go-spiffe's WithDefaultX509SVIDPicker
+      - Illustrates SPIKE's trust boundary and SPIRE's role
+
+      DEMO SCENARIO:
+      "Multi-Environment Service Router"
+
+      A single workload that routes requests to internal/external services
+      and needs different identities for each:
+
+      Use Cases:
+      1. Internal requests → Use "internal" SVID to access internal secrets
+      2. External requests → Use "external" SVID to access public secrets
+      3. Admin operations → Use "admin" SVID for sensitive operations
+
+      IMPLEMENTATION:
+
+      Demo Application: "spike-demo-multi-identity"
+
+      Location: examples/multi-identity-workload/
+
+      Components:
+      1. Go application using go-spiffe
+      2. SPIRE registration scripts
+      3. SPIKE policy configuration
+      4. README with explanation
+      5. Docker/Kubernetes deployment manifests
+
+      Code Structure:
+      ```
+      examples/multi-identity-workload/
+      ├── README.md                    # Detailed explanation
+      ├── main.go                      # Demo application
+      ├── spire-setup.sh               # Register multiple identities
+      ├── spike-policies.sh            # Create SPIKE policies
+      ├── docker-compose.yml           # Bare metal demo
+      ├── k8s/
+      │   ├── deployment.yaml
+      │   └── spire-entries.yaml
+      └── docs/
+          └── architecture.md          # Trust model explanation
+      ```
+
+      APPLICATION BEHAVIOR:
+
+      main.go pseudo-code:
+      ```go
+      package main
+
+      import (
+          "context"
+          "github.com/spiffe/go-spiffe/v2/workloadapi"
+          "github.com/spiffe/go-spiffe/v2/svid/x509svid"
+      )
+
+      func main() {
+          ctx := context.Background()
+
+          // Demonstrate fetching multiple SVIDs
+          source, _ := workloadapi.NewX509Source(ctx)
+          defer source.Close()
+
+          // Get all SVIDs
+          x509Ctx, _ := source.GetX509Context()
+          fmt.Printf("Received %d SVIDs:\n", len(x509Ctx.SVIDs))
+          for _, svid := range x509Ctx.SVIDs {
+              fmt.Printf("  - %s (hint: %q)\n", svid.ID, svid.Hint)
+          }
+
+          // Route 1: Internal operations
+          internalClient := createClientWithHint("internal")
+          secret1, _ := internalClient.GetSecret("secrets/internal/db")
+          fmt.Printf("Internal secret: %v\n", secret1)
+
+          // Route 2: External operations
+          externalClient := createClientWithHint("external")
+          secret2, _ := externalClient.GetSecret("secrets/public/api-key")
+          fmt.Printf("External secret: %v\n", secret2)
+
+          // Route 3: Admin operations (if admin SVID available)
+          adminClient := createClientWithHint("admin")
+          secret3, _ := adminClient.GetSecret("secrets/admin/root-creds")
+          fmt.Printf("Admin secret: %v\n", secret3)
+      }
+
+      func createClientWithHint(hint string) *SpikeClient {
+          // Create X509Source with custom SVID picker
+          source, _ := workloadapi.NewX509Source(
+              context.Background(),
+              workloadapi.WithDefaultX509SVIDPicker(func(svids []*x509svid.SVID) *x509svid.SVID {
+                  for _, s := range svids {
+                      if s.Hint == hint {
+                          log.Printf("Selected SVID %s for hint %q", s.ID, hint)
+                          return s
+                      }
+                  }
+                  log.Printf("No SVID found for hint %q, using default", hint)
+                  return svids[0]
+              }),
+          )
+
+          return &SpikeClient{source: source}
+      }
+      ```
+
+      SPIRE REGISTRATION (spire-setup.sh):
+      ```bash
+      #!/bin/bash
+
+      # Register workload with THREE different SPIFFE IDs
+      # Same selectors (same workload), different identities
+
+      # Internal identity
+      spire-server entry create \
+        -parentID spiffe://example.org/spire/agent/demo \
+        -spiffeID spiffe://example.org/demo/app/internal \
+        -selector unix:uid:1000 \
+        -hint internal
+
+      # External identity
+      spire-server entry create \
+        -parentID spiffe://example.org/spire/agent/demo \
+        -spiffeID spiffe://example.org/demo/app/external \
+        -selector unix:uid:1000 \
+        -hint external
+
+      # Admin identity (optional - shows privileged operations)
+      spire-server entry create \
+        -parentID spiffe://example.org/spire/agent/demo \
+        -spiffeID spiffe://example.org/demo/app/admin \
+        -selector unix:uid:1000 \
+        -hint admin
+      ```
+
+      SPIKE POLICIES (spike-policies.sh):
+      ```bash
+      #!/bin/bash
+
+      # Policy 1: Internal SVID can read internal secrets
+      spike policy create internal-access \
+        --spiffe-id-pattern "spiffe://example\\.org/demo/app/internal" \
+        --path-pattern "secrets/internal/.*" \
+        --permissions read
+
+      # Policy 2: External SVID can read public secrets
+      spike policy create external-access \
+        --spiffe-id-pattern "spiffe://example\\.org/demo/app/external" \
+        --path-pattern "secrets/public/.*" \
+        --permissions read
+
+      # Policy 3: Admin SVID has full access
+      spike policy create admin-access \
+        --spiffe-id-pattern "spiffe://example\\.org/demo/app/admin" \
+        --path-pattern "secrets/admin/.*" \
+        --permissions read,write,delete
+      ```
+
+      DEMONSTRATION FLOW:
+
+      1. Setup:
+         - Deploy SPIRE, SPIKE, demo workload
+         - Register three SPIFFE IDs with same selectors
+         - Create three SPIKE policies
+
+      2. Run workload:
+         - Workload receives 3 SVIDs from SPIRE
+         - Logs all received SVIDs and hints
+         - Makes three separate connections to SPIKE Nexus:
+           a. With "internal" SVID → reads secrets/internal/db
+           b. With "external" SVID → reads secrets/public/api-key
+           c. With "admin" SVID → reads secrets/admin/root-creds
+
+      3. Observe SPIKE logs:
+         - Show each connection authenticated with different SPIFFE ID
+         - Show policy enforcement based on presented identity
+         - Demonstrate that same workload gets different access levels
+
+      4. Security demonstrations:
+         - Try accessing admin secrets with internal SVID → 403 Forbidden
+         - Try accessing internal secrets with external SVID → 403 Forbidden
+         - Show that policies are enforced per-identity
+
+      README.md SECTIONS:
+
+      1. Overview
+         - What this demo shows
+         - Why multiple SVIDs exist
+         - When to use this pattern
+
+      2. SPIFFE Concepts
+         - X.509-SVID structure
+         - Workload API and multiple identities
+         - Hint field purpose
+         - SVID selection in go-spiffe
+
+      3. SPIKE Trust Model
+         - SPIKE trusts SPIRE for identity issuance
+         - SPIKE enforces policies based on presented SVID
+         - Workload chooses which SVID to present
+         - Separation of concerns (SPIRE vs SPIKE)
+
+      4. Real-World Use Cases
+         - Service mesh internal/external routing
+         - Multi-tenant applications
+         - Privilege separation within single process
+         - Gateway/proxy scenarios
+
+      5. Best Practices
+         - ✅ DO: Use different selectors for different privilege levels
+         - ❌ DON'T: Mix low/high privilege SVIDs on same selectors
+         - ✅ DO: Use hints semantically ("internal", "external")
+         - ✅ DO: Document why workload needs multiple identities
+         - ❌ DON'T: Use multiple SVIDs as a workaround for bad design
+
+      6. Troubleshooting
+         - How to verify SVIDs received by workload
+         - How to check which SVID is being used
+         - Common misconfiguration scenarios
+         - SPIKE policy debugging
+
+      EDUCATIONAL VALUE:
+
+      This demo teaches:
+      - Multiple SVIDs are a feature, not a bug
+      - Hint field usage in practice
+      - go-spiffe WithDefaultX509SVIDPicker
+      - SPIKE/SPIRE trust boundaries
+      - Proper SPIRE selector configuration
+      - Policy design for multi-identity workloads
+
+      BONUS: Video Walkthrough
+      Create a 5-10 minute video showing:
+      1. Setup and configuration
+      2. Running the demo
+      3. Explaining what's happening
+      4. Security model walkthrough
+      5. Common pitfalls
+
+      TESTING:
+      - Verify all three identities work correctly
+      - Test policy enforcement (positive and negative cases)
+      - Verify hint-based selection
+      - Test with missing hints
+      - Test default SVID selection
+
+      RELATED:
+      - Complements documentation issue about multiple SVIDs
+      - Provides hands-on learning
+      - References SPIFFE/SPIRE standards
+      - Shows SPIKE's correct behavior
+    </issue>
+  </examples>
 </stuff>
