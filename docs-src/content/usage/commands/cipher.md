@@ -170,12 +170,62 @@ spike cipher decrypt -f backup.enc | psql mydb
   replacement for access control
 * Use consistent encryption for data that will be decrypted later
 
+## Technical Details
+
+### Cryptographic Algorithm
+
+**SPIKE Cipher** uses **AES-256-GCM** (Galois/Counter Mode) for authenticated
+encryption:
+
+| Property            | Value                                             |
+|---------------------|---------------------------------------------------|
+| Algorithm           | AES-256-GCM                                       |
+| Key Size            | 32 bytes (256 bits)                               |
+| Nonce Size          | 12 bytes (96 bits)                                |
+| Authentication      | Built-in (AEAD)                                   |
+
+**Security Properties:**
+
+* **Confidentiality**: Plaintext is hidden from unauthorized parties
+* **Integrity**: Any tampering or corruption is detected
+* **Authenticity**: Verifies data originated from a valid source
+* **Freshness**: Unique nonce prevents replay attacks
+
+### Stream Mode Binary Format
+
+In stream mode, the encrypted output has the following binary format:
+
+```text
++--------+-------------+------------------+
+| Byte 0 | Bytes 1-12  | Bytes 13 to end  |
++--------+-------------+------------------+
+| 0x01   | Nonce (GCM) | Ciphertext       |
++--------+-------------+------------------+
+```
+
+* **Byte 0**: Version byte (currently `0x01`)
+* **Bytes 1-12**: 12-byte GCM nonce (randomly generated)
+* **Bytes 13+**: The actual ciphertext with authentication tag
+
+### JSON vs Stream Mode
+
+| Aspect           | JSON Mode              | Stream Mode                |
+|------------------|------------------------|----------------------------|
+| Content-Type     | `application/json`     | `application/octet-stream` |
+| Request Format   | JSON object            | Binary bytes               |
+| Response Format  | JSON object            | Binary bytes               |
+| Overhead         | Higher (JSON encoding) | Lower (raw binary)         |
+| Use Case         | Small data, structured | Large data, efficiency     |
+| Nonce Location   | JSON field             | Bytes 1-12 of response     |
+| Version Location | JSON field             | Byte 0 of response         |
+
 ## Security Considerations
 
 * All cipher operations require valid SPIFFE authentication
 * Encryption keys are managed by **SPIKE Nexus** and never exposed to clients
 * The cipher operations use authenticated encryption (AEAD)
 * Memory containing sensitive data is cleared after operations
+* Nonces are randomly generated and must be unique per encryption
 
 ----
 

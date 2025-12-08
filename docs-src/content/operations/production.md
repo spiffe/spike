@@ -413,11 +413,11 @@ keeping out the untrusted binary.
 
 ## How the Root Key Is Protected in SPIKE
 
-In **SPIKE**, the **root key** is essential for encrypting secrets within the 
-central store, **SPIKE Nexus**. To prevent any single entity from having full 
-access to this key, SPIKE uses [Shamir's Secret Sharing][shamir] to divide the 
-root key into multiple shares. These shares are distributed among 
-**SPIKE Keeper**s, ensuring that the root key can only be reconstructed when a 
+In **SPIKE**, the **root key** is essential for encrypting secrets within the
+central store, **SPIKE Nexus**. To prevent any single entity from having full
+access to this key, SPIKE uses [Shamir's Secret Sharing][shamir] to divide the
+root key into multiple shares. These shares are distributed among
+**SPIKE Keeper**s, ensuring that the root key can only be reconstructed when a
 sufficient number of shares are combined.
 
 This approach enhances security by requiring collaboration among multiple
@@ -425,13 +425,69 @@ trusted components to access the root key.
 
 [Shamir's Secret Sharing (SSS)][shamir] is a cryptographic method that divides a
 secret into parts, distributing them among participants. The secret can only be
-reconstructed when a minimum number of parts (the **threshold**) are combined. 
-This ensures that partial knowledge of the secret does not compromise its 
+reconstructed when a minimum number of parts (the **threshold**) are combined.
+This ensures that partial knowledge of the secret does not compromise its
 security.
 
 [shamir]: https://en.wikipedia.org/wiki/Shamir%27s_secret_sharing "Shamir's Secret Sharing"
 
-Let me complete this text for you:
+### Shamir Configuration
+
+Configure the threshold and total shares using environment variables:
+
+```bash
+export SPIKE_SHAMIR_THRESHOLD=3   # Need 3 shards to reconstruct
+export SPIKE_SHAMIR_SHARES=5      # Generate 5 total shards
+```
+
+**Recommended configurations by deployment size:**
+
+| Deployment   | Threshold | Shares | Rationale            |
+|--------------|-----------|--------|----------------------|
+| Dev/Test     | 2         | 3      | Minimal redundancy   |
+| Small Prod   | 3         | 5      | Standard config      |
+| Large Prod   | 5         | 7      | High redundancy      |
+| Critical     | 7         | 10     | Maximum security     |
+
+**Trade-offs to consider:**
+
+* **Higher threshold**: More secure (harder to compromise), but requires more
+  Keepers to be online for recovery
+* **Higher shares**: More redundancy (tolerate more Keeper failures), but
+  requires more Keeper instances
+* **Lower threshold**: Easier recovery (fewer shards needed), but lower security
+* **Lower shares**: Less overhead (fewer Keepers), but less fault tolerance
+
+### Security Guarantees
+
+Shamir Secret Sharing is **information-theoretically secure**. With fewer than
+the threshold number of shards, an attacker gains **zero information** about
+the root key.
+
+| Shards Compromised | Security Impact                   |
+|--------------------|-----------------------------------|
+| < threshold        | Zero information leaked           |
+| = threshold        | Root key can be reconstructed     |
+| > threshold        | Root key can be reconstructed     |
+
+**Mitigation strategies:**
+
+* Distribute shards across isolated Keepers in different locations
+* Use mTLS with SPIFFE ID validation for all Keeper communication
+* Monitor shard access through audit logs
+* Follow the principle of least privilege for Keeper access
+
+### Shard Storage
+
+**SPIKE Keeper storage:**
+* Shards are stored in-memory only (never persisted to disk)
+* Shards are lost on Keeper restart but recovered from SPIKE Nexus
+* Protected by process isolation and mTLS
+
+**Operator storage (break-the-glass recovery):**
+* Recovery shards saved to `~/.spike/recover` directory
+* File permissions are set to `0600` (owner read/write only)
+* Operator is responsible for securely storing and later erasing these files
 
 ## Turn Swap and Core Dumps Off
 

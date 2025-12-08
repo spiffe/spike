@@ -36,6 +36,10 @@
   </high-level-plan>
   <task-group for="v0.6.1" theme="doc update and stabilization">
     <issue>
+      check all documentation (including the ones in ./diagrams) for
+      readability, grammar, logical soundness, and accuracy.
+    </issue>
+    <issue>
       It has been a while; it's about time to make another SPIKE walkthrough.
     </issue>
     <issue>

@@ -33,6 +33,74 @@ components:
 The system provides high availability for secret storage with a manual recovery
 mechanism in case of irrecoverable failure.
 
+Here is an overview of each **SPIKE** component:
+
+### SPIKE Nexus
+
+* **SPIKE Nexus** is the primary component responsible for secrets management.
+* It creates and manages the root encryption key.
+* It handles secret encryption and decryption.
+* It syncs the **root key**'s [**Shamir Shards**][shamir] with **SPIKE
+  Keepers**s. These shards then can be used to recover **SPIKE Nexus**
+  upon a crash.
+* It provides an **RESTful mTLS API** for *secret lifecycle management*,
+  *policy management*, *admin operations*, and *disaster recovery*.
+
+### SPIKE Keeper
+
+* It is designed to be **simple** and **reliable**.
+* It does one thing and does it well.
+* Its **only** goal is to keep a [**Shamir Shard**][shamir] in **memory**.
+* By design, it does not have any knowledge about its peer **SPIKE Keepers**,
+  nor **SPIKE Nexus**. It doesn't require any configuration to be brought up.
+  This makes it simple to operate, replace, scale, replicate.
+* It enables automatic recovery if **SPIKE Nexus** crashes.
+
+Since **SPIKE Keeper** only contains a single shard, its compromise will not
+compromise the system.
+
+The more keepers you have, the more reliable and secure your **SPIKE**
+deployment will be. We recommend `5` **SPIKE Keeper** instances with a
+shard-generation threshold of `3`, for production deployments.
+
+[Check out **SPIKE Production Hardening Guide**][production] for more
+details.
+
+[production]: @/operations/production.md
+
+### SPIKE Pilot
+
+* It is the CLI to the system (*i.e., the `spike` binary that you see
+  in the examples*).
+* It converts CLI commands to **RESTful mTLS API calls** to **SPIKE Nexus**.
+
+**SPIKE Pilot** is the only management entry point to the system.
+Thus, deleting/disabling/removing **SPIKE Pilot** reduces the attack surface
+of the system since admin operations will not be possible without
+**SPIKE Pilot**.
+
+Similarly, revoking the **SPIRE Server** registration of **SPIKE Pilot**'s
+**SVID** (*once SPIKE Pilot is no longer needed*) will effectively block
+administrative access to the system, improving the overall security posture.
+
+### SPIKE Bootstrap
+
+* It is a one-time initialization component that runs during system setup.
+* It generates a cryptographically secure random **root key**.
+* It splits the root key into [**Shamir**][shamir] shards and distributes them
+  to the configured **SPIKE Keeper** instances.
+* It verifies that **SPIKE Nexus** has successfully initialized by performing
+  an end-to-end encryption test.
+
+**SPIKE Bootstrap** is designed to run once per deployment. In Kubernetes
+environments, it uses a `ConfigMap` to track whether bootstrap has completed,
+preventing duplicate initialization. In bare-metal deployments, it runs each
+time unless explicitly skipped.
+
+This separation of concerns keeps **SPIKE Nexus**'s initialization flow simple:
+**SPIKE Nexus** always polls **SPIKE Keeper**s for shards, while **SPIKE
+Bootstrap** handles the initial key generation and distribution.
+
 ## Identity Control Plane
 
 The following diagram shows how [**SVID**s][svid] are assigned to **SPIKE** 
@@ -86,6 +154,18 @@ located in other trust boundaries.
 > This approach is more secure than traditional methods like shared secrets or 
 > network-based security, as each workload gets its own unique, short-lived 
 > identity that can be automatically rotated and revoked if needed.
+
+### Builtin SPIFFE IDs
+
+**SPIKE Nexus** recognizes the following builtin SPIFFE IDS:
+
+* `spiffe://$trustRoot/spike/pilot/role/superuser`: Super Admin
+* `spiffe://$trustRoot/spike/pilot/role/recover`: Recovery Admin
+* `spiffe://$trustRoot/spike/pilot/role/restore`: Restore Admin
+
+You can check out the [**Administrative Access section of SPIKE security
+model](@/architecture/security-model.md#administrative-access) for more
+information about these roles.
 
 [mtls]: https://www.cloudflare.com/learning/access-management/what-is-mutual-tls/ "What is mTLS"
 [svid]: https://spiffe.io/docs/latest/spire-about/spire-concepts/#a-day-in-the-life-of-an-svid "A Day in the Life of an SVID"
@@ -193,50 +273,82 @@ This provides both security and fault tolerance: The system can continue
 operating even if some **SPIKE Keeper**s become temporarily unavailable, as 
 long as the threshold number of shards remains accessible.
 
-## SPIKE Nexus Init Flow
+## SPIKE Bootstrap Flow
 
-The following diagram depicts **SPIKE Nexus** initial bootstrapping flow:
+The following diagram depicts the **SPIKE Bootstrap** flow, where **SPIKE
+Keepers** receive their shards for **SPIKE Nexus** to use. Open the picture on a
+new tab for an enlarged version of it.
+
+{{imglink(
+  href="/assets/docs/spike-bootstrap-flow.jpg"
+  src="/assets/docs/spike-bootstrap-flow.jpg"
+  alt="SPIKE Bootstrap flow."
+)}}
+
+## SPIKE Nexus Initial Bootstrapping
+
+The following diagram depicts **SPIKE Nexus** initial bootstrapping flow.
 
 {{imglink(
   href="/assets/docs/spike-nexus-bootstrapping.jpg"
   src="/assets/docs/spike-nexus-bootstrapping.jpg"
-  alt="Secret Nexus bootstrapping."
+  alt="SPIKE Nexus initialization."
 )}}
 
 When **SPIKE Nexus** is configured to use an **in-memory** backing store, we
-don't need **SPIKE Keeper** because the database is in **SPIKE Nexus**'s memory
+don't need **SPIKE Keeper**s because the database is in **SPIKE Nexus**'s memory
 and there is nothing to recover if **SPIKE Nexus** crashes. This is a convenient
 setup to use for **development** purposes.
 
 When **SPIKE Nexus** is configured to use a persistent backing store (*like
-SQLite*), however, then it will follow two paths.
+SQLite*), it does **not** generate the root key itself. Instead, **SPIKE Nexus**
+always polls **SPIKE Keeper**s to collect enough shards to reconstruct the
+root key. This polling continues indefinitely until the threshold number of
+shards is collected.
 
-* If **SPIKE Nexus** has bootstrapped before, then it has just crashed. Which 
-  means, it has lost its **root key**. So, it will try to recover its 
-  **root key** by requesting **shards** from the **SPIKE Keeper**s.
-* If, otherwise, it's the first time **SPIKE Nexus** is bootstrapping, then
-  we compute a secure **root key**, initialize the backing store with that
-  root key. Split the root key into [**Shamir**][shamir] shards, and send those
-  shards to relevant **SPIKE Keeper** instances.
+The **root key** is generated by a separate component: **SPIKE Bootstrap**.
+When **SPIKE Bootstrap** runs, it generates a secure random root key, splits
+it into [**Shamir**][shamir] shards, and distributes those shards to the
+configured **SPIKE Keeper** instances. This separation of concerns keeps
+**SPIKE Nexus**'s initialization flow simple and predictable.
 
-Regardless of the above flow, there is an ongoing operation (*shown in the
-bottom part of the diagram*) that runs as a separate **goroutine**.
+## SPIKE Nexus Updating SPIKE Keepers
 
-* At regular intervals, if **SPIKE Nexus** happens to have a **root key**, it
-  computes [**Shamir**][shamir] shards out of it and dispatches these shards
-  to the **SPIKE Keeper**s.
+In addition, there is an ongoing operation that runs as a separate **goroutine**
+inside **SPIKE Nexus**:
 
-This flow establishes a secure boot process that handles both initial setup and 
-subsequent startups. The system ensures the **root key** is either properly 
-recovered from existing shards or securely generated and distributed when 
-starting fresh.
+* At regular intervals, if **SPIKE Nexus** has a **root key**, it computes
+  [**Shamir**][shamir] shards and dispatches them to the **SPIKE Keeper**s.
+  This ensures that the shards remain synchronized even if individual
+  **SPIKE Keeper**s restart.
+
+{{imglink(
+href="/assets/docs/spike-nexus-keeper-update.jpg"
+src="/assets/docs/spike-nexus-keeper-update.jpg"
+alt="SPIKE Nexus updating SPIKE Keepers."
+)}}
+
+This flow establishes a secure boot process: **SPIKE Bootstrap** handles the
+initial key generation and distribution, while **SPIKE Nexus** focuses solely
+on recovering the root key from **SPIKE Keeper**s whenever it starts.
+
+The following state diagram illustrates how each of these recovery and 
+restoration steps relate to the existence of the *root key** in memory.
+
+{{imglink(
+href="/assets/docs/root-key-state-diagram.jpg"
+src="/assets/docs/root-key-state-diagram.jpg"
+alt="SPIKE Nexus Root Key state diagram."
+)}}
+
+## SPIKE "break-the-glass" Disaster Recovery
 
 There is one edge case, though: When there is a total system crash, and **SPIKE
 Keeper**s don't have any shards in their memory, then you'll need a manual 
 recovery.
 
 This event is highly unlikely, as deploying a sufficient number of **SPIKE
-Keepers** with proper geographic distribution significantly reduces the
+Keeper**s with proper geographic distribution significantly reduces the
 probability of them all crashing simultaneously. Since **SPIKE Keepers** are
 designed to operate independently and without requiring intercommunication,
 failures caused by systemic issues are minimized. By ensuring redundancy across
@@ -244,9 +356,7 @@ diverse geographic locations, even large-scale outages or localized failures are
 highly improbable to impact all **SPIKE Keepers** at once.
 
 That being said, unexpected failures can occur, and the disaster recovery
-procedure for these situations is described in the next section.
-
-## SPIKE "break-the-glass" Disaster Recovery
+procedure for these situations.
 
 > **Need a Runbook**?
 >
@@ -256,13 +366,25 @@ procedure for these situations is described in the next section.
 > You will need to prepare **beforehand** so that you can recover the root
 > key when the system fails to automatically recover it from **SPIKE Keeper**s.
 
-The following diagram outlines **SPIKE**'s manual disaster recovery procedure.
+The following diagram outlines creating recovery shards for **SPIKE Nexus** 
+before a disaster strikes, while the system is healthy. The operator leverages
+`spike operator recover` command to create the shards. You can open the picture
+on a new tab for an enlarged version of it.
+
+{{imglink(
+  href="/assets/docs/spike-break-the-glass-recover.jpg"
+  src="/assets/docs/spike-break-the-glass-recover.jpg"
+  alt="SPIKE Manual disaster recovery flow."
+)}}
+
+And the following diagram outlines how you can use `spike operator restore`
+command to restore **SPIKE Nexus** back to its working state after a disaster.
 You can open the picture on a new tab for an enlarged version of it.
 
 {{imglink(
-  href="/assets/docs/spike-doomsday-recovery.jpg"
-  src="/assets/docs/spike-doomsday-recovery.jpg"
-  alt="SPIKE Manual disaster recovery flow."
+  href="/assets/docs/spike-break-the-glass-restore.jpg"
+  src="/assets/docs/spike-break-the-glass-restore.jpg"
+  alt="SPIKE Nexus manual restoration flow."
 )}}
 
 ### Preventive Backup 
@@ -291,11 +413,11 @@ When later recovery is needed, the Operator will provide these shards to
 
 ### Disaster Recovery
 
-When disaster strikes (*shown in the red box*):
+When disaster strikes:
 
 * **SPIKE Nexus** and SPIKE Keepers have simultaneously crashed and restarted.
-* **SPIKE Nexus** has **lost** its **root key**
-* **SPIKE Keeper**s don't have enough shards
+* **SPIKE Nexus** has **lost** its **root key**.
+* **SPIKE Keeper**s don't have enough shards.
 * Thus, automatic recovery is impossible and the system requires manual 
   recovery.
 
@@ -314,69 +436,12 @@ Once enough shards are provided, **SPIKE Nexus** reconstructs the **root key**.
 A separate goroutine redistributes shards to **SPIKE Keeper**s and the System 
 returns to normal operation.
 
-## SPIKE Components
+## Want More Pretty Pictures?
 
-Here is an overview of each **SPIKE** component:
+The diagrams above have been simplified for clarity. You can find more detailed
+ones in the [`diagrams` folder of the **SPIKE** GitHub repository][diagrams].
 
-### SPIKE Nexus
-
-* **SPIKE Nexus** is the primary component responsible for secrets management.
-* It creates and manages the root encryption key.
-* It handles secret encryption and decryption.
-* It syncs the **root key**'s [**Shamir Shards**][shamir] with **SPIKE 
-  Keepers**s. These shards then can be used to recover **SPIKE Nexus** 
-  upon a crash.
-* It provides an **RESTful mTLS API** for *secret lifecycle management*, 
-  *policy management*, *admin operations*, and *disaster recovery*.
-
-### SPIKE Keeper
-
-* It is designed to be **simple** and **reliable**.
-* It does one thing and does it well.
-* Its **only** goal is to keep a [**Shamir Shard**][shamir] in **memory**.
-* By design, it does not have any knowledge about its peer **SPIKE Keepers**, 
-  nor **SPIKE Nexus**. It doesn't require any configuration to be brought up.
-  This makes it simple to operate, replace, scale, replicate.
-* It enables automatic recovery if **SPIKE Nexus** crashes.
-
-Since **SPIKE Keeper** only contains a single shard, its compromise will not 
-compromise the system. 
-
-The more keepers you have, the more reliable and secure your **SPIKE**
-deployment will be. We recommend `5` **SPIKE Keeper** instances with a 
-shard-generation threshold of `3`, for production deployments.
-
-[Check out **SPIKE Production Hardening Guide**][production] for more
-details.
-
-[production]: @/operations/production.md
-
-### SPIKE Pilot
-
-* It is the CLI to the system (*i.e., the `spike` binary that you see
-  in the examples*).
-* It converts CLI commands to **RESTful mTLS API calls** to **SPIKE Nexus**.
-
-**SPIKE Pilot** is the only management entry point to the system. 
-Thus, deleting/disabling/removing **SPIKE Pilot** reduces the attack surface
-of the system since admin operations will not be possible without
-**SPIKE Pilot**.
-
-Similarly, revoking the **SPIRE Server** registration of **SPIKE Pilot**'s
-**SVID** (*once SPIKE Pilot is no longer needed*) will effectively block 
-administrative access to the system, improving the overall security posture.
-
-### Builtin SPIFFE IDs
-
-**SPIKE Nexus** recognizes the following builtin SPIFFE IDS:
-
-* `spiffe://$trustRoot/spike/pilot/role/superuser`: Super Admin
-* `spiffe://$trustRoot/spike/pilot/role/recover`: Recovery Admin
-* `spiffe://$trustRoot/spike/pilot/role/restore`: Restore Admin
-
-You can check out the [**Administrative Access section of SPIKE security
-model](@/architecture/security-model.md#administrative-access) for more
-information about these roles.
+diagrams: https://github.com/spiffe/spike/tree/main/diagrams "SPIKE Diagrams"
 
 <p>&nbsp;</p>
 
