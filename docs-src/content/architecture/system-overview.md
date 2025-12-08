@@ -250,7 +250,7 @@ procedure for these situations is described in the next section.
 
 > **Need a Runbook**?
 >
-> The [**SPIKE Recovery Procedures**](/@/operations/recovery.md) page contains
+> The [**SPIKE Recovery Procedures**](@/operations/recovery.md) page contains
 > step-by-step instructions to follow during, before, and a disaster occurs.
 >
 > You will need to prepare **beforehand** so that you can recover the root
@@ -349,7 +349,7 @@ shard-generation threshold of `3`, for production deployments.
 [Check out **SPIKE Production Hardening Guide**][production] for more
 details.
 
-[production]: /@/operations/production.md
+[production]: @/operations/production.md
 
 ### SPIKE Pilot
 
