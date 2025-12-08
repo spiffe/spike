@@ -249,6 +249,13 @@ You can run this to start all the required components:
 make start
 ```
 
+> **`make start` Is Also a Mini Smoke Test**
+> 
+> The `make start` script also runs sample secret and policy operations to 
+> ensure everything is working as expected. So, although it is not strictly
+> necessary, you are encourage to run it once before starting development
+> to ensure everything is working as expected.
+
 And then, on a separate terminal, you can run `spike`:
 
 ```bash
@@ -274,6 +281,21 @@ spike
 # 
 # Use "spike [command] --help" for help.
 ```
+
+> **Killing the `make start` Process** Will Exit Cleanly
+> 
+> When you stop the `make start` script by `CTRLT+C`, it will exit cleanly;
+> during this process, it will also kill all the running **SPIKE** and **SPIKE**
+> components.
+> 
+> However, in certain cases, especially if the script has not run successfully
+> to the end, it might leave some processes running in the background.
+> 
+> In such cases, you can kill the processes manually by running:
+> 
+> ```bash
+> make kill
+> ```
 
 Although the `make start` script is convenient, it might be useful to run the
 components individually to understand the process better and debug any issues

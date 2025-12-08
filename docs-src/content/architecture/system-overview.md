@@ -8,15 +8,6 @@ weight = 1
 sort_by = "weight"
 +++
 
-> **⚠️ This Page Needs Work**
->
-> With the recent introduction of **SPIKE Bootstrap**, some of the workflows
-> mentioned in the page has slightly changed. Although the architecture and
-> the trust model remain the same, the content of this page needs to be
-> updated.
->
-> This notice will be removed once the page is updated.
-
 # SPIKE System Overview
 
 This document provides an overview of **SPIKE**, a [**SPIFFE**][spiffe]-native 
@@ -141,7 +132,7 @@ breach the system, as a single shard is insufficient to reconstruct the
 root key.
 
 The system's security can be tuned by configuring both the total number of 
-**SPIKE Keepers** and the **threshold **of required shards needed to reconstruct 
+**SPIKE Keepers** and the **threshold** of required shards needed to reconstruct 
 the root key. 
 
 During system bootstrapping, **SPIKE Nexus** distributes these shards to the 

@@ -64,11 +64,11 @@ fi
 # processes. If you are using the current user to use SPIKE only, then you
 # can run this command without sudo.
 if [ "$1" == "--use-sudo" ]; then
-  sudo "$AGENT_PATH" run \
+  exec sudo "$AGENT_PATH" run \
     -config ./config/bare-metal/agent/agent.conf \
     -joinToken "$JOIN_TOKEN"
 else
-  "$AGENT_PATH" run \
+  exec "$AGENT_PATH" run \
     -config ./config/bare-metal/agent/agent.conf \
     -joinToken "$JOIN_TOKEN"
 fi

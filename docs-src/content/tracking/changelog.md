@@ -12,7 +12,8 @@ sort_by = "weight"
 
 ## Recent
 
-TBD
+* Update documentation to reflect the new SPIKE architecture.
+* Fix occasional dangling process issues when `make start` does not exit cleanly.
 
 ## [0.8.0] - 2025-11-28
 

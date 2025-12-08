@@ -172,6 +172,17 @@ it is what we recommend.
 
 ## Deploying SPIRE and SPIKE to the Local Cluster
 
+<!-- TODO: remove these instructions after upstream is fixed -->
+> **⚠️ Changes Due to Current Upstream Helm Charts Work**
+>
+> There are some changes to the upstream **SPIFFE Helm Charts** that are
+> currently in progress. Until they are merged, you will need to use a
+> feature branch of the upstream repo.
+> 
+> Before you proceed, please follow the instructions at 
+> [the Quickstart Guide](@/getting-started/quickstart.md) to clone your local
+> `helm-charts-hardened` repo at the `spike-next` branch first.
+
 Once we push the container images to the registry, we can now deploy **SPIRE**
 and **SPIKE**.
 
