@@ -36,6 +36,12 @@
   </high-level-plan>
   <task-group for="v0.6.1" theme="doc update and stabilization">
     <issue>
+      shall we encrypt secret metadata too
+      does hashi encrpyt secret metada
+      what about the secret paths, versions, and other unencrypted fields.
+      how does hashi kv stores them. needs investigation.
+    </issue>
+    <issue>
       change the image on the landing page; the CLI commands etc has changed
       and the image does not reflect the recent cli.
     </issue>
