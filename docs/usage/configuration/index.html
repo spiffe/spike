@@ -188,6 +188,10 @@
                 </li>
 
                 <li >
+                    <a href="https://spike.ist/development/sdk-integration/">SDK Integration Guide</a>
+                </li>
+
+                <li >
                     <a href="https://spike.ist/development/api-docs/">API Documentation</a>
                 </li>
 
@@ -787,7 +791,7 @@ configure the SPIKE components:</p>
 <tr><td>SPIKE Keeper</td><td><code>SPIKE_KEEPER_TLS_PORT</code></td><td>The TLS port the current SPIKE Keeper instance listens on.</td><td><code>":8443"</code></td></tr>
 <tr><td>SPIKE Nexus</td><td><code>SPIKE_NEXUS_BACKEND_STORE</code></td><td>The backend store SPIKE Nexus uses to store secrets (memory, lite, sqlite).</td><td><code>"sqlite"</code></td></tr>
 <tr><td>SPIKE Nexus</td><td><code>SPIKE_NEXUS_CRYPTO_MAX_CIPHERTEXT_SIZE</code></td><td>The maximum allowed ciphertext size in bytes for encryption operations.</td><td><code>65536</code></td></tr>
-<tr><td>SPIKE Nexus</td><td><code>SPIKE_NEXUS_DATA_DIR</code></td><td>Custom directory for Nexus data storage. Falls back to <code>~/.spike/data</code> or <code>/tmp/.spike-$USER/data</code>.</td><td><code>""</code></td></tr>
+<tr><td>SPIKE Nexus</td><td><code>SPIKE_NEXUS_DATA_DIR</code></td><td>Custom directory for Nexus data storage. Falls back to <code>~/.spike/data</code> or <code>/tmp/.spike-$USER/data</code>.</td><td><code>~/.spike/data</code></td></tr>
 <tr><td>SPIKE Nexus</td><td><code>SPIKE_NEXUS_DB_BUSY_TIMEOUT_MS</code></td><td>The timeout for the database to wait for a lock.</td><td><code>1000</code></td></tr>
 <tr><td>SPIKE Nexus</td><td><code>SPIKE_NEXUS_DB_CONN_MAX_LIFETIME</code></td><td>The maximum lifetime of a database connection.</td><td><code>"1h"</code></td></tr>
 <tr><td>SPIKE Nexus</td><td><code>SPIKE_NEXUS_DB_INITIALIZATION_TIMEOUT</code></td><td>The maximum initialization time for SPIKE Nexus DB before bailing out</td><td><code>30s</code></td></tr>

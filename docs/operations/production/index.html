@@ -185,6 +185,10 @@
                 </li>
 
                 <li >
+                    <a href="https://spike.ist/development/sdk-integration/">SDK Integration Guide</a>
+                </li>
+
+                <li >
                     <a href="https://spike.ist/development/api-docs/">API Documentation</a>
                 </li>
 
@@ -865,7 +869,7 @@ outgoing traffic to the bare minimum that you need.</p>
 <p>You may want the <code>spike</code> commands themselves not appear in history at all.</p>
 <h3 id="keep-a-frequent-upgrade-cadence">Keep a Frequent Upgrade Cadence</h3>
 <p><strong>SPIKE</strong> is actively developed, hardened, and patched against vulnerabilities.
-You should upgrade <strong>SPIKE</strong> often to incorporate security fixes and any
+You should upgrade <strong>SPIKE</strong> frequently to incorporate security fixes and any
 changes in default settings such as key lengths or cipher suites.</p>
 <h3 id="restrict-backing-store-access">Restrict Backing Store Access</h3>
 <p><strong>SPIKE</strong> encrypts data at rest, regardless of the kind of backing store it
@@ -1136,7 +1140,56 @@ secret into parts, distributing them among participants. The secret can only be
 reconstructed when a minimum number of parts (the <strong>threshold</strong>) are combined.
 This ensures that partial knowledge of the secret does not compromise its
 security.</p>
-<p>Let me complete this text for you:</p>
+<h3 id="shamir-configuration">Shamir Configuration</h3>
+<p>Configure the threshold and total shares using environment variables:</p>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#b48ead;">export </span><span style="color:#bf616a;">SPIKE_SHAMIR_THRESHOLD</span><span>=</span><span style="color:#a3be8c;">3   </span><span style="color:#65737e;"># Need 3 shards to reconstruct
+</span><span style="color:#b48ead;">export </span><span style="color:#bf616a;">SPIKE_SHAMIR_SHARES</span><span>=</span><span style="color:#a3be8c;">5      </span><span style="color:#65737e;"># Generate 5 total shards
+</span></code></pre>
+<p><strong>Recommended configurations by deployment size:</strong></p>
+<table><thead><tr><th>Deployment</th><th>Threshold</th><th>Shares</th><th>Rationale</th></tr></thead><tbody>
+<tr><td>Dev/Test</td><td>2</td><td>3</td><td>Minimal redundancy</td></tr>
+<tr><td>Small Prod</td><td>3</td><td>5</td><td>Standard config</td></tr>
+<tr><td>Large Prod</td><td>5</td><td>7</td><td>High redundancy</td></tr>
+<tr><td>Critical</td><td>7</td><td>10</td><td>Maximum security</td></tr>
+</tbody></table>
+<p><strong>Trade-offs to consider:</strong></p>
+<ul>
+<li><strong>Higher threshold</strong>: More secure (harder to compromise), but requires more
+Keepers to be online for recovery</li>
+<li><strong>Higher shares</strong>: More redundancy (tolerate more Keeper failures), but
+requires more Keeper instances</li>
+<li><strong>Lower threshold</strong>: Easier recovery (fewer shards needed), but lower security</li>
+<li><strong>Lower shares</strong>: Less overhead (fewer Keepers), but less fault tolerance</li>
+</ul>
+<h3 id="security-guarantees">Security Guarantees</h3>
+<p>Shamir Secret Sharing is <strong>information-theoretically secure</strong>. With fewer than
+the threshold number of shards, an attacker gains <strong>zero information</strong> about
+the root key.</p>
+<table><thead><tr><th>Shards Compromised</th><th>Security Impact</th></tr></thead><tbody>
+<tr><td>&lt; threshold</td><td>Zero information leaked</td></tr>
+<tr><td>= threshold</td><td>Root key can be reconstructed</td></tr>
+<tr><td>&gt; threshold</td><td>Root key can be reconstructed</td></tr>
+</tbody></table>
+<p><strong>Mitigation strategies:</strong></p>
+<ul>
+<li>Distribute shards across isolated Keepers in different locations</li>
+<li>Use mTLS with SPIFFE ID validation for all Keeper communication</li>
+<li>Monitor shard access through audit logs</li>
+<li>Follow the principle of least privilege for Keeper access</li>
+</ul>
+<h3 id="shard-storage">Shard Storage</h3>
+<p><strong>SPIKE Keeper storage:</strong></p>
+<ul>
+<li>Shards are stored in-memory only (never persisted to disk)</li>
+<li>Shards are lost on Keeper restart but recovered from SPIKE Nexus</li>
+<li>Protected by process isolation and mTLS</li>
+</ul>
+<p><strong>Operator storage (break-the-glass recovery):</strong></p>
+<ul>
+<li>Recovery shards saved to <code>~/.spike/recover</code> directory</li>
+<li>File permissions are set to <code>0600</code> (owner read/write-only)</li>
+<li>Operator is responsible for securely storing and later erasing these files</li>
+</ul>
 <h2 id="turn-swap-and-core-dumps-off">Turn Swap and Core Dumps Off</h2>
 <p>Both <strong>SPIKE Nexus</strong> and <strong>SPIKE Keeper</strong> maintain sensitive cryptographic
 material of varying degrees of sensitivity in memory.</p>

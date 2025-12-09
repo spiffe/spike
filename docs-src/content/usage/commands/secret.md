@@ -208,9 +208,9 @@ value.
 
 #### Flags:
 
-| Flag              | Description                                                     |
-|-------------------|-----------------------------------------------------------------|
-| `--version`, `-v` | Specific version to retrieve (default: 0, the current version)  |
+| Flag              | Description                                                              |
+|-------------------|--------------------------------------------------------------------------|
+| `--version`, `-v` | Specific version to retrieve (default: 0, the current version)           |
 | `--format`, `-f`  | Output format: `plain`, `p`, `yaml`, `y`, `json`, `j` (default: `plain`) |
 
 #### Examples:

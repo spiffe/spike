@@ -253,7 +253,7 @@ make start
 > 
 > The `make start` script also runs sample secret and policy operations to 
 > ensure everything is working as expected. So, although it is not strictly
-> necessary, you are encourage to run it once before starting development
+> necessary, you are encouraged to run it once before starting development
 > to ensure everything is working as expected.
 
 And then, on a separate terminal, you can run `spike`:
@@ -370,7 +370,7 @@ cd $WORKSPACE/spike
 ./hack/bare-metal/startup/start-keeper-3.sh
 ```
 
-Here is how one of these **SPIKE Keeper** startup scripts looks like:
+Here is how one of these **SPIKE Keeper** startup scripts:
 
 ```bash
 # ./hack/bare-metal/startup/start-keeper-1.sh
@@ -378,7 +378,7 @@ SPIKE_KEEPER_TLS_PORT=':8443' \
 ./keeper
 ````
 
-And here is how **SPIKE Nexus** startup script looks like:
+And here is how **SPIKE Nexus** startup script:
 
 ```bash
 # ./hack/bare-metal/startup/start-nexus.sh

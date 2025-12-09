@@ -185,6 +185,10 @@
                 </li>
 
                 <li >
+                    <a href="https://spike.ist/development/sdk-integration/">SDK Integration Guide</a>
+                </li>
+
+                <li >
                     <a href="https://spike.ist/development/api-docs/">API Documentation</a>
                 </li>
 
@@ -871,12 +875,53 @@ base64-encoded encryption components and returns plaintext output.</p>
 replacement for access control</li>
 <li>Use consistent encryption for data that will be decrypted later</li>
 </ul>
+<h2 id="technical-details">Technical Details</h2>
+<h3 id="cryptographic-algorithm">Cryptographic Algorithm</h3>
+<p><strong>SPIKE Cipher</strong> uses <strong>AES-256-GCM</strong> (Galois/Counter Mode) for authenticated
+encryption:</p>
+<table><thead><tr><th>Property</th><th>Value</th></tr></thead><tbody>
+<tr><td>Algorithm</td><td>AES-256-GCM</td></tr>
+<tr><td>Key Size</td><td>32 bytes (256 bits)</td></tr>
+<tr><td>Nonce Size</td><td>12 bytes (96 bits)</td></tr>
+<tr><td>Authentication</td><td>Built-in (AEAD)</td></tr>
+</tbody></table>
+<p><strong>Security Properties:</strong></p>
+<ul>
+<li><strong>Confidentiality</strong>: Plaintext is hidden from unauthorized parties</li>
+<li><strong>Integrity</strong>: Any tampering or corruption is detected</li>
+<li><strong>Authenticity</strong>: Verifies data originated from a valid source</li>
+<li><strong>Freshness</strong>: Unique nonce prevents replay attacks</li>
+</ul>
+<h3 id="stream-mode-binary-format">Stream Mode Binary Format</h3>
+<p>In stream mode, the encrypted output has the following binary format:</p>
+<pre data-lang="text" style="background-color:#2b303b;color:#c0c5ce;" class="language-text "><code class="language-text" data-lang="text"><span>+--------+-------------+------------------+
+</span><span>| Byte 0 | Bytes 1-12  | Bytes 13 to end  |
+</span><span>+--------+-------------+------------------+
+</span><span>| 0x01   | Nonce (GCM) | Ciphertext       |
+</span><span>+--------+-------------+------------------+
+</span></code></pre>
+<ul>
+<li><strong>Byte 0</strong>: Version byte (currently <code>0x01</code>)</li>
+<li><strong>Bytes 1-12</strong>: 12-byte GCM nonce (randomly generated)</li>
+<li><strong>Bytes 13+</strong>: The actual ciphertext with authentication tag</li>
+</ul>
+<h3 id="json-vs-stream-mode">JSON vs Stream Mode</h3>
+<table><thead><tr><th>Aspect</th><th>JSON Mode</th><th>Stream Mode</th></tr></thead><tbody>
+<tr><td>Content-Type</td><td><code>application/json</code></td><td><code>application/octet-stream</code></td></tr>
+<tr><td>Request Format</td><td>JSON object</td><td>Binary bytes</td></tr>
+<tr><td>Response Format</td><td>JSON object</td><td>Binary bytes</td></tr>
+<tr><td>Overhead</td><td>Higher (JSON encoding)</td><td>Lower (raw binary)</td></tr>
+<tr><td>Use Case</td><td>Small data, structured</td><td>Large data, efficiency</td></tr>
+<tr><td>Nonce Location</td><td>JSON field</td><td>Bytes 1-12 of response</td></tr>
+<tr><td>Version Location</td><td>JSON field</td><td>Byte 0 of response</td></tr>
+</tbody></table>
 <h2 id="security-considerations">Security Considerations</h2>
 <ul>
 <li>All cipher operations require valid SPIFFE authentication</li>
 <li>Encryption keys are managed by <strong>SPIKE Nexus</strong> and never exposed to clients</li>
 <li>The cipher operations use authenticated encryption (AEAD)</li>
 <li>Memory containing sensitive data is cleared after operations</li>
+<li>Nonces are randomly generated and must be unique per encryption</li>
 </ul>
 <hr />
 <h2 id="spike-command-index"><code>spike</code> Command Index</h2>

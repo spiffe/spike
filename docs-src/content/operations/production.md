@@ -118,7 +118,7 @@ You may want the `spike` commands themselves not appear in history at all.
 ### Keep a Frequent Upgrade Cadence
 
 **SPIKE** is actively developed, hardened, and patched against vulnerabilities.
-You should upgrade **SPIKE** often to incorporate security fixes and any 
+You should upgrade **SPIKE** frequently to incorporate security fixes and any 
 changes in default settings such as key lengths or cipher suites. 
 
 ### Restrict Backing Store Access
@@ -486,7 +486,7 @@ the root key.
 
 **Operator storage (break-the-glass recovery):**
 * Recovery shards saved to `~/.spike/recover` directory
-* File permissions are set to `0600` (owner read/write only)
+* File permissions are set to `0600` (owner read/write-only)
 * Operator is responsible for securely storing and later erasing these files
 
 ## Turn Swap and Core Dumps Off

@@ -163,7 +163,7 @@ export SPIKE_NEXUS_URL=https://localhost:8553
 
 ### Pattern 1: Initialization Secret Fetch
 
-Fetch all required secrets at application startup:
+Fetch all required secrets at the application startup:
 
 ```go
 func main() {
@@ -261,7 +261,7 @@ oldVersion, _ := api.GetSecretWithOptions("path", opts)
 
 ### Common Errors and Solutions
 
-**Workload not registered in SPIRE:**
+**Workload is not registered in SPIRE:**
 ```
 Error: Failed to acquire SVID: no registration entry found
 ```

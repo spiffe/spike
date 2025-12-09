@@ -231,7 +231,7 @@ Root key rotation is **not currently supported**. This is because:
 
 * All secrets and policies would need to be re-encrypted
 * Keeper shards must be regenerated and redistributed
-* The migration process carries risk of data loss
+* The migration process carries a risk of data loss
 
 This is a known limitation and may be addressed in future versions.
 
@@ -243,13 +243,13 @@ by an administrator (*using the `spike policy` command*). These policies
 specify what a workload is allowed to do with the secrets managed by 
 **SPIKE Nexus**.
 
-* **Default Deny:** By default, access to **SPIKE Nexus** is prohibited. Only
+* **Default Deny**: By default, access to **SPIKE Nexus** is prohibited. Only
   super administrators have full access by default.
-* **Policy Enforcement:** Workloads require a valid, explicitly defined policy
+* **Policy Enforcement**: Workloads require a valid, explicitly defined policy
   to perform any lifecycle operation on paths that contain secrets.
-* **Controlled Operations:** The access policies strictly govern operations such 
+* **Controlled Operations**: The access policies strictly govern operations such 
   as creating, deleting, or modifying secrets.
-* **Access Scoping:** Policies can define the scope and level of access (*e.g.,
+* **Access Scoping**: Policies can define the scope and level of access (*e.g.,
   read-only or full access*) on specific secret paths for each workload.
 
 This ensures that workloads only access or modify the secrets they are

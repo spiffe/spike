@@ -141,7 +141,7 @@ The dashed boxes represent distinct security and deployment boundaries.
 **SPIRE** provides identity management capabilities that span across these 
 trust boundaries. This architecture allows administrative operations to be 
 performed on a hardened, secured **SPIRE Server** instance (*shown in the top 
-yellow box*), while restricting direct access to sensitive operations 
+yellow box*). This restricts direct access to sensitive operations 
 (*like creating SPIRE Server registration entries*) from users and applications 
 located in other trust boundaries.
 
@@ -208,7 +208,7 @@ At the bottom of the diagram, multiple **SPIKE Keeper**s connect to
 **SPIKE Nexus** maintains in memory. 
 
 This design ensures that compromising any individual **SPIKE Keeper** cannot 
-breach the system, as a single shard is insufficient to reconstruct the 
+breach the system, as a single shard is not enough to reconstruct the 
 root key.
 
 The system's security can be tuned by configuring both the total number of 
@@ -441,7 +441,7 @@ returns to normal operation.
 The diagrams above have been simplified for clarity. You can find more detailed
 ones in the [`diagrams` folder of the **SPIKE** GitHub repository][diagrams].
 
-diagrams: https://github.com/spiffe/spike/tree/main/diagrams "SPIKE Diagrams"
+[diagrams]: https://github.com/spiffe/spike/tree/main/diagrams "SPIKE Diagrams"
 
 <p>&nbsp;</p>
 

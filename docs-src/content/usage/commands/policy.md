@@ -511,7 +511,7 @@ Only SPIKE Pilot or workloads with write access to spike/system/acl
 can manage policies
 ```
 
-**Path starts with slash:**
+**Path starts with a slash:**
 ```
 Error: Invalid path pattern: "/secrets/app/.*"
 Paths are namespaces, remove leading slash: "secrets/app/.*"
