@@ -46,6 +46,9 @@
       start.sh should test recovery and restore
       start.sh should test encryption and decryption
     </issue>
+    <issue>
+      Go through GitHub issues and close the completed ones.
+    </issue>
   </task-group>
   <task-group for="v0.8.2">
     <issue>
@@ -58,38 +61,19 @@
       helper functions. The same marshal-and-print pattern is duplicated
       multiple times for different format types.
     </issue>
-  </task-group>
-  <task-group for="v0.6.1" theme="doc update and stabilization">
-
-
-
-    <issue>
-      format inconsistencies.
-
-      for policies we have json and human
-      for secrets we have
-      if !slices.Contains([]string{"plain",
-      "yaml", "json", "y", "p", "j"}, format) {
-
-      and not all operations honor the format parameter anyway.
-
-      anything that provides an output (except for error messages) should
-      honor the format parameter
-      human->human-friendly (human, h :: alias: plain, p)
-      json->valid json (json, j)
-      yaml->valid yaml (yaml, y)
-    </issue>
-    <issue>
-      this is from sdk; it should come from env config
-      ReadHeaderTimeout: 10 * time.Second,
-
-    </issue>
     <issue>
       func VerifyShamirReconstruction(secret group.Scalar, shares []shamir.Share) {
       this is generic enough to go to the sdk.
+
+      Check if there are other similar reusable functions that can go.
     </issue>
     <issue>
-      let AI write some tests to all the things.
+      validPermsList := "read, write, list, super"
+      SDK should define these instead.
+    </issue>
+    <issue>
+      these can be made generic and added to the SDK:
+      app/nexus/internal/state/base/validation.go
     </issue>
     <issue priority="medium" category="testing">
       CLI Command Testing Guidance
@@ -102,37 +86,37 @@
       The following helper functions can be tested directly without mocking:
 
       1. Policy Commands (app/spike/internal/cmd/policy/):
-         - filter.go: validUUID() - UUID validation
-         - fotmat.go: formatPoliciesOutput(), formatPolicy() - output formatting
-         - validation.go: validatePolicySpec() - policy spec validation
-         - create.go: readPolicyFromFile(), getPolicyFromFlags() - input parsing
+      - filter.go: validUUID() - UUID validation
+      - fotmat.go: formatPoliciesOutput(), formatPolicy() - output formatting
+      - validation.go: validatePolicySpec() - policy spec validation
+      - create.go: readPolicyFromFile(), getPolicyFromFlags() - input parsing
 
       2. Secret Commands (app/spike/internal/cmd/secret/):
-         - validation.go: validSecretPath() - path validation
-         - print.go: formatTime(), printSecretResponse() - output formatting
+      - validation.go: validSecretPath() - path validation
+      - print.go: formatTime(), printSecretResponse() - output formatting
 
       3. Cipher Commands (app/spike/internal/cmd/cipher/):
-         - io.go: openInput(), openOutput() - file I/O handling
+      - io.go: openInput(), openOutput() - file I/O handling
 
       Example test pattern for pure functions:
       ```go
       func TestValidUUID(t *testing.T) {
-          tests := []struct {
-              name     string
-              uuid     string
-              expected bool
-          }{
-              {"valid UUID", "123e4567-e89b-12d3-a456-426614174000", true},
-              {"invalid", "not-a-uuid", false},
-          }
-          for _, tt := range tests {
-              t.Run(tt.name, func(t *testing.T) {
-                  if validUUID(tt.uuid) != tt.expected {
-                      t.Errorf("validUUID(%q) = %v, want %v",
-                          tt.uuid, !tt.expected, tt.expected)
-                  }
-              })
-          }
+      tests := []struct {
+      name     string
+      uuid     string
+      expected bool
+      }{
+      {"valid UUID", "123e4567-e89b-12d3-a456-426614174000", true},
+      {"invalid", "not-a-uuid", false},
+      }
+      for _, tt := range tests {
+      t.Run(tt.name, func(t *testing.T) {
+      if validUUID(tt.uuid) != tt.expected {
+      t.Errorf("validUUID(%q) = %v, want %v",
+      tt.uuid, !tt.expected, tt.expected)
+      }
+      })
+      }
       }
       ```
 
@@ -143,29 +127,29 @@
 
       ```go
       func TestSecretGetCommand_Success(t *testing.T) {
-          // Create mock server
-          server := httptest.NewTLSServer(http.HandlerFunc(
-              func(w http.ResponseWriter, r *http.Request) {
-                  // Verify request
-                  if r.URL.Path != "/v1/store/secret" {
-                      t.Errorf("unexpected path: %s", r.URL.Path)
-                  }
+      // Create mock server
+      server := httptest.NewTLSServer(http.HandlerFunc(
+      func(w http.ResponseWriter, r *http.Request) {
+      // Verify request
+      if r.URL.Path != "/v1/store/secret" {
+      t.Errorf("unexpected path: %s", r.URL.Path)
+      }
 
-                  // Return mock response
-                  resp := reqres.SecretReadResponse{
-                      Data: map[string]string{"key": "value"},
-                  }
-                  json.NewEncoder(w).Encode(resp)
-              },
-          ))
-          defer server.Close()
+      // Return mock response
+      resp := reqres.SecretReadResponse{
+      Data: map[string]string{"key": "value"},
+      }
+      json.NewEncoder(w).Encode(resp)
+      },
+      ))
+      defer server.Close()
 
-          // Configure SDK to use mock server URL
-          // (requires setting SPIKE_NEXUS_API_URL env var or similar)
-          t.Setenv("SPIKE_NEXUS_API_URL", server.URL)
+      // Configure SDK to use mock server URL
+      // (requires setting SPIKE_NEXUS_API_URL env var or similar)
+      t.Setenv("SPIKE_NEXUS_API_URL", server.URL)
 
-          // Execute command and verify output
-          // ...
+      // Execute command and verify output
+      // ...
       }
       ```
 
@@ -189,29 +173,29 @@
       // +build integration
 
       func TestPolicyCreateIntegration(t *testing.T) {
-          if os.Getenv("SPIKE_INTEGRATION_TEST") == "" {
-              t.Skip("Skipping integration test")
-          }
+      if os.Getenv("SPIKE_INTEGRATION_TEST") == "" {
+      t.Skip("Skipping integration test")
+      }
 
-          // Use actual spike CLI binary or SDK
-          api, err := spike.New()
-          if err != nil {
-              t.Fatalf("Failed to create API client: %v", err)
-          }
-          defer api.Close()
+      // Use actual spike CLI binary or SDK
+      api, err := spike.New()
+      if err != nil {
+      t.Fatalf("Failed to create API client: %v", err)
+      }
+      defer api.Close()
 
-          // Create policy
-          err = api.CreatePolicy(data.PolicySpec{
-              Name: "test-policy",
-              // ...
-          })
-          if err != nil {
-              t.Fatalf("CreatePolicy failed: %v", err)
-          }
+      // Create policy
+      err = api.CreatePolicy(data.PolicySpec{
+      Name: "test-policy",
+      // ...
+      })
+      if err != nil {
+      t.Fatalf("CreatePolicy failed: %v", err)
+      }
 
-          // Verify policy exists
-          policies, _ := api.ListPolicies("", "")
-          // Assert...
+      // Verify policy exists
+      policies, _ := api.ListPolicies("", "")
+      // Assert...
       }
       ```
 
@@ -231,17 +215,17 @@
 
       ```go
       func TestAuthenticateForPilot_InvalidID(t *testing.T) {
-          // Enable panic mode for FatalErr
-          t.Setenv("SPIKE_STACK_TRACES_ON_LOG_FATAL", "true")
+      // Enable panic mode for FatalErr
+      t.Setenv("SPIKE_STACK_TRACES_ON_LOG_FATAL", "true")
 
-          defer func() {
-              if r := recover(); r == nil {
-                  t.Error("Expected panic for invalid ID")
-              }
-          }()
+      defer func() {
+      if r := recover(); r == nil {
+      t.Error("Expected panic for invalid ID")
+      }
+      }()
 
-          AuthenticateForPilot("invalid-spiffe-id")
-          t.Error("Should have panicked")
+      AuthenticateForPilot("invalid-spiffe-id")
+      t.Error("Should have panicked")
       }
       ```
 
@@ -257,16 +241,6 @@
       - cipher commands: ~18%
 
       Target: 60%+ coverage for command packages through unit + mock tests.
-    </issue>
-    <issue>
-      // PermissionExecute grants the ability to execute specified resources.
-      // One such resource is encryption and decryption operations that
-      // don't necessarily persist anything but execute an internal command.
-      const PermissionExecute PolicyPermission = "execute"
-
-      ^ are we using this permission in policies properly?
-      ^ is it documented properly?
-      ^ are other permissions and where they apply documented?
     </issue>
     <issue>
       env using log causes circular dependencies which we fixed by copying
@@ -289,44 +263,15 @@
       )
       }
     </issue>
-    <issue>
-      SDK should return its unique error instance instead of wrapping errors:
+  </task-group>
+  <task-group for="v0.6.1" theme="doc update and stabilization">
 
-      the SDK should return:
-      type SDKError struct {
-      Code    ErrorCode  // e.g., "ERR_NOT_READY"
-      Message string
-      Wrapped error
-      }
 
-      func (e *SDKError) Is(target error) bool {
-      if t, ok := target.(*SDKError); ok {
-      return e.Code == t.Code
-      }
-      return false
-      }
 
-      Then you could:
-      if errors.Is(err, &sdk.Error{Code: sdk.ErrNotReady}) {
 
-    </issue>
-    <issue>
-      func FailIfError[T any](
-      and its sisters can go the the SDK.
-    </issue>
-    <issue>
-      validPermsList := "read, write, list, super"
-      SDK should define these instead.
-    </issue>
-    <issue>
-      if err != nil || v < 0 || v > 255 {
-      ^ version check in spike/internal/cmd/cipher/decrypt.go
-      currently we support only a single version `1`.
-    </issue>
-    <issue>
-      these can be made generic and added to the SDK:
-      app/nexus/internal/state/base/validation.go
-    </issue>
+
+
+
     <issue>
       // It's unlikely to have 1000 SPIKE Keepers across the board.
       // The indexes start from 1 and increase one-by-one by design.
