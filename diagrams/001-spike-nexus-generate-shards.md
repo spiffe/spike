@@ -31,7 +31,7 @@ sequenceDiagram
     RootKey-->>Nexus: [32]byte root key
 
     Nexus->>Shamir: computeShares(rootKey)
-    Note right of Shamir: threshold t = ShamirThreshold - 1<br/>total shares n = ShamirShares<br/>Example: t=2, n=5<br/>(need 3 of 5 shards)
+    Note right of Shamir: threshold t = ShamirThreshold - 1<br/>total shares n = ShamirShares<br/>Example: t=1, n=3<br/>(need 2 of 3 shards)
 
     Shamir->>Shamir: Generate deterministic shards
     Note right of Shamir: Uses P256 elliptic curve<br/>Deterministic from root key

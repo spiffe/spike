@@ -23,30 +23,16 @@
     <issue order="3">Secure Secrets Management Web UX</issue>
     <issue order="4">Zero Turtle Pi Grid</issue>
     <watch-list>
-      * Outstanding PRs on SDK and SPIKE.
-      * cipher encrypt decrypt: https://github.com/spiffe/spike/pull/212
-      * encrypt policy info: https://github.com/spiffe/spike/pull/223
-      * ConfigMap: https://github.com/spiffe/spike/pull/228
-      * status: https://github.com/spiffe/spike/pull/222
-      * cipher validation to start.sh: https://github.com/spiffe/spike/issues/242
-      --
-      * key rotation: https://github.com/spiffe/spike/issues/229
-      * secure UI: https://github.com/spiffe/spike/issues/230
     </watch-list>
   </high-level-plan>
-  <task-group for="v0.6.1" theme="doc update and stabilization">
+  <task-group theme="immediate">
     <issue>
-      check all documentation (including the ones in ./diagrams) for
-      readability, grammar, logical soundness, and accuracy.
-    </issue>
-    <issue>
-      It has been a while; it's about time to make another SPIKE walkthrough.
-    </issue>
-    <issue>
-      behavior incompatibility:
-      spike secret list only shows paths whereas spike policy list
-      dumps the entire policy, it should just show the name and id instead.
-      spike policy get can show the policy details if needed.
+      Create a new walk-trough video recording.
+        * Brief architecture overview
+        * Dev startup for bare-metal
+        * Dev startup for Minikube
+        * CLI overview
+        * Mini codewalk
     </issue>
     <issue>
       spike-next is still an open branch on helm-charts main.
@@ -54,22 +40,17 @@
       needs to be done to push the PR forward.
     </issue>
     <issue>
-      shall we encrypt secret metadata too
-      does hashi encrpyt secret metada
-      what about the secret paths, versions, and other unencrypted fields.
-      how does hashi kv stores them. needs investigation.
-    </issue>
-    <issue>
-      change the image on the landing page; the CLI commands etc has changed
-      and the image does not reflect the recent cli.
-    </issue>
-    <issue>
-      go through internal files, some of them are generic enough to graduate
-      to the SDK.
+      doomsday recovery and restore is not functional at the moment.
     </issue>
     <issue>
       start.sh should test recovery and restore
       start.sh should test encryption and decryption
+    </issue>
+  </task-group>
+  <task-group for="v0.8.2">
+    <issue>
+      go through internal files, some of them are generic enough to graduate
+      to the SDK.
     </issue>
     <issue>
       Refactor app/spike/internal/cmd/secret/get.go to extract repeated
@@ -77,6 +58,11 @@
       helper functions. The same marshal-and-print pattern is duplicated
       multiple times for different format types.
     </issue>
+  </task-group>
+  <task-group for="v0.6.1" theme="doc update and stabilization">
+
+
+
     <issue>
       format inconsistencies.
 

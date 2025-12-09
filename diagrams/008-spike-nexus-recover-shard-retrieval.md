@@ -20,7 +20,7 @@ sequenceDiagram
     Nexus->>Recovery: InitializeBackingStoreFromKeepers()
 
     Recovery->>Recovery: Get keeper URLs from env
-    Note right of Recovery: env.KeepersVal()<br/>["https://keeper1:8554",<br/>"https://keeper2:8554", ...]
+    Note right of Recovery: env.KeepersVal()<br/>["https://keeper1:8443",<br/>"https://keeper2:8543", ...]
 
     loop Until threshold shards collected
         loop For each keeper URL
@@ -45,7 +45,7 @@ sequenceDiagram
                 Note right of ShardStore: []ShamirShard<br/>Validate no duplicates
 
                 Recovery->>Recovery: Check if threshold met
-                Note right of Recovery: Need ShamirThreshold shards<br/>Example: 3 of 5
+                Note right of Recovery: Need ShamirThreshold shards<br/>Example: 2 of 3
 
                 alt Threshold met
                     Note over Recovery: Enough shards collected.<br/>Proceed to reconstruction.

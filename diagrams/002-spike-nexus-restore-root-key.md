@@ -12,8 +12,8 @@ Restore the root key in SPIKE Nexus from recovery shards.
 - All shards zeroed from memory after reconstruction
 
 **Configuration:**
-- `SPIKE_SHAMIR_THRESHOLD`: Number of shards needed (default: 3)
-- `SPIKE_SHAMIR_SHARES`: Total shards generated (default: 5)
+- `SPIKE_NEXUS_SHAMIR_THRESHOLD`: Number of shards needed (default: 2)
+- `SPIKE_NEXUS_SHAMIR_SHARES`: Total shards generated (default: 3)
 
 ```mermaid
 sequenceDiagram

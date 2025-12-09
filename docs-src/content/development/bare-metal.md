@@ -453,7 +453,7 @@ spike secret get tenants/acme/credentials/db
 Let's delete the secret now:
 
 ```bash
-spike secret delete /tenants/acme/credentials/db
+spike secret delete tenants/acme/credentials/db
 
 # Output:
 # OK

@@ -127,7 +127,7 @@ spec:
         env:
         - name: SPIFFE_ENDPOINT_SOCKET
           value: "unix:///run/spire/sockets/agent.sock"
-        - name: SPIKE_NEXUS_URL
+        - name: SPIKE_NEXUS_API_URL
           value: "https://spike-nexus:8553"
         volumeMounts:
         - name: spire-agent-socket
@@ -143,7 +143,7 @@ spec:
 **Key configuration:**
 * Mount the SPIRE Agent socket
 * Set `SPIFFE_ENDPOINT_SOCKET` environment variable
-* Set `SPIKE_NEXUS_URL` to the Nexus service endpoint
+* Set `SPIKE_NEXUS_API_URL` to the Nexus service endpoint
 
 ### Bare-Metal Deployment
 
@@ -153,7 +153,7 @@ systemctl status spire-agent
 
 # 2. Set environment variables
 export SPIFFE_ENDPOINT_SOCKET=unix:///tmp/spire-agent/public/api.sock
-export SPIKE_NEXUS_URL=https://localhost:8553
+export SPIKE_NEXUS_API_URL=https://localhost:8553
 
 # 3. Run your application
 ./myapp
