@@ -249,6 +249,10 @@
                                         </li>
                                 </ul>
                         <li >
+                    <a href="https://spike.ist/development/sdk-integration/">SDK Integration Guide</a>
+                </li>
+
+                <li >
                     <a href="https://spike.ist/development/api-docs/">API Documentation</a>
                 </li>
 
@@ -987,6 +991,13 @@ SPIKE Nexus, and SPIKE Keeper.</p>
 <pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># Start everything:
 </span><span style="color:#bf616a;">make</span><span> start
 </span></code></pre>
+<blockquote>
+<p><strong><code>make start</code> Is Also a Mini Smoke Test</strong></p>
+<p>The <code>make start</code> script also runs sample secret and policy operations to
+ensure everything is working as expected. So, although it is not strictly
+necessary, you are encouraged to run it once before starting development
+to ensure everything is working as expected.</p>
+</blockquote>
 <p>And then, on a separate terminal, you can run <code>spike</code>:</p>
 <pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># Make sure you have the `spike` binary in your PATH.
 </span><span style="color:#bf616a;">spike
@@ -1010,6 +1021,17 @@ SPIKE Nexus, and SPIKE Keeper.</p>
 </span><span style="color:#65737e;"># 
 </span><span style="color:#65737e;"># Use &quot;spike [command] --help&quot; for help.
 </span></code></pre>
+<blockquote>
+<p><strong>Killing the <code>make start</code> Process</strong> Will Exit Cleanly</p>
+<p>When you stop the <code>make start</code> script by <code>CTRLT+C</code>, it will exit cleanly;
+during this process, it will also kill all the running <strong>SPIKE</strong> and <strong>SPIKE</strong>
+components.</p>
+<p>However, in certain cases, especially if the script has not run successfully
+to the end, it might leave some processes running in the background.</p>
+<p>In such cases, you can kill the processes manually by running:</p>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">make</span><span> kill
+</span></code></pre>
+</blockquote>
 <p>Although the <code>make start</code> script is convenient, it might be useful to run the
 components individually to understand the process better and debug any issues
 that might arise.</p>
@@ -1057,12 +1079,12 @@ window.</p>
 </span><span style="color:#bf616a;">./hack/bare-metal/startup/start-keeper-2.sh
 </span><span style="color:#bf616a;">./hack/bare-metal/startup/start-keeper-3.sh
 </span></code></pre>
-<p>Here is how one of these <strong>SPIKE Keeper</strong> startup scripts looks like:</p>
+<p>Here is how one of these <strong>SPIKE Keeper</strong> startup scripts:</p>
 <pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># ./hack/bare-metal/startup/start-keeper-1.sh
 </span><span style="color:#bf616a;">SPIKE_KEEPER_TLS_PORT</span><span>=&#39;</span><span style="color:#a3be8c;">:8443</span><span>&#39; \
 </span><span style="color:#bf616a;">./keeper
 </span></code></pre>
-<p>And here is how <strong>SPIKE Nexus</strong> startup script looks like:</p>
+<p>And here is how <strong>SPIKE Nexus</strong> startup script:</p>
 <pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># ./hack/bare-metal/startup/start-nexus.sh
 </span><span style="color:#bf616a;">SPIKE_NEXUS_KEEPER_PEERS</span><span>=&#39;</span><span style="color:#a3be8c;">https://localhost:8443,\
 </span><span style="color:#a3be8c;">https://localhost:8543,https://localhost:8643</span><span>&#39;

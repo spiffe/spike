@@ -185,6 +185,10 @@
                 </li>
 
                 <li >
+                    <a href="https://spike.ist/development/sdk-integration/">SDK Integration Guide</a>
+                </li>
+
+                <li >
                     <a href="https://spike.ist/development/api-docs/">API Documentation</a>
                 </li>
 
@@ -1103,6 +1107,73 @@ specified rules and allow for flexibility with wildcards or exact matches.</p>
 <li>Regularly audit and review your policies</li>
 <li>Never assign <code>super</code> permissions unless absolutely necessary</li>
 </ul>
+<h2 id="technical-details">Technical Details</h2>
+<h3 id="permission-hierarchy">Permission Hierarchy</h3>
+<p>The <code>super</code> permission acts as a wildcard that grants all other permissions:</p>
+<table><thead><tr><th>Permission</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>super</code></td><td>All permissions (wildcard)</td></tr>
+<tr><td><code>write</code></td><td>Create and update secrets</td></tr>
+<tr><td><code>read</code></td><td>Read secrets</td></tr>
+<tr><td><code>list</code></td><td>List secret paths</td></tr>
+<tr><td><code>execute</code></td><td>Cipher operations (encrypt/decrypt)</td></tr>
+</tbody></table>
+<h3 id="authorization-for-policy-management">Authorization for Policy Management</h3>
+<p>Policy management operations (create, update, delete) are authorized as follows:</p>
+<ol>
+<li><strong>SPIKE Pilot</strong> (<code>spiffe://&lt;trustRoot&gt;/spike/pilot/*</code>) has full access to
+all operations, including policy management</li>
+<li><strong>Other workloads</strong> need a policy granting <code>write</code> permission on the
+system path <code>spike/system/acl</code></li>
+</ol>
+<h3 id="encryption-at-rest">Encryption at Rest</h3>
+<p>Policy details are encrypted in the database using <strong>AES-256-GCM</strong>:</p>
+<p><strong>Encrypted fields:</strong></p>
+<ul>
+<li>SPIFFE ID Pattern (regex string)</li>
+<li>Path Pattern (regex string)</li>
+<li>Permissions (JSON array)</li>
+</ul>
+<p><strong>Not encrypted:</strong></p>
+<ul>
+<li>Policy name (used for lookups)</li>
+<li>Policy ID</li>
+<li>Timestamps</li>
+</ul>
+<p>A single nonce is generated per policy and used for all encrypted fields
+to ensure atomicity.</p>
+<h3 id="policy-evaluation">Policy Evaluation</h3>
+<p>When a secret is accessed, <strong>SPIKE Nexus</strong> evaluates policies by:</p>
+<ol>
+<li>Checking if the requestor is <strong>SPIKE Pilot</strong> (grants immediate access)</li>
+<li>Loading all policies from the backing store</li>
+<li>For each policy, checking if the SPIFFE ID pattern matches the requestor</li>
+<li>If matched, checking if the path pattern matches the requested resource</li>
+<li>If matched, checking if the policy grants the required permission</li>
+<li>Access is granted on <strong>first match</strong>; there are no “deny” policies</li>
+</ol>
+<p>Policies are loaded fresh from the database on each request to ensure
+changes take effect immediately.</p>
+<h3 id="regex-safety">Regex Safety</h3>
+<p>SPIKE uses Go’s <code>regexp</code> package which provides <strong>linear-time</strong> matching
+guarantees. This prevents ReDoS (Regular Expression Denial of Service)
+attacks.</p>
+<h2 id="common-errors">Common Errors</h2>
+<p><strong>Pattern validation failed:</strong></p>
+<pre style="background-color:#2b303b;color:#c0c5ce;"><code><span>Error: Invalid SPIFFE ID pattern: &quot;spiffe://example.org/workload/*&quot;
+</span><span>Use regex syntax: &quot;spiffe://example\.org/workload/.*&quot;
+</span></code></pre>
+<p><strong>Unauthorized:</strong></p>
+<pre style="background-color:#2b303b;color:#c0c5ce;"><code><span>Error: Permission denied
+</span><span>Only SPIKE Pilot or workloads with write access to spike/system/acl
+</span><span>can manage policies
+</span></code></pre>
+<p><strong>Path starts with a slash:</strong></p>
+<pre style="background-color:#2b303b;color:#c0c5ce;"><code><span>Error: Invalid path pattern: &quot;/secrets/app/.*&quot;
+</span><span>Paths are namespaces, remove leading slash: &quot;secrets/app/.*&quot;
+</span></code></pre>
+<p><strong>Empty policy name:</strong></p>
+<pre style="background-color:#2b303b;color:#c0c5ce;"><code><span>Error: Policy name cannot be empty
+</span></code></pre>
 <hr />
 <h2 id="spike-command-index"><code>spike</code> Command Index</h2>
 <ul>

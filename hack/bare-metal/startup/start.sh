@@ -364,7 +364,6 @@ CIPHER_FILE_INPUT="Hello SPIKE Cipher File Test with special chars: @#$%"
 CIPHER_TEMP_IN=$(mktemp)
 CIPHER_TEMP_ENC=$(mktemp)
 CIPHER_TEMP_DEC=$(mktemp)
-trap 'rm -f $CIPHER_TEMP_IN $CIPHER_TEMP_ENC $CIPHER_TEMP_DEC' EXIT
 
 # Write input to file
 echo -n "$CIPHER_FILE_INPUT" > "$CIPHER_TEMP_IN"

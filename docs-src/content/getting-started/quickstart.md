@@ -95,7 +95,7 @@ kubectl get node
 
 ## Deploying **SPIKE** to Minikube
 
-> ** ⚠️ Changes Due to Current Upstream Helm Charts Work**
+> **⚠️ Changes Due to Current Upstream Helm Charts Work**
 > 
 > There are some changes to the upstream **SPIFFE Helm Charts** that are
 > currently in progress. Until they are merged, you will need to use a

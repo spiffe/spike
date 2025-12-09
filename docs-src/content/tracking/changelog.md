@@ -12,7 +12,8 @@ sort_by = "weight"
 
 ## Recent
 
-TBD
+* Update documentation to reflect the new SPIKE architecture.
+* Fix occasional dangling process issues when `make start` does not exit cleanly.
 
 ## [0.8.0] - 2025-11-28
 
@@ -32,11 +33,11 @@ TBD
 * Added extensive package documentation to ALL packages of SPIKE and 
   SPIKE Go SGK.
 * SDK: Improved documentation clarity for single return value functions, CSPRNG
-  fatal behavior, and function distinctions (ValidatePath vs 
+  fatal behavior, and function distinctions (ValidatePath vs. 
   ValidatePathPattern).
 * SDK: Significantly increased test coverage across all SDK packages with
   comprehensive unit and integration tests.
-* SDK: Enhanced documentation for version numbering system - version numbers
+* SDK: Enhanced documentation for the version numbering system---version numbers
   start at 1, and `CurrentVersion == 0` indicates all versions have been deleted.
 * SDK: Updated `Delete()` documentation to clarify soft-delete behavior and that
   paths remain in storage even when all versions are deleted.
@@ -65,7 +66,7 @@ TBD
 
 * **BREAKING**: SDK now returns typed sentinel errors instead of generic `error`
   values.
-* **BREAKING**: SDK: Enhanced error handling - Get methods now return 
+* **BREAKING**: SDK: Enhanced error handling---Get methods now return 
   `ErrAPINotFound` instead of `(nil, nil)` when resources are not found, 
   following idiomatic Go patterns (similar to `os.Open`, `database/sql`).
 * SDK: Improved API consistency by standardizing policy function 
@@ -112,7 +113,7 @@ TBD
 * Code Quality: Eliminated error variable shadowing across the codebase. Error
   variables now use descriptive names (`atoiErr`, `nonceErr`, `openErr`,
   `restoreErr`, etc.) instead of reusing `err`. This prevents subtle bugs where
-  a later error could inadvertently shadow an earlier one, and improves code
+  a later error could inadvertently shadow an earlier one and improves code
   readability by making error sources explicit.
 
 ### Fixed 
@@ -123,13 +124,13 @@ TBD
 * SDK: Added nil validation to `CreateMTLSServer` functions with fail-fast 
   behavior for configuration errors.
 * SDK: Fixed resource management bug in `StreamPostWithContentType` where defer
-  was closing response body on success path, causing callers to receive closed 
+  was closing response body on the success path, causing callers to receive closed 
   body.
 * SDK: Fixed critical bug in `Undelete` function that was ignoring the `versions`
   parameter due to missing else clause.
 * Nexus: Added `OldestVersion` tracking to `UndeleteSecret` for consistency
-  with `DeleteSecret`, ensuring metadata accurately reflects oldest non-deleted
-  version.
+  with `DeleteSecret`, ensuring metadata accurately reflects the oldest 
+  non-deleted version.
 * Nexus: Fixed bug in `UndeleteSecret` where undeleting a version higher than
   the current `CurrentVersion` did not update `CurrentVersion` to reflect the
   new highest active version, causing metadata inconsistency.
@@ -140,18 +141,18 @@ TBD
 * Nexus: Fixed resource leak in `internal/net/post.go` where response body
   close was deferred after body read instead of immediately after response
   obtained, causing leaks when read operations failed.
-* Nexus: Fixed critical bug in secret route handlers where error paths were not
+* Nexus: Fixed a critical bug in secret route handlers where error paths were not
   sending HTTP responses to clients. Added missing `net.Fail()` calls in
   `put_intercept.go` (3 locations) and `undelete.go` to ensure proper error
   responses.
 * Nexus: Fixed bug in `RouteDeletePolicy` that returned HTTP 500 for all errors
-  including "not found". Now correctly returns HTTP 404 when the policy does not
+  including "not found." Now correctly returns HTTP 404 when the policy does not
   exist
 
 ### Security
 
-* PoP validation after bootstrap sequence to ensure SPIKE Nexus has initialized
-  properly.
+* PoP validation after the bootstrap sequence to ensure SPIKE Nexus has 
+  initialized properly.
 * Update SPIKE Components' Go version to `1.25.3`.
 * `log.FatalLn` exits cleanly by default to avoid leaking sensitive information
   via stack traces in production. Stack traces can be enabled for

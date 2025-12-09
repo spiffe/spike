@@ -7,6 +7,11 @@
 start:
 	./hack/bare-metal/startup/start.sh
 
+# Kill any dangling SPIKE-related processes.
+# Use this if `make start` was interrupted and left background processes running.
+kill:
+	./hack/bare-metal/startup/kill.sh
+
 .PHONY: bootstrap
 # Initialize the SPIKE setup with a brand new, secure, random root key.
 bootstrap:

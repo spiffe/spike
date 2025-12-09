@@ -222,6 +222,10 @@
                 </li>
 
                 <li >
+                    <a href="https://spike.ist/development/sdk-integration/">SDK Integration Guide</a>
+                </li>
+
+                <li >
                     <a href="https://spike.ist/development/api-docs/">API Documentation</a>
                 </li>
 
@@ -905,6 +909,16 @@ the images into Minikube without having to deal with Docker networking,
 port forwarding, and Docker registry, making it the preferred method, and
 it is what we recommend.</p>
 <h2 id="deploying-spire-and-spike-to-the-local-cluster">Deploying SPIRE and SPIKE to the Local Cluster</h2>
+<!-- TODO: remove these instructions after upstream is fixed -->
+<blockquote>
+<p><strong>⚠️ Changes Due to Current Upstream Helm Charts Work</strong></p>
+<p>There are some changes to the upstream <strong>SPIFFE Helm Charts</strong> that are
+currently in progress. Until they are merged, you will need to use a
+feature branch of the upstream repo.</p>
+<p>Before you proceed, please follow the instructions at
+<a href="https://spike.ist/getting-started/quickstart/">the Quickstart Guide</a> to clone your local
+<code>helm-charts-hardened</code> repo at the <code>spike-next</code> branch first.</p>
+</blockquote>
 <p>Once we push the container images to the registry, we can now deploy <strong>SPIRE</strong>
 and <strong>SPIKE</strong>.</p>
 <pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># Uses `./config/helm/values-local.yaml`

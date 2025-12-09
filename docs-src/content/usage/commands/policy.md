@@ -436,6 +436,92 @@ specified rules and allow for flexibility with wildcards or exact matches.
 * Regularly audit and review your policies
 * Never assign `super` permissions unless absolutely necessary
 
+## Technical Details
+
+### Permission Hierarchy
+
+The `super` permission acts as a wildcard that grants all other permissions:
+
+| Permission  | Description                            |
+|-------------|----------------------------------------|
+| `super`     | All permissions (wildcard)             |
+| `write`     | Create and update secrets              |
+| `read`      | Read secrets                           |
+| `list`      | List secret paths                      |
+| `execute`   | Cipher operations (encrypt/decrypt)    |
+
+### Authorization for Policy Management
+
+Policy management operations (create, update, delete) are authorized as follows:
+
+1. **SPIKE Pilot** (`spiffe://<trustRoot>/spike/pilot/*`) has full access to
+   all operations, including policy management
+2. **Other workloads** need a policy granting `write` permission on the
+   system path `spike/system/acl`
+
+### Encryption at Rest
+
+Policy details are encrypted in the database using **AES-256-GCM**:
+
+**Encrypted fields:**
+* SPIFFE ID Pattern (regex string)
+* Path Pattern (regex string)
+* Permissions (JSON array)
+
+**Not encrypted:**
+* Policy name (used for lookups)
+* Policy ID
+* Timestamps
+
+A single nonce is generated per policy and used for all encrypted fields
+to ensure atomicity.
+
+### Policy Evaluation
+
+When a secret is accessed, **SPIKE Nexus** evaluates policies by:
+
+1. Checking if the requestor is **SPIKE Pilot** (grants immediate access)
+2. Loading all policies from the backing store
+3. For each policy, checking if the SPIFFE ID pattern matches the requestor
+4. If matched, checking if the path pattern matches the requested resource
+5. If matched, checking if the policy grants the required permission
+6. Access is granted on **first match**; there are no "deny" policies
+
+Policies are loaded fresh from the database on each request to ensure
+changes take effect immediately.
+
+### Regex Safety
+
+SPIKE uses Go's `regexp` package which provides **linear-time** matching
+guarantees. This prevents ReDoS (Regular Expression Denial of Service)
+attacks.
+
+## Common Errors
+
+**Pattern validation failed:**
+```
+Error: Invalid SPIFFE ID pattern: "spiffe://example.org/workload/*"
+Use regex syntax: "spiffe://example\.org/workload/.*"
+```
+
+**Unauthorized:**
+```
+Error: Permission denied
+Only SPIKE Pilot or workloads with write access to spike/system/acl
+can manage policies
+```
+
+**Path starts with a slash:**
+```
+Error: Invalid path pattern: "/secrets/app/.*"
+Paths are namespaces, remove leading slash: "secrets/app/.*"
+```
+
+**Empty policy name:**
+```
+Error: Policy name cannot be empty
+```
+
 ----
 
 ## `spike` Command Index

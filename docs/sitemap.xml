@@ -151,13 +151,13 @@
         <loc>https://spike.ist/development/local-deployment/</loc>
     </url>
     <url>
+        <loc>https://spike.ist/development/sdk-integration/</loc>
+    </url>
+    <url>
         <loc>https://spike.ist/getting-started/</loc>
     </url>
     <url>
         <loc>https://spike.ist/getting-started/quickstart/</loc>
-    </url>
-    <url>
-        <loc>https://spike.ist/internals/nil-source-handling-and-go-concurrency/</loc>
     </url>
     <url>
         <loc>https://spike.ist/operations/</loc>

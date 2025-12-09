@@ -185,6 +185,10 @@
                 </li>
 
                 <li >
+                    <a href="https://spike.ist/development/sdk-integration/">SDK Integration Guide</a>
+                </li>
+
+                <li >
                     <a href="https://spike.ist/development/api-docs/">API Documentation</a>
                 </li>
 
@@ -812,7 +816,10 @@
             
         <h1 id="spike-changelog">SPIKE Changelog</h1>
 <h2 id="recent">Recent</h2>
-<p>TBD</p>
+<ul>
+<li>Update documentation to reflect the new SPIKE architecture.</li>
+<li>Fix occasional dangling process issues when <code>make start</code> does not exit cleanly.</li>
+</ul>
 <h2 id="0-8-0-2025-11-28">[0.8.0] - 2025-11-28</h2>
 <h3 id="added">Added</h3>
 <ul>
@@ -830,11 +837,11 @@ in good shape and ready to roll.</li>
 <li>Added extensive package documentation to ALL packages of SPIKE and
 SPIKE Go SGK.</li>
 <li>SDK: Improved documentation clarity for single return value functions, CSPRNG
-fatal behavior, and function distinctions (ValidatePath vs
+fatal behavior, and function distinctions (ValidatePath vs.
 ValidatePathPattern).</li>
 <li>SDK: Significantly increased test coverage across all SDK packages with
 comprehensive unit and integration tests.</li>
-<li>SDK: Enhanced documentation for version numbering system - version numbers
+<li>SDK: Enhanced documentation for the version numbering system—version numbers
 start at 1, and <code>CurrentVersion == 0</code> indicates all versions have been deleted.</li>
 <li>SDK: Updated <code>Delete()</code> documentation to clarify soft-delete behavior and that
 paths remain in storage even when all versions are deleted.</li>
@@ -863,7 +870,7 @@ authorization checks. See ADR-0031.</li>
 <ul>
 <li><strong>BREAKING</strong>: SDK now returns typed sentinel errors instead of generic <code>error</code>
 values.</li>
-<li><strong>BREAKING</strong>: SDK: Enhanced error handling - Get methods now return
+<li><strong>BREAKING</strong>: SDK: Enhanced error handling—Get methods now return
 <code>ErrAPINotFound</code> instead of <code>(nil, nil)</code> when resources are not found,
 following idiomatic Go patterns (similar to <code>os.Open</code>, <code>database/sql</code>).</li>
 <li>SDK: Improved API consistency by standardizing policy function
@@ -910,7 +917,7 @@ semantics for consistency with secret operations. <code>state.CreatePolicy</code
 <li>Code Quality: Eliminated error variable shadowing across the codebase. Error
 variables now use descriptive names (<code>atoiErr</code>, <code>nonceErr</code>, <code>openErr</code>,
 <code>restoreErr</code>, etc.) instead of reusing <code>err</code>. This prevents subtle bugs where
-a later error could inadvertently shadow an earlier one, and improves code
+a later error could inadvertently shadow an earlier one and improves code
 readability by making error sources explicit.</li>
 </ul>
 <h3 id="fixed">Fixed</h3>
@@ -921,13 +928,13 @@ good.</li>
 <li>SDK: Added nil validation to <code>CreateMTLSServer</code> functions with fail-fast
 behavior for configuration errors.</li>
 <li>SDK: Fixed resource management bug in <code>StreamPostWithContentType</code> where defer
-was closing response body on success path, causing callers to receive closed
+was closing response body on the success path, causing callers to receive closed
 body.</li>
 <li>SDK: Fixed critical bug in <code>Undelete</code> function that was ignoring the <code>versions</code>
 parameter due to missing else clause.</li>
 <li>Nexus: Added <code>OldestVersion</code> tracking to <code>UndeleteSecret</code> for consistency
-with <code>DeleteSecret</code>, ensuring metadata accurately reflects oldest non-deleted
-version.</li>
+with <code>DeleteSecret</code>, ensuring metadata accurately reflects the oldest
+non-deleted version.</li>
 <li>Nexus: Fixed bug in <code>UndeleteSecret</code> where undeleting a version higher than
 the current <code>CurrentVersion</code> did not update <code>CurrentVersion</code> to reflect the
 new highest active version, causing metadata inconsistency.</li>
@@ -938,18 +945,18 @@ the highest existing version number and increments from there.</li>
 <li>Nexus: Fixed resource leak in <code>internal/net/post.go</code> where response body
 close was deferred after body read instead of immediately after response
 obtained, causing leaks when read operations failed.</li>
-<li>Nexus: Fixed critical bug in secret route handlers where error paths were not
+<li>Nexus: Fixed a critical bug in secret route handlers where error paths were not
 sending HTTP responses to clients. Added missing <code>net.Fail()</code> calls in
 <code>put_intercept.go</code> (3 locations) and <code>undelete.go</code> to ensure proper error
 responses.</li>
 <li>Nexus: Fixed bug in <code>RouteDeletePolicy</code> that returned HTTP 500 for all errors
-including “not found”. Now correctly returns HTTP 404 when the policy does not
+including “not found.” Now correctly returns HTTP 404 when the policy does not
 exist</li>
 </ul>
 <h3 id="security">Security</h3>
 <ul>
-<li>PoP validation after bootstrap sequence to ensure SPIKE Nexus has initialized
-properly.</li>
+<li>PoP validation after the bootstrap sequence to ensure SPIKE Nexus has
+initialized properly.</li>
 <li>Update SPIKE Components’ Go version to <code>1.25.3</code>.</li>
 <li><code>log.FatalLn</code> exits cleanly by default to avoid leaking sensitive information
 via stack traces in production. Stack traces can be enabled for

@@ -185,6 +185,10 @@
                 </li>
 
                 <li >
+                    <a href="https://spike.ist/development/sdk-integration/">SDK Integration Guide</a>
+                </li>
+
+                <li >
                     <a href="https://spike.ist/development/api-docs/">API Documentation</a>
                 </li>
 
@@ -219,13 +223,19 @@
                                                         <a href="https://spike.ist/architecture/system-overview/#spike-nexus-root-key-sharding">SPIKE Nexus Root Key Sharding</a>
                                                     </li>
                                                 <li>
-                                                        <a href="https://spike.ist/architecture/system-overview/#spike-nexus-init-flow">SPIKE Nexus Init Flow</a>
+                                                        <a href="https://spike.ist/architecture/system-overview/#spike-bootstrap-flow">SPIKE Bootstrap Flow</a>
+                                                    </li>
+                                                <li>
+                                                        <a href="https://spike.ist/architecture/system-overview/#spike-nexus-initial-bootstrapping">SPIKE Nexus Initial Bootstrapping</a>
+                                                    </li>
+                                                <li>
+                                                        <a href="https://spike.ist/architecture/system-overview/#spike-nexus-updating-spike-keepers">SPIKE Nexus Updating SPIKE Keepers</a>
                                                     </li>
                                                 <li>
                                                         <a href="https://spike.ist/architecture/system-overview/#spike-break-the-glass-disaster-recovery">SPIKE “break-the-glass” Disaster Recovery</a>
                                                     </li>
                                                 <li>
-                                                        <a href="https://spike.ist/architecture/system-overview/#spike-components-1">SPIKE Components</a>
+                                                        <a href="https://spike.ist/architecture/system-overview/#want-more-pretty-pictures">Want More Pretty Pictures?</a>
                                                     </li>
                                                 </ul>
                                         </li>
@@ -783,15 +793,7 @@
 
         <article>
             
-        <blockquote>
-<p><strong>⚠️ This Page Needs Work</strong></p>
-<p>With the recent introduction of <strong>SPIKE Bootstrap</strong>, some of the workflows
-mentioned in the page has slightly changed. Although the architecture and
-the trust model remain the same, the content of this page needs to be
-updated.</p>
-<p>This notice will be removed once the page is updated.</p>
-</blockquote>
-<h1 id="spike-system-overview">SPIKE System Overview</h1>
+        <h1 id="spike-system-overview">SPIKE System Overview</h1>
 <p>This document provides an overview of <strong>SPIKE</strong>, a <a href="https://spiffe.io/" title="SPIFFE"><strong>SPIFFE</strong></a>-native
 Secrets Management solution. It is designed to ensure secure storage, recovery,
 and management of sensitive data with a focus on simplicity, reliability,
@@ -810,6 +812,64 @@ with the required crypto material without human intervention.</li>
 </ul>
 <p>The system provides high availability for secret storage with a manual recovery
 mechanism in case of irrecoverable failure.</p>
+<p>Here is an overview of each <strong>SPIKE</strong> component:</p>
+<h3 id="spike-nexus">SPIKE Nexus</h3>
+<ul>
+<li><strong>SPIKE Nexus</strong> is the primary component responsible for secrets management.</li>
+<li>It creates and manages the root encryption key.</li>
+<li>It handles secret encryption and decryption.</li>
+<li>It syncs the <strong>root key</strong>’s <a href="https://en.wikipedia.org/wiki/Shamir%27s_secret_sharing" title="Shamir&#39;s Secret Sharing"><strong>Shamir Shards</strong></a> with <strong>SPIKE
+Keepers</strong>s. These shards then can be used to recover <strong>SPIKE Nexus</strong>
+upon a crash.</li>
+<li>It provides an <strong>RESTful mTLS API</strong> for <em>secret lifecycle management</em>,
+<em>policy management</em>, <em>admin operations</em>, and <em>disaster recovery</em>.</li>
+</ul>
+<h3 id="spike-keeper">SPIKE Keeper</h3>
+<ul>
+<li>It is designed to be <strong>simple</strong> and <strong>reliable</strong>.</li>
+<li>It does one thing and does it well.</li>
+<li>Its <strong>only</strong> goal is to keep a <a href="https://en.wikipedia.org/wiki/Shamir%27s_secret_sharing" title="Shamir&#39;s Secret Sharing"><strong>Shamir Shard</strong></a> in <strong>memory</strong>.</li>
+<li>By design, it does not have any knowledge about its peer <strong>SPIKE Keepers</strong>,
+nor <strong>SPIKE Nexus</strong>. It doesn’t require any configuration to be brought up.
+This makes it simple to operate, replace, scale, replicate.</li>
+<li>It enables automatic recovery if <strong>SPIKE Nexus</strong> crashes.</li>
+</ul>
+<p>Since <strong>SPIKE Keeper</strong> only contains a single shard, its compromise will not
+compromise the system.</p>
+<p>The more keepers you have, the more reliable and secure your <strong>SPIKE</strong>
+deployment will be. We recommend <code>5</code> <strong>SPIKE Keeper</strong> instances with a
+shard-generation threshold of <code>3</code>, for production deployments.</p>
+<p><a href="https://spike.ist/operations/production/">Check out <strong>SPIKE Production Hardening Guide</strong></a> for more
+details.</p>
+<h3 id="spike-pilot">SPIKE Pilot</h3>
+<ul>
+<li>It is the CLI to the system (<em>i.e., the <code>spike</code> binary that you see
+in the examples</em>).</li>
+<li>It converts CLI commands to <strong>RESTful mTLS API calls</strong> to <strong>SPIKE Nexus</strong>.</li>
+</ul>
+<p><strong>SPIKE Pilot</strong> is the only management entry point to the system.
+Thus, deleting/disabling/removing <strong>SPIKE Pilot</strong> reduces the attack surface
+of the system since admin operations will not be possible without
+<strong>SPIKE Pilot</strong>.</p>
+<p>Similarly, revoking the <strong>SPIRE Server</strong> registration of <strong>SPIKE Pilot</strong>’s
+<strong>SVID</strong> (<em>once SPIKE Pilot is no longer needed</em>) will effectively block
+administrative access to the system, improving the overall security posture.</p>
+<h3 id="spike-bootstrap">SPIKE Bootstrap</h3>
+<ul>
+<li>It is a one-time initialization component that runs during system setup.</li>
+<li>It generates a cryptographically secure random <strong>root key</strong>.</li>
+<li>It splits the root key into <a href="https://en.wikipedia.org/wiki/Shamir%27s_secret_sharing" title="Shamir&#39;s Secret Sharing"><strong>Shamir</strong></a> shards and distributes them
+to the configured <strong>SPIKE Keeper</strong> instances.</li>
+<li>It verifies that <strong>SPIKE Nexus</strong> has successfully initialized by performing
+an end-to-end encryption test.</li>
+</ul>
+<p><strong>SPIKE Bootstrap</strong> is designed to run once per deployment. In Kubernetes
+environments, it uses a <code>ConfigMap</code> to track whether bootstrap has completed,
+preventing duplicate initialization. In bare-metal deployments, it runs each
+time unless explicitly skipped.</p>
+<p>This separation of concerns keeps <strong>SPIKE Nexus</strong>’s initialization flow simple:
+<strong>SPIKE Nexus</strong> always polls <strong>SPIKE Keeper</strong>s for shards, while <strong>SPIKE
+Bootstrap</strong> handles the initial key generation and distribution.</p>
 <h2 id="identity-control-plane">Identity Control Plane</h2>
 <p>The following diagram shows how <a href="https://spiffe.io/docs/latest/spire-about/spire-concepts/#a-day-in-the-life-of-an-svid" title="A Day in the Life of an SVID"><strong>SVID</strong>s</a> are assigned to <strong>SPIKE</strong>
 components and other actors in the system. <strong>SVID</strong>s, or <em>SPIFFE-Verifiable
@@ -852,7 +912,7 @@ components to:</p>
 <strong>SPIRE</strong> provides identity management capabilities that span across these
 trust boundaries. This architecture allows administrative operations to be
 performed on a hardened, secured <strong>SPIRE Server</strong> instance (<em>shown in the top
-yellow box</em>), while restricting direct access to sensitive operations
+yellow box</em>). This restricts direct access to sensitive operations
 (<em>like creating SPIRE Server registration entries</em>) from users and applications
 located in other trust boundaries.</p>
 <blockquote>
@@ -864,6 +924,16 @@ identity regardless of its network location.</p>
 network-based security, as each workload gets its own unique, short-lived
 identity that can be automatically rotated and revoked if needed.</p>
 </blockquote>
+<h3 id="builtin-spiffe-ids">Builtin SPIFFE IDs</h3>
+<p><strong>SPIKE Nexus</strong> recognizes the following builtin SPIFFE IDS:</p>
+<ul>
+<li><code>spiffe://$trustRoot/spike/pilot/role/superuser</code>: Super Admin</li>
+<li><code>spiffe://$trustRoot/spike/pilot/role/recover</code>: Recovery Admin</li>
+<li><code>spiffe://$trustRoot/spike/pilot/role/restore</code>: Restore Admin</li>
+</ul>
+<p>You can check out the <a href="https://spike.ist/architecture/security-model/#administrative-access">**Administrative Access section of SPIKE security
+model</a> for more
+information about these roles.</p>
 <h2 id="spike-component-interaction">SPIKE Component Interaction</h2>
 <p>The following diagram depicts how various <strong>SPIKE</strong> components interact with
 each other:</p>
@@ -891,10 +961,10 @@ secrets store.</p>
 <a href="https://en.wikipedia.org/wiki/Shamir%27s_secret_sharing" title="Shamir&#39;s Secret Sharing"><strong>Shamir Secret Share</strong></a> (<em>shard</em>) of the <strong>root key</strong> that
 <strong>SPIKE Nexus</strong> maintains in memory.</p>
 <p>This design ensures that compromising any individual <strong>SPIKE Keeper</strong> cannot
-breach the system, as a single shard is insufficient to reconstruct the
+breach the system, as a single shard is not enough to reconstruct the
 root key.</p>
 <p>The system’s security can be tuned by configuring both the total number of
-<strong>SPIKE Keepers</strong> and the **threshold **of required shards needed to reconstruct
+<strong>SPIKE Keepers</strong> and the <strong>threshold</strong> of required shards needed to reconstruct
 the root key.</p>
 <p>During system bootstrapping, <strong>SPIKE Nexus</strong> distributes these shards to the
 <strong>SPIKE Keeper</strong>s. If <strong>SPIKE Nexus</strong> crashes or restarts, it automatically
@@ -946,70 +1016,113 @@ root key (<em>e.g., any 2 of 3, or 3 of 5, etc.</em>)</li>
 <p>This provides both security and fault tolerance: The system can continue
 operating even if some <strong>SPIKE Keeper</strong>s become temporarily unavailable, as
 long as the threshold number of shards remains accessible.</p>
-<h2 id="spike-nexus-init-flow">SPIKE Nexus Init Flow</h2>
-<p>The following diagram depicts <strong>SPIKE Nexus</strong> initial bootstrapping flow:</p>
+<h2 id="spike-bootstrap-flow">SPIKE Bootstrap Flow</h2>
+<p>The following diagram depicts the <strong>SPIKE Bootstrap</strong> flow, where <strong>SPIKE
+Keepers</strong> receive their shards for <strong>SPIKE Nexus</strong> to use. Open the picture on a
+new tab for an enlarged version of it.</p>
 
-<a href="&#x2F;assets&#x2F;docs&#x2F;spike-nexus-bootstrapping.jpg" title="Secret Nexus bootstrapping.">
+<a href="&#x2F;assets&#x2F;docs&#x2F;spike-bootstrap-flow.jpg" title="SPIKE Bootstrap flow.">
     <div class="z2h-image">
-        <p class="img"><img src="&#x2F;assets&#x2F;docs&#x2F;spike-nexus-bootstrapping.jpg" alt="Secret Nexus bootstrapping."/></p>
+        <p class="img"><img src="&#x2F;assets&#x2F;docs&#x2F;spike-bootstrap-flow.jpg" alt="SPIKE Bootstrap flow."/></p>
         <p class="alt" style="text-align: center; font-style: italic;
-    margin-top: -1.125em; font-size: 1em;">Secret Nexus bootstrapping.</p>
+    margin-top: -1.125em; font-size: 1em;">SPIKE Bootstrap flow.</p>
+    </div>
+</a>
+<h2 id="spike-nexus-initial-bootstrapping">SPIKE Nexus Initial Bootstrapping</h2>
+<p>The following diagram depicts <strong>SPIKE Nexus</strong> initial bootstrapping flow.</p>
+
+<a href="&#x2F;assets&#x2F;docs&#x2F;spike-nexus-bootstrapping.jpg" title="SPIKE Nexus initialization.">
+    <div class="z2h-image">
+        <p class="img"><img src="&#x2F;assets&#x2F;docs&#x2F;spike-nexus-bootstrapping.jpg" alt="SPIKE Nexus initialization."/></p>
+        <p class="alt" style="text-align: center; font-style: italic;
+    margin-top: -1.125em; font-size: 1em;">SPIKE Nexus initialization.</p>
     </div>
 </a>
 <p>When <strong>SPIKE Nexus</strong> is configured to use an <strong>in-memory</strong> backing store, we
-don’t need <strong>SPIKE Keeper</strong> because the database is in <strong>SPIKE Nexus</strong>’s memory
+don’t need <strong>SPIKE Keeper</strong>s because the database is in <strong>SPIKE Nexus</strong>’s memory
 and there is nothing to recover if <strong>SPIKE Nexus</strong> crashes. This is a convenient
 setup to use for <strong>development</strong> purposes.</p>
 <p>When <strong>SPIKE Nexus</strong> is configured to use a persistent backing store (<em>like
-SQLite</em>), however, then it will follow two paths.</p>
+SQLite</em>), it does <strong>not</strong> generate the root key itself. Instead, <strong>SPIKE Nexus</strong>
+always polls <strong>SPIKE Keeper</strong>s to collect enough shards to reconstruct the
+root key. This polling continues indefinitely until the threshold number of
+shards is collected.</p>
+<p>The <strong>root key</strong> is generated by a separate component: <strong>SPIKE Bootstrap</strong>.
+When <strong>SPIKE Bootstrap</strong> runs, it generates a secure random root key, splits
+it into <a href="https://en.wikipedia.org/wiki/Shamir%27s_secret_sharing" title="Shamir&#39;s Secret Sharing"><strong>Shamir</strong></a> shards, and distributes those shards to the
+configured <strong>SPIKE Keeper</strong> instances. This separation of concerns keeps
+<strong>SPIKE Nexus</strong>’s initialization flow simple and predictable.</p>
+<h2 id="spike-nexus-updating-spike-keepers">SPIKE Nexus Updating SPIKE Keepers</h2>
+<p>In addition, there is an ongoing operation that runs as a separate <strong>goroutine</strong>
+inside <strong>SPIKE Nexus</strong>:</p>
 <ul>
-<li>If <strong>SPIKE Nexus</strong> has bootstrapped before, then it has just crashed. Which
-means, it has lost its <strong>root key</strong>. So, it will try to recover its
-<strong>root key</strong> by requesting <strong>shards</strong> from the <strong>SPIKE Keeper</strong>s.</li>
-<li>If, otherwise, it’s the first time <strong>SPIKE Nexus</strong> is bootstrapping, then
-we compute a secure <strong>root key</strong>, initialize the backing store with that
-root key. Split the root key into <a href="https://en.wikipedia.org/wiki/Shamir%27s_secret_sharing" title="Shamir&#39;s Secret Sharing"><strong>Shamir</strong></a> shards, and send those
-shards to relevant <strong>SPIKE Keeper</strong> instances.</li>
+<li>At regular intervals, if <strong>SPIKE Nexus</strong> has a <strong>root key</strong>, it computes
+<a href="https://en.wikipedia.org/wiki/Shamir%27s_secret_sharing" title="Shamir&#39;s Secret Sharing"><strong>Shamir</strong></a> shards and dispatches them to the <strong>SPIKE Keeper</strong>s.
+This ensures that the shards remain synchronized even if individual
+<strong>SPIKE Keeper</strong>s restart.</li>
 </ul>
-<p>Regardless of the above flow, there is an ongoing operation (<em>shown in the
-bottom part of the diagram</em>) that runs as a separate <strong>goroutine</strong>.</p>
-<ul>
-<li>At regular intervals, if <strong>SPIKE Nexus</strong> happens to have a <strong>root key</strong>, it
-computes <a href="https://en.wikipedia.org/wiki/Shamir%27s_secret_sharing" title="Shamir&#39;s Secret Sharing"><strong>Shamir</strong></a> shards out of it and dispatches these shards
-to the <strong>SPIKE Keeper</strong>s.</li>
-</ul>
-<p>This flow establishes a secure boot process that handles both initial setup and
-subsequent startups. The system ensures the <strong>root key</strong> is either properly
-recovered from existing shards or securely generated and distributed when
-starting fresh.</p>
+
+<a href="&#x2F;assets&#x2F;docs&#x2F;spike-nexus-keeper-update.jpg" title="SPIKE Nexus updating SPIKE Keepers.">
+    <div class="z2h-image">
+        <p class="img"><img src="&#x2F;assets&#x2F;docs&#x2F;spike-nexus-keeper-update.jpg" alt="SPIKE Nexus updating SPIKE Keepers."/></p>
+        <p class="alt" style="text-align: center; font-style: italic;
+    margin-top: -1.125em; font-size: 1em;">SPIKE Nexus updating SPIKE Keepers.</p>
+    </div>
+</a>
+<p>This flow establishes a secure boot process: <strong>SPIKE Bootstrap</strong> handles the
+initial key generation and distribution, while <strong>SPIKE Nexus</strong> focuses solely
+on recovering the root key from <strong>SPIKE Keeper</strong>s whenever it starts.</p>
+<p>The following state diagram illustrates how each of these recovery and
+restoration steps relate to the existence of the <em>root key</em>* in memory.</p>
+
+<a href="&#x2F;assets&#x2F;docs&#x2F;root-key-state-diagram.jpg" title="SPIKE Nexus Root Key state diagram.">
+    <div class="z2h-image">
+        <p class="img"><img src="&#x2F;assets&#x2F;docs&#x2F;root-key-state-diagram.jpg" alt="SPIKE Nexus Root Key state diagram."/></p>
+        <p class="alt" style="text-align: center; font-style: italic;
+    margin-top: -1.125em; font-size: 1em;">SPIKE Nexus Root Key state diagram.</p>
+    </div>
+</a>
+<h2 id="spike-break-the-glass-disaster-recovery">SPIKE “break-the-glass” Disaster Recovery</h2>
 <p>There is one edge case, though: When there is a total system crash, and <strong>SPIKE
 Keeper</strong>s don’t have any shards in their memory, then you’ll need a manual
 recovery.</p>
 <p>This event is highly unlikely, as deploying a sufficient number of <strong>SPIKE
-Keepers</strong> with proper geographic distribution significantly reduces the
+Keeper</strong>s with proper geographic distribution significantly reduces the
 probability of them all crashing simultaneously. Since <strong>SPIKE Keepers</strong> are
 designed to operate independently and without requiring intercommunication,
 failures caused by systemic issues are minimized. By ensuring redundancy across
 diverse geographic locations, even large-scale outages or localized failures are
 highly improbable to impact all <strong>SPIKE Keepers</strong> at once.</p>
 <p>That being said, unexpected failures can occur, and the disaster recovery
-procedure for these situations is described in the next section.</p>
-<h2 id="spike-break-the-glass-disaster-recovery">SPIKE “break-the-glass” Disaster Recovery</h2>
+procedure for these situations.</p>
 <blockquote>
 <p><strong>Need a Runbook</strong>?</p>
-<p>The <a href="/@/operations/recovery.md"><strong>SPIKE Recovery Procedures</strong></a> page contains
+<p>The <a href="https://spike.ist/operations/recovery/"><strong>SPIKE Recovery Procedures</strong></a> page contains
 step-by-step instructions to follow during, before, and a disaster occurs.</p>
 <p>You will need to prepare <strong>beforehand</strong> so that you can recover the root
 key when the system fails to automatically recover it from <strong>SPIKE Keeper</strong>s.</p>
 </blockquote>
-<p>The following diagram outlines <strong>SPIKE</strong>’s manual disaster recovery procedure.
-You can open the picture on a new tab for an enlarged version of it.</p>
+<p>The following diagram outlines creating recovery shards for <strong>SPIKE Nexus</strong>
+before a disaster strikes, while the system is healthy. The operator leverages
+<code>spike operator recover</code> command to create the shards. You can open the picture
+on a new tab for an enlarged version of it.</p>
 
-<a href="&#x2F;assets&#x2F;docs&#x2F;spike-doomsday-recovery.jpg" title="SPIKE Manual disaster recovery flow.">
+<a href="&#x2F;assets&#x2F;docs&#x2F;spike-break-the-glass-recover.jpg" title="SPIKE Manual disaster recovery flow.">
     <div class="z2h-image">
-        <p class="img"><img src="&#x2F;assets&#x2F;docs&#x2F;spike-doomsday-recovery.jpg" alt="SPIKE Manual disaster recovery flow."/></p>
+        <p class="img"><img src="&#x2F;assets&#x2F;docs&#x2F;spike-break-the-glass-recover.jpg" alt="SPIKE Manual disaster recovery flow."/></p>
         <p class="alt" style="text-align: center; font-style: italic;
     margin-top: -1.125em; font-size: 1em;">SPIKE Manual disaster recovery flow.</p>
+    </div>
+</a>
+<p>And the following diagram outlines how you can use <code>spike operator restore</code>
+command to restore <strong>SPIKE Nexus</strong> back to its working state after a disaster.
+You can open the picture on a new tab for an enlarged version of it.</p>
+
+<a href="&#x2F;assets&#x2F;docs&#x2F;spike-break-the-glass-restore.jpg" title="SPIKE Nexus manual restoration flow.">
+    <div class="z2h-image">
+        <p class="img"><img src="&#x2F;assets&#x2F;docs&#x2F;spike-break-the-glass-restore.jpg" alt="SPIKE Nexus manual restoration flow."/></p>
+        <p class="alt" style="text-align: center; font-style: italic;
+    margin-top: -1.125em; font-size: 1em;">SPIKE Nexus manual restoration flow.</p>
     </div>
 </a>
 <h3 id="preventive-backup">Preventive Backup</h3>
@@ -1033,11 +1146,11 @@ erases the copies generated as an output to <code>spike recover</code>.</li>
 <p>When later recovery is needed, the Operator will provide these shards to
 <strong>SPIKE</strong> to restore the system back to its working state.</p>
 <h3 id="disaster-recovery">Disaster Recovery</h3>
-<p>When disaster strikes (<em>shown in the red box</em>):</p>
+<p>When disaster strikes:</p>
 <ul>
 <li><strong>SPIKE Nexus</strong> and SPIKE Keepers have simultaneously crashed and restarted.</li>
-<li><strong>SPIKE Nexus</strong> has <strong>lost</strong> its <strong>root key</strong></li>
-<li><strong>SPIKE Keeper</strong>s don’t have enough shards</li>
+<li><strong>SPIKE Nexus</strong> has <strong>lost</strong> its <strong>root key</strong>.</li>
+<li><strong>SPIKE Keeper</strong>s don’t have enough shards.</li>
 <li>Thus, automatic recovery is impossible and the system requires manual
 recovery.</li>
 </ul>
@@ -1053,59 +1166,9 @@ the root key.</li>
 <p>Once enough shards are provided, <strong>SPIKE Nexus</strong> reconstructs the <strong>root key</strong>.</p>
 <p>A separate goroutine redistributes shards to <strong>SPIKE Keeper</strong>s and the System
 returns to normal operation.</p>
-<h2 id="spike-components-1">SPIKE Components</h2>
-<p>Here is an overview of each <strong>SPIKE</strong> component:</p>
-<h3 id="spike-nexus">SPIKE Nexus</h3>
-<ul>
-<li><strong>SPIKE Nexus</strong> is the primary component responsible for secrets management.</li>
-<li>It creates and manages the root encryption key.</li>
-<li>It handles secret encryption and decryption.</li>
-<li>It syncs the <strong>root key</strong>’s <a href="https://en.wikipedia.org/wiki/Shamir%27s_secret_sharing" title="Shamir&#39;s Secret Sharing"><strong>Shamir Shards</strong></a> with <strong>SPIKE
-Keepers</strong>s. These shards then can be used to recover <strong>SPIKE Nexus</strong>
-upon a crash.</li>
-<li>It provides an <strong>RESTful mTLS API</strong> for <em>secret lifecycle management</em>,
-<em>policy management</em>, <em>admin operations</em>, and <em>disaster recovery</em>.</li>
-</ul>
-<h3 id="spike-keeper">SPIKE Keeper</h3>
-<ul>
-<li>It is designed to be <strong>simple</strong> and <strong>reliable</strong>.</li>
-<li>It does one thing and does it well.</li>
-<li>Its <strong>only</strong> goal is to keep a <a href="https://en.wikipedia.org/wiki/Shamir%27s_secret_sharing" title="Shamir&#39;s Secret Sharing"><strong>Shamir Shard</strong></a> in <strong>memory</strong>.</li>
-<li>By design, it does not have any knowledge about its peer <strong>SPIKE Keepers</strong>,
-nor <strong>SPIKE Nexus</strong>. It doesn’t require any configuration to be brought up.
-This makes it simple to operate, replace, scale, replicate.</li>
-<li>It enables automatic recovery if <strong>SPIKE Nexus</strong> crashes.</li>
-</ul>
-<p>Since <strong>SPIKE Keeper</strong> only contains a single shard, its compromise will not
-compromise the system.</p>
-<p>The more keepers you have, the more reliable and secure your <strong>SPIKE</strong>
-deployment will be. We recommend <code>5</code> <strong>SPIKE Keeper</strong> instances with a
-shard-generation threshold of <code>3</code>, for production deployments.</p>
-<p><a href="/@/operations/production.md">Check out <strong>SPIKE Production Hardening Guide</strong></a> for more
-details.</p>
-<h3 id="spike-pilot">SPIKE Pilot</h3>
-<ul>
-<li>It is the CLI to the system (<em>i.e., the <code>spike</code> binary that you see
-in the examples</em>).</li>
-<li>It converts CLI commands to <strong>RESTful mTLS API calls</strong> to <strong>SPIKE Nexus</strong>.</li>
-</ul>
-<p><strong>SPIKE Pilot</strong> is the only management entry point to the system.
-Thus, deleting/disabling/removing <strong>SPIKE Pilot</strong> reduces the attack surface
-of the system since admin operations will not be possible without
-<strong>SPIKE Pilot</strong>.</p>
-<p>Similarly, revoking the <strong>SPIRE Server</strong> registration of <strong>SPIKE Pilot</strong>’s
-<strong>SVID</strong> (<em>once SPIKE Pilot is no longer needed</em>) will effectively block
-administrative access to the system, improving the overall security posture.</p>
-<h3 id="builtin-spiffe-ids">Builtin SPIFFE IDs</h3>
-<p><strong>SPIKE Nexus</strong> recognizes the following builtin SPIFFE IDS:</p>
-<ul>
-<li><code>spiffe://$trustRoot/spike/pilot/role/superuser</code>: Super Admin</li>
-<li><code>spiffe://$trustRoot/spike/pilot/role/recover</code>: Recovery Admin</li>
-<li><code>spiffe://$trustRoot/spike/pilot/role/restore</code>: Restore Admin</li>
-</ul>
-<p>You can check out the <a href="https://spike.ist/architecture/security-model/#administrative-access">**Administrative Access section of SPIKE security
-model</a> for more
-information about these roles.</p>
+<h2 id="want-more-pretty-pictures">Want More Pretty Pictures?</h2>
+<p>The diagrams above have been simplified for clarity. You can find more detailed
+ones in the <a href="https://github.com/spiffe/spike/tree/main/diagrams" title="SPIKE Diagrams"><code>diagrams</code> folder of the <strong>SPIKE</strong> GitHub repository</a>.</p>
 <p>&nbsp;</p>
 <hr />
 <ul>
