@@ -436,8 +436,8 @@ security.
 Configure the threshold and total shares using environment variables:
 
 ```bash
-export SPIKE_SHAMIR_THRESHOLD=3   # Need 3 shards to reconstruct
-export SPIKE_SHAMIR_SHARES=5      # Generate 5 total shards
+export SPIKE_NEXUS_SHAMIR_THRESHOLD=3   # Need 3 shards to reconstruct
+export SPIKE_NEXUS_SHAMIR_SHARES=5      # Generate 5 total shards
 ```
 
 **Recommended configurations by deployment size:**

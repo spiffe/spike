@@ -11,13 +11,13 @@
 
 **Example Configuration:**
 ```
-ShamirThreshold = 3
-ShamirShares = 5
+ShamirThreshold = 2
+ShamirShares = 3
 
-t = 3 - 1 = 2
-n = 5
+t = 2 - 1 = 1
+n = 3
 
-Need any 3 of 5 shards to reconstruct root key
+Need any 2 of 3 shards to reconstruct root key
 ```
 
 ### Polynomial Construction

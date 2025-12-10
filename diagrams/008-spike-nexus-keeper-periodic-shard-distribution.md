@@ -18,7 +18,7 @@ participant Keepers as SPIKE Keepers<br/>(all instances)
     Nexus->>Timer: Start SendShardsPeriodically()
     Note right of Timer: Background goroutine<br/>Runs every 5 minutes
 
-    loop Every SPIKE_RECOVERY_KEEPER_UPDATE_INTERVAL
+    loop Every SPIKE_NEXUS_KEEPER_UPDATE_INTERVAL
         Timer->>RootKey: GetRootKey()
 
         alt Root key not available
@@ -28,7 +28,7 @@ participant Keepers as SPIKE Keepers<br/>(all instances)
             RootKey-->>Timer: [32]byte root key
 
             Timer->>Shamir: computeShares(rootKey)
-            Note right of Shamir: Generate deterministic shards<br/>t = ShamirThreshold - 1<br/>n = ShamirShares<br/>Example: 5 shards, need 3
+            Note right of Shamir: Generate deterministic shards<br/>t = ShamirThreshold - 1<br/>n = ShamirShares<br/>Example: 3 shards, need 2
 
             Shamir->>Shamir: Create P256 scalar from key
             Shamir->>Shamir: Deterministic share generation
@@ -51,7 +51,7 @@ participant Keepers as SPIKE Keepers<br/>(all instances)
 
                 alt Valid peer
                     Keepers->>Keepers: state.SetShard(shard)
-                    Note right of Keepers: Store in memory<br/>Protected by mutex<br/>Global: keeperShard variable
+                    Note right of Keepers: Stored in-memory<br/>(package-level shard,<br/>mutex-protected)
 
                     Keepers-->>MTLSClient: 200 OK
 

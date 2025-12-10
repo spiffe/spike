@@ -15,10 +15,10 @@ root key, creates Shamir shards, and distributes them to **SPIKE Keeper**s.
 | Deployment         | DaemonSet/Deployment   | Systemd service         |
 
 **Configuration:**
-* `SPIKE_SHAMIR_THRESHOLD`: Number of shards needed (default: 2)
-* `SPIKE_SHAMIR_SHARES`: Total shards to generate (default: 4)
-* `SPIKE_KEEPERS`: Comma-separated Keeper URLs
-* `SPIKE_NEXUS_URL`: SPIKE Nexus endpoint
+* `SPIKE_NEXUS_SHAMIR_THRESHOLD`: Number of shards needed (default: 2)
+* `SPIKE_NEXUS_SHAMIR_SHARES`: Total shards to generate (default: 3)
+* `SPIKE_NEXUS_KEEPER_PEERS`: Comma-separated Keeper URLs
+* `SPIKE_NEXUS_API_URL`: SPIKE Nexus endpoint
 * `SPIKE_BOOTSTRAP_FORCE`: Force bootstrap even if already completed (K8s only)
 
 **Security Notes:**
@@ -92,10 +92,10 @@ sequenceDiagram
     Note right of State: Elliptic curve scalar<br/>deterministic operations
 
     State->>Shamir: shamir.New(reader, t, secret)
-    Note right of Shamir: t = ShamirThreshold - 1<br/>Example: t=2 (need 3 shards)
+    Note right of Shamir: t = ShamirThreshold - 1<br/>Example: t=1 (need 2 shards)
 
     Shamir->>Shamir: Split secret into n shares
-    Note right of Shamir: n = ShamirShares<br/>Example: n=5 (5 total shards)
+    Note right of Shamir: n = ShamirShares<br/>Example: n=3 (3 total shards)
 
     Shamir-->>State: []ShamirShard
 

@@ -65,32 +65,33 @@ permissions: [read]
 
 # Web service configuration
 name: "web-service-policy"
-spiffeid: "^spiffe://example\\.org/web-service$"
-path: "^secrets/web-service/config$"
+spiffeidPattern: "^spiffe://example\\.org/web-service$"
+pathPattern: "^secrets/web-service/config$"
 permissions: [read, write]
 
 # Cache credentials
 name: "cache-policy"
-spiffeid: "^spiffe://example\\.org/cache/$"
-path: "^secrets/cache/redis/session$"
+spiffeidPattern: "^spiffe://example\\.org/cache/$"
+pathPattern: "^secrets/cache/redis/session$"
 permissions: [read]
 
 # Application environment variables
 name: "app-env-policy"
-spiffeid: "^spiffe://example\\.org/app$"
-path: "^secrets/app/env/production$"
+spiffeidPattern: "^spiffe://example\\.org/app$"
+pathPattern: "^secrets/app/env/production$"
 permissions: [read, list]
 ```
 
 ### All Available Permissions
 ```yaml
 name: "admin-policy"
-spiffeid: "^spiffe://example\\.org/admin$"
-path: "secrets"
+spiffeidPattern: "^spiffe://example\\.org/admin$"
+pathPattern: "secrets"
 permissions:
   - read    # Permission to read secrets
   - write   # Permission to create, update, or delete secrets
   - list    # Permission to list resources
+  - execute # Permission for cipher operations (encrypt/decrypt)
   - super   # Administrative permissions
 ```
 
@@ -99,8 +100,8 @@ permissions:
 #### Flow Sequence for Permissions
 ```yaml
 name: "database-policy"
-spiffeid: "^spiffe://example\\.org/database$"
-path: "^secrets/database/production$"
+spiffeidPattern: "^spiffe://example\\.org/database$"
+pathPattern: "^secrets/database/production$"
 permissions: [read, write, list]
 ```
 
@@ -248,20 +249,22 @@ SPIKE repository has the following example policies for your convenience:
 
 #### Permission Types
 
-| Permission | Description                                            |
-|------------|--------------------------------------------------------|
-| **read**   | Allows reading secrets and resources                   |
-| **write**  | Allows creating, updating, and deleting secrets        |
-| **list**   | Allows listing resources and directories               |
-| **super**  | Full administrative permissions (**use with caution**) |
+| Permission  | Description                                            |
+|-------------|--------------------------------------------------------|
+| **read**    | Allows reading secrets and resources                   |
+| **write**   | Allows creating, updating, and deleting secrets        |
+| **list**    | Allows listing resources and directories               |
+| **execute** | Allows cipher operations (encrypt/decrypt)             |
+| **super**   | Full administrative permissions (**use with caution**) |
 
 #### Validation
 
 All policy configurations are validated to ensure:
 
-1. **Required fields**: `name`, `spiffeid`, `path`, and `permissions` must be 
-   present
-2. **Valid permissions**: Only `read`, `write`, `list`, and `super` are allowed
+1. **Required fields**: `name`, `spiffeidPattern`, `pathPattern`, and
+   `permissions` must be present
+2. **Valid permissions**: Only `read`, `write`, `list`, `execute`, and `super`
+   are allowed
 3. **Valid YAML syntax**: Proper YAML formatting is required (for YAML files)
 4. **Non-empty values**: All fields must have non-empty values
 

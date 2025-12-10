@@ -34,7 +34,7 @@ sequenceDiagram
     Deterministic-->>State: io.Reader
 
     State->>Shamir: shamir.New(reader, threshold, secret)
-    Note right of Shamir: threshold = ShamirThreshold - 1<br/>Example: t=2 (need 3 shards)<br/>total shares = ShamirShares<br/>Example: n=5 (5 total shards)
+    Note right of Shamir: threshold = ShamirThreshold - 1<br/>Example: t=1 (need 2 shards)<br/>total shares = ShamirShares<br/>Example: n=3 (3 total shards)
 
     Shamir->>Shamir: Split secret into n shares
     Note right of Shamir: Polynomial interpolation<br/>in finite field<br/>Degree t polynomial
@@ -54,7 +54,7 @@ sequenceDiagram
     Note over Verify: Verify shards can reconstruct secret
 
     Verify->>Verify: Take first t+1 shards
-    Note right of Verify: Example: 3 of 5 shards
+    Note right of Verify: Example: 2 of 3 shards
 
     Verify->>Shamir: secretsharing.Recover(t, shares)
     Note right of Shamir: Lagrange interpolation<br/>Reconstruct polynomial

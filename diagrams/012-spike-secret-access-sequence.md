@@ -3,7 +3,7 @@
 ```mermaid
 graph TD
     A[Client requests secret] --> B[Extract peer SPIFFE ID]
-    B --> C[Load all policies from cache]
+    B --> C[Load all policies]
     C --> D{For each policy}
     D --> E{SPIFFE ID matches pattern?}
     E -->|No| D
@@ -14,3 +14,7 @@ graph TD
     G -->|Yes| H[Grant access]
     D -->|No matches| I[Deny access]
 ```
+
+**Note:** SPIKE Pilot has a management bypass in `CheckAccess()`. If the peer
+SPIFFE ID matches the Pilot role, access is granted immediately without policy
+evaluation.

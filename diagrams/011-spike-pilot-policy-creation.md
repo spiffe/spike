@@ -32,7 +32,7 @@ sequenceDiagram
     Note right of Validation: Must be valid regex<br/>Example: "secrets/.*"<br/>NOT "/secrets/*"
 
     Validation->>Validation: Validate permissions
-    Note right of Validation: Valid: read, write, delete,<br/>list, admin, super
+    Note right of Validation: Valid: read, write,<br/>list, execute, super
 
     alt Validation fails
         Validation-->>Pilot: Error

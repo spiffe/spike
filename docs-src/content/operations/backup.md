@@ -54,12 +54,12 @@ metadata. This database is typically located in `~/.spike` on the Nexus server.
 
 ```bash
 # 1. First, ensure consistent state by using SQLite's online backup API
-sqlite3 ~/.spike/database.sqlite \
+sqlite3 ~/.spike/data/spike.db \
   ".backup '/backup/spike_nexus_db_$(date +%Y%m%d_%H%M%S).sqlite'"
 
 # 2. For WAL mode databases, checkpoint first to ensure consistency
-sqlite3 ~/.spike/database.sqlite "PRAGMA wal_checkpoint(FULL);"
-sqlite3 ~/.spike/database.sqlite \
+sqlite3 ~/.spike/data/spike.db "PRAGMA wal_checkpoint(FULL);"
+sqlite3 ~/.spike/data/spike.db \
   ".backup '/backup/spike_nexus_db_$(date +%Y%m%d_%H%M%S).sqlite'"
 
 # 3. Verify backup integrity
@@ -84,7 +84,7 @@ Shamir's Secret Sharing:
 # IMPORTANT: Run this BEFORE any disaster occurs
 spike recover
 
-# This will generate multiple shard files under `~/.spike/recovery` folder. 
+# This will generate multiple shard files under `~/.spike/recover` folder. 
 ```
 
 **Secure handling of recovery shards:**
@@ -158,12 +158,12 @@ To restore the SQLite database:
 2. Replace the current database with the backup.
    ```bash
    cp /backup/spike_nexus_db_TIMESTAMP.sqlite \
-     ~/.spike/database.sqlite
+     ~/.spike/data/spike.db
 
 3. Set appropriate permissions
    ```bash
-   chown spike:spike ~/.spike/database.sqlite
-   chmod 600 ~/.spike/database.sqlite
+   chown spike:spike ~/.spike/data/spike.db
+   chmod 600 ~/.spike/data/spike.db
    ```
 
 4. Start **SPIKE Nexus**
@@ -178,7 +178,7 @@ After completing a restore operation, verify system integrity:
 
 ```bash
 # Verify database integrity
-sqlite3 ~/.spike/database.sqlite "PRAGMA integrity_check;"
+sqlite3 ~/.spike/data/spike.db "PRAGMA integrity_check;"
 
 # Test secret access to verify encryption/decryption is working
 spike get /path/to/test/secret

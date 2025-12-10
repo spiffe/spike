@@ -17,9 +17,9 @@ graph TB
 
     subgraph "SPIKE Core Components"
         NEXUS[SPIKE Nexus<br/>Secret Management Service<br/>Port: 8553]
-        KEEPER1[SPIKE Keeper 1<br/>Shard Storage<br/>Port: 8554]
-        KEEPER2[SPIKE Keeper 2<br/>Shard Storage<br/>Port: 8554]
-        KEEPER3[SPIKE Keeper 3<br/>Shard Storage<br/>Port: 8554]
+        KEEPER1[SPIKE Keeper 1<br/>Shard Storage<br/>Port: 8443]
+        KEEPER2[SPIKE Keeper 2<br/>Shard Storage<br/>Port: 8543]
+        KEEPER3[SPIKE Keeper 3<br/>Shard Storage<br/>Port: 8643]
 
         NEXUS -->|Distribute Shards<br/>Every 5min| KEEPER1
         NEXUS -->|Distribute Shards<br/>Every 5min| KEEPER2

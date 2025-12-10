@@ -224,7 +224,7 @@ Here are a few links to get you started:
 * [Bare Metal **SPIKE** Installation][bare-metal]
 * [Configuring **SPIKE**][configuration]
 * [**SPIKE** Architecture][architecture]
-* [*8SPIKE** Production Hardening Guide][hardening]
+* [**SPIKE** Production Hardening Guide][hardening]
 * [**SPIKE** CLI Reference][cli]
 
 ## Open Source Is Better Together
