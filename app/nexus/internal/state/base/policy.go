@@ -47,7 +47,7 @@ func CheckAccess(
 	const fName = "CheckAccess"
 	// Role:SpikePilot can always manage secrets and policies,
 	// and can call encryption and decryption API endpoints.
-	if spiffeid.IsPilot(peerSPIFFEID) {
+	if spiffeid.IsPilotOperator(peerSPIFFEID) {
 		return true
 	}
 
