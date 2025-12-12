@@ -63,10 +63,19 @@ func InitializeBackingStoreFromKeepers(source *workloadapi.X509Source) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
+	// Note: It is okay for SPIKE Nexus to continue asking shards from
+	// SPIKE Keepers in an infinite loop: The operator may optionally
+	// configure SPIKE Keepers to be hydrated out-of-band instead of
+	// automatically bootstrapping them during SPIKE installation; or
+	// they might decide to "reset" the system with new shards. We
+	// cannot assume that SPIKE Nexus initialization always completes
+	// in a timely manner. If things take longer than usual, there are
+	// always logs that can be inspected to root-cause the issue.
+
 	_, err := retry.Forever(ctx, func() (bool, *sdkErrors.SDKError) {
 		log.Debug(fName, "message", "retry attempt", "time", time.Now().String())
 
-		// Early check: avoid unnecessary function call if source is nil
+		// Early check: avoid unnecessary function call if the source is nil
 		if source == nil {
 			warnErr := *sdkErrors.ErrSPIFFENilX509Source.Clone()
 			warnErr.Msg = "X509 source is nil, will retry"

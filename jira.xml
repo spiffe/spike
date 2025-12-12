@@ -26,12 +26,6 @@
     </watch-list>
   </high-level-plan>
   <task-group theme="immediate">
-    <issue>
-      // TO: both verification and retry is done forever; we need an upper limit
-      // for these.
-      // we can have a goroutine/channel that panic if this entire main thread
-      // does not complete within a given timeframe.
-    </issue>
     <issue priority="high" category="bug" repo="spike-sdk-go">
       SDK Recover/Restore functions use wrong SPIFFE ID check
 
@@ -90,27 +84,7 @@
       it likely tries to trigger bootstrap and fail
       if it fails, give a proper warning in bootstrap instead of random panics.
     </issue>
-    <issue>
-      spike bootstrap and other container images don't have any descriptions
-
-      No description provided
-      This package version was published 7 minutes ago.
-
-      To provide a description, add the following line to your Dockerfile:
-
-      LABEL org.opencontainers.image.description DESCRIPTION
-      For multi-arch images, set a value for the org.opencontainers.image.description key in the annotations field of the manifest:
-
-      "annotations": { "org.opencontainers.image.description": "DESCRIPTION" }
-      https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry#labelling-container-images
-    </issue>
-    <issue>
-      if there are no binaries, `make start` errs out; it should not, since it
-      builds the binaries before anything else anyway.
-    </issue>
-    <issue>
-      add `-trimpath` and `-a` to go build.
-    </issue>
+>
     <issue>
       `make test` is still not parallelized due to env setup.
     </issue>
