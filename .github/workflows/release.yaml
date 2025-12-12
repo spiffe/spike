@@ -44,7 +44,7 @@ jobs:
         uses: docker/setup-buildx-action@v3
 
       - name: Install cosign
-        uses: sigstore/cosign-installer@v3.3.0
+        uses: sigstore/cosign-installer@v4.0.0
 
       - name: Login to Docker HUB
         uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # v3.3.0

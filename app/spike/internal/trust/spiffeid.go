@@ -11,7 +11,7 @@ package trust
 import (
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/log"
-	svid "github.com/spiffe/spike-sdk-go/spiffeid"
+	"github.com/spiffe/spike-sdk-go/spiffeid"
 )
 
 // AuthenticateForPilot verifies if the provided SPIFFE ID belongs to a
@@ -20,7 +20,7 @@ import (
 // SPIFFEID is the SPIFFE ID string to authenticate for pilot access.
 func AuthenticateForPilot(SPIFFEID string) {
 	const fName = "AuthenticateForPilot"
-	if !svid.IsPilot(SPIFFEID) {
+	if !spiffeid.IsPilotOperator(SPIFFEID) {
 		failErr := *sdkErrors.ErrAccessUnauthorized.Clone()
 		failErr.Msg = "you need a 'pilot' SPIFFE ID to use this command"
 		log.FatalErr(fName, failErr)
@@ -33,7 +33,7 @@ func AuthenticateForPilot(SPIFFEID string) {
 // SPIFFEID is the SPIFFE ID string to authenticate for pilot recover access.
 func AuthenticateForPilotRecover(SPIFFEID string) {
 	const fName = "AuthenticateForPilotRecover"
-	if !svid.IsPilotRecover(SPIFFEID) {
+	if !spiffeid.IsPilotRecover(SPIFFEID) {
 		failErr := *sdkErrors.ErrAccessUnauthorized.Clone()
 		failErr.Msg = "you need a 'recover' SPIFFE ID to use this command"
 		log.FatalErr(fName, failErr)
@@ -46,7 +46,7 @@ func AuthenticateForPilotRecover(SPIFFEID string) {
 // SPIFFEID is the SPIFFE ID string to authenticate for restore access.
 func AuthenticateForPilotRestore(SPIFFEID string) {
 	const fName = "AuthenticateForPilotRestore"
-	if !svid.IsPilotRestore(SPIFFEID) {
+	if !spiffeid.IsPilotRestore(SPIFFEID) {
 		failErr := *sdkErrors.ErrAccessUnauthorized.Clone()
 		failErr.Msg = "you need a 'restore' SPIFFE ID to use this command"
 		log.FatalErr(fName, failErr)
