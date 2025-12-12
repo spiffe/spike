@@ -154,25 +154,13 @@
       we can directly remove it too, since vscem is less of a focus nowadays.
     </issue>
     <issue>
-      import "errors"
-
-      // IsOneOf returns true if err is equal to any of the errs.
-      func IsOneOf(err error, errs ...error) bool {
-      for _, e := range errs {
-      if errors.Is(err, e) {
-      return true
-      }
-      }
-      return false
-      }
-    </issue>
-    <issue>
       bare metal; don't run bootstrap, and observe what happens:
       1. do error messages make sense?
       2. can the user understand what's wrong?
     </issue>
     <issue>
-      maybe we can add a configurable "bootsrap time out" as an env var later. For now, the bootsrap app will try to
+      maybe we can add a configurable "bootsrap time out" as an env var later.
+      For now, the bootsrap app will try to
       bootstrap the thing in an exponentially-backing-off loop until it succeeds.
     </issue>
     <issue>

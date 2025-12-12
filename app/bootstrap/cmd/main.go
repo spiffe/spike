@@ -27,6 +27,10 @@ func main() {
 		"version", config.BootstrapVersion,
 	)
 
+	// TODO: create a hard-timer based on env.BootstrapTimeoutVal()
+	// zero: infinite; anything else, exit here when the timer reaches regardless
+	// of progress.
+
 	init := flag.Bool("init", false, "Initialize the bootstrap module")
 	flag.Parse()
 	if !*init {
