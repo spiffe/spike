@@ -8,8 +8,10 @@ import (
 	"context"
 	"crypto/fips140"
 	"flag"
+	"time"
 
 	spike "github.com/spiffe/spike-sdk-go/api"
+	"github.com/spiffe/spike-sdk-go/config/env"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/log"
 
@@ -27,9 +29,23 @@ func main() {
 		"version", config.BootstrapVersion,
 	)
 
-	// TODO: create a hard-timer based on env.BootstrapTimeoutVal()
-	// zero: infinite; anything else, exit here when the timer reaches regardless
-	// of progress.
+	// Hard timeout for the entire bootstrap process.
+	// A value of 0 means no timeout (infinite).
+	bootstrapTimeout := env.BootstrapTimeoutVal()
+	if bootstrapTimeout > 0 {
+		log.Debug(
+			appName,
+			"message", "bootstrap timeout configured",
+			"timeout", bootstrapTimeout.String(),
+		)
+		time.AfterFunc(bootstrapTimeout, func() {
+			log.FatalLn(
+				appName,
+				"message", "bootstrap timeout exceeded, terminating",
+				"timeout", bootstrapTimeout.String(),
+			)
+		})
+	}
 
 	init := flag.Bool("init", false, "Initialize the bootstrap module")
 	flag.Parse()
