@@ -10,6 +10,7 @@ import (
 	"crypto/cipher"
 	"crypto/rand"
 	"encoding/hex"
+	"fmt"
 	"io"
 
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
@@ -40,6 +41,22 @@ func BroadcastKeepers(ctx context.Context, api *spike.API) {
 	const fName = "BroadcastKeepers"
 
 	validation.CheckContext(ctx, fName)
+
+	// Ensures the number of keepers matches the Shamir shares required.
+	keepers := env.KeepersVal()
+	expectedShares := env.ShamirSharesVal()
+
+	if len(keepers) != expectedShares {
+		failErr := sdkErrors.ErrShamirNotEnoughKeepers.Clone()
+		failErr.Msg = fmt.Sprintf(
+			"keeper count mismatch: SPIKE_NEXUS_SHAMIR_SHARES=%d "+
+				"but %d keepers configured in SPIKE_NEXUS_KEEPER_PEERS; "+
+				"these values must match",
+			expectedShares, len(keepers),
+		)
+		log.FatalErr(fName, *failErr)
+		return
+	}
 
 	// RootShares() generates the root key and splits it into shares.
 	// It enforces single-call semantics and will terminate if called again.

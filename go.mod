@@ -80,3 +80,4 @@ require (
 //
 // Example:
 // replace github.com/spiffe/spike-sdk-go => /home/volkan/WORKSPACE/spike-sdk-go
+replace github.com/spiffe/spike-sdk-go => /home/h236/WORKSPACE/spike-sdk-go
