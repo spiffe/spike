@@ -84,7 +84,6 @@
       it likely tries to trigger bootstrap and fail
       if it fails, give a proper warning in bootstrap instead of random panics.
     </issue>
->
     <issue>
       `make test` is still not parallelized due to env setup.
     </issue>
@@ -106,29 +105,20 @@
         * Mini codewalk
     </issue>
     <issue>
-      type ShardGetResponse struct {
-      error field should be optional.
-    </issue>
-    <issue>
       also, empty id or path should raise an error for policies
       and also for secrets
     </issue>
-    <issue>
-      func readPolicyFromFile(filePath string) (Spec, error) {
-      this function is in the wrong file!
-    </issue>
-
     <issue>
       spike-next is still an open branch on helm-charts main.
       check if there are still things that need to be merged, and what
       needs to be done to push the PR forward.
     </issue>
     <issue>
-      doomsday recovery and restore is not functional at the moment.
-    </issue>
-    <issue>
-      start.sh should test recovery and restore
-      start.sh should test encryption and decryption
+      <sub>doomsday recovery and restore is not functional at the moment.</sub>
+      <issue>
+        start.sh should test recovery and restore
+        start.sh should test encryption and decryption
+      </issue>
     </issue>
     <issue>
       Go through GitHub issues and close the completed ones.
@@ -138,10 +128,6 @@
       // The indexes start from 1 and increase one-by-one by design.
       const maxShardID = 1000
       to env var configuration.
-    </issue>
-    <issue>
-      add some more description etc to SPIKE go SDK github repo.
-      also the social media banners on both repos needs an overhaul.
     </issue>
     <issue>
       additional memory clearing for the sdk:
@@ -157,11 +143,6 @@
       bare metal; don't run bootstrap, and observe what happens:
       1. do error messages make sense?
       2. can the user understand what's wrong?
-    </issue>
-    <issue>
-      maybe we can add a configurable "bootsrap time out" as an env var later.
-      For now, the bootsrap app will try to
-      bootstrap the thing in an exponentially-backing-off loop until it succeeds.
     </issue>
     <issue>
       move this to the SDK: app/spike/internal/trust/spiffeid.go
@@ -180,10 +161,6 @@
       path := "tenants/demo/db/creds"
       the first one creates an error in demo app but the error response is
       not helpful.
-    </issue>
-    <issue>
-      create a banner for SPIKE too; vSecM has fancy banner that show when sharing links on bluesky.
-      https://github.com/vmware/secrets-manager/security/dependabot
     </issue>
     <issue>
       verify that these still work:
