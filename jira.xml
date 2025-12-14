@@ -221,6 +221,11 @@
       create a video about how to develop SPIKE on WSL.
     </issue>
     <issue>
+      BREAKING: API Methods should accept a context, so that they can
+      be cancelled from the consumer without having to for a wrapper
+      goroutine
+    </issue>
+    <issue>
       // TDO: Yes memory is the source of truth; but at least
       // attempt some exponential retries before giving up.
       if err := be.StoreSecret(ctx, path, *secret); err != nil {
