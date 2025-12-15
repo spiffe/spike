@@ -26,6 +26,7 @@
     </watch-list>
   </high-level-plan>
   <task-group theme="immediate">
+    <issue>dummy</issue>
     <issue>
       The banner on the git pages need to change to be aligned with the social
       banner that we created recently.
