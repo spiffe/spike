@@ -23,6 +23,35 @@ them on the [SPIFFE community Slack][slack].
 [slack]: https://slack.spiffe.io/ "SPIFFE Slack"
 [spike]: @/about/intro.md "About SPIKE"
 
+## Environment Variables
+
+It may be useful to set the following environment variables before
+you start.
+
+This is a sample configuration; please adjust as needed:
+
+```bash
+# User Configuration
+#
+# Add this to your ~/.bashrc or ~/.zshrc, ~/.profile,
+# or ~/.zprofile, or wherever you keep your shell config.
+
+export PATH=$PATH:/usr/local/go/bin
+
+# If you are using GPG for signing commits:
+export GPG_TTY=$(tty)
+
+# This where you clone SPIKE, SPIRE, and SPIFFE Helm Charts:
+export WORKSPACE="$HOME/WORKSPACE" 
+
+# These are needed for Bare-Metal Installation:
+export PATH="$PATH:$WORKSPACE/spire/bin"
+export PATH="$PATH:$WORKSPACE/spike"
+
+# Optional, but recommended:
+source "$WORKSPACE/spike/hack/lib/env.sh"
+```
+
 ## Prerequisites
 
 This quickstart guide assumes you are using an [Ubuntu Linux][ubuntu] operating
@@ -175,7 +204,7 @@ as documentation to help understand the development environment.
 source $WORKSPACE/spike/hack/lib/env.sh 
 ```
 
-## Verifying SPIRE Installation
+## Verifying **SPIRE** Installation
 
 Verify SPIRE installation as follows:
 
