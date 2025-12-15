@@ -26,6 +26,10 @@
     </watch-list>
   </high-level-plan>
   <task-group theme="immediate">
+    <issue>
+      The banner on the git pages need to change to be aligned with the social
+      banner that we created recently.
+    </issue>
     <issue priority="high" category="bug" repo="spike-sdk-go">
       SDK Recover/Restore functions use wrong SPIFFE ID check
 
