@@ -26,196 +26,11 @@
     </watch-list>
   </high-level-plan>
   <task-group theme="immediate">
-    <issue>
-      to docs:
-
-      # Developing SPIKE on WSL
-
-      ## Memory Lock Limit Issue
-
-      WSL2 sets a default `RLIMIT_MEMLOCK` of 64MB for all shell sessions. This limit is imposed by WSL's Relay process before any Linux configuration is read, which means standard Linux approaches (`/etc/security/limits.conf`, systemd configs, PAM) cannot override it.
-
-      SPIKE uses memory locking (`mlock`) to prevent sensitive secrets from being swapped to disk. If you encounter memory locking failures during development, this is likely the cause.
-
-      ## Verify the Issue
-
-      ```bash
-      # Check your current limit (reported in KB)
-      ulimit -l
-
-      # Check kernel-level limit (reported in bytes)
-      cat /proc/$$/limits | grep MEMLOCK
-      ```
-
-      If you see `65536` KB (64MB), you're hitting the WSL default.
-
-      ## Solutions
-
-      ### Option 1: Per-Session Fix (Recommended for Development)
-
-      Run this after opening a terminal:
-
-      ```bash
-      sudo prlimit --memlock=unlimited:unlimited --pid $$
-      exec bash
-      ```
-
-      To automate this, add to your `~/.bashrc` or `~/.zshrc`:
-
-      ```bash
-      # Raise memlock limit for SPIKE development
-      if [ "$(cat /proc/$$/limits | grep 'Max locked memory' | awk '{print $4}')" != "unlimited" ]; then
-      sudo prlimit --memlock=unlimited:unlimited --pid $$ 2>/dev/null && exec bash
-      fi
-      ```
-
-      For passwordless operation, add to sudoers (`sudo visudo`):
-
-      ```
-      yourusername ALL=(ALL) NOPASSWD: /usr/bin/prlimit
-      ```
-
-      ### Option 2: Binary Capability (Recommended for Specific Binaries)
-
-      Grant the `CAP_IPC_LOCK` capability to SPIKE binaries, bypassing the limit check entirely:
-
-      ```bash
-      sudo setcap cap_ipc_lock=+ep /path/to/spike
-      ```
-
-      This must be re-applied after recompiling.
-
-      ### Option 3: Docker
-
-      Run SPIKE in Docker with explicit ulimit flags:
-
-      ```bash
-      docker run --ulimit memlock=-1:-1 ...
-      ```
-
-      Or in `docker-compose.yml`:
-
-      ```yaml
-      services:
-      spike:
-      ulimits:
-      memlock:
-      soft: -1
-      hard: -1
-      ```
-
-      ## Why Standard Linux Configs Don't Work
-
-      WSL spawns your shell via a Windows-side Relay process:
-
-      ```
-      Windows WSL (sets 64MB limit) → Relay → your shell
-      ```
-
-      By the time Linux session management runs, the limit is already inherited. The following have no effect on interactive WSL shells:
-
-      - `/etc/security/limits.conf`
-      - `/etc/systemd/user.conf`
-      - `/etc/systemd/system.conf`
-      - PAM configuration
-
-      These configs *do* apply to processes spawned through systemd (e.g., `systemd-run --user`), but not to your default terminal session.
-
-      ## Verifying the Fix
-
-      After applying a fix:
-
-      ```bash
-      # Should show "unlimited"
-      ulimit -l
-
-      # Or check the kernel value directly
-      cat /proc/$$/limits | grep MEMLOCK
-      ```
-    </issue>
-    <issue>
-      if [ "$(ulimit -Hl)" != "unlimited" ]; then
-      sudo prlimit --memlock=unlimited:unlimited --pid $$ 2>/dev/null
-      exec bash
-      fi
-
-      add to lib for wsl and call from zshrc
-      add to documentation
-      this sets limits to unlimited.
-    </issue>
-    <issue>
-      This should return an error instead of logging:
-      // Lock attempts to lock the process memory to prevent swapping.
-      // Returns true if successful, false if not supported or failed.
-      func Lock() bool {
-      const fName = "Lock"
-      // Attempt to lock all current and future memory
-      if err := syscall.Mlockall(
-      syscall.MCL_CURRENT | syscall.MCL_FUTURE); err != nil {
-      log.Log().Warn(fName, "msg", "Failed to lock memory", "err", err.Error())
-      return false
-      }
-
-      return true
-      }
-    </issue>
-    <issue>
-      WSL regenerates /etc/hosts on each start from Windows. You have two options:
-      Option 1: Disable auto-generation and manage it yourself
-      bashsudo nano /etc/wsl.conf
-      Add:
-      ini[network]
-      generateHosts = false
-      Then wsl --shutdown from PowerShell, reopen, and now /etc/hosts is yours to edit.
-      Option 2: Add entries to Windows hosts file
-      Edit C:\Windows\System32\drivers\etc\hosts (as Administrator in Notepad), and WSL will pick them up on next restart.
-    </issue>
-    <issue>
-      spike secret list gives memory warning in std out.
-      it should not
-      > spike secret list
-      {"time":"2025-12-15T03:58:26.299044093-08:00","level":"WARN","msg":"Lock","msg":"Failed to lock memory","err":"cannot allocate memory"}
-      - tenants/demo/db/creds
-    </issue>
     <issue>add installing zola to prerequisites, for those who want to test
       documentation locally</issue>
     <issue>
       The banner on the git pages need to change to be aligned with the social
       banner that we created recently.
-    </issue>
-    <issue priority="high" category="bug" repo="spike-sdk-go">
-      SDK Recover/Restore functions use wrong SPIFFE ID check
-
-      The SDK's `Recover` function in
-      `spike-sdk-go/api/internal/impl/operator/recover.go` checks for generic
-      pilot identity instead of the recover role.
-
-      == Bug Location ==
-
-      recover.go line 100:
-      if !spiffeid.IsPilot(selfSPIFFEID) {
-
-      == Expected ==
-
-      if !spiffeid.IsPilotRecover(selfSPIFFEID) {
-
-      == Impact ==
-
-      The `spike operator recover` command fails with:
-      "recovery can only be performed from SPIKE Pilot"
-
-      Even when the caller has the correct recover role SPIFFE ID:
-      spiffe://spike.ist/spike/pilot/role/recover
-
-      The SDK is checking for the generic pilot ID:
-      spiffe://spike.ist/spike/pilot
-
-      == Files ==
-      - spike-sdk-go/api/internal/impl/operator/recover.go:100
-
-      == Notes ==
-      The same bug likely exists in the `Restore` function. Check
-      `spike-sdk-go/api/internal/impl/operator/restore.go` for similar issue.
     </issue>
     <issue priority="high">
       fix broken things first:
@@ -334,15 +149,6 @@
       move generated binaries to `./bin` folder.
       stream logs to `./logs` folder.
     </issue>
-    <issue>
-      add to docs:
-      sourcing
-      source /home/volkan/WORKSPACE/spike/hack/lib/env.sh
-      in your profile file can be helpful for development
-      it has predefined environment variables for bare-metal local
-      development.
-      `make start` already does that for the apps that it launches.
-    </issue>
     <issue severity="important" urgency="moderate">
       // TDO: check all database operations (secrets, policies, metadata)
       and
@@ -355,6 +161,9 @@
     </issue>
     <issue>
       Try SPIKE on a Mac (and create a video)
+    </issue>
+    <issue>
+      spike on windows video.
     </issue>
     <issue>
       Add a SPIKE Lite section for the docs.
