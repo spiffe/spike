@@ -8,10 +8,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
+	"text/tabwriter"
 	"time"
 
 	"github.com/spf13/cobra"
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
+	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 )
 
 // formatPoliciesOutput formats the output of policies based on the format flag.
@@ -29,7 +31,7 @@ import (
 //
 // Returns:
 //   - string: The formatted output or error message
-func formatPoliciesOutput(cmd *cobra.Command, policies *[]data.Policy) string {
+func formatPoliciesOutput(cmd *cobra.Command, policies *[]reqres.PolicyListItem) string {
 	format, _ := cmd.Flags().GetString("format")
 
 	// Validate format
@@ -60,30 +62,21 @@ func formatPoliciesOutput(cmd *cobra.Command, policies *[]data.Policy) string {
 	}
 
 	// The rest of the function remains the same:
+	// Human readable format for multiple policies
 	var result strings.Builder
+	// Aligns tab-separated columns into a readable table (2-space padding).
+	tw := tabwriter.NewWriter(&result, 0, 0, 2, ' ', 0)
+
 	result.WriteString("POLICIES\n========\n\n")
 
+	// Tabwriter header
+	fmt.Fprintln(tw, "ID\tNAME")
 	for _, policy := range *policies {
-		result.WriteString(fmt.Sprintf("ID: %s\n", policy.ID))
-		result.WriteString(fmt.Sprintf("Name: %s\n", policy.Name))
-		result.WriteString(fmt.Sprintf("SPIFFE ID Pattern: %s\n",
-			policy.SPIFFEIDPattern))
-		result.WriteString(fmt.Sprintf("Path Pattern: %s\n",
-			policy.PathPattern))
+		fmt.Fprintf(tw, "%s\t%s\n", policy.ID, policy.Name)
+	}
 
-		perms := make([]string, 0, len(policy.Permissions))
-		for _, p := range policy.Permissions {
-			perms = append(perms, string(p))
-		}
-		result.WriteString(fmt.Sprintf("Permissions: %s\n",
-			strings.Join(perms, ", ")))
-		result.WriteString(fmt.Sprintf("Created At: %s\n",
-			policy.CreatedAt.Format(time.RFC3339)))
-		if !policy.UpdatedAt.IsZero() {
-			result.WriteString(fmt.Sprintf("Updated At: %s\n",
-				policy.UpdatedAt.Format(time.RFC3339)))
-		}
-		result.WriteString("--------\n\n")
+	if err := tw.Flush(); err != nil {
+		return fmt.Sprintf("Error: failed to flush tabwriter output: %v\n", err)
 	}
 
 	return result.String()

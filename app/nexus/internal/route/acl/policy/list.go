@@ -89,7 +89,15 @@ func RouteListPolicies(
 	if listErr != nil {
 		return net.HandleError(listErr, w, reqres.PolicyListResponse{})
 	}
+	var policyItems []reqres.PolicyListItem
 
-	net.Success(reqres.PolicyListResponse{Policies: policies}.Success(), w)
+	for _, policy := range policies {
+		policyItems = append(policyItems, reqres.PolicyListItem{
+			ID:   policy.ID,
+			Name: policy.Name,
+		})
+	}
+
+	net.Success(reqres.PolicyListResponse{Policies: policyItems}.Success(), w)
 	return nil
 }
