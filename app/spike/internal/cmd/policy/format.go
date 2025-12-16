@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
+	"text/tabwriter"
 	"time"
 
 	"github.com/spf13/cobra"
@@ -29,9 +30,7 @@ import (
 //
 // Returns:
 //   - string: The formatted output or error message
-func formatPoliciesOutput(
-	cmd *cobra.Command, policies *[]data.PolicyListItem,
-) string {
+func formatPoliciesOutput(cmd *cobra.Command, policies *[]data.PolicyListItem) string {
 	format, _ := cmd.Flags().GetString("format")
 
 	// Validate format
@@ -61,13 +60,22 @@ func formatPoliciesOutput(
 		return "No policies found."
 	}
 
+	// The rest of the function remains the same:
+	// Human readable format for multiple policies
 	var result strings.Builder
+	// Aligns tab-separated columns into a readable table (2-space padding).
+	tw := tabwriter.NewWriter(&result, 0, 0, 2, ' ', 0)
+
 	result.WriteString("POLICIES\n========\n\n")
 
+	// Tabwriter header
+	fmt.Fprintln(tw, "ID\tNAME")
 	for _, policy := range *policies {
-		result.WriteString(fmt.Sprintf("ID: %s\n", policy.ID))
-		result.WriteString(fmt.Sprintf("Name: %s\n", policy.Name))
-		result.WriteString("--------\n\n")
+		fmt.Fprintf(tw, "%s\t%s\n", policy.ID, policy.Name)
+	}
+
+	if err := tw.Flush(); err != nil {
+		return fmt.Sprintf("Error: failed to flush tabwriter output: %v\n", err)
 	}
 
 	return result.String()
