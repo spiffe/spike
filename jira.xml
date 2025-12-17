@@ -162,6 +162,21 @@
     </issue>
   </task-group>
   <task-group state="parked" until="after-release">
+    <issue>
+      code duplication
+
+      // Initialize parameters
+      g := group.P256
+      t := uint(env.ShamirThresholdVal() - 1) // Need t+1 shares to reconstruct
+      n := uint(env.ShamirSharesVal())        // Total number of shares
+
+      // Create a secret from our 32-byte key:
+      rootSecret := g.NewScalar()
+      if err := rootSecret.UnmarshalBinary(rootKeySeed[:]); err != nil {
+      failErr := sdkErrors.ErrDataUnmarshalFailure.Wrap(err)
+      log.FatalErr(fName, *failErr)
+      }
+    </issue>
     <issue area="helm-charts">
       * helm-charts-hardened is still waiting for spike-next merge.
       * helm-charts-hardene/spike-next has incorrect assumptions about
