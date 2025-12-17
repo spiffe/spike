@@ -26,6 +26,15 @@
       <issue>
         spike cipher (stream mode) is broken -> Murat.
       </issue>
+      <issue>
+        PRs to watch:
+        * https://github.com/spiffe/spike/pull/260
+        * https://github.com/spiffe/spike/pull/262
+        * https://github.com/spiffe/spike/pull/263
+        * https://github.com/spiffe/spike-sdk-go/pull/134
+        * https://github.com/spiffe/spike-sdk-go/pull/133
+        * https://github.com/spiffe/spike-sdk-go/pull/133
+      </issue>
     </watch-list>
   </high-level-plan>
   <task-group theme="immediate">
@@ -58,30 +67,6 @@
         * Mini codewalk
     </issue>
     <issue>
-      start.sh should test recovery and restore
-      start.sh should test encryption and decryption
-    </issue>
-
-    <issue>
-      demo main.go:
-
-      path := "^tenants/demo/db/creds"
-      path := "tenants/demo/db/creds"
-      the first one creates an error in demo app but the error response is
-      not helpful.
-    </issue>
-    <issue>
-      verify that these still work:
-      * https://spike.ist/getting-started/local-deployment/
-      * https://spike.ist/getting-started/quickstart/
-      * https://spike.ist/getting-started/bare-metal/
-      Fix the document for chart-related things, if needed.
-    </issue>
-    <issue>
-      func DatabaseOperationTimeout() time.Duration {
-      ^ this is not used anywhere. find where it should be used and add it.
-    </issue>
-    <issue>
       move generated binaries to `./bin` folder.
       stream logs to `./logs` folder.
     </issue>
@@ -102,50 +87,11 @@
       spike on windows video.
     </issue>
     <issue>
-      Add a SPIKE Lite section for the docs.
-      But before that crypto stream and json mode needs to be fixed.
-
-      SPIKE Lite:
-      # get pilot's pem and key to test things out.
-      # this can be part of documentation too. to test the API directly, 1. extract the pem and key, and then do regular
-      curl.
-      curl -s -X POST --header "Content-Type:application/octet-stream" --data-binary "This is a test encryption"
-      https://spire-spike-nexus/v1/encrypt -k --cert /tmp/pem/svid.0.pem --key /tmp/pem/svid.0.key -o encrypted
-      curl -s -X POST --header "Content-Type:application/octet-stream" --data-binary @encrypted
-      https://spire-spike-nexus/v1/decrypt -k --cert /tmp/pem/svid.0.pem --key /tmp/pem/svid.0.key -o decrypted
-      cat decrypted; echo
-    </issue>
-    <issue>
       func initializeSqliteBackend(rootKey *[32]byte) backend.Backend {
       panic if rootkey is nil or empty.
     </issue>
     <issue>
       create a video about how to develop SPIKE on WSL.
-    </issue>
-    <issue>
-      BREAKING: API Methods should accept a context, so that they can
-      be cancelled from the consumer without having to for a wrapper
-      goroutine
-    </issue>
-    <issue>
-      // TDO: Yes memory is the source of truth; but at least
-      // attempt some exponential retries before giving up.
-      if err := be.StoreSecret(ctx, path, *secret); err != nil {
-      // Log error but continue - memory is the source of truth
-      log.Log().Warn(fName,
-      "message", "Failed to cache secret",
-      "path", path,
-      "err", err.Error(),
-      )
-      }
-
-      SQLLite can error out if there is a blocked transaction or
-      a integrity issue, which a retry can fix it.
-    </issue>
-    <issue>
-      SPIKE Bootstrap tries to reach keepers forever, but it should have a max
-      timeout (like, say, 20mins), after which it gives up and crashes.
-      -- configurable.
     </issue>
     <issue waitingFor="json mode to be fixed">
       demo: encryption as a service
@@ -162,6 +108,47 @@
     </issue>
   </task-group>
   <task-group state="parked" until="after-release">
+    <issue>
+      SPIKE Bootstrap tries to reach keepers forever, but it should have a max
+      timeout (like, say, 20mins), after which it gives up and crashes.
+      -- configurable.
+    </issue>
+
+    <issue>
+      ensure db operations are retried a couple times with backoff
+      before giving up.
+
+      SQLLite can error out if there is a blocked transaction or
+      a integrity issue, which a retry can fix it.
+    </issue>
+    <issue>
+      BREAKING: API Methods should accept a context, so that they can
+      be cancelled from the consumer without having to for a wrapper
+      goroutine
+    </issue>
+    <issue>
+      Add a SPIKE Lite section for the docs.
+      But before that crypto stream and json mode needs to be fixed.
+
+      SPIKE Lite:
+      # get pilot's pem and key to test things out.
+      # this can be part of documentation too. to test the API directly, 1. extract the pem and key, and then do regular
+      curl.
+      curl -s -X POST --header "Content-Type:application/octet-stream" --data-binary "This is a test encryption"
+      https://spire-spike-nexus/v1/encrypt -k --cert /tmp/pem/svid.0.pem --key /tmp/pem/svid.0.key -o encrypted
+      curl -s -X POST --header "Content-Type:application/octet-stream" --data-binary @encrypted
+      https://spire-spike-nexus/v1/decrypt -k --cert /tmp/pem/svid.0.pem --key /tmp/pem/svid.0.key -o decrypted
+      cat decrypted; echo
+    </issue>
+    <issue>
+      start.sh should test recovery and restore
+      start.sh should test encryption and decryption
+    </issue>
+    <issue>
+      func DatabaseOperationTimeout() time.Duration {
+      ^ this is not used anywhere. find where it should be used and add it.
+    </issue>
+
     <issue>
       code duplication
 
