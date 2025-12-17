@@ -186,9 +186,9 @@ func (s *DataStore) LoadAllSecrets(
 		return nil, sdkErrors.ErrEntityQueryFailed.Wrap(err)
 	}
 	defer func(rows *sql.Rows) {
-		err := rows.Close()
-		if err != nil {
-			failErr := *sdkErrors.ErrFSFileCloseFailed.Clone()
+		closeErr := rows.Close()
+		if closeErr != nil {
+			failErr := *sdkErrors.ErrFSFileCloseFailed.Wrap(closeErr)
 			log.WarnErr(fName, failErr)
 		}
 	}(rows)
@@ -199,17 +199,17 @@ func (s *DataStore) LoadAllSecrets(
 	// Iterate over paths
 	for rows.Next() {
 		var path string
-		if err := rows.Scan(&path); err != nil {
-			failErr := sdkErrors.ErrEntityQueryFailed.Wrap(err)
+		if scanErr := rows.Scan(&path); scanErr != nil {
+			failErr := sdkErrors.ErrEntityQueryFailed.Wrap(scanErr)
 			failErr.Msg = "failed to scan secret path row, skipping"
 			log.WarnErr(fName, *failErr)
 			continue
 		}
 
 		// Load the full secret for this path
-		secret, err := s.loadSecretInternal(ctx, path)
-		if err != nil {
-			failErr := sdkErrors.ErrEntityLoadFailed.Wrap(err)
+		secret, loadErr := s.loadSecretInternal(ctx, path)
+		if loadErr != nil {
+			failErr := sdkErrors.ErrEntityLoadFailed.Wrap(loadErr)
 			failErr.Msg = "failed to load secret at path " + path + ", skipping"
 			log.WarnErr(fName, *failErr)
 			continue
@@ -220,8 +220,8 @@ func (s *DataStore) LoadAllSecrets(
 		}
 	}
 
-	if err := rows.Err(); err != nil {
-		return nil, sdkErrors.ErrEntityQueryFailed.Wrap(err)
+	if rowErr := rows.Err(); rowErr != nil {
+		return nil, sdkErrors.ErrEntityQueryFailed.Wrap(rowErr)
 	}
 
 	return secrets, nil

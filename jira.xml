@@ -20,9 +20,12 @@
  -->
 <stuff>
   <high-level-plan>
-    <issue order="3">Secure Secrets Management Web UX</issue>
-    <issue order="4">Zero Turtle Pi Grid</issue>
+    <issue order="1">Zero Turtle Pi Grid</issue>
+    <issue order="3">Secure Secrets CLI UX (similar to Claude auth)</issue>
     <watch-list>
+      <issue>
+        spike cipher (stream mode) is broken -> Murat.
+      </issue>
     </watch-list>
   </high-level-plan>
   <task-group theme="immediate">
@@ -35,34 +38,12 @@
     <issue priority="high">
       fix broken things first:
       * CI integration test is broken
-      * SPIKE cipher stream mode is broken
       * recovery/restore is broken
-      * helm-charts-hardened is still waiting for spike-next merge.
-      * helm-charts-hardene/spike-next has incorrect assumptions about
-        components that might need update:
-        1.   ## @param trustRoot.keepers Override which trustRoot Keepers are in
-          for spike nexus keepers can have multiple trust roots (which is okay)
-          but for spike keeper, nexus is assumed to have a single trust root.
-          in a HA setup nexus can have multiple trust roots, so the value
-          in values.yaml should be an array.
-        2. SPIKE Nexus statefulset uses both SPIKE_TRUST_ROOT_NEXUS and also
-           SPIKE_TRUST_ROOT (same for keeper, bootstrap, and pilot)
-           that's not a bug, but it's confusing and should be documented
-           in the charts which one is for what. SPIKE_TRUST_ROOT is for self
-           assignment and SPIKE_TRUST_ROOT_NEXUS etc is for validation functions.
     </issue>
     <issue>
       verify `make start` works in in-memory mode.
       it likely tries to trigger bootstrap and fail
       if it fails, give a proper warning in bootstrap instead of random panics.
-    </issue>
-    <issue>
-      `make test` is still not parallelized due to env setup.
-    </issue>
-    <issue>
-      when entries are not registered to the SPIRE Server and the
-      operator tries to use SPIKE, the error messages can be more
-      explanatory.
     </issue>
     <issue>
       a demo just focus on the architecture and nothing else. (no live demo,
@@ -77,55 +58,10 @@
         * Mini codewalk
     </issue>
     <issue>
-      also, empty id or path should raise an error for policies
-      and also for secrets
+      start.sh should test recovery and restore
+      start.sh should test encryption and decryption
     </issue>
-    <issue>
-      spike-next is still an open branch on helm-charts main.
-      check if there are still things that need to be merged, and what
-      needs to be done to push the PR forward.
-    </issue>
-    <issue>
-      <sub>doomsday recovery and restore is not functional at the moment.</sub>
-      <issue>
-        start.sh should test recovery and restore
-        start.sh should test encryption and decryption
-      </issue>
-    </issue>
-    <issue>
-      Go through GitHub issues and close the completed ones.
-    </issue>
-    <issue>
-      // It's unlikely to have 1000 SPIKE Keepers across the board.
-      // The indexes start from 1 and increase one-by-one by design.
-      const maxShardID = 1000
-      to env var configuration.
-    </issue>
-    <issue>
-      additional memory clearing for the sdk:
-      https://github.com/spiffe/spike/issues/243
-    </issue>
-    <issue>
-      VSecM has a missing video:
-      vsecm missing video(s)
-      https://vsecm.com/documentation/getting-started/overview/
-      we can directly remove it too, since vscem is less of a focus nowadays.
-    </issue>
-    <issue>
-      bare metal; don't run bootstrap, and observe what happens:
-      1. do error messages make sense?
-      2. can the user understand what's wrong?
-    </issue>
-    <issue>
-      move this to the SDK: app/spike/internal/trust/spiffeid.go
-      then any code that does self-authentication such as the following,
-      will use trust.AuthenticateForXyz() instead:
-      This...
-        // I should be SPIKE Nexus.
-        if !spiffeid.IsNexus(selfSPIFFEID){...crash if not nexus...}
-      will become
-        trust.AuthenticateForNexus(selfSPIFFEID)
-    </issue>
+
     <issue>
       demo main.go:
 
@@ -223,6 +159,84 @@
       create a workload that can create policies
       create another workload that can backup the root key
       to demo these features.
+    </issue>
+  </task-group>
+  <task-group state="parked" until="after-release">
+    <issue area="helm-charts">
+      * helm-charts-hardened is still waiting for spike-next merge.
+      * helm-charts-hardene/spike-next has incorrect assumptions about
+      components that might need update:
+      1.   ## @param trustRoot.keepers Override which trustRoot Keepers are in
+      for spike nexus keepers can have multiple trust roots (which is okay)
+      but for spike keeper, nexus is assumed to have a single trust root.
+      in a HA setup nexus can have multiple trust roots, so the value
+      in values.yaml should be an array.
+      2. SPIKE Nexus statefulset uses both SPIKE_TRUST_ROOT_NEXUS and also
+      SPIKE_TRUST_ROOT (same for keeper, bootstrap, and pilot)
+      that's not a bug, but it's confusing and should be documented
+      in the charts which one is for what. SPIKE_TRUST_ROOT is for self
+      assignment and SPIKE_TRUST_ROOT_NEXUS etc is for validation functions.
+    </issue>
+    <issue>
+      `make test` is still not parallelized due to env setup.
+    </issue>
+    <issue>
+      when entries are not registered to the SPIRE Server and the
+      operator tries to use SPIKE, the error messages can be more
+      explanatory.
+    </issue>
+    <issue>
+      also, empty id or path should raise an error for policies
+      and also for secrets
+    </issue>
+    <issue>
+      spike-next is still an open branch on helm-charts main.
+      check if there are still things that need to be merged, and what
+      needs to be done to push the PR forward.
+    </issue>
+    <issue>
+      Go through GitHub issues and close the completed ones.
+    </issue>
+    <issue>
+      // It's unlikely to have 1000 SPIKE Keepers across the board.
+      // The indexes start from 1 and increase one-by-one by design.
+      const maxShardID = 1000
+      to env var configuration.
+    </issue>
+    <issue>
+      additional memory clearing for the sdk:
+      https://github.com/spiffe/spike/issues/243
+    </issue>
+    <issue>
+      VSecM has a missing video:
+      vsecm missing video(s)
+      https://vsecm.com/documentation/getting-started/overview/
+      we can directly remove it too, since vscem is less of a focus nowadays.
+    </issue>
+    <issue>
+      move this to the SDK: app/spike/internal/trust/spiffeid.go
+      then any code that does self-authentication such as the following,
+      will use trust.AuthenticateForXyz() instead:
+      This...
+      // I should be SPIKE Nexus.
+      if !spiffeid.IsNexus(selfSPIFFEID){...crash if not nexus...}
+      will become
+      trust.AuthenticateForNexus(selfSPIFFEID)
+    </issue>
+    <issue>
+      SDK. duplicate code fragment:
+      if source == nil {
+      return nil, sdkErrors.ErrSPIFFENilX509Source.Clone()
+      }
+
+      r := reqres.SecretMetadataRequest{Path: path, Version: version}
+
+      mr, marshalErr := json.Marshal(r)
+      if marshalErr != nil {
+      failErr := sdkErrors.ErrDataMarshalFailure.Wrap(marshalErr)
+      failErr.Msg = "problem generating the payload"
+      return nil, failErr
+      }
     </issue>
   </task-group>
   <task-group for="v0.8.2">

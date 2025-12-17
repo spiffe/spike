@@ -83,12 +83,12 @@ func (s *DataStore) Initialize(ctx context.Context) *sdkErrors.SDKError {
 	}
 
 	// Create tables
-	if err := s.createTables(ctx, db); err != nil {
+	if createErr := s.createTables(ctx, db); createErr != nil {
 		closeErr := db.Close()
 		if closeErr != nil {
-			return err.Wrap(closeErr)
+			return createErr.Wrap(closeErr)
 		}
-		return err
+		return createErr
 	}
 
 	s.db = db

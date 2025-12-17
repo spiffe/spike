@@ -82,8 +82,11 @@ func main() {
 
 	api := spike.NewWithSource(src)
 	defer func() {
-		err := api.Close()
-		warnErr := sdkErrors.ErrFSStreamCloseFailed.Wrap(err)
+		closeErr := api.Close()
+		if closeErr == nil {
+			return
+		}
+		warnErr := sdkErrors.ErrFSStreamCloseFailed.Wrap(closeErr)
 		warnErr.Msg = "failed to close SPIKE API client"
 		log.WarnErr(appName, *warnErr)
 	}()
