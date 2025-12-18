@@ -7,6 +7,7 @@ package config
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
@@ -45,10 +46,20 @@ func TestValidPermission(t *testing.T) {
 func TestValidPermissionsList(t *testing.T) {
 	result := validation.ValidPermissionsList()
 
-	// Check that all valid permissions are in the list
-	for _, p := range validation.ValidPermissions {
+	expectedPerms := []data.PolicyPermission{
+		data.PermissionRead,
+		data.PermissionWrite,
+		data.PermissionList,
+		data.PermissionExecute,
+		data.PermissionSuper,
+	}
+
+	for _, p := range expectedPerms {
 		if !contains(result, string(p)) {
-			t.Errorf("validPermissionsList() missing permission %q", p)
+			t.Errorf(
+				"ValidPermissionsList missing permission %q",
+				p,
+			)
 		}
 	}
 }
@@ -347,24 +358,18 @@ func TestValidPermissions_AllPermissionsPresent(t *testing.T) {
 		data.PermissionSuper,
 	}
 
-	validPermissions := validation.ValidPermissions
-
-	if len(validPermissions) != len(expectedPerms) {
-		t.Errorf("ValidPermissions has %d items, want %d",
-			len(validPermissions), len(expectedPerms))
-	}
+	validPermsList := validation.ValidPermissionsList()
 
 	for _, expected := range expectedPerms {
-		found := false
-		for _, actual := range validPermissions {
-			if actual == expected {
-				found = true
-				break
-			}
-		}
-		if !found {
+		if !validation.ValidPermission(string(expected)) {
 			t.Errorf("ValidPermissions missing %q", expected)
 		}
+	}
+
+	permStrings := strings.Split(validPermsList, ", ")
+	if len(permStrings) != len(expectedPerms) {
+		t.Errorf("ValidPermissionsList has %d items, want %d.",
+			len(permStrings), len(expectedPerms))
 	}
 }
 
