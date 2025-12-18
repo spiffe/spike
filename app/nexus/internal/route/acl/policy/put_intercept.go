@@ -6,6 +6,7 @@ package policy
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
@@ -89,7 +90,18 @@ func guardPolicyCreateRequest(
 		return sdkErrors.ErrDataInvalidInput
 	}
 
-	if err := validation.ValidatePermissions(permissions); err != nil {
+	permValues := make([]string, 0, len(permissions))
+	for _, perm := range permissions {
+		trimmed := strings.TrimSpace(string(perm))
+		if trimmed == "" {
+			continue
+		}
+		permValues = append(permValues, trimmed)
+	}
+
+	permsStr := strings.Join(permValues, ",")
+
+	if _, err := validation.ValidatePermissions(permsStr); err != nil {
 		net.Fail(
 			reqres.PolicyPutResponse{}.BadRequest(), w, http.StatusBadRequest,
 		)

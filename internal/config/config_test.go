@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
+	"github.com/spiffe/spike-sdk-go/validation"
 )
 
 func TestValidPermission(t *testing.T) {
@@ -32,7 +33,7 @@ func TestValidPermission(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := validPermission(tt.perm)
+			result := validation.ValidPermission(tt.perm)
 			if result != tt.expected {
 				t.Errorf("validPermission(%q) = %v, want %v",
 					tt.perm, result, tt.expected)
@@ -42,10 +43,10 @@ func TestValidPermission(t *testing.T) {
 }
 
 func TestValidPermissionsList(t *testing.T) {
-	result := validPermissionsList()
+	result := validation.ValidPermissionsList()
 
 	// Check that all valid permissions are in the list
-	for _, p := range ValidPermissions {
+	for _, p := range validation.ValidPermissions {
 		if !contains(result, string(p)) {
 			t.Errorf("validPermissionsList() missing permission %q", p)
 		}
@@ -140,7 +141,7 @@ func TestValidatePermissions(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			perms, err := ValidatePermissions(tt.input)
+			perms, err := validation.ValidatePermissions(tt.input)
 
 			if tt.wantErr {
 				if err == nil {
@@ -346,14 +347,16 @@ func TestValidPermissions_AllPermissionsPresent(t *testing.T) {
 		data.PermissionSuper,
 	}
 
-	if len(ValidPermissions) != len(expectedPerms) {
+	validPermissions := validation.ValidPermissions
+
+	if len(validPermissions) != len(expectedPerms) {
 		t.Errorf("ValidPermissions has %d items, want %d",
-			len(ValidPermissions), len(expectedPerms))
+			len(validPermissions), len(expectedPerms))
 	}
 
 	for _, expected := range expectedPerms {
 		found := false
-		for _, actual := range ValidPermissions {
+		for _, actual := range validPermissions {
 			if actual == expected {
 				found = true
 				break
