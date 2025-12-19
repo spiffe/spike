@@ -11,4 +11,5 @@ const headerKeyContentType = "Content-Type"
 const headerValueOctetStream = "application/octet-stream"
 
 // expectedNonceSize is the standard AES-GCM nonce size. See ADR-0032.
+// (https://spike.ist/architecture/adrs/adr-0012/)
 const expectedNonceSize = crypto.GCMNonceSize

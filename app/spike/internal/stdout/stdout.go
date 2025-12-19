@@ -15,7 +15,7 @@ import (
 
 // notReadyCallCount tracks how many times PrintNotReady has been called.
 // This enables progressive messaging: brief on the first call, detailed on
-// subsequent calls.
+// the following calls.
 var (
 	notReadyCallCount int
 	notReadyMu        sync.Mutex
@@ -24,10 +24,10 @@ var (
 // PrintNotReady prints a message indicating that SPIKE is not initialized.
 //
 // On the first call, it prints a brief message suggesting the user wait.
-// On subsequent calls, it prints a more detailed message with troubleshooting
-// steps and recovery instructions. This progressive approach avoids alarming
-// users during normal startup delays while still providing help when there
-// is a real problem.
+// On the following calls, it prints a more detailed message with
+// troubleshooting steps and recovery instructions. This progressive approach
+// avoids alarming users during normal startup delays while still providing
+// help when there is a real problem.
 func PrintNotReady() {
 	notReadyMu.Lock()
 	notReadyCallCount++

@@ -31,7 +31,8 @@ func RouteFactory[ApiAction any](p url.APIURL, a ApiAction, m string,
 	switchyard func(a ApiAction, p url.APIURL) Handler) Handler {
 	log.Info("RouteFactory", "path", p, "action", a, "method", m)
 
-	// We only accept POST requests -- See ADR-0012.
+	// We only accept POST requests---See ADR-0012.
+	// (https://spike.ist/architecture/adrs/adr-0012/)
 	if m != http.MethodPost {
 		return Fallback
 	}

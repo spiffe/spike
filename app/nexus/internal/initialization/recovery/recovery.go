@@ -40,11 +40,11 @@ import (
 //
 // Parameters:
 //   - source: An X509Source used for SPIFFE-based mTLS authentication with
-//     SPIKE Keeper nodes. Can be nil. If source is nil during a retry
+//     SPIKE Keeper nodes. Can be nil. If `source` is nil during a retry
 //     iteration, the function will log a warning and retry. This graceful
 //     handling allows recovery from transient workload API failures where
 //     the source may be temporarily unavailable but can be restored in
-//     subsequent retry attempts.
+//     the following retry attempts.
 func InitializeBackingStoreFromKeepers(source *workloadapi.X509Source) {
 	const fName = "InitializeBackingStoreFromKeepers"
 
@@ -210,10 +210,11 @@ func RestoreBackingStoreFromPilotShards(shards []ShamirShard) {
 //
 // Parameters:
 //   - source: An X509Source used for creating SPIFFE-based mTLS connections to
-//     keepers. Can be nil. If source is nil during any iteration, the function
-//     performs an early check and skips shard distribution for that iteration,
-//     logging a warning and waiting for the next scheduled interval. This
-//     graceful handling allows recovery from transient workload API failures.
+//     keepers. Can be nil. If `source` is nil during any iteration, the
+//     function performs an early check and skips shard distribution for that
+//     iteration, logging a warning and waiting for the next scheduled interval.
+//     This graceful handling allows recovery from transient workload API
+//     failures.
 func SendShardsPeriodically(source *workloadapi.X509Source) {
 	const fName = "SendShardsPeriodically"
 
@@ -225,7 +226,7 @@ func SendShardsPeriodically(source *workloadapi.X509Source) {
 	for range ticker.C {
 		log.Debug(fName, "message", "sending shards to keepers")
 
-		// Early check: skip if source is nil
+		// Early check: skip if `source` is nil
 		if source == nil {
 			warnErr := *sdkErrors.ErrSPIFFENilX509Source.Clone()
 			warnErr.Msg = "X509 source is nil: skipping shard send"
@@ -266,7 +267,7 @@ func SendShardsPeriodically(source *workloadapi.X509Source) {
 //
 // Security and Error Handling:
 //
-// This function employs a fail-fast strategy with log.FatalErr for any errors
+// This function uses a fail-fast strategy with log.FatalErr for any errors
 // during shard generation. This is intentional and critical for security:
 //   - Shard generation failures indicate memory corruption, crypto library
 //     bugs, or corrupted internal state

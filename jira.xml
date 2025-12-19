@@ -109,6 +109,128 @@
   </task-group>
   <task-group state="parked" until="after-release">
     <issue>
+      const GCMNonceSize = 12
+      to sdk.
+    </issue>
+    <issue>
+      duplicate code fragment:
+      for _, policy := range *policies {
+      result.WriteString(fmt.Sprintf("ID: %s\n", policy.ID))
+      result.WriteString(fmt.Sprintf("Name: %s\n", policy.Name))
+      result.WriteString(fmt.Sprintf("SPIFFE ID Pattern: %s\n",
+      policy.SPIFFEIDPattern))
+      result.WriteString(fmt.Sprintf("Path Pattern: %s\n",
+      policy.PathPattern))
+
+      perms := make([]string, 0, len(policy.Permissions))
+      for _, p := range policy.Permissions {
+      perms = append(perms, string(p))
+      }
+    </issue>
+    <issue>
+      duplicate code fragment
+
+      func encryptStream(cmd *cobra.Command, api *sdk.API, inFile, outFile string) {
+      // Validate the input file exists before attempting encryption.
+      if inFile != "" {
+      if _, err := os.Stat(inFile); err != nil {
+      if os.IsNotExist(err) {
+      cmd.PrintErrf("Error: Input file does not exist: %s\n", inFile)
+      return
+      }
+      cmd.PrintErrf("Error: Cannot access input file: %s\n", inFile)
+      return
+      }
+    </issue>
+    <issue>
+      maybe have a dedicated RootKey type of *[32]byte
+    </issue>
+    <issue>
+      move internal stuff to the SDK.
+    </issue>
+    <issue>
+      duplicate code fragment
+      // Get the specific version
+      v, exists := secret.Versions[version]
+      if !exists {
+      failErr := *sdkErrors.ErrEntityNotFound.Clone()
+      failErr.Msg = fmt.Sprintf(
+      "secret with path %s not found for version %v",
+      path, version,
+      )
+      return nil, &failErr
+      }
+    </issue>
+    <issue>
+      duplicated code fragment:
+      func (s *DataStore) DeletePolicy(
+      ctx context.Context, id string,
+      ) *sdkErrors.SDKError {
+      const fName = "DeletePolicy"
+
+      validation.CheckContext(ctx, fName)
+
+      s.mu.Lock()
+      defer s.mu.Unlock()
+
+      tx, beginErr := s.db.BeginTx(
+      ctx, &sql.TxOptions{Isolation: sql.LevelSerializable},
+      )
+      if beginErr != nil {
+      failErr := sdkErrors.ErrTransactionBeginFailed.Wrap(beginErr)
+      return failErr
+      }
+    </issue>
+    <issue>
+      duplicated code fragment:
+
+      func RouteDecrypt(
+      w http.ResponseWriter, r *http.Request, audit *journal.AuditEntry,
+      ) *sdkErrors.SDKError {
+      const fName = "routeDecrypt"
+      journal.AuditRequest(fName, r, audit, journal.AuditCreate)
+
+      // Check if streaming mode based on Content-Type
+      contentType := r.Header.Get(headerKeyContentType)
+      streamModeActive := contentType == headerValueOctetStream
+
+      if streamModeActive {
+      // Cipher getter for streaming mode
+      getCipher := func() (cipher.AEAD, *sdkErrors.SDKError) {
+      return getCipherOrFailStreaming(w)
+      }
+      return handleStreamingDecrypt(w, r, getCipher)
+      }
+    </issue>
+    <issue>
+      refactor with injections to make the code more testable:
+
+      func TestSendShardsToKeepers_NetworkDependentFunction(t *testing.T) {
+      // The sendShardsToKeepers function has multiple external dependencies that make it
+      // difficult to test without a significant infrastructure:
+      // 1. Requires SPIFFE X509Source
+      // 2. Makes network calls via mTLS clients
+      // 3. Depends on state management for the root key
+      // 4. Calls computeShares() and sanityCheck() which have their own dependencies
+      t.Skip("Skipping sendShardsToKeepers test - requires SPIFFE infrastructure, network connectivity, and state management")
+
+      // Note: To properly test this function, you would need to:
+      // 1. Mock the workloadapi.X509Source
+      // 2. Mock network.CreateMTLSClientWithPredicate
+      // 3. Mock net.Post
+      // 4. Mock state.RootKeyZero()
+      // 5. Mock computeShares() and sanityCheck()
+      // 6. Set up test HTTP servers
+      // 7. Or refactor the code for better testability with dependency injection
+      }
+    </issue>
+    <issue>
+      g := group.P256
+      t := uint(env.ShamirThresholdVal() - 1) // Need t+1 shares to reconstruct
+      n := uint(env.ShamirSharesVal())        // Total number of shares
+      duplicated code fragment.
+    </issue>
+    <issue>
       SPIKE Bootstrap tries to reach keepers forever, but it should have a max
       timeout (like, say, 20mins), after which it gives up and crashes.
       -- configurable.
