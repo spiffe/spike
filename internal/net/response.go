@@ -61,7 +61,7 @@ func MarshalBodyAndRespondOnMarshalFail(
 		_, err = w.Write(internalErrJSON)
 		if err != nil {
 			wrappedErr = wrappedErr.Wrap(err)
-			// At this point, we cannot respond. So there is not much to send.
+			// At this point, we cannot respond. So there is little to send.
 			// We cannot even send a generic error message.
 			// We can only log the error.
 		}
@@ -103,7 +103,7 @@ func Respond(statusCode int, body []byte, w http.ResponseWriter) {
 
 	_, err := w.Write(body)
 	if err != nil {
-		// At this point, we cannot respond. So there is not much to send
+		// At this point, we cannot respond. So there is little to send
 		// back to the client. We can only log the error.
 		// This should rarely, if ever, happen.
 		failErr := sdkErrors.ErrAPIInternal.Wrap(err)

@@ -21,7 +21,7 @@
 //
 // Recovery workflow:
 //
-//  1. While SPIKE Nexus is healthy, run "spike operator recover" to obtain
+//  1. While SPIKE Nexus is healthy, run "spike operator recover" to get
 //     and securely store the recovery shards.
 //  2. If SPIKE Nexus fails and cannot auto-recover via SPIKE Keeper, run
 //     "spike operator restore" multiple times to submit the required number

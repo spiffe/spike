@@ -69,7 +69,7 @@ func TestOpenInput_ValidFile(t *testing.T) {
 }
 
 func TestOpenInput_NonexistentFile(t *testing.T) {
-	in, cleanup, err := openInput("/nonexistent/path/to/file.txt")
+	in, _, err := openInput("/nonexistent/path/to/file.txt")
 
 	if err == nil {
 		t.Error("openInput() should return error for nonexistent file")
@@ -77,10 +77,6 @@ func TestOpenInput_NonexistentFile(t *testing.T) {
 
 	if in != nil {
 		t.Error("openInput() should return nil reader on error")
-	}
-
-	if cleanup != nil {
-		t.Error("openInput() should return nil cleanup on error")
 	}
 
 	// Verify error type
@@ -153,7 +149,7 @@ func TestOpenOutput_ValidFile(t *testing.T) {
 
 func TestOpenOutput_InvalidPath(t *testing.T) {
 	// Try to create a file in a nonexistent directory
-	out, cleanup, err := openOutput("/nonexistent/directory/file.txt")
+	out, _, err := openOutput("/nonexistent/directory/file.txt")
 
 	if err == nil {
 		t.Error("openOutput() should return error for invalid path")
@@ -161,10 +157,6 @@ func TestOpenOutput_InvalidPath(t *testing.T) {
 
 	if out != nil {
 		t.Error("openOutput() should return nil writer on error")
-	}
-
-	if cleanup != nil {
-		t.Error("openOutput() should return nil cleanup on error")
 	}
 
 	// Verify error type

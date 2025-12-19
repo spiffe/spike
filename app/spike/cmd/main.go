@@ -21,7 +21,8 @@ import (
 const appName = "SPIKE"
 
 func main() {
-	if !mem.Lock() {
+	errMem := mem.Lock()
+	if errMem != nil {
 		if env.ShowMemoryWarningVal() {
 			if _, err := fmt.Fprintln(os.Stderr, `
 Memory locking is not available.

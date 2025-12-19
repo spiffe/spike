@@ -18,6 +18,7 @@ import (
 )
 
 // expectedNonceSize is the standard AES-GCM nonce size. See ADR-0032.
+// (https://spike.ist/architecture/adrs/adr-0032/)
 const expectedNonceSize = crypto.GCMNonceSize
 
 // guardVerifyRequest validates a bootstrap verification request by performing

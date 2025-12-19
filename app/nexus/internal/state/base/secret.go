@@ -407,7 +407,7 @@ func GetSecret(
 	return v.Data, nil
 }
 
-// GetRawSecret retrieves the complete secret structure including all versions
+// GetRawSecret retrieves the complete secret structure, including all versions
 // and metadata from the specified path. The requested version must exist and
 // be non-deleted, but the entire secret structure is returned.
 //

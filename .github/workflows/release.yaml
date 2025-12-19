@@ -71,18 +71,37 @@ jobs:
     strategy:
       matrix:
         app: [pilot, keeper, nexus, demo, bootstrap]
+        include:
+          - app: pilot
+            description: "SPIKE Pilot is the CLI tool for managing secrets in SPIKE."
+          - app: keeper
+            description: "SPIKE Keeper stores encrypted key shares for SPIKE Nexus root key recovery."
+          - app: nexus
+            description: "SPIKE Nexus is the central secrets management service for SPIKE."
+          - app: demo
+            description: "SPIKE Demo is a sample workload demonstrating SPIKE secrets retrieval."
+          - app: bootstrap
+            description: "SPIKE Bootstrap initializes SPIKE Nexus by securely distributing root key shares to SPIKE Keepers."
     steps:
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
       - name: Log in to the Container registry
         uses: docker/login-action@v3.3.0
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - run: |
-          # Extract version from release tag
+
+      - name: Create and push multi-arch manifest with annotations
+        run: |
           VERSION="${{ github.event.release.tag_name }}"
-          VERSION=${VERSION#v}  # Remove 'v' prefix if present
-          docker manifest create ghcr.io/spiffe/spike-${{ matrix.app }}:${VERSION} \
-            --amend ghcr.io/spiffe/spike-${{ matrix.app }}:${VERSION}-linux-amd64 \
-            --amend ghcr.io/spiffe/spike-${{ matrix.app }}:${VERSION}-linux-arm64 && \
-          docker manifest push ghcr.io/spiffe/spike-${{ matrix.app }}:${VERSION}
+          VERSION=${VERSION#v}
+          docker buildx imagetools create \
+            --annotation "index:org.opencontainers.image.title=SPIKE ${{ matrix.app }}" \
+            --annotation "index:org.opencontainers.image.description=${{ matrix.description }}" \
+            --annotation "index:org.opencontainers.image.source=https://github.com/spiffe/spike" \
+            --annotation "index:org.opencontainers.image.licenses=Apache-2.0" \
+            --tag ghcr.io/spiffe/spike-${{ matrix.app }}:${VERSION} \
+            ghcr.io/spiffe/spike-${{ matrix.app }}:${VERSION}-linux-amd64 \
+            ghcr.io/spiffe/spike-${{ matrix.app }}:${VERSION}-linux-arm64

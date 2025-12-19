@@ -18,8 +18,8 @@ import (
 // createDataDir creates the data directory for the SQLite database if it
 // does not already exist. The directory path is determined by the
 // s.Opts.DataDir field. The directory is created with 0750 permissions,
-// allowing read, write, and execute for the owner, and read and execute for
-// the group.
+// allowing `read`, `write`, and `execute` for the owner, and `read` and
+// `execute` for the group.
 //
 // Returns:
 //   - *sdkErrors.SDKError: An error if the directory creation fails, wrapped

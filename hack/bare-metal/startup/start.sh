@@ -79,32 +79,6 @@ fi
 # Your existing script continues here
 echo "Domain check passed. Continuing with the script..."
 
-# Check for required SPIKE binaries
-echo "Checking for required SPIKE binaries..."
-REQUIRED_BINARIES=("spike" "nexus" "keeper" "bootstrap")
-MISSING_BINARIES=()
-
-for binary in "${REQUIRED_BINARIES[@]}"; do
-  if ! command -v "$binary" >/dev/null 2>&1; then
-    MISSING_BINARIES+=("$binary")
-  fi
-done
-
-if [ ${#MISSING_BINARIES[@]} -gt 0 ]; then
-  echo "Error: The following required binaries are not found in PATH:"
-  for missing in "${MISSING_BINARIES[@]}"; do
-    echo "  - $missing"
-  done
-  echo ""
-  echo "Please build SPIKE binaries first by running:"
-  echo "  ./hack/bare-metal/build/build-spike.sh"
-  echo ""
-  echo "If you have the binaries built, ensure the binaries are in your PATH."
-  exit 1
-fi
-
-echo "All required SPIKE binaries found."
-
 # Helpers
 source ./hack/lib/bg.sh
 
@@ -128,6 +102,32 @@ if [ -z "$SPIKE_SKIP_SPIKE_BUILD" ]; then
   fi
 else
   echo "SPIKE_SKIP_SPIKE_BUILD is set, skipping SPIKE build."
+
+  # Only check for binaries if we're skipping the build step
+  echo "Checking for required SPIKE binaries..."
+  REQUIRED_BINARIES=("spike" "nexus" "keeper" "bootstrap")
+  MISSING_BINARIES=()
+
+  for binary in "${REQUIRED_BINARIES[@]}"; do
+    if ! command -v "$binary" >/dev/null 2>&1; then
+      MISSING_BINARIES+=("$binary")
+    fi
+  done
+
+  if [ ${#MISSING_BINARIES[@]} -gt 0 ]; then
+    echo "Error: The following required binaries are not found in PATH:"
+    for missing in "${MISSING_BINARIES[@]}"; do
+      echo "  - $missing"
+    done
+    echo ""
+    echo "Please build SPIKE binaries first by running:"
+    echo "  ./hack/bare-metal/build/build-spike.sh"
+    echo ""
+    echo "Or unset SPIKE_SKIP_SPIKE_BUILD to build them automatically."
+    exit 1
+  fi
+
+  echo "All required SPIKE binaries found."
 fi
 
 # Start SPIRE server in background and save its PID

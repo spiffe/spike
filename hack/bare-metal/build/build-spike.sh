@@ -12,16 +12,16 @@ rm bootstrap
 
 # Build for the current platform.
 echo "Building SPIKE binaries..."
-GOFIPS140=v1.0.0 go build -ldflags="-s -w" \
+GOFIPS140=v1.0.0 go build -trimpath -ldflags="-s -w" \
   -o keeper ./app/keeper/cmd/main.go
 # CGO is for sqlite dependency.
-CGO_ENABLED=1 GOFIPS140=v1.0.0 go build -ldflags="-s -w" \
+CGO_ENABLED=1 GOFIPS140=v1.0.0 go build -trimpath -ldflags="-s -w" \
   -o nexus ./app/nexus/cmd/main.go
-GOFIPS140=v1.0.0 go build -ldflags="-s -w" \
+GOFIPS140=v1.0.0 go build -trimpath -ldflags="-s -w" \
   -o spike ./app/spike/cmd/main.go
-GOFIPS140=v1.0.0 go build -ldflags="-s -w" \
+GOFIPS140=v1.0.0 go build -trimpath -ldflags="-s -w" \
   -o demo ./app/demo/cmd/main.go
-GOFIPS140=v1.0.0 go build -ldflags="-s -w" \
+GOFIPS140=v1.0.0 go build -trimpath -ldflags="-s -w" \
   -o bootstrap ./app/bootstrap/cmd/main.go
 
 echo "!!! The symbols have been stripped from binaries for security."

@@ -30,7 +30,7 @@ import (
 // Flags:
 //   - --versions, -v (string): Comma-separated list of version numbers to
 //     restore
-//   - "0" or empty: Restores current version only (default)
+//   - "0" or empty: Restores the current version only (default)
 //   - "1,2,3": Restores specific versions
 //
 // Returns:
@@ -40,7 +40,7 @@ import (
 //
 //	spike secret undelete db/pwd           # Restores current version
 //	spike secret undelete db/pwd -v 1,2,3  # Restores specific versions
-//	spike secret undelete db/pwd -v 0,1,2  # Restores current version plus 1,2
+//	spike secret undelete db/pwd -v 0,1,2  # Restores the current version plus 1,2
 //
 // The command performs validation to ensure:
 //   - Exactly one path argument is provided

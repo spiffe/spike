@@ -13,7 +13,7 @@
 //     to restore Nexus operation.
 //
 //   - Restore: Accepts recovery shards to reconstruct the root key and
-//     restore Nexus to operational state. Requires the threshold number
+//     restore Nexus to its operational state. Requires the threshold number
 //     of valid shards to succeed.
 //
 // # Security Constraints
@@ -23,6 +23,7 @@
 // identity before allowing access. This prevents unauthorized workloads
 // from accessing or manipulating recovery material. See ADR-0029 for the
 // rationale behind this restriction.
+// (https://spike.ist/architecture/adrs/adr-0029/)
 //
 // # Authentication
 //

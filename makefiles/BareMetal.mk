@@ -4,6 +4,10 @@
 
 # Start a local development environment to test SPIKE.
 # By default, SPIRE Agent will have the same privileges as the user.
+#
+# ! Make sure you read https://spike.ist/development/bare-metal/ and          !
+# ! https://spike.ist/getting-started/quickstart/ before you run this command !
+# ! to have a smooth developer experience.                                    !
 start:
 	./hack/bare-metal/startup/start.sh
 

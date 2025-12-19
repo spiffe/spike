@@ -191,7 +191,7 @@ and **SPIKE**.
 make deploy-dev-local
 ```
 
-## Verifying SPIKE Deployment
+## Verifying **SPIKE** Deployment
 
 First, make sure that your components are up and running.
 

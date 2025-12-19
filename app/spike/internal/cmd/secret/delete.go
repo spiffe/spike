@@ -32,7 +32,7 @@ import (
 // Flags:
 //   - --versions, -v (string): Comma-separated list of version numbers to
 //     delete
-//   - "0" or empty: Deletes current version only (default)
+//   - "0" or empty: Deletes the current version only (default)
 //   - "1,2,3": Deletes specific versions
 //
 // Returns:
@@ -42,7 +42,7 @@ import (
 //
 //	spike secret delete secret/pass           # Deletes current version
 //	spike secret delete secret/pass -v 1,2,3  # Deletes specific versions
-//	spike secret delete secret/pass -v 0,1,2  # Deletes current version plus 1,2
+//	spike secret delete secret/pass -v 0,1,2  # Deletes the current version plus 1,2
 //
 // The command performs trust to ensure:
 //   - Exactly one path argument is provided

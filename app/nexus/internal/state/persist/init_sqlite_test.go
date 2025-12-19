@@ -37,6 +37,9 @@ func TestInitializeSqliteBackend_Success(t *testing.T) {
 }
 
 func TestInitializeSqliteBackend_NilKey(t *testing.T) {
+	// Enable panic mode for log.FatalErr so we can test error handling
+	t.Setenv("SPIKE_STACK_TRACES_ON_LOG_FATAL", "true")
+
 	cleanupSQLiteDatabase(t)
 	defer cleanupSQLiteDatabase(t)
 
@@ -51,19 +54,26 @@ func TestInitializeSqliteBackend_NilKey(t *testing.T) {
 }
 
 func TestInitializeSqliteBackend_ZeroKey(t *testing.T) {
+	// Enable panic mode for log.FatalErr so we can test error handling
+	t.Setenv("SPIKE_STACK_TRACES_ON_LOG_FATAL", "true")
+
 	cleanupSQLiteDatabase(t)
 	defer cleanupSQLiteDatabase(t)
 
 	// Create a zero key
 	zeroKey := createZeroKey()
 
-	// Test with a zero key - this should work (unlike the general validation in InitializeBackend)
-	backend := initializeSqliteBackend(zeroKey)
+	// Test with a zero key - this should panic because you cannot encrypt
+	// a database with an empty key.
+	defer func() {
+		if r := recover(); r == nil {
+			t.Error("Expected panic when initializing sqlite backend with zero key")
+		}
+	}()
 
-	// Should succeed - zero key is valid for SQLite backend creation itself
-	if backend == nil {
-		t.Error("Expected initializeSqliteBackend to succeed with zero key")
-	}
+	initializeSqliteBackend(zeroKey)
+
+	t.Error("Should have panicked")
 }
 
 func TestInitializeSqliteBackend_MultipleInitializations(t *testing.T) {

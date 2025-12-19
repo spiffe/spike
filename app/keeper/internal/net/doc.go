@@ -7,5 +7,5 @@
 // This package includes functions for initializing and starting the
 // TLS-secured HTTP server that handles incoming requests from SPIKE Nexus and
 // SPIKE Bootstrap. The server is configured with mTLS authentication and
-// restricted to accept connections only from authorized peers.
+// restricted to accepting connections only from authorized peers.
 package net
