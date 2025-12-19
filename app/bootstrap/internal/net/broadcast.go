@@ -133,7 +133,7 @@ func VerifyInitialization(ctx context.Context, api *spike.API) {
 			failErr := sdkErrors.ErrCryptoCipherVerificationFailed.Wrap(verifyErr)
 			failErr.Msg = "failed to verify initialization: will retry"
 			log.WarnErr(fName, *failErr)
-			return false, verifyErr
+			return false, failErr
 		}
 		return true, nil
 	}, retry.WithBackOffOptions(
