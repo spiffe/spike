@@ -204,9 +204,25 @@ func AcquireSource() *workloadapi.X509Source {
 	return src
 }
 
-// contributeWithContext wraps api.Contribute so cancellation/timeouts can be enforced.
-// The call is executed in a goroutine and the function waits for either the
-// contribution result or ctx.Done, returning ctx.Err() when the context ends first.
+// contributeWithContext wraps api.Contribute so cancellation/timeouts can be
+// enforced. The call is executed in a goroutine and the function waits for
+// either the contribution result or ctx.Done, returning ctx.Err() when the
+// context ends first.
+//
+// TODO: fix the API layer as soon as possible.
+//
+// IMPORTANT: This is a workaround, not a proper fix. When the context times
+// out, this function returns early but the underlying api.Contribute call
+// continues running in the background. This means:
+//   - The HTTP request is NOT actually cancelled
+//   - On retries, multiple concurrent requests may be in flight to the same
+//     keeper
+//   - Resources (goroutines, connections) are leaked until the orphaned calls
+//     complete
+//
+// The proper fix is to update the SDK so that api.Contribute accepts a
+// context.Context parameter and uses http.NewRequestWithContext internally.
+// This would allow the HTTP client to respect cancellation and timeouts.
 //
 // Parameters:
 //   - ctx: Context that controls cancellation/deadline for the contribution
