@@ -204,21 +204,47 @@ func AcquireSource() *workloadapi.X509Source {
 	return src
 }
 
-// contributeWithContext wraps api.Contribute so cancellation/timeouts can be enforced.
-// The call is executed in a goroutine and the function waits for either the
-// contribution result or ctx.Done, returning ctx.Err() when the context ends first.
+// contributeWithContext wraps api.Contribute so cancellation/timeouts can be
+// enforced. The call is executed in a goroutine and the function waits for
+// either the contribution result or ctx.Done, returning ctx.Err() when the
+// context ends first.
+//
+// TODO: fix the API layer as soon as possible.
+//
+// IMPORTANT: This is a workaround, not a proper fix. When the context times
+// out, this function returns early but the underlying api.Contribute call
+// continues running in the background. This means:
+//   - The HTTP request is NOT actually cancelled
+//   - On retries, multiple concurrent requests may be in flight to the same
+//     keeper
+//   - Resources (goroutines, connections) are leaked until the orphaned calls
+//     complete
+//
+// The proper fix is to update the SDK so that api.Contribute accepts a
+// context.Context parameter and uses http.NewRequestWithContext internally.
+// This would allow the HTTP client to respect cancellation and timeouts.
 //
 // Parameters:
 //   - ctx: Context that controls cancellation/deadline for the contribution
 //   - api: SPIKE API client used to send the share
 //   - share: Keeper share being contributed
 //   - keeperID: Identifier of the target keeper
-func contributeWithContext(ctx context.Context, api *spike.API, share secretsharing.Share, keeperID string) error {
+func contributeWithContext(
+	ctx context.Context, api *spike.API,
+	share secretsharing.Share, keeperID string,
+) error {
 	done := make(chan error, 1)
 
 	go func() {
-		err := api.Contribute(share, keeperID)
-		done <- err
+		contributeErr := api.Contribute(share, keeperID)
+		// Explicitly send nil to avoid the nil-interface-with-nil-pointer issue.
+		// If we send a nil *SDKError directly, it becomes a non-nil error interface
+		// holding a nil pointer, causing "err != nil" checks to incorrectly pass.
+		if contributeErr == nil {
+			done <- nil
+			return
+		}
+		done <- contributeErr
 	}()
 
 	select {
