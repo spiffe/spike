@@ -38,8 +38,6 @@
     </watch-list>
   </high-level-plan>
   <task-group theme="immediate">
-    <issue>add installing zola to prerequisites, for those who want to test
-      documentation locally</issue>
     <issue>
       The banner on the git pages need to change to be aligned with the social
       banner that we created recently.

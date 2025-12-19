@@ -83,6 +83,10 @@ In addition, you will need the usual suspects:
 * [`node`](https://nodejs.org) (*(optional: most AI tools require it*)
 * [`build-essential`](https://packages.ubuntu.com/hirsute/build-essential)
   (*i.e., `sudo apt install build-essential`*)
+* (Optional) [`zola`])[zola], if you want to build the documentation site 
+  locally
+
+[zola]: https://www.getzola.org/ "Zola"
 
 ## Go Environment Setup
 

@@ -50,11 +50,14 @@ starting with this guide:
 * Have [`make`][make] installed on your machine.
 * Have a [`minikube`][minikube] binary installed.
 * Have [`helm`][helm] binary installed.
+* (Optional) install [`zola`][zola] if you want to build the documentation 
+  locally.
 
 [docker]: https://www.docker.com/ "Docker: Build, Share, and Run Applications"
 [kubectl]: https://kubernetes.io/docs/tasks/tools/ "kubectl: Kubernetes command-line tool"
 [make]: https://www.gnu.org/software/make/ "GNU Make: Build Automation Tool"
 [helm]: https://helm.sh/ "Helm"
+[zola]: https://www.getzola.org/ "Zola"
 
 ## For Windows Users
 
