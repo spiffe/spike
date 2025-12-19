@@ -213,12 +213,22 @@ func AcquireSource() *workloadapi.X509Source {
 //   - api: SPIKE API client used to send the share
 //   - share: Keeper share being contributed
 //   - keeperID: Identifier of the target keeper
-func contributeWithContext(ctx context.Context, api *spike.API, share secretsharing.Share, keeperID string) error {
+func contributeWithContext(
+	ctx context.Context, api *spike.API,
+	share secretsharing.Share, keeperID string,
+) error {
 	done := make(chan error, 1)
 
 	go func() {
-		err := api.Contribute(share, keeperID)
-		done <- err
+		contributeErr := api.Contribute(share, keeperID)
+		// Explicitly send nil to avoid the nil-interface-with-nil-pointer issue.
+		// If we send a nil *SDKError directly, it becomes a non-nil error interface
+		// holding a nil pointer, causing "err != nil" checks to incorrectly pass.
+		if contributeErr == nil {
+			done <- nil
+			return
+		}
+		done <- contributeErr
 	}()
 
 	select {
