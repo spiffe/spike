@@ -42,8 +42,8 @@ const keyBootstrapCompletedByPod = "completed-by-pod"
 //     - If ConfigMap exists and bootstrap-completed="true", skip bootstrap
 //     - Otherwise, proceed with bootstrap
 //
-// The function returns false if bootstrap should be skipped, true if it
-// should proceed.
+// The function returns false if the bootstrap operation should be skipped,
+// true if it should proceed.
 func ShouldBootstrap() bool {
 	const fName = "ShouldBootstrap"
 

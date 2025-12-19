@@ -221,7 +221,7 @@ func TestRootKeyNoLock_ReturnsPointer(t *testing.T) {
 	// Get the pointer without a lock
 	ptr := RootKeyNoLock()
 
-	// Verify pointer is not nil
+	// Verify the pointer is not nil
 	if ptr == nil {
 		t.Fatal("RootKeyNoLock should not return nil")
 		return
@@ -296,7 +296,7 @@ func TestConcurrentRootKeyAccess(t *testing.T) {
 	}
 	wg.Wait()
 
-	// Verify system is still in a consistent state
+	// Verify the system is still in a consistent state
 	isZero := RootKeyZero()
 	t.Logf("After concurrent operations, root key is zero: %v", isZero)
 

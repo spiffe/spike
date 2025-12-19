@@ -27,7 +27,7 @@ import (
 // The function prints errors directly to stderr and returns without error
 // propagation, following the CLI command pattern.
 func decryptStream(cmd *cobra.Command, api *sdk.API, inFile, outFile string) {
-	// Validate input file exists before attempting decryption.
+	// Validate the input file exists before attempting decryption.
 	if inFile != "" {
 		if _, err := os.Stat(inFile); err != nil {
 			if os.IsNotExist(err) {

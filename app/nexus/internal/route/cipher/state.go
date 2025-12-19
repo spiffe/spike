@@ -24,7 +24,7 @@ import (
 //
 // Returns:
 //   - cipher.AEAD: The system cipher if available, nil otherwise
-//   - error: An error if the cipher is unavailable, nil otherwise
+//   - *sdkErrors.SDKError: An error if the cipher is unavailable, nil otherwise
 func getCipherOrFailStreaming(
 	w http.ResponseWriter,
 ) (cipher.AEAD, *sdkErrors.SDKError) {
@@ -48,11 +48,11 @@ func getCipherOrFailStreaming(
 //
 // Parameters:
 //   - w: The HTTP response writer for sending error responses
-//   - errorResponse: The error response to send in JSON mode
+//   - errorResponse: The error response of type T to send as JSON
 //
 // Returns:
 //   - cipher.AEAD: The system cipher if available, nil otherwise
-//   - error: An error if the cipher is unavailable, nil otherwise
+//   - *sdkErrors.SDKError: An error if the cipher is unavailable, nil otherwise
 func getCipherOrFailJSON[T any](
 	w http.ResponseWriter, errorResponse T,
 ) (cipher.AEAD, *sdkErrors.SDKError) {

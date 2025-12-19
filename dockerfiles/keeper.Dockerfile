@@ -60,6 +60,10 @@ LABEL maintainers="SPIKE Maintainers <maintainers@spike.ist>" \
       documentation="https://spike.ist/" \
       contact="https://spike.ist/community/contact/" \
       community="https://spike.ist/community/hello/" \
-      changelog="https://spike.ist/tracking/changelog/"
+      changelog="https://spike.ist/tracking/changelog/" \
+      org.opencontainers.image.title="SPIKE Keeper" \
+      org.opencontainers.image.description="SPIKE Keeper stores encrypted key shares for SPIKE Nexus root key recovery." \
+      org.opencontainers.image.source="https://github.com/spiffe/spike" \
+      org.opencontainers.image.licenses="Apache-2.0"
 
 ENTRYPOINT ["/keeper"]

@@ -16,4 +16,5 @@ package crypto
 //
 // This constant is used for validation of incoming nonces in the cipher API
 // and bootstrap verification endpoints. See ADR-0032 for the design decision.
+// (https://spike.ist/architecture/adrs/adr-0032/)
 const GCMNonceSize = 12

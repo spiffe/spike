@@ -25,7 +25,7 @@ func TestFormatPoliciesOutput_EmptyList(t *testing.T) {
 	tests := []struct {
 		name     string
 		format   string
-		policies *[]data.Policy
+		policies *[]data.PolicyListItem
 		expected string
 	}{
 		{
@@ -37,7 +37,7 @@ func TestFormatPoliciesOutput_EmptyList(t *testing.T) {
 		{
 			name:     "empty slice human format",
 			format:   "human",
-			policies: &[]data.Policy{},
+			policies: &[]data.PolicyListItem{},
 			expected: "No policies found.",
 		},
 		{
@@ -49,7 +49,7 @@ func TestFormatPoliciesOutput_EmptyList(t *testing.T) {
 		{
 			name:     "empty slice json format",
 			format:   "json",
-			policies: &[]data.Policy{},
+			policies: &[]data.PolicyListItem{},
 			expected: "[]",
 		},
 		{
@@ -75,7 +75,7 @@ func TestFormatPoliciesOutput_EmptyList(t *testing.T) {
 
 func TestFormatPoliciesOutput_InvalidFormat(t *testing.T) {
 	cmd := createTestCommandWithFormat("xml")
-	policies := &[]data.Policy{}
+	policies := &[]data.PolicyListItem{}
 
 	result := formatPoliciesOutput(cmd, policies)
 
@@ -88,18 +88,10 @@ func TestFormatPoliciesOutput_InvalidFormat(t *testing.T) {
 }
 
 func TestFormatPoliciesOutput_HumanFormat(t *testing.T) {
-	createdAt := time.Date(2025, 1, 15, 10, 30, 0, 0, time.UTC)
-	updatedAt := time.Date(2025, 1, 16, 14, 0, 0, 0, time.UTC)
-
-	policies := &[]data.Policy{
+	policies := &[]data.PolicyListItem{
 		{
-			ID:              "123e4567-e89b-12d3-a456-426614174000",
-			Name:            "test-policy",
-			SPIFFEIDPattern: "^spiffe://example\\.org/.*$",
-			PathPattern:     "^secrets/.*$",
-			Permissions:     []data.PolicyPermission{"read", "write"},
-			CreatedAt:       createdAt,
-			UpdatedAt:       updatedAt,
+			ID:   "123e4567-e89b-12d3-a456-426614174000",
+			Name: "test-policy",
 		},
 	}
 
@@ -111,13 +103,10 @@ func TestFormatPoliciesOutput_HumanFormat(t *testing.T) {
 		t.Error("Human format should contain 'POLICIES' header")
 	}
 
-	// Check policy fields are present
+	// Check policy fields are present (PolicyListItem only has ID and Name)
 	expectedFields := []string{
 		"ID: 123e4567-e89b-12d3-a456-426614174000",
 		"Name: test-policy",
-		"SPIFFE ID Pattern: ^spiffe://example\\.org/.*$",
-		"Path Pattern: ^secrets/.*$",
-		"Permissions: read, write",
 	}
 
 	for _, field := range expectedFields {
@@ -125,27 +114,13 @@ func TestFormatPoliciesOutput_HumanFormat(t *testing.T) {
 			t.Errorf("Human format should contain %q", field)
 		}
 	}
-
-	// Check timestamps are formatted
-	if !strings.Contains(result, "Created At:") {
-		t.Error("Human format should contain 'Created At'")
-	}
-	if !strings.Contains(result, "Updated At:") {
-		t.Error("Human format should contain 'Updated At'")
-	}
 }
 
 func TestFormatPoliciesOutput_JSONFormat(t *testing.T) {
-	createdAt := time.Date(2025, 1, 15, 10, 30, 0, 0, time.UTC)
-
-	policies := &[]data.Policy{
+	policies := &[]data.PolicyListItem{
 		{
-			ID:              "123e4567-e89b-12d3-a456-426614174000",
-			Name:            "test-policy",
-			SPIFFEIDPattern: "^spiffe://example\\.org/.*$",
-			PathPattern:     "^secrets/.*$",
-			Permissions:     []data.PolicyPermission{"read"},
-			CreatedAt:       createdAt,
+			ID:   "123e4567-e89b-12d3-a456-426614174000",
+			Name: "test-policy",
 		},
 	}
 
@@ -153,7 +128,7 @@ func TestFormatPoliciesOutput_JSONFormat(t *testing.T) {
 	result := formatPoliciesOutput(cmd, policies)
 
 	// Verify it's valid JSON
-	var decoded []data.Policy
+	var decoded []data.PolicyListItem
 	if err := json.Unmarshal([]byte(result), &decoded); err != nil {
 		t.Errorf("JSON format should produce valid JSON: %v", err)
 	}
@@ -269,26 +244,18 @@ func TestFormatPolicy_JSONFormat(t *testing.T) {
 }
 
 func TestFormatPoliciesOutput_MultiplePolicies(t *testing.T) {
-	createdAt := time.Date(2025, 1, 15, 10, 30, 0, 0, time.UTC)
-
-	policies := &[]data.Policy{
+	policies := &[]data.PolicyListItem{
 		{
-			ID:          "id-1",
-			Name:        "policy-one",
-			Permissions: []data.PolicyPermission{"read"},
-			CreatedAt:   createdAt,
+			ID:   "id-1",
+			Name: "policy-one",
 		},
 		{
-			ID:          "id-2",
-			Name:        "policy-two",
-			Permissions: []data.PolicyPermission{"write"},
-			CreatedAt:   createdAt,
+			ID:   "id-2",
+			Name: "policy-two",
 		},
 		{
-			ID:          "id-3",
-			Name:        "policy-three",
-			Permissions: []data.PolicyPermission{"list"},
-			CreatedAt:   createdAt,
+			ID:   "id-3",
+			Name: "policy-three",
 		},
 	}
 

@@ -14,6 +14,10 @@ sort_by = "weight"
 
 * Update documentation to reflect the new SPIKE architecture.
 * Fix occasional dangling process issues when `make start` does not exit cleanly.
+* SDK API methods now return cloned versions of sentinel *SDKErrors instead of
+  returning the original reference. This prevents accidental mutation of the
+  error values.
+* mem.Lock() does not print JSON error logs on CLI startup anymore.
 
 ## [0.8.0] - 2025-11-28
 

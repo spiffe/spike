@@ -51,7 +51,7 @@ import (
 //  1. Queries secret metadata from the secret_metadata table
 //  2. Fetches all versions from the secrets table
 //  3. Decrypts each version using the DataStore's cipher
-//  4. Unmarshals JSON data into map[string]string format
+//  4. Unmarshals JSON data into a map[string]string format
 //  5. Assembles the complete kv.Value structure
 func (s *DataStore) loadSecretInternal(
 	ctx context.Context, path string,

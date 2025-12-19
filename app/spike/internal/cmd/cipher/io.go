@@ -41,7 +41,7 @@ func openInput(inFile string) (io.ReadCloser, func(), *sdkErrors.SDKError) {
 		if err != nil {
 			failErr := sdkErrors.ErrFSFileOpenFailed.Wrap(err)
 			failErr.Msg = fmt.Sprintf("failed to open input file: %s", inFile)
-			return nil, nil, failErr
+			return nil, func() {}, failErr
 		}
 		in = f
 	} else {
@@ -90,7 +90,7 @@ func openOutput(outFile string) (io.Writer, func(), *sdkErrors.SDKError) {
 			// since it represents file access failures in general
 			failErr := sdkErrors.ErrFSFileOpenFailed.Wrap(err)
 			failErr.Msg = fmt.Sprintf("failed to create output file: %s", outFile)
-			return nil, nil, failErr
+			return nil, func() {}, failErr
 		}
 		out = f
 		outCloser = f

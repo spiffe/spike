@@ -24,8 +24,8 @@
 // Paths are namespace identifiers, not filesystem paths. They should not start
 // with a forward slash:
 //
-//	spike secret put secrets/db/password ...   # correct
-//	spike secret put /secrets/db/password ...  # incorrect
+//	spike secret put secrets/db/password ...  # correct
+//	spike secret put /secrets/db/password ... # incorrect
 //
 // Versioning:
 //

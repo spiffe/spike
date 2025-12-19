@@ -29,6 +29,28 @@ fi
 # Convert architecture format for tags (replace / with -)
 ARCH_TAG=$(echo "$ARCH" | sed 's/\//-/g')
 
+# Set component-specific description
+case "$APP" in
+  pilot)
+    DESCRIPTION="SPIKE Pilot is the CLI tool for managing secrets in SPIKE."
+    ;;
+  keeper)
+    DESCRIPTION="SPIKE Keeper stores encrypted key shares for SPIKE Nexus root key recovery."
+    ;;
+  nexus)
+    DESCRIPTION="SPIKE Nexus is the central secrets management service for SPIKE."
+    ;;
+  demo)
+    DESCRIPTION="SPIKE Demo is a sample workload demonstrating SPIKE secrets retrieval."
+    ;;
+  bootstrap)
+    DESCRIPTION="SPIKE Bootstrap initializes SPIKE Nexus by securely distributing root key shares to SPIKE Keepers."
+    ;;
+  *)
+    DESCRIPTION="SPIKE is a lightweight secrets store that uses SPIFFE as its Identity Control Plane."
+    ;;
+esac
+
 # Generate tags
 GIT_SHA=$(git rev-parse --short HEAD)
 MAJOR_MINOR=$(echo "$VERSION" | cut -d. -f1,2)
@@ -65,8 +87,8 @@ docker buildx build \
   --label "org.opencontainers.image.revision=$GIT_SHA" \
   --label "org.opencontainers.image.source=https://github.com/spiffe/spike" \
   --label "org.opencontainers.image.licenses=Apache-2.0" \
-  --label "org.opencontainers.image.title=spike" \
-  --label "org.opencontainers.image.description=SPIKE is a lightweight secrets store that uses SPIFFE as its Identity Control Plane." \
+  --label "org.opencontainers.image.title=SPIKE $APP" \
+  --label "org.opencontainers.image.description=$DESCRIPTION" \
   $TAG_ARGS \
   .
 

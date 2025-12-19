@@ -104,7 +104,7 @@ func TestPrintSecretResponse_WithMetadata(t *testing.T) {
 
 	output := buf.String()
 
-	// Check metadata section is present
+	// Check the metadata section is present
 	if !strings.Contains(output, "Metadata:") {
 		t.Error("Should print Metadata section")
 	}
@@ -156,7 +156,7 @@ func TestPrintSecretResponse_WithVersions(t *testing.T) {
 
 	output := buf.String()
 
-	// Check versions section is present
+	// Check the versions section is present
 	if !strings.Contains(output, "Secret Versions:") {
 		t.Error("Should print Secret Versions section")
 	}

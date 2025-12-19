@@ -89,11 +89,19 @@ func guardPolicyCreateRequest(
 		return sdkErrors.ErrDataInvalidInput
 	}
 
-	if err := validation.ValidatePermissions(permissions); err != nil {
+	if len(permissions) == 0 {
 		net.Fail(
 			reqres.PolicyPutResponse{}.BadRequest(), w, http.StatusBadRequest,
 		)
 		return sdkErrors.ErrDataInvalidInput
+	}
+	for _, perm := range permissions {
+		if !validation.ValidPermission(string(perm)) {
+			net.Fail(
+				reqres.PolicyPutResponse{}.BadRequest(), w, http.StatusBadRequest,
+			)
+			return sdkErrors.ErrDataInvalidInput
+		}
 	}
 
 	return nil

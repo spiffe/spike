@@ -21,7 +21,7 @@ import (
 //   - Starts a background goroutine for periodic shard synchronization
 //
 // 2. In-memory initialization (Memory backend):
-//   - Initializes an empty in-memory backing store without root key
+//   - Initializes an empty in-memory backing store without the root key
 //   - Logs warnings about non-production use
 //   - Does not use SPIKE Keepers for disaster recovery.
 //

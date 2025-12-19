@@ -20,104 +20,37 @@
  -->
 <stuff>
   <high-level-plan>
-    <issue order="3">Secure Secrets Management Web UX</issue>
-    <issue order="4">Zero Turtle Pi Grid</issue>
+    <issue order="1">Zero Turtle Pi Grid</issue>
+    <issue order="3">Secure Secrets CLI UX (similar to Claude auth)</issue>
     <watch-list>
+      <issue>
+        spike cipher (stream mode) is broken -> Murat.
+      </issue>
+      <issue>
+        PRs to watch:
+        * https://github.com/spiffe/spike/pull/260
+        * https://github.com/spiffe/spike/pull/262
+        * https://github.com/spiffe/spike/pull/263
+        * https://github.com/spiffe/spike-sdk-go/pull/134
+        * https://github.com/spiffe/spike-sdk-go/pull/133
+        * https://github.com/spiffe/spike-sdk-go/pull/133
+      </issue>
     </watch-list>
   </high-level-plan>
   <task-group theme="immediate">
     <issue>
-      // TO: both verification and retry is done forever; we need an upper limit
-      // for these.
-      // we can have a goroutine/channel that panic if this entire main thread
-      // does not complete within a given timeframe.
-    </issue>
-    <issue priority="high" category="bug" repo="spike-sdk-go">
-      SDK Recover/Restore functions use wrong SPIFFE ID check
-
-      The SDK's `Recover` function in
-      `spike-sdk-go/api/internal/impl/operator/recover.go` checks for generic
-      pilot identity instead of the recover role.
-
-      == Bug Location ==
-
-      recover.go line 100:
-      if !spiffeid.IsPilot(selfSPIFFEID) {
-
-      == Expected ==
-
-      if !spiffeid.IsPilotRecover(selfSPIFFEID) {
-
-      == Impact ==
-
-      The `spike operator recover` command fails with:
-      "recovery can only be performed from SPIKE Pilot"
-
-      Even when the caller has the correct recover role SPIFFE ID:
-      spiffe://spike.ist/spike/pilot/role/recover
-
-      The SDK is checking for the generic pilot ID:
-      spiffe://spike.ist/spike/pilot
-
-      == Files ==
-      - spike-sdk-go/api/internal/impl/operator/recover.go:100
-
-      == Notes ==
-      The same bug likely exists in the `Restore` function. Check
-      `spike-sdk-go/api/internal/impl/operator/restore.go` for similar issue.
+      The banner on the git pages need to change to be aligned with the social
+      banner that we created recently.
     </issue>
     <issue priority="high">
       fix broken things first:
       * CI integration test is broken
-      * SPIKE cipher stream mode is broken
       * recovery/restore is broken
-      * helm-charts-hardened is still waiting for spike-next merge.
-      * helm-charts-hardene/spike-next has incorrect assumptions about
-        components that might need update:
-        1.   ## @param trustRoot.keepers Override which trustRoot Keepers are in
-          for spike nexus keepers can have multiple trust roots (which is okay)
-          but for spike keeper, nexus is assumed to have a single trust root.
-          in a HA setup nexus can have multiple trust roots, so the value
-          in values.yaml should be an array.
-        2. SPIKE Nexus statefulset uses both SPIKE_TRUST_ROOT_NEXUS and also
-           SPIKE_TRUST_ROOT (same for keeper, bootstrap, and pilot)
-           that's not a bug, but it's confusing and should be documented
-           in the charts which one is for what. SPIKE_TRUST_ROOT is for self
-           assignment and SPIKE_TRUST_ROOT_NEXUS etc is for validation functions.
     </issue>
     <issue>
       verify `make start` works in in-memory mode.
       it likely tries to trigger bootstrap and fail
       if it fails, give a proper warning in bootstrap instead of random panics.
-    </issue>
-    <issue>
-      spike bootstrap and other container images don't have any descriptions
-
-      No description provided
-      This package version was published 7 minutes ago.
-
-      To provide a description, add the following line to your Dockerfile:
-
-      LABEL org.opencontainers.image.description DESCRIPTION
-      For multi-arch images, set a value for the org.opencontainers.image.description key in the annotations field of the manifest:
-
-      "annotations": { "org.opencontainers.image.description": "DESCRIPTION" }
-      https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry#labelling-container-images
-    </issue>
-    <issue>
-      if there are no binaries, `make start` errs out; it should not, since it
-      builds the binaries before anything else anyway.
-    </issue>
-    <issue>
-      add `-trimpath` and `-a` to go build.
-    </issue>
-    <issue>
-      `make test` is still not parallelized due to env setup.
-    </issue>
-    <issue>
-      when entries are not registered to the SPIRE Server and the
-      operator tries to use SPIKE, the error messages can be more
-      explanatory.
     </issue>
     <issue>
       a demo just focus on the architecture and nothing else. (no live demo,
@@ -132,120 +65,8 @@
         * Mini codewalk
     </issue>
     <issue>
-      type ShardGetResponse struct {
-      error field should be optional.
-    </issue>
-    <issue>
-      also, empty id or path should raise an error for policies
-      and also for secrets
-    </issue>
-    <issue>
-      func readPolicyFromFile(filePath string) (Spec, error) {
-      this function is in the wrong file!
-    </issue>
-
-    <issue>
-      spike-next is still an open branch on helm-charts main.
-      check if there are still things that need to be merged, and what
-      needs to be done to push the PR forward.
-    </issue>
-    <issue>
-      doomsday recovery and restore is not functional at the moment.
-    </issue>
-    <issue>
-      start.sh should test recovery and restore
-      start.sh should test encryption and decryption
-    </issue>
-    <issue>
-      Go through GitHub issues and close the completed ones.
-    </issue>
-    <issue>
-      // It's unlikely to have 1000 SPIKE Keepers across the board.
-      // The indexes start from 1 and increase one-by-one by design.
-      const maxShardID = 1000
-      to env var configuration.
-    </issue>
-    <issue>
-      add some more description etc to SPIKE go SDK github repo.
-      also the social media banners on both repos needs an overhaul.
-    </issue>
-    <issue>
-      additional memory clearing for the sdk:
-      https://github.com/spiffe/spike/issues/243
-    </issue>
-    <issue>
-      VSecM has a missing video:
-      vsecm missing video(s)
-      https://vsecm.com/documentation/getting-started/overview/
-      we can directly remove it too, since vscem is less of a focus nowadays.
-    </issue>
-    <issue>
-      import "errors"
-
-      // IsOneOf returns true if err is equal to any of the errs.
-      func IsOneOf(err error, errs ...error) bool {
-      for _, e := range errs {
-      if errors.Is(err, e) {
-      return true
-      }
-      }
-      return false
-      }
-    </issue>
-    <issue>
-      bare metal; don't run bootstrap, and observe what happens:
-      1. do error messages make sense?
-      2. can the user understand what's wrong?
-    </issue>
-    <issue>
-      maybe we can add a configurable "bootsrap time out" as an env var later. For now, the bootsrap app will try to
-      bootstrap the thing in an exponentially-backing-off loop until it succeeds.
-    </issue>
-    <issue>
-      move this to the SDK: app/spike/internal/trust/spiffeid.go
-      then any code that does self-authentication such as the following,
-      will use trust.AuthenticateForXyz() instead:
-      This...
-        // I should be SPIKE Nexus.
-        if !spiffeid.IsNexus(selfSPIFFEID){...crash if not nexus...}
-      will become
-        trust.AuthenticateForNexus(selfSPIFFEID)
-    </issue>
-    <issue>
-      demo main.go:
-
-      path := "^tenants/demo/db/creds"
-      path := "tenants/demo/db/creds"
-      the first one creates an error in demo app but the error response is
-      not helpful.
-    </issue>
-    <issue>
-      create a banner for SPIKE too; vSecM has fancy banner that show when sharing links on bluesky.
-      https://github.com/vmware/secrets-manager/security/dependabot
-    </issue>
-    <issue>
-      verify that these still work:
-      * https://spike.ist/getting-started/local-deployment/
-      * https://spike.ist/getting-started/quickstart/
-      * https://spike.ist/getting-started/bare-metal/
-      Fix the document for chart-related things, if needed.
-    </issue>
-    <issue>
-      func DatabaseOperationTimeout() time.Duration {
-      ^ this is not used anywhere. find where it should be used and add it.
-    </issue>
-    <issue>
       move generated binaries to `./bin` folder.
       stream logs to `./logs` folder.
-    </issue>
-    <issue>
-      add to docs:
-      sourcing
-      source /home/volkan/WORKSPACE/spike/hack/lib/env.sh
-      in your profile file can be helpful for development
-      it has predefined environment variables for bare-metal local
-      development.
-      `make start` already does that for the apps that it launches.
     </issue>
     <issue severity="important" urgency="moderate">
       // TDO: check all database operations (secrets, policies, metadata)
@@ -259,6 +80,171 @@
     </issue>
     <issue>
       Try SPIKE on a Mac (and create a video)
+    </issue>
+    <issue>
+      spike on windows video.
+    </issue>
+    <issue>
+      func initializeSqliteBackend(rootKey *[32]byte) backend.Backend {
+      panic if rootkey is nil or empty.
+    </issue>
+    <issue>
+      create a video about how to develop SPIKE on WSL.
+    </issue>
+    <issue waitingFor="json mode to be fixed">
+      demo: encryption as a service
+    </issue>
+    <issue>
+      note: we migth already be doing something similar; verify first.
+
+      for operator actions ensure that `spike/system/ops` path is enforced
+      (similar to how acl is enforced above.
+
+      create a workload that can create policies
+      create another workload that can backup the root key
+      to demo these features.
+    </issue>
+  </task-group>
+  <task-group state="parked" until="after-release">
+    <issue>
+      const GCMNonceSize = 12
+      to sdk.
+    </issue>
+    <issue>
+      duplicate code fragment:
+      for _, policy := range *policies {
+      result.WriteString(fmt.Sprintf("ID: %s\n", policy.ID))
+      result.WriteString(fmt.Sprintf("Name: %s\n", policy.Name))
+      result.WriteString(fmt.Sprintf("SPIFFE ID Pattern: %s\n",
+      policy.SPIFFEIDPattern))
+      result.WriteString(fmt.Sprintf("Path Pattern: %s\n",
+      policy.PathPattern))
+
+      perms := make([]string, 0, len(policy.Permissions))
+      for _, p := range policy.Permissions {
+      perms = append(perms, string(p))
+      }
+    </issue>
+    <issue>
+      duplicate code fragment
+
+      func encryptStream(cmd *cobra.Command, api *sdk.API, inFile, outFile string) {
+      // Validate the input file exists before attempting encryption.
+      if inFile != "" {
+      if _, err := os.Stat(inFile); err != nil {
+      if os.IsNotExist(err) {
+      cmd.PrintErrf("Error: Input file does not exist: %s\n", inFile)
+      return
+      }
+      cmd.PrintErrf("Error: Cannot access input file: %s\n", inFile)
+      return
+      }
+    </issue>
+    <issue>
+      maybe have a dedicated RootKey type of *[32]byte
+    </issue>
+    <issue>
+      move internal stuff to the SDK.
+    </issue>
+    <issue>
+      duplicate code fragment
+      // Get the specific version
+      v, exists := secret.Versions[version]
+      if !exists {
+      failErr := *sdkErrors.ErrEntityNotFound.Clone()
+      failErr.Msg = fmt.Sprintf(
+      "secret with path %s not found for version %v",
+      path, version,
+      )
+      return nil, &failErr
+      }
+    </issue>
+    <issue>
+      duplicated code fragment:
+      func (s *DataStore) DeletePolicy(
+      ctx context.Context, id string,
+      ) *sdkErrors.SDKError {
+      const fName = "DeletePolicy"
+
+      validation.CheckContext(ctx, fName)
+
+      s.mu.Lock()
+      defer s.mu.Unlock()
+
+      tx, beginErr := s.db.BeginTx(
+      ctx, &sql.TxOptions{Isolation: sql.LevelSerializable},
+      )
+      if beginErr != nil {
+      failErr := sdkErrors.ErrTransactionBeginFailed.Wrap(beginErr)
+      return failErr
+      }
+    </issue>
+    <issue>
+      duplicated code fragment:
+
+      func RouteDecrypt(
+      w http.ResponseWriter, r *http.Request, audit *journal.AuditEntry,
+      ) *sdkErrors.SDKError {
+      const fName = "routeDecrypt"
+      journal.AuditRequest(fName, r, audit, journal.AuditCreate)
+
+      // Check if streaming mode based on Content-Type
+      contentType := r.Header.Get(headerKeyContentType)
+      streamModeActive := contentType == headerValueOctetStream
+
+      if streamModeActive {
+      // Cipher getter for streaming mode
+      getCipher := func() (cipher.AEAD, *sdkErrors.SDKError) {
+      return getCipherOrFailStreaming(w)
+      }
+      return handleStreamingDecrypt(w, r, getCipher)
+      }
+    </issue>
+    <issue>
+      refactor with injections to make the code more testable:
+
+      func TestSendShardsToKeepers_NetworkDependentFunction(t *testing.T) {
+      // The sendShardsToKeepers function has multiple external dependencies that make it
+      // difficult to test without a significant infrastructure:
+      // 1. Requires SPIFFE X509Source
+      // 2. Makes network calls via mTLS clients
+      // 3. Depends on state management for the root key
+      // 4. Calls computeShares() and sanityCheck() which have their own dependencies
+      t.Skip("Skipping sendShardsToKeepers test - requires SPIFFE infrastructure, network connectivity, and state management")
+
+      // Note: To properly test this function, you would need to:
+      // 1. Mock the workloadapi.X509Source
+      // 2. Mock network.CreateMTLSClientWithPredicate
+      // 3. Mock net.Post
+      // 4. Mock state.RootKeyZero()
+      // 5. Mock computeShares() and sanityCheck()
+      // 6. Set up test HTTP servers
+      // 7. Or refactor the code for better testability with dependency injection
+      }
+    </issue>
+    <issue>
+      g := group.P256
+      t := uint(env.ShamirThresholdVal() - 1) // Need t+1 shares to reconstruct
+      n := uint(env.ShamirSharesVal())        // Total number of shares
+      duplicated code fragment.
+    </issue>
+    <issue>
+      SPIKE Bootstrap tries to reach keepers forever, but it should have a max
+      timeout (like, say, 20mins), after which it gives up and crashes.
+      -- configurable.
+    </issue>
+
+    <issue>
+      ensure db operations are retried a couple times with backoff
+      before giving up.
+
+      SQLLite can error out if there is a blocked transaction or
+      a integrity issue, which a retry can fix it.
+    </issue>
+    <issue>
+      BREAKING: API Methods should accept a context, so that they can
+      be cancelled from the consumer without having to for a wrapper
+      goroutine
     </issue>
     <issue>
       Add a SPIKE Lite section for the docs.
@@ -275,44 +261,104 @@
       cat decrypted; echo
     </issue>
     <issue>
-      func initializeSqliteBackend(rootKey *[32]byte) backend.Backend {
-      panic if rootkey is nil or empty.
+      start.sh should test recovery and restore
+      start.sh should test encryption and decryption
     </issue>
     <issue>
-      create a video about how to develop SPIKE on WSL.
+      func DatabaseOperationTimeout() time.Duration {
+      ^ this is not used anywhere. find where it should be used and add it.
+    </issue>
+
+    <issue>
+      code duplication
+
+      // Initialize parameters
+      g := group.P256
+      t := uint(env.ShamirThresholdVal() - 1) // Need t+1 shares to reconstruct
+      n := uint(env.ShamirSharesVal())        // Total number of shares
+
+      // Create a secret from our 32-byte key:
+      rootSecret := g.NewScalar()
+      if err := rootSecret.UnmarshalBinary(rootKeySeed[:]); err != nil {
+      failErr := sdkErrors.ErrDataUnmarshalFailure.Wrap(err)
+      log.FatalErr(fName, *failErr)
+      }
+    </issue>
+    <issue area="helm-charts">
+      * helm-charts-hardened is still waiting for spike-next merge.
+      * helm-charts-hardene/spike-next has incorrect assumptions about
+      components that might need update:
+      1.   ## @param trustRoot.keepers Override which trustRoot Keepers are in
+      for spike nexus keepers can have multiple trust roots (which is okay)
+      but for spike keeper, nexus is assumed to have a single trust root.
+      in a HA setup nexus can have multiple trust roots, so the value
+      in values.yaml should be an array.
+      2. SPIKE Nexus statefulset uses both SPIKE_TRUST_ROOT_NEXUS and also
+      SPIKE_TRUST_ROOT (same for keeper, bootstrap, and pilot)
+      that's not a bug, but it's confusing and should be documented
+      in the charts which one is for what. SPIKE_TRUST_ROOT is for self
+      assignment and SPIKE_TRUST_ROOT_NEXUS etc is for validation functions.
     </issue>
     <issue>
-      // TDO: Yes memory is the source of truth; but at least
-      // attempt some exponential retries before giving up.
-      if err := be.StoreSecret(ctx, path, *secret); err != nil {
-      // Log error but continue - memory is the source of truth
-      log.Log().Warn(fName,
-      "message", "Failed to cache secret",
-      "path", path,
-      "err", err.Error(),
-      )
+      `make test` is still not parallelized due to env setup.
+    </issue>
+    <issue>
+      when entries are not registered to the SPIRE Server and the
+      operator tries to use SPIKE, the error messages can be more
+      explanatory.
+    </issue>
+    <issue>
+      also, empty id or path should raise an error for policies
+      and also for secrets
+    </issue>
+    <issue>
+      spike-next is still an open branch on helm-charts main.
+      check if there are still things that need to be merged, and what
+      needs to be done to push the PR forward.
+    </issue>
+    <issue>
+      Go through GitHub issues and close the completed ones.
+    </issue>
+    <issue>
+      // It's unlikely to have 1000 SPIKE Keepers across the board.
+      // The indexes start from 1 and increase one-by-one by design.
+      const maxShardID = 1000
+      to env var configuration.
+    </issue>
+    <issue>
+      additional memory clearing for the sdk:
+      https://github.com/spiffe/spike/issues/243
+    </issue>
+    <issue>
+      VSecM has a missing video:
+      vsecm missing video(s)
+      https://vsecm.com/documentation/getting-started/overview/
+      we can directly remove it too, since vscem is less of a focus nowadays.
+    </issue>
+    <issue>
+      move this to the SDK: app/spike/internal/trust/spiffeid.go
+      then any code that does self-authentication such as the following,
+      will use trust.AuthenticateForXyz() instead:
+      This...
+      // I should be SPIKE Nexus.
+      if !spiffeid.IsNexus(selfSPIFFEID){...crash if not nexus...}
+      will become
+      trust.AuthenticateForNexus(selfSPIFFEID)
+    </issue>
+    <issue>
+      SDK. duplicate code fragment:
+      if source == nil {
+      return nil, sdkErrors.ErrSPIFFENilX509Source.Clone()
       }
 
-      SQLLite can error out if there is a blocked transaction or
-      a integrity issue, which a retry can fix it.
-    </issue>
-    <issue>
-      SPIKE Bootstrap tries to reach keepers forever, but it should have a max
-      timeout (like, say, 20mins), after which it gives up and crashes.
-      -- configurable.
-    </issue>
-    <issue waitingFor="json mode to be fixed">
-      demo: encryption as a service
-    </issue>
-    <issue>
-      note: we migth already be doing something similar; verify first.
+      r := reqres.SecretMetadataRequest{Path: path, Version: version}
 
-      for operator actions ensure that `spike/system/ops` path is enforced
-      (similar to how acl is enforced above.
-
-      create a workload that can create policies
-      create another workload that can backup the root key
-      to demo these features.
+      mr, marshalErr := json.Marshal(r)
+      if marshalErr != nil {
+      failErr := sdkErrors.ErrDataMarshalFailure.Wrap(marshalErr)
+      failErr.Msg = "problem generating the payload"
+      return nil, failErr
+      }
     </issue>
   </task-group>
   <task-group for="v0.8.2">

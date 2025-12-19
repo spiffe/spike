@@ -50,11 +50,131 @@ starting with this guide:
 * Have [`make`][make] installed on your machine.
 * Have a [`minikube`][minikube] binary installed.
 * Have [`helm`][helm] binary installed.
+* (Optional) install [`zola`][zola] if you want to build the documentation 
+  locally.
 
 [docker]: https://www.docker.com/ "Docker: Build, Share, and Run Applications"
 [kubectl]: https://kubernetes.io/docs/tasks/tools/ "kubectl: Kubernetes command-line tool"
 [make]: https://www.gnu.org/software/make/ "GNU Make: Build Automation Tool"
 [helm]: https://helm.sh/ "Helm"
+[zola]: https://www.getzola.org/ "Zola"
+
+## For Windows Users
+
+The best way to get started on Windows is to use [Windows Subsystem for 
+Linux][wsl]. After installing WSL, make sure to install the prerequisites
+(*`docker`, `kubectl`, `make`, `minikube`, `helm`*) to your WSL distribution
+and **not** to your Windows machine.
+
+### Hosts File Setup
+
+**SPIKE** bare-metal installation requires that `spike.spike.ist` is 
+configured in your `/etc/hosts` file. However, WSL will automatically override
+your Linux hosts wile every time you restart your WSL distribution.
+
+To fix this, edit `/etc/wsl.conf` and add the following lines:
+
+```bash
+# sudo vim /etc/wsl.conf
+
+[network]
+generateHosts=false
+```
+
+Then update your hosts file:
+
+```bash
+# sudo vim /etc/hosts
+
+# Add the following line:
+127.0.0.1  spire.spike.ist
+```
+
+Then restart your WSL distribution, and the `hosts` file is yours to 
+modify and maintain.
+
+Note that editing `C:\Windows\System32\drivers\etc\hosts` will **NOT** work.
+
+### WSL Memory Lock Limit
+
+WSL sets a default `RLIMIT_MEMLOCK` of 64MB for all shell sessions. This limit 
+is imposed by WSL's Relay process before any Linux configuration is read, which
+means standard Linux approaches (*`/etc/security/limits.conf`, `systemd` 
+configs, PAM*) cannot override it.
+
+SPIKE uses memory locking (`mlock`) to prevent sensitive secrets from being 
+swapped to disk. Failing to lock memory will not stop SPIKE from running,
+but you will see warnings in the logs.
+
+WSL spawns your shell via a Windows-side Relay process:
+
+```
+Windows WSL (sets 64MB limit) → Relay → your shell
+```
+
+By the time Linux session management runs, the limit is already inherited. 
+The following have **no** effect on interactive WSL shells:
+
+* `/etc/security/limits.conf`
+* `/etc/systemd/user.conf`
+* `/etc/systemd/system.conf`
+* PAM configuration
+
+These configs *do* apply to processes spawned through `systemd` 
+(*e.g., `systemd-run --user`*), but not to your default terminal session.
+
+To fix this, you can use the following script:
+
+```bash
+!#/usr/bin/env bash
+# > ulimit -l
+# 65536
+# --
+
+# Raise memlock limit for SPIKE development
+sudo prlimit --memlock=unlimited:unlimited \
+  --pid $$ 2>/dev/null && exec bash
+
+# --
+# > ulimit -l
+# unlimited
+```
+
+You can even add this script to your `~/.bashrc` or `~/.zshrc` to make it 
+automatically run on every shell session.
+
+[wsl]: https://learn.microsoft.com/en-us/windows/wsl/install
+
+## Environment Variables
+
+It may be useful to set the following environment variables before
+you start.
+
+This is a sample configuration; please adjust as needed:
+
+```bash
+# User Configuration
+#
+# Add this to your ~/.bashrc or ~/.zshrc, ~/.profile,
+# or ~/.zprofile, or wherever you keep your shell config.
+
+export PATH=$PATH:/usr/local/go/bin
+
+# If you are using GPG for signing commits:
+export GPG_TTY=$(tty)
+
+# This where you clone SPIKE, SPIRE, and SPIFFE Helm Charts:
+export WORKSPACE="$HOME/WORKSPACE" 
+
+# These are needed for Bare-Metal Installation:
+export PATH="$PATH:$WORKSPACE/spire/bin"
+export PATH="$PATH:$WORKSPACE/spike"
+
+# Optional, but recommended.
+source "$WORKSPACE/spike/hack/lib/env.sh"
+# ^ Note that the `make start` Make target will
+# automatically source this file for you.
+```
 
 ## Starting Minikube
 

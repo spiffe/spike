@@ -49,7 +49,7 @@ import (
 //   - X509 source unavailable: Workload API connection lost
 //   - Invalid secret path: Path format validation failed
 //   - Invalid key-value format: Malformed pair (continues with other pairs)
-//   - SPIKE not ready: Backend not initialized, prompts to wait
+//   - SPIKE is not ready: Backend not initialized, prompts to wait
 //   - Network/API errors: Connection or storage failures
 func newSecretPutCommand(
 	source *workloadapi.X509Source, SPIFFEID string,
