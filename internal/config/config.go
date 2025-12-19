@@ -36,7 +36,7 @@ func NexusDataFolder() string {
 // ~/.spike/recover. If the home directory is unavailable, it falls back to
 // /tmp/.spike-$USER/recover.
 //
-// The directory is created once on the first call and cached for subsequent
+// The directory is created once on the first call and cached for the following
 // calls.
 //
 // Returns:

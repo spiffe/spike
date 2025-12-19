@@ -132,11 +132,12 @@ func iterateKeepersAndInitializeState(
 				"message", "still shards remaining",
 				"id", keeperID,
 				"url", keeperAPIRoot,
-				"has", successfulKeeperShards,
+				"has", len(successfulKeeperShards),
 				"needs", env.ShamirThresholdVal(),
 			)
 			continue
 		}
+		log.Info(fName, "message", "threshold reached")
 
 		// No need to erase `ss` because upon successful recovery,
 		// `InitializeBackingStoreFromKeepers()` resets `successfulKeeperShards`

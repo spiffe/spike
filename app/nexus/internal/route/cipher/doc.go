@@ -76,7 +76,7 @@
 //
 // Both flows ensure:
 //   - Cipher (sensitive resource) is accessed only after SPIFFE ID validation
-//   - Guard receives complete request for field validation
+//   - Guard receives the complete request for field validation
 //   - Principle of least privilege is maintained
 //   - Authentication happens before authorization
 //

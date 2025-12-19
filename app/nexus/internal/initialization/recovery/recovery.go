@@ -40,11 +40,11 @@ import (
 //
 // Parameters:
 //   - source: An X509Source used for SPIFFE-based mTLS authentication with
-//     SPIKE Keeper nodes. Can be nil. If source is nil during a retry
+//     SPIKE Keeper nodes. Can be nil. If `source` is nil during a retry
 //     iteration, the function will log a warning and retry. This graceful
 //     handling allows recovery from transient workload API failures where
 //     the source may be temporarily unavailable but can be restored in
-//     subsequent retry attempts.
+//     the following retry attempts.
 func InitializeBackingStoreFromKeepers(source *workloadapi.X509Source) {
 	const fName = "InitializeBackingStoreFromKeepers"
 
@@ -63,10 +63,19 @@ func InitializeBackingStoreFromKeepers(source *workloadapi.X509Source) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
+	// Note: It is okay for SPIKE Nexus to continue asking shards from
+	// SPIKE Keepers in an infinite loop: The operator may optionally
+	// configure SPIKE Keepers to be hydrated out-of-band instead of
+	// automatically bootstrapping them during SPIKE installation; or
+	// they might decide to "reset" the system with new shards. We
+	// cannot assume that SPIKE Nexus initialization always completes
+	// in a timely manner. If things take longer than usual, there are
+	// always logs that can be inspected to root-cause the issue.
+
 	_, err := retry.Forever(ctx, func() (bool, *sdkErrors.SDKError) {
 		log.Debug(fName, "message", "retry attempt", "time", time.Now().String())
 
-		// Early check: avoid unnecessary function call if source is nil
+		// Early check: avoid unnecessary function call if the source is nil
 		if source == nil {
 			warnErr := *sdkErrors.ErrSPIFFENilX509Source.Clone()
 			warnErr.Msg = "X509 source is nil, will retry"
@@ -201,10 +210,11 @@ func RestoreBackingStoreFromPilotShards(shards []ShamirShard) {
 //
 // Parameters:
 //   - source: An X509Source used for creating SPIFFE-based mTLS connections to
-//     keepers. Can be nil. If source is nil during any iteration, the function
-//     performs an early check and skips shard distribution for that iteration,
-//     logging a warning and waiting for the next scheduled interval. This
-//     graceful handling allows recovery from transient workload API failures.
+//     keepers. Can be nil. If `source` is nil during any iteration, the
+//     function performs an early check and skips shard distribution for that
+//     iteration, logging a warning and waiting for the next scheduled interval.
+//     This graceful handling allows recovery from transient workload API
+//     failures.
 func SendShardsPeriodically(source *workloadapi.X509Source) {
 	const fName = "SendShardsPeriodically"
 
@@ -216,7 +226,7 @@ func SendShardsPeriodically(source *workloadapi.X509Source) {
 	for range ticker.C {
 		log.Debug(fName, "message", "sending shards to keepers")
 
-		// Early check: skip if source is nil
+		// Early check: skip if `source` is nil
 		if source == nil {
 			warnErr := *sdkErrors.ErrSPIFFENilX509Source.Clone()
 			warnErr.Msg = "X509 source is nil: skipping shard send"
@@ -257,7 +267,7 @@ func SendShardsPeriodically(source *workloadapi.X509Source) {
 //
 // Security and Error Handling:
 //
-// This function employs a fail-fast strategy with log.FatalErr for any errors
+// This function uses a fail-fast strategy with log.FatalErr for any errors
 // during shard generation. This is intentional and critical for security:
 //   - Shard generation failures indicate memory corruption, crypto library
 //     bugs, or corrupted internal state

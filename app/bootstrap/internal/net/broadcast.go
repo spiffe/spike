@@ -123,16 +123,28 @@ func VerifyInitialization(ctx context.Context, api *spike.API) {
 
 	ciphertext := gcm.Seal(nil, nonce, []byte(randomText), nil)
 
-	_, _ = retry.Forever(ctx, func() (bool, *sdkErrors.SDKError) {
-		err := api.Verify(randomText, nonce, ciphertext)
-		if err != nil {
-			failErr := sdkErrors.ErrCryptoCipherVerificationFailed.Wrap(err)
+	// At this point we talk to SPIKE Nexus, and our expectation is SPIKE Nexus
+	// is about to become healthy. So, we retry with a reasonable timeout and
+	// give up if we cannot verify the initialization in a timely manner.
+
+	_, retryErr := retry.Do(ctx, func() (bool, *sdkErrors.SDKError) {
+		verifyErr := api.Verify(randomText, nonce, ciphertext)
+		if verifyErr != nil {
+			failErr := sdkErrors.ErrCryptoCipherVerificationFailed.Wrap(verifyErr)
 			failErr.Msg = "failed to verify initialization: will retry"
 			log.WarnErr(fName, *failErr)
-			return false, err
+			return false, failErr
 		}
 		return true, nil
-	})
+	}, retry.WithBackOffOptions(
+		retry.WithMaxElapsedTime(env.BootstrapInitVerificationTimeoutVal())),
+	)
+
+	if retryErr != nil {
+		failErr := sdkErrors.ErrCryptoCipherVerificationFailed.Wrap(retryErr)
+		failErr.Msg = "failed to verify initialization within timeout"
+		log.FatalErr(fName, *failErr)
+	}
 }
 
 // AcquireSource obtains and validates an X.509 SVID source with a SPIKE

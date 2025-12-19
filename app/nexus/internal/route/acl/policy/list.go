@@ -90,6 +90,14 @@ func RouteListPolicies(
 		return net.HandleError(listErr, w, reqres.PolicyListResponse{})
 	}
 
-	net.Success(reqres.PolicyListResponse{Policies: policies}.Success(), w)
+	items := make([]data.PolicyListItem, len(policies))
+	for i, p := range policies {
+		items[i] = data.PolicyListItem{
+			ID:   p.ID,
+			Name: p.Name,
+		}
+	}
+
+	net.Success(reqres.PolicyListResponse{Policies: items}.Success(), w)
 	return nil
 }

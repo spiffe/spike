@@ -11,6 +11,10 @@ k8s-delete:
 	./hack/k8s/minikube-delete.sh
 
 # 2. Start the test cluster.
+#
+# ! Make sure you read https://spike.ist/development/quickstart/ and          !
+# ! https://spike.ist/getting-started/bare-metal/ before you run this command !
+# ! to have a smooth developer experience.                                    !
 k8s-start:
 	./hack/k8s/minikube-start.sh
 

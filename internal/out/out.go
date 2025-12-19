@@ -47,7 +47,9 @@ func PrintBanner(appName, appVersion string) {
 // Parameters:
 //   - appName: The name of the application, used as a prefix in log messages
 func LogMemLock(appName string) {
-	if mem.Lock() {
+	err := mem.Lock()
+
+	if err == nil {
 		log.Info(appName, "message", "successfully locked memory")
 		return
 	}

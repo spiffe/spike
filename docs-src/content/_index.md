@@ -22,3 +22,5 @@ as its identity control plane.
 
 **SPIKE** protects your secrets and helps your ops, SREs, and sysadmins
 `#sleepmore`.
+
+[spiffe]: https://spiffe.io/ "SPIFFE"

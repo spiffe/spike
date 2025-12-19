@@ -4,7 +4,8 @@
 #  \\\\\ Copyright 2024-present SPIKE contributors.
 # \\\\\\\ SPDX-License-Identifier: Apache-2.0
 
-# Source this file in your ~/.profile for your convenience.
+# Source this file in your ~/.profile (or ~/.zprofile, or the profile file
+# of your active shell) for your convenience.
 #
 # NOTE: This file contains example environment variables for local development
 # and debugging. Some values intentionally deviate from production defaults

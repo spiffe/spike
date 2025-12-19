@@ -85,8 +85,8 @@ func TestRootSharesConsistency(t *testing.T) {
 		t.Fatal("Both share sets should have 3 shares")
 	}
 
-	// The shares should be different because we use different random root keys
-	// But the structure should be the same
+	// The shares should be different because we use different random root keys,
+	// but the structure should be the same
 	for i := 0; i < len(shares1); i++ {
 		// IDs should be consistent (1, 2, 3)
 		if !shares1[i].ID.IsEqual(shares2[i].ID) {

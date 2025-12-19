@@ -14,10 +14,10 @@ import (
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 )
 
-// formatPoliciesOutput formats the output of policies based on the format flag.
-// It supports "human" (default) and "json" formats. For human format, it
-// creates a readable tabular representation. For JSON format, it marshals the
-// policies to indented JSON.
+// formatPoliciesOutput formats the output of policy list items based on the
+// format flag. It supports "human" (default) and "json" formats. For human
+// format, it creates a readable tabular representation. For JSON format, it
+// marshals the policies to indented JSON.
 //
 // If the format flag is invalid, it returns an error message.
 // If the "policies" list is empty, it returns an appropriate message based on
@@ -25,11 +25,13 @@ import (
 //
 // Parameters:
 //   - cmd: The Cobra command containing the format flag
-//   - policies: The policies to format
+//   - policies: The policy list items to format (contains ID and Name only)
 //
 // Returns:
 //   - string: The formatted output or error message
-func formatPoliciesOutput(cmd *cobra.Command, policies *[]data.Policy) string {
+func formatPoliciesOutput(
+	cmd *cobra.Command, policies *[]data.PolicyListItem,
+) string {
 	format, _ := cmd.Flags().GetString("format")
 
 	// Validate format
@@ -43,7 +45,7 @@ func formatPoliciesOutput(cmd *cobra.Command, policies *[]data.Policy) string {
 
 	if format == "json" {
 		if isEmptyList {
-			// Return an empty array instead of null for an empty list in JSON format
+			// Return an empty array instead of null for an empty list
 			return "[]"
 		}
 
@@ -59,30 +61,12 @@ func formatPoliciesOutput(cmd *cobra.Command, policies *[]data.Policy) string {
 		return "No policies found."
 	}
 
-	// The rest of the function remains the same:
 	var result strings.Builder
 	result.WriteString("POLICIES\n========\n\n")
 
 	for _, policy := range *policies {
 		result.WriteString(fmt.Sprintf("ID: %s\n", policy.ID))
 		result.WriteString(fmt.Sprintf("Name: %s\n", policy.Name))
-		result.WriteString(fmt.Sprintf("SPIFFE ID Pattern: %s\n",
-			policy.SPIFFEIDPattern))
-		result.WriteString(fmt.Sprintf("Path Pattern: %s\n",
-			policy.PathPattern))
-
-		perms := make([]string, 0, len(policy.Permissions))
-		for _, p := range policy.Permissions {
-			perms = append(perms, string(p))
-		}
-		result.WriteString(fmt.Sprintf("Permissions: %s\n",
-			strings.Join(perms, ", ")))
-		result.WriteString(fmt.Sprintf("Created At: %s\n",
-			policy.CreatedAt.Format(time.RFC3339)))
-		if !policy.UpdatedAt.IsZero() {
-			result.WriteString(fmt.Sprintf("Updated At: %s\n",
-				policy.UpdatedAt.Format(time.RFC3339)))
-		}
 		result.WriteString("--------\n\n")
 	}
 

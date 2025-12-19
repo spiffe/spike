@@ -90,22 +90,19 @@ func guardPolicyCreateRequest(
 		return sdkErrors.ErrDataInvalidInput
 	}
 
-	permValues := make([]string, 0, len(permissions))
-	for _, perm := range permissions {
-		trimmed := strings.TrimSpace(string(perm))
-		if trimmed == "" {
-			continue
-		}
-		permValues = append(permValues, trimmed)
-	}
-
-	permsStr := strings.Join(permValues, ",")
-
-	if _, err := validation.ValidatePermissions(permsStr); err != nil {
+	if len(permissions) == 0 {
 		net.Fail(
 			reqres.PolicyPutResponse{}.BadRequest(), w, http.StatusBadRequest,
 		)
 		return sdkErrors.ErrDataInvalidInput
+	}
+	for _, perm := range permissions {
+		if !validation.ValidPermission(string(perm)) {
+			net.Fail(
+				reqres.PolicyPutResponse{}.BadRequest(), w, http.StatusBadRequest,
+			)
+			return sdkErrors.ErrDataInvalidInput
+		}
 	}
 
 	return nil

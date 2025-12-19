@@ -157,8 +157,8 @@ func TestHTTPClientInteraction(t *testing.T) {
 	if doErr != nil {
 		t.Fatalf("Failed to send request: %v", doErr)
 	}
-	defer func(Body io.ReadCloser) {
-		_ = Body.Close()
+	defer func(body io.ReadCloser) {
+		_ = body.Close()
 	}(resp.Body)
 
 	if resp.StatusCode != http.StatusOK {

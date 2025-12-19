@@ -57,7 +57,7 @@ func TestSQLitePolicy_CreateAndGet(t *testing.T) {
 			t.Errorf("Expected name %s, got %s", policy.Name, retrievedPolicy.Name)
 		}
 		if retrievedPolicy.SPIFFEIDPattern != policy.SPIFFEIDPattern {
-			t.Errorf("Expected spiffeid pattern %s, got %s", policy.SPIFFEIDPattern, retrievedPolicy.SPIFFEIDPattern)
+			t.Errorf("Expected SPIFFE ID pattern %s, got %s", policy.SPIFFEIDPattern, retrievedPolicy.SPIFFEIDPattern)
 		}
 		if retrievedPolicy.PathPattern != policy.PathPattern {
 			t.Errorf("Expected pathPattern pattern %s, got %s", policy.PathPattern, retrievedPolicy.PathPattern)

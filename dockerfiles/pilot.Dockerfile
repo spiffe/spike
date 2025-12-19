@@ -70,6 +70,10 @@ LABEL maintainers="SPIKE Maintainers <maintainers@spike.ist>" \
       documentation="https://spike.ist/" \
       contact="https://spike.ist/community/contact/" \
       community="https://spike.ist/community/hello/" \
-      changelog="https://spike.ist/tracking/changelog/"
+      changelog="https://spike.ist/tracking/changelog/" \
+      org.opencontainers.image.title="SPIKE Pilot" \
+      org.opencontainers.image.description="SPIKE Pilot is the CLI tool for managing secrets in SPIKE." \
+      org.opencontainers.image.source="https://github.com/spiffe/spike" \
+      org.opencontainers.image.licenses="Apache-2.0"
 
 ENTRYPOINT ["/usr/local/bin/spike"]

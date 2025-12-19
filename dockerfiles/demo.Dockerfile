@@ -59,6 +59,10 @@ LABEL maintainers="SPIKE Maintainers <maintainers@spike.ist>" \
       documentation="https://spike.ist/" \
       contact="https://spike.ist/community/contact/" \
       community="https://spike.ist/community/hello/" \
-      changelog="https://spike.ist/tracking/changelog/"
+      changelog="https://spike.ist/tracking/changelog/" \
+      org.opencontainers.image.title="SPIKE Demo" \
+      org.opencontainers.image.description="SPIKE Demo is a sample workload demonstrating SPIKE secrets retrieval." \
+      org.opencontainers.image.source="https://github.com/spiffe/spike" \
+      org.opencontainers.image.licenses="Apache-2.0"
 
 ENTRYPOINT ["/demo"]

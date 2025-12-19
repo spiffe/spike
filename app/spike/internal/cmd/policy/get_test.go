@@ -52,7 +52,7 @@ func TestNewPolicyGetCommandWithNilSource(t *testing.T) {
 		return
 	}
 
-	// Command should still be created; nil source is handled at runtime
+	// Command should still be created; the nil source is handled at runtime
 	if cmd.Use != "get [policy-id]" {
 		t.Errorf("Expected command use to be 'get [policy-id]', got '%s'",
 			cmd.Use)

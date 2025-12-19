@@ -58,7 +58,7 @@ else
 fi
 
 # Build with proper flags
-GOFIPS140=v1.0.0 go build -ldflags="-s -w" -o "$APP" \
+GOFIPS140=v1.0.0 go build -trimpath -ldflags="-s -w" -o "$APP" \
   /workspace/app/"$APP"/cmd/main.go
 
 # Verify the binary was created
