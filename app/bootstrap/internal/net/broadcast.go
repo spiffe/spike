@@ -10,8 +10,10 @@ import (
 	"crypto/cipher"
 	"crypto/rand"
 	"encoding/hex"
+	"fmt"
 	"io"
 
+	"github.com/cloudflare/circl/secretsharing"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	spike "github.com/spiffe/spike-sdk-go/api"
 	"github.com/spiffe/spike-sdk-go/config/env"
@@ -25,49 +27,68 @@ import (
 	"github.com/spiffe/spike/internal/validation"
 )
 
-// BroadcastKeepers distributes root key shares to all configured SPIKE Keeper
-// instances. It iterates through each keeper ID from the environment
-// configuration and sends the corresponding keeper share using the provided
-// API. The function retries indefinitely until each share is successfully
-// delivered. If a keeper fails to receive its share, the function logs a
-// warning and retries. The function terminates the application if the retry
-// mechanism fails unexpectedly.
+// BroadcastKeepers distributes root key shares to all configured SPIKE
+// Keeper instances. It iterates through each keeper ID from the
+// environment configuration and sends the corresponding keeper share
+// using the provided API. The function retries with exponential
+// backoff using a configurable timeout and a maximum number of retry
+// attempts per keeper. If a keeper cannot be reached within the
+// timeout, the function terminates with a clear error message,
+// allowing the operator to fix the issue and rerun bootstrap.
+//
+// This fail-fast approach is appropriate for bootstrap because:
+//   - Bootstrap is a day-zero operation with an active operator watching
+//   - Bootstrap is idempotent and safe to rerun after fixing issues
+//   - Clear error messages help operators quickly identify and fix
+//     problems
+//   - Blocking forever obscures problems rather than surfacing them
 //
 // Parameters:
 //   - ctx: Context for cancellation and timeout control
 //   - api: SPIKE API client for communicating with keepers
+
 func BroadcastKeepers(ctx context.Context, api *spike.API) {
 	const fName = "BroadcastKeepers"
 
 	validation.CheckContext(ctx, fName)
-
-	// RootShares() generates the root key and splits it into shares.
-	// It enforces single-call semantics and will terminate if called again.
 	rs := state.RootShares()
 
-	for keeperID := range env.KeepersVal() {
+	timeout := env.BootstrapKeeperTimeoutVal()
+	maxRetries := env.BootstrapKeeperMaxRetriesVal()
+
+	for keeperID, keeperURL := range env.KeepersVal() {
 		keeperShare := state.KeeperShare(rs, keeperID)
 
-		log.Debug(fName, "message", "iterating", "keeper_id", keeperID)
-		_, err := retry.Forever(ctx, func() (bool, *sdkErrors.SDKError) {
-			log.Debug(fName, "message", "retrying", "keeper_id", keeperID)
+		keeperCtx, cancel := context.WithTimeout(ctx, timeout)
+		defer cancel()
 
-			err := api.Contribute(keeperShare, keeperID)
-			if err != nil {
-				failErr := sdkErrors.ErrAPIPostFailed.Wrap(err)
-				failErr.Msg = "failed to send shard: will retry"
-				log.WarnErr(fName, *failErr)
-				return false, failErr
-			}
+		_, err := retry.WithMaxAttempts(keeperCtx, maxRetries,
+			func() (bool, *sdkErrors.SDKError) {
+				log.Info(fName,
+					"message", "sending shard to keeper",
+					"keeper_id", keeperID,
+					"keeper_url", keeperURL,
+				)
 
-			return true, nil
-		})
+				err := contributeWithContext(keeperCtx, api, keeperShare, keeperID)
+				if err != nil {
+					warnErr := sdkErrors.ErrAPIPostFailed.Wrap(err)
+					warnErr.Msg = "failed to send shard: will retry"
+					log.WarnErr(fName, *warnErr)
+					return false, warnErr
+				}
+				return true, nil
+			})
 
-		// This should never happen since the above loop retries forever:
 		if err != nil {
-			failErr := sdkErrors.ErrStateInitializationFailed.Wrap(err)
-			failErr.Msg = "failed to send shards: will terminate"
+			failErr := sdkErrors.ErrBootstrapKeeperUnreachable.Clone()
+			failErr.Msg = fmt.Sprintf(
+				"failed to reach keeper %s at %s after %d attempts; "+
+					"ensure all keepers are running and rerun bootstrap",
+				keeperID, keeperURL, maxRetries,
+			)
 			log.FatalErr(fName, *failErr)
+			return
 		}
 	}
 }
@@ -181,4 +202,29 @@ func AcquireSource() *workloadapi.X509Source {
 	}
 
 	return src
+}
+
+// contributeWithContext wraps api.Contribute so cancellation/timeouts can be enforced.
+// The call is executed in a goroutine and the function waits for either the
+// contribution result or ctx.Done, returning ctx.Err() when the context ends first.
+//
+// Parameters:
+//   - ctx: Context that controls cancellation/deadline for the contribution
+//   - api: SPIKE API client used to send the share
+//   - share: Keeper share being contributed
+//   - keeperID: Identifier of the target keeper
+func contributeWithContext(ctx context.Context, api *spike.API, share secretsharing.Share, keeperID string) error {
+	done := make(chan error, 1)
+
+	go func() {
+		err := api.Contribute(share, keeperID)
+		done <- err
+	}()
+
+	select {
+	case err := <-done:
+		return err
+	case <-ctx.Done():
+		return ctx.Err()
+	}
 }
