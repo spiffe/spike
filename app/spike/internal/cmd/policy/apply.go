@@ -5,6 +5,8 @@
 package policy
 
 import (
+	"context"
+
 	"github.com/spf13/cobra"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	spike "github.com/spiffe/spike-sdk-go/api"
@@ -163,8 +165,11 @@ func newPolicyApplyCommand(
 				return
 			}
 
+			ctx, cancel := context.WithCancel(context.Background())
+			defer cancel()
+
 			// Apply policy using upsert semantics
-			policyErr := api.CreatePolicy(policy.Name, policy.SpiffeIDPattern,
+			policyErr := api.CreatePolicy(ctx, policy.Name, policy.SpiffeIDPattern,
 				policy.PathPattern, permissions)
 			if stdout.HandleAPIError(c, policyErr) {
 				return

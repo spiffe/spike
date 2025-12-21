@@ -13,7 +13,6 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/cloudflare/circl/secretsharing"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	spike "github.com/spiffe/spike-sdk-go/api"
 	"github.com/spiffe/spike-sdk-go/config/env"
@@ -70,7 +69,7 @@ func BroadcastKeepers(ctx context.Context, api *spike.API) {
 					"keeper_url", keeperURL,
 				)
 
-				err := contributeWithContext(keeperCtx, api, keeperShare, keeperID)
+				err := api.Contribute(keeperCtx, keeperShare, keeperID)
 				if err != nil {
 					warnErr := sdkErrors.ErrAPIPostFailed.Wrap(err)
 					warnErr.Msg = "failed to send shard: will retry"
@@ -149,7 +148,7 @@ func VerifyInitialization(ctx context.Context, api *spike.API) {
 	// give up if we cannot verify the initialization in a timely manner.
 
 	_, retryErr := retry.Do(ctx, func() (bool, *sdkErrors.SDKError) {
-		verifyErr := api.Verify(randomText, nonce, ciphertext)
+		verifyErr := api.Verify(ctx, randomText, nonce, ciphertext)
 		if verifyErr != nil {
 			failErr := sdkErrors.ErrCryptoCipherVerificationFailed.Wrap(verifyErr)
 			failErr.Msg = "failed to verify initialization: will retry"
@@ -202,55 +201,4 @@ func AcquireSource() *workloadapi.X509Source {
 	}
 
 	return src
-}
-
-// contributeWithContext wraps api.Contribute so cancellation/timeouts can be
-// enforced. The call is executed in a goroutine and the function waits for
-// either the contribution result or ctx.Done, returning ctx.Err() when the
-// context ends first.
-//
-// TODO: fix the API layer as soon as possible.
-//
-// IMPORTANT: This is a workaround, not a proper fix. When the context times
-// out, this function returns early but the underlying api.Contribute call
-// continues running in the background. This means:
-//   - The HTTP request is NOT actually cancelled
-//   - On retries, multiple concurrent requests may be in flight to the same
-//     keeper
-//   - Resources (goroutines, connections) are leaked until the orphaned calls
-//     complete
-//
-// The proper fix is to update the SDK so that api.Contribute accepts a
-// context.Context parameter and uses http.NewRequestWithContext internally.
-// This would allow the HTTP client to respect cancellation and timeouts.
-//
-// Parameters:
-//   - ctx: Context that controls cancellation/deadline for the contribution
-//   - api: SPIKE API client used to send the share
-//   - share: Keeper share being contributed
-//   - keeperID: Identifier of the target keeper
-func contributeWithContext(
-	ctx context.Context, api *spike.API,
-	share secretsharing.Share, keeperID string,
-) error {
-	done := make(chan error, 1)
-
-	go func() {
-		contributeErr := api.Contribute(share, keeperID)
-		// Explicitly send nil to avoid the nil-interface-with-nil-pointer issue.
-		// If we send a nil *SDKError directly, it becomes a non-nil error interface
-		// holding a nil pointer, causing "err != nil" checks to incorrectly pass.
-		if contributeErr == nil {
-			done <- nil
-			return
-		}
-		done <- contributeErr
-	}()
-
-	select {
-	case err := <-done:
-		return err
-	case <-ctx.Done():
-		return ctx.Err()
-	}
 }
