@@ -6,6 +6,7 @@ package recovery
 
 import (
 	"context"
+	"fmt"
 	"math/big"
 	"time"
 
@@ -240,11 +241,20 @@ func SendShardsPeriodically(source *workloadapi.X509Source) {
 			continue
 		}
 
+		// Ensures the number of keepers matches the Shamir shares required.
 		keepers := env.KeepersVal()
-		if len(keepers) < env.ShamirSharesVal() {
-			failErr := *sdkErrors.ErrShamirNotEnoughShards.Clone()
-			failErr.Msg = "not enough keepers configured"
-			log.FatalErr(fName, failErr)
+		expectedShares := env.ShamirSharesVal()
+
+		if len(keepers) != expectedShares {
+			failErr := sdkErrors.ErrShamirNotEnoughKeepers.Clone()
+			failErr.Msg = fmt.Sprintf(
+				"keeper count mismatch: SPIKE_NEXUS_SHAMIR_SHARES=%d "+
+					"but %d keepers configured in SPIKE_NEXUS_KEEPER_PEERS; "+
+					"these values must match",
+				expectedShares, len(keepers),
+			)
+			log.FatalErr(fName, *failErr)
+			return
 		}
 
 		sendShardsToKeepers(source, keepers)
