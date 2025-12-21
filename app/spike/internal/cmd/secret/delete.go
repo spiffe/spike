@@ -5,6 +5,7 @@
 package secret
 
 import (
+	"context"
 	"strconv"
 	"strings"
 
@@ -113,7 +114,10 @@ Examples:
 				vv = []int{}
 			}
 
-			err := api.DeleteSecretVersions(path, vv)
+			ctx, cancel := context.WithCancel(context.Background())
+			defer cancel()
+
+			err := api.DeleteSecretVersions(ctx, path, vv)
 			if stdout.HandleAPIError(cmd, err) {
 				return
 			}

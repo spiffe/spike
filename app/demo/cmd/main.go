@@ -5,6 +5,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 
 	spike "github.com/spiffe/spike-sdk-go/api"
@@ -12,6 +13,9 @@ import (
 
 func main() {
 	fmt.Println("SPIKE Demo")
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 
 	// Make sure you register the demo app SPIRE Server registration entry
 	// first:
@@ -40,7 +44,7 @@ func main() {
 
 	// Create a Secret
 	// https://pkg.go.dev/github.com/spiffe/spike-sdk-go/api#PutSecret
-	putErr := api.PutSecret(path, map[string]string{
+	putErr := api.PutSecret(ctx, path, map[string]string{
 		"username": "SPIKE",
 		"password": "SPIKE_Rocks",
 	})
@@ -51,7 +55,8 @@ func main() {
 
 	// Read the Secret
 	// https://pkg.go.dev/github.com/spiffe/spike-sdk-go/api#GetSecret
-	secret, getErr := api.GetSecret(path)
+
+	secret, getErr := api.GetSecret(ctx, path)
 	if getErr != nil {
 		fmt.Println("Error reading secret:", getErr.Error())
 		return

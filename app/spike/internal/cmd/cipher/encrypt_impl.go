@@ -5,6 +5,7 @@
 package cipher
 
 import (
+	"context"
 	"encoding/base64"
 	"os"
 
@@ -52,7 +53,10 @@ func encryptStream(cmd *cobra.Command, api *sdk.API, inFile, outFile string) {
 	}
 	defer cleanupOut()
 
-	ciphertext, apiErr := api.CipherEncryptStream(in)
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	ciphertext, apiErr := api.CipherEncryptStream(ctx, in)
 	if stdout.HandleAPIError(cmd, apiErr) {
 		return
 	}
@@ -90,7 +94,10 @@ func encryptJSON(cmd *cobra.Command, api *sdk.API, plaintextB64, algorithm,
 	}
 	defer cleanupOut()
 
-	ciphertext, apiErr := api.CipherEncrypt(plaintext, algorithm)
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	ciphertext, apiErr := api.CipherEncrypt(ctx, plaintext, algorithm)
 	if stdout.HandleAPIError(cmd, apiErr) {
 		return
 	}

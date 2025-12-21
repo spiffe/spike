@@ -5,6 +5,7 @@
 package secret
 
 import (
+	"context"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -91,7 +92,10 @@ func newSecretPutCommand(
 				return
 			}
 
-			err := api.PutSecret(path, values)
+			ctx, cancel := context.WithCancel(context.Background())
+			defer cancel()
+
+			err := api.PutSecret(ctx, path, values)
 			if stdout.HandleAPIError(cmd, err) {
 				return
 			}
