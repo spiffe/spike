@@ -6,7 +6,6 @@ package policy
 
 import (
 	"net/http"
-	"strings"
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
