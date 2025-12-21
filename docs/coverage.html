@@ -13160,10 +13160,10 @@ import (
         "github.com/spiffe/spike/internal/config"
 )
 
-// validatePermissions is a wrapper around config.ValidatePermissions that
+// validatePermissions is a wrapper around validate.ValidatePermissions that
 // validates policy permissions from a comma-separated string.
-// See config.ValidatePermissions for details.
-var validatePermissions = config.ValidatePermissions
+// See validate.ValidatePermissions for details.
+var validatePermissions = validate.ValidatePermissions
 
 // checkPolicyNameExists checks if a policy with the given name already exists.
 //

@@ -7,9 +7,11 @@ package config
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
+	"github.com/spiffe/spike-sdk-go/validation"
 )
 
 func TestValidPermission(t *testing.T) {
@@ -32,7 +34,7 @@ func TestValidPermission(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := validPermission(tt.perm)
+			result := validation.ValidPermission(tt.perm)
 			if result != tt.expected {
 				t.Errorf("validPermission(%q) = %v, want %v",
 					tt.perm, result, tt.expected)
@@ -42,12 +44,22 @@ func TestValidPermission(t *testing.T) {
 }
 
 func TestValidPermissionsList(t *testing.T) {
-	result := validPermissionsList()
+	result := validation.ValidPermissionsList()
 
-	// Check that all valid permissions are in the list
-	for _, p := range ValidPermissions {
+	expectedPerms := []data.PolicyPermission{
+		data.PermissionRead,
+		data.PermissionWrite,
+		data.PermissionList,
+		data.PermissionExecute,
+		data.PermissionSuper,
+	}
+
+	for _, p := range expectedPerms {
 		if !contains(result, string(p)) {
-			t.Errorf("validPermissionsList() missing permission %q", p)
+			t.Errorf(
+				"ValidPermissionsList missing permission %q",
+				p,
+			)
 		}
 	}
 }
@@ -140,7 +152,7 @@ func TestValidatePermissions(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			perms, err := ValidatePermissions(tt.input)
+			perms, err := validation.ValidatePermissions(tt.input)
 
 			if tt.wantErr {
 				if err == nil {
@@ -346,22 +358,18 @@ func TestValidPermissions_AllPermissionsPresent(t *testing.T) {
 		data.PermissionSuper,
 	}
 
-	if len(ValidPermissions) != len(expectedPerms) {
-		t.Errorf("ValidPermissions has %d items, want %d",
-			len(ValidPermissions), len(expectedPerms))
-	}
+	validPermsList := validation.ValidPermissionsList()
 
 	for _, expected := range expectedPerms {
-		found := false
-		for _, actual := range ValidPermissions {
-			if actual == expected {
-				found = true
-				break
-			}
-		}
-		if !found {
+		if !validation.ValidPermission(string(expected)) {
 			t.Errorf("ValidPermissions missing %q", expected)
 		}
+	}
+
+	permStrings := strings.Split(validPermsList, ", ")
+	if len(permStrings) != len(expectedPerms) {
+		t.Errorf("ValidPermissionsList has %d items, want %d.",
+			len(permStrings), len(expectedPerms))
 	}
 }
 
