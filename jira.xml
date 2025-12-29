@@ -28,12 +28,10 @@
       </issue>
       <issue>
         PRs to watch:
-        * https://github.com/spiffe/spike/pull/260
-        * https://github.com/spiffe/spike/pull/262
-        * https://github.com/spiffe/spike/pull/263
-        * https://github.com/spiffe/spike-sdk-go/pull/134
-        * https://github.com/spiffe/spike-sdk-go/pull/133
-        * https://github.com/spiffe/spike-sdk-go/pull/133
+        https://github.com/spiffe/spike-sdk-go/pull/140
+        https://github.com/spiffe/spike/pull/263
+        https://github.com/spiffe/spike/pull/268
+        https://github.com/spiffe/spike/pull/270
       </issue>
     </watch-list>
   </high-level-plan>
