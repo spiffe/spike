@@ -7,14 +7,13 @@ package policy
 import (
 	spike "github.com/spiffe/spike-sdk-go/api"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
-
-	"github.com/spiffe/spike/internal/config"
+	"github.com/spiffe/spike-sdk-go/validation"
 )
 
-// validatePermissions is a wrapper around config.ValidatePermissions that
+// validatePermissions is a wrapper around validation.ValidatePermissions that
 // validates policy permissions from a comma-separated string.
-// See config.ValidatePermissions for details.
-var validatePermissions = config.ValidatePermissions
+// See validation.ValidatePermissions for details.
+var validatePermissions = validation.ValidatePermissions
 
 // checkPolicyNameExists checks if a policy with the given name already exists.
 //
