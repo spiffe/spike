@@ -6,13 +6,13 @@ package secret
 
 import (
 	"encoding/json"
-	"slices"
 
 	"github.com/spf13/cobra"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	spike "github.com/spiffe/spike-sdk-go/api"
 	"gopkg.in/yaml.v3"
 
+	"github.com/spiffe/spike/app/spike/internal/cmd/format"
 	"github.com/spiffe/spike/app/spike/internal/stdout"
 	"github.com/spiffe/spike/app/spike/internal/trust"
 )
@@ -34,8 +34,8 @@ import (
 // Flags:
 //   - --version, -v (int): Specific version of the secret to retrieve
 //     (default 0) where 0 represents the current version
-//   - --format, -f (string): Output format. Valid options: plain, p, yaml, y,
-//     json, j (default "plain")
+//   - --format, -f (string): Output format. Valid options: human/h/plain/p,
+//     json/j, yaml/y (default "human")
 //
 // Returns:
 //   - *cobra.Command: Configured get command
@@ -68,11 +68,10 @@ func newSecretGetCommand(
 
 			path := args[0]
 			version, _ := cmd.Flags().GetInt("version")
-			format, _ := cmd.Flags().GetString("format")
 
-			if !slices.Contains([]string{"plain",
-				"yaml", "json", "y", "p", "j"}, format) {
-				cmd.PrintErrf("Error: Invalid format: %s\n", format)
+			outputFormat, formatErr := format.GetFormat(cmd)
+			if formatErr != nil {
+				cmd.PrintErrf("Error: %v\n", formatErr)
 				return
 			}
 
@@ -97,14 +96,19 @@ func newSecretGetCommand(
 			}
 
 			d := secret.Data
+			key := ""
+			if len(args) >= 2 {
+				key = args[1]
+			}
 
-			if format == "plain" || format == "p" {
+			// For human format, use plain key:value output
+			if outputFormat == format.Human {
 				found := false
 				for k, v := range d {
-					if len(args) < 2 || args[1] == "" {
+					if key == "" {
 						cmd.Printf("%s: %s\n", k, v)
 						found = true
-					} else if args[1] == k {
+					} else if key == k {
 						cmd.Printf("%s\n", v)
 						found = true
 						break
@@ -116,59 +120,41 @@ func newSecretGetCommand(
 				return
 			}
 
-			if len(args) < 2 || args[1] == "" {
-				if format == "yaml" || format == "y" {
-					b, marshalErr := yaml.Marshal(d)
-					if marshalErr != nil {
-						cmd.PrintErrf("Error: %v\n", marshalErr)
-						return
-					}
-
-					cmd.Printf("%s\n", string(b))
+			// For structured formats (JSON/YAML)
+			var dataToFormat interface{}
+			if key == "" {
+				dataToFormat = d
+			} else {
+				val, exists := d[key]
+				if !exists {
+					cmd.PrintErrln("Error: Key not found.")
 					return
 				}
+				dataToFormat = val
+			}
 
-				b, marshalErr := json.MarshalIndent(d, "", "    ")
+			switch outputFormat {
+			case format.YAML:
+				b, marshalErr := yaml.Marshal(dataToFormat)
 				if marshalErr != nil {
 					cmd.PrintErrf("Error: %v\n", marshalErr)
 					return
 				}
-
 				cmd.Printf("%s\n", string(b))
-				return
-			}
 
-			for k, v := range d {
-				if args[1] == k {
-					if format == "yaml" || format == "y" {
-						b, marshalErr := yaml.Marshal(v)
-						if marshalErr != nil {
-							cmd.PrintErrf("Error: %v\n", marshalErr)
-							return
-						}
-
-						cmd.Printf("%s\n", string(b))
-						return
-					}
-
-					b, marshalErr := json.Marshal(v)
-					if marshalErr != nil {
-						cmd.PrintErrf("Error: %v\n", marshalErr)
-						return
-					}
-
-					cmd.Printf("%s\n", string(b))
+			case format.JSON:
+				b, marshalErr := json.MarshalIndent(dataToFormat, "", "    ")
+				if marshalErr != nil {
+					cmd.PrintErrf("Error: %v\n", marshalErr)
 					return
 				}
+				cmd.Printf("%s\n", string(b))
 			}
-
-			cmd.PrintErrln("Error: Key not found.")
 		},
 	}
 
 	getCmd.Flags().IntP("version", "v", 0, "Specific version to retrieve")
-	getCmd.Flags().StringP("format", "f", "plain",
-		"Format to use. Valid options: plain, p, yaml, y, json, j")
+	format.AddFormatFlag(getCmd)
 
 	return getCmd
 }

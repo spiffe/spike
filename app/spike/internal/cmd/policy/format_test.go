@@ -79,7 +79,7 @@ func TestFormatPoliciesOutput_InvalidFormat(t *testing.T) {
 
 	result := formatPoliciesOutput(cmd, policies)
 
-	if !strings.Contains(result, "Error: Invalid format") {
+	if !strings.Contains(result, "Error: invalid format") {
 		t.Errorf("formatPoliciesOutput() should return error for invalid format")
 	}
 	if !strings.Contains(result, "xml") {
@@ -166,12 +166,12 @@ func TestFormatPolicy_NilPolicy(t *testing.T) {
 }
 
 func TestFormatPolicy_InvalidFormat(t *testing.T) {
-	cmd := createTestCommandWithFormat("yaml")
+	cmd := createTestCommandWithFormat("xml")
 	policy := &data.Policy{Name: "test"}
 
 	result := formatPolicy(cmd, policy)
 
-	if !strings.Contains(result, "Error: Invalid format") {
+	if !strings.Contains(result, "Error: invalid format") {
 		t.Error("formatPolicy() should return error for invalid format")
 	}
 }
@@ -277,5 +277,107 @@ func TestFormatPoliciesOutput_MultiplePolicies(t *testing.T) {
 	separatorCount := strings.Count(result, "--------")
 	if separatorCount < 3 {
 		t.Errorf("Expected at least 3 separators, got %d", separatorCount)
+	}
+}
+
+func TestFormatPoliciesOutput_YAMLFormat(t *testing.T) {
+	policies := &[]data.PolicyListItem{
+		{
+			ID:   "123e4567-e89b-12d3-a456-426614174000",
+			Name: "test-policy",
+		},
+	}
+
+	tests := []struct {
+		name   string
+		format string
+	}{
+		{"yaml full name", "yaml"},
+		{"yaml alias y", "y"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cmd := createTestCommandWithFormat(tt.format)
+			result := formatPoliciesOutput(cmd, policies)
+
+			// Check that output contains YAML-like content
+			if !strings.Contains(result, "id:") ||
+				!strings.Contains(result, "name:") {
+				t.Errorf("YAML format should contain YAML fields")
+			}
+		})
+	}
+}
+
+func TestFormatPoliciesOutput_FormatAliases(t *testing.T) {
+	policies := &[]data.PolicyListItem{
+		{
+			ID:   "test-id",
+			Name: "test-name",
+		},
+	}
+
+	tests := []struct {
+		name           string
+		format         string
+		shouldContain  string
+		shouldNotError bool
+	}{
+		{"human alias h", "h", "POLICIES", true},
+		{"human alias plain", "plain", "POLICIES", true},
+		{"human alias p", "p", "POLICIES", true},
+		{"json alias j", "j", `"id"`, true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cmd := createTestCommandWithFormat(tt.format)
+			result := formatPoliciesOutput(cmd, policies)
+
+			if strings.Contains(result, "Error:") && tt.shouldNotError {
+				t.Errorf("Format alias %q should not produce error: %s",
+					tt.format, result)
+			}
+
+			if !strings.Contains(result, tt.shouldContain) {
+				t.Errorf("Format %q output should contain %q, got: %s",
+					tt.format, tt.shouldContain, result)
+			}
+		})
+	}
+}
+
+func TestFormatPolicy_YAMLFormat(t *testing.T) {
+	createdAt := time.Date(2025, 1, 15, 10, 30, 0, 0, time.UTC)
+
+	policy := &data.Policy{
+		ID:              "123e4567-e89b-12d3-a456-426614174000",
+		Name:            "test-policy",
+		SPIFFEIDPattern: "^spiffe://example\\.org/.*$",
+		PathPattern:     "^secrets/.*$",
+		Permissions:     []data.PolicyPermission{"read"},
+		CreatedAt:       createdAt,
+	}
+
+	tests := []struct {
+		name   string
+		format string
+	}{
+		{"yaml full name", "yaml"},
+		{"yaml alias y", "y"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cmd := createTestCommandWithFormat(tt.format)
+			result := formatPolicy(cmd, policy)
+
+			// Check that output contains YAML-like content
+			if !strings.Contains(result, "id:") ||
+				!strings.Contains(result, "name:") {
+				t.Errorf("YAML format should contain YAML fields")
+			}
+		})
 	}
 }

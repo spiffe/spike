@@ -4,16 +4,19 @@
 
 package policy
 
-import "github.com/spf13/cobra"
+import (
+	"github.com/spf13/cobra"
 
-// addFormatFlag adds a format flag to the given command to allow specifying
-// the output format (human or JSON).
+	"github.com/spiffe/spike/app/spike/internal/cmd/format"
+)
+
+// addFormatFlag adds a standardized format flag to the given command.
+// Supports human/h/plain/p, json/j, and yaml/y formats.
 //
 // Parameters:
 //   - cmd: The Cobra command to add the flag to
 func addFormatFlag(cmd *cobra.Command) {
-	cmd.Flags().String("format", "human",
-		"Output format: 'human' or 'json'")
+	format.AddFormatFlag(cmd)
 }
 
 // addNameFlag adds a name flag to the given command to allow specifying
