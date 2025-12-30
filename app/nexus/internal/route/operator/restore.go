@@ -13,11 +13,11 @@ import (
 	"github.com/spiffe/spike-sdk-go/config/env"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/log"
+	"github.com/spiffe/spike-sdk-go/net"
 	"github.com/spiffe/spike-sdk-go/security/mem"
 
 	"github.com/spiffe/spike/app/nexus/internal/initialization/recovery"
 	"github.com/spiffe/spike/internal/journal"
-	"github.com/spiffe/spike/internal/net"
 )
 
 var (
@@ -87,7 +87,7 @@ func RouteRestore(
 
 	if restored {
 		// Already restored; acknowledge and ignore additional shards.
-		net.Success(
+		return net.Success(
 			reqres.RestoreResponse{
 				RestorationStatus: data.RestorationStatus{
 					ShardsCollected: currentShardCount,
@@ -96,7 +96,6 @@ func RouteRestore(
 				},
 			}.Success(), w,
 		)
-		return nil
 	}
 
 	for _, shard := range shards {
@@ -105,7 +104,7 @@ func RouteRestore(
 		}
 
 		// Duplicate shard; acknowledge and ignore.
-		net.Success(
+		return net.Success(
 			reqres.RestoreResponse{
 				RestorationStatus: data.RestorationStatus{
 					ShardsCollected: currentShardCount,
@@ -114,7 +113,6 @@ func RouteRestore(
 				},
 			}.Success(), w,
 		)
-		return nil
 	}
 
 	shards = append(shards, recovery.ShamirShard{
@@ -139,7 +137,7 @@ func RouteRestore(
 		}
 	}
 
-	net.Success(
+	return net.Success(
 		reqres.RestoreResponse{
 			RestorationStatus: data.RestorationStatus{
 				ShardsCollected: currentShardCount,
@@ -148,5 +146,4 @@ func RouteRestore(
 			},
 		}.Success(), w,
 	)
-	return nil
 }

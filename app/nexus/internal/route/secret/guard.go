@@ -9,11 +9,11 @@ import (
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
+	"github.com/spiffe/spike-sdk-go/net"
 	"github.com/spiffe/spike-sdk-go/validation"
 
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 	"github.com/spiffe/spike/internal/auth"
-	"github.com/spiffe/spike/internal/net"
 )
 
 // guardSecretRequest is a generic helper that validates secret requests by
@@ -58,15 +58,21 @@ func guardSecretRequest[TUnauth, TBadInput any](
 	// Check access permissions
 	allowed := state.CheckAccess(peerSPIFFEID.String(), path, permissions)
 	if !allowed {
-		net.Fail(unauthorizedResp, w, http.StatusUnauthorized)
+		failErr := net.Fail(unauthorizedResp, w, http.StatusUnauthorized)
+		if failErr != nil {
+			return sdkErrors.ErrAccessUnauthorized.Wrap(failErr)
+		}
 		return sdkErrors.ErrAccessUnauthorized
 	}
 
 	// Validate path format
 	pathErr := validation.ValidatePath(path)
 	if pathErr != nil {
-		net.Fail(badInputResp, w, http.StatusBadRequest)
+		failErr := net.Fail(badInputResp, w, http.StatusBadRequest)
 		pathErr.Msg = "invalid secret path: " + path
+		if failErr != nil {
+			return pathErr.Wrap(failErr)
+		}
 		return pathErr
 	}
 

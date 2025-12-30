@@ -37,7 +37,7 @@ import (
 func Serve(appName string, source *workloadapi.X509Source) {
 	// Fail-fast if the source is nil: server cannot operate without mTLS
 	if source == nil {
-		log.FatalErr(appName, *sdkErrors.ErrSPIFFENilX509Source)
+		log.FatalErr(appName, *sdkErrors.ErrSPIFFENilX509Source.Clone())
 	}
 
 	if serveErr := net.Serve(

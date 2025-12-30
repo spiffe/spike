@@ -9,6 +9,7 @@ import (
 
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
+	"github.com/spiffe/spike-sdk-go/net"
 )
 
 // respondFallbackWithStatus writes a fallback JSON response with the given HTTP
@@ -28,7 +29,7 @@ import (
 func respondFallbackWithStatus(
 	w http.ResponseWriter, status int, code sdkErrors.ErrorCode,
 ) *sdkErrors.SDKError {
-	body, err := MarshalBodyAndRespondOnMarshalFail(
+	body, err := net.MarshalBodyAndRespondOnMarshalFail(
 		reqres.FallbackResponse{Err: code}, w,
 	)
 	if err != nil {

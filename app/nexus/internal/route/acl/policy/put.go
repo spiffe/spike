@@ -10,10 +10,10 @@ import (
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
+	"github.com/spiffe/spike-sdk-go/net"
 
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 	"github.com/spiffe/spike/internal/journal"
-	"github.com/spiffe/spike/internal/net"
 )
 
 // RoutePutPolicy handles HTTP requests for creating or updating policies.
@@ -77,21 +77,15 @@ func RoutePutPolicy(
 		return err
 	}
 
-	name := request.Name
-	SPIFFEIDPattern := request.SPIFFEIDPattern
-	pathPattern := request.PathPattern
-	permissions := request.Permissions
-
 	policy, upsertErr := state.UpsertPolicy(data.Policy{
-		Name:            name,
-		SPIFFEIDPattern: SPIFFEIDPattern,
-		PathPattern:     pathPattern,
-		Permissions:     permissions,
+		Name:            request.Name,
+		SPIFFEIDPattern: request.SPIFFEIDPattern,
+		PathPattern:     request.PathPattern,
+		Permissions:     request.Permissions,
 	})
 	if upsertErr != nil {
-		return net.HandleError(upsertErr, w, reqres.PolicyPutResponse{})
+		return net.RespondWithHTTPError(upsertErr, w, reqres.PolicyPutResponse{})
 	}
 
-	net.Success(reqres.PolicyPutResponse{ID: policy.ID}.Success(), w)
-	return nil
+	return net.Success(reqres.PolicyPutResponse{ID: policy.ID}.Success(), w)
 }

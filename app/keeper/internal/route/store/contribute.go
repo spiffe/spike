@@ -9,11 +9,11 @@ import (
 
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
+	"github.com/spiffe/spike-sdk-go/net"
 	"github.com/spiffe/spike-sdk-go/security/mem"
 
 	"github.com/spiffe/spike/app/keeper/internal/state"
 	"github.com/spiffe/spike/internal/journal"
-	"github.com/spiffe/spike/internal/net"
 )
 
 // RouteContribute handles HTTP requests for the shard contributions in the
@@ -75,7 +75,12 @@ func RouteContribute(
 	}
 
 	if request.Shard == nil {
-		net.Fail(reqres.ShardPutResponse{}.BadRequest(), w, http.StatusBadRequest)
+		failErr := net.Fail(
+			reqres.ShardPutResponse{}.BadRequest(), w, http.StatusBadRequest,
+		)
+		if failErr != nil {
+			return sdkErrors.ErrDataInvalidInput.Wrap(failErr)
+		}
 		return sdkErrors.ErrShamirNilShard
 	}
 
@@ -89,13 +94,17 @@ func RouteContribute(
 	// indicate invalid input. Since Shard is a fixed-length array in the request,
 	// clients must send meaningful non-zero data.
 	if mem.Zeroed32(request.Shard) {
-		net.Fail(reqres.ShardPutResponse{}.BadRequest(), w, http.StatusBadRequest)
+		failErr := net.Fail(
+			reqres.ShardPutResponse{}.BadRequest(), w, http.StatusBadRequest,
+		)
+		if failErr != nil {
+			return sdkErrors.ErrDataInvalidInput.Wrap(failErr)
+		}
 		return sdkErrors.ErrShamirEmptyShard
 	}
 
 	// `state.SetShard` copies the shard. We can safely reset this one at [1].
 	state.SetShard(request.Shard)
 
-	net.Success(reqres.ShardPutResponse{}.Success(), w)
-	return nil
+	return net.Success(reqres.ShardPutResponse{}.Success(), w)
 }

@@ -10,10 +10,10 @@ import (
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	"github.com/spiffe/spike-sdk-go/config/env"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
+	"github.com/spiffe/spike-sdk-go/net"
 	"github.com/spiffe/spike-sdk-go/spiffeid"
 
 	"github.com/spiffe/spike/internal/auth"
-	"github.com/spiffe/spike/internal/net"
 )
 
 // guardRestoreRequest validates a system restore request by performing
@@ -58,17 +58,23 @@ func guardRestoreRequest(
 	// We don't do policy checks as the restore operation purely restricted to
 	// SPIKE Pilot.
 	if !spiffeid.IsPilotRestore(peerSPIFFEID.String()) {
-		net.Fail(
+		failErr := net.Fail(
 			reqres.RestoreResponse{}.Unauthorized(), w,
 			http.StatusUnauthorized,
 		)
+		if failErr != nil {
+			return sdkErrors.ErrAccessUnauthorized.Wrap(failErr)
+		}
 		return sdkErrors.ErrAccessUnauthorized
 	}
 
 	if request.ID < 1 || request.ID > env.ShamirMaxShareCountVal() {
-		net.Fail(
+		failErr := net.Fail(
 			reqres.RestoreResponse{}.BadRequest(), w, http.StatusBadRequest,
 		)
+		if failErr != nil {
+			return sdkErrors.ErrAPIBadRequest.Wrap(failErr)
+		}
 		return sdkErrors.ErrAPIBadRequest
 	}
 
@@ -80,11 +86,13 @@ func guardRestoreRequest(
 		}
 	}
 	if allZero {
-		net.Fail(
+		failErr := net.Fail(
 			reqres.RestoreResponse{}.BadRequest(), w, http.StatusBadRequest,
 		)
+		if failErr != nil {
+			return sdkErrors.ErrAPIBadRequest.Wrap(failErr)
+		}
 		return sdkErrors.ErrAPIBadRequest
 	}
-
 	return nil
 }

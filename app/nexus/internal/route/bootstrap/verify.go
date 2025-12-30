@@ -11,10 +11,10 @@ import (
 
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
+	"github.com/spiffe/spike-sdk-go/net"
 
 	"github.com/spiffe/spike/app/nexus/internal/state/persist"
 	"github.com/spiffe/spike/internal/journal"
-	"github.com/spiffe/spike/internal/net"
 )
 
 // RouteVerify handles HTTP requests from SPIKE Bootstrap to verify that
@@ -70,7 +70,7 @@ func RouteVerify(
 	// Get cipher from the backend
 	c := persist.Backend().GetCipher()
 	if c == nil {
-		return net.HandleInternalError(
+		return net.RespondWithInternalError(
 			sdkErrors.ErrCryptoCipherNotAvailable, w,
 			reqres.BootstrapVerifyResponse{},
 		)
@@ -79,7 +79,7 @@ func RouteVerify(
 	// Decrypt the ciphertext
 	plaintext, decryptErr := c.Open(nil, request.Nonce, request.Ciphertext, nil)
 	if decryptErr != nil {
-		return net.HandleInternalError(
+		return net.RespondWithInternalError(
 			sdkErrors.ErrCryptoDecryptionFailed, w,
 			reqres.BootstrapVerifyResponse{},
 		)
@@ -89,10 +89,9 @@ func RouteVerify(
 	hash := sha256.Sum256(plaintext)
 	hashHex := hex.EncodeToString(hash[:])
 
-	net.Success(
+	return net.Success(
 		reqres.BootstrapVerifyResponse{
 			Hash: hashHex,
 		}.Success(), w,
 	)
-	return nil
 }

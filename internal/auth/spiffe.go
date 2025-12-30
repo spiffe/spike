@@ -12,11 +12,29 @@ import (
 
 	"github.com/spiffe/go-spiffe/v2/spiffeid"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
+	"github.com/spiffe/spike-sdk-go/net"
 	"github.com/spiffe/spike-sdk-go/spiffe"
 	"github.com/spiffe/spike-sdk-go/validation"
-
-	"github.com/spiffe/spike/internal/net"
 )
+
+func respondUnauthorizedAndWrapError(
+	err *sdkErrors.SDKError,
+	failErr *sdkErrors.SDKError,
+	w http.ResponseWriter,
+	responseBody []byte,
+) *sdkErrors.SDKError {
+	if notRespondedYet := err == nil; notRespondedYet {
+		respondErr := net.Respond(http.StatusUnauthorized, responseBody, w)
+		if respondErr != nil {
+			notAuthorizedErr := sdkErrors.ErrAccessUnauthorized.Wrap(
+				failErr.Wrap(respondErr),
+			)
+			return notAuthorizedErr
+		}
+	}
+	notAuthorizedErr := sdkErrors.ErrAccessUnauthorized.Wrap(failErr)
+	return notAuthorizedErr
+}
 
 // ExtractPeerSPIFFEID extracts and validates the peer SPIFFE ID from an HTTP
 // request. If the SPIFFE ID cannot be extracted or is nil, it writes an
@@ -58,12 +76,10 @@ func ExtractPeerSPIFFEID[T any](
 		responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
 			errorResponse, w,
 		)
-		if notRespondedYet := err == nil; notRespondedYet {
-			net.Respond(http.StatusUnauthorized, responseBody, w)
-		}
 
-		notAuthorizedErr := sdkErrors.ErrAccessUnauthorized.Wrap(failErr)
-		return nil, notAuthorizedErr
+		e := respondUnauthorizedAndWrapError(err, failErr, w, responseBody)
+
+		return nil, e
 	}
 
 	err = validation.ValidateSPIFFEID(peerSPIFFEID.String())
@@ -73,12 +89,10 @@ func ExtractPeerSPIFFEID[T any](
 		responseBody, err := net.MarshalBodyAndRespondOnMarshalFail(
 			errorResponse, w,
 		)
-		if notRespondedYet := err == nil; notRespondedYet {
-			net.Respond(http.StatusUnauthorized, responseBody, w)
-		}
 
-		notAuthorizedErr := sdkErrors.ErrAccessUnauthorized.Wrap(failErr)
-		return nil, notAuthorizedErr
+		e := respondUnauthorizedAndWrapError(err, failErr, w, responseBody)
+
+		return nil, e
 	}
 
 	return peerSPIFFEID, nil
