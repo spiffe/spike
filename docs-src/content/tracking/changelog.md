@@ -18,6 +18,9 @@ sort_by = "weight"
   returning the original reference. This prevents accidental mutation of the
   error values.
 * mem.Lock() does not print JSON error logs on CLI startup anymore.
+* moved some of the internal reusable feature from in-tree to SPIKE Go SDK.
+* binaries are now create at the ./bin folder instead of the root of the project.
+* log files are now created at the ./logs folder instead of the root of the project.
 
 ## [0.8.0] - 2025-11-28
 
