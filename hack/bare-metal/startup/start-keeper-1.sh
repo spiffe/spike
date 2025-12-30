@@ -11,4 +11,4 @@ if ! command -v keeper &> /dev/null; then
 fi
 
 SPIKE_KEEPER_TLS_PORT=':8443' \
-exec ./keeper
+exec keeper

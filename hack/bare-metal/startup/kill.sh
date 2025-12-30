@@ -20,7 +20,7 @@ set -e
 echo "Killing SPIKE-related processes..."
 
 # List of process names to kill
-PROCESSES=("spire-server" "spire-agent" "nexus" "keeper")
+PROCESSES=("spire-server" "spire-agent" "nexus" "keeper" "demo")
 
 for proc in "${PROCESSES[@]}"; do
   # Check if process is running

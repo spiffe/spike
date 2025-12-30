@@ -23,8 +23,9 @@ cleanup() {
 # Function to run a script in background and store its PID
 run_background() {
     local script="$1"
+    mkdir -p "./logs"
     # shellcheck disable=SC2155
-    local logfile="./$(basename "$script").log"
+    local logfile="./logs/$(basename "$script").log"
 
     if [ ! -x "$script" ]; then
         echo "Error: $script is not executable"

@@ -4,7 +4,7 @@
 #  \\\\\ Copyright 2024-present SPIKE contributors.
 # \\\\\\\ SPDX-License-Identifier: Apache-2.
 
-DEMO_PATH="$(pwd)/demo"
+DEMO_PATH="$(pwd)/bin/demo"
 DEMO_SHA=$(sha256sum "$DEMO_PATH" | cut -d' ' -f1)
 
 # Register Demo Workload

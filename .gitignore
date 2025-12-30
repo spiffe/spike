@@ -27,35 +27,7 @@ go.work.sum
 .env.*
 
 # Generated binaries.
-/keeper
-/nexus
-/pilot
-/spike
-/bootstrap
-/keeper-arm
-/keeper-darwin
-/keeper-x86
-/nexus-arm
-/nexus-darwin
-/nexus-x68
-/spike-arm
-/spike-darwin
-/spike-x86
-/bootstrap-arm
-/bootstrap-darwin
-/bootstrap-x86
-/keeper-darwin-arm64
-/keeper-linux-amd64
-/nexus-linux-amd64
-/keeper-linux-arm64
-/nexus-darwin-arm64
-/nexus-linux-arm64
-/spike-darwin-arm64
-/spike-linux-amd64
-/spike-linux-arm64
-/bootstrap-darwin-arm64
-/bootstrap-linux-amd64
-/bootstrap-linux-arm64
+bin
 
 # IDE
 .idea
