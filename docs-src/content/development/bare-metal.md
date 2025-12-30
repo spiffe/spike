@@ -46,7 +46,7 @@ export WORKSPACE="$HOME/WORKSPACE"
 
 # These are needed for Bare-Metal Installation:
 export PATH="$PATH:$WORKSPACE/spire/bin"
-export PATH="$PATH:$WORKSPACE/spike"
+export PATH="$PATH:$WORKSPACE/spike/bin"
 
 # Optional, but recommended:
 source "$WORKSPACE/spike/hack/lib/env.sh"
@@ -183,8 +183,8 @@ root directory by default. You can add the binaries to your `$PATH` as follows:
 
 ```bash
 # ~/.profile
-export PATH=$PATH:$WORKSPACE/spike
-echo 'PATH=$PATH:$WORKSPACE/spike' >> ~/.profile
+export PATH=$PATH:$WORKSPACE/spike/bin
+echo 'PATH=$PATH:$WORKSPACE/spike/bin' >> ~/.profile
 ```
 
 Additionally, you can source the following file to define additional

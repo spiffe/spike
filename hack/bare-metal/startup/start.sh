@@ -307,6 +307,10 @@ echo "$POLICY_OUTPUT" | grep -q "workload-can-read" || \
   { echo "WARNING: Missing 'workload-can-read' policy"; POLICY_VALIDATION_FAILED=true; }
 echo "$POLICY_OUTPUT" | grep -q "workload-can-write" || \
   { echo "WARNING: Missing 'workload-can-write' policy"; POLICY_VALIDATION_FAILED=true; }
+echo "$POLICY_OUTPUT" | grep -q "Permissions: read" || \
+  { echo "WARNING: Missing read permission"; POLICY_VALIDATION_FAILED=true; }
+echo "$POLICY_OUTPUT" | grep -q "Permissions: write" || \
+  { echo "WARNING: Missing write permission"; POLICY_VALIDATION_FAILED=true; }
 
 if [ "$POLICY_VALIDATION_FAILED" = true ]; then
   echo ""

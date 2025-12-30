@@ -9,10 +9,10 @@ import (
 
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
+	"github.com/spiffe/spike-sdk-go/net"
 
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 	"github.com/spiffe/spike/internal/journal"
-	"github.com/spiffe/spike/internal/net"
 )
 
 // RouteDeleteSecret handles HTTP DELETE requests for secret deletion
@@ -75,9 +75,8 @@ func RouteDeleteSecret(
 
 	deleteErr := state.DeleteSecret(path, versions)
 	if deleteErr != nil {
-		return net.HandleError(deleteErr, w, reqres.SecretDeleteResponse{})
+		return net.RespondWithHTTPError(deleteErr, w, reqres.SecretDeleteResponse{})
 	}
 
-	net.Success(reqres.SecretDeleteResponse{}.Success(), w)
-	return nil
+	return net.Success(reqres.SecretDeleteResponse{}.Success(), w)
 }

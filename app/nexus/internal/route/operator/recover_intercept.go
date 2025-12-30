@@ -9,10 +9,10 @@ import (
 
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
+	"github.com/spiffe/spike-sdk-go/net"
 	"github.com/spiffe/spike-sdk-go/spiffeid"
 
 	"github.com/spiffe/spike/internal/auth"
-	"github.com/spiffe/spike/internal/net"
 )
 
 // guardRecoverRequest validates a system recovery request by performing
@@ -54,9 +54,12 @@ func guardRecoverRequest(
 	// We don't do policy checks as the recovery operation purely restricted to
 	// SPIKE Pilot.
 	if !spiffeid.IsPilotRecover(peerSPIFFEID.String()) {
-		net.Fail(
+		failErr := net.Fail(
 			reqres.RestoreResponse{}.Unauthorized(), w, http.StatusUnauthorized,
 		)
+		if failErr != nil {
+			return sdkErrors.ErrAccessUnauthorized.Wrap(failErr)
+		}
 		return sdkErrors.ErrAccessUnauthorized
 	}
 

@@ -28,29 +28,18 @@
       </issue>
       <issue>
         PRs to watch:
-        * https://github.com/spiffe/spike/pull/260
-        * https://github.com/spiffe/spike/pull/262
-        * https://github.com/spiffe/spike/pull/263
-        * https://github.com/spiffe/spike-sdk-go/pull/134
-        * https://github.com/spiffe/spike-sdk-go/pull/133
-        * https://github.com/spiffe/spike-sdk-go/pull/133
+        https://github.com/spiffe/spike-sdk-go/pull/140
+        https://github.com/spiffe/spike/pull/263
+        https://github.com/spiffe/spike/pull/268
+        https://github.com/spiffe/spike/pull/270
       </issue>
     </watch-list>
   </high-level-plan>
   <task-group theme="immediate">
-    <issue>
-      The banner on the git pages need to change to be aligned with the social
-      banner that we created recently.
-    </issue>
     <issue priority="high">
       fix broken things first:
       * CI integration test is broken
       * recovery/restore is broken
-    </issue>
-    <issue>
-      verify `make start` works in in-memory mode.
-      it likely tries to trigger bootstrap and fail
-      if it fails, give a proper warning in bootstrap instead of random panics.
     </issue>
     <issue>
       a demo just focus on the architecture and nothing else. (no live demo,
@@ -63,10 +52,6 @@
         * Dev startup for Minikube
         * CLI overview
         * Mini codewalk
-    </issue>
-    <issue>
-      move generated binaries to `./bin` folder.
-      stream logs to `./logs` folder.
     </issue>
     <issue severity="important" urgency="moderate">
       // TDO: check all database operations (secrets, policies, metadata)
@@ -94,21 +79,37 @@
     <issue waitingFor="json mode to be fixed">
       demo: encryption as a service
     </issue>
-    <issue>
-      note: we migth already be doing something similar; verify first.
-
-      for operator actions ensure that `spike/system/ops` path is enforced
-      (similar to how acl is enforced above.
-
-      create a workload that can create policies
-      create another workload that can backup the root key
-      to demo these features.
-    </issue>
   </task-group>
   <task-group state="parked" until="after-release">
     <issue>
       const GCMNonceSize = 12
       to sdk.
+    </issue>
+    <issue>
+      `spike secret list` right now lists all secrets available and
+      requires system level access.
+
+      we might want to restrict the "list" action to a regular expression
+      matcher with a policy, so for certain SPIFFE IDs, a `list` call
+      will only list the secrets that they are allowed to see.
+
+      so that a workload (if allowed) can list secrets under
+      secret/tenants/acme/*
+      but not secret/tenants/bodega
+
+      For that, we likely need to extend the policy structure too
+
+      here is how the policies are specified currenty:
+      spike policy create --name=workload-can-write \
+      --path-pattern="^tenants/demo/db/.*$" \
+      --spiffeid-pattern="^spiffe://spike\.ist/workload/.*$" \
+      --permissions="write"
+
+      we may need to add a "list" permission type, and that would
+      limit the policy to list secrets that match to the path pattern only.
+
+      if a workload does not have a list access given by a policy, it
+      won't be able to list secrets.
     </issue>
     <issue>
       duplicate code fragment:

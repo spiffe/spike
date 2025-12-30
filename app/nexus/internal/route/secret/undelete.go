@@ -9,10 +9,10 @@ import (
 
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
+	"github.com/spiffe/spike-sdk-go/net"
 
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 	"github.com/spiffe/spike/internal/journal"
-	"github.com/spiffe/spike/internal/net"
 )
 
 // RouteUndeleteSecret handles HTTP requests to restore previously deleted
@@ -75,9 +75,10 @@ func RouteUndeleteSecret(
 
 	undeleteErr := state.UndeleteSecret(path, versions)
 	if undeleteErr != nil {
-		return net.HandleError(undeleteErr, w, reqres.SecretUndeleteResponse{})
+		return net.RespondWithHTTPError(
+			undeleteErr, w, reqres.SecretUndeleteResponse{},
+		)
 	}
 
-	net.Success(reqres.SecretUndeleteResponse{}.Success(), w)
-	return nil
+	return net.Success(reqres.SecretUndeleteResponse{}.Success(), w)
 }

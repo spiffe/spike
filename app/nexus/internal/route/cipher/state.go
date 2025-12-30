@@ -9,9 +9,9 @@ import (
 	"net/http"
 
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
+	"github.com/spiffe/spike-sdk-go/net"
 
 	"github.com/spiffe/spike/app/nexus/internal/state/persist"
-	"github.com/spiffe/spike/internal/net"
 )
 
 // getCipherOrFailStreaming retrieves the system cipher from the backend
@@ -35,7 +35,7 @@ func getCipherOrFailStreaming(
 			w, string(sdkErrors.ErrCryptoCipherNotAvailable.Code),
 			http.StatusInternalServerError,
 		)
-		return nil, sdkErrors.ErrCryptoCipherNotAvailable
+		return nil, sdkErrors.ErrCryptoCipherNotAvailable.Clone()
 	}
 
 	return c, nil
@@ -58,8 +58,11 @@ func getCipherOrFailJSON[T any](
 ) (cipher.AEAD, *sdkErrors.SDKError) {
 	c := persist.Backend().GetCipher()
 	if c == nil {
-		net.Fail(errorResponse, w, http.StatusInternalServerError)
-		return nil, sdkErrors.ErrCryptoCipherNotAvailable
+		failErr := net.Fail(errorResponse, w, http.StatusInternalServerError)
+		if failErr != nil {
+			return nil, sdkErrors.ErrCryptoCipherNotAvailable.Wrap(failErr)
+		}
+		return nil, sdkErrors.ErrCryptoCipherNotAvailable.Clone()
 	}
 
 	return c, nil

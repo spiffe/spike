@@ -11,9 +11,9 @@ import (
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	"github.com/spiffe/spike-sdk-go/config/env"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
+	"github.com/spiffe/spike-sdk-go/net"
 
 	"github.com/spiffe/spike/internal/auth"
-	"github.com/spiffe/spike/internal/net"
 )
 
 // extractAndValidateSPIFFEID extracts and validates the peer SPIFFE ID from
@@ -55,8 +55,11 @@ func validateVersion[T any](
 	version byte, w http.ResponseWriter, errorResponse T,
 ) *sdkErrors.SDKError {
 	if version != spikeCipherVersion {
-		net.Fail(errorResponse, w, http.StatusBadRequest)
-		return sdkErrors.ErrCryptoUnsupportedCipherVersion
+		failErr := net.Fail(errorResponse, w, http.StatusBadRequest)
+		if failErr != nil {
+			return sdkErrors.ErrCryptoUnsupportedCipherVersion.Wrap(failErr)
+		}
+		return sdkErrors.ErrCryptoUnsupportedCipherVersion.Clone()
 	}
 	return nil
 }
@@ -75,8 +78,11 @@ func validateNonceSize[T any](
 	nonce []byte, w http.ResponseWriter, errorResponse T,
 ) *sdkErrors.SDKError {
 	if len(nonce) != expectedNonceSize {
-		net.Fail(errorResponse, w, http.StatusBadRequest)
-		return sdkErrors.ErrDataInvalidInput
+		failErr := net.Fail(errorResponse, w, http.StatusBadRequest)
+		if failErr != nil {
+			return sdkErrors.ErrDataInvalidInput.Wrap(failErr)
+		}
+		return sdkErrors.ErrDataInvalidInput.Clone()
 	}
 	return nil
 }
@@ -96,8 +102,11 @@ func validateCiphertextSize[T any](
 	ciphertext []byte, w http.ResponseWriter, errorResponse T,
 ) *sdkErrors.SDKError {
 	if len(ciphertext) > env.CryptoMaxCiphertextSizeVal() {
-		net.Fail(errorResponse, w, http.StatusBadRequest)
-		return sdkErrors.ErrDataInvalidInput
+		failErr := net.Fail(errorResponse, w, http.StatusBadRequest)
+		if failErr != nil {
+			return sdkErrors.ErrDataInvalidInput.Wrap(failErr)
+		}
+		return sdkErrors.ErrDataInvalidInput.Clone()
 	}
 	return nil
 }
@@ -117,7 +126,10 @@ func validatePlaintextSize[T any](
 	plaintext []byte, w http.ResponseWriter, errorResponse T,
 ) *sdkErrors.SDKError {
 	if len(plaintext) > env.CryptoMaxPlaintextSizeVal() {
-		net.Fail(errorResponse, w, http.StatusBadRequest)
+		failErr := net.Fail(errorResponse, w, http.StatusBadRequest)
+		if failErr != nil {
+			return sdkErrors.ErrDataInvalidInput.Wrap(failErr)
+		}
 		return sdkErrors.ErrDataInvalidInput
 	}
 	return nil

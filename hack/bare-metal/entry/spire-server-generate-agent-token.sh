@@ -4,7 +4,7 @@
 #  \\\\\ Copyright 2024-present SPIKE contributors.
 # \\\\\\\ SPDX-License-Identifier: Apache-2.0
 
-TOKEN_FILE=".spire-agent-join-token"
+TOKEN_FILE=".data/.spire-agent-join-token"
 
 # Generate token and save to file
 if ! spire-server token generate -spiffeID spiffe://spike.ist/spire-agent | \

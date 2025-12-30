@@ -12,8 +12,7 @@ import (
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/log"
-
-	"github.com/spiffe/spike/internal/net"
+	"github.com/spiffe/spike-sdk-go/net"
 )
 
 // readJSONDecryptRequestWithoutGuard reads and parses a JSON mode decryption

@@ -9,10 +9,10 @@ import (
 
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
+	"github.com/spiffe/spike-sdk-go/net"
 
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 	"github.com/spiffe/spike/internal/journal"
-	"github.com/spiffe/spike/internal/net"
 )
 
 // RouteListPaths handles requests to retrieve all available secret paths.
@@ -56,7 +56,7 @@ import (
 func RouteListPaths(
 	w http.ResponseWriter, r *http.Request, audit *journal.AuditEntry,
 ) *sdkErrors.SDKError {
-	const fName = "routeListPaths"
+	const fName = "RouteListPaths"
 
 	journal.AuditRequest(fName, r, audit, journal.AuditList)
 
@@ -68,6 +68,7 @@ func RouteListPaths(
 		return err
 	}
 
-	net.Success(reqres.SecretListResponse{Keys: state.ListKeys()}.Success(), w)
-	return nil
+	return net.Success(
+		reqres.SecretListResponse{Keys: state.ListKeys()}.Success(), w,
+	)
 }

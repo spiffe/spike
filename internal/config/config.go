@@ -7,14 +7,6 @@
 // management for storing encrypted backups and secrets securely.
 package config
 
-import (
-	"fmt"
-	"strings"
-
-	"github.com/spiffe/spike-sdk-go/api/entity/data"
-	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
-)
-
 // NexusDataFolder returns the path to the directory where Nexus stores
 // its encrypted backup for its secrets and other data.
 //
@@ -54,102 +46,4 @@ func PilotRecoveryFolder() string {
 		pilotRecoveryPath = initPilotRecoveryFolder()
 	})
 	return pilotRecoveryPath
-}
-
-// ValidPermissions contains the set of valid policy permissions supported by
-// the SPIKE system. These are sourced from the SDK to prevent typos.
-//
-// Valid permissions are:
-//   - read: Read access to resources
-//   - write: Write access to resources
-//   - list: List access to resources
-//   - execute: Execute access to resources
-//   - super: Superuser access (grants all permissions)
-var ValidPermissions = []data.PolicyPermission{
-	data.PermissionRead,
-	data.PermissionWrite,
-	data.PermissionList,
-	data.PermissionExecute,
-	data.PermissionSuper,
-}
-
-// validPermission checks if the given permission string is valid.
-//
-// Parameters:
-//   - perm: The permission string to validate.
-//
-// Returns:
-//   - true if the permission is found in ValidPermissions, false otherwise.
-func validPermission(perm string) bool {
-	for _, p := range ValidPermissions {
-		if string(p) == perm {
-			return true
-		}
-	}
-	return false
-}
-
-// validPermissionsList returns a comma-separated string of valid permissions,
-// suitable for display in error messages.
-//
-// Returns:
-//   - string: A comma-separated list of valid permissions.
-func validPermissionsList() string {
-	perms := make([]string, len(ValidPermissions))
-	for i, p := range ValidPermissions {
-		perms[i] = string(p)
-	}
-	return strings.Join(perms, ", ")
-}
-
-// ValidatePermissions validates policy permissions from a comma-separated
-// string and returns a slice of PolicyPermission values. It returns an error
-// if any permission is invalid or if the string contains no valid permissions.
-//
-// Valid permissions are:
-//   - read: Read access to resources
-//   - write: Write access to resources
-//   - list: List access to resources
-//   - execute: Execute access to resources
-//   - super: Superuser access (grants all permissions)
-//
-// Parameters:
-//   - permsStr: Comma-separated string of permissions
-//     (e.g., "read,write,execute")
-//
-// Returns:
-//   - []data.PolicyPermission: Validated policy permissions
-//   - *sdkErrors.SDKError: An error if any permission is invalid
-func ValidatePermissions(permsStr string) (
-	[]data.PolicyPermission, *sdkErrors.SDKError,
-) {
-	var permissions []string
-	for _, p := range strings.Split(permsStr, ",") {
-		perm := strings.TrimSpace(p)
-		if perm != "" {
-			permissions = append(permissions, perm)
-		}
-	}
-
-	perms := make([]data.PolicyPermission, 0, len(permissions))
-	for _, perm := range permissions {
-		if !validPermission(perm) {
-			failErr := *sdkErrors.ErrAccessInvalidPermission.Clone()
-			failErr.Msg = fmt.Sprintf(
-				"invalid permission: '%s'. valid permissions: '%s'",
-				perm, validPermissionsList(),
-			)
-			return nil, &failErr
-		}
-		perms = append(perms, data.PolicyPermission(perm))
-	}
-
-	if len(perms) == 0 {
-		failErr := *sdkErrors.ErrAccessInvalidPermission.Clone()
-		failErr.Msg = "no valid permissions specified" +
-			". valid permissions are: " + validPermissionsList()
-		return nil, &failErr
-	}
-
-	return perms, nil
 }

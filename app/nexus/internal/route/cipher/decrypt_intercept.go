@@ -13,10 +13,10 @@ import (
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	apiAuth "github.com/spiffe/spike-sdk-go/config/auth"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
+	"github.com/spiffe/spike-sdk-go/net"
 	sdkSpiffeid "github.com/spiffe/spike-sdk-go/spiffeid"
 
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
-	"github.com/spiffe/spike/internal/net"
 )
 
 // guardDecryptCipherRequest validates a cipher decryption request by
@@ -87,10 +87,13 @@ func guardDecryptCipherRequest(
 	}
 
 	if !allowed {
-		net.Fail(
+		failErr := net.Fail(
 			reqres.CipherDecryptResponse{}.Unauthorized(), w, http.StatusUnauthorized,
 		)
-		return sdkErrors.ErrAccessUnauthorized
+		if failErr != nil {
+			return sdkErrors.ErrAccessUnauthorized.Wrap(failErr)
+		}
+		return sdkErrors.ErrAccessUnauthorized.Clone()
 	}
 
 	return nil
