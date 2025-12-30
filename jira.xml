@@ -36,19 +36,10 @@
     </watch-list>
   </high-level-plan>
   <task-group theme="immediate">
-    <issue>
-      The banner on the git pages need to change to be aligned with the social
-      banner that we created recently.
-    </issue>
     <issue priority="high">
       fix broken things first:
       * CI integration test is broken
       * recovery/restore is broken
-    </issue>
-    <issue>
-      verify `make start` works in in-memory mode.
-      it likely tries to trigger bootstrap and fail
-      if it fails, give a proper warning in bootstrap instead of random panics.
     </issue>
     <issue>
       a demo just focus on the architecture and nothing else. (no live demo,
@@ -61,10 +52,6 @@
         * Dev startup for Minikube
         * CLI overview
         * Mini codewalk
-    </issue>
-    <issue>
-      move generated binaries to `./bin` folder.
-      stream logs to `./logs` folder.
     </issue>
     <issue severity="important" urgency="moderate">
       // TDO: check all database operations (secrets, policies, metadata)

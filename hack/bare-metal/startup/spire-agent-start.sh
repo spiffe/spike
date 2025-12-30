@@ -7,7 +7,7 @@
 # Enable alias expansion in non-interactive shells
 shopt -s expand_aliases
 
-TOKEN_FILE=".spire-agent-join-token"
+TOKEN_FILE=".data/.spire-agent-join-token"
 
 # Enable alias expansion in non-interactive shells
 shopt -s expand_aliases

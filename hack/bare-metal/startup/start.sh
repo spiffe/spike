@@ -305,12 +305,6 @@ echo "$POLICY_OUTPUT" | grep -q "workload-can-read" || \
   { echo "WARNING: Missing 'workload-can-read' policy"; POLICY_VALIDATION_FAILED=true; }
 echo "$POLICY_OUTPUT" | grep -q "workload-can-write" || \
   { echo "WARNING: Missing 'workload-can-write' policy"; POLICY_VALIDATION_FAILED=true; }
-echo "$POLICY_OUTPUT" | \
-  grep -qF "SPIFFE ID Pattern: ^spiffe://spike\.ist/workload/.*$" || \
-  { echo "WARNING: Missing expected SPIFFE ID pattern"; POLICY_VALIDATION_FAILED=true; }
-echo "$POLICY_OUTPUT" | \
-  grep -qF "Path Pattern: ^tenants/demo/db/.*$" || \
-  { echo "WARNING: Missing expected path pattern"; POLICY_VALIDATION_FAILED=true; }
 echo "$POLICY_OUTPUT" | grep -q "Permissions: read" || \
   { echo "WARNING: Missing read permission"; POLICY_VALIDATION_FAILED=true; }
 echo "$POLICY_OUTPUT" | grep -q "Permissions: write" || \

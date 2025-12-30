@@ -4,10 +4,10 @@
 #  \\\\\ Copyright 2024-present SPIKE contributors.
 # \\\\\\\ SPDX-License-Identifier: Apache-2.0
 
-PILOT_PATH="$(pwd)/spike"
+PILOT_PATH="$(pwd)/bin/spike"
 PILOT_SHA=$(sha256sum "$PILOT_PATH" | cut -d' ' -f1)
 
-BOOTSTRAP_PATH="$(pwd)/bootstrap"
+BOOTSTRAP_PATH="$(pwd)/bin/bootstrap"
 BOOTSTRAP_SHA=$(sha256sum "$BOOTSTRAP_PATH" | cut -d' ' -f1)
 
 PILOT_ENTRY_ID=$(spire-server entry show -spiffeID \
