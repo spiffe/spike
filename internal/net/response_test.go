@@ -11,6 +11,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/spiffe/spike-sdk-go/net"
+
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 )
 
@@ -23,7 +25,7 @@ func TestMarshalBodyAndRespondOnMarshalFail_Success(t *testing.T) {
 	w := httptest.NewRecorder()
 	res := testResponse{Message: "success", Code: 200}
 
-	body, err := MarshalBodyAndRespondOnMarshalFail(res, w)
+	body, err := net.MarshalBodyAndRespondOnMarshalFail(res, w)
 
 	if err != nil {
 		t.Errorf("MarshalBodyAndRespondOnMarshalFail() error = %v, want nil", err)
@@ -57,7 +59,7 @@ func TestMarshalBodyAndRespondOnMarshalFail_UnmarshalableType(t *testing.T) {
 	// Channels cannot be marshaled to JSON
 	res := make(chan int)
 
-	body, err := MarshalBodyAndRespondOnMarshalFail(res, w)
+	body, err := net.MarshalBodyAndRespondOnMarshalFail(res, w)
 
 	if err == nil {
 		t.Error("MarshalBodyAndRespondOnMarshalFail() expected error for channel")
@@ -77,7 +79,7 @@ func TestRespond_SetsHeaders(t *testing.T) {
 	w := httptest.NewRecorder()
 	body := []byte(`{"test":"value"}`)
 
-	Respond(http.StatusOK, body, w)
+	_ = net.Respond(http.StatusOK, body, w)
 
 	// Check Content-Type
 	if ct := w.Header().Get("Content-Type"); ct != "application/json" {
@@ -132,7 +134,7 @@ func TestRespond_DifferentStatusCodes(t *testing.T) {
 			w := httptest.NewRecorder()
 			body := []byte(`{}`)
 
-			Respond(tt.statusCode, body, w)
+			_ = net.Respond(tt.statusCode, body, w)
 
 			if w.Code != tt.statusCode {
 				t.Errorf("Respond() status = %d, want %d", w.Code, tt.statusCode)
@@ -157,7 +159,7 @@ func (m mockErrorResponse) Internal() mockErrorResponse {
 func TestHandleError_NilError(t *testing.T) {
 	w := httptest.NewRecorder()
 
-	result := HandleError(nil, w, mockErrorResponse{})
+	result := net.RespondWithHTTPError(nil, w, mockErrorResponse{})
 
 	if result != nil {
 		t.Errorf("HandleError(nil) = %v, want nil", result)
@@ -172,8 +174,8 @@ func TestHandleError_NilError(t *testing.T) {
 func TestHandleError_NotFoundError(t *testing.T) {
 	w := httptest.NewRecorder()
 
-	err := sdkErrors.ErrEntityNotFound
-	result := HandleError(err, w, mockErrorResponse{})
+	err := sdkErrors.ErrEntityNotFound.Clone()
+	result := net.RespondWithHTTPError(err, w, mockErrorResponse{})
 
 	if result == nil {
 		t.Error("HandleError() returned nil for not found error")
@@ -188,8 +190,8 @@ func TestHandleError_NotFoundError(t *testing.T) {
 func TestHandleError_OtherError(t *testing.T) {
 	w := httptest.NewRecorder()
 
-	err := sdkErrors.ErrAPIBadRequest
-	result := HandleError(err, w, mockErrorResponse{})
+	err := sdkErrors.ErrAPIBadRequest.Clone()
+	result := net.RespondWithHTTPError(err, w, mockErrorResponse{})
 
 	if result == nil {
 		t.Error("HandleError() returned nil for other error")
@@ -206,7 +208,7 @@ func TestHandleError_WrappedNotFoundError(t *testing.T) {
 
 	// Create a wrapped not found error
 	wrappedErr := sdkErrors.ErrEntityNotFound.Wrap(sdkErrors.ErrAPIBadRequest)
-	result := HandleError(wrappedErr, w, mockErrorResponse{})
+	result := net.RespondWithHTTPError(wrappedErr, w, mockErrorResponse{})
 
 	if result == nil {
 		t.Error("HandleError() returned nil for wrapped not found error")
@@ -222,8 +224,8 @@ func TestHandleError_WrappedNotFoundError(t *testing.T) {
 func TestHandleInternalError(t *testing.T) {
 	w := httptest.NewRecorder()
 
-	err := sdkErrors.ErrCryptoCipherNotAvailable
-	result := HandleInternalError(err, w, mockErrorResponse{})
+	err := sdkErrors.ErrCryptoCipherNotAvailable.Clone()
+	result := net.RespondWithInternalError(err, w, mockErrorResponse{})
 
 	if result == nil {
 		t.Error("HandleInternalError() returned nil")

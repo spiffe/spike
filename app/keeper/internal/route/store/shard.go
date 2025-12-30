@@ -9,11 +9,12 @@ import (
 
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
+	"github.com/spiffe/spike-sdk-go/log"
+	"github.com/spiffe/spike-sdk-go/net"
 	"github.com/spiffe/spike-sdk-go/security/mem"
 
 	"github.com/spiffe/spike/app/keeper/internal/state"
 	"github.com/spiffe/spike/internal/journal"
-	"github.com/spiffe/spike/internal/net"
 )
 
 // RouteShard handles HTTP requests to retrieve the stored shard from the
@@ -71,15 +72,22 @@ func RouteShard(
 	sh := state.ShardNoSync()
 
 	if mem.Zeroed32(sh) {
-		net.Fail(
+		failErr := net.Fail(
 			reqres.ShardGetResponse{}.BadRequest(), w, http.StatusBadRequest,
 		)
+		if failErr != nil {
+			return sdkErrors.ErrDataInvalidInput.Wrap(failErr)
+		}
 		return sdkErrors.ErrDataInvalidInput
 	}
 
-	responseBody := net.SuccessWithResponseBody(
+	responseBody, respondErr := net.SuccessWithResponseBody(
 		reqres.ShardGetResponse{Shard: sh}.Success(), w,
 	)
+	if respondErr != nil {
+		respondErr.Msg = "failed to return success response"
+		log.WarnErr(fName, *respondErr)
+	}
 	// Security: Reset response body before function exits.
 	defer func() {
 		mem.ClearBytes(responseBody)

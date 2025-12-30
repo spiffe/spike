@@ -12,10 +12,10 @@ import (
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/log"
+	"github.com/spiffe/spike-sdk-go/net"
 
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 	"github.com/spiffe/spike/internal/journal"
-	"github.com/spiffe/spike/internal/net"
 )
 
 // RouteGetSecret handles requests to retrieve a secret at a specific path
@@ -93,11 +93,10 @@ func RouteGetSecret(
 	}
 
 	if !secretFound {
-		return net.HandleError(getErr, w, reqres.SecretGetResponse{})
+		return net.RespondWithHTTPError(getErr, w, reqres.SecretGetResponse{})
 	}
 
-	net.Success(reqres.SecretGetResponse{
+	return net.Success(reqres.SecretGetResponse{
 		Secret: data.Secret{Data: secret},
 	}.Success(), w)
-	return nil
 }

@@ -13,7 +13,7 @@ import (
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 
-	"github.com/spiffe/spike/internal/net"
+	"github.com/spiffe/spike-sdk-go/net"
 )
 
 // decryptDataStreaming performs decryption for streaming mode requests.
@@ -55,10 +55,13 @@ func decryptDataJSON(
 ) ([]byte, *sdkErrors.SDKError) {
 	plaintext, err := c.Open(nil, nonce, ciphertext, nil)
 	if err != nil {
-		net.Fail(
+		failErr := net.Fail(
 			reqres.CipherDecryptResponse{}.Internal(), w,
 			http.StatusInternalServerError,
 		)
+		if failErr != nil {
+			return nil, sdkErrors.ErrCryptoDecryptionFailed.Wrap(err).Wrap(failErr)
+		}
 		return nil, sdkErrors.ErrCryptoDecryptionFailed.Wrap(err)
 	}
 
@@ -106,7 +109,11 @@ func generateNonceOrFailJSON[T any](
 ) ([]byte, *sdkErrors.SDKError) {
 	nonce := make([]byte, c.NonceSize())
 	if _, err := io.ReadFull(rand.Reader, nonce); err != nil {
-		net.Fail(errorResponse, w, http.StatusInternalServerError)
+		failErr := net.Fail(errorResponse, w, http.StatusInternalServerError)
+		if failErr != nil {
+			return nil, sdkErrors.ErrCryptoNonceGenerationFailed.Wrap(
+				err).Wrap(failErr)
+		}
 		return nil, sdkErrors.ErrCryptoNonceGenerationFailed.Wrap(err)
 	}
 

@@ -11,11 +11,11 @@ import (
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	"github.com/spiffe/spike-sdk-go/config/env"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
+	"github.com/spiffe/spike-sdk-go/net"
 	"github.com/spiffe/spike-sdk-go/security/mem"
 
 	"github.com/spiffe/spike/app/nexus/internal/initialization/recovery"
 	"github.com/spiffe/spike/internal/journal"
-	"github.com/spiffe/spike/internal/net"
 )
 
 // RouteRecover handles HTTP requests for recovering pilot recovery shards.
@@ -67,7 +67,7 @@ func RouteRecover(
 	}()
 
 	if len(shards) < env.ShamirThresholdVal() {
-		return net.HandleInternalError(
+		return net.RespondWithInternalError(
 			sdkErrors.ErrShamirNotEnoughShards, w, reqres.RecoverResponse{},
 		)
 	}
@@ -79,7 +79,7 @@ func RouteRecover(
 		if seenIndices[idx] {
 			failErr := sdkErrors.ErrShamirDuplicateIndex.Clone()
 			failErr.Msg = fmt.Sprint("duplicate shard index: ", idx)
-			return net.HandleInternalError(failErr, w, reqres.RecoverResponse{})
+			return net.RespondWithInternalError(failErr, w, reqres.RecoverResponse{})
 		}
 
 		// We cannot check for duplicate values, because although it's
@@ -90,7 +90,7 @@ func RouteRecover(
 
 		// Check for nil pointers
 		if shard == nil {
-			return net.HandleInternalError(
+			return net.RespondWithInternalError(
 				sdkErrors.ErrShamirNilShard, w, reqres.RecoverResponse{},
 			)
 		}
@@ -104,24 +104,27 @@ func RouteRecover(
 			}
 		}
 		if zeroed {
-			return net.HandleInternalError(
+			return net.RespondWithInternalError(
 				sdkErrors.ErrShamirEmptyShard, w, reqres.RecoverResponse{},
 			)
 		}
 
 		// Verify shard index is within valid range:
 		if idx < 1 || idx > env.ShamirSharesVal() {
-			return net.HandleInternalError(
+			return net.RespondWithInternalError(
 				sdkErrors.ErrShamirInvalidIndex, w, reqres.RecoverResponse{},
 			)
 		}
 	}
 
-	responseBody := net.SuccessWithResponseBody(
+	responseBody, successErr := net.SuccessWithResponseBody(
 		reqres.RecoverResponse{Shards: shards}.Success(), w,
 	)
 	defer func() {
 		mem.ClearBytes(responseBody)
 	}()
+	if successErr != nil {
+		return successErr
+	}
 	return nil
 }

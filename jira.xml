@@ -79,21 +79,37 @@
     <issue waitingFor="json mode to be fixed">
       demo: encryption as a service
     </issue>
-    <issue>
-      note: we migth already be doing something similar; verify first.
-
-      for operator actions ensure that `spike/system/ops` path is enforced
-      (similar to how acl is enforced above.
-
-      create a workload that can create policies
-      create another workload that can backup the root key
-      to demo these features.
-    </issue>
   </task-group>
   <task-group state="parked" until="after-release">
     <issue>
       const GCMNonceSize = 12
       to sdk.
+    </issue>
+    <issue>
+      `spike secret list` right now lists all secrets available and
+      requires system level access.
+
+      we might want to restrict the "list" action to a regular expression
+      matcher with a policy, so for certain SPIFFE IDs, a `list` call
+      will only list the secrets that they are allowed to see.
+
+      so that a workload (if allowed) can list secrets under
+      secret/tenants/acme/*
+      but not secret/tenants/bodega
+
+      For that, we likely need to extend the policy structure too
+
+      here is how the policies are specified currenty:
+      spike policy create --name=workload-can-write \
+      --path-pattern="^tenants/demo/db/.*$" \
+      --spiffeid-pattern="^spiffe://spike\.ist/workload/.*$" \
+      --permissions="write"
+
+      we may need to add a "list" permission type, and that would
+      limit the policy to list secrets that match to the path pattern only.
+
+      if a workload does not have a list access given by a policy, it
+      won't be able to list secrets.
     </issue>
     <issue>
       duplicate code fragment:

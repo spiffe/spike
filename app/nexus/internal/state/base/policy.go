@@ -53,7 +53,7 @@ func CheckAccess(
 
 	policies, err := ListPolicies()
 	if err != nil {
-		log.WarnErr(fName, *sdkErrors.ErrEntityLoadFailed)
+		log.WarnErr(fName, *sdkErrors.ErrEntityLoadFailed.Clone())
 		return false
 	}
 
@@ -101,7 +101,7 @@ func CheckAccess(
 //   - For existing policies: preserves ID and CreatedAt, updates UpdatedAt
 func UpsertPolicy(policy data.Policy) (data.Policy, *sdkErrors.SDKError) {
 	if policy.Name == "" {
-		return data.Policy{}, sdkErrors.ErrEntityInvalid
+		return data.Policy{}, sdkErrors.ErrEntityInvalid.Clone()
 	}
 
 	ctx := context.Background()
