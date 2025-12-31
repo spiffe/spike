@@ -72,3 +72,6 @@ bootstrap-linux-arm64.sum.txt
 # Claude
 /PLAN.md
 /TEST_COVERAGE_ANALYSIS.md
+
+# For SKD debugging while building images
+spike-sdk-go

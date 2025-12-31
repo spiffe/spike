@@ -12,6 +12,13 @@ sort_by = "weight"
 
 ## Recent
 
+* Added configurable retry backoff intervals for SPIKE Bootstrap keeper
+  communication. New environment variables `SPIKE_BOOTSTRAP_KEEPER_RETRY_INITIAL_INTERVAL`
+  (default 2s) and `SPIKE_BOOTSTRAP_KEEPER_RETRY_MAX_INTERVAL` (default 30s)
+  allow operators to tune retry behavior during bootstrap.
+* SDK: `retry.WithMaxAttempts` now accepts optional `RetrierOption` parameters,
+  enabling callers to customize backoff settings while maintaining backward
+  compatibility.
 * Update documentation to reflect the new SPIKE architecture.
 * Fix occasional dangling process issues when `make start` does not exit cleanly.
 * SDK API methods now return cloned versions of sentinel *SDKErrors instead of
