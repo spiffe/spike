@@ -28,6 +28,7 @@ sort_by = "weight"
 * moved some of the internal reusable feature from in-tree to SPIKE Go SDK.
 * binaries are now create at the ./bin folder instead of the root of the project.
 * log files are now created at the ./logs folder instead of the root of the project.
+* factored out some common validation and error handling logic from in-tree to the SDK.
 
 ## [0.8.0] - 2025-11-28
 
