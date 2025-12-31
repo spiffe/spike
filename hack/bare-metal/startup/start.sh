@@ -40,7 +40,7 @@ SPIRE_SERVER_DOMAIN="spire.spike.ist"
 check_domain() {
   # First try DNS resolution with dig
   DNS_ANSWER=$(dig +noall +answer "$SPIRE_SERVER_DOMAIN" | grep -v "^;")
-    
+
   # If dig doesn't find it, check if getent exists and try it
   if [ -z "$DNS_ANSWER" ]; then
     echo "No DNS record found for $SPIRE_SERVER_DOMAIN. using other methods..."
@@ -52,7 +52,7 @@ check_domain() {
       # Fallback for systems without getent (like macOS)
       HOSTS_ANSWER=$(grep "$SPIRE_SERVER_DOMAIN" /etc/hosts | grep -v "^#")
     fi
-        
+
     # If hosts file check also fails, return error
     if [ -z "$HOSTS_ANSWER" ]; then
       echo "Error: Could not resolve $SPIRE_SERVER_DOMAIN through any means."
@@ -184,7 +184,7 @@ if [ -z "$SPIKE_SKIP_SPIRE_AGENT_START" ]; then
   echo ""
   echo "Waiting before starting SPIRE Agent"
   sleep 5
-  
+
   if [ "$1" == "--use-sudo" ]; then
     run_background "./hack/bare-metal/startup/spire-agent-start.sh" --use-sudo
   else
@@ -301,6 +301,8 @@ fi
 # Validate expected policy output (warnings only, no exit)
 echo "$POLICY_OUTPUT" | grep -q "POLICIES" || \
   { echo "WARNING: Missing 'POLICIES' header in output"; POLICY_VALIDATION_FAILED=true; }
+echo "$POLICY_OUTPUT" | grep -qE '^ID[[:space:]]+NAME$' || \
+  { echo "WARNING: Missing 'ID NAME' header in output"; POLICY_VALIDATION_FAILED=true; }
 echo "$POLICY_OUTPUT" | grep -q "workload-can-read" || \
   { echo "WARNING: Missing 'workload-can-read' policy"; POLICY_VALIDATION_FAILED=true; }
 echo "$POLICY_OUTPUT" | grep -q "workload-can-write" || \
