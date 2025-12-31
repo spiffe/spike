@@ -5,6 +5,7 @@
 package policy
 
 import (
+	"context"
 	"regexp"
 	"strings"
 
@@ -28,7 +29,11 @@ import (
 func findPolicyByName(
 	api *spike.API, name string,
 ) (string, *sdkErrors.SDKError) {
-	policies, err := api.ListPolicies("", "")
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	policies, err := api.ListPolicies(ctx, "", "")
 	if err != nil {
 		return "", err
 	}
