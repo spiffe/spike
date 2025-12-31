@@ -13,7 +13,6 @@ import (
 	"github.com/spiffe/spike-sdk-go/net"
 	"github.com/spiffe/spike-sdk-go/spiffeid"
 
-	"github.com/spiffe/spike/internal/auth"
 	"github.com/spiffe/spike/internal/crypto"
 )
 
@@ -52,22 +51,10 @@ const expectedNonceSize = crypto.GCMNonceSize
 func guardVerifyRequest(
 	request reqres.BootstrapVerifyRequest, w http.ResponseWriter, r *http.Request,
 ) *sdkErrors.SDKError {
-	peerSPIFFEID, err := auth.ExtractPeerSPIFFEID[reqres.BootstrapVerifyResponse](
-		r, w, reqres.BootstrapVerifyResponse{}.Unauthorized(),
-	)
-	if alreadyResponded := err != nil; alreadyResponded {
+	err := net.RespondUnauthorizedOnPredicateFail(spiffeid.IsBootstrap,
+		reqres.BootstrapVerifyResponse{}.Unauthorized(), w, r)
+	if err != nil {
 		return err
-	}
-
-	if !spiffeid.IsBootstrap(peerSPIFFEID.String()) {
-		failErr := net.Fail(
-			reqres.BootstrapVerifyResponse{}.Unauthorized(), w,
-			http.StatusUnauthorized,
-		)
-		if failErr != nil {
-			return sdkErrors.ErrAccessUnauthorized.Wrap(failErr)
-		}
-		return sdkErrors.ErrAccessUnauthorized.Clone()
 	}
 
 	if len(request.Nonce) != expectedNonceSize {

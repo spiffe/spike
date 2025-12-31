@@ -32,6 +32,7 @@
         https://github.com/spiffe/spike/pull/263
         https://github.com/spiffe/spike/pull/268
         https://github.com/spiffe/spike/pull/270
+        https://github.com/spiffe/helm-charts-hardened/pull/665
       </issue>
     </watch-list>
   </high-level-plan>
@@ -157,7 +158,7 @@
       "secret with path %s not found for version %v",
       path, version,
       )
-      return nil, &failErr
+      return nil, &amp;failErr
       }
     </issue>
     <issue>
@@ -173,7 +174,7 @@
       defer s.mu.Unlock()
 
       tx, beginErr := s.db.BeginTx(
-      ctx, &sql.TxOptions{Isolation: sql.LevelSerializable},
+      ctx, &amp;sql.TxOptions{Isolation: sql.LevelSerializable},
       )
       if beginErr != nil {
       failErr := sdkErrors.ErrTransactionBeginFailed.Wrap(beginErr)

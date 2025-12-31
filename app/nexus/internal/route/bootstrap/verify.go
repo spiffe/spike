@@ -55,7 +55,7 @@ import (
 func RouteVerify(
 	w http.ResponseWriter, r *http.Request, audit *journal.AuditEntry,
 ) *sdkErrors.SDKError {
-	const fName = "routeVerify"
+	const fName = "RouteVerify"
 
 	journal.AuditRequest(fName, r, audit, journal.AuditCreate)
 

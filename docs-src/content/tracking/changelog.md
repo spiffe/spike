@@ -12,12 +12,23 @@ sort_by = "weight"
 
 ## Recent
 
+* Added configurable retry backoff intervals for SPIKE Bootstrap keeper
+  communication. New environment variables `SPIKE_BOOTSTRAP_KEEPER_RETRY_INITIAL_INTERVAL`
+  (default 2s) and `SPIKE_BOOTSTRAP_KEEPER_RETRY_MAX_INTERVAL` (default 30s)
+  allow operators to tune retry behavior during bootstrap.
+* SDK: `retry.WithMaxAttempts` now accepts optional `RetrierOption` parameters,
+  enabling callers to customize backoff settings while maintaining backward
+  compatibility.
 * Update documentation to reflect the new SPIKE architecture.
 * Fix occasional dangling process issues when `make start` does not exit cleanly.
 * SDK API methods now return cloned versions of sentinel *SDKErrors instead of
   returning the original reference. This prevents accidental mutation of the
   error values.
 * mem.Lock() does not print JSON error logs on CLI startup anymore.
+* moved some of the internal reusable feature from in-tree to SPIKE Go SDK.
+* binaries are now create at the ./bin folder instead of the root of the project.
+* log files are now created at the ./logs folder instead of the root of the project.
+* factored out some common validation and error handling logic from in-tree to the SDK.
 
 ## [0.8.0] - 2025-11-28
 

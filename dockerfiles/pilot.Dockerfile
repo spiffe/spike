@@ -29,6 +29,8 @@ RUN apt-get update && apt-get install -y \
 
 # Download dependencies first (better layer caching)
 COPY go.mod go.sum ./
+# Copy local SDK (required when using replace directive for development)
+# COPY spike-sdk-go/ ./spike-sdk-go/
 RUN go mod download
 
 # Copy the app source code

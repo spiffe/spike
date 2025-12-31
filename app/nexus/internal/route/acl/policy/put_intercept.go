@@ -15,8 +15,14 @@ import (
 	"github.com/spiffe/spike-sdk-go/validation"
 
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
-	"github.com/spiffe/spike/internal/auth"
 )
+
+func hasWritePermission(peerSPIFFEID string) bool {
+	return state.CheckAccess(
+		peerSPIFFEID, cfg.PathSystemPolicyAccess,
+		[]data.PolicyPermission{data.PermissionWrite},
+	)
+}
 
 // guardPolicyCreateRequest validates a policy creation request by performing
 // authentication, authorization, and input validation checks.
@@ -44,26 +50,12 @@ import (
 func guardPolicyCreateRequest(
 	request reqres.PolicyPutRequest, w http.ResponseWriter, r *http.Request,
 ) *sdkErrors.SDKError {
-	peerSPIFFEID, err := auth.ExtractPeerSPIFFEID[reqres.PolicyPutResponse](
-		r, w, reqres.PolicyPutResponse{}.Unauthorized(),
+	err := net.RespondUnauthorizedOnPredicateFail(
+		hasWritePermission,
+		reqres.PolicyPutResponse{}.Unauthorized(), w, r,
 	)
-	if alreadyResponded := err != nil; alreadyResponded {
+	if err != nil {
 		return err
-	}
-
-	// Request "write" access to the ACL system for the SPIFFE ID.
-	allowed := state.CheckAccess(
-		peerSPIFFEID.String(), cfg.PathSystemPolicyAccess,
-		[]data.PolicyPermission{data.PermissionWrite},
-	)
-	if !allowed {
-		failErr := net.Fail(
-			reqres.PolicyPutResponse{}.Unauthorized(), w, http.StatusUnauthorized,
-		)
-		if failErr != nil {
-			return sdkErrors.ErrAccessUnauthorized.Wrap(failErr)
-		}
-		return sdkErrors.ErrAccessUnauthorized.Clone()
 	}
 
 	name := request.Name

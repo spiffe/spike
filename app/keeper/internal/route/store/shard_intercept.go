@@ -11,8 +11,6 @@ import (
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/net"
 	"github.com/spiffe/spike-sdk-go/spiffeid"
-
-	"github.com/spiffe/spike/internal/auth"
 )
 
 // guardShardGetRequest validates that the peer requesting shard retrieval is
@@ -33,23 +31,7 @@ import (
 func guardShardGetRequest(
 	_ reqres.ShardGetRequest, w http.ResponseWriter, r *http.Request,
 ) *sdkErrors.SDKError {
-	peerSPIFFEID, err := auth.ExtractPeerSPIFFEID[reqres.ShardGetResponse](
-		r, w, reqres.ShardGetResponse{}.Unauthorized(),
+	return net.RespondUnauthorizedOnPredicateFail(spiffeid.IsNexus,
+		reqres.ShardGetResponse{}.Unauthorized(), w, r,
 	)
-	if alreadyResponded := err != nil; alreadyResponded {
-		return err
-	}
-
-	// Only SPIKE Nexus is authorized to retrieve shards from SPIKE Keeper.
-	if !spiffeid.IsNexus(peerSPIFFEID.String()) {
-		failErr := net.Fail(
-			reqres.ShardGetResponse{}.Unauthorized(), w, http.StatusUnauthorized,
-		)
-		if failErr != nil {
-			return sdkErrors.ErrAccessUnauthorized.Wrap(failErr)
-		}
-		return sdkErrors.ErrAccessUnauthorized.Clone()
-	}
-
-	return nil
 }
