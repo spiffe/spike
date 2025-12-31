@@ -11,8 +11,6 @@ import (
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/net"
 	"github.com/spiffe/spike-sdk-go/spiffeid"
-
-	"github.com/spiffe/spike/internal/auth"
 )
 
 // guardShardPutRequest validates that the peer contributing a shard is either
@@ -33,24 +31,7 @@ import (
 func guardShardPutRequest(
 	_ reqres.ShardPutRequest, w http.ResponseWriter, r *http.Request,
 ) *sdkErrors.SDKError {
-	peerSPIFFEID, err := auth.ExtractPeerSPIFFEID[reqres.ShardPutResponse](
-		r, w, reqres.ShardPutResponse{}.Unauthorized(),
+	return net.RespondUnauthorizedOnPredicateFail(spiffeid.PeerCanTalkToKeeper,
+		reqres.ShardPutResponse{}.Unauthorized(), w, r,
 	)
-	if alreadyResponded := err != nil; alreadyResponded {
-		return err
-	}
-
-	// Allow both Bootstrap (initial setup) and Nexus (periodic updates)
-	if !spiffeid.PeerCanTalkToKeeper(peerSPIFFEID.String()) {
-		failErr := net.Fail(
-			reqres.ShardPutResponse{}.Unauthorized(), w, http.StatusUnauthorized,
-		)
-		if failErr != nil {
-			return sdkErrors.ErrAccessUnauthorized.Wrap(failErr)
-		}
-
-		return sdkErrors.ErrAccessUnauthorized.Clone()
-	}
-
-	return nil
 }
