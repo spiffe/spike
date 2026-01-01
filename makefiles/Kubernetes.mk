@@ -47,11 +47,6 @@ k8s-load-images:
 # For Multi-Cluster Federation Demo, DO NOT run `deploy-local`
 # Instead, see FederationDemo.mk for the remaining steps.
 
-# DEPRECATED
-deploy-local:
-	@echo "deploy-local is deprecated. Please use deploy-dev-local"
-	./hack/k8s/spike-install.sh
-
 # 6. Deploy SPIKE locally.
 deploy-dev-local:
 	./hack/k8s/spike-dev-install.sh

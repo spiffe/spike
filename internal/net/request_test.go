@@ -10,6 +10,8 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/spiffe/spike-sdk-go/net"
 )
 
 type testRequest struct {
@@ -26,7 +28,7 @@ func TestUnmarshalAndRespondOnFail_Success(t *testing.T) {
 	requestBody := []byte(`{"name":"test","value":42}`)
 	errorResp := testErrorResponse{Err: "bad request"}
 
-	result, err := UnmarshalAndRespondOnFail[testRequest, testErrorResponse](
+	result, err := net.UnmarshalAndRespondOnFail[testRequest, testErrorResponse](
 		requestBody, w, errorResp,
 	)
 
@@ -61,7 +63,7 @@ func TestUnmarshalAndRespondOnFail_InvalidJSON(t *testing.T) {
 	requestBody := []byte(`{invalid json}`)
 	errorResp := testErrorResponse{Err: "bad request"}
 
-	result, err := UnmarshalAndRespondOnFail[testRequest, testErrorResponse](
+	result, err := net.UnmarshalAndRespondOnFail[testRequest, testErrorResponse](
 		requestBody, w, errorResp,
 	)
 
@@ -84,7 +86,7 @@ func TestUnmarshalAndRespondOnFail_EmptyBody(t *testing.T) {
 	requestBody := []byte(``)
 	errorResp := testErrorResponse{Err: "bad request"}
 
-	result, err := UnmarshalAndRespondOnFail[testRequest, testErrorResponse](
+	result, err := net.UnmarshalAndRespondOnFail[testRequest, testErrorResponse](
 		requestBody, w, errorResp,
 	)
 
@@ -101,7 +103,7 @@ func TestFail_SendsErrorResponse(t *testing.T) {
 	w := httptest.NewRecorder()
 	errorResp := testErrorResponse{Err: "something went wrong"}
 
-	Fail(errorResp, w, http.StatusBadRequest)
+	_ = net.Fail(errorResp, w, http.StatusBadRequest)
 
 	if w.Code != http.StatusBadRequest {
 		t.Errorf("Fail() status = %d, want %d", w.Code, http.StatusBadRequest)
@@ -122,7 +124,7 @@ func TestSuccess_SendsOKResponse(t *testing.T) {
 	w := httptest.NewRecorder()
 	resp := testResponse{Message: "created", Code: 200}
 
-	Success(resp, w)
+	_ = net.Success(resp, w)
 
 	if w.Code != http.StatusOK {
 		t.Errorf("Success() status = %d, want %d", w.Code, http.StatusOK)
@@ -143,7 +145,7 @@ func TestSuccessWithResponseBody_ReturnsBody(t *testing.T) {
 	w := httptest.NewRecorder()
 	resp := testResponse{Message: "data", Code: 200}
 
-	body := SuccessWithResponseBody(resp, w)
+	body, _ := net.SuccessWithResponseBody(resp, w)
 
 	if body == nil {
 		t.Error("SuccessWithResponseBody() returned nil body")
@@ -172,7 +174,7 @@ func TestReadRequestBodyAndRespondOnFail_Success(t *testing.T) {
 		bytes.NewBufferString(expectedBody))
 	w := httptest.NewRecorder()
 
-	body, err := ReadRequestBodyAndRespondOnFail(w, r)
+	body, err := net.ReadRequestBodyAndRespondOnFail(w, r)
 
 	if err != nil {
 		t.Errorf("ReadRequestBodyAndRespondOnFail() error = %v, want nil", err)
@@ -201,7 +203,7 @@ func TestFail_DifferentStatusCodes(t *testing.T) {
 			w := httptest.NewRecorder()
 			errorResp := testErrorResponse{Err: "error"}
 
-			Fail(errorResp, w, tt.statusCode)
+			_ = net.Fail(errorResp, w, tt.statusCode)
 
 			if w.Code != tt.statusCode {
 				t.Errorf("Fail() status = %d, want %d", w.Code, tt.statusCode)

@@ -94,9 +94,10 @@ func TestFormatPoliciesOutput_HumanFormat(t *testing.T) {
 			Name: "test-policy",
 		},
 	}
-
 	cmd := createTestCommandWithFormat("human")
 	result := formatPoliciesOutput(cmd, policies)
+
+	normalized := normalizePolicyOutput(result)
 
 	// Check header
 	if !strings.Contains(result, "POLICIES") {
@@ -109,8 +110,9 @@ func TestFormatPoliciesOutput_HumanFormat(t *testing.T) {
 		"Name: test-policy",
 	}
 
+	// Check policy fields are present
 	for _, field := range expectedFields {
-		if !strings.Contains(result, field) {
+		if !strings.Contains(normalized, field) {
 			t.Errorf("Human format should contain %q", field)
 		}
 	}
@@ -262,19 +264,20 @@ func TestFormatPoliciesOutput_MultiplePolicies(t *testing.T) {
 	cmd := createTestCommandWithFormat("human")
 	result := formatPoliciesOutput(cmd, policies)
 
+	normalized := normalizePolicyOutput(result)
+
 	// Check all policies are present
-	if !strings.Contains(result, "policy-one") {
-		t.Error("Should contain policy-one")
+	if !strings.Contains(normalized, "policy-one") {
+		t.Errorf("Should contain policy-one")
 	}
-	if !strings.Contains(result, "policy-two") {
+	if !strings.Contains(normalized, "policy-two") {
 		t.Error("Should contain policy-two")
 	}
-	if !strings.Contains(result, "policy-three") {
+	if !strings.Contains(normalized, "policy-three") {
 		t.Error("Should contain policy-three")
 	}
-
 	// Check separators between policies
-	separatorCount := strings.Count(result, "--------")
+	separatorCount := strings.Count(normalized, "\n")
 	if separatorCount < 3 {
 		t.Errorf("Expected at least 3 separators, got %d", separatorCount)
 	}

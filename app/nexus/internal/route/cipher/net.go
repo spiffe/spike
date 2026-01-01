@@ -9,8 +9,7 @@ import (
 
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
-
-	"github.com/spiffe/spike/internal/net"
+	"github.com/spiffe/spike-sdk-go/net"
 )
 
 // respondStreamingDecrypt sends the decrypted plaintext as raw binary data
@@ -41,16 +40,16 @@ func respondStreamingDecrypt(
 //   - w: The HTTP response writer
 //
 // Returns:
-//   - *sdkErrors.SDKError: Always nil (included for interface consistency)
+//   - *sdkErrors.SDKError: nil on success, or an error if the response fails
+//     to send
 func respondJSONDecrypt(
 	plaintext []byte, w http.ResponseWriter,
 ) *sdkErrors.SDKError {
-	net.Success(
+	return net.Success(
 		reqres.CipherDecryptResponse{
 			Plaintext: plaintext,
 		}.Success(), w,
 	)
-	return nil
 }
 
 // respondStreamingEncrypt sends the encrypted ciphertext as raw binary data
@@ -91,16 +90,16 @@ func respondStreamingEncrypt(
 //   - w: The HTTP response writer
 //
 // Returns:
-//   - error: Always nil (included for interface consistency)
+//   - *sdkErrors.SDKError: nil on success, or an error if the response fails
+//     to send
 func respondJSONEncrypt(
 	nonce, ciphertext []byte, w http.ResponseWriter,
 ) *sdkErrors.SDKError {
-	net.Success(
+	return net.Success(
 		reqres.CipherEncryptResponse{
 			Version:    spikeCipherVersion,
 			Nonce:      nonce,
 			Ciphertext: ciphertext,
 		}.Success(), w,
 	)
-	return nil
 }

@@ -11,10 +11,10 @@ import (
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	apiAuth "github.com/spiffe/spike-sdk-go/config/auth"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
+	"github.com/spiffe/spike-sdk-go/net"
 
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 	"github.com/spiffe/spike/internal/auth"
-	"github.com/spiffe/spike/internal/net"
 )
 
 // guardListSecretRequest validates a secret listing request by performing
@@ -55,10 +55,13 @@ func guardListSecretRequest(
 		[]data.PolicyPermission{data.PermissionList},
 	)
 	if !allowed {
-		net.Fail(
+		failErr := net.Fail(
 			reqres.SecretListResponse{}.Unauthorized(), w,
 			http.StatusUnauthorized,
 		)
+		if failErr != nil {
+			return sdkErrors.ErrAccessUnauthorized.Wrap(failErr)
+		}
 		return sdkErrors.ErrAccessUnauthorized
 	}
 

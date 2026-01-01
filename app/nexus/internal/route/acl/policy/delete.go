@@ -9,10 +9,10 @@ import (
 
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
+	"github.com/spiffe/spike-sdk-go/net"
 
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 	"github.com/spiffe/spike/internal/journal"
-	"github.com/spiffe/spike/internal/net"
 )
 
 // RouteDeletePolicy handles HTTP DELETE requests to remove existing policies.
@@ -84,9 +84,8 @@ func RouteDeletePolicy(
 
 	deleteErr := state.DeletePolicy(policyID)
 	if deleteErr != nil {
-		return net.HandleError(deleteErr, w, reqres.PolicyDeleteResponse{})
+		return net.RespondWithHTTPError(deleteErr, w, reqres.PolicyDeleteResponse{})
 	}
 
-	net.Success(reqres.PolicyDeleteResponse{}.Success(), w)
-	return nil
+	return net.Success(reqres.PolicyDeleteResponse{}.Success(), w)
 }

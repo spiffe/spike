@@ -9,10 +9,10 @@ import (
 
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
+	"github.com/spiffe/spike-sdk-go/net"
 
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 	"github.com/spiffe/spike/internal/journal"
-	"github.com/spiffe/spike/internal/net"
 )
 
 // RouteGetPolicy handles HTTP requests to retrieve a specific policy by its ID.
@@ -97,9 +97,8 @@ func RouteGetPolicy(
 
 	policy, policyErr := state.GetPolicy(policyID)
 	if policyErr != nil {
-		return net.HandleError(policyErr, w, reqres.PolicyReadResponse{})
+		return net.RespondWithHTTPError(policyErr, w, reqres.PolicyReadResponse{})
 	}
 
-	net.Success(reqres.PolicyReadResponse{Policy: policy}.Success(), w)
-	return nil
+	return net.Success(reqres.PolicyReadResponse{Policy: policy}.Success(), w)
 }

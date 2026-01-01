@@ -10,11 +10,11 @@ import (
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
+	"github.com/spiffe/spike-sdk-go/net"
 	"github.com/spiffe/spike-sdk-go/validation"
 
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 	"github.com/spiffe/spike/internal/auth"
-	"github.com/spiffe/spike/internal/net"
 )
 
 // guardSecretPutRequest validates a secret storage request by performing
@@ -58,11 +58,14 @@ func guardSecretPutRequest(
 
 	pathErr := validation.ValidatePath(path)
 	if invalidPath := pathErr != nil; invalidPath {
-		net.Fail(
+		failErr := net.Fail(
 			reqres.SecretPutResponse{}.BadRequest(), w,
 			http.StatusBadRequest,
 		)
 		pathErr.Msg = "invalid secret path: " + path
+		if failErr != nil {
+			return pathErr.Wrap(failErr)
+		}
 		return pathErr
 	}
 
@@ -70,11 +73,14 @@ func guardSecretPutRequest(
 	for k := range values {
 		nameErr := validation.ValidateName(k)
 		if nameErr != nil {
-			net.Fail(
+			nameErr.Msg = "invalid key name: " + k
+			failErr := net.Fail(
 				reqres.SecretPutResponse{}.BadRequest(), w,
 				http.StatusBadRequest,
 			)
-			nameErr.Msg = "invalid key name: " + k
+			if failErr != nil {
+				return nameErr.Wrap(failErr)
+			}
 			return nameErr
 		}
 	}
@@ -84,14 +90,16 @@ func guardSecretPutRequest(
 		[]data.PolicyPermission{data.PermissionWrite},
 	)
 	if !allowed {
-		net.Fail(
+		failErr := net.Fail(
 			reqres.SecretPutResponse{}.Unauthorized(), w,
 			http.StatusUnauthorized,
 		)
-		failErr := *sdkErrors.ErrAccessUnauthorized.Clone()
-		failErr.Msg = "unauthorized to write secret: " + path
-		return &failErr
+		authErr := sdkErrors.ErrAccessUnauthorized.Clone()
+		authErr.Msg = "unauthorized to write secret: " + path
+		if failErr != nil {
+			return sdkErrors.ErrAccessUnauthorized.Wrap(failErr)
+		}
+		return authErr
 	}
-
 	return nil
 }

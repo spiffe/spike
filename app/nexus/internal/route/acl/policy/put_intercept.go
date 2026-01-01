@@ -11,12 +11,18 @@ import (
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	cfg "github.com/spiffe/spike-sdk-go/config/auth"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
+	"github.com/spiffe/spike-sdk-go/net"
 	"github.com/spiffe/spike-sdk-go/validation"
 
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
-	"github.com/spiffe/spike/internal/auth"
-	"github.com/spiffe/spike/internal/net"
 )
+
+func hasWritePermission(peerSPIFFEID string) bool {
+	return state.CheckAccess(
+		peerSPIFFEID, cfg.PathSystemPolicyAccess,
+		[]data.PolicyPermission{data.PermissionWrite},
+	)
+}
 
 // guardPolicyCreateRequest validates a policy creation request by performing
 // authentication, authorization, and input validation checks.
@@ -44,23 +50,12 @@ import (
 func guardPolicyCreateRequest(
 	request reqres.PolicyPutRequest, w http.ResponseWriter, r *http.Request,
 ) *sdkErrors.SDKError {
-	peerSPIFFEID, err := auth.ExtractPeerSPIFFEID[reqres.PolicyPutResponse](
-		r, w, reqres.PolicyPutResponse{}.Unauthorized(),
+	err := net.RespondUnauthorizedOnPredicateFail(
+		hasWritePermission,
+		reqres.PolicyPutResponse{}.Unauthorized(), w, r,
 	)
-	if alreadyResponded := err != nil; alreadyResponded {
+	if err != nil {
 		return err
-	}
-
-	// Request "write" access to the ACL system for the SPIFFE ID.
-	allowed := state.CheckAccess(
-		peerSPIFFEID.String(), cfg.PathSystemPolicyAccess,
-		[]data.PolicyPermission{data.PermissionWrite},
-	)
-	if !allowed {
-		net.Fail(
-			reqres.PolicyPutResponse{}.Unauthorized(), w, http.StatusUnauthorized,
-		)
-		return sdkErrors.ErrAccessUnauthorized
 	}
 
 	name := request.Name
@@ -69,38 +64,53 @@ func guardPolicyCreateRequest(
 	permissions := request.Permissions
 
 	if err := validation.ValidateName(name); err != nil {
-		net.Fail(
+		failErr := net.Fail(
 			reqres.PolicyPutResponse{}.BadRequest(), w, http.StatusBadRequest,
 		)
-		return sdkErrors.ErrDataInvalidInput
+		if failErr != nil {
+			return sdkErrors.ErrDataInvalidInput.Wrap(failErr)
+		}
+		return sdkErrors.ErrDataInvalidInput.Clone()
 	}
 
 	if err := validation.ValidateSPIFFEIDPattern(SPIFFEIDPattern); err != nil {
-		net.Fail(
+		failEr := net.Fail(
 			reqres.PolicyPutResponse{}.BadRequest(), w, http.StatusBadRequest,
 		)
-		return sdkErrors.ErrDataInvalidInput
+		if failEr != nil {
+			return sdkErrors.ErrDataInvalidInput.Wrap(failEr)
+		}
+		return sdkErrors.ErrDataInvalidInput.Clone()
 	}
 
 	if err := validation.ValidatePathPattern(pathPattern); err != nil {
-		net.Fail(
+		failErr := net.Fail(
 			reqres.PolicyPutResponse{}.BadRequest(), w, http.StatusBadRequest,
 		)
-		return sdkErrors.ErrDataInvalidInput
+		if failErr != nil {
+			return sdkErrors.ErrDataInvalidInput.Wrap(failErr)
+		}
+		return sdkErrors.ErrDataInvalidInput.Clone()
 	}
 
 	if len(permissions) == 0 {
-		net.Fail(
+		failErr := net.Fail(
 			reqres.PolicyPutResponse{}.BadRequest(), w, http.StatusBadRequest,
 		)
-		return sdkErrors.ErrDataInvalidInput
+		if failErr != nil {
+			return sdkErrors.ErrDataInvalidInput.Wrap(failErr)
+		}
+		return sdkErrors.ErrDataInvalidInput.Clone()
 	}
 	for _, perm := range permissions {
 		if !validation.ValidPermission(string(perm)) {
-			net.Fail(
+			failErr := net.Fail(
 				reqres.PolicyPutResponse{}.BadRequest(), w, http.StatusBadRequest,
 			)
-			return sdkErrors.ErrDataInvalidInput
+			if failErr != nil {
+				return sdkErrors.ErrDataInvalidInput.Wrap(failErr)
+			}
+			return sdkErrors.ErrDataInvalidInput.Clone()
 		}
 	}
 

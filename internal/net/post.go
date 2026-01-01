@@ -82,14 +82,14 @@ func Post(
 
 	if r.StatusCode != http.StatusOK {
 		if r.StatusCode == http.StatusNotFound {
-			return nil, sdkErrors.ErrAPINotFound
+			return nil, sdkErrors.ErrAPINotFound.Clone()
 		}
 
 		if r.StatusCode == http.StatusUnauthorized {
-			return nil, sdkErrors.ErrAccessUnauthorized
+			return nil, sdkErrors.ErrAccessUnauthorized.Clone()
 		}
 
-		return nil, sdkErrors.ErrNetPeerConnection
+		return nil, sdkErrors.ErrNetPeerConnection.Clone()
 	}
 
 	b, bodyErr := body(r)
