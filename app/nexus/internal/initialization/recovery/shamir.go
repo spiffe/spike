@@ -13,7 +13,6 @@ import (
 	"github.com/spiffe/spike-sdk-go/log"
 	"github.com/spiffe/spike-sdk-go/security/mem"
 
-	cipher "github.com/spiffe/spike-sdk-go/crypto"
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 )
 
@@ -66,7 +65,7 @@ func computeShares() (group.Scalar, []shamir.Share) {
 
 	// Verify the generated shares can reconstruct the original secret.
 	// This crashes via log.FatalErr if reconstruction fails.
-	cipher.VerifyShamirReconstruction(rootSecret, shares)
+	crypto.VerifyShamirReconstruction(rootSecret, shares)
 
 	return rootSecret, shares
 }
