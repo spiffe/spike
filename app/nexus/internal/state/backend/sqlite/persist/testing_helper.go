@@ -12,6 +12,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strconv"
 	"testing"
 	"time"
 
@@ -127,13 +128,7 @@ func storeTestSecretDirectly(t TestingInterface, store *DataStore, path string,
 	versions map[int]map[string]string, metadata TestSecretMetadata) {
 	ctx := context.Background()
 
-	// Insert metadata
-	_, metaErr := store.db.ExecContext(ctx, ddl.QueryUpdateSecretMetadata,
-		path, metadata.CurrentVersion, metadata.OldestVersion,
-		metadata.CreatedTime, metadata.UpdatedTime, metadata.MaxVersions)
-	if metaErr != nil {
-		t.Fatalf("Failed to insert metadata: %v", metaErr)
-	}
+	insertEncryptedMetadata(ctx, t, store, path, metadata)
 
 	// Insert versions
 	for version, data := range versions {
@@ -169,5 +164,29 @@ func storeTestSecretDirectly(t TestingInterface, store *DataStore, path string,
 		if execErr != nil {
 			t.Fatalf("Failed to insert version %d: %v", version, execErr)
 		}
+	}
+}
+
+// insertEncryptedMetadata encrypts the metadata fields with a shared nonce
+// and inserts the encrypted values into the secret_metadata table
+func insertEncryptedMetadata(ctx context.Context, t TestingInterface, store *DataStore, path string, metadata TestSecretMetadata) {
+	metaNonce := make([]byte, store.Cipher.NonceSize())
+	if _, randErr := rand.Read(metaNonce); randErr != nil {
+		t.Fatalf("Failed to generate metadata nonce: %v", randErr)
+	}
+	// Encrypt metadata
+	encryptedCurrentversion := store.Cipher.Seal(nil, metaNonce, []byte(strconv.Itoa(metadata.CurrentVersion)), nil)
+	encryptedOldestVersion := store.Cipher.Seal(nil, metaNonce, []byte(strconv.Itoa(metadata.OldestVersion)), nil)
+	encryptedMaxVersions := store.Cipher.Seal(nil, metaNonce, []byte(strconv.Itoa(metadata.MaxVersions)), nil)
+
+	encryptedCreatedTime := store.Cipher.Seal(nil, metaNonce, []byte(strconv.FormatInt(metadata.CreatedTime.Unix(), 10)), nil)
+	encryptedUpdatedTime := store.Cipher.Seal(nil, metaNonce, []byte(strconv.FormatInt(metadata.UpdatedTime.Unix(), 10)), nil)
+
+	// Insert metadata
+	_, execErr := store.db.ExecContext(ctx, ddl.QueryUpdateSecretMetadata,
+		path, metaNonce, encryptedCurrentversion, encryptedOldestVersion, encryptedCreatedTime, encryptedUpdatedTime, encryptedMaxVersions,
+	)
+	if execErr != nil {
+		t.Fatalf("Failed to insert metadata: %v", execErr)
 	}
 }
