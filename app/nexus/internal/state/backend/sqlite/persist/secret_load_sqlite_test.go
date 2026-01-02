@@ -13,9 +13,10 @@ import (
 
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/spiffe/spike-sdk-go/config/env"
+	"github.com/spiffe/spike-sdk-go/config/fs"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
+
 	"github.com/spiffe/spike/app/nexus/internal/state/backend/sqlite/ddl"
-	"github.com/spiffe/spike/internal/config"
 )
 
 func TestDataStore_loadSecretInternal_Success(t *testing.T) {
@@ -348,7 +349,7 @@ func BenchmarkDataStore_loadSecretInternal(b *testing.B) {
 	}()
 
 	// Clean up the database
-	dataDir := config.NexusDataFolder()
+	dataDir := fs.NexusDataFolder()
 	dbPath := filepath.Join(dataDir, "spike.db")
 	if _, err := os.Stat(dbPath); err == nil {
 		_ = os.Remove(dbPath)

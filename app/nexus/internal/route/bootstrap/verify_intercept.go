@@ -13,7 +13,7 @@ import (
 	"github.com/spiffe/spike-sdk-go/net"
 	"github.com/spiffe/spike-sdk-go/spiffeid"
 
-	"github.com/spiffe/spike/internal/crypto"
+	"github.com/spiffe/spike-sdk-go/crypto"
 )
 
 // expectedNonceSize is the standard AES-GCM nonce size. See ADR-0032.

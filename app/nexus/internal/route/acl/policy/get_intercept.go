@@ -15,7 +15,6 @@ import (
 	"github.com/spiffe/spike-sdk-go/validation"
 
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
-	"github.com/spiffe/spike/internal/auth"
 )
 
 // guardPolicyReadRequest validates a policy read request by performing
@@ -41,7 +40,7 @@ import (
 func guardPolicyReadRequest(
 	request reqres.PolicyReadRequest, w http.ResponseWriter, r *http.Request,
 ) *sdkErrors.SDKError {
-	peerSPIFFEID, err := auth.ExtractPeerSPIFFEID[reqres.PolicyReadResponse](
+	peerSPIFFEID, err := net.ExtractPeerSPIFFEIDFromRequestAndRespondOnFail[reqres.PolicyReadResponse](
 		r, w, reqres.PolicyReadResponse{}.Unauthorized(),
 	)
 	if alreadyResponded := err != nil; alreadyResponded {

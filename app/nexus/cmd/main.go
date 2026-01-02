@@ -10,11 +10,13 @@ import (
 	"github.com/spiffe/spike-sdk-go/config/env"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/log"
+	sdkNet "github.com/spiffe/spike-sdk-go/net"
+	"github.com/spiffe/spike-sdk-go/predicate"
 	"github.com/spiffe/spike-sdk-go/spiffe"
 	"github.com/spiffe/spike-sdk-go/spiffeid"
 
 	"github.com/spiffe/spike/app/nexus/internal/initialization"
-	"github.com/spiffe/spike/app/nexus/internal/net"
+	http "github.com/spiffe/spike/app/nexus/internal/route/base"
 	"github.com/spiffe/spike/internal/config"
 	"github.com/spiffe/spike/internal/out"
 )
@@ -66,6 +68,19 @@ func main() {
 		"message", "started service",
 		"version", config.NexusVersion,
 	)
-	// Start the server:
-	net.Serve(appName, source)
+
+	// Serve the app.
+	sdkNet.ServeWithRoute(
+		appName,
+		source,
+		http.Route,
+		// AllowAll, because any workload can talk to SPIKE Nexus if they
+		// have a legitimate SPIFFE ID registration entry.
+		// we might want to further restrict this based on environment
+		// configuration maybe (for example, a predicate that checks regex
+		// matching on workload SPIFFFE IDs before granting access,
+		// if the matcher is not provided, AllowAll will be assumed).
+		predicate.AllowAll,
+		env.NexusTLSPortVal(),
+	)
 }

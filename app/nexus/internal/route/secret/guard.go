@@ -13,7 +13,6 @@ import (
 	"github.com/spiffe/spike-sdk-go/validation"
 
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
-	"github.com/spiffe/spike/internal/auth"
 )
 
 // guardSecretRequest is a generic helper that validates secret requests by
@@ -48,7 +47,7 @@ func guardSecretRequest[TUnauth, TBadInput any](
 	badInputResp TBadInput,
 ) *sdkErrors.SDKError {
 	// Extract and validate peer SPIFFE ID
-	peerSPIFFEID, err := auth.ExtractPeerSPIFFEID[TUnauth](
+	peerSPIFFEID, err := net.ExtractPeerSPIFFEIDFromRequestAndRespondOnFail[TUnauth](
 		r, w, unauthorizedResp,
 	)
 	if alreadyResponded := err != nil; alreadyResponded {

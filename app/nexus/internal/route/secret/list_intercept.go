@@ -14,7 +14,6 @@ import (
 	"github.com/spiffe/spike-sdk-go/net"
 
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
-	"github.com/spiffe/spike/internal/auth"
 )
 
 // guardListSecretRequest validates a secret listing request by performing
@@ -43,7 +42,7 @@ import (
 func guardListSecretRequest(
 	_ reqres.SecretListRequest, w http.ResponseWriter, r *http.Request,
 ) *sdkErrors.SDKError {
-	peerSPIFFEID, err := auth.ExtractPeerSPIFFEID[reqres.SecretListResponse](
+	peerSPIFFEID, err := net.ExtractPeerSPIFFEIDFromRequestAndRespondOnFail[reqres.SecretListResponse](
 		r, w, reqres.SecretListResponse{}.Unauthorized(),
 	)
 	if err != nil {

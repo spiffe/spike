@@ -11,8 +11,8 @@ import (
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/net"
 
+	"github.com/spiffe/spike-sdk-go/journal"
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
-	"github.com/spiffe/spike/internal/journal"
 )
 
 // RouteGetPolicy handles HTTP requests to retrieve a specific policy by its ID.

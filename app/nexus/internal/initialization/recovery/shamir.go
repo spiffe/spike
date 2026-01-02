@@ -13,8 +13,8 @@ import (
 	"github.com/spiffe/spike-sdk-go/log"
 	"github.com/spiffe/spike-sdk-go/security/mem"
 
+	cipher "github.com/spiffe/spike-sdk-go/crypto"
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
-	cipher "github.com/spiffe/spike/internal/crypto"
 )
 
 // computeShares generates a set of Shamir secret shares from the root key.

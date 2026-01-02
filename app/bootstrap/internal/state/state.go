@@ -15,8 +15,6 @@ import (
 	"github.com/spiffe/spike-sdk-go/crypto"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/log"
-
-	cipher "github.com/spiffe/spike/internal/crypto"
 )
 
 // RootShares generates a set of Shamir secret shares from a cryptographically
@@ -84,7 +82,7 @@ func RootShares() []shamir.Share {
 
 	// Verify the generated shares can reconstruct the original secret.
 	// This crashes via log.FatalErr if reconstruction fails.
-	cipher.VerifyShamirReconstruction(rootSecret, computedShares)
+	crypto.VerifyShamirReconstruction(rootSecret, computedShares)
 
 	return computedShares
 }

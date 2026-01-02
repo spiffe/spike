@@ -16,8 +16,8 @@ import (
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/log"
 
+	"github.com/spiffe/spike-sdk-go/validation"
 	"github.com/spiffe/spike/app/nexus/internal/state/backend/sqlite/ddl"
-	"github.com/spiffe/spike/internal/validation"
 )
 
 // DeletePolicy removes a policy from the database by its ID.
@@ -37,7 +37,7 @@ func (s *DataStore) DeletePolicy(
 ) *sdkErrors.SDKError {
 	const fName = "DeletePolicy"
 
-	validation.CheckContext(ctx, fName)
+	validation.NonNilContextOrDie(ctx, fName)
 
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -94,7 +94,7 @@ func (s *DataStore) StorePolicy(
 ) *sdkErrors.SDKError {
 	const fName = "StorePolicy"
 
-	validation.CheckContext(ctx, fName)
+	validation.NonNilContextOrDie(ctx, fName)
 
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -208,7 +208,7 @@ func (s *DataStore) LoadPolicy(
 ) (*data.Policy, *sdkErrors.SDKError) {
 	const fName = "LoadPolicy"
 
-	validation.CheckContext(ctx, fName)
+	validation.NonNilContextOrDie(ctx, fName)
 
 	s.mu.RLock()
 	defer s.mu.RUnlock()
@@ -306,7 +306,7 @@ func (s *DataStore) LoadAllPolicies(
 ) (map[string]*data.Policy, *sdkErrors.SDKError) {
 	const fName = "LoadAllPolicies"
 
-	validation.CheckContext(ctx, fName)
+	validation.NonNilContextOrDie(ctx, fName)
 
 	s.mu.RLock()
 	defer s.mu.RUnlock()

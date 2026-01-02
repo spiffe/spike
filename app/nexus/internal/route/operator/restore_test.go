@@ -17,8 +17,8 @@ import (
 	"github.com/spiffe/spike-sdk-go/config/env"
 	"github.com/spiffe/spike-sdk-go/crypto"
 
+	"github.com/spiffe/spike-sdk-go/journal"
 	"github.com/spiffe/spike/app/nexus/internal/initialization/recovery"
-	"github.com/spiffe/spike/internal/journal"
 )
 
 func TestRouteRestore_MemoryMode(t *testing.T) {

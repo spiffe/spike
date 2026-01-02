@@ -7,12 +7,14 @@ package main
 import (
 	"context"
 
+	"github.com/spiffe/spike-sdk-go/config/env"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/log"
+	sdkNet "github.com/spiffe/spike-sdk-go/net"
+	"github.com/spiffe/spike-sdk-go/predicate"
 	"github.com/spiffe/spike-sdk-go/spiffe"
 	"github.com/spiffe/spike-sdk-go/spiffeid"
-
-	"github.com/spiffe/spike/app/keeper/internal/net"
+	http "github.com/spiffe/spike/app/keeper/internal/route/base"
 	"github.com/spiffe/spike/internal/config"
 	"github.com/spiffe/spike/internal/out"
 )
@@ -52,5 +54,11 @@ func main() {
 	)
 
 	// Serve the app.
-	net.Serve(appName, source)
+	sdkNet.ServeWithRoute(
+		appName,
+		source,
+		http.Route,
+		predicate.AllowKeeperPeer,
+		env.KeeperTLSPortVal(),
+	)
 }

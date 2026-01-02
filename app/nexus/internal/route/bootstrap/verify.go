@@ -13,8 +13,8 @@ import (
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/net"
 
+	"github.com/spiffe/spike-sdk-go/journal"
 	"github.com/spiffe/spike/app/nexus/internal/state/persist"
-	"github.com/spiffe/spike/internal/journal"
 )
 
 // RouteVerify handles HTTP requests from SPIKE Bootstrap to verify that

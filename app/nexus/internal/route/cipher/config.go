@@ -4,7 +4,7 @@
 
 package cipher
 
-import "github.com/spiffe/spike/internal/crypto"
+import "github.com/spiffe/spike-sdk-go/crypto"
 
 const spikeCipherVersion = byte('1')
 const headerKeyContentType = "Content-Type"

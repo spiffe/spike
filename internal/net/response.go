@@ -8,7 +8,8 @@ import (
 	"net/http"
 
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
-	"github.com/spiffe/spike/internal/journal"
+	"github.com/spiffe/spike-sdk-go/journal"
+	"github.com/spiffe/spike-sdk-go/net"
 )
 
 // Fallback handles requests to undefined routes by returning a 400 Bad Request.
@@ -36,7 +37,7 @@ func Fallback(
 ) *sdkErrors.SDKError {
 	audit.Action = journal.AuditFallback
 
-	return respondFallbackWithStatus(
+	return net.RespondFallbackWithStatus(
 		w, http.StatusBadRequest, sdkErrors.ErrAPIBadRequest.Code,
 	)
 }
@@ -65,7 +66,7 @@ func NotReady(
 ) *sdkErrors.SDKError {
 	audit.Action = journal.AuditBlocked
 
-	return respondFallbackWithStatus(
+	return net.RespondFallbackWithStatus(
 		w, http.StatusServiceUnavailable, sdkErrors.ErrStateNotReady.Code,
 	)
 }

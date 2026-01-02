@@ -14,8 +14,8 @@ import (
 	"github.com/spiffe/spike-sdk-go/log"
 	"github.com/spiffe/spike-sdk-go/net"
 
+	"github.com/spiffe/spike-sdk-go/journal"
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
-	"github.com/spiffe/spike/internal/journal"
 )
 
 // RouteGetSecret handles requests to retrieve a secret at a specific path

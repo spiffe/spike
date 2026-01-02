@@ -9,14 +9,13 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/spiffe/spike-sdk-go/config/fs"
 	"github.com/spiffe/spike-sdk-go/crypto"
-
-	"github.com/spiffe/spike/internal/config"
 )
 
 // cleanupSQLiteDatabase removes the existing SQLite database to ensure a clean test state
 func cleanupSQLiteDatabase(t *testing.T) {
-	dataDir := config.NexusDataFolder()
+	dataDir := fs.NexusDataFolder()
 	dbPath := filepath.Join(dataDir, "spike.db")
 
 	// Remove the database file if it exists

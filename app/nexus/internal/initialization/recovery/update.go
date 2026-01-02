@@ -17,12 +17,11 @@ import (
 	"github.com/spiffe/spike-sdk-go/crypto"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/log"
-	network "github.com/spiffe/spike-sdk-go/net"
+	"github.com/spiffe/spike-sdk-go/net"
 	"github.com/spiffe/spike-sdk-go/predicate"
 	"github.com/spiffe/spike-sdk-go/security/mem"
 
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
-	"github.com/spiffe/spike/internal/net"
 )
 
 // sendShardsToKeepers distributes shares of the root key to all keeper nodes.
@@ -152,7 +151,7 @@ func sendShardsToKeepers(
 		// Security: Only SPIKE Keeper can send shards to SPIKE Nexus.
 		// Create the client just before use to avoid unnecessary allocation
 		// if earlier checks fail.
-		client := network.CreateMTLSClientWithPredicate(
+		client := net.CreateMTLSClientWithPredicate(
 			source, predicate.AllowKeeper,
 		)
 

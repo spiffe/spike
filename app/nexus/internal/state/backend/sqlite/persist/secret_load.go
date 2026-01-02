@@ -15,8 +15,8 @@ import (
 	"github.com/spiffe/spike-sdk-go/kv"
 	"github.com/spiffe/spike-sdk-go/log"
 
+	"github.com/spiffe/spike-sdk-go/validation"
 	"github.com/spiffe/spike/app/nexus/internal/state/backend/sqlite/ddl"
-	"github.com/spiffe/spike/internal/validation"
 )
 
 // loadSecretInternal retrieves a secret and all its versions from the database
@@ -58,7 +58,7 @@ func (s *DataStore) loadSecretInternal(
 ) (*kv.Value, *sdkErrors.SDKError) {
 	const fName = "loadSecretInternal"
 
-	validation.CheckContext(ctx, fName)
+	validation.NonNilContextOrDie(ctx, fName)
 
 	var secret kv.Value
 
