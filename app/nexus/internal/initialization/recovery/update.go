@@ -65,7 +65,14 @@ func sendShardsToKeepers(
 			continue
 		}
 
-		rootSecret, rootShares := computeShares()
+		state.LockRootKey()
+		rootSecret, rootShares := crypto.ComputeShares(state.RootKeyNoLock())
+		// not using `defer` because ComputeShare is deterministic, it does not
+		// return an error, and `root key` is not nil. -- using defer in a loop
+		// can potentially leak resources. An alternative approach could be to
+		// use a closure or create a copy of the root key; both of the approaches
+		// complicate the code further.
+		state.UnlockRootKey()
 
 		var share secretsharing.Share
 		for _, sr := range rootShares {

@@ -18,6 +18,7 @@ import (
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	spike "github.com/spiffe/spike-sdk-go/api"
 	"github.com/spiffe/spike-sdk-go/config/env"
+	"github.com/spiffe/spike-sdk-go/crypto"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/log"
 	"github.com/spiffe/spike-sdk-go/retry"
@@ -69,9 +70,12 @@ func BroadcastKeepers(ctx context.Context, api *spike.API) {
 		return
 	}
 
+	state.LockRootKeySeed()
+	defer state.UnlockRootKeySeed()
 	// RootShares() generates the root key and splits it into shares.
 	// It enforces single-call semantics and will terminate if called again.
-	rs := state.RootShares()
+	rks := state.RootKeySeedNoLock()
+	rs := crypto.RootShares(rks)
 
 	timeout := env.BootstrapKeeperTimeoutVal()
 	maxRetries := env.BootstrapKeeperMaxRetriesVal()
@@ -174,8 +178,10 @@ func VerifyInitialization(ctx context.Context, api *spike.API) {
 	}
 	randomText := hex.EncodeToString(randomBytes)
 
+	state.LockRootKeySeed()
 	// Encrypt the random text with the root key
-	rootKey := state.RootKey()
+	rootKey := state.RootKeySeed()
+	defer state.UnlockRootKeySeed()
 	block, aesErr := aes.NewCipher(rootKey[:])
 	if aesErr != nil {
 		failErr := sdkErrors.ErrCryptoFailedToCreateCipher.Wrap(aesErr)

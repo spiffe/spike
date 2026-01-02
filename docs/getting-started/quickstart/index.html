@@ -165,6 +165,12 @@
                                                         <a href="https://spike.ist/getting-started/quickstart/#prerequisites">Prerequisites</a>
                                                     </li>
                                                 <li>
+                                                        <a href="https://spike.ist/getting-started/quickstart/#for-windows-users">For Windows Users</a>
+                                                    </li>
+                                                <li>
+                                                        <a href="https://spike.ist/getting-started/quickstart/#environment-variables">Environment Variables</a>
+                                                    </li>
+                                                <li>
                                                         <a href="https://spike.ist/getting-started/quickstart/#starting-minikube">Starting Minikube</a>
                                                     </li>
                                                 <li>
@@ -812,7 +818,96 @@ starting with this guide:</p>
 <li>Have <a href="https://www.gnu.org/software/make/" title="GNU Make: Build Automation Tool"><code>make</code></a> installed on your machine.</li>
 <li>Have a <a href="https://minikube.sigs.k8s.io/" title="Minikube: Run Kubernetes locally"><code>minikube</code></a> binary installed.</li>
 <li>Have <a href="https://helm.sh/" title="Helm"><code>helm</code></a> binary installed.</li>
+<li>(Optional) install <a href="https://www.getzola.org/" title="Zola"><code>zola</code></a> if you want to build the documentation
+locally.</li>
 </ul>
+<h2 id="for-windows-users">For Windows Users</h2>
+<p>The best way to get started on Windows is to use <a href="https://learn.microsoft.com/en-us/windows/wsl/install">Windows Subsystem for
+Linux</a>. After installing WSL, make sure to install the prerequisites
+(<em><code>docker</code>, <code>kubectl</code>, <code>make</code>, <code>minikube</code>, <code>helm</code></em>) to your WSL distribution
+and <strong>not</strong> to your Windows machine.</p>
+<h3 id="hosts-file-setup">Hosts File Setup</h3>
+<p><strong>SPIKE</strong> bare-metal installation requires that <code>spike.spike.ist</code> is
+configured in your <code>/etc/hosts</code> file. However, WSL will automatically override
+your Linux hosts wile every time you restart your WSL distribution.</p>
+<p>To fix this, edit <code>/etc/wsl.conf</code> and add the following lines:</p>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># sudo vim /etc/wsl.conf
+</span><span>
+</span><span style="color:#bf616a;">[network]
+</span><span style="color:#bf616a;">generateHosts</span><span>=</span><span style="color:#a3be8c;">false
+</span></code></pre>
+<p>Then update your hosts file:</p>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># sudo vim /etc/hosts
+</span><span>
+</span><span style="color:#65737e;"># Add the following line:
+</span><span style="color:#bf616a;">127.0.0.1</span><span>  spire.spike.ist
+</span></code></pre>
+<p>Then restart your WSL distribution, and the <code>hosts</code> file is yours to
+modify and maintain.</p>
+<p>Note that editing <code>C:\Windows\System32\drivers\etc\hosts</code> will <strong>NOT</strong> work.</p>
+<h3 id="wsl-memory-lock-limit">WSL Memory Lock Limit</h3>
+<p>WSL sets a default <code>RLIMIT_MEMLOCK</code> of 64MB for all shell sessions. This limit
+is imposed by WSL’s Relay process before any Linux configuration is read, which
+means standard Linux approaches (<em><code>/etc/security/limits.conf</code>, <code>systemd</code>
+configs, PAM</em>) cannot override it.</p>
+<p>SPIKE uses memory locking (<code>mlock</code>) to prevent sensitive secrets from being
+swapped to disk. Failing to lock memory will not stop SPIKE from running,
+but you will see warnings in the logs.</p>
+<p>WSL spawns your shell via a Windows-side Relay process:</p>
+<pre style="background-color:#2b303b;color:#c0c5ce;"><code><span>Windows WSL (sets 64MB limit) → Relay → your shell
+</span></code></pre>
+<p>By the time Linux session management runs, the limit is already inherited.
+The following have <strong>no</strong> effect on interactive WSL shells:</p>
+<ul>
+<li><code>/etc/security/limits.conf</code></li>
+<li><code>/etc/systemd/user.conf</code></li>
+<li><code>/etc/systemd/system.conf</code></li>
+<li>PAM configuration</li>
+</ul>
+<p>These configs <em>do</em> apply to processes spawned through <code>systemd</code>
+(<em>e.g., <code>systemd-run --user</code></em>), but not to your default terminal session.</p>
+<p>To fix this, you can use the following script:</p>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span>!</span><span style="color:#bf616a;">#/usr/bin/env</span><span> bash
+</span><span style="color:#65737e;"># &gt; ulimit -l
+</span><span style="color:#65737e;"># 65536
+</span><span style="color:#65737e;"># --
+</span><span>
+</span><span style="color:#65737e;"># Raise memlock limit for SPIKE development
+</span><span style="color:#bf616a;">sudo</span><span> prlimit</span><span style="color:#bf616a;"> --memlock</span><span>=unlimited:unlimited \
+</span><span style="color:#bf616a;">  --pid </span><span>$</span><span style="color:#bf616a;">$ </span><span style="color:#d08770;">2</span><span>&gt;/dev/null &amp;&amp; </span><span style="color:#96b5b4;">exec</span><span> bash
+</span><span>
+</span><span style="color:#65737e;"># --
+</span><span style="color:#65737e;"># &gt; ulimit -l
+</span><span style="color:#65737e;"># unlimited
+</span></code></pre>
+<p>You can even add this script to your <code>~/.bashrc</code> or <code>~/.zshrc</code> to make it
+automatically run on every shell session.</p>
+<h2 id="environment-variables">Environment Variables</h2>
+<p>It may be useful to set the following environment variables before
+you start.</p>
+<p>This is a sample configuration; please adjust as needed:</p>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># User Configuration
+</span><span style="color:#65737e;">#
+</span><span style="color:#65737e;"># Add this to your ~/.bashrc or ~/.zshrc, ~/.profile,
+</span><span style="color:#65737e;"># or ~/.zprofile, or wherever you keep your shell config.
+</span><span>
+</span><span style="color:#b48ead;">export </span><span style="color:#bf616a;">PATH</span><span>=$</span><span style="color:#bf616a;">PATH</span><span style="color:#a3be8c;">:/usr/local/go/bin
+</span><span>
+</span><span style="color:#65737e;"># If you are using GPG for signing commits:
+</span><span style="color:#b48ead;">export </span><span style="color:#bf616a;">GPG_TTY</span><span>=$</span><span style="color:#a3be8c;">(</span><span style="color:#bf616a;">tty</span><span style="color:#a3be8c;">)
+</span><span>
+</span><span style="color:#65737e;"># This where you clone SPIKE, SPIRE, and SPIFFE Helm Charts:
+</span><span style="color:#b48ead;">export </span><span style="color:#bf616a;">WORKSPACE</span><span>=&quot;$</span><span style="color:#bf616a;">HOME</span><span style="color:#a3be8c;">/WORKSPACE</span><span>&quot; 
+</span><span>
+</span><span style="color:#65737e;"># These are needed for Bare-Metal Installation:
+</span><span style="color:#b48ead;">export </span><span style="color:#bf616a;">PATH</span><span>=&quot;$</span><span style="color:#bf616a;">PATH</span><span style="color:#a3be8c;">:</span><span>$</span><span style="color:#bf616a;">WORKSPACE</span><span style="color:#a3be8c;">/spire/bin</span><span>&quot;
+</span><span style="color:#b48ead;">export </span><span style="color:#bf616a;">PATH</span><span>=&quot;$</span><span style="color:#bf616a;">PATH</span><span style="color:#a3be8c;">:</span><span>$</span><span style="color:#bf616a;">WORKSPACE</span><span style="color:#a3be8c;">/spike</span><span>&quot;
+</span><span>
+</span><span style="color:#65737e;"># Optional, but recommended.
+</span><span style="color:#96b5b4;">source </span><span>&quot;$</span><span style="color:#bf616a;">WORKSPACE</span><span style="color:#a3be8c;">/spike/hack/lib/env.sh</span><span>&quot;
+</span><span style="color:#65737e;"># ^ Note that the `make start` Make target will
+</span><span style="color:#65737e;"># automatically source this file for you.
+</span></code></pre>
 <h2 id="starting-minikube">Starting Minikube</h2>
 <p>To start a local Minikube cluster, clone the project repository and run the
 following command in the root directory of the project:</p>
@@ -947,7 +1042,7 @@ using <strong>SPIKE</strong>.</p>
 <li><a href="https://spike.ist/development/bare-metal/" title="Bare Metal SPIKE Installation">Bare Metal <strong>SPIKE</strong> Installation</a></li>
 <li><a href="https://spike.ist/usage/configuration/" title="Configuring SPIKE">Configuring <strong>SPIKE</strong></a></li>
 <li><a href="https://spike.ist/architecture/" title="SPIKE Architecture"><strong>SPIKE</strong> Architecture</a></li>
-<li><a href="https://spike.ist/operations/production/" title="SPIKE Production Hardening Guide"><em>8SPIKE</em>* Production Hardening Guide</a></li>
+<li><a href="https://spike.ist/operations/production/" title="SPIKE Production Hardening Guide"><strong>SPIKE</strong> Production Hardening Guide</a></li>
 <li><a href="https://spike.ist/usage/commands/"><strong>SPIKE</strong> CLI Reference</a></li>
 </ul>
 <h2 id="open-source-is-better-together">Open Source Is Better Together</h2>

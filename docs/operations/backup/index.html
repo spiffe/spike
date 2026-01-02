@@ -827,12 +827,12 @@ shards</li>
 <p>The SPIKE Nexus uses a SQLite database to store all encrypted secrets and
 metadata. This database is typically located in <code>~/.spike</code> on the Nexus server.</p>
 <pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># 1. First, ensure consistent state by using SQLite&#39;s online backup API
-</span><span style="color:#bf616a;">sqlite3 ~</span><span>/.spike/database.sqlite \
+</span><span style="color:#bf616a;">sqlite3 ~</span><span>/.spike/data/spike.db \
 </span><span>  &quot;</span><span style="color:#a3be8c;">.backup &#39;/backup/spike_nexus_db_</span><span>$</span><span style="color:#a3be8c;">(</span><span style="color:#bf616a;">date</span><span style="color:#a3be8c;"> +</span><span>%</span><span style="color:#bf616a;">Y</span><span>%</span><span style="color:#bf616a;">m</span><span>%</span><span style="color:#bf616a;">d_</span><span>%</span><span style="color:#bf616a;">H</span><span>%</span><span style="color:#bf616a;">M</span><span>%</span><span style="color:#bf616a;">S</span><span style="color:#a3be8c;">).sqlite&#39;</span><span>&quot;
 </span><span>
 </span><span style="color:#65737e;"># 2. For WAL mode databases, checkpoint first to ensure consistency
-</span><span style="color:#bf616a;">sqlite3 ~</span><span>/.spike/database.sqlite &quot;</span><span style="color:#a3be8c;">PRAGMA wal_checkpoint(FULL);</span><span>&quot;
-</span><span style="color:#bf616a;">sqlite3 ~</span><span>/.spike/database.sqlite \
+</span><span style="color:#bf616a;">sqlite3 ~</span><span>/.spike/data/spike.db &quot;</span><span style="color:#a3be8c;">PRAGMA wal_checkpoint(FULL);</span><span>&quot;
+</span><span style="color:#bf616a;">sqlite3 ~</span><span>/.spike/data/spike.db \
 </span><span>  &quot;</span><span style="color:#a3be8c;">.backup &#39;/backup/spike_nexus_db_</span><span>$</span><span style="color:#a3be8c;">(</span><span style="color:#bf616a;">date</span><span style="color:#a3be8c;"> +</span><span>%</span><span style="color:#bf616a;">Y</span><span>%</span><span style="color:#bf616a;">m</span><span>%</span><span style="color:#bf616a;">d_</span><span>%</span><span style="color:#bf616a;">H</span><span>%</span><span style="color:#bf616a;">M</span><span>%</span><span style="color:#bf616a;">S</span><span style="color:#a3be8c;">).sqlite&#39;</span><span>&quot;
 </span><span>
 </span><span style="color:#65737e;"># 3. Verify backup integrity
@@ -853,7 +853,7 @@ Shamir’s Secret Sharing:</p>
 </span><span style="color:#65737e;"># IMPORTANT: Run this BEFORE any disaster occurs
 </span><span style="color:#bf616a;">spike</span><span> recover
 </span><span>
-</span><span style="color:#65737e;"># This will generate multiple shard files under `~/.spike/recovery` folder. 
+</span><span style="color:#65737e;"># This will generate multiple shard files under `~/.spike/recover` folder. 
 </span></code></pre>
 <p><strong>Secure handling of recovery shards:</strong></p>
 <ol>
@@ -930,14 +930,14 @@ hardware keys</em>)</li>
 <li>
 <p>Replace the current database with the backup.</p>
 <pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">cp</span><span> /backup/spike_nexus_db_TIMESTAMP.sqlite \
-</span><span>  </span><span style="color:#bf616a;">~</span><span>/.spike/database.sqlite
+</span><span>  </span><span style="color:#bf616a;">~</span><span>/.spike/data/spike.db
 </span><span>
 </span></code></pre>
 </li>
 <li>
 <p>Set appropriate permissions</p>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">chown</span><span> spike:spike </span><span style="color:#bf616a;">~</span><span>/.spike/database.sqlite
-</span><span style="color:#bf616a;">chmod</span><span> 600 </span><span style="color:#bf616a;">~</span><span>/.spike/database.sqlite
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">chown</span><span> spike:spike </span><span style="color:#bf616a;">~</span><span>/.spike/data/spike.db
+</span><span style="color:#bf616a;">chmod</span><span> 600 </span><span style="color:#bf616a;">~</span><span>/.spike/data/spike.db
 </span></code></pre>
 </li>
 <li>
@@ -950,7 +950,7 @@ key restoration procedure above.</p>
 <h3 id="verification-procedures">Verification procedures</h3>
 <p>After completing a restore operation, verify system integrity:</p>
 <pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># Verify database integrity
-</span><span style="color:#bf616a;">sqlite3 ~</span><span>/.spike/database.sqlite &quot;</span><span style="color:#a3be8c;">PRAGMA integrity_check;</span><span>&quot;
+</span><span style="color:#bf616a;">sqlite3 ~</span><span>/.spike/data/spike.db &quot;</span><span style="color:#a3be8c;">PRAGMA integrity_check;</span><span>&quot;
 </span><span>
 </span><span style="color:#65737e;"># Test secret access to verify encryption/decryption is working
 </span><span style="color:#bf616a;">spike</span><span> get /path/to/test/secret
