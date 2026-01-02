@@ -12,18 +12,8 @@ import (
 	"github.com/spiffe/spike-sdk-go/crypto"
 )
 
-// resetRootSharesForTesting resets the rootSharesGenerated flag to allow
-// multiple calls to RootShares() within tests. This function should ONLY be
-// used in test code to enable testing of RootShares() behavior.
-//
-// WARNING: This function should never be called in production code.
-func resetRootSharesForTesting() {
-	rootSharesGeneratedMu.Lock()
-	rootSharesGenerated = false
-	rootSharesGeneratedMu.Unlock()
-}
-
-// Helper function to create test shares with known structure
+// createTestShares creates test shares with known structure for testing
+// KeeperShare and related functionality.
 func createTestShares(t *testing.T, numShares int) []shamir.Share {
 	g := group.P256
 
