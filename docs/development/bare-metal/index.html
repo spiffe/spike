@@ -192,6 +192,9 @@
                                             https://spike.ist/development/bare-metal/#spike-on-linux">SPIKE on Linux</a>
                                         <ul>
                                                 <li>
+                                                        <a href="https://spike.ist/development/bare-metal/#environment-variables">Environment Variables</a>
+                                                    </li>
+                                                <li>
                                                         <a href="https://spike.ist/development/bare-metal/#prerequisites">Prerequisites</a>
                                                     </li>
                                                 <li>
@@ -829,6 +832,30 @@ have administrative privileges on your system, as some steps might require them.
 working with <strong>SPIKE</strong> effectively. Make sure to follow each step carefully to
 ensure a smooth experience. In case you encounter issues, please discuss
 them on the <a href="https://slack.spiffe.io/" title="SPIFFE Slack">SPIFFE community Slack</a>.</p>
+<h2 id="environment-variables">Environment Variables</h2>
+<p>It may be useful to set the following environment variables before
+you start.</p>
+<p>This is a sample configuration; please adjust as needed:</p>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># User Configuration
+</span><span style="color:#65737e;">#
+</span><span style="color:#65737e;"># Add this to your ~/.bashrc or ~/.zshrc, ~/.profile,
+</span><span style="color:#65737e;"># or ~/.zprofile, or wherever you keep your shell config.
+</span><span>
+</span><span style="color:#b48ead;">export </span><span style="color:#bf616a;">PATH</span><span>=$</span><span style="color:#bf616a;">PATH</span><span style="color:#a3be8c;">:/usr/local/go/bin
+</span><span>
+</span><span style="color:#65737e;"># If you are using GPG for signing commits:
+</span><span style="color:#b48ead;">export </span><span style="color:#bf616a;">GPG_TTY</span><span>=$</span><span style="color:#a3be8c;">(</span><span style="color:#bf616a;">tty</span><span style="color:#a3be8c;">)
+</span><span>
+</span><span style="color:#65737e;"># This where you clone SPIKE, SPIRE, and SPIFFE Helm Charts:
+</span><span style="color:#b48ead;">export </span><span style="color:#bf616a;">WORKSPACE</span><span>=&quot;$</span><span style="color:#bf616a;">HOME</span><span style="color:#a3be8c;">/WORKSPACE</span><span>&quot; 
+</span><span>
+</span><span style="color:#65737e;"># These are needed for Bare-Metal Installation:
+</span><span style="color:#b48ead;">export </span><span style="color:#bf616a;">PATH</span><span>=&quot;$</span><span style="color:#bf616a;">PATH</span><span style="color:#a3be8c;">:</span><span>$</span><span style="color:#bf616a;">WORKSPACE</span><span style="color:#a3be8c;">/spire/bin</span><span>&quot;
+</span><span style="color:#b48ead;">export </span><span style="color:#bf616a;">PATH</span><span>=&quot;$</span><span style="color:#bf616a;">PATH</span><span style="color:#a3be8c;">:</span><span>$</span><span style="color:#bf616a;">WORKSPACE</span><span style="color:#a3be8c;">/spike/bin</span><span>&quot;
+</span><span>
+</span><span style="color:#65737e;"># Optional, but recommended:
+</span><span style="color:#96b5b4;">source </span><span>&quot;$</span><span style="color:#bf616a;">WORKSPACE</span><span style="color:#a3be8c;">/spike/hack/lib/env.sh</span><span>&quot;
+</span></code></pre>
 <h2 id="prerequisites">Prerequisites</h2>
 <p>This quickstart guide assumes you are using an <a href="https://ubuntu.com/">Ubuntu Linux</a> operating
 system. The steps may slightly differ if you are using a different operating
@@ -851,6 +878,8 @@ free to discuss them on the <a href="https://slack.spiffe.io/" title="SPIFFE Sla
 <li><a href="https://nodejs.org"><code>node</code></a> (<em>(optional: most AI tools require it</em>)</li>
 <li><a href="https://packages.ubuntu.com/hirsute/build-essential"><code>build-essential</code></a>
 (<em>i.e., <code>sudo apt install build-essential</code></em>)</li>
+<li>(Optional) [<code>zola</code>])<a href="https://www.getzola.org/" title="Zola">zola</a>, if you want to build the documentation site
+locally</li>
 </ul>
 <h2 id="go-environment-setup">Go Environment Setup</h2>
 <p>Here’s part of the <code>go env</code> setting we use for this guide. Yours might slightly
@@ -920,8 +949,8 @@ follow the <a href="https://spiffe.io/docs/latest/deploying/configuring/" title=
 <p>The bare-metal installation will create <strong>SPIKE</strong> binaries in the project
 root directory by default. You can add the binaries to your <code>$PATH</code> as follows:</p>
 <pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># ~/.profile
-</span><span style="color:#b48ead;">export </span><span style="color:#bf616a;">PATH</span><span>=$</span><span style="color:#bf616a;">PATH</span><span style="color:#a3be8c;">:</span><span>$</span><span style="color:#bf616a;">WORKSPACE</span><span style="color:#a3be8c;">/spike
-</span><span style="color:#96b5b4;">echo </span><span>&#39;</span><span style="color:#a3be8c;">PATH=$PATH:$WORKSPACE/spike</span><span>&#39; &gt;&gt; </span><span style="color:#bf616a;">~</span><span>/.profile
+</span><span style="color:#b48ead;">export </span><span style="color:#bf616a;">PATH</span><span>=$</span><span style="color:#bf616a;">PATH</span><span style="color:#a3be8c;">:</span><span>$</span><span style="color:#bf616a;">WORKSPACE</span><span style="color:#a3be8c;">/spike/bin
+</span><span style="color:#96b5b4;">echo </span><span>&#39;</span><span style="color:#a3be8c;">PATH=$PATH:$WORKSPACE/spike/bin</span><span>&#39; &gt;&gt; </span><span style="color:#bf616a;">~</span><span>/.profile
 </span></code></pre>
 <p>Additionally, you can source the following file to define additional
 <strong>SPIKE</strong>-related environment variables for your convenience. This is <strong>NOT</strong>
@@ -939,7 +968,7 @@ as documentation to help understand the development environment.</p>
 </span><span style="color:#65737e;"># SPIKE Environment configuration                                                
 </span><span style="color:#96b5b4;">source </span><span>$</span><span style="color:#bf616a;">WORKSPACE</span><span>/spike/hack/lib/env.sh 
 </span></code></pre>
-<h2 id="verifying-spire-installation">Verifying SPIRE Installation</h2>
+<h2 id="verifying-spire-installation">Verifying <strong>SPIRE</strong> Installation</h2>
 <p>Verify SPIRE installation as follows:</p>
 <pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#96b5b4;">source </span><span style="color:#bf616a;">~</span><span>/.profile
 </span><span style="color:#bf616a;">spire-server -h
@@ -1136,7 +1165,7 @@ For that, execute the following:</p>
 </span><span style="color:#65737e;"># username: root
 </span></code></pre>
 <p>Let’s delete the secret now:</p>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">spike</span><span> secret delete /tenants/acme/credentials/db
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">spike</span><span> secret delete tenants/acme/credentials/db
 </span><span>
 </span><span style="color:#65737e;"># Output:
 </span><span style="color:#65737e;"># OK

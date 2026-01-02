@@ -14,6 +14,8 @@ import (
 	"github.com/spiffe/spike-sdk-go/config/env"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/log"
+	"github.com/spiffe/spike-sdk-go/security/mem"
+	"github.com/spiffe/spike/app/bootstrap/internal/state"
 
 	"github.com/spiffe/spike/app/bootstrap/internal/lifecycle"
 	"github.com/spiffe/spike/app/bootstrap/internal/net"
@@ -103,6 +105,11 @@ func main() {
 	// encrypted payload and verifying the hash of the decrypted plaintext.
 	// Retries verification until successful.
 	net.VerifyInitialization(ctx, api)
+
+	// Clear the seed after use.
+	state.LockRootKeySeed()
+	defer state.UnlockRootKeySeed()
+	mem.ClearRawBytes(state.RootKeySeedNoLock())
 
 	// Bootstrap verification is complete. Mark the bootstrap as "done".
 

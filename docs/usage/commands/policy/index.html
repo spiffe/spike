@@ -802,37 +802,38 @@ the <code>spike policy apply</code> command safe to use in automation and GitOps
 </span><span>
 </span><span style="color:#65737e;"># Web service configuration
 </span><span style="color:#bf616a;">name</span><span>: &quot;</span><span style="color:#a3be8c;">web-service-policy</span><span>&quot;
-</span><span style="color:#bf616a;">spiffeid</span><span>: &quot;</span><span style="color:#a3be8c;">^spiffe://example</span><span style="color:#96b5b4;">\\</span><span style="color:#a3be8c;">.org/web-service$</span><span>&quot;
-</span><span style="color:#bf616a;">path</span><span>: &quot;</span><span style="color:#a3be8c;">^secrets/web-service/config$</span><span>&quot;
+</span><span style="color:#bf616a;">spiffeidPattern</span><span>: &quot;</span><span style="color:#a3be8c;">^spiffe://example</span><span style="color:#96b5b4;">\\</span><span style="color:#a3be8c;">.org/web-service$</span><span>&quot;
+</span><span style="color:#bf616a;">pathPattern</span><span>: &quot;</span><span style="color:#a3be8c;">^secrets/web-service/config$</span><span>&quot;
 </span><span style="color:#bf616a;">permissions</span><span>: [</span><span style="color:#a3be8c;">read</span><span>, </span><span style="color:#a3be8c;">write</span><span>]
 </span><span>
 </span><span style="color:#65737e;"># Cache credentials
 </span><span style="color:#bf616a;">name</span><span>: &quot;</span><span style="color:#a3be8c;">cache-policy</span><span>&quot;
-</span><span style="color:#bf616a;">spiffeid</span><span>: &quot;</span><span style="color:#a3be8c;">^spiffe://example</span><span style="color:#96b5b4;">\\</span><span style="color:#a3be8c;">.org/cache/$</span><span>&quot;
-</span><span style="color:#bf616a;">path</span><span>: &quot;</span><span style="color:#a3be8c;">^secrets/cache/redis/session$</span><span>&quot;
+</span><span style="color:#bf616a;">spiffeidPattern</span><span>: &quot;</span><span style="color:#a3be8c;">^spiffe://example</span><span style="color:#96b5b4;">\\</span><span style="color:#a3be8c;">.org/cache/$</span><span>&quot;
+</span><span style="color:#bf616a;">pathPattern</span><span>: &quot;</span><span style="color:#a3be8c;">^secrets/cache/redis/session$</span><span>&quot;
 </span><span style="color:#bf616a;">permissions</span><span>: [</span><span style="color:#a3be8c;">read</span><span>]
 </span><span>
 </span><span style="color:#65737e;"># Application environment variables
 </span><span style="color:#bf616a;">name</span><span>: &quot;</span><span style="color:#a3be8c;">app-env-policy</span><span>&quot;
-</span><span style="color:#bf616a;">spiffeid</span><span>: &quot;</span><span style="color:#a3be8c;">^spiffe://example</span><span style="color:#96b5b4;">\\</span><span style="color:#a3be8c;">.org/app$</span><span>&quot;
-</span><span style="color:#bf616a;">path</span><span>: &quot;</span><span style="color:#a3be8c;">^secrets/app/env/production$</span><span>&quot;
+</span><span style="color:#bf616a;">spiffeidPattern</span><span>: &quot;</span><span style="color:#a3be8c;">^spiffe://example</span><span style="color:#96b5b4;">\\</span><span style="color:#a3be8c;">.org/app$</span><span>&quot;
+</span><span style="color:#bf616a;">pathPattern</span><span>: &quot;</span><span style="color:#a3be8c;">^secrets/app/env/production$</span><span>&quot;
 </span><span style="color:#bf616a;">permissions</span><span>: [</span><span style="color:#a3be8c;">read</span><span>, </span><span style="color:#a3be8c;">list</span><span>]
 </span></code></pre>
 <h3 id="all-available-permissions">All Available Permissions</h3>
 <pre data-lang="yaml" style="background-color:#2b303b;color:#c0c5ce;" class="language-yaml "><code class="language-yaml" data-lang="yaml"><span style="color:#bf616a;">name</span><span>: &quot;</span><span style="color:#a3be8c;">admin-policy</span><span>&quot;
-</span><span style="color:#bf616a;">spiffeid</span><span>: &quot;</span><span style="color:#a3be8c;">^spiffe://example</span><span style="color:#96b5b4;">\\</span><span style="color:#a3be8c;">.org/admin$</span><span>&quot;
-</span><span style="color:#bf616a;">path</span><span>: &quot;</span><span style="color:#a3be8c;">secrets</span><span>&quot;
+</span><span style="color:#bf616a;">spiffeidPattern</span><span>: &quot;</span><span style="color:#a3be8c;">^spiffe://example</span><span style="color:#96b5b4;">\\</span><span style="color:#a3be8c;">.org/admin$</span><span>&quot;
+</span><span style="color:#bf616a;">pathPattern</span><span>: &quot;</span><span style="color:#a3be8c;">secrets</span><span>&quot;
 </span><span style="color:#bf616a;">permissions</span><span>:
 </span><span>  - </span><span style="color:#a3be8c;">read    </span><span style="color:#65737e;"># Permission to read secrets
 </span><span>  - </span><span style="color:#a3be8c;">write   </span><span style="color:#65737e;"># Permission to create, update, or delete secrets
 </span><span>  - </span><span style="color:#a3be8c;">list    </span><span style="color:#65737e;"># Permission to list resources
+</span><span>  - </span><span style="color:#a3be8c;">execute </span><span style="color:#65737e;"># Permission for cipher operations (encrypt/decrypt)
 </span><span>  - </span><span style="color:#a3be8c;">super   </span><span style="color:#65737e;"># Administrative permissions
 </span></code></pre>
 <h3 id="alternative-yaml-formats">Alternative YAML Formats</h3>
 <h4 id="flow-sequence-for-permissions">Flow Sequence for Permissions</h4>
 <pre data-lang="yaml" style="background-color:#2b303b;color:#c0c5ce;" class="language-yaml "><code class="language-yaml" data-lang="yaml"><span style="color:#bf616a;">name</span><span>: &quot;</span><span style="color:#a3be8c;">database-policy</span><span>&quot;
-</span><span style="color:#bf616a;">spiffeid</span><span>: &quot;</span><span style="color:#a3be8c;">^spiffe://example</span><span style="color:#96b5b4;">\\</span><span style="color:#a3be8c;">.org/database$</span><span>&quot;
-</span><span style="color:#bf616a;">path</span><span>: &quot;</span><span style="color:#a3be8c;">^secrets/database/production$</span><span>&quot;
+</span><span style="color:#bf616a;">spiffeidPattern</span><span>: &quot;</span><span style="color:#a3be8c;">^spiffe://example</span><span style="color:#96b5b4;">\\</span><span style="color:#a3be8c;">.org/database$</span><span>&quot;
+</span><span style="color:#bf616a;">pathPattern</span><span>: &quot;</span><span style="color:#a3be8c;">^secrets/database/production$</span><span>&quot;
 </span><span style="color:#bf616a;">permissions</span><span>: [</span><span style="color:#a3be8c;">read</span><span>, </span><span style="color:#a3be8c;">write</span><span>, </span><span style="color:#a3be8c;">list</span><span>]
 </span></code></pre>
 <h4 id="quoted-values">Quoted Values</h4>
@@ -950,14 +951,16 @@ with invalid permissions (for testing)</li>
 <tr><td><strong>read</strong></td><td>Allows reading secrets and resources</td></tr>
 <tr><td><strong>write</strong></td><td>Allows creating, updating, and deleting secrets</td></tr>
 <tr><td><strong>list</strong></td><td>Allows listing resources and directories</td></tr>
+<tr><td><strong>execute</strong></td><td>Allows cipher operations (encrypt/decrypt)</td></tr>
 <tr><td><strong>super</strong></td><td>Full administrative permissions (<strong>use with caution</strong>)</td></tr>
 </tbody></table>
 <h4 id="validation">Validation</h4>
 <p>All policy configurations are validated to ensure:</p>
 <ol>
-<li><strong>Required fields</strong>: <code>name</code>, <code>spiffeid</code>, <code>path</code>, and <code>permissions</code> must be
-present</li>
-<li><strong>Valid permissions</strong>: Only <code>read</code>, <code>write</code>, <code>list</code>, and <code>super</code> are allowed</li>
+<li><strong>Required fields</strong>: <code>name</code>, <code>spiffeidPattern</code>, <code>pathPattern</code>, and
+<code>permissions</code> must be present</li>
+<li><strong>Valid permissions</strong>: Only <code>read</code>, <code>write</code>, <code>list</code>, <code>execute</code>, and <code>super</code>
+are allowed</li>
 <li><strong>Valid YAML syntax</strong>: Proper YAML formatting is required (for YAML files)</li>
 <li><strong>Non-empty values</strong>: All fields must have non-empty values</li>
 </ol>

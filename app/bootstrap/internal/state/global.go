@@ -16,9 +16,4 @@ var (
 	rootKeySeed [crypto.AES256KeySize]byte
 	// rootKeySeedMu provides mutual exclusion for access to the root key seed.
 	rootKeySeedMu sync.RWMutex
-
-	// rootSharesGenerated tracks whether RootShares() has been called.
-	rootSharesGenerated bool
-	// rootSharesGeneratedMu protects the rootSharesGenerated flag.
-	rootSharesGeneratedMu sync.Mutex
 )

@@ -308,7 +308,10 @@ func NewPilotRecoveryShards() map[int]*[crypto.AES256KeySize]byte {
 		return nil
 	}
 
-	rootSecret, rootShards := computeShares()
+	state.LockRootKey()
+	defer state.UnlockRootKey()
+	rk := state.RootKeyNoLock()
+	rootSecret, rootShards := crypto.ComputeShares(rk)
 	// Security: Ensure the root key and shards are zeroed out after use.
 	defer func() {
 		rootSecret.SetUint64(0)

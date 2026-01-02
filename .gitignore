@@ -75,3 +75,6 @@ bootstrap-linux-arm64.sum.txt
 
 # For SKD debugging while building images
 spike-sdk-go
+
+# WSL
+*:Zone.Identifier

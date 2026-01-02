@@ -883,7 +883,7 @@ SPIRE registration to secret operations.</p>
 </span><span>        </span><span style="color:#bf616a;">env</span><span>:
 </span><span>        - </span><span style="color:#bf616a;">name</span><span>: </span><span style="color:#a3be8c;">SPIFFE_ENDPOINT_SOCKET
 </span><span>          </span><span style="color:#bf616a;">value</span><span>: &quot;</span><span style="color:#a3be8c;">unix:///run/spire/sockets/agent.sock</span><span>&quot;
-</span><span>        - </span><span style="color:#bf616a;">name</span><span>: </span><span style="color:#a3be8c;">SPIKE_NEXUS_URL
+</span><span>        - </span><span style="color:#bf616a;">name</span><span>: </span><span style="color:#a3be8c;">SPIKE_NEXUS_API_URL
 </span><span>          </span><span style="color:#bf616a;">value</span><span>: &quot;</span><span style="color:#a3be8c;">https://spike-nexus:8553</span><span>&quot;
 </span><span>        </span><span style="color:#bf616a;">volumeMounts</span><span>:
 </span><span>        - </span><span style="color:#bf616a;">name</span><span>: </span><span style="color:#a3be8c;">spire-agent-socket
@@ -899,7 +899,7 @@ SPIRE registration to secret operations.</p>
 <ul>
 <li>Mount the SPIRE Agent socket</li>
 <li>Set <code>SPIFFE_ENDPOINT_SOCKET</code> environment variable</li>
-<li>Set <code>SPIKE_NEXUS_URL</code> to the Nexus service endpoint</li>
+<li>Set <code>SPIKE_NEXUS_API_URL</code> to the Nexus service endpoint</li>
 </ul>
 <h3 id="bare-metal-deployment">Bare-Metal Deployment</h3>
 <pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># 1. Ensure SPIRE Agent is running
@@ -907,7 +907,7 @@ SPIRE registration to secret operations.</p>
 </span><span>
 </span><span style="color:#65737e;"># 2. Set environment variables
 </span><span style="color:#b48ead;">export </span><span style="color:#bf616a;">SPIFFE_ENDPOINT_SOCKET</span><span>=</span><span style="color:#a3be8c;">unix:///tmp/spire-agent/public/api.sock
-</span><span style="color:#b48ead;">export </span><span style="color:#bf616a;">SPIKE_NEXUS_URL</span><span>=</span><span style="color:#a3be8c;">https://localhost:8553
+</span><span style="color:#b48ead;">export </span><span style="color:#bf616a;">SPIKE_NEXUS_API_URL</span><span>=</span><span style="color:#a3be8c;">https://localhost:8553
 </span><span>
 </span><span style="color:#65737e;"># 3. Run your application
 </span><span style="color:#bf616a;">./myapp
