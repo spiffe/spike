@@ -443,6 +443,118 @@ func TestGetPolicyFromFlags(t *testing.T) {
 	}
 }
 
+// TestValidatePermissions tests the validatePermissions wrapper function to
+// ensure it properly validates permissions and rejects invalid ones.
+func TestValidatePermissions(t *testing.T) {
+	tests := []struct {
+		name        string
+		permsStr    string
+		wantErr     bool
+		errContains string
+		wantPerms   int
+	}{
+		{
+			name:      "valid_single_permission",
+			permsStr:  "read",
+			wantErr:   false,
+			wantPerms: 1,
+		},
+		{
+			name:      "valid_multiple_permissions",
+			permsStr:  "read,write,list",
+			wantErr:   false,
+			wantPerms: 3,
+		},
+		{
+			name:      "valid_all_permissions",
+			permsStr:  "read,write,list,execute,super",
+			wantErr:   false,
+			wantPerms: 5,
+		},
+		{
+			name:      "valid_permissions_with_spaces",
+			permsStr:  "read, write, list",
+			wantErr:   false,
+			wantPerms: 3,
+		},
+		{
+			name:        "invalid_permission_delete",
+			permsStr:    "delete",
+			wantErr:     true,
+			errContains: "invalid permission",
+		},
+		{
+			name:        "invalid_permission_admin",
+			permsStr:    "admin",
+			wantErr:     true,
+			errContains: "invalid permission",
+		},
+		{
+			name:        "invalid_permission_typo",
+			permsStr:    "raed",
+			wantErr:     true,
+			errContains: "invalid permission",
+		},
+		{
+			name:        "mixed_valid_and_invalid",
+			permsStr:    "read,delete",
+			wantErr:     true,
+			errContains: "invalid permission",
+		},
+		{
+			name:        "invalid_permission_create",
+			permsStr:    "create",
+			wantErr:     true,
+			errContains: "invalid permission",
+		},
+		{
+			name:        "empty_string",
+			permsStr:    "",
+			wantErr:     true,
+			errContains: "no valid permissions",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			perms, err := validatePermissions(tt.permsStr)
+
+			if tt.wantErr {
+				if err == nil {
+					t.Errorf(
+						"validatePermissions() expected error but got none",
+					)
+					return
+				}
+				if tt.errContains != "" && !strings.Contains(
+					strings.ToLower(err.Error()),
+					strings.ToLower(tt.errContains),
+				) {
+					t.Errorf(
+						"validatePermissions() error = %v, "+
+							"want error containing %v",
+						err, tt.errContains,
+					)
+				}
+			} else {
+				if err != nil {
+					t.Errorf(
+						"validatePermissions() unexpected error: %v",
+						err,
+					)
+					return
+				}
+				if len(perms) != tt.wantPerms {
+					t.Errorf(
+						"validatePermissions() got %d permissions, want %d",
+						len(perms), tt.wantPerms,
+					)
+				}
+			}
+		})
+	}
+}
+
 func TestNewPolicyCreateCommand(t *testing.T) {
 	source := &workloadapi.X509Source{}
 	SPIFFEIDPattern := "^spiffe://example\\.org/spike$"
