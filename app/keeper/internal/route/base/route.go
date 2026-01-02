@@ -15,8 +15,8 @@ import (
 	"github.com/spiffe/spike-sdk-go/api/url"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 
+	"github.com/spiffe/spike-sdk-go/journal"
 	"github.com/spiffe/spike/app/keeper/internal/route/store"
-	"github.com/spiffe/spike/internal/journal"
 	"github.com/spiffe/spike/internal/net"
 )
 

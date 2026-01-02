@@ -23,9 +23,9 @@ import (
 	"github.com/spiffe/spike-sdk-go/retry"
 	"github.com/spiffe/spike-sdk-go/spiffe"
 	svid "github.com/spiffe/spike-sdk-go/spiffeid"
+	"github.com/spiffe/spike-sdk-go/validation"
 
 	"github.com/spiffe/spike/app/bootstrap/internal/state"
-	"github.com/spiffe/spike/internal/validation"
 )
 
 // BroadcastKeepers distributes root key shares to all configured SPIKE
@@ -51,7 +51,7 @@ import (
 func BroadcastKeepers(ctx context.Context, api *spike.API) {
 	const fName = "BroadcastKeepers"
 
-	validation.CheckContext(ctx, fName)
+	validation.NonNilContextOrDie(ctx, fName)
 
 	// Ensures the number of keepers matches the Shamir shares required.
 	keepers := env.KeepersVal()
@@ -162,7 +162,7 @@ func broadcastToKeeper(
 func VerifyInitialization(ctx context.Context, api *spike.API) {
 	const fName = "VerifyInitialization"
 
-	validation.CheckContext(ctx, fName)
+	validation.NonNilContextOrDie(ctx, fName)
 
 	// Generate random text for verification
 	randomBytes := make([]byte, 32)

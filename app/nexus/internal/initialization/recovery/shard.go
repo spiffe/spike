@@ -10,10 +10,8 @@ import (
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
-	network "github.com/spiffe/spike-sdk-go/net"
+	"github.com/spiffe/spike-sdk-go/net"
 	"github.com/spiffe/spike-sdk-go/predicate"
-
-	"github.com/spiffe/spike/internal/net"
 )
 
 // shardGetResponse retrieves a shard from a SPIKE Keeper via mTLS POST request.
@@ -50,7 +48,7 @@ func shardGetResponse(
 		return nil, failErr
 	}
 
-	client := network.CreateMTLSClientWithPredicate(
+	client := net.CreateMTLSClientWithPredicate(
 		source,
 		// Security: Only get shards from SPIKE Keepers.
 		predicate.AllowKeeper,

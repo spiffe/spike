@@ -12,8 +12,8 @@ import (
 	"github.com/spiffe/spike-sdk-go/net"
 	"github.com/spiffe/spike-sdk-go/security/mem"
 
+	"github.com/spiffe/spike-sdk-go/journal"
 	"github.com/spiffe/spike/app/keeper/internal/state"
-	"github.com/spiffe/spike/internal/journal"
 )
 
 // RouteContribute handles HTTP requests for the shard contributions in the

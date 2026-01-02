@@ -10,14 +10,3 @@ var NexusVersion = app.Version
 var PilotVersion = app.Version
 var KeeperVersion = app.Version
 var BootstrapVersion = app.Version
-
-// restrictedPaths contains system directories that should not be used
-// for data storage for security and operational reasons.
-var restrictedPaths = []string{
-	"/", "/etc", "/sys", "/proc", "/dev", "/bin", "/sbin",
-	"/usr", "/lib", "/lib64", "/boot", "/root",
-}
-
-const spikeHiddenFolderName = ".spike"
-const spikeDataFolderName = "data"
-const spikeRecoveryFolderName = "recover"

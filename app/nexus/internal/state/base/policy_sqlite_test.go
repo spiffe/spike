@@ -15,10 +15,10 @@ import (
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/config/env"
+	"github.com/spiffe/spike-sdk-go/config/fs"
 	"github.com/spiffe/spike-sdk-go/crypto"
 
 	"github.com/spiffe/spike/app/nexus/internal/state/persist"
-	"github.com/spiffe/spike/internal/config"
 )
 
 func TestSQLitePolicy_CreateAndGet(t *testing.T) {
@@ -595,7 +595,7 @@ func BenchmarkSQLiteCreatePolicy(b *testing.B) {
 	}()
 
 	// Clean up the database
-	dataDir := config.NexusDataFolder()
+	dataDir := fs.NexusDataFolder()
 	dbPath := filepath.Join(dataDir, "spike.db")
 	if _, err := os.Stat(dbPath); err == nil {
 		_ = os.Remove(dbPath)
@@ -647,7 +647,7 @@ func BenchmarkSQLiteGetPolicy(b *testing.B) {
 	}()
 
 	// Clean up the database
-	dataDir := config.NexusDataFolder()
+	dataDir := fs.NexusDataFolder()
 	dbPath := filepath.Join(dataDir, "spike.db")
 	if _, err := os.Stat(dbPath); err == nil {
 		_ = os.Remove(dbPath)

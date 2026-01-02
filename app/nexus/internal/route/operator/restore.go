@@ -16,8 +16,8 @@ import (
 	"github.com/spiffe/spike-sdk-go/net"
 	"github.com/spiffe/spike-sdk-go/security/mem"
 
+	"github.com/spiffe/spike-sdk-go/journal"
 	"github.com/spiffe/spike/app/nexus/internal/initialization/recovery"
-	"github.com/spiffe/spike/internal/journal"
 )
 
 var (

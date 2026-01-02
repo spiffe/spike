@@ -12,8 +12,6 @@ import (
 	"github.com/spiffe/spike-sdk-go/config/env"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/net"
-
-	"github.com/spiffe/spike/internal/auth"
 )
 
 // extractAndValidateSPIFFEID extracts and validates the peer SPIFFE ID from
@@ -30,7 +28,7 @@ import (
 func extractAndValidateSPIFFEID(
 	w http.ResponseWriter, r *http.Request,
 ) (*spiffeid.ID, *sdkErrors.SDKError) {
-	peerSPIFFEID, err := auth.ExtractPeerSPIFFEID[reqres.CipherDecryptResponse](
+	peerSPIFFEID, err := net.ExtractPeerSPIFFEIDFromRequestAndRespondOnFail[reqres.CipherDecryptResponse](
 		r, w, reqres.CipherDecryptResponse{
 			Err: sdkErrors.ErrAccessUnauthorized.Code,
 		})

@@ -11,7 +11,7 @@ import (
 	"github.com/spiffe/spike-sdk-go/crypto"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 
-	"github.com/spiffe/spike/internal/journal"
+	"github.com/spiffe/spike-sdk-go/journal"
 )
 
 // Handler is a function type that processes HTTP requests with audit

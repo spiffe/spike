@@ -11,7 +11,7 @@ import (
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 
-	"github.com/spiffe/spike/internal/journal"
+	"github.com/spiffe/spike-sdk-go/journal"
 )
 
 // RouteEncrypt handles HTTP requests to encrypt plaintext data using the

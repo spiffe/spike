@@ -16,10 +16,10 @@ import (
 	"time"
 
 	"github.com/spiffe/spike-sdk-go/config/env"
+	"github.com/spiffe/spike-sdk-go/config/fs"
 	"github.com/spiffe/spike-sdk-go/crypto"
 
 	"github.com/spiffe/spike/app/nexus/internal/state/backend/sqlite/ddl"
-	"github.com/spiffe/spike/internal/config"
 )
 
 // TestingInterface allows both *testing.T and *testing.B to be used
@@ -75,7 +75,7 @@ func withSQLiteEnvironment(_ *testing.T, testFunc func()) {
 }
 
 func cleanupSQLiteDatabase(t *testing.T) {
-	dataDir := config.NexusDataFolder()
+	dataDir := fs.NexusDataFolder()
 	dbPath := filepath.Join(dataDir, "spike.db")
 
 	// Remove the database file if it exists
@@ -102,7 +102,7 @@ func createTestDataStore(t TestingInterface) *DataStore {
 
 	// Use DefaultOptions and override the data directory for testing
 	opts := DefaultOptions()
-	opts.DataDir = config.NexusDataFolder()
+	opts.DataDir = fs.NexusDataFolder()
 
 	// Create a unique database filename to avoid race conditions
 	opts.DatabaseFile = fmt.Sprintf("spike_test_%d.db", time.Now().UnixNano())

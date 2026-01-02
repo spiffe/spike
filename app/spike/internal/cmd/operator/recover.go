@@ -15,11 +15,11 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	spike "github.com/spiffe/spike-sdk-go/api"
+	"github.com/spiffe/spike-sdk-go/config/fs"
 	"github.com/spiffe/spike-sdk-go/security/mem"
 	"github.com/spiffe/spike-sdk-go/spiffeid"
 
 	"github.com/spiffe/spike/app/spike/internal/trust"
-	"github.com/spiffe/spike/internal/config"
 )
 
 // newOperatorRecoverCommand creates a new cobra command for recovery operations
@@ -108,7 +108,7 @@ func newOperatorRecoverCommand(
 			}
 
 			// Creates the folder if it does not exist.
-			recoverDir := config.PilotRecoveryFolder()
+			recoverDir := fs.PilotRecoveryFolder()
 
 			// Clean the path to normalize it
 			cleanPath, absErr := filepath.Abs(filepath.Clean(recoverDir))

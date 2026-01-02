@@ -9,13 +9,13 @@ import (
 	"encoding/hex"
 
 	"github.com/spiffe/spike-sdk-go/config/env"
+	"github.com/spiffe/spike-sdk-go/config/fs"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/log"
 	"github.com/spiffe/spike-sdk-go/security/mem"
 
 	"github.com/spiffe/spike/app/nexus/internal/state/backend"
 	"github.com/spiffe/spike/app/nexus/internal/state/backend/sqlite"
-	"github.com/spiffe/spike/internal/config"
 )
 
 // initializeSqliteBackend creates and initializes an SQLite backend instance
@@ -60,7 +60,7 @@ func initializeSqliteBackend(rootKey *[32]byte) backend.Backend {
 
 	opts := map[backend.DatabaseConfigKey]any{}
 
-	opts[backend.KeyDataDir] = config.NexusDataFolder()
+	opts[backend.KeyDataDir] = fs.NexusDataFolder()
 	opts[backend.KeyDatabaseFile] = dbName
 	opts[backend.KeyJournalMode] = env.DatabaseJournalModeVal()
 	opts[backend.KeyBusyTimeoutMs] = env.DatabaseBusyTimeoutMsVal()

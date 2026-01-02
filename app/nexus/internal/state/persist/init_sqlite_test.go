@@ -9,8 +9,8 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/spiffe/spike-sdk-go/config/fs"
 	"github.com/spiffe/spike-sdk-go/crypto"
-	"github.com/spiffe/spike/internal/config"
 )
 
 func TestInitializeSqliteBackend_Success(t *testing.T) {
@@ -29,7 +29,7 @@ func TestInitializeSqliteBackend_Success(t *testing.T) {
 	}
 
 	// Verify the database file was created
-	dataDir := config.NexusDataFolder()
+	dataDir := fs.NexusDataFolder()
 	dbPath := filepath.Join(dataDir, "spike.db")
 	if _, err := os.Stat(dbPath); os.IsNotExist(err) {
 		t.Errorf("Database file was not created at %s", dbPath)
@@ -110,7 +110,7 @@ func BenchmarkInitializeSqliteBackend(b *testing.B) {
 	}
 
 	// Clean up before and after
-	dataDir := config.NexusDataFolder()
+	dataDir := fs.NexusDataFolder()
 	dbPath := filepath.Join(dataDir, "spike.db")
 	if _, err := os.Stat(dbPath); err == nil {
 		_ = os.Remove(dbPath)

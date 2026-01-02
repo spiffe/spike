@@ -13,8 +13,8 @@ import (
 	"github.com/spiffe/spike-sdk-go/net"
 	"github.com/spiffe/spike-sdk-go/security/mem"
 
+	"github.com/spiffe/spike-sdk-go/journal"
 	"github.com/spiffe/spike/app/keeper/internal/state"
-	"github.com/spiffe/spike/internal/journal"
 )
 
 // RouteShard handles HTTP requests to retrieve the stored shard from the

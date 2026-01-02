@@ -14,7 +14,6 @@ import (
 	"github.com/spiffe/spike-sdk-go/validation"
 
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
-	"github.com/spiffe/spike/internal/auth"
 )
 
 // guardSecretPutRequest validates a secret storage request by performing
@@ -47,7 +46,7 @@ import (
 func guardSecretPutRequest(
 	request reqres.SecretPutRequest, w http.ResponseWriter, r *http.Request,
 ) *sdkErrors.SDKError {
-	peerSPIFFEID, err := auth.ExtractPeerSPIFFEID[reqres.SecretPutResponse](
+	peerSPIFFEID, err := net.ExtractPeerSPIFFEIDFromRequestAndRespondOnFail[reqres.SecretPutResponse](
 		r, w, reqres.SecretPutResponse{}.Unauthorized(),
 	)
 	if alreadyResponded := err != nil; alreadyResponded {

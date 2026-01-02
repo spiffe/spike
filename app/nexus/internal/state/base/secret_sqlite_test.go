@@ -13,12 +13,12 @@ import (
 	"testing"
 
 	"github.com/spiffe/spike-sdk-go/config/env"
+	"github.com/spiffe/spike-sdk-go/config/fs"
 	"github.com/spiffe/spike-sdk-go/crypto"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/kv"
 
 	"github.com/spiffe/spike/app/nexus/internal/state/persist"
-	"github.com/spiffe/spike/internal/config"
 )
 
 // createTestRootKey creates a test root key for SQLite backend
@@ -34,7 +34,7 @@ func createTestRootKey(_ *testing.T) *[crypto.AES256KeySize]byte {
 // cleanupSQLiteDatabase removes the existing SQLite database to ensure
 // a clean test state
 func cleanupSQLiteDatabase(t *testing.T) {
-	dataDir := config.NexusDataFolder()
+	dataDir := fs.NexusDataFolder()
 	dbPath := filepath.Join(dataDir, "spike.db")
 
 	// Remove the database file if it exists
@@ -84,7 +84,7 @@ func TestSQLiteSecret_NewSecret(t *testing.T) {
 		}
 
 		// Get the actual database pathPattern used by the system
-		dataDir := config.NexusDataFolder()
+		dataDir := fs.NexusDataFolder()
 		dbPath := filepath.Join(dataDir, "spike.db")
 		t.Logf("Using SQLite database at: %s", dbPath)
 
@@ -512,7 +512,7 @@ func BenchmarkSQLiteUpsertSecret(b *testing.B) {
 	}()
 
 	// Clean up the database
-	dataDir := config.NexusDataFolder()
+	dataDir := fs.NexusDataFolder()
 	dbPath := filepath.Join(dataDir, "spike.db")
 	if _, err := os.Stat(dbPath); err == nil {
 		_ = os.Remove(dbPath)
@@ -565,7 +565,7 @@ func BenchmarkSQLiteGetSecret(b *testing.B) {
 	}()
 
 	// Clean up the database
-	dataDir := config.NexusDataFolder()
+	dataDir := fs.NexusDataFolder()
 	dbPath := filepath.Join(dataDir, "spike.db")
 	if _, err := os.Stat(dbPath); err == nil {
 		_ = os.Remove(dbPath)
