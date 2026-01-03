@@ -5,10 +5,14 @@
 package secret
 
 import (
+	"encoding/json"
+
 	"github.com/spf13/cobra"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	spike "github.com/spiffe/spike-sdk-go/api"
+	"gopkg.in/yaml.v3"
 
+	"github.com/spiffe/spike/app/spike/internal/cmd/format"
 	"github.com/spiffe/spike/app/spike/internal/stdout"
 	"github.com/spiffe/spike/app/spike/internal/trust"
 )
@@ -28,15 +32,18 @@ import (
 //
 // The command will:
 //  1. Make a network request to retrieve all available secret paths
-//  2. Display the results in a formatted list
-//  3. Show "No secrets found" if the system is empty
+//  2. Display the results based on the --format flag
+//  3. Show "No secrets found" or "[]" if the system is empty
 //
-// Output format:
+// Flags:
+//   - --format, -f (string): Output format. Valid options: human/h/plain/p,
+//     json/j, yaml/y (default "human")
 //
-//	Secrets:
-//	- secret/path1
-//	- secret/path2
-//	- secret/path3
+// Example output (human format):
+//
+//   - secret/path1
+//   - secret/path2
+//   - secret/path3
 //
 // Note: Requires an initialized SPIKE system and valid authentication
 func newSecretListCommand(
@@ -53,27 +60,59 @@ func newSecretListCommand(
 				return
 			}
 
+			outputFormat, formatErr := format.GetFormat(cmd)
+			if formatErr != nil {
+				cmd.PrintErrf("Error: %v\n", formatErr)
+				return
+			}
+
 			api := spike.NewWithSource(source)
 
 			keys, err := api.ListSecretKeys()
 			if stdout.HandleAPIError(cmd, err) {
 				return
 			}
-			if keys == nil {
-				cmd.Println("No secrets found.")
-				return
-			}
 
-			if len(*keys) == 0 {
-				cmd.Println("No secrets found.")
-				return
-			}
+			isEmptyList := keys == nil || len(*keys) == 0
 
-			for _, key := range *keys {
-				cmd.Printf("- %s\n", key)
+			switch outputFormat {
+			case format.JSON:
+				if isEmptyList {
+					cmd.Println("[]")
+					return
+				}
+				output, marshalErr := json.MarshalIndent(keys, "", "  ")
+				if marshalErr != nil {
+					cmd.PrintErrf("Error formatting output: %v\n", marshalErr)
+					return
+				}
+				cmd.Println(string(output))
+
+			case format.YAML:
+				if isEmptyList {
+					cmd.Println("[]")
+					return
+				}
+				output, marshalErr := yaml.Marshal(keys)
+				if marshalErr != nil {
+					cmd.PrintErrf("Error formatting output: %v\n", marshalErr)
+					return
+				}
+				cmd.Print(string(output))
+
+			default: // format.Human
+				if isEmptyList {
+					cmd.Println("No secrets found.")
+					return
+				}
+				for _, key := range *keys {
+					cmd.Printf("- %s\n", key)
+				}
 			}
 		},
 	}
+
+	format.AddFormatFlag(listCmd)
 
 	return listCmd
 }

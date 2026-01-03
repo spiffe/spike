@@ -5,10 +5,14 @@
 package secret
 
 import (
+	"encoding/json"
+
 	"github.com/spf13/cobra"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	spike "github.com/spiffe/spike-sdk-go/api"
+	"gopkg.in/yaml.v3"
 
+	"github.com/spiffe/spike/app/spike/internal/cmd/format"
 	"github.com/spiffe/spike/app/spike/internal/stdout"
 	"github.com/spiffe/spike/app/spike/internal/trust"
 )
@@ -29,6 +33,8 @@ import (
 // Flags:
 //   - --version, -v (int): Specific version of the secret to retrieve
 //     (default 0) where 0 represents the current version
+//   - --format, -f (string): Output format. Valid options: human/h/plain/p,
+//     json/j, yaml/y (default "human")
 //
 // Returns:
 //   - *cobra.Command: Configured get command
@@ -36,7 +42,7 @@ import (
 // The command will:
 //  1. Verify SPIKE initialization status via admin token
 //  2. Retrieve the secret metadata from the specified path and version
-//  3. Display all metadata fields and secret versions
+//  3. Display metadata based on the --format flag
 //
 // Error cases:
 //   - SPIKE not initialized: Prompts user to run 'spike init'
@@ -62,6 +68,12 @@ func newSecretMetadataGetCommand(
 				return
 			}
 
+			outputFormat, formatErr := format.GetFormat(cmd)
+			if formatErr != nil {
+				cmd.PrintErrf("Error: %v\n", formatErr)
+				return
+			}
+
 			api := spike.NewWithSource(source)
 
 			path := args[0]
@@ -77,11 +89,31 @@ func newSecretMetadataGetCommand(
 				return
 			}
 
-			printSecretResponse(cmd, secret)
+			switch outputFormat {
+			case format.JSON:
+				output, marshalErr := json.MarshalIndent(secret, "", "  ")
+				if marshalErr != nil {
+					cmd.PrintErrf("Error formatting output: %v\n", marshalErr)
+					return
+				}
+				cmd.Println(string(output))
+
+			case format.YAML:
+				output, marshalErr := yaml.Marshal(secret)
+				if marshalErr != nil {
+					cmd.PrintErrf("Error formatting output: %v\n", marshalErr)
+					return
+				}
+				cmd.Print(string(output))
+
+			default: // format.Human
+				printSecretResponse(cmd, secret)
+			}
 		},
 	}
 
 	getCmd.Flags().IntP("version", "v", 0, "Specific version to retrieve")
+	format.AddFormatFlag(getCmd)
 
 	cmd.AddCommand(getCmd)
 
