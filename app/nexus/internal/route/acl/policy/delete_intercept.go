@@ -69,6 +69,7 @@ func guardPolicyDeleteRequest(
 		return authErr
 	}
 
+	// TODO: RespondErrorOnBadPolicyId (parse policy id from request; do not get as parameter)
 	validationErr := validation.ValidatePolicyID(policyID)
 	if invalidPolicy := validationErr != nil; invalidPolicy {
 		failErr := net.Fail(

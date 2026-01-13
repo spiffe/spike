@@ -99,7 +99,9 @@ func handleJSONDecrypt(
 	getCipher func() (cipher.AEAD, *sdkErrors.SDKError),
 ) *sdkErrors.SDKError {
 	// Extract and validate SPIFFE ID before accessing cipher
-	peerSPIFFEID, err := extractAndValidateSPIFFEID(w, r)
+	peerSPIFFEID, err := net.ExtractPeerSPIFFEIDAndRespondOnFail(r, w, reqres.CipherDecryptResponse{
+		Err: sdkErrors.ErrAccessUnauthorized.Code,
+	})
 	if err != nil {
 		return err
 	}
