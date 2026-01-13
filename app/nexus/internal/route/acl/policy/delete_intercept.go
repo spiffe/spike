@@ -17,6 +17,14 @@ import (
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 )
 
+func spiffeidAllowedForPolicyDelete(spiffeId string) bool {
+	return state.CheckAccess(
+		spiffeId,
+		cfg.PathSystemPolicyAccess,
+		[]data.PolicyPermission{data.PermissionWrite},
+	)
+}
+
 // guardPolicyDeleteRequest validates a policy deletion request by performing
 // authentication, authorization, and input validation checks.
 //
@@ -40,14 +48,26 @@ import (
 func guardPolicyDeleteRequest(
 	request reqres.PolicyDeleteRequest, w http.ResponseWriter, r *http.Request,
 ) *sdkErrors.SDKError {
-	peerSPIFFEID, err := net.ExtractPeerSPIFFEIDFromRequestAndRespondOnFail[reqres.PolicyDeleteResponse](
-		r, w, reqres.PolicyDeleteResponse{}.Unauthorized(),
-	)
-	if alreadyResponded := err != nil; alreadyResponded {
+	policyID := request.ID
+
+	// TODO: ensure this happens in ALL guard calls.
+	// Extract and validate SPIFFE ID before any action.
+	_, err := net.ExtractPeerSPIFFEIDAndRespondOnFail(
+		r, w, reqres.PolicyDeleteResponse{
+			Err: sdkErrors.ErrAccessUnauthorized.Code,
+		})
+	if err != nil {
 		return err
 	}
 
-	policyID := request.ID
+	// TODO: ensure policy verification before other verifications on ALL guard calls.
+	authErr := net.RespondUnauthorizedOnPredicateFail(
+		spiffeidAllowedForPolicyDelete,
+		reqres.PolicyDeleteResponse{}.Unauthorized(), w, r,
+	)
+	if authErr != nil {
+		return authErr
+	}
 
 	validationErr := validation.ValidatePolicyID(policyID)
 	if invalidPolicy := validationErr != nil; invalidPolicy {
@@ -61,19 +81,5 @@ func guardPolicyDeleteRequest(
 		return validationErr
 	}
 
-	allowed := state.CheckAccess(
-		peerSPIFFEID.String(), cfg.PathSystemPolicyAccess,
-		[]data.PolicyPermission{data.PermissionWrite},
-	)
-	if !allowed {
-		failErr := net.Fail(
-			reqres.PolicyDeleteResponse{}.Unauthorized(), w, http.StatusUnauthorized,
-		)
-		if failErr != nil {
-			return sdkErrors.ErrAccessUnauthorized.Wrap(failErr)
-		}
-		return sdkErrors.ErrAccessUnauthorized.Clone()
-	}
-
-	return nil
+	return validationErr
 }

@@ -62,9 +62,7 @@ func Initialize(source *workloadapi.X509Source) {
 		return
 	}
 
-	devMode := env.BackendStoreTypeVal() == env.Memory
-
-	if devMode {
+	if devMode := env.BackendStoreTypeVal() == env.Memory; devMode {
 		log.Warn(
 			fName,
 			"message", "in-memory mode: no SPIKE Keepers, not for production",

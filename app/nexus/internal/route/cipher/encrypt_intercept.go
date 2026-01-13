@@ -7,8 +7,6 @@ package cipher
 import (
 	"net/http"
 
-	"github.com/spiffe/go-spiffe/v2/spiffeid"
-
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	apiAuth "github.com/spiffe/spike-sdk-go/config/auth"
@@ -18,6 +16,23 @@ import (
 
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 )
+
+func spiffeidAllowedForEncryptCipher(spiffeid string) bool {
+	// Lite Workloads are always allowed:
+	allowed := false
+	if sdkSpiffeid.IsLiteWorkload(spiffeid) {
+		allowed = true
+	}
+	// If not, do a policy check to determine if the request is allowed:
+	if !allowed {
+		allowed = state.CheckAccess(
+			spiffeid,
+			apiAuth.PathSystemCipherEncrypt,
+			[]data.PolicyPermission{data.PermissionExecute},
+		)
+	}
+	return allowed
+}
 
 // guardEncryptCipherRequest validates a cipher encryption request by
 // performing authentication, authorization, and request field validation.
@@ -47,9 +62,8 @@ import (
 //   - apiErr.ErrBadInput if request validation fails
 func guardEncryptCipherRequest(
 	request reqres.CipherEncryptRequest,
-	peerSPIFFEID *spiffeid.ID,
 	w http.ResponseWriter,
-	_ *http.Request,
+	r *http.Request,
 ) *sdkErrors.SDKError {
 	// Validate plaintext size to prevent DoS attacks
 	if err := validatePlaintextSize(
@@ -58,29 +72,9 @@ func guardEncryptCipherRequest(
 		return err
 	}
 
-	// Lite Workloads are always allowed:
-	allowed := false
-	if sdkSpiffeid.IsLiteWorkload(peerSPIFFEID.String()) {
-		allowed = true
-	}
-	// If not, do a policy check to determine if the request is allowed:
-	if !allowed {
-		allowed = state.CheckAccess(
-			peerSPIFFEID.String(),
-			apiAuth.PathSystemCipherEncrypt,
-			[]data.PolicyPermission{data.PermissionExecute},
-		)
-	}
-	// If not, block the request:
-	if !allowed {
-		failErr := net.Fail(
-			reqres.CipherEncryptResponse{}.Unauthorized(), w, http.StatusUnauthorized,
-		)
-		if failErr != nil {
-			return sdkErrors.ErrAccessUnauthorized.Wrap(failErr)
-		}
-		return sdkErrors.ErrAccessUnauthorized.Clone()
-	}
-
-	return nil
+	return net.RespondUnauthorizedOnPredicateFail(
+		spiffeidAllowedForEncryptCipher,
+		reqres.CipherEncryptResponse{}.Unauthorized(),
+		w, r,
+	)
 }

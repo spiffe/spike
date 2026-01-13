@@ -10,6 +10,7 @@ import (
 
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
+	"github.com/spiffe/spike-sdk-go/net"
 )
 
 // handleStreamingDecrypt processes a complete streaming mode decryption
@@ -36,7 +37,10 @@ func handleStreamingDecrypt(
 	// entity accordingly.
 
 	// Extract and validate SPIFFE ID before accessing cipher
-	peerSPIFFEID, err := extractAndValidateSPIFFEID(w, r)
+	peerSPIFFEID, err := net.ExtractPeerSPIFFEIDAndRespondOnFail(
+		r, w, reqres.CipherDecryptResponse{
+			Err: sdkErrors.ErrAccessUnauthorized.Code,
+		})
 	if err != nil {
 		return err
 	}

@@ -55,20 +55,13 @@ func TestShardURL_ValidInput(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result, err := shardURL(tt.keeperAPIRoot)
+			result := apiUrl.ShardFromKeperAPIRoot(tt.keeperAPIRoot)
 
 			if tt.shouldBeEmpty {
 				if result != "" {
 					t.Errorf("Expected empty result, got %s", result)
 				}
-				if err == nil {
-					t.Error("Expected error for invalid input")
-				}
 			} else {
-				if err != nil {
-					t.Errorf("Unexpected error: %v", err)
-					return
-				}
 				if result == "" {
 					t.Error("Expected non-empty result")
 					return
@@ -118,15 +111,12 @@ func TestShardURL_InvalidInput(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result, err := shardURL(tt.keeperAPIRoot)
+			result := apiUrl.ShardFromKeperAPIRoot(tt.keeperAPIRoot)
 
 			// Invalid inputs should return an empty string and an error
 			if result != "" {
 				t.Errorf("Expected empty result for invalid input, got %s",
 					result)
-			}
-			if err == nil {
-				t.Error("Expected error for invalid input")
 			}
 		})
 	}
