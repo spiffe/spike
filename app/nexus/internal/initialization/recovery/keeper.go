@@ -8,6 +8,7 @@ import (
 	"strconv"
 
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
+	"github.com/spiffe/spike-sdk-go/api/url"
 	"github.com/spiffe/spike-sdk-go/config/env"
 	"github.com/spiffe/spike-sdk-go/crypto"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
@@ -84,26 +85,11 @@ func iterateKeepersAndInitializeState(
 			"id", keeperID, "url", keeperAPIRoot,
 		)
 
-		// Configuration errors (malformed keeper URLs) are logged but not fatal.
-		// Rationale:
-		// 1. Availability: If threshold=3 and we have 4 valid + 2 invalid URLs,
-		//    recovery can still succeed with the valid keepers.
-		// 2. Graceful degradation: The system becomes operational despite partial
-		//    misconfiguration; operators can fix the env var and restart later.
-		// 3. Consistency: Similar to the network errors or unmarshal failures below,
-		//    a bad URL means this keeper is unavailable, not a fatal condition.
-		// 4. The Shamir threshold mechanism already protects against insufficient
-		//    shards.
-		u, urlErr := shardURL(keeperAPIRoot)
-		if urlErr != nil {
-			log.WarnErr(fName, *urlErr)
-			continue
-		}
-
+		u := url.ShardFromKeperAPIRoot(keeperAPIRoot)
 		data, err := shardGetResponse(source, u)
 		if err != nil {
 			warnErr := sdkErrors.ErrNetPeerConnection.Wrap(err)
-			warnErr.Msg = "failed to get shard from keeper"
+			warnErr.Msg = "failed to get shard from keeper: " + u
 			log.WarnErr(fName, *warnErr) // just log: will retry
 			continue
 		}
@@ -143,7 +129,7 @@ func iterateKeepersAndInitializeState(
 		// `InitializeBackingStoreFromKeepers()` resets `successfulKeeperShards`
 		// which points to the same shards here. And until recovery, we will keep
 		// a threshold number of shards in memory.
-		ss := make([]ShamirShard, 0)
+		ss := make([]crypto.ShamirShard, 0)
 		for ix, shard := range successfulKeeperShards {
 			id, err := strconv.Atoi(ix)
 			if err != nil {
@@ -164,13 +150,13 @@ func iterateKeepersAndInitializeState(
 				return false
 			}
 
-			ss = append(ss, ShamirShard{
+			ss = append(ss, crypto.ShamirShard{
 				ID:    uint64(id),
 				Value: shard,
 			})
 		}
 
-		rk := ComputeRootKeyFromShards(ss)
+		rk := crypto.ComputeRootKeyFromShards(ss)
 
 		// Security: Crash if there is a problem with root key recovery.
 		if rk == nil || mem.Zeroed32(rk) {

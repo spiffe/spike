@@ -2,6 +2,7 @@
 //  \\\\\ Copyright 2024-present SPIKE contributors.
 // \\\\\\\ SPDX-License-Identifier: Apache-2.0
 
+// package main is the main entry point for SPIKE Nexus.
 package main
 
 import (

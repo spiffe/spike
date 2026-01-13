@@ -17,6 +17,9 @@
   potential issues before deciding which ones to formally create in GitHub. By
   working here first, we keep the active issue tracker focused and avoid
   cluttering it with early-stage or exploratory thoughts.
+
+  Note that this is NOT a strict XML file, and parsing it as an XML will
+  most-likely fail.
  -->
 <stuff>
   <high-level-plan>
@@ -85,6 +88,20 @@
     <issue>
       const GCMNonceSize = 12
       to sdk.
+    </issue>
+    <issue>
+      once https://github.com/spiffe/spike-sdk-go/pull/140/changes
+      is merged, the following needs to be updated accordingly
+      as 1. it is faking a context with timeout without actually doing
+      anything at the http layer
+      2. it makes things extra complicate without achieving proper
+      network-layer cancellation:
+      <!--
+      func contributeWithContext(
+      ctx context.Context, api *spike.API,
+      share secretsharing.Share, keeperID string,
+      ) error {
+      -->
     </issue>
     <issue>
       `spike secret list` right now lists all secrets available and

@@ -181,7 +181,7 @@ func TestShamirShardStructure(t *testing.T) {
 		testData[i] = byte(i)
 	}
 
-	shard := ShamirShard{
+	shard := crypto.ShamirShard{
 		ID:    123,
 		Value: testData,
 	}
@@ -209,7 +209,7 @@ func TestShamirShardStructure(t *testing.T) {
 
 func TestShamirShardSliceHandling(t *testing.T) {
 	// Test creating and manipulating slices of ShamirShard (as done in the function)
-	shards := make([]ShamirShard, 0)
+	shards := make([]crypto.ShamirShard, 0)
 
 	// Add some test shards
 	for i := 0; i < 3; i++ {
@@ -218,7 +218,7 @@ func TestShamirShardSliceHandling(t *testing.T) {
 			testData[j] = byte((i + j) % 256)
 		}
 
-		shard := ShamirShard{
+		shard := crypto.ShamirShard{
 			ID:    uint64(i + 1),
 			Value: testData,
 		}
@@ -250,7 +250,7 @@ func TestShamirShardSliceHandling(t *testing.T) {
 }
 
 func TestKeeperIDConversion(t *testing.T) {
-	// Test the string to integer conversion logic used in the function
+	// Test the string-to-integer conversion logic used in the function
 	tests := []struct {
 		name      string
 		keeperID  string

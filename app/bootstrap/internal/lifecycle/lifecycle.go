@@ -107,7 +107,9 @@ func ShouldBootstrap() bool {
 
 	namespace := "spike"
 	// Read namespace from the service account if not specified
-	if nsBytes, readErr := os.ReadFile(k8sServiceAccountNamespace); readErr == nil {
+	if nsBytes, readErr := os.ReadFile(
+		k8sServiceAccountNamespace,
+	); readErr == nil {
 		namespace = string(nsBytes)
 	}
 

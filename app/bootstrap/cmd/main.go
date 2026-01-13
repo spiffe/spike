@@ -2,6 +2,7 @@
 //  \\\\\ Copyright 2024-present SPIKE contributors.
 // \\\\\\\ SPDX-License-Identifier: Apache-2.0
 
+// package main is the main entry point of SPIKE Bootstrap.
 package main
 
 import (
@@ -15,10 +16,10 @@ import (
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/log"
 	"github.com/spiffe/spike-sdk-go/security/mem"
-	"github.com/spiffe/spike/app/bootstrap/internal/state"
 
 	"github.com/spiffe/spike/app/bootstrap/internal/lifecycle"
 	"github.com/spiffe/spike/app/bootstrap/internal/net"
+	"github.com/spiffe/spike/app/bootstrap/internal/state"
 	"github.com/spiffe/spike/internal/config"
 )
 
