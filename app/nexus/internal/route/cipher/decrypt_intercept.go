@@ -7,13 +7,10 @@ package cipher
 import (
 	"net/http"
 
-	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
-	apiAuth "github.com/spiffe/spike-sdk-go/config/auth"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/net"
-	sdkSpiffeid "github.com/spiffe/spike-sdk-go/spiffeid"
-
+	"github.com/spiffe/spike-sdk-go/predicate"
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 )
 
@@ -77,7 +74,11 @@ func guardDecryptCipherRequest(
 	}
 
 	return net.RespondUnauthorizedOnPredicateFail(
-		spiffeidAllowedForCipherDecrypt,
+		func(peerSPIFFEID string) bool {
+			return predicate.AllowSPIFFEIDForCipherDecrypt(
+				peerSPIFFEID, state.CheckAccess,
+			)
+		},
 		reqres.CipherDecryptResponse{}.Unauthorized(),
 		w, r,
 	)

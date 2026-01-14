@@ -10,6 +10,8 @@ import (
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/net"
+	"github.com/spiffe/spike-sdk-go/predicate"
+	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 )
 
 // guardPolicyDeleteRequest validates a policy deletion request by performing
@@ -49,7 +51,11 @@ func guardPolicyDeleteRequest(
 
 	// TODO: ensure policy verification before other verifications on ALL guard calls.
 	authErr := net.RespondUnauthorizedOnPredicateFail(
-		spiffeidAllowedForPolicyDelete,
+		func(peerSPIFFEID string) bool {
+			return predicate.AllowSPIFFEIDForPolicyDelete(
+				peerSPIFFEID, state.CheckAccess,
+			)
+		},
 		reqres.PolicyDeleteResponse{}.Unauthorized(), w, r,
 	)
 	if authErr != nil {
