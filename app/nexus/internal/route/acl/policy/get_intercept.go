@@ -7,11 +7,10 @@ package policy
 import (
 	"net/http"
 
-	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
-	apiAuth "github.com/spiffe/spike-sdk-go/config/auth"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/net"
+	"github.com/spiffe/spike-sdk-go/predicate"
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 )
 
@@ -38,7 +37,7 @@ import (
 func guardPolicyReadRequest(
 	request reqres.PolicyReadRequest, w http.ResponseWriter, r *http.Request,
 ) *sdkErrors.SDKError {
-	_, err := net.ExtractPeerSPIFFEIDFromRequestAndRespondOnFail[reqres.PolicyReadResponse](
+	_, err := net.ExtractPeerSPIFFEIDAndRespondOnFail[reqres.PolicyReadResponse](
 		w, r, reqres.PolicyReadResponse{}.Unauthorized(),
 	)
 	if alreadyResponded := err != nil; alreadyResponded {
@@ -46,8 +45,12 @@ func guardPolicyReadRequest(
 	}
 
 	authErr := net.RespondUnauthorizedOnPredicateFail(
-		spiffeidAllowedForPolicyRead, reqres.PolicyReadResponse{}.Unauthorized(),
-		w, r,
+		func(peerSPIFFEID string) bool {
+			return predicate.AllowSPIFFEIDForPolicyRead(
+				peerSPIFFEID, state.CheckAccess,
+			)
+		},
+		reqres.PolicyReadResponse{}.Unauthorized(), w, r,
 	)
 	if authErr != nil {
 		return authErr

@@ -8,9 +8,10 @@ import (
 	"net/http"
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
+	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/net"
-	"github.com/spiffe/spike-sdk-go/validation"
+	"github.com/spiffe/spike-sdk-go/predicate"
 
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 )
@@ -47,33 +48,26 @@ func guardSecretRequest[TUnauth, TBadInput any](
 	badInputResp TBadInput,
 ) *sdkErrors.SDKError {
 	// Extract and validate peer SPIFFE ID
-	peerSPIFFEID, err := net.ExtractPeerSPIFFEIDFromRequestAndRespondOnFail[TUnauth](
-		r, w, unauthorizedResp,
+	_, err := net.ExtractPeerSPIFFEIDAndRespondOnFail[TUnauth](
+		w, r, unauthorizedResp,
 	)
 	if alreadyResponded := err != nil; alreadyResponded {
 		return err
 	}
 
 	// Check access permissions
-	allowed := state.CheckAccess(peerSPIFFEID.String(), path, permissions)
-	if !allowed {
-		failErr := net.Fail(unauthorizedResp, w, http.StatusUnauthorized)
-		if failErr != nil {
-			return sdkErrors.ErrAccessUnauthorized.Wrap(failErr)
-		}
-		return sdkErrors.ErrAccessUnauthorized
+	authErr := net.RespondUnauthorizedOnPredicateFail(
+		func(peerSPIFFEID string) bool {
+			return predicate.AllowSPIFFEIDForPathAndPermissions(
+				peerSPIFFEID, path, permissions, state.CheckAccess,
+			)
+		},
+		reqres.PolicyDeleteResponse{}.Unauthorized(), w, r,
+	)
+	if authErr != nil {
+		return authErr
 	}
 
 	// Validate path format
-	pathErr := validation.ValidatePath(path)
-	if pathErr != nil {
-		failErr := net.Fail(badInputResp, w, http.StatusBadRequest)
-		pathErr.Msg = "invalid secret path: " + path
-		if failErr != nil {
-			return pathErr.Wrap(failErr)
-		}
-		return pathErr
-	}
-
-	return nil
+	return net.RespondErrOnBadPath(path, badInputResp, w)
 }
