@@ -7,23 +7,10 @@ package policy
 import (
 	"net/http"
 
-	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
-	cfg "github.com/spiffe/spike-sdk-go/config/auth"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/net"
-	"github.com/spiffe/spike-sdk-go/validation"
-
-	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 )
-
-func spiffeidAllowedForPolicyDelete(spiffeId string) bool {
-	return state.CheckAccess(
-		spiffeId,
-		cfg.PathSystemPolicyAccess,
-		[]data.PolicyPermission{data.PermissionWrite},
-	)
-}
 
 // guardPolicyDeleteRequest validates a policy deletion request by performing
 // authentication, authorization, and input validation checks.
@@ -53,7 +40,7 @@ func guardPolicyDeleteRequest(
 	// TODO: ensure this happens in ALL guard calls.
 	// Extract and validate SPIFFE ID before any action.
 	_, err := net.ExtractPeerSPIFFEIDAndRespondOnFail(
-		r, w, reqres.PolicyDeleteResponse{
+		w, r, reqres.PolicyDeleteResponse{
 			Err: sdkErrors.ErrAccessUnauthorized.Code,
 		})
 	if err != nil {
@@ -69,18 +56,7 @@ func guardPolicyDeleteRequest(
 		return authErr
 	}
 
-	// TODO: RespondErrorOnBadPolicyId (parse policy id from request; do not get as parameter)
-	validationErr := validation.ValidatePolicyID(policyID)
-	if invalidPolicy := validationErr != nil; invalidPolicy {
-		failErr := net.Fail(
-			reqres.PolicyDeleteResponse{}.BadRequest(), w, http.StatusBadRequest,
-		)
-		validationErr.Msg = "invalid policy ID: " + policyID
-		if failErr != nil {
-			return validationErr.Wrap(failErr)
-		}
-		return validationErr
-	}
-
-	return validationErr
+	return net.RespondErrOnBadPolicyID(
+		policyID, w, reqres.PolicyDeleteResponse{}.BadRequest(),
+	)
 }

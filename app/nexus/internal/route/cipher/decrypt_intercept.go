@@ -7,8 +7,6 @@ package cipher
 import (
 	"net/http"
 
-	"github.com/spiffe/go-spiffe/v2/spiffeid"
-
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	apiAuth "github.com/spiffe/spike-sdk-go/config/auth"
@@ -46,55 +44,41 @@ import (
 //   - apiErr.ErrUnauthorized if authorization fails
 //   - apiErr.ErrBadInput if request validation fails
 func guardDecryptCipherRequest(
-	request reqres.CipherDecryptRequest,
-	peerSPIFFEID *spiffeid.ID,
-	w http.ResponseWriter,
-	_ *http.Request,
+	request reqres.CipherDecryptRequest, w http.ResponseWriter, r *http.Request,
 ) *sdkErrors.SDKError {
+	// validate peer SPIFFE ID
+	_, err := net.ExtractPeerSPIFFEIDAndRespondOnFail(
+		w, r, reqres.CipherDecryptResponse{
+			Err: sdkErrors.ErrAccessUnauthorized.Code,
+		})
+	if err != nil {
+		return err
+	}
+
 	// Validate version
-	if err := validateVersion(
+	if err := net.RespondCryptoErrOnVersionMismatch(
 		request.Version, w, reqres.CipherDecryptResponse{}.BadRequest(),
 	); err != nil {
 		return err
 	}
 
 	// Validate nonce size
-	if err := validateNonceSize(
+	if err := net.RespondCryptoErrOnInvalidNonceSize(
 		request.Nonce, w, reqres.CipherDecryptResponse{}.BadRequest(),
 	); err != nil {
 		return err
 	}
 
 	// Validate ciphertext size to prevent DoS attacks
-	if err := validateCiphertextSize(
+	if err := net.RespondCryptoErrOnLargeCipherText(
 		request.Ciphertext, w, reqres.CipherDecryptResponse{}.BadRequest(),
 	); err != nil {
 		return err
 	}
 
-	// Lite workloads are always allowed:
-	allowed := false
-	if sdkSpiffeid.IsLiteWorkload(peerSPIFFEID.String()) {
-		allowed = true
-	}
-	// If not, do a policy check to determine if the request is allowed:
-	if !allowed {
-		allowed = state.CheckAccess(
-			peerSPIFFEID.String(),
-			apiAuth.PathSystemCipherDecrypt,
-			[]data.PolicyPermission{data.PermissionExecute},
-		)
-	}
-
-	if !allowed {
-		failErr := net.Fail(
-			reqres.CipherDecryptResponse{}.Unauthorized(), w, http.StatusUnauthorized,
-		)
-		if failErr != nil {
-			return sdkErrors.ErrAccessUnauthorized.Wrap(failErr)
-		}
-		return sdkErrors.ErrAccessUnauthorized.Clone()
-	}
-
-	return nil
+	return net.RespondUnauthorizedOnPredicateFail(
+		spiffeidAllowedForCipherDecrypt,
+		reqres.CipherDecryptResponse{}.Unauthorized(),
+		w, r,
+	)
 }
