@@ -15,13 +15,6 @@ import (
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 )
 
-//func hasListPermission(peerSPIFFEID string) bool {
-//	return state.CheckAccess(
-//		peerSPIFFEID, cfg.PathSystemPolicyAccess,
-//		[]data.PolicyPermission{data.PermissionList},
-//	)
-//}
-
 // guardListPolicyRequest validates a policy list request by performing
 // authentication and authorization checks.
 //
@@ -54,10 +47,9 @@ func guardListPolicyRequest(
 
 	return net.RespondUnauthorizedOnPredicateFail(
 		func(peerSPIFFEID string) bool {
-			return predicate.AllowSPIFFEIDForPolicyList( // TODO: update SDK.
+			return predicate.AllowSPIFFEIDForPolicyList(
 				peerSPIFFEID, state.CheckAccess,
 			)
 		},
-		//hasListPermission,
 		reqres.PolicyListResponse{}.Unauthorized(), w, r)
 }
