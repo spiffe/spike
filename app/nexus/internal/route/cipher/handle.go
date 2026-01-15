@@ -67,7 +67,7 @@ func handleStreamingDecrypt(
 	}
 
 	// Full guard validation (auth and request fields)
-	guardErr := guardDecryptCipherRequest(request, peerSPIFFEID, w, r)
+	guardErr := guardCipherDecryptRequest(request, peerSPIFFEID, w, r)
 	if guardErr != nil {
 		return guardErr
 	}
@@ -113,7 +113,7 @@ func handleJSONDecrypt(
 	}
 
 	// Full guard validation (auth and request fields)
-	guardErr := guardDecryptCipherRequest(*request, peerSPIFFEID, w, r)
+	guardErr := guardCipherDecryptRequest(*request, peerSPIFFEID, w, r)
 	if guardErr != nil {
 		return guardErr
 	}
@@ -170,7 +170,7 @@ func handleStreamingEncrypt(
 	}
 
 	// Full guard validation (auth and request fields)
-	guardErr := guardEncryptCipherRequest(request, peerSPIFFEID, w, r)
+	guardErr := guardCipherEncryptRequest(request, peerSPIFFEID, w, r)
 	if guardErr != nil {
 		return guardErr
 	}
@@ -220,7 +220,7 @@ func handleJSONEncrypt(
 	}
 
 	// Full guard validation (auth and request fields)
-	guardErr := guardEncryptCipherRequest(*request, peerSPIFFEID, w, r)
+	guardErr := guardCipherEncryptRequest(*request, peerSPIFFEID, w, r)
 	if guardErr != nil {
 		return guardErr
 	}

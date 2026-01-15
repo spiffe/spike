@@ -71,7 +71,7 @@ func RoutePutPolicy(
 	request, err := net.ReadParseAndGuard[
 		reqres.PolicyPutRequest, reqres.PolicyPutResponse,
 	](
-		w, r, reqres.PolicyPutResponse{}.BadRequest(), guardPolicyCreateRequest,
+		w, r, reqres.PolicyPutResponse{}.BadRequest(), guardPolicyPutRequest,
 	)
 	if alreadyResponded := err != nil; alreadyResponded {
 		return err

@@ -19,10 +19,16 @@ import (
 )
 
 // CheckAccess determines if a given SPIFFE ID has the required permissions for
-// a specific path. It first checks if the ID belongs to SPIKE Pilot (which has
-// unrestricted access), then evaluates against all defined policies. Policies
-// are checked in order, with wildcard patterns evaluated first, followed by
-// specific pattern matching using regular expressions.
+// a specific path. For SPIKE Pilot (a system workload), access is always
+// granted without policy checks. For other workloads, the function evaluates
+// against all defined policies using regular expression pattern matching.
+//
+// Workloads with associated policies effectively act "on behalf of" SPIKE Pilot
+// to read and modify secrets and policies.
+//
+// Note that elevated actions such as "recovery" and "restore" DO NOT use
+// CheckAccess for access control. These actions require exact actor SPIFFE ID
+// matches and cannot be overridden by policies.
 //
 // Parameters:
 //   - spiffeId: The SPIFFE ID of the requestor
@@ -34,19 +40,17 @@ import (
 //
 // The function grants access if any of these conditions are met:
 //  1. The requestor is a SPIKE Pilot instance.
-//  2. A matching policy has the super permission
-//  3. A matching policy contains all requested permissions
+//  2. A matching policy has the super permission.
+//  3. A matching policy contains all requested permissions.
 //
-// A policy matches when:
-//
-//	Its SPIFFE ID pattern matches the requestor's ID, and its path pattern
-//	matches the requested path.
+// A policy matches when its SPIFFE ID pattern matches the requestor's ID and
+// its path pattern matches the requested path.
 func CheckAccess(
 	peerSPIFFEID string, path string, wants []data.PolicyPermission,
 ) bool {
 	const fName = "CheckAccess"
-	// Role:SpikePilot can always manage secrets and policies,
-	// and can call encryption and decryption API endpoints.
+
+	// SPIKE Pilot is a system workload; no policy check needed.
 	if spiffeid.IsPilotOperator(peerSPIFFEID) {
 		return true
 	}

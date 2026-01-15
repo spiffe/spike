@@ -11,6 +11,7 @@ import (
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/net"
 	"github.com/spiffe/spike-sdk-go/predicate"
+
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 )
 
@@ -37,32 +38,16 @@ import (
 func guardPolicyDeleteRequest(
 	request reqres.PolicyDeleteRequest, w http.ResponseWriter, r *http.Request,
 ) *sdkErrors.SDKError {
-	policyID := request.ID
-
-	// TODO: ensure this happens in ALL guard calls.
-	// Extract and validate SPIFFE ID before any action.
-	_, err := net.ExtractPeerSPIFFEIDAndRespondOnFail(
-		w, r, reqres.PolicyDeleteResponse{
-			Err: sdkErrors.ErrAccessUnauthorized.Code,
-		})
-	if err != nil {
-		return err
-	}
-
-	// TODO: ensure policy verification before other verifications on ALL guard calls.
-	authErr := net.RespondUnauthorizedOnPredicateFail(
-		func(peerSPIFFEID string) bool {
-			return predicate.AllowSPIFFEIDForPolicyDelete(
-				peerSPIFFEID, state.CheckAccess,
-			)
-		},
-		reqres.PolicyDeleteResponse{}.Unauthorized(), w, r,
-	)
-	if authErr != nil {
+	if authErr := net.AuthorizeAndRespondOnFail(
+		reqres.PolicyDeleteResponse{}.Unauthorized(),
+		predicate.AllowSPIFFEIDForPolicyDelete,
+		state.CheckAccess,
+		w, r,
+	); authErr != nil {
 		return authErr
 	}
 
 	return net.RespondErrOnBadPolicyID(
-		policyID, w, reqres.PolicyDeleteResponse{}.BadRequest(),
+		request.ID, w, reqres.PolicyDeleteResponse{}.BadRequest(),
 	)
 }

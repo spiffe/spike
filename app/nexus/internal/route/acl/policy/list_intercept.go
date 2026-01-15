@@ -37,19 +37,10 @@ import (
 func guardListPolicyRequest(
 	_ reqres.PolicyListRequest, w http.ResponseWriter, r *http.Request,
 ) *sdkErrors.SDKError {
-	_, err := net.ExtractPeerSPIFFEIDAndRespondOnFail(
-		w, r, reqres.PolicyListResponse{
-			Err: sdkErrors.ErrAccessUnauthorized.Code,
-		})
-	if err != nil {
-		return err
-	}
-
-	return net.RespondUnauthorizedOnPredicateFail(
-		func(peerSPIFFEID string) bool {
-			return predicate.AllowSPIFFEIDForPolicyList(
-				peerSPIFFEID, state.CheckAccess,
-			)
-		},
-		reqres.PolicyListResponse{}.Unauthorized(), w, r)
+	return net.AuthorizeAndRespondOnFail(
+		reqres.PolicyListResponse{}.Unauthorized(),
+		predicate.AllowSPIFFEIDForPolicyList,
+		state.CheckAccess,
+		w, r,
+	)
 }

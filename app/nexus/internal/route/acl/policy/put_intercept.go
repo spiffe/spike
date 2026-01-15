@@ -11,10 +11,11 @@ import (
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/net"
 	"github.com/spiffe/spike-sdk-go/predicate"
+
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 )
 
-// guardPolicyCreateRequest validates a policy creation request by performing
+// guardPolicyPutRequest validates a policy creation request by performing
 // authentication, authorization, and input validation checks.
 //
 // The function performs the following validations in order:
@@ -37,56 +38,37 @@ import (
 //   - nil if all validations pass
 //   - apiErr.ErrUnauthorized if authentication or authorization fails
 //   - apiErr.ErrInvalidInput if any input validation fails
-func guardPolicyCreateRequest(
+func guardPolicyPutRequest(
 	request reqres.PolicyPutRequest, w http.ResponseWriter, r *http.Request,
 ) *sdkErrors.SDKError {
-	_, err := net.ExtractPeerSPIFFEIDAndRespondOnFail(
-		w, r, reqres.PolicyPutResponse{
-			Err: sdkErrors.ErrAccessUnauthorized.Code,
-		})
-	if err != nil {
-		return err
+	if authErr := net.AuthorizeAndRespondOnFail(
+		reqres.PolicyPutResponse{}.Unauthorized(),
+		predicate.AllowSPIFFEIDForPolicyWrite,
+		state.CheckAccess,
+		w, r,
+	); authErr != nil {
+		return authErr
 	}
 
-	writeErr := net.RespondUnauthorizedOnPredicateFail(
-		func(peerSPIFFEID string) bool {
-			return predicate.AllowSPIFFEIDForPolicyWrite(
-				peerSPIFFEID, state.CheckAccess,
-			)
-		},
-		reqres.PolicyPutResponse{}.Unauthorized(), w, r,
-	)
-	if writeErr != nil {
-		return writeErr
-	}
-
-	name := request.Name
-	SPIFFEIDPattern := request.SPIFFEIDPattern
-	pathPattern := request.PathPattern
-	permissions := request.Permissions
-
-	nameErr := net.RespondErrOnBadName(
-		name, reqres.PolicyPutResponse{}.BadRequest(), w,
-	)
-	if nameErr != nil {
+	if nameErr := net.RespondErrOnBadName(
+		request.Name, reqres.PolicyPutResponse{}.BadRequest(), w,
+	); nameErr != nil {
 		return nameErr
 	}
 
-	spifeIdPatternErr := net.RespondErrOnBadSPIFFEIDPattern(
-		SPIFFEIDPattern, reqres.PolicyPutResponse{}.BadRequest(), w,
-	)
-	if spifeIdPatternErr != nil {
+	if spifeIdPatternErr := net.RespondErrOnBadSPIFFEIDPattern(
+		request.SPIFFEIDPattern, reqres.PolicyPutResponse{}.BadRequest(), w,
+	); spifeIdPatternErr != nil {
 		return spifeIdPatternErr
 	}
 
-	pathPatternErr := net.RespondErrOnBadPathPattern(
-		pathPattern, reqres.PolicyPutResponse{}.BadRequest(), w,
-	)
-	if pathPatternErr != nil {
+	if pathPatternErr := net.RespondErrOnBadPathPattern(
+		request.PathPattern, reqres.PolicyPutResponse{}.BadRequest(), w,
+	); pathPatternErr != nil {
 		return pathPatternErr
 	}
 
 	return net.RespondErrOnBadPermission(
-		permissions, reqres.PolicyPutResponse{}.BadRequest(), w,
+		request.Permissions, reqres.PolicyPutResponse{}.BadRequest(), w,
 	)
 }

@@ -42,7 +42,7 @@ import (
 func guardListSecretRequest(
 	_ reqres.SecretListRequest, w http.ResponseWriter, r *http.Request,
 ) *sdkErrors.SDKError {
-	peerSPIFFEID, err := net.ExtractPeerSPIFFEIDFromRequestAndRespondOnFail[reqres.SecretListResponse](
+	peerSPIFFEID, err := net.ExtractPeerSPIFFEIDAndRespondOnFail(
 		r, w, reqres.SecretListResponse{}.Unauthorized(),
 	)
 	if err != nil {

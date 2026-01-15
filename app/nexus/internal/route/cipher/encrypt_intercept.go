@@ -12,6 +12,7 @@ import (
 	apiAuth "github.com/spiffe/spike-sdk-go/config/auth"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/net"
+	"github.com/spiffe/spike-sdk-go/predicate"
 	sdkSpiffeid "github.com/spiffe/spike-sdk-go/spiffeid"
 
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
@@ -34,7 +35,7 @@ func spiffeidAllowedForEncryptCipher(spiffeid string) bool {
 	return allowed
 }
 
-// guardEncryptCipherRequest validates a cipher encryption request by
+// guardCipherEncryptRequest validates a cipher encryption request by
 // performing authentication, authorization, and request field validation.
 //
 // This function implements a two-tier authorization model:
@@ -60,21 +61,22 @@ func spiffeidAllowedForEncryptCipher(spiffeid string) bool {
 //   - nil if all validations pass
 //   - apiErr.ErrUnauthorized if authorization fails
 //   - apiErr.ErrBadInput if request validation fails
-func guardEncryptCipherRequest(
+func guardCipherEncryptRequest(
 	request reqres.CipherEncryptRequest,
 	w http.ResponseWriter,
 	r *http.Request,
 ) *sdkErrors.SDKError {
-	// Validate plaintext size to prevent DoS attacks
-	if err := validatePlaintextSize(
-		request.Plaintext, w, reqres.CipherEncryptResponse{}.BadRequest(),
-	); err != nil {
-		return err
+	if authErr := net.AuthorizeAndRespondOnFail(
+		reqres.CipherEncryptResponse{}.Unauthorized(),
+		predicate.AllowSPIFFEIDForCipherEncrypt, // TODO: needs SDK update.
+		state.CheckAccess,
+		w, r,
+	); authErr != nil {
+		return authErr
 	}
 
-	return net.RespondUnauthorizedOnPredicateFail(
-		spiffeidAllowedForEncryptCipher,
-		reqres.CipherEncryptResponse{}.Unauthorized(),
-		w, r,
+	// Validate plaintext size to prevent DoS attacks
+	return net.RespondCryptoErrOnLargeCipherText(
+		request.Plaintext, w, reqres.CipherEncryptResponse{}.BadRequest(),
 	)
 }

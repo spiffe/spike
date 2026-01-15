@@ -99,7 +99,7 @@
 //
 // To add request field validation, modify the guard functions:
 //
-//	func guardDecryptCipherRequest(
+//	func guardCipherDecryptRequest(
 //	    request reqres.CipherDecryptRequest,
 //	    peerSPIFFEID *spiffeid.ID,
 //	    w http.ResponseWriter,

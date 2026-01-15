@@ -8,12 +8,10 @@ import (
 	"net/http"
 
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
-	"github.com/spiffe/spike-sdk-go/config/env"
+	"github.com/spiffe/spike-sdk-go/crypto"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/net"
 	"github.com/spiffe/spike-sdk-go/spiffeid"
-
-	"github.com/spiffe/spike-sdk-go/crypto"
 )
 
 // expectedNonceSize is the standard AES-GCM nonce size. See ADR-0032.
@@ -49,38 +47,30 @@ const expectedNonceSize = crypto.GCMNonceSize
 //     bootstrap
 //   - sdkErrors.ErrDataInvalidInput if nonce or ciphertext validation fails
 func guardVerifyRequest(
-	request reqres.BootstrapVerifyRequest, w http.ResponseWriter, r *http.Request,
+	request reqres.BootstrapVerifyRequest,
+	w http.ResponseWriter, r *http.Request,
 ) *sdkErrors.SDKError {
-	err := net.RespondUnauthorizedOnPredicateFail(spiffeid.IsBootstrap,
+	// No CheckAccess because this route is privileged and should not honor
+	// policy overrides. Match exact SPIFFE ID instead.
+	if _, idErr := net.ExtractPeerSPIFFEIDAndRespondOnFail(
+		w, r, reqres.BootstrapVerifyResponse{}.Unauthorized(),
+	); idErr != nil {
+		return idErr
+	}
+	authErr := net.RespondUnauthorizedOnPredicateFail(spiffeid.IsBootstrap,
 		reqres.BootstrapVerifyResponse{}.Unauthorized(), w, r)
-	if err != nil {
-		return err
+	if authErr != nil {
+		return authErr
 	}
 
-	if len(request.Nonce) != expectedNonceSize {
-		failErr := net.Fail(
-			reqres.BootstrapVerifyResponse{}.BadRequest(), w,
-			http.StatusBadRequest,
-		)
-		if failErr != nil {
-			return sdkErrors.ErrDataInvalidInput.Wrap(failErr)
-		}
-		return sdkErrors.ErrDataInvalidInput.Clone()
+	nonceErr := net.RespondCryptoErrOnInvalidNonceSize(
+		request.Nonce, w, reqres.BootstrapVerifyResponse{}.BadRequest(),
+	)
+	if nonceErr != nil {
+		return nonceErr
 	}
 
-	// Limit cipherText size to prevent DoS attacks
-	// The maximum possible size is 68,719,476,704
-	// The limit comes from GCM's 32-bit counter.
-	if len(request.Ciphertext) > env.CryptoMaxCiphertextSizeVal() {
-		failErr := net.Fail(
-			reqres.BootstrapVerifyResponse{}.BadRequest(), w,
-			http.StatusBadRequest,
-		)
-		if failErr != nil {
-			return sdkErrors.ErrDataInvalidInput.Wrap(failErr)
-		}
-		return sdkErrors.ErrDataInvalidInput.Clone()
-	}
-
-	return nil
+	return net.RespondCryptoErrOnLargeCipherText(
+		request.Ciphertext, w, reqres.BootstrapVerifyResponse{}.BadRequest(),
+	)
 }

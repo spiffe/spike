@@ -37,27 +37,16 @@ import (
 func guardPolicyReadRequest(
 	request reqres.PolicyReadRequest, w http.ResponseWriter, r *http.Request,
 ) *sdkErrors.SDKError {
-	_, err := net.ExtractPeerSPIFFEIDAndRespondOnFail[reqres.PolicyReadResponse](
-		w, r, reqres.PolicyReadResponse{}.Unauthorized(),
-	)
-	if alreadyResponded := err != nil; alreadyResponded {
-		return err
-	}
-
-	authErr := net.RespondUnauthorizedOnPredicateFail(
-		func(peerSPIFFEID string) bool {
-			return predicate.AllowSPIFFEIDForPolicyRead(
-				peerSPIFFEID, state.CheckAccess,
-			)
-		},
-		reqres.PolicyReadResponse{}.Unauthorized(), w, r,
-	)
-	if authErr != nil {
+	if authErr := net.AuthorizeAndRespondOnFail(
+		reqres.PolicyReadResponse{}.Unauthorized(),
+		predicate.AllowSPIFFEIDForPolicyRead,
+		state.CheckAccess,
+		w, r,
+	); authErr != nil {
 		return authErr
 	}
 
-	policyID := request.ID
 	return net.RespondErrOnBadPolicyID(
-		policyID, w, reqres.PolicyReadResponse{}.BadRequest(),
+		request.ID, w, reqres.PolicyReadResponse{}.BadRequest(),
 	)
 }

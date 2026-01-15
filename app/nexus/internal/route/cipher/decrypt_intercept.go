@@ -14,7 +14,7 @@ import (
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 )
 
-// guardDecryptCipherRequest validates a cipher decryption request by
+// guardCipherDecryptRequest validates a cipher decryption request by
 // performing authentication, authorization, and request field validation.
 //
 // This function implements a two-tier authorization model:
@@ -40,46 +40,34 @@ import (
 //   - nil if all validations pass
 //   - apiErr.ErrUnauthorized if authorization fails
 //   - apiErr.ErrBadInput if request validation fails
-func guardDecryptCipherRequest(
+func guardCipherDecryptRequest(
 	request reqres.CipherDecryptRequest, w http.ResponseWriter, r *http.Request,
 ) *sdkErrors.SDKError {
-	// validate peer SPIFFE ID
-	_, err := net.ExtractPeerSPIFFEIDAndRespondOnFail(
-		w, r, reqres.CipherDecryptResponse{
-			Err: sdkErrors.ErrAccessUnauthorized.Code,
-		})
-	if err != nil {
-		return err
+	if authErr := net.AuthorizeAndRespondOnFail(
+		reqres.CipherDecryptResponse{}.Unauthorized(),
+		predicate.AllowSPIFFEIDForCipherDecrypt,
+		state.CheckAccess,
+		w, r,
+	); authErr != nil {
+		return authErr
 	}
 
 	// Validate version
-	if err := net.RespondCryptoErrOnVersionMismatch(
+	if versionErr := net.RespondCryptoErrOnVersionMismatch(
 		request.Version, w, reqres.CipherDecryptResponse{}.BadRequest(),
-	); err != nil {
-		return err
+	); versionErr != nil {
+		return versionErr
 	}
 
 	// Validate nonce size
-	if err := net.RespondCryptoErrOnInvalidNonceSize(
+	if nonceErr := net.RespondCryptoErrOnInvalidNonceSize(
 		request.Nonce, w, reqres.CipherDecryptResponse{}.BadRequest(),
-	); err != nil {
-		return err
+	); nonceErr != nil {
+		return nonceErr
 	}
 
 	// Validate ciphertext size to prevent DoS attacks
-	if err := net.RespondCryptoErrOnLargeCipherText(
+	return net.RespondCryptoErrOnLargeCipherText(
 		request.Ciphertext, w, reqres.CipherDecryptResponse{}.BadRequest(),
-	); err != nil {
-		return err
-	}
-
-	return net.RespondUnauthorizedOnPredicateFail(
-		func(peerSPIFFEID string) bool {
-			return predicate.AllowSPIFFEIDForCipherDecrypt(
-				peerSPIFFEID, state.CheckAccess,
-			)
-		},
-		reqres.CipherDecryptResponse{}.Unauthorized(),
-		w, r,
 	)
 }
