@@ -51,7 +51,7 @@ const expectedNonceSize = crypto.GCMNonceSize
 func guardVerifyRequest(
 	request reqres.BootstrapVerifyRequest, w http.ResponseWriter, r *http.Request,
 ) *sdkErrors.SDKError {
-    // >>>>>>
+	// >>>>>>>>>>
 
 	err := net.RespondUnauthorizedOnPredicateFail(spiffeid.IsBootstrap,
 		reqres.BootstrapVerifyResponse{}.Unauthorized(), w, r)
