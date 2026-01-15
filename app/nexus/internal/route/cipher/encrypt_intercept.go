@@ -68,7 +68,7 @@ func guardCipherEncryptRequest(
 ) *sdkErrors.SDKError {
 	if authErr := net.AuthorizeAndRespondOnFail(
 		reqres.CipherEncryptResponse{}.Unauthorized(),
-		predicate.AllowSPIFFEIDForCipherEncrypt, // TODO: needs SDK update.
+		predicate.AllowSPIFFEIDForCipherEncrypt,
 		state.CheckAccess,
 		w, r,
 	); authErr != nil {

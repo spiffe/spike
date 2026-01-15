@@ -12,6 +12,7 @@ import (
 	apiAuth "github.com/spiffe/spike-sdk-go/config/auth"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/net"
+	"github.com/spiffe/spike-sdk-go/predicate"
 
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 )
@@ -42,6 +43,15 @@ import (
 func guardListSecretRequest(
 	_ reqres.SecretListRequest, w http.ResponseWriter, r *http.Request,
 ) *sdkErrors.SDKError {
+	if authErr := net.AuthorizeAndRespondOnFail(
+		reqres.CipherDecryptResponse{}.Unauthorized(),
+		predicate.AllowSPIFFEIDForSecretList, // TODO: TO SDK.
+		state.CheckAccess,
+		w, r,
+	); authErr != nil {
+		return authErr
+	}
+
 	peerSPIFFEID, err := net.ExtractPeerSPIFFEIDAndRespondOnFail(
 		r, w, reqres.SecretListResponse{}.Unauthorized(),
 	)

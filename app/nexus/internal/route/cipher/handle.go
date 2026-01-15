@@ -11,6 +11,9 @@ import (
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/net"
+	"github.com/spiffe/spike-sdk-go/predicate"
+
+	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 )
 
 // handleStreamingDecrypt processes a complete streaming mode decryption
@@ -36,13 +39,13 @@ func handleStreamingDecrypt(
 	// payloads. We need to read the entire stream and generate a request
 	// entity accordingly.
 
-	// Extract and validate SPIFFE ID before accessing cipher
-	peerSPIFFEID, err := net.ExtractPeerSPIFFEIDAndRespondOnFail(
-		r, w, reqres.CipherDecryptResponse{
-			Err: sdkErrors.ErrAccessUnauthorized.Code,
-		})
-	if err != nil {
-		return err
+	if authErr := net.AuthorizeAndRespondOnFail(
+		reqres.CipherDecryptResponse{}.Unauthorized(),
+		predicate.AllowSPIFFEIDForCipherDecrypt,
+		state.CheckAccess,
+		w, r,
+	); authErr != nil {
+		return authErr
 	}
 
 	// Get cipher only after SPIFFE ID validation passes
@@ -67,7 +70,7 @@ func handleStreamingDecrypt(
 	}
 
 	// Full guard validation (auth and request fields)
-	guardErr := guardCipherDecryptRequest(request, peerSPIFFEID, w, r)
+	guardErr := guardCipherDecryptRequest(request, w, r)
 	if guardErr != nil {
 		return guardErr
 	}
@@ -99,11 +102,13 @@ func handleJSONDecrypt(
 	getCipher func() (cipher.AEAD, *sdkErrors.SDKError),
 ) *sdkErrors.SDKError {
 	// Extract and validate SPIFFE ID before accessing cipher
-	peerSPIFFEID, err := net.ExtractPeerSPIFFEIDAndRespondOnFail(r, w, reqres.CipherDecryptResponse{
-		Err: sdkErrors.ErrAccessUnauthorized.Code,
-	})
-	if err != nil {
-		return err
+	if authErr := net.AuthorizeAndRespondOnFail(
+		reqres.CipherDecryptResponse{}.Unauthorized(),
+		predicate.AllowSPIFFEIDForCipherDecrypt,
+		state.CheckAccess,
+		w, r,
+	); authErr != nil {
+		return authErr
 	}
 
 	// Parse request (doesn't need cipher)
@@ -113,7 +118,7 @@ func handleJSONDecrypt(
 	}
 
 	// Full guard validation (auth and request fields)
-	guardErr := guardCipherDecryptRequest(*request, peerSPIFFEID, w, r)
+	guardErr := guardCipherDecryptRequest(*request, w, r)
 	if guardErr != nil {
 		return guardErr
 	}
@@ -153,9 +158,13 @@ func handleStreamingEncrypt(
 	getCipher func() (cipher.AEAD, *sdkErrors.SDKError),
 ) *sdkErrors.SDKError {
 	// Extract and validate SPIFFE ID before accessing cipher
-	peerSPIFFEID, err := extractAndValidateSPIFFEID(w, r)
-	if err != nil {
-		return err
+	if authErr := net.AuthorizeAndRespondOnFail(
+		reqres.CipherEncryptResponse{}.Unauthorized(),
+		predicate.AllowSPIFFEIDForCipherEncrypt,
+		state.CheckAccess,
+		w, r,
+	); authErr != nil {
+		return authErr
 	}
 
 	// Read plaintext (doesn't need cipher)
@@ -170,7 +179,7 @@ func handleStreamingEncrypt(
 	}
 
 	// Full guard validation (auth and request fields)
-	guardErr := guardCipherEncryptRequest(request, peerSPIFFEID, w, r)
+	guardErr := guardCipherEncryptRequest(request, w, r)
 	if guardErr != nil {
 		return guardErr
 	}
@@ -208,9 +217,13 @@ func handleJSONEncrypt(
 	getCipher func() (cipher.AEAD, *sdkErrors.SDKError),
 ) *sdkErrors.SDKError {
 	// Extract and validate SPIFFE ID before accessing cipher
-	peerSPIFFEID, err := extractAndValidateSPIFFEID(w, r)
-	if err != nil {
-		return err
+	if authErr := net.AuthorizeAndRespondOnFail(
+		reqres.CipherEncryptResponse{}.Unauthorized(),
+		predicate.AllowSPIFFEIDForCipherEncrypt,
+		state.CheckAccess,
+		w, r,
+	); authErr != nil {
+		return authErr
 	}
 
 	// Parse request (doesn't need cipher)
@@ -220,7 +233,7 @@ func handleJSONEncrypt(
 	}
 
 	// Full guard validation (auth and request fields)
-	guardErr := guardCipherEncryptRequest(*request, peerSPIFFEID, w, r)
+	guardErr := guardCipherEncryptRequest(*request, w, r)
 	if guardErr != nil {
 		return guardErr
 	}

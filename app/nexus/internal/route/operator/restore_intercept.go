@@ -14,6 +14,8 @@ import (
 	"github.com/spiffe/spike-sdk-go/spiffeid"
 )
 
+const minRequestId = 1
+
 // guardRestoreRequest validates a system restore request by performing
 // authentication, authorization, and input validation checks.
 //
@@ -46,6 +48,8 @@ import (
 func guardRestoreRequest(
 	request reqres.RestoreRequest, w http.ResponseWriter, r *http.Request,
 ) *sdkErrors.SDKError {
+	// No CheckAccess because this route is privileged and should not honor
+	// policy overrides. Match exact SPIFFE ID instead.
 	err := net.RespondUnauthorizedOnPredicateFail(spiffeid.IsPilotRestore,
 		reqres.RestoreResponse{}.Unauthorized(), w, r,
 	)
@@ -53,8 +57,7 @@ func guardRestoreRequest(
 		return err
 	}
 
-	// TODO: magic number: 1
-	if request.ID < 1 || request.ID > env.ShamirMaxShareCountVal() {
+	if request.ID < minRequestId || request.ID > env.ShamirMaxShareCountVal() {
 		failErr := net.Fail(
 			reqres.RestoreResponse{}.BadRequest(), w, http.StatusBadRequest,
 		)
