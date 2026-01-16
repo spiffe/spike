@@ -13,8 +13,6 @@ import (
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/log"
-	"github.com/spiffe/spike-sdk-go/spiffeid"
-
 	"github.com/spiffe/spike/app/nexus/internal/state/persist"
 )
 
@@ -50,11 +48,11 @@ func CheckAccess(
 ) bool {
 	const fName = "CheckAccess"
 
-	// SPIKE Pilot is a system workload; no policy check needed.
-	if spiffeid.IsPilotOperator(peerSPIFFEID) {
-		return true
-	}
-
+	//// SPIKE Pilot is a system workload; no policy check needed.
+	//if spiffeid.IsPilotOperator(peerSPIFFEID) {
+	//	return true
+	//}
+	//
 	policies, err := ListPolicies()
 	if err != nil {
 		log.WarnErr(fName, *sdkErrors.ErrEntityLoadFailed.Clone())

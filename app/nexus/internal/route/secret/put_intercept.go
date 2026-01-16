@@ -7,12 +7,10 @@ package secret
 import (
 	"net/http"
 
-	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/net"
-	"github.com/spiffe/spike-sdk-go/validation"
-
+	"github.com/spiffe/spike-sdk-go/predicate"
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 )
 
@@ -46,59 +44,28 @@ import (
 func guardSecretPutRequest(
 	request reqres.SecretPutRequest, w http.ResponseWriter, r *http.Request,
 ) *sdkErrors.SDKError {
-	peerSPIFFEID, err := net.ExtractPeerSPIFFEIDFromRequestAndRespondOnFail[reqres.SecretPutResponse](
-		r, w, reqres.SecretPutResponse{}.Unauthorized(),
-	)
-	if alreadyResponded := err != nil; alreadyResponded {
-		return err
+	if authErr := net.AuthorizeAndRespondOnFail(
+		reqres.SecretPutResponse{}.Unauthorized(),
+		func(
+			peerSPIFFEID string, checkAccess predicate.PolicyAccessChecker,
+		) bool {
+			return predicate.AllowSPIFFEIDForSecretWrite(
+				peerSPIFFEID, request.Path, checkAccess,
+			)
+		},
+		state.CheckAccess,
+		w, r,
+	); authErr != nil {
+		return authErr
 	}
 
-	path := request.Path
-
-	pathErr := validation.ValidatePath(path)
-	if invalidPath := pathErr != nil; invalidPath {
-		failErr := net.Fail(
-			reqres.SecretPutResponse{}.BadRequest(), w,
-			http.StatusBadRequest,
-		)
-		pathErr.Msg = "invalid secret path: " + path
-		if failErr != nil {
-			return pathErr.Wrap(failErr)
-		}
+	if pathErr := net.RespondErrOnBadPath(
+		request.Path, reqres.SecretPutResponse{}.BadRequest(), w,
+	); pathErr != nil {
 		return pathErr
 	}
 
-	values := request.Values
-	for k := range values {
-		nameErr := validation.ValidateName(k)
-		if nameErr != nil {
-			nameErr.Msg = "invalid key name: " + k
-			failErr := net.Fail(
-				reqres.SecretPutResponse{}.BadRequest(), w,
-				http.StatusBadRequest,
-			)
-			if failErr != nil {
-				return nameErr.Wrap(failErr)
-			}
-			return nameErr
-		}
-	}
-
-	allowed := state.CheckAccess(
-		peerSPIFFEID.String(), path,
-		[]data.PolicyPermission{data.PermissionWrite},
+	return net.RespondErrOnBadValues(
+		request.Values, reqres.SecretPutResponse{}.BadRequest(), w,
 	)
-	if !allowed {
-		failErr := net.Fail(
-			reqres.SecretPutResponse{}.Unauthorized(), w,
-			http.StatusUnauthorized,
-		)
-		authErr := sdkErrors.ErrAccessUnauthorized.Clone()
-		authErr.Msg = "unauthorized to write secret: " + path
-		if failErr != nil {
-			return sdkErrors.ErrAccessUnauthorized.Wrap(failErr)
-		}
-		return authErr
-	}
-	return nil
 }

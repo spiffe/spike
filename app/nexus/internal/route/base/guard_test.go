@@ -115,7 +115,6 @@ func checkDirectory(t *testing.T, dir string) []string {
 func isUtilityFile(name string) bool {
 	utilityFiles := []string{
 		"errors.go",
-		"guard.go",
 		"map.go",
 		"config.go",
 		"crypto.go",
