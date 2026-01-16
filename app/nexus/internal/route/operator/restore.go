@@ -11,6 +11,7 @@ import (
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	"github.com/spiffe/spike-sdk-go/config/env"
+	"github.com/spiffe/spike-sdk-go/crypto"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/log"
 	"github.com/spiffe/spike-sdk-go/net"
@@ -21,7 +22,7 @@ import (
 )
 
 var (
-	shards      []recovery.ShamirShard
+	shards      []crypto.ShamirShard
 	shardsMutex sync.RWMutex
 )
 
@@ -115,7 +116,7 @@ func RouteRestore(
 		)
 	}
 
-	shards = append(shards, recovery.ShamirShard{
+	shards = append(shards, crypto.ShamirShard{
 		ID:    uint64(request.ID),
 		Value: request.Shard,
 	})

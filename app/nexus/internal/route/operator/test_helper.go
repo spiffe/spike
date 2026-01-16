@@ -6,8 +6,6 @@ package operator
 
 import (
 	"github.com/spiffe/spike-sdk-go/crypto"
-
-	"github.com/spiffe/spike/app/nexus/internal/initialization/recovery"
 )
 
 // Helper functions
@@ -15,7 +13,7 @@ import (
 func resetShards() {
 	shardsMutex.Lock()
 	defer shardsMutex.Unlock()
-	shards = []recovery.ShamirShard{}
+	shards = []crypto.ShamirShard{}
 }
 
 func createTestShardValue(id int) *[crypto.AES256KeySize]byte {

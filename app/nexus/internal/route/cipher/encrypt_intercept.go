@@ -7,33 +7,29 @@ package cipher
 import (
 	"net/http"
 
-	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
-	apiAuth "github.com/spiffe/spike-sdk-go/config/auth"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/net"
 	"github.com/spiffe/spike-sdk-go/predicate"
-	sdkSpiffeid "github.com/spiffe/spike-sdk-go/spiffeid"
-
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 )
 
-func spiffeidAllowedForEncryptCipher(spiffeid string) bool {
-	// Lite Workloads are always allowed:
-	allowed := false
-	if sdkSpiffeid.IsLiteWorkload(spiffeid) {
-		allowed = true
-	}
-	// If not, do a policy check to determine if the request is allowed:
-	if !allowed {
-		allowed = state.CheckAccess(
-			spiffeid,
-			apiAuth.PathSystemCipherEncrypt,
-			[]data.PolicyPermission{data.PermissionExecute},
-		)
-	}
-	return allowed
-}
+//func spiffeidAllowedForEncryptCipher(spiffeid string) bool {
+//	// Lite Workloads are always allowed:
+//	allowed := false
+//	if sdkSpiffeid.IsLiteWorkload(spiffeid) {
+//		allowed = true
+//	}
+//	// If not, do a policy check to determine if the request is allowed:
+//	if !allowed {
+//		allowed = state.CheckAccess(
+//			spiffeid,
+//			apiAuth.PathSystemCipherExecute,
+//			[]data.PolicyPermission{data.PermissionExecute},
+//		)
+//	}
+//	return allowed
+//}
 
 // guardCipherEncryptRequest validates a cipher encryption request by
 // performing authentication, authorization, and request field validation.
