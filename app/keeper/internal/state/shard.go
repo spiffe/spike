@@ -2,9 +2,6 @@
 //  \\\\\ Copyright 2024-present SPIKE contributors.
 // \\\\\\\ SPDX-License-Identifier: Apache-2.0
 
-// Package state provides thread-safe utilities for securely managing
-// and accessing a global shard value. It ensures consistent access
-// and updates to the shard using synchronization primitives.
 package state
 
 import (

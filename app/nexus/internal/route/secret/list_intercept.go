@@ -44,7 +44,7 @@ func guardListSecretRequest(
 	return net.AuthorizeAndRespondOnFail(
 		reqres.SecretListResponse{}.Unauthorized(),
 		predicate.AllowSPIFFEIDForSecretList,
-		state.CheckAccess,
+		state.CheckPolicyAccess,
 		w, r,
 	)
 }

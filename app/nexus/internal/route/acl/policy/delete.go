@@ -71,19 +71,16 @@ func RouteDeletePolicy(
 
 	journal.AuditRequest(fName, r, audit, journal.AuditDelete)
 
-	request, err := net.ReadParseAndGuard[
+	request, guardErr := net.ReadParseAndGuard[
 		reqres.PolicyDeleteRequest, reqres.PolicyDeleteResponse,
 	](
 		w, r, reqres.PolicyDeleteResponse{}.BadRequest(), guardPolicyDeleteRequest,
 	)
-	if alreadyResponded := err != nil; alreadyResponded {
-		return err
+	if alreadyResponded := guardErr != nil; alreadyResponded {
+		return guardErr
 	}
 
-	policyID := request.ID
-
-	deleteErr := state.DeletePolicy(policyID)
-	if deleteErr != nil {
+	if deleteErr := state.DeletePolicy(request.ID); deleteErr != nil {
 		return net.RespondWithHTTPError(deleteErr, w, reqres.PolicyDeleteResponse{})
 	}
 

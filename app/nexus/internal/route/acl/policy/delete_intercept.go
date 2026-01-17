@@ -41,7 +41,7 @@ func guardPolicyDeleteRequest(
 	if authErr := net.AuthorizeAndRespondOnFail(
 		reqres.PolicyDeleteResponse{}.Unauthorized(),
 		predicate.AllowSPIFFEIDForPolicyDelete,
-		state.CheckAccess,
+		state.CheckPolicyAccess,
 		w, r,
 	); authErr != nil {
 		return authErr

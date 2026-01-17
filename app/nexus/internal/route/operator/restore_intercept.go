@@ -50,11 +50,12 @@ func guardRestoreRequest(
 ) *sdkErrors.SDKError {
 	// No CheckAccess because this route is privileged and should not honor
 	// policy overrides. Match exact SPIFFE ID instead.
-	err := net.RespondUnauthorizedOnPredicateFail(spiffeid.IsPilotRestore,
-		reqres.RestoreResponse{}.Unauthorized(), w, r,
-	)
-	if err != nil {
-		return err
+	if authErr := net.AuthorizeAndRespondOnFailNoPolicy(
+		reqres.RestoreResponse{}.Unauthorized(),
+		spiffeid.IsPilotRestore,
+		w, r,
+	); authErr != nil {
+		return authErr
 	}
 
 	if request.ID < minRequestId || request.ID > env.ShamirMaxShareCountVal() {
@@ -64,7 +65,7 @@ func guardRestoreRequest(
 		if failErr != nil {
 			return sdkErrors.ErrAPIBadRequest.Wrap(failErr)
 		}
-		return sdkErrors.ErrAPIBadRequest
+		return sdkErrors.ErrAPIBadRequest.Clone()
 	}
 
 	allZero := true
@@ -81,7 +82,7 @@ func guardRestoreRequest(
 		if failErr != nil {
 			return sdkErrors.ErrAPIBadRequest.Wrap(failErr)
 		}
-		return sdkErrors.ErrAPIBadRequest
+		return sdkErrors.ErrAPIBadRequest.Clone()
 	}
 	return nil
 }

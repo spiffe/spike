@@ -44,7 +44,7 @@ func guardPolicyPutRequest(
 	if authErr := net.AuthorizeAndRespondOnFail(
 		reqres.PolicyPutResponse{}.Unauthorized(),
 		predicate.AllowSPIFFEIDForPolicyWrite,
-		state.CheckAccess,
+		state.CheckPolicyAccess,
 		w, r,
 	); authErr != nil {
 		return authErr

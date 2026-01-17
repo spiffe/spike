@@ -85,17 +85,14 @@ func RouteGetPolicy(
 
 	journal.AuditRequest(fName, r, audit, journal.AuditRead)
 
-	request, err := net.ReadParseAndGuard[
-		reqres.PolicyReadRequest, reqres.PolicyReadResponse](
+	request, guardErr := net.ReadParseAndGuard(
 		w, r, reqres.PolicyReadResponse{}.BadRequest(), guardPolicyReadRequest,
 	)
-	if alreadyResponded := err != nil; alreadyResponded {
-		return err
+	if alreadyResponded := guardErr != nil; alreadyResponded {
+		return guardErr
 	}
 
-	policyID := request.ID
-
-	policy, policyErr := state.GetPolicy(policyID)
+	policy, policyErr := state.GetPolicy(request.ID)
 	if policyErr != nil {
 		return net.RespondWithHTTPError(policyErr, w, reqres.PolicyReadResponse{})
 	}

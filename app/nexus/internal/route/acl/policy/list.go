@@ -61,12 +61,12 @@ func RouteListPolicies(
 
 	journal.AuditRequest(fName, r, audit, journal.AuditList)
 
-	request, err := net.ReadParseAndGuard[
+	request, guardErr := net.ReadParseAndGuard[
 		reqres.PolicyListRequest, reqres.PolicyListResponse](
 		w, r, reqres.PolicyListResponse{}.BadRequest(), guardListPolicyRequest,
 	)
-	if alreadyResponded := err != nil; alreadyResponded {
-		return err
+	if alreadyResponded := guardErr != nil; alreadyResponded {
+		return guardErr
 	}
 
 	var policies []data.Policy

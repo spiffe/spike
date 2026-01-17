@@ -44,10 +44,8 @@ import (
 func Initialize(source *workloadapi.X509Source) {
 	const fName = "Initialize"
 
-	requireBackingStoreToBootstrap := env.BackendStoreTypeVal() == env.Sqlite ||
-		env.BackendStoreTypeVal() == env.Lite
-
-	if requireBackingStoreToBootstrap {
+	if requireBackingStoreToBootstrap := env.BackendStoreTypeVal() == env.Sqlite ||
+		env.BackendStoreTypeVal() == env.Lite; requireBackingStoreToBootstrap {
 		// Initialize the backing store from SPIKE Keeper instances.
 		// This is only required when the SPIKE Nexus needs bootstrapping.
 		// For modes where bootstrapping is not required (such as in-memory mode),
@@ -78,8 +76,7 @@ func Initialize(source *workloadapi.X509Source) {
 	// Better to crash, since this is likely a configuration failure.
 	log.FatalLn(
 		fName,
-		"message",
-		"invalid backend store type",
+		"message", "invalid backend store type",
 		"type", env.BackendStoreTypeVal(),
 		"valid_types", "sqlite, lite, memory",
 	)

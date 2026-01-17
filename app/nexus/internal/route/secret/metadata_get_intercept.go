@@ -50,7 +50,7 @@ func guardGetSecretMetadataRequest(
 				peerSPIFFEID, request.Path, checkAccess,
 			)
 		},
-		state.CheckAccess,
+		state.CheckPolicyAccess,
 		w, r,
 	); authErr != nil {
 		return authErr

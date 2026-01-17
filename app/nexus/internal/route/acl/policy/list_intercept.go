@@ -40,7 +40,7 @@ func guardListPolicyRequest(
 	return net.AuthorizeAndRespondOnFail(
 		reqres.PolicyListResponse{}.Unauthorized(),
 		predicate.AllowSPIFFEIDForPolicyList,
-		state.CheckAccess,
+		state.CheckPolicyAccess,
 		w, r,
 	)
 }

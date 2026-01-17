@@ -52,14 +52,11 @@ func guardVerifyRequest(
 ) *sdkErrors.SDKError {
 	// No CheckAccess because this route is privileged and should not honor
 	// policy overrides. Match exact SPIFFE ID instead.
-	if _, idErr := net.ExtractPeerSPIFFEIDAndRespondOnFail(
-		w, r, reqres.BootstrapVerifyResponse{}.Unauthorized(),
-	); idErr != nil {
-		return idErr
-	}
-	authErr := net.RespondUnauthorizedOnPredicateFail(spiffeid.IsBootstrap,
-		reqres.BootstrapVerifyResponse{}.Unauthorized(), w, r)
-	if authErr != nil {
+	if authErr := net.AuthorizeAndRespondOnFailNoPolicy(
+		reqres.BootstrapVerifyResponse{}.Unauthorized(),
+		spiffeid.IsBootstrap,
+		w, r,
+	); authErr != nil {
 		return authErr
 	}
 

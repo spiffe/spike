@@ -46,7 +46,7 @@ func guardCipherDecryptRequest(
 	if authErr := net.AuthorizeAndRespondOnFail(
 		reqres.CipherDecryptResponse{}.Unauthorized(),
 		predicate.AllowSPIFFEIDForCipherDecrypt,
-		state.CheckAccess,
+		state.CheckPolicyAccess,
 		w, r,
 	); authErr != nil {
 		return authErr

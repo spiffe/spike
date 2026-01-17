@@ -42,7 +42,7 @@ func handleStreamingDecrypt(
 	if authErr := net.AuthorizeAndRespondOnFail(
 		reqres.CipherDecryptResponse{}.Unauthorized(),
 		predicate.AllowSPIFFEIDForCipherDecrypt,
-		state.CheckAccess,
+		state.CheckPolicyAccess,
 		w, r,
 	); authErr != nil {
 		return authErr
@@ -105,7 +105,7 @@ func handleJSONDecrypt(
 	if authErr := net.AuthorizeAndRespondOnFail(
 		reqres.CipherDecryptResponse{}.Unauthorized(),
 		predicate.AllowSPIFFEIDForCipherDecrypt,
-		state.CheckAccess,
+		state.CheckPolicyAccess,
 		w, r,
 	); authErr != nil {
 		return authErr
@@ -161,7 +161,7 @@ func handleStreamingEncrypt(
 	if authErr := net.AuthorizeAndRespondOnFail(
 		reqres.CipherEncryptResponse{}.Unauthorized(),
 		predicate.AllowSPIFFEIDForCipherEncrypt,
-		state.CheckAccess,
+		state.CheckPolicyAccess,
 		w, r,
 	); authErr != nil {
 		return authErr
@@ -220,7 +220,7 @@ func handleJSONEncrypt(
 	if authErr := net.AuthorizeAndRespondOnFail(
 		reqres.CipherEncryptResponse{}.Unauthorized(),
 		predicate.AllowSPIFFEIDForCipherEncrypt,
-		state.CheckAccess,
+		state.CheckPolicyAccess,
 		w, r,
 	); authErr != nil {
 		return authErr

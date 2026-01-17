@@ -11,6 +11,7 @@ import (
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/net"
 	"github.com/spiffe/spike-sdk-go/predicate"
+
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 )
 
@@ -40,7 +41,7 @@ func guardPolicyReadRequest(
 	if authErr := net.AuthorizeAndRespondOnFail(
 		reqres.PolicyReadResponse{}.Unauthorized(),
 		predicate.AllowSPIFFEIDForPolicyRead,
-		state.CheckAccess,
+		state.CheckPolicyAccess,
 		w, r,
 	); authErr != nil {
 		return authErr

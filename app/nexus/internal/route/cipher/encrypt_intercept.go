@@ -22,7 +22,7 @@ import (
 //	}
 //	// If not, do a policy check to determine if the request is allowed:
 //	if !allowed {
-//		allowed = state.CheckAccess(
+//		allowed = state.CheckPolicyAccess(
 //			spiffeid,
 //			apiAuth.PathSystemCipherExecute,
 //			[]data.PolicyPermission{data.PermissionExecute},
@@ -65,7 +65,7 @@ func guardCipherEncryptRequest(
 	if authErr := net.AuthorizeAndRespondOnFail(
 		reqres.CipherEncryptResponse{}.Unauthorized(),
 		predicate.AllowSPIFFEIDForCipherEncrypt,
-		state.CheckAccess,
+		state.CheckPolicyAccess,
 		w, r,
 	); authErr != nil {
 		return authErr

@@ -50,9 +50,7 @@ func main() {
 	}
 
 	log.Info(
-		appName,
-		"message", "started service",
-		"version", config.KeeperVersion,
+		appName, "message", "started service", "version", config.KeeperVersion,
 	)
 
 	// Serve the app.

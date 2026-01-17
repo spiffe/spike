@@ -26,11 +26,7 @@ import (
 const appName = "SPIKE Bootstrap"
 
 func main() {
-	log.Info(
-		appName,
-		"message", "starting",
-		"version", config.BootstrapVersion,
-	)
+	log.Info(appName, "message", "starting", "version", config.BootstrapVersion)
 
 	// Hard timeout for the entire bootstrap process.
 	// A value of 0 means no timeout (infinite).
@@ -72,11 +68,7 @@ func main() {
 		return
 	}
 
-	log.Info(
-		appName,
-		"message", "FIPS 140.3 Status",
-		"enabled", fips140.Enabled(),
-	)
+	log.Info(appName, "message", "FIPS Status", "enabled", fips140.Enabled())
 
 	// Panics if it cannot acquire the source.
 	src := net.AcquireSource()

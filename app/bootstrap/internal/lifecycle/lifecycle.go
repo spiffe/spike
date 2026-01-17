@@ -49,19 +49,13 @@ func ShouldBootstrap() bool {
 
 	// Memory backend doesn't need bootstrap.
 	if env.BackendStoreTypeVal() == env.Memory {
-		log.Info(
-			fName,
-			"message", "skipping bootstrap for in-memory backend",
-		)
+		log.Info(fName, "message", "skipping bootstrap for in-memory backend")
 		return false
 	}
 
 	// Lite backend doesn't need bootstrap.
 	if env.BackendStoreTypeVal() == env.Lite {
-		log.Info(
-			fName,
-			"message", "skipping bootstrap for lite backend",
-		)
+		log.Info(fName, "message", "skipping bootstrap for lite backend")
 		return false
 	}
 
@@ -95,7 +89,7 @@ func ShouldBootstrap() bool {
 		return false
 	}
 
-	// We're in Kubernetes---check the ConfigMap
+	// We're in Kubernetes: Check the ConfigMap
 	clientset, clientErr := kubernetes.NewForConfig(cfg)
 	if clientErr != nil {
 		failErr := sdkErrors.ErrK8sClientFailed.Clone()
@@ -120,7 +114,7 @@ func ShouldBootstrap() bool {
 	)
 	if getErr != nil {
 		failErr := sdkErrors.ErrK8sReconciliationFailed.Wrap(getErr)
-		// ConfigMap doesn't exist or can't read it - proceed with bootstrap
+		// ConfigMap doesn't exist or can't read it: Proceed with bootstrap
 		failErr.Msg = "failed to get ConfigMap: proceeding with bootstrap"
 		log.WarnErr(fName, *failErr)
 		return true
@@ -142,10 +136,12 @@ func ShouldBootstrap() bool {
 			keyBootstrapCompletedByPod, completedByPod,
 			"reason", reason,
 		)
+
+		// Bootstrap is complete: Skip further bootstraps
 		return false
 	}
 
-	// Bootstrap is not completed: proceed with bootstrap
+	// Bootstrap is not completed: Proceed with bootstrap
 	return true
 }
 

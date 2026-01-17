@@ -16,10 +16,10 @@ import (
 	"github.com/spiffe/spike-sdk-go/api/url"
 	"github.com/spiffe/spike-sdk-go/config/env"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
-
 	"github.com/spiffe/spike-sdk-go/journal"
+	"github.com/spiffe/spike-sdk-go/net"
+
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
-	"github.com/spiffe/spike/internal/net"
 )
 
 // Route handles all incoming HTTP requests by dynamically selecting and
@@ -38,9 +38,9 @@ func Route(
 		url.APIAction(r.URL.Query().Get(url.KeyAPIAction)),
 		r.Method,
 		func(a url.APIAction, p url.APIURL) net.Handler {
-			// Lite: requires root key.
-			// SQLite: requires root key.
-			// Memory: does not require root key.
+			// Lite: requires the root key.
+			// SQLite: requires the root key.
+			// Memory: does not require the root key.
 
 			emptyRootKey := state.RootKeyZero()
 			inMemoryMode := env.BackendStoreTypeVal() == env.Memory

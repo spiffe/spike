@@ -10,9 +10,9 @@ import (
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
+	"github.com/spiffe/spike-sdk-go/journal"
 	"github.com/spiffe/spike-sdk-go/net"
 
-	"github.com/spiffe/spike-sdk-go/journal"
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 )
 
@@ -68,13 +68,11 @@ func RoutePutPolicy(
 
 	journal.AuditRequest(fName, r, audit, journal.AuditCreate)
 
-	request, err := net.ReadParseAndGuard[
-		reqres.PolicyPutRequest, reqres.PolicyPutResponse,
-	](
+	request, guardErr := net.ReadParseAndGuard(
 		w, r, reqres.PolicyPutResponse{}.BadRequest(), guardPolicyPutRequest,
 	)
-	if alreadyResponded := err != nil; alreadyResponded {
-		return err
+	if alreadyResponded := guardErr != nil; alreadyResponded {
+		return guardErr
 	}
 
 	policy, upsertErr := state.UpsertPolicy(data.Policy{

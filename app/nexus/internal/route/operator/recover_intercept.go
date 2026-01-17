@@ -44,7 +44,9 @@ func guardRecoverRequest(
 ) *sdkErrors.SDKError {
 	// No CheckAccess because this route is privileged and should not honor
 	// policy overrides. Match exact SPIFFE ID instead.
-	return net.RespondUnauthorizedOnPredicateFail(spiffeid.IsPilotRecover,
-		reqres.RestoreResponse{}.Unauthorized(), w, r,
+	return net.AuthorizeAndRespondOnFailNoPolicy(
+		reqres.PolicyPutResponse{}.Unauthorized(),
+		spiffeid.IsPilotRecover,
+		w, r,
 	)
 }

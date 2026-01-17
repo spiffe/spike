@@ -16,8 +16,9 @@ import (
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 
 	"github.com/spiffe/spike-sdk-go/journal"
+	"github.com/spiffe/spike-sdk-go/net"
+
 	"github.com/spiffe/spike/app/keeper/internal/route/store"
-	"github.com/spiffe/spike/internal/net"
 )
 
 // Route handles all incoming HTTP requests by dynamically selecting and
