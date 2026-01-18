@@ -37,10 +37,14 @@ import (
 func guardListPolicyRequest(
 	_ reqres.PolicyListRequest, w http.ResponseWriter, r *http.Request,
 ) *sdkErrors.SDKError {
-	return net.AuthorizeAndRespondOnFail(
+	if authErr := net.AuthorizeAndRespondOnFail(
 		reqres.PolicyListResponse{}.Unauthorized(),
 		predicate.AllowSPIFFEIDForPolicyList,
 		state.CheckPolicyAccess,
 		w, r,
-	)
+	); authErr != nil {
+		return authErr
+	}
+
+	return nil
 }

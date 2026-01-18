@@ -5,11 +5,12 @@
 package cipher
 
 import (
-	"crypto/cipher"
 	"net/http"
 
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
+	"github.com/spiffe/spike-sdk-go/net"
+	"github.com/spiffe/spike/app/nexus/internal/state/persist"
 
 	"github.com/spiffe/spike-sdk-go/journal"
 )
@@ -58,23 +59,11 @@ func RouteEncrypt(
 
 	journal.AuditRequest(fName, r, audit, journal.AuditCreate)
 
-	// Check if streaming mode based on Content-Type
-	contentType := r.Header.Get(headerKeyContentType)
-	streamModeActive := contentType == headerValueOctetStream
-
-	if streamModeActive {
-		// Cipher getter for streaming mode
-		getCipher := func() (cipher.AEAD, *sdkErrors.SDKError) {
-			return getCipherOrFailStreaming(w)
-		}
-		return handleStreamingEncrypt(w, r, getCipher)
-	}
-
-	// Cipher getter for JSON mode
-	getCipher := func() (cipher.AEAD, *sdkErrors.SDKError) {
-		return getCipherOrFailJSON(
-			w, reqres.CipherEncryptResponse{Err: sdkErrors.ErrAPIInternal.Code},
-		)
-	}
-	return handleJSONEncrypt(w, r, getCipher)
+	return net.DispatchByContentType(
+		w, r,
+		handleStreamingEncrypt,
+		handleJSONEncrypt,
+		persist.Backend().GetCipher,
+		reqres.CipherEncryptResponse{}.Internal(),
+	)
 }

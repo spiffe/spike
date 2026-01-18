@@ -68,7 +68,7 @@ func iterateKeepersAndInitializeState(
 
 	// For persistent backends, X509 source is required for mTLS with keepers.
 	// We warn and return false (triggering retry) rather than crashing because:
-	// 1. This function runs in retry.Forever() - designed for transient failures
+	// 1. This function runs in retry.Forever() (designed for transient failures)
 	// 2. Workload API may temporarily lose source and recover
 	// 3. Returning false allows the system to retry and recover gracefully
 	if source == nil {

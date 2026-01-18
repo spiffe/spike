@@ -79,7 +79,7 @@ func main() {
 		// have a legitimate SPIFFE ID registration entry.
 		// we might want to further restrict this based on environment
 		// configuration maybe (for example, a predicate that checks regex
-		// matching on workload SPIFFFE IDs before granting access,
+		// matching on workload SPIFFE IDs before granting access,
 		// if the matcher is not provided, AllowAll will be assumed).
 		predicate.AllowAll,
 		env.NexusTLSPortVal(),

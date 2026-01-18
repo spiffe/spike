@@ -13,11 +13,11 @@ import (
 	"github.com/spiffe/spike-sdk-go/config/env"
 	"github.com/spiffe/spike-sdk-go/crypto"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
+	"github.com/spiffe/spike-sdk-go/journal"
 	"github.com/spiffe/spike-sdk-go/log"
 	"github.com/spiffe/spike-sdk-go/net"
 	"github.com/spiffe/spike-sdk-go/security/mem"
 
-	"github.com/spiffe/spike-sdk-go/journal"
 	"github.com/spiffe/spike/app/nexus/internal/initialization/recovery"
 )
 

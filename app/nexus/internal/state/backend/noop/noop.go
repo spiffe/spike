@@ -174,8 +174,18 @@ func (s *Store) DeletePolicy(_ context.Context, _ string) *sdkErrors.SDKError {
 // satisfy the backend interface but provides no cipher since no actual
 // encryption operations are performed.
 //
+// This method includes a nil receiver guard for consistency with other
+// backend implementations. The guard exists because GetCipher may be passed
+// as a method value (e.g., `backend.GetCipher` without parentheses) where
+// the receiver is bound at capture time. If the backend is nil when the
+// method value is later invoked, the guard prevents a panic. For this no-op
+// implementation, the result is the same (nil) regardless of receiver state.
+//
 // Returns:
 //   - cipher.AEAD: Always returns nil
 func (s *Store) GetCipher() cipher.AEAD {
+	if s == nil {
+		return nil
+	}
 	return nil
 }

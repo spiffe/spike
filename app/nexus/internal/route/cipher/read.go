@@ -121,24 +121,26 @@ func readStreamingDecryptRequestData(
 }
 
 // readStreamingEncryptRequestWithoutGuard reads a streaming mode encryption
-// request without performing guard validation.
+// request without performing guard validation. The raw binary body is wrapped
+// in a CipherEncryptRequest to provide a unified interface with the JSON
+// reader.
 //
 // Parameters:
 //   - w: The HTTP response writer for error responses
 //   - r: The HTTP request containing the binary data
 //
 // Returns:
-//   - plaintext: The plaintext data to encrypt
+//   - *reqres.CipherEncryptRequest: The request with plaintext populated
 //   - *sdkErrors.SDKError: An error if reading fails
 func readStreamingEncryptRequestWithoutGuard(
 	w http.ResponseWriter, r *http.Request,
-) ([]byte, *sdkErrors.SDKError) {
+) (*reqres.CipherEncryptRequest, *sdkErrors.SDKError) {
 	plaintext, err := net.ReadRequestBodyAndRespondOnFail(w, r)
 	if err != nil {
 		return nil, err
 	}
 
-	return plaintext, nil
+	return &reqres.CipherEncryptRequest{Plaintext: plaintext}, nil
 }
 
 // readJSONEncryptRequestWithoutGuard reads and parses a JSON mode encryption

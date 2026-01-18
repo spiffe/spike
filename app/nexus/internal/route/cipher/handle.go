@@ -75,7 +75,7 @@ func handleStreamingDecrypt(
 		return guardErr
 	}
 
-	plaintext, decryptErr := decryptDataStreaming(nonce, ciphertext, c, w)
+	plaintext, decryptErr := net.DecryptDataStreaming(nonce, ciphertext, c, w)
 	if decryptErr != nil {
 		return decryptErr
 	}
@@ -129,7 +129,7 @@ func handleJSONDecrypt(
 		return cipherErr
 	}
 
-	plaintext, decryptErr := decryptDataJSON(
+	plaintext, decryptErr := net.DecryptDataJSON(
 		request.Nonce, request.Ciphertext, c, w,
 	)
 	if decryptErr != nil {
@@ -157,45 +157,83 @@ func handleStreamingEncrypt(
 	w http.ResponseWriter, r *http.Request,
 	getCipher func() (cipher.AEAD, *sdkErrors.SDKError),
 ) *sdkErrors.SDKError {
-	// Extract and validate SPIFFE ID before accessing cipher
-	if authErr := net.AuthorizeAndRespondOnFail(
-		reqres.CipherEncryptResponse{}.Unauthorized(),
-		predicate.AllowSPIFFEIDForCipherEncrypt,
-		state.CheckPolicyAccess,
+	req, err := readAndGuardRequest(
+		readStreamingEncryptRequestWithoutGuard,
+		guardCipherEncryptRequest,
 		w, r,
-	); authErr != nil {
-		return authErr
+	)
+	if err != nil {
+		return err
 	}
 
-	// Read plaintext (doesn't need cipher)
-	plaintext, readErr := readStreamingEncryptRequestWithoutGuard(w, r)
-	if readErr != nil {
-		return readErr
-	}
-
-	// Construct request object for guard validation
-	request := reqres.CipherEncryptRequest{
-		Plaintext: plaintext,
-	}
-
-	// Full guard validation (auth and request fields)
-	guardErr := guardCipherEncryptRequest(request, w, r)
-	if guardErr != nil {
-		return guardErr
-	}
-
-	// Get cipher only after auth passes
-	c, cipherErr := getCipher()
-	if cipherErr != nil {
-		return cipherErr
-	}
-
-	nonce, ciphertext, encryptErr := encryptDataStreaming(plaintext, c, w)
+	nonce, ciphertext, encryptErr := getCipherAndEncrypt(getCipher, net.EncryptDataStreaming, req.Plaintext, w)
 	if encryptErr != nil {
 		return encryptErr
 	}
 
 	return respondStreamingEncrypt(nonce, ciphertext, w)
+}
+
+type Handler[T any] func(w http.ResponseWriter, r *http.Request) (*T, *sdkErrors.SDKError)
+type HandlerWithEntity[T any] func(req T, w http.ResponseWriter, r *http.Request) *sdkErrors.SDKError
+
+type Encryptor func(plaintext []byte, c cipher.AEAD, w http.ResponseWriter) ([]byte, []byte, *sdkErrors.SDKError)
+
+// readAndGuardRequest reads and parses a request, then validates it using the
+// provided guard function. This is similar to net.ReadParseAndGuard but accepts
+// a custom reader function for streaming mode support.
+//
+// Parameters:
+//   - readRequest: Function to read and parse the request body
+//   - guard: Function to validate the parsed request (handles auth and fields)
+//   - w: The HTTP response writer
+//   - r: The HTTP request
+//
+// Returns:
+//   - *T: The parsed and validated request
+//   - *sdkErrors.SDKError: An error if reading or validation fails
+func readAndGuardRequest[T any](
+	readRequest Handler[T],
+	guard HandlerWithEntity[T],
+	w http.ResponseWriter, r *http.Request,
+) (*T, *sdkErrors.SDKError) {
+	request, readErr := readRequest(w, r)
+	if readErr != nil {
+		return nil, readErr
+	}
+
+	if guardErr := guard(*request, w, r); guardErr != nil {
+		return nil, guardErr
+	}
+
+	return request, nil
+}
+
+// getCipherAndEncrypt retrieves the cipher and encrypts the provided data.
+// This combines cipher acquisition and encryption into a single operation.
+//
+// Parameters:
+//   - getCipher: Function to retrieve the AEAD cipher
+//   - encryptData: The encryption function to use
+//   - plaintext: The data to encrypt
+//   - w: The HTTP response writer for error responses
+//
+// Returns:
+//   - []byte: The generated nonce
+//   - []byte: The encrypted ciphertext
+//   - *sdkErrors.SDKError: An error if cipher retrieval or encryption fails
+func getCipherAndEncrypt(
+	getCipher func() (cipher.AEAD, *sdkErrors.SDKError),
+	encryptData Encryptor,
+	plaintext []byte,
+	w http.ResponseWriter,
+) ([]byte, []byte, *sdkErrors.SDKError) {
+	c, cipherErr := getCipher()
+	if cipherErr != nil {
+		return nil, nil, cipherErr
+	}
+
+	return encryptData(plaintext, c, w)
 }
 
 // handleJSONEncrypt processes a complete JSON mode encryption request,
@@ -216,37 +254,16 @@ func handleJSONEncrypt(
 	w http.ResponseWriter, r *http.Request,
 	getCipher func() (cipher.AEAD, *sdkErrors.SDKError),
 ) *sdkErrors.SDKError {
-	// Extract and validate SPIFFE ID before accessing cipher
-	if authErr := net.AuthorizeAndRespondOnFail(
-		reqres.CipherEncryptResponse{}.Unauthorized(),
-		predicate.AllowSPIFFEIDForCipherEncrypt,
-		state.CheckPolicyAccess,
+	req, err := readAndGuardRequest(
+		readJSONEncryptRequestWithoutGuard,
+		guardCipherEncryptRequest,
 		w, r,
-	); authErr != nil {
-		return authErr
-	}
-
-	// Parse request (doesn't need cipher)
-	request, jsonErr := readJSONEncryptRequestWithoutGuard(w, r)
-	if jsonErr != nil {
-		return jsonErr
-	}
-
-	// Full guard validation (auth and request fields)
-	guardErr := guardCipherEncryptRequest(*request, w, r)
-	if guardErr != nil {
-		return guardErr
-	}
-
-	// Get cipher only after auth passes
-	c, cipherErr := getCipher()
-	if cipherErr != nil {
-		return cipherErr
-	}
-
-	nonce, ciphertext, encryptErr := encryptDataJSON(
-		request.Plaintext, c, w,
 	)
+	if err != nil {
+		return err
+	}
+
+	nonce, ciphertext, encryptErr := getCipherAndEncrypt(getCipher, net.EncryptDataJSON, req.Plaintext, w)
 	if encryptErr != nil {
 		return encryptErr
 	}

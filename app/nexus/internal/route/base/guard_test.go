@@ -117,7 +117,6 @@ func isUtilityFile(name string) bool {
 		"errors.go",
 		"map.go",
 		"config.go",
-		"crypto.go",
 		"handle.go",
 		"net.go",
 		"state.go",

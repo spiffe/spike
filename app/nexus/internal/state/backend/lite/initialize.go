@@ -69,9 +69,19 @@ func New(rootKey *[crypto.AES256KeySize]byte) (
 // This method provides access to the underlying AEAD (Authenticated Encryption
 // with Associated Data) cipher for performing cryptographic operations.
 //
+// This method includes a nil receiver guard because it may be passed as a
+// method value (e.g., `backend.GetCipher` without parentheses) where the
+// receiver is bound at capture time. If the backend is nil when the method
+// value is later invoked, the guard prevents a panic by returning nil
+// instead of dereferencing a nil pointer. Callers should check for a nil
+// return value.
+//
 // Returns:
 //   - cipher.AEAD: The AES-GCM cipher instance configured during store
-//     initialization
+//     initialization, or nil if the receiver is nil
 func (ds *Store) GetCipher() cipher.AEAD {
+	if ds == nil {
+		return nil
+	}
 	return ds.Cipher
 }

@@ -8,15 +8,10 @@ import (
 	"net/http"
 
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
-	"github.com/spiffe/spike-sdk-go/crypto"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/net"
 	"github.com/spiffe/spike-sdk-go/spiffeid"
 )
-
-// expectedNonceSize is the standard AES-GCM nonce size. See ADR-0032.
-// (https://spike.ist/architecture/adrs/adr-0032/)
-const expectedNonceSize = crypto.GCMNonceSize
 
 // guardVerifyRequest validates a bootstrap verification request by performing
 // authentication and input validation checks.
