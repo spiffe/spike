@@ -8,13 +8,10 @@ import (
 	"net/http"
 
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
-	"github.com/spiffe/spike-sdk-go/config/env"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/net"
 	"github.com/spiffe/spike-sdk-go/spiffeid"
 )
-
-const minRequestId = 1
 
 // guardRestoreRequest validates a system restore request by performing
 // authentication, authorization, and input validation checks.
@@ -58,31 +55,13 @@ func guardRestoreRequest(
 		return authErr
 	}
 
-	if request.ID < minRequestId || request.ID > env.ShamirMaxShareCountVal() {
-		failErr := net.Fail(
-			reqres.RestoreResponse{}.BadRequest(), w, http.StatusBadRequest,
-		)
-		if failErr != nil {
-			return sdkErrors.ErrAPIBadRequest.Wrap(failErr)
-		}
-		return sdkErrors.ErrAPIBadRequest.Clone()
+	if idErr := net.RespondErrOnBadRequestID(
+		request.ID, reqres.RestoreResponse{}.BadRequest(), w,
+	); idErr != nil {
+		return idErr
 	}
 
-	allZero := true
-	for _, b := range request.Shard {
-		if b != 0 {
-			allZero = false
-			break
-		}
-	}
-	if allZero {
-		failErr := net.Fail(
-			reqres.RestoreResponse{}.BadRequest(), w, http.StatusBadRequest,
-		)
-		if failErr != nil {
-			return sdkErrors.ErrAPIBadRequest.Wrap(failErr)
-		}
-		return sdkErrors.ErrAPIBadRequest.Clone()
-	}
-	return nil
+	return net.RespondErrOnEmptyShard(
+		request.Shard, reqres.RestoreResponse{}.BadRequest(), w,
+	)
 }

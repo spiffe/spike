@@ -18,7 +18,6 @@ import (
 	"github.com/spiffe/spike-sdk-go/crypto"
 
 	"github.com/spiffe/spike-sdk-go/journal"
-	"github.com/spiffe/spike/app/nexus/internal/initialization/recovery"
 )
 
 func TestRouteRestore_MemoryMode(t *testing.T) {
@@ -157,7 +156,7 @@ func TestRouteRestore_TooManyShards(t *testing.T) {
 	for i := 1; i <= 3; i++ { // Exceed the threshold of 2
 		testData := &[crypto.AES256KeySize]byte{}
 		testData[0] = byte(i) // Make each shard unique and non-zero
-		shards = append(shards, recovery.ShamirShard{
+		shards = append(shards, crypto.ShamirShard{
 			ID:    uint64(i),
 			Value: testData,
 		})
@@ -213,7 +212,7 @@ func TestRouteRestore_DuplicateShard(t *testing.T) {
 	testData := &[crypto.AES256KeySize]byte{}
 	testData[0] = 1 // Non-zero
 	shardsMutex.Lock()
-	shards = append(shards, recovery.ShamirShard{
+	shards = append(shards, crypto.ShamirShard{
 		ID:    1,
 		Value: testData,
 	})
@@ -265,21 +264,21 @@ func TestShardCollectionLogic(t *testing.T) {
 
 	tests := []struct {
 		name            string
-		existingShards  []recovery.ShamirShard
+		existingShards  []crypto.ShamirShard
 		newShardID      uint64
 		expectedCount   int
 		expectThreshold bool
 	}{
 		{
 			name:            "first shard",
-			existingShards:  []recovery.ShamirShard{},
+			existingShards:  []crypto.ShamirShard{},
 			newShardID:      1,
 			expectedCount:   1,
 			expectThreshold: false,
 		},
 		{
 			name: "second shard",
-			existingShards: []recovery.ShamirShard{
+			existingShards: []crypto.ShamirShard{
 				{ID: 1, Value: createTestShardValue(1)},
 			},
 			newShardID:      2,
@@ -288,7 +287,7 @@ func TestShardCollectionLogic(t *testing.T) {
 		},
 		{
 			name: "third shard - reaches threshold",
-			existingShards: []recovery.ShamirShard{
+			existingShards: []crypto.ShamirShard{
 				{ID: 1, Value: createTestShardValue(1)},
 				{ID: 2, Value: createTestShardValue(2)},
 			},
@@ -315,7 +314,7 @@ func TestShardCollectionLogic(t *testing.T) {
 			// Simulate adding a new shard
 			if currentCount < threshold {
 				shardsMutex.Lock()
-				shards = append(shards, recovery.ShamirShard{
+				shards = append(shards, crypto.ShamirShard{
 					ID:    tt.newShardID,
 					Value: createTestShardValue(int(tt.newShardID)),
 				})
@@ -340,7 +339,7 @@ func TestShardDuplicateDetection(t *testing.T) {
 	resetShards()
 
 	// Add initial shards
-	testShards := []recovery.ShamirShard{
+	testShards := []crypto.ShamirShard{
 		{ID: 1, Value: createTestShardValue(1)},
 		{ID: 3, Value: createTestShardValue(3)},
 		{ID: 5, Value: createTestShardValue(5)},
@@ -397,7 +396,7 @@ func TestShardSecurityCleanup(t *testing.T) {
 
 	// Reset and add shards that would trigger restoration
 	resetShards()
-	testShards := []recovery.ShamirShard{
+	testShards := []crypto.ShamirShard{
 		{ID: 1, Value: createTestShardValue(1)},
 		{ID: 2, Value: createTestShardValue(2)},
 	}
@@ -477,7 +476,7 @@ func TestConcurrentShardAccess(t *testing.T) {
 				shardID := uint64(goroutineID*shardsPerGoroutine + j + 1)
 
 				shardsMutex.Lock()
-				shards = append(shards, recovery.ShamirShard{
+				shards = append(shards, crypto.ShamirShard{
 					ID:    shardID,
 					Value: createTestShardValue(int(shardID)),
 				})

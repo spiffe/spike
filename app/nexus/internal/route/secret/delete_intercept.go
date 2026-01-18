@@ -39,8 +39,11 @@ import (
 func guardDeleteSecretRequest(
 	request reqres.SecretDeleteRequest, w http.ResponseWriter, r *http.Request,
 ) *sdkErrors.SDKError {
-	if authErr := net.AuthorizeAndRespondOnFail(
+	if authErr := net.AuthorizeAndRespondOnFail( // TODO: AuthorizeAndRespondOnFailForPath(peerSPIFFEID, path, checkAccess)
 		reqres.SecretDeleteResponse{}.Unauthorized(),
+
+		// TODO: type ForPathWithPolicyAccessChecker func(string peerSPIFFEID, string path, PolicyAccessChecker) bool
+
 		func(
 			peerSPIFFEID string, checkAccess predicate.PolicyAccessChecker,
 		) bool {
