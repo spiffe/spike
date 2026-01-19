@@ -50,7 +50,7 @@ import (
 //   - Version numbers are valid non-negative integers
 //   - Version strings are properly formatted
 func newSecretDeleteCommand(
-		source *workloadapi.X509Source, SPIFFEID string,
+	source *workloadapi.X509Source, SPIFFEID string,
 ) *cobra.Command {
 	var deleteCmd = &cobra.Command{
 		Use:   "delete <path>",

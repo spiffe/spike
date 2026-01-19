@@ -40,11 +40,11 @@ func encryptStream(cmd *cobra.Command, api *sdk.API, inFile, outFile string) {
 	}
 
 	in, cleanupIn, inputErr := openInput(inFile)
+	defer cleanupIn() // safe: openInput returns noop on error.
 	if inputErr != nil {
 		cmd.PrintErrf("Error: %v\n", inputErr)
 		return
 	}
-	defer cleanupIn()
 
 	out, cleanupOut, outputErr := openOutput(outFile)
 	if outputErr != nil {
@@ -79,7 +79,7 @@ func encryptStream(cmd *cobra.Command, api *sdk.API, inFile, outFile string) {
 // The function prints errors directly to stderr and returns without error
 // propagation, following the CLI command pattern.
 func encryptJSON(cmd *cobra.Command, api *sdk.API, plaintextB64, algorithm,
-	outFile string) {
+		outFile string) {
 	plaintext, err := base64.StdEncoding.DecodeString(plaintextB64)
 	if err != nil {
 		cmd.PrintErrln("Error: Invalid --plaintext base64.")
