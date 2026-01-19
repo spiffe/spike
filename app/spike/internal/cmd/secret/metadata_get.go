@@ -10,9 +10,8 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	spike "github.com/spiffe/spike-sdk-go/api"
-
+	"github.com/spiffe/spike-sdk-go/spiffeid"
 	"github.com/spiffe/spike/app/spike/internal/stdout"
-	"github.com/spiffe/spike/app/spike/internal/trust"
 )
 
 // newSecretMetadataGetCommand creates and returns a new cobra.Command for
@@ -57,12 +56,7 @@ func newSecretMetadataGetCommand(
 		Short: "Gets secret metadata from the specified path",
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
-			trust.AuthenticateForPilot(SPIFFEID)
-
-			if source == nil {
-				cmd.PrintErrln("Error: SPIFFE X509 source is unavailable.")
-				return
-			}
+			spiffeid.IsPilotOperatorOrDie(SPIFFEID)
 
 			api := spike.NewWithSource(source)
 

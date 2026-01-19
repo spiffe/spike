@@ -35,45 +35,14 @@ import (
 func (s *DataStore) DeletePolicy(
 	ctx context.Context, id string,
 ) *sdkErrors.SDKError {
-	const fName = "DeletePolicy"
-
-	validation.NonNilContextOrDie(ctx, fName)
-
-	s.mu.Lock()
-	defer s.mu.Unlock()
-
-	tx, beginErr := s.db.BeginTx(
-		ctx, &sql.TxOptions{Isolation: sql.LevelSerializable},
-	)
-	if beginErr != nil {
-		failErr := sdkErrors.ErrTransactionBeginFailed.Wrap(beginErr)
-		return failErr
-	}
-
-	committed := false
-	defer func(tx *sql.Tx) {
-		if !committed {
-			rollbackErr := tx.Rollback()
-			if rollbackErr != nil {
-				failErr := sdkErrors.ErrTransactionRollbackFailed.Wrap(rollbackErr)
-				log.WarnErr(fName, *failErr)
+	return s.withSerializableTx(ctx, "DeletePolicy",
+		func(tx *sql.Tx) *sdkErrors.SDKError {
+			_, execErr := tx.ExecContext(ctx, ddl.QueryDeletePolicy, id)
+			if execErr != nil {
+				return sdkErrors.ErrEntityQueryFailed.Wrap(execErr)
 			}
-		}
-	}(tx)
-
-	_, execErr := tx.ExecContext(ctx, ddl.QueryDeletePolicy, id)
-	if execErr != nil {
-		failErr := sdkErrors.ErrEntityQueryFailed.Wrap(execErr)
-		return failErr
-	}
-
-	if commitErr := tx.Commit(); commitErr != nil {
-		failErr := sdkErrors.ErrTransactionCommitFailed.Wrap(commitErr)
-		return failErr
-	}
-
-	committed = true
-	return nil
+			return nil
+		})
 }
 
 // StorePolicy saves or updates a policy in the database.
@@ -92,32 +61,6 @@ func (s *DataStore) DeletePolicy(
 func (s *DataStore) StorePolicy(
 	ctx context.Context, policy data.Policy,
 ) *sdkErrors.SDKError {
-	const fName = "StorePolicy"
-
-	validation.NonNilContextOrDie(ctx, fName)
-
-	s.mu.Lock()
-	defer s.mu.Unlock()
-
-	tx, beginErr := s.db.BeginTx(
-		ctx, &sql.TxOptions{Isolation: sql.LevelSerializable},
-	)
-	if beginErr != nil {
-		failErr := sdkErrors.ErrTransactionBeginFailed.Wrap(beginErr)
-		return failErr
-	}
-
-	committed := false
-	defer func(tx *sql.Tx) {
-		if !committed {
-			rollbackErr := tx.Rollback()
-			if rollbackErr != nil {
-				failErr := sdkErrors.ErrTransactionRollbackFailed.Wrap(rollbackErr)
-				log.WarnErr(fName, *failErr)
-			}
-		}
-	}(tx)
-
 	// Serialize permissions to comma-separated string
 	permissionsStr := ""
 	if len(policy.Permissions) > 0 {
@@ -128,7 +71,7 @@ func (s *DataStore) StorePolicy(
 		permissionsStr = strings.Join(permissions, ",")
 	}
 
-	// Encryption
+	// Encryption (done before transaction since it doesn't need the database)
 	nonce, nonceErr := generateNonce(s)
 	if nonceErr != nil {
 		return sdkErrors.ErrCryptoNonceGenerationFailed.Wrap(nonceErr)
@@ -147,7 +90,6 @@ func (s *DataStore) StorePolicy(
 	encryptedPathPattern, pathErr := encryptWithNonce(
 		s, nonce, []byte(policy.PathPattern),
 	)
-
 	if pathErr != nil {
 		failErr := sdkErrors.ErrCryptoEncryptionFailed.Wrap(pathErr)
 		failErr.Msg = fmt.Sprintf(
@@ -155,6 +97,7 @@ func (s *DataStore) StorePolicy(
 		)
 		return failErr
 	}
+
 	encryptedPermissions, permErr := encryptWithNonce(
 		s, nonce, []byte(permissionsStr),
 	)
@@ -166,29 +109,25 @@ func (s *DataStore) StorePolicy(
 		return failErr
 	}
 
-	_, execErr := tx.ExecContext(ctx, ddl.QueryUpsertPolicy,
-		policy.ID,
-		policy.Name,
-		nonce,
-		encryptedSpiffeID,
-		encryptedPathPattern,
-		encryptedPermissions,
-		policy.CreatedAt.Unix(),
-		policy.UpdatedAt.Unix(),
-	)
-
-	if execErr != nil {
-		failErr := sdkErrors.ErrEntityQueryFailed.Wrap(execErr)
-		failErr.Msg = fmt.Sprintf("failed to upsert policy %s", policy.ID)
-		return failErr
-	}
-
-	if commitErr := tx.Commit(); commitErr != nil {
-		return sdkErrors.ErrTransactionCommitFailed.Wrap(commitErr)
-	}
-
-	committed = true
-	return nil
+	return s.withSerializableTx(ctx, "StorePolicy",
+		func(tx *sql.Tx) *sdkErrors.SDKError {
+			_, execErr := tx.ExecContext(ctx, ddl.QueryUpsertPolicy,
+				policy.ID,
+				policy.Name,
+				nonce,
+				encryptedSpiffeID,
+				encryptedPathPattern,
+				encryptedPermissions,
+				policy.CreatedAt.Unix(),
+				policy.UpdatedAt.Unix(),
+			)
+			if execErr != nil {
+				failErr := sdkErrors.ErrEntityQueryFailed.Wrap(execErr)
+				failErr.Msg = fmt.Sprintf("failed to upsert policy %s", policy.ID)
+				return failErr
+			}
+			return nil
+		})
 }
 
 // LoadPolicy retrieves a policy from the database and compiles its patterns.

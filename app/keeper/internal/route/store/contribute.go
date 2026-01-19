@@ -61,7 +61,6 @@ func RouteContribute(
 	w http.ResponseWriter, r *http.Request, audit *journal.AuditEntry,
 ) *sdkErrors.SDKError {
 	const fName = "RouteContribute"
-
 	journal.AuditRequest(fName, r, audit, journal.AuditCreate)
 
 	request, err := net.ReadParseAndGuard[

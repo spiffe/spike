@@ -53,7 +53,6 @@ func RouteShard(
 	w http.ResponseWriter, r *http.Request, audit *journal.AuditEntry,
 ) *sdkErrors.SDKError {
 	const fName = "RouteShard"
-
 	journal.AuditRequest(fName, r, audit, journal.AuditRead)
 
 	_, err := net.ReadParseAndGuard[

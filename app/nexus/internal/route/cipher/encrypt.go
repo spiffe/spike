@@ -56,7 +56,6 @@ func RouteEncrypt(
 	w http.ResponseWriter, r *http.Request, audit *journal.AuditEntry,
 ) *sdkErrors.SDKError {
 	const fName = "RouteEncrypt"
-
 	journal.AuditRequest(fName, r, audit, journal.AuditCreate)
 
 	return net.DispatchByContentType(

@@ -30,7 +30,9 @@ import (
 //
 // Returns:
 //   - string: The formatted output or error message
-func formatPoliciesOutput(cmd *cobra.Command, policies *[]data.PolicyListItem) string {
+func formatPoliciesOutput(
+	cmd *cobra.Command, policies *[]data.PolicyListItem,
+) string {
 	format, _ := cmd.Flags().GetString("format")
 
 	// Validate format
@@ -69,13 +71,19 @@ func formatPoliciesOutput(cmd *cobra.Command, policies *[]data.PolicyListItem) s
 	result.WriteString("POLICIES\n========\n\n")
 
 	// Tabwriter header
-	fmt.Fprintln(tw, "ID\tNAME")
+	_, fmtErr := fmt.Fprintln(tw, "ID\tNAME")
+	if fmtErr != nil {
+		return "Error: Failed to write to output: " + fmtErr.Error()
+	}
 	for _, policy := range *policies {
-		fmt.Fprintf(tw, "%s\t%s\n", policy.ID, policy.Name)
+		_, writeErr := fmt.Fprintf(tw, "%s\t%s\n", policy.ID, policy.Name)
+		if writeErr != nil {
+			return "Error: Failed to write to output: " + writeErr.Error()
+		}
 	}
 
-	if err := tw.Flush(); err != nil {
-		return fmt.Sprintf("Error: failed to flush tabwriter output: %v\n", err)
+	if flushErr := tw.Flush(); flushErr != nil {
+		return fmt.Sprintf("Error: failed to flush tabwriter output: %v\n", flushErr)
 	}
 
 	return result.String()

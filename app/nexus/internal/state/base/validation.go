@@ -7,7 +7,6 @@ package base
 import (
 	"context"
 
-	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/kv"
 
@@ -34,55 +33,4 @@ func loadAndValidateSecret(path string) (*kv.Value, *sdkErrors.SDKError) {
 		return nil, err
 	}
 	return secret, nil
-}
-
-// contains checks whether a specific permission exists in the given slice of
-// permissions.
-//
-// Parameters:
-//   - permissions: The slice of permissions to search
-//   - permission: The permission to search for
-//
-// Returns:
-//   - true if the permission is found in the slice
-//   - false otherwise
-func contains(permissions []data.PolicyPermission,
-	permission data.PolicyPermission) bool {
-	for _, p := range permissions {
-		if p == permission {
-			return true
-		}
-	}
-	return false
-}
-
-// verifyPermissions checks whether the "haves" permissions satisfy all the
-// required "wants" permissions.
-//
-// The "Super" permission acts as a wildcard that grants all permissions.
-// If "Super" is present in haves, this function returns true regardless of
-// the wants.
-//
-// Parameters:
-//   - haves: The permissions that are available
-//   - wants: The permissions that are required
-//
-// Returns:
-//   - true if all required permissions are satisfied (or "super" is present)
-//   - false if any required permission is missing
-func verifyPermissions(
-	haves []data.PolicyPermission,
-	wants []data.PolicyPermission,
-) bool {
-	// The "Super" permission grants all permissions.
-	if contains(haves, data.PermissionSuper) {
-		return true
-	}
-
-	for _, want := range wants {
-		if !contains(haves, want) {
-			return false
-		}
-	}
-	return true
 }

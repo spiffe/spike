@@ -65,7 +65,6 @@ func RoutePutPolicy(
 	w http.ResponseWriter, r *http.Request, audit *journal.AuditEntry,
 ) *sdkErrors.SDKError {
 	const fName = "RoutePutPolicy"
-
 	journal.AuditRequest(fName, r, audit, journal.AuditCreate)
 
 	request, guardErr := net.ReadParseAndGuard(

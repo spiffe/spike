@@ -11,6 +11,7 @@ import (
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/net"
 	"github.com/spiffe/spike-sdk-go/predicate"
+
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 )
 

@@ -80,7 +80,6 @@ func RouteGetSecretMetadata(
 	w http.ResponseWriter, r *http.Request, audit *journal.AuditEntry,
 ) *sdkErrors.SDKError {
 	const fName = "routeGetSecretMetadata"
-
 	journal.AuditRequest(fName, r, audit, journal.AuditRead)
 
 	request, err := net.ReadParseAndGuard[

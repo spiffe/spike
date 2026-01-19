@@ -61,7 +61,6 @@ func RouteRestore(
 	w http.ResponseWriter, r *http.Request, audit *journal.AuditEntry,
 ) *sdkErrors.SDKError {
 	const fName = "routeRestore"
-
 	journal.AuditRequest(fName, r, audit, journal.AuditCreate)
 
 	if env.BackendStoreTypeVal() == env.Memory {

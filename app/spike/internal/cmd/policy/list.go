@@ -10,9 +10,9 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	spike "github.com/spiffe/spike-sdk-go/api"
+	"github.com/spiffe/spike-sdk-go/spiffeid"
 
 	"github.com/spiffe/spike/app/spike/internal/stdout"
-	"github.com/spiffe/spike/app/spike/internal/trust"
 )
 
 // newPolicyListCommand creates a new Cobra command for listing policies.
@@ -107,12 +107,7 @@ func newPolicyListCommand(
 			"SPIFFE ID pattern",
 		Args: cobra.NoArgs,
 		Run: func(c *cobra.Command, args []string) {
-			trust.AuthenticateForPilot(SPIFFEID)
-
-			if source == nil {
-				c.PrintErrln("Error: SPIFFE X509 source is unavailable.")
-				return
-			}
+			spiffeid.IsPilotOperatorOrDie(SPIFFEID)
 
 			api := spike.NewWithSource(source)
 

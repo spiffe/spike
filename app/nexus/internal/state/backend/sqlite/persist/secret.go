@@ -42,41 +42,16 @@ import (
 func (s *DataStore) StoreSecret(
 	ctx context.Context, path string, secret kv.Value,
 ) *sdkErrors.SDKError {
-	const fName = "StoreSecret"
-
-	validation.NonNilContextOrDie(ctx, fName)
-
-	s.mu.Lock()
-	defer s.mu.Unlock()
-
-	tx, err := s.db.BeginTx(ctx, &sql.TxOptions{Isolation: sql.LevelSerializable})
-	if err != nil {
-		return sdkErrors.ErrTransactionBeginFailed.Wrap(err)
+	// Pre-encrypt all versions before starting the transaction
+	type encryptedVersion struct {
+		version     int
+		nonce       []byte
+		encrypted   []byte
+		createdTime any
+		deletedTime any
 	}
 
-	committed := false
-
-	defer func(tx *sql.Tx) {
-		if !committed {
-			err := tx.Rollback()
-			if err != nil {
-				failErr := *sdkErrors.ErrTransactionRollbackFailed.Clone()
-				log.WarnErr(fName, failErr)
-			}
-		}
-	}(tx)
-
-	// Update metadata
-	_, err = tx.ExecContext(ctx, ddl.QueryUpdateSecretMetadata,
-		path, secret.Metadata.CurrentVersion, secret.Metadata.OldestVersion,
-		secret.Metadata.CreatedTime,
-		secret.Metadata.UpdatedTime, secret.Metadata.MaxVersions,
-	)
-	if err != nil {
-		return sdkErrors.ErrEntityQueryFailed.Wrap(err)
-	}
-
-	// Update versions
+	encryptedVersions := make([]encryptedVersion, 0, len(secret.Versions))
 	for version, sv := range secret.Versions {
 		md, marshalErr := json.Marshal(sv.Data)
 		if marshalErr != nil {
@@ -88,19 +63,39 @@ func (s *DataStore) StoreSecret(
 			return sdkErrors.ErrCryptoEncryptionFailed.Wrap(encryptErr)
 		}
 
-		_, execErr := tx.ExecContext(ctx, ddl.QueryUpsertSecret,
-			path, version, nonce, encrypted, sv.CreatedTime, sv.DeletedTime)
-		if execErr != nil {
-			return sdkErrors.ErrEntityQueryFailed.Wrap(execErr)
-		}
+		encryptedVersions = append(encryptedVersions, encryptedVersion{
+			version:     version,
+			nonce:       nonce,
+			encrypted:   encrypted,
+			createdTime: sv.CreatedTime,
+			deletedTime: sv.DeletedTime,
+		})
 	}
 
-	if err := tx.Commit(); err != nil {
-		return sdkErrors.ErrTransactionCommitFailed.Wrap(err)
-	}
+	return s.withSerializableTx(ctx, "StoreSecret",
+		func(tx *sql.Tx) *sdkErrors.SDKError {
+			// Update metadata
+			_, metaErr := tx.ExecContext(ctx, ddl.QueryUpdateSecretMetadata,
+				path, secret.Metadata.CurrentVersion, secret.Metadata.OldestVersion,
+				secret.Metadata.CreatedTime,
+				secret.Metadata.UpdatedTime, secret.Metadata.MaxVersions,
+			)
+			if metaErr != nil {
+				return sdkErrors.ErrEntityQueryFailed.Wrap(metaErr)
+			}
 
-	committed = true
-	return nil
+			// Update versions
+			for _, ev := range encryptedVersions {
+				_, execErr := tx.ExecContext(ctx, ddl.QueryUpsertSecret,
+					path, ev.version, ev.nonce, ev.encrypted,
+					ev.createdTime, ev.deletedTime)
+				if execErr != nil {
+					return sdkErrors.ErrEntityQueryFailed.Wrap(execErr)
+				}
+			}
+
+			return nil
+		})
 }
 
 // LoadSecret retrieves a secret and all its versions from the specified path.

@@ -11,9 +11,9 @@ import (
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	spike "github.com/spiffe/spike-sdk-go/api"
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
+	"github.com/spiffe/spike-sdk-go/spiffeid"
 
 	"github.com/spiffe/spike/app/spike/internal/stdout"
-	"github.com/spiffe/spike/app/spike/internal/trust"
 )
 
 // newPolicyApplyCommand creates a new Cobra command for policy application.
@@ -117,12 +117,7 @@ func newPolicyApplyCommand(
         Valid permissions: read, write, list, super`,
 		Args: cobra.NoArgs,
 		Run: func(c *cobra.Command, args []string) {
-			trust.AuthenticateForPilot(SPIFFEID)
-
-			if source == nil {
-				c.PrintErrln("Error: SPIFFE X509 source is unavailable.")
-				return
-			}
+			spiffeid.IsPilotOperatorOrDie(SPIFFEID)
 
 			api := spike.NewWithSource(source)
 

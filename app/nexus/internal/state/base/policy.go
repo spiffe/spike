@@ -13,6 +13,8 @@ import (
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/log"
+	"github.com/spiffe/spike-sdk-go/validation"
+
 	"github.com/spiffe/spike/app/nexus/internal/state/persist"
 )
 
@@ -65,7 +67,7 @@ func CheckPolicyAccess(
 			continue
 		}
 
-		if verifyPermissions(policy.Permissions, wants) {
+		if validation.ValidatePolicyPermissions(policy.Permissions, wants) {
 			return true
 		}
 	}

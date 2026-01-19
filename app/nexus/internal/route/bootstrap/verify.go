@@ -56,7 +56,6 @@ func RouteVerify(
 	w http.ResponseWriter, r *http.Request, audit *journal.AuditEntry,
 ) *sdkErrors.SDKError {
 	const fName = "RouteVerify"
-
 	journal.AuditRequest(fName, r, audit, journal.AuditCreate)
 
 	request, parseErr := net.ReadParseAndGuard[

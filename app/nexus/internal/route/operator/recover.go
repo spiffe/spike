@@ -46,7 +46,6 @@ func RouteRecover(
 	w http.ResponseWriter, r *http.Request, audit *journal.AuditEntry,
 ) *sdkErrors.SDKError {
 	const fName = "routeRecover"
-
 	journal.AuditRequest(fName, r, audit, journal.AuditCreate)
 
 	_, err := net.ReadParseAndGuard[
