@@ -18,55 +18,6 @@ import (
 	"github.com/spiffe/spike/app/bootstrap/internal/state"
 )
 
-// contributeWithContext wraps api.Contribute so cancellation/timeouts can be
-// enforced. The call is executed in a goroutine, and the function waits for
-// either the contribution result or ctx.Done, returning ctx.Err() when the
-// context ends first.
-//
-// IMPORTANT: This is a workaround, not a proper fix. When the context times
-// out, this function returns early, but the underlying api.Contribute call
-// continues running in the background. This means:
-//   - The HTTP request is NOT actually canceled
-//   - On retries, multiple concurrent requests may be in flight to the same
-//     keeper
-//   - Resources (goroutines, connections) are leaked until the orphaned calls
-//     complete
-//
-// The proper fix is to update the SDK so that api.Contribute accepts a
-// context.Context parameter and uses http.NewRequestWithContext internally.
-// This would allow the HTTP client to respect cancellation and timeouts.
-//
-// Parameters:
-//   - ctx: Context that controls cancellation/deadline for the contribution
-//   - api: SPIKE API client used to send the share
-//   - share: Keeper share being contributed
-//   - keeperID: Identifier of the target keeper
-func contributeWithContext(
-	ctx context.Context, api *spike.API,
-	share secretsharing.Share, keeperID string,
-) error {
-	done := make(chan error, 1)
-
-	go func() {
-		contributeErr := api.Contribute(share, keeperID)
-		// Explicitly send nil to avoid the nil-interface-with-nil-pointer issue.
-		// If we send a nil *SDKError directly, it becomes a non-nil error interface
-		// holding a nil pointer, causing "err != nil" checks to incorrectly pass.
-		if contributeErr == nil {
-			done <- nil
-			return
-		}
-		done <- contributeErr
-	}()
-
-	select {
-	case err := <-done:
-		return err
-	case <-ctx.Done():
-		return ctx.Err()
-	}
-}
-
 // broadcastToKeeper sends a root key share to a single SPIKE Keeper instance.
 // It creates a timeout context for the operation and retries with exponential
 // backoff until success or the maximum retry attempts are exhausted.
@@ -91,7 +42,14 @@ func broadcastToKeeper(
 
 	keeperShare := state.KeeperShare(rs, keeperID)
 
-	keeperCtx, cancel := context.WithTimeout(ctx, timeout)
+	// A zero timeout means no timeout (infinite). We must handle this explicitly
+	// because context.WithTimeout(ctx, 0) creates an already-expired context,
+	// not an infinite one.
+	keeperCtx := ctx
+	var cancel context.CancelFunc = func() {}
+	if timeout > 0 {
+		keeperCtx, cancel = context.WithTimeout(ctx, timeout)
+	}
 	defer cancel()
 
 	_, err := retry.WithMaxAttempts(keeperCtx, maxRetries,
@@ -102,15 +60,15 @@ func broadcastToKeeper(
 				"keeper_url", keeperURL,
 			)
 
-			contributeErr := contributeWithContext(
-				keeperCtx, api, keeperShare, keeperID,
-			)
-			if contributeErr != nil {
+			if contributeErr := api.Contribute(
+				keeperCtx, keeperShare, keeperID,
+			); contributeErr != nil {
 				warnErr := sdkErrors.ErrAPIPostFailed.Wrap(contributeErr)
 				warnErr.Msg = "failed to send shard: will retry"
 				log.WarnErr(fName, *warnErr)
 				return false, warnErr
 			}
+
 			return true, nil
 		},
 		retry.WithBackOffOptions(

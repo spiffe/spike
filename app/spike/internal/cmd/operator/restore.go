@@ -5,6 +5,7 @@
 package operator
 
 import (
+	"context"
 	"encoding/hex"
 	"os"
 	"strconv"
@@ -144,7 +145,9 @@ func newOperatorRestoreCommand(
 				return
 			}
 
-			status, restoreErr := api.Restore(ix, &shardToRestore)
+			ctx := context.Background()
+
+			status, restoreErr := api.Restore(ctx, ix, &shardToRestore)
 			// Security: reset shardToRestore immediately after recovery.
 			mem.ClearRawBytes(&shardToRestore)
 			if restoreErr != nil {

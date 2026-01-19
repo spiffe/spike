@@ -35,9 +35,9 @@ func handleStreamingDecrypt(
 	getCipher func() (cipher.AEAD, *sdkErrors.SDKError),
 ) *sdkErrors.SDKError {
 	// NOTE: since we are dealing with streaming data, we cannot directly use
-	// the request parameter validation patterns that we employ in the JSON/REST
-	// payloads. We need to read the entire stream and generate a request
-	// entity accordingly.
+	// the request parameter validation patterns (i.e. the guard functions)
+	// that we employ in the JSON/REST payloads. We need to read the entire
+	// stream and generate a request entity accordingly.
 
 	if authErr := net.AuthorizeAndRespondOnFail(
 		reqres.CipherDecryptResponse{}.Unauthorized(),
@@ -55,7 +55,7 @@ func handleStreamingDecrypt(
 	}
 
 	// Read request data (now that we have cipher for nonce size)
-	version, nonce, ciphertext, readErr := readStreamingDecryptRequestData(
+	version, nonce, ciphertext, readErr := net.ReadStreamingDecryptRequestData(
 		w, r, c,
 	)
 	if readErr != nil {
@@ -80,7 +80,7 @@ func handleStreamingDecrypt(
 		return decryptErr
 	}
 
-	return respondStreamingDecrypt(plaintext, w)
+	return net.RespondStreamingDecrypt(plaintext, w)
 }
 
 // handleJSONDecrypt processes a complete JSON mode decryption request,
@@ -112,7 +112,7 @@ func handleJSONDecrypt(
 	}
 
 	// Parse request (doesn't need cipher)
-	request, readErr := readJSONDecryptRequestWithoutGuard(w, r)
+	request, readErr := net.ReadJSONDecryptRequestWithoutGuard(w, r)
 	if readErr != nil {
 		return readErr
 	}
@@ -136,7 +136,7 @@ func handleJSONDecrypt(
 		return decryptErr
 	}
 
-	return respondJSONDecrypt(plaintext, w)
+	return net.RespondJSONDecrypt(plaintext, w)
 }
 
 // handleStreamingEncrypt processes a complete streaming mode encryption
@@ -157,8 +157,8 @@ func handleStreamingEncrypt(
 	w http.ResponseWriter, r *http.Request,
 	getCipher func() (cipher.AEAD, *sdkErrors.SDKError),
 ) *sdkErrors.SDKError {
-	req, err := readAndGuardRequest(
-		readStreamingEncryptRequestWithoutGuard,
+	req, err := net.ReadAndGuardRequest(
+		net.ReadStreamingEncryptRequestWithoutGuard,
 		guardCipherEncryptRequest,
 		w, r,
 	)
@@ -166,74 +166,14 @@ func handleStreamingEncrypt(
 		return err
 	}
 
-	nonce, ciphertext, encryptErr := getCipherAndEncrypt(getCipher, net.EncryptDataStreaming, req.Plaintext, w)
+	nonce, ciphertext, encryptErr := net.GetCipherAndEncrypt(
+		getCipher, net.EncryptDataStreaming, req.Plaintext, w,
+	)
 	if encryptErr != nil {
 		return encryptErr
 	}
 
-	return respondStreamingEncrypt(nonce, ciphertext, w)
-}
-
-type Handler[T any] func(w http.ResponseWriter, r *http.Request) (*T, *sdkErrors.SDKError)
-type HandlerWithEntity[T any] func(req T, w http.ResponseWriter, r *http.Request) *sdkErrors.SDKError
-
-type Encryptor func(plaintext []byte, c cipher.AEAD, w http.ResponseWriter) ([]byte, []byte, *sdkErrors.SDKError)
-
-// readAndGuardRequest reads and parses a request, then validates it using the
-// provided guard function. This is similar to net.ReadParseAndGuard but accepts
-// a custom reader function for streaming mode support.
-//
-// Parameters:
-//   - readRequest: Function to read and parse the request body
-//   - guard: Function to validate the parsed request (handles auth and fields)
-//   - w: The HTTP response writer
-//   - r: The HTTP request
-//
-// Returns:
-//   - *T: The parsed and validated request
-//   - *sdkErrors.SDKError: An error if reading or validation fails
-func readAndGuardRequest[T any](
-	readRequest Handler[T],
-	guard HandlerWithEntity[T],
-	w http.ResponseWriter, r *http.Request,
-) (*T, *sdkErrors.SDKError) {
-	request, readErr := readRequest(w, r)
-	if readErr != nil {
-		return nil, readErr
-	}
-
-	if guardErr := guard(*request, w, r); guardErr != nil {
-		return nil, guardErr
-	}
-
-	return request, nil
-}
-
-// getCipherAndEncrypt retrieves the cipher and encrypts the provided data.
-// This combines cipher acquisition and encryption into a single operation.
-//
-// Parameters:
-//   - getCipher: Function to retrieve the AEAD cipher
-//   - encryptData: The encryption function to use
-//   - plaintext: The data to encrypt
-//   - w: The HTTP response writer for error responses
-//
-// Returns:
-//   - []byte: The generated nonce
-//   - []byte: The encrypted ciphertext
-//   - *sdkErrors.SDKError: An error if cipher retrieval or encryption fails
-func getCipherAndEncrypt(
-	getCipher func() (cipher.AEAD, *sdkErrors.SDKError),
-	encryptData Encryptor,
-	plaintext []byte,
-	w http.ResponseWriter,
-) ([]byte, []byte, *sdkErrors.SDKError) {
-	c, cipherErr := getCipher()
-	if cipherErr != nil {
-		return nil, nil, cipherErr
-	}
-
-	return encryptData(plaintext, c, w)
+	return net.RespondStreamingEncrypt(nonce, ciphertext, w)
 }
 
 // handleJSONEncrypt processes a complete JSON mode encryption request,
@@ -254,8 +194,8 @@ func handleJSONEncrypt(
 	w http.ResponseWriter, r *http.Request,
 	getCipher func() (cipher.AEAD, *sdkErrors.SDKError),
 ) *sdkErrors.SDKError {
-	req, err := readAndGuardRequest(
-		readJSONEncryptRequestWithoutGuard,
+	req, err := net.ReadAndGuardRequest(
+		net.ReadJSONEncryptRequestWithoutGuard,
 		guardCipherEncryptRequest,
 		w, r,
 	)
@@ -263,10 +203,12 @@ func handleJSONEncrypt(
 		return err
 	}
 
-	nonce, ciphertext, encryptErr := getCipherAndEncrypt(getCipher, net.EncryptDataJSON, req.Plaintext, w)
+	nonce, ciphertext, encryptErr := net.GetCipherAndEncrypt(
+		getCipher, net.EncryptDataJSON, req.Plaintext, w,
+	)
 	if encryptErr != nil {
 		return encryptErr
 	}
 
-	return respondJSONEncrypt(nonce, ciphertext, w)
+	return net.RespondJSONEncrypt(nonce, ciphertext, w)
 }

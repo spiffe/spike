@@ -5,6 +5,7 @@
 package secret
 
 import (
+	"context"
 	"strconv"
 	"strings"
 
@@ -49,7 +50,7 @@ import (
 //   - Version numbers are valid non-negative integers
 //   - Version strings are properly formatted
 func newSecretDeleteCommand(
-	source *workloadapi.X509Source, SPIFFEID string,
+		source *workloadapi.X509Source, SPIFFEID string,
 ) *cobra.Command {
 	var deleteCmd = &cobra.Command{
 		Use:   "delete <path>",
@@ -113,7 +114,9 @@ Examples:
 				vv = []int{}
 			}
 
-			err := api.DeleteSecretVersions(path, vv)
+			ctx := context.Background()
+
+			err := api.DeleteSecretVersions(ctx, path, vv)
 			if stdout.HandleAPIError(cmd, err) {
 				return
 			}

@@ -81,6 +81,7 @@ func RouteShard(
 		return sdkErrors.ErrDataInvalidInput
 	}
 
+	// Capture respond body to securely wipe out.
 	responseBody, respondErr := net.SuccessWithResponseBody(
 		reqres.ShardGetResponse{Shard: sh}.Success(), w,
 	)

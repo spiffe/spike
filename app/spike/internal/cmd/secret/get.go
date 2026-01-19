@@ -5,6 +5,7 @@
 package secret
 
 import (
+	"context"
 	"encoding/json"
 	"slices"
 
@@ -81,7 +82,9 @@ func newSecretGetCommand(
 				return
 			}
 
-			secret, err := api.GetSecretVersion(path, version)
+			ctx := context.Background()
+
+			secret, err := api.GetSecretVersion(ctx, path, version)
 			if stdout.HandleAPIError(cmd, err) {
 				return
 			}

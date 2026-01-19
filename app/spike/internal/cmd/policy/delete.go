@@ -6,6 +6,7 @@ package policy
 
 import (
 	"bufio"
+	"context"
 	"os"
 	"strings"
 
@@ -105,7 +106,9 @@ func newPolicyDeleteCommand(
 				return
 			}
 
-			deleteErr := api.DeletePolicy(policyID)
+			ctx := context.Background()
+
+			deleteErr := api.DeletePolicy(ctx, policyID)
 			if stdout.HandleAPIError(c, deleteErr) {
 				return
 			}

@@ -40,15 +40,10 @@ import (
 func guardGetSecretRequest(
 	request reqres.SecretGetRequest, w http.ResponseWriter, r *http.Request,
 ) *sdkErrors.SDKError {
-	if authErr := net.AuthorizeAndRespondOnFail(
+	if authErr := net.AuthorizeAndRespondOnFailForPath(
 		reqres.SecretGetResponse{}.Unauthorized(),
-		func(
-			peerSPIFFEID string, checkAccess predicate.PolicyAccessChecker,
-		) bool {
-			return predicate.AllowSPIFFEIDForSecretRead(
-				peerSPIFFEID, request.Path, checkAccess,
-			)
-		},
+		request.Path,
+		predicate.AllowSPIFFEIDForSecretRead,
 		state.CheckPolicyAccess,
 		w, r,
 	); authErr != nil {

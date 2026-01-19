@@ -5,6 +5,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 
 	spike "github.com/spiffe/spike-sdk-go/api"
@@ -38,9 +39,11 @@ func main() {
 	// The path to store/retrieve/update the secret.
 	path := "tenants/demo/db/creds"
 
+	ctx := context.Background()
+
 	// Create a Secret
 	// https://pkg.go.dev/github.com/spiffe/spike-sdk-go/api#PutSecret
-	putErr := api.PutSecret(path, map[string]string{
+	putErr := api.PutSecret(ctx, path, map[string]string{
 		"username": "SPIKE",
 		"password": "SPIKE_Rocks",
 	})
@@ -51,7 +54,7 @@ func main() {
 
 	// Read the Secret
 	// https://pkg.go.dev/github.com/spiffe/spike-sdk-go/api#GetSecret
-	secret, getErr := api.GetSecret(path)
+	secret, getErr := api.GetSecret(ctx, path)
 	if getErr != nil {
 		fmt.Println("Error reading secret:", getErr.Error())
 		return

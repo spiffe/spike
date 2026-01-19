@@ -5,6 +5,7 @@
 package secret
 
 import (
+	"context"
 	"strconv"
 	"strings"
 
@@ -104,7 +105,9 @@ Examples:
 				vv = append(vv, version)
 			}
 
-			err := api.UndeleteSecret(path, vv)
+			ctx := context.Background()
+
+			err := api.UndeleteSecret(ctx, path, vv)
 			if stdout.HandleAPIError(cmd, err) {
 				return
 			}

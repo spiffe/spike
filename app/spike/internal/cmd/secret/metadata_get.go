@@ -5,6 +5,8 @@
 package secret
 
 import (
+	"context"
+
 	"github.com/spf13/cobra"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	spike "github.com/spiffe/spike-sdk-go/api"
@@ -67,7 +69,9 @@ func newSecretMetadataGetCommand(
 			path := args[0]
 			version, _ := cmd.Flags().GetInt("version")
 
-			secret, err := api.GetSecretMetadata(path, version)
+			ctx := context.Background()
+
+			secret, err := api.GetSecretMetadata(ctx, path, version)
 			if stdout.HandleAPIError(cmd, err) {
 				return
 			}

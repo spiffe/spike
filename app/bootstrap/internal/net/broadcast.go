@@ -152,7 +152,7 @@ func VerifyInitialization(ctx context.Context, api *spike.API) {
 	// give up if we cannot verify the initialization in a timely manner.
 
 	_, retryErr := retry.Do(ctx, func() (bool, *sdkErrors.SDKError) {
-		verifyErr := api.Verify(randomText, nonce, ciphertext)
+		verifyErr := api.Verify(ctx, randomText, nonce, ciphertext)
 		if verifyErr != nil {
 			failErr := sdkErrors.ErrCryptoCipherVerificationFailed.Wrap(verifyErr)
 			failErr.Msg = "failed to verify initialization: will retry"

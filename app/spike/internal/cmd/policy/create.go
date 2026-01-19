@@ -5,6 +5,8 @@
 package policy
 
 import (
+	"context"
+
 	"github.com/spf13/cobra"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	spike "github.com/spiffe/spike-sdk-go/api"
@@ -136,8 +138,10 @@ func newPolicyCreateCommand(
 				return
 			}
 
+			ctx := context.Background()
+
 			// Create policy
-			apiErr = api.CreatePolicy(name, SPIFFEIDPattern,
+			apiErr = api.CreatePolicy(ctx, name, SPIFFEIDPattern,
 				pathPattern, permissions)
 			if stdout.HandleAPIError(c, apiErr) {
 				return

@@ -14,23 +14,6 @@ import (
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 )
 
-//func spiffeidAllowedForEncryptCipher(spiffeid string) bool {
-//	// Lite Workloads are always allowed:
-//	allowed := false
-//	if sdkSpiffeid.IsLiteWorkload(spiffeid) {
-//		allowed = true
-//	}
-//	// If not, do a policy check to determine if the request is allowed:
-//	if !allowed {
-//		allowed = state.CheckPolicyAccess(
-//			spiffeid,
-//			apiAuth.PathSystemCipherExecute,
-//			[]data.PolicyPermission{data.PermissionExecute},
-//		)
-//	}
-//	return allowed
-//}
-
 // guardCipherEncryptRequest validates a cipher encryption request by
 // performing authentication, authorization, and request field validation.
 //

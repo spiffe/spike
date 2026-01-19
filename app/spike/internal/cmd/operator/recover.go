@@ -5,6 +5,7 @@
 package operator
 
 import (
+	"context"
 	"encoding/hex"
 	"fmt"
 	"os"
@@ -75,7 +76,9 @@ func newOperatorRecoverCommand(
 
 			api := spike.NewWithSource(source)
 
-			shards, apiErr := api.Recover()
+			ctx := context.Background()
+
+			shards, apiErr := api.Recover(ctx)
 			// Security: clean the shards when we no longer need them.
 			defer func() {
 				for _, shard := range shards {

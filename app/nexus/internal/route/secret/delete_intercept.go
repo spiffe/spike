@@ -11,6 +11,7 @@ import (
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/net"
 	"github.com/spiffe/spike-sdk-go/predicate"
+
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 )
 
@@ -39,18 +40,10 @@ import (
 func guardDeleteSecretRequest(
 	request reqres.SecretDeleteRequest, w http.ResponseWriter, r *http.Request,
 ) *sdkErrors.SDKError {
-	if authErr := net.AuthorizeAndRespondOnFail( // TODO: AuthorizeAndRespondOnFailForPath(peerSPIFFEID, path, checkAccess)
+	if authErr := net.AuthorizeAndRespondOnFailForPath(
 		reqres.SecretDeleteResponse{}.Unauthorized(),
-
-		// TODO: type ForPathWithPolicyAccessChecker func(string peerSPIFFEID, string path, PolicyAccessChecker) bool
-
-		func(
-			peerSPIFFEID string, checkAccess predicate.PolicyAccessChecker,
-		) bool {
-			return predicate.AllowSPIFFEIDForSecretDelete(
-				peerSPIFFEID, request.Path, checkAccess,
-			)
-		},
+		request.Path,
+		predicate.AllowSPIFFEIDForSecretDelete,
 		state.CheckPolicyAccess,
 		w, r,
 	); authErr != nil {
