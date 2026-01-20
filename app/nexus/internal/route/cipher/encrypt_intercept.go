@@ -7,19 +7,14 @@ package cipher
 import (
 	"net/http"
 
-	"github.com/spiffe/go-spiffe/v2/spiffeid"
-
-	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
-	apiAuth "github.com/spiffe/spike-sdk-go/config/auth"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/net"
-	sdkSpiffeid "github.com/spiffe/spike-sdk-go/spiffeid"
-
+	"github.com/spiffe/spike-sdk-go/predicate"
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 )
 
-// guardEncryptCipherRequest validates a cipher encryption request by
+// guardCipherEncryptRequest validates a cipher encryption request by
 // performing authentication, authorization, and request field validation.
 //
 // This function implements a two-tier authorization model:
@@ -45,42 +40,22 @@ import (
 //   - nil if all validations pass
 //   - apiErr.ErrUnauthorized if authorization fails
 //   - apiErr.ErrBadInput if request validation fails
-func guardEncryptCipherRequest(
+func guardCipherEncryptRequest(
 	request reqres.CipherEncryptRequest,
-	peerSPIFFEID *spiffeid.ID,
 	w http.ResponseWriter,
-	_ *http.Request,
+	r *http.Request,
 ) *sdkErrors.SDKError {
+	if authErr := net.AuthorizeAndRespondOnFail(
+		reqres.CipherEncryptResponse{}.Unauthorized(),
+		predicate.AllowSPIFFEIDForCipherEncrypt,
+		state.CheckPolicyAccess,
+		w, r,
+	); authErr != nil {
+		return authErr
+	}
+
 	// Validate plaintext size to prevent DoS attacks
-	if err := validatePlaintextSize(
+	return net.RespondCryptoErrOnLargeCipherText(
 		request.Plaintext, w, reqres.CipherEncryptResponse{}.BadRequest(),
-	); err != nil {
-		return err
-	}
-
-	// Lite Workloads are always allowed:
-	allowed := false
-	if sdkSpiffeid.IsLiteWorkload(peerSPIFFEID.String()) {
-		allowed = true
-	}
-	// If not, do a policy check to determine if the request is allowed:
-	if !allowed {
-		allowed = state.CheckAccess(
-			peerSPIFFEID.String(),
-			apiAuth.PathSystemCipherEncrypt,
-			[]data.PolicyPermission{data.PermissionExecute},
-		)
-	}
-	// If not, block the request:
-	if !allowed {
-		failErr := net.Fail(
-			reqres.CipherEncryptResponse{}.Unauthorized(), w, http.StatusUnauthorized,
-		)
-		if failErr != nil {
-			return sdkErrors.ErrAccessUnauthorized.Wrap(failErr)
-		}
-		return sdkErrors.ErrAccessUnauthorized.Clone()
-	}
-
-	return nil
+	)
 }

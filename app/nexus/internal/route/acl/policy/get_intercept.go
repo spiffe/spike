@@ -7,12 +7,10 @@ package policy
 import (
 	"net/http"
 
-	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
-	apiAuth "github.com/spiffe/spike-sdk-go/config/auth"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/net"
-	"github.com/spiffe/spike-sdk-go/validation"
+	"github.com/spiffe/spike-sdk-go/predicate"
 
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 )
@@ -40,40 +38,16 @@ import (
 func guardPolicyReadRequest(
 	request reqres.PolicyReadRequest, w http.ResponseWriter, r *http.Request,
 ) *sdkErrors.SDKError {
-	peerSPIFFEID, err := net.ExtractPeerSPIFFEIDFromRequestAndRespondOnFail[reqres.PolicyReadResponse](
-		r, w, reqres.PolicyReadResponse{}.Unauthorized(),
+	if authErr := net.AuthorizeAndRespondOnFail(
+		reqres.PolicyReadResponse{}.Unauthorized(),
+		predicate.AllowSPIFFEIDForPolicyRead,
+		state.CheckPolicyAccess,
+		w, r,
+	); authErr != nil {
+		return authErr
+	}
+
+	return net.RespondErrOnBadPolicyID(
+		request.ID, w, reqres.PolicyReadResponse{}.BadRequest(),
 	)
-	if alreadyResponded := err != nil; alreadyResponded {
-		return err
-	}
-
-	policyID := request.ID
-
-	validationErr := validation.ValidatePolicyID(policyID)
-	if validationErr != nil {
-		failErr := net.Fail(
-			reqres.PolicyReadResponse{}.BadRequest(), w, http.StatusBadRequest,
-		)
-		if failErr != nil {
-			return validationErr.Wrap(failErr)
-		}
-		validationErr.Msg = "invalid policy ID: " + policyID
-		return validationErr
-	}
-
-	allowed := state.CheckAccess(
-		peerSPIFFEID.String(), apiAuth.PathSystemPolicyAccess,
-		[]data.PolicyPermission{data.PermissionRead},
-	)
-	if !allowed {
-		failErr := net.Fail(
-			reqres.PolicyReadResponse{}.Unauthorized(), w, http.StatusUnauthorized,
-		)
-		if failErr != nil {
-			return sdkErrors.ErrAccessUnauthorized.Wrap(failErr)
-		}
-		return sdkErrors.ErrAccessUnauthorized.Clone()
-	}
-
-	return nil
 }

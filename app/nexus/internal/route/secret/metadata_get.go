@@ -9,9 +9,9 @@ import (
 
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
+	"github.com/spiffe/spike-sdk-go/journal"
 	"github.com/spiffe/spike-sdk-go/net"
 
-	"github.com/spiffe/spike-sdk-go/journal"
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 )
 
@@ -80,7 +80,6 @@ func RouteGetSecretMetadata(
 	w http.ResponseWriter, r *http.Request, audit *journal.AuditEntry,
 ) *sdkErrors.SDKError {
 	const fName = "routeGetSecretMetadata"
-
 	journal.AuditRequest(fName, r, audit, journal.AuditRead)
 
 	request, err := net.ReadParseAndGuard[
@@ -101,5 +100,5 @@ func RouteGetSecretMetadata(
 		return net.RespondWithHTTPError(getErr, w, reqres.SecretMetadataResponse{})
 	}
 
-	return net.Success(toSecretMetadataSuccessResponse(rawSecret), w)
+	return net.Success(reqres.ValueToSecretMetadataSuccessResponse(rawSecret), w)
 }

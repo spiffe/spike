@@ -6,13 +6,13 @@ package base
 
 import (
 	"github.com/spiffe/spike-sdk-go/api/url"
+	"github.com/spiffe/spike-sdk-go/net"
 
 	"github.com/spiffe/spike/app/nexus/internal/route/acl/policy"
 	"github.com/spiffe/spike/app/nexus/internal/route/bootstrap"
 	"github.com/spiffe/spike/app/nexus/internal/route/cipher"
 	"github.com/spiffe/spike/app/nexus/internal/route/operator"
 	"github.com/spiffe/spike/app/nexus/internal/route/secret"
-	"github.com/spiffe/spike/internal/net"
 )
 
 // routeWithBackingStore maps API actions and URLs to their corresponding

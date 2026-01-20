@@ -53,7 +53,6 @@ func RouteShard(
 	w http.ResponseWriter, r *http.Request, audit *journal.AuditEntry,
 ) *sdkErrors.SDKError {
 	const fName = "RouteShard"
-
 	journal.AuditRequest(fName, r, audit, journal.AuditRead)
 
 	_, err := net.ReadParseAndGuard[
@@ -81,6 +80,7 @@ func RouteShard(
 		return sdkErrors.ErrDataInvalidInput
 	}
 
+	// Capture respond body to securely wipe out.
 	responseBody, respondErr := net.SuccessWithResponseBody(
 		reqres.ShardGetResponse{Shard: sh}.Success(), w,
 	)

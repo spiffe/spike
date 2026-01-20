@@ -8,6 +8,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	"github.com/spiffe/spike-sdk-go/kv"
 )
 
@@ -23,7 +24,7 @@ func TestToSecretMetadataSuccessResponse_EmptyVersions(t *testing.T) {
 		},
 	}
 
-	response := toSecretMetadataSuccessResponse(secret)
+	response := reqres.ValueToSecretMetadataSuccessResponse(secret)
 
 	if len(response.SecretMetadata.Versions) != 0 {
 		t.Errorf("toSecretMetadataSuccessResponse() versions = %d, want 0",
@@ -57,7 +58,7 @@ func TestToSecretMetadataSuccessResponse_SingleVersion(t *testing.T) {
 		},
 	}
 
-	response := toSecretMetadataSuccessResponse(secret)
+	response := reqres.ValueToSecretMetadataSuccessResponse(secret)
 
 	if len(response.SecretMetadata.Versions) != 1 {
 		t.Errorf("toSecretMetadataSuccessResponse() versions = %d, want 1",
@@ -125,7 +126,7 @@ func TestToSecretMetadataSuccessResponse_MultipleVersions(t *testing.T) {
 		},
 	}
 
-	response := toSecretMetadataSuccessResponse(secret)
+	response := reqres.ValueToSecretMetadataSuccessResponse(secret)
 
 	if len(response.SecretMetadata.Versions) != 3 {
 		t.Errorf("toSecretMetadataSuccessResponse() versions = %d, want 3",
@@ -174,7 +175,7 @@ func TestToSecretMetadataSuccessResponse_ResponseIsSuccess(t *testing.T) {
 		},
 	}
 
-	response := toSecretMetadataSuccessResponse(secret)
+	response := reqres.ValueToSecretMetadataSuccessResponse(secret)
 
 	// The response should have an empty error message (success)
 	if response.Err != "" {

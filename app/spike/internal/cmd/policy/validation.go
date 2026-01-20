@@ -5,6 +5,8 @@
 package policy
 
 import (
+	"context"
+
 	spike "github.com/spiffe/spike-sdk-go/api"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/validation"
@@ -27,7 +29,9 @@ var validatePermissions = validation.ValidatePermissions
 func checkPolicyNameExists(
 	api *spike.API, name string,
 ) (bool, *sdkErrors.SDKError) {
-	policies, err := api.ListPolicies("", "")
+	ctx := context.Background()
+
+	policies, err := api.ListAllPolicies(ctx)
 	if err != nil {
 		return false, err
 	}

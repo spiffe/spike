@@ -5,6 +5,7 @@
 package operator
 
 import (
+	"context"
 	"encoding/hex"
 	"fmt"
 	"os"
@@ -18,8 +19,6 @@ import (
 	"github.com/spiffe/spike-sdk-go/config/fs"
 	"github.com/spiffe/spike-sdk-go/security/mem"
 	"github.com/spiffe/spike-sdk-go/spiffeid"
-
-	"github.com/spiffe/spike/app/spike/internal/trust"
 )
 
 // newOperatorRecoverCommand creates a new cobra command for recovery operations
@@ -60,13 +59,7 @@ func newOperatorRecoverCommand(
 		Use:   "recover",
 		Short: "Recover SPIKE Nexus (do this while SPIKE Nexus is healthy)",
 		Run: func(cmd *cobra.Command, args []string) {
-			if !spiffeid.IsPilotRecover(SPIFFEID) {
-				cmd.PrintErrln("Error: You need the 'recover' role.")
-				cmd.PrintErrln("See https://spike.ist/operations/recovery/")
-				return
-			}
-
-			trust.AuthenticateForPilotRecover(SPIFFEID)
+			spiffeid.IsPilotRecoverOrDie(SPIFFEID)
 
 			if source == nil {
 				cmd.PrintErrln("Error: SPIFFE X509 source is unavailable.")
@@ -75,7 +68,9 @@ func newOperatorRecoverCommand(
 
 			api := spike.NewWithSource(source)
 
-			shards, apiErr := api.Recover()
+			ctx := context.Background()
+
+			shards, apiErr := api.Recover(ctx)
 			// Security: clean the shards when we no longer need them.
 			defer func() {
 				for _, shard := range shards {

@@ -39,7 +39,9 @@ func TestSQLitePolicy_CreateAndGet(t *testing.T) {
 			Name:            "test-policy",
 			SPIFFEIDPattern: "^spiffe://example\\.org/workload$",
 			PathPattern:     "^test/secrets/.*$",
-			Permissions:     []data.PolicyPermission{data.PermissionRead, data.PermissionList},
+			Permissions: []data.PolicyPermission{
+				data.PermissionRead, data.PermissionList,
+			},
 		}
 
 		createdPolicy, createErr := UpsertPolicy(policy)
@@ -135,16 +137,28 @@ func TestSQLitePolicy_Persistence(t *testing.T) {
 		}
 
 		if retrievedPolicy.Name != policy.Name {
-			t.Errorf("Policy name not persisted correctly: expected %s, got %s", policy.Name, retrievedPolicy.Name)
+			t.Errorf(
+				"Policy name not persisted correctly: expected %s, got %s",
+				policy.Name, retrievedPolicy.Name,
+			)
 		}
 		if retrievedPolicy.SPIFFEIDPattern != policy.SPIFFEIDPattern {
-			t.Errorf("Policy SPIFFE ID pattern not persisted correctly: expected %s, got %s", policy.SPIFFEIDPattern, retrievedPolicy.SPIFFEIDPattern)
+			t.Errorf(
+				"Policy SPIFFE ID pattern not persisted correctly: expected %s, got %s",
+				policy.SPIFFEIDPattern, retrievedPolicy.SPIFFEIDPattern,
+			)
 		}
 		if retrievedPolicy.PathPattern != policy.PathPattern {
-			t.Errorf("Policy pathPattern pattern not persisted correctly: expected %s, got %s", policy.PathPattern, retrievedPolicy.PathPattern)
+			t.Errorf(
+				"Policy pathPattern pattern not persisted correctly: expected %s, got %s",
+				policy.PathPattern, retrievedPolicy.PathPattern,
+			)
 		}
 		if !reflect.DeepEqual(retrievedPolicy.Permissions, policy.Permissions) {
-			t.Errorf("Policy permissions not persisted correctly: expected %v, got %v", policy.Permissions, retrievedPolicy.Permissions)
+			t.Errorf(
+				"Policy permissions not persisted correctly: expected %v, got %v",
+				policy.Permissions, retrievedPolicy.Permissions,
+			)
 		}
 	})
 }

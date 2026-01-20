@@ -7,24 +7,15 @@ package policy
 import (
 	"net/http"
 
-	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
-	cfg "github.com/spiffe/spike-sdk-go/config/auth"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/net"
-	"github.com/spiffe/spike-sdk-go/validation"
+	"github.com/spiffe/spike-sdk-go/predicate"
 
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 )
 
-func hasWritePermission(peerSPIFFEID string) bool {
-	return state.CheckAccess(
-		peerSPIFFEID, cfg.PathSystemPolicyAccess,
-		[]data.PolicyPermission{data.PermissionWrite},
-	)
-}
-
-// guardPolicyCreateRequest validates a policy creation request by performing
+// guardPolicyPutRequest validates a policy creation request by performing
 // authentication, authorization, and input validation checks.
 //
 // The function performs the following validations in order:
@@ -47,72 +38,37 @@ func hasWritePermission(peerSPIFFEID string) bool {
 //   - nil if all validations pass
 //   - apiErr.ErrUnauthorized if authentication or authorization fails
 //   - apiErr.ErrInvalidInput if any input validation fails
-func guardPolicyCreateRequest(
+func guardPolicyPutRequest(
 	request reqres.PolicyPutRequest, w http.ResponseWriter, r *http.Request,
 ) *sdkErrors.SDKError {
-	err := net.RespondUnauthorizedOnPredicateFail(
-		hasWritePermission,
-		reqres.PolicyPutResponse{}.Unauthorized(), w, r,
+	if authErr := net.AuthorizeAndRespondOnFail(
+		reqres.PolicyPutResponse{}.Unauthorized(),
+		predicate.AllowSPIFFEIDForPolicyWrite,
+		state.CheckPolicyAccess,
+		w, r,
+	); authErr != nil {
+		return authErr
+	}
+
+	if nameErr := net.RespondErrOnBadName(
+		request.Name, reqres.PolicyPutResponse{}.BadRequest(), w,
+	); nameErr != nil {
+		return nameErr
+	}
+
+	if spifeIdPatternErr := net.RespondErrOnBadSPIFFEIDPattern(
+		request.SPIFFEIDPattern, reqres.PolicyPutResponse{}.BadRequest(), w,
+	); spifeIdPatternErr != nil {
+		return spifeIdPatternErr
+	}
+
+	if pathPatternErr := net.RespondErrOnBadPathPattern(
+		request.PathPattern, reqres.PolicyPutResponse{}.BadRequest(), w,
+	); pathPatternErr != nil {
+		return pathPatternErr
+	}
+
+	return net.RespondErrOnBadPermission(
+		request.Permissions, reqres.PolicyPutResponse{}.BadRequest(), w,
 	)
-	if err != nil {
-		return err
-	}
-
-	name := request.Name
-	SPIFFEIDPattern := request.SPIFFEIDPattern
-	pathPattern := request.PathPattern
-	permissions := request.Permissions
-
-	if err := validation.ValidateName(name); err != nil {
-		failErr := net.Fail(
-			reqres.PolicyPutResponse{}.BadRequest(), w, http.StatusBadRequest,
-		)
-		if failErr != nil {
-			return sdkErrors.ErrDataInvalidInput.Wrap(failErr)
-		}
-		return sdkErrors.ErrDataInvalidInput.Clone()
-	}
-
-	if err := validation.ValidateSPIFFEIDPattern(SPIFFEIDPattern); err != nil {
-		failEr := net.Fail(
-			reqres.PolicyPutResponse{}.BadRequest(), w, http.StatusBadRequest,
-		)
-		if failEr != nil {
-			return sdkErrors.ErrDataInvalidInput.Wrap(failEr)
-		}
-		return sdkErrors.ErrDataInvalidInput.Clone()
-	}
-
-	if err := validation.ValidatePathPattern(pathPattern); err != nil {
-		failErr := net.Fail(
-			reqres.PolicyPutResponse{}.BadRequest(), w, http.StatusBadRequest,
-		)
-		if failErr != nil {
-			return sdkErrors.ErrDataInvalidInput.Wrap(failErr)
-		}
-		return sdkErrors.ErrDataInvalidInput.Clone()
-	}
-
-	if len(permissions) == 0 {
-		failErr := net.Fail(
-			reqres.PolicyPutResponse{}.BadRequest(), w, http.StatusBadRequest,
-		)
-		if failErr != nil {
-			return sdkErrors.ErrDataInvalidInput.Wrap(failErr)
-		}
-		return sdkErrors.ErrDataInvalidInput.Clone()
-	}
-	for _, perm := range permissions {
-		if !validation.ValidPermission(string(perm)) {
-			failErr := net.Fail(
-				reqres.PolicyPutResponse{}.BadRequest(), w, http.StatusBadRequest,
-			)
-			if failErr != nil {
-				return sdkErrors.ErrDataInvalidInput.Wrap(failErr)
-			}
-			return sdkErrors.ErrDataInvalidInput.Clone()
-		}
-	}
-
-	return nil
 }

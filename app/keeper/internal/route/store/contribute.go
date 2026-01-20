@@ -20,7 +20,6 @@ import (
 // system. It processes incoming shard data and stores it in the system state.
 //
 // Security:
-//
 // This endpoint validates that the peer is either SPIKE Bootstrap or SPIKE
 // Nexus using SPIFFE ID verification. SPIKE Bootstrap contributes shards
 // during initial system setup, while SPIKE Nexus contributes shards during
@@ -62,7 +61,6 @@ func RouteContribute(
 	w http.ResponseWriter, r *http.Request, audit *journal.AuditEntry,
 ) *sdkErrors.SDKError {
 	const fName = "RouteContribute"
-
 	journal.AuditRequest(fName, r, audit, journal.AuditCreate)
 
 	request, err := net.ReadParseAndGuard[

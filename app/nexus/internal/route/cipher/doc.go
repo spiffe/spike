@@ -84,7 +84,6 @@
 //
 // Request handling is organized into focused functions:
 //   - config.go: Constants (version byte, content-type headers, nonce size)
-//   - crypto.go: Cryptographic operations (encrypt/decrypt data)
 //   - decrypt.go: RouteDecrypt HTTP handler entry point
 //   - decrypt_intercept.go: Decryption guards and SPIFFE ID extraction
 //   - encrypt.go: RouteEncrypt HTTP handler entry point
@@ -99,7 +98,7 @@
 //
 // To add request field validation, modify the guard functions:
 //
-//	func guardDecryptCipherRequest(
+//	func guardCipherDecryptRequest(
 //	    request reqres.CipherDecryptRequest,
 //	    peerSPIFFEID *spiffeid.ID,
 //	    w http.ResponseWriter,

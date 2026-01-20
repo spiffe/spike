@@ -5,38 +5,10 @@
 package persist
 
 import (
-	"crypto/aes"
-	"crypto/cipher"
-	"crypto/rand"
-
 	"github.com/spiffe/spike-sdk-go/config/env"
 	"github.com/spiffe/spike-sdk-go/crypto"
-	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
-	"github.com/spiffe/spike-sdk-go/log"
-	"github.com/spiffe/spike-sdk-go/security/mem"
+	"github.com/spiffe/spike-sdk-go/validation"
 )
-
-func createCipher() cipher.AEAD {
-	key := make([]byte, crypto.AES256KeySize) // AES-256 key
-	if _, randErr := rand.Read(key); randErr != nil {
-		log.FatalLn("createCipher", "message",
-			"Failed to generate test key", "err", randErr)
-	}
-
-	block, cipherErr := aes.NewCipher(key)
-	if cipherErr != nil {
-		log.FatalLn("createCipher", "message",
-			"Failed to create cipher", "err", cipherErr)
-	}
-
-	gcm, gcmErr := cipher.NewGCM(block)
-	if gcmErr != nil {
-		log.FatalLn("createCipher", "message",
-			"Failed to create GCM", "err", gcmErr)
-	}
-
-	return gcm
-}
 
 // InitializeBackend creates and returns a backend storage implementation based
 // on the configured store type in the environment. The function is thread-safe
@@ -62,31 +34,15 @@ func createCipher() cipher.AEAD {
 // Note: This function modifies the package-level be variable. Later calls
 // will reinitialize the backend, potentially losing any existing state.
 func InitializeBackend(rootKey *[crypto.AES256KeySize]byte) {
-	const fName = "InitializeBackend"
-
 	// Root key is not needed, nor used in in-memory stores.
 	// For in-memory stores, ensure that it is always nil, as the alternative
 	// might mean a logic, or initialization-flow bug, and an unnecessary
 	// crypto material in the memory.
 	// In other store types, ensure it is set for security.
 	if env.BackendStoreTypeVal() == env.Memory {
-		if rootKey != nil {
-			failErr := *sdkErrors.ErrRootKeyNotEmpty.Clone()
-			failErr.Msg = "root key should be nil for memory store type"
-			log.FatalErr(fName, failErr)
-		}
+		validation.NilRootKeyOrDie(rootKey)
 	} else {
-		if rootKey == nil {
-			failErr := *sdkErrors.ErrRootKeyEmpty.Clone()
-			failErr.Msg = "root key cannot be nil"
-			log.FatalErr(fName, failErr)
-		}
-
-		if mem.Zeroed32(rootKey) {
-			failErr := *sdkErrors.ErrRootKeyEmpty.Clone()
-			failErr.Msg = "root key cannot be empty"
-			log.FatalErr(fName, failErr)
-		}
+		validation.ValidRootKeyOrDie(rootKey)
 	}
 
 	backendMu.Lock()

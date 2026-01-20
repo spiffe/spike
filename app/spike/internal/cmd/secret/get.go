@@ -5,16 +5,17 @@
 package secret
 
 import (
+	"context"
 	"encoding/json"
 	"slices"
 
 	"github.com/spf13/cobra"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	spike "github.com/spiffe/spike-sdk-go/api"
+	"github.com/spiffe/spike-sdk-go/spiffeid"
 	"gopkg.in/yaml.v3"
 
 	"github.com/spiffe/spike/app/spike/internal/stdout"
-	"github.com/spiffe/spike/app/spike/internal/trust"
 )
 
 // newSecretGetCommand creates and returns a new cobra.Command for retrieving
@@ -57,12 +58,7 @@ func newSecretGetCommand(
 		Short: "Get secrets from the specified path",
 		Args:  cobra.RangeArgs(1, 2),
 		Run: func(cmd *cobra.Command, args []string) {
-			trust.AuthenticateForPilot(SPIFFEID)
-
-			if source == nil {
-				cmd.PrintErrln("Error: SPIFFE X509 source is unavailable.")
-				return
-			}
+			spiffeid.IsPilotOperatorOrDie(SPIFFEID)
 
 			api := spike.NewWithSource(source)
 
@@ -81,7 +77,9 @@ func newSecretGetCommand(
 				return
 			}
 
-			secret, err := api.GetSecretVersion(path, version)
+			ctx := context.Background()
+
+			secret, err := api.GetSecretVersion(ctx, path, version)
 			if stdout.HandleAPIError(cmd, err) {
 				return
 			}

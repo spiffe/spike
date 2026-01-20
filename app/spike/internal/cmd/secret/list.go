@@ -5,12 +5,14 @@
 package secret
 
 import (
+	"context"
+
 	"github.com/spf13/cobra"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	spike "github.com/spiffe/spike-sdk-go/api"
+	"github.com/spiffe/spike-sdk-go/spiffeid"
 
 	"github.com/spiffe/spike/app/spike/internal/stdout"
-	"github.com/spiffe/spike/app/spike/internal/trust"
 )
 
 // newSecretListCommand creates and returns a new cobra.Command for listing all
@@ -46,16 +48,13 @@ func newSecretListCommand(
 		Use:   "list",
 		Short: "List all secret paths",
 		Run: func(cmd *cobra.Command, args []string) {
-			trust.AuthenticateForPilot(SPIFFEID)
-
-			if source == nil {
-				cmd.PrintErrln("Error: SPIFFE X509 source is unavailable.")
-				return
-			}
+			spiffeid.IsPilotOperatorOrDie(SPIFFEID)
 
 			api := spike.NewWithSource(source)
 
-			keys, err := api.ListSecretKeys()
+			ctx := context.Background()
+
+			keys, err := api.ListSecretKeys(ctx)
 			if stdout.HandleAPIError(cmd, err) {
 				return
 			}

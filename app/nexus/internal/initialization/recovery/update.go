@@ -5,6 +5,7 @@
 package recovery
 
 import (
+	"context"
 	"encoding/json"
 	"net/url"
 	"strconv"
@@ -162,7 +163,9 @@ func sendShardsToKeepers(
 			source, predicate.AllowKeeper,
 		)
 
-		_, postErr := net.Post(client, u, md)
+		ctx := context.Background()
+
+		_, postErr := net.Post(ctx, client, u, md)
 
 		// Security: Ensure that md is zeroed out.
 		mem.ClearBytes(md)

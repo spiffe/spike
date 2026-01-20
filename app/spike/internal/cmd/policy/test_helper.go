@@ -54,7 +54,10 @@ func normalizePolicyOutput(output string) string {
 			name = fields[1]
 		}
 
-		fmt.Fprintf(&b, "ID: %s, Name: %s\n", id, name)
+		_, printErr := fmt.Fprintf(&b, "ID: %s, Name: %s\n", id, name)
+		if printErr != nil {
+			return ""
+		}
 	}
 
 	return b.String()

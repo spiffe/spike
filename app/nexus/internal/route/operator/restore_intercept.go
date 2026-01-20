@@ -8,7 +8,6 @@ import (
 	"net/http"
 
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
-	"github.com/spiffe/spike-sdk-go/config/env"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/net"
 	"github.com/spiffe/spike-sdk-go/spiffeid"
@@ -46,39 +45,23 @@ import (
 func guardRestoreRequest(
 	request reqres.RestoreRequest, w http.ResponseWriter, r *http.Request,
 ) *sdkErrors.SDKError {
-	err := net.RespondUnauthorizedOnPredicateFail(spiffeid.IsPilotRestore,
-		reqres.RestoreResponse{}.Unauthorized(), w, r,
+	// No CheckAccess because this route is privileged and should not honor
+	// policy overrides. Match exact SPIFFE ID instead.
+	if authErr := net.AuthorizeAndRespondOnFailNoPolicy(
+		reqres.RestoreResponse{}.Unauthorized(),
+		spiffeid.IsPilotRestore,
+		w, r,
+	); authErr != nil {
+		return authErr
+	}
+
+	if idErr := net.RespondErrOnBadRequestID(
+		request.ID, reqres.RestoreResponse{}.BadRequest(), w,
+	); idErr != nil {
+		return idErr
+	}
+
+	return net.RespondErrOnEmptyShard(
+		request.Shard, reqres.RestoreResponse{}.BadRequest(), w,
 	)
-	if err != nil {
-		return err
-	}
-
-	// TODO: magic number: 1
-	if request.ID < 1 || request.ID > env.ShamirMaxShareCountVal() {
-		failErr := net.Fail(
-			reqres.RestoreResponse{}.BadRequest(), w, http.StatusBadRequest,
-		)
-		if failErr != nil {
-			return sdkErrors.ErrAPIBadRequest.Wrap(failErr)
-		}
-		return sdkErrors.ErrAPIBadRequest
-	}
-
-	allZero := true
-	for _, b := range request.Shard {
-		if b != 0 {
-			allZero = false
-			break
-		}
-	}
-	if allZero {
-		failErr := net.Fail(
-			reqres.RestoreResponse{}.BadRequest(), w, http.StatusBadRequest,
-		)
-		if failErr != nil {
-			return sdkErrors.ErrAPIBadRequest.Wrap(failErr)
-		}
-		return sdkErrors.ErrAPIBadRequest
-	}
-	return nil
 }

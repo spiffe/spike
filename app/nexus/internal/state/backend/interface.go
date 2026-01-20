@@ -213,6 +213,12 @@ type Backend interface {
 	// methods which handle encryption internally, because Backend implementations
 	// may return nil if cipher access is not appropriate for their specific use
 	// case.
+	//
+	// IMPLEMENTATION NOTE: All implementations must include a nil receiver guard.
+	// This method may be passed as a method value (e.g., `backend.GetCipher`
+	// without parentheses), binding the receiver at capture time. If the backend
+	// becomes nil before invocation, the guard returns nil instead of panicking.
+	// Callers must check for a nil return value.
 	GetCipher() cipher.AEAD
 }
 

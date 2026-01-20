@@ -7,9 +7,11 @@ package secret
 import (
 	"net/http"
 
-	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
+	"github.com/spiffe/spike-sdk-go/net"
+	"github.com/spiffe/spike-sdk-go/predicate"
+	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 )
 
 // guardGetSecretRequest validates a secret retrieval request by performing
@@ -38,11 +40,17 @@ import (
 func guardGetSecretRequest(
 	request reqres.SecretGetRequest, w http.ResponseWriter, r *http.Request,
 ) *sdkErrors.SDKError {
-	return guardSecretRequest(
-		request.Path,
-		[]data.PolicyPermission{data.PermissionRead},
-		w, r,
+	if authErr := net.AuthorizeAndRespondOnFailForPath(
 		reqres.SecretGetResponse{}.Unauthorized(),
-		reqres.SecretGetResponse{}.BadRequest(),
+		request.Path,
+		predicate.AllowSPIFFEIDForSecretRead,
+		state.CheckPolicyAccess,
+		w, r,
+	); authErr != nil {
+		return authErr
+	}
+
+	return net.RespondErrOnBadPath(
+		request.Path, reqres.SecretGetResponse{}.BadRequest(), w,
 	)
 }

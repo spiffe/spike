@@ -7,19 +7,14 @@ package cipher
 import (
 	"net/http"
 
-	"github.com/spiffe/go-spiffe/v2/spiffeid"
-
-	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
-	apiAuth "github.com/spiffe/spike-sdk-go/config/auth"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/net"
-	sdkSpiffeid "github.com/spiffe/spike-sdk-go/spiffeid"
-
+	"github.com/spiffe/spike-sdk-go/predicate"
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 )
 
-// guardDecryptCipherRequest validates a cipher decryption request by
+// guardCipherDecryptRequest validates a cipher decryption request by
 // performing authentication, authorization, and request field validation.
 //
 // This function implements a two-tier authorization model:
@@ -45,56 +40,34 @@ import (
 //   - nil if all validations pass
 //   - apiErr.ErrUnauthorized if authorization fails
 //   - apiErr.ErrBadInput if request validation fails
-func guardDecryptCipherRequest(
-	request reqres.CipherDecryptRequest,
-	peerSPIFFEID *spiffeid.ID,
-	w http.ResponseWriter,
-	_ *http.Request,
+func guardCipherDecryptRequest(
+	request reqres.CipherDecryptRequest, w http.ResponseWriter, r *http.Request,
 ) *sdkErrors.SDKError {
+	if authErr := net.AuthorizeAndRespondOnFail(
+		reqres.CipherDecryptResponse{}.Unauthorized(),
+		predicate.AllowSPIFFEIDForCipherDecrypt,
+		state.CheckPolicyAccess,
+		w, r,
+	); authErr != nil {
+		return authErr
+	}
+
 	// Validate version
-	if err := validateVersion(
+	if versionErr := net.RespondCryptoErrOnVersionMismatch(
 		request.Version, w, reqres.CipherDecryptResponse{}.BadRequest(),
-	); err != nil {
-		return err
+	); versionErr != nil {
+		return versionErr
 	}
 
 	// Validate nonce size
-	if err := validateNonceSize(
+	if nonceErr := net.RespondCryptoErrOnInvalidNonceSize(
 		request.Nonce, w, reqres.CipherDecryptResponse{}.BadRequest(),
-	); err != nil {
-		return err
+	); nonceErr != nil {
+		return nonceErr
 	}
 
 	// Validate ciphertext size to prevent DoS attacks
-	if err := validateCiphertextSize(
+	return net.RespondCryptoErrOnLargeCipherText(
 		request.Ciphertext, w, reqres.CipherDecryptResponse{}.BadRequest(),
-	); err != nil {
-		return err
-	}
-
-	// Lite workloads are always allowed:
-	allowed := false
-	if sdkSpiffeid.IsLiteWorkload(peerSPIFFEID.String()) {
-		allowed = true
-	}
-	// If not, do a policy check to determine if the request is allowed:
-	if !allowed {
-		allowed = state.CheckAccess(
-			peerSPIFFEID.String(),
-			apiAuth.PathSystemCipherDecrypt,
-			[]data.PolicyPermission{data.PermissionExecute},
-		)
-	}
-
-	if !allowed {
-		failErr := net.Fail(
-			reqres.CipherDecryptResponse{}.Unauthorized(), w, http.StatusUnauthorized,
-		)
-		if failErr != nil {
-			return sdkErrors.ErrAccessUnauthorized.Wrap(failErr)
-		}
-		return sdkErrors.ErrAccessUnauthorized.Clone()
-	}
-
-	return nil
+	)
 }

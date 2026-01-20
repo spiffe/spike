@@ -7,21 +7,13 @@ package policy
 import (
 	"net/http"
 
-	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
-	cfg "github.com/spiffe/spike-sdk-go/config/auth"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/net"
+	"github.com/spiffe/spike-sdk-go/predicate"
 
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 )
-
-func hasListPermission(peerSPIFFEID string) bool {
-	return state.CheckAccess(
-		peerSPIFFEID, cfg.PathSystemPolicyAccess,
-		[]data.PolicyPermission{data.PermissionList},
-	)
-}
 
 // guardListPolicyRequest validates a policy list request by performing
 // authentication and authorization checks.
@@ -45,6 +37,14 @@ func hasListPermission(peerSPIFFEID string) bool {
 func guardListPolicyRequest(
 	_ reqres.PolicyListRequest, w http.ResponseWriter, r *http.Request,
 ) *sdkErrors.SDKError {
-	return net.RespondUnauthorizedOnPredicateFail(hasListPermission,
-		reqres.PolicyListResponse{}.Unauthorized(), w, r)
+	if authErr := net.AuthorizeAndRespondOnFail(
+		reqres.PolicyListResponse{}.Unauthorized(),
+		predicate.AllowSPIFFEIDForPolicyList,
+		state.CheckPolicyAccess,
+		w, r,
+	); authErr != nil {
+		return authErr
+	}
+
+	return nil
 }

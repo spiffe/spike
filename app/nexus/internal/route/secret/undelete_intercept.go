@@ -7,9 +7,12 @@ package secret
 import (
 	"net/http"
 
-	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
+	"github.com/spiffe/spike-sdk-go/net"
+	"github.com/spiffe/spike-sdk-go/predicate"
+
+	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 )
 
 // guardSecretUndeleteRequest validates a secret restoration request by
@@ -41,11 +44,22 @@ import (
 func guardSecretUndeleteRequest(
 	request reqres.SecretUndeleteRequest, w http.ResponseWriter, r *http.Request,
 ) *sdkErrors.SDKError {
-	return guardSecretRequest(
-		request.Path,
-		[]data.PolicyPermission{data.PermissionWrite},
-		w, r,
+	if authErr := net.AuthorizeAndRespondOnFail(
 		reqres.SecretUndeleteResponse{}.Unauthorized(),
-		reqres.SecretUndeleteResponse{}.BadRequest(),
+		func(
+			peerSPIFFEID string, checkAccess predicate.PolicyAccessChecker,
+		) bool {
+			return predicate.AllowSPIFFEIDForSecretUndelete(
+				peerSPIFFEID, request.Path, checkAccess,
+			)
+		},
+		state.CheckPolicyAccess,
+		w, r,
+	); authErr != nil {
+		return authErr
+	}
+
+	return net.RespondErrOnBadPath(
+		request.Path, reqres.SecretUndeleteResponse{}.BadRequest(), w,
 	)
 }

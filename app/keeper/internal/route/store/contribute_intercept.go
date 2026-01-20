@@ -31,7 +31,9 @@ import (
 func guardShardPutRequest(
 	_ reqres.ShardPutRequest, w http.ResponseWriter, r *http.Request,
 ) *sdkErrors.SDKError {
-	return net.RespondUnauthorizedOnPredicateFail(spiffeid.PeerCanTalkToKeeper,
-		reqres.ShardPutResponse{}.Unauthorized(), w, r,
+	return net.AuthorizeAndRespondOnFailNoPolicy(
+		reqres.PolicyPutResponse{}.Unauthorized(),
+		spiffeid.PeerCanTalkToKeeper,
+		w, r,
 	)
 }

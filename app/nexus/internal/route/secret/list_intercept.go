@@ -7,11 +7,10 @@ package secret
 import (
 	"net/http"
 
-	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
-	apiAuth "github.com/spiffe/spike-sdk-go/config/auth"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/net"
+	"github.com/spiffe/spike-sdk-go/predicate"
 
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 )
@@ -42,27 +41,10 @@ import (
 func guardListSecretRequest(
 	_ reqres.SecretListRequest, w http.ResponseWriter, r *http.Request,
 ) *sdkErrors.SDKError {
-	peerSPIFFEID, err := net.ExtractPeerSPIFFEIDFromRequestAndRespondOnFail[reqres.SecretListResponse](
-		r, w, reqres.SecretListResponse{}.Unauthorized(),
+	return net.AuthorizeAndRespondOnFail(
+		reqres.SecretListResponse{}.Unauthorized(),
+		predicate.AllowSPIFFEIDForSecretList,
+		state.CheckPolicyAccess,
+		w, r,
 	)
-	if err != nil {
-		return err
-	}
-
-	allowed := state.CheckAccess(
-		peerSPIFFEID.String(), apiAuth.PathSystemSecretAccess,
-		[]data.PolicyPermission{data.PermissionList},
-	)
-	if !allowed {
-		failErr := net.Fail(
-			reqres.SecretListResponse{}.Unauthorized(), w,
-			http.StatusUnauthorized,
-		)
-		if failErr != nil {
-			return sdkErrors.ErrAccessUnauthorized.Wrap(failErr)
-		}
-		return sdkErrors.ErrAccessUnauthorized
-	}
-
-	return nil
 }
