@@ -85,7 +85,7 @@ func iterateKeepersAndInitializeState(
 			"id", keeperID, "url", keeperAPIRoot,
 		)
 
-		u := url.ShardFromKeperAPIRoot(keeperAPIRoot)
+		u := url.ShardFromKeeperAPIRoot(keeperAPIRoot)
 		data, err := shardGetResponse(source, u)
 		if err != nil {
 			warnErr := sdkErrors.ErrNetPeerConnection.Wrap(err)
