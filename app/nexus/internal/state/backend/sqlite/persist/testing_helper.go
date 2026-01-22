@@ -167,24 +167,53 @@ func storeTestSecretDirectly(t TestingInterface, store *DataStore, path string,
 	}
 }
 
-// insertEncryptedMetadata encrypts the metadata fields with a shared nonce
+// insertEncryptedMetadata is a helper function that encrypts the metadata fields with per-field nonces
 // and inserts the encrypted values into the secret_metadata table
 func insertEncryptedMetadata(ctx context.Context, t TestingInterface, store *DataStore, path string, metadata TestSecretMetadata) {
-	metaNonce := make([]byte, store.Cipher.NonceSize())
-	if _, randErr := rand.Read(metaNonce); randErr != nil {
+	nonce := make([]byte, store.Cipher.NonceSize())
+	if _, randErr := rand.Read(nonce); randErr != nil {
 		t.Fatalf("Failed to generate metadata nonce: %v", randErr)
 	}
 	// Encrypt metadata
-	encryptedCurrentversion := store.Cipher.Seal(nil, metaNonce, []byte(strconv.Itoa(metadata.CurrentVersion)), nil)
-	encryptedOldestVersion := store.Cipher.Seal(nil, metaNonce, []byte(strconv.Itoa(metadata.OldestVersion)), nil)
-	encryptedMaxVersions := store.Cipher.Seal(nil, metaNonce, []byte(strconv.Itoa(metadata.MaxVersions)), nil)
-
-	encryptedCreatedTime := store.Cipher.Seal(nil, metaNonce, []byte(strconv.FormatInt(metadata.CreatedTime.Unix(), 10)), nil)
-	encryptedUpdatedTime := store.Cipher.Seal(nil, metaNonce, []byte(strconv.FormatInt(metadata.UpdatedTime.Unix(), 10)), nil)
+	encryptedCurrentversion, encryptErr := encryptWithDerivedNonce(
+		store, nonce, nonceFieldSecretMetadataCurrentVersion,
+		[]byte(strconv.Itoa(metadata.CurrentVersion)),
+	)
+	if encryptErr != nil {
+		t.Fatalf("Failed to encrypt current version: %v", encryptErr)
+	}
+	encryptedOldestVersion, encryptErr := encryptWithDerivedNonce(
+		store, nonce, nonceFieldSecretMetadataOldestVersion,
+		[]byte(strconv.Itoa(metadata.OldestVersion)),
+	)
+	if encryptErr != nil {
+		t.Fatalf("Failed to encrypt oldest version: %v", encryptErr)
+	}
+	encryptedMaxVersions, encryptErr := encryptWithDerivedNonce(
+		store, nonce, nonceFieldSecretMetadataMaxVersions,
+		[]byte(strconv.Itoa(metadata.MaxVersions)),
+	)
+	if encryptErr != nil {
+		t.Fatalf("Failed to encrypt max versions: %v", encryptErr)
+	}
+	encryptedCreatedTime, encryptErr := encryptWithDerivedNonce(
+		store, nonce, nonceFieldSecretMetadataCreatedTime,
+		[]byte(strconv.FormatInt(metadata.CreatedTime.Unix(), 10)),
+	)
+	if encryptErr != nil {
+		t.Fatalf("Failed to encrypt created time: %v", encryptErr)
+	}
+	encryptedUpdatedTime, encryptErr := encryptWithDerivedNonce(
+		store, nonce, nonceFieldSecretMetadataUpdatedTime,
+		[]byte(strconv.FormatInt(metadata.UpdatedTime.Unix(), 10)),
+	)
+	if encryptErr != nil {
+		t.Fatalf("Failed to encrypt updated time: %v", encryptErr)
+	}
 
 	// Insert metadata
 	_, execErr := store.db.ExecContext(ctx, ddl.QueryUpdateSecretMetadata,
-		path, metaNonce, encryptedCurrentversion, encryptedOldestVersion, encryptedCreatedTime, encryptedUpdatedTime, encryptedMaxVersions,
+		path, nonce, encryptedCurrentversion, encryptedOldestVersion, encryptedCreatedTime, encryptedUpdatedTime, encryptedMaxVersions,
 	)
 	if execErr != nil {
 		t.Fatalf("Failed to insert metadata: %v", execErr)

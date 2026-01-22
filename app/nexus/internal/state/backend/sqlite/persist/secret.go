@@ -66,10 +66,12 @@ func (s *DataStore) StoreSecret(
 			}
 		}
 	}(tx)
+
 	nonce, nonceErr := generateNonce(s)
 	if nonceErr != nil {
 		return sdkErrors.ErrCryptoNonceGenerationFailed.Wrap(nonceErr)
 	}
+
 	// time.Time → []byte (Unix seconds as string)
 	createdBytes := []byte(strconv.FormatInt(secret.Metadata.CreatedTime.Unix(), 10))
 	updatedBytes := []byte(strconv.FormatInt(secret.Metadata.UpdatedTime.Unix(), 10))
@@ -79,24 +81,34 @@ func (s *DataStore) StoreSecret(
 	oldestVersionBytes := []byte(strconv.Itoa(secret.Metadata.OldestVersion))
 	maxVersionsBytes := []byte(strconv.Itoa(secret.Metadata.MaxVersions))
 
-	// Encrypt metadata
-	encryptedCurrentVersion, encryptErr := encryptWithNonce(s, nonce, currentVersionBytes)
+	// Encrypt metadata using a derived per-field nonce.
+	encryptedCurrentVersion, encryptErr := encryptWithDerivedNonce(
+		s, nonce, nonceFieldSecretMetadataCurrentVersion, currentVersionBytes,
+	)
 	if encryptErr != nil {
 		return sdkErrors.ErrCryptoEncryptionFailed.Wrap(encryptErr)
 	}
-	encryptedOldestVersion, encryptErr := encryptWithNonce(s, nonce, oldestVersionBytes)
+	encryptedOldestVersion, encryptErr := encryptWithDerivedNonce(
+		s, nonce, nonceFieldSecretMetadataOldestVersion, oldestVersionBytes,
+	)
 	if encryptErr != nil {
 		return sdkErrors.ErrCryptoEncryptionFailed.Wrap(encryptErr)
 	}
-	encryptedMaxVersions, encryptErr := encryptWithNonce(s, nonce, maxVersionsBytes)
+	encryptedMaxVersions, encryptErr := encryptWithDerivedNonce(
+		s, nonce, nonceFieldSecretMetadataMaxVersions, maxVersionsBytes,
+	)
 	if encryptErr != nil {
 		return sdkErrors.ErrCryptoEncryptionFailed.Wrap(encryptErr)
 	}
-	encryptedCreatedTime, encryptErr := encryptWithNonce(s, nonce, createdBytes)
+	encryptedCreatedTime, encryptErr := encryptWithDerivedNonce(
+		s, nonce, nonceFieldSecretMetadataCreatedTime, createdBytes,
+	)
 	if encryptErr != nil {
 		return sdkErrors.ErrCryptoEncryptionFailed.Wrap(encryptErr)
 	}
-	encryptedUpdatedTime, encryptErr := encryptWithNonce(s, nonce, updatedBytes)
+	encryptedUpdatedTime, encryptErr := encryptWithDerivedNonce(
+		s, nonce, nonceFieldSecretMetadataUpdatedTime, updatedBytes,
+	)
 	if encryptErr != nil {
 		return sdkErrors.ErrCryptoEncryptionFailed.Wrap(encryptErr)
 	}

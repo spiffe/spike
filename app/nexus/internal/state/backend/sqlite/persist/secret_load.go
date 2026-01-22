@@ -64,7 +64,7 @@ func (s *DataStore) loadSecretInternal(
 
 	var secret kv.Value
 	var (
-		metaNonce               []byte
+		nonce                   []byte
 		encryptedCurrentVersion []byte
 		encryptedOldestVersion  []byte
 		encryptedCreatedTime    []byte
@@ -74,7 +74,7 @@ func (s *DataStore) loadSecretInternal(
 
 	// Load metadata
 	metaErr := s.db.QueryRowContext(ctx, ddl.QuerySecretMetadata, path).Scan(
-		&metaNonce,
+		&nonce,
 		&encryptedCurrentVersion,
 		&encryptedOldestVersion,
 		&encryptedCreatedTime,
@@ -89,24 +89,34 @@ func (s *DataStore) loadSecretInternal(
 		return nil, sdkErrors.ErrEntityLoadFailed
 	}
 
-	// Decrypt metadata
-	currentVersionBytes, decryptErr := s.decrypt(encryptedCurrentVersion, metaNonce)
+	// Decrypt metadata using per-field derived nonces.
+	currentVersionBytes, decryptErr := decryptWithDerivedNonce(
+		s, nonce, nonceFieldSecretMetadataCurrentVersion, encryptedCurrentVersion,
+	)
 	if decryptErr != nil {
 		return nil, sdkErrors.ErrCryptoDecryptionFailed.Wrap(decryptErr)
 	}
-	oldestVersionBytes, decryptErr := s.decrypt(encryptedOldestVersion, metaNonce)
+	oldestVersionBytes, decryptErr := decryptWithDerivedNonce(
+		s, nonce, nonceFieldSecretMetadataOldestVersion, encryptedOldestVersion,
+	)
 	if decryptErr != nil {
 		return nil, sdkErrors.ErrCryptoDecryptionFailed.Wrap(decryptErr)
 	}
-	createdBytes, decryptErr := s.decrypt(encryptedCreatedTime, metaNonce)
+	createdBytes, decryptErr := decryptWithDerivedNonce(
+		s, nonce, nonceFieldSecretMetadataCreatedTime, encryptedCreatedTime,
+	)
 	if decryptErr != nil {
 		return nil, sdkErrors.ErrCryptoDecryptionFailed.Wrap(decryptErr)
 	}
-	updatedBytes, decryptErr := s.decrypt(encryptedUpdatedTime, metaNonce)
+	updatedBytes, decryptErr := decryptWithDerivedNonce(
+		s, nonce, nonceFieldSecretMetadataUpdatedTime, encryptedUpdatedTime,
+	)
 	if decryptErr != nil {
 		return nil, sdkErrors.ErrCryptoDecryptionFailed.Wrap(decryptErr)
 	}
-	maxVersionsBytes, decryptErr := s.decrypt(encryptedMaxVersions, metaNonce)
+	maxVersionsBytes, decryptErr := decryptWithDerivedNonce(
+		s, nonce, nonceFieldSecretMetadataMaxVersions, encryptedMaxVersions,
+	)
 	if decryptErr != nil {
 		return nil, sdkErrors.ErrCryptoDecryptionFailed.Wrap(decryptErr)
 	}
