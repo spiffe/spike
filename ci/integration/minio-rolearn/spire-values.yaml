@@ -57,6 +57,23 @@ spike-keeper:
   image:
     pullPolicy: Never
     tag: dev
+  extraInitContainers:
+    - name: wait-for-spire
+      image: cgr.dev/chainguard/bash:latest
+      command:
+        - /bin/bash
+        - -c
+        - |
+          echo "Waiting for SPIRE agent socket..."
+          while [ ! -S /spiffe-workload-api/spire-agent.sock ]; do
+            echo "Socket not found, waiting..."
+            sleep 2
+          done
+          echo "SPIRE agent socket is ready"
+      volumeMounts:
+        - name: spiffe-workload-api
+          mountPath: /spiffe-workload-api
+          readOnly: true
 
 spike-nexus:
   enabled: true
@@ -64,3 +81,20 @@ spike-nexus:
     pullPolicy: Never
     tag: dev
   backendStore: lite
+  extraInitContainers:
+    - name: wait-for-spire
+      image: cgr.dev/chainguard/bash:latest
+      command:
+        - /bin/bash
+        - -c
+        - |
+          echo "Waiting for SPIRE agent socket..."
+          while [ ! -S /spiffe-workload-api/spire-agent.sock ]; do
+            echo "Socket not found, waiting..."
+            sleep 2
+          done
+          echo "SPIRE agent socket is ready"
+      volumeMounts:
+        - name: spiffe-workload-api
+          mountPath: /spiffe-workload-api
+          readOnly: true
