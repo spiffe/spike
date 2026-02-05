@@ -8,6 +8,7 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"strconv"
 
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/kv"
@@ -20,7 +21,7 @@ import (
 // StoreSecret stores a secret at the specified path with its metadata and
 // versions. It performs the following operations atomically within a
 // transaction:
-//   - Updates the secret metadata (current version, creation time, update time)
+//   - Encrypts and updates the secret metadata (current version, creation time, update time)
 //   - Stores all secret versions with their respective data encrypted using
 //     AES-GCM
 //
@@ -66,16 +67,60 @@ func (s *DataStore) StoreSecret(
 		}
 	}(tx)
 
+	nonce, nonceErr := generateNonce(s)
+	if nonceErr != nil {
+		return sdkErrors.ErrCryptoNonceGenerationFailed.Wrap(nonceErr)
+	}
+
+	// time.Time → []byte (Unix seconds as string)
+	createdBytes := []byte(strconv.FormatInt(secret.Metadata.CreatedTime.Unix(), 10))
+	updatedBytes := []byte(strconv.FormatInt(secret.Metadata.UpdatedTime.Unix(), 10))
+
+	// int → []byte (decimal string)
+	currentVersionBytes := []byte(strconv.Itoa(secret.Metadata.CurrentVersion))
+	oldestVersionBytes := []byte(strconv.Itoa(secret.Metadata.OldestVersion))
+	maxVersionsBytes := []byte(strconv.Itoa(secret.Metadata.MaxVersions))
+
+	// Encrypt metadata using a derived per-field nonce.
+	encryptedCurrentVersion, encryptErr := encryptWithDerivedNonce(
+		s, nonce, nonceFieldSecretMetadataCurrentVersion, currentVersionBytes,
+	)
+	if encryptErr != nil {
+		return sdkErrors.ErrCryptoEncryptionFailed.Wrap(encryptErr)
+	}
+	encryptedOldestVersion, encryptErr := encryptWithDerivedNonce(
+		s, nonce, nonceFieldSecretMetadataOldestVersion, oldestVersionBytes,
+	)
+	if encryptErr != nil {
+		return sdkErrors.ErrCryptoEncryptionFailed.Wrap(encryptErr)
+	}
+	encryptedMaxVersions, encryptErr := encryptWithDerivedNonce(
+		s, nonce, nonceFieldSecretMetadataMaxVersions, maxVersionsBytes,
+	)
+	if encryptErr != nil {
+		return sdkErrors.ErrCryptoEncryptionFailed.Wrap(encryptErr)
+	}
+	encryptedCreatedTime, encryptErr := encryptWithDerivedNonce(
+		s, nonce, nonceFieldSecretMetadataCreatedTime, createdBytes,
+	)
+	if encryptErr != nil {
+		return sdkErrors.ErrCryptoEncryptionFailed.Wrap(encryptErr)
+	}
+	encryptedUpdatedTime, encryptErr := encryptWithDerivedNonce(
+		s, nonce, nonceFieldSecretMetadataUpdatedTime, updatedBytes,
+	)
+	if encryptErr != nil {
+		return sdkErrors.ErrCryptoEncryptionFailed.Wrap(encryptErr)
+	}
 	// Update metadata
 	_, err = tx.ExecContext(ctx, ddl.QueryUpdateSecretMetadata,
-		path, secret.Metadata.CurrentVersion, secret.Metadata.OldestVersion,
-		secret.Metadata.CreatedTime,
-		secret.Metadata.UpdatedTime, secret.Metadata.MaxVersions,
+		path, nonce, encryptedCurrentVersion, encryptedOldestVersion,
+		encryptedCreatedTime,
+		encryptedUpdatedTime, encryptedMaxVersions,
 	)
 	if err != nil {
 		return sdkErrors.ErrEntityQueryFailed.Wrap(err)
 	}
-
 	// Update versions
 	for version, sv := range secret.Versions {
 		md, marshalErr := json.Marshal(sv.Data)

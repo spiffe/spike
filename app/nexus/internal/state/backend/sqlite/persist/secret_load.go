@@ -9,6 +9,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"strconv"
 	"time"
 
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
@@ -21,9 +22,9 @@ import (
 
 // loadSecretInternal retrieves a secret and all its versions from the database
 // for the specified path. It performs the actual database operations including
-// loading metadata, fetching all versions, and decrypting the secret data.
+// loading and decrypting metadata, fetching all versions, and decrypting the secret data.
 //
-// The function first queries for secret metadata (current version, timestamps),
+// The function first queries and decrypts secret metadata (current version, timestamps),
 // then retrieves all versions of the secret, decrypts each version, and
 // reconstructs the complete secret structure.
 //
@@ -49,6 +50,7 @@ import (
 //
 // The function handles the following operations:
 //  1. Queries secret metadata from the secret_metadata table
+//  2. Decrypts secret metadata
 //  2. Fetches all versions from the secrets table
 //  3. Decrypts each version using the DataStore's cipher
 //  4. Unmarshals JSON data into a map[string]string format
@@ -61,14 +63,24 @@ func (s *DataStore) loadSecretInternal(
 	validation.NonNilContextOrDie(ctx, fName)
 
 	var secret kv.Value
+	var (
+		nonce                   []byte
+		encryptedCurrentVersion []byte
+		encryptedOldestVersion  []byte
+		encryptedCreatedTime    []byte
+		encryptedUpdatedTime    []byte
+		encryptedMaxVersions    []byte
+	)
 
 	// Load metadata
 	metaErr := s.db.QueryRowContext(ctx, ddl.QuerySecretMetadata, path).Scan(
-		&secret.Metadata.CurrentVersion,
-		&secret.Metadata.OldestVersion,
-		&secret.Metadata.CreatedTime,
-		&secret.Metadata.UpdatedTime,
-		&secret.Metadata.MaxVersions)
+		&nonce,
+		&encryptedCurrentVersion,
+		&encryptedOldestVersion,
+		&encryptedCreatedTime,
+		&encryptedUpdatedTime,
+		&encryptedMaxVersions,
+	)
 	if metaErr != nil {
 		if errors.Is(metaErr, sql.ErrNoRows) {
 			return nil, sdkErrors.ErrEntityNotFound
@@ -76,6 +88,50 @@ func (s *DataStore) loadSecretInternal(
 
 		return nil, sdkErrors.ErrEntityLoadFailed
 	}
+
+	// Decrypt metadata using per-field derived nonces.
+	currentVersionBytes, decryptErr := decryptWithDerivedNonce(
+		s, nonce, nonceFieldSecretMetadataCurrentVersion, encryptedCurrentVersion,
+	)
+	if decryptErr != nil {
+		return nil, sdkErrors.ErrCryptoDecryptionFailed.Wrap(decryptErr)
+	}
+	oldestVersionBytes, decryptErr := decryptWithDerivedNonce(
+		s, nonce, nonceFieldSecretMetadataOldestVersion, encryptedOldestVersion,
+	)
+	if decryptErr != nil {
+		return nil, sdkErrors.ErrCryptoDecryptionFailed.Wrap(decryptErr)
+	}
+	createdBytes, decryptErr := decryptWithDerivedNonce(
+		s, nonce, nonceFieldSecretMetadataCreatedTime, encryptedCreatedTime,
+	)
+	if decryptErr != nil {
+		return nil, sdkErrors.ErrCryptoDecryptionFailed.Wrap(decryptErr)
+	}
+	updatedBytes, decryptErr := decryptWithDerivedNonce(
+		s, nonce, nonceFieldSecretMetadataUpdatedTime, encryptedUpdatedTime,
+	)
+	if decryptErr != nil {
+		return nil, sdkErrors.ErrCryptoDecryptionFailed.Wrap(decryptErr)
+	}
+	maxVersionsBytes, decryptErr := decryptWithDerivedNonce(
+		s, nonce, nonceFieldSecretMetadataMaxVersions, encryptedMaxVersions,
+	)
+	if decryptErr != nil {
+		return nil, sdkErrors.ErrCryptoDecryptionFailed.Wrap(decryptErr)
+	}
+
+	// Decode into struct
+	secret.Metadata.CurrentVersion, _ = strconv.Atoi(string(currentVersionBytes))
+	secret.Metadata.OldestVersion, _ = strconv.Atoi(string(oldestVersionBytes))
+
+	createdSec, _ := strconv.ParseInt(string(createdBytes), 10, 64)
+	updatedSec, _ := strconv.ParseInt(string(updatedBytes), 10, 64)
+
+	secret.Metadata.CreatedTime = time.Unix(createdSec, 0)
+	secret.Metadata.UpdatedTime = time.Unix(updatedSec, 0)
+
+	secret.Metadata.MaxVersions, _ = strconv.Atoi(string(maxVersionsBytes))
 
 	// Load versions
 	rows, queryErr := s.db.QueryContext(ctx, ddl.QuerySecretVersions, path)
