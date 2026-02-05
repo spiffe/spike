@@ -107,8 +107,8 @@ func TestSecretGetCommandFlagDefaults(t *testing.T) {
 		t.Fatal("Expected 'format' flag to be present")
 		return
 	}
-	if formatFlag.DefValue != "plain" {
-		t.Errorf("Expected format default to be 'plain', got '%s'",
+	if formatFlag.DefValue != "human" {
+		t.Errorf("Expected format default to be 'human', got '%s'",
 			formatFlag.DefValue)
 	}
 	if formatFlag.Shorthand != "f" {
