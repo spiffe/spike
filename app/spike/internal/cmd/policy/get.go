@@ -15,7 +15,7 @@ import (
 
 // newPolicyGetCommand creates a new Cobra command for retrieving policy
 // details. It fetches and displays the complete information about a specific
-// policy by ID or name.
+// policy by name.
 //
 // The command requires an X509Source for SPIFFE authentication and validates
 // that the system is initialized before retrieving policy information.
@@ -31,28 +31,27 @@ import (
 //
 // Command usage:
 //
-//	get [policy-id] [flags]
+//	get [policy-name] [flags]
 //
 // Arguments:
-//   - policy-id: The unique identifier of the policy to retrieve
+//   - policy-name: The name of the policy to retrieve
 //     (optional if --name is provided)
 //
 // Flags:
-//   - --name: Policy name to look up (alternative to policy ID)
+//   - --name: Policy name to look up
 //   - --format: Output format ("human" or "json", default is "human")
 //
 // Example usage:
 //
-//	spike policy get abc123
+//	spike policy get web-service-policy
 //	spike policy get --name=web-service-policy
-//	spike policy get abc123 --format=json
+//	spike policy get web-service-policy --format=json
 //
 // Example output for human format:
 //
 //	POLICY DETAILS
 //	=============
 //
-//	ID: policy-123
 //	Name: web-service-policy
 //	SPIFFE ID Pattern: ^spiffe://example\.org/web-service/.*$
 //	Path Pattern: ^/secrets/db/.*$
@@ -63,7 +62,6 @@ import (
 // Example output for JSON format:
 //
 //	{
-//	  "id": "policy-123",
 //	  "name": "web-service-policy",
 //	  "spiffeIdPattern": "^spiffe://example\\.org/web-service/.*$",
 //	  "pathPattern": "^tenants/demo/db$",
@@ -74,14 +72,14 @@ import (
 //
 // The command will:
 //  1. Check if the system is initialized
-//  2. Get the policy ID either from arguments or by looking up the policy name
-//  3. Retrieve the policy with the specified ID
+//  2. Get the policy name from arguments or --name flag
+//  3. Retrieve the policy with the specified name
 //  4. Format the policy details based on the format flag
 //  5. Display the formatted output
 //
 // Error conditions:
-//   - Neither policy ID argument nor --name flag provided
-//   - Policy not found by ID or name
+//   - Neither policy name argument nor --name flag provided
+//   - Policy not found by name
 //   - Invalid format specified
 //   - System not initialized (requires running 'spike init' first)
 //   - Insufficient permissions
@@ -89,12 +87,12 @@ func newPolicyGetCommand(
 	source *workloadapi.X509Source, SPIFFEID string,
 ) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "get [policy-id]",
+		Use:   "get [policy-name]",
 		Short: "Get policy details",
-		Long: `Get detailed information about a policy by ID or name.
+		Long: `Get detailed information about a policy by name.
 
         You can provide either:
-        - A policy ID as an argument: spike policy get abc123
+        - A policy name as an argument: spike policy get web-service-policy
         - A policy name with the --name flag: spike policy get --name=my-policy
 
         Use --format=json to get the output in JSON format.`,
@@ -108,12 +106,14 @@ func newPolicyGetCommand(
 
 			api := spike.NewWithSource(source)
 
-			policyID, err := sendGetPolicyIDRequest(c, args, api)
+			// TODO: Issue #250 - Using name as primary identifier.
+			// The SDK still uses 'id' field in the API call.
+			policyName, err := sendGetPolicyNameRequest(c, args, api)
 			if stdout.HandleAPIError(c, err) {
 				return
 			}
 
-			policy, apiErr := api.GetPolicy(policyID)
+			policy, apiErr := api.GetPolicy(policyName)
 			if stdout.HandleAPIError(c, apiErr) {
 				return
 			}

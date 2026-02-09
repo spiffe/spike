@@ -77,7 +77,7 @@ func TestCheckAccess_SuperPermission(t *testing.T) {
 		}
 
 		// Clean up
-		deleteErr := DeletePolicy(createdPolicy.ID)
+		deleteErr := DeletePolicy(createdPolicy.Name)
 		if deleteErr != nil {
 			t.Errorf("Failed to clean up policy: %v", deleteErr)
 		}
@@ -158,7 +158,7 @@ func TestCheckAccess_SpecificPatterns(t *testing.T) {
 		}
 
 		// Clean up
-		deleteErr := DeletePolicy(createdPolicy.ID)
+		deleteErr := DeletePolicy(createdPolicy.Name)
 		if deleteErr != nil {
 			t.Errorf("Failed to clean up policy: %v", deleteErr)
 		}
@@ -202,8 +202,8 @@ func TestUpsertPolicy_ValidPolicy(t *testing.T) {
 		}
 
 		// Verify policy was created with expected fields
-		if createdPolicy.ID == "" {
-			t.Error("Expected generated ID")
+		if createdPolicy.Name == "" {
+			t.Error("Expected non-empty policy name")
 		}
 		if createdPolicy.Name != policy.Name {
 			t.Errorf("Expected name %s, got %s", policy.Name, createdPolicy.Name)
@@ -223,6 +223,9 @@ func TestUpsertPolicy_ValidPolicy(t *testing.T) {
 		if createdPolicy.CreatedAt.IsZero() {
 			t.Error("Expected CreatedAt to be set")
 		}
+		if createdPolicy.SPIFFEIDPattern == "" {
+			t.Error("Expected SPIFFEIDPattern to be set")
+		}
 		if createdPolicy.IDRegex == nil {
 			t.Error("Expected IDRegex to be compiled")
 		}
@@ -231,7 +234,7 @@ func TestUpsertPolicy_ValidPolicy(t *testing.T) {
 		}
 
 		// Clean up
-		deleteErr := DeletePolicy(createdPolicy.ID)
+		deleteErr := DeletePolicy(createdPolicy.Name)
 		if deleteErr != nil {
 			t.Errorf("Failed to clean up policy: %v", deleteErr)
 		}
@@ -286,10 +289,10 @@ func TestUpsertPolicy_UpdateExisting(t *testing.T) {
 			t.Fatalf("Failed to upsert policy: %v", updateErr)
 		}
 
-		// Verify upsert preserved ID and CreatedAt
-		if updatedPolicy.ID != createdPolicy1.ID {
-			t.Errorf("Expected ID to be preserved, got %s, want %s",
-				updatedPolicy.ID, createdPolicy1.ID)
+		// Verify upsert preserved name and CreatedAt
+		if updatedPolicy.Name != createdPolicy1.Name {
+			t.Errorf("Expected name to be preserved, got %s, want %s",
+				updatedPolicy.Name, createdPolicy1.Name)
 		}
 		if !updatedPolicy.CreatedAt.Equal(createdPolicy1.CreatedAt) {
 			t.Errorf("Expected CreatedAt to be preserved")
@@ -301,7 +304,7 @@ func TestUpsertPolicy_UpdateExisting(t *testing.T) {
 		}
 
 		// Clean up
-		deleteErr := DeletePolicy(createdPolicy1.ID)
+		deleteErr := DeletePolicy(createdPolicy1.Name)
 		if deleteErr != nil {
 			t.Errorf("Failed to clean up policy: %v", deleteErr)
 		}
@@ -363,7 +366,7 @@ func TestUpsertPolicy_InvalidRegexPatterns(t *testing.T) {
 						t.Errorf("Unexpected error for valid patterns: %v", createErr)
 					} else {
 						// Clean up successful creation
-						_ = DeletePolicy(createdPolicy.ID)
+						_ = DeletePolicy(createdPolicy.Name)
 					}
 				}
 			})
@@ -396,7 +399,7 @@ func TestUpsertPolicy_PreserveCreatedAt(t *testing.T) {
 		}
 
 		// Clean up
-		deleteErr := DeletePolicy(createdPolicy.ID)
+		deleteErr := DeletePolicy(createdPolicy.Name)
 		if deleteErr != nil {
 			t.Errorf("Failed to clean up policy: %v", deleteErr)
 		}
@@ -422,23 +425,27 @@ func TestGetPolicy_ExistingPolicy(t *testing.T) {
 		}
 
 		// Get the policy
-		retrievedPolicy, getErr := GetPolicy(createdPolicy.ID)
+		retrievedPolicy, getErr := GetPolicy(createdPolicy.Name)
 		if getErr != nil {
 			t.Fatalf("Failed to get policy: %v", getErr)
 		}
 
 		// Verify the retrieved policy matches
-		if retrievedPolicy.ID != createdPolicy.ID {
-			t.Errorf("Expected ID %s, got %s",
-				createdPolicy.ID, retrievedPolicy.ID)
-		}
 		if retrievedPolicy.Name != createdPolicy.Name {
 			t.Errorf("Expected name %s, got %s",
 				createdPolicy.Name, retrievedPolicy.Name)
 		}
+		if retrievedPolicy.SPIFFEIDPattern != createdPolicy.SPIFFEIDPattern {
+			t.Errorf("Expected SPIFFEIDPattern %s, got %s",
+				createdPolicy.SPIFFEIDPattern, retrievedPolicy.SPIFFEIDPattern)
+		}
+		if retrievedPolicy.PathPattern != createdPolicy.PathPattern {
+			t.Errorf("Expected PathPattern %s, got %s",
+				createdPolicy.PathPattern, retrievedPolicy.PathPattern)
+		}
 
 		// Clean up
-		deleteErr := DeletePolicy(createdPolicy.ID)
+		deleteErr := DeletePolicy(createdPolicy.Name)
 		if deleteErr != nil {
 			t.Errorf("Failed to clean up policy: %v", deleteErr)
 		}
@@ -480,13 +487,13 @@ func TestDeletePolicy_ExistingPolicy(t *testing.T) {
 		}
 
 		// Delete the policy
-		deleteErr := DeletePolicy(createdPolicy.ID)
+		deleteErr := DeletePolicy(createdPolicy.Name)
 		if deleteErr != nil {
 			t.Fatalf("Failed to delete policy: %v", deleteErr)
 		}
 
 		// Verify the policy is gone
-		_, getErr := GetPolicy(createdPolicy.ID)
+		_, getErr := GetPolicy(createdPolicy.Name)
 		if !errors.Is(getErr, sdkErrors.ErrEntityNotFound) {
 			t.Errorf("Expected ErrEntityNotFound after deletion, got %v", getErr)
 		}
@@ -573,7 +580,7 @@ func TestListPolicies_MultiplePolicies(t *testing.T) {
 
 		// Clean up
 		for _, policy := range createdPolicies {
-			deleteErr := DeletePolicy(policy.ID)
+			deleteErr := DeletePolicy(policy.Name)
 			if deleteErr != nil {
 				t.Errorf("Failed to clean up policy %s: %v", policy.Name, deleteErr)
 			}
@@ -651,7 +658,7 @@ func TestListPoliciesByPath_MatchingPolicies(t *testing.T) {
 
 		// Clean up
 		for _, policy := range createdPolicies {
-			deleteErr := DeletePolicy(policy.ID)
+			deleteErr := DeletePolicy(policy.Name)
 			if deleteErr != nil {
 				t.Errorf("Failed to clean up policy %s: %v", policy.Name, deleteErr)
 			}
@@ -688,7 +695,7 @@ func TestListPoliciesByPath_NoMatches(t *testing.T) {
 		}
 
 		// Clean up
-		deleteErr := DeletePolicy(createdPolicy.ID)
+		deleteErr := DeletePolicy(createdPolicy.Name)
 		if deleteErr != nil {
 			t.Errorf("Failed to clean up policy: %v", deleteErr)
 		}
@@ -766,7 +773,7 @@ func TestListPoliciesBySPIFFEID_MatchingPolicies(t *testing.T) {
 
 		// Clean up
 		for _, policy := range createdPolicies {
-			deleteErr := DeletePolicy(policy.ID)
+			deleteErr := DeletePolicy(policy.Name)
 			if deleteErr != nil {
 				t.Errorf("Failed to clean up policy %s: %v", policy.Name, deleteErr)
 			}
@@ -803,7 +810,7 @@ func TestListPoliciesBySPIFFEID_NoMatches(t *testing.T) {
 		}
 
 		// Clean up
-		deleteErr := DeletePolicy(createdPolicy.ID)
+		deleteErr := DeletePolicy(createdPolicy.Name)
 		if deleteErr != nil {
 			t.Errorf("Failed to clean up policy: %v", deleteErr)
 		}
@@ -855,7 +862,7 @@ func TestPolicyRegexCompilation(t *testing.T) {
 		}
 
 		// Clean up
-		deleteErr := DeletePolicy(createdPolicy.ID)
+		deleteErr := DeletePolicy(createdPolicy.Name)
 		if deleteErr != nil {
 			t.Errorf("Failed to clean up policy: %v", deleteErr)
 		}
@@ -893,7 +900,7 @@ func BenchmarkCheckAccess_WildcardPolicy(b *testing.B) {
 			"test/path", []data.PolicyPermission{data.PermissionRead})
 	}
 
-	_ = DeletePolicy(createdPolicy.ID)
+	_ = DeletePolicy(createdPolicy.Name)
 }
 
 func BenchmarkUpsertPolicy(b *testing.B) {
@@ -922,7 +929,7 @@ func BenchmarkUpsertPolicy(b *testing.B) {
 		}
 
 		createdPolicy, _ := UpsertPolicy(policy)
-		createdPolicies = append(createdPolicies, createdPolicy.ID)
+		createdPolicies = append(createdPolicies, createdPolicy.Name)
 	}
 	b.StopTimer()
 
@@ -956,7 +963,7 @@ func BenchmarkListPolicies(b *testing.B) {
 			Permissions:     []data.PolicyPermission{data.PermissionRead},
 		}
 		createdPolicy, _ := UpsertPolicy(policy)
-		createdPolicies = append(createdPolicies, createdPolicy.ID)
+		createdPolicies = append(createdPolicies, createdPolicy.Name)
 	}
 
 	b.ResetTimer()

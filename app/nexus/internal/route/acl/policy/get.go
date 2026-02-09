@@ -15,12 +15,12 @@ import (
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 )
 
-// RouteGetPolicy handles HTTP requests to retrieve a specific policy by its ID.
-// It processes the request body to fetch detailed information about a single
-// policy.
+// RouteGetPolicy handles HTTP requests to retrieve a specific policy by its
+// name. It processes the request body to fetch detailed information about a
+// single policy.
 //
 // The function expects a JSON request body containing:
-//   - ID: unique identifier of the policy to retrieve
+//   - Name: name of the policy to retrieve
 //
 // On success, it returns the complete policy object. If the policy is not
 // found, it returns a "not found" error. For other errors, it returns an
@@ -28,7 +28,7 @@ import (
 //
 // Parameters:
 //   - w: HTTP response writer for sending the response
-//   - r: HTTP request containing the policy ID to retrieve
+//   - r: HTTP request containing the policy name to retrieve
 //   - audit: Audit entry for logging the policy read action
 //
 // Returns:
@@ -38,14 +38,13 @@ import (
 // Example request body:
 //
 //	{
-//	    "id": "policy-123"
+//	    "name": "example-policy"
 //	}
 //
 // Example success response:
 //
 //	{
 //	    "policy": {
-//	        "id": "policy-123",
 //	        "name": "example-policy",
 //	        "spiffe_id_pattern": "^spiffe://example\.org/.*/service",
 //	        "path_pattern": "^api/",
@@ -93,9 +92,13 @@ func RouteGetPolicy(
 		return err
 	}
 
-	policyID := request.ID
+	// TODO: Issue #250 - SDK uses 'id' field, but we're using name as primary key.
+	// This is a temporary workaround. The SDK's PolicyReadRequest.ID field should
+	// be renamed to 'name' in a future SDK update.
+	// See: https://github.com/spiffe/spike/issues/250
+	policyName := request.ID
 
-	policy, policyErr := state.GetPolicy(policyID)
+	policy, policyErr := state.GetPolicy(policyName)
 	if policyErr != nil {
 		return net.RespondWithHTTPError(policyErr, w, reqres.PolicyReadResponse{})
 	}

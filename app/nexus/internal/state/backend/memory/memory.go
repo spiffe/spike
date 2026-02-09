@@ -28,7 +28,7 @@ type Store struct {
 	secretStore *kv.KV       // In-memory key-value store for secrets
 	secretMu    sync.RWMutex // Mutex protecting secret operations
 
-	policies map[string]*data.Policy // In-memory map of policies by ID
+	policies map[string]*data.Policy // In-memory map of policies by name
 	policyMu sync.RWMutex            // Mutex protecting policy operations
 
 	cipher cipher.AEAD // Encryption cipher (for interface compatibility)
@@ -189,8 +189,8 @@ func (s *Store) LoadAllSecrets(_ context.Context) (
 
 // StorePolicy stores a policy in the store.
 //
-// This method is thread-safe and validates that the policy has a non-empty ID
-// before storing. If a policy with the same ID already exists, it is
+// This method is thread-safe and validates that the policy has a non-empty
+// name before storing. If a policy with the same name already exists, it is
 // replaced.
 //
 // Parameters:
@@ -200,43 +200,43 @@ func (s *Store) LoadAllSecrets(_ context.Context) (
 //
 // Returns:
 //   - *sdkErrors.SDKError: nil on success, or sdkErrors.ErrEntityInvalid if
-//     the policy ID is empty
+//     the policy name is empty
 func (s *Store) StorePolicy(
 	_ context.Context, policy data.Policy,
 ) *sdkErrors.SDKError {
 	s.policyMu.Lock()
 	defer s.policyMu.Unlock()
 
-	if policy.ID == "" {
+	if policy.Name == "" {
 		failErr := *sdkErrors.ErrEntityInvalid.Clone()
-		failErr.Msg = "policy ID cannot be empty"
+		failErr.Msg = "policy name cannot be empty"
 		return &failErr
 	}
 
-	s.policies[policy.ID] = &policy
+	s.policies[policy.Name] = &policy
 	return nil
 }
 
-// LoadPolicy retrieves a policy from the store by its ID.
+// LoadPolicy retrieves a policy from the store by its name.
 //
 // This method is thread-safe and returns the policy if it exists.
 //
 // Parameters:
 //   - context.Context: Context for cancellation (ignored in this
 //     implementation)
-//   - id: The unique identifier of the policy to retrieve
+//   - name: The name of the policy to retrieve
 //
 // Returns:
 //   - *data.Policy: The policy if found, nil otherwise
 //   - *sdkErrors.SDKError: nil on success, or sdkErrors.ErrEntityNotFound if
 //     the policy does not exist
 func (s *Store) LoadPolicy(
-	_ context.Context, id string,
+	_ context.Context, name string,
 ) (*data.Policy, *sdkErrors.SDKError) {
 	s.policyMu.RLock()
 	defer s.policyMu.RUnlock()
 
-	policy, exists := s.policies[id]
+	policy, exists := s.policies[name]
 	if !exists {
 		return nil, sdkErrors.ErrEntityNotFound
 	}
@@ -254,7 +254,7 @@ func (s *Store) LoadPolicy(
 //     implementation)
 //
 // Returns:
-//   - map[string]*data.Policy: A map of policy IDs to policies
+//   - map[string]*data.Policy: A map of policy names to policies
 //   - *sdkErrors.SDKError: Always returns nil for in-memory storage
 func (s *Store) LoadAllPolicies(
 	_ context.Context,
@@ -264,14 +264,14 @@ func (s *Store) LoadAllPolicies(
 
 	// Create a copy to avoid race conditions
 	result := make(map[string]*data.Policy, len(s.policies))
-	for id, policy := range s.policies {
-		result[id] = policy
+	for name, policy := range s.policies {
+		result[name] = policy
 	}
 
 	return result, nil
 }
 
-// DeletePolicy removes a policy from the store by its ID.
+// DeletePolicy removes a policy from the store by its name.
 //
 // This method is thread-safe and removes the policy if it exists. If the
 // policy does not exist, this is a no-op (no error is returned).
@@ -279,15 +279,15 @@ func (s *Store) LoadAllPolicies(
 // Parameters:
 //   - context.Context: Context for cancellation (ignored in this
 //     implementation)
-//   - id: The unique identifier of the policy to delete
+//   - name: The name of the policy to delete
 //
 // Returns:
 //   - *sdkErrors.SDKError: Always returns nil for in-memory storage
-func (s *Store) DeletePolicy(_ context.Context, id string) *sdkErrors.SDKError {
+func (s *Store) DeletePolicy(_ context.Context, name string) *sdkErrors.SDKError {
 	s.policyMu.Lock()
 	defer s.policyMu.Unlock()
 
-	delete(s.policies, id)
+	delete(s.policies, name)
 	return nil
 }
 

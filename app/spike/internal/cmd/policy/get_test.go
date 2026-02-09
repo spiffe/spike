@@ -22,8 +22,8 @@ func TestNewPolicyGetCommand(t *testing.T) {
 		return
 	}
 
-	if cmd.Use != "get [policy-id]" {
-		t.Errorf("Expected command use to be 'get [policy-id]', got '%s'",
+	if cmd.Use != "get [policy-name]" {
+		t.Errorf("Expected command use to be 'get [policy-name]', got '%s'",
 			cmd.Use)
 	}
 
@@ -53,8 +53,8 @@ func TestNewPolicyGetCommandWithNilSource(t *testing.T) {
 	}
 
 	// Command should still be created; the nil source is handled at runtime
-	if cmd.Use != "get [policy-id]" {
-		t.Errorf("Expected command use to be 'get [policy-id]', got '%s'",
+	if cmd.Use != "get [policy-name]" {
+		t.Errorf("Expected command use to be 'get [policy-name]', got '%s'",
 			cmd.Use)
 	}
 }
@@ -69,7 +69,7 @@ func TestPolicyGetCommandRegistration(t *testing.T) {
 
 	var getCmd *cobra.Command
 	for _, cmd := range policyCmd.Commands() {
-		if cmd.Use == "get [policy-id]" {
+		if cmd.Use == "get [policy-name]" {
 			getCmd = cmd
 			break
 		}

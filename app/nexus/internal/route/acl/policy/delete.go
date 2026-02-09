@@ -80,9 +80,13 @@ func RouteDeletePolicy(
 		return err
 	}
 
-	policyID := request.ID
+	// TODO: Issue #250 - SDK uses 'id' field, but we're using name as primary key.
+	// This is a temporary workaround. The SDK's PolicyDeleteRequest.ID field should
+	// be renamed to 'name' in a future SDK update.
+	// See: https://github.com/spiffe/spike/issues/250
+	policyName := request.ID
 
-	deleteErr := state.DeletePolicy(policyID)
+	deleteErr := state.DeletePolicy(policyName)
 	if deleteErr != nil {
 		return net.RespondWithHTTPError(deleteErr, w, reqres.PolicyDeleteResponse{})
 	}
