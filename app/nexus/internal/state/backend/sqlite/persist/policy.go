@@ -20,20 +20,20 @@ import (
 	"github.com/spiffe/spike/app/nexus/internal/state/backend/sqlite/ddl"
 )
 
-// DeletePolicy removes a policy from the database by its ID.
+// DeletePolicy removes a policy from the database by its name.
 //
 // Uses serializable transaction isolation to ensure consistency.
 // Automatically rolls back on error.
 //
 // Parameters:
 //   - ctx: Context for the database operation
-//   - id: Unique identifier of the policy to delete
+//   - name: Name of the policy to delete
 //
 // Returns:
 //   - *sdkErrors.SDKError: nil on success, or an error if transaction
 //     operations fail or policy deletion fails
 func (s *DataStore) DeletePolicy(
-	ctx context.Context, id string,
+	ctx context.Context, name string,
 ) *sdkErrors.SDKError {
 	const fName = "DeletePolicy"
 
@@ -61,7 +61,7 @@ func (s *DataStore) DeletePolicy(
 		}
 	}(tx)
 
-	_, execErr := tx.ExecContext(ctx, ddl.QueryDeletePolicy, id)
+	_, execErr := tx.ExecContext(ctx, ddl.QueryDeletePolicy, name)
 	if execErr != nil {
 		failErr := sdkErrors.ErrEntityQueryFailed.Wrap(execErr)
 		return failErr
@@ -139,7 +139,7 @@ func (s *DataStore) StorePolicy(
 	if encErr != nil {
 		failErr := sdkErrors.ErrCryptoEncryptionFailed.Wrap(encErr)
 		failErr.Msg = fmt.Sprintf(
-			"failed to encrypt SPIFFE ID pattern for policy %s", policy.ID,
+			"failed to encrypt SPIFFE ID pattern for policy %s", policy.Name,
 		)
 		return failErr
 	}
@@ -151,7 +151,7 @@ func (s *DataStore) StorePolicy(
 	if pathErr != nil {
 		failErr := sdkErrors.ErrCryptoEncryptionFailed.Wrap(pathErr)
 		failErr.Msg = fmt.Sprintf(
-			"failed to encrypt path pattern for policy %s", policy.ID,
+			"failed to encrypt path pattern for policy %s", policy.Name,
 		)
 		return failErr
 	}
@@ -161,13 +161,12 @@ func (s *DataStore) StorePolicy(
 	if permErr != nil {
 		failErr := sdkErrors.ErrCryptoEncryptionFailed.Wrap(permErr)
 		failErr.Msg = fmt.Sprintf(
-			"failed to encrypt permissions for policy %s", policy.ID,
+			"failed to encrypt permissions for policy %s", policy.Name,
 		)
 		return failErr
 	}
 
 	_, execErr := tx.ExecContext(ctx, ddl.QueryUpsertPolicy,
-		policy.ID,
 		policy.Name,
 		nonce,
 		encryptedSpiffeID,
@@ -179,7 +178,7 @@ func (s *DataStore) StorePolicy(
 
 	if execErr != nil {
 		failErr := sdkErrors.ErrEntityQueryFailed.Wrap(execErr)
-		failErr.Msg = fmt.Sprintf("failed to upsert policy %s", policy.ID)
+		failErr.Msg = fmt.Sprintf("failed to upsert policy %s", policy.Name)
 		return failErr
 	}
 
@@ -195,7 +194,7 @@ func (s *DataStore) StorePolicy(
 //
 // Parameters:
 //   - ctx: Context for the database operation
-//   - id: Unique identifier of the policy to load
+//   - name: Name of the policy to load
 //
 // Returns:
 //   - *data.Policy: Loaded policy with compiled patterns, nil if not found or
@@ -204,7 +203,7 @@ func (s *DataStore) StorePolicy(
 //     policy does not exist, or an error if database operations fail,
 //     decryption fails, or pattern compilation fails
 func (s *DataStore) LoadPolicy(
-	ctx context.Context, id string,
+	ctx context.Context, name string,
 ) (*data.Policy, *sdkErrors.SDKError) {
 	const fName = "LoadPolicy"
 
@@ -221,8 +220,7 @@ func (s *DataStore) LoadPolicy(
 	var createdTime int64
 	var updatedTime int64
 
-	scanErr := s.db.QueryRowContext(ctx, ddl.QueryLoadPolicy, id).Scan(
-		&policy.ID,
+	scanErr := s.db.QueryRowContext(ctx, ddl.QueryLoadPolicy, name).Scan(
 		&policy.Name,
 		&encryptedSPIFFEIDPattern,
 		&encryptedPathPattern,
@@ -246,7 +244,7 @@ func (s *DataStore) LoadPolicy(
 	if spiffeDecryptErr != nil {
 		failErr := sdkErrors.ErrCryptoDecryptionFailed.Wrap(spiffeDecryptErr)
 		failErr.Msg = fmt.Sprintf(
-			"failed to decrypt SPIFFE ID pattern for policy %s", policy.ID,
+			"failed to decrypt SPIFFE ID pattern for policy %s", policy.Name,
 		)
 		return nil, failErr
 	}
@@ -254,7 +252,7 @@ func (s *DataStore) LoadPolicy(
 	if pathDecryptErr != nil {
 		failErr := sdkErrors.ErrCryptoDecryptionFailed.Wrap(pathDecryptErr)
 		failErr.Msg = fmt.Sprintf(
-			"failed to decrypt path pattern for policy %s", policy.ID,
+			"failed to decrypt path pattern for policy %s", policy.Name,
 		)
 		return nil, failErr
 	}
@@ -295,7 +293,7 @@ func (s *DataStore) LoadPolicy(
 //   - ctx: Context for the database operation
 //
 // Returns:
-//   - map[string]*data.Policy: Map of policy IDs to successfully loaded
+//   - map[string]*data.Policy: Map of policy names to successfully loaded
 //     policies with compiled patterns. May be incomplete if some policies
 //     failed to load (check logs for warnings).
 //   - *sdkErrors.SDKError: nil on success, or an error if the database query
@@ -336,7 +334,6 @@ func (s *DataStore) LoadAllPolicies(
 		var updatedTime int64
 
 		if scanErr := rows.Scan(
-			&policy.ID,
 			&policy.Name,
 			&encryptedSPIFFEIDPattern,
 			&encryptedPathPattern,
@@ -359,7 +356,7 @@ func (s *DataStore) LoadAllPolicies(
 			failErr := sdkErrors.ErrCryptoDecryptionFailed.Wrap(spiffeDecryptErr)
 			failErr.Msg = fmt.Sprintf(
 				"failed to decrypt SPIFFE ID pattern for policy %s, skipping",
-				policy.ID,
+				policy.Name,
 			)
 			log.WarnErr(fName, *failErr)
 			continue
@@ -371,7 +368,7 @@ func (s *DataStore) LoadAllPolicies(
 			failErr := sdkErrors.ErrCryptoDecryptionFailed.Wrap(pathDecryptErr)
 			failErr.Msg = fmt.Sprintf(
 				"failed to decrypt path pattern for policy %s, skipping",
-				policy.ID,
+				policy.Name,
 			)
 			log.WarnErr(fName, *failErr)
 			continue
@@ -383,7 +380,7 @@ func (s *DataStore) LoadAllPolicies(
 			failErr := sdkErrors.ErrCryptoDecryptionFailed.Wrap(permDecryptErr)
 			failErr.Msg = fmt.Sprintf(
 				"failed to decrypt permissions for policy %s, skipping",
-				policy.ID,
+				policy.Name,
 			)
 			log.WarnErr(fName, *failErr)
 			continue
@@ -403,13 +400,13 @@ func (s *DataStore) LoadAllPolicies(
 			failErr := sdkErrors.ErrEntityInvalid.Wrap(compileErr)
 			failErr.Msg = fmt.Sprintf(
 				"failed to compile regex patterns for policy %s, skipping",
-				policy.ID,
+				policy.Name,
 			)
 			log.WarnErr(fName, *failErr)
 			continue
 		}
 
-		policies[policy.ID] = &policy
+		policies[policy.Name] = &policy
 	}
 
 	if rowsErr := rows.Err(); rowsErr != nil {

@@ -48,7 +48,7 @@ func TestSQLitePolicy_CreateAndGet(t *testing.T) {
 		}
 
 		// Verify policy was stored
-		retrievedPolicy, getErr := GetPolicy(createdPolicy.ID)
+		retrievedPolicy, getErr := GetPolicy(createdPolicy.Name)
 		if getErr != nil {
 			t.Fatalf("Failed to retrieve policy: %v", getErr)
 		}
@@ -64,9 +64,6 @@ func TestSQLitePolicy_CreateAndGet(t *testing.T) {
 		}
 		if !reflect.DeepEqual(retrievedPolicy.Permissions, policy.Permissions) {
 			t.Errorf("Expected permissions %v, got %v", policy.Permissions, retrievedPolicy.Permissions)
-		}
-		if retrievedPolicy.ID != createdPolicy.ID {
-			t.Errorf("Expected ID %s, got %s", createdPolicy.ID, retrievedPolicy.ID)
 		}
 	})
 }
@@ -111,25 +108,8 @@ func TestSQLitePolicy_Persistence(t *testing.T) {
 			_ = persist.Backend().Close(ctx)
 		}()
 
-		// First, we need to get the policy ID by listing policies
-		// and finding our policy
-		allPolicies, listErr := ListPolicies()
-		if listErr != nil {
-			t.Fatalf("Failed to list policies in second session: %v", listErr)
-		}
-
-		var targetPolicyID string
-		for _, p := range allPolicies {
-			if p.Name == policyName {
-				targetPolicyID = p.ID
-				break
-			}
-		}
-		if targetPolicyID == "" {
-			t.Fatalf("Policy with name %s not found in second session", policyName)
-		}
-
-		retrievedPolicy, getErr := GetPolicy(targetPolicyID)
+		// Retrieve the policy by name directly
+		retrievedPolicy, getErr := GetPolicy(policyName)
 		if getErr != nil {
 			t.Fatalf("Failed to retrieve policy in second session: %v", getErr)
 		}
@@ -251,26 +231,14 @@ func TestSQLitePolicy_DeletePolicy(t *testing.T) {
 			t.Fatalf("Expected 3 policies, got %d", len(allPolicies))
 		}
 
-		// Get the policy ID to delete by finding it in the list
-		var policyToDeleteID string
-		for _, p := range allPolicies {
-			if p.Name == "delete-policy-1" {
-				policyToDeleteID = p.ID
-				break
-			}
-		}
-		if policyToDeleteID == "" {
-			t.Fatalf("Policy delete-policy-1 not found")
-		}
-
-		// Delete one policy
-		deleteErr := DeletePolicy(policyToDeleteID)
+		// Delete one policy by name directly
+		deleteErr := DeletePolicy("delete-policy-1")
 		if deleteErr != nil {
 			t.Fatalf("Failed to delete policy: %v", deleteErr)
 		}
 
 		// Verify policy was deleted
-		_, getErr := GetPolicy(policyToDeleteID)
+		_, getErr := GetPolicy("delete-policy-1")
 		if getErr == nil {
 			t.Error("Expected error when getting deleted policy, got nil")
 		}
@@ -338,7 +306,7 @@ func TestSQLitePolicy_CreateMultiplePolicies(t *testing.T) {
 		}
 
 		// Verify the first policy is still intact
-		retrievedFirst, getFirstErr := GetPolicy(createdFirst.ID)
+		retrievedFirst, getFirstErr := GetPolicy(createdFirst.Name)
 		if getFirstErr != nil {
 			t.Fatalf("Failed to retrieve first policy: %v", getFirstErr)
 		}
@@ -353,7 +321,7 @@ func TestSQLitePolicy_CreateMultiplePolicies(t *testing.T) {
 		}
 
 		// Verify the second policy was created correctly
-		retrievedSecond, getSecondErr := GetPolicy(createdSecond.ID)
+		retrievedSecond, getSecondErr := GetPolicy(createdSecond.Name)
 		if getSecondErr != nil {
 			t.Fatalf("Failed to retrieve second policy: %v", getSecondErr)
 		}
@@ -414,7 +382,7 @@ func TestSQLitePolicy_SpecialCharactersAndLongData(t *testing.T) {
 		}
 
 		// Retrieve and verify
-		retrievedPolicy, getErr := GetPolicy(createdPolicy.ID)
+		retrievedPolicy, getErr := GetPolicy(createdPolicy.Name)
 		if getErr != nil {
 			t.Fatalf("Failed to retrieve policy with special characters: %v", getErr)
 		}
@@ -447,8 +415,8 @@ func TestSQLitePolicy_EncryptionWithDifferentKeys(t *testing.T) {
 		Permissions:     []data.PolicyPermission{data.PermissionSuper},
 	}
 
-	// Variable to store the created policy ID across test blocks
-	var createdPolicyID string
+	// Variable to store the created policy name across test blocks
+	var createdPolicyName string
 
 	// Create a policy with the first key
 	key1 := createTestRootKey(t)
@@ -467,7 +435,7 @@ func TestSQLitePolicy_EncryptionWithDifferentKeys(t *testing.T) {
 		if createErr != nil {
 			t.Fatalf("Failed to create policy with key1: %v", createErr)
 		}
-		createdPolicyID = createdPolicy.ID
+		createdPolicyName = createdPolicy.Name
 	})
 
 	// Try to read with a different key (should fail)
@@ -487,7 +455,7 @@ func TestSQLitePolicy_EncryptionWithDifferentKeys(t *testing.T) {
 		}()
 
 		// This should fail with the wrong key
-		_, getErr := GetPolicy(createdPolicyID)
+		_, getErr := GetPolicy(createdPolicyName)
 		if getErr == nil {
 			t.Log("Note: GetPolicy succeeded with wrong key" +
 				" - this might indicate encryption issue")
@@ -507,7 +475,7 @@ func TestSQLitePolicy_EncryptionWithDifferentKeys(t *testing.T) {
 			_ = persist.Backend().Close(ctx)
 		}()
 
-		retrievedPolicy, getErr := GetPolicy(createdPolicyID)
+		retrievedPolicy, getErr := GetPolicy(createdPolicyName)
 		if getErr != nil {
 			t.Fatalf("Failed to retrieve policy with original key: %v", getErr)
 		}

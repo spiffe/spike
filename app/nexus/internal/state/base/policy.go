@@ -9,7 +9,6 @@ import (
 	"regexp"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/log"
@@ -77,28 +76,28 @@ func CheckAccess(
 }
 
 // UpsertPolicy creates a new policy or updates an existing one with the same
-// name. The function compiles regex patterns, generates a UUID for new policies,
-// and sets timestamps appropriately before storing the policy.
+// name. The function compiles regex patterns and sets timestamps appropriately
+// before storing the policy.
 //
 // This function follows upsert semantics consistent with UpsertSecret:
 //   - If no policy with the given name exists, a new policy is created
-//   - If a policy with the same name exists, it is updated (ID and CreatedAt
-//     are preserved from the existing policy)
+//   - If a policy with the same name exists, it is updated (CreatedAt
+//     is preserved from the existing policy)
 //
 // Parameters:
 //   - policy: The policy to create or update. Must have a non-empty Name field.
 //     SPIFFEIDPattern and PathPattern MUST be valid regular expressions.
 //
 // Returns:
-//   - data.Policy: The created or updated policy, including ID and timestamps
+//   - data.Policy: The created or updated policy, including timestamps
 //   - *sdkErrors.SDKError: ErrEntityInvalid if the policy name is empty or
 //     regex patterns are invalid, ErrEntityLoadFailed or ErrEntitySaveFailed
 //     for backend errors
 //
 // The function performs the following:
 //   - Compiles and stores regex patterns for SPIFFEIDPattern and PathPattern
-//   - For new policies: generates a UUID, sets CreatedAt and UpdatedAt
-//   - For existing policies: preserves ID and CreatedAt, updates UpdatedAt
+//   - For new policies: sets CreatedAt and UpdatedAt
+//   - For existing policies: preserves CreatedAt, updates UpdatedAt
 func UpsertPolicy(policy data.Policy) (data.Policy, *sdkErrors.SDKError) {
 	if policy.Name == "" {
 		return data.Policy{}, sdkErrors.ErrEntityInvalid.Clone()
@@ -143,13 +142,11 @@ func UpsertPolicy(policy data.Policy) (data.Policy, *sdkErrors.SDKError) {
 	now := time.Now()
 
 	if existingPolicy != nil {
-		// Update existing policy: preserve ID and CreatedAt, set UpdatedAt
-		policy.ID = existingPolicy.ID
+		// Update existing policy: preserve CreatedAt, set UpdatedAt
 		policy.CreatedAt = existingPolicy.CreatedAt
 		policy.UpdatedAt = now
 	} else {
-		// New policy: generate ID and set creation time
-		policy.ID = uuid.New().String()
+		// New policy: set creation time
 		if policy.CreatedAt.IsZero() {
 			policy.CreatedAt = now
 		}
@@ -167,64 +164,64 @@ func UpsertPolicy(policy data.Policy) (data.Policy, *sdkErrors.SDKError) {
 	return policy, nil
 }
 
-// GetPolicy retrieves a policy by its ID from the policy store.
+// GetPolicy retrieves a policy by its name from the policy store.
 //
 // Parameters:
-//   - id: The unique identifier of the policy to retrieve
+//   - name: The name of the policy to retrieve
 //
 // Returns:
 //   - data.Policy: The retrieved policy if found
 //   - *sdkErrors.SDKError: ErrEntityNotFound if no policy exists with the
-//     given ID, ErrEntityLoadFailed if loading fails
-func GetPolicy(id string) (data.Policy, *sdkErrors.SDKError) {
+//     given name, ErrEntityLoadFailed if loading fails
+func GetPolicy(name string) (data.Policy, *sdkErrors.SDKError) {
 	ctx := context.Background()
 
 	// Load directly from the backend
-	policy, loadErr := persist.Backend().LoadPolicy(ctx, id)
+	policy, loadErr := persist.Backend().LoadPolicy(ctx, name)
 	if loadErr != nil {
 		getPolicyErr := sdkErrors.ErrEntityLoadFailed.Clone()
-		getPolicyErr.Msg = "failed to load policy with ID " + id
+		getPolicyErr.Msg = "failed to load policy with name " + name
 		return data.Policy{}, getPolicyErr.Wrap(loadErr)
 	}
 
 	if policy == nil {
 		notFoundErr := sdkErrors.ErrEntityNotFound.Clone()
-		notFoundErr.Msg = "policy with ID " + id + " not found"
+		notFoundErr.Msg = "policy with name " + name + " not found"
 		return data.Policy{}, notFoundErr
 	}
 
 	return *policy, nil
 }
 
-// DeletePolicy removes a policy from the system by its ID.
+// DeletePolicy removes a policy from the system by its name.
 //
 // Parameters:
-//   - id: The unique identifier of the policy to delete
+//   - name: The name of the policy to delete
 //
 // Returns:
 //   - *sdkErrors.SDKError: ErrEntityNotFound if no policy exists with the
-//     given ID, ErrObjectDeletionFailed if deletion fails, nil on success
-func DeletePolicy(id string) *sdkErrors.SDKError {
+//     given name, ErrObjectDeletionFailed if deletion fails, nil on success
+func DeletePolicy(name string) *sdkErrors.SDKError {
 	ctx := context.Background()
 
 	// Check if the policy exists first (to maintain the same error behavior)
-	policy, loadErr := persist.Backend().LoadPolicy(ctx, id)
+	policy, loadErr := persist.Backend().LoadPolicy(ctx, name)
 	if loadErr != nil {
 		loadPolicyErr := sdkErrors.ErrEntityLoadFailed.Clone()
-		loadPolicyErr.Msg = "failed to load policy with ID " + id
+		loadPolicyErr.Msg = "failed to load policy with name " + name
 		return loadPolicyErr.Wrap(loadErr)
 	}
 	if policy == nil {
 		notFoundErr := sdkErrors.ErrEntityNotFound.Clone()
-		notFoundErr.Msg = "policy with ID " + id + " not found"
+		notFoundErr.Msg = "policy with name " + name + " not found"
 		return notFoundErr
 	}
 
 	// Delete the policy from the backend
-	deleteErr := persist.Backend().DeletePolicy(ctx, id)
+	deleteErr := persist.Backend().DeletePolicy(ctx, name)
 	if deleteErr != nil {
 		deletePolicyErr := sdkErrors.ErrEntityDeletionFailed.Clone()
-		deletePolicyErr.Msg = "failed to delete policy with ID " + id
+		deletePolicyErr.Msg = "failed to delete policy with name " + name
 		return deletePolicyErr.Wrap(deleteErr)
 	}
 

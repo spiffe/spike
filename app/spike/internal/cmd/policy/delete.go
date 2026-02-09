@@ -18,8 +18,8 @@ import (
 )
 
 // newPolicyDeleteCommand creates a new Cobra command for policy deletion.
-// It allows users to delete existing policies by providing either the policy ID
-// as a command line argument or the policy name with the --name flag.
+// It allows users to delete existing policies by providing the policy name
+// as a command line argument or with the --name flag.
 //
 // The command requires an X509Source for SPIFFE authentication and validates
 // that the system is initialized before attempting to delete a policy.
@@ -35,30 +35,30 @@ import (
 //
 // Command usage:
 //
-//	delete [policy-id] [flags]
+//	delete [policy-name] [flags]
 //
 // Arguments:
-//   - policy-id: The unique identifier of the policy to delete (optional
+//   - policy-name: The name of the policy to delete (optional
 //     if --name is provided)
 //
 // Flags:
-//   - --name: Policy name to look up (alternative to policy ID)
+//   - --name: Policy name to delete
 //
 // Example usage:
 //
-//	spike policy delete policy-123
+//	spike policy delete web-service-policy
 //	spike policy delete --name=web-service-policy
 //
 // The command will:
 //  1. Check if the system is initialized
-//  2. Get the policy ID either from arguments or by looking up the policy name
+//  2. Get the policy name from arguments or --name flag
 //  3. Prompt the user to confirm deletion
-//  4. If confirmed, attempt to delete the policy with the specified ID
+//  4. If confirmed, attempt to delete the policy with the specified name
 //  5. Confirm successful deletion or report any errors
 //
 // Error conditions:
-//   - Neither policy ID argument nor --name flag provided
-//   - Policy not found by ID or name
+//   - Neither policy name argument nor --name flag provided
+//   - Policy not found by name
 //   - User cancels the operation
 //   - System not initialized (requires running 'spike init' first)
 //   - Insufficient permissions
@@ -70,12 +70,12 @@ func newPolicyDeleteCommand(
 	source *workloadapi.X509Source, SPIFFEID string,
 ) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "delete [policy-id]",
+		Use:   "delete [policy-name]",
 		Short: "Delete a policy",
-		Long: `Delete a policy by ID or name.
+		Long: `Delete a policy by name.
 
         You can provide either:
-        - A policy ID as an argument: spike policy delete abc123
+        - A policy name as an argument: spike policy delete web-service-policy
         - A policy name with the --name flag:
           spike policy delete --name=my-policy`,
 		Run: func(c *cobra.Command, args []string) {
@@ -88,14 +88,16 @@ func newPolicyDeleteCommand(
 
 			api := spike.NewWithSource(source)
 
-			policyID, err := sendGetPolicyIDRequest(c, args, api)
+			// TODO: Issue #250 - Using name as primary identifier.
+			// The SDK still uses 'id' field in the API call.
+			policyName, err := sendGetPolicyNameRequest(c, args, api)
 			if stdout.HandleAPIError(c, err) {
 				return
 			}
 
 			// Confirm deletion
 			c.Printf("Are you sure you want to "+
-				"delete policy with ID '%s'? (y/N): ", policyID)
+				"delete policy '%s'? (y/N): ", policyName)
 			reader := bufio.NewReader(os.Stdin)
 			confirm, _ := reader.ReadString('\n')
 			confirm = strings.TrimSpace(confirm)
@@ -105,7 +107,7 @@ func newPolicyDeleteCommand(
 				return
 			}
 
-			deleteErr := api.DeletePolicy(policyID)
+			deleteErr := api.DeletePolicy(policyName)
 			if stdout.HandleAPIError(c, deleteErr) {
 				return
 			}
