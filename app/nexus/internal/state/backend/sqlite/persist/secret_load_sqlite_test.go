@@ -251,11 +251,14 @@ func TestDataStore_loadSecretInternal_EmptyVersionsResult(t *testing.T) {
 		createdTime := time.Now().Add(-24 * time.Hour).Truncate(time.Second)
 		updatedTime := time.Now().Add(-1 * time.Hour).Truncate(time.Second)
 
-		_, err := store.db.ExecContext(ctx, ddl.QueryUpdateSecretMetadata,
-			path, 1, 1, createdTime, updatedTime, 5)
-		if err != nil {
-			t.Fatalf("Failed to insert metadata: %v", err)
+		metadata := TestSecretMetadata{
+			CurrentVersion: 1,
+			OldestVersion:  1,
+			MaxVersions:    5,
+			CreatedTime:    createdTime,
+			UpdatedTime:    updatedTime,
 		}
+		insertEncryptedMetadata(ctx, t, store, path, metadata)
 
 		// Execute the function
 		secret, loadErr := store.loadSecretInternal(ctx, path)
@@ -290,19 +293,22 @@ func TestDataStore_loadSecretInternal_CorruptedData(t *testing.T) {
 		createdTime := time.Now().Add(-24 * time.Hour).Truncate(time.Second)
 		updatedTime := time.Now().Add(-1 * time.Hour).Truncate(time.Second)
 
-		// Insert metadata
-		_, err := store.db.ExecContext(ctx, ddl.QueryUpdateSecretMetadata,
-			path, 1, 1, createdTime, updatedTime, 5)
-		if err != nil {
-			t.Fatalf("Failed to insert metadata: %v", err)
+		metadata := TestSecretMetadata{
+			CurrentVersion: 1,
+			OldestVersion:  1,
+			MaxVersions:    5,
+			CreatedTime:    createdTime,
+			UpdatedTime:    updatedTime,
 		}
+		// Insert metadata
+		insertEncryptedMetadata(ctx, t, store, path, metadata)
 
 		// Insert corrupted version data (invalid nonce/encrypted combination)
 		invalidNonce := make([]byte, store.Cipher.NonceSize())
 		invalidEncrypted := []byte("invalid encrypted data that will fail decryption")
 
 		versionCreatedTime := createdTime.Add(1 * time.Hour)
-		_, err = store.db.ExecContext(ctx, ddl.QueryUpsertSecret,
+		_, err := store.db.ExecContext(ctx, ddl.QueryUpsertSecret,
 			path, 1, invalidNonce, invalidEncrypted, versionCreatedTime, nil)
 		if err != nil {
 			t.Fatalf("Failed to insert corrupted version: %v", err)
