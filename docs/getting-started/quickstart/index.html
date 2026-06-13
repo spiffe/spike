@@ -800,12 +800,12 @@ upstream <strong>SPIFFE Helm Charts</strong>.</p>
 </blockquote>
 <h1 id="spike-quickstart-guide"><strong>SPIKE</strong> Quickstart Guide</h1>
 <p>The fastest way to get started with <strong>SPIRE</strong> and <strong>SPIKE</strong> is to deploy them
-using the official <a href="https://github.com/spiffe/helm-charts-hardened" title="SPIFFE Helm charts (hardened)">SPIFFE Helm chart</a>.</p>
+using the official <a rel="external" title="SPIFFE Helm charts (hardened)" href="https://github.com/spiffe/helm-charts-hardened">SPIFFE Helm chart</a>.</p>
 <p>You can deploy SPIKE to any Kubernetes cluster, including a local one like
-<a href="https://kind.sigs.k8s.io/" title="KinD: Kubernetes in Docker">KinD</a> or <a href="https://minikube.sigs.k8s.io/" title="Minikube: Run Kubernetes locally">Minikube</a>. We will use <strong>Minikube</strong> in this guide.
+<a rel="external" title="KinD: Kubernetes in Docker" href="https://kind.sigs.k8s.io/">KinD</a> or <a rel="external" title="Minikube: Run Kubernetes locally" href="https://minikube.sigs.k8s.io/">Minikube</a>. We will use <strong>Minikube</strong> in this guide.
 Your installation may vary slightly depending on the Kubernetes cluster you
 are using, but the general steps will be the same.</p>
-<p>We will also use a <a href="https://www.debian.org/" title="Debian: The Universal Operating System">Debian Linux</a> machine throughout this guide, but you
+<p>We will also use a <a rel="external" title="Debian: The Universal Operating System" href="https://www.debian.org/">Debian Linux</a> machine throughout this guide, but you
 can use any OS that supports SPIFFE, SPIRE, Docker, and Kubernetes. Depending on
 your OS, your installation steps may vary slightly, but the general steps will
 not change much.</p>
@@ -813,16 +813,16 @@ not change much.</p>
 <p>Here is a list of things you need to have installed on your machine before
 starting with this guide:</p>
 <ul>
-<li>Have <a href="https://www.docker.com/" title="Docker: Build, Share, and Run Applications">Docker</a> installed and running on your machine.</li>
-<li>Have a <a href="https://kubernetes.io/docs/tasks/tools/" title="kubectl: Kubernetes command-line tool"><code>kubectl</code></a> client installed.</li>
-<li>Have <a href="https://www.gnu.org/software/make/" title="GNU Make: Build Automation Tool"><code>make</code></a> installed on your machine.</li>
-<li>Have a <a href="https://minikube.sigs.k8s.io/" title="Minikube: Run Kubernetes locally"><code>minikube</code></a> binary installed.</li>
-<li>Have <a href="https://helm.sh/" title="Helm"><code>helm</code></a> binary installed.</li>
-<li>(Optional) install <a href="https://www.getzola.org/" title="Zola"><code>zola</code></a> if you want to build the documentation
+<li>Have <a rel="external" title="Docker: Build, Share, and Run Applications" href="https://www.docker.com/">Docker</a> installed and running on your machine.</li>
+<li>Have a <a rel="external" title="kubectl: Kubernetes command-line tool" href="https://kubernetes.io/docs/tasks/tools/"><code>kubectl</code></a> client installed.</li>
+<li>Have <a rel="external" title="GNU Make: Build Automation Tool" href="https://www.gnu.org/software/make/"><code>make</code></a> installed on your machine.</li>
+<li>Have a <a rel="external" title="Minikube: Run Kubernetes locally" href="https://minikube.sigs.k8s.io/"><code>minikube</code></a> binary installed.</li>
+<li>Have <a rel="external" title="Helm" href="https://helm.sh/"><code>helm</code></a> binary installed.</li>
+<li>(Optional) install <a rel="external" title="Zola" href="https://www.getzola.org/"><code>zola</code></a> if you want to build the documentation
 locally.</li>
 </ul>
 <h2 id="for-windows-users">For Windows Users</h2>
-<p>The best way to get started on Windows is to use <a href="https://learn.microsoft.com/en-us/windows/wsl/install">Windows Subsystem for
+<p>The best way to get started on Windows is to use <a rel="external" href="https://learn.microsoft.com/en-us/windows/wsl/install">Windows Subsystem for
 Linux</a>. After installing WSL, make sure to install the prerequisites
 (<em><code>docker</code>, <code>kubectl</code>, <code>make</code>, <code>minikube</code>, <code>helm</code></em>) to your WSL distribution
 and <strong>not</strong> to your Windows machine.</p>
@@ -831,17 +831,15 @@ and <strong>not</strong> to your Windows machine.</p>
 configured in your <code>/etc/hosts</code> file. However, WSL will automatically override
 your Linux hosts wile every time you restart your WSL distribution.</p>
 <p>To fix this, edit <code>/etc/wsl.conf</code> and add the following lines:</p>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># sudo vim /etc/wsl.conf
-</span><span>
-</span><span style="color:#bf616a;">[network]
-</span><span style="color:#bf616a;">generateHosts</span><span>=</span><span style="color:#a3be8c;">false
-</span></code></pre>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="shellscript"><span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># sudo vim /etc/wsl.conf</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #89DDFF;">[</span><span>network</span><span style="color: #89DDFF;">]</span></span>
+<span class="giallo-l"><span>generateHosts</span><span style="color: #89DDFF;">=</span><span style="color: #C3E88D;">false</span></span></code></pre>
 <p>Then update your hosts file:</p>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># sudo vim /etc/hosts
-</span><span>
-</span><span style="color:#65737e;"># Add the following line:
-</span><span style="color:#bf616a;">127.0.0.1</span><span>  spire.spike.ist
-</span></code></pre>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="shellscript"><span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># sudo vim /etc/hosts</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># Add the following line:</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">127.0.0.1</span><span style="color: #C3E88D;">  spire.spike.ist</span></span></code></pre>
 <p>Then restart your WSL distribution, and the <code>hosts</code> file is yours to
 modify and maintain.</p>
 <p>Note that editing <code>C:\Windows\System32\drivers\etc\hosts</code> will <strong>NOT</strong> work.</p>
@@ -854,8 +852,7 @@ configs, PAM</em>) cannot override it.</p>
 swapped to disk. Failing to lock memory will not stop SPIKE from running,
 but you will see warnings in the logs.</p>
 <p>WSL spawns your shell via a Windows-side Relay process:</p>
-<pre style="background-color:#2b303b;color:#c0c5ce;"><code><span>Windows WSL (sets 64MB limit) → Relay → your shell
-</span></code></pre>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="plain"><span class="giallo-l"><span>Windows WSL (sets 64MB limit) → Relay → your shell</span></span></code></pre>
 <p>By the time Linux session management runs, the limit is already inherited.
 The following have <strong>no</strong> effect on interactive WSL shells:</p>
 <ul>
@@ -867,172 +864,156 @@ The following have <strong>no</strong> effect on interactive WSL shells:</p>
 <p>These configs <em>do</em> apply to processes spawned through <code>systemd</code>
 (<em>e.g., <code>systemd-run --user</code></em>), but not to your default terminal session.</p>
 <p>To fix this, you can use the following script:</p>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span>!</span><span style="color:#bf616a;">#/usr/bin/env</span><span> bash
-</span><span style="color:#65737e;"># &gt; ulimit -l
-</span><span style="color:#65737e;"># 65536
-</span><span style="color:#65737e;"># --
-</span><span>
-</span><span style="color:#65737e;"># Raise memlock limit for SPIKE development
-</span><span style="color:#bf616a;">sudo</span><span> prlimit</span><span style="color:#bf616a;"> --memlock</span><span>=unlimited:unlimited \
-</span><span style="color:#bf616a;">  --pid </span><span>$</span><span style="color:#bf616a;">$ </span><span style="color:#d08770;">2</span><span>&gt;/dev/null &amp;&amp; </span><span style="color:#96b5b4;">exec</span><span> bash
-</span><span>
-</span><span style="color:#65737e;"># --
-</span><span style="color:#65737e;"># &gt; ulimit -l
-</span><span style="color:#65737e;"># unlimited
-</span></code></pre>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="shellscript"><span class="giallo-l"><span style="color: #89DDFF;">!</span><span>#/usr/bin/env bash</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># &gt; ulimit -l</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># 65536</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># --</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># Raise memlock limit for SPIKE development</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">sudo</span><span style="color: #C3E88D;"> prlimit --memlock=unlimited:unlimited</span><span> \</span></span>
+<span class="giallo-l"><span style="color: #C3E88D;">  --pid</span><span> $$</span><span style="color: #89DDFF;"> 2&gt;</span><span style="color: #C3E88D;">/dev/null</span><span style="color: #89DDFF;"> &amp;&amp;</span><span style="color: #82AAFF;"> exec</span><span style="color: #C3E88D;"> bash</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># --</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># &gt; ulimit -l</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># unlimited</span></span></code></pre>
 <p>You can even add this script to your <code>~/.bashrc</code> or <code>~/.zshrc</code> to make it
 automatically run on every shell session.</p>
 <h2 id="environment-variables">Environment Variables</h2>
 <p>It may be useful to set the following environment variables before
 you start.</p>
 <p>This is a sample configuration; please adjust as needed:</p>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># User Configuration
-</span><span style="color:#65737e;">#
-</span><span style="color:#65737e;"># Add this to your ~/.bashrc or ~/.zshrc, ~/.profile,
-</span><span style="color:#65737e;"># or ~/.zprofile, or wherever you keep your shell config.
-</span><span>
-</span><span style="color:#b48ead;">export </span><span style="color:#bf616a;">PATH</span><span>=$</span><span style="color:#bf616a;">PATH</span><span style="color:#a3be8c;">:/usr/local/go/bin
-</span><span>
-</span><span style="color:#65737e;"># If you are using GPG for signing commits:
-</span><span style="color:#b48ead;">export </span><span style="color:#bf616a;">GPG_TTY</span><span>=$</span><span style="color:#a3be8c;">(</span><span style="color:#bf616a;">tty</span><span style="color:#a3be8c;">)
-</span><span>
-</span><span style="color:#65737e;"># This where you clone SPIKE, SPIRE, and SPIFFE Helm Charts:
-</span><span style="color:#b48ead;">export </span><span style="color:#bf616a;">WORKSPACE</span><span>=&quot;$</span><span style="color:#bf616a;">HOME</span><span style="color:#a3be8c;">/WORKSPACE</span><span>&quot; 
-</span><span>
-</span><span style="color:#65737e;"># These are needed for Bare-Metal Installation:
-</span><span style="color:#b48ead;">export </span><span style="color:#bf616a;">PATH</span><span>=&quot;$</span><span style="color:#bf616a;">PATH</span><span style="color:#a3be8c;">:</span><span>$</span><span style="color:#bf616a;">WORKSPACE</span><span style="color:#a3be8c;">/spire/bin</span><span>&quot;
-</span><span style="color:#b48ead;">export </span><span style="color:#bf616a;">PATH</span><span>=&quot;$</span><span style="color:#bf616a;">PATH</span><span style="color:#a3be8c;">:</span><span>$</span><span style="color:#bf616a;">WORKSPACE</span><span style="color:#a3be8c;">/spike</span><span>&quot;
-</span><span>
-</span><span style="color:#65737e;"># Optional, but recommended.
-</span><span style="color:#96b5b4;">source </span><span>&quot;$</span><span style="color:#bf616a;">WORKSPACE</span><span style="color:#a3be8c;">/spike/hack/lib/env.sh</span><span>&quot;
-</span><span style="color:#65737e;"># ^ Note that the `make start` Make target will
-</span><span style="color:#65737e;"># automatically source this file for you.
-</span></code></pre>
-<h2 id="starting-minikube">Starting Minikube</h2>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="shellscript"><span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># User Configuration</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;">#</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># Add this to your ~/.bashrc or ~/.zshrc, ~/.profile,</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># or ~/.zprofile, or wherever you keep your shell config.</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #C792EA;">export</span><span> PATH</span><span style="color: #89DDFF;">=</span><span>$PATH:/usr/local/go/bin</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># If you are using GPG for signing commits:</span></span>
+<span class="giallo-l"><span style="color: #C792EA;">export</span><span> GPG_TTY</span><span style="color: #89DDFF;">=$(</span><span style="color: #FFCB6B;">tty</span><span style="color: #89DDFF;">)</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># This where you clone SPIKE, SPIRE, and SPIFFE Helm Charts:</span></span>
+<span class="giallo-l"><span style="color: #C792EA;">export</span><span> WORKSPACE</span><span style="color: #89DDFF;">=&quot;</span><span>$HOME</span><span style="color: #C3E88D;">/WORKSPACE</span><span style="color: #89DDFF;">&quot;</span><span> </span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># These are needed for Bare-Metal Installation:</span></span>
+<span class="giallo-l"><span style="color: #C792EA;">export</span><span> PATH</span><span style="color: #89DDFF;">=&quot;</span><span>$PATH</span><span style="color: #C3E88D;">:</span><span>$WORKSPACE</span><span style="color: #C3E88D;">/spire/bin</span><span style="color: #89DDFF;">&quot;</span></span>
+<span class="giallo-l"><span style="color: #C792EA;">export</span><span> PATH</span><span style="color: #89DDFF;">=&quot;</span><span>$PATH</span><span style="color: #C3E88D;">:</span><span>$WORKSPACE</span><span style="color: #C3E88D;">/spike</span><span style="color: #89DDFF;">&quot;</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># Optional, but recommended.</span></span>
+<span class="giallo-l"><span style="color: #82AAFF;">source</span><span style="color: #89DDFF;"> &quot;</span><span>$WORKSPACE</span><span style="color: #C3E88D;">/spike/hack/lib/env.sh</span><span style="color: #89DDFF;">&quot;</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># ^ Note that the `make start` Make target will</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># automatically source this file for you.</span></span></code></pre><h2 id="starting-minikube">Starting Minikube</h2>
 <p>To start a local Minikube cluster, clone the project repository and run the
 following command in the root directory of the project:</p>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#96b5b4;">cd </span><span>$</span><span style="color:#bf616a;">WORKSPACE </span><span style="color:#65737e;"># Replace with your workspace directory
-</span><span style="color:#bf616a;">git</span><span> clone https://github.com/spiffe/spike.git
-</span><span style="color:#96b5b4;">cd</span><span> spike
-</span><span style="color:#bf616a;">make</span><span> docker-cleanup </span><span style="color:#65737e;"># (Optional) Purge docker registry.
-</span><span style="color:#bf616a;">make</span><span> k8s-delete     </span><span style="color:#65737e;"># Delete any former Minikube installation.
-</span><span style="color:#bf616a;">make</span><span> k8s-start      </span><span style="color:#65737e;"># This will start a Minikube cluster.
-</span></code></pre>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="shellscript"><span class="giallo-l"><span style="color: #82AAFF;">cd</span><span> $WORKSPACE</span><span style="color: #464B5D;font-style: italic;"> # Replace with your workspace directory</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">git</span><span style="color: #C3E88D;"> clone https://github.com/spiffe/spike.git</span></span>
+<span class="giallo-l"><span style="color: #82AAFF;">cd</span><span style="color: #C3E88D;"> spike</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">make</span><span style="color: #C3E88D;"> docker-cleanup</span><span style="color: #464B5D;font-style: italic;"> # (Optional) Purge docker registry.</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">make</span><span style="color: #C3E88D;"> k8s-delete</span><span style="color: #464B5D;font-style: italic;">     # Delete any former Minikube installation.</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">make</span><span style="color: #C3E88D;"> k8s-start</span><span style="color: #464B5D;font-style: italic;">      # This will start a Minikube cluster.</span></span></code></pre>
 <p>If successful, you will have a local Minikube cluster running with the
 necessary plugins enabled. You can verify that Minikube is running by executing:</p>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">minikube</span><span> status
-</span><span style="color:#65737e;"># or...
-</span><span style="color:#bf616a;">kubectl</span><span> get node
-</span><span>
-</span><span style="color:#65737e;"># Sample Outputs:
-</span><span style="color:#65737e;">#
-</span><span style="color:#65737e;"># $ minikube status
-</span><span style="color:#65737e;"># minikube
-</span><span style="color:#65737e;"># type: Control Plane
-</span><span style="color:#65737e;"># host: Running
-</span><span style="color:#65737e;"># kubelet: Running
-</span><span style="color:#65737e;"># apiserver: Running
-</span><span style="color:#65737e;"># kubeconfig: Configured
-</span><span style="color:#65737e;">#
-</span><span style="color:#65737e;"># $ kubectl get node
-</span><span style="color:#65737e;"># NAME       STATUS   ROLES           AGE   VERSION
-</span><span style="color:#65737e;"># minikube   Ready    control-plane   67s   v1.33.1
-</span></code></pre>
-<h2 id="deploying-spike-to-minikube">Deploying <strong>SPIKE</strong> to Minikube</h2>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="shellscript"><span class="giallo-l"><span style="color: #FFCB6B;">minikube</span><span style="color: #C3E88D;"> status</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># or...</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">kubectl</span><span style="color: #C3E88D;"> get node</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># Sample Outputs:</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;">#</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># $ minikube status</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># minikube</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># type: Control Plane</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># host: Running</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># kubelet: Running</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># apiserver: Running</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># kubeconfig: Configured</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;">#</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># $ kubectl get node</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># NAME       STATUS   ROLES           AGE   VERSION</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># minikube   Ready    control-plane   67s   v1.33.1</span></span></code></pre><h2 id="deploying-spike-to-minikube">Deploying <strong>SPIKE</strong> to Minikube</h2>
 <blockquote>
 <p><strong>⚠️ Changes Due to Current Upstream Helm Charts Work</strong></p>
 <p>There are some changes to the upstream <strong>SPIFFE Helm Charts</strong> that are
 currently in progress. Until they are merged, you will need to use a
 feature branch of the upstream repo.</p>
 <p>For this, first clone the upstream repo:</p>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">git</span><span> clone https://github.com/spiffe/helm-charts-hardened.git
-</span></code></pre>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="shellscript"><span class="giallo-l"><span style="color: #FFCB6B;">git</span><span style="color: #C3E88D;"> clone https://github.com/spiffe/helm-charts-hardened.git</span></span></code></pre>
 <p>Then, switch to the <code>spike-next</code> branch:</p>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#96b5b4;">cd</span><span> helm-charts-hardened
-</span><span style="color:#bf616a;">git</span><span> checkout spike-next
-</span></code></pre>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="shellscript"><span class="giallo-l"><span style="color: #82AAFF;">cd</span><span style="color: #C3E88D;"> helm-charts-hardened</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">git</span><span style="color: #C3E88D;"> checkout spike-next</span></span></code></pre>
 <p>You can now use the <code>spike-next</code> branch of the upstream repo to deploy
 <strong>SPIKE</strong> to Minikube.</p>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># $WORKSPACE is your local workspace directory where you cloned the 
-</span><span style="color:#65737e;"># helm-charts-hardened repo and the spike repo.
-</span><span>
-</span><span style="color:#65737e;"># Create a new namespace for SPIRE components.
-</span><span style="color:#bf616a;">kubectl</span><span> create ns spire-mgmt
-</span><span>
-</span><span style="color:#65737e;"># Deploy the CRDs.
-</span><span style="color:#bf616a;">helm</span><span> upgrade</span><span style="color:#bf616a;"> --install -n</span><span> spire-mgmt &quot;</span><span style="color:#a3be8c;">spire-crds</span><span>&quot; &quot;</span><span style="color:#a3be8c;">spire-crds</span><span>&quot; \
-</span><span>&quot;</span><span style="color:#a3be8c;">WORKSPACE/helm-charts-hardened/charts/spire-crds</span><span>&quot; \
-</span><span style="color:#bf616a;">--create-namespace
-</span><span>
-</span><span style="color:#65737e;"># Deploy SPIRE and SPIKE components.
-</span><span style="color:#bf616a;">helm</span><span> upgrade</span><span style="color:#bf616a;"> --install -n</span><span> spire-mgmt &quot;</span><span style="color:#a3be8c;">spiffe</span><span>&quot; &quot;</span><span style="color:#a3be8c;">spire</span><span>&quot; \
-</span><span>&quot;</span><span style="color:#a3be8c;">WORKSPACE/helm-charts-hardened/charts/spire</span><span>&quot; \
-</span><span style="color:#bf616a;">-f</span><span> /path/to/your/values.yaml
-</span></code></pre>
-</blockquote>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="shellscript"><span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># $WORKSPACE is your local workspace directory where you cloned the </span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># helm-charts-hardened repo and the spike repo.</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># Create a new namespace for SPIRE components.</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">kubectl</span><span style="color: #C3E88D;"> create ns spire-mgmt</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># Deploy the CRDs.</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">helm</span><span style="color: #C3E88D;"> upgrade --install -n spire-mgmt</span><span style="color: #89DDFF;"> &quot;</span><span style="color: #C3E88D;">spire-crds</span><span style="color: #89DDFF;">&quot; &quot;</span><span style="color: #C3E88D;">spire-crds</span><span style="color: #89DDFF;">&quot;</span><span> \</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">&quot;</span><span style="color: #C3E88D;">WORKSPACE/helm-charts-hardened/charts/spire-crds</span><span style="color: #89DDFF;">&quot;</span><span> \</span></span>
+<span class="giallo-l"><span>--create-namespace</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># Deploy SPIRE and SPIKE components.</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">helm</span><span style="color: #C3E88D;"> upgrade --install -n spire-mgmt</span><span style="color: #89DDFF;"> &quot;</span><span style="color: #C3E88D;">spiffe</span><span style="color: #89DDFF;">&quot; &quot;</span><span style="color: #C3E88D;">spire</span><span style="color: #89DDFF;">&quot;</span><span> \</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">&quot;</span><span style="color: #C3E88D;">WORKSPACE/helm-charts-hardened/charts/spire</span><span style="color: #89DDFF;">&quot;</span><span> \</span></span>
+<span class="giallo-l"><span>-f</span><span style="color: #C3E88D;"> /path/to/your/values.yaml</span></span></code></pre></blockquote>
 <p>spife-helm-charts-hardened: https://spiffe.github.io/helm-charts-hardened/</p>
 <p>Once you have Minikube running, you can deploy <strong>SPIKE</strong> to it from
 <strong>SPIFFE helm charts</strong>.</p>
 <p>First create a <code>values.yaml</code> file to enable SPIKE components:</p>
-<pre data-lang="yaml" style="background-color:#2b303b;color:#c0c5ce;" class="language-yaml "><code class="language-yaml" data-lang="yaml"><span style="color:#65737e;"># file: values.yaml
-</span><span style="color:#bf616a;">spike-nexus</span><span>:
-</span><span>  </span><span style="color:#bf616a;">enabled</span><span>: </span><span style="color:#d08770;">true
-</span><span style="color:#bf616a;">spike-keeper</span><span>:
-</span><span>  </span><span style="color:#bf616a;">enabled</span><span>: </span><span style="color:#d08770;">true
-</span><span style="color:#bf616a;">spike-pilot</span><span>:
-</span><span>  </span><span style="color:#bf616a;">enabled</span><span>: </span><span style="color:#d08770;">true
-</span><span style="color:#bf616a;">spire-server</span><span>:
-</span><span>  </span><span style="color:#bf616a;">enabled</span><span>: </span><span style="color:#d08770;">true
-</span><span style="color:#bf616a;">spire-agent</span><span>:
-</span><span>  </span><span style="color:#bf616a;">enabled</span><span>: </span><span style="color:#d08770;">true
-</span><span style="color:#bf616a;">spiffe-csi-driver</span><span>:
-</span><span>  </span><span style="color:#bf616a;">enabled</span><span>: </span><span style="color:#d08770;">true
-</span><span style="color:#bf616a;">spiffe-oidc-discovery-provider</span><span>:
-</span><span>  </span><span style="color:#bf616a;">enabled</span><span>: </span><span style="color:#d08770;">true
-</span></code></pre>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="yaml"><span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># file: values.yaml</span></span>
+<span class="giallo-l"><span style="color: #F07178;">spike-nexus</span><span style="color: #89DDFF;">:</span></span>
+<span class="giallo-l"><span style="color: #F07178;">  enabled</span><span style="color: #89DDFF;">:</span><span style="color: #FF9CAC;"> true</span></span>
+<span class="giallo-l"><span style="color: #F07178;">spike-keeper</span><span style="color: #89DDFF;">:</span></span>
+<span class="giallo-l"><span style="color: #F07178;">  enabled</span><span style="color: #89DDFF;">:</span><span style="color: #FF9CAC;"> true</span></span>
+<span class="giallo-l"><span style="color: #F07178;">spike-pilot</span><span style="color: #89DDFF;">:</span></span>
+<span class="giallo-l"><span style="color: #F07178;">  enabled</span><span style="color: #89DDFF;">:</span><span style="color: #FF9CAC;"> true</span></span>
+<span class="giallo-l"><span style="color: #F07178;">spire-server</span><span style="color: #89DDFF;">:</span></span>
+<span class="giallo-l"><span style="color: #F07178;">  enabled</span><span style="color: #89DDFF;">:</span><span style="color: #FF9CAC;"> true</span></span>
+<span class="giallo-l"><span style="color: #F07178;">spire-agent</span><span style="color: #89DDFF;">:</span></span>
+<span class="giallo-l"><span style="color: #F07178;">  enabled</span><span style="color: #89DDFF;">:</span><span style="color: #FF9CAC;"> true</span></span>
+<span class="giallo-l"><span style="color: #F07178;">spiffe-csi-driver</span><span style="color: #89DDFF;">:</span></span>
+<span class="giallo-l"><span style="color: #F07178;">  enabled</span><span style="color: #89DDFF;">:</span><span style="color: #FF9CAC;"> true</span></span>
+<span class="giallo-l"><span style="color: #F07178;">spiffe-oidc-discovery-provider</span><span style="color: #89DDFF;">:</span></span>
+<span class="giallo-l"><span style="color: #F07178;">  enabled</span><span style="color: #89DDFF;">:</span><span style="color: #FF9CAC;"> true</span></span></code></pre>
 <p>Then deploy SPIKE using the following command:</p>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">helm</span><span> upgrade</span><span style="color:#bf616a;"> --install</span><span> spire-crds spire-crds \
-</span><span style="color:#bf616a;">  --repo</span><span> https://spiffe.github.io/helm-charts-hardened/
-</span><span>  
-</span><span style="color:#bf616a;">helm</span><span> upgrade</span><span style="color:#bf616a;"> --install</span><span> spiffe spire \
-</span><span style="color:#bf616a;">  --repo</span><span> https://spiffe.github.io/helm-charts-hardened \
-</span><span style="color:#bf616a;">  -f</span><span> ./values.yaml </span><span style="color:#65737e;"># The values.yaml file we created earlier
-</span></code></pre>
-<h2 id="verifying-spike-deployment">Verifying <strong>SPIKE</strong> Deployment</h2>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="shellscript"><span class="giallo-l"><span style="color: #FFCB6B;">helm</span><span style="color: #C3E88D;"> upgrade --install spire-crds spire-crds</span><span> \</span></span>
+<span class="giallo-l"><span style="color: #C3E88D;">  --repo https://spiffe.github.io/helm-charts-hardened/</span></span>
+<span class="giallo-l"><span>  </span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">helm</span><span style="color: #C3E88D;"> upgrade --install spiffe spire</span><span> \</span></span>
+<span class="giallo-l"><span style="color: #C3E88D;">  --repo https://spiffe.github.io/helm-charts-hardened</span><span> \</span></span>
+<span class="giallo-l"><span style="color: #C3E88D;">  -f ./values.yaml</span><span style="color: #464B5D;font-style: italic;"> # The values.yaml file we created earlier</span></span></code></pre><h2 id="verifying-spike-deployment">Verifying <strong>SPIKE</strong> Deployment</h2>
 <p>First, make sure that your components are up and running.</p>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">kubectl</span><span> get po</span><span style="color:#bf616a;"> -A
-</span><span style="color:#65737e;"># Sample Output:
-</span><span style="color:#65737e;">#
-</span><span style="color:#65737e;"># NAME                                              READY  STATUS 
-</span><span style="color:#65737e;"># spike          spiffe-spike-keeper-0              1/1    Running
-</span><span style="color:#65737e;"># spike          spiffe-spike-keeper-1              1/1    Running
-</span><span style="color:#65737e;"># spike          spiffe-spike-keeper-2              1/1    Running
-</span><span style="color:#65737e;"># spike          spiffe-spike-nexus-0               1/1    Running
-</span><span style="color:#65737e;"># spike          spiffe-spike-pilot-5ddb88f-jsv9q   1/1    Running
-</span><span style="color:#65737e;"># spire-server   spiffe-server-0                    2/2    Running
-</span><span style="color:#65737e;"># spire-server   spiffe-oidc-provider-b4b9d-vn2zj   2/2    Running
-</span><span style="color:#65737e;"># spire-system   spiffe-agent-lllsv                 1/1    Running
-</span><span style="color:#65737e;"># spire-system   spiffe-spiffe-csi-driver-dkbwf     2/2    Running
-</span></code></pre>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="shellscript"><span class="giallo-l"><span style="color: #FFCB6B;">kubectl</span><span style="color: #C3E88D;"> get po -A</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># Sample Output:</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;">#</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># NAME                                              READY  STATUS </span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># spike          spiffe-spike-keeper-0              1/1    Running</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># spike          spiffe-spike-keeper-1              1/1    Running</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># spike          spiffe-spike-keeper-2              1/1    Running</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># spike          spiffe-spike-nexus-0               1/1    Running</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># spike          spiffe-spike-pilot-5ddb88f-jsv9q   1/1    Running</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># spire-server   spiffe-server-0                    2/2    Running</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># spire-server   spiffe-oidc-provider-b4b9d-vn2zj   2/2    Running</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># spire-system   spiffe-agent-lllsv                 1/1    Running</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># spire-system   spiffe-spiffe-csi-driver-dkbwf     2/2    Running</span></span></code></pre>
 <p>Once the deployment is complete, you can verify SPIKE is running by
 creating a sample secret and reading its value back.</p>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">kubectl</span><span> exec</span><span style="color:#bf616a;"> -it</span><span> deploy/spiffe-spike-pilot -- sh
-</span><span style="color:#65737e;"># Shell into the container and run the following commands:
-</span><span style="color:#bf616a;">spike</span><span> secret list
-</span><span style="color:#65737e;"># Output:
-</span><span style="color:#65737e;"># No Secrets found.
-</span><span style="color:#bf616a;">spike</span><span> secret put test/creds username=spike password=SPIKERocks
-</span><span style="color:#65737e;"># Output:
-</span><span style="color:#65737e;"># OK
-</span><span style="color:#bf616a;">spike</span><span> secret list
-</span><span style="color:#65737e;"># Output:
-</span><span style="color:#65737e;"># - test/creds
-</span><span style="color:#bf616a;">spike</span><span> secret get test/creds
-</span><span style="color:#65737e;"># Output:
-</span><span style="color:#65737e;"># password: SPIKERocks
-</span><span style="color:#65737e;"># username: spike
-</span></code></pre>
-<h2 id="next-up">Next Up</h2>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="shellscript"><span class="giallo-l"><span style="color: #FFCB6B;">kubectl</span><span style="color: #C3E88D;"> exec -it deploy/spiffe-spike-pilot -- sh</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># Shell into the container and run the following commands:</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">spike</span><span style="color: #C3E88D;"> secret list</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># Output:</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># No Secrets found.</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">spike</span><span style="color: #C3E88D;"> secret put test/creds username=spike password=SPIKERocks</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># Output:</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># OK</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">spike</span><span style="color: #C3E88D;"> secret list</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># Output:</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># - test/creds</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">spike</span><span style="color: #C3E88D;"> secret get test/creds</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># Output:</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># password: SPIKERocks</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># username: spike</span></span></code></pre><h2 id="next-up">Next Up</h2>
 <p>You are all set. You have successfully deployed <strong>SPIKE</strong> to your local
 Minikube cluster. Explore other parts of the documentation to learn more about
 using <strong>SPIKE</strong>.</p>

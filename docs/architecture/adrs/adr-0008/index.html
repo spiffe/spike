@@ -926,12 +926,10 @@
 </ul>
 <h2 id="implementation-guidelines">Implementation Guidelines</h2>
 <h3 id="command-line-interface">Command Line Interface</h3>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">spike</span><span> login</span><span style="color:#bf616a;"> --password </span><span style="color:#b48ead;">[</span><span>password</span><span style="color:#b48ead;">]  </span><span style="color:#65737e;"># Exchange password for temporary token
-</span><span style="color:#bf616a;">spike</span><span> reset</span><span style="color:#bf616a;"> --force              
-</span><span style="color:#65737e;"># Execute factory reset (requires additional safeguards)
-</span><span style="color:#65737e;"># for example it will print a script but not execute it.
-</span></code></pre>
-<h3 id="state-management">State Management</h3>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="shellscript"><span class="giallo-l"><span style="color: #FFCB6B;">spike</span><span style="color: #C3E88D;"> login --password</span><span> [password]</span><span style="color: #464B5D;font-style: italic;">  # Exchange password for temporary token</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">spike</span><span style="color: #C3E88D;"> reset --force</span><span>              </span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># Execute factory reset (requires additional safeguards)</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># for example it will print a script but not execute it.</span></span></code></pre><h3 id="state-management">State Management</h3>
 <ul>
 <li>Use atomic operations for state changes</li>
 <li>Implement state persistence</li>
@@ -940,8 +938,8 @@
 </ul>
 <h2 id="references">References</h2>
 <ul>
-<li><a href="https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html">OWASP Authentication Guidelines</a></li>
-<li><a href="https://pages.nist.gov/800-63-3/">NIST Digital Identity Guidelines</a></li>
+<li><a rel="external" href="https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html">OWASP Authentication Guidelines</a></li>
+<li><a rel="external" href="https://pages.nist.gov/800-63-3/">NIST Digital Identity Guidelines</a></li>
 </ul>
 <h2 id="notes">Notes</h2>
 <ul>

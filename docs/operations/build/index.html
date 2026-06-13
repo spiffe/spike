@@ -763,28 +763,23 @@
 <p>We cross-build SPIKE on an ARM64 Mac Machine.</p>
 <p>Here is what’s needed for a cross-compile:</p>
 <h2 id="prerequisites">Prerequisites</h2>
-<p>Installed required tools via <a href="https://brew.sh">Homebrew</a>.</p>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">brew</span><span> install FiloSottile/musl-cross/musl-cross
-</span><span style="color:#bf616a;">brew</span><span> install gcc
-</span><span style="color:#bf616a;">brew</span><span> install x86_64-linux-gnu-binutils
-</span><span style="color:#bf616a;">brew</span><span> install aarch64-elf-gcc
-</span></code></pre>
-<h2 id="build">Build</h2>
+<p>Installed required tools via <a rel="external" href="https://brew.sh">Homebrew</a>.</p>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="shellscript"><span class="giallo-l"><span style="color: #FFCB6B;">brew</span><span style="color: #C3E88D;"> install FiloSottile/musl-cross/musl-cross</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">brew</span><span style="color: #C3E88D;"> install gcc</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">brew</span><span style="color: #C3E88D;"> install x86_64-linux-gnu-binutils</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">brew</span><span style="color: #C3E88D;"> install aarch64-elf-gcc</span></span></code></pre><h2 id="build">Build</h2>
 <p>To cross-compile the binaries, run the following:</p>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">./hack/bare-metal/build/build-spike-cross-platform.sh
-</span></code></pre>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="shellscript"><span class="giallo-l"><span style="color: #FFCB6B;">./hack/bare-metal/build/build-spike-cross-platform.sh</span></span></code></pre>
 <p>After the script runs to completion, you should get the following artifacts:</p>
-<pre data-lang="txt" style="background-color:#2b303b;color:#c0c5ce;" class="language-txt "><code class="language-txt" data-lang="txt"><span>-rwxr-xr-x   1 volkan  staff  16262498 Nov 10 10:41 keeper-v0.8.0-darwin-arm64
-</span><span>-rwxr-xr-x   1 volkan  staff  16644567 Nov 10 10:42 keeper-v0.8.0-linux-amd64
-</span><span>-rwxr-xr-x   1 volkan  staff  16122001 Nov 10 10:41 keeper-v0.8.0-linux-arm64
-</span><span>-rwxr-xr-x   1 volkan  staff  20632146 Nov 10 10:41 nexus-v0.8.0-darwin-arm64
-</span><span>-rwxr-xr-x   1 volkan  staff  22916584 Nov 10 10:42 nexus-v0.8.0-linux-amd64
-</span><span>-rwxr-xr-x   1 volkan  staff  21563848 Nov 10 10:42 nexus-v0.8.0-linux-arm64
-</span><span>-rwxr-xr-x   1 volkan  staff  16982594 Nov 10 10:41 spike-v0.8.0-darwin-arm64
-</span><span>-rwxr-xr-x   1 volkan  staff  17379008 Nov 10 10:42 spike-v0.8.0-linux-amd64
-</span><span>-rwxr-xr-x   1 volkan  staff  16783196 Nov 10 10:42 spike-v0.8.0-linux-arm64
-</span></code></pre>
-<p>&nbsp;</p>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="plain"><span class="giallo-l"><span>-rwxr-xr-x   1 volkan  staff  16262498 Nov 10 10:41 keeper-v0.8.0-darwin-arm64</span></span>
+<span class="giallo-l"><span>-rwxr-xr-x   1 volkan  staff  16644567 Nov 10 10:42 keeper-v0.8.0-linux-amd64</span></span>
+<span class="giallo-l"><span>-rwxr-xr-x   1 volkan  staff  16122001 Nov 10 10:41 keeper-v0.8.0-linux-arm64</span></span>
+<span class="giallo-l"><span>-rwxr-xr-x   1 volkan  staff  20632146 Nov 10 10:41 nexus-v0.8.0-darwin-arm64</span></span>
+<span class="giallo-l"><span>-rwxr-xr-x   1 volkan  staff  22916584 Nov 10 10:42 nexus-v0.8.0-linux-amd64</span></span>
+<span class="giallo-l"><span>-rwxr-xr-x   1 volkan  staff  21563848 Nov 10 10:42 nexus-v0.8.0-linux-arm64</span></span>
+<span class="giallo-l"><span>-rwxr-xr-x   1 volkan  staff  16982594 Nov 10 10:41 spike-v0.8.0-darwin-arm64</span></span>
+<span class="giallo-l"><span>-rwxr-xr-x   1 volkan  staff  17379008 Nov 10 10:42 spike-v0.8.0-linux-amd64</span></span>
+<span class="giallo-l"><span>-rwxr-xr-x   1 volkan  staff  16783196 Nov 10 10:42 spike-v0.8.0-linux-arm64</span></span></code></pre><p>&nbsp;</p>
 <hr />
 <ul>
 <li><a href="https://spike.ist/operations/build/">SPIKE Cross-Platform Build</a></li>

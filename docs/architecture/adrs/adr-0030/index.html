@@ -797,36 +797,31 @@ error messages</strong> to clients.</p>
 <h3 id="security-preventing-information-leakage">Security: Preventing Information Leakage</h3>
 <p>Error messages can reveal sensitive information about the system:</p>
 <p><strong>Path existence enumeration:</strong></p>
-<pre style="background-color:#2b303b;color:#c0c5ce;"><code><span>❌ &quot;Secret &#39;secrets/admin/root-password&#39; not found&quot;
-</span><span>   → Reveals path structure even when denied
-</span><span>
-</span><span>✓  NOT_FOUND
-</span><span>   → Reveals nothing about whether path exists or is unauthorized
-</span></code></pre>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="plain"><span class="giallo-l"><span>❌ &quot;Secret &#39;secrets/admin/root-password&#39; not found&quot;</span></span>
+<span class="giallo-l"><span>   → Reveals path structure even when denied</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span>✓  NOT_FOUND</span></span>
+<span class="giallo-l"><span>   → Reveals nothing about whether path exists or is unauthorized</span></span></code></pre>
 <p><strong>Permission structure disclosure:</strong></p>
-<pre style="background-color:#2b303b;color:#c0c5ce;"><code><span>❌ &quot;Permission denied for path &#39;secrets/database&#39;&quot;
-</span><span>   → Leaks information about permission boundaries
-</span><span>
-</span><span>✓  UNAUTHORIZED
-</span><span>   → No information about what paths exist or their structure
-</span></code></pre>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="plain"><span class="giallo-l"><span>❌ &quot;Permission denied for path &#39;secrets/database&#39;&quot;</span></span>
+<span class="giallo-l"><span>   → Leaks information about permission boundaries</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span>✓  UNAUTHORIZED</span></span>
+<span class="giallo-l"><span>   → No information about what paths exist or their structure</span></span></code></pre>
 <p><strong>Implementation details:</strong></p>
-<pre style="background-color:#2b303b;color:#c0c5ce;"><code><span>❌ &quot;Database query failed: table &#39;secrets&#39; locked&quot;
-</span><span>   → Leaks internal architecture details
-</span><span>
-</span><span>✓  INTERNAL_SERVER_ERROR
-</span><span>   → No information about internal implementation
-</span></code></pre>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="plain"><span class="giallo-l"><span>❌ &quot;Database query failed: table &#39;secrets&#39; locked&quot;</span></span>
+<span class="giallo-l"><span>   → Leaks internal architecture details</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span>✓  INTERNAL_SERVER_ERROR</span></span>
+<span class="giallo-l"><span>   → No information about internal implementation</span></span></code></pre>
 <p><strong>Stack traces (the “one bad commit” risk):</strong></p>
-<pre style="background-color:#2b303b;color:#c0c5ce;"><code><span>❌ Adding an ErrMsg field creates risk of accidentally including:
-</span><span>   - File paths
-</span><span>   - Internal function names
-</span><span>   - SQL queries
-</span><span>   - Configuration details
-</span><span>
-</span><span>✓  No message field = no risk of accidental disclosure
-</span></code></pre>
-<h3 id="defense-against-enumeration-attacks">Defense Against Enumeration Attacks</h3>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="plain"><span class="giallo-l"><span>❌ Adding an ErrMsg field creates risk of accidentally including:</span></span>
+<span class="giallo-l"><span>   - File paths</span></span>
+<span class="giallo-l"><span>   - Internal function names</span></span>
+<span class="giallo-l"><span>   - SQL queries</span></span>
+<span class="giallo-l"><span>   - Configuration details</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span>✓  No message field = no risk of accidental disclosure</span></span></code></pre><h3 id="defense-against-enumeration-attacks">Defense Against Enumeration Attacks</h3>
 <p>Minimal errors prevent attackers from probing the system:</p>
 <table><thead><tr><th>Attack Vector</th><th>Detailed Messages</th><th>Minimal Codes</th></tr></thead><tbody>
 <tr><td>Path enumeration</td><td>“Path X not found” vs “Path Y unauthorized” reveals valid paths</td><td>All failures return same code</td></tr>
@@ -837,14 +832,13 @@ error messages</strong> to clients.</p>
 <h3 id="api-design-clean-and-stable">API Design: Clean and Stable</h3>
 <p>Error codes provide better API stability than messages:</p>
 <p><strong>Programmatic handling:</strong></p>
-<pre data-lang="go" style="background-color:#2b303b;color:#c0c5ce;" class="language-go "><code class="language-go" data-lang="go"><span style="color:#65737e;">// Client can reliably handle specific errors
-</span><span style="color:#b48ead;">switch </span><span style="color:#bf616a;">response</span><span>.</span><span style="color:#bf616a;">Err </span><span>{
-</span><span style="color:#b48ead;">case </span><span style="color:#bf616a;">data</span><span>.</span><span style="color:#bf616a;">ErrNotFound</span><span>:
-</span><span>    </span><span style="color:#65737e;">// Handle missing secret
-</span><span style="color:#b48ead;">case </span><span style="color:#bf616a;">data</span><span>.</span><span style="color:#bf616a;">ErrUnauthorized</span><span>:
-</span><span>    </span><span style="color:#65737e;">// Handle permission denied
-</span><span>}
-</span></code></pre>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="go"><span class="giallo-l"><span style="color: #464B5D;font-style: italic;">// Client can reliably handle specific errors</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;font-style: italic;">switch</span><span> response</span><span style="color: #89DDFF;">.</span><span>Err</span><span style="color: #89DDFF;"> {</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;font-style: italic;">case</span><span> data</span><span style="color: #89DDFF;">.</span><span>ErrNotFound</span><span style="color: #89DDFF;">:</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;">    // Handle missing secret</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;font-style: italic;">case</span><span> data</span><span style="color: #89DDFF;">.</span><span>ErrUnauthorized</span><span style="color: #89DDFF;">:</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;">    // Handle permission denied</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">}</span></span></code></pre>
 <p><strong>No versioning issues:</strong></p>
 <ul>
 <li>Error codes remain stable across versions</li>
@@ -861,16 +855,14 @@ error messages</strong> to clients.</p>
 <h3 id="operational-model-server-side-context">Operational Model: Server-Side Context</h3>
 <p>SPIKE’s architecture provides full diagnostics where they belong:</p>
 <p><strong>Audit logging captures everything:</strong></p>
-<pre style="background-color:#2b303b;color:#c0c5ce;"><code><span>Server log:
-</span><span>[req_abc123] [SPIFFE: spiffe://example.org/workload/app]
-</span><span>Failed to read secret &#39;secrets/db/password&#39;: permission denied
-</span><span>Policy check failed: path pattern &#39;^secrets/admin/.*&#39; required
-</span></code></pre>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="plain"><span class="giallo-l"><span>Server log:</span></span>
+<span class="giallo-l"><span>[req_abc123] [SPIFFE: spiffe://example.org/workload/app]</span></span>
+<span class="giallo-l"><span>Failed to read secret &#39;secrets/db/password&#39;: permission denied</span></span>
+<span class="giallo-l"><span>Policy check failed: path pattern &#39;^secrets/admin/.*&#39; required</span></span></code></pre>
 <p><strong>Client receives:</strong></p>
-<pre data-lang="json" style="background-color:#2b303b;color:#c0c5ce;" class="language-json "><code class="language-json" data-lang="json"><span>{
-</span><span>  &quot;</span><span style="color:#a3be8c;">err</span><span>&quot;: &quot;</span><span style="color:#a3be8c;">UNAUTHORIZED</span><span>&quot;
-</span><span>}
-</span></code></pre>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="json"><span class="giallo-l"><span style="color: #89DDFF;">{</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">  &quot;</span><span style="color: #C792EA;">err</span><span style="color: #89DDFF;">&quot;: &quot;</span><span style="color: #C3E88D;">UNAUTHORIZED</span><span style="color: #89DDFF;">&quot;</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">}</span></span></code></pre>
 <p><strong>Clear separation of concerns:</strong></p>
 <ul>
 <li><strong>Clients</strong>: Get actionable error codes for programmatic handling</li>
@@ -881,26 +873,22 @@ error messages</strong> to clients.</p>
 <h3 id="industry-validation">Industry Validation</h3>
 <p>Security-critical systems follow this pattern:</p>
 <p><strong>HashiCorp Vault:</strong></p>
-<pre style="background-color:#2b303b;color:#c0c5ce;"><code><span>API Response: {&quot;errors&quot;:[&quot;permission denied&quot;]}
-</span><span>Server logs:  Detailed context with paths, policies, tokens
-</span></code></pre>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="plain"><span class="giallo-l"><span>API Response: {&quot;errors&quot;:[&quot;permission denied&quot;]}</span></span>
+<span class="giallo-l"><span>Server logs:  Detailed context with paths, policies, tokens</span></span></code></pre>
 <p><strong>AWS Secrets Manager:</strong></p>
-<pre style="background-color:#2b303b;color:#c0c5ce;"><code><span>API Response: Generic error codes
-</span><span>CloudTrail:   Full audit trail with all context
-</span></code></pre>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="plain"><span class="giallo-l"><span>API Response: Generic error codes</span></span>
+<span class="giallo-l"><span>CloudTrail:   Full audit trail with all context</span></span></code></pre>
 <p><strong>Kubernetes Secrets API:</strong></p>
-<pre style="background-color:#2b303b;color:#c0c5ce;"><code><span>API Response: Standard error codes
-</span><span>Audit logs:   Complete request/response details
-</span></code></pre>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="plain"><span class="giallo-l"><span>API Response: Standard error codes</span></span>
+<span class="giallo-l"><span>Audit logs:   Complete request/response details</span></span></code></pre>
 <p>All separate client-facing errors from server-side diagnostics.</p>
 <h2 id="alternatives-considered">Alternatives Considered</h2>
 <h3 id="alternative-1-include-generic-error-messages">Alternative 1: Include Generic Error Messages</h3>
 <p>Provide generic messages without sensitive details:</p>
-<pre data-lang="json" style="background-color:#2b303b;color:#c0c5ce;" class="language-json "><code class="language-json" data-lang="json"><span>{
-</span><span>  &quot;</span><span style="color:#a3be8c;">err</span><span>&quot;: &quot;</span><span style="color:#a3be8c;">NOT_FOUND</span><span>&quot;,
-</span><span>  &quot;</span><span style="color:#a3be8c;">message</span><span>&quot;: &quot;</span><span style="color:#a3be8c;">Secret not found</span><span>&quot;
-</span><span>}
-</span></code></pre>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="json"><span class="giallo-l"><span style="color: #89DDFF;">{</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">  &quot;</span><span style="color: #C792EA;">err</span><span style="color: #89DDFF;">&quot;: &quot;</span><span style="color: #C3E88D;">NOT_FOUND</span><span style="color: #89DDFF;">&quot;,</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">  &quot;</span><span style="color: #C792EA;">message</span><span style="color: #89DDFF;">&quot;: &quot;</span><span style="color: #C3E88D;">Secret not found</span><span style="color: #89DDFF;">&quot;</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">}</span></span></code></pre>
 <p><strong>Rejected because:</strong></p>
 <ul>
 <li>Adds API surface complexity with minimal benefit</li>
@@ -911,11 +899,10 @@ error messages</strong> to clients.</p>
 </ul>
 <h3 id="alternative-2-detailed-messages-for-authenticated-users">Alternative 2: Detailed Messages for Authenticated Users</h3>
 <p>Provide detailed errors only to authenticated, authorized users:</p>
-<pre data-lang="json" style="background-color:#2b303b;color:#c0c5ce;" class="language-json "><code class="language-json" data-lang="json"><span>{
-</span><span>  &quot;</span><span style="color:#a3be8c;">err</span><span>&quot;: &quot;</span><span style="color:#a3be8c;">UNAUTHORIZED</span><span>&quot;,
-</span><span>  &quot;</span><span style="color:#a3be8c;">message</span><span>&quot;: &quot;</span><span style="color:#a3be8c;">Policy &#39;db-read&#39; denies access to &#39;secrets/db/password&#39;</span><span>&quot;
-</span><span>}
-</span></code></pre>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="json"><span class="giallo-l"><span style="color: #89DDFF;">{</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">  &quot;</span><span style="color: #C792EA;">err</span><span style="color: #89DDFF;">&quot;: &quot;</span><span style="color: #C3E88D;">UNAUTHORIZED</span><span style="color: #89DDFF;">&quot;,</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">  &quot;</span><span style="color: #C792EA;">message</span><span style="color: #89DDFF;">&quot;: &quot;</span><span style="color: #C3E88D;">Policy &#39;db-read&#39; denies access to &#39;secrets/db/password&#39;</span><span style="color: #89DDFF;">&quot;</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">}</span></span></code></pre>
 <p><strong>Rejected because:</strong></p>
 <ul>
 <li>Still risks information leakage (policy names, path details)</li>
@@ -926,11 +913,10 @@ error messages</strong> to clients.</p>
 </ul>
 <h3 id="alternative-3-request-ids-for-correlation">Alternative 3: Request IDs for Correlation</h3>
 <p>Include correlation IDs so clients can reference server logs:</p>
-<pre data-lang="json" style="background-color:#2b303b;color:#c0c5ce;" class="language-json "><code class="language-json" data-lang="json"><span>{
-</span><span>  &quot;</span><span style="color:#a3be8c;">err</span><span>&quot;: &quot;</span><span style="color:#a3be8c;">NOT_FOUND</span><span>&quot;,
-</span><span>  &quot;</span><span style="color:#a3be8c;">requestId</span><span>&quot;: &quot;</span><span style="color:#a3be8c;">req_abc123</span><span>&quot;
-</span><span>}
-</span></code></pre>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="json"><span class="giallo-l"><span style="color: #89DDFF;">{</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">  &quot;</span><span style="color: #C792EA;">err</span><span style="color: #89DDFF;">&quot;: &quot;</span><span style="color: #C3E88D;">NOT_FOUND</span><span style="color: #89DDFF;">&quot;,</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">  &quot;</span><span style="color: #C792EA;">requestId</span><span style="color: #89DDFF;">&quot;: &quot;</span><span style="color: #C3E88D;">req_abc123</span><span style="color: #89DDFF;">&quot;</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">}</span></span></code></pre>
 <p><strong>Considered acceptable but not required because:</strong></p>
 <ul>
 <li>SPIKE’s audit logging already provides correlation via SPIFFE ID and
@@ -976,12 +962,10 @@ management</li>
 <h2 id="implementation-details">Implementation Details</h2>
 <h3 id="response-structure">Response Structure</h3>
 <p>All error responses follow this structure:</p>
-<pre data-lang="go" style="background-color:#2b303b;color:#c0c5ce;" class="language-go "><code class="language-go" data-lang="go"><span style="color:#b48ead;">type </span><span>ErrorResponse </span><span style="color:#b48ead;">struct </span><span>{
-</span><span>    </span><span style="color:#bf616a;">Err data</span><span>.</span><span style="color:#b48ead;">ErrorCode </span><span>`</span><span style="color:#a3be8c;">json:&quot;err&quot;</span><span>`
-</span><span>    </span><span style="color:#65737e;">// No message, details, or stack trace fields
-</span><span>}
-</span></code></pre>
-<h3 id="error-codes">Error Codes</h3>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="go"><span class="giallo-l"><span style="color: #89DDFF;">type</span><span style="color: #FFCB6B;"> ErrorResponse</span><span style="color: #89DDFF;"> struct {</span></span>
+<span class="giallo-l"><span>    Err</span><span style="color: #FFCB6B;"> data</span><span style="color: #89DDFF;">.</span><span style="color: #FFCB6B;">ErrorCode</span><span style="color: #89DDFF;"> `</span><span style="color: #C3E88D;">json:&quot;err&quot;</span><span style="color: #89DDFF;">`</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;">    // No message, details, or stack trace fields</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">}</span></span></code></pre><h3 id="error-codes">Error Codes</h3>
 <p>Standard error codes returned:</p>
 <table><thead><tr><th>HTTP Status</th><th>Error Code</th><th>Meaning</th></tr></thead><tbody>
 <tr><td>200</td><td><code>null</code></td><td>Success</td></tr>
@@ -994,62 +978,55 @@ management</li>
 enumeration.</p>
 <h3 id="server-side-logging">Server-Side Logging</h3>
 <p>All errors are logged with full context:</p>
-<pre data-lang="go" style="background-color:#2b303b;color:#c0c5ce;" class="language-go "><code class="language-go" data-lang="go"><span style="color:#65737e;">// Handler logs detailed context
-</span><span style="color:#bf616a;">log</span><span>.</span><span style="color:#bf616a;">DebugErr</span><span>(</span><span style="color:#bf616a;">fName</span><span>, </span><span style="color:#bf616a;">sdkErrors</span><span>.</span><span style="color:#bf616a;">ErrAPINotFound</span><span>.</span><span style="color:#bf616a;">Wrap</span><span>(</span><span style="color:#bf616a;">err</span><span>))
-</span><span style="color:#65737e;">// Audit trail captures request details
-</span><span style="color:#bf616a;">journal</span><span>.</span><span style="color:#bf616a;">AuditRequest</span><span>(</span><span style="color:#bf616a;">fName</span><span>, </span><span style="color:#bf616a;">r</span><span>, </span><span style="color:#bf616a;">audit</span><span>, </span><span style="color:#bf616a;">journal</span><span>.</span><span style="color:#bf616a;">AuditRead</span><span>)
-</span><span>
-</span><span style="color:#65737e;">// Client receives only:
-</span><span style="color:#bf616a;">net</span><span>.</span><span style="color:#bf616a;">Fail</span><span>(</span><span style="color:#bf616a;">reqres</span><span>.</span><span style="color:#bf616a;">SecretGetNotFound</span><span>, </span><span style="color:#bf616a;">w</span><span>, </span><span style="color:#bf616a;">http</span><span>.</span><span style="color:#bf616a;">StatusNotFound</span><span>)
-</span></code></pre>
-<h3 id="error-handling-pattern">Error Handling Pattern</h3>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="go"><span class="giallo-l"><span style="color: #464B5D;font-style: italic;">// Handler logs detailed context</span></span>
+<span class="giallo-l"><span>log</span><span style="color: #89DDFF;">.</span><span style="color: #82AAFF;">DebugErr</span><span style="color: #89DDFF;">(</span><span>fName</span><span style="color: #89DDFF;">,</span><span> sdkErrors</span><span style="color: #89DDFF;">.</span><span>ErrAPINotFound</span><span style="color: #89DDFF;">.</span><span style="color: #82AAFF;">Wrap</span><span style="color: #89DDFF;">(</span><span>err</span><span style="color: #89DDFF;">))</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;">// Audit trail captures request details</span></span>
+<span class="giallo-l"><span>journal</span><span style="color: #89DDFF;">.</span><span style="color: #82AAFF;">AuditRequest</span><span style="color: #89DDFF;">(</span><span>fName</span><span style="color: #89DDFF;">,</span><span> r</span><span style="color: #89DDFF;">,</span><span> audit</span><span style="color: #89DDFF;">,</span><span> journal</span><span style="color: #89DDFF;">.</span><span>AuditRead</span><span style="color: #89DDFF;">)</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;">// Client receives only:</span></span>
+<span class="giallo-l"><span>net</span><span style="color: #89DDFF;">.</span><span style="color: #82AAFF;">Fail</span><span style="color: #89DDFF;">(</span><span>reqres</span><span style="color: #89DDFF;">.</span><span>SecretGetNotFound</span><span style="color: #89DDFF;">,</span><span> w</span><span style="color: #89DDFF;">,</span><span> http</span><span style="color: #89DDFF;">.</span><span>StatusNotFound</span><span style="color: #89DDFF;">)</span></span></code></pre><h3 id="error-handling-pattern">Error Handling Pattern</h3>
 <p>All route handlers follow this pattern:</p>
-<pre data-lang="go" style="background-color:#2b303b;color:#c0c5ce;" class="language-go "><code class="language-go" data-lang="go"><span style="color:#b48ead;">func </span><span style="color:#8fa1b3;">RouteGetSecret</span><span>(</span><span style="color:#bf616a;">w http</span><span>.</span><span style="color:#b48ead;">ResponseWriter</span><span>, </span><span style="color:#bf616a;">r </span><span>*</span><span style="color:#bf616a;">http</span><span>.</span><span style="color:#b48ead;">Request</span><span>,
-</span><span>    </span><span style="color:#bf616a;">audit </span><span>*</span><span style="color:#bf616a;">journal</span><span>.</span><span style="color:#b48ead;">AuditEntry</span><span>) *</span><span style="color:#bf616a;">sdkErrors</span><span>.</span><span style="color:#b48ead;">SDKError </span><span>{
-</span><span>
-</span><span>    </span><span style="color:#bf616a;">secret</span><span>, </span><span style="color:#bf616a;">err </span><span>:= </span><span style="color:#bf616a;">state</span><span>.</span><span style="color:#bf616a;">GetSecret</span><span>(</span><span style="color:#bf616a;">path</span><span>, </span><span style="color:#bf616a;">version</span><span>)
-</span><span>    </span><span style="color:#b48ead;">if </span><span style="color:#bf616a;">err </span><span>!= </span><span style="color:#d08770;">nil </span><span>{
-</span><span>        </span><span style="color:#65737e;">// Server-side: Log full context
-</span><span>        </span><span style="color:#bf616a;">log</span><span>.</span><span style="color:#bf616a;">DebugErr</span><span>(&quot;</span><span style="color:#a3be8c;">RouteGetSecret</span><span>&quot;, </span><span style="color:#bf616a;">err</span><span>)
-</span><span>
-</span><span>        </span><span style="color:#65737e;">// Client-side: Return only code
-</span><span>        </span><span style="color:#b48ead;">if </span><span style="color:#bf616a;">err</span><span>.</span><span style="color:#bf616a;">Is</span><span>(</span><span style="color:#bf616a;">sdkErrors</span><span>.</span><span style="color:#bf616a;">ErrEntityNotFound</span><span>) {
-</span><span>            </span><span style="color:#bf616a;">net</span><span>.</span><span style="color:#bf616a;">Fail</span><span>(</span><span style="color:#bf616a;">reqres</span><span>.</span><span style="color:#bf616a;">SecretGetNotFound</span><span>, </span><span style="color:#bf616a;">w</span><span>, </span><span style="color:#bf616a;">http</span><span>.</span><span style="color:#bf616a;">StatusNotFound</span><span>)
-</span><span>        } </span><span style="color:#b48ead;">else </span><span>{
-</span><span>            </span><span style="color:#bf616a;">net</span><span>.</span><span style="color:#bf616a;">Fail</span><span>(</span><span style="color:#bf616a;">reqres</span><span>.</span><span style="color:#bf616a;">SecretGetInternal</span><span>, </span><span style="color:#bf616a;">w</span><span>,
-</span><span>                </span><span style="color:#bf616a;">http</span><span>.</span><span style="color:#bf616a;">StatusInternalServerError</span><span>)
-</span><span>        }
-</span><span>        </span><span style="color:#b48ead;">return </span><span style="color:#bf616a;">err
-</span><span>    }
-</span><span>
-</span><span>    </span><span style="color:#65737e;">// Success response
-</span><span>    </span><span style="color:#b48ead;">return </span><span style="color:#bf616a;">net</span><span>.</span><span style="color:#bf616a;">Success</span><span>(</span><span style="color:#bf616a;">reqres</span><span>.</span><span style="color:#bf616a;">SecretGetSuccess</span><span>, </span><span style="color:#bf616a;">w</span><span>)
-</span><span>}
-</span></code></pre>
-<h3 id="client-interpretation">Client Interpretation</h3>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="go"><span class="giallo-l"><span style="color: #89DDFF;">func</span><span style="color: #82AAFF;"> RouteGetSecret</span><span style="color: #89DDFF;">(</span><span style="font-style: italic;">w</span><span style="color: #FFCB6B;"> http</span><span style="color: #89DDFF;">.</span><span style="color: #FFCB6B;">ResponseWriter</span><span style="color: #89DDFF;">,</span><span style="font-style: italic;"> r</span><span style="color: #89DDFF;"> *</span><span style="color: #FFCB6B;">http</span><span style="color: #89DDFF;">.</span><span style="color: #FFCB6B;">Request</span><span style="color: #89DDFF;">,</span></span>
+<span class="giallo-l"><span style="font-style: italic;">    audit</span><span style="color: #89DDFF;"> *</span><span style="color: #FFCB6B;">journal</span><span style="color: #89DDFF;">.</span><span style="color: #FFCB6B;">AuditEntry</span><span style="color: #89DDFF;">) *</span><span style="color: #FFCB6B;">sdkErrors</span><span style="color: #89DDFF;">.</span><span style="color: #FFCB6B;">SDKError</span><span style="color: #89DDFF;"> {</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span>    secret</span><span style="color: #89DDFF;">,</span><span> err</span><span style="color: #89DDFF;"> :=</span><span> state</span><span style="color: #89DDFF;">.</span><span style="color: #82AAFF;">GetSecret</span><span style="color: #89DDFF;">(</span><span>path</span><span style="color: #89DDFF;">,</span><span> version</span><span style="color: #89DDFF;">)</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;font-style: italic;">    if</span><span> err</span><span style="color: #89DDFF;"> != nil {</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;">        // Server-side: Log full context</span></span>
+<span class="giallo-l"><span>        log</span><span style="color: #89DDFF;">.</span><span style="color: #82AAFF;">DebugErr</span><span style="color: #89DDFF;">(&quot;</span><span style="color: #C3E88D;">RouteGetSecret</span><span style="color: #89DDFF;">&quot;,</span><span> err</span><span style="color: #89DDFF;">)</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;">        // Client-side: Return only code</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;font-style: italic;">        if</span><span> err</span><span style="color: #89DDFF;">.</span><span style="color: #82AAFF;">Is</span><span style="color: #89DDFF;">(</span><span>sdkErrors</span><span style="color: #89DDFF;">.</span><span>ErrEntityNotFound</span><span style="color: #89DDFF;">) {</span></span>
+<span class="giallo-l"><span>            net</span><span style="color: #89DDFF;">.</span><span style="color: #82AAFF;">Fail</span><span style="color: #89DDFF;">(</span><span>reqres</span><span style="color: #89DDFF;">.</span><span>SecretGetNotFound</span><span style="color: #89DDFF;">,</span><span> w</span><span style="color: #89DDFF;">,</span><span> http</span><span style="color: #89DDFF;">.</span><span>StatusNotFound</span><span style="color: #89DDFF;">)</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">        }</span><span style="color: #89DDFF;font-style: italic;"> else</span><span style="color: #89DDFF;"> {</span></span>
+<span class="giallo-l"><span>            net</span><span style="color: #89DDFF;">.</span><span style="color: #82AAFF;">Fail</span><span style="color: #89DDFF;">(</span><span>reqres</span><span style="color: #89DDFF;">.</span><span>SecretGetInternal</span><span style="color: #89DDFF;">,</span><span> w</span><span style="color: #89DDFF;">,</span></span>
+<span class="giallo-l"><span>                http</span><span style="color: #89DDFF;">.</span><span>StatusInternalServerError</span><span style="color: #89DDFF;">)</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">        }</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;font-style: italic;">        return</span><span> err</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">    }</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;">    // Success response</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;font-style: italic;">    return</span><span> net</span><span style="color: #89DDFF;">.</span><span style="color: #82AAFF;">Success</span><span style="color: #89DDFF;">(</span><span>reqres</span><span style="color: #89DDFF;">.</span><span>SecretGetSuccess</span><span style="color: #89DDFF;">,</span><span> w</span><span style="color: #89DDFF;">)</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">}</span></span></code></pre><h3 id="client-interpretation">Client Interpretation</h3>
 <p>Clients use error codes programmatically:</p>
-<pre data-lang="go" style="background-color:#2b303b;color:#c0c5ce;" class="language-go "><code class="language-go" data-lang="go"><span style="color:#65737e;">// Client code
-</span><span style="color:#bf616a;">resp</span><span>, </span><span style="color:#bf616a;">err </span><span>:= </span><span style="color:#bf616a;">nexus</span><span>.</span><span style="color:#bf616a;">GetSecret</span><span>(</span><span style="color:#bf616a;">ctx</span><span>, </span><span style="color:#bf616a;">path</span><span>, </span><span style="color:#bf616a;">version</span><span>)
-</span><span style="color:#b48ead;">if </span><span style="color:#bf616a;">err </span><span>!= </span><span style="color:#d08770;">nil </span><span>{
-</span><span>    </span><span style="color:#b48ead;">switch </span><span style="color:#bf616a;">resp</span><span>.</span><span style="color:#bf616a;">Err </span><span>{
-</span><span>    </span><span style="color:#b48ead;">case </span><span style="color:#bf616a;">data</span><span>.</span><span style="color:#bf616a;">ErrNotFound</span><span>:
-</span><span>        </span><span style="color:#65737e;">// Secret doesn&#39;t exist or not authorized
-</span><span>    </span><span style="color:#b48ead;">case </span><span style="color:#bf616a;">data</span><span>.</span><span style="color:#bf616a;">ErrUnauthorized</span><span>:
-</span><span>        </span><span style="color:#65737e;">// Authentication failed
-</span><span>    </span><span style="color:#b48ead;">case </span><span style="color:#bf616a;">data</span><span>.</span><span style="color:#bf616a;">ErrInternal</span><span>:
-</span><span>        </span><span style="color:#65737e;">// Server error - retry or escalate
-</span><span>    }
-</span><span>}
-</span></code></pre>
-<h2 id="future-enhancements">Future Enhancements</h2>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="go"><span class="giallo-l"><span style="color: #464B5D;font-style: italic;">// Client code</span></span>
+<span class="giallo-l"><span>resp</span><span style="color: #89DDFF;">,</span><span> err</span><span style="color: #89DDFF;"> :=</span><span> nexus</span><span style="color: #89DDFF;">.</span><span style="color: #82AAFF;">GetSecret</span><span style="color: #89DDFF;">(</span><span>ctx</span><span style="color: #89DDFF;">,</span><span> path</span><span style="color: #89DDFF;">,</span><span> version</span><span style="color: #89DDFF;">)</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;font-style: italic;">if</span><span> err</span><span style="color: #89DDFF;"> != nil {</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;font-style: italic;">    switch</span><span> resp</span><span style="color: #89DDFF;">.</span><span>Err</span><span style="color: #89DDFF;"> {</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;font-style: italic;">    case</span><span> data</span><span style="color: #89DDFF;">.</span><span>ErrNotFound</span><span style="color: #89DDFF;">:</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;">        // Secret doesn&#39;t exist or not authorized</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;font-style: italic;">    case</span><span> data</span><span style="color: #89DDFF;">.</span><span>ErrUnauthorized</span><span style="color: #89DDFF;">:</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;">        // Authentication failed</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;font-style: italic;">    case</span><span> data</span><span style="color: #89DDFF;">.</span><span>ErrInternal</span><span style="color: #89DDFF;">:</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;">        // Server error - retry or escalate</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">    }</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">}</span></span></code></pre><h2 id="future-enhancements">Future Enhancements</h2>
 <h3 id="correlation-ids">Correlation IDs</h3>
 <p>If operational experience shows a clear need, we may add request correlation
 IDs to API responses:</p>
-<pre data-lang="json" style="background-color:#2b303b;color:#c0c5ce;" class="language-json "><code class="language-json" data-lang="json"><span>{
-</span><span>  &quot;</span><span style="color:#a3be8c;">err</span><span>&quot;: &quot;</span><span style="color:#a3be8c;">NOT_FOUND</span><span>&quot;,
-</span><span>  &quot;</span><span style="color:#a3be8c;">requestId</span><span>&quot;: &quot;</span><span style="color:#a3be8c;">req_abc123</span><span>&quot;
-</span><span>}
-</span></code></pre>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="json"><span class="giallo-l"><span style="color: #89DDFF;">{</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">  &quot;</span><span style="color: #C792EA;">err</span><span style="color: #89DDFF;">&quot;: &quot;</span><span style="color: #C3E88D;">NOT_FOUND</span><span style="color: #89DDFF;">&quot;,</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">  &quot;</span><span style="color: #C792EA;">requestId</span><span style="color: #89DDFF;">&quot;: &quot;</span><span style="color: #C3E88D;">req_abc123</span><span style="color: #89DDFF;">&quot;</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">}</span></span></code></pre>
 <p><strong>Benefits:</strong></p>
 <ul>
 <li>Users can reference specific requests when asking operators for help</li>
@@ -1074,13 +1051,13 @@ SPIFFE ID filtering)</li>
 </ul>
 <h2 id="references">References</h2>
 <ul>
-<li><a href="https://owasp.org/www-community/Improper_Error_Handling">OWASP: Information Exposure Through Error
+<li><a rel="external" href="https://owasp.org/www-community/Improper_Error_Handling">OWASP: Information Exposure Through Error
 Messages</a></li>
-<li><a href="https://cwe.mitre.org/data/definitions/209.html">CWE-209: Information Exposure Through an Error
+<li><a rel="external" href="https://cwe.mitre.org/data/definitions/209.html">CWE-209: Information Exposure Through an Error
 Message</a></li>
-<li><a href="https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-53r5.pdf">NIST SP 800-53: Security and Privacy Controls
+<li><a rel="external" href="https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-53r5.pdf">NIST SP 800-53: Security and Privacy Controls
 (SI-11: Error Handling)</a></li>
-<li><a href="https://www.vaultproject.io/api/system/health">HashiCorp Vault API documentation</a></li>
+<li><a rel="external" href="https://www.vaultproject.io/api/system/health">HashiCorp Vault API documentation</a></li>
 </ul>
 <h2 id="related-adrs">Related ADRs</h2>
 <ul>

@@ -839,29 +839,27 @@ maintaining SQLite as the default implementation. This architecture will:</p>
 <h3 id="plugin-architecture">Plugin Architecture</h3>
 <p>Here is a sample structure for the plugin architecture. Note that this is
 a starting point and it will likely be subject to change.</p>
-<pre data-lang="go" style="background-color:#2b303b;color:#c0c5ce;" class="language-go "><code class="language-go" data-lang="go"><span style="color:#65737e;">// Interface
-</span><span style="color:#b48ead;">type </span><span>StorageBackend </span><span style="color:#b48ead;">interface </span><span>{
-</span><span>    </span><span style="color:#65737e;">// Core operations
-</span><span>    </span><span style="color:#8fa1b3;">Create</span><span>(</span><span style="color:#bf616a;">ctx context</span><span>.</span><span style="color:#b48ead;">Context</span><span>, </span><span style="color:#bf616a;">secret </span><span>*</span><span style="color:#b48ead;">Secret</span><span>) </span><span style="color:#b48ead;">error
-</span><span>    </span><span style="color:#8fa1b3;">Read</span><span>(</span><span style="color:#bf616a;">ctx context</span><span>.</span><span style="color:#b48ead;">Context</span><span>, </span><span style="color:#bf616a;">id </span><span style="color:#b48ead;">string</span><span>) (*</span><span style="color:#b48ead;">Secret</span><span>, </span><span style="color:#b48ead;">error</span><span>)
-</span><span>    </span><span style="color:#8fa1b3;">Update</span><span>(</span><span style="color:#bf616a;">ctx context</span><span>.</span><span style="color:#b48ead;">Context</span><span>, </span><span style="color:#bf616a;">secret </span><span>*</span><span style="color:#b48ead;">Secret</span><span>) </span><span style="color:#b48ead;">error
-</span><span>    </span><span style="color:#8fa1b3;">Delete</span><span>(</span><span style="color:#bf616a;">ctx context</span><span>.</span><span style="color:#b48ead;">Context</span><span>, </span><span style="color:#bf616a;">id </span><span style="color:#b48ead;">string</span><span>) </span><span style="color:#b48ead;">error
-</span><span>    
-</span><span>    </span><span style="color:#65737e;">// Management
-</span><span>    </span><span style="color:#8fa1b3;">Initialize</span><span>(</span><span style="color:#bf616a;">ctx context</span><span>.</span><span style="color:#b48ead;">Context</span><span>, </span><span style="color:#bf616a;">config </span><span>*</span><span style="color:#b48ead;">Config</span><span>) </span><span style="color:#b48ead;">error
-</span><span>    </span><span style="color:#8fa1b3;">Healthcheck</span><span>(</span><span style="color:#bf616a;">ctx context</span><span>.</span><span style="color:#b48ead;">Context</span><span>) </span><span style="color:#b48ead;">error
-</span><span>    
-</span><span>    </span><span style="color:#65737e;">// Transaction support
-</span><span>    </span><span style="color:#8fa1b3;">BeginTx</span><span>(</span><span style="color:#bf616a;">ctx context</span><span>.</span><span style="color:#b48ead;">Context</span><span>) (</span><span style="color:#b48ead;">Transaction</span><span>, </span><span style="color:#b48ead;">error</span><span>)
-</span><span>}
-</span><span>
-</span><span style="color:#65737e;">// Registration
-</span><span style="color:#b48ead;">type </span><span>PluginRegistry </span><span style="color:#b48ead;">interface </span><span>{
-</span><span>    </span><span style="color:#8fa1b3;">Register</span><span>(</span><span style="color:#bf616a;">name </span><span style="color:#b48ead;">string</span><span>, </span><span style="color:#bf616a;">factory </span><span style="color:#b48ead;">StorageFactory</span><span>) </span><span style="color:#b48ead;">error
-</span><span>    </span><span style="color:#8fa1b3;">Get</span><span>(</span><span style="color:#bf616a;">name </span><span style="color:#b48ead;">string</span><span>) (</span><span style="color:#b48ead;">StorageFactory</span><span>, </span><span style="color:#b48ead;">error</span><span>)
-</span><span>}
-</span></code></pre>
-<h2 id="consequences">Consequences</h2>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="go"><span class="giallo-l"><span style="color: #464B5D;font-style: italic;">// Interface</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">type</span><span style="color: #FFCB6B;"> StorageBackend</span><span style="color: #89DDFF;"> interface {</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;">    // Core operations</span></span>
+<span class="giallo-l"><span style="color: #82AAFF;">    Create</span><span style="color: #89DDFF;">(</span><span style="font-style: italic;">ctx</span><span style="color: #FFCB6B;"> context</span><span style="color: #89DDFF;">.</span><span style="color: #FFCB6B;">Context</span><span style="color: #89DDFF;">,</span><span style="font-style: italic;"> secret</span><span style="color: #89DDFF;"> *</span><span style="color: #FFCB6B;">Secret</span><span style="color: #89DDFF;">)</span><span style="color: #C792EA;"> error</span></span>
+<span class="giallo-l"><span style="color: #82AAFF;">    Read</span><span style="color: #89DDFF;">(</span><span style="font-style: italic;">ctx</span><span style="color: #FFCB6B;"> context</span><span style="color: #89DDFF;">.</span><span style="color: #FFCB6B;">Context</span><span style="color: #89DDFF;">,</span><span style="font-style: italic;"> id</span><span style="color: #C792EA;"> string</span><span style="color: #89DDFF;">) (*</span><span style="color: #FFCB6B;">Secret</span><span style="color: #89DDFF;">,</span><span style="color: #C792EA;"> error</span><span style="color: #89DDFF;">)</span></span>
+<span class="giallo-l"><span style="color: #82AAFF;">    Update</span><span style="color: #89DDFF;">(</span><span style="font-style: italic;">ctx</span><span style="color: #FFCB6B;"> context</span><span style="color: #89DDFF;">.</span><span style="color: #FFCB6B;">Context</span><span style="color: #89DDFF;">,</span><span style="font-style: italic;"> secret</span><span style="color: #89DDFF;"> *</span><span style="color: #FFCB6B;">Secret</span><span style="color: #89DDFF;">)</span><span style="color: #C792EA;"> error</span></span>
+<span class="giallo-l"><span style="color: #82AAFF;">    Delete</span><span style="color: #89DDFF;">(</span><span style="font-style: italic;">ctx</span><span style="color: #FFCB6B;"> context</span><span style="color: #89DDFF;">.</span><span style="color: #FFCB6B;">Context</span><span style="color: #89DDFF;">,</span><span style="font-style: italic;"> id</span><span style="color: #C792EA;"> string</span><span style="color: #89DDFF;">)</span><span style="color: #C792EA;"> error</span></span>
+<span class="giallo-l"><span>    </span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;">    // Management</span></span>
+<span class="giallo-l"><span style="color: #82AAFF;">    Initialize</span><span style="color: #89DDFF;">(</span><span style="font-style: italic;">ctx</span><span style="color: #FFCB6B;"> context</span><span style="color: #89DDFF;">.</span><span style="color: #FFCB6B;">Context</span><span style="color: #89DDFF;">,</span><span style="font-style: italic;"> config</span><span style="color: #89DDFF;"> *</span><span style="color: #FFCB6B;">Config</span><span style="color: #89DDFF;">)</span><span style="color: #C792EA;"> error</span></span>
+<span class="giallo-l"><span style="color: #82AAFF;">    Healthcheck</span><span style="color: #89DDFF;">(</span><span style="font-style: italic;">ctx</span><span style="color: #FFCB6B;"> context</span><span style="color: #89DDFF;">.</span><span style="color: #FFCB6B;">Context</span><span style="color: #89DDFF;">)</span><span style="color: #C792EA;"> error</span></span>
+<span class="giallo-l"><span>    </span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;">    // Transaction support</span></span>
+<span class="giallo-l"><span style="color: #82AAFF;">    BeginTx</span><span style="color: #89DDFF;">(</span><span style="font-style: italic;">ctx</span><span style="color: #FFCB6B;"> context</span><span style="color: #89DDFF;">.</span><span style="color: #FFCB6B;">Context</span><span style="color: #89DDFF;">) (</span><span style="color: #FFCB6B;">Transaction</span><span style="color: #89DDFF;">,</span><span style="color: #C792EA;"> error</span><span style="color: #89DDFF;">)</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">}</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;">// Registration</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">type</span><span style="color: #FFCB6B;"> PluginRegistry</span><span style="color: #89DDFF;"> interface {</span></span>
+<span class="giallo-l"><span style="color: #82AAFF;">    Register</span><span style="color: #89DDFF;">(</span><span style="font-style: italic;">name</span><span style="color: #C792EA;"> string</span><span style="color: #89DDFF;">,</span><span style="font-style: italic;"> factory</span><span style="color: #FFCB6B;"> StorageFactory</span><span style="color: #89DDFF;">)</span><span style="color: #C792EA;"> error</span></span>
+<span class="giallo-l"><span style="color: #82AAFF;">    Get</span><span style="color: #89DDFF;">(</span><span style="font-style: italic;">name</span><span style="color: #C792EA;"> string</span><span style="color: #89DDFF;">) (</span><span style="color: #FFCB6B;">StorageFactory</span><span style="color: #89DDFF;">,</span><span style="color: #C792EA;"> error</span><span style="color: #89DDFF;">)</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">}</span></span></code></pre><h2 id="consequences">Consequences</h2>
 <h3 id="positive">Positive</h3>
 <ol>
 <li>Increased flexibility for different deployment scenarios</li>

@@ -831,54 +831,51 @@ have administrative privileges on your system, as some steps might require them.
 <p>The tools and resources mentioned in this guide are essential for building and
 working with <strong>SPIKE</strong> effectively. Make sure to follow each step carefully to
 ensure a smooth experience. In case you encounter issues, please discuss
-them on the <a href="https://slack.spiffe.io/" title="SPIFFE Slack">SPIFFE community Slack</a>.</p>
+them on the <a rel="external" title="SPIFFE Slack" href="https://slack.spiffe.io/">SPIFFE community Slack</a>.</p>
 <h2 id="environment-variables">Environment Variables</h2>
 <p>It may be useful to set the following environment variables before
 you start.</p>
 <p>This is a sample configuration; please adjust as needed:</p>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># User Configuration
-</span><span style="color:#65737e;">#
-</span><span style="color:#65737e;"># Add this to your ~/.bashrc or ~/.zshrc, ~/.profile,
-</span><span style="color:#65737e;"># or ~/.zprofile, or wherever you keep your shell config.
-</span><span>
-</span><span style="color:#b48ead;">export </span><span style="color:#bf616a;">PATH</span><span>=$</span><span style="color:#bf616a;">PATH</span><span style="color:#a3be8c;">:/usr/local/go/bin
-</span><span>
-</span><span style="color:#65737e;"># If you are using GPG for signing commits:
-</span><span style="color:#b48ead;">export </span><span style="color:#bf616a;">GPG_TTY</span><span>=$</span><span style="color:#a3be8c;">(</span><span style="color:#bf616a;">tty</span><span style="color:#a3be8c;">)
-</span><span>
-</span><span style="color:#65737e;"># This where you clone SPIKE, SPIRE, and SPIFFE Helm Charts:
-</span><span style="color:#b48ead;">export </span><span style="color:#bf616a;">WORKSPACE</span><span>=&quot;$</span><span style="color:#bf616a;">HOME</span><span style="color:#a3be8c;">/WORKSPACE</span><span>&quot; 
-</span><span>
-</span><span style="color:#65737e;"># These are needed for Bare-Metal Installation:
-</span><span style="color:#b48ead;">export </span><span style="color:#bf616a;">PATH</span><span>=&quot;$</span><span style="color:#bf616a;">PATH</span><span style="color:#a3be8c;">:</span><span>$</span><span style="color:#bf616a;">WORKSPACE</span><span style="color:#a3be8c;">/spire/bin</span><span>&quot;
-</span><span style="color:#b48ead;">export </span><span style="color:#bf616a;">PATH</span><span>=&quot;$</span><span style="color:#bf616a;">PATH</span><span style="color:#a3be8c;">:</span><span>$</span><span style="color:#bf616a;">WORKSPACE</span><span style="color:#a3be8c;">/spike/bin</span><span>&quot;
-</span><span>
-</span><span style="color:#65737e;"># Optional, but recommended:
-</span><span style="color:#96b5b4;">source </span><span>&quot;$</span><span style="color:#bf616a;">WORKSPACE</span><span style="color:#a3be8c;">/spike/hack/lib/env.sh</span><span>&quot;
-</span></code></pre>
-<h2 id="prerequisites">Prerequisites</h2>
-<p>This quickstart guide assumes you are using an <a href="https://ubuntu.com/">Ubuntu Linux</a> operating
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="shellscript"><span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># User Configuration</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;">#</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># Add this to your ~/.bashrc or ~/.zshrc, ~/.profile,</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># or ~/.zprofile, or wherever you keep your shell config.</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #C792EA;">export</span><span> PATH</span><span style="color: #89DDFF;">=</span><span>$PATH:/usr/local/go/bin</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># If you are using GPG for signing commits:</span></span>
+<span class="giallo-l"><span style="color: #C792EA;">export</span><span> GPG_TTY</span><span style="color: #89DDFF;">=$(</span><span style="color: #FFCB6B;">tty</span><span style="color: #89DDFF;">)</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># This where you clone SPIKE, SPIRE, and SPIFFE Helm Charts:</span></span>
+<span class="giallo-l"><span style="color: #C792EA;">export</span><span> WORKSPACE</span><span style="color: #89DDFF;">=&quot;</span><span>$HOME</span><span style="color: #C3E88D;">/WORKSPACE</span><span style="color: #89DDFF;">&quot;</span><span> </span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># These are needed for Bare-Metal Installation:</span></span>
+<span class="giallo-l"><span style="color: #C792EA;">export</span><span> PATH</span><span style="color: #89DDFF;">=&quot;</span><span>$PATH</span><span style="color: #C3E88D;">:</span><span>$WORKSPACE</span><span style="color: #C3E88D;">/spire/bin</span><span style="color: #89DDFF;">&quot;</span></span>
+<span class="giallo-l"><span style="color: #C792EA;">export</span><span> PATH</span><span style="color: #89DDFF;">=&quot;</span><span>$PATH</span><span style="color: #C3E88D;">:</span><span>$WORKSPACE</span><span style="color: #C3E88D;">/spike/bin</span><span style="color: #89DDFF;">&quot;</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># Optional, but recommended:</span></span>
+<span class="giallo-l"><span style="color: #82AAFF;">source</span><span style="color: #89DDFF;"> &quot;</span><span>$WORKSPACE</span><span style="color: #C3E88D;">/spike/hack/lib/env.sh</span><span style="color: #89DDFF;">&quot;</span></span></code></pre><h2 id="prerequisites">Prerequisites</h2>
+<p>This quickstart guide assumes you are using an <a rel="external" href="https://ubuntu.com/">Ubuntu Linux</a> operating
 system. The steps may slightly differ if you are using a different operating
 system.</p>
-<p><strong>SPIKE</strong> can run anywhere <a href="https://spiffe.io/">SPIFFE</a> can be deployed. For consistency,
-the tutorials and guides in <strong>SPIKE</strong> documentation use <a href="https://ubuntu.com/"><strong>Ubuntu</strong></a> as
+<p><strong>SPIKE</strong> can run anywhere <a rel="external" href="https://spiffe.io/">SPIFFE</a> can be deployed. For consistency,
+the tutorials and guides in <strong>SPIKE</strong> documentation use <a rel="external" href="https://ubuntu.com/"><strong>Ubuntu</strong></a> as
 the base operating system. Though, if you encounter issues with your OS, feel
-free to discuss them on the <a href="https://slack.spiffe.io/" title="SPIFFE Slack">SPIFFE community Slack</a>.</p>
+free to discuss them on the <a rel="external" title="SPIFFE Slack" href="https://slack.spiffe.io/">SPIFFE community Slack</a>.</p>
 <p>Here are the OS details that we are testing this guide on:</p>
-<pre data-lang="txt" style="background-color:#2b303b;color:#c0c5ce;" class="language-txt "><code class="language-txt" data-lang="txt"><span>DISTRIB_ID=Ubuntu
-</span><span>DISTRIB_RELEASE=24.04
-</span><span>DISTRIB_CODENAME=noble
-</span><span>DISTRIB_DESCRIPTION=&quot;Ubuntu 24.04 LTS&quot;
-</span></code></pre>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="plain"><span class="giallo-l"><span>DISTRIB_ID=Ubuntu</span></span>
+<span class="giallo-l"><span>DISTRIB_RELEASE=24.04</span></span>
+<span class="giallo-l"><span>DISTRIB_CODENAME=noble</span></span>
+<span class="giallo-l"><span>DISTRIB_DESCRIPTION=&quot;Ubuntu 24.04 LTS&quot;</span></span></code></pre>
 <p>In addition, you will need the usual suspects:</p>
 <ul>
-<li><a href="https://git-scm.com/"><code>git</code></a></li>
-<li><a href="https://www.gnu.org/software/make/"><code>make</code></a></li>
-<li><a href="https://go.dev/"><code>go</code></a> (<em>the most recent version would do</em>)</li>
-<li><a href="https://nodejs.org"><code>node</code></a> (<em>(optional: most AI tools require it</em>)</li>
-<li><a href="https://packages.ubuntu.com/hirsute/build-essential"><code>build-essential</code></a>
+<li><a rel="external" href="https://git-scm.com/"><code>git</code></a></li>
+<li><a rel="external" href="https://www.gnu.org/software/make/"><code>make</code></a></li>
+<li><a rel="external" href="https://go.dev/"><code>go</code></a> (<em>the most recent version would do</em>)</li>
+<li><a rel="external" href="https://nodejs.org"><code>node</code></a> (<em>(optional: most AI tools require it</em>)</li>
+<li><a rel="external" href="https://packages.ubuntu.com/hirsute/build-essential"><code>build-essential</code></a>
 (<em>i.e., <code>sudo apt install build-essential</code></em>)</li>
-<li>(Optional) [<code>zola</code>])<a href="https://www.getzola.org/" title="Zola">zola</a>, if you want to build the documentation site
+<li>(Optional) [<code>zola</code>])<a rel="external" title="Zola" href="https://www.getzola.org/">zola</a>, if you want to build the documentation site
 locally</li>
 </ul>
 <h2 id="go-environment-setup">Go Environment Setup</h2>
@@ -887,71 +884,62 @@ vary depending on your development configuration.</p>
 <p>The environment setup shown below is mostly what Go uses by default, yet, we
 provide them just-in-case to eliminate any environment-related setup issues you
 might face.</p>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">go</span><span> env
-</span><span style="color:#65737e;"># GO111MODULE=&#39;on&#39;
-</span><span style="color:#65737e;"># GOCACHE=&#39;/home/spike/.cache/go-build&#39;
-</span><span style="color:#65737e;"># GOENV=&#39;/home/spike/.config/go/env&#39;
-</span><span style="color:#65737e;"># GOMODCACHE=&#39;/home/spike/packages/go/pkg/mod&#39;
-</span><span style="color:#65737e;"># GONOPROXY=&#39;&#39;
-</span><span style="color:#65737e;"># GONOSUMDB=&#39;&#39;
-</span><span style="color:#65737e;"># GOOS=&#39;linux&#39;
-</span><span style="color:#65737e;"># GOPATH=&#39;/home/spike/packages/go&#39;
-</span><span style="color:#65737e;"># GOPRIVATE=&#39;&#39;
-</span><span style="color:#65737e;"># GOPROXY=&#39;https://proxy.golang.org,direct&#39;
-</span><span style="color:#65737e;"># GOROOT=&#39;/usr/local/go&#39;
-</span><span style="color:#65737e;"># GOSUMDB=&#39;sum.golang.org&#39;
-</span><span style="color:#65737e;"># GOTOOLCHAIN=&#39;auto&#39;
-</span><span style="color:#65737e;"># GOMOD=&#39;/home/spike/Desktop/WORKSPACE/spike/go.mod&#39;
-</span><span style="color:#65737e;"># GOWORK=&#39;&#39;
-</span></code></pre>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="shellscript"><span class="giallo-l"><span style="color: #FFCB6B;">go</span><span style="color: #C3E88D;"> env</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># GO111MODULE=&#39;on&#39;</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># GOCACHE=&#39;/home/spike/.cache/go-build&#39;</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># GOENV=&#39;/home/spike/.config/go/env&#39;</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># GOMODCACHE=&#39;/home/spike/packages/go/pkg/mod&#39;</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># GONOPROXY=&#39;&#39;</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># GONOSUMDB=&#39;&#39;</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># GOOS=&#39;linux&#39;</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># GOPATH=&#39;/home/spike/packages/go&#39;</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># GOPRIVATE=&#39;&#39;</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># GOPROXY=&#39;https://proxy.golang.org,direct&#39;</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># GOROOT=&#39;/usr/local/go&#39;</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># GOSUMDB=&#39;sum.golang.org&#39;</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># GOTOOLCHAIN=&#39;auto&#39;</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># GOMOD=&#39;/home/spike/Desktop/WORKSPACE/spike/go.mod&#39;</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># GOWORK=&#39;&#39;</span></span></code></pre>
 <p>If you need, you can also use Go’s built-in tooling to view and modify your Go
 environment settings. Use the <code>go env</code> command to inspect or set specific
 environment variables.</p>
 <p>For example:</p>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># View the current list of environment variables
-</span><span style="color:#bf616a;">go</span><span> env
-</span><span>
-</span><span style="color:#65737e;"># Set a specific environment variable like GOPATH
-</span><span style="color:#bf616a;">go</span><span> env</span><span style="color:#bf616a;"> -w</span><span> GOPATH=$</span><span style="color:#bf616a;">HOME</span><span>/my-gopath
-</span><span>
-</span><span style="color:#65737e;"># Set multiple variables, e.g., GOROOT and GO111MODULE
-</span><span style="color:#bf616a;">go</span><span> env</span><span style="color:#bf616a;"> -w</span><span> GOROOT=/usr/local/go GO111MODULE=on
-</span><span>
-</span><span style="color:#65737e;"># Verify the changes were made
-</span><span style="color:#bf616a;">go</span><span> env GOPATH
-</span><span style="color:#bf616a;">go</span><span> env GOROOT
-</span><span style="color:#bf616a;">go</span><span> env GO111MODULE
-</span></code></pre>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="shellscript"><span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># View the current list of environment variables</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">go</span><span style="color: #C3E88D;"> env</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># Set a specific environment variable like GOPATH</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">go</span><span style="color: #C3E88D;"> env -w GOPATH=</span><span>$HOME</span><span style="color: #C3E88D;">/my-gopath</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># Set multiple variables, e.g., GOROOT and GO111MODULE</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">go</span><span style="color: #C3E88D;"> env -w GOROOT=/usr/local/go GO111MODULE=on</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># Verify the changes were made</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">go</span><span style="color: #C3E88D;"> env GOPATH</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">go</span><span style="color: #C3E88D;"> env GOROOT</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">go</span><span style="color: #C3E88D;"> env GO111MODULE</span></span></code></pre>
 <p>These changes made using the <code>go env -w</code> command are persistent and stored in
 Go configuration files. You can view these changes in the file located at
 <code>$(go env GOENV)</code>. To reset a variable to its default value, use:</p>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">go</span><span> env</span><span style="color:#bf616a;"> -u</span><span> GOPATH
-</span></code></pre>
-<h2 id="building-spire">Building SPIRE</h2>
-<p>To get started, let’s create a development version of <a href="https://spiffe.io/docs/latest/spire-about/" title="SPIRE"><strong>SPIRE</strong></a>.
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="shellscript"><span class="giallo-l"><span style="color: #FFCB6B;">go</span><span style="color: #C3E88D;"> env -u GOPATH</span></span></code></pre><h2 id="building-spire">Building SPIRE</h2>
+<p>To get started, let’s create a development version of <a rel="external" title="SPIRE" href="https://spiffe.io/docs/latest/spire-about/"><strong>SPIRE</strong></a>.
 Note that this is not a production-ready setup. For production, you should
-follow the <a href="https://spiffe.io/docs/latest/deploying/configuring/" title="SPIRE Production Configuration">official SPIRE documentation</a>.</p>
+follow the <a rel="external" title="SPIRE Production Configuration" href="https://spiffe.io/docs/latest/deploying/configuring/">official SPIRE documentation</a>.</p>
 <p>Let’s first build <strong>SPIRE</strong> from the source:</p>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#96b5b4;">echo </span><span>&#39;</span><span style="color:#a3be8c;">export WORKSPACE=&quot;$HOME/-change_to_dev_dir-&quot;</span><span>&#39; &gt;&gt; </span><span style="color:#bf616a;">~</span><span>/.profile
-</span><span style="color:#96b5b4;">source </span><span style="color:#bf616a;">~</span><span>/.profile
-</span><span style="color:#96b5b4;">echo </span><span>$</span><span style="color:#bf616a;">WORKSPACE
-</span><span style="color:#96b5b4;">cd </span><span>$</span><span style="color:#bf616a;">WORKSPACE
-</span><span style="color:#bf616a;">git</span><span> clone https://github.com/spiffe/spire &amp;&amp; </span><span style="color:#96b5b4;">cd</span><span> spire
-</span><span style="color:#bf616a;">make</span><span> build
-</span></code></pre>
-<h2 id="adding-spire-binaries-to-path">Adding SPIRE Binaries to <code>$PATH</code></h2>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="shellscript"><span class="giallo-l"><span style="color: #82AAFF;">echo</span><span style="color: #89DDFF;"> &#39;</span><span style="color: #C3E88D;">export WORKSPACE=&quot;$HOME/-change_to_dev_dir-&quot;</span><span style="color: #89DDFF;">&#39; &gt;&gt;</span><span style="color: #C3E88D;"> ~/.profile</span></span>
+<span class="giallo-l"><span style="color: #82AAFF;">source</span><span style="color: #C3E88D;"> ~/.profile</span></span>
+<span class="giallo-l"><span style="color: #82AAFF;">echo</span><span> $WORKSPACE</span></span>
+<span class="giallo-l"><span style="color: #82AAFF;">cd</span><span> $WORKSPACE</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">git</span><span style="color: #C3E88D;"> clone https://github.com/spiffe/spire</span><span style="color: #89DDFF;"> &amp;&amp;</span><span style="color: #82AAFF;"> cd</span><span style="color: #C3E88D;"> spire</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">make</span><span style="color: #C3E88D;"> build</span></span></code></pre><h2 id="adding-spire-binaries-to-path">Adding SPIRE Binaries to <code>$PATH</code></h2>
 <p>Add the <strong>SPIRE</strong> binaries to your <code>$PATH</code>:</p>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># ~/.profile
-</span><span style="color:#b48ead;">export </span><span style="color:#bf616a;">PATH</span><span>=$</span><span style="color:#bf616a;">PATH</span><span style="color:#a3be8c;">:</span><span>$</span><span style="color:#bf616a;">WORKSPACE</span><span style="color:#a3be8c;">/spire/bin
-</span><span style="color:#96b5b4;">echo </span><span>&#39;</span><span style="color:#a3be8c;">PATH=$PATH:$WORKSPACE/spire/bin</span><span>&#39; &gt;&gt; </span><span style="color:#bf616a;">~</span><span>/.profile
-</span></code></pre>
-<h2 id="adding-spike-binaries-to-path">Adding SPIKE Binaries to <code>$PATH</code></h2>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="shellscript"><span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># ~/.profile</span></span>
+<span class="giallo-l"><span style="color: #C792EA;">export</span><span> PATH</span><span style="color: #89DDFF;">=</span><span>$PATH:$WORKSPACE/spire/bin</span></span>
+<span class="giallo-l"><span style="color: #82AAFF;">echo</span><span style="color: #89DDFF;"> &#39;</span><span style="color: #C3E88D;">PATH=$PATH:$WORKSPACE/spire/bin</span><span style="color: #89DDFF;">&#39; &gt;&gt;</span><span style="color: #C3E88D;"> ~/.profile</span></span></code></pre><h2 id="adding-spike-binaries-to-path">Adding SPIKE Binaries to <code>$PATH</code></h2>
 <p>The bare-metal installation will create <strong>SPIKE</strong> binaries in the project
 root directory by default. You can add the binaries to your <code>$PATH</code> as follows:</p>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># ~/.profile
-</span><span style="color:#b48ead;">export </span><span style="color:#bf616a;">PATH</span><span>=$</span><span style="color:#bf616a;">PATH</span><span style="color:#a3be8c;">:</span><span>$</span><span style="color:#bf616a;">WORKSPACE</span><span style="color:#a3be8c;">/spike/bin
-</span><span style="color:#96b5b4;">echo </span><span>&#39;</span><span style="color:#a3be8c;">PATH=$PATH:$WORKSPACE/spike/bin</span><span>&#39; &gt;&gt; </span><span style="color:#bf616a;">~</span><span>/.profile
-</span></code></pre>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="shellscript"><span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># ~/.profile</span></span>
+<span class="giallo-l"><span style="color: #C792EA;">export</span><span> PATH</span><span style="color: #89DDFF;">=</span><span>$PATH:$WORKSPACE/spike/bin</span></span>
+<span class="giallo-l"><span style="color: #82AAFF;">echo</span><span style="color: #89DDFF;"> &#39;</span><span style="color: #C3E88D;">PATH=$PATH:$WORKSPACE/spike/bin</span><span style="color: #89DDFF;">&#39; &gt;&gt;</span><span style="color: #C3E88D;"> ~/.profile</span></span></code></pre>
 <p>Additionally, you can source the following file to define additional
 <strong>SPIKE</strong>-related environment variables for your convenience. This is <strong>NOT</strong>
 required because if you don’t define them, <strong>SPIKE</strong> will assume sensible
@@ -961,65 +949,55 @@ environment settings. This can be particularly useful for development
 purposes to test custom setups or alternative paths.</p>
 <p>Having all overrides in a single place is also handy as it doubles
 as documentation to help understand the development environment.</p>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># ~/.profile
-</span><span>
-</span><span style="color:#65737e;"># ... truncated ...
-</span><span>
-</span><span style="color:#65737e;"># SPIKE Environment configuration                                                
-</span><span style="color:#96b5b4;">source </span><span>$</span><span style="color:#bf616a;">WORKSPACE</span><span>/spike/hack/lib/env.sh 
-</span></code></pre>
-<h2 id="verifying-spire-installation">Verifying <strong>SPIRE</strong> Installation</h2>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="shellscript"><span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># ~/.profile</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># ... truncated ...</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># SPIKE Environment configuration                                                </span></span>
+<span class="giallo-l"><span style="color: #82AAFF;">source</span><span> $WORKSPACE</span><span style="color: #C3E88D;">/spike/hack/lib/env.sh</span><span> </span></span></code></pre><h2 id="verifying-spire-installation">Verifying <strong>SPIRE</strong> Installation</h2>
 <p>Verify SPIRE installation as follows:</p>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#96b5b4;">source </span><span style="color:#bf616a;">~</span><span>/.profile
-</span><span style="color:#bf616a;">spire-server -h
-</span></code></pre>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="shellscript"><span class="giallo-l"><span style="color: #82AAFF;">source</span><span style="color: #C3E88D;"> ~/.profile</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">spire-server</span><span style="color: #C3E88D;"> -h</span></span></code></pre>
 <p>Output:</p>
-<pre data-lang="txt" style="background-color:#2b303b;color:#c0c5ce;" class="language-txt "><code class="language-txt" data-lang="txt"><span>Usage: spire-server [--version] [--help] &lt;command&gt; [&lt;args&gt;]
-</span><span>
-</span><span>Available commands are:
-</span><span>    agent                
-</span><span>    bundle               
-</span><span>    entry                
-</span><span>    federation           
-</span><span>    healthcheck          Health status 
-</span><span>    jwt                  
-</span><span>    localauthority       
-</span><span>    logger               
-</span><span>    run                  Runs the server
-</span><span>    token                
-</span><span>    upstreamauthority    
-</span><span>    validate             Validates config 
-</span><span>    x509  
-</span></code></pre>
-<h2 id="building-spike">Building SPIKE</h2>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="plain"><span class="giallo-l"><span>Usage: spire-server [--version] [--help] &lt;command&gt; [&lt;args&gt;]</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span>Available commands are:</span></span>
+<span class="giallo-l"><span>    agent                </span></span>
+<span class="giallo-l"><span>    bundle               </span></span>
+<span class="giallo-l"><span>    entry                </span></span>
+<span class="giallo-l"><span>    federation           </span></span>
+<span class="giallo-l"><span>    healthcheck          Health status </span></span>
+<span class="giallo-l"><span>    jwt                  </span></span>
+<span class="giallo-l"><span>    localauthority       </span></span>
+<span class="giallo-l"><span>    logger               </span></span>
+<span class="giallo-l"><span>    run                  Runs the server</span></span>
+<span class="giallo-l"><span>    token                </span></span>
+<span class="giallo-l"><span>    upstreamauthority    </span></span>
+<span class="giallo-l"><span>    validate             Validates config </span></span>
+<span class="giallo-l"><span>    x509  </span></span></code></pre><h2 id="building-spike">Building SPIKE</h2>
 <p>Next, build <strong>SPIKE</strong> binaries:</p>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#96b5b4;">cd </span><span>$</span><span style="color:#bf616a;">WORKSPACE</span><span>/spike
-</span><span style="color:#bf616a;">make</span><span> build
-</span><span>
-</span><span style="color:#65737e;"># Created files:
-</span><span style="color:#65737e;">#   keeper*
-</span><span style="color:#65737e;">#   nexus*
-</span><span style="color:#65737e;">#   spike*
-</span><span style="color:#65737e;">#   bootstrap*
-</span></code></pre>
-<h2 id="configure-local-dns">Configure Local DNS</h2>
-<p><a href="https://github.com/spiffe/spike/blob/main/config/spire/agent/agent.conf#L4">The default agent configuration file</a> uses
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="shellscript"><span class="giallo-l"><span style="color: #82AAFF;">cd</span><span> $WORKSPACE</span><span style="color: #C3E88D;">/spike</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">make</span><span style="color: #C3E88D;"> build</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># Created files:</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;">#   keeper*</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;">#   nexus*</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;">#   spike*</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;">#   bootstrap*</span></span></code></pre><h2 id="configure-local-dns">Configure Local DNS</h2>
+<p><a rel="external" href="https://github.com/spiffe/spike/blob/main/config/spire/agent/agent.conf#L4">The default agent configuration file</a> uses
 <code>spire.spike.ist</code> as the SPIRE Server DNS name. To resolve this name to the
 loopback address, add the following entry to your <code>/etc/hosts</code> file:</p>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># /etc/hosts
-</span><span>
-</span><span style="color:#65737e;"># If SPIRE Server is running on a different IP, replace
-</span><span style="color:#65737e;"># this with the correct IP address.
-</span><span style="color:#bf616a;">127.0.0.1</span><span> spire.spike.ist
-</span></code></pre>
-<h2 id="starting-spike">Starting SPIKE</h2>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="shellscript"><span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># /etc/hosts</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># If SPIRE Server is running on a different IP, replace</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># this with the correct IP address.</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">127.0.0.1</span><span style="color: #C3E88D;"> spire.spike.ist</span></span></code></pre><h2 id="starting-spike">Starting SPIKE</h2>
 <p>There is a starter script that combines and automates some steps in the
 following sections. It configures and runs SPIRE Server, SPIRE Agent,
 SPIKE Nexus, and SPIKE Keeper.</p>
 <p>You can run this to start all the required components:</p>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># Start everything:
-</span><span style="color:#bf616a;">make</span><span> start
-</span></code></pre>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="shellscript"><span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># Start everything:</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">make</span><span style="color: #C3E88D;"> start</span></span></code></pre>
 <blockquote>
 <p><strong><code>make start</code> Is Also a Mini Smoke Test</strong></p>
 <p>The <code>make start</code> script also runs sample secret and policy operations to
@@ -1028,28 +1006,27 @@ necessary, you are encouraged to run it once before starting development
 to ensure everything is working as expected.</p>
 </blockquote>
 <p>And then, on a separate terminal, you can run <code>spike</code>:</p>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># Make sure you have the `spike` binary in your PATH.
-</span><span style="color:#bf616a;">spike
-</span><span>
-</span><span style="color:#65737e;"># Sample Output: 
-</span><span style="color:#65737e;"># SPIKE v$version
-</span><span style="color:#65737e;"># &gt;&gt; Secure your secrets with SPIFFE: https://spike.ist/ #
-</span><span style="color:#65737e;">#
-</span><span style="color:#65737e;"># Usage:
-</span><span style="color:#65737e;">#  spike [command]
-</span><span style="color:#65737e;">#
-</span><span style="color:#65737e;"># Available Commands:
-</span><span style="color:#65737e;">#   completion  Generate the autocompletion script
-</span><span style="color:#65737e;">#   help        Help about any command
-</span><span style="color:#65737e;">#   operator    Manage admin operations
-</span><span style="color:#65737e;">#   policy      Manage policies
-</span><span style="color:#65737e;">#   secret      Manage secrets
-</span><span style="color:#65737e;">#
-</span><span style="color:#65737e;"># Flags:
-</span><span style="color:#65737e;">#  -h, --help   help for spike
-</span><span style="color:#65737e;"># 
-</span><span style="color:#65737e;"># Use &quot;spike [command] --help&quot; for help.
-</span></code></pre>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="shellscript"><span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># Make sure you have the `spike` binary in your PATH.</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">spike</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># Sample Output: </span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># SPIKE v$version</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># &gt;&gt; Secure your secrets with SPIFFE: https://spike.ist/ #</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;">#</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># Usage:</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;">#  spike [command]</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;">#</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># Available Commands:</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;">#   completion  Generate the autocompletion script</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;">#   help        Help about any command</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;">#   operator    Manage admin operations</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;">#   policy      Manage policies</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;">#   secret      Manage secrets</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;">#</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># Flags:</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;">#  -h, --help   help for spike</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># </span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># Use &quot;spike [command] --help&quot; for help.</span></span></code></pre>
 <blockquote>
 <p><strong>Killing the <code>make start</code> Process</strong> Will Exit Cleanly</p>
 <p>When you stop the <code>make start</code> script by <code>CTRLT+C</code>, it will exit cleanly;
@@ -1058,9 +1035,7 @@ components.</p>
 <p>However, in certain cases, especially if the script has not run successfully
 to the end, it might leave some processes running in the background.</p>
 <p>In such cases, you can kill the processes manually by running:</p>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">make</span><span> kill
-</span></code></pre>
-</blockquote>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="shellscript"><span class="giallo-l"><span style="color: #FFCB6B;">make</span><span style="color: #C3E88D;"> kill</span></span></code></pre></blockquote>
 <p>Although the <code>make start</code> script is convenient, it might be useful to run the
 components individually to understand the process better and debug any issues
 that might arise.</p>
@@ -1077,99 +1052,81 @@ action.</p>
 </blockquote>
 <h2 id="start-spire-server">Start SPIRE Server</h2>
 <p>Start the SPIRE Server:</p>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#96b5b4;">cd </span><span>$</span><span style="color:#bf616a;">WORKSPACE</span><span>/spike
-</span><span style="color:#bf616a;">./hack/bare-metal/startup/spire-server-start.sh
-</span></code></pre>
-<h2 id="creating-registration-entries">Creating Registration Entries</h2>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="shellscript"><span class="giallo-l"><span style="color: #82AAFF;">cd</span><span> $WORKSPACE</span><span style="color: #C3E88D;">/spike</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">./hack/bare-metal/startup/spire-server-start.sh</span></span></code></pre><h2 id="creating-registration-entries">Creating Registration Entries</h2>
 <p>The following script will create registration entries for the SPIKE components:</p>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#96b5b4;">cd </span><span>$</span><span style="color:#bf616a;">WORKSPACE</span><span>/spike
-</span><span style="color:#bf616a;">./hack/bare-metal/entry/spire-server-entry-spike-register.sh
-</span></code></pre>
-<h2 id="start-spire-agent">Start SPIRE Agent</h2>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="shellscript"><span class="giallo-l"><span style="color: #82AAFF;">cd</span><span> $WORKSPACE</span><span style="color: #C3E88D;">/spike</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">./hack/bare-metal/entry/spire-server-entry-spike-register.sh</span></span></code></pre><h2 id="start-spire-agent">Start SPIRE Agent</h2>
 <p>Start the SPIRE Agent:</p>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#96b5b4;">cd </span><span>$</span><span style="color:#bf616a;">WORKSPACE</span><span>/spike
-</span><span style="color:#bf616a;">./hack/bare-metal/startup/spire-agent-start.sh
-</span></code></pre>
-<h2 id="start-spike-components">Start SPIKE Components</h2>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="shellscript"><span class="giallo-l"><span style="color: #82AAFF;">cd</span><span> $WORKSPACE</span><span style="color: #C3E88D;">/spike</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">./hack/bare-metal/startup/spire-agent-start.sh</span></span></code></pre><h2 id="start-spike-components">Start SPIKE Components</h2>
 <p>Then start <strong>SPIKE</strong> components:</p>
 <p>Make sure you started the following binaries, each runs on a specific terminal
 window.</p>
 <p>Start the workloads:</p>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># Optional: Increase the log level to debug:
-</span><span style="color:#b48ead;">export </span><span style="color:#bf616a;">SPIKE_SYSTEM_LOG_LEVEL</span><span>=</span><span style="color:#a3be8c;">debug
-</span><span>
-</span><span style="color:#96b5b4;">cd </span><span>$</span><span style="color:#bf616a;">WORKSPACE</span><span>/spike
-</span><span>
-</span><span style="color:#65737e;"># Start SPIKE Nexus in one terminal.
-</span><span style="color:#bf616a;">./hack/bare-metal/startup/start-nexus.sh
-</span><span>
-</span><span style="color:#65737e;"># Start SPIKE Keepers in separate terminals.
-</span><span style="color:#bf616a;">./hack/bare-metal/startup/start-keeper-1.sh
-</span><span style="color:#bf616a;">./hack/bare-metal/startup/start-keeper-2.sh
-</span><span style="color:#bf616a;">./hack/bare-metal/startup/start-keeper-3.sh
-</span></code></pre>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="shellscript"><span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># Optional: Increase the log level to debug:</span></span>
+<span class="giallo-l"><span style="color: #C792EA;">export</span><span> SPIKE_SYSTEM_LOG_LEVEL</span><span style="color: #89DDFF;">=</span><span>debug</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #82AAFF;">cd</span><span> $WORKSPACE</span><span style="color: #C3E88D;">/spike</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># Start SPIKE Nexus in one terminal.</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">./hack/bare-metal/startup/start-nexus.sh</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># Start SPIKE Keepers in separate terminals.</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">./hack/bare-metal/startup/start-keeper-1.sh</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">./hack/bare-metal/startup/start-keeper-2.sh</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">./hack/bare-metal/startup/start-keeper-3.sh</span></span></code></pre>
 <p>Here is how one of these <strong>SPIKE Keeper</strong> startup scripts:</p>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># ./hack/bare-metal/startup/start-keeper-1.sh
-</span><span style="color:#bf616a;">SPIKE_KEEPER_TLS_PORT</span><span>=&#39;</span><span style="color:#a3be8c;">:8443</span><span>&#39; \
-</span><span style="color:#bf616a;">./keeper
-</span></code></pre>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="shellscript"><span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># ./hack/bare-metal/startup/start-keeper-1.sh</span></span>
+<span class="giallo-l"><span>SPIKE_KEEPER_TLS_PORT</span><span style="color: #89DDFF;">=&#39;</span><span style="color: #C3E88D;">:8443</span><span style="color: #89DDFF;">&#39;</span><span style="color: #FFCB6B;"> \</span></span>
+<span class="giallo-l"><span>./keeper</span></span></code></pre>
 <p>And here is how <strong>SPIKE Nexus</strong> startup script:</p>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># ./hack/bare-metal/startup/start-nexus.sh
-</span><span style="color:#bf616a;">SPIKE_NEXUS_KEEPER_PEERS</span><span>=&#39;</span><span style="color:#a3be8c;">https://localhost:8443,\
-</span><span style="color:#a3be8c;">https://localhost:8543,https://localhost:8643</span><span>&#39;
-</span><span style="color:#bf616a;">./nexus
-</span></code></pre>
-<h2 id="bootstrap-spike">Bootstrap SPIKE</h2>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="shellscript"><span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># ./hack/bare-metal/startup/start-nexus.sh</span></span>
+<span class="giallo-l"><span>SPIKE_NEXUS_KEEPER_PEERS</span><span style="color: #89DDFF;">=&#39;</span><span style="color: #C3E88D;">https://localhost:8443,\</span></span>
+<span class="giallo-l"><span style="color: #C3E88D;">https://localhost:8543,https://localhost:8643</span><span style="color: #89DDFF;">&#39;</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">./nexus</span></span></code></pre><h2 id="bootstrap-spike">Bootstrap SPIKE</h2>
 <p>Before using <strong>SPIKE</strong> you need to bootstrap it with a root key.
 For that, execute the following:</p>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#96b5b4;">cd </span><span>$</span><span style="color:#bf616a;">WORKSPACE</span><span>/spike
-</span><span style="color:#bf616a;">./hack/bare-metal/startup/bootstrap.sh
-</span><span style="color:#65737e;"># Sample Output:
-</span><span style="color:#65737e;"># {&quot;msg&quot;:&quot;boostrap.main&quot;,&quot;message&quot;:&quot;Send shards to SPIKE Keeper instances...&quot;}
-</span><span style="color:#65737e;"># {&quot;msg&quot;:&quot;boostrap.main&quot;,&quot;keeper ID&quot;:&quot;3&quot;}
-</span><span style="color:#65737e;"># {&quot;msg&quot;:&quot;rootShares&quot;,&quot;t&quot;:1,&quot;n&quot;:3}
-</span><span style="color:#65737e;"># {&quot;msg&quot;:&quot;rootShares&quot;,&quot;message&quot;:&quot;Generated Shamir shares&quot;}
-</span><span style="color:#65737e;"># {&quot;msg&quot;:&quot;rootShares&quot;,&quot;message&quot;:&quot;Successfully generated shards.&quot;}
-</span><span style="color:#65737e;"># {&quot;msg&quot;:&quot;post&quot;,&quot;payload&quot;:&quot;2522804946c6b844cecdabb32d&quot;}
-</span><span style="color:#65737e;"># {&quot;msg&quot;:&quot;post&quot;,&quot;path&quot;:&quot;https://localhost:8643/v1/store/contribute&quot;}
-</span><span style="color:#65737e;"># {&quot;msg&quot;:&quot;post&quot;,&quot;message&quot;:&quot;done&quot;}
-</span><span style="color:#65737e;"># {&quot;boostrap.main&quot;,&quot;keeper ID&quot;:&quot;1&quot;}
-</span><span style="color:#65737e;"># {&quot;msg&quot;:&quot;rootShares&quot;,&quot;t&quot;:1,&quot;n&quot;:3}
-</span><span style="color:#65737e;"># ... truncated ...
-</span><span style="color:#65737e;"># {&quot;msg&quot;:&quot;post&quot;,&quot;message&quot;:&quot;done&quot;}
-</span><span style="color:#65737e;"># {&quot;msg&quot;:&quot;boostrap.main&quot;,&quot;message&quot;:&quot;Sent shards to SPIKE Keeper instances.&quot;}
-</span></code></pre>
-<h2 id="using-spike-pilot">Using SPIKE Pilot</h2>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="shellscript"><span class="giallo-l"><span style="color: #82AAFF;">cd</span><span> $WORKSPACE</span><span style="color: #C3E88D;">/spike</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">./hack/bare-metal/startup/bootstrap.sh</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># Sample Output:</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># {&quot;msg&quot;:&quot;boostrap.main&quot;,&quot;message&quot;:&quot;Send shards to SPIKE Keeper instances...&quot;}</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># {&quot;msg&quot;:&quot;boostrap.main&quot;,&quot;keeper ID&quot;:&quot;3&quot;}</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># {&quot;msg&quot;:&quot;rootShares&quot;,&quot;t&quot;:1,&quot;n&quot;:3}</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># {&quot;msg&quot;:&quot;rootShares&quot;,&quot;message&quot;:&quot;Generated Shamir shares&quot;}</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># {&quot;msg&quot;:&quot;rootShares&quot;,&quot;message&quot;:&quot;Successfully generated shards.&quot;}</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># {&quot;msg&quot;:&quot;post&quot;,&quot;payload&quot;:&quot;2522804946c6b844cecdabb32d&quot;}</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># {&quot;msg&quot;:&quot;post&quot;,&quot;path&quot;:&quot;https://localhost:8643/v1/store/contribute&quot;}</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># {&quot;msg&quot;:&quot;post&quot;,&quot;message&quot;:&quot;done&quot;}</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># {&quot;boostrap.main&quot;,&quot;keeper ID&quot;:&quot;1&quot;}</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># {&quot;msg&quot;:&quot;rootShares&quot;,&quot;t&quot;:1,&quot;n&quot;:3}</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># ... truncated ...</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># {&quot;msg&quot;:&quot;post&quot;,&quot;message&quot;:&quot;done&quot;}</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># {&quot;msg&quot;:&quot;boostrap.main&quot;,&quot;message&quot;:&quot;Sent shards to SPIKE Keeper instances.&quot;}</span></span></code></pre><h2 id="using-spike-pilot">Using SPIKE Pilot</h2>
 <p>Define an alias to <strong>SPIKE</strong> Pilot:</p>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># ~/.bashrc
-</span><span>
-</span><span style="color:#65737e;"># path to the SPIKE Pilot binary (`spike`)
-</span><span style="color:#96b5b4;">alias </span><span style="color:#8fa1b3;">spike</span><span>=$</span><span style="color:#bf616a;">WORKSPACE</span><span style="color:#a3be8c;">/spike/spike
-</span></code></pre>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="shellscript"><span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># ~/.bashrc</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># path to the SPIKE Pilot binary (`spike`)</span></span>
+<span class="giallo-l"><span style="color: #C792EA;">alias</span><span> spike</span><span style="color: #89DDFF;">=</span><span>$WORKSPACE/spike/spike</span></span></code></pre>
 <p>Run <strong>SPIKE</strong> Pilot and explore the CLI:</p>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">spike
-</span></code></pre>
-<h2 id="testing-out-spike">Testing Out SPIKE</h2>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="shellscript"><span class="giallo-l"><span style="color: #FFCB6B;">spike</span></span></code></pre><h2 id="testing-out-spike">Testing Out SPIKE</h2>
 <p>Let’s test <strong>SPIKE</strong> by creating a secret:</p>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">spike</span><span> secret put tenants/acme/credentials/db \
-</span><span>  username=root pass=SPIKERocks
-</span><span>
-</span><span style="color:#65737e;"># Output:
-</span><span style="color:#65737e;"># OK
-</span></code></pre>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="shellscript"><span class="giallo-l"><span style="color: #FFCB6B;">spike</span><span style="color: #C3E88D;"> secret put tenants/acme/credentials/db</span><span> \</span></span>
+<span class="giallo-l"><span style="color: #C3E88D;">  username=root pass=SPIKERocks</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># Output:</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># OK</span></span></code></pre>
 <p>Now, let’s read the secret back:</p>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">spike</span><span> secret get tenants/acme/credentials/db
-</span><span>
-</span><span style="color:#65737e;"># Output:
-</span><span style="color:#65737e;"># pass: SPIKERocks
-</span><span style="color:#65737e;"># username: root
-</span></code></pre>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="shellscript"><span class="giallo-l"><span style="color: #FFCB6B;">spike</span><span style="color: #C3E88D;"> secret get tenants/acme/credentials/db</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># Output:</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># pass: SPIKERocks</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># username: root</span></span></code></pre>
 <p>Let’s delete the secret now:</p>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">spike</span><span> secret delete tenants/acme/credentials/db
-</span><span>
-</span><span style="color:#65737e;"># Output:
-</span><span style="color:#65737e;"># OK
-</span></code></pre>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="shellscript"><span class="giallo-l"><span style="color: #FFCB6B;">spike</span><span style="color: #C3E88D;"> secret delete tenants/acme/credentials/db</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># Output:</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># OK</span></span></code></pre>
 <p>If you try to read the secret again, you won’t be able to get it.</p>
 <p>Feel free to experiment with other <strong>SPIKE</strong> commands in your sandbox
 environment to explore its capabilities and better understand how it works. This
@@ -1182,17 +1139,14 @@ simple executable files, they have no impact on your system’s performance when
 not in use. Therefore, keeping them installed is completely harmless.</p>
 <p>However, if you want to wipe everything out, you can remove the binaries
 and <strong>SPIKE</strong>’s data folder, and that would be it:</p>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">rm -rf ~</span><span>/.spike
-</span><span style="color:#bf616a;">rm</span><span> spike
-</span><span style="color:#bf616a;">rm</span><span> keeper
-</span><span style="color:#bf616a;">rm</span><span> nexus
-</span></code></pre>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="shellscript"><span class="giallo-l"><span style="color: #FFCB6B;">rm</span><span style="color: #C3E88D;"> -rf ~/.spike</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">rm</span><span style="color: #C3E88D;"> spike</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">rm</span><span style="color: #C3E88D;"> keeper</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">rm</span><span style="color: #C3E88D;"> nexus</span></span></code></pre>
 <p>If you have <code>spire-server</code> and <code>spire-agent</code> on your system, and you are not
 using them for anything else; you can remove them too:</p>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">rm</span><span> spire-server
-</span><span style="color:#bf616a;">rm</span><span> spire-agent
-</span></code></pre>
-<h2 id="have-fun">Have Fun</h2>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="shellscript"><span class="giallo-l"><span style="color: #FFCB6B;">rm</span><span style="color: #C3E88D;"> spire-server</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">rm</span><span style="color: #C3E88D;"> spire-agent</span></span></code></pre><h2 id="have-fun">Have Fun</h2>
 <p>That’s about it.</p>
 <p>Enjoy.</p>
 <p>&nbsp;</p>

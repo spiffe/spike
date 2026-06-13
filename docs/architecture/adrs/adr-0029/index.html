@@ -839,12 +839,11 @@ at the SDK level provides defense in depth:</p>
 </ul>
 <h3 id="fail-safe-design">Fail-Safe Design</h3>
 <p>The SDK implementation uses <code>log.FatalErr()</code> rather than returning an error:</p>
-<pre data-lang="go" style="background-color:#2b303b;color:#c0c5ce;" class="language-go "><code class="language-go" data-lang="go"><span style="color:#b48ead;">if </span><span>!</span><span style="color:#bf616a;">spiffeid</span><span>.</span><span style="color:#bf616a;">IsPilot</span><span>(</span><span style="color:#bf616a;">selfSPIFFEID</span><span>) {
-</span><span>    </span><span style="color:#bf616a;">failErr </span><span>:= </span><span style="color:#bf616a;">sdkErrors</span><span>.</span><span style="color:#bf616a;">ErrUnauthorized
-</span><span>    </span><span style="color:#bf616a;">failErr</span><span>.</span><span style="color:#bf616a;">Msg </span><span>= &quot;</span><span style="color:#a3be8c;">recovery can only be performed from SPIKE Pilot</span><span>&quot;
-</span><span>    </span><span style="color:#bf616a;">log</span><span>.</span><span style="color:#bf616a;">FatalErr</span><span>(</span><span style="color:#bf616a;">fName</span><span>, *</span><span style="color:#bf616a;">failErr</span><span>)
-</span><span>}
-</span></code></pre>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="go"><span class="giallo-l"><span style="color: #89DDFF;font-style: italic;">if</span><span style="color: #89DDFF;"> !</span><span>spiffeid</span><span style="color: #89DDFF;">.</span><span style="color: #82AAFF;">IsPilot</span><span style="color: #89DDFF;">(</span><span>selfSPIFFEID</span><span style="color: #89DDFF;">) {</span></span>
+<span class="giallo-l"><span>    failErr</span><span style="color: #89DDFF;"> :=</span><span> sdkErrors</span><span style="color: #89DDFF;">.</span><span>ErrUnauthorized</span></span>
+<span class="giallo-l"><span>    failErr</span><span style="color: #89DDFF;">.</span><span>Msg</span><span style="color: #89DDFF;"> = &quot;</span><span style="color: #C3E88D;">recovery can only be performed from SPIKE Pilot</span><span style="color: #89DDFF;">&quot;</span></span>
+<span class="giallo-l"><span>    log</span><span style="color: #89DDFF;">.</span><span style="color: #82AAFF;">FatalErr</span><span style="color: #89DDFF;">(</span><span>fName</span><span style="color: #89DDFF;">, *</span><span>failErr</span><span style="color: #89DDFF;">)</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">}</span></span></code></pre>
 <p>This ensures:</p>
 <ul>
 <li>No possibility of error handling bugs bypassing the check</li>
@@ -915,16 +914,14 @@ interface</li>
 <li><code>api/internal/impl/operator/recover.go:67-71</code></li>
 <li><code>api/internal/impl/operator/restore.go:76-80</code></li>
 </ul>
-<pre data-lang="go" style="background-color:#2b303b;color:#c0c5ce;" class="language-go "><code class="language-go" data-lang="go"><span style="color:#bf616a;">selfSPIFFEID </span><span>:= </span><span style="color:#bf616a;">svid</span><span>.</span><span style="color:#bf616a;">ID</span><span>.</span><span style="color:#bf616a;">String</span><span>()
-</span><span>
-</span><span style="color:#65737e;">// Security: Recovery and Restoration can ONLY be done via SPIKE Pilot.
-</span><span style="color:#b48ead;">if </span><span>!</span><span style="color:#bf616a;">spiffeid</span><span>.</span><span style="color:#bf616a;">IsPilot</span><span>(</span><span style="color:#bf616a;">selfSPIFFEID</span><span>) {
-</span><span>    </span><span style="color:#bf616a;">failErr </span><span>:= </span><span style="color:#bf616a;">sdkErrors</span><span>.</span><span style="color:#bf616a;">ErrUnauthorized
-</span><span>    </span><span style="color:#bf616a;">failErr</span><span>.</span><span style="color:#bf616a;">Msg </span><span>= &quot;</span><span style="color:#a3be8c;">recovery can only be performed from SPIKE Pilot</span><span>&quot;
-</span><span>    </span><span style="color:#bf616a;">log</span><span>.</span><span style="color:#bf616a;">FatalErr</span><span>(</span><span style="color:#bf616a;">fName</span><span>, *</span><span style="color:#bf616a;">failErr</span><span>)
-</span><span>}
-</span></code></pre>
-<h3 id="operations-not-restricted">Operations NOT Restricted</h3>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="go"><span class="giallo-l"><span>selfSPIFFEID</span><span style="color: #89DDFF;"> :=</span><span> svid</span><span style="color: #89DDFF;">.</span><span>ID</span><span style="color: #89DDFF;">.</span><span style="color: #82AAFF;">String</span><span style="color: #89DDFF;">()</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;">// Security: Recovery and Restoration can ONLY be done via SPIKE Pilot.</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;font-style: italic;">if</span><span style="color: #89DDFF;"> !</span><span>spiffeid</span><span style="color: #89DDFF;">.</span><span style="color: #82AAFF;">IsPilot</span><span style="color: #89DDFF;">(</span><span>selfSPIFFEID</span><span style="color: #89DDFF;">) {</span></span>
+<span class="giallo-l"><span>    failErr</span><span style="color: #89DDFF;"> :=</span><span> sdkErrors</span><span style="color: #89DDFF;">.</span><span>ErrUnauthorized</span></span>
+<span class="giallo-l"><span>    failErr</span><span style="color: #89DDFF;">.</span><span>Msg</span><span style="color: #89DDFF;"> = &quot;</span><span style="color: #C3E88D;">recovery can only be performed from SPIKE Pilot</span><span style="color: #89DDFF;">&quot;</span></span>
+<span class="giallo-l"><span>    log</span><span style="color: #89DDFF;">.</span><span style="color: #82AAFF;">FatalErr</span><span style="color: #89DDFF;">(</span><span>fName</span><span style="color: #89DDFF;">, *</span><span>failErr</span><span style="color: #89DDFF;">)</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">}</span></span></code></pre><h3 id="operations-not-restricted">Operations NOT Restricted</h3>
 <p>The following operations remain policy-controlled and can be performed by any
 workload with appropriate policy permissions:</p>
 <ul>

@@ -762,16 +762,14 @@ through <strong>SPIKE Nexus</strong>. It allows workloads to protect sensitive d
 transit or at rest using cryptographic operations managed by the secrets
 infrastructure.</p>
 <h2 id="quick-start">Quick Start</h2>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># Encrypt a file
-</span><span style="color:#bf616a;">spike</span><span> cipher encrypt</span><span style="color:#bf616a;"> --file</span><span> secret.txt</span><span style="color:#bf616a;"> --out</span><span> secret.enc
-</span><span>
-</span><span style="color:#65737e;"># Decrypt a file
-</span><span style="color:#bf616a;">spike</span><span> cipher decrypt</span><span style="color:#bf616a;"> --file</span><span> secret.enc</span><span style="color:#bf616a;"> --out</span><span> secret.txt
-</span><span>
-</span><span style="color:#65737e;"># Stream encryption/decryption via stdin/stdout
-</span><span style="color:#96b5b4;">echo </span><span>&quot;</span><span style="color:#a3be8c;">sensitive data</span><span>&quot; | </span><span style="color:#bf616a;">spike</span><span> cipher encrypt | </span><span style="color:#bf616a;">spike</span><span> cipher decrypt
-</span></code></pre>
-<h2 id="what-is-spike-cipher">What is SPIKE Cipher?</h2>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="shellscript"><span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># Encrypt a file</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">spike</span><span style="color: #C3E88D;"> cipher encrypt --file secret.txt --out secret.enc</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># Decrypt a file</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">spike</span><span style="color: #C3E88D;"> cipher decrypt --file secret.enc --out secret.txt</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># Stream encryption/decryption via stdin/stdout</span></span>
+<span class="giallo-l"><span style="color: #82AAFF;">echo</span><span style="color: #89DDFF;"> &quot;</span><span style="color: #C3E88D;">sensitive data</span><span style="color: #89DDFF;">&quot; |</span><span style="color: #FFCB6B;"> spike</span><span style="color: #C3E88D;"> cipher encrypt</span><span style="color: #89DDFF;"> |</span><span style="color: #FFCB6B;"> spike</span><span style="color: #C3E88D;"> cipher decrypt</span></span></code></pre><h2 id="what-is-spike-cipher">What is SPIKE Cipher?</h2>
 <p>The cipher commands provide a secure way to encrypt and decrypt data using keys
 managed by <strong>SPIKE Nexus</strong>. This enables:</p>
 <ul>
@@ -783,8 +781,7 @@ authentication</li>
 </ul>
 <h2 id="commands">Commands</h2>
 <h3 id="spike-cipher-encrypt"><code>spike cipher encrypt</code></h3>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">spike</span><span> cipher encrypt </span><span style="color:#b48ead;">[</span><span>--file=&lt;input&gt;</span><span style="color:#b48ead;">] [</span><span>--out=&lt;output&gt;</span><span style="color:#b48ead;">]
-</span></code></pre>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="shellscript"><span class="giallo-l"><span style="color: #FFCB6B;">spike</span><span style="color: #C3E88D;"> cipher encrypt</span><span> [--file=&lt;input&gt;] </span><span style="color: #89DDFF;">[</span><span>--out</span><span style="color: #89DDFF;">=&lt;</span><span>output</span><span style="color: #89DDFF;">&gt;]</span></span></code></pre>
 <p>Encrypts data via <strong>SPIKE Nexus</strong>. The command supports two modes of operation:</p>
 <h4 id="stream-mode-default">Stream Mode (default)</h4>
 <p>Reads data from a file or stdin and writes encrypted data to a file or stdout.
@@ -800,21 +797,18 @@ and returns a JSON-formatted encryption result.</p>
 <tr><td><code>--algorithm</code></td><td>Algorithm hint for JSON mode</td></tr>
 </tbody></table>
 <h4 id="examples">Examples:</h4>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># Encrypt a file to another file
-</span><span style="color:#bf616a;">spike</span><span> cipher encrypt</span><span style="color:#bf616a;"> --file</span><span> secret.txt</span><span style="color:#bf616a;"> --out</span><span> secret.enc
-</span><span>
-</span><span style="color:#65737e;"># Encrypt from stdin to stdout
-</span><span style="color:#bf616a;">cat</span><span> secret.txt | </span><span style="color:#bf616a;">spike</span><span> cipher encrypt &gt; secret.enc
-</span><span>
-</span><span style="color:#65737e;"># Encrypt using short flags
-</span><span style="color:#bf616a;">spike</span><span> cipher encrypt</span><span style="color:#bf616a;"> -f</span><span> secret.txt</span><span style="color:#bf616a;"> -o</span><span> secret.enc
-</span><span>
-</span><span style="color:#65737e;"># Encrypt with JSON mode (base64 input)
-</span><span style="color:#bf616a;">spike</span><span> cipher encrypt</span><span style="color:#bf616a;"> --plaintext </span><span>&quot;</span><span style="color:#a3be8c;">c2Vuc2l0aXZlIGRhdGE=</span><span>&quot;
-</span></code></pre>
-<h3 id="spike-cipher-decrypt"><code>spike cipher decrypt</code></h3>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">spike</span><span> cipher decrypt </span><span style="color:#b48ead;">[</span><span>--file=&lt;input&gt;</span><span style="color:#b48ead;">] [</span><span>--out=&lt;output&gt;</span><span style="color:#b48ead;">]
-</span></code></pre>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="shellscript"><span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># Encrypt a file to another file</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">spike</span><span style="color: #C3E88D;"> cipher encrypt --file secret.txt --out secret.enc</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># Encrypt from stdin to stdout</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">cat</span><span style="color: #C3E88D;"> secret.txt</span><span style="color: #89DDFF;"> |</span><span style="color: #FFCB6B;"> spike</span><span style="color: #C3E88D;"> cipher encrypt</span><span style="color: #89DDFF;"> &gt;</span><span style="color: #C3E88D;"> secret.enc</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># Encrypt using short flags</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">spike</span><span style="color: #C3E88D;"> cipher encrypt -f secret.txt -o secret.enc</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># Encrypt with JSON mode (base64 input)</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">spike</span><span style="color: #C3E88D;"> cipher encrypt --plaintext</span><span style="color: #89DDFF;"> &quot;</span><span style="color: #C3E88D;">c2Vuc2l0aXZlIGRhdGE=</span><span style="color: #89DDFF;">&quot;</span></span></code></pre><h3 id="spike-cipher-decrypt"><code>spike cipher decrypt</code></h3>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="shellscript"><span class="giallo-l"><span style="color: #FFCB6B;">spike</span><span style="color: #C3E88D;"> cipher decrypt</span><span> [--file=&lt;input&gt;] </span><span style="color: #89DDFF;">[</span><span>--out</span><span style="color: #89DDFF;">=&lt;</span><span>output</span><span style="color: #89DDFF;">&gt;]</span></span></code></pre>
 <p>Decrypts data via <strong>SPIKE Nexus</strong>. The command supports two modes of operation:</p>
 <h4 id="stream-mode-default-1">Stream Mode (default)</h4>
 <p>Reads encrypted data from a file or stdin and writes decrypted plaintext to a
@@ -832,41 +826,33 @@ base64-encoded encryption components and returns plaintext output.</p>
 <tr><td><code>--algorithm</code></td><td>Algorithm hint for JSON mode</td></tr>
 </tbody></table>
 <h4 id="examples-1">Examples:</h4>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># Decrypt a file to another file
-</span><span style="color:#bf616a;">spike</span><span> cipher decrypt</span><span style="color:#bf616a;"> --file</span><span> secret.enc</span><span style="color:#bf616a;"> --out</span><span> secret.txt
-</span><span>
-</span><span style="color:#65737e;"># Decrypt from stdin to stdout
-</span><span style="color:#bf616a;">cat</span><span> secret.enc | </span><span style="color:#bf616a;">spike</span><span> cipher decrypt &gt; secret.txt
-</span><span>
-</span><span style="color:#65737e;"># Decrypt using short flags
-</span><span style="color:#bf616a;">spike</span><span> cipher decrypt</span><span style="color:#bf616a;"> -f</span><span> secret.enc</span><span style="color:#bf616a;"> -o</span><span> secret.txt
-</span><span>
-</span><span style="color:#65737e;"># Decrypt with JSON mode components
-</span><span style="color:#bf616a;">spike</span><span> cipher decrypt</span><span style="color:#bf616a;"> --version</span><span>=1</span><span style="color:#bf616a;"> --nonce</span><span>=&quot;</span><span style="color:#a3be8c;">...</span><span>&quot;</span><span style="color:#bf616a;"> --ciphertext</span><span>=&quot;</span><span style="color:#a3be8c;">...</span><span>&quot;
-</span></code></pre>
-<h2 id="use-cases">Use Cases</h2>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="shellscript"><span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># Decrypt a file to another file</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">spike</span><span style="color: #C3E88D;"> cipher decrypt --file secret.enc --out secret.txt</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># Decrypt from stdin to stdout</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">cat</span><span style="color: #C3E88D;"> secret.enc</span><span style="color: #89DDFF;"> |</span><span style="color: #FFCB6B;"> spike</span><span style="color: #C3E88D;"> cipher decrypt</span><span style="color: #89DDFF;"> &gt;</span><span style="color: #C3E88D;"> secret.txt</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># Decrypt using short flags</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">spike</span><span style="color: #C3E88D;"> cipher decrypt -f secret.enc -o secret.txt</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># Decrypt with JSON mode components</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">spike</span><span style="color: #C3E88D;"> cipher decrypt --version=1 --nonce=</span><span style="color: #89DDFF;">&quot;</span><span style="color: #C3E88D;">...</span><span style="color: #89DDFF;">&quot;</span><span style="color: #C3E88D;"> --ciphertext=</span><span style="color: #89DDFF;">&quot;</span><span style="color: #C3E88D;">...</span><span style="color: #89DDFF;">&quot;</span></span></code></pre><h2 id="use-cases">Use Cases</h2>
 <h3 id="encrypting-configuration-files">Encrypting Configuration Files</h3>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># Encrypt a configuration file before storing
-</span><span style="color:#bf616a;">spike</span><span> cipher encrypt</span><span style="color:#bf616a;"> -f</span><span> config.yaml</span><span style="color:#bf616a;"> -o</span><span> config.yaml.enc
-</span><span>
-</span><span style="color:#65737e;"># Decrypt when needed
-</span><span style="color:#bf616a;">spike</span><span> cipher decrypt</span><span style="color:#bf616a;"> -f</span><span> config.yaml.enc</span><span style="color:#bf616a;"> -o</span><span> config.yaml
-</span></code></pre>
-<h3 id="pipeline-processing">Pipeline Processing</h3>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># Process data through encryption in a pipeline
-</span><span style="color:#bf616a;">generate-secrets </span><span>| </span><span style="color:#bf616a;">spike</span><span> cipher encrypt | </span><span style="color:#bf616a;">store-encrypted-data
-</span><span>
-</span><span style="color:#65737e;"># Decrypt and process
-</span><span style="color:#bf616a;">fetch-encrypted-data </span><span>| </span><span style="color:#bf616a;">spike</span><span> cipher decrypt | </span><span style="color:#bf616a;">process-secrets
-</span></code></pre>
-<h3 id="backup-encryption">Backup Encryption</h3>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># Encrypt a database dump
-</span><span style="color:#bf616a;">pg_dump</span><span> mydb | </span><span style="color:#bf616a;">spike</span><span> cipher encrypt &gt; backup.enc
-</span><span>
-</span><span style="color:#65737e;"># Restore from encrypted backup
-</span><span style="color:#bf616a;">spike</span><span> cipher decrypt</span><span style="color:#bf616a;"> -f</span><span> backup.enc | </span><span style="color:#bf616a;">psql</span><span> mydb
-</span></code></pre>
-<h2 id="best-practices">Best Practices</h2>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="shellscript"><span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># Encrypt a configuration file before storing</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">spike</span><span style="color: #C3E88D;"> cipher encrypt -f config.yaml -o config.yaml.enc</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># Decrypt when needed</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">spike</span><span style="color: #C3E88D;"> cipher decrypt -f config.yaml.enc -o config.yaml</span></span></code></pre><h3 id="pipeline-processing">Pipeline Processing</h3>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="shellscript"><span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># Process data through encryption in a pipeline</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">generate-secrets</span><span style="color: #89DDFF;"> |</span><span style="color: #FFCB6B;"> spike</span><span style="color: #C3E88D;"> cipher encrypt</span><span style="color: #89DDFF;"> |</span><span style="color: #FFCB6B;"> store-encrypted-data</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># Decrypt and process</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">fetch-encrypted-data</span><span style="color: #89DDFF;"> |</span><span style="color: #FFCB6B;"> spike</span><span style="color: #C3E88D;"> cipher decrypt</span><span style="color: #89DDFF;"> |</span><span style="color: #FFCB6B;"> process-secrets</span></span></code></pre><h3 id="backup-encryption">Backup Encryption</h3>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="shellscript"><span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># Encrypt a database dump</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">pg_dump</span><span style="color: #C3E88D;"> mydb</span><span style="color: #89DDFF;"> |</span><span style="color: #FFCB6B;"> spike</span><span style="color: #C3E88D;"> cipher encrypt</span><span style="color: #89DDFF;"> &gt;</span><span style="color: #C3E88D;"> backup.enc</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># Restore from encrypted backup</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">spike</span><span style="color: #C3E88D;"> cipher decrypt -f backup.enc</span><span style="color: #89DDFF;"> |</span><span style="color: #FFCB6B;"> psql</span><span style="color: #C3E88D;"> mydb</span></span></code></pre><h2 id="best-practices">Best Practices</h2>
 <ul>
 <li>Use file-based operations for large data to avoid memory issues</li>
 <li>Pipe operations are useful for automation and scripting</li>
@@ -894,12 +880,11 @@ encryption:</p>
 </ul>
 <h3 id="stream-mode-binary-format">Stream Mode Binary Format</h3>
 <p>In stream mode, the encrypted output has the following binary format:</p>
-<pre data-lang="text" style="background-color:#2b303b;color:#c0c5ce;" class="language-text "><code class="language-text" data-lang="text"><span>+--------+-------------+------------------+
-</span><span>| Byte 0 | Bytes 1-12  | Bytes 13 to end  |
-</span><span>+--------+-------------+------------------+
-</span><span>| 0x01   | Nonce (GCM) | Ciphertext       |
-</span><span>+--------+-------------+------------------+
-</span></code></pre>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="plain"><span class="giallo-l"><span>+--------+-------------+------------------+</span></span>
+<span class="giallo-l"><span>| Byte 0 | Bytes 1-12  | Bytes 13 to end  |</span></span>
+<span class="giallo-l"><span>+--------+-------------+------------------+</span></span>
+<span class="giallo-l"><span>| 0x01   | Nonce (GCM) | Ciphertext       |</span></span>
+<span class="giallo-l"><span>+--------+-------------+------------------+</span></span></code></pre>
 <ul>
 <li><strong>Byte 0</strong>: Version byte (currently <code>0x01</code>)</li>
 <li><strong>Bytes 1-12</strong>: 12-byte GCM nonce (randomly generated)</li>

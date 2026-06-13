@@ -794,15 +794,12 @@ CLI rather than exposing raw sentinel errors to users.</p>
 <h3 id="industry-best-practices">Industry Best Practices</h3>
 <p>Popular CLI tools follow this pattern:</p>
 <p><strong>Git:</strong></p>
-<pre style="background-color:#2b303b;color:#c0c5ce;"><code><span>fatal: not a git repository (or any of the parent directories): .git
-</span></code></pre>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="plain"><span class="giallo-l"><span>fatal: not a git repository (or any of the parent directories): .git</span></span></code></pre>
 <p><strong>Docker:</strong></p>
-<pre style="background-color:#2b303b;color:#c0c5ce;"><code><span>Error: No such container: mycontainer
-</span><span>Error response from daemon: manifest for nginx:invalid not found
-</span></code></pre>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="plain"><span class="giallo-l"><span>Error: No such container: mycontainer</span></span>
+<span class="giallo-l"><span>Error response from daemon: manifest for nginx:invalid not found</span></span></code></pre>
 <p><strong>kubectl:</strong></p>
-<pre style="background-color:#2b303b;color:#c0c5ce;"><code><span>Error from server (NotFound): pods &quot;myapp&quot; not found
-</span></code></pre>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="plain"><span class="giallo-l"><span>Error from server (NotFound): pods &quot;myapp&quot; not found</span></span></code></pre>
 <p>All provide human-readable context, not raw error types.</p>
 <h3 id="user-needs-for-cli-tools">User Needs for CLI Tools</h3>
 <p>When a CLI command fails, users need:</p>
@@ -813,18 +810,15 @@ CLI rather than exposing raw sentinel errors to users.</p>
 </ol>
 <p>Example comparison:</p>
 <p><strong>Sentinel error approach (bad for CLI):</strong></p>
-<pre data-lang="go" style="background-color:#2b303b;color:#c0c5ce;" class="language-go "><code class="language-go" data-lang="go"><span style="color:#b48ead;">return </span><span style="color:#bf616a;">apiErr</span><span>.</span><span style="color:#bf616a;">ErrSecretNotFound
-</span><span style="color:#65737e;">// Output: &quot;secret not found&quot;
-</span></code></pre>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="go"><span class="giallo-l"><span style="color: #89DDFF;font-style: italic;">return</span><span> apiErr</span><span style="color: #89DDFF;">.</span><span>ErrSecretNotFound</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;">// Output: &quot;secret not found&quot;</span></span></code></pre>
 <p><strong>Formatted error approach (good for CLI):</strong></p>
-<pre data-lang="go" style="background-color:#2b303b;color:#c0c5ce;" class="language-go "><code class="language-go" data-lang="go"><span style="color:#b48ead;">return </span><span style="color:#bf616a;">fmt</span><span>.</span><span style="color:#bf616a;">Errorf</span><span>(
-</span><span>    &quot;</span><span style="color:#a3be8c;">secret not found at path &#39;</span><span style="color:#d08770;">%s</span><span style="color:#a3be8c;">&#39;. Use &#39;spike secret list&#39; to see secrets</span><span>&quot;,
-</span><span>    </span><span style="color:#bf616a;">path</span><span>,
-</span><span>)
-</span><span style="color:#65737e;">// Output: &quot;secret not found at path &#39;secrets/db/password&#39;.
-</span><span style="color:#65737e;">//          Use &#39;spike secret list&#39; to see available secrets&quot;
-</span></code></pre>
-<h3 id="when-to-use-each-approach">When to Use Each Approach</h3>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="go"><span class="giallo-l"><span style="color: #89DDFF;font-style: italic;">return</span><span> fmt</span><span style="color: #89DDFF;">.</span><span style="color: #82AAFF;">Errorf</span><span style="color: #89DDFF;">(</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">    &quot;</span><span style="color: #C3E88D;">secret not found at path &#39;</span><span style="color: #F07178;">%s</span><span style="color: #C3E88D;">&#39;. Use &#39;spike secret list&#39; to see secrets</span><span style="color: #89DDFF;">&quot;,</span></span>
+<span class="giallo-l"><span>    path</span><span style="color: #89DDFF;">,</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">)</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;">// Output: &quot;secret not found at path &#39;secrets/db/password&#39;.</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;">//          Use &#39;spike secret list&#39; to see available secrets&quot;</span></span></code></pre><h3 id="when-to-use-each-approach">When to Use Each Approach</h3>
 <p><strong>Use sentinel errors when:</strong></p>
 <ul>
 <li>Writing library code consumed by other Go code</li>
@@ -839,32 +833,29 @@ CLI rather than exposing raw sentinel errors to users.</p>
 </ul>
 <h2 id="examples-from-spike-pilot">Examples from SPIKE Pilot</h2>
 <h3 id="good-human-friendly-errors">Good: Human-Friendly Errors</h3>
-<pre data-lang="go" style="background-color:#2b303b;color:#c0c5ce;" class="language-go "><code class="language-go" data-lang="go"><span style="color:#65737e;">// Provides context and path
-</span><span style="color:#b48ead;">if </span><span>!</span><span style="color:#bf616a;">validSecretPath</span><span>(</span><span style="color:#bf616a;">path</span><span>) {
-</span><span>    </span><span style="color:#b48ead;">return </span><span style="color:#bf616a;">fmt</span><span>.</span><span style="color:#bf616a;">Errorf</span><span>(&quot;</span><span style="color:#a3be8c;">invalid secret path: </span><span style="color:#d08770;">%s</span><span>&quot;, </span><span style="color:#bf616a;">path</span><span>)
-</span><span>}
-</span><span>
-</span><span style="color:#65737e;">// Includes actionable information
-</span><span style="color:#b48ead;">if </span><span style="color:#bf616a;">cmd</span><span>.</span><span style="color:#bf616a;">NotReadyError</span><span>(</span><span style="color:#bf616a;">err</span><span>) {
-</span><span>    </span><span style="color:#bf616a;">stdout</span><span>.</span><span style="color:#bf616a;">PrintNotReady</span><span>()
-</span><span>    </span><span style="color:#b48ead;">return </span><span style="color:#bf616a;">fmt</span><span>.</span><span style="color:#bf616a;">Errorf</span><span>(&quot;</span><span style="color:#a3be8c;">server not ready</span><span>&quot;)
-</span><span>}
-</span><span>
-</span><span style="color:#65737e;">// Suggests next steps
-</span><span style="color:#b48ead;">return </span><span style="color:#bf616a;">fmt</span><span>.</span><span style="color:#bf616a;">Errorf</span><span>(
-</span><span>    &quot;</span><span style="color:#a3be8c;">unauthorized: your SPIFFE ID &#39;</span><span style="color:#d08770;">%s</span><span style="color:#a3be8c;">&#39; does not have permission. </span><span>&quot; +
-</span><span>    &quot;</span><span style="color:#a3be8c;">Check policies with &#39;spike policy list&#39;</span><span>&quot;,
-</span><span>    </span><span style="color:#bf616a;">spiffeID</span><span>,
-</span><span>)
-</span></code></pre>
-<h3 id="internal-sentinel-errors-still-used">Internal: Sentinel Errors Still Used</h3>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="go"><span class="giallo-l"><span style="color: #464B5D;font-style: italic;">// Provides context and path</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;font-style: italic;">if</span><span style="color: #89DDFF;"> !</span><span style="color: #82AAFF;">validSecretPath</span><span style="color: #89DDFF;">(</span><span>path</span><span style="color: #89DDFF;">) {</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;font-style: italic;">    return</span><span> fmt</span><span style="color: #89DDFF;">.</span><span style="color: #82AAFF;">Errorf</span><span style="color: #89DDFF;">(&quot;</span><span style="color: #C3E88D;">invalid secret path: </span><span style="color: #F07178;">%s</span><span style="color: #89DDFF;">&quot;,</span><span> path</span><span style="color: #89DDFF;">)</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">}</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;">// Includes actionable information</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;font-style: italic;">if</span><span> cmd</span><span style="color: #89DDFF;">.</span><span style="color: #82AAFF;">NotReadyError</span><span style="color: #89DDFF;">(</span><span>err</span><span style="color: #89DDFF;">) {</span></span>
+<span class="giallo-l"><span>    stdout</span><span style="color: #89DDFF;">.</span><span style="color: #82AAFF;">PrintNotReady</span><span style="color: #89DDFF;">()</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;font-style: italic;">    return</span><span> fmt</span><span style="color: #89DDFF;">.</span><span style="color: #82AAFF;">Errorf</span><span style="color: #89DDFF;">(&quot;</span><span style="color: #C3E88D;">server not ready</span><span style="color: #89DDFF;">&quot;)</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">}</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;">// Suggests next steps</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;font-style: italic;">return</span><span> fmt</span><span style="color: #89DDFF;">.</span><span style="color: #82AAFF;">Errorf</span><span style="color: #89DDFF;">(</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">    &quot;</span><span style="color: #C3E88D;">unauthorized: your SPIFFE ID &#39;</span><span style="color: #F07178;">%s</span><span style="color: #C3E88D;">&#39; does not have permission. </span><span style="color: #89DDFF;">&quot; +</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">    &quot;</span><span style="color: #C3E88D;">Check policies with &#39;spike policy list&#39;</span><span style="color: #89DDFF;">&quot;,</span></span>
+<span class="giallo-l"><span>    spiffeID</span><span style="color: #89DDFF;">,</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">)</span></span></code></pre><h3 id="internal-sentinel-errors-still-used">Internal: Sentinel Errors Still Used</h3>
 <p>The SDK and internal packages still use sentinel errors appropriately:</p>
-<pre data-lang="go" style="background-color:#2b303b;color:#c0c5ce;" class="language-go "><code class="language-go" data-lang="go"><span style="color:#65737e;">// internal/net/response.go - Server responses
-</span><span style="color:#bf616a;">reqres</span><span>.</span><span style="color:#bf616a;">FallbackResponse</span><span>{</span><span style="color:#bf616a;">Err</span><span>: </span><span style="color:#bf616a;">data</span><span>.</span><span style="color:#bf616a;">ErrNotReady</span><span>}
-</span><span>
-</span><span style="color:#65737e;">// spike-sdk-go - SDK for programmatic use
-</span><span style="color:#b48ead;">return </span><span style="color:#bf616a;">apiErr</span><span>.</span><span style="color:#bf616a;">ErrUnauthorized
-</span></code></pre>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="go"><span class="giallo-l"><span style="color: #464B5D;font-style: italic;">// internal/net/response.go - Server responses</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">reqres</span><span style="color: #89DDFF;">.</span><span style="color: #FFCB6B;">FallbackResponse</span><span style="color: #89DDFF;">{</span><span>Err</span><span style="color: #89DDFF;">:</span><span> data</span><span style="color: #89DDFF;">.</span><span>ErrNotReady</span><span style="color: #89DDFF;">}</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;">// spike-sdk-go - SDK for programmatic use</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;font-style: italic;">return</span><span> apiErr</span><span style="color: #89DDFF;">.</span><span>ErrUnauthorized</span></span></code></pre>
 <p>The CLI layer translates these into human-friendly messages.</p>
 <h2 id="consequences">Consequences</h2>
 <h3 id="positive">Positive</h3>
@@ -903,15 +894,12 @@ not currently required)</li>
 <li><strong>Be concise</strong>: Don’t overwhelm with excessive detail</li>
 </ol>
 <p><strong>Good example:</strong></p>
-<pre data-lang="go" style="background-color:#2b303b;color:#c0c5ce;" class="language-go "><code class="language-go" data-lang="go"><span style="color:#b48ead;">return </span><span style="color:#bf616a;">fmt</span><span>.</span><span style="color:#bf616a;">Errorf</span><span>(
-</span><span>    &quot;</span><span style="color:#a3be8c;">failed to decrypt file &#39;</span><span style="color:#d08770;">%s</span><span style="color:#a3be8c;">&#39;: file does not exist</span><span>&quot;,
-</span><span>    </span><span style="color:#bf616a;">inFile</span><span>,
-</span><span>)
-</span></code></pre>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="go"><span class="giallo-l"><span style="color: #89DDFF;font-style: italic;">return</span><span> fmt</span><span style="color: #89DDFF;">.</span><span style="color: #82AAFF;">Errorf</span><span style="color: #89DDFF;">(</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">    &quot;</span><span style="color: #C3E88D;">failed to decrypt file &#39;</span><span style="color: #F07178;">%s</span><span style="color: #C3E88D;">&#39;: file does not exist</span><span style="color: #89DDFF;">&quot;,</span></span>
+<span class="giallo-l"><span>    inFile</span><span style="color: #89DDFF;">,</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">)</span></span></code></pre>
 <p><strong>Bad example:</strong></p>
-<pre data-lang="go" style="background-color:#2b303b;color:#c0c5ce;" class="language-go "><code class="language-go" data-lang="go"><span style="color:#b48ead;">return </span><span style="color:#bf616a;">ErrFileNotFound  </span><span style="color:#65737e;">// Unhelpful for CLI users
-</span></code></pre>
-<h2 id="references">References</h2>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="go"><span class="giallo-l"><span style="color: #89DDFF;font-style: italic;">return</span><span> ErrFileNotFound</span><span style="color: #464B5D;font-style: italic;">  // Unhelpful for CLI users</span></span></code></pre><h2 id="references">References</h2>
 <ul>
 <li>Go Error Handling: https://go.dev/blog/error-handling-and-go</li>
 <li>CLI Design Guidelines: https://clig.dev/</li>

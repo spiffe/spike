@@ -786,11 +786,9 @@ caching of sensitive data.</p>
 <li>Include all operation parameters in the request body</li>
 </ol>
 <p>Example URLs:</p>
-<pre style="background-color:#2b303b;color:#c0c5ce;"><code><span>https://host:port/v1/secrets?action=read
-</span><span>https://host:port/v1/secrets?action=delete
-</span><span>https://host:port/v1/secrets?action=write
-</span></code></pre>
-<h2 id="consequences">Consequences</h2>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="plain"><span class="giallo-l"><span>https://host:port/v1/secrets?action=read</span></span>
+<span class="giallo-l"><span>https://host:port/v1/secrets?action=delete</span></span>
+<span class="giallo-l"><span>https://host:port/v1/secrets?action=write</span></span></code></pre><h2 id="consequences">Consequences</h2>
 <h3 id="positive">Positive</h3>
 <ul>
 <li>Prevents sensitive data from being cached in URLs</li>
@@ -819,9 +817,8 @@ caching of sensitive data.</p>
 <li>Rejected due to caching concerns and desire for consistency</li>
 </ul>
 <h3 id="using-path-parameters-instead-of-query-parameters">Using path parameters instead of query parameters</h3>
-<pre style="background-color:#2b303b;color:#c0c5ce;"><code><span>/v1/secrets/read
-</span><span>/v1/secrets/delete
-</span></code></pre>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="plain"><span class="giallo-l"><span>/v1/secrets/read</span></span>
+<span class="giallo-l"><span>/v1/secrets/delete</span></span></code></pre>
 <ul>
 <li>Rejected to maintain the existing implementation pattern</li>
 </ul>
@@ -835,9 +832,9 @@ a usable API interface. It aligns with the security-first approach required for
 a Secrets Management system.</p>
 <h2 id="references">References</h2>
 <ul>
-<li><a href="https://spiffe.io/">SPIFFE</a></li>
-<li><a href="https://spiffe.io/spire/">SPIRE</a></li>
-<li><a href="https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html">HTTP Method Definitions</a></li>
+<li><a rel="external" href="https://spiffe.io/">SPIFFE</a></li>
+<li><a rel="external" href="https://spiffe.io/spire/">SPIRE</a></li>
+<li><a rel="external" href="https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html">HTTP Method Definitions</a></li>
 </ul>
 <hr />
 <ul>

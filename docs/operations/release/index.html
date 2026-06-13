@@ -775,9 +775,9 @@ managing the release cuts of <strong>SPIKE</strong>. It provides detailed instru
 ensure a smooth and reliable release process.</p>
 <h2 id="coverage-report">Coverage Report</h2>
 <p>The coverage report for <strong>SPIKE</strong> is available at
-<a href="https://spike.ist/coverage.html" title="SPIKE Coverage Report">https://spike.ist/coverage.html</a>.</p>
+<a rel="external" title="SPIKE Coverage Report" href="https://spike.ist/coverage.html">https://spike.ist/coverage.html</a>.</p>
 <p>The coverage report for <strong>SPIKE Go SDK</strong> available at
-<a href="https://spike.ist/sdk/coverage.html" title="SPIKE Coverage Report">https://spike.ist/sdk/coverage.html</a>.</p>
+<a rel="external" title="SPIKE Coverage Report" href="https://spike.ist/sdk/coverage.html">https://spike.ist/sdk/coverage.html</a>.</p>
 <p>We update the coverage report at every release cut.</p>
 <p>If you want to increase test coverage, you are more than welcome to contribute
 to the project.</p>
@@ -786,9 +786,8 @@ to the project.</p>
 SPIKE repository root. This generates the coverage report and publishes it to
 <code>./docs/coverage.html</code>.</p>
 <p>To generate and publish the <strong>SPIKE Go SDK</strong> coverage report:</p>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#96b5b4;">cd</span><span> /path/to/spike-sdk-go
-</span><span style="color:#bf616a;">make</span><span> coverage/publish
-</span></code></pre>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="shellscript"><span class="giallo-l"><span style="color: #82AAFF;">cd</span><span style="color: #C3E88D;"> /path/to/spike-sdk-go</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">make</span><span style="color: #C3E88D;"> coverage/publish</span></span></code></pre>
 <p>This runs the SDK tests with coverage profiling and publishes the HTML report
 to the SPIKE documentation directory at <code>./docs/sdk/coverage.html</code>.</p>
 <h2 id="before-every-release">Before Every Release</h2>

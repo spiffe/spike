@@ -873,28 +873,24 @@ control:</p>
 <h2 id="access-control-implementation">Access Control Implementation</h2>
 <h3 id="rbac-structure">RBAC Structure</h3>
 <h4 id="role-definitions">Role Definitions</h4>
-<pre data-lang="yaml" style="background-color:#2b303b;color:#c0c5ce;" class="language-yaml "><code class="language-yaml" data-lang="yaml"><span style="color:#bf616a;">roles</span><span>:
-</span><span> </span><span style="color:#bf616a;">super_admin</span><span>:
-</span><span>   - </span><span style="color:#a3be8c;">all_permissions
-</span><span> </span><span style="color:#bf616a;">tenant_admin</span><span>:
-</span><span>   - </span><span style="color:#a3be8c;">tenant_read
-</span><span>   - </span><span style="color:#a3be8c;">tenant_write
-</span><span>   - </span><span style="color:#a3be8c;">tenant_user_manage
-</span><span> </span><span style="color:#bf616a;">auditor</span><span>:
-</span><span>   - </span><span style="color:#a3be8c;">system_read
-</span><span>   - </span><span style="color:#a3be8c;">audit_read
-</span></code></pre>
-<h4 id="permission-mapping">Permission Mapping:</h4>
-<pre data-lang="yaml" style="background-color:#2b303b;color:#c0c5ce;" class="language-yaml "><code class="language-yaml" data-lang="yaml"><span style="color:#bf616a;">permissions</span><span>:
-</span><span> </span><span style="color:#bf616a;">tenant_read</span><span>:
-</span><span>   - </span><span style="color:#a3be8c;">read_secrets
-</span><span>   - </span><span style="color:#a3be8c;">list_resources
-</span><span> </span><span style="color:#bf616a;">tenant_write</span><span>:
-</span><span>   - </span><span style="color:#a3be8c;">create_secrets
-</span><span>   - </span><span style="color:#a3be8c;">update_secrets
-</span><span>   - </span><span style="color:#a3be8c;">delete_secrets
-</span></code></pre>
-<h3 id="tenant-isolation">Tenant Isolation</h3>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="yaml"><span class="giallo-l"><span style="color: #F07178;">roles</span><span style="color: #89DDFF;">:</span></span>
+<span class="giallo-l"><span style="color: #F07178;"> super_admin</span><span style="color: #89DDFF;">:</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">   -</span><span style="color: #C3E88D;"> all_permissions</span></span>
+<span class="giallo-l"><span style="color: #F07178;"> tenant_admin</span><span style="color: #89DDFF;">:</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">   -</span><span style="color: #C3E88D;"> tenant_read</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">   -</span><span style="color: #C3E88D;"> tenant_write</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">   -</span><span style="color: #C3E88D;"> tenant_user_manage</span></span>
+<span class="giallo-l"><span style="color: #F07178;"> auditor</span><span style="color: #89DDFF;">:</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">   -</span><span style="color: #C3E88D;"> system_read</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">   -</span><span style="color: #C3E88D;"> audit_read</span></span></code></pre><h4 id="permission-mapping">Permission Mapping:</h4>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="yaml"><span class="giallo-l"><span style="color: #F07178;">permissions</span><span style="color: #89DDFF;">:</span></span>
+<span class="giallo-l"><span style="color: #F07178;"> tenant_read</span><span style="color: #89DDFF;">:</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">   -</span><span style="color: #C3E88D;"> read_secrets</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">   -</span><span style="color: #C3E88D;"> list_resources</span></span>
+<span class="giallo-l"><span style="color: #F07178;"> tenant_write</span><span style="color: #89DDFF;">:</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">   -</span><span style="color: #C3E88D;"> create_secrets</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">   -</span><span style="color: #C3E88D;"> update_secrets</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">   -</span><span style="color: #C3E88D;"> delete_secrets</span></span></code></pre><h3 id="tenant-isolation">Tenant Isolation</h3>
 <h4 id="resource-segregation">Resource Segregation</h4>
 <ul>
 <li>Tenant-specific namespaces</li>
@@ -957,10 +953,10 @@ control:</p>
 </ul>
 <h2 id="references">References</h2>
 <ul>
-<li><a href="https://csrc.nist.gov/projects/role-based-access-control">NIST RBAC Guidelines</a></li>
+<li><a rel="external" href="https://csrc.nist.gov/projects/role-based-access-control">NIST RBAC Guidelines</a></li>
 <li>Multi-Tenant Security Patterns</li>
-<li><a href="https://cheatsheetseries.owasp.org/cheatsheets/Authorization_Cheat_Sheet.html">OWASP Authorization Cheat Sheet</a></li>
-<li><a href="https://cloudsecurityalliance.org/research/guidance">Cloud Security Alliance Guidelines</a></li>
+<li><a rel="external" href="https://cheatsheetseries.owasp.org/cheatsheets/Authorization_Cheat_Sheet.html">OWASP Authorization Cheat Sheet</a></li>
+<li><a rel="external" href="https://cloudsecurityalliance.org/research/guidance">Cloud Security Alliance Guidelines</a></li>
 </ul>
 <h2 id="notes">Notes</h2>
 <ul>

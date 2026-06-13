@@ -793,13 +793,11 @@ would require additional infrastructure (<em>message buses, distributed locks,
 consensus protocols</em>)</li>
 </ol>
 <p><strong>Example Scenario:</strong></p>
-<pre style="background-color:#2b303b;color:#c0c5ce;"><code><span>Time T1: Instance A updates secret at /api/key to version 2
-</span><span>Time T2: Instance B (unaware of A&#39;s update) updates same path to its version 2
-</span><span>Result: Both instances have version 2 with different content
-</span><span>         Backend has whichever write completed last
-</span><span>         Users see different data depending on load balancer routing
-</span></code></pre>
-<h2 id="decision">Decision</h2>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="plain"><span class="giallo-l"><span>Time T1: Instance A updates secret at /api/key to version 2</span></span>
+<span class="giallo-l"><span>Time T2: Instance B (unaware of A&#39;s update) updates same path to its version 2</span></span>
+<span class="giallo-l"><span>Result: Both instances have version 2 with different content</span></span>
+<span class="giallo-l"><span>         Backend has whichever write completed last</span></span>
+<span class="giallo-l"><span>         Users see different data depending on load balancer routing</span></span></code></pre><h2 id="decision">Decision</h2>
 <p>We will eliminate the in-memory cache layer entirely and make all secret and
 policy operations interact directly with the backing store.</p>
 <p>This change involves:</p>
