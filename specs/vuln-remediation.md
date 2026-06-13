@@ -29,6 +29,11 @@ Called vulnerabilities:
    - `golang.org/x/net` v0.48.0 -> v0.55.0
 3. `go mod tidy` to settle the module graph (transitively bumps
    `golang.org/x/crypto`, `x/sys`, `x/term`, `x/text`).
+4. Clear the remaining (uncalled) advisories surfaced after the above:
+   bump `golang.org/x/crypto` v0.51.0 -> v0.52.0 (13 advisories) and
+   `google.golang.org/grpc` v1.78.0 -> v1.79.3 (GO-2026-4762); tidy.
+   govulncheck then reports zero vulnerabilities total, not merely zero
+   called.
 
 ## File Surface
 
@@ -40,10 +45,9 @@ Called vulnerabilities:
 - **Toolchain availability.** `go1.26.4` is fetched via Go's toolchain
   mechanism (`GOTOOLCHAIN`); contributors on older Go auto-download it
   because of the `toolchain` directive.
-- **Remaining uncalled vulns.** govulncheck still lists vulnerabilities
-  in imported/required packages that the code does not call. These do
-  not fail the gate and are out of scope here; they resolve naturally as
-  those deps are bumped over time.
+- **Uncalled advisories are still remediated.** "Uncalled" means lower
+  urgency, not acceptable. The x/crypto and grpc bumps in step 4 clear
+  them so the scan is clean end to end, not just on called paths.
 
 ## Non-Goals
 
@@ -52,6 +56,8 @@ Called vulnerabilities:
 
 ## Verification
 
-- `make audit` exits 0; `govulncheck` reports "Your code is affected by
-  0 vulnerabilities."
-- `make test` passes on the upgraded module graph (Go 1.26.4).
+- `make audit` exits 0; `govulncheck` reports "No vulnerabilities
+  found" with no "also found in packages you import / modules you
+  require" residue (0 vulnerabilities total).
+- `make test` passes on the upgraded module graph (Go 1.26.4), including
+  the grpc v1.79.3 minor bump.
