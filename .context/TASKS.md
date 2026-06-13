@@ -34,3 +34,7 @@ TASK STATUS LABELS:
 - [ ] Task 2
 
 ## Blocked
+
+### Maintenance
+
+- [ ] Clear remaining uncalled govulncheck advisories (10 import + 4 module) via a dependency-bump pass #priority:low #session:6d40ae08 #branch:chore/introduce-ctx #commit:ca9b541 #added:2026-06-13-130622
