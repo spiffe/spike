@@ -22,6 +22,7 @@ import (
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/log"
 	"github.com/spiffe/spike-sdk-go/retry"
+	"github.com/spiffe/spike-sdk-go/security/mem"
 	"github.com/spiffe/spike-sdk-go/spiffe"
 	svid "github.com/spiffe/spike-sdk-go/spiffeid"
 	"github.com/spiffe/spike-sdk-go/validation"
@@ -179,10 +180,25 @@ func VerifyInitialization(ctx context.Context, api *spike.API) {
 	randomText := hex.EncodeToString(randomBytes)
 
 	state.LockRootKeySeed()
-	// Encrypt the random text with the root key
-	rootKey := state.RootKeySeed()
 	defer state.UnlockRootKeySeed()
-	block, aesErr := aes.NewCipher(rootKey[:])
+	// Encrypt the random text with the canonical root key (NOT the raw seed).
+	// SPIKE Keepers/Nexus key their cipher with the root key derived by
+	// reducing the seed into a P256 scalar (ComputeShares) and marshalling it
+	// back to bytes; encrypting with the raw seed would mismatch Nexus's
+	// cipher and the verification would always fail. Use the no-lock accessor:
+	// LockRootKeySeed already holds the write lock, and RootKeySeed would take
+	// a read lock on the same non-reentrant RWMutex, deadlocking.
+	seed := state.RootKeySeedNoLock()
+	rootSecret, _ := crypto.ComputeShares(seed)
+	rootKey, marshalErr := rootSecret.MarshalBinary()
+	if marshalErr != nil {
+		failErr := sdkErrors.ErrDataMarshalFailure.Wrap(marshalErr)
+		failErr.Msg = "failed to marshal root key for verification"
+		log.FatalErr(fName, *failErr)
+		return
+	}
+	defer mem.ClearBytes(rootKey)
+	block, aesErr := aes.NewCipher(rootKey)
 	if aesErr != nil {
 		failErr := sdkErrors.ErrCryptoFailedToCreateCipher.Wrap(aesErr)
 		log.FatalErr(fName, *failErr)
