@@ -49,10 +49,10 @@ In that case, manual intervention will be necessary. The following sections
 describe this "*break-the-glass*" procedure to help restore **SPIKE** back to 
 its operational state:
 
-### 1. Before complete system failure:
+### 1. Before Complete System Failure
 * Change the **SPIFFE ID** of **SPIKE Pilot** to recovery mode by 
   executing `./hack/bare-metal/entry/spire-server-entry-recover-register.sh`
-* Run `spike recover`
+* Run `spike operator recover`
 * Save the files generated in `~/.spike/recover` folder to a safe,
   encrypted, and password-protected medium.
 * Securely erase the ~/.spike/recover` folder.
@@ -63,11 +63,11 @@ its operational state:
   `./hack/bare-metal/entry/spire-server-entry-su-register.sh` when you need to use 
   **SPIKE Pilot**.
 
-### 2. During complete system failure:
+### 2. During Complete System Failure
 * Change the **SPIFFE ID** of **SPIKE Pilot** to restore mode:
   `./hack/bare-metal/entry/spire-server-entry-restore-register.sh`
-* Execute `spike restore` and enter the shards you created in the
-  previous step one by one. Each `spike restore` call accepts a 
+* Execute `spike operator restore` and enter the shards you created in the
+  previous step one by one. Each `spike operator restore` call accepts a 
   single shard.
 * When you provide enough shards, the system will restore itself:
   **SPIKE Nexus** will restore its root key, and it will also hydrate
@@ -82,7 +82,7 @@ its operational state:
 
 1. Both **SPIKE Nexus**, **SPIKE Keeper** are unavailable, or the system is
    in another irrecoverable state.
-2. Admin executes `spike recover`.
+2. Admin executes `spike operator recover`.
 3. Admin provides their **password**.
 4. The encrypted **root key** is fetched from the database and injected to
    the memory of **SPIKE Nexus**.
@@ -107,7 +107,7 @@ The situation:
 
 * Both **SPIKE Nexus** and all **SPIKE Keeper** instances have crashed, there
   is no way to fetch the root key from **SPIKE Keeper**(s).
-* The system administrator has not used `spike recover` to create recovery 
+* The system administrator has not used `spike operator recover` to create recovery 
   shards, or they have lost access to the recovery shards.
 * Everyone has learned their lessons, and now it's time to reset the system
   and conduct an extensive "what went wrong / what should have been done" 

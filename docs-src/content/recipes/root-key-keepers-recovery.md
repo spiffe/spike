@@ -3,12 +3,12 @@
 #  \\\\\ Copyright 2024-present SPIKE contributors.
 # \\\\\\\ SPDX-License-Identifier: Apache-2.0
 
-title = "Where the root key lives"
+title = "Where the Root Key Lives"
 weight = 3
 sort_by = "weight"
 +++
 
-# Where the root key lives: keepers, Shamir, and recovery
+# Where the Root Key Lives: Keepers, Shamir, and Recovery
 
 ## Problem
 
@@ -26,7 +26,7 @@ reconstructs the key in memory. Lose one keeper and the key still recovers;
 lose more than `N − threshold` and you fall back to
 [break-the-glass recovery](/recipes/break-the-glass-recovery/).
 
-## Workflow (what happens automatically)
+## Workflow (What Happens Automatically)
 
 1. **Bootstrap** generates the root key, splits it into `SPIKE_NEXUS_SHAMIR_SHARES`
    shares, and seeds the keepers (one share each). See
@@ -39,12 +39,12 @@ lose more than `N − threshold` and you fall back to
 3. **Ongoing sync:** Nexus runs `SendShardsPeriodically`, re-pushing shares to
    the keepers on an interval so restarted/replaced keepers get re-hydrated.
 4. **Keeper restart:** a keeper holds its share only in memory, so a restarted
-   keeper is empty until Nexus re-syncs it — which is why a single keeper
+   keeper is empty until Nexus re-syncs it, which is why a single keeper
    bouncing is harmless as long as `threshold` others are up.
 
 ## Tips
 
-- **`memory` mode has no root key and no keepers** — it's the only standalone
+- **`memory` mode has no root key and no keepers**: it's the only standalone
   mode. `lite` and `sqlite` always recover from keepers.
 - Pick `shares`/`threshold` for your failure tolerance: you can lose up to
   `shares − threshold` keepers and still recover automatically.
@@ -64,7 +64,7 @@ lose more than `N − threshold` and you fall back to
 - **Keepers are not a secret store.** They hold only root-key shares, never
   your secrets.
 
-## Cross-links
+## Cross-Links
 
 - [Bootstrapping a fresh SPIKE](/recipes/bootstrapping-spike/)
 - [Break-the-glass disaster recovery](/recipes/break-the-glass-recovery/)
@@ -72,7 +72,7 @@ lose more than `N − threshold` and you fall back to
 - Architecture: [System overview](/architecture/system-overview/) ·
   [Security model](/architecture/security-model/)
 
-## What's next
+## What's Next
 
 Plan for the day the keepers can't recover the key:
 [Break-the-glass disaster recovery](/recipes/break-the-glass-recovery/).

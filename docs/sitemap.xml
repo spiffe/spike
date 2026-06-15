@@ -178,6 +178,51 @@
         <loc>https://spike.ist/operations/release/</loc>
     </url>
     <url>
+        <loc>https://spike.ist/recipes/</loc>
+    </url>
+    <url>
+        <loc>https://spike.ist/recipes/backup-and-restore/</loc>
+    </url>
+    <url>
+        <loc>https://spike.ist/recipes/bootstrapping-spike/</loc>
+    </url>
+    <url>
+        <loc>https://spike.ist/recipes/break-the-glass-recovery/</loc>
+    </url>
+    <url>
+        <loc>https://spike.ist/recipes/choosing-a-backend-store/</loc>
+    </url>
+    <url>
+        <loc>https://spike.ist/recipes/deploying-spike/</loc>
+    </url>
+    <url>
+        <loc>https://spike.ist/recipes/encryption-as-a-service/</loc>
+    </url>
+    <url>
+        <loc>https://spike.ist/recipes/go-sdk-integration/</loc>
+    </url>
+    <url>
+        <loc>https://spike.ist/recipes/granting-a-workload-access/</loc>
+    </url>
+    <url>
+        <loc>https://spike.ist/recipes/production-hardening/</loc>
+    </url>
+    <url>
+        <loc>https://spike.ist/recipes/root-key-keepers-recovery/</loc>
+    </url>
+    <url>
+        <loc>https://spike.ist/recipes/storing-and-reading-secrets/</loc>
+    </url>
+    <url>
+        <loc>https://spike.ist/recipes/troubleshooting/</loc>
+    </url>
+    <url>
+        <loc>https://spike.ist/recipes/upgrading-spike/</loc>
+    </url>
+    <url>
+        <loc>https://spike.ist/recipes/writing-access-policies/</loc>
+    </url>
+    <url>
         <loc>https://spike.ist/tracking/</loc>
     </url>
     <url>

@@ -291,6 +291,69 @@
                 </li>
 
                 </ul>
+    <input class="tree-toggle" type="checkbox" id="recipes"
+               />
+        <label class="tree-toggle-label "
+               for="recipes">Recipes</label>
+
+        <ul class="subtree">
+            <li >
+                    <a href="https://spike.ist/recipes/choosing-a-backend-store/">Choosing a backend store</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/bootstrapping-spike/">Bootstrapping a fresh SPIKE</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/root-key-keepers-recovery/">Where the root key lives</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/storing-and-reading-secrets/">Storing and reading secrets</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/writing-access-policies/">Writing access policies</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/granting-a-workload-access/">Granting a workload access to secrets</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/encryption-as-a-service/">Using SPIKE as an encryption service</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/break-the-glass-recovery/">Break-the-glass disaster recovery</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/backup-and-restore/">Backup and restore</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/deploying-spike/">Deploying SPIKE (Kubernetes and bare-metal)</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/production-hardening/">Production hardening</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/troubleshooting/">Troubleshooting</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/go-sdk-integration/">Integrating the Go SDK</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/upgrading-spike/">Upgrading SPIKE</a>
+                </li>
+
+                </ul>
     </div>
 <style>
     /* Navigation tree structure */
@@ -1127,8 +1190,8 @@ You can open the picture on a new tab for an enlarged version of it.</p>
 </a>
 <h3 id="preventive-backup">Preventive Backup</h3>
 <blockquote>
-<p><strong>Run <code>spike recover</code> as Soon as You Can</strong></p>
-<p>You must back up the <strong>root key</strong> shards using <code>spike recover</code> <strong>BEFORE</strong> a
+<p><strong>Run <code>spike operator recover</code> as Soon as You Can</strong></p>
+<p>You must back up the <strong>root key</strong> shards using <code>spike operator recover</code> <strong>BEFORE</strong> a
 disaster strikes.</p>
 <p>This is like having a spare key stored in a safe place before you lose your
 main keys. Without this proactive backup step, there would be nothing to
@@ -1138,10 +1201,10 @@ recover from in a catastrophic failure.</p>
 deploying <strong>SPIKE</strong>.</p>
 <p>Here is how the flow goes:</p>
 <ul>
-<li>The Operator runs <code>spike recover</code> using <strong>SPIKE Pilot</strong>.</li>
+<li>The Operator runs <code>spike operator recover</code> using <strong>SPIKE Pilot</strong>.</li>
 <li><strong>SPIKE Pilot</strong> saves the recovery shards on the home directory of the system/</li>
 <li>The Operator encrypts and stores these shards in a secure medium, and securely
-erases the copies generated as an output to <code>spike recover</code>.</li>
+erases the copies generated as an output to <code>spike operator recover</code>.</li>
 </ul>
 <p>When later recovery is needed, the Operator will provide these shards to
 <strong>SPIKE</strong> to restore the system back to its working state.</p>
@@ -1154,7 +1217,7 @@ erases the copies generated as an output to <code>spike recover</code>.</li>
 <li>Thus, automatic recovery is impossible and the system requires manual
 recovery.</li>
 </ul>
-<p>In that case, the Operator uses <code>spike restore</code> to provide the previously
+<p>In that case, the Operator uses <code>spike operator restore</code> to provide the previously
 backed-up shards one at a time</p>
 <ul>
 <li><strong>SPIKE Pilot</strong> forwards the entered shard to <strong>SPIKE Nexus</strong></li>

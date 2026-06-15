@@ -96,17 +96,17 @@ File location: `docs-src/content/recipes/<slug>.md`.
 - [x] T1 #1 `choosing-a-backend-store.md`
 - [x] T1 #2 `bootstrapping-spike.md`
 - [x] T1 #3 `root-key-keepers-recovery.md`
-- [ ] T2 #4 `storing-and-reading-secrets.md`
-- [ ] T2 #5 `writing-access-policies.md`
-- [ ] T2 #6 `granting-a-workload-access.md`
-- [ ] T2 #7 `encryption-as-a-service.md`
-- [ ] T3 #8 `break-the-glass-recovery.md`
-- [ ] T3 #9 `backup-and-restore.md`
-- [ ] T3 #10 `deploying-spike.md`
-- [ ] T3 #11 `production-hardening.md`
-- [ ] T3 #12 `troubleshooting.md`
-- [ ] T4 #13 `go-sdk-integration.md`
-- [ ] T4 #14 `upgrading-spike.md`
+- [x] T2 #4 `storing-and-reading-secrets.md`
+- [x] T2 #5 `writing-access-policies.md`
+- [x] T2 #6 `granting-a-workload-access.md`
+- [x] T2 #7 `encryption-as-a-service.md`
+- [x] T3 #8 `break-the-glass-recovery.md`
+- [x] T3 #9 `backup-and-restore.md`
+- [x] T3 #10 `deploying-spike.md`
+- [x] T3 #11 `production-hardening.md`
+- [x] T3 #12 `troubleshooting.md`
+- [x] T4 #13 `go-sdk-integration.md`
+- [x] T4 #14 `upgrading-spike.md`
 
 Notes: section added at `weight = 9` to avoid renumbering other sections and
 keep `make docs` green; nav/weight placement can be promoted in a follow-up.

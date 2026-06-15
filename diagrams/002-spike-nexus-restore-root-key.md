@@ -1,6 +1,6 @@
 ![SPIKE](../assets/spike-banner-lg.png)
 
-## SPIKE Nexus Root Key Restoration (`spike restore`)
+## SPIKE Nexus Root Key Restoration (`spike operator restore`)
 
 Restore the root key in SPIKE Nexus from recovery shards.
 
@@ -17,7 +17,7 @@ Restore the root key in SPIKE Nexus from recovery shards.
 
 ```mermaid
 sequenceDiagram
-    participant Operator as SPIKE Pilot<br/>(spike restore)
+    participant Operator as SPIKE Pilot<br/>(spike operator restore)
     participant Disk as ~/.spike/recover
     participant Nexus as SPIKE Nexus
     participant ShardStore as Shard Store<br/>(in-memory)

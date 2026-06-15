@@ -282,6 +282,69 @@
                 </li>
 
                 </ul>
+    <input class="tree-toggle" type="checkbox" id="recipes"
+               />
+        <label class="tree-toggle-label "
+               for="recipes">Recipes</label>
+
+        <ul class="subtree">
+            <li >
+                    <a href="https://spike.ist/recipes/choosing-a-backend-store/">Choosing a backend store</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/bootstrapping-spike/">Bootstrapping a fresh SPIKE</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/root-key-keepers-recovery/">Where the root key lives</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/storing-and-reading-secrets/">Storing and reading secrets</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/writing-access-policies/">Writing access policies</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/granting-a-workload-access/">Granting a workload access to secrets</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/encryption-as-a-service/">Using SPIKE as an encryption service</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/break-the-glass-recovery/">Break-the-glass disaster recovery</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/backup-and-restore/">Backup and restore</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/deploying-spike/">Deploying SPIKE (Kubernetes and bare-metal)</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/production-hardening/">Production hardening</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/troubleshooting/">Troubleshooting</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/go-sdk-integration/">Integrating the Go SDK</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/upgrading-spike/">Upgrading SPIKE</a>
+                </li>
+
+                </ul>
     </div>
 <style>
     /* Navigation tree structure */
@@ -850,7 +913,7 @@ memory during normal operation, you must back it up for disaster recovery using
 Shamir’s Secret Sharing:</p>
 <pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="shellscript"><span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># Create recovery shards of the root key</span></span>
 <span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># IMPORTANT: Run this BEFORE any disaster occurs</span></span>
-<span class="giallo-l"><span style="color: #FFCB6B;">spike</span><span style="color: #C3E88D;"> recover</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">spike</span><span style="color: #C3E88D;"> operator recover</span></span>
 <span class="giallo-l"></span>
 <span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># This will generate multiple shard files under `~/.spike/recover` folder. </span></span></code></pre>
 <p><strong>Secure handling of recovery shards:</strong></p>
@@ -903,7 +966,7 @@ hardware keys</em>)</li>
 <span class="giallo-l"><span style="color: #FFCB6B;">./hack/bare-metal/entry/spire-server-entry-restore-register.sh</span></span>
 <span class="giallo-l"></span>
 <span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># 2. Run the restore command</span></span>
-<span class="giallo-l"><span style="color: #FFCB6B;">spike</span><span style="color: #C3E88D;"> restore</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">spike</span><span style="color: #C3E88D;"> operator restore</span></span>
 <span class="giallo-l"></span>
 <span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># 3. When prompted, provide recovery shards one at a time</span></span>
 <span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># You&#39;ll need to provide enough shards to meet your threshold (e.g., 2 of 3)</span></span>
@@ -944,7 +1007,7 @@ key restoration procedure above.</p>
 <span class="giallo-l"><span style="color: #FFCB6B;">sqlite3</span><span style="color: #C3E88D;"> ~/.spike/data/spike.db</span><span style="color: #89DDFF;"> &quot;</span><span style="color: #C3E88D;">PRAGMA integrity_check;</span><span style="color: #89DDFF;">&quot;</span></span>
 <span class="giallo-l"></span>
 <span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># Test secret access to verify encryption/decryption is working</span></span>
-<span class="giallo-l"><span style="color: #FFCB6B;">spike</span><span style="color: #C3E88D;"> get /path/to/test/secret</span></span></code></pre><h2 id="backup-best-practices">Backup best practices</h2>
+<span class="giallo-l"><span style="color: #FFCB6B;">spike</span><span style="color: #C3E88D;"> secret get path/to/test/secret</span></span></code></pre><h2 id="backup-best-practices">Backup best practices</h2>
 <h3 id="backup-frequency-and-scheduling">Backup frequency and scheduling</h3>
 <table><thead><tr><th>Component</th><th>Recommended Frequency</th><th>Reasoning</th></tr></thead><tbody>
 <tr><td>SQLite Database</td><td>Daily</td><td>Captures secret changes promptly</td></tr>

@@ -56,3 +56,14 @@ checkout-pr:
 docs:
 	./hack/bare-metal/build/build-docs.sh
 	./hack/qa/cover.sh
+
+# Serve the documentation site locally with live reload
+# Usage: make docs-serve
+# Runs `zola serve` from docs-src. Zola rewrites base_url to the local address,
+# so navigation links resolve to http://127.0.0.1:8080 instead of the
+# production base_url (which would 404 on not-yet-published pages). Requires
+# zola to be installed. Override the port with: make docs-serve PORT=1111
+.PHONY: docs-serve
+PORT ?= 8080
+docs-serve:
+	cd docs-src && zola serve --interface 127.0.0.1 --port $(PORT)

@@ -732,6 +732,7 @@ import (
         sdkErrors "github.com/spiffe/spike-sdk-go/errors"
         "github.com/spiffe/spike-sdk-go/log"
         "github.com/spiffe/spike-sdk-go/retry"
+        "github.com/spiffe/spike-sdk-go/security/mem"
         "github.com/spiffe/spike-sdk-go/spiffe"
         svid "github.com/spiffe/spike-sdk-go/spiffeid"
         "github.com/spiffe/spike-sdk-go/validation"
@@ -889,10 +890,25 @@ func VerifyInitialization(ctx context.Context, api *spike.API) <span class="cov0
         <span class="cov0" title="0">randomText := hex.EncodeToString(randomBytes)
 
         state.LockRootKeySeed()
-        // Encrypt the random text with the root key
-        rootKey := state.RootKeySeed()
         defer state.UnlockRootKeySeed()
-        block, aesErr := aes.NewCipher(rootKey[:])
+        // Encrypt the random text with the canonical root key (NOT the raw seed).
+        // SPIKE Keepers/Nexus key their cipher with the root key derived by
+        // reducing the seed into a P256 scalar (ComputeShares) and marshalling it
+        // back to bytes; encrypting with the raw seed would mismatch Nexus's
+        // cipher and the verification would always fail. Use the no-lock accessor:
+        // LockRootKeySeed already holds the write lock, and RootKeySeed would take
+        // a read lock on the same non-reentrant RWMutex, deadlocking.
+        seed := state.RootKeySeedNoLock()
+        rootSecret, _ := crypto.ComputeShares(seed)
+        rootKey, marshalErr := rootSecret.MarshalBinary()
+        if marshalErr != nil </span><span class="cov0" title="0">{
+                failErr := sdkErrors.ErrDataMarshalFailure.Wrap(marshalErr)
+                failErr.Msg = "failed to marshal root key for verification"
+                log.FatalErr(fName, *failErr)
+                return
+        }</span>
+        <span class="cov0" title="0">defer mem.ClearBytes(rootKey)
+        block, aesErr := aes.NewCipher(rootKey)
         if aesErr != nil </span><span class="cov0" title="0">{
                 failErr := sdkErrors.ErrCryptoFailedToCreateCipher.Wrap(aesErr)
                 log.FatalErr(fName, *failErr)
@@ -3796,6 +3812,8 @@ func routeWithBackingStore(a url.APIAction, p url.APIURL) net.Handler <span clas
 //     or net.Fallback if the operation requires a backing store
 func routeWithNoBackingStore(a url.APIAction, p url.APIURL) net.Handler <span class="cov0" title="0">{
         switch </span>{
+        case a == url.ActionDefault &amp;&amp; p == url.NexusBootstrapVerify:<span class="cov0" title="0">
+                return bootstrap.RouteVerify</span>
         case a == url.ActionDefault &amp;&amp; p == url.NexusOperatorRecover:<span class="cov0" title="0">
                 return operator.RouteRecover</span>
         case a == url.ActionDefault &amp;&amp; p == url.NexusOperatorRestore:<span class="cov0" title="0">

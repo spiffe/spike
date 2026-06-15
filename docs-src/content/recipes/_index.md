@@ -4,7 +4,7 @@
 # \\\\\\\ SPDX-License-Identifier: Apache-2.0
 
 title = "Recipes"
-weight = 9
+weight = 4
 sort_by = "weight"
 +++
 
@@ -17,20 +17,20 @@ see [Configuration](/usage/configuration/) and the
 [command reference](/usage/commands/); for the why, see
 [Architecture](/architecture/system-overview/).
 
-## Concepts & decisions
+## Concepts and Decisions
 
 - [Choosing a backend store: memory, lite, or sqlite](/recipes/choosing-a-backend-store/)
 - [Bootstrapping a fresh SPIKE](/recipes/bootstrapping-spike/)
 - [Where the root key lives: keepers, Shamir, and recovery](/recipes/root-key-keepers-recovery/)
 
-## Day-to-day usage
+## Day-to-Day Usage
 
 - [Storing and reading secrets](/recipes/storing-and-reading-secrets/)
 - [Writing access policies](/recipes/writing-access-policies/)
 - [Granting a workload access to secrets](/recipes/granting-a-workload-access/)
 - [Using SPIKE as an encryption service](/recipes/encryption-as-a-service/)
 
-## Operations & lifecycle
+## Operations and Lifecycle
 
 - [Break-the-glass disaster recovery](/recipes/break-the-glass-recovery/)
 - [Backup and restore](/recipes/backup-and-restore/)
@@ -38,7 +38,7 @@ see [Configuration](/usage/configuration/) and the
 - [Production hardening](/recipes/production-hardening/)
 - [Troubleshooting](/recipes/troubleshooting/)
 
-## Integration & advanced
+## Integration and Advanced
 
 - [Integrating the Go SDK](/recipes/go-sdk-integration/)
 - [Upgrading SPIKE](/recipes/upgrading-spike/)

@@ -1,6 +1,6 @@
 ![SPIKE](../assets/spike-banner-lg.png)
 
-## SPIKE Nexus Recovery Flow (`spike recover`)
+## SPIKE Nexus Recovery Flow (`spike operator recover`)
 
 Generate recovery shards from the running SPIKE Nexus instance.
 
@@ -14,7 +14,7 @@ Generate recovery shards from the running SPIKE Nexus instance.
 
 ```mermaid
 sequenceDiagram
-    participant Operator as SPIKE Pilot<br/>(spike recover)
+    participant Operator as SPIKE Pilot<br/>(spike operator recover)
     participant Nexus as SPIKE Nexus
     participant RootKey as Root Key<br/>(in-memory)
     participant Shamir as Shamir Secret<br/>Sharing

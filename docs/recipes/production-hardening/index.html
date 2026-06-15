@@ -1,0 +1,1048 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="/main.css">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link rel="icon" href="https://spike.ist/assets/spike-favicon-16x16.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+    <title> SPIKE | Production hardening </title>
+</head>
+<body>
+
+<main>
+    
+    <nav>
+  <script>
+    fetch('https://api.github.com/repos/spiffe/spike/releases/latest')
+        .then(response => response.json())
+        .then(data => {
+            const release = document.getElementById('release');
+            const icon = '<i class="bx bx-package"></i>';
+            release.href = data.name ? data.html_url : 'https://api.github.com/repos/spiffe/spike/releases';
+            release.innerHTML = icon + (data.name ? ' ' + data.name : ' Releases');
+        });
+</script>
+<div id="banner">
+    <a href="https://spike.ist">
+        <img id="banner-image" src="https://spike.ist/assets/spike-banner.png" alt="logo" />
+    </a>
+    <div id="banner-body">
+        <a class="banner-title" href="https://spike.ist">
+            SPIKE
+        </a>
+        <span class="banner-tagline">
+            Secure your secrets<br> with SPIFFE.
+        </span>
+        <a id="release" class="banner-link" href="https://github.com/spiffe/spike/releases">
+            <i class='bx bx-package'></i>
+        </a>
+        <a href="https://github.com/spiffe/spike" class="banner-link">
+            <i class='bx bxl-github'></i> GitHub
+        </a>
+
+    </div>
+</div>
+<style>
+   /* Banner on top of the nav */
+   #banner {
+        position: sticky;
+        background-color: var(--bg-primary);
+        z-index: 100;
+        top: 0;
+        display: flex;
+        flex-direction: row;
+        padding: 1rem;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        margin-bottom: 1rem;
+    }
+
+    #banner img {
+        width: 100px;
+        height: auto;
+    }
+
+    #banner-body {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        justify-content: space-between;
+        margin-left: 1rem;
+    }
+
+    .banner-title {
+        font-size: 1.75rem;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        margin-bottom: -15px;
+        font-family: var(--brand-font-family);
+    }
+    .banner-tagline {
+        font-size: 0.875rem;
+        color: var(--text-muted);
+        font-style: italic;
+    }
+
+    .banner-link {
+        display: flex;
+        gap: 0.5rem;
+        min-width: 84px;
+        font-size: 0.875rem;
+        font-weight: 300;
+        padding: 0.25rem 0.75rem;
+        border-radius: 4px;
+        background-color: var(--bg-interactive);
+        transition: all 0.2s ease;
+    }
+
+    .banner-link i {
+        font-size: 1.125rem;
+        color: var(--spike-blue);
+    }
+
+    .banner-link:hover {
+        background-color: var(--spike-blue);
+    }
+</style> <div id="trees">
+    <input class="tree-toggle" type="checkbox" id="about"
+               />
+        <label class="tree-toggle-label "
+               for="about">About</label>
+
+        <ul class="subtree">
+            <li >
+                    <a href="https://spike.ist/about/intro/">About SPIKE</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/about/project-status/">Project Maturity</a>
+                </li>
+
+                </ul>
+    <input class="tree-toggle" type="checkbox" id="community"
+               />
+        <label class="tree-toggle-label "
+               for="community">Community</label>
+
+        <ul class="subtree">
+            <li >
+                    <a href="https://spike.ist/community/hello/">Hello Universe</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/community/contact/">Contact Us</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/community/presentations/">Presentations and Demos</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/community/resources/">Resources</a>
+                </li>
+
+                </ul>
+    <input class="tree-toggle" type="checkbox" id="getting-started"
+               />
+        <label class="tree-toggle-label "
+               for="getting-started">Getting Started</label>
+
+        <ul class="subtree">
+            <li >
+                    <a href="https://spike.ist/getting-started/quickstart/">SPIKE Quickstart Guide</a>
+                </li>
+
+                </ul>
+    <input class="tree-toggle" type="checkbox" id="using-spike"
+               />
+        <label class="tree-toggle-label "
+               for="using-spike">Using SPIKE</label>
+
+        <ul class="subtree">
+            <li >
+                    <a href="https://spike.ist/usage/configuration/">Configuring SPIKE</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/usage/cli/">SPIKE CLI</a>
+                </li>
+
+                </ul>
+    <input class="tree-toggle" type="checkbox" id="developing-spike"
+               />
+        <label class="tree-toggle-label "
+               for="developing-spike">Developing SPIKE</label>
+
+        <ul class="subtree">
+            <li >
+                    <a href="https://spike.ist/development/local-deployment/">SPIKE on Kubernetes</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/development/bare-metal/">SPIKE on Linux</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/development/sdk-integration/">SDK Integration Guide</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/development/api-docs/">API Documentation</a>
+                </li>
+
+                </ul>
+    <input class="tree-toggle" type="checkbox" id="spike-architecture"
+               />
+        <label class="tree-toggle-label "
+               for="spike-architecture">SPIKE Architecture</label>
+
+        <ul class="subtree">
+            <li >
+                    <a href="https://spike.ist/architecture/system-overview/">System Overview</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/architecture/security-model/">SPIKE Security Model</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/architecture/architectural-decision-records/">ADRs</a>
+                </li>
+
+                </ul>
+    <input class="tree-toggle" type="checkbox" id="tracking"
+               />
+        <label class="tree-toggle-label "
+               for="tracking">Tracking</label>
+
+        <ul class="subtree">
+            <li >
+                    <a href="https://spike.ist/tracking/changelog/">Changelog</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/tracking/snapshots/">Documentation Snapshots</a>
+                </li>
+
+                </ul>
+    <input class="tree-toggle" type="checkbox" id="operations"
+               />
+        <label class="tree-toggle-label "
+               for="operations">Operations</label>
+
+        <ul class="subtree">
+            <li >
+                    <a href="https://spike.ist/operations/build/">SPIKE Cross-Platform Build</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/operations/production/">SPIKE Production Setup</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/operations/recovery/">SPIKE Recovery Procedures</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/operations/backup/">SPIKE Backup and Restore</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/operations/release/">SPIKE Relase Management</a>
+                </li>
+
+                </ul>
+    <input class="tree-toggle" type="checkbox" id="recipes"
+               checked/>
+        <label class="tree-toggle-label "
+               for="recipes">Recipes</label>
+
+        <ul class="subtree">
+            <li >
+                    <a href="https://spike.ist/recipes/choosing-a-backend-store/">Choosing a backend store</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/bootstrapping-spike/">Bootstrapping a fresh SPIKE</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/root-key-keepers-recovery/">Where the root key lives</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/storing-and-reading-secrets/">Storing and reading secrets</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/writing-access-policies/">Writing access policies</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/granting-a-workload-access/">Granting a workload access to secrets</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/encryption-as-a-service/">Using SPIKE as an encryption service</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/break-the-glass-recovery/">Break-the-glass disaster recovery</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/backup-and-restore/">Backup and restore</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/deploying-spike/">Deploying SPIKE (Kubernetes and bare-metal)</a>
+                </li>
+
+                <li class="active">
+                    <a href="https://spike.ist/recipes/production-hardening/">Production hardening</a>
+                </li>
+
+                
+                        
+                        
+                            <ul id="toc">
+                                <li><a href="
+                                            https://spike.ist/recipes/production-hardening/#production-hardening">Production hardening</a>
+                                        <ul>
+                                                <li>
+                                                        <a href="https://spike.ist/recipes/production-hardening/#problem">Problem</a>
+                                                    </li>
+                                                <li>
+                                                        <a href="https://spike.ist/recipes/production-hardening/#tl-dr">TL;DR</a>
+                                                    </li>
+                                                <li>
+                                                        <a href="https://spike.ist/recipes/production-hardening/#workflow">Workflow</a>
+                                                    </li>
+                                                <li>
+                                                        <a href="https://spike.ist/recipes/production-hardening/#tips">Tips</a>
+                                                    </li>
+                                                <li>
+                                                        <a href="https://spike.ist/recipes/production-hardening/#pitfalls">Pitfalls</a>
+                                                    </li>
+                                                <li>
+                                                        <a href="https://spike.ist/recipes/production-hardening/#cross-links">Cross-links</a>
+                                                    </li>
+                                                <li>
+                                                        <a href="https://spike.ist/recipes/production-hardening/#what-s-next">What’s next</a>
+                                                    </li>
+                                                </ul>
+                                        </li>
+                                </ul>
+                        <li >
+                    <a href="https://spike.ist/recipes/troubleshooting/">Troubleshooting</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/go-sdk-integration/">Integrating the Go SDK</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/upgrading-spike/">Upgrading SPIKE</a>
+                </li>
+
+                </ul>
+    </div>
+<style>
+    /* Navigation tree structure */
+    #trees {
+        padding: 0 1rem;
+    }
+
+    .tree-toggle {
+        display: none;
+    }
+
+    .tree-toggle:checked + .tree-toggle-label + .subtree {
+        display: block;
+    }
+
+    .tree-toggle-label {
+        display: block;
+        padding: 0.75rem 1rem;
+        margin: 0.25rem 0;
+        border-radius: 6px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .tree-toggle-label:hover {
+        background-color: rgba(0, 0, 0, 0.05);
+    }
+
+    .tree-toggle-label::before {
+        content: '▸';
+        display: inline-block;
+        margin-right: 0.5rem;
+        transition: transform 0.2s ease;
+    }
+
+    .tree-toggle:checked + .tree-toggle-label::before {
+        transform: rotate(90deg);
+    }
+
+    .subtree {
+        display: none;
+        margin: 0;
+        padding: 0 0 0 1rem;
+        list-style: none;
+    }
+
+    .subtree li {
+        margin: 0.25rem 0;
+    }
+
+    .subtree li a {
+        display: block;
+        padding: 0.5rem 1rem;
+        text-decoration: none;
+        border-radius: 4px;
+        font-size: 0.9375rem;
+        transition: all 0.2s ease;
+    }
+
+    .subtree li a:hover {
+        background-color: rgba(0, 0, 0, 0.05);
+    }
+
+    .subtree li.active a {
+        font-weight: 600;
+        background-color: rgba(0, 0, 0, 0.05);
+    }
+
+    /* Table of contents styling */
+    #toc {
+        margin: 0.5rem 0 0.5rem 1.5rem;
+        padding: 0;
+        list-style: none;
+        font-size: 0.875rem;
+    }
+
+    #toc li {
+        margin: 0.25rem 0;
+    }
+
+    #toc li a {
+        padding: 0.375rem 0.75rem;
+        opacity: 0.8;
+    }
+
+    #toc li a:hover {
+        opacity: 1;
+    }
+
+    #toc ul {
+        margin: 0.25rem 0 0.25rem 1rem;
+        padding: 0;
+        list-style: none;
+    }
+</style>
+</nav>
+<style>
+  nav {
+    position: sticky;
+    width: 300px;
+    height: 100vh;
+    top: 0;
+    max-height: 100vh;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 0, 0, 0.3) transparent;
+    z-index: 100;
+    box-shadow: 5px 0 20px var(--shadow-color);
+    border-right: 1px solid var(--border-color);
+    transition: transform 0.4s ease-in-out;
+    background-color: var(--bg-primary);
+  }
+
+  nav::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  nav::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  nav::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.3);
+    border-radius: 4px;
+    border: 2px solid transparent;
+  }
+
+  @media (max-width: 1300px) {
+    .nav-toggle {
+      display: none;
+    }
+
+    nav {
+      position: fixed;
+      transform: translateX(-100%);
+      width: 85%;
+      max-width: 300px;
+      height: calc(100vh - 57px);
+      top: 57px;
+    }
+
+    nav.active {
+      transform: translateX(0);
+    }
+  }
+</style>
+
+
+    <div class="content">
+        <div class="header">
+  <div class="header-content">
+    <button
+      id="mobile-nav-toggle"
+      aria-label="Toggle navigation"
+      class="mobile-only"
+    >
+      <i class="bx bx-menu"></i>
+    </button>
+    <script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const searchInput = document.querySelector(".search-input");
+    const overlay = document.querySelector(".overlay");
+    const searchResults = document.querySelector(".search-results");
+
+    function closeSearch() {
+      overlay.style.display = "none";
+      searchResults.style.display = "none";
+      searchInput.blur();
+    }
+
+    function openSearch() {
+      overlay.style.display = "block";
+      searchResults.style.display = "block";
+    }
+
+    searchInput.addEventListener("focus", openSearch);
+    overlay.addEventListener("click", closeSearch);
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        closeSearch();
+      }
+    });
+  });
+</script>
+<div class="overlay"></div>
+<input class="search-input" type="text" placeholder="Search..." />
+<div class="search-results">
+  <div class="search-results__header">
+    <span class="search-results__count">Waiting for input...</span>
+  </div>
+  <div class="search-results__items"></div>
+</div>
+
+<style>
+  .search-input {
+    width: 100%;
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background-color: var(--bg-interactive);
+    color: var(--text-primary);
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+    z-index: 101;
+  }
+
+  .search-input:focus {
+    outline: none;
+    border-color: var(--spike-blue);
+    background-color: var(--bg-primary);
+    box-shadow: 0 0 0 2px rgba(var(--spike-blue-rgb), 0.2);
+  }
+
+  .search-input::placeholder {
+    color: var(--text-muted);
+  }
+
+  .overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 100;
+  }
+
+  .search-results {
+    display: none;
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 100%;
+    max-width: 700px;
+    margin: 0.5rem auto;
+    background: var(--bg-primary);
+    border-radius: 8px;
+    box-shadow: 0px 4px 8px 3px rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--border-color);
+    z-index: 102;
+  }
+
+  .search-results__header {
+    padding: 0.75rem 1rem;
+    color: var(--text-muted);
+    font-size: 0.875rem;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .search-results__items {
+    max-height: 60vh;
+    overflow-y: auto;
+  }
+
+  .search-results__item {
+    display: block;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--border-color);
+    transition: background-color 0.2s ease;
+  }
+
+  .search-results__item:hover {
+    background-color: var(--bg-interactive);
+  }
+
+  .search-results__title {
+    color: var(--spike-blue);
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+  }
+
+  .search-results__preview {
+    color: var(--text-secondary);
+    font-size: 0.8125rem;
+    line-height: 1.4;
+  }
+
+  .search-results__preview b {
+    color: var(--spike-dark-green);
+    font-weight: 600;
+  }
+
+  .search-results__items::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  .search-results__items::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 4px;
+  }
+
+  /* Empty state */
+  .search-results__empty {
+    padding: 2rem 1rem;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.875rem;
+  }
+</style>
+
+    <a
+      href="https://github.com/spiffe/spike"
+      target="_blank"
+      rel="noopener"
+      class="github-star"
+    >
+      <i class="bx bx-star"></i>
+      <span>Star <strong>SPIKE</strong> on <strong>GitHub</strong></span>
+    </a>
+    <button id="theme-toggle" aria-label="Toggle theme">
+      <i class="bx bx-sun light-icon"></i>
+      <i class="bx bx-moon dark-icon"></i>
+    </button>
+  </div>
+</div>
+
+<style>
+  .header {
+    position: sticky;
+    top: 0;
+    background-color: var(--bg-primary);
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color);
+    box-shadow: 0 4px 6px -1px var(--shadow-color),
+      0 2px 4px -1px var(--shadow-color);
+    z-index: 101;
+  }
+
+  .header-content {
+    max-width: 800px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  #mobile-nav-toggle {
+    display: none;
+    background: none;
+    border: none;
+    padding: 0.5rem;
+    cursor: pointer;
+    color: var(--text-primary);
+    font-size: 1.5rem;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+  }
+
+  #mobile-nav-toggle i {
+    pointer-events: none;
+    display: block;
+  }
+
+  #mobile-nav-toggle:hover {
+    background-color: var(--bg-interactive);
+  }
+
+  @media (max-width: 1300px) {
+    #mobile-nav-toggle {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+    }
+  }
+
+  #theme-toggle {
+    background: none;
+    border: none;
+    padding: 0.5rem;
+    cursor: pointer;
+    color: var(--text-primary);
+    font-size: 1.25rem;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  #theme-toggle:hover {
+    background-color: var(--bg-interactive);
+  }
+
+  #theme-toggle:active {
+    background-color: var(--bg-secondary);
+  }
+
+  /* Show/hide icons based on theme */
+  [data-theme="dark"] .light-icon,
+  :root:not([data-theme="dark"]) .dark-icon {
+    display: none;
+  }
+
+  /* GitHub Star Button */
+  .github-star {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    color: white;
+    text-decoration: none;
+    background: linear-gradient(
+      135deg,
+      var(--spike-blue),
+      var(--spike-dark-green)
+    );
+    border-radius: 20px;
+    transition: all 0.2s ease;
+    font-size: 0.875rem;
+    white-space: nowrap;
+  }
+
+  .github-star:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(var(--spike-blue-rgb), 0.3);
+  }
+
+  .github-star i {
+    font-size: 1.1rem;
+    animation: starBounce 2s infinite;
+    color: #ffd700;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+  }
+
+  @keyframes starBounce {
+    0%,
+    100% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.2);
+    }
+  }
+
+  .github-star span {
+    white-space: nowrap;
+  }
+
+  @media (max-width: 768px) {
+    .github-star span {
+      display: none;
+    }
+
+    .github-star {
+      padding: 0.5rem;
+    }
+  }
+</style>
+
+<script>
+  // Theme toggle functionality
+  document.addEventListener("DOMContentLoaded", () => {
+    const themeToggle = document.getElementById("theme-toggle");
+
+    // Function to set theme
+    function setTheme(theme) {
+      document.documentElement.setAttribute("data-theme", theme);
+      localStorage.setItem("theme", theme);
+      
+      // Update banner image based on theme
+      const bannerImage = document.getElementById("banner-image");
+      if (bannerImage) {
+        bannerImage.src = theme === "dark" 
+          ? "/assets/spike-banner-dark-thin.png"
+          : "/assets/spike-banner-light-thin.png";
+      }
+    }
+
+    // Initialize theme
+    const savedTheme = localStorage.getItem("theme");
+    setTheme(savedTheme ? savedTheme : "dark");
+    // Discard system theme changes; the landing page is always dark, so
+    // it's better to transition to a dark-by-default theme.
+    // } else if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+    //   setTheme("dark");
+    // }
+
+    // Toggle theme on button click
+    themeToggle.addEventListener("click", () => {
+      const currentTheme = document.documentElement.getAttribute("data-theme");
+      const newTheme = currentTheme === "dark" ? "light" : "dark";
+      setTheme(newTheme);
+    });
+
+    // Discard system-theme changes.
+    // window
+    //   .matchMedia("(prefers-color-scheme: dark)")
+    //   .addEventListener("change", (e) => {
+    //     if (!localStorage.getItem("theme")) {
+    //       setTheme(e.matches ? "dark" : "light");
+    //     }
+    //   });
+  });
+</script>
+
+
+        <article>
+            
+        <h1 id="production-hardening">Production hardening</h1>
+<h2 id="problem">Problem</h2>
+<p>SPIKE keeps its most sensitive material (the root key, decrypted secrets) in
+memory by design. That makes the <em>host</em> the trust boundary: if an attacker can
+read process memory, swap, or core dumps, encryption at rest no longer helps.
+Going to production means closing those host-level gaps and hardening the SPIRE
+identity plane SPIKE depends on. This recipe is the prioritized checklist; the
+<a href="/operations/production/">Production Setup guide</a> has the full rationale.</p>
+<h2 id="tl-dr">TL;DR</h2>
+<p>Protect memory, run unprivileged, lock down the identity plane, and restrict
+the backing store:</p>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="shellscript"><span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># Keep secrets out of disk-backed memory</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">swapoff</span><span style="color: #C3E88D;"> -a</span><span style="color: #464B5D;font-style: italic;">                                   # disable swap</span></span>
+<span class="giallo-l"><span style="color: #82AAFF;">ulimit</span><span style="color: #C3E88D;"> -c</span><span style="color: #F78C6C;"> 0</span><span style="color: #464B5D;font-style: italic;">                                  # disable core dumps (RLIMIT_CORE)</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># allow mlock for the spike user (limits.conf / LimitMEMLOCK=infinity)</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># restrict debugging</span></span>
+<span class="giallo-l"><span style="color: #82AAFF;">echo</span><span style="color: #89DDFF;"> &#39;</span><span style="color: #C3E88D;">kernel.yama.ptrace_scope = 2</span><span style="color: #89DDFF;">&#39; |</span><span style="color: #FFCB6B;"> sudo</span><span style="color: #C3E88D;"> tee /etc/sysctl.d/10-ptrace.conf</span></span></code></pre>
+<p>Then: non-root service accounts, mTLS-only SPIRE, granular registration
+entries (no wildcards), and least-privilege access to <code>~/.spike/data</code>.</p>
+<h2 id="workflow">Workflow</h2>
+<ol>
+<li>
+<p><strong>Protect memory (highest value).</strong> SPIKE attempts <code>mlockall</code> to keep keys
+out of swap; give the <code>spike</code> user the memlock limit so it succeeds.</p>
+<ul>
+<li>Disable swap (<code>swapoff -a</code>), or use encrypted swap if you cannot.</li>
+<li>Disable core dumps (<code>RLIMIT_CORE=0</code>, or <code>LimitCORE=0</code> in systemd).</li>
+<li>Restrict <code>ptrace</code>: set <code>kernel.yama.ptrace_scope</code> to <code>2</code> (root-only) or <code>3</code>
+(off). This applies to both Nexus and the Keepers.</li>
+<li>Keep ASLR on (<code>kernel.randomize_va_space = 2</code>).</li>
+</ul>
+</li>
+<li>
+<p><strong>Run unprivileged and isolated.</strong></p>
+<ul>
+<li>Run every component as a dedicated <strong>non-root</strong> user with minimal
+permissions. Never run as root.</li>
+<li>Single-tenant the Nexus host (node affinity in Kubernetes); it should be
+the only significant process on the box.</li>
+<li>In Kubernetes: <code>allowPrivilegeEscalation: false</code>, <code>privileged: false</code>,
+<code>readOnlyRootFilesystem: true</code>, non-root <code>runAsUser</code>/<code>runAsGroup</code>, Pod
+Security Admission, and NetworkPolicies.</li>
+</ul>
+</li>
+<li>
+<p><strong>Harden the SPIRE identity plane.</strong> SPIKE’s security rests on it.</p>
+<ul>
+<li>Isolate the SPIRE server (separate cluster or dedicated hardware); consider
+a KMS plugin for its keys.</li>
+<li>Write <strong>granular</strong> registration entries; avoid wildcard selectors.</li>
+<li>Bind component identities to binary <code>sha256</code> selectors so a swapped binary
+fails attestation and gets no SVID.</li>
+<li>mTLS everywhere; rotate workload certs frequently.</li>
+</ul>
+</li>
+<li>
+<p><strong>Restrict the backing store and backups.</strong></p>
+<ul>
+<li>Limit write access to <code>~/.spike/data</code> to the Nexus process only.</li>
+<li>For external stores (S3/minio/DB), assume untrusted: TLS in transit,
+restricted access, encrypted at rest.</li>
+<li>Encrypt backups; guard root-key shards far more strictly than the (already
+encrypted) database. See
+<a href="/recipes/backup-and-restore/">Backup and restore</a>.</li>
+</ul>
+</li>
+<li>
+<p><strong>Set the Shamir parameters for your scale.</strong></p>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="shellscript"><span class="giallo-l"><span style="color: #C792EA;">export</span><span> SPIKE_NEXUS_SHAMIR_SHARES</span><span style="color: #89DDFF;">=</span><span style="color: #F78C6C;">5</span><span style="color: #464B5D;font-style: italic;">      # total keepers</span></span>
+<span class="giallo-l"><span style="color: #C792EA;">export</span><span> SPIKE_NEXUS_SHAMIR_THRESHOLD</span><span style="color: #89DDFF;">=</span><span style="color: #F78C6C;">3</span><span style="color: #464B5D;font-style: italic;">   # needed to reconstruct</span></span></code></pre><table><thead><tr><th>Deployment</th><th>Threshold</th><th>Shares</th></tr></thead><tbody>
+<tr><td>Dev/Test</td><td>2</td><td>3</td></tr>
+<tr><td>Small Prod</td><td>3</td><td>5</td></tr>
+<tr><td>Large Prod</td><td>5</td><td>7</td></tr>
+<tr><td>Critical</td><td>7</td><td>10</td></tr>
+</tbody></table>
+</li>
+</ol>
+<h2 id="tips">Tips</h2>
+<ul>
+<li><strong>Defense in depth.</strong> No single control is sufficient. Memory locking plus no
+swap plus no core dumps plus ptrace restriction together make memory
+extraction genuinely hard.</li>
+<li><strong>Verify binary integrity.</strong> SPIKE binaries ship with SHA-256 checksums.
+Verify on install and re-check periodically; binding the SHA into SPIRE
+entries makes this load-bearing, not just advisory.</li>
+<li><strong>Audit logs are evidence.</strong> Audit entries are prefixed <code>[AUDIT]:</code> on stdout
+(not yet a separate stream). Ship them somewhere tamper-evident with a
+retention policy that matches your compliance needs.</li>
+<li><strong>Containers need mlock support.</strong> To use <code>mlock</code> inside a container, use a
+storage driver that supports it (e.g. <code>overlay2</code>) and raise the container
+runtime’s <code>LimitMEMLOCK</code>.</li>
+</ul>
+<h2 id="pitfalls">Pitfalls</h2>
+<ul>
+<li><strong>The host is the trust boundary.</strong> Encryption at rest does not protect a key
+sitting in swap or a core dump. Skipping the memory-protection steps is the
+most consequential omission.</li>
+<li><strong>Misconfigured SPIRE silently weakens everything.</strong> A wildcard selector or a
+privileged user running a component undoes attestation. The protections exist
+only if configured correctly.</li>
+<li><strong>Storage tampering is still possible.</strong> SPIKE encrypts data at rest, but an
+attacker with write access to the store can corrupt or delete it. Restrict
+store access independent of encryption.</li>
+<li><strong>Don’t treat this as one-time.</strong> Cipher suites, key lengths, and defaults
+change across versions. Hardening is continuous; keep a frequent upgrade
+cadence. See <a href="/recipes/upgrading-spike/">Upgrading SPIKE</a>.</li>
+</ul>
+<h2 id="cross-links">Cross-links</h2>
+<ul>
+<li><a href="/recipes/deploying-spike/">Deploying SPIKE</a></li>
+<li><a href="/recipes/backup-and-restore/">Backup and restore</a></li>
+<li><a href="/recipes/break-the-glass-recovery/">Break-the-glass disaster recovery</a></li>
+<li>Reference: <a href="/operations/production/">Production Setup guide</a>,
+<a href="/architecture/security-model/">Security model</a></li>
+</ul>
+<h2 id="what-s-next">What’s next</h2>
+<p>When something still will not come up, work the symptoms:
+<a href="/recipes/troubleshooting/">Troubleshooting</a>.</p>
+
+    
+        </article>
+
+        <footer id="footer">
+            Copyright © 2024-present <strong>SPIKE Contributors</strong>.<br>
+            <strong>SPIKE</strong>'s code
+            is distributed under <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache (v2.0)</a>.
+            <br>
+            The documentation on this website
+            is distributed under <a href="https://creativecommons.org/licenses/by/4.0/">CC-BY-4.0</a>.
+            <br><br>
+            We <strong>do not</strong> collect your data.
+            This site <strong>does not</strong> use any tracking cookies or scripts.
+        </footer>
+    </div>
+
+</main>
+
+
+    <script type="text/javascript" src="https://spike.ist/elasticlunr.min.js" defer></script>
+    <script type="text/javascript" src="https://spike.ist/search_index.en.js" defer></script>
+<script type="text/javascript" src="https://spike.ist/js.js" defer></script>
+</body>
+</html>
+<style>
+body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    font-family: var(--font-family);
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+}
+
+main {
+    width: 100vw;
+    max-width: 1920px;
+    display: flex;
+    flex-direction: row;
+    overflow: hidden;
+}
+
+#footer {
+    text-align: center;
+    padding: 2rem;
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    border-top: 1px solid var(--border-color);
+    margin-top: 2rem;
+}
+
+.content {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    height: 100vh;
+    overflow-y: auto;
+    background-color: var(--bg-primary);
+    line-height: 1.6;
+    border-left: 1px solid var(--border-color);
+}
+
+#footer a {
+    color: var(--spike-blue);
+    text-decoration: none;
+    transition: all 0.2s ease;
+    border-bottom: 1px solid transparent;
+    font-weight: 500;
+
+}
+
+#footer a:hover {
+    border-bottom-color: var(--spike-blue);
+}
+
+</style>

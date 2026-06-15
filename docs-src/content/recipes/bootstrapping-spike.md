@@ -3,22 +3,22 @@
 #  \\\\\ Copyright 2024-present SPIKE contributors.
 # \\\\\\\ SPDX-License-Identifier: Apache-2.0
 
-title = "Bootstrapping a fresh SPIKE"
+title = "Bootstrapping a Fresh SPIKE"
 weight = 2
 sort_by = "weight"
 +++
 
-# Bootstrapping a fresh SPIKE
+# Bootstrapping a Fresh SPIKE
 
 ## Problem
 
 On a brand-new `lite` or `sqlite` deployment the SPIKE Keepers start **empty**.
 SPIKE Nexus recovers its root key *from* the keepers, so until something
-generates a root key and seeds the keepers, Nexus can never initialize — it
+generates a root key and seeds the keepers, Nexus can never initialize; it
 loops in keeper recovery and its readiness probe keeps killing it. Bootstrap is
 the one-time step that breaks this chicken-and-egg.
 
-> `memory` mode needs no bootstrap — skip this recipe.
+> `memory` mode needs no bootstrap, so skip this recipe.
 
 ## TL;DR
 
@@ -69,7 +69,7 @@ ready.
 ## Pitfalls
 
 - **No `--wait` race.** Don't `helm install --wait` the chart and expect Nexus
-  Ready *before* bootstrap runs — Nexus can't be ready until the keepers are
+  Ready *before* bootstrap runs; Nexus can't be ready until the keepers are
   seeded. Install without `--wait`, run bootstrap, then wait on the Nexus
   rollout.
 - **Keepers not all up.** Bootstrap requires exactly `SHARES` reachable keepers;
@@ -78,14 +78,14 @@ ready.
   API; set `SPIKE_NEXUS_API_URL` to a resolvable address (in Kubernetes, the
   fully-qualified service DNS).
 
-## Cross-links
+## Cross-Links
 
 - [Choosing a backend store](/recipes/choosing-a-backend-store/)
 - [Where the root key lives: keepers, Shamir, and recovery](/recipes/root-key-keepers-recovery/)
 - [Troubleshooting](/recipes/troubleshooting/) (Nexus stuck in keeper recovery)
 - Reference: [Configuration](/usage/configuration/)
 
-## What's next
+## What's Next
 
 Understand the moving parts you just wired up:
 [Where the root key lives](/recipes/root-key-keepers-recovery/).
