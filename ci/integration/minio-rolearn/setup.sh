@@ -29,7 +29,11 @@ spec:
 '
 kubectl rollout status statefulset/spire-spike-nexus -n spire-server --watch --timeout=5m
 kubectl apply -f "${SCRIPTPATH}/test.yaml"
-helm upgrade --install minio -n minio --create-namespace oci://registry-1.docker.io/bitnamicharts/minio -f "${SCRIPTPATH}/minio-values.yaml"
+# Pin the chart version so the image tags stay aligned with the tags that
+# exist under docker.io/bitnamilegacy/* (see minio-values.yaml). An unpinned
+# install would float to the latest chart, whose newer image tags may not be
+# mirrored in the frozen legacy repository.
+helm upgrade --install minio -n minio --create-namespace --version 17.0.21 oci://registry-1.docker.io/bitnamicharts/minio -f "${SCRIPTPATH}/minio-values.yaml"
 kubectl rollout restart -n minio deployment/minio
 kubectl rollout status -n minio deployment/minio
 kubectl wait -l statefulset.kubernetes.io/pod-name=test-0 --for=condition=ready pod --timeout=-360s

@@ -1,3 +1,23 @@
+# Bitnami removed its free `docker.io/bitnami/*` images from Docker Hub and
+# relocated them to `docker.io/bitnamilegacy/*`. The default image tags shipped
+# by chart 17.0.21 (pinned in setup.sh) no longer exist under `bitnami/`, so we
+# redirect every image the chart pulls to the legacy repository. The chart's
+# image-verification gate rejects non-`bitnami/` repositories unless
+# `allowInsecureImages` is set.
+global:
+  security:
+    allowInsecureImages: true
+image:
+  repository: bitnamilegacy/minio
+clientImage:
+  repository: bitnamilegacy/minio-client
+console:
+  image:
+    repository: bitnamilegacy/minio-object-browser
+defaultInitContainers:
+  volumePermissions:
+    image:
+      repository: bitnamilegacy/os-shell
 auth:
   rootUser: admin
   rootPassword: admin1234
