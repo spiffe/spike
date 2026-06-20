@@ -1,0 +1,115 @@
+# SPIKE Bootstrap: one-shot Job that generates the root key, splits it into
+# Shamir shares, and seeds the SPIKE Keepers. Without this, SPIKE Nexus waits
+# forever in InitializeBackingStoreFromKeepers (the keepers hold no shard), so
+# Nexus never becomes ready. The spire chart registers the
+# spiffe://<trust>/spike/bootstrap identity (component=spike-bootstrap) but
+# does not deploy a bootstrap workload; this Job is that workload.
+#
+# The ServiceAccount/RBAC below let the bootstrap read and write its
+# "spike-bootstrap-state" ConfigMap. That ConfigMap is the idempotency guard:
+# without it a Job retry would re-bootstrap with a brand-new root key and
+# corrupt an already-initialized Nexus.
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: spire-spike-bootstrap
+  namespace: spire-server
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: spire-spike-bootstrap
+  namespace: spire-server
+rules:
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    verbs: ["get", "create", "update", "patch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: spire-spike-bootstrap
+  namespace: spire-server
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: spire-spike-bootstrap
+subjects:
+  - kind: ServiceAccount
+    name: spire-spike-bootstrap
+    namespace: spire-server
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: spire-spike-bootstrap
+  namespace: spire-server
+spec:
+  backoffLimit: 30
+  template:
+    metadata:
+      labels:
+        component: spike-bootstrap
+        release: spire
+        release-namespace: spire-server
+    spec:
+      restartPolicy: OnFailure
+      serviceAccountName: spire-spike-bootstrap
+      initContainers:
+        - name: wait-for-spire
+          image: cgr.dev/chainguard/bash:latest
+          command:
+            - /bin/bash
+            - -c
+            - |
+              echo "Waiting for SPIRE agent socket..."
+              while [ ! -S /spiffe-workload-api/spire-agent.sock ]; do
+                sleep 2
+              done
+              echo "SPIRE agent socket is ready"
+          volumeMounts:
+            - name: spiffe-workload-api
+              mountPath: /spiffe-workload-api
+              readOnly: true
+      containers:
+        - name: spike-bootstrap
+          image: ghcr.io/spiffe/spike-bootstrap:dev
+          imagePullPolicy: Never
+          args: ["-init"]
+          env:
+            - name: SPIFFE_ENDPOINT_SOCKET
+              value: unix:///spiffe-workload-api/spire-agent.sock
+            # Nexus API URL for the post-seed initialization-verification probe.
+            # Without it the bootstrap dials a default address and hangs after
+            # seeding, never marking completion.
+            - name: SPIKE_NEXUS_API_URL
+              value: "https://spire-spike-nexus.spire-server.svc.cluster.local"
+            - name: SPIKE_NEXUS_KEEPER_PEERS
+              value: "https://spire-spike-keeper-0.spire-spike-keeper-headless:8443,https://spire-spike-keeper-1.spire-spike-keeper-headless:8443,https://spire-spike-keeper-2.spire-spike-keeper-headless:8443"
+            - name: SPIKE_NEXUS_SHAMIR_SHARES
+              value: "3"
+            - name: SPIKE_NEXUS_SHAMIR_THRESHOLD
+              value: "2"
+            - name: SPIKE_TRUST_ROOT
+              value: example.org
+            - name: SPIKE_TRUST_ROOT_KEEPER
+              value: example.org
+            - name: SPIKE_TRUST_ROOT_BOOTSTRAP
+              value: example.org
+            # Required so the post-seed verify can authorize Nexus's SVID
+            # (predicate.AllowNexus -> IsNexus reads SPIKE_TRUST_ROOT_NEXUS).
+            - name: SPIKE_TRUST_ROOT_NEXUS
+              value: example.org
+            - name: SPIKE_TRUST_ROOT_PILOT
+              value: example.org
+            - name: SPIKE_SYSTEM_LOG_LEVEL
+              value: debug
+          volumeMounts:
+            - name: spiffe-workload-api
+              mountPath: /spiffe-workload-api
+              readOnly: true
+      volumes:
+        - name: spiffe-workload-api
+          csi:
+            driver: csi.spiffe.io
+            readOnly: true

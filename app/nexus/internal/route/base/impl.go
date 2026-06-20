@@ -83,6 +83,8 @@ func routeWithBackingStore(a url.APIAction, p url.APIURL) net.Handler {
 //     or net.Fallback if the operation requires a backing store
 func routeWithNoBackingStore(a url.APIAction, p url.APIURL) net.Handler {
 	switch {
+	case a == url.ActionDefault && p == url.NexusBootstrapVerify:
+		return bootstrap.RouteVerify
 	case a == url.ActionDefault && p == url.NexusOperatorRecover:
 		return operator.RouteRecover
 	case a == url.ActionDefault && p == url.NexusOperatorRestore:

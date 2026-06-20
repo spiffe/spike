@@ -291,6 +291,69 @@
                 </li>
 
                 </ul>
+    <input class="tree-toggle" type="checkbox" id="recipes"
+               />
+        <label class="tree-toggle-label "
+               for="recipes">Recipes</label>
+
+        <ul class="subtree">
+            <li >
+                    <a href="https://spike.ist/recipes/choosing-a-backend-store/">Choosing a backend store</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/bootstrapping-spike/">Bootstrapping a fresh SPIKE</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/root-key-keepers-recovery/">Where the root key lives</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/storing-and-reading-secrets/">Storing and reading secrets</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/writing-access-policies/">Writing access policies</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/granting-a-workload-access/">Granting a workload access to secrets</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/encryption-as-a-service/">Using SPIKE as an encryption service</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/break-the-glass-recovery/">Break-the-glass disaster recovery</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/backup-and-restore/">Backup and restore</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/deploying-spike/">Deploying SPIKE (Kubernetes and bare-metal)</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/production-hardening/">Production hardening</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/troubleshooting/">Troubleshooting</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/go-sdk-integration/">Integrating the Go SDK</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/upgrading-spike/">Upgrading SPIKE</a>
+                </li>
+
+                </ul>
     </div>
 <style>
     /* Navigation tree structure */
@@ -812,98 +875,88 @@ production-like namespace structure.</li>
 <p>Here is a list of things you need to have installed on your machine before
 starting with this guide:</p>
 <ul>
-<li>Have <a href="https://www.docker.com/" title="Docker: Build, Share, and Run Applications">Docker</a> installed and running on your machine.</li>
-<li>Have a <a href="https://kubernetes.io/docs/tasks/tools/" title="kubectl: Kubernetes command-line tool"><code>kubectl</code></a> client installed.</li>
-<li>Have <a href="https://www.gnu.org/software/make/" title="GNU Make: Build Automation Tool"><code>make</code></a> installed on your machine.</li>
-<li>Have a <a href="https://minikube.sigs.k8s.io/docs/start/" title="Minikube: Run Kubernetes Locally"><code>minikube</code></a> binary installed.</li>
-<li>Have <a href="https://helm.sh/" title="Helm"><code>helm</code></a> binary installed.</li>
+<li>Have <a rel="external" title="Docker: Build, Share, and Run Applications" href="https://www.docker.com/">Docker</a> installed and running on your machine.</li>
+<li>Have a <a rel="external" title="kubectl: Kubernetes command-line tool" href="https://kubernetes.io/docs/tasks/tools/"><code>kubectl</code></a> client installed.</li>
+<li>Have <a rel="external" title="GNU Make: Build Automation Tool" href="https://www.gnu.org/software/make/"><code>make</code></a> installed on your machine.</li>
+<li>Have a <a rel="external" title="Minikube: Run Kubernetes Locally" href="https://minikube.sigs.k8s.io/docs/start/"><code>minikube</code></a> binary installed.</li>
+<li>Have <a rel="external" title="Helm" href="https://helm.sh/"><code>helm</code></a> binary installed.</li>
 </ul>
 <h2 id="docker-registry-setup">Docker Registry Setup</h2>
 <p>For security, SPIKE components lock the memory they use at runtime. You may
 need to update the <code>ulimit</code> settings for your Docker daemon to allow this.</p>
 <p>For Linux, edit or create the <code>/etc/docker/daemon.json</code> file and add the
 following:</p>
-<pre data-lang="json" style="background-color:#2b303b;color:#c0c5ce;" class="language-json "><code class="language-json" data-lang="json"><span>{
-</span><span>  &quot;</span><span style="color:#a3be8c;">default-ulimits</span><span>&quot;: {
-</span><span>    &quot;</span><span style="color:#a3be8c;">memlock</span><span>&quot;: {
-</span><span>      &quot;</span><span style="color:#a3be8c;">Name</span><span>&quot;: &quot;</span><span style="color:#a3be8c;">memlock</span><span>&quot;,
-</span><span>      &quot;</span><span style="color:#a3be8c;">Hard</span><span>&quot;: </span><span style="color:#d08770;">17179869184</span><span>,
-</span><span>      &quot;</span><span style="color:#a3be8c;">Soft</span><span>&quot;: </span><span style="color:#d08770;">17179869184
-</span><span>    }
-</span><span>  }
-</span><span>}
-</span></code></pre>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="json"><span class="giallo-l"><span style="color: #89DDFF;">{</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">  &quot;</span><span style="color: #C792EA;">default-ulimits</span><span style="color: #89DDFF;">&quot;: {</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">    &quot;</span><span style="color: #FFCB6B;">memlock</span><span style="color: #89DDFF;">&quot;: {</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">      &quot;</span><span style="color: #F78C6C;">Name</span><span style="color: #89DDFF;">&quot;: &quot;</span><span style="color: #C3E88D;">memlock</span><span style="color: #89DDFF;">&quot;,</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">      &quot;</span><span style="color: #F78C6C;">Hard</span><span style="color: #89DDFF;">&quot;:</span><span style="color: #F78C6C;"> 17179869184</span><span style="color: #89DDFF;">,</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">      &quot;</span><span style="color: #F78C6C;">Soft</span><span style="color: #89DDFF;">&quot;:</span><span style="color: #F78C6C;"> 17179869184</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">    }</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">  }</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">}</span></span></code></pre>
 <p><code>17179869184</code> will set the maximum amount of memory a container can lock to
 16GB. You can set this to a lower value if you want, since SPIKE components
 don’t need that much memory.</p>
 <p>For Docker for Mac, or Docker for Windows, you will need to update
 the Docker Engine settings from the “<em>Settings &gt; Docker Engine</em>” menu as
 follows:</p>
-<pre data-lang="json" style="background-color:#2b303b;color:#c0c5ce;" class="language-json "><code class="language-json" data-lang="json"><span>{
-</span><span>  &quot;</span><span style="color:#a3be8c;">builder</span><span>&quot;: {
-</span><span>    &quot;</span><span style="color:#a3be8c;">gc</span><span>&quot;: {
-</span><span>      &quot;</span><span style="color:#a3be8c;">defaultKeepStorage</span><span>&quot;: &quot;</span><span style="color:#a3be8c;">20GB</span><span>&quot;,
-</span><span>      &quot;</span><span style="color:#a3be8c;">enabled</span><span>&quot;: </span><span style="color:#d08770;">true
-</span><span>    }
-</span><span>  },
-</span><span>  &quot;</span><span style="color:#a3be8c;">experimental</span><span>&quot;: </span><span style="color:#d08770;">false</span><span>,
-</span><span>  &quot;</span><span style="color:#a3be8c;">default-ulimits</span><span>&quot;: {
-</span><span>    &quot;</span><span style="color:#a3be8c;">memlock</span><span>&quot;: {
-</span><span>      &quot;</span><span style="color:#a3be8c;">Name</span><span>&quot;: &quot;</span><span style="color:#a3be8c;">memlock</span><span>&quot;,
-</span><span>      &quot;</span><span style="color:#a3be8c;">Hard</span><span>&quot;: </span><span style="color:#d08770;">17179869184</span><span>,
-</span><span>      &quot;</span><span style="color:#a3be8c;">Soft</span><span>&quot;: </span><span style="color:#d08770;">17179869184
-</span><span>    }
-</span><span>  }
-</span><span>}
-</span></code></pre>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="json"><span class="giallo-l"><span style="color: #89DDFF;">{</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">  &quot;</span><span style="color: #C792EA;">builder</span><span style="color: #89DDFF;">&quot;: {</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">    &quot;</span><span style="color: #FFCB6B;">gc</span><span style="color: #89DDFF;">&quot;: {</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">      &quot;</span><span style="color: #F78C6C;">defaultKeepStorage</span><span style="color: #89DDFF;">&quot;: &quot;</span><span style="color: #C3E88D;">20GB</span><span style="color: #89DDFF;">&quot;,</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">      &quot;</span><span style="color: #F78C6C;">enabled</span><span style="color: #89DDFF;">&quot;: true</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">    }</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">  },</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">  &quot;</span><span style="color: #C792EA;">experimental</span><span style="color: #89DDFF;">&quot;: false,</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">  &quot;</span><span style="color: #C792EA;">default-ulimits</span><span style="color: #89DDFF;">&quot;: {</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">    &quot;</span><span style="color: #FFCB6B;">memlock</span><span style="color: #89DDFF;">&quot;: {</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">      &quot;</span><span style="color: #F78C6C;">Name</span><span style="color: #89DDFF;">&quot;: &quot;</span><span style="color: #C3E88D;">memlock</span><span style="color: #89DDFF;">&quot;,</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">      &quot;</span><span style="color: #F78C6C;">Hard</span><span style="color: #89DDFF;">&quot;:</span><span style="color: #F78C6C;"> 17179869184</span><span style="color: #89DDFF;">,</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">      &quot;</span><span style="color: #F78C6C;">Soft</span><span style="color: #89DDFF;">&quot;:</span><span style="color: #F78C6C;"> 17179869184</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">    }</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">  }</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">}</span></span></code></pre>
 <p>Once the change is done, remember to restart the Docker Engine.</p>
 <h2 id="all-in-one-script">All-in-One Script</h2>
 <p>If you have the prerequisites set up and want to skip ahead and run the entire
 guide in one go, you can use the following script:</p>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#96b5b4;">cd </span><span>$</span><span style="color:#bf616a;">WORKSPACE </span><span style="color:#65737e;"># Replace with your workspace directory
-</span><span style="color:#bf616a;">git</span><span> clone https://github.com/spiffe/spike.git
-</span><span style="color:#96b5b4;">cd</span><span> spike
-</span><span style="color:#bf616a;">make</span><span> deploy-minikube 
-</span></code></pre>
-<h2 id="starting-minikube">Starting Minikube</h2>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="shellscript"><span class="giallo-l"><span style="color: #82AAFF;">cd</span><span> $WORKSPACE</span><span style="color: #464B5D;font-style: italic;"> # Replace with your workspace directory</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">git</span><span style="color: #C3E88D;"> clone https://github.com/spiffe/spike.git</span></span>
+<span class="giallo-l"><span style="color: #82AAFF;">cd</span><span style="color: #C3E88D;"> spike</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">make</span><span style="color: #C3E88D;"> deploy-minikube</span><span> </span></span></code></pre><h2 id="starting-minikube">Starting Minikube</h2>
 <p>To start a local Minikube cluster, clone the project repository and run the
 following command in the root directory of the project:</p>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#96b5b4;">cd </span><span>$</span><span style="color:#bf616a;">WORKSPACE </span><span style="color:#65737e;"># Replace with your workspace directory
-</span><span style="color:#bf616a;">git</span><span> clone https://github.com/spiffe/spike.git
-</span><span style="color:#96b5b4;">cd</span><span> spike
-</span><span style="color:#bf616a;">make</span><span> docker-cleanup </span><span style="color:#65737e;"># (Optional) Purge docker registry.
-</span><span style="color:#bf616a;">make</span><span> k8s-delete     </span><span style="color:#65737e;"># Delete any former Minikube installation.
-</span><span style="color:#bf616a;">make</span><span> k8s-start      </span><span style="color:#65737e;"># This will start a Minikube cluster.
-</span></code></pre>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="shellscript"><span class="giallo-l"><span style="color: #82AAFF;">cd</span><span> $WORKSPACE</span><span style="color: #464B5D;font-style: italic;"> # Replace with your workspace directory</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">git</span><span style="color: #C3E88D;"> clone https://github.com/spiffe/spike.git</span></span>
+<span class="giallo-l"><span style="color: #82AAFF;">cd</span><span style="color: #C3E88D;"> spike</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">make</span><span style="color: #C3E88D;"> docker-cleanup</span><span style="color: #464B5D;font-style: italic;"> # (Optional) Purge docker registry.</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">make</span><span style="color: #C3E88D;"> k8s-delete</span><span style="color: #464B5D;font-style: italic;">     # Delete any former Minikube installation.</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">make</span><span style="color: #C3E88D;"> k8s-start</span><span style="color: #464B5D;font-style: italic;">      # This will start a Minikube cluster.</span></span></code></pre>
 <p>If successful, you will have a local Minikube cluster running with the
 necessary plugins enabled. You can verify that Minikube is running by executing:</p>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">minikube</span><span> status
-</span><span style="color:#65737e;"># or...
-</span><span style="color:#bf616a;">kubectl</span><span> get node
-</span><span>
-</span><span style="color:#65737e;"># Sample Outputs:
-</span><span style="color:#65737e;">#
-</span><span style="color:#65737e;"># $ minikube status
-</span><span style="color:#65737e;"># minikube
-</span><span style="color:#65737e;"># type: Control Plane
-</span><span style="color:#65737e;"># host: Running
-</span><span style="color:#65737e;"># kubelet: Running
-</span><span style="color:#65737e;"># apiserver: Running
-</span><span style="color:#65737e;"># kubeconfig: Configured
-</span><span style="color:#65737e;">#
-</span><span style="color:#65737e;"># $ kubectl get node
-</span><span style="color:#65737e;"># NAME       STATUS   ROLES           AGE   VERSION
-</span><span style="color:#65737e;"># minikube   Ready    control-plane   67s   v1.33.1
-</span></code></pre>
-<h2 id="build-container-images-locally">Build Container Images Locally</h2>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="shellscript"><span class="giallo-l"><span style="color: #FFCB6B;">minikube</span><span style="color: #C3E88D;"> status</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># or...</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">kubectl</span><span style="color: #C3E88D;"> get node</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># Sample Outputs:</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;">#</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># $ minikube status</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># minikube</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># type: Control Plane</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># host: Running</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># kubelet: Running</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># apiserver: Running</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># kubeconfig: Configured</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;">#</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># $ kubectl get node</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># NAME       STATUS   ROLES           AGE   VERSION</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># minikube   Ready    control-plane   67s   v1.33.1</span></span></code></pre><h2 id="build-container-images-locally">Build Container Images Locally</h2>
 <p>We have a <code>make</code> target to build the container images locally.</p>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">make</span><span> docker-build
-</span></code></pre>
-<h2 id="pushing-container-images-to-the-local-registry">Pushing Container Images to the Local Registry</h2>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="shellscript"><span class="giallo-l"><span style="color: #FFCB6B;">make</span><span style="color: #C3E88D;"> docker-build</span></span></code></pre><h2 id="pushing-container-images-to-the-local-registry">Pushing Container Images to the Local Registry</h2>
 <p>Next up, we’ll push the container images to our internal Minikube container
 registry:</p>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">make</span><span> k8s-load-images
-</span></code></pre>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="shellscript"><span class="giallo-l"><span style="color: #FFCB6B;">make</span><span style="color: #C3E88D;"> k8s-load-images</span></span></code></pre>
 <p>That said, <code>make k8s-load-images</code> is the safest and simplest way to push
 the images into Minikube without having to deal with Docker networking,
 port forwarding, and Docker registry, making it the preferred method, and
@@ -921,49 +974,44 @@ feature branch of the upstream repo.</p>
 </blockquote>
 <p>Once we push the container images to the registry, we can now deploy <strong>SPIRE</strong>
 and <strong>SPIKE</strong>.</p>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># Uses `./config/helm/values-local.yaml`
-</span><span style="color:#bf616a;">make</span><span> deploy-dev-local
-</span></code></pre>
-<h2 id="verifying-spike-deployment">Verifying <strong>SPIKE</strong> Deployment</h2>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="shellscript"><span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># Uses `./config/helm/values-local.yaml`</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">make</span><span style="color: #C3E88D;"> deploy-dev-local</span></span></code></pre><h2 id="verifying-spike-deployment">Verifying <strong>SPIKE</strong> Deployment</h2>
 <p>First, make sure that your components are up and running.</p>
 <p>The following commands should <strong>all</strong> show <code>Ready</code> and <code>Runing</code> containers.</p>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">kubectl</span><span> get po</span><span style="color:#bf616a;"> -n</span><span> spire-server
-</span><span style="color:#65737e;"># spiffe-server-0
-</span><span style="color:#65737e;"># spiffe-spiffe-oidc-discovery-provider
-</span><span style="color:#bf616a;">kubectl</span><span> get po</span><span style="color:#bf616a;"> -n</span><span> spire-system
-</span><span style="color:#65737e;"># spiffe-agent
-</span><span style="color:#65737e;"># spiffe-spiffe-csi-driver
-</span><span style="color:#bf616a;">kubectl</span><span> get po</span><span style="color:#bf616a;"> -n</span><span> spike
-</span><span style="color:#65737e;"># spiffe-spike-keeper-0
-</span><span style="color:#65737e;"># spiffe-spike-keeper-1
-</span><span style="color:#65737e;"># spiffe-spike-keeper-2
-</span><span style="color:#65737e;"># spiffe-spike-nexus-0
-</span><span style="color:#65737e;"># spiffe-spike-pilot
-</span></code></pre>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="shellscript"><span class="giallo-l"><span style="color: #FFCB6B;">kubectl</span><span style="color: #C3E88D;"> get po -n spire-server</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># spiffe-server-0</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># spiffe-spiffe-oidc-discovery-provider</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">kubectl</span><span style="color: #C3E88D;"> get po -n spire-system</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># spiffe-agent</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># spiffe-spiffe-csi-driver</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">kubectl</span><span style="color: #C3E88D;"> get po -n spike</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># spiffe-spike-keeper-0</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># spiffe-spike-keeper-1</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># spiffe-spike-keeper-2</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># spiffe-spike-nexus-0</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># spiffe-spike-pilot</span></span></code></pre>
 <p>You can also shell into <strong>SPIKE Pilot</strong> to create and retrieve secrets to
 ensure <strong>SPIKE</strong> is up and running and properly configured in the cluster.</p>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">make</span><span> exec-spike
-</span><span style="color:#65737e;"># ^ This will shell into SPIKE Pilot.
-</span><span style="color:#65737e;"># Now you can execute the following commands:
-</span><span style="color:#bf616a;">spike</span><span> secret list
-</span><span style="color:#65737e;"># Output:
-</span><span style="color:#65737e;"># No Secrets found.
-</span><span style="color:#bf616a;">spike</span><span> secret put test/creds username=spike password=SPIKERocks
-</span><span style="color:#65737e;"># Output:
-</span><span style="color:#65737e;"># OK
-</span><span style="color:#bf616a;">spike</span><span> secret list
-</span><span style="color:#65737e;"># Output:
-</span><span style="color:#65737e;"># - test/creds
-</span><span style="color:#bf616a;">spike</span><span> secret get test/creds
-</span><span style="color:#65737e;"># Output:
-</span><span style="color:#65737e;"># password: SPIKERocks
-</span><span style="color:#65737e;"># username: spike
-</span><span>
-</span></code></pre>
-<h2 id="you-are-all-set">You Are All Set</h2>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="shellscript"><span class="giallo-l"><span style="color: #FFCB6B;">make</span><span style="color: #C3E88D;"> exec-spike</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># ^ This will shell into SPIKE Pilot.</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># Now you can execute the following commands:</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">spike</span><span style="color: #C3E88D;"> secret list</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># Output:</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># No Secrets found.</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">spike</span><span style="color: #C3E88D;"> secret put test/creds username=spike password=SPIKERocks</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># Output:</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># OK</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">spike</span><span style="color: #C3E88D;"> secret list</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># Output:</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># - test/creds</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">spike</span><span style="color: #C3E88D;"> secret get test/creds</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># Output:</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># password: SPIKERocks</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># username: spike</span></span>
+<span class="giallo-l"></span></code></pre><h2 id="you-are-all-set">You Are All Set</h2>
 <p>That’s it. Now, you know how to modify <strong>SPIKE</strong>’s source code and test your
 changes in a local Kubernetes cluster.</p>
-<p>Next up, you might want to <a href="https://github.com/spiffe/spike" title="SPIKE on GitHub">Read <strong>SPIKE</strong>’s Source Code</a> to learn more
+<p>Next up, you might want to <a rel="external" title="SPIKE on GitHub" href="https://github.com/spiffe/spike">Read <strong>SPIKE</strong>’s Source Code</a> to learn more
 about <strong>SPIKE</strong>’s internals, or <a href="https://spike.ist/architecture/" title="SPIKE Architecture">learn more about <strong>SPIKE</strong>’s
 architecture</a> or <a href="https://spike.ist/architecture/security-model/" title="SPIKE Security Model">security model</a>.</p>
 <p>You might also want to try <a href="https://spike.ist/development/bare-metal/" title="SPIKE on Linux">building <strong>SPIKE</strong> on a bare metal

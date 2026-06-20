@@ -44,9 +44,10 @@ spire-server entry create \
 A policy must grant your workload access to the secrets it needs:
 
 ```bash
-spike policy create myapp-policy \
-  --spiffe-id-pattern "spiffe://example\.org/myapp" \
-  --path-pattern "tenants/myapp/.*" \
+spike policy create \
+  --name myapp-policy \
+  --spiffeid-pattern "^spiffe://example\.org/myapp$" \
+  --path-pattern "^tenants/myapp/.*$" \
   --permissions read,write
 ```
 

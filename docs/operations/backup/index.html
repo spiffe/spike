@@ -282,6 +282,69 @@
                 </li>
 
                 </ul>
+    <input class="tree-toggle" type="checkbox" id="recipes"
+               />
+        <label class="tree-toggle-label "
+               for="recipes">Recipes</label>
+
+        <ul class="subtree">
+            <li >
+                    <a href="https://spike.ist/recipes/choosing-a-backend-store/">Choosing a backend store</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/bootstrapping-spike/">Bootstrapping a fresh SPIKE</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/root-key-keepers-recovery/">Where the root key lives</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/storing-and-reading-secrets/">Storing and reading secrets</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/writing-access-policies/">Writing access policies</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/granting-a-workload-access/">Granting a workload access to secrets</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/encryption-as-a-service/">Using SPIKE as an encryption service</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/break-the-glass-recovery/">Break-the-glass disaster recovery</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/backup-and-restore/">Backup and restore</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/deploying-spike/">Deploying SPIKE (Kubernetes and bare-metal)</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/production-hardening/">Production hardening</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/troubleshooting/">Troubleshooting</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/go-sdk-integration/">Integrating the Go SDK</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/upgrading-spike/">Upgrading SPIKE</a>
+                </li>
+
+                </ul>
     </div>
 <style>
     /* Navigation tree structure */
@@ -826,18 +889,17 @@ shards</li>
 <h3 id="sqlite-database-backup">SQLite database backup</h3>
 <p>The SPIKE Nexus uses a SQLite database to store all encrypted secrets and
 metadata. This database is typically located in <code>~/.spike</code> on the Nexus server.</p>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># 1. First, ensure consistent state by using SQLite&#39;s online backup API
-</span><span style="color:#bf616a;">sqlite3 ~</span><span>/.spike/data/spike.db \
-</span><span>  &quot;</span><span style="color:#a3be8c;">.backup &#39;/backup/spike_nexus_db_</span><span>$</span><span style="color:#a3be8c;">(</span><span style="color:#bf616a;">date</span><span style="color:#a3be8c;"> +</span><span>%</span><span style="color:#bf616a;">Y</span><span>%</span><span style="color:#bf616a;">m</span><span>%</span><span style="color:#bf616a;">d_</span><span>%</span><span style="color:#bf616a;">H</span><span>%</span><span style="color:#bf616a;">M</span><span>%</span><span style="color:#bf616a;">S</span><span style="color:#a3be8c;">).sqlite&#39;</span><span>&quot;
-</span><span>
-</span><span style="color:#65737e;"># 2. For WAL mode databases, checkpoint first to ensure consistency
-</span><span style="color:#bf616a;">sqlite3 ~</span><span>/.spike/data/spike.db &quot;</span><span style="color:#a3be8c;">PRAGMA wal_checkpoint(FULL);</span><span>&quot;
-</span><span style="color:#bf616a;">sqlite3 ~</span><span>/.spike/data/spike.db \
-</span><span>  &quot;</span><span style="color:#a3be8c;">.backup &#39;/backup/spike_nexus_db_</span><span>$</span><span style="color:#a3be8c;">(</span><span style="color:#bf616a;">date</span><span style="color:#a3be8c;"> +</span><span>%</span><span style="color:#bf616a;">Y</span><span>%</span><span style="color:#bf616a;">m</span><span>%</span><span style="color:#bf616a;">d_</span><span>%</span><span style="color:#bf616a;">H</span><span>%</span><span style="color:#bf616a;">M</span><span>%</span><span style="color:#bf616a;">S</span><span style="color:#a3be8c;">).sqlite&#39;</span><span>&quot;
-</span><span>
-</span><span style="color:#65737e;"># 3. Verify backup integrity
-</span><span style="color:#bf616a;">sqlite3</span><span> /backup/spike_nexus_db_*.sqlite &quot;</span><span style="color:#a3be8c;">PRAGMA integrity_check;</span><span>&quot;
-</span></code></pre>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="shellscript"><span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># 1. First, ensure consistent state by using SQLite&#39;s online backup API</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">sqlite3</span><span style="color: #C3E88D;"> ~/.spike/data/spike.db</span><span> \</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">  &quot;</span><span style="color: #C3E88D;">.backup &#39;/backup/spike_nexus_db_</span><span style="color: #89DDFF;">$(</span><span style="color: #FFCB6B;">date</span><span style="color: #C3E88D;"> +%Y%m%d_%H%M%S</span><span style="color: #89DDFF;">)</span><span style="color: #C3E88D;">.sqlite&#39;</span><span style="color: #89DDFF;">&quot;</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># 2. For WAL mode databases, checkpoint first to ensure consistency</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">sqlite3</span><span style="color: #C3E88D;"> ~/.spike/data/spike.db</span><span style="color: #89DDFF;"> &quot;</span><span style="color: #C3E88D;">PRAGMA wal_checkpoint(FULL);</span><span style="color: #89DDFF;">&quot;</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">sqlite3</span><span style="color: #C3E88D;"> ~/.spike/data/spike.db</span><span> \</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">  &quot;</span><span style="color: #C3E88D;">.backup &#39;/backup/spike_nexus_db_</span><span style="color: #89DDFF;">$(</span><span style="color: #FFCB6B;">date</span><span style="color: #C3E88D;"> +%Y%m%d_%H%M%S</span><span style="color: #89DDFF;">)</span><span style="color: #C3E88D;">.sqlite&#39;</span><span style="color: #89DDFF;">&quot;</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># 3. Verify backup integrity</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">sqlite3</span><span style="color: #C3E88D;"> /backup/spike_nexus_db_</span><span>*</span><span style="color: #C3E88D;">.sqlite</span><span style="color: #89DDFF;"> &quot;</span><span style="color: #C3E88D;">PRAGMA integrity_check;</span><span style="color: #89DDFF;">&quot;</span></span></code></pre>
 <p><strong>Important considerations:</strong></p>
 <ul>
 <li>The SQLite database backup contains encrypted data that can only be decrypted
@@ -849,12 +911,11 @@ direct file copying</li>
 <p>The root key is <strong>SPIKE</strong>’s most critical component. While it exists only in
 memory during normal operation, you must back it up for disaster recovery using
 Shamir’s Secret Sharing:</p>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># Create recovery shards of the root key
-</span><span style="color:#65737e;"># IMPORTANT: Run this BEFORE any disaster occurs
-</span><span style="color:#bf616a;">spike</span><span> recover
-</span><span>
-</span><span style="color:#65737e;"># This will generate multiple shard files under `~/.spike/recover` folder. 
-</span></code></pre>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="shellscript"><span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># Create recovery shards of the root key</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># IMPORTANT: Run this BEFORE any disaster occurs</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">spike</span><span style="color: #C3E88D;"> operator recover</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># This will generate multiple shard files under `~/.spike/recover` folder. </span></span></code></pre>
 <p><strong>Secure handling of recovery shards:</strong></p>
 <ol>
 <li>Encrypt each shard immediately after creation (<em>e.g., using GPG with
@@ -872,10 +933,8 @@ hardware keys</em>)</li>
 </li>
 <li>
 <p>SPIFFE registration entries:</p>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># Back up SPIFFE registration entries
-</span><span style="color:#bf616a;">spire-server</span><span> entry show &gt; /backup/spire_entries_$(</span><span style="color:#bf616a;">date</span><span> +%</span><span style="color:#bf616a;">Y</span><span>%</span><span style="color:#bf616a;">m</span><span>%</span><span style="color:#bf616a;">d</span><span>).txt
-</span></code></pre>
-</li>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="shellscript"><span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># Back up SPIFFE registration entries</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">spire-server</span><span style="color: #C3E88D;"> entry show</span><span style="color: #89DDFF;"> &gt;</span><span style="color: #C3E88D;"> /backup/spire_entries_</span><span style="color: #89DDFF;">$(</span><span style="color: #FFCB6B;">date</span><span style="color: #C3E88D;"> +%Y%m%d</span><span style="color: #89DDFF;">)</span><span style="color: #C3E88D;">.txt</span></span></code></pre></li>
 </ol>
 <h2 id="restore-procedures">Restore procedures</h2>
 <h3 id="prerequisites-for-restoration">Prerequisites for Restoration</h3>
@@ -902,19 +961,18 @@ hardware keys</em>)</li>
 <h3 id="root-key-restoration">Root key restoration</h3>
 <p>If both <strong>SPIKE Nexus</strong> and all <strong>SPIKE Keeper</strong>s are unavailable
 (<em>catastrophic failure</em>), follow this procedure:</p>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># 1. Configure SPIKE Pilot for restore operations 
-</span><span style="color:#65737e;"># (adjust the script path for your environment)
-</span><span style="color:#bf616a;">./hack/bare-metal/entry/spire-server-entry-restore-register.sh
-</span><span>
-</span><span style="color:#65737e;"># 2. Run the restore command
-</span><span style="color:#bf616a;">spike</span><span> restore
-</span><span>
-</span><span style="color:#65737e;"># 3. When prompted, provide recovery shards one at a time
-</span><span style="color:#65737e;"># You&#39;ll need to provide enough shards to meet your threshold (e.g., 2 of 3)
-</span><span>
-</span><span style="color:#65737e;"># 4. After successful restoration, revert SPIKE Pilot to normal operation
-</span><span style="color:#bf616a;">./hack/bare-metal/entry/spire-server-entry-su-register.sh
-</span></code></pre>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="shellscript"><span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># 1. Configure SPIKE Pilot for restore operations </span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># (adjust the script path for your environment)</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">./hack/bare-metal/entry/spire-server-entry-restore-register.sh</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># 2. Run the restore command</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">spike</span><span style="color: #C3E88D;"> operator restore</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># 3. When prompted, provide recovery shards one at a time</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># You&#39;ll need to provide enough shards to meet your threshold (e.g., 2 of 3)</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># 4. After successful restoration, revert SPIKE Pilot to normal operation</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">./hack/bare-metal/entry/spire-server-entry-su-register.sh</span></span></code></pre>
 <p>SPIKE Nexus will:</p>
 <ul>
 <li>Automatically reconstruct the root key from the provided shards</li>
@@ -929,17 +987,13 @@ hardware keys</em>)</li>
 </li>
 <li>
 <p>Replace the current database with the backup.</p>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">cp</span><span> /backup/spike_nexus_db_TIMESTAMP.sqlite \
-</span><span>  </span><span style="color:#bf616a;">~</span><span>/.spike/data/spike.db
-</span><span>
-</span></code></pre>
-</li>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="shellscript"><span class="giallo-l"><span style="color: #FFCB6B;">cp</span><span style="color: #C3E88D;"> /backup/spike_nexus_db_TIMESTAMP.sqlite</span><span> \</span></span>
+<span class="giallo-l"><span style="color: #C3E88D;">  ~/.spike/data/spike.db</span></span>
+<span class="giallo-l"></span></code></pre></li>
 <li>
 <p>Set appropriate permissions</p>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">chown</span><span> spike:spike </span><span style="color:#bf616a;">~</span><span>/.spike/data/spike.db
-</span><span style="color:#bf616a;">chmod</span><span> 600 </span><span style="color:#bf616a;">~</span><span>/.spike/data/spike.db
-</span></code></pre>
-</li>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="shellscript"><span class="giallo-l"><span style="color: #FFCB6B;">chown</span><span style="color: #C3E88D;"> spike:spike ~/.spike/data/spike.db</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">chmod</span><span style="color: #F78C6C;"> 600</span><span style="color: #C3E88D;"> ~/.spike/data/spike.db</span></span></code></pre></li>
 <li>
 <p>Start <strong>SPIKE Nexus</strong></p>
 </li>
@@ -949,13 +1003,11 @@ recover the root key from <strong>SPIKE Keeper</strong>s, you’ll need to perfo
 key restoration procedure above.</p>
 <h3 id="verification-procedures">Verification procedures</h3>
 <p>After completing a restore operation, verify system integrity:</p>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># Verify database integrity
-</span><span style="color:#bf616a;">sqlite3 ~</span><span>/.spike/data/spike.db &quot;</span><span style="color:#a3be8c;">PRAGMA integrity_check;</span><span>&quot;
-</span><span>
-</span><span style="color:#65737e;"># Test secret access to verify encryption/decryption is working
-</span><span style="color:#bf616a;">spike</span><span> get /path/to/test/secret
-</span></code></pre>
-<h2 id="backup-best-practices">Backup best practices</h2>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="shellscript"><span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># Verify database integrity</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">sqlite3</span><span style="color: #C3E88D;"> ~/.spike/data/spike.db</span><span style="color: #89DDFF;"> &quot;</span><span style="color: #C3E88D;">PRAGMA integrity_check;</span><span style="color: #89DDFF;">&quot;</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># Test secret access to verify encryption/decryption is working</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">spike</span><span style="color: #C3E88D;"> secret get path/to/test/secret</span></span></code></pre><h2 id="backup-best-practices">Backup best practices</h2>
 <h3 id="backup-frequency-and-scheduling">Backup frequency and scheduling</h3>
 <table><thead><tr><th>Component</th><th>Recommended Frequency</th><th>Reasoning</th></tr></thead><tbody>
 <tr><td>SQLite Database</td><td>Daily</td><td>Captures secret changes promptly</td></tr>

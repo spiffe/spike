@@ -20,7 +20,7 @@ sequenceDiagram
 
     Note over User: Create policy for workload
 
-    User->>Pilot: spike policy create my-policy \<br/>--spiffe-id-pattern "spiffe://example\.org/workload/.*" \<br/>--path-pattern "secrets/app/.*" \<br/>--permissions read,write
+    User->>Pilot: spike policy create --name my-policy \<br/>--spiffeid-pattern "^spiffe://example\.org/workload/.*$" \<br/>--path-pattern "^secrets/app/.*$" \<br/>--permissions read,write
 
     Pilot->>Validation: Validate inputs
 

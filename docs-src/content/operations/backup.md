@@ -13,9 +13,9 @@ sort_by = "weight"
 **SPIKE**, the Secure Production Identity Framework for Key Encryption, provides 
 robust secrets management with strong identity controls. But even the most 
 reliable systems need comprehensive backup and recovery plans. This guide
-explains how to properly back up, secure, and restore SPIKE deployments—ensuring 
-your critical secrets infrastructure remains resilient against catastrophic 
-failures.
+explains how to properly back up, secure, and restore SPIKE deployments,
+ensuring your critical secrets infrastructure remains resilient against
+catastrophic failures.
 
 ## Architecture Foundations for Effective Backup Planning
 
@@ -45,9 +45,9 @@ The foundation of SPIKE's security model lies in its root key management:
 * For disaster recovery scenarios, administrators can create additional recovery 
   shards
 
-## Backup procedures
+## Backup Procedures
 
-### SQLite database backup
+### SQLite Database Backup
 
 The SPIKE Nexus uses a SQLite database to store all encrypted secrets and 
 metadata. This database is typically located in `~/.spike` on the Nexus server.
@@ -73,7 +73,7 @@ sqlite3 /backup/spike_nexus_db_*.sqlite "PRAGMA integrity_check;"
 * Use database-level locking through SQLite's `.backup` command rather than 
   direct file copying
 
-### Root key and cryptographic material backup
+### Root Key and Cryptographic Material Backup
 
 The root key is **SPIKE**'s most critical component. While it exists only in 
 memory during normal operation, you must back it up for disaster recovery using 
@@ -82,7 +82,7 @@ Shamir's Secret Sharing:
 ```bash
 # Create recovery shards of the root key
 # IMPORTANT: Run this BEFORE any disaster occurs
-spike recover
+spike operator recover
 
 # This will generate multiple shard files under `~/.spike/recover` folder. 
 ```
@@ -96,7 +96,7 @@ spike recover
 4. Implement strict access controls for shard access
 5. Document the threshold configuration (*e.g., "2 of 3 shards required"*)
 
-### Configuration and other components backup
+### Configuration and Other Components Backup
 
 Beyond the database and root key, back up these critical components:
 
@@ -108,7 +108,7 @@ Beyond the database and root key, back up these critical components:
    spire-server entry show > /backup/spire_entries_$(date +%Y%m%d).txt
    ```
 
-## Restore procedures
+## Restore Procedures
 
 ### Prerequisites for Restoration
 
@@ -124,7 +124,7 @@ Before beginning any restore operation, ensure:
 
 3. All **SPIKE** services are properly installed on the target system
 
-### Root key restoration
+### Root Key Restoration
 
 If both **SPIKE Nexus** and all **SPIKE Keeper**s are unavailable 
 (*catastrophic failure*), follow this procedure:
@@ -135,7 +135,7 @@ If both **SPIKE Nexus** and all **SPIKE Keeper**s are unavailable
 ./hack/bare-metal/entry/spire-server-entry-restore-register.sh
 
 # 2. Run the restore command
-spike restore
+spike operator restore
 
 # 3. When prompted, provide recovery shards one at a time
 # You'll need to provide enough shards to meet your threshold (e.g., 2 of 3)
@@ -149,7 +149,7 @@ SPIKE Nexus will:
 * Redistribute shards to available SPIKE Keeper instances
 * Resume normal operation with the restored key
 
-### SQLite database restoration
+### SQLite Database Restoration
 
 To restore the SQLite database:
 
@@ -172,7 +172,7 @@ To restore the SQLite database:
 recover the root key from **SPIKE Keeper**s, you'll need to perform the root 
 key restoration procedure above.
 
-### Verification procedures
+### Verification Procedures
 
 After completing a restore operation, verify system integrity:
 
@@ -181,12 +181,12 @@ After completing a restore operation, verify system integrity:
 sqlite3 ~/.spike/data/spike.db "PRAGMA integrity_check;"
 
 # Test secret access to verify encryption/decryption is working
-spike get /path/to/test/secret
+spike secret get path/to/test/secret
 ```
 
-## Backup best practices
+## Backup Best Practices
 
-### Backup frequency and scheduling
+### Backup Frequency and Scheduling
 
 | Component       | Recommended Frequency                               | Reasoning                                |
 |-----------------|-----------------------------------------------------|------------------------------------------|
@@ -195,7 +195,7 @@ spike get /path/to/test/secret
 | Configuration   | After any configuration change                      | Ensures you can recreate the environment |
 | SPIFFE Entries  | After any identity changes                          | Required for workload authentication     |
 
-### Backup rotation and retention
+### Backup Rotation and Retention
 
 Implement a comprehensive retention policy:
 
@@ -231,7 +231,7 @@ For database backups:
 While **SPIKE** currently lacks built-in migration tools, careful planning can 
 facilitate future migrations.
 
-### Current migration limitations
+### Current Migration Limitations
 
 - No direct database migration between different SPIKE versions
 - Manual coordination is required for root key transfers

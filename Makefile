@@ -7,3 +7,6 @@ include ./makefiles/BareMetal.mk
 include ./makefiles/Kubernetes.mk
 include ./makefiles/FederationDemo.mk
 include ./makefiles/Test.mk
+
+# Optional AI-tooling targets (ctx). Safe to skip if ctx is not installed.
+-include ./makefiles/Ctx.mk

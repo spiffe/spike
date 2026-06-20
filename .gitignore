@@ -78,3 +78,25 @@ spike-sdk-go
 
 # WSL
 *:Zone.Identifier
+
+# ctx managed entries
+.context/journal
+.context/journal-site
+.context/journal-obsidian
+.context/logs
+.context/.ctx.key
+.context/state/
+.context/ingest/
+.context/handovers/*
+!.context/handovers/.gitkeep
+GETTING_STARTED.md
+Makefile.ctx
+
+# AI tooling: locally generated / installed, not committed
+.claude/
+.gitnexus
+
+# Local agent scratch notebooks (ctx dream / triage)
+/ideas/
+/inbox/
+/outbox/

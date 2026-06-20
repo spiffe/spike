@@ -340,6 +340,7 @@ using **SPIKE**.
 
 Here are a few links to get you started:
 
+* [**SPIKE** Recipes: task-oriented, step-by-step guides][recipes]
 * [Building **SPIKE** Locally and Deploying to Minikube][local-deployment]
 * [Bare Metal **SPIKE** Installation][bare-metal]
 * [Configuring **SPIKE**][configuration]
@@ -352,6 +353,7 @@ Here are a few links to get you started:
 [**Join the SPIKE community**][community] to ask your questions and
 learn from the subject-matter experts.
 
+[recipes]: @/recipes/_index.md "SPIKE Recipes"
 [hardening]: @/operations/production.md "SPIKE Production Hardening Guide"
 [architecture]: @/architecture/_index.md "SPIKE Architecture"
 [configuration]: @/usage/configuration.md "Configuring SPIKE"

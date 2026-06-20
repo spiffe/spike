@@ -10,12 +10,14 @@ compile_sass = true
 build_search_index = true
 
 [markdown]
-# Whether to do syntax highlighting
-# Theme can be customised by setting the `highlight_theme` variable to a theme supported by Zola
-highlight_code = true
-highlight_theme = "base16-ocean-dark"
-
 smart_punctuation = true
+
+# Syntax highlighting. As of Zola 0.19 the top-level `highlight_code`
+# and `highlight_theme` keys moved into the [markdown.highlighting]
+# table; Zola 0.22 switched the highlighter to Giallo. Theme can be
+# customised by setting `theme` to any Zola-supported theme.
+[markdown.highlighting]
+theme = "material-theme-ocean"
 
 # Put all your custom variables here
 [extra]

@@ -291,6 +291,69 @@
                 </li>
 
                 </ul>
+    <input class="tree-toggle" type="checkbox" id="recipes"
+               />
+        <label class="tree-toggle-label "
+               for="recipes">Recipes</label>
+
+        <ul class="subtree">
+            <li >
+                    <a href="https://spike.ist/recipes/choosing-a-backend-store/">Choosing a backend store</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/bootstrapping-spike/">Bootstrapping a fresh SPIKE</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/root-key-keepers-recovery/">Where the root key lives</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/storing-and-reading-secrets/">Storing and reading secrets</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/writing-access-policies/">Writing access policies</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/granting-a-workload-access/">Granting a workload access to secrets</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/encryption-as-a-service/">Using SPIKE as an encryption service</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/break-the-glass-recovery/">Break-the-glass disaster recovery</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/backup-and-restore/">Backup and restore</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/deploying-spike/">Deploying SPIKE (Kubernetes and bare-metal)</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/production-hardening/">Production hardening</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/troubleshooting/">Troubleshooting</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/go-sdk-integration/">Integrating the Go SDK</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/upgrading-spike/">Upgrading SPIKE</a>
+                </li>
+
+                </ul>
     </div>
 <style>
     /* Navigation tree structure */
@@ -794,13 +857,13 @@
         <article>
             
         <h1 id="spike-system-overview">SPIKE System Overview</h1>
-<p>This document provides an overview of <strong>SPIKE</strong>, a <a href="https://spiffe.io/" title="SPIFFE"><strong>SPIFFE</strong></a>-native
+<p>This document provides an overview of <strong>SPIKE</strong>, a <a rel="external" title="SPIFFE" href="https://spiffe.io/"><strong>SPIFFE</strong></a>-native
 Secrets Management solution. It is designed to ensure secure storage, recovery,
 and management of sensitive data with a focus on simplicity, reliability,
 and scalability for production environments.</p>
 <h2 id="spike-components">SPIKE Components</h2>
 <p><strong>SPIKE</strong> (<em>Secure Production Identity for Key Encryption</em>) is a Secrets
-Manager built on top of a <a href="https://spiffe.io/" title="SPIFFE"><strong>SPIFFE</strong></a> (<em>Secure Production
+Manager built on top of a <a rel="external" title="SPIFFE" href="https://spiffe.io/"><strong>SPIFFE</strong></a> (<em>Secure Production
 Identity Framework for Everyone</em>) identity control plane, consisting of three
 components:</p>
 <ul>
@@ -818,7 +881,7 @@ mechanism in case of irrecoverable failure.</p>
 <li><strong>SPIKE Nexus</strong> is the primary component responsible for secrets management.</li>
 <li>It creates and manages the root encryption key.</li>
 <li>It handles secret encryption and decryption.</li>
-<li>It syncs the <strong>root key</strong>’s <a href="https://en.wikipedia.org/wiki/Shamir%27s_secret_sharing" title="Shamir&#39;s Secret Sharing"><strong>Shamir Shards</strong></a> with <strong>SPIKE
+<li>It syncs the <strong>root key</strong>’s <a rel="external" title="Shamir's Secret Sharing" href="https://en.wikipedia.org/wiki/Shamir%27s_secret_sharing"><strong>Shamir Shards</strong></a> with <strong>SPIKE
 Keepers</strong>s. These shards then can be used to recover <strong>SPIKE Nexus</strong>
 upon a crash.</li>
 <li>It provides an <strong>RESTful mTLS API</strong> for <em>secret lifecycle management</em>,
@@ -828,7 +891,7 @@ upon a crash.</li>
 <ul>
 <li>It is designed to be <strong>simple</strong> and <strong>reliable</strong>.</li>
 <li>It does one thing and does it well.</li>
-<li>Its <strong>only</strong> goal is to keep a <a href="https://en.wikipedia.org/wiki/Shamir%27s_secret_sharing" title="Shamir&#39;s Secret Sharing"><strong>Shamir Shard</strong></a> in <strong>memory</strong>.</li>
+<li>Its <strong>only</strong> goal is to keep a <a rel="external" title="Shamir's Secret Sharing" href="https://en.wikipedia.org/wiki/Shamir%27s_secret_sharing"><strong>Shamir Shard</strong></a> in <strong>memory</strong>.</li>
 <li>By design, it does not have any knowledge about its peer <strong>SPIKE Keepers</strong>,
 nor <strong>SPIKE Nexus</strong>. It doesn’t require any configuration to be brought up.
 This makes it simple to operate, replace, scale, replicate.</li>
@@ -858,7 +921,7 @@ administrative access to the system, improving the overall security posture.</p>
 <ul>
 <li>It is a one-time initialization component that runs during system setup.</li>
 <li>It generates a cryptographically secure random <strong>root key</strong>.</li>
-<li>It splits the root key into <a href="https://en.wikipedia.org/wiki/Shamir%27s_secret_sharing" title="Shamir&#39;s Secret Sharing"><strong>Shamir</strong></a> shards and distributes them
+<li>It splits the root key into <a rel="external" title="Shamir's Secret Sharing" href="https://en.wikipedia.org/wiki/Shamir%27s_secret_sharing"><strong>Shamir</strong></a> shards and distributes them
 to the configured <strong>SPIKE Keeper</strong> instances.</li>
 <li>It verifies that <strong>SPIKE Nexus</strong> has successfully initialized by performing
 an end-to-end encryption test.</li>
@@ -871,10 +934,10 @@ time unless explicitly skipped.</p>
 <strong>SPIKE Nexus</strong> always polls <strong>SPIKE Keeper</strong>s for shards, while <strong>SPIKE
 Bootstrap</strong> handles the initial key generation and distribution.</p>
 <h2 id="identity-control-plane">Identity Control Plane</h2>
-<p>The following diagram shows how <a href="https://spiffe.io/docs/latest/spire-about/spire-concepts/#a-day-in-the-life-of-an-svid" title="A Day in the Life of an SVID"><strong>SVID</strong>s</a> are assigned to <strong>SPIKE</strong>
+<p>The following diagram shows how <a rel="external" title="A Day in the Life of an SVID" href="https://spiffe.io/docs/latest/spire-about/spire-concepts/#a-day-in-the-life-of-an-svid"><strong>SVID</strong>s</a> are assigned to <strong>SPIKE</strong>
 components and other actors in the system. <strong>SVID</strong>s, or <em>SPIFFE-Verifiable
-Identity Documents</em>, are <a href="https://en.wikipedia.org/wiki/X.509" title="X.509">x.509 Digital Certificates</a>, that contain
-a <a href="https://spiffe.io/docs/latest/spiffe-about/spiffe-concepts/" title="SPIFFE Concepts"><strong>SPIFFE ID</strong></a> in their <a href="https://en.wikipedia.org/wiki/Public_key_certificate" title="Public Key Certificate">SAN</a> (<em>Subject Alternative Name</em>)</p>
+Identity Documents</em>, are <a rel="external" title="X.509" href="https://en.wikipedia.org/wiki/X.509">x.509 Digital Certificates</a>, that contain
+a <a rel="external" title="SPIFFE Concepts" href="https://spiffe.io/docs/latest/spiffe-about/spiffe-concepts/"><strong>SPIFFE ID</strong></a> in their <a rel="external" title="Public Key Certificate" href="https://en.wikipedia.org/wiki/Public_key_certificate">SAN</a> (<em>Subject Alternative Name</em>)</p>
 <p>The following diagram illustrates how <strong>SPIFFE</strong> identities are distributed
 across different <strong>SPIKE</strong> system components using <strong>SPIRE</strong> as the identity
 control plane.</p>
@@ -904,7 +967,7 @@ control plane.</p>
 components to:</p>
 <ul>
 <li>Prove their identity to other services</li>
-<li>Establish secure, authenticated <a href="https://www.cloudflare.com/learning/access-management/what-is-mutual-tls/" title="What is mTLS"><strong>mTLS</strong></a> connections</li>
+<li>Establish secure, authenticated <a rel="external" title="What is mTLS" href="https://www.cloudflare.com/learning/access-management/what-is-mutual-tls/"><strong>mTLS</strong></a> connections</li>
 <li>Access resources they’re authorized to use</li>
 <li>Communicate securely with other components in the system</li>
 </ul>
@@ -947,7 +1010,7 @@ each other:</p>
 </a>
 <p>At the top level, there’s an Application that consumes secrets through an
 mTLS (mutual TLS) connection to SPIKE Nexus. The application will likely use
-the <a href="https://github.com/spiffe/spike-sdk-go" title="SPIKE Go SDK"><strong>SPIKE Developer SDK</strong></a> to consume secrets without having
+the <a rel="external" title="SPIKE Go SDK" href="https://github.com/spiffe/spike-sdk-go"><strong>SPIKE Developer SDK</strong></a> to consume secrets without having
 to implement the underlying SPIFFE mTLS wiring.</p>
 <p>The secrets are created/managed through:</p>
 <p>An administrative user interacting with <strong>SPIKE Pilot</strong> through a command line
@@ -958,7 +1021,7 @@ secrets.</p>
 secrets store.</p>
 <p>At the bottom of the diagram, multiple <strong>SPIKE Keeper</strong>s connect to
 <strong>SPIKE Nexus</strong> via mTLS. Each <strong>SPIKE Keeper</strong> holds a single
-<a href="https://en.wikipedia.org/wiki/Shamir%27s_secret_sharing" title="Shamir&#39;s Secret Sharing"><strong>Shamir Secret Share</strong></a> (<em>shard</em>) of the <strong>root key</strong> that
+<a rel="external" title="Shamir's Secret Sharing" href="https://en.wikipedia.org/wiki/Shamir%27s_secret_sharing"><strong>Shamir Secret Share</strong></a> (<em>shard</em>) of the <strong>root key</strong> that
 <strong>SPIKE Nexus</strong> maintains in memory.</p>
 <p>This design ensures that compromising any individual <strong>SPIKE Keeper</strong> cannot
 breach the system, as a single shard is not enough to reconstruct the
@@ -1001,7 +1064,7 @@ shards and then delivered to <strong>SPIKE Keeper</strong>s:</p>
     </div>
 </a>
 <p>The <strong>SPIKE Nexus</strong> has a <strong>root key</strong> that’s essential for encrypting the
-backing store. This <strong>root key</strong> is split into <a href="https://en.wikipedia.org/wiki/Shamir%27s_secret_sharing" title="Shamir&#39;s Secret Sharing">Shamir shards</a> based
+backing store. This <strong>root key</strong> is split into <a rel="external" title="Shamir's Secret Sharing" href="https://en.wikipedia.org/wiki/Shamir%27s_secret_sharing">Shamir shards</a> based
 on a configurable number and threshold. There should be as many keepers as
 the created shards.</p>
 <p>The key advantage of using <em>Shamir sharding</em> specifically (<em>versus other forms
@@ -1049,7 +1112,7 @@ root key. This polling continues indefinitely until the threshold number of
 shards is collected.</p>
 <p>The <strong>root key</strong> is generated by a separate component: <strong>SPIKE Bootstrap</strong>.
 When <strong>SPIKE Bootstrap</strong> runs, it generates a secure random root key, splits
-it into <a href="https://en.wikipedia.org/wiki/Shamir%27s_secret_sharing" title="Shamir&#39;s Secret Sharing"><strong>Shamir</strong></a> shards, and distributes those shards to the
+it into <a rel="external" title="Shamir's Secret Sharing" href="https://en.wikipedia.org/wiki/Shamir%27s_secret_sharing"><strong>Shamir</strong></a> shards, and distributes those shards to the
 configured <strong>SPIKE Keeper</strong> instances. This separation of concerns keeps
 <strong>SPIKE Nexus</strong>’s initialization flow simple and predictable.</p>
 <h2 id="spike-nexus-updating-spike-keepers">SPIKE Nexus Updating SPIKE Keepers</h2>
@@ -1057,7 +1120,7 @@ configured <strong>SPIKE Keeper</strong> instances. This separation of concerns 
 inside <strong>SPIKE Nexus</strong>:</p>
 <ul>
 <li>At regular intervals, if <strong>SPIKE Nexus</strong> has a <strong>root key</strong>, it computes
-<a href="https://en.wikipedia.org/wiki/Shamir%27s_secret_sharing" title="Shamir&#39;s Secret Sharing"><strong>Shamir</strong></a> shards and dispatches them to the <strong>SPIKE Keeper</strong>s.
+<a rel="external" title="Shamir's Secret Sharing" href="https://en.wikipedia.org/wiki/Shamir%27s_secret_sharing"><strong>Shamir</strong></a> shards and dispatches them to the <strong>SPIKE Keeper</strong>s.
 This ensures that the shards remain synchronized even if individual
 <strong>SPIKE Keeper</strong>s restart.</li>
 </ul>
@@ -1127,8 +1190,8 @@ You can open the picture on a new tab for an enlarged version of it.</p>
 </a>
 <h3 id="preventive-backup">Preventive Backup</h3>
 <blockquote>
-<p><strong>Run <code>spike recover</code> as Soon as You Can</strong></p>
-<p>You must back up the <strong>root key</strong> shards using <code>spike recover</code> <strong>BEFORE</strong> a
+<p><strong>Run <code>spike operator recover</code> as Soon as You Can</strong></p>
+<p>You must back up the <strong>root key</strong> shards using <code>spike operator recover</code> <strong>BEFORE</strong> a
 disaster strikes.</p>
 <p>This is like having a spare key stored in a safe place before you lose your
 main keys. Without this proactive backup step, there would be nothing to
@@ -1138,10 +1201,10 @@ recover from in a catastrophic failure.</p>
 deploying <strong>SPIKE</strong>.</p>
 <p>Here is how the flow goes:</p>
 <ul>
-<li>The Operator runs <code>spike recover</code> using <strong>SPIKE Pilot</strong>.</li>
+<li>The Operator runs <code>spike operator recover</code> using <strong>SPIKE Pilot</strong>.</li>
 <li><strong>SPIKE Pilot</strong> saves the recovery shards on the home directory of the system/</li>
 <li>The Operator encrypts and stores these shards in a secure medium, and securely
-erases the copies generated as an output to <code>spike recover</code>.</li>
+erases the copies generated as an output to <code>spike operator recover</code>.</li>
 </ul>
 <p>When later recovery is needed, the Operator will provide these shards to
 <strong>SPIKE</strong> to restore the system back to its working state.</p>
@@ -1154,7 +1217,7 @@ erases the copies generated as an output to <code>spike recover</code>.</li>
 <li>Thus, automatic recovery is impossible and the system requires manual
 recovery.</li>
 </ul>
-<p>In that case, the Operator uses <code>spike restore</code> to provide the previously
+<p>In that case, the Operator uses <code>spike operator restore</code> to provide the previously
 backed-up shards one at a time</p>
 <ul>
 <li><strong>SPIKE Pilot</strong> forwards the entered shard to <strong>SPIKE Nexus</strong></li>
@@ -1168,7 +1231,7 @@ the root key.</li>
 returns to normal operation.</p>
 <h2 id="want-more-pretty-pictures">Want More Pretty Pictures?</h2>
 <p>The diagrams above have been simplified for clarity. You can find more detailed
-ones in the <a href="https://github.com/spiffe/spike/tree/main/diagrams" title="SPIKE Diagrams"><code>diagrams</code> folder of the <strong>SPIKE</strong> GitHub repository</a>.</p>
+ones in the <a rel="external" title="SPIKE Diagrams" href="https://github.com/spiffe/spike/tree/main/diagrams"><code>diagrams</code> folder of the <strong>SPIKE</strong> GitHub repository</a>.</p>
 <p>&nbsp;</p>
 <hr />
 <ul>

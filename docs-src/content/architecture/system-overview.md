@@ -389,9 +389,9 @@ You can open the picture on a new tab for an enlarged version of it.
 
 ### Preventive Backup 
 
-> **Run `spike recover` as Soon as You Can**
+> **Run `spike operator recover` as Soon as You Can**
 > 
-> You must back up the **root key** shards using `spike recover` **BEFORE** a 
+> You must back up the **root key** shards using `spike operator recover` **BEFORE** a 
 > disaster strikes.
 >
 > This is like having a spare key stored in a safe place before you lose your 
@@ -403,10 +403,10 @@ deploying **SPIKE**.
 
 Here is how the flow goes:
 
-* The Operator runs `spike recover` using **SPIKE Pilot**.
+* The Operator runs `spike operator recover` using **SPIKE Pilot**.
 * **SPIKE Pilot** saves the recovery shards on the home directory of the system/
 * The Operator encrypts and stores these shards in a secure medium, and securely
-  erases the copies generated as an output to `spike recover`. 
+  erases the copies generated as an output to `spike operator recover`. 
 
 When later recovery is needed, the Operator will provide these shards to 
 **SPIKE** to restore the system back to its working state.
@@ -421,7 +421,7 @@ When disaster strikes:
 * Thus, automatic recovery is impossible and the system requires manual 
   recovery.
 
-In that case, the Operator uses `spike restore` to provide the previously 
+In that case, the Operator uses `spike operator restore` to provide the previously 
 backed-up shards one at a time
 
 * **SPIKE Pilot** forwards the entered shard to **SPIKE Nexus**

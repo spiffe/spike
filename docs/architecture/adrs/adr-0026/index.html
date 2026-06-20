@@ -254,6 +254,69 @@
                 </li>
 
                 </ul>
+    <input class="tree-toggle" type="checkbox" id="recipes"
+               />
+        <label class="tree-toggle-label "
+               for="recipes">Recipes</label>
+
+        <ul class="subtree">
+            <li >
+                    <a href="https://spike.ist/recipes/choosing-a-backend-store/">Choosing a backend store</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/bootstrapping-spike/">Bootstrapping a fresh SPIKE</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/root-key-keepers-recovery/">Where the root key lives</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/storing-and-reading-secrets/">Storing and reading secrets</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/writing-access-policies/">Writing access policies</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/granting-a-workload-access/">Granting a workload access to secrets</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/encryption-as-a-service/">Using SPIKE as an encryption service</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/break-the-glass-recovery/">Break-the-glass disaster recovery</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/backup-and-restore/">Backup and restore</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/deploying-spike/">Deploying SPIKE (Kubernetes and bare-metal)</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/production-hardening/">Production hardening</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/troubleshooting/">Troubleshooting</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/go-sdk-integration/">Integrating the Go SDK</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/upgrading-spike/">Upgrading SPIKE</a>
+                </li>
+
+                </ul>
     </div>
 <style>
     /* Navigation tree structure */
@@ -798,13 +861,11 @@ validation</li>
 sensible defaults and comprehensive validation.</p>
 <h2 id="detailed-design">Detailed Design</h2>
 <h3 id="new-environment-variables">New Environment Variables</h3>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># SPIKE Nexus data directory (default: ~/.spike/data)
-</span><span style="color:#bf616a;">SPIKE_NEXUS_DATA_DIR</span><span>=</span><span style="color:#a3be8c;">/custom/path/to/data
-</span><span>
-</span><span style="color:#65737e;"># SPIKE Pilot recovery directory (default: ~/.spike/recover)
-</span><span style="color:#bf616a;">SPIKE_PILOT_RECOVERY_DIR</span><span>=</span><span style="color:#a3be8c;">/custom/path/to/recover
-</span></code></pre>
-<h3 id="fallback-chain">Fallback Chain</h3>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="shellscript"><span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># SPIKE Nexus data directory (default: ~/.spike/data)</span></span>
+<span class="giallo-l"><span>SPIKE_NEXUS_DATA_DIR</span><span style="color: #89DDFF;">=</span><span style="color: #C3E88D;">/custom/path/to/data</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># SPIKE Pilot recovery directory (default: ~/.spike/recover)</span></span>
+<span class="giallo-l"><span>SPIKE_PILOT_RECOVERY_DIR</span><span style="color: #89DDFF;">=</span><span style="color: #C3E88D;">/custom/path/to/recover</span></span></code></pre><h3 id="fallback-chain">Fallback Chain</h3>
 <ol>
 <li>Use environment variable if set and valid</li>
 <li>Fall back to <code>~/.spike</code> (current default)</li>
@@ -830,29 +891,27 @@ sensible defaults and comprehensive validation.</p>
 </li>
 </ol>
 <h3 id="implementation-example">Implementation Example</h3>
-<pre data-lang="go" style="background-color:#2b303b;color:#c0c5ce;" class="language-go "><code class="language-go" data-lang="go"><span style="color:#b48ead;">func </span><span style="color:#8fa1b3;">NexusDataFolder</span><span>() </span><span style="color:#b48ead;">string </span><span>{
-</span><span>    </span><span style="color:#65737e;">// Check environment variable first
-</span><span>    </span><span style="color:#b48ead;">if </span><span style="color:#bf616a;">customDir </span><span>:= </span><span style="color:#bf616a;">os</span><span>.</span><span style="color:#bf616a;">Getenv</span><span>(&quot;</span><span style="color:#a3be8c;">SPIKE_NEXUS_DATA_DIR</span><span>&quot;); </span><span style="color:#bf616a;">customDir </span><span>!= &quot;&quot; {
-</span><span>        </span><span style="color:#b48ead;">if </span><span style="color:#bf616a;">err </span><span>:= </span><span style="color:#bf616a;">validateDataDirectory</span><span>(</span><span style="color:#bf616a;">customDir</span><span>); </span><span style="color:#bf616a;">err </span><span>== </span><span style="color:#d08770;">nil </span><span>{
-</span><span>            </span><span style="color:#b48ead;">return </span><span style="color:#bf616a;">filepath</span><span>.</span><span style="color:#bf616a;">Join</span><span>(</span><span style="color:#bf616a;">customDir</span><span>, &quot;</span><span style="color:#a3be8c;">data</span><span>&quot;)
-</span><span>        }
-</span><span>        </span><span style="color:#bf616a;">log</span><span>.</span><span style="color:#bf616a;">Warn</span><span>(&quot;</span><span style="color:#a3be8c;">Invalid custom data directory, falling back to default</span><span>&quot;,
-</span><span>            &quot;</span><span style="color:#a3be8c;">dir</span><span>&quot;, </span><span style="color:#bf616a;">customDir</span><span>, &quot;</span><span style="color:#a3be8c;">err</span><span>&quot;, </span><span style="color:#bf616a;">err</span><span>)
-</span><span>    }
-</span><span>
-</span><span>    </span><span style="color:#65737e;">// Fall back to home directory
-</span><span>    </span><span style="color:#bf616a;">homeDir</span><span>, </span><span style="color:#bf616a;">err </span><span>:= </span><span style="color:#bf616a;">os</span><span>.</span><span style="color:#bf616a;">UserHomeDir</span><span>()
-</span><span>    </span><span style="color:#b48ead;">if </span><span style="color:#bf616a;">err </span><span>!= </span><span style="color:#d08770;">nil </span><span>{
-</span><span>        </span><span style="color:#65737e;">// Fall back to temp with user isolation
-</span><span>        </span><span style="color:#b48ead;">return </span><span style="color:#bf616a;">fmt</span><span>.</span><span style="color:#bf616a;">Sprintf</span><span>(&quot;</span><span style="color:#a3be8c;">/tmp/.spike-</span><span style="color:#d08770;">%s</span><span style="color:#a3be8c;">/data</span><span>&quot;, </span><span style="color:#bf616a;">os</span><span>.</span><span style="color:#bf616a;">Getenv</span><span>(&quot;</span><span style="color:#a3be8c;">USER</span><span>&quot;))
-</span><span>    }
-</span><span>
-</span><span>    </span><span style="color:#bf616a;">spikeDir </span><span>:= </span><span style="color:#bf616a;">filepath</span><span>.</span><span style="color:#bf616a;">Join</span><span>(</span><span style="color:#bf616a;">homeDir</span><span>, &quot;</span><span style="color:#a3be8c;">.spike</span><span>&quot;)
-</span><span>    </span><span style="color:#bf616a;">os</span><span>.</span><span style="color:#bf616a;">MkdirAll</span><span>(</span><span style="color:#bf616a;">filepath</span><span>.</span><span style="color:#bf616a;">Join</span><span>(</span><span style="color:#bf616a;">spikeDir</span><span>, &quot;</span><span style="color:#a3be8c;">data</span><span>&quot;), </span><span style="color:#d08770;">0700</span><span>)
-</span><span>    </span><span style="color:#b48ead;">return </span><span style="color:#bf616a;">filepath</span><span>.</span><span style="color:#bf616a;">Join</span><span>(</span><span style="color:#bf616a;">spikeDir</span><span>, &quot;</span><span style="color:#a3be8c;">data</span><span>&quot;)
-</span><span>}
-</span></code></pre>
-<h2 id="consequences">Consequences</h2>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="go"><span class="giallo-l"><span style="color: #89DDFF;">func</span><span style="color: #82AAFF;"> NexusDataFolder</span><span style="color: #89DDFF;">()</span><span style="color: #C792EA;"> string</span><span style="color: #89DDFF;"> {</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;">    // Check environment variable first</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;font-style: italic;">    if</span><span> customDir</span><span style="color: #89DDFF;"> :=</span><span> os</span><span style="color: #89DDFF;">.</span><span style="color: #82AAFF;">Getenv</span><span style="color: #89DDFF;">(&quot;</span><span style="color: #C3E88D;">SPIKE_NEXUS_DATA_DIR</span><span style="color: #89DDFF;">&quot;);</span><span> customDir</span><span style="color: #89DDFF;"> != &quot;&quot; {</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;font-style: italic;">        if</span><span> err</span><span style="color: #89DDFF;"> :=</span><span style="color: #82AAFF;"> validateDataDirectory</span><span style="color: #89DDFF;">(</span><span>customDir</span><span style="color: #89DDFF;">);</span><span> err</span><span style="color: #89DDFF;"> == nil {</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;font-style: italic;">            return</span><span> filepath</span><span style="color: #89DDFF;">.</span><span style="color: #82AAFF;">Join</span><span style="color: #89DDFF;">(</span><span>customDir</span><span style="color: #89DDFF;">, &quot;</span><span style="color: #C3E88D;">data</span><span style="color: #89DDFF;">&quot;)</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">        }</span></span>
+<span class="giallo-l"><span>        log</span><span style="color: #89DDFF;">.</span><span style="color: #82AAFF;">Warn</span><span style="color: #89DDFF;">(&quot;</span><span style="color: #C3E88D;">Invalid custom data directory, falling back to default</span><span style="color: #89DDFF;">&quot;,</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">            &quot;</span><span style="color: #C3E88D;">dir</span><span style="color: #89DDFF;">&quot;,</span><span> customDir</span><span style="color: #89DDFF;">, &quot;</span><span style="color: #C3E88D;">err</span><span style="color: #89DDFF;">&quot;,</span><span> err</span><span style="color: #89DDFF;">)</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">    }</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;">    // Fall back to home directory</span></span>
+<span class="giallo-l"><span>    homeDir</span><span style="color: #89DDFF;">,</span><span> err</span><span style="color: #89DDFF;"> :=</span><span> os</span><span style="color: #89DDFF;">.</span><span style="color: #82AAFF;">UserHomeDir</span><span style="color: #89DDFF;">()</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;font-style: italic;">    if</span><span> err</span><span style="color: #89DDFF;"> != nil {</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;">        // Fall back to temp with user isolation</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;font-style: italic;">        return</span><span> fmt</span><span style="color: #89DDFF;">.</span><span style="color: #82AAFF;">Sprintf</span><span style="color: #89DDFF;">(&quot;</span><span style="color: #C3E88D;">/tmp/.spike-</span><span style="color: #F07178;">%s</span><span style="color: #C3E88D;">/data</span><span style="color: #89DDFF;">&quot;,</span><span> os</span><span style="color: #89DDFF;">.</span><span style="color: #82AAFF;">Getenv</span><span style="color: #89DDFF;">(&quot;</span><span style="color: #C3E88D;">USER</span><span style="color: #89DDFF;">&quot;))</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">    }</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span>    spikeDir</span><span style="color: #89DDFF;"> :=</span><span> filepath</span><span style="color: #89DDFF;">.</span><span style="color: #82AAFF;">Join</span><span style="color: #89DDFF;">(</span><span>homeDir</span><span style="color: #89DDFF;">, &quot;</span><span style="color: #C3E88D;">.spike</span><span style="color: #89DDFF;">&quot;)</span></span>
+<span class="giallo-l"><span>    os</span><span style="color: #89DDFF;">.</span><span style="color: #82AAFF;">MkdirAll</span><span style="color: #89DDFF;">(</span><span>filepath</span><span style="color: #89DDFF;">.</span><span style="color: #82AAFF;">Join</span><span style="color: #89DDFF;">(</span><span>spikeDir</span><span style="color: #89DDFF;">, &quot;</span><span style="color: #C3E88D;">data</span><span style="color: #89DDFF;">&quot;),</span><span style="color: #F78C6C;"> 0700</span><span style="color: #89DDFF;">)</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;font-style: italic;">    return</span><span> filepath</span><span style="color: #89DDFF;">.</span><span style="color: #82AAFF;">Join</span><span style="color: #89DDFF;">(</span><span>spikeDir</span><span style="color: #89DDFF;">, &quot;</span><span style="color: #C3E88D;">data</span><span style="color: #89DDFF;">&quot;)</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">}</span></span></code></pre><h2 id="consequences">Consequences</h2>
 <h3 id="positive">Positive</h3>
 <ul>
 <li><strong>Container deployments</strong> - Mount persistent volumes at custom paths</li>
@@ -879,12 +938,8 @@ sensible defaults and comprehensive validation.</p>
 <h3 id="for-users-wanting-custom-paths">For Users Wanting Custom Paths</h3>
 <ol>
 <li>Stop SPIKE components</li>
-<li>Move existing data to new location:<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">mv ~</span><span>/.spike/data /new/path/data
-</span></code></pre>
-</li>
-<li>Set environment variable:<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#b48ead;">export </span><span style="color:#bf616a;">SPIKE_NEXUS_DATA_DIR</span><span>=</span><span style="color:#a3be8c;">/new/path
-</span></code></pre>
-</li>
+<li>Move existing data to new location:<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="shellscript"><span class="giallo-l"><span style="color: #FFCB6B;">mv</span><span style="color: #C3E88D;"> ~/.spike/data /new/path/data</span></span></code></pre></li>
+<li>Set environment variable:<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="shellscript"><span class="giallo-l"><span style="color: #C792EA;">export</span><span> SPIKE_NEXUS_DATA_DIR</span><span style="color: #89DDFF;">=</span><span>/new/path</span></span></code></pre></li>
 <li>Restart SPIKE components</li>
 </ol>
 <h2 id="security-considerations">Security Considerations</h2>

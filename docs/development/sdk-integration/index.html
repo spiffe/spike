@@ -285,6 +285,69 @@
                 </li>
 
                 </ul>
+    <input class="tree-toggle" type="checkbox" id="recipes"
+               />
+        <label class="tree-toggle-label "
+               for="recipes">Recipes</label>
+
+        <ul class="subtree">
+            <li >
+                    <a href="https://spike.ist/recipes/choosing-a-backend-store/">Choosing a backend store</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/bootstrapping-spike/">Bootstrapping a fresh SPIKE</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/root-key-keepers-recovery/">Where the root key lives</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/storing-and-reading-secrets/">Storing and reading secrets</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/writing-access-policies/">Writing access policies</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/granting-a-workload-access/">Granting a workload access to secrets</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/encryption-as-a-service/">Using SPIKE as an encryption service</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/break-the-glass-recovery/">Break-the-glass disaster recovery</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/backup-and-restore/">Backup and restore</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/deploying-spike/">Deploying SPIKE (Kubernetes and bare-metal)</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/production-hardening/">Production hardening</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/troubleshooting/">Troubleshooting</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/go-sdk-integration/">Integrating the Go SDK</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/upgrading-spike/">Upgrading SPIKE</a>
+                </li>
+
+                </ul>
     </div>
 <style>
     /* Navigation tree structure */
@@ -796,105 +859,98 @@ SPIRE registration to secret operations.</p>
 <h3 id="1-spire-registration">1. SPIRE Registration</h3>
 <p>Your workload must be registered in SPIRE with a SPIFFE ID:</p>
 <p><strong>Kubernetes example:</strong></p>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">spire-server</span><span> entry create \
-</span><span style="color:#bf616a;">  -spiffeID</span><span> spiffe://example.org/myapp \
-</span><span style="color:#bf616a;">  -parentID</span><span> spiffe://example.org/spire/agent/k8s_psat/node1 \
-</span><span style="color:#bf616a;">  -selector</span><span> k8s:ns:default \
-</span><span style="color:#bf616a;">  -selector</span><span> k8s:pod-label:app:myapp
-</span></code></pre>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="shellscript"><span class="giallo-l"><span style="color: #FFCB6B;">spire-server</span><span style="color: #C3E88D;"> entry create</span><span> \</span></span>
+<span class="giallo-l"><span style="color: #C3E88D;">  -spiffeID spiffe://example.org/myapp</span><span> \</span></span>
+<span class="giallo-l"><span style="color: #C3E88D;">  -parentID spiffe://example.org/spire/agent/k8s_psat/node1</span><span> \</span></span>
+<span class="giallo-l"><span style="color: #C3E88D;">  -selector k8s:ns:default</span><span> \</span></span>
+<span class="giallo-l"><span style="color: #C3E88D;">  -selector k8s:pod-label:app:myapp</span></span></code></pre>
 <p><strong>Bare-metal example:</strong></p>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">spire-server</span><span> entry create \
-</span><span style="color:#bf616a;">  -spiffeID</span><span> spiffe://example.org/myapp \
-</span><span style="color:#bf616a;">  -parentID</span><span> spiffe://example.org/spire/agent/unix/hostname \
-</span><span style="color:#bf616a;">  -selector</span><span> unix:uid:1001
-</span></code></pre>
-<h3 id="2-spike-policy">2. SPIKE Policy</h3>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="shellscript"><span class="giallo-l"><span style="color: #FFCB6B;">spire-server</span><span style="color: #C3E88D;"> entry create</span><span> \</span></span>
+<span class="giallo-l"><span style="color: #C3E88D;">  -spiffeID spiffe://example.org/myapp</span><span> \</span></span>
+<span class="giallo-l"><span style="color: #C3E88D;">  -parentID spiffe://example.org/spire/agent/unix/hostname</span><span> \</span></span>
+<span class="giallo-l"><span style="color: #C3E88D;">  -selector unix:uid:1001</span></span></code></pre><h3 id="2-spike-policy">2. SPIKE Policy</h3>
 <p>A policy must grant your workload access to the secrets it needs:</p>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">spike</span><span> policy create myapp-policy \
-</span><span style="color:#bf616a;">  --spiffe-id-pattern </span><span>&quot;</span><span style="color:#a3be8c;">spiffe://example\.org/myapp</span><span>&quot; \
-</span><span style="color:#bf616a;">  --path-pattern </span><span>&quot;</span><span style="color:#a3be8c;">tenants/myapp/.*</span><span>&quot; \
-</span><span style="color:#bf616a;">  --permissions</span><span> read,write
-</span></code></pre>
-<h3 id="3-spike-nexus-running">3. SPIKE Nexus Running</h3>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="shellscript"><span class="giallo-l"><span style="color: #FFCB6B;">spike</span><span style="color: #C3E88D;"> policy create</span><span> \</span></span>
+<span class="giallo-l"><span style="color: #C3E88D;">  --name myapp-policy</span><span> \</span></span>
+<span class="giallo-l"><span style="color: #C3E88D;">  --spiffeid-pattern</span><span style="color: #89DDFF;"> &quot;</span><span style="color: #C3E88D;">^spiffe://example\.org/myapp$</span><span style="color: #89DDFF;">&quot;</span><span> \</span></span>
+<span class="giallo-l"><span style="color: #C3E88D;">  --path-pattern</span><span style="color: #89DDFF;"> &quot;</span><span style="color: #C3E88D;">^tenants/myapp/.*$</span><span style="color: #89DDFF;">&quot;</span><span> \</span></span>
+<span class="giallo-l"><span style="color: #C3E88D;">  --permissions read,write</span></span></code></pre><h3 id="3-spike-nexus-running">3. SPIKE Nexus Running</h3>
 <p>Ensure SPIKE Nexus is running and accessible from your workload.</p>
 <h2 id="basic-integration">Basic Integration</h2>
 <p>Here is a minimal example showing how to use the SPIKE SDK:</p>
-<pre data-lang="go" style="background-color:#2b303b;color:#c0c5ce;" class="language-go "><code class="language-go" data-lang="go"><span style="color:#b48ead;">package </span><span style="color:#bf616a;">main
-</span><span>
-</span><span style="color:#b48ead;">import </span><span>(
-</span><span>    &quot;</span><span style="color:#a3be8c;">fmt</span><span>&quot;
-</span><span>
-</span><span>    </span><span style="color:#bf616a;">spike </span><span>&quot;</span><span style="color:#a3be8c;">github.com/spiffe/spike-sdk-go/api</span><span>&quot;
-</span><span>)
-</span><span>
-</span><span style="color:#b48ead;">func </span><span style="color:#8fa1b3;">main</span><span>() {
-</span><span>    </span><span style="color:#65737e;">// Create a new SPIKE API client
-</span><span>    </span><span style="color:#65737e;">// Uses the default Workload API Socket
-</span><span>    </span><span style="color:#bf616a;">api</span><span>, </span><span style="color:#bf616a;">err </span><span>:= </span><span style="color:#bf616a;">spike</span><span>.</span><span style="color:#bf616a;">New</span><span>()
-</span><span>    </span><span style="color:#b48ead;">if </span><span style="color:#bf616a;">err </span><span>!= </span><span style="color:#d08770;">nil </span><span>{
-</span><span>        </span><span style="color:#bf616a;">fmt</span><span>.</span><span style="color:#bf616a;">Println</span><span>(&quot;</span><span style="color:#a3be8c;">Error connecting to SPIKE Nexus:</span><span>&quot;, </span><span style="color:#bf616a;">err</span><span>.</span><span style="color:#bf616a;">Error</span><span>())
-</span><span>        </span><span style="color:#b48ead;">return
-</span><span>    }
-</span><span>
-</span><span>    </span><span style="color:#65737e;">// Close the connection when done
-</span><span>    </span><span style="color:#b48ead;">defer </span><span style="color:#bf616a;">api</span><span>.</span><span style="color:#bf616a;">Close</span><span>()
-</span><span>
-</span><span>    </span><span style="color:#65737e;">// Store a secret
-</span><span>    </span><span style="color:#bf616a;">path </span><span>:= &quot;</span><span style="color:#a3be8c;">tenants/myapp/db/creds</span><span>&quot;
-</span><span>    </span><span style="color:#bf616a;">err </span><span>= </span><span style="color:#bf616a;">api</span><span>.</span><span style="color:#bf616a;">PutSecret</span><span>(</span><span style="color:#bf616a;">path</span><span>, </span><span style="color:#b48ead;">map</span><span>[</span><span style="color:#b48ead;">string</span><span>]</span><span style="color:#b48ead;">string</span><span>{
-</span><span>        &quot;</span><span style="color:#a3be8c;">username</span><span>&quot;: &quot;</span><span style="color:#a3be8c;">dbuser</span><span>&quot;,
-</span><span>        &quot;</span><span style="color:#a3be8c;">password</span><span>&quot;: &quot;</span><span style="color:#a3be8c;">dbpass123</span><span>&quot;,
-</span><span>    })
-</span><span>    </span><span style="color:#b48ead;">if </span><span style="color:#bf616a;">err </span><span>!= </span><span style="color:#d08770;">nil </span><span>{
-</span><span>        </span><span style="color:#bf616a;">fmt</span><span>.</span><span style="color:#bf616a;">Println</span><span>(&quot;</span><span style="color:#a3be8c;">Error writing secret:</span><span>&quot;, </span><span style="color:#bf616a;">err</span><span>.</span><span style="color:#bf616a;">Error</span><span>())
-</span><span>        </span><span style="color:#b48ead;">return
-</span><span>    }
-</span><span>
-</span><span>    </span><span style="color:#65737e;">// Retrieve the secret
-</span><span>    </span><span style="color:#bf616a;">secret</span><span>, </span><span style="color:#bf616a;">err </span><span>:= </span><span style="color:#bf616a;">api</span><span>.</span><span style="color:#bf616a;">GetSecret</span><span>(</span><span style="color:#bf616a;">path</span><span>)
-</span><span>    </span><span style="color:#b48ead;">if </span><span style="color:#bf616a;">err </span><span>!= </span><span style="color:#d08770;">nil </span><span>{
-</span><span>        </span><span style="color:#bf616a;">fmt</span><span>.</span><span style="color:#bf616a;">Println</span><span>(&quot;</span><span style="color:#a3be8c;">Error reading secret:</span><span>&quot;, </span><span style="color:#bf616a;">err</span><span>.</span><span style="color:#bf616a;">Error</span><span>())
-</span><span>        </span><span style="color:#b48ead;">return
-</span><span>    }
-</span><span>
-</span><span>    </span><span style="color:#bf616a;">fmt</span><span>.</span><span style="color:#bf616a;">Printf</span><span>(&quot;</span><span style="color:#a3be8c;">Username: </span><span style="color:#d08770;">%s</span><span style="color:#96b5b4;">\n</span><span>&quot;, </span><span style="color:#bf616a;">secret</span><span>.</span><span style="color:#bf616a;">Data</span><span>[&quot;</span><span style="color:#a3be8c;">username</span><span>&quot;])
-</span><span>}
-</span></code></pre>
-<h2 id="deployment">Deployment</h2>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="go"><span class="giallo-l"><span style="color: #89DDFF;">package</span><span style="color: #FFCB6B;"> main</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #89DDFF;font-style: italic;">import</span><span style="color: #89DDFF;"> (</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">    &quot;</span><span style="color: #FFCB6B;">fmt</span><span style="color: #89DDFF;">&quot;</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span>    spike</span><span style="color: #89DDFF;"> &quot;</span><span style="color: #FFCB6B;">github.com/spiffe/spike-sdk-go/api</span><span style="color: #89DDFF;">&quot;</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">)</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #89DDFF;">func</span><span style="color: #82AAFF;"> main</span><span style="color: #89DDFF;">() {</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;">    // Create a new SPIKE API client</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;">    // Uses the default Workload API Socket</span></span>
+<span class="giallo-l"><span>    api</span><span style="color: #89DDFF;">,</span><span> err</span><span style="color: #89DDFF;"> :=</span><span> spike</span><span style="color: #89DDFF;">.</span><span style="color: #82AAFF;">New</span><span style="color: #89DDFF;">()</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;font-style: italic;">    if</span><span> err</span><span style="color: #89DDFF;"> != nil {</span></span>
+<span class="giallo-l"><span>        fmt</span><span style="color: #89DDFF;">.</span><span style="color: #82AAFF;">Println</span><span style="color: #89DDFF;">(&quot;</span><span style="color: #C3E88D;">Error connecting to SPIKE Nexus:</span><span style="color: #89DDFF;">&quot;,</span><span> err</span><span style="color: #89DDFF;">.</span><span style="color: #82AAFF;">Error</span><span style="color: #89DDFF;">())</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;font-style: italic;">        return</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">    }</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;">    // Close the connection when done</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;font-style: italic;">    defer</span><span> api</span><span style="color: #89DDFF;">.</span><span style="color: #82AAFF;">Close</span><span style="color: #89DDFF;">()</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;">    // Store a secret</span></span>
+<span class="giallo-l"><span>    path</span><span style="color: #89DDFF;"> := &quot;</span><span style="color: #C3E88D;">tenants/myapp/db/creds</span><span style="color: #89DDFF;">&quot;</span></span>
+<span class="giallo-l"><span>    err</span><span style="color: #89DDFF;"> =</span><span> api</span><span style="color: #89DDFF;">.</span><span style="color: #82AAFF;">PutSecret</span><span style="color: #89DDFF;">(</span><span>path</span><span style="color: #89DDFF;">, map[</span><span style="color: #C792EA;">string</span><span style="color: #89DDFF;">]</span><span style="color: #C792EA;">string</span><span style="color: #89DDFF;">{</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">        &quot;</span><span style="color: #C3E88D;">username</span><span style="color: #89DDFF;">&quot;: &quot;</span><span style="color: #C3E88D;">dbuser</span><span style="color: #89DDFF;">&quot;,</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">        &quot;</span><span style="color: #C3E88D;">password</span><span style="color: #89DDFF;">&quot;: &quot;</span><span style="color: #C3E88D;">dbpass123</span><span style="color: #89DDFF;">&quot;,</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">    })</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;font-style: italic;">    if</span><span> err</span><span style="color: #89DDFF;"> != nil {</span></span>
+<span class="giallo-l"><span>        fmt</span><span style="color: #89DDFF;">.</span><span style="color: #82AAFF;">Println</span><span style="color: #89DDFF;">(&quot;</span><span style="color: #C3E88D;">Error writing secret:</span><span style="color: #89DDFF;">&quot;,</span><span> err</span><span style="color: #89DDFF;">.</span><span style="color: #82AAFF;">Error</span><span style="color: #89DDFF;">())</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;font-style: italic;">        return</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">    }</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;">    // Retrieve the secret</span></span>
+<span class="giallo-l"><span>    secret</span><span style="color: #89DDFF;">,</span><span> err</span><span style="color: #89DDFF;"> :=</span><span> api</span><span style="color: #89DDFF;">.</span><span style="color: #82AAFF;">GetSecret</span><span style="color: #89DDFF;">(</span><span>path</span><span style="color: #89DDFF;">)</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;font-style: italic;">    if</span><span> err</span><span style="color: #89DDFF;"> != nil {</span></span>
+<span class="giallo-l"><span>        fmt</span><span style="color: #89DDFF;">.</span><span style="color: #82AAFF;">Println</span><span style="color: #89DDFF;">(&quot;</span><span style="color: #C3E88D;">Error reading secret:</span><span style="color: #89DDFF;">&quot;,</span><span> err</span><span style="color: #89DDFF;">.</span><span style="color: #82AAFF;">Error</span><span style="color: #89DDFF;">())</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;font-style: italic;">        return</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">    }</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span>    fmt</span><span style="color: #89DDFF;">.</span><span style="color: #82AAFF;">Printf</span><span style="color: #89DDFF;">(&quot;</span><span style="color: #C3E88D;">Username: </span><span style="color: #F07178;">%s</span><span>\n</span><span style="color: #89DDFF;">&quot;,</span><span> secret</span><span style="color: #89DDFF;">.</span><span>Data</span><span style="color: #89DDFF;">[&quot;</span><span style="color: #C3E88D;">username</span><span style="color: #89DDFF;">&quot;])</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">}</span></span></code></pre><h2 id="deployment">Deployment</h2>
 <h3 id="kubernetes-deployment">Kubernetes Deployment</h3>
-<pre data-lang="yaml" style="background-color:#2b303b;color:#c0c5ce;" class="language-yaml "><code class="language-yaml" data-lang="yaml"><span style="color:#bf616a;">apiVersion</span><span>: </span><span style="color:#a3be8c;">apps/v1
-</span><span style="color:#bf616a;">kind</span><span>: </span><span style="color:#a3be8c;">Deployment
-</span><span style="color:#bf616a;">metadata</span><span>:
-</span><span>  </span><span style="color:#bf616a;">name</span><span>: </span><span style="color:#a3be8c;">myapp
-</span><span>  </span><span style="color:#bf616a;">namespace</span><span>: </span><span style="color:#a3be8c;">default
-</span><span style="color:#bf616a;">spec</span><span>:
-</span><span>  </span><span style="color:#bf616a;">replicas</span><span>: </span><span style="color:#d08770;">1
-</span><span>  </span><span style="color:#bf616a;">selector</span><span>:
-</span><span>    </span><span style="color:#bf616a;">matchLabels</span><span>:
-</span><span>      </span><span style="color:#bf616a;">app</span><span>: </span><span style="color:#a3be8c;">myapp
-</span><span>  </span><span style="color:#bf616a;">template</span><span>:
-</span><span>    </span><span style="color:#bf616a;">metadata</span><span>:
-</span><span>      </span><span style="color:#bf616a;">labels</span><span>:
-</span><span>        </span><span style="color:#bf616a;">app</span><span>: </span><span style="color:#a3be8c;">myapp
-</span><span>    </span><span style="color:#bf616a;">spec</span><span>:
-</span><span>      </span><span style="color:#bf616a;">containers</span><span>:
-</span><span>      - </span><span style="color:#bf616a;">name</span><span>: </span><span style="color:#a3be8c;">myapp
-</span><span>        </span><span style="color:#bf616a;">image</span><span>: </span><span style="color:#a3be8c;">myapp:latest
-</span><span>        </span><span style="color:#bf616a;">env</span><span>:
-</span><span>        - </span><span style="color:#bf616a;">name</span><span>: </span><span style="color:#a3be8c;">SPIFFE_ENDPOINT_SOCKET
-</span><span>          </span><span style="color:#bf616a;">value</span><span>: &quot;</span><span style="color:#a3be8c;">unix:///run/spire/sockets/agent.sock</span><span>&quot;
-</span><span>        - </span><span style="color:#bf616a;">name</span><span>: </span><span style="color:#a3be8c;">SPIKE_NEXUS_API_URL
-</span><span>          </span><span style="color:#bf616a;">value</span><span>: &quot;</span><span style="color:#a3be8c;">https://spike-nexus:8553</span><span>&quot;
-</span><span>        </span><span style="color:#bf616a;">volumeMounts</span><span>:
-</span><span>        - </span><span style="color:#bf616a;">name</span><span>: </span><span style="color:#a3be8c;">spire-agent-socket
-</span><span>          </span><span style="color:#bf616a;">mountPath</span><span>: </span><span style="color:#a3be8c;">/run/spire/sockets
-</span><span>          </span><span style="color:#bf616a;">readOnly</span><span>: </span><span style="color:#d08770;">true
-</span><span>      </span><span style="color:#bf616a;">volumes</span><span>:
-</span><span>      - </span><span style="color:#bf616a;">name</span><span>: </span><span style="color:#a3be8c;">spire-agent-socket
-</span><span>        </span><span style="color:#bf616a;">hostPath</span><span>:
-</span><span>          </span><span style="color:#bf616a;">path</span><span>: </span><span style="color:#a3be8c;">/run/spire/sockets
-</span><span>          </span><span style="color:#bf616a;">type</span><span>: </span><span style="color:#a3be8c;">Directory
-</span></code></pre>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="yaml"><span class="giallo-l"><span style="color: #F07178;">apiVersion</span><span style="color: #89DDFF;">:</span><span style="color: #C3E88D;"> apps/v1</span></span>
+<span class="giallo-l"><span style="color: #F07178;">kind</span><span style="color: #89DDFF;">:</span><span style="color: #C3E88D;"> Deployment</span></span>
+<span class="giallo-l"><span style="color: #F07178;">metadata</span><span style="color: #89DDFF;">:</span></span>
+<span class="giallo-l"><span style="color: #F07178;">  name</span><span style="color: #89DDFF;">:</span><span style="color: #C3E88D;"> myapp</span></span>
+<span class="giallo-l"><span style="color: #F07178;">  namespace</span><span style="color: #89DDFF;">:</span><span style="color: #C3E88D;"> default</span></span>
+<span class="giallo-l"><span style="color: #F07178;">spec</span><span style="color: #89DDFF;">:</span></span>
+<span class="giallo-l"><span style="color: #F07178;">  replicas</span><span style="color: #89DDFF;">:</span><span style="color: #F78C6C;"> 1</span></span>
+<span class="giallo-l"><span style="color: #F07178;">  selector</span><span style="color: #89DDFF;">:</span></span>
+<span class="giallo-l"><span style="color: #F07178;">    matchLabels</span><span style="color: #89DDFF;">:</span></span>
+<span class="giallo-l"><span style="color: #F07178;">      app</span><span style="color: #89DDFF;">:</span><span style="color: #C3E88D;"> myapp</span></span>
+<span class="giallo-l"><span style="color: #F07178;">  template</span><span style="color: #89DDFF;">:</span></span>
+<span class="giallo-l"><span style="color: #F07178;">    metadata</span><span style="color: #89DDFF;">:</span></span>
+<span class="giallo-l"><span style="color: #F07178;">      labels</span><span style="color: #89DDFF;">:</span></span>
+<span class="giallo-l"><span style="color: #F07178;">        app</span><span style="color: #89DDFF;">:</span><span style="color: #C3E88D;"> myapp</span></span>
+<span class="giallo-l"><span style="color: #F07178;">    spec</span><span style="color: #89DDFF;">:</span></span>
+<span class="giallo-l"><span style="color: #F07178;">      containers</span><span style="color: #89DDFF;">:</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">      -</span><span style="color: #F07178;"> name</span><span style="color: #89DDFF;">:</span><span style="color: #C3E88D;"> myapp</span></span>
+<span class="giallo-l"><span style="color: #F07178;">        image</span><span style="color: #89DDFF;">:</span><span style="color: #C3E88D;"> myapp:latest</span></span>
+<span class="giallo-l"><span style="color: #F07178;">        env</span><span style="color: #89DDFF;">:</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">        -</span><span style="color: #F07178;"> name</span><span style="color: #89DDFF;">:</span><span style="color: #C3E88D;"> SPIFFE_ENDPOINT_SOCKET</span></span>
+<span class="giallo-l"><span style="color: #F07178;">          value</span><span style="color: #89DDFF;">: &quot;</span><span style="color: #C3E88D;">unix:///run/spire/sockets/agent.sock</span><span style="color: #89DDFF;">&quot;</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">        -</span><span style="color: #F07178;"> name</span><span style="color: #89DDFF;">:</span><span style="color: #C3E88D;"> SPIKE_NEXUS_API_URL</span></span>
+<span class="giallo-l"><span style="color: #F07178;">          value</span><span style="color: #89DDFF;">: &quot;</span><span style="color: #C3E88D;">https://spike-nexus:8553</span><span style="color: #89DDFF;">&quot;</span></span>
+<span class="giallo-l"><span style="color: #F07178;">        volumeMounts</span><span style="color: #89DDFF;">:</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">        -</span><span style="color: #F07178;"> name</span><span style="color: #89DDFF;">:</span><span style="color: #C3E88D;"> spire-agent-socket</span></span>
+<span class="giallo-l"><span style="color: #F07178;">          mountPath</span><span style="color: #89DDFF;">:</span><span style="color: #C3E88D;"> /run/spire/sockets</span></span>
+<span class="giallo-l"><span style="color: #F07178;">          readOnly</span><span style="color: #89DDFF;">:</span><span style="color: #FF9CAC;"> true</span></span>
+<span class="giallo-l"><span style="color: #F07178;">      volumes</span><span style="color: #89DDFF;">:</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">      -</span><span style="color: #F07178;"> name</span><span style="color: #89DDFF;">:</span><span style="color: #C3E88D;"> spire-agent-socket</span></span>
+<span class="giallo-l"><span style="color: #F07178;">        hostPath</span><span style="color: #89DDFF;">:</span></span>
+<span class="giallo-l"><span style="color: #F07178;">          path</span><span style="color: #89DDFF;">:</span><span style="color: #C3E88D;"> /run/spire/sockets</span></span>
+<span class="giallo-l"><span style="color: #F07178;">          type</span><span style="color: #89DDFF;">:</span><span style="color: #C3E88D;"> Directory</span></span></code></pre>
 <p><strong>Key configuration:</strong></p>
 <ul>
 <li>Mount the SPIRE Agent socket</li>
@@ -902,114 +958,100 @@ SPIRE registration to secret operations.</p>
 <li>Set <code>SPIKE_NEXUS_API_URL</code> to the Nexus service endpoint</li>
 </ul>
 <h3 id="bare-metal-deployment">Bare-Metal Deployment</h3>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># 1. Ensure SPIRE Agent is running
-</span><span style="color:#bf616a;">systemctl</span><span> status spire-agent
-</span><span>
-</span><span style="color:#65737e;"># 2. Set environment variables
-</span><span style="color:#b48ead;">export </span><span style="color:#bf616a;">SPIFFE_ENDPOINT_SOCKET</span><span>=</span><span style="color:#a3be8c;">unix:///tmp/spire-agent/public/api.sock
-</span><span style="color:#b48ead;">export </span><span style="color:#bf616a;">SPIKE_NEXUS_API_URL</span><span>=</span><span style="color:#a3be8c;">https://localhost:8553
-</span><span>
-</span><span style="color:#65737e;"># 3. Run your application
-</span><span style="color:#bf616a;">./myapp
-</span></code></pre>
-<h2 id="integration-patterns">Integration Patterns</h2>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="shellscript"><span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># 1. Ensure SPIRE Agent is running</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">systemctl</span><span style="color: #C3E88D;"> status spire-agent</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># 2. Set environment variables</span></span>
+<span class="giallo-l"><span style="color: #C792EA;">export</span><span> SPIFFE_ENDPOINT_SOCKET</span><span style="color: #89DDFF;">=</span><span>unix:///tmp/spire-agent/public/api.sock</span></span>
+<span class="giallo-l"><span style="color: #C792EA;">export</span><span> SPIKE_NEXUS_API_URL</span><span style="color: #89DDFF;">=</span><span>https://localhost:8553</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># 3. Run your application</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">./myapp</span></span></code></pre><h2 id="integration-patterns">Integration Patterns</h2>
 <h3 id="pattern-1-initialization-secret-fetch">Pattern 1: Initialization Secret Fetch</h3>
 <p>Fetch all required secrets at the application startup:</p>
-<pre data-lang="go" style="background-color:#2b303b;color:#c0c5ce;" class="language-go "><code class="language-go" data-lang="go"><span style="color:#b48ead;">func </span><span style="color:#8fa1b3;">main</span><span>() {
-</span><span>    </span><span style="color:#bf616a;">api</span><span>, </span><span style="color:#bf616a;">_ </span><span>:= </span><span style="color:#bf616a;">spike</span><span>.</span><span style="color:#bf616a;">New</span><span>()
-</span><span>    </span><span style="color:#b48ead;">defer </span><span style="color:#bf616a;">api</span><span>.</span><span style="color:#bf616a;">Close</span><span>()
-</span><span>
-</span><span>    </span><span style="color:#65737e;">// Fetch all required secrets at startup
-</span><span>    </span><span style="color:#bf616a;">dbCreds</span><span>, </span><span style="color:#bf616a;">_ </span><span>:= </span><span style="color:#bf616a;">api</span><span>.</span><span style="color:#bf616a;">GetSecret</span><span>(&quot;</span><span style="color:#a3be8c;">tenants/myapp/db/creds</span><span>&quot;)
-</span><span>    </span><span style="color:#bf616a;">apiKey</span><span>, </span><span style="color:#bf616a;">_ </span><span>:= </span><span style="color:#bf616a;">api</span><span>.</span><span style="color:#bf616a;">GetSecret</span><span>(&quot;</span><span style="color:#a3be8c;">tenants/myapp/api/key</span><span>&quot;)
-</span><span>
-</span><span>    </span><span style="color:#65737e;">// Initialize services with secrets
-</span><span>    </span><span style="color:#bf616a;">db </span><span>:= </span><span style="color:#bf616a;">connectDB</span><span>(</span><span style="color:#bf616a;">dbCreds</span><span>.</span><span style="color:#bf616a;">Data</span><span>[&quot;</span><span style="color:#a3be8c;">username</span><span>&quot;], </span><span style="color:#bf616a;">dbCreds</span><span>.</span><span style="color:#bf616a;">Data</span><span>[&quot;</span><span style="color:#a3be8c;">password</span><span>&quot;])
-</span><span>    </span><span style="color:#bf616a;">client </span><span>:= </span><span style="color:#bf616a;">initAPIClient</span><span>(</span><span style="color:#bf616a;">apiKey</span><span>.</span><span style="color:#bf616a;">Data</span><span>[&quot;</span><span style="color:#a3be8c;">key</span><span>&quot;])
-</span><span>
-</span><span>    </span><span style="color:#65737e;">// Run application
-</span><span>    </span><span style="color:#bf616a;">serve</span><span>(</span><span style="color:#bf616a;">db</span><span>, </span><span style="color:#bf616a;">client</span><span>)
-</span><span>}
-</span></code></pre>
-<h3 id="pattern-2-on-demand-secret-fetch">Pattern 2: On-Demand Secret Fetch</h3>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="go"><span class="giallo-l"><span style="color: #89DDFF;">func</span><span style="color: #82AAFF;"> main</span><span style="color: #89DDFF;">() {</span></span>
+<span class="giallo-l"><span>    api</span><span style="color: #89DDFF;">,</span><span> _</span><span style="color: #89DDFF;"> :=</span><span> spike</span><span style="color: #89DDFF;">.</span><span style="color: #82AAFF;">New</span><span style="color: #89DDFF;">()</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;font-style: italic;">    defer</span><span> api</span><span style="color: #89DDFF;">.</span><span style="color: #82AAFF;">Close</span><span style="color: #89DDFF;">()</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;">    // Fetch all required secrets at startup</span></span>
+<span class="giallo-l"><span>    dbCreds</span><span style="color: #89DDFF;">,</span><span> _</span><span style="color: #89DDFF;"> :=</span><span> api</span><span style="color: #89DDFF;">.</span><span style="color: #82AAFF;">GetSecret</span><span style="color: #89DDFF;">(&quot;</span><span style="color: #C3E88D;">tenants/myapp/db/creds</span><span style="color: #89DDFF;">&quot;)</span></span>
+<span class="giallo-l"><span>    apiKey</span><span style="color: #89DDFF;">,</span><span> _</span><span style="color: #89DDFF;"> :=</span><span> api</span><span style="color: #89DDFF;">.</span><span style="color: #82AAFF;">GetSecret</span><span style="color: #89DDFF;">(&quot;</span><span style="color: #C3E88D;">tenants/myapp/api/key</span><span style="color: #89DDFF;">&quot;)</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;">    // Initialize services with secrets</span></span>
+<span class="giallo-l"><span>    db</span><span style="color: #89DDFF;"> :=</span><span style="color: #82AAFF;"> connectDB</span><span style="color: #89DDFF;">(</span><span>dbCreds</span><span style="color: #89DDFF;">.</span><span>Data</span><span style="color: #89DDFF;">[&quot;</span><span style="color: #C3E88D;">username</span><span style="color: #89DDFF;">&quot;],</span><span> dbCreds</span><span style="color: #89DDFF;">.</span><span>Data</span><span style="color: #89DDFF;">[&quot;</span><span style="color: #C3E88D;">password</span><span style="color: #89DDFF;">&quot;])</span></span>
+<span class="giallo-l"><span>    client</span><span style="color: #89DDFF;"> :=</span><span style="color: #82AAFF;"> initAPIClient</span><span style="color: #89DDFF;">(</span><span>apiKey</span><span style="color: #89DDFF;">.</span><span>Data</span><span style="color: #89DDFF;">[&quot;</span><span style="color: #C3E88D;">key</span><span style="color: #89DDFF;">&quot;])</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;">    // Run application</span></span>
+<span class="giallo-l"><span style="color: #82AAFF;">    serve</span><span style="color: #89DDFF;">(</span><span>db</span><span style="color: #89DDFF;">,</span><span> client</span><span style="color: #89DDFF;">)</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">}</span></span></code></pre><h3 id="pattern-2-on-demand-secret-fetch">Pattern 2: On-Demand Secret Fetch</h3>
 <p>Fetch secrets when needed for specific operations:</p>
-<pre data-lang="go" style="background-color:#2b303b;color:#c0c5ce;" class="language-go "><code class="language-go" data-lang="go"><span style="color:#b48ead;">func </span><span style="color:#8fa1b3;">handleRequest</span><span>(</span><span style="color:#bf616a;">req </span><span style="color:#b48ead;">Request</span><span>) </span><span style="color:#b48ead;">Response </span><span>{
-</span><span>    </span><span style="color:#bf616a;">api</span><span>, </span><span style="color:#bf616a;">_ </span><span>:= </span><span style="color:#bf616a;">spike</span><span>.</span><span style="color:#bf616a;">New</span><span>()
-</span><span>    </span><span style="color:#b48ead;">defer </span><span style="color:#bf616a;">api</span><span>.</span><span style="color:#bf616a;">Close</span><span>()
-</span><span>
-</span><span>    </span><span style="color:#65737e;">// Fetch secret for this specific request
-</span><span>    </span><span style="color:#bf616a;">secret</span><span>, </span><span style="color:#bf616a;">_ </span><span>:= </span><span style="color:#bf616a;">api</span><span>.</span><span style="color:#bf616a;">GetSecret</span><span>(&quot;</span><span style="color:#a3be8c;">tenants/myapp/api/key</span><span>&quot;)
-</span><span>
-</span><span>    </span><span style="color:#65737e;">// Use secret
-</span><span>    </span><span style="color:#bf616a;">response </span><span>:= </span><span style="color:#bf616a;">callExternalAPI</span><span>(</span><span style="color:#bf616a;">secret</span><span>.</span><span style="color:#bf616a;">Data</span><span>[&quot;</span><span style="color:#a3be8c;">key</span><span>&quot;])
-</span><span>
-</span><span>    </span><span style="color:#b48ead;">return </span><span style="color:#bf616a;">response
-</span><span>}
-</span></code></pre>
-<h3 id="pattern-3-cached-secrets-with-refresh">Pattern 3: Cached Secrets with Refresh</h3>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="go"><span class="giallo-l"><span style="color: #89DDFF;">func</span><span style="color: #82AAFF;"> handleRequest</span><span style="color: #89DDFF;">(</span><span style="font-style: italic;">req</span><span style="color: #FFCB6B;"> Request</span><span style="color: #89DDFF;">)</span><span style="color: #FFCB6B;"> Response</span><span style="color: #89DDFF;"> {</span></span>
+<span class="giallo-l"><span>    api</span><span style="color: #89DDFF;">,</span><span> _</span><span style="color: #89DDFF;"> :=</span><span> spike</span><span style="color: #89DDFF;">.</span><span style="color: #82AAFF;">New</span><span style="color: #89DDFF;">()</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;font-style: italic;">    defer</span><span> api</span><span style="color: #89DDFF;">.</span><span style="color: #82AAFF;">Close</span><span style="color: #89DDFF;">()</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;">    // Fetch secret for this specific request</span></span>
+<span class="giallo-l"><span>    secret</span><span style="color: #89DDFF;">,</span><span> _</span><span style="color: #89DDFF;"> :=</span><span> api</span><span style="color: #89DDFF;">.</span><span style="color: #82AAFF;">GetSecret</span><span style="color: #89DDFF;">(&quot;</span><span style="color: #C3E88D;">tenants/myapp/api/key</span><span style="color: #89DDFF;">&quot;)</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;">    // Use secret</span></span>
+<span class="giallo-l"><span>    response</span><span style="color: #89DDFF;"> :=</span><span style="color: #82AAFF;"> callExternalAPI</span><span style="color: #89DDFF;">(</span><span>secret</span><span style="color: #89DDFF;">.</span><span>Data</span><span style="color: #89DDFF;">[&quot;</span><span style="color: #C3E88D;">key</span><span style="color: #89DDFF;">&quot;])</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #89DDFF;font-style: italic;">    return</span><span> response</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">}</span></span></code></pre><h3 id="pattern-3-cached-secrets-with-refresh">Pattern 3: Cached Secrets with Refresh</h3>
 <p>Cache secrets and refresh them periodically:</p>
-<pre data-lang="go" style="background-color:#2b303b;color:#c0c5ce;" class="language-go "><code class="language-go" data-lang="go"><span style="color:#b48ead;">type </span><span>SecretCache </span><span style="color:#b48ead;">struct </span><span>{
-</span><span>    </span><span style="color:#bf616a;">api   </span><span>*</span><span style="color:#bf616a;">spike</span><span>.</span><span style="color:#b48ead;">API
-</span><span>    </span><span style="color:#bf616a;">cache </span><span style="color:#b48ead;">map</span><span>[</span><span style="color:#b48ead;">string</span><span>]</span><span style="color:#b48ead;">map</span><span>[</span><span style="color:#b48ead;">string</span><span>]</span><span style="color:#b48ead;">string
-</span><span>    </span><span style="color:#bf616a;">mu    sync</span><span>.</span><span style="color:#b48ead;">RWMutex
-</span><span>}
-</span><span>
-</span><span style="color:#b48ead;">func </span><span>(</span><span style="color:#bf616a;">c </span><span>*</span><span style="color:#b48ead;">SecretCache</span><span>) </span><span style="color:#8fa1b3;">Get</span><span>(</span><span style="color:#bf616a;">path </span><span style="color:#b48ead;">string</span><span>) </span><span style="color:#b48ead;">map</span><span>[</span><span style="color:#b48ead;">string</span><span>]</span><span style="color:#b48ead;">string </span><span>{
-</span><span>    </span><span style="color:#bf616a;">c</span><span>.</span><span style="color:#bf616a;">mu</span><span>.</span><span style="color:#bf616a;">RLock</span><span>()
-</span><span>    </span><span style="color:#b48ead;">defer </span><span style="color:#bf616a;">c</span><span>.</span><span style="color:#bf616a;">mu</span><span>.</span><span style="color:#bf616a;">RUnlock</span><span>()
-</span><span>    </span><span style="color:#b48ead;">return </span><span style="color:#bf616a;">c</span><span>.</span><span style="color:#bf616a;">cache</span><span>[</span><span style="color:#bf616a;">path</span><span>]
-</span><span>}
-</span><span>
-</span><span style="color:#b48ead;">func </span><span>(</span><span style="color:#bf616a;">c </span><span>*</span><span style="color:#b48ead;">SecretCache</span><span>) </span><span style="color:#8fa1b3;">Refresh</span><span>(</span><span style="color:#bf616a;">path </span><span style="color:#b48ead;">string</span><span>) {
-</span><span>    </span><span style="color:#bf616a;">secret</span><span>, </span><span style="color:#bf616a;">_ </span><span>:= </span><span style="color:#bf616a;">c</span><span>.</span><span style="color:#bf616a;">api</span><span>.</span><span style="color:#bf616a;">GetSecret</span><span>(</span><span style="color:#bf616a;">path</span><span>)
-</span><span>
-</span><span>    </span><span style="color:#bf616a;">c</span><span>.</span><span style="color:#bf616a;">mu</span><span>.</span><span style="color:#bf616a;">Lock</span><span>()
-</span><span>    </span><span style="color:#b48ead;">defer </span><span style="color:#bf616a;">c</span><span>.</span><span style="color:#bf616a;">mu</span><span>.</span><span style="color:#bf616a;">Unlock</span><span>()
-</span><span>    </span><span style="color:#bf616a;">c</span><span>.</span><span style="color:#bf616a;">cache</span><span>[</span><span style="color:#bf616a;">path</span><span>] = </span><span style="color:#bf616a;">secret</span><span>.</span><span style="color:#bf616a;">Data
-</span><span>}
-</span><span>
-</span><span style="color:#65737e;">// Refresh every 5 minutes
-</span><span style="color:#b48ead;">func </span><span>(</span><span style="color:#bf616a;">c </span><span>*</span><span style="color:#b48ead;">SecretCache</span><span>) </span><span style="color:#8fa1b3;">StartRefresh</span><span>(</span><span style="color:#bf616a;">path </span><span style="color:#b48ead;">string</span><span>) {
-</span><span>    </span><span style="color:#bf616a;">ticker </span><span>:= </span><span style="color:#bf616a;">time</span><span>.</span><span style="color:#bf616a;">NewTicker</span><span>(</span><span style="color:#d08770;">5 </span><span>* </span><span style="color:#bf616a;">time</span><span>.</span><span style="color:#bf616a;">Minute</span><span>)
-</span><span>    </span><span style="color:#b48ead;">go func</span><span>() {
-</span><span>        </span><span style="color:#b48ead;">for range </span><span style="color:#bf616a;">ticker</span><span>.</span><span style="color:#bf616a;">C </span><span>{
-</span><span>            </span><span style="color:#bf616a;">c</span><span>.</span><span style="color:#bf616a;">Refresh</span><span>(</span><span style="color:#bf616a;">path</span><span>)
-</span><span>        }
-</span><span>    }()
-</span><span>}
-</span></code></pre>
-<h2 id="secret-versioning">Secret Versioning</h2>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="go"><span class="giallo-l"><span style="color: #89DDFF;">type</span><span style="color: #FFCB6B;"> SecretCache</span><span style="color: #89DDFF;"> struct {</span></span>
+<span class="giallo-l"><span>    api</span><span style="color: #89DDFF;">   *</span><span style="color: #FFCB6B;">spike</span><span style="color: #89DDFF;">.</span><span style="color: #FFCB6B;">API</span></span>
+<span class="giallo-l"><span>    cache</span><span style="color: #89DDFF;"> map[</span><span style="color: #C792EA;">string</span><span style="color: #89DDFF;">]map[</span><span style="color: #C792EA;">string</span><span style="color: #89DDFF;">]</span><span style="color: #C792EA;">string</span></span>
+<span class="giallo-l"><span>    mu</span><span style="color: #FFCB6B;">    sync</span><span style="color: #89DDFF;">.</span><span style="color: #FFCB6B;">RWMutex</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">}</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #89DDFF;">func (</span><span style="font-style: italic;">c </span><span style="color: #89DDFF;">*</span><span style="color: #FFCB6B;">SecretCache</span><span style="color: #89DDFF;">)</span><span style="color: #82AAFF;"> Get</span><span style="color: #89DDFF;">(</span><span style="font-style: italic;">path</span><span style="color: #C792EA;"> string</span><span style="color: #89DDFF;">) map[</span><span style="color: #C792EA;">string</span><span style="color: #89DDFF;">]</span><span style="color: #C792EA;">string</span><span style="color: #89DDFF;"> {</span></span>
+<span class="giallo-l"><span>    c</span><span style="color: #89DDFF;">.</span><span>mu</span><span style="color: #89DDFF;">.</span><span style="color: #82AAFF;">RLock</span><span style="color: #89DDFF;">()</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;font-style: italic;">    defer</span><span> c</span><span style="color: #89DDFF;">.</span><span>mu</span><span style="color: #89DDFF;">.</span><span style="color: #82AAFF;">RUnlock</span><span style="color: #89DDFF;">()</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;font-style: italic;">    return</span><span> c</span><span style="color: #89DDFF;">.</span><span>cache</span><span style="color: #89DDFF;">[</span><span>path</span><span style="color: #89DDFF;">]</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">}</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #89DDFF;">func (</span><span style="font-style: italic;">c </span><span style="color: #89DDFF;">*</span><span style="color: #FFCB6B;">SecretCache</span><span style="color: #89DDFF;">)</span><span style="color: #82AAFF;"> Refresh</span><span style="color: #89DDFF;">(</span><span style="font-style: italic;">path</span><span style="color: #C792EA;"> string</span><span style="color: #89DDFF;">) {</span></span>
+<span class="giallo-l"><span>    secret</span><span style="color: #89DDFF;">,</span><span> _</span><span style="color: #89DDFF;"> :=</span><span> c</span><span style="color: #89DDFF;">.</span><span>api</span><span style="color: #89DDFF;">.</span><span style="color: #82AAFF;">GetSecret</span><span style="color: #89DDFF;">(</span><span>path</span><span style="color: #89DDFF;">)</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span>    c</span><span style="color: #89DDFF;">.</span><span>mu</span><span style="color: #89DDFF;">.</span><span style="color: #82AAFF;">Lock</span><span style="color: #89DDFF;">()</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;font-style: italic;">    defer</span><span> c</span><span style="color: #89DDFF;">.</span><span>mu</span><span style="color: #89DDFF;">.</span><span style="color: #82AAFF;">Unlock</span><span style="color: #89DDFF;">()</span></span>
+<span class="giallo-l"><span>    c</span><span style="color: #89DDFF;">.</span><span>cache</span><span style="color: #89DDFF;">[</span><span>path</span><span style="color: #89DDFF;">] =</span><span> secret</span><span style="color: #89DDFF;">.</span><span>Data</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">}</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;">// Refresh every 5 minutes</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">func (</span><span style="font-style: italic;">c </span><span style="color: #89DDFF;">*</span><span style="color: #FFCB6B;">SecretCache</span><span style="color: #89DDFF;">)</span><span style="color: #82AAFF;"> StartRefresh</span><span style="color: #89DDFF;">(</span><span style="font-style: italic;">path</span><span style="color: #C792EA;"> string</span><span style="color: #89DDFF;">) {</span></span>
+<span class="giallo-l"><span>    ticker</span><span style="color: #89DDFF;"> :=</span><span> time</span><span style="color: #89DDFF;">.</span><span style="color: #82AAFF;">NewTicker</span><span style="color: #89DDFF;">(</span><span style="color: #F78C6C;">5</span><span style="color: #89DDFF;"> *</span><span> time</span><span style="color: #89DDFF;">.</span><span>Minute</span><span style="color: #89DDFF;">)</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;font-style: italic;">    go</span><span style="color: #89DDFF;"> func() {</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;font-style: italic;">        for range</span><span> ticker</span><span style="color: #89DDFF;">.</span><span>C</span><span style="color: #89DDFF;"> {</span></span>
+<span class="giallo-l"><span>            c</span><span style="color: #89DDFF;">.</span><span style="color: #82AAFF;">Refresh</span><span style="color: #89DDFF;">(</span><span>path</span><span style="color: #89DDFF;">)</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">        }</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">    }()</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">}</span></span></code></pre><h2 id="secret-versioning">Secret Versioning</h2>
 <p>SPIKE supports secret versioning. You can access previous versions:</p>
-<pre data-lang="go" style="background-color:#2b303b;color:#c0c5ce;" class="language-go "><code class="language-go" data-lang="go"><span style="color:#65737e;">// Store initial secret (version 1)
-</span><span style="color:#bf616a;">api</span><span>.</span><span style="color:#bf616a;">PutSecret</span><span>(&quot;</span><span style="color:#a3be8c;">path</span><span>&quot;, </span><span style="color:#b48ead;">map</span><span>[</span><span style="color:#b48ead;">string</span><span>]</span><span style="color:#b48ead;">string</span><span>{&quot;</span><span style="color:#a3be8c;">password</span><span>&quot;: &quot;</span><span style="color:#a3be8c;">old</span><span>&quot;})
-</span><span>
-</span><span style="color:#65737e;">// Update secret (version 2)
-</span><span style="color:#bf616a;">api</span><span>.</span><span style="color:#bf616a;">PutSecret</span><span>(&quot;</span><span style="color:#a3be8c;">path</span><span>&quot;, </span><span style="color:#b48ead;">map</span><span>[</span><span style="color:#b48ead;">string</span><span>]</span><span style="color:#b48ead;">string</span><span>{&quot;</span><span style="color:#a3be8c;">password</span><span>&quot;: &quot;</span><span style="color:#a3be8c;">new</span><span>&quot;})
-</span><span>
-</span><span style="color:#65737e;">// Get current version
-</span><span style="color:#bf616a;">current</span><span>, </span><span style="color:#bf616a;">_ </span><span>:= </span><span style="color:#bf616a;">api</span><span>.</span><span style="color:#bf616a;">GetSecret</span><span>(&quot;</span><span style="color:#a3be8c;">path</span><span>&quot;)
-</span><span>
-</span><span style="color:#65737e;">// Get specific version
-</span><span style="color:#bf616a;">opts </span><span>:= &amp;</span><span style="color:#bf616a;">spike</span><span>.</span><span style="color:#bf616a;">GetSecretOptions</span><span>{</span><span style="color:#bf616a;">Version</span><span>: </span><span style="color:#d08770;">1</span><span>}
-</span><span style="color:#bf616a;">oldVersion</span><span>, </span><span style="color:#bf616a;">_ </span><span>:= </span><span style="color:#bf616a;">api</span><span>.</span><span style="color:#bf616a;">GetSecretWithOptions</span><span>(&quot;</span><span style="color:#a3be8c;">path</span><span>&quot;, </span><span style="color:#bf616a;">opts</span><span>)
-</span></code></pre>
-<h2 id="error-handling">Error Handling</h2>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="go"><span class="giallo-l"><span style="color: #464B5D;font-style: italic;">// Store initial secret (version 1)</span></span>
+<span class="giallo-l"><span>api</span><span style="color: #89DDFF;">.</span><span style="color: #82AAFF;">PutSecret</span><span style="color: #89DDFF;">(&quot;</span><span style="color: #C3E88D;">path</span><span style="color: #89DDFF;">&quot;, map[</span><span style="color: #C792EA;">string</span><span style="color: #89DDFF;">]</span><span style="color: #C792EA;">string</span><span style="color: #89DDFF;">{&quot;</span><span style="color: #C3E88D;">password</span><span style="color: #89DDFF;">&quot;: &quot;</span><span style="color: #C3E88D;">old</span><span style="color: #89DDFF;">&quot;})</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;">// Update secret (version 2)</span></span>
+<span class="giallo-l"><span>api</span><span style="color: #89DDFF;">.</span><span style="color: #82AAFF;">PutSecret</span><span style="color: #89DDFF;">(&quot;</span><span style="color: #C3E88D;">path</span><span style="color: #89DDFF;">&quot;, map[</span><span style="color: #C792EA;">string</span><span style="color: #89DDFF;">]</span><span style="color: #C792EA;">string</span><span style="color: #89DDFF;">{&quot;</span><span style="color: #C3E88D;">password</span><span style="color: #89DDFF;">&quot;: &quot;</span><span style="color: #C3E88D;">new</span><span style="color: #89DDFF;">&quot;})</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;">// Get current version</span></span>
+<span class="giallo-l"><span>current</span><span style="color: #89DDFF;">,</span><span> _</span><span style="color: #89DDFF;"> :=</span><span> api</span><span style="color: #89DDFF;">.</span><span style="color: #82AAFF;">GetSecret</span><span style="color: #89DDFF;">(&quot;</span><span style="color: #C3E88D;">path</span><span style="color: #89DDFF;">&quot;)</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;">// Get specific version</span></span>
+<span class="giallo-l"><span>opts</span><span style="color: #89DDFF;"> := &amp;</span><span style="color: #FFCB6B;">spike</span><span style="color: #89DDFF;">.</span><span style="color: #FFCB6B;">GetSecretOptions</span><span style="color: #89DDFF;">{</span><span>Version</span><span style="color: #89DDFF;">:</span><span style="color: #F78C6C;"> 1</span><span style="color: #89DDFF;">}</span></span>
+<span class="giallo-l"><span>oldVersion</span><span style="color: #89DDFF;">,</span><span> _</span><span style="color: #89DDFF;"> :=</span><span> api</span><span style="color: #89DDFF;">.</span><span style="color: #82AAFF;">GetSecretWithOptions</span><span style="color: #89DDFF;">(&quot;</span><span style="color: #C3E88D;">path</span><span style="color: #89DDFF;">&quot;,</span><span> opts</span><span style="color: #89DDFF;">)</span></span></code></pre><h2 id="error-handling">Error Handling</h2>
 <h3 id="common-errors-and-solutions">Common Errors and Solutions</h3>
 <p><strong>Workload is not registered in SPIRE:</strong></p>
-<pre style="background-color:#2b303b;color:#c0c5ce;"><code><span>Error: Failed to acquire SVID: no registration entry found
-</span></code></pre>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="plain"><span class="giallo-l"><span>Error: Failed to acquire SVID: no registration entry found</span></span></code></pre>
 <p><em>Solution:</em> Register your workload in SPIRE with correct selectors.</p>
 <p><strong>No policy granting access:</strong></p>
-<pre style="background-color:#2b303b;color:#c0c5ce;"><code><span>Error: 403 Forbidden - Permission denied
-</span></code></pre>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="plain"><span class="giallo-l"><span>Error: 403 Forbidden - Permission denied</span></span></code></pre>
 <p><em>Solution:</em> Create a policy granting your workload access to the secret path.</p>
 <p><strong>SPIKE Nexus unreachable:</strong></p>
-<pre style="background-color:#2b303b;color:#c0c5ce;"><code><span>Error: connection refused
-</span></code></pre>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="plain"><span class="giallo-l"><span>Error: connection refused</span></span></code></pre>
 <p><em>Solution:</em> Verify SPIKE Nexus is running and check network connectivity.</p>
 <p><strong>SPIRE Agent not running:</strong></p>
-<pre style="background-color:#2b303b;color:#c0c5ce;"><code><span>Error: Failed to acquire SVID: connection refused
-</span></code></pre>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="plain"><span class="giallo-l"><span>Error: Failed to acquire SVID: connection refused</span></span></code></pre>
 <p><em>Solution:</em> Start SPIRE Agent and verify the socket path.</p>
 <h2 id="what-the-sdk-handles">What the SDK Handles</h2>
 <p>The SPIKE SDK handles all the complexity of secure secret management:</p>

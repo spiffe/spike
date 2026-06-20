@@ -254,6 +254,69 @@
                 </li>
 
                 </ul>
+    <input class="tree-toggle" type="checkbox" id="recipes"
+               />
+        <label class="tree-toggle-label "
+               for="recipes">Recipes</label>
+
+        <ul class="subtree">
+            <li >
+                    <a href="https://spike.ist/recipes/choosing-a-backend-store/">Choosing a backend store</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/bootstrapping-spike/">Bootstrapping a fresh SPIKE</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/root-key-keepers-recovery/">Where the root key lives</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/storing-and-reading-secrets/">Storing and reading secrets</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/writing-access-policies/">Writing access policies</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/granting-a-workload-access/">Granting a workload access to secrets</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/encryption-as-a-service/">Using SPIKE as an encryption service</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/break-the-glass-recovery/">Break-the-glass disaster recovery</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/backup-and-restore/">Backup and restore</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/deploying-spike/">Deploying SPIKE (Kubernetes and bare-metal)</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/production-hardening/">Production hardening</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/troubleshooting/">Troubleshooting</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/go-sdk-integration/">Integrating the Go SDK</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/upgrading-spike/">Upgrading SPIKE</a>
+                </li>
+
+                </ul>
     </div>
 <style>
     /* Navigation tree structure */
@@ -762,13 +825,11 @@
 privileged operators with specific SPIFFE roles to perform critical operations
 for maintaining <strong>SPIKE Nexus</strong>’ resilience.</p>
 <h2 id="quick-start">Quick Start</h2>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># For disaster recovery preparation (while system is healthy)
-</span><span style="color:#bf616a;">spike</span><span> operator recover
-</span><span>
-</span><span style="color:#65737e;"># For system restoration (after system failure)
-</span><span style="color:#bf616a;">spike</span><span> operator restore
-</span></code></pre>
-<h2 id="what-is-spike-operator-mode">What is SPIKE Operator Mode?</h2>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="shellscript"><span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># For disaster recovery preparation (while system is healthy)</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">spike</span><span style="color: #C3E88D;"> operator recover</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># For system restoration (after system failure)</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">spike</span><span style="color: #C3E88D;"> operator restore</span></span></code></pre><h2 id="what-is-spike-operator-mode">What is SPIKE Operator Mode?</h2>
 <p>The <strong>Operator</strong> mode in <strong>SPIKE</strong> provides privileged functionality for system
 maintenance and recovery. These commands:</p>
 <ul>
@@ -782,8 +843,7 @@ even in worst-case scenarios, the system can be recovered without compromising
 security.</p>
 <h2 id="commands">Commands</h2>
 <h3 id="spike-operator-recover"><code>spike operator recover</code></h3>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">spike</span><span> operator recover
-</span></code></pre>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="shellscript"><span class="giallo-l"><span style="color: #FFCB6B;">spike</span><span style="color: #C3E88D;"> operator recover</span></span></code></pre>
 <p>The <code>recover</code> command allows privileged operators with the <code>recover</code> role to
 extract recovery shards from a healthy SPIKE Nexus system. These shards are
 essential for system restoration in case of catastrophic failure.</p>
@@ -809,24 +869,20 @@ essential for system restoration in case of catastrophic failure.</p>
 <li>Loss of recovery shards may prevent system restoration</li>
 </ul>
 <h4 id="example">Example:</h4>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># Generate recovery shards for disaster preparedness
-</span><span style="color:#bf616a;">spike</span><span> operator recover
-</span></code></pre>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="shellscript"><span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># Generate recovery shards for disaster preparedness</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">spike</span><span style="color: #C3E88D;"> operator recover</span></span></code></pre>
 <p>After executing the command, you will see:</p>
-<pre style="background-color:#2b303b;color:#c0c5ce;"><code><span>SPIKE Recovery shards saved to the recovery directory:
-</span><span>/path/to/recovery/directory
-</span><span>
-</span><span>Please make sure that:
-</span><span>  1. You encrypt these shards and keep them safe.
-</span><span>  2. Securely erase the shards from the recovery directory after you encrypt them
-</span><span>     and save them to a safe location.
-</span><span>
-</span><span>If you lose these shards, you will not be able to recover SPIKE Nexus in the
-</span><span>unlikely event of a total system crash.
-</span></code></pre>
-<h3 id="spike-operator-restore"><code>spike operator restore</code></h3>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">spike</span><span> operator restore
-</span></code></pre>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="plain"><span class="giallo-l"><span>SPIKE Recovery shards saved to the recovery directory:</span></span>
+<span class="giallo-l"><span>/path/to/recovery/directory</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span>Please make sure that:</span></span>
+<span class="giallo-l"><span>  1. You encrypt these shards and keep them safe.</span></span>
+<span class="giallo-l"><span>  2. Securely erase the shards from the recovery directory after you encrypt them</span></span>
+<span class="giallo-l"><span>     and save them to a safe location.</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span>If you lose these shards, you will not be able to recover SPIKE Nexus in the</span></span>
+<span class="giallo-l"><span>unlikely event of a total system crash.</span></span></code></pre><h3 id="spike-operator-restore"><code>spike operator restore</code></h3>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="shellscript"><span class="giallo-l"><span style="color: #FFCB6B;">spike</span><span style="color: #C3E88D;"> operator restore</span></span></code></pre>
 <p>The <code>restore</code> command allows privileged operators with the <code>restore</code> role to
 restore <strong>SPIKE Nexus</strong> after a system failure. It requires the recovery shards
 previously generated with the <code>recover</code> command.</p>
@@ -852,28 +908,22 @@ previously generated with the <code>recover</code> command.</p>
 <li>The restoration process is designed to require multiple shards for security</li>
 </ul>
 <h4 id="example-1">Example:</h4>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># Begin restoration process
-</span><span style="color:#bf616a;">spike</span><span> operator restore
-</span></code></pre>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="shellscript"><span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># Begin restoration process</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">spike</span><span style="color: #C3E88D;"> operator restore</span></span></code></pre>
 <p>During execution, you will be prompted:</p>
-<pre style="background-color:#2b303b;color:#c0c5ce;"><code><span>(your input will be hidden as you paste/type it)
-</span><span>Enter recovery shard: 
-</span></code></pre>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="plain"><span class="giallo-l"><span>(your input will be hidden as you paste/type it)</span></span>
+<span class="giallo-l"><span>Enter recovery shard: </span></span></code></pre>
 <p>After providing a valid shard, you will see one of two responses:</p>
 <p>If restoration is complete:</p>
-<pre style="background-color:#2b303b;color:#c0c5ce;"><code><span>SPIKE is now restored and ready to use.
-</span><span>Please run `./hack/bare-metal/entry/spire-server-entry-su-register.sh` with necessary privileges
-</span><span>to start using SPIKE as a superuser.
-</span></code></pre>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="plain"><span class="giallo-l"><span>SPIKE is now restored and ready to use.</span></span>
+<span class="giallo-l"><span>Please run `./hack/bare-metal/entry/spire-server-entry-su-register.sh` with necessary privileges</span></span>
+<span class="giallo-l"><span>to start using SPIKE as a superuser.</span></span></code></pre>
 <p>If more shards are needed:</p>
-<pre style="background-color:#2b303b;color:#c0c5ce;"><code><span>Shards collected: 1
-</span><span>Shards remaining: 2
-</span><span>Please run `spike operator restore` again to provide the remaining shards.
-</span></code></pre>
-<h2 id="recovery-shard-format">Recovery Shard Format</h2>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="plain"><span class="giallo-l"><span>Shards collected: 1</span></span>
+<span class="giallo-l"><span>Shards remaining: 2</span></span>
+<span class="giallo-l"><span>Please run `spike operator restore` again to provide the remaining shards.</span></span></code></pre><h2 id="recovery-shard-format">Recovery Shard Format</h2>
 <p>Recovery shards follow a specific format:</p>
-<pre style="background-color:#2b303b;color:#c0c5ce;"><code><span>spike:INDEX:HEXDATA
-</span></code></pre>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="plain"><span class="giallo-l"><span>spike:INDEX:HEXDATA</span></span></code></pre>
 <p>Where:</p>
 <ul>
 <li><code>INDEX</code> is the numeric index of the shard</li>
@@ -907,14 +957,10 @@ administrators</li>
 <ol>
 <li>
 <p>For recovery role:</p>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">./hack/bare-metal/entry/spire-server-entry-recover-register.sh
-</span></code></pre>
-</li>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="shellscript"><span class="giallo-l"><span style="color: #FFCB6B;">./hack/bare-metal/entry/spire-server-entry-recover-register.sh</span></span></code></pre></li>
 <li>
 <p>For restore role:</p>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">./hack/bare-metal/entry/spire-server-entry-restore-register.sh
-</span></code></pre>
-</li>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="shellscript"><span class="giallo-l"><span style="color: #FFCB6B;">./hack/bare-metal/entry/spire-server-entry-restore-register.sh</span></span></code></pre></li>
 </ol>
 <p>These scripts must be run with appropriate privileges.</p>
 <hr />

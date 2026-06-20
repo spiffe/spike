@@ -288,6 +288,69 @@
                 </li>
 
                 </ul>
+    <input class="tree-toggle" type="checkbox" id="recipes"
+               />
+        <label class="tree-toggle-label "
+               for="recipes">Recipes</label>
+
+        <ul class="subtree">
+            <li >
+                    <a href="https://spike.ist/recipes/choosing-a-backend-store/">Choosing a backend store</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/bootstrapping-spike/">Bootstrapping a fresh SPIKE</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/root-key-keepers-recovery/">Where the root key lives</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/storing-and-reading-secrets/">Storing and reading secrets</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/writing-access-policies/">Writing access policies</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/granting-a-workload-access/">Granting a workload access to secrets</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/encryption-as-a-service/">Using SPIKE as an encryption service</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/break-the-glass-recovery/">Break-the-glass disaster recovery</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/backup-and-restore/">Backup and restore</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/deploying-spike/">Deploying SPIKE (Kubernetes and bare-metal)</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/production-hardening/">Production hardening</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/troubleshooting/">Troubleshooting</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/go-sdk-integration/">Integrating the Go SDK</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/upgrading-spike/">Upgrading SPIKE</a>
+                </li>
+
+                </ul>
     </div>
 <style>
     /* Navigation tree structure */
@@ -831,32 +894,29 @@ this attempt will fail.</p>
 user running <strong>SPIKE</strong> components.</p>
 <p>For bare-metal Linux deployments, edit the <code>/etc/security/limits.conf</code> file to
 add the following lines:</p>
-<pre data-lang="txt" style="background-color:#2b303b;color:#c0c5ce;" class="language-txt "><code class="language-txt" data-lang="txt"><span># Replace &quot;spike&quot; with the user running SPIKE components
-</span><span>spike  soft    memlock    16777216
-</span><span>spike  soft    memlock    16777216
-</span><span>spike  hard    memlock    16777216
-</span></code></pre>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="plain"><span class="giallo-l"><span># Replace &quot;spike&quot; with the user running SPIKE components</span></span>
+<span class="giallo-l"><span>spike  soft    memlock    16777216</span></span>
+<span class="giallo-l"><span>spike  soft    memlock    16777216</span></span>
+<span class="giallo-l"><span>spike  hard    memlock    16777216</span></span></code></pre>
 <p>For Docker, edit or create the <code>/etc/docker/daemon.json</code> file and add the
 following—The instructions may differ for other container runtimes:</p>
-<pre data-lang="json" style="background-color:#2b303b;color:#c0c5ce;" class="language-json "><code class="language-json" data-lang="json"><span>{
-</span><span>  &quot;</span><span style="color:#a3be8c;">default-ulimits</span><span>&quot;: {
-</span><span>    &quot;</span><span style="color:#a3be8c;">memlock</span><span>&quot;: {
-</span><span>      &quot;</span><span style="color:#a3be8c;">Name</span><span>&quot;: &quot;</span><span style="color:#a3be8c;">memlock</span><span>&quot;,
-</span><span>      &quot;</span><span style="color:#a3be8c;">Hard</span><span>&quot;: </span><span style="color:#d08770;">17179869184</span><span>,
-</span><span>      &quot;</span><span style="color:#a3be8c;">Soft</span><span>&quot;: </span><span style="color:#d08770;">17179869184
-</span><span>    }
-</span><span>  }
-</span><span>}
-</span></code></pre>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="json"><span class="giallo-l"><span style="color: #89DDFF;">{</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">  &quot;</span><span style="color: #C792EA;">default-ulimits</span><span style="color: #89DDFF;">&quot;: {</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">    &quot;</span><span style="color: #FFCB6B;">memlock</span><span style="color: #89DDFF;">&quot;: {</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">      &quot;</span><span style="color: #F78C6C;">Name</span><span style="color: #89DDFF;">&quot;: &quot;</span><span style="color: #C3E88D;">memlock</span><span style="color: #89DDFF;">&quot;,</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">      &quot;</span><span style="color: #F78C6C;">Hard</span><span style="color: #89DDFF;">&quot;:</span><span style="color: #F78C6C;"> 17179869184</span><span style="color: #89DDFF;">,</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">      &quot;</span><span style="color: #F78C6C;">Soft</span><span style="color: #89DDFF;">&quot;:</span><span style="color: #F78C6C;"> 17179869184</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">    }</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">  }</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">}</span></span></code></pre>
 <p>For Kubernetes, the settings will depend on your container runtime.
 For <code>containerd</code>, for example, execute the following:</p>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">sudo</span><span> systemctl edit containerd
-</span><span style="color:#65737e;"># Add:
-</span><span style="color:#bf616a;">[Service]
-</span><span style="color:#bf616a;">LimitMEMLOCK</span><span>=</span><span style="color:#a3be8c;">infinity
-</span><span style="color:#65737e;"># Then:
-</span><span style="color:#bf616a;">sudo</span><span> systemctl daemon-reload &amp;&amp; </span><span style="color:#bf616a;">sudo</span><span> systemctl restart containerd
-</span></code></pre>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="shellscript"><span class="giallo-l"><span style="color: #FFCB6B;">sudo</span><span style="color: #C3E88D;"> systemctl edit containerd</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># Add:</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">[</span><span>Service</span><span style="color: #89DDFF;">]</span></span>
+<span class="giallo-l"><span>LimitMEMLOCK</span><span style="color: #89DDFF;">=</span><span style="color: #C3E88D;">infinity</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># Then:</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">sudo</span><span style="color: #C3E88D;"> systemctl daemon-reload</span><span style="color: #89DDFF;"> &amp;&amp;</span><span style="color: #FFCB6B;"> sudo</span><span style="color: #C3E88D;"> systemctl restart containerd</span></span></code></pre>
 <p>If, for any reason, you cannot enable memory locking, make sure to disable
 swap and core dumps on your system for additional security.</p>
 <h3 id="network-security">Network Security</h3>
@@ -933,7 +993,7 @@ applications.</p>
 separate dedicated Kubernetes cluster, or on standalone hardware. This way, if
 the primary cluster is compromised, the SPIRE private keys are not at risk.</p>
 <p>To protect <strong>SPIRE</strong> private keys even further, you can use one of the
-supported <a href="https://github.com/spiffe/spire/tree/main/doc" title="SPIRE Docs on GitHub">SPIRE KMS plugins</a>.</p>
+supported <a rel="external" title="SPIRE Docs on GitHub" href="https://github.com/spiffe/spire/tree/main/doc">SPIRE KMS plugins</a>.</p>
 <h3 id="secure-spire-server-and-agent-communication">Secure SPIRE Server and Agent Communication</h3>
 <ul>
 <li>Use <strong>mutual TLS (mTLS)</strong> for all communication between SPIRE Server, SPIRE
@@ -967,7 +1027,7 @@ persistence, ensure that the database is:</p>
 attacks.</li>
 </ul>
 <p>You can find sample scripts that creates registration entries under the
-<a href="https://github.com/spiffe/spike/tree/main/hack"><code>./hack</code></a> folder:</p>
+<a rel="external" href="https://github.com/spiffe/spike/tree/main/hack"><code>./hack</code></a> folder:</p>
 <ul>
 <li><code>./hack/bare-metal/entry/spire-server-entry-recover-register.sh</code></li>
 <li><code>./hack/bare-metal/entry/spire-server-entry-spike-register.sh</code></li>
@@ -976,7 +1036,7 @@ attacks.</li>
 <h3 id="harden-spire-deployment-on-kubernetes">Harden SPIRE Deployment on Kubernetes</h3>
 <p>If you have deployed <strong>SPIRE</strong> on Kubernetes:</p>
 <ul>
-<li>Use Kubernetes <a href="https://kubernetes.io/docs/concepts/security/pod-security-standards/" title="Pod Security Standards"><strong>Pod Security Standards</strong></a>, Network Policies,
+<li>Use Kubernetes <a rel="external" title="Pod Security Standards" href="https://kubernetes.io/docs/concepts/security/pod-security-standards/"><strong>Pod Security Standards</strong></a>, Network Policies,
 and RBAC to restrict <strong>SPIRE Server</strong> and <strong>SPIRE Agent</strong> access.</li>
 <li>Limit SPIRE components to trusted namespaces and nodes.</li>
 </ul>
@@ -1108,14 +1168,13 @@ that binaries are not replaced with malicious code.</p>
 <p>One more thing you are encouraged to do is to include <strong>SPIKE Nexus</strong>,
 <strong>SPIKE Keeper</strong>, and <strong>SPIKE Pilot</strong>’s binary SHA hashes while registering
 them to <strong>SPIRE Server</strong>. Here’s an example:</p>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># Register SPIKE Keeper
-</span><span style="color:#bf616a;">spire-server</span><span> entry create \
-</span><span style="color:#bf616a;">    -spiffeID</span><span> spiffe://spike.ist/spike/keeper \
-</span><span style="color:#bf616a;">    -parentID </span><span>&quot;</span><span style="color:#a3be8c;">spiffe://spike.ist/spire-agent</span><span>&quot; \
-</span><span style="color:#bf616a;">    -selector</span><span> unix:uid:&quot;$</span><span style="color:#bf616a;">KEEPER_UID</span><span>&quot; \
-</span><span style="color:#bf616a;">    -selector</span><span> unix:path:&quot;$</span><span style="color:#bf616a;">KEEPER_PATH</span><span>&quot; \
-</span><span style="color:#bf616a;">    -selector</span><span> unix:sha256:&quot;$</span><span style="color:#bf616a;">KEEPER_SHA</span><span>&quot;
-</span></code></pre>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="shellscript"><span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># Register SPIKE Keeper</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">spire-server</span><span style="color: #C3E88D;"> entry create</span><span> \</span></span>
+<span class="giallo-l"><span style="color: #C3E88D;">    -spiffeID spiffe://spike.ist/spike/keeper</span><span> \</span></span>
+<span class="giallo-l"><span style="color: #C3E88D;">    -parentID</span><span style="color: #89DDFF;"> &quot;</span><span style="color: #C3E88D;">spiffe://spike.ist/spire-agent</span><span style="color: #89DDFF;">&quot;</span><span> \</span></span>
+<span class="giallo-l"><span style="color: #C3E88D;">    -selector unix:uid:</span><span style="color: #89DDFF;">&quot;</span><span>$KEEPER_UID</span><span style="color: #89DDFF;">&quot;</span><span> \</span></span>
+<span class="giallo-l"><span style="color: #C3E88D;">    -selector unix:path:</span><span style="color: #89DDFF;">&quot;</span><span>$KEEPER_PATH</span><span style="color: #89DDFF;">&quot;</span><span> \</span></span>
+<span class="giallo-l"><span style="color: #C3E88D;">    -selector unix:sha256:</span><span style="color: #89DDFF;">&quot;</span><span>$KEEPER_SHA</span><span style="color: #89DDFF;">&quot;</span></span></code></pre>
 <p>This way, if the binary changes, <strong>SPIRE Server</strong> will not assign it an SVID,
 and the rest of the system will not trust it and stop communicating with it,
 effectively securing the <strong>SPIKE</strong> components by totally isolating and
@@ -1129,22 +1188,21 @@ keeping out the untrusted binary.</p>
 <h2 id="how-the-root-key-is-protected-in-spike">How the Root Key Is Protected in SPIKE</h2>
 <p>In <strong>SPIKE</strong>, the <strong>root key</strong> is essential for encrypting secrets within the
 central store, <strong>SPIKE Nexus</strong>. To prevent any single entity from having full
-access to this key, SPIKE uses <a href="https://en.wikipedia.org/wiki/Shamir%27s_secret_sharing" title="Shamir&#39;s Secret Sharing">Shamir’s Secret Sharing</a> to divide the
+access to this key, SPIKE uses <a rel="external" title="Shamir's Secret Sharing" href="https://en.wikipedia.org/wiki/Shamir%27s_secret_sharing">Shamir’s Secret Sharing</a> to divide the
 root key into multiple shares. These shares are distributed among
 <strong>SPIKE Keeper</strong>s, ensuring that the root key can only be reconstructed when a
 sufficient number of shares are combined.</p>
 <p>This approach enhances security by requiring collaboration among multiple
 trusted components to access the root key.</p>
-<p><a href="https://en.wikipedia.org/wiki/Shamir%27s_secret_sharing" title="Shamir&#39;s Secret Sharing">Shamir’s Secret Sharing (SSS)</a> is a cryptographic method that divides a
+<p><a rel="external" title="Shamir's Secret Sharing" href="https://en.wikipedia.org/wiki/Shamir%27s_secret_sharing">Shamir’s Secret Sharing (SSS)</a> is a cryptographic method that divides a
 secret into parts, distributing them among participants. The secret can only be
 reconstructed when a minimum number of parts (the <strong>threshold</strong>) are combined.
 This ensures that partial knowledge of the secret does not compromise its
 security.</p>
 <h3 id="shamir-configuration">Shamir Configuration</h3>
 <p>Configure the threshold and total shares using environment variables:</p>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#b48ead;">export </span><span style="color:#bf616a;">SPIKE_NEXUS_SHAMIR_THRESHOLD</span><span>=</span><span style="color:#a3be8c;">3   </span><span style="color:#65737e;"># Need 3 shards to reconstruct
-</span><span style="color:#b48ead;">export </span><span style="color:#bf616a;">SPIKE_NEXUS_SHAMIR_SHARES</span><span>=</span><span style="color:#a3be8c;">5      </span><span style="color:#65737e;"># Generate 5 total shards
-</span></code></pre>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="shellscript"><span class="giallo-l"><span style="color: #C792EA;">export</span><span> SPIKE_NEXUS_SHAMIR_THRESHOLD</span><span style="color: #89DDFF;">=</span><span style="color: #F78C6C;">3</span><span style="color: #464B5D;font-style: italic;">   # Need 3 shards to reconstruct</span></span>
+<span class="giallo-l"><span style="color: #C792EA;">export</span><span> SPIKE_NEXUS_SHAMIR_SHARES</span><span style="color: #89DDFF;">=</span><span style="color: #F78C6C;">5</span><span style="color: #464B5D;font-style: italic;">      # Generate 5 total shards</span></span></code></pre>
 <p><strong>Recommended configurations by deployment size:</strong></p>
 <table><thead><tr><th>Deployment</th><th>Threshold</th><th>Shares</th><th>Rationale</th></tr></thead><tbody>
 <tr><td>Dev/Test</td><td>2</td><td>3</td><td>Minimal redundancy</td></tr>

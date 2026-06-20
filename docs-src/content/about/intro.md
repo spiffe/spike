@@ -34,9 +34,9 @@ secrets management solution.
 
 Here’s why relying on Kubernetes secrets can be problematic:
 
-### Limited Scope & Portability
+### Limited Scope and Portability
 
-If a service outside Kubernetes—or in another cluster—needs access to a
+If a service outside Kubernetes (or in another cluster) needs access to a
 Kubernetes secret, it introduces significant authentication and authorization
 challenges.
 
@@ -53,7 +53,7 @@ single cluster.
 
 Kubernetes secrets are static once created. They are stored in `etcd` and
 injected into pods at startup, meaning updates require manual
-intervention—modifying the secret, redeploying affected applications, and
+intervention: modifying the secret, redeploying affected applications, and
 ensuring no stale or expired secrets remain in use.
 
 Updating a Kubernetes Secret does not automatically notify or reload the
@@ -71,7 +71,7 @@ multiple environments. This often leads to fragmented governance and
 potential misconfigurations.
 
 A dedicated secrets manager offers dynamic cross-environment compatibility
-and stronger security controls—making it a better choice for modern,
+and stronger security controls, making it a better choice for modern,
 distributed architectures.
 
 ### Kubernetes Secrets Are Not Encrypted By Default
@@ -101,7 +101,7 @@ cluster-contained workloads where:
 * RBAC policies are well-configured to prevent accidental exposure.
 
 However, for any multi-cluster, dynamic, or **zero-trust** architecture, a
-dedicated secrets management solution is a better approach—providing
+dedicated secrets management solution is a better approach, providing
 fine-grained access control, cross-environment compatibility, and stronger
 security guarantees.
 

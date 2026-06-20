@@ -306,6 +306,69 @@
                 </li>
 
                 </ul>
+    <input class="tree-toggle" type="checkbox" id="recipes"
+               />
+        <label class="tree-toggle-label "
+               for="recipes">Recipes</label>
+
+        <ul class="subtree">
+            <li >
+                    <a href="https://spike.ist/recipes/choosing-a-backend-store/">Choosing a backend store</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/bootstrapping-spike/">Bootstrapping a fresh SPIKE</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/root-key-keepers-recovery/">Where the root key lives</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/storing-and-reading-secrets/">Storing and reading secrets</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/writing-access-policies/">Writing access policies</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/granting-a-workload-access/">Granting a workload access to secrets</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/encryption-as-a-service/">Using SPIKE as an encryption service</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/break-the-glass-recovery/">Break-the-glass disaster recovery</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/backup-and-restore/">Backup and restore</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/deploying-spike/">Deploying SPIKE (Kubernetes and bare-metal)</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/production-hardening/">Production hardening</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/troubleshooting/">Troubleshooting</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/go-sdk-integration/">Integrating the Go SDK</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/upgrading-spike/">Upgrading SPIKE</a>
+                </li>
+
+                </ul>
     </div>
 <style>
     /* Navigation tree structure */
@@ -827,7 +890,7 @@ and <strong>SPIKE Keeper</strong>instances, and the security of their relevant c
 parameters will be important.</p>
 <h2 id="authentication-and-communication">Authentication and Communication</h2>
 <ul>
-<li>All inter-component communication is secured through <a href="https://spiffe.io/"><strong>SPIFFE</strong> mTLS</a>.</li>
+<li>All inter-component communication is secured through <a rel="external" href="https://spiffe.io/"><strong>SPIFFE</strong> mTLS</a>.</li>
 <li>Components identify each other using their <strong>SVID</strong>s.</li>
 <li>Network-level security is provided by <strong>SPIFFE</strong> mTLS.</li>
 </ul>
@@ -931,7 +994,7 @@ they cannot laterally move to other SPIKE Keeper instances.</p>
 Keepers (the spokes) can only communicate with SPIKE Nexus (the hub).</p>
 <h2 id="spike-keeper-shard-distribution-and-disaster-recovery">SPIKE Keeper Shard Distribution and Disaster Recovery</h2>
 <p><strong>SPIKE</strong> uses <strong>SPIKE Keeper</strong>s, which are apps responsible for storing
-<a href="https://en.wikipedia.org/wiki/Shamir%27s_secret_sharing" title="Shamir&#39;s Secret Sharing">Shamir shards</a> of the <strong>root key</strong>. Both the <strong>root key</strong> and the
+<a rel="external" title="Shamir's Secret Sharing" href="https://en.wikipedia.org/wiki/Shamir%27s_secret_sharing">Shamir shards</a> of the <strong>root key</strong>. Both the <strong>root key</strong> and the
 <strong>shards</strong> are always in memory and <strong>never</strong> persisted to disk.</p>
 <p><strong>SPIKE Nexus</strong> can establish a SPIFFE-based mTLS connection to request a shard
 from a <strong>SPIKE Keeper</strong>, enabling the system to auto-recover itself.</p>
@@ -942,7 +1005,7 @@ share can reconstruct the root key alone, ensuring security. However, multiple
 shares can be combined to restore the system when needed.</li>
 <li><strong>SPIKE Nexus</strong> often automatically recovers itself from crashes using
 <strong>SPIKE Keeper</strong>s. However, for the unlikely case of a total system crash,
-each administrator can hold one of these shares and use <code>spike restore</code> to
+each administrator can hold one of these shares and use <code>spike operator restore</code> to
 restore the system back to normal. Since a single shard cannot recreate
 the root key, we are mitigating risk by distributing trust.</li>
 <li>For those less concerned with strict separation, an alternative approach
@@ -963,8 +1026,8 @@ disaster recovery.</p>
 </li>
 <li>The <strong>root key</strong> is automatically generated by <strong>SPIKE Bootstrap</strong>, and it’s
 <strong>never</strong> stored on disk in plain text (<em>i.e., it always lives in memory</em>)</li>
-<li>An administrator with adequate privileges can use <code>spike recover</code> to save
-<a href="https://en.wikipedia.org/wiki/Shamir%27s_secret_sharing" title="Shamir&#39;s Secret Sharing">Shamir Shards</a> in an encrypted medium out-of-band for future
+<li>An administrator with adequate privileges can use <code>spike operator recover</code> to save
+<a rel="external" title="Shamir's Secret Sharing" href="https://en.wikipedia.org/wiki/Shamir%27s_secret_sharing">Shamir Shards</a> in an encrypted medium out-of-band for future
 break-the-glass disaster recovery.</li>
 <li>Root key rotation will also re-encrypt the secrets.</li>
 </ul>
@@ -1123,16 +1186,16 @@ Or, on macOS: <code>shasum -a 256 -c spike-v0.4.0.sha256</code>.</li>
 </ul>
 </li>
 <li><strong>Transparency</strong>: All release artifacts and their corresponding checksums are
-publicly available on <a href="https://github.com/spiffe/spike/releases" title="SPIKE Releases">the official GitHub releases page</a>,
+publicly available on <a rel="external" title="SPIKE Releases" href="https://github.com/spiffe/spike/releases">the official GitHub releases page</a>,
 allowing for community verification and trust.</li>
 </ul>
 <h2 id="fips-compliance">FIPS Compliance</h2>
-<p><strong>FIPS</strong> stands for <a href="https://csrc.nist.gov/pubs/fips/140-3/final" title="FIPS">Federal Information Processing Standards</a>. FIPS
-are publicly announced standards developed by the <a href="https://www.nist.gov/" title="NIST"><em>U.S. National Institute of
+<p><strong>FIPS</strong> stands for <a rel="external" title="FIPS" href="https://csrc.nist.gov/pubs/fips/140-3/final">Federal Information Processing Standards</a>. FIPS
+are publicly announced standards developed by the <a rel="external" title="NIST" href="https://www.nist.gov/"><em>U.S. National Institute of
 Standards and Technology (<strong>NIST</strong>)</em></a> for use in computer systems by
 non-military American government agencies and government contractors.</p>
 <p><strong>FIPS</strong> standards cover various aspects of information technology.
-<a href="https://csrc.nist.gov/pubs/fips/140-3/final" title="FIPS">FIPS 140-3</a>, in particular, defines standards of security for hardware
+<a rel="external" title="FIPS" href="https://csrc.nist.gov/pubs/fips/140-3/final">FIPS 140-3</a>, in particular, defines standards of security for hardware
 and software cryptographic modules used to protect sensitive information.</p>
 <p>All <strong>SPIKE</strong> binaries are configured to be <strong>FIPS 140-3</strong>-enabled at <strong>compile
 time</strong>.</p>

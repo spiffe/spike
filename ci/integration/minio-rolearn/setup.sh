@@ -5,7 +5,15 @@ SCRIPTPATH="$(dirname "${SCRIPT}")"
 BASEPATH="${SCRIPTPATH}/../../../"
 
 helm upgrade --install -n spire-server spire-crds spire-crds --repo https://spiffe.github.io/helm-charts-hardened/ --create-namespace
-helm upgrade --install -n spire-server spire spire --repo https://spiffe.github.io/helm-charts-hardened/ -f "${SCRIPTPATH}/spire-values.yaml" --wait
+helm upgrade --install -n spire-server spire spire --repo https://spiffe.github.io/helm-charts-hardened/ -f "${SCRIPTPATH}/spire-values.yaml"
+
+# Seed the SPIKE Keepers with the root-key shares. Without this, SPIKE Nexus
+# waits forever in InitializeBackingStoreFromKeepers and never becomes ready.
+# The spire chart registers the spike/bootstrap identity but ships no bootstrap
+# workload, so we supply it here. (No --wait on the install above: Nexus cannot
+# become ready until the keepers are seeded by this Job.)
+kubectl apply -f "${SCRIPTPATH}/bootstrap.yaml"
+
 #FIXME remove once upstream chart supports this
 kubectl patch statefulset -n spire-server spire-spike-nexus --type='strategic' -p '
 spec:
@@ -21,7 +29,11 @@ spec:
 '
 kubectl rollout status statefulset/spire-spike-nexus -n spire-server --watch --timeout=5m
 kubectl apply -f "${SCRIPTPATH}/test.yaml"
-helm upgrade --install minio -n minio --create-namespace oci://registry-1.docker.io/bitnamicharts/minio -f "${SCRIPTPATH}/minio-values.yaml"
+# Pin the chart version so the image tags stay aligned with the tags that
+# exist under docker.io/bitnamilegacy/* (see minio-values.yaml). An unpinned
+# install would float to the latest chart, whose newer image tags may not be
+# mirrored in the frozen legacy repository.
+helm upgrade --install minio -n minio --create-namespace --version 17.0.21 oci://registry-1.docker.io/bitnamicharts/minio -f "${SCRIPTPATH}/minio-values.yaml"
 kubectl rollout restart -n minio deployment/minio
 kubectl rollout status -n minio deployment/minio
 kubectl wait -l statefulset.kubernetes.io/pod-name=test-0 --for=condition=ready pod --timeout=-360s

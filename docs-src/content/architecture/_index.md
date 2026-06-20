@@ -4,7 +4,7 @@
 # \\\\\\\ SPDX-License-Identifier: Apache-2.
 
 title = "SPIKE Architecture"
-weight = 6
+weight = 7
 sort_by = "weight"
 +++
 

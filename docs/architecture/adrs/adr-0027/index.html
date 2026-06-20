@@ -254,6 +254,69 @@
                 </li>
 
                 </ul>
+    <input class="tree-toggle" type="checkbox" id="recipes"
+               />
+        <label class="tree-toggle-label "
+               for="recipes">Recipes</label>
+
+        <ul class="subtree">
+            <li >
+                    <a href="https://spike.ist/recipes/choosing-a-backend-store/">Choosing a backend store</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/bootstrapping-spike/">Bootstrapping a fresh SPIKE</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/root-key-keepers-recovery/">Where the root key lives</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/storing-and-reading-secrets/">Storing and reading secrets</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/writing-access-policies/">Writing access policies</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/granting-a-workload-access/">Granting a workload access to secrets</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/encryption-as-a-service/">Using SPIKE as an encryption service</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/break-the-glass-recovery/">Break-the-glass disaster recovery</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/backup-and-restore/">Backup and restore</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/deploying-spike/">Deploying SPIKE (Kubernetes and bare-metal)</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/production-hardening/">Production hardening</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/troubleshooting/">Troubleshooting</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/go-sdk-integration/">Integrating the Go SDK</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/upgrading-spike/">Upgrading SPIKE</a>
+                </li>
+
+                </ul>
     </div>
 <style>
     /* Navigation tree structure */
@@ -818,21 +881,19 @@ list, etc.)</li>
 </li>
 <li>
 <p><strong>Audit Entry Structure</strong> (<code>internal/journal/audit.go</code>):</p>
-<pre data-lang="go" style="background-color:#2b303b;color:#c0c5ce;" class="language-go "><code class="language-go" data-lang="go"><span style="color:#b48ead;">type </span><span>AuditEntry </span><span style="color:#b48ead;">struct </span><span>{
-</span><span>    </span><span style="color:#bf616a;">Component  </span><span style="color:#b48ead;">string        </span><span style="color:#65737e;">// Component that performed the action
-</span><span>    </span><span style="color:#bf616a;">TrailID    </span><span style="color:#b48ead;">string        </span><span style="color:#65737e;">// Unique trail identifier
-</span><span>    </span><span style="color:#bf616a;">Timestamp  time</span><span>.</span><span style="color:#b48ead;">Time     </span><span style="color:#65737e;">// When the action occurred
-</span><span>    </span><span style="color:#bf616a;">UserID     </span><span style="color:#b48ead;">string        </span><span style="color:#65737e;">// User identifier
-</span><span>    </span><span style="color:#bf616a;">Action     </span><span style="color:#b48ead;">AuditAction   </span><span style="color:#65737e;">// Operation performed
-</span><span>    </span><span style="color:#bf616a;">Path       </span><span style="color:#b48ead;">string        </span><span style="color:#65737e;">// URL path
-</span><span>    </span><span style="color:#bf616a;">Resource   </span><span style="color:#b48ead;">string        </span><span style="color:#65737e;">// Resource acted upon (query params)
-</span><span>    </span><span style="color:#bf616a;">SessionID  </span><span style="color:#b48ead;">string        </span><span style="color:#65737e;">// Session identifier
-</span><span>    </span><span style="color:#bf616a;">State      </span><span style="color:#b48ead;">AuditState    </span><span style="color:#65737e;">// Entry state (created/success/errored)
-</span><span>    </span><span style="color:#bf616a;">Err        </span><span style="color:#b48ead;">string        </span><span style="color:#65737e;">// Error message if failed
-</span><span>    </span><span style="color:#bf616a;">Duration   time</span><span>.</span><span style="color:#b48ead;">Duration </span><span style="color:#65737e;">// Request processing time
-</span><span>}
-</span></code></pre>
-</li>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="go"><span class="giallo-l"><span style="color: #89DDFF;">type</span><span style="color: #FFCB6B;"> AuditEntry</span><span style="color: #89DDFF;"> struct {</span></span>
+<span class="giallo-l"><span>    Component</span><span style="color: #C792EA;">  string</span><span style="color: #464B5D;font-style: italic;">        // Component that performed the action</span></span>
+<span class="giallo-l"><span>    TrailID</span><span style="color: #C792EA;">    string</span><span style="color: #464B5D;font-style: italic;">        // Unique trail identifier</span></span>
+<span class="giallo-l"><span>    Timestamp</span><span style="color: #FFCB6B;">  time</span><span style="color: #89DDFF;">.</span><span style="color: #FFCB6B;">Time</span><span style="color: #464B5D;font-style: italic;">     // When the action occurred</span></span>
+<span class="giallo-l"><span>    UserID</span><span style="color: #C792EA;">     string</span><span style="color: #464B5D;font-style: italic;">        // User identifier</span></span>
+<span class="giallo-l"><span>    Action</span><span style="color: #FFCB6B;">     AuditAction</span><span style="color: #464B5D;font-style: italic;">   // Operation performed</span></span>
+<span class="giallo-l"><span>    Path</span><span style="color: #C792EA;">       string</span><span style="color: #464B5D;font-style: italic;">        // URL path</span></span>
+<span class="giallo-l"><span>    Resource</span><span style="color: #C792EA;">   string</span><span style="color: #464B5D;font-style: italic;">        // Resource acted upon (query params)</span></span>
+<span class="giallo-l"><span>    SessionID</span><span style="color: #C792EA;">  string</span><span style="color: #464B5D;font-style: italic;">        // Session identifier</span></span>
+<span class="giallo-l"><span>    State</span><span style="color: #FFCB6B;">      AuditState</span><span style="color: #464B5D;font-style: italic;">    // Entry state (created/success/errored)</span></span>
+<span class="giallo-l"><span>    Err</span><span style="color: #C792EA;">        string</span><span style="color: #464B5D;font-style: italic;">        // Error message if failed</span></span>
+<span class="giallo-l"><span>    Duration</span><span style="color: #FFCB6B;">   time</span><span style="color: #89DDFF;">.</span><span style="color: #FFCB6B;">Duration</span><span style="color: #464B5D;font-style: italic;"> // Request processing time</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">}</span></span></code></pre></li>
 <li>
 <p><strong>Output Mechanism</strong>:</p>
 <ul>
@@ -904,48 +965,47 @@ environments</li>
 <h3 id="phase-1-implementation">Phase 1 Implementation</h3>
 <p>Phase 1 builds on the existing audit infrastructure by redirecting audit
 output to stderr while enhancing the <code>AuditEntry</code> structure:</p>
-<pre data-lang="go" style="background-color:#2b303b;color:#c0c5ce;" class="language-go "><code class="language-go" data-lang="go"><span style="color:#65737e;">// Enhanced audit entry for Phase 1
-</span><span style="color:#b48ead;">type </span><span>AuditEntry </span><span style="color:#b48ead;">struct </span><span>{
-</span><span>    </span><span style="color:#65737e;">// Existing fields (keep current structure)
-</span><span>    </span><span style="color:#bf616a;">Component  </span><span style="color:#b48ead;">string
-</span><span>    </span><span style="color:#bf616a;">TrailID    </span><span style="color:#b48ead;">string
-</span><span>    </span><span style="color:#bf616a;">Timestamp  time</span><span>.</span><span style="color:#b48ead;">Time
-</span><span>    </span><span style="color:#bf616a;">UserID     </span><span style="color:#b48ead;">string
-</span><span>    </span><span style="color:#bf616a;">Action     </span><span style="color:#b48ead;">AuditAction
-</span><span>    </span><span style="color:#bf616a;">Path       </span><span style="color:#b48ead;">string
-</span><span>    </span><span style="color:#bf616a;">Resource   </span><span style="color:#b48ead;">string
-</span><span>    </span><span style="color:#bf616a;">SessionID  </span><span style="color:#b48ead;">string
-</span><span>    </span><span style="color:#bf616a;">State      </span><span style="color:#b48ead;">AuditState
-</span><span>    </span><span style="color:#bf616a;">Err        </span><span style="color:#b48ead;">string
-</span><span>    </span><span style="color:#bf616a;">Duration   time</span><span>.</span><span style="color:#b48ead;">Duration
-</span><span>
-</span><span>    </span><span style="color:#65737e;">// New fields for Phase 1
-</span><span>    </span><span style="color:#bf616a;">SPIFFEID  </span><span style="color:#b48ead;">string </span><span>`</span><span style="color:#a3be8c;">json:&quot;spiffe_id,omitempty&quot;</span><span>`
-</span><span>    </span><span style="color:#bf616a;">SourceIP  </span><span style="color:#b48ead;">string </span><span>`</span><span style="color:#a3be8c;">json:&quot;src_ip,omitempty&quot;</span><span>`
-</span><span>    </span><span style="color:#bf616a;">Signature </span><span style="color:#b48ead;">string </span><span>`</span><span style="color:#a3be8c;">json:&quot;sig,omitempty&quot;</span><span>` </span><span style="color:#65737e;">// HMAC for tamper detection
-</span><span>}
-</span><span>
-</span><span style="color:#65737e;">// Modified audit logger for Phase 1
-</span><span style="color:#b48ead;">func </span><span style="color:#8fa1b3;">Audit</span><span>(</span><span style="color:#bf616a;">entry </span><span style="color:#b48ead;">AuditEntry</span><span>) {
-</span><span>    </span><span style="color:#bf616a;">audit </span><span>:= </span><span style="color:#bf616a;">AuditLogLine</span><span>{
-</span><span>        </span><span style="color:#bf616a;">Timestamp</span><span>:  </span><span style="color:#bf616a;">time</span><span>.</span><span style="color:#bf616a;">Now</span><span>(),
-</span><span>        </span><span style="color:#bf616a;">AuditEntry</span><span>: </span><span style="color:#bf616a;">entry</span><span>,
-</span><span>    }
-</span><span>
-</span><span>    </span><span style="color:#bf616a;">body</span><span>, </span><span style="color:#bf616a;">err </span><span>:= </span><span style="color:#bf616a;">json</span><span>.</span><span style="color:#bf616a;">Marshal</span><span>(</span><span style="color:#bf616a;">audit</span><span>)
-</span><span>    </span><span style="color:#b48ead;">if </span><span style="color:#bf616a;">err </span><span>!= </span><span style="color:#d08770;">nil </span><span>{
-</span><span>        </span><span style="color:#bf616a;">logger</span><span>.</span><span style="color:#bf616a;">FatalLn</span><span>(&quot;</span><span style="color:#a3be8c;">Audit</span><span>&quot;,
-</span><span>            &quot;</span><span style="color:#a3be8c;">message</span><span>&quot;, &quot;</span><span style="color:#a3be8c;">Problem marshalling audit entry</span><span>&quot;,
-</span><span>            &quot;</span><span style="color:#a3be8c;">err</span><span>&quot;, </span><span style="color:#bf616a;">err</span><span>.</span><span style="color:#bf616a;">Error</span><span>())
-</span><span>        </span><span style="color:#b48ead;">return
-</span><span>    }
-</span><span>
-</span><span>    </span><span style="color:#65737e;">// Change from fmt.Println() to stderr output
-</span><span>    </span><span style="color:#bf616a;">fmt</span><span>.</span><span style="color:#bf616a;">Fprintf</span><span>(</span><span style="color:#bf616a;">os</span><span>.</span><span style="color:#bf616a;">Stderr</span><span>, &quot;</span><span style="color:#d08770;">%s</span><span style="color:#96b5b4;">\n</span><span>&quot;, </span><span style="color:#bf616a;">string</span><span>(</span><span style="color:#bf616a;">body</span><span>))
-</span><span>}
-</span><span>
-</span><span style="color:#65737e;">// Operational logs continue to stdout via logger.Log()
-</span></code></pre>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="go"><span class="giallo-l"><span style="color: #464B5D;font-style: italic;">// Enhanced audit entry for Phase 1</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">type</span><span style="color: #FFCB6B;"> AuditEntry</span><span style="color: #89DDFF;"> struct {</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;">    // Existing fields (keep current structure)</span></span>
+<span class="giallo-l"><span>    Component</span><span style="color: #C792EA;">  string</span></span>
+<span class="giallo-l"><span>    TrailID</span><span style="color: #C792EA;">    string</span></span>
+<span class="giallo-l"><span>    Timestamp</span><span style="color: #FFCB6B;">  time</span><span style="color: #89DDFF;">.</span><span style="color: #FFCB6B;">Time</span></span>
+<span class="giallo-l"><span>    UserID</span><span style="color: #C792EA;">     string</span></span>
+<span class="giallo-l"><span>    Action</span><span style="color: #FFCB6B;">     AuditAction</span></span>
+<span class="giallo-l"><span>    Path</span><span style="color: #C792EA;">       string</span></span>
+<span class="giallo-l"><span>    Resource</span><span style="color: #C792EA;">   string</span></span>
+<span class="giallo-l"><span>    SessionID</span><span style="color: #C792EA;">  string</span></span>
+<span class="giallo-l"><span>    State</span><span style="color: #FFCB6B;">      AuditState</span></span>
+<span class="giallo-l"><span>    Err</span><span style="color: #C792EA;">        string</span></span>
+<span class="giallo-l"><span>    Duration</span><span style="color: #FFCB6B;">   time</span><span style="color: #89DDFF;">.</span><span style="color: #FFCB6B;">Duration</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;">    // New fields for Phase 1</span></span>
+<span class="giallo-l"><span>    SPIFFEID</span><span style="color: #C792EA;">  string</span><span style="color: #89DDFF;"> `</span><span style="color: #C3E88D;">json:&quot;spiffe_id,omitempty&quot;</span><span style="color: #89DDFF;">`</span></span>
+<span class="giallo-l"><span>    SourceIP</span><span style="color: #C792EA;">  string</span><span style="color: #89DDFF;"> `</span><span style="color: #C3E88D;">json:&quot;src_ip,omitempty&quot;</span><span style="color: #89DDFF;">`</span></span>
+<span class="giallo-l"><span>    Signature</span><span style="color: #C792EA;"> string</span><span style="color: #89DDFF;"> `</span><span style="color: #C3E88D;">json:&quot;sig,omitempty&quot;</span><span style="color: #89DDFF;">`</span><span style="color: #464B5D;font-style: italic;"> // HMAC for tamper detection</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">}</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;">// Modified audit logger for Phase 1</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">func</span><span style="color: #82AAFF;"> Audit</span><span style="color: #89DDFF;">(</span><span style="font-style: italic;">entry</span><span style="color: #FFCB6B;"> AuditEntry</span><span style="color: #89DDFF;">) {</span></span>
+<span class="giallo-l"><span>    audit</span><span style="color: #89DDFF;"> :=</span><span style="color: #FFCB6B;"> AuditLogLine</span><span style="color: #89DDFF;">{</span></span>
+<span class="giallo-l"><span>        Timestamp</span><span style="color: #89DDFF;">:</span><span>  time</span><span style="color: #89DDFF;">.</span><span style="color: #82AAFF;">Now</span><span style="color: #89DDFF;">(),</span></span>
+<span class="giallo-l"><span>        AuditEntry</span><span style="color: #89DDFF;">:</span><span> entry</span><span style="color: #89DDFF;">,</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">    }</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span>    body</span><span style="color: #89DDFF;">,</span><span> err</span><span style="color: #89DDFF;"> :=</span><span> json</span><span style="color: #89DDFF;">.</span><span style="color: #82AAFF;">Marshal</span><span style="color: #89DDFF;">(</span><span>audit</span><span style="color: #89DDFF;">)</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;font-style: italic;">    if</span><span> err</span><span style="color: #89DDFF;"> != nil {</span></span>
+<span class="giallo-l"><span>        logger</span><span style="color: #89DDFF;">.</span><span style="color: #82AAFF;">FatalLn</span><span style="color: #89DDFF;">(&quot;</span><span style="color: #C3E88D;">Audit</span><span style="color: #89DDFF;">&quot;,</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">            &quot;</span><span style="color: #C3E88D;">message</span><span style="color: #89DDFF;">&quot;, &quot;</span><span style="color: #C3E88D;">Problem marshalling audit entry</span><span style="color: #89DDFF;">&quot;,</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">            &quot;</span><span style="color: #C3E88D;">err</span><span style="color: #89DDFF;">&quot;,</span><span> err</span><span style="color: #89DDFF;">.</span><span style="color: #82AAFF;">Error</span><span style="color: #89DDFF;">())</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;font-style: italic;">        return</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">    }</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;">    // Change from fmt.Println() to stderr output</span></span>
+<span class="giallo-l"><span>    fmt</span><span style="color: #89DDFF;">.</span><span style="color: #82AAFF;">Fprintf</span><span style="color: #89DDFF;">(</span><span>os</span><span style="color: #89DDFF;">.</span><span>Stderr</span><span style="color: #89DDFF;">, &quot;</span><span style="color: #F07178;">%s</span><span>\n</span><span style="color: #89DDFF;">&quot;,</span><span style="color: #C792EA;"> string</span><span style="color: #89DDFF;">(</span><span>body</span><span style="color: #89DDFF;">))</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">}</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;">// Operational logs continue to stdout via logger.Log()</span></span></code></pre>
 <p><strong>Key Changes from Current Implementation:</strong></p>
 <ol>
 <li>Change <code>fmt.Println()</code> to <code>fmt.Fprintf(os.Stderr, ...)</code> in
@@ -957,59 +1017,57 @@ output to stderr while enhancing the <code>AuditEntry</code> structure:</p>
 <h3 id="phase-2-architecture">Phase 2 Architecture</h3>
 <p>Phase 2 extends the audit system with pluggable devices while maintaining
 backward compatibility with the existing <code>journal.Audit()</code> interface:</p>
-<pre data-lang="go" style="background-color:#2b303b;color:#c0c5ce;" class="language-go "><code class="language-go" data-lang="go"><span style="color:#65737e;">// Pluggable audit device interface (future)
-</span><span style="color:#b48ead;">type </span><span>AuditDevice </span><span style="color:#b48ead;">interface </span><span>{
-</span><span>    </span><span style="color:#8fa1b3;">Write</span><span>(</span><span style="color:#bf616a;">entry </span><span style="color:#b48ead;">AuditEntry</span><span>) </span><span style="color:#b48ead;">error
-</span><span>    </span><span style="color:#8fa1b3;">Close</span><span>() </span><span style="color:#b48ead;">error
-</span><span>}
-</span><span>
-</span><span style="color:#b48ead;">type </span><span>AuditManager </span><span style="color:#b48ead;">struct </span><span>{
-</span><span>    </span><span style="color:#bf616a;">devices  </span><span>[]</span><span style="color:#b48ead;">AuditDevice
-</span><span>    </span><span style="color:#bf616a;">blocking </span><span style="color:#b48ead;">bool </span><span style="color:#65737e;">// If true, operations fail when audit fails
-</span><span>    </span><span style="color:#bf616a;">hmacKey  </span><span>[]</span><span style="color:#b48ead;">byte
-</span><span>}
-</span><span>
-</span><span style="color:#65737e;">// Modified Audit function to support multiple devices
-</span><span style="color:#b48ead;">func </span><span style="color:#8fa1b3;">Audit</span><span>(</span><span style="color:#bf616a;">entry </span><span style="color:#b48ead;">AuditEntry</span><span>) {
-</span><span>    </span><span style="color:#65737e;">// Existing stderr output (backward compatibility)
-</span><span>    </span><span style="color:#bf616a;">audit </span><span>:= </span><span style="color:#bf616a;">AuditLogLine</span><span>{
-</span><span>        </span><span style="color:#bf616a;">Timestamp</span><span>:  </span><span style="color:#bf616a;">time</span><span>.</span><span style="color:#bf616a;">Now</span><span>(),
-</span><span>        </span><span style="color:#bf616a;">AuditEntry</span><span>: </span><span style="color:#bf616a;">entry</span><span>,
-</span><span>    }
-</span><span>
-</span><span>    </span><span style="color:#bf616a;">body</span><span>, </span><span style="color:#bf616a;">err </span><span>:= </span><span style="color:#bf616a;">json</span><span>.</span><span style="color:#bf616a;">Marshal</span><span>(</span><span style="color:#bf616a;">audit</span><span>)
-</span><span>    </span><span style="color:#b48ead;">if </span><span style="color:#bf616a;">err </span><span>!= </span><span style="color:#d08770;">nil </span><span>{
-</span><span>        </span><span style="color:#bf616a;">logger</span><span>.</span><span style="color:#bf616a;">FatalLn</span><span>(&quot;</span><span style="color:#a3be8c;">Audit</span><span>&quot;,
-</span><span>            &quot;</span><span style="color:#a3be8c;">message</span><span>&quot;, &quot;</span><span style="color:#a3be8c;">Problem marshalling audit entry</span><span>&quot;,
-</span><span>            &quot;</span><span style="color:#a3be8c;">err</span><span>&quot;, </span><span style="color:#bf616a;">err</span><span>.</span><span style="color:#bf616a;">Error</span><span>())
-</span><span>        </span><span style="color:#b48ead;">return
-</span><span>    }
-</span><span>
-</span><span>    </span><span style="color:#bf616a;">fmt</span><span>.</span><span style="color:#bf616a;">Fprintf</span><span>(</span><span style="color:#bf616a;">os</span><span>.</span><span style="color:#bf616a;">Stderr</span><span>, &quot;</span><span style="color:#d08770;">%s</span><span style="color:#96b5b4;">\n</span><span>&quot;, </span><span style="color:#bf616a;">string</span><span>(</span><span style="color:#bf616a;">body</span><span>))
-</span><span>
-</span><span>    </span><span style="color:#65737e;">// New: Write to pluggable devices
-</span><span>    </span><span style="color:#b48ead;">if </span><span style="color:#bf616a;">auditManager </span><span>!= </span><span style="color:#d08770;">nil </span><span>{
-</span><span>        </span><span style="color:#b48ead;">for </span><span style="color:#bf616a;">_</span><span>, </span><span style="color:#bf616a;">device </span><span>:= </span><span style="color:#b48ead;">range </span><span style="color:#bf616a;">auditManager</span><span>.</span><span style="color:#bf616a;">devices </span><span>{
-</span><span>            </span><span style="color:#b48ead;">if </span><span style="color:#bf616a;">err </span><span>:= </span><span style="color:#bf616a;">device</span><span>.</span><span style="color:#bf616a;">Write</span><span>(</span><span style="color:#bf616a;">entry</span><span>); </span><span style="color:#bf616a;">err </span><span>!= </span><span style="color:#d08770;">nil </span><span>{
-</span><span>                </span><span style="color:#b48ead;">if </span><span style="color:#bf616a;">auditManager</span><span>.</span><span style="color:#bf616a;">blocking </span><span>{
-</span><span>                    </span><span style="color:#bf616a;">logger</span><span>.</span><span style="color:#bf616a;">FatalLn</span><span>(&quot;</span><span style="color:#a3be8c;">Audit</span><span>&quot;,
-</span><span>                        &quot;</span><span style="color:#a3be8c;">message</span><span>&quot;, &quot;</span><span style="color:#a3be8c;">Critical audit device failure</span><span>&quot;,
-</span><span>                        &quot;</span><span style="color:#a3be8c;">err</span><span>&quot;, </span><span style="color:#bf616a;">err</span><span>.</span><span style="color:#bf616a;">Error</span><span>())
-</span><span>                }
-</span><span>                </span><span style="color:#bf616a;">logger</span><span>.</span><span style="color:#bf616a;">Log</span><span>().</span><span style="color:#bf616a;">Warn</span><span>(&quot;</span><span style="color:#a3be8c;">Audit</span><span>&quot;,
-</span><span>                    &quot;</span><span style="color:#a3be8c;">message</span><span>&quot;, &quot;</span><span style="color:#a3be8c;">Audit device write failed</span><span>&quot;,
-</span><span>                    &quot;</span><span style="color:#a3be8c;">err</span><span>&quot;, </span><span style="color:#bf616a;">err</span><span>.</span><span style="color:#bf616a;">Error</span><span>())
-</span><span>            }
-</span><span>        }
-</span><span>    }
-</span><span>}
-</span><span>
-</span><span style="color:#65737e;">// Device implementations
-</span><span style="color:#b48ead;">type </span><span>FileAuditDevice </span><span style="color:#b48ead;">struct </span><span>{ </span><span style="color:#65737e;">/* ... */ </span><span>}
-</span><span style="color:#b48ead;">type </span><span>SocketAuditDevice </span><span style="color:#b48ead;">struct </span><span>{ </span><span style="color:#65737e;">/* ... */ </span><span>}
-</span><span style="color:#b48ead;">type </span><span>SyslogAuditDevice </span><span style="color:#b48ead;">struct </span><span>{ </span><span style="color:#65737e;">/* ... */ </span><span>}
-</span></code></pre>
-<h3 id="migration-path">Migration Path</h3>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="go"><span class="giallo-l"><span style="color: #464B5D;font-style: italic;">// Pluggable audit device interface (future)</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">type</span><span style="color: #FFCB6B;"> AuditDevice</span><span style="color: #89DDFF;"> interface {</span></span>
+<span class="giallo-l"><span style="color: #82AAFF;">    Write</span><span style="color: #89DDFF;">(</span><span style="font-style: italic;">entry</span><span style="color: #FFCB6B;"> AuditEntry</span><span style="color: #89DDFF;">)</span><span style="color: #C792EA;"> error</span></span>
+<span class="giallo-l"><span style="color: #82AAFF;">    Close</span><span style="color: #89DDFF;">()</span><span style="color: #C792EA;"> error</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">}</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #89DDFF;">type</span><span style="color: #FFCB6B;"> AuditManager</span><span style="color: #89DDFF;"> struct {</span></span>
+<span class="giallo-l"><span>    devices</span><span style="color: #89DDFF;">  []</span><span style="color: #FFCB6B;">AuditDevice</span></span>
+<span class="giallo-l"><span>    blocking</span><span style="color: #C792EA;"> bool</span><span style="color: #464B5D;font-style: italic;"> // If true, operations fail when audit fails</span></span>
+<span class="giallo-l"><span>    hmacKey</span><span style="color: #89DDFF;">  []</span><span style="color: #C792EA;">byte</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">}</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;">// Modified Audit function to support multiple devices</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">func</span><span style="color: #82AAFF;"> Audit</span><span style="color: #89DDFF;">(</span><span style="font-style: italic;">entry</span><span style="color: #FFCB6B;"> AuditEntry</span><span style="color: #89DDFF;">) {</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;">    // Existing stderr output (backward compatibility)</span></span>
+<span class="giallo-l"><span>    audit</span><span style="color: #89DDFF;"> :=</span><span style="color: #FFCB6B;"> AuditLogLine</span><span style="color: #89DDFF;">{</span></span>
+<span class="giallo-l"><span>        Timestamp</span><span style="color: #89DDFF;">:</span><span>  time</span><span style="color: #89DDFF;">.</span><span style="color: #82AAFF;">Now</span><span style="color: #89DDFF;">(),</span></span>
+<span class="giallo-l"><span>        AuditEntry</span><span style="color: #89DDFF;">:</span><span> entry</span><span style="color: #89DDFF;">,</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">    }</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span>    body</span><span style="color: #89DDFF;">,</span><span> err</span><span style="color: #89DDFF;"> :=</span><span> json</span><span style="color: #89DDFF;">.</span><span style="color: #82AAFF;">Marshal</span><span style="color: #89DDFF;">(</span><span>audit</span><span style="color: #89DDFF;">)</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;font-style: italic;">    if</span><span> err</span><span style="color: #89DDFF;"> != nil {</span></span>
+<span class="giallo-l"><span>        logger</span><span style="color: #89DDFF;">.</span><span style="color: #82AAFF;">FatalLn</span><span style="color: #89DDFF;">(&quot;</span><span style="color: #C3E88D;">Audit</span><span style="color: #89DDFF;">&quot;,</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">            &quot;</span><span style="color: #C3E88D;">message</span><span style="color: #89DDFF;">&quot;, &quot;</span><span style="color: #C3E88D;">Problem marshalling audit entry</span><span style="color: #89DDFF;">&quot;,</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">            &quot;</span><span style="color: #C3E88D;">err</span><span style="color: #89DDFF;">&quot;,</span><span> err</span><span style="color: #89DDFF;">.</span><span style="color: #82AAFF;">Error</span><span style="color: #89DDFF;">())</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;font-style: italic;">        return</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">    }</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span>    fmt</span><span style="color: #89DDFF;">.</span><span style="color: #82AAFF;">Fprintf</span><span style="color: #89DDFF;">(</span><span>os</span><span style="color: #89DDFF;">.</span><span>Stderr</span><span style="color: #89DDFF;">, &quot;</span><span style="color: #F07178;">%s</span><span>\n</span><span style="color: #89DDFF;">&quot;,</span><span style="color: #C792EA;"> string</span><span style="color: #89DDFF;">(</span><span>body</span><span style="color: #89DDFF;">))</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;">    // New: Write to pluggable devices</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;font-style: italic;">    if</span><span> auditManager</span><span style="color: #89DDFF;"> != nil {</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;font-style: italic;">        for</span><span> _</span><span style="color: #89DDFF;">,</span><span> device</span><span style="color: #89DDFF;"> :=</span><span style="color: #89DDFF;font-style: italic;"> range</span><span> auditManager</span><span style="color: #89DDFF;">.</span><span>devices</span><span style="color: #89DDFF;"> {</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;font-style: italic;">            if</span><span> err</span><span style="color: #89DDFF;"> :=</span><span> device</span><span style="color: #89DDFF;">.</span><span style="color: #82AAFF;">Write</span><span style="color: #89DDFF;">(</span><span>entry</span><span style="color: #89DDFF;">);</span><span> err</span><span style="color: #89DDFF;"> != nil {</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;font-style: italic;">                if</span><span> auditManager</span><span style="color: #89DDFF;">.</span><span>blocking</span><span style="color: #89DDFF;"> {</span></span>
+<span class="giallo-l"><span>                    logger</span><span style="color: #89DDFF;">.</span><span style="color: #82AAFF;">FatalLn</span><span style="color: #89DDFF;">(&quot;</span><span style="color: #C3E88D;">Audit</span><span style="color: #89DDFF;">&quot;,</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">                        &quot;</span><span style="color: #C3E88D;">message</span><span style="color: #89DDFF;">&quot;, &quot;</span><span style="color: #C3E88D;">Critical audit device failure</span><span style="color: #89DDFF;">&quot;,</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">                        &quot;</span><span style="color: #C3E88D;">err</span><span style="color: #89DDFF;">&quot;,</span><span> err</span><span style="color: #89DDFF;">.</span><span style="color: #82AAFF;">Error</span><span style="color: #89DDFF;">())</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">                }</span></span>
+<span class="giallo-l"><span>                logger</span><span style="color: #89DDFF;">.</span><span style="color: #82AAFF;">Log</span><span style="color: #89DDFF;">().</span><span style="color: #82AAFF;">Warn</span><span style="color: #89DDFF;">(&quot;</span><span style="color: #C3E88D;">Audit</span><span style="color: #89DDFF;">&quot;,</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">                    &quot;</span><span style="color: #C3E88D;">message</span><span style="color: #89DDFF;">&quot;, &quot;</span><span style="color: #C3E88D;">Audit device write failed</span><span style="color: #89DDFF;">&quot;,</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">                    &quot;</span><span style="color: #C3E88D;">err</span><span style="color: #89DDFF;">&quot;,</span><span> err</span><span style="color: #89DDFF;">.</span><span style="color: #82AAFF;">Error</span><span style="color: #89DDFF;">())</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">            }</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">        }</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">    }</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">}</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;">// Device implementations</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">type</span><span style="color: #FFCB6B;"> FileAuditDevice</span><span style="color: #89DDFF;"> struct {</span><span style="color: #464B5D;font-style: italic;"> /* ... */</span><span style="color: #89DDFF;"> }</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">type</span><span style="color: #FFCB6B;"> SocketAuditDevice</span><span style="color: #89DDFF;"> struct {</span><span style="color: #464B5D;font-style: italic;"> /* ... */</span><span style="color: #89DDFF;"> }</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">type</span><span style="color: #FFCB6B;"> SyslogAuditDevice</span><span style="color: #89DDFF;"> struct {</span><span style="color: #464B5D;font-style: italic;"> /* ... */</span><span style="color: #89DDFF;"> }</span></span></code></pre><h3 id="migration-path">Migration Path</h3>
 <p><strong>Current → Phase 1:</strong></p>
 <ol>
 <li>Modify <code>internal/journal/audit.go</code>:
@@ -1037,33 +1095,31 @@ backward compatibility with the existing <code>journal.Audit()</code> interface:
 <li>Maintain stderr output for backward compatibility</li>
 </ol>
 <h3 id="sample-kubernetes-configuration">Sample Kubernetes Configuration</h3>
-<pre data-lang="yaml" style="background-color:#2b303b;color:#c0c5ce;" class="language-yaml "><code class="language-yaml" data-lang="yaml"><span style="color:#65737e;"># Fluentd/Fluent Bit routing based on stream
-</span><span style="color:#a3be8c;">&lt;source&gt;
-</span><span>  @</span><span style="color:#a3be8c;">type tail
-</span><span>  </span><span style="color:#a3be8c;">path /var/log/containers/*.log
-</span><span>  </span><span style="color:#a3be8c;">&lt;parse&gt;
-</span><span>    @</span><span style="color:#a3be8c;">type multi_format
-</span><span>    </span><span style="color:#a3be8c;">&lt;pattern&gt;
-</span><span>      </span><span style="color:#a3be8c;">format regexp
-</span><span>      </span><span style="color:#a3be8c;">expression /^(?&lt;time&gt;.+) (?&lt;stream&gt;stdout|stderr) (?&lt;log&gt;.*)$/
-</span><span>    </span><span style="color:#a3be8c;">&lt;/pattern&gt;
-</span><span>  </span><span style="color:#a3be8c;">&lt;/parse&gt;
-</span><span style="color:#a3be8c;">&lt;/source&gt;
-</span><span>
-</span><span style="color:#a3be8c;">&lt;filter **&gt;
-</span><span>  @</span><span style="color:#a3be8c;">type record_transformer
-</span><span>  </span><span style="color:#a3be8c;">&lt;record&gt;
-</span><span>    </span><span style="color:#bf616a;">log_type ${tag_parts[0] == &#39;stderr&#39; ? &#39;audit&#39; </span><span>: &#39;</span><span style="color:#a3be8c;">operational</span><span>&#39;}
-</span><span>  </span><span style="color:#a3be8c;">&lt;/record&gt;
-</span><span style="color:#a3be8c;">&lt;/filter&gt;
-</span><span>
-</span><span style="color:#a3be8c;">&lt;match audit.**&gt;
-</span><span>  @</span><span style="color:#a3be8c;">type elasticsearch
-</span><span>  </span><span style="color:#a3be8c;">index_name audit-logs
-</span><span>  </span><span style="color:#65737e;"># Immutable index settings
-</span><span style="color:#a3be8c;">&lt;/match&gt;
-</span></code></pre>
-<h2 id="implementation-status">Implementation Status</h2>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="yaml"><span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># Fluentd/Fluent Bit routing based on stream</span></span>
+<span class="giallo-l"><span style="color: #C3E88D;">&lt;source&gt;</span></span>
+<span class="giallo-l"><span>  @</span><span style="color: #C3E88D;">type tail</span></span>
+<span class="giallo-l"><span style="color: #C3E88D;">  path /var/log/containers/*.log</span></span>
+<span class="giallo-l"><span style="color: #C3E88D;">  &lt;parse&gt;</span></span>
+<span class="giallo-l"><span>    @</span><span style="color: #C3E88D;">type multi_format</span></span>
+<span class="giallo-l"><span style="color: #C3E88D;">    &lt;pattern&gt;</span></span>
+<span class="giallo-l"><span style="color: #C3E88D;">      format regexp</span></span>
+<span class="giallo-l"><span style="color: #C3E88D;">      expression /^(?&lt;time&gt;.+) (?&lt;stream&gt;stdout|stderr) (?&lt;log&gt;.*)$/</span></span>
+<span class="giallo-l"><span style="color: #C3E88D;">    &lt;/pattern&gt;</span></span>
+<span class="giallo-l"><span style="color: #C3E88D;">  &lt;/parse&gt;</span></span>
+<span class="giallo-l"><span style="color: #C3E88D;">&lt;/source&gt;</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #C3E88D;">&lt;filter **&gt;</span></span>
+<span class="giallo-l"><span>  @</span><span style="color: #C3E88D;">type record_transformer</span></span>
+<span class="giallo-l"><span style="color: #C3E88D;">  &lt;record&gt;</span></span>
+<span class="giallo-l"><span style="color: #F07178;">    log_type ${tag_parts[0] == &#39;stderr&#39; ? &#39;audit&#39;</span><span style="color: #89DDFF;"> : &#39;</span><span style="color: #C3E88D;">operational</span><span style="color: #89DDFF;">&#39;</span><span>}</span></span>
+<span class="giallo-l"><span style="color: #C3E88D;">  &lt;/record&gt;</span></span>
+<span class="giallo-l"><span style="color: #C3E88D;">&lt;/filter&gt;</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #C3E88D;">&lt;match audit.**&gt;</span></span>
+<span class="giallo-l"><span>  @</span><span style="color: #C3E88D;">type elasticsearch</span></span>
+<span class="giallo-l"><span style="color: #C3E88D;">  index_name audit-logs</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;">  # Immutable index settings</span></span>
+<span class="giallo-l"><span style="color: #C3E88D;">&lt;/match&gt;</span></span></code></pre><h2 id="implementation-status">Implementation Status</h2>
 <h3 id="what-works-today-current">What Works Today (Current)</h3>
 <ul>
 <li>✅ Structured audit logging with <code>AuditEntry</code> and <code>AuditLogLine</code></li>

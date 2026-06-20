@@ -257,6 +257,69 @@
                 </li>
 
                 </ul>
+    <input class="tree-toggle" type="checkbox" id="recipes"
+               />
+        <label class="tree-toggle-label "
+               for="recipes">Recipes</label>
+
+        <ul class="subtree">
+            <li >
+                    <a href="https://spike.ist/recipes/choosing-a-backend-store/">Choosing a backend store</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/bootstrapping-spike/">Bootstrapping a fresh SPIKE</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/root-key-keepers-recovery/">Where the root key lives</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/storing-and-reading-secrets/">Storing and reading secrets</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/writing-access-policies/">Writing access policies</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/granting-a-workload-access/">Granting a workload access to secrets</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/encryption-as-a-service/">Using SPIKE as an encryption service</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/break-the-glass-recovery/">Break-the-glass disaster recovery</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/backup-and-restore/">Backup and restore</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/deploying-spike/">Deploying SPIKE (Kubernetes and bare-metal)</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/production-hardening/">Production hardening</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/troubleshooting/">Troubleshooting</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/go-sdk-integration/">Integrating the Go SDK</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/upgrading-spike/">Upgrading SPIKE</a>
+                </li>
+
+                </ul>
     </div>
 <style>
     /* Navigation tree structure */
@@ -777,76 +840,70 @@ exhaustive reference; for that, refer to the
 <p>The best way to learn about it will be to use its <code>--help</code> flag.</p>
 <p>The following snippet shows what the interface looks like. Note that what you
 see might be different based on the version you use.</p>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">spike</span><span> (main)</span><span style="color:#bf616a;">$</span><span> spike
-</span><span>&gt;&gt; Secure </span><span style="color:#bf616a;">your</span><span> secrets with SPIFFE: https://spike.ist/ </span><span style="color:#65737e;">#
-</span><span>
-</span><span style="color:#bf616a;">Usage:
-</span><span>  </span><span style="color:#bf616a;">spike </span><span style="color:#b48ead;">[</span><span>command</span><span style="color:#b48ead;">]
-</span><span>
-</span><span style="color:#bf616a;">Available</span><span> Commands:
-</span><span>  </span><span style="color:#bf616a;">cipher</span><span>      Encrypt and decrypt data using SPIKE Nexus
-</span><span>  </span><span style="color:#bf616a;">completion</span><span>  Generate the autocompletion script for the specified shell
-</span><span>  </span><span style="color:#96b5b4;">help</span><span>        Help about any command
-</span><span>  </span><span style="color:#bf616a;">operator</span><span>    Manage admin operations
-</span><span>  </span><span style="color:#bf616a;">policy</span><span>      Manage policies
-</span><span>  </span><span style="color:#bf616a;">secret</span><span>      Manage secrets
-</span><span>
-</span><span style="color:#bf616a;">Flags:
-</span><span>  </span><span style="color:#bf616a;">-h, --help</span><span>   help for spike
-</span><span>
-</span><span style="color:#bf616a;">Use </span><span>&quot;</span><span style="color:#a3be8c;">spike [command] --help</span><span>&quot; for more information about a command.
-</span></code></pre>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="shellscript"><span class="giallo-l"><span style="color: #FFCB6B;">spike</span><span> (main)$ spike</span></span>
+<span class="giallo-l"><span style="color: #89DDFF;">&gt;&gt;</span><span> Secure your secrets with SPIFFE: https://spike.ist/</span><span style="color: #464B5D;font-style: italic;"> #</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">Usage:</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">  spike</span><span> [command]</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">Available</span><span style="color: #C3E88D;"> Commands:</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">  cipher</span><span style="color: #C3E88D;">      Encrypt and decrypt data using SPIKE Nexus</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">  completion</span><span style="color: #C3E88D;">  Generate the autocompletion script for the specified shell</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">  help</span><span style="color: #C3E88D;">        Help about any command</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">  operator</span><span style="color: #C3E88D;">    Manage admin operations</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">  policy</span><span style="color: #C3E88D;">      Manage policies</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">  secret</span><span style="color: #C3E88D;">      Manage secrets</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">Flags:</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">  -h,</span><span style="color: #C3E88D;"> --help   help for spike</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">Use</span><span style="color: #89DDFF;"> &quot;</span><span style="color: #C3E88D;">spike [command] --help</span><span style="color: #89DDFF;">&quot;</span><span style="color: #C3E88D;"> for more information about a command.</span></span></code></pre>
 <p>And here is how we can get help about a certain using of the <code>spike</code> command
 using the <code>--help</code> flag:</p>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">spike</span><span> (main)</span><span style="color:#bf616a;">$</span><span> spike secret</span><span style="color:#bf616a;"> --help
-</span><span style="color:#bf616a;">Manage</span><span> secrets
-</span><span>
-</span><span style="color:#bf616a;">Usage:
-</span><span>  </span><span style="color:#bf616a;">spike</span><span> secret </span><span style="color:#b48ead;">[</span><span>command</span><span style="color:#b48ead;">]
-</span><span>
-</span><span style="color:#bf616a;">Available</span><span> Commands:
-</span><span>  </span><span style="color:#bf616a;">delete</span><span>      Delete secrets at the specified path
-</span><span>  </span><span style="color:#bf616a;">get</span><span>         Get secrets from the specified path
-</span><span>  </span><span style="color:#bf616a;">list</span><span>        List all secret paths
-</span><span>  </span><span style="color:#bf616a;">metadata</span><span>    Manage secret metadata
-</span><span>  </span><span style="color:#bf616a;">put</span><span>         Put secrets at the specified path
-</span><span>  </span><span style="color:#bf616a;">undelete</span><span>    Undelete secrets at the specified path
-</span><span>
-</span><span style="color:#bf616a;">Flags:
-</span><span>  </span><span style="color:#bf616a;">-h, --help</span><span>   help for secret
-</span><span>
-</span><span style="color:#bf616a;">Use </span><span>&quot;</span><span style="color:#a3be8c;">spike secret [command] --help</span><span>&quot; for more information about a command.
-</span></code></pre>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="shellscript"><span class="giallo-l"><span style="color: #FFCB6B;">spike</span><span> (main)$ spike secret --help</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">Manage</span><span style="color: #C3E88D;"> secrets</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">Usage:</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">  spike</span><span style="color: #C3E88D;"> secret</span><span> [command]</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">Available</span><span style="color: #C3E88D;"> Commands:</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">  delete</span><span style="color: #C3E88D;">      Delete secrets at the specified path</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">  get</span><span style="color: #C3E88D;">         Get secrets from the specified path</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">  list</span><span style="color: #C3E88D;">        List all secret paths</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">  metadata</span><span style="color: #C3E88D;">    Manage secret metadata</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">  put</span><span style="color: #C3E88D;">         Put secrets at the specified path</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">  undelete</span><span style="color: #C3E88D;">    Undelete secrets at the specified path</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">Flags:</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">  -h,</span><span style="color: #C3E88D;"> --help   help for secret</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">Use</span><span style="color: #89DDFF;"> &quot;</span><span style="color: #C3E88D;">spike secret [command] --help</span><span style="color: #89DDFF;">&quot;</span><span style="color: #C3E88D;"> for more information about a command.</span></span></code></pre>
 <p>Let’s dig in further:</p>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">spike</span><span> (main)</span><span style="color:#bf616a;">$</span><span> spike secret put</span><span style="color:#bf616a;"> --help
-</span><span style="color:#bf616a;">Put</span><span> secrets at the specified path
-</span><span>
-</span><span style="color:#bf616a;">Usage:
-</span><span>  </span><span style="color:#bf616a;">spike</span><span> secret put &lt;path&gt; &lt;key=value&gt;... </span><span style="color:#b48ead;">[</span><span>flags</span><span style="color:#b48ead;">]
-</span><span>
-</span><span style="color:#bf616a;">Flags:
-</span><span>  </span><span style="color:#bf616a;">-h, --help</span><span>   help for put
-</span></code></pre>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="shellscript"><span class="giallo-l"><span style="color: #FFCB6B;">spike</span><span> (main)$ spike secret put --help</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">Put</span><span style="color: #C3E88D;"> secrets at the specified path</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">Usage:</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">  spike</span><span style="color: #C3E88D;"> secret put</span><span style="color: #89DDFF;"> &lt;</span><span style="color: #C3E88D;">pat</span><span>h</span><span style="color: #89DDFF;">&gt; &lt;</span><span style="color: #C3E88D;">key=valu</span><span>e</span><span style="color: #89DDFF;">&gt;</span><span style="color: #C3E88D;">...</span><span> [flags]</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">Flags:</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">  -h,</span><span style="color: #C3E88D;"> --help   help for put</span></span></code></pre>
 <p>Okay, that explains a lot. Let’s try the command:</p>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">spike</span><span> (main)</span><span style="color:#bf616a;">$</span><span> spike secret put tenants/acme/db/creds pass=SPIKERocks
-</span><span style="color:#bf616a;">OK
-</span></code></pre>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="shellscript"><span class="giallo-l"><span style="color: #FFCB6B;">spike</span><span> (main)$ spike secret put tenants/acme/db/creds pass</span><span style="color: #89DDFF;">=</span><span style="color: #C3E88D;">SPIKERocks</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">OK</span></span></code></pre>
 <p>Now let’s try to read this secret:</p>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">spike</span><span> (main)</span><span style="color:#bf616a;">$</span><span> spike secret get</span><span style="color:#bf616a;"> --help
-</span><span style="color:#bf616a;">Get</span><span> secrets from the specified path
-</span><span>
-</span><span style="color:#bf616a;">Usage:
-</span><span>  </span><span style="color:#bf616a;">spike</span><span> secret get &lt;path&gt; </span><span style="color:#b48ead;">[</span><span>key</span><span style="color:#b48ead;">] [</span><span>flags</span><span style="color:#b48ead;">]
-</span><span>
-</span><span style="color:#bf616a;">Flags:
-</span><span>  </span><span style="color:#bf616a;">-f, --format</span><span> string   Format to use: plain, p, yaml, y, json, j (default &quot;</span><span style="color:#a3be8c;">plain</span><span>&quot;)
-</span><span>  </span><span style="color:#bf616a;">-h, --help</span><span>            help for get
-</span><span>  </span><span style="color:#bf616a;">-v, --version</span><span> int     Specific version to retrieve
-</span></code></pre>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="shellscript"><span class="giallo-l"><span style="color: #FFCB6B;">spike</span><span> (main)$ spike secret get --help</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">Get</span><span style="color: #C3E88D;"> secrets from the specified path</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">Usage:</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">  spike</span><span style="color: #C3E88D;"> secret get</span><span style="color: #89DDFF;"> &lt;</span><span style="color: #C3E88D;">pat</span><span>h</span><span style="color: #89DDFF;">&gt;</span><span> [key] </span><span style="color: #89DDFF;">[</span><span>flags</span><span style="color: #89DDFF;">]</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">Flags:</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">  -f,</span><span style="color: #C3E88D;"> --format string   Format to use: plain, p, yaml, y, json, j</span><span> (default</span><span style="color: #89DDFF;"> &quot;</span><span style="color: #C3E88D;">plain</span><span style="color: #89DDFF;">&quot;</span><span>)</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">  -h,</span><span style="color: #C3E88D;"> --help            help for get</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">  -v,</span><span style="color: #C3E88D;"> --version int     Specific version to retrieve</span></span></code></pre>
 <p>Now that we know how to use the <code>spike secret get</code> command, let’s try it.</p>
-<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">spike</span><span> (main)</span><span style="color:#bf616a;">$</span><span> spike secret get tenants/acme/db/creds
-</span><span style="color:#bf616a;">pass:</span><span> SPIKERocks
-</span></code></pre>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="shellscript"><span class="giallo-l"><span style="color: #FFCB6B;">spike</span><span> (main)$ spike secret get tenants/acme/db/creds</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">pass:</span><span style="color: #C3E88D;"> SPIKERocks</span></span></code></pre>
 <p>That’s about it. You can use other <strong>SPIKE</strong> commands similarly.</p>
 <p>&nbsp;</p>
 <hr />

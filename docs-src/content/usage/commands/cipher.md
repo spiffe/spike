@@ -49,7 +49,7 @@ spike cipher encrypt [--file=<input>] [--out=<output>]
 
 Encrypts data via **SPIKE Nexus**. The command supports two modes of operation:
 
-#### Stream Mode (default)
+#### Stream Mode (Default)
 
 Reads data from a file or stdin and writes encrypted data to a file or stdout.
 This mode handles binary data transparently.
@@ -92,7 +92,7 @@ spike cipher decrypt [--file=<input>] [--out=<output>]
 
 Decrypts data via **SPIKE Nexus**. The command supports two modes of operation:
 
-#### Stream Mode (default)
+#### Stream Mode (Default)
 
 Reads encrypted data from a file or stdin and writes decrypted plaintext to a
 file or stdout. This mode handles binary data transparently.

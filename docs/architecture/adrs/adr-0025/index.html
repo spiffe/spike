@@ -254,6 +254,69 @@
                 </li>
 
                 </ul>
+    <input class="tree-toggle" type="checkbox" id="recipes"
+               />
+        <label class="tree-toggle-label "
+               for="recipes">Recipes</label>
+
+        <ul class="subtree">
+            <li >
+                    <a href="https://spike.ist/recipes/choosing-a-backend-store/">Choosing a backend store</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/bootstrapping-spike/">Bootstrapping a fresh SPIKE</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/root-key-keepers-recovery/">Where the root key lives</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/storing-and-reading-secrets/">Storing and reading secrets</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/writing-access-policies/">Writing access policies</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/granting-a-workload-access/">Granting a workload access to secrets</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/encryption-as-a-service/">Using SPIKE as an encryption service</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/break-the-glass-recovery/">Break-the-glass disaster recovery</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/backup-and-restore/">Backup and restore</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/deploying-spike/">Deploying SPIKE (Kubernetes and bare-metal)</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/production-hardening/">Production hardening</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/troubleshooting/">Troubleshooting</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/go-sdk-integration/">Integrating the Go SDK</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/upgrading-spike/">Upgrading SPIKE</a>
+                </li>
+
+                </ul>
     </div>
 <style>
     /* Navigation tree structure */
@@ -869,25 +932,21 @@ regex testers</li>
 </ul>
 <h2 id="examples">Examples</h2>
 <h3 id="secret-path-examples">Secret Path Examples</h3>
-<pre style="background-color:#2b303b;color:#c0c5ce;"><code><span>secrets/app/config                # Application configuration
-</span><span>secrets/database/production/creds # Production database credentials  
-</span><span>config/service/tls                # TLS configuration
-</span><span>tenantA/projectX/env1/key         # Multi-tenant organization
-</span></code></pre>
-<h3 id="policy-pattern-examples">Policy Pattern Examples</h3>
-<pre data-lang="yaml" style="background-color:#2b303b;color:#c0c5ce;" class="language-yaml "><code class="language-yaml" data-lang="yaml"><span style="color:#65737e;"># Match all secrets under app namespace
-</span><span style="color:#bf616a;">pathPattern</span><span>: &quot;</span><span style="color:#a3be8c;">^secrets/app/.*$</span><span>&quot;
-</span><span>
-</span><span style="color:#65737e;"># Match specific database credentials
-</span><span style="color:#bf616a;">pathPattern</span><span>: &quot;</span><span style="color:#a3be8c;">^secrets/database/production$</span><span>&quot;
-</span><span>
-</span><span style="color:#65737e;"># Match numbered database instances
-</span><span style="color:#bf616a;">pathPattern</span><span>: &quot;</span><span style="color:#a3be8c;">^secrets/db-[0-9]+/creds$</span><span>&quot;
-</span><span>
-</span><span style="color:#65737e;"># Match SPIFFE ID with escaped dots
-</span><span style="color:#bf616a;">spiffeidPattern</span><span>: &quot;</span><span style="color:#a3be8c;">^spiffe://example</span><span style="color:#96b5b4;">\\</span><span style="color:#a3be8c;">.org/service$</span><span>&quot;
-</span></code></pre>
-<h2 id="migration-guide">Migration Guide</h2>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="plain"><span class="giallo-l"><span>secrets/app/config                # Application configuration</span></span>
+<span class="giallo-l"><span>secrets/database/production/creds # Production database credentials  </span></span>
+<span class="giallo-l"><span>config/service/tls                # TLS configuration</span></span>
+<span class="giallo-l"><span>tenantA/projectX/env1/key         # Multi-tenant organization</span></span></code></pre><h3 id="policy-pattern-examples">Policy Pattern Examples</h3>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="yaml"><span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># Match all secrets under app namespace</span></span>
+<span class="giallo-l"><span style="color: #F07178;">pathPattern</span><span style="color: #89DDFF;">: &quot;</span><span style="color: #C3E88D;">^secrets/app/.*$</span><span style="color: #89DDFF;">&quot;</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># Match specific database credentials</span></span>
+<span class="giallo-l"><span style="color: #F07178;">pathPattern</span><span style="color: #89DDFF;">: &quot;</span><span style="color: #C3E88D;">^secrets/database/production$</span><span style="color: #89DDFF;">&quot;</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># Match numbered database instances</span></span>
+<span class="giallo-l"><span style="color: #F07178;">pathPattern</span><span style="color: #89DDFF;">: &quot;</span><span style="color: #C3E88D;">^secrets/db-[0-9]+/creds$</span><span style="color: #89DDFF;">&quot;</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># Match SPIFFE ID with escaped dots</span></span>
+<span class="giallo-l"><span style="color: #F07178;">spiffeidPattern</span><span style="color: #89DDFF;">: &quot;</span><span style="color: #C3E88D;">^spiffe://example</span><span>\\</span><span style="color: #C3E88D;">.org/service$</span><span style="color: #89DDFF;">&quot;</span></span></code></pre><h2 id="migration-guide">Migration Guide</h2>
 <p>For users transitioning from glob-style thinking:</p>
 <table><thead><tr><th>Glob Pattern</th><th>SPIKE Regex Pattern</th><th>Notes</th></tr></thead><tbody>
 <tr><td><code>secrets/*</code></td><td><code>^secrets/[^/]*$</code></td><td>Single level only</td></tr>
