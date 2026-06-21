@@ -2,10 +2,18 @@ name: Docs Link Check
 
 on:
   pull_request:
-    paths: ["docs/**", ".github/workflows/docs-link-check.yaml"]
+    paths:
+      - "docs/**"
+      - "docs-src/**"
+      - ".github/workflows/docs-link-check.yaml"
+      - ".lychee.toml"
   push:
     branches: [main]
-    paths: ["docs/**"]
+    paths:
+      - "docs/**"
+      - "docs-src/**"
+      - ".github/workflows/docs-link-check.yaml"
+      - ".lychee.toml"
 
 jobs:
   lychee:
@@ -13,15 +21,58 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Restore lychee cache
+      - name: Restore lychee cache for pull requests
+        if: ${{ github.event_name == 'pull_request' }}
         uses: actions/cache@v4
         with:
           path: .lycheecache
-          key: cache-lychee-${{ github.sha }}
-          restore-keys: cache-lychee-
+          key: cache-lychee-pr-${{ runner.os }}-${{ github.sha }}
+          restore-keys: cache-lychee-pr-${{ runner.os }}-
 
-      - name: Link Checker
+      - name: Restore lychee cache for production checks
+        if: ${{ github.event_name == 'push' }}
+        uses: actions/cache@v4
+        with:
+          path: .lycheecache
+          key: cache-lychee-production-${{ runner.os }}-${{ github.sha }}
+          restore-keys: cache-lychee-production-${{ runner.os }}-
+
+      - name: Generate pull request lychee config
+        if: ${{ github.event_name == 'pull_request' }}
+        run: |
+          cat > lychee-pr.toml <<EOF
+          timeout = 60
+          max_retries = 3
+          retry_wait_time = 3
+          exclude_mail = true
+          exclude_all_private = true
+          accept = [200, 206, 403, 429]
+          root_dir = "${GITHUB_WORKSPACE}/docs"
+          index_files = ["index.html"]
+          remap = [
+            '^https://spike\.ist/?$ file://${GITHUB_WORKSPACE}/docs/index.html',
+            '^https://spike\.ist/(.*)$ file://${GITHUB_WORKSPACE}/docs/\$1',
+            '^/+(.*)$ file://${GITHUB_WORKSPACE}/docs/\$1',
+            '^file://.*/docs/(.*)$ file://${GITHUB_WORKSPACE}/docs/\$1',
+          ]
+          EOF
+
+      - name: Link Checker for pull requests
+        if: ${{ github.event_name == 'pull_request' }}
         id: lychee
+        uses: lycheeverse/lychee-action@v2
+        with:
+          args: >-
+            --config ${{ github.workspace }}/lychee-pr.toml
+            --cache --max-cache-age 1d
+            docs
+          format: markdown
+          output: ./lychee/out.md
+          fail: false
+
+      - name: Link Checker for production
+        if: ${{ github.event_name == 'push' }}
+        id: lychee-production
         uses: lycheeverse/lychee-action@v2
         with:
           args: >-
