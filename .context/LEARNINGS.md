@@ -17,11 +17,22 @@ DO NOT UPDATE FOR:
 <!-- INDEX:START -->
 | Date | Learning |
 |----|--------|
+| 2026-06-20 | Bitnami deleted docker.io/bitnami/* images; charts need bitnamilegacy/* + allowInsecureImages |
 | 2026-06-13 | SPIKE k8s integration test was missing keeper bootstrap; plus a verify-path deadlock |
 | 2026-06-13 | Zola 0.19+/0.22 moved syntax highlighting config and renamed themes |
 <!-- INDEX:END -->
 
 <!-- Add gotchas, tips, and lessons learned here -->
+## [2026-06-20-121612] Bitnami deleted docker.io/bitnami/* images; charts need bitnamilegacy/* + allowInsecureImages
+
+**Context**: The minio-rolearn integration test (CI) was red even though the whole SPIKE stack was healthy (keepers, Nexus, Pilot, bootstrap all up). Root cause: every MinIO pod hit ImagePullBackOff and Helm's post-install --wait timed out. Bitnami removed its free docker.io/bitnami/* images from Docker Hub and relocated them to docker.io/bitnamilegacy/*, so the chart's default image tags now 404.
+
+**Lesson**: Any Helm chart that pulls default Bitnami images is now broken. The fix has three parts that must go together: (1) redirect every image the chart pulls to bitnamilegacy/* (for the minio chart: image, clientImage, console.image, defaultInitContainers.volumePermissions.image), (2) set global.security.allowInsecureImages=true because the chart's image-verification gate rejects non-bitnami/ repositories, and (3) pin the chart --version so the image tags stay aligned with the frozen, no-longer-updated legacy repo.
+
+**Application**: When a Bitnami-backed chart fails with ImagePullBackOff, check the registry: docker.io/bitnami/<img>:<tag> returns 404 while docker.io/bitnamilegacy/<img>:<tag> returns 200. Override all image repos to bitnamilegacy/*, add allowInsecureImages=true, and pin the chart version. bitnamilegacy is frozen; a future migration off Bitnami images is the durable fix. See specs/minio-bitnami-image-relocation.md and ci/integration/minio-rolearn/minio-values.yaml.
+
+---
+
 ## [2026-06-13-170816] SPIKE k8s integration test was missing keeper bootstrap; plus a verify-path deadlock
 
 **Context**: minio-rolearn integration test (CI red on main, pre-existing) hangs because keepers are never seeded with root-key shares; SPIKE Nexus InitializeBackingStoreFromKeepers waits forever (retry.Forever, by design until keepers are hydrated). The spire helm chart registers the spike/bootstrap identity but ships no bootstrap workload, and hack/k8s/Bootstrap.yaml does not exist.
