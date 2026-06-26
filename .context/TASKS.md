@@ -37,6 +37,7 @@ TASK STATUS LABELS:
 
 ### Maintenance
 
+- [ ] test.
 - [ ] Replace MinIO in minio-rolearn integration test with a maintained, permissively-licensed S3 store. The current bitnamilegacy/* pin (commit 4decfca) is a stopgap: that repo is frozen, and MinIO Community itself is AGPLv3, entered maintenance mode Dec 2025 / archived early 2026, and stopped publishing official minio/minio images (Docker Hub + Quay) in Oct 2025. Binding constraint: the test exercises S3 + OIDC AssumeRoleWithWebIdentity role-policy (mc idp openid against the SPIRE OIDC discovery provider), so any replacement MUST support OIDC/STS web-identity role mapping. Candidates (researched 2026-06-20): SeaweedFS (Apache-2.0, explicit AssumeRoleWithWebIdentity + OIDC docs, lightweight - evaluate FIRST); RustFS (Apache-2.0, Rust, MinIO drop-in, OIDC/STS unverified); Ceph RGW (strong OIDC STS but GPL + heavyweight, poor kind fit). Garage ruled out (AGPLv3). Action: PoC SeaweedFS S3 + AssumeRoleWithWebIdentity against SPIRE JWT-SVID in kind; if it works, port the minio-values.yaml policy/OIDC wiring and drop the Bitnami dependency entirely. #session:5a7938b8 #branch:chore/introduce-ctx #commit:4decfca #added:2026-06-20-124108
 
 - [x] Clear remaining uncalled govulncheck advisories (10 import + 4 module) via a dependency-bump pass #priority:low #session:6d40ae08 #branch:chore/introduce-ctx #commit:ca9b541 #added:2026-06-13-130622 #done:2026-06-13 (x/crypto v0.52.0, grpc v1.79.3; govulncheck now 0 total)
