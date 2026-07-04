@@ -9,17 +9,45 @@
 ## IMPORTANT: You Have Persistent Memory
 
 This project uses Context (`ctx`) for context persistence across sessions.
-**Your memory is NOT ephemeral**: it lives in the context directory.
+When `ctx` is installed, **your memory is NOT ephemeral**: it lives in the
+context directory.
+
+`ctx` is an optional companion tool: helpful, but never required to build,
+test, or contribute to this project. If it is not installed, offer the
+setup note in "On Session Start" once, then skip every `ctx`-dependent
+instruction in this file and help with the task at hand as usual.
 
 ## On Session Start
 
-1. **Run `ctx system bootstrap`**: CRITICAL, not optional.
-   This tells you where the context directory is.
-   If it returns any error, relay the error output to the user
-   verbatim, point them at
-   https://ctx.ist/home/getting-started/ for setup, and STOP.
-   Do not try to activate, initialize, or otherwise recover: **those
-   are the user's decisions**. Wait for their next instruction.
+1. **Run `ctx system bootstrap`**: it tells you where the context
+   directory is.
+
+   **If the `ctx` command is not found**: `ctx` is optional, so this is
+   not an error. Mention once that the user can enable persistent context
+   by cloning the repository and installing the plugin from the local
+   clone (releases are infrequent, so marketplace versions may lag behind
+   the repository):
+
+   ```bash
+   git clone https://github.com/ActiveMemory/ctx.git ~/WORKSPACE/ctx
+   ```
+
+   Then, inside Claude Code:
+
+   ```
+   /plugin marketplace add ~/WORKSPACE/ctx
+   /plugin install ctx@activememory-ctx
+   ```
+
+   The `ctx` binary is installed separately; see
+   https://ctx.ist/home/getting-started/. Afterward, continue with the
+   user's task and work without persistent context until `ctx` is set up.
+
+   **If `ctx` is installed but returns an error**: relay the error output
+   to the user verbatim, point them at
+   https://ctx.ist/home/getting-started/ for setup, and STOP. Do not try
+   to activate, initialize, or otherwise recover: **those are the user's
+   decisions**. Wait for their next instruction.
 2. **Read AGENT_PLAYBOOK.md** from the context directory: it explains
    how to use this system
 3. **Run `ctx agent`** for a content summary
