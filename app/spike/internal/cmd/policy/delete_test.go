@@ -22,8 +22,8 @@ func TestNewPolicyDeleteCommand(t *testing.T) {
 		return
 	}
 
-	if cmd.Use != "delete [policy-id]" {
-		t.Errorf("Expected command use to be 'delete [policy-id]', got '%s'",
+	if cmd.Use != "delete [policy-name]" {
+		t.Errorf("Expected command use to be 'delete [policy-name]', got '%s'",
 			cmd.Use)
 	}
 
@@ -50,8 +50,8 @@ func TestNewPolicyDeleteCommandWithNilSource(t *testing.T) {
 	}
 
 	// Command should still be created; the nil source is handled at runtime
-	if cmd.Use != "delete [policy-id]" {
-		t.Errorf("Expected command use to be 'delete [policy-id]', got '%s'",
+	if cmd.Use != "delete [policy-name]" {
+		t.Errorf("Expected command use to be 'delete [policy-name]', got '%s'",
 			cmd.Use)
 	}
 }
@@ -66,7 +66,7 @@ func TestPolicyDeleteCommandRegistration(t *testing.T) {
 
 	var deleteCmd *cobra.Command
 	for _, cmd := range policyCmd.Commands() {
-		if cmd.Use == "delete [policy-id]" {
+		if cmd.Use == "delete [policy-name]" {
 			deleteCmd = cmd
 			break
 		}

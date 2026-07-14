@@ -80,6 +80,9 @@ func RouteDeletePolicy(
 		return guardErr
 	}
 
+	// SPIKE policies are keyed by name; the SDK's PolicyDeleteRequest still
+	// exposes that identifier as ID, so request.ID holds the policy name.
+	// See issue #250 for the pending SDK field rename.
 	if deleteErr := state.DeletePolicy(request.ID); deleteErr != nil {
 		return net.RespondWithHTTPError(deleteErr, w, reqres.PolicyDeleteResponse{})
 	}
