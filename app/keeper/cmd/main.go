@@ -2,6 +2,7 @@
 //  \\\\\ Copyright 2024-present SPIKE contributors.
 // \\\\\\\ SPDX-License-Identifier: Apache-2.0
 
+// package main is the main entry point for SPIKE Keeper.
 package main
 
 import (
@@ -14,6 +15,7 @@ import (
 	"github.com/spiffe/spike-sdk-go/predicate"
 	"github.com/spiffe/spike-sdk-go/spiffe"
 	"github.com/spiffe/spike-sdk-go/spiffeid"
+
 	http "github.com/spiffe/spike/app/keeper/internal/route/base"
 	"github.com/spiffe/spike/internal/config"
 	"github.com/spiffe/spike/internal/out"
@@ -48,9 +50,7 @@ func main() {
 	}
 
 	log.Info(
-		appName,
-		"message", "started service",
-		"version", config.KeeperVersion,
+		appName, "message", "started service", "version", config.KeeperVersion,
 	)
 
 	// Serve the app.

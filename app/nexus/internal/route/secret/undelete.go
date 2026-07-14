@@ -54,7 +54,6 @@ func RouteUndeleteSecret(
 	w http.ResponseWriter, r *http.Request, audit *journal.AuditEntry,
 ) *sdkErrors.SDKError {
 	const fName = "routeUndeleteSecret"
-
 	journal.AuditRequest(fName, r, audit, journal.AuditUndelete)
 
 	request, err := net.ReadParseAndGuard[

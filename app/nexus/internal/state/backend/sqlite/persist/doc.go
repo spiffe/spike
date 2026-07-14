@@ -24,7 +24,6 @@
 //   - initialize.go: Database initialization and schema setup
 //   - secret.go, secret_load.go: Secret storage and retrieval
 //   - policy.go: Policy storage and retrieval
-//   - crypto.go, cipher.go, nonce.go: Encryption utilities
 //   - transform.go: Data serialization/deserialization
 //   - schema.go: Database schema definitions
 //   - options.go, parse.go: Configuration parsing

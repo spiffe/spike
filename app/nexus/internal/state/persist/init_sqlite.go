@@ -12,7 +12,7 @@ import (
 	"github.com/spiffe/spike-sdk-go/config/fs"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/log"
-	"github.com/spiffe/spike-sdk-go/security/mem"
+	"github.com/spiffe/spike-sdk-go/validation"
 
 	"github.com/spiffe/spike/app/nexus/internal/state/backend"
 	"github.com/spiffe/spike/app/nexus/internal/state/backend/sqlite"
@@ -44,19 +44,7 @@ func initializeSqliteBackend(rootKey *[32]byte) backend.Backend {
 	const fName = "initializeSqliteBackend"
 	const dbName = "spike.db"
 
-	// TODO: this is repeated, maybe move to the SDK.
-
-	if rootKey == nil {
-		failErr := *sdkErrors.ErrRootKeyEmpty.Clone()
-		failErr.Msg = "root key cannot be nil"
-		log.FatalErr(fName, failErr)
-	}
-
-	if mem.Zeroed32(rootKey) {
-		failErr := *sdkErrors.ErrRootKeyEmpty.Clone()
-		failErr.Msg = "root key cannot be empty"
-		log.FatalErr(fName, failErr)
-	}
+	validation.ValidRootKeyOrDie(rootKey)
 
 	opts := map[backend.DatabaseConfigKey]any{}
 

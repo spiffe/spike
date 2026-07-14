@@ -66,7 +66,6 @@ func RouteGetSecret(
 	w http.ResponseWriter, r *http.Request, audit *journal.AuditEntry,
 ) *sdkErrors.SDKError {
 	const fName = "routeGetSecret"
-
 	journal.AuditRequest(fName, r, audit, journal.AuditRead)
 
 	request, err := net.ReadParseAndGuard[

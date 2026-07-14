@@ -5,6 +5,7 @@
 package recovery
 
 import (
+	"context"
 	"encoding/json"
 
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
@@ -54,7 +55,9 @@ func shardGetResponse(
 		predicate.AllowKeeper,
 	)
 
-	data, postErr := net.Post(client, u, md)
+	ctx := context.Background()
+
+	data, postErr := net.Post(ctx, client, u, md)
 	if postErr != nil {
 		return nil, postErr
 	}

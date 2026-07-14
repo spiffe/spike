@@ -115,10 +115,8 @@ func checkDirectory(t *testing.T, dir string) []string {
 func isUtilityFile(name string) bool {
 	utilityFiles := []string{
 		"errors.go",
-		"guard.go",
 		"map.go",
 		"config.go",
-		"crypto.go",
 		"handle.go",
 		"net.go",
 		"state.go",
@@ -182,9 +180,26 @@ func invokesGuard(funcDecl *ast.FuncDecl) bool {
 		return false
 	}
 
+	// Handler helpers that perform authorization internally. A route that
+	// delegates to one of these, either by calling it or by passing it as a
+	// value to a dispatcher such as net.DispatchByContentType, is guarded.
+	guardedHandlers := map[string]bool{
+		"handleJSONDecrypt":      true,
+		"handleStreamingDecrypt": true,
+		"handleJSONEncrypt":      true,
+		"handleStreamingEncrypt": true,
+	}
+
 	found := false
 	ast.Inspect(funcDecl.Body, func(n ast.Node) bool {
 		if found {
+			return false
+		}
+
+		// A guarded handler referenced as a value (e.g. passed to
+		// net.DispatchByContentType) counts as a guard invocation.
+		if ident, ok := n.(*ast.Ident); ok && guardedHandlers[ident.Name] {
+			found = true
 			return false
 		}
 
@@ -217,18 +232,10 @@ func invokesGuard(funcDecl *ast.FuncDecl) bool {
 		}
 
 		// Check for handler functions that internally call guards
-		// These are the cipher route helpers that have guards built-in
-		guardedHandlers := []string{
-			"handleJSONDecrypt",
-			"handleStreamingDecrypt",
-			"handleJSONEncrypt",
-			"handleStreamingEncrypt",
-		}
-		for _, handler := range guardedHandlers {
-			if funcName == handler {
-				found = true
-				return false
-			}
+		// (cipher route helpers that have guards built-in) called directly.
+		if guardedHandlers[funcName] {
+			found = true
+			return false
 		}
 
 		return true

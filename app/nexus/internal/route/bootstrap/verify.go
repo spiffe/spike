@@ -11,9 +11,9 @@ import (
 
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
+	"github.com/spiffe/spike-sdk-go/journal"
 	"github.com/spiffe/spike-sdk-go/net"
 
-	"github.com/spiffe/spike-sdk-go/journal"
 	"github.com/spiffe/spike/app/nexus/internal/state/persist"
 )
 
@@ -56,22 +56,21 @@ func RouteVerify(
 	w http.ResponseWriter, r *http.Request, audit *journal.AuditEntry,
 ) *sdkErrors.SDKError {
 	const fName = "RouteVerify"
-
 	journal.AuditRequest(fName, r, audit, journal.AuditCreate)
 
-	request, err := net.ReadParseAndGuard[
+	request, parseErr := net.ReadParseAndGuard[
 		reqres.BootstrapVerifyRequest, reqres.BootstrapVerifyResponse](
 		w, r, reqres.BootstrapVerifyResponse{}.BadRequest(), guardVerifyRequest,
 	)
-	if alreadyResponded := err != nil; alreadyResponded {
-		return err
+	if alreadyResponded := parseErr != nil; alreadyResponded {
+		return parseErr
 	}
 
 	// Get cipher from the backend
 	c := persist.Backend().GetCipher()
 	if c == nil {
 		return net.RespondWithInternalError(
-			sdkErrors.ErrCryptoCipherNotAvailable, w,
+			sdkErrors.ErrCryptoCipherNotAvailable.Clone(), w,
 			reqres.BootstrapVerifyResponse{},
 		)
 	}
@@ -80,7 +79,7 @@ func RouteVerify(
 	plaintext, decryptErr := c.Open(nil, request.Nonce, request.Ciphertext, nil)
 	if decryptErr != nil {
 		return net.RespondWithInternalError(
-			sdkErrors.ErrCryptoDecryptionFailed, w,
+			sdkErrors.ErrCryptoDecryptionFailed.Clone(), w,
 			reqres.BootstrapVerifyResponse{},
 		)
 	}

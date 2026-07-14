@@ -34,7 +34,7 @@ func TestCheckAccess_PilotAccess(t *testing.T) {
 
 		// This will return false in practice because we don't have the actual
 		// SPIKE Pilot setup, but the code pathPattern will be tested
-		result := CheckAccess(pilotSPIFFEID, path, wants)
+		result := CheckPolicyAccess(pilotSPIFFEID, path, wants)
 
 		// Since we don't have actual pilot setup, this will test the policy matching pathPattern
 		if result {
@@ -69,7 +69,7 @@ func TestCheckAccess_SuperPermission(t *testing.T) {
 		}
 
 		for _, perm := range permissions {
-			result := CheckAccess("spiffe://example.org/test",
+			result := CheckPolicyAccess("spiffe://example.org/test",
 				"any/pathPattern", []data.PolicyPermission{perm})
 			if !result {
 				t.Errorf("Expected super permission to grant %v access", perm)
@@ -149,7 +149,7 @@ func TestCheckAccess_SpecificPatterns(t *testing.T) {
 
 		for _, tc := range testCases {
 			t.Run(tc.name, func(t *testing.T) {
-				result := CheckAccess(tc.SPIFFEID, tc.path, tc.wants)
+				result := CheckPolicyAccess(tc.SPIFFEID, tc.path, tc.wants)
 				if result != tc.expectGrant {
 					t.Errorf("Expected %v, got %v for case: %s",
 						tc.expectGrant, result, tc.name)
@@ -174,7 +174,7 @@ func TestCheckAccess_LoadPoliciesError(t *testing.T) {
 		persist.InitializeBackend(nil)
 
 		// Normal case should work
-		result := CheckAccess("spiffe://example.org/test",
+		result := CheckPolicyAccess("spiffe://example.org/test",
 			"some/path", []data.PolicyPermission{data.PermissionRead})
 		// Should be false since no policies exist
 		if result {
@@ -845,7 +845,7 @@ func TestPolicyRegexCompilation(t *testing.T) {
 
 		for i, tc := range testCases {
 			t.Run(fmt.Sprintf("regex_test_%d", i), func(t *testing.T) {
-				result := CheckAccess(tc.SPIFFEID, tc.path,
+				result := CheckPolicyAccess(tc.SPIFFEID, tc.path,
 					[]data.PolicyPermission{data.PermissionRead})
 				if result != tc.shouldMatch {
 					t.Errorf("Expected %v for SPIFFEID %s and path %s",
@@ -889,7 +889,7 @@ func BenchmarkCheckAccess_WildcardPolicy(b *testing.B) {
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		CheckAccess("spiffe://example.org/test",
+		CheckPolicyAccess("spiffe://example.org/test",
 			"test/path", []data.PolicyPermission{data.PermissionRead})
 	}
 

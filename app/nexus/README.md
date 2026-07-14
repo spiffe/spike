@@ -10,10 +10,10 @@ storage with versioning, soft-delete support, and SPIFFE-based access control.
 SPIKE Nexus supports multiple storage backends, configured via the
 `SPIKE_NEXUS_BACKEND_STORE` environment variable:
 
-- **sqlite** (production): Persistent encrypted storage using SQLite. Secrets
+* **sqlite** (production): Persistent encrypted storage using SQLite. Secrets
   are stored in `~/.spike/data/spike.db` with AES-256-GCM encryption at rest.
-- **memory** (development/testing): In-memory storage. Data is lost on restart.
-- **lite**: Encryption-only mode for encryption-as-a-service use cases. No
+* **memory** (development/testing): In-memory storage. Data is lost on restart.
+* **lite**: Encryption-only mode for encryption-as-a-service use cases. No
   secret persistence; provides cipher access for external encryption needs.
 
 ### Root Key Management

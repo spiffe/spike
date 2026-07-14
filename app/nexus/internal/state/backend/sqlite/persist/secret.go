@@ -43,85 +43,71 @@ import (
 func (s *DataStore) StoreSecret(
 	ctx context.Context, path string, secret kv.Value,
 ) *sdkErrors.SDKError {
-	const fName = "StoreSecret"
-
-	validation.NonNilContextOrDie(ctx, fName)
-
-	s.mu.Lock()
-	defer s.mu.Unlock()
-
-	tx, err := s.db.BeginTx(ctx, &sql.TxOptions{Isolation: sql.LevelSerializable})
-	if err != nil {
-		return sdkErrors.ErrTransactionBeginFailed.Wrap(err)
+	// Pre-encrypt all versions before starting the transaction
+	type encryptedVersion struct {
+		version     int
+		nonce       []byte
+		encrypted   []byte
+		createdTime any
+		deletedTime any
 	}
 
-	committed := false
-
-	defer func(tx *sql.Tx) {
-		if !committed {
-			err := tx.Rollback()
-			if err != nil {
-				failErr := *sdkErrors.ErrTransactionRollbackFailed.Clone()
-				log.WarnErr(fName, failErr)
-			}
-		}
-	}(tx)
-
-	nonce, nonceErr := generateNonce(s)
+	// Pre-encrypt the metadata fields using a derived per-field nonce
+	// before starting the transaction.
+	metaNonce, nonceErr := generateNonce(s)
 	if nonceErr != nil {
 		return sdkErrors.ErrCryptoNonceGenerationFailed.Wrap(nonceErr)
 	}
 
 	// time.Time → []byte (Unix seconds as string)
-	createdBytes := []byte(strconv.FormatInt(secret.Metadata.CreatedTime.Unix(), 10))
-	updatedBytes := []byte(strconv.FormatInt(secret.Metadata.UpdatedTime.Unix(), 10))
+	createdBytes := []byte(
+		strconv.FormatInt(secret.Metadata.CreatedTime.Unix(), 10))
+	updatedBytes := []byte(
+		strconv.FormatInt(secret.Metadata.UpdatedTime.Unix(), 10))
 
 	// int → []byte (decimal string)
-	currentVersionBytes := []byte(strconv.Itoa(secret.Metadata.CurrentVersion))
-	oldestVersionBytes := []byte(strconv.Itoa(secret.Metadata.OldestVersion))
+	currentVersionBytes := []byte(
+		strconv.Itoa(secret.Metadata.CurrentVersion))
+	oldestVersionBytes := []byte(
+		strconv.Itoa(secret.Metadata.OldestVersion))
 	maxVersionsBytes := []byte(strconv.Itoa(secret.Metadata.MaxVersions))
 
-	// Encrypt metadata using a derived per-field nonce.
 	encryptedCurrentVersion, encryptErr := encryptWithDerivedNonce(
-		s, nonce, nonceFieldSecretMetadataCurrentVersion, currentVersionBytes,
+		s, metaNonce, nonceFieldSecretMetadataCurrentVersion,
+		currentVersionBytes,
 	)
 	if encryptErr != nil {
 		return sdkErrors.ErrCryptoEncryptionFailed.Wrap(encryptErr)
 	}
 	encryptedOldestVersion, encryptErr := encryptWithDerivedNonce(
-		s, nonce, nonceFieldSecretMetadataOldestVersion, oldestVersionBytes,
+		s, metaNonce, nonceFieldSecretMetadataOldestVersion,
+		oldestVersionBytes,
 	)
 	if encryptErr != nil {
 		return sdkErrors.ErrCryptoEncryptionFailed.Wrap(encryptErr)
 	}
 	encryptedMaxVersions, encryptErr := encryptWithDerivedNonce(
-		s, nonce, nonceFieldSecretMetadataMaxVersions, maxVersionsBytes,
+		s, metaNonce, nonceFieldSecretMetadataMaxVersions,
+		maxVersionsBytes,
 	)
 	if encryptErr != nil {
 		return sdkErrors.ErrCryptoEncryptionFailed.Wrap(encryptErr)
 	}
 	encryptedCreatedTime, encryptErr := encryptWithDerivedNonce(
-		s, nonce, nonceFieldSecretMetadataCreatedTime, createdBytes,
+		s, metaNonce, nonceFieldSecretMetadataCreatedTime, createdBytes,
 	)
 	if encryptErr != nil {
 		return sdkErrors.ErrCryptoEncryptionFailed.Wrap(encryptErr)
 	}
 	encryptedUpdatedTime, encryptErr := encryptWithDerivedNonce(
-		s, nonce, nonceFieldSecretMetadataUpdatedTime, updatedBytes,
+		s, metaNonce, nonceFieldSecretMetadataUpdatedTime, updatedBytes,
 	)
 	if encryptErr != nil {
 		return sdkErrors.ErrCryptoEncryptionFailed.Wrap(encryptErr)
 	}
-	// Update metadata
-	_, err = tx.ExecContext(ctx, ddl.QueryUpdateSecretMetadata,
-		path, nonce, encryptedCurrentVersion, encryptedOldestVersion,
-		encryptedCreatedTime,
-		encryptedUpdatedTime, encryptedMaxVersions,
-	)
-	if err != nil {
-		return sdkErrors.ErrEntityQueryFailed.Wrap(err)
-	}
-	// Update versions
+
+	// Pre-encrypt all versions before starting the transaction.
+	encryptedVersions := make([]encryptedVersion, 0, len(secret.Versions))
 	for version, sv := range secret.Versions {
 		md, marshalErr := json.Marshal(sv.Data)
 		if marshalErr != nil {
@@ -133,19 +119,39 @@ func (s *DataStore) StoreSecret(
 			return sdkErrors.ErrCryptoEncryptionFailed.Wrap(encryptErr)
 		}
 
-		_, execErr := tx.ExecContext(ctx, ddl.QueryUpsertSecret,
-			path, version, nonce, encrypted, sv.CreatedTime, sv.DeletedTime)
-		if execErr != nil {
-			return sdkErrors.ErrEntityQueryFailed.Wrap(execErr)
-		}
+		encryptedVersions = append(encryptedVersions, encryptedVersion{
+			version:     version,
+			nonce:       nonce,
+			encrypted:   encrypted,
+			createdTime: sv.CreatedTime,
+			deletedTime: sv.DeletedTime,
+		})
 	}
 
-	if err := tx.Commit(); err != nil {
-		return sdkErrors.ErrTransactionCommitFailed.Wrap(err)
-	}
+	return s.withSerializableTx(ctx, "StoreSecret",
+		func(tx *sql.Tx) *sdkErrors.SDKError {
+			// Update encrypted metadata
+			_, metaErr := tx.ExecContext(ctx, ddl.QueryUpdateSecretMetadata,
+				path, metaNonce, encryptedCurrentVersion,
+				encryptedOldestVersion, encryptedCreatedTime,
+				encryptedUpdatedTime, encryptedMaxVersions,
+			)
+			if metaErr != nil {
+				return sdkErrors.ErrEntityQueryFailed.Wrap(metaErr)
+			}
 
-	committed = true
-	return nil
+			// Update versions
+			for _, ev := range encryptedVersions {
+				_, execErr := tx.ExecContext(ctx, ddl.QueryUpsertSecret,
+					path, ev.version, ev.nonce, ev.encrypted,
+					ev.createdTime, ev.deletedTime)
+				if execErr != nil {
+					return sdkErrors.ErrEntityQueryFailed.Wrap(execErr)
+				}
+			}
+
+			return nil
+		})
 }
 
 // LoadSecret retrieves a secret and all its versions from the specified path.

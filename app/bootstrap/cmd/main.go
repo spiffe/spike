@@ -2,6 +2,7 @@
 //  \\\\\ Copyright 2024-present SPIKE contributors.
 // \\\\\\\ SPDX-License-Identifier: Apache-2.0
 
+// package main is the main entry point of SPIKE Bootstrap.
 package main
 
 import (
@@ -15,21 +16,17 @@ import (
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/log"
 	"github.com/spiffe/spike-sdk-go/security/mem"
-	"github.com/spiffe/spike/app/bootstrap/internal/state"
 
 	"github.com/spiffe/spike/app/bootstrap/internal/lifecycle"
 	"github.com/spiffe/spike/app/bootstrap/internal/net"
+	"github.com/spiffe/spike/app/bootstrap/internal/state"
 	"github.com/spiffe/spike/internal/config"
 )
 
 const appName = "SPIKE Bootstrap"
 
 func main() {
-	log.Info(
-		appName,
-		"message", "starting",
-		"version", config.BootstrapVersion,
-	)
+	log.Info(appName, "message", "starting", "version", config.BootstrapVersion)
 
 	// Hard timeout for the entire bootstrap process.
 	// A value of 0 means no timeout (infinite).
@@ -71,11 +68,7 @@ func main() {
 		return
 	}
 
-	log.Info(
-		appName,
-		"message", "FIPS 140.3 Status",
-		"enabled", fips140.Enabled(),
-	)
+	log.Info(appName, "message", "FIPS Status", "enabled", fips140.Enabled())
 
 	// Panics if it cannot acquire the source.
 	src := net.AcquireSource()

@@ -8,8 +8,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	sdk "github.com/spiffe/spike-sdk-go/api"
-
-	"github.com/spiffe/spike/app/spike/internal/trust"
+	"github.com/spiffe/spike-sdk-go/spiffeid"
 )
 
 // newDecryptCommand creates a Cobra command for decrypting data via SPIKE
@@ -49,7 +48,7 @@ func newDecryptCommand(
 		Use:   "decrypt",
 		Short: "Decrypt file or stdin via SPIKE Nexus",
 		Run: func(cmd *cobra.Command, args []string) {
-			trust.AuthenticateForPilot(SPIFFEID)
+			spiffeid.IsPilotOperatorOrDie(SPIFFEID)
 
 			if source == nil {
 				cmd.PrintErrln("Error: SPIFFE X509 source is unavailable.")
