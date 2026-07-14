@@ -13,6 +13,7 @@ import (
 var (
 	// rootKeySeed stores the root key seed generated during initialization.
 	// It is kept in memory to allow encryption operations during bootstrap.
+	// It is cleared immediately after a successful bootstrap.
 	rootKeySeed [crypto.AES256KeySize]byte
 	// rootKeySeedMu provides mutual exclusion for access to the root key seed.
 	rootKeySeedMu sync.RWMutex

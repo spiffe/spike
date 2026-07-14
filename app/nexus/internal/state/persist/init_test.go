@@ -6,63 +6,12 @@ package persist
 
 import (
 	"os"
-	"reflect"
 	"testing"
 
 	"github.com/spiffe/spike-sdk-go/crypto"
 
 	"github.com/spiffe/spike/app/nexus/internal/state/backend/memory"
 )
-
-func TestCreateCipher(t *testing.T) {
-	aead := createCipher()
-
-	// Verify that a cipher was created
-	if aead == nil {
-		t.Fatal("createCipher returned nil")
-	}
-
-	// Verify nonce size is reasonable (GCM typically has 12 bytes)
-	nonceSize := aead.NonceSize()
-	if nonceSize <= 0 || nonceSize > 32 {
-		t.Errorf("Unexpected nonce size: %d", nonceSize)
-	}
-
-	// Test that it can encrypt and decrypt
-	plaintext := []byte("test data for encryption")
-	nonce := make([]byte, aead.NonceSize())
-
-	// Encrypt
-	ciphertext := aead.Seal(nil, nonce, plaintext, nil)
-	if len(ciphertext) <= len(plaintext) {
-		t.Error("Ciphertext should be longer than plaintext due to authentication tag")
-	}
-
-	// Decrypt
-	decrypted, err := aead.Open(nil, nonce, ciphertext, nil)
-	if err != nil {
-		t.Errorf("Failed to decrypt: %v", err)
-	}
-
-	if !reflect.DeepEqual(decrypted, plaintext) {
-		t.Errorf("Decrypted data doesn't match original: got %v, want %v", decrypted, plaintext)
-	}
-}
-
-func TestCreateCipher_DifferentInstances(t *testing.T) {
-	aead1 := createCipher()
-	aead2 := createCipher()
-
-	// Verify both are valid but different instances
-	if aead1 == nil || aead2 == nil {
-		t.Fatal("createCipher returned nil")
-	}
-
-	// They should be different instances (different random keys)
-	if aead1 == aead2 {
-		t.Error("createCipher should create different instances")
-	}
-}
 
 func TestInitializeBackend_Memory_WithNilKey(t *testing.T) {
 	withEnvironment(t, "SPIKE_NEXUS_BACKEND_STORE", "memory", func() {
@@ -338,15 +287,6 @@ func TestBackend_AccessAfterInitialization(t *testing.T) {
 }
 
 // Benchmark tests
-func BenchmarkCreateCipher(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		aead := createCipher()
-		if aead == nil {
-			b.Fatal("createCipher returned nil")
-		}
-	}
-}
-
 func BenchmarkInitializeBackend_Memory(b *testing.B) {
 	withEnvironment(b, "SPIKE_NEXUS_BACKEND_STORE", "memory", func() {
 		for i := 0; i < b.N; i++ {

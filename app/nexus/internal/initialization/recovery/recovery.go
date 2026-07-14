@@ -125,7 +125,7 @@ func InitializeBackingStoreFromKeepers(source *workloadapi.X509Source) {
 // It will return early with an error log if:
 //   - There are not enough shards to meet the threshold
 //   - The SPIFFE source cannot be created
-func RestoreBackingStoreFromPilotShards(shards []ShamirShard) {
+func RestoreBackingStoreFromPilotShards(shards []crypto.ShamirShard) {
 	const fName = "RestoreBackingStoreFromPilotShards"
 
 	log.Info(
@@ -163,7 +163,7 @@ func RestoreBackingStoreFromPilotShards(shards []ShamirShard) {
 	)
 
 	// Recover the root key using the threshold number of shards
-	rk := ComputeRootKeyFromShards(shards)
+	rk := crypto.ComputeRootKeyFromShards(shards)
 	if rk == nil || mem.Zeroed32(rk) {
 		failErr := *sdkErrors.ErrShamirReconstructionFailed.Clone()
 		failErr.Msg = "failed to recover the root key"

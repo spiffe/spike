@@ -42,7 +42,15 @@ import (
 func guardRecoverRequest(
 	_ reqres.RecoverRequest, w http.ResponseWriter, r *http.Request,
 ) *sdkErrors.SDKError {
-	return net.RespondUnauthorizedOnPredicateFail(spiffeid.IsPilotRecover,
-		reqres.RestoreResponse{}.Unauthorized(), w, r,
-	)
+	// No CheckAccess because this route is privileged and should not honor
+	// policy overrides. Match exact SPIFFE ID instead.
+	if authErr := net.AuthorizeAndRespondOnFailNoPolicy(
+		reqres.RecoverResponse{}.Unauthorized(),
+		spiffeid.IsPilotRecover,
+		w, r,
+	); authErr != nil {
+		return authErr
+	}
+
+	return nil
 }

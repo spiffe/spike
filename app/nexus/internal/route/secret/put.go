@@ -52,7 +52,6 @@ func RoutePutSecret(
 	w http.ResponseWriter, r *http.Request, audit *journal.AuditEntry,
 ) *sdkErrors.SDKError {
 	const fName = "RoutePutSecret"
-
 	journal.AuditRequest(fName, r, audit, journal.AuditCreate)
 
 	request, err := net.ReadParseAndGuard[

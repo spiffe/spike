@@ -40,7 +40,7 @@ func TestRestoreBackingStoreFromPilotShards_InsufficientShards(t *testing.T) {
 	t.Setenv(env.NexusShamirThreshold, "3")
 
 	// Create insufficient shards (only 2, but the threshold is 3)
-	shards := make([]ShamirShard, 2)
+	shards := make([]crypto.ShamirShard, 2)
 	for i := range shards {
 		testData := &[crypto.AES256KeySize]byte{}
 		for j := range testData {
@@ -48,7 +48,7 @@ func TestRestoreBackingStoreFromPilotShards_InsufficientShards(t *testing.T) {
 		}
 		testData[0] = byte(i + 1) // Ensure non-zero
 
-		shards[i] = ShamirShard{
+		shards[i] = crypto.ShamirShard{
 			ID:    uint64(i + 1),
 			Value: testData,
 		}
@@ -74,12 +74,12 @@ func TestRestoreBackingStoreFromPilotShards_InvalidShards(t *testing.T) {
 
 	tests := []struct {
 		name       string
-		setupShard func() ShamirShard
+		setupShard func() crypto.ShamirShard
 	}{
 		{
 			name: "nil value shard",
-			setupShard: func() ShamirShard {
-				return ShamirShard{
+			setupShard: func() crypto.ShamirShard {
+				return crypto.ShamirShard{
 					ID:    1,
 					Value: nil,
 				}
@@ -87,10 +87,10 @@ func TestRestoreBackingStoreFromPilotShards_InvalidShards(t *testing.T) {
 		},
 		{
 			name: "zero ID shard",
-			setupShard: func() ShamirShard {
+			setupShard: func() crypto.ShamirShard {
 				testData := &[crypto.AES256KeySize]byte{}
 				testData[0] = 1 // Non-zero data
-				return ShamirShard{
+				return crypto.ShamirShard{
 					ID:    0, // Zero ID
 					Value: testData,
 				}
@@ -98,9 +98,9 @@ func TestRestoreBackingStoreFromPilotShards_InvalidShards(t *testing.T) {
 		},
 		{
 			name: "zeroed value shard",
-			setupShard: func() ShamirShard {
+			setupShard: func() crypto.ShamirShard {
 				testData := &[crypto.AES256KeySize]byte{} // All zeros
-				return ShamirShard{
+				return crypto.ShamirShard{
 					ID:    1,
 					Value: testData,
 				}
@@ -110,7 +110,7 @@ func TestRestoreBackingStoreFromPilotShards_InvalidShards(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			shards := []ShamirShard{tt.setupShard()}
+			shards := []crypto.ShamirShard{tt.setupShard()}
 
 			defer func() {
 				if r := recover(); r == nil {
@@ -194,7 +194,7 @@ func TestShamirShardValidation(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			shard := ShamirShard{
+			shard := crypto.ShamirShard{
 				ID:    tt.id,
 				Value: tt.value,
 			}
@@ -228,7 +228,7 @@ func TestShamirShardValidation(t *testing.T) {
 
 func TestShamirShardSliceOperations(t *testing.T) {
 	// Test operations on slices of ShamirShard
-	shards := make([]ShamirShard, 3)
+	shards := make([]crypto.ShamirShard, 3)
 
 	// Initialize test shards
 	for i := range shards {
@@ -238,7 +238,7 @@ func TestShamirShardSliceOperations(t *testing.T) {
 		}
 		testData[0] = byte(i + 1) // Ensure non-zero
 
-		shards[i] = ShamirShard{
+		shards[i] = crypto.ShamirShard{
 			ID:    uint64(i + 1),
 			Value: testData,
 		}
@@ -372,7 +372,7 @@ func TestShardDataIntegrity(t *testing.T) {
 	}
 
 	// Create shard
-	shard := ShamirShard{
+	shard := crypto.ShamirShard{
 		ID:    123,
 		Value: &originalData,
 	}

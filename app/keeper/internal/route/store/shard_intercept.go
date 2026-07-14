@@ -31,7 +31,9 @@ import (
 func guardShardGetRequest(
 	_ reqres.ShardGetRequest, w http.ResponseWriter, r *http.Request,
 ) *sdkErrors.SDKError {
-	return net.RespondUnauthorizedOnPredicateFail(spiffeid.IsNexus,
-		reqres.ShardGetResponse{}.Unauthorized(), w, r,
+	return net.AuthorizeAndRespondOnFailNoPolicy(
+		reqres.ShardGetResponse{}.Unauthorized(),
+		spiffeid.IsNexus,
+		w, r,
 	)
 }

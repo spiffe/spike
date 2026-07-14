@@ -11,17 +11,18 @@ import (
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	"github.com/spiffe/spike-sdk-go/config/env"
+	"github.com/spiffe/spike-sdk-go/crypto"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
+	"github.com/spiffe/spike-sdk-go/journal"
 	"github.com/spiffe/spike-sdk-go/log"
 	"github.com/spiffe/spike-sdk-go/net"
 	"github.com/spiffe/spike-sdk-go/security/mem"
 
-	"github.com/spiffe/spike-sdk-go/journal"
 	"github.com/spiffe/spike/app/nexus/internal/initialization/recovery"
 )
 
 var (
-	shards      []recovery.ShamirShard
+	shards      []crypto.ShamirShard
 	shardsMutex sync.RWMutex
 )
 
@@ -60,7 +61,6 @@ func RouteRestore(
 	w http.ResponseWriter, r *http.Request, audit *journal.AuditEntry,
 ) *sdkErrors.SDKError {
 	const fName = "routeRestore"
-
 	journal.AuditRequest(fName, r, audit, journal.AuditCreate)
 
 	if env.BackendStoreTypeVal() == env.Memory {
@@ -115,7 +115,7 @@ func RouteRestore(
 		)
 	}
 
-	shards = append(shards, recovery.ShamirShard{
+	shards = append(shards, crypto.ShamirShard{
 		ID:    uint64(request.ID),
 		Value: request.Shard,
 	})

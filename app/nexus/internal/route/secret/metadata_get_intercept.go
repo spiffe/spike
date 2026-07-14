@@ -7,12 +7,10 @@ package secret
 import (
 	"net/http"
 
-	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/net"
-	"github.com/spiffe/spike-sdk-go/validation"
-
+	"github.com/spiffe/spike-sdk-go/predicate"
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 )
 
@@ -43,43 +41,22 @@ import (
 func guardGetSecretMetadataRequest(
 	request reqres.SecretMetadataRequest, w http.ResponseWriter, r *http.Request,
 ) *sdkErrors.SDKError {
-	peerSPIFFEID, err := net.ExtractPeerSPIFFEIDFromRequestAndRespondOnFail[reqres.SecretMetadataResponse](
-		r, w, reqres.SecretMetadataResponse{}.Unauthorized(),
-	)
-	if alreadyResponded := err != nil; alreadyResponded {
-		return err
-	}
-
-	path := request.Path
-	pathErr := validation.ValidatePath(path)
-	if pathErr != nil {
-		failErr := net.Fail(
-			reqres.SecretMetadataResponse{}.BadRequest(), w,
-			http.StatusBadRequest,
-		)
-		pathErr.Msg = "invalid secret path: " + path
-		if failErr != nil {
-			return pathErr.Wrap(failErr)
-		}
-		return pathErr
-	}
-
-	allowed := state.CheckAccess(
-		peerSPIFFEID.String(), path,
-		[]data.PolicyPermission{data.PermissionRead},
-	)
-	if !allowed {
-		failErr := net.Fail(
-			reqres.SecretMetadataResponse{}.Unauthorized(), w,
-			http.StatusUnauthorized,
-		)
-		authErr := sdkErrors.ErrAccessUnauthorized.Clone()
-		authErr.Msg = "unauthorized to read secret metadata for: " + path
-		if failErr != nil {
-			return authErr.Wrap(failErr)
-		}
+	if authErr := net.AuthorizeAndRespondOnFail(
+		reqres.SecretMetadataResponse{}.Unauthorized(),
+		func(
+			peerSPIFFEID string, checkAccess predicate.PolicyAccessChecker,
+		) bool {
+			return predicate.AllowSPIFFEIDForSecretMetaDataRead(
+				peerSPIFFEID, request.Path, checkAccess,
+			)
+		},
+		state.CheckPolicyAccess,
+		w, r,
+	); authErr != nil {
 		return authErr
 	}
 
-	return nil
+	return net.RespondErrOnBadPath(
+		request.Path, reqres.SecretMetadataResponse{}.BadRequest(), w,
+	)
 }

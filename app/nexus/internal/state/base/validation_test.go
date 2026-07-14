@@ -8,44 +8,8 @@ import (
 	"testing"
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
+	"github.com/spiffe/spike-sdk-go/validation"
 )
-
-func TestContains(t *testing.T) {
-	permissions := []data.PolicyPermission{
-		data.PermissionRead,
-		data.PermissionWrite,
-		data.PermissionList,
-	}
-
-	testCases := []struct {
-		name       string
-		permission data.PolicyPermission
-		expected   bool
-	}{
-		{"contains read", data.PermissionRead, true},
-		{"contains write", data.PermissionWrite, true},
-		{"contains list", data.PermissionList, true},
-		{"does not contain super", data.PermissionSuper, false},
-	}
-
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			result := contains(permissions, tc.permission)
-			if result != tc.expected {
-				t.Errorf("Expected %v, got %v for permission %v", tc.expected, result, tc.permission)
-			}
-		})
-	}
-}
-
-func TestContains_EmptySlice(t *testing.T) {
-	var permissions []data.PolicyPermission
-
-	result := contains(permissions, data.PermissionRead)
-	if result {
-		t.Error("Expected false for empty permission slice")
-	}
-}
 
 func TestVerifyPermissions_SuperPermissionJoker(t *testing.T) {
 	// Test that super permission acts as a joker and grants all permissions
@@ -95,7 +59,7 @@ func TestVerifyPermissions_SuperPermissionJoker(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			result := verifyPermissions(tc.haves, tc.wants)
+			result := validation.ValidatePolicyPermissions(tc.haves, tc.wants)
 			if result != tc.expected {
 				t.Errorf("Expected %v, got %v for case: %s", tc.expected, result, tc.name)
 			}
@@ -157,7 +121,7 @@ func TestVerifyPermissions_SpecificPermissions(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			result := verifyPermissions(tc.haves, tc.wants)
+			result := validation.ValidatePolicyPermissions(tc.haves, tc.wants)
 			if result != tc.expected {
 				t.Errorf("Expected %v, got %v for case: %s", tc.expected, result, tc.name)
 			}
@@ -195,26 +159,11 @@ func TestVerifyPermissions_SuperWithOtherPermissions(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			result := verifyPermissions(tc.haves, tc.wants)
+			result := validation.ValidatePolicyPermissions(tc.haves, tc.wants)
 			if result != tc.expected {
 				t.Errorf("Expected %v, got %v for case: %s", tc.expected, result, tc.name)
 			}
 		})
-	}
-}
-
-// Benchmark tests
-func BenchmarkContains(b *testing.B) {
-	permissions := []data.PolicyPermission{
-		data.PermissionRead,
-		data.PermissionWrite,
-		data.PermissionList,
-		data.PermissionSuper,
-	}
-
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		contains(permissions, data.PermissionWrite)
 	}
 }
 
@@ -224,7 +173,7 @@ func BenchmarkVerifyPermissions_WithSuper(b *testing.B) {
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		verifyPermissions(haves, wants)
+		validation.ValidatePolicyPermissions(haves, wants)
 	}
 }
 
@@ -234,7 +183,7 @@ func BenchmarkVerifyPermissions_WithoutSuper(b *testing.B) {
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		verifyPermissions(haves, wants)
+		validation.ValidatePolicyPermissions(haves, wants)
 	}
 }
 
@@ -250,6 +199,6 @@ func BenchmarkVerifyPermissions_LargePermissionSet(b *testing.B) {
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		verifyPermissions(haves, wants)
+		validation.ValidatePolicyPermissions(haves, wants)
 	}
 }
