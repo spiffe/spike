@@ -10,14 +10,13 @@ package ddl
 // policy management with relevant constraints and indices.
 //
 // Note: The policies table has no additional indexes beyond the PRIMARY KEY
-// because current queries only use the 'id' field (already indexed) or
+// because current queries only use the 'name' field (already indexed) or
 // perform full table scans. Additional indexes should be added if queries
-// are introduced that filter by name, spiffe_id_pattern, path_pattern,
+// are introduced that filter by spiffe_id_pattern, path_pattern,
 // created_time, or combinations of these columns.
 const QueryInitialize = `
 CREATE TABLE IF NOT EXISTS policies (
-    id TEXT PRIMARY KEY,
-    name TEXT NOT NULL,
+    name TEXT PRIMARY KEY,
     nonce BLOB NOT NULL,
     encrypted_spiffe_id_pattern BLOB NOT NULL,
     encrypted_path_pattern BLOB NOT NULL,
@@ -95,7 +94,6 @@ ORDER BY version
 // QueryUpsertPolicy defines an SQL query to insert or update a policy record.
 const QueryUpsertPolicy = `
 INSERT INTO policies (
-    id,
     name,
     nonce,
     encrypted_spiffe_id_pattern,
@@ -104,9 +102,8 @@ INSERT INTO policies (
     created_time,
     updated_time
 )
-VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-ON CONFLICT(id) DO UPDATE SET
-    name = excluded.name,
+VALUES (?, ?, ?, ?, ?, ?, ?)
+ON CONFLICT(name) DO UPDATE SET
     nonce = excluded.nonce,
     encrypted_spiffe_id_pattern = excluded.encrypted_spiffe_id_pattern,
     encrypted_path_pattern = excluded.encrypted_path_pattern,
@@ -114,16 +111,15 @@ ON CONFLICT(id) DO UPDATE SET
     updated_time = excluded.updated_time
 `
 
-// QueryDeletePolicy defines the SQL statement to delete a policy by its ID.
+// QueryDeletePolicy defines the SQL statement to delete a policy by its name.
 const QueryDeletePolicy = `
 DELETE FROM policies
-WHERE id = ?
+WHERE name = ?
 `
 
-// QueryLoadPolicy is a SQL query to select policy details by ID
+// QueryLoadPolicy is a SQL query to select policy details by name
 const QueryLoadPolicy = `
-SELECT id,
-       name,
+SELECT name,
        encrypted_spiffe_id_pattern,
        encrypted_path_pattern,
        encrypted_permissions,
@@ -131,12 +127,11 @@ SELECT id,
        created_time,
        updated_time
 FROM policies
-WHERE id = ?
+WHERE name = ?
 `
 
 const QueryAllPolicies = `
-SELECT id,
-       name,
+SELECT name,
        encrypted_spiffe_id_pattern,
        encrypted_path_pattern,
        encrypted_permissions,

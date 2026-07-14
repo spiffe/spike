@@ -261,8 +261,7 @@ func TestInMemoryStore_StoreAndLoadPolicy(t *testing.T) {
 
 	// Create a test policy
 	policy := data.Policy{
-		ID:              "test-policy-1",
-		Name:            "Test Policy",
+		Name:            "test-policy-1",
 		SPIFFEIDPattern: "^spiffe://example\\.org/app/.*$",
 		PathPattern:     "^app/secrets/.*$",
 		Permissions:     []data.PolicyPermission{data.PermissionRead, data.PermissionWrite},
@@ -275,7 +274,7 @@ func TestInMemoryStore_StoreAndLoadPolicy(t *testing.T) {
 	}
 
 	// Load the policy
-	loadedPolicy, loadErr := store.LoadPolicy(ctx, policy.ID)
+	loadedPolicy, loadErr := store.LoadPolicy(ctx, policy.Name)
 	if loadErr != nil {
 		t.Errorf("LoadPolicy failed: %v", loadErr)
 	}
@@ -286,10 +285,6 @@ func TestInMemoryStore_StoreAndLoadPolicy(t *testing.T) {
 	}
 
 	// Verify the loaded policy matches the stored one
-	if loadedPolicy.ID != policy.ID {
-		t.Errorf("Expected ID '%s', got '%s'", policy.ID, loadedPolicy.ID)
-	}
-
 	if loadedPolicy.Name != policy.Name {
 		t.Errorf("Expected Name '%s', got '%s'", policy.Name, loadedPolicy.Name)
 	}
@@ -310,15 +305,14 @@ func TestInMemoryStore_StoreAndLoadPolicy(t *testing.T) {
 	}
 }
 
-func TestInMemoryStore_StorePolicyEmptyID(t *testing.T) {
+func TestInMemoryStore_StorePolicyEmptyName(t *testing.T) {
 	testCipher := createTestCipher(t)
 	store := NewInMemoryStore(testCipher, 10)
 	ctx := context.Background()
 
-	// Create a policy with empty ID
+	// Create a policy with empty Name
 	policy := data.Policy{
-		ID:              "", // Empty ID
-		Name:            "Test Policy",
+		Name:            "", // Empty Name
 		SPIFFEIDPattern: "^spiffe://example\\.org/app/.*$",
 		PathPattern:     "^app/secrets/.*$",
 		Permissions:     []data.PolicyPermission{data.PermissionRead},
@@ -327,7 +321,7 @@ func TestInMemoryStore_StorePolicyEmptyID(t *testing.T) {
 	// Store the policy - should fail with ErrEntityInvalid
 	storeErr := store.StorePolicy(ctx, policy)
 	if storeErr == nil {
-		t.Error("Expected error when storing policy with empty ID")
+		t.Error("Expected error when storing policy with empty name")
 	}
 
 	if storeErr != nil && !storeErr.Is(sdkErrors.ErrEntityInvalid) {
@@ -365,22 +359,19 @@ func TestInMemoryStore_LoadAllPolicies(t *testing.T) {
 	// Store multiple policies
 	policies := map[string]data.Policy{
 		"policy-1": {
-			ID:              "policy-1",
-			Name:            "Read Policy",
+			Name:            "policy-1",
 			SPIFFEIDPattern: "^spiffe://example\\.org/reader/.*$",
 			PathPattern:     "^read/.*$",
 			Permissions:     []data.PolicyPermission{data.PermissionRead},
 		},
 		"policy-2": {
-			ID:              "policy-2",
-			Name:            "Write Policy",
+			Name:            "policy-2",
 			SPIFFEIDPattern: "^spiffe://example\\.org/writer/.*$",
 			PathPattern:     "^write/.*$",
 			Permissions:     []data.PolicyPermission{data.PermissionWrite},
 		},
 		"policy-3": {
-			ID:              "policy-3",
-			Name:            "Admin Policy",
+			Name:            "policy-3",
 			SPIFFEIDPattern: "^spiffe://example\\.org/admin/.*$",
 			PathPattern:     "^secrets/.*$",
 			Permissions: []data.PolicyPermission{data.PermissionRead,
@@ -392,7 +383,7 @@ func TestInMemoryStore_LoadAllPolicies(t *testing.T) {
 	for _, policy := range policies {
 		storeErr := store.StorePolicy(ctx, policy)
 		if storeErr != nil {
-			t.Errorf("Failed to store policy %s: %v", policy.ID, storeErr)
+			t.Errorf("Failed to store policy %s: %v", policy.Name, storeErr)
 		}
 	}
 
@@ -407,26 +398,21 @@ func TestInMemoryStore_LoadAllPolicies(t *testing.T) {
 	}
 
 	// Verify each policy was loaded correctly
-	for id, expectedPolicy := range policies {
-		loadedPolicy, exists := allPolicies[id]
+	for name, expectedPolicy := range policies {
+		loadedPolicy, exists := allPolicies[name]
 		if !exists {
-			t.Errorf("Expected policy with ID %s to exist", id)
+			t.Errorf("Expected policy with name %s to exist", name)
 			continue
-		}
-
-		if loadedPolicy.ID != expectedPolicy.ID {
-			t.Errorf("ID mismatch for %s: expected %s, got %s",
-				id, expectedPolicy.ID, loadedPolicy.ID)
 		}
 
 		if loadedPolicy.Name != expectedPolicy.Name {
 			t.Errorf("Name mismatch for %s: expected %s, got %s",
-				id, expectedPolicy.Name, loadedPolicy.Name)
+				name, expectedPolicy.Name, loadedPolicy.Name)
 		}
 
 		if !reflect.DeepEqual(loadedPolicy.Permissions, expectedPolicy.Permissions) {
 			t.Errorf("Permissions mismatch for %s: expected %v, got %v",
-				id, expectedPolicy.Permissions, loadedPolicy.Permissions)
+				name, expectedPolicy.Permissions, loadedPolicy.Permissions)
 		}
 	}
 }
@@ -454,8 +440,7 @@ func TestInMemoryStore_DeletePolicy(t *testing.T) {
 
 	// Create and store test policy
 	policy := data.Policy{
-		ID:              "deletable-policy",
-		Name:            "Deletable Policy",
+		Name:            "deletable-policy",
 		SPIFFEIDPattern: "^spiffe://example\\.org/temp/.*$",
 		PathPattern:     "^secrets/temp/.*$",
 		Permissions:     []data.PolicyPermission{data.PermissionRead},
@@ -467,19 +452,19 @@ func TestInMemoryStore_DeletePolicy(t *testing.T) {
 	}
 
 	// Verify policy exists
-	loadedPolicy, loadErr := store.LoadPolicy(ctx, policy.ID)
+	loadedPolicy, loadErr := store.LoadPolicy(ctx, policy.Name)
 	if loadErr != nil || loadedPolicy == nil {
 		t.Fatal("Policy should exist before deletion")
 	}
 
 	// Delete the policy
-	deleteErr := store.DeletePolicy(ctx, policy.ID)
+	deleteErr := store.DeletePolicy(ctx, policy.Name)
 	if deleteErr != nil {
 		t.Errorf("DeletePolicy failed: %v", deleteErr)
 	}
 
 	// Verify policy no longer exists (LoadPolicy returns ErrEntityNotFound)
-	deletedPolicy, loadAfterDeleteErr := store.LoadPolicy(ctx, policy.ID)
+	deletedPolicy, loadAfterDeleteErr := store.LoadPolicy(ctx, policy.Name)
 	if loadAfterDeleteErr == nil || !loadAfterDeleteErr.Is(sdkErrors.ErrEntityNotFound) {
 		t.Errorf("Expected ErrEntityNotFound after deletion, got: %v", loadAfterDeleteErr)
 	}
