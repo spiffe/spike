@@ -160,18 +160,18 @@ type Backend interface {
 	//     on success.
 	StorePolicy(ctx context.Context, policy data.Policy) *sdkErrors.SDKError
 
-	// LoadPolicy retrieves a policy by its ID from the backend storage.
+	// LoadPolicy retrieves a policy by its name from the backend storage.
 	//
 	// Parameters:
 	//   - ctx: Context for managing request lifetime and cancellation.
-	//   - id: The unique identifier of the policy to retrieve.
+	//   - name: The name of the policy to retrieve.
 	//
 	// Returns:
 	//   - *data.Policy: The policy object, or nil if not found.
 	//   - *sdkErrors.SDKError: An error if the operation fails. Returns nil
 	//     on success.
 	LoadPolicy(
-		ctx context.Context, id string,
+		ctx context.Context, name string,
 	) (*data.Policy, *sdkErrors.SDKError)
 
 	// LoadAllPolicies retrieves all policies stored in the backend.
@@ -188,17 +188,17 @@ type Backend interface {
 		ctx context.Context,
 	) (map[string]*data.Policy, *sdkErrors.SDKError)
 
-	// DeletePolicy removes a policy object identified by the given ID from
+	// DeletePolicy removes a policy object identified by the given name from
 	// the backend storage.
 	//
 	// Parameters:
 	//   - ctx: Context for managing request lifetime and cancellation.
-	//   - id: The unique identifier of the policy to delete.
+	//   - name: The name of the policy to delete.
 	//
 	// Returns:
 	//   - *sdkErrors.SDKError: An error if the operation fails. Returns nil
 	//     on success.
-	DeletePolicy(ctx context.Context, id string) *sdkErrors.SDKError
+	DeletePolicy(ctx context.Context, name string) *sdkErrors.SDKError
 
 	// GetCipher retrieves the AEAD cipher used for encryption and decryption.
 	//

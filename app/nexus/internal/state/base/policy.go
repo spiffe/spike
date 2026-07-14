@@ -6,6 +6,7 @@ package base
 
 import (
 	"context"
+	"errors"
 	"regexp"
 	"time"
 
@@ -104,19 +105,13 @@ func UpsertPolicy(policy data.Policy) (data.Policy, *sdkErrors.SDKError) {
 
 	ctx := context.Background()
 
-	// Check for existing policy with the same name
-	allPolicies, loadErr := persist.Backend().LoadAllPolicies(ctx)
-	if loadErr != nil {
+	// Look up any existing policy by name directly. This is an indexed
+	// lookup on the name primary key, so it avoids loading and decrypting
+	// every policy just to check for one. A missing policy is expected on
+	// create and is not an error.
+	existingPolicy, loadErr := persist.Backend().LoadPolicy(ctx, policy.Name)
+	if loadErr != nil && !errors.Is(loadErr, sdkErrors.ErrEntityNotFound) {
 		return data.Policy{}, sdkErrors.ErrEntityLoadFailed.Wrap(loadErr)
-	}
-
-	var existingPolicy *data.Policy
-	for _, p := range allPolicies {
-		if p.Name == policy.Name {
-			pCopy := p
-			existingPolicy = pCopy
-			break
-		}
 	}
 
 	// Compile and validate patterns
