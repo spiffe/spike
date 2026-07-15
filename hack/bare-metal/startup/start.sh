@@ -170,37 +170,81 @@ fi
 # the build produces them. Failing here, before any SPIRE or SPIKE
 # process starts, is far more helpful than a bare "spike: command not
 # found" surfacing halfway through startup.
+#
+# Each name must also resolve to the binary in ./bin, not to an
+# unrelated tool that happens to share the name. The SPIRE entries pin
+# the exact binary path and hash (unix:path and unix:sha256 selectors),
+# so a lookalike elsewhere on PATH cannot obtain an identity and the
+# run fails in confusing ways later.
 check_spike_binaries() {
   local missing=()
+  local shadowed=()
+  local found
+  local failed=0
 
   for b in spike nexus keeper bootstrap demo; do
-    if ! command -v "$b" >/dev/null 2>&1; then
+    found="$(command -v "$b" 2>/dev/null)"
+    if [ -z "$found" ]; then
       missing+=("$b")
+    elif [ ! "$found" -ef "$(pwd)/bin/$b" ]; then
+      shadowed+=("$b -> $found")
     fi
   done
 
-  if [ ${#missing[@]} -eq 0 ]; then
-    echo "All required SPIKE binaries found on PATH."
-    return 0
+  if [ ${#missing[@]} -gt 0 ]; then
+    failed=1
+    echo "" >&2
+    echo "Error: required SPIKE binaries were not found on your PATH:" >&2
+    for m in "${missing[@]}"; do
+      echo "  - $m" >&2
+    done
+    echo "" >&2
+    echo "To build them into ./bin:" >&2
+    echo "  make build" >&2
+    echo "" >&2
+    echo "Then add the bin directory to your PATH:" >&2
+    echo "  export PATH=\"\$PATH:$(pwd)/bin\"" >&2
+    echo "" >&2
+    echo "Then verify with:" >&2
+    echo "  command -v spike nexus keeper bootstrap demo" >&2
+    echo "" >&2
+    echo "See https://spike.ist/development/bare-metal/ for details." >&2
   fi
 
-  echo "" >&2
-  echo "Error: required SPIKE binaries were not found on your PATH:" >&2
-  for m in "${missing[@]}"; do
-    echo "  - $m" >&2
-  done
-  echo "" >&2
-  echo "To build them into ./bin:" >&2
-  echo "  make build" >&2
-  echo "" >&2
-  echo "Then add the bin directory to your PATH:" >&2
-  echo "  export PATH=\"\$PATH:$(pwd)/bin\"" >&2
-  echo "" >&2
-  echo "Then verify with:" >&2
-  echo "  command -v spike nexus keeper bootstrap demo" >&2
-  echo "" >&2
-  echo "See https://spike.ist/development/bare-metal/ for details." >&2
-  return 1
+  if [ ${#shadowed[@]} -gt 0 ]; then
+    local label="Error"
+    if [ -n "$SPIKE_SKIP_REGISTER_ENTRIES" ]; then
+      label="Warning"
+    fi
+    echo "" >&2
+    echo "$label: PATH resolves these commands outside $(pwd)/bin:" >&2
+    for s in "${shadowed[@]}"; do
+      echo "  - $s" >&2
+    done
+    echo "" >&2
+    echo "SPIKE registers its workloads with SPIRE by exact binary" >&2
+    echo "path and hash, so the binaries above cannot obtain an" >&2
+    echo "identity even if they are copies of the SPIKE binaries." >&2
+    echo "" >&2
+    echo "Give $(pwd)/bin precedence for this shell:" >&2
+    echo "  export PATH=\"$(pwd)/bin:\$PATH\"" >&2
+    echo "" >&2
+    echo "Or remove/rename the conflicting binaries." >&2
+    if [ -z "$SPIKE_SKIP_REGISTER_ENTRIES" ]; then
+      failed=1
+    else
+      echo "" >&2
+      echo "WARNING: continuing because SPIKE_SKIP_REGISTER_ENTRIES" >&2
+      echo "is set; make sure your registered entries match the" >&2
+      echo "binaries listed above." >&2
+    fi
+  fi
+
+  if [ $failed -eq 0 ] && [ ${#shadowed[@]} -eq 0 ]; then
+    echo "All required SPIKE binaries found on PATH."
+  fi
+
+  return $failed
 }
 
 if ! check_spike_binaries; then
