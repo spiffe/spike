@@ -30,6 +30,14 @@ start-privileged:
 build:
 	./hack/bare-metal/build/build-spike.sh
 
+.PHONY: build-spire
+# Builds and installs the SPIRE server and agent binaries that the
+# bare-metal dev environment needs (SPIRE v1.11.2 into /usr/local/bin).
+# Requires Go and sudo. Run this once before `make start` if
+# spire-server/spire-agent are not already on your PATH.
+build-spire:
+	./hack/bare-metal/build/build-spire.sh
+
 # Registry an entry to the SPIRE server for the demo app.
 demo-register-entry:
 	./examples/consume-secrets/demo-register-entry.sh

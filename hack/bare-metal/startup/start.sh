@@ -119,7 +119,7 @@ check_spire_binaries() {
   echo "binaries on your PATH." >&2
   echo "" >&2
   echo "To build and install them (SPIRE v1.11.2 into /usr/local/bin):" >&2
-  echo "  ./hack/bare-metal/build/build-spire.sh" >&2
+  echo "  make build-spire" >&2
   echo "" >&2
   echo "If you already have them elsewhere, add that directory to PATH:" >&2
   echo "  export PATH=\"/path/to/spire/bin:\$PATH\"" >&2
