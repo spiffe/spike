@@ -79,6 +79,63 @@ fi
 # Your existing script continues here
 echo "Domain check passed. Continuing with the script..."
 
+# Preflight: make sure the SPIRE binaries this run needs are on PATH.
+# Failing here with clear guidance is far more helpful than a bare
+# "spire-server: command not found" surfacing later from the agent-token
+# or agent-start scripts. Only the binaries that the enabled steps actually
+# use are required, so external-SPIRE workflows that skip those steps are
+# not blocked.
+check_spire_binaries() {
+  local missing=()
+
+  # spire-server starts the server, generates the agent token, and
+  # registers entries.
+  if [ -z "$SPIKE_SKIP_SPIRE_SERVER_START" ] ||
+    [ -z "$SPIKE_SKIP_GENERATE_AGENT_TOKEN" ] ||
+    [ -z "$SPIKE_SKIP_REGISTER_ENTRIES" ]; then
+    if ! command -v spire-server >/dev/null 2>&1; then
+      missing+=("spire-server")
+    fi
+  fi
+
+  # spire-agent starts the SPIRE agent.
+  if [ -z "$SPIKE_SKIP_SPIRE_AGENT_START" ]; then
+    if ! command -v spire-agent >/dev/null 2>&1; then
+      missing+=("spire-agent")
+    fi
+  fi
+
+  if [ ${#missing[@]} -eq 0 ]; then
+    return 0
+  fi
+
+  echo "" >&2
+  echo "Error: required SPIRE binaries were not found on your PATH:" >&2
+  for m in "${missing[@]}"; do
+    echo "  - $m" >&2
+  done
+  echo "" >&2
+  echo "The bare-metal dev environment needs the SPIRE server and agent" >&2
+  echo "binaries on your PATH." >&2
+  echo "" >&2
+  echo "To build and install them (SPIRE v1.11.2 into /usr/local/bin):" >&2
+  echo "  ./hack/bare-metal/build/build-spire.sh" >&2
+  echo "" >&2
+  echo "If you already have them elsewhere, add that directory to PATH:" >&2
+  echo "  export PATH=\"/path/to/spire/bin:\$PATH\"" >&2
+  echo "" >&2
+  echo "Then verify with:" >&2
+  echo "  command -v spire-server spire-agent" >&2
+  echo "" >&2
+  echo "See https://spike.ist/development/bare-metal/ for details." >&2
+  return 1
+}
+
+if ! check_spire_binaries; then
+  echo "SPIRE preflight check failed. Exiting..." >&2
+  exit 1
+fi
+
 # Helpers
 source ./hack/lib/bg.sh
 
