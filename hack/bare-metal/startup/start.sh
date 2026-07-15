@@ -159,32 +159,53 @@ if [ -z "$SPIKE_SKIP_SPIKE_BUILD" ]; then
   fi
 else
   echo "SPIKE_SKIP_SPIKE_BUILD is set, skipping SPIKE build."
+fi
 
-  # Only check for binaries if we're skipping the build step
-  echo "Checking for required SPIKE binaries..."
-  REQUIRED_BINARIES=("spike" "nexus" "keeper" "bootstrap")
-  MISSING_BINARIES=()
+# Preflight: make sure the SPIKE binaries are on PATH.
+#
+# build-spike.sh compiles them into ./bin, but this script and its child
+# scripts invoke them as bare commands (spike, nexus, keeper, bootstrap,
+# demo), so the bin directory must also be on PATH. The check runs after
+# the build step because on a fresh clone the binaries do not exist until
+# the build produces them. Failing here, before any SPIRE or SPIKE
+# process starts, is far more helpful than a bare "spike: command not
+# found" surfacing halfway through startup.
+check_spike_binaries() {
+  local missing=()
 
-  for binary in "${REQUIRED_BINARIES[@]}"; do
-    if ! command -v "$binary" >/dev/null 2>&1; then
-      MISSING_BINARIES+=("$binary")
+  for b in spike nexus keeper bootstrap demo; do
+    if ! command -v "$b" >/dev/null 2>&1; then
+      missing+=("$b")
     fi
   done
 
-  if [ ${#MISSING_BINARIES[@]} -gt 0 ]; then
-    echo "Error: The following required binaries are not found in PATH:"
-    for missing in "${MISSING_BINARIES[@]}"; do
-      echo "  - $missing"
-    done
-    echo ""
-    echo "Please build SPIKE binaries first by running:"
-    echo "  ./hack/bare-metal/build/build-spike.sh"
-    echo ""
-    echo "Or unset SPIKE_SKIP_SPIKE_BUILD to build them automatically."
-    exit 1
+  if [ ${#missing[@]} -eq 0 ]; then
+    echo "All required SPIKE binaries found on PATH."
+    return 0
   fi
 
-  echo "All required SPIKE binaries found."
+  echo "" >&2
+  echo "Error: required SPIKE binaries were not found on your PATH:" >&2
+  for m in "${missing[@]}"; do
+    echo "  - $m" >&2
+  done
+  echo "" >&2
+  echo "To build them into ./bin:" >&2
+  echo "  make build" >&2
+  echo "" >&2
+  echo "Then add the bin directory to your PATH:" >&2
+  echo "  export PATH=\"\$PATH:$(pwd)/bin\"" >&2
+  echo "" >&2
+  echo "Then verify with:" >&2
+  echo "  command -v spike nexus keeper bootstrap demo" >&2
+  echo "" >&2
+  echo "See https://spike.ist/development/bare-metal/ for details." >&2
+  return 1
+}
+
+if ! check_spike_binaries; then
+  echo "SPIKE binary preflight check failed. Exiting..." >&2
+  exit 1
 fi
 
 # Start SPIRE server in background and save its PID
@@ -473,7 +494,7 @@ echo "> Everything is set up."
 echo "> You can now experiment with SPIKE."
 echo ">"
 echo "<<"
-echo "> >> To begin, run './spike' on a separate terminal window."
+echo "> >> To begin, run 'spike' on a separate terminal window."
 echo "<<"
 echo ">"
 echo "> When you are done with your experiments, you can press 'Ctrl+C'"
