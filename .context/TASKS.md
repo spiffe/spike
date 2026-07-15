@@ -53,14 +53,14 @@ the name-based policy work.
 
 ### Phase 4: Policy & Secrets `#priority:medium`
 - [ ] Add a `list` permission type; scope `spike secret list` to the caller's allowed path patterns → ideas/research-list-permission.md #source:jira.xml #added:2026-07-14
-- [ ] Add `LoadPolicyByName` for indexed O(1) lookup (UpsertPolicy currently scans all policies) #source:jira.xml #added:2026-07-14
+- [x] Add `LoadPolicyByName` for indexed O(1) lookup (UpsertPolicy currently scans all policies) #source:jira.xml #added:2026-07-14 #done:2026-07-14 #branch:fix/upsert-policy-indexed-lookup (used the existing `LoadPolicy(ctx, name)` indexed lookup; no new method needed)
 - [ ] Reject empty id/path for both policies and secrets #source:jira.xml #added:2026-07-14
 - [ ] Substring/partial-match filtering for `policy list` and `secret list` (today requires the exact regex) #source:jira.xml #added:2026-07-14
 - [ ] Refactor `app/spike/internal/cmd/secret/get.go` to extract the repeated marshal-and-print helpers #source:jira.xml #added:2026-07-14
 
 ### Phase 5: Ops & Config `#priority:low`
-- [ ] Wire the unused `DatabaseOperationTimeout()` into the DB path → ideas/research-db-resilience.md #source:jira.xml #added:2026-07-14
-- [ ] Move `const maxShardID = 1000` to env-var configuration #source:jira.xml #added:2026-07-14
+- [ ] Wire the SDK's `env.DatabaseOperationTimeoutVal()` (spike-sdk-go config/env/database.go) into the Nexus DB path; SPIKE does not call it yet → ideas/research-db-resilience.md #source:jira.xml #added:2026-07-14 (retargeted 2026-07-14: the old in-repo accessor was removed and the accessor now lives in the SDK)
+- [-] Move `const maxShardID = 1000` to env-var configuration #source:jira.xml #added:2026-07-14 #skipped:2026-07-14 (obsolete: the constant no longer exists anywhere in the repo or SDK)
 - [ ] Add a configurable SVID-source acquisition timeout (go-spiffe context) so lookups don't wait forever #source:jira.xml #added:2026-07-14
 - [ ] Add a Nexus `/status` endpoint; Pilot warns when Nexus not ready; Bootstrap uses it instead of the k8s Jobs API #source:jira.xml #added:2026-07-14
 
