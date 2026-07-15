@@ -76,6 +76,10 @@ bootstrap-linux-arm64.sum.txt
 # For SKD debugging while building images
 spike-sdk-go
 
+# SPIRE source clone (build-spire.sh now uses a temp dir; guard against a
+# repo-root clone from older runs or a manual `git clone`).
+/spire/
+
 # WSL
 *:Zone.Identifier
 
