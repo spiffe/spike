@@ -104,9 +104,9 @@ func TestFormatPoliciesOutput_HumanFormat(t *testing.T) {
 		t.Error("Human format should contain 'POLICIES' header")
 	}
 
-	// Check policy fields are present (PolicyListItem only has ID and Name)
+	// The human format prints only the name; policies are keyed by name
+	// and the vestigial ID is not shown.
 	expectedFields := []string{
-		"ID: 123e4567-e89b-12d3-a456-426614174000",
 		"Name: test-policy",
 	}
 
@@ -200,7 +200,6 @@ func TestFormatPolicy_HumanFormat(t *testing.T) {
 
 	// Check all fields are present
 	expectedFields := []string{
-		"ID: 123e4567-e89b-12d3-a456-426614174000",
 		"Name: admin-policy",
 		"SPIFFE ID Pattern: ^spiffe://example\\.org/admin/.*$",
 		"Path Pattern: ^.*$",

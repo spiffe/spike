@@ -19,8 +19,9 @@ import (
 
 // formatPoliciesOutput formats the output of policy list items based on the
 // format flag. It supports human/plain, json, and yaml formats. For human
-// format, it creates a readable tabular representation. For JSON/YAML formats,
-// it marshals the policies to the appropriate structured format.
+// format, it creates a readable list of policy names (policies are keyed by
+// name; there is no separate ID). For JSON/YAML formats, it marshals the
+// policies to the appropriate structured format.
 //
 // If the format flag is invalid, it returns an error message.
 // If the "policies" list is empty, it returns an appropriate message based on
@@ -28,7 +29,7 @@ import (
 //
 // Parameters:
 //   - cmd: The Cobra command containing the format flag
-//   - policies: The policy list items to format (contains ID and Name only)
+//   - policies: The policy list items to format
 //
 // Returns:
 //   - string: The formatted output or error message
@@ -73,7 +74,6 @@ func formatPoliciesOutput(
 		result.WriteString("POLICIES\n========\n\n")
 
 		for _, policy := range *policies {
-			result.WriteString(fmt.Sprintf("ID: %s\n", policy.ID))
 			result.WriteString(fmt.Sprintf("Name: %s\n", policy.Name))
 			result.WriteString("--------\n\n")
 		}
@@ -120,7 +120,6 @@ func formatPolicy(cmd *cobra.Command, policy *data.Policy) string {
 		var result strings.Builder
 		result.WriteString("POLICY DETAILS\n=============\n\n")
 
-		result.WriteString(fmt.Sprintf("ID: %s\n", policy.ID))
 		result.WriteString(fmt.Sprintf("Name: %s\n", policy.Name))
 		result.WriteString(fmt.Sprintf("SPIFFE ID Pattern: %s\n",
 			policy.SPIFFEIDPattern))

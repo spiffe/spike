@@ -51,31 +51,23 @@ import (
 //	spike policy list --path-pattern="^secrets/db/.*$"
 //	spike policy list --spiffeid-pattern="^spiffe://example\.org/app$"
 //
-// Example output for human format:
+// Example output for human format (the list shows policy names only; use
+// `spike policy get` for the full details of a policy):
 //
 //	POLICIES
 //	========
 //
-//	ID: policy-123
 //	Name: web-service-policy
-//	SPIFFE ID Pattern: ^spiffe://example\.org/web-service/.*$
-//	Path Pattern: ^secrets/db/.*$
-//	Permissions: read, write
-//	Created At: 2024-01-01T00:00:00Z
-//	Created By: user-abc
 //	--------
 //
-// Example output for JSON format:
+// Example output for JSON format (the "id" field is always empty; policies
+// are keyed by name, and the field awaits the SDK rename tracked in issue
+// #250):
 //
 //	[
 //	  {
-//	    "id": "policy-123",
-//	    "name": "web-service-policy",
-//	    "spiffeIdPattern": "^spiffe://example\.org/web-service/.*$",
-//	    "pathPattern": "^tenants/demo/db$",
-//	    "permissions": ["read", "write"],
-//	    "createdAt": "2024-01-01T00:00:00Z",
-//	    "createdBy": "user-abc"
+//	    "id": "",
+//	    "name": "web-service-policy"
 //	  }
 //	]
 //
