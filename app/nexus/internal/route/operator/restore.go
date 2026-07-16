@@ -63,9 +63,20 @@ func RouteRestore(
 	const fName = "routeRestore"
 	journal.AuditRequest(fName, r, audit, journal.AuditCreate)
 
+	// The in-memory backend keeps no persistent state, so there is
+	// nothing to restore. Reject the request explicitly: returning
+	// without a response body reads as "failed to communicate with
+	// SPIKE Nexus" on the Pilot side.
 	if env.BackendStoreTypeVal() == env.Memory {
-		log.Info(fName, "message", "skipping restoration: in-memory mode")
-		return nil
+		log.Warn(fName, "message", "rejecting restore: in-memory backend")
+		failErr := sdkErrors.ErrDataInvalidInput.Clone()
+		failErr.Msg = "restore is not applicable to the in-memory backend"
+		if respondErr := net.Fail(
+			reqres.RestoreResponse{}.BadRequest(), w, http.StatusBadRequest,
+		); respondErr != nil {
+			return failErr.Wrap(respondErr)
+		}
+		return failErr
 	}
 
 	request, err := net.ReadParseAndGuard[

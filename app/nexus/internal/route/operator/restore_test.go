@@ -16,6 +16,7 @@ import (
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	"github.com/spiffe/spike-sdk-go/config/env"
 	"github.com/spiffe/spike-sdk-go/crypto"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 
 	"github.com/spiffe/spike-sdk-go/journal"
 )
@@ -47,9 +48,18 @@ func TestRouteRestore_MemoryMode(t *testing.T) {
 	// Call function
 	err := RouteRestore(w, req, audit)
 
-	// Should return nil (no error) and skip processing in memory mode
-	if err != nil {
-		t.Errorf("Expected no error in memory mode, got: %v", err)
+	// Restore does not apply to the in-memory backend; the route must
+	// reject the request explicitly rather than return an empty 200.
+	if err == nil {
+		t.Error("Expected an error in memory mode")
+		return
+	}
+	if !err.Is(sdkErrors.ErrDataInvalidInput) {
+		t.Errorf("Expected ErrDataInvalidInput, got: %v", err)
+	}
+	if w.Code != http.StatusBadRequest {
+		t.Errorf("Expected status %d, got: %d",
+			http.StatusBadRequest, w.Code)
 	}
 }
 

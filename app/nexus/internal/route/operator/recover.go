@@ -12,6 +12,7 @@ import (
 	"github.com/spiffe/spike-sdk-go/config/env"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/journal"
+	"github.com/spiffe/spike-sdk-go/log"
 	"github.com/spiffe/spike-sdk-go/net"
 	"github.com/spiffe/spike-sdk-go/security/mem"
 
@@ -47,6 +48,22 @@ func RouteRecover(
 ) *sdkErrors.SDKError {
 	const fName = "routeRecover"
 	journal.AuditRequest(fName, r, audit, journal.AuditCreate)
+
+	// The in-memory backend keeps no persistent state, so recovery
+	// shards would be useless after a restart. Reject the request
+	// explicitly instead of failing later with a misleading "not
+	// enough shards" internal error.
+	if env.BackendStoreTypeVal() == env.Memory {
+		log.Warn(fName, "message", "rejecting recover: in-memory backend")
+		failErr := sdkErrors.ErrDataInvalidInput.Clone()
+		failErr.Msg = "recovery is not applicable to the in-memory backend"
+		if respondErr := net.Fail(
+			reqres.RecoverResponse{}.BadRequest(), w, http.StatusBadRequest,
+		); respondErr != nil {
+			return failErr.Wrap(respondErr)
+		}
+		return failErr
+	}
 
 	_, err := net.ReadParseAndGuard[
 		reqres.RecoverRequest, reqres.RecoverResponse](
