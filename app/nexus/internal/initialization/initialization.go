@@ -17,8 +17,10 @@ import (
 // backend store type. The function handles three initialization modes:
 //
 // 1. SPIKE-Keeper-based initialization (SQLite and Lite backends):
-//   - Initializes the backing store from SPIKE Keeper instances
+//   - Initializes the backing store from SPIKE Keeper instances in the
+//     background, so the caller can start serving immediately
 //   - Starts a background goroutine for periodic shard synchronization
+//     once the backing store is initialized
 //
 // 2. In-memory initialization (Memory backend):
 //   - Initializes an empty in-memory backing store without the root key
@@ -46,16 +48,21 @@ func Initialize(source *workloadapi.X509Source) {
 
 	if requireBackingStoreToBootstrap := env.BackendStoreTypeVal() == env.Sqlite ||
 		env.BackendStoreTypeVal() == env.Lite; requireBackingStoreToBootstrap {
-		// Initialize the backing store from SPIKE Keeper instances.
-		// This is only required when the SPIKE Nexus needs bootstrapping.
-		// For modes where bootstrapping is not required (such as in-memory mode),
-		// SPIKE Nexus should be initialized internally.
-		recovery.InitializeBackingStoreFromKeepers(source)
+		// Initialize the backing store from SPIKE Keeper instances in the
+		// background so the caller can start the mTLS listener right away.
+		// While the root key is missing, the router only exposes the
+		// operator recover/restore emergency routes (see route/base), so
+		// serving early is safe. It is also required: a break-the-glass
+		// restore feeds shards through this very listener when every
+		// SPIKE Keeper has lost its shard. Blocking here would deadlock
+		// that flow, because SPIKE Nexus would never start listening.
+		go func() {
+			recovery.InitializeBackingStoreFromKeepers(source)
 
-		// Lazy evaluation in a loop:
-		// If bootstrapping is successful, start a background process to
-		// periodically sync shards.
-		go recovery.SendShardsPeriodically(source)
+			// If bootstrapping is successful, start a background process
+			// to periodically sync shards.
+			go recovery.SendShardsPeriodically(source)
+		}()
 
 		return
 	}
