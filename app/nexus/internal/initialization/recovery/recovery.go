@@ -76,6 +76,16 @@ func InitializeBackingStoreFromKeepers(source *workloadapi.X509Source) {
 	_, err := retry.Forever(ctx, func() (bool, *sdkErrors.SDKError) {
 		log.Debug(fName, "message", "retry attempt", "time", time.Now().String())
 
+		// The operator may have restored the root key through the
+		// emergency restore route while this loop was retrying. In that
+		// case initialization already happened; stop polling the SPIKE
+		// Keepers and let the periodic shard sync take over.
+		if !state.RootKeyZero() {
+			log.Info(fName,
+				"message", "root key already present; skipping recovery")
+			return true, nil
+		}
+
 		// Early check: avoid unnecessary function call if the source is nil
 		if source == nil {
 			warnErr := *sdkErrors.ErrSPIFFENilX509Source.Clone()
