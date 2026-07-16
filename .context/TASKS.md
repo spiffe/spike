@@ -35,9 +35,9 @@ the name-based policy work.
 -->
 
 ### Phase 1: Correctness & Broken Things `#priority:high`
-- [ ] Fix broken CI integration test #source:jira.xml #added:2026-07-14
-- [ ] Fix broken recovery/restore flow #source:jira.xml #added:2026-07-14
-- [ ] Fix `spike cipher` stream mode (broken; owner: Murat); JSON mode fix unblocks encryption-as-a-service demo/docs #source:jira.xml #added:2026-07-14
+- [x] Fix broken CI integration test #source:jira.xml #added:2026-07-14 #done:2026-07-16 (stale: CI has been green for several weeks; closed on user confirmation)
+- [ ] Fix broken recovery/restore flow #source:jira.xml #added:2026-07-14 (code review 2026-07-16: no live breakage found; awaiting the scripted drill in Phase 3 to confirm and close)
+- [x] Fix `spike cipher` stream mode (broken; owner: Murat); JSON mode fix unblocks encryption-as-a-service demo/docs #source:jira.xml #added:2026-07-14 #done:2026-07-15 (stale: both cipher streaming and file modes verified passing via the make start checks on 2026-07-15)
 - [ ] Retry sqlite operations with exponential backoff on transient locks (all of `app/nexus/internal/state/persist`) → ideas/research-db-resilience.md #source:jira.xml #added:2026-07-14
 - [ ] Bound the Bootstrap keeper-wait loop with a configurable timeout/max-attempts instead of looping forever → ideas/research-db-resilience.md #source:jira.xml #added:2026-07-14
 - [ ] Make `env` accessors return sentinel errors instead of calling `log.FatalLn` (removes env→log circular dep, makes them testable) → ideas/research-env-error-handling.md #source:jira.xml #added:2026-07-14
@@ -50,6 +50,7 @@ the name-based policy work.
 - [ ] Add integration tests: root key cached/recovered/not-re-initialized; secret & policy CRUD; Pilot denies when Nexus uninitialized / warns when unreachable → ideas/research-cli-testing.md #source:jira.xml #added:2026-07-14
 - [ ] Raise CLI command coverage to 60%+ via unit + HTTP-mock tests; fix `t.Skip()`ed tests; DI-refactor `sendShardsToKeepers` → ideas/research-cli-testing.md #source:jira.xml #added:2026-07-14
 - [ ] `start.sh` should exercise recovery/restore and encryption/decryption #source:jira.xml #added:2026-07-14
+- [ ] Scripted live recovery/restore drill: once `make start` completes cleanly, run `spike operator recover`, kill Nexus and the Keepers, restart Nexus alone, feed the shards back via `spike operator restore` (scriptable via stdin since fix/operator-restore), and verify a pre-crash secret reads back. Rationale: the 2026-07-16 code review found no live breakage (shard-index fidelity intact end to end; guards use exact SPIFFE role matching, unaffected by the policy-name migration), so only a drill can prove the Phase 1 "recovery/restore is broken" claim stale and close both tasks. Needs the recover/restore role entries (spire-server-entry-recover-register.sh / -restore-register.sh), which make start does not register by default. #added:2026-07-16
 
 ### Phase 4: Policy & Secrets `#priority:medium`
 - [ ] Add a `list` permission type; scope `spike secret list` to the caller's allowed path patterns → ideas/research-list-permission.md #source:jira.xml #added:2026-07-14
