@@ -5,8 +5,10 @@
 package operator
 
 import (
+	"bytes"
 	"context"
 	"encoding/hex"
+	"io"
 	"os"
 	"strconv"
 	"strings"
@@ -63,11 +65,8 @@ func newOperatorRestoreCommand(
 		Run: func(cmd *cobra.Command, args []string) {
 			spiffeid.IsPilotRestoreOrDie(SPIFFEID)
 
-			cmd.Println("(your input will be hidden as you paste/type it)")
-			cmd.Print("Enter recovery shard: ")
-			shard, readErr := term.ReadPassword(int(os.Stdin.Fd()))
+			shard, readErr := readShardInput(cmd)
 			if readErr != nil {
-				cmd.Println("") // newline after hidden input
 				cmd.PrintErrf("Error: %v\n", readErr)
 				return
 			}
@@ -166,4 +165,40 @@ func newOperatorRestoreCommand(
 	}
 
 	return restoreCmd
+}
+
+// readShardInput reads a recovery shard from standard input. When stdin
+// is a terminal, the input is hidden while typed. Otherwise, the shard
+// is read until EOF, which lets scripts (such as the bare-metal recovery
+// drill) drive `spike operator restore` non-interactively.
+//
+// In the non-interactive mode, the process supplying the shard holds a
+// copy of it too, so scripted restore should be reserved for development
+// environments and recovery drills.
+//
+// Parameters:
+//   - cmd: The Cobra command used for prompting.
+//
+// Returns:
+//   - []byte: The shard bytes with surrounding whitespace removed.
+//   - error: An error if reading standard input fails.
+func readShardInput(cmd *cobra.Command) ([]byte, error) {
+	fd := int(os.Stdin.Fd())
+
+	if term.IsTerminal(fd) {
+		cmd.Println("(your input will be hidden as you paste/type it)")
+		cmd.Print("Enter recovery shard: ")
+		shard, readErr := term.ReadPassword(fd)
+		cmd.Println("") // newline after hidden input
+		return shard, readErr
+	}
+
+	// A shard line is well under 4KB; the limit only guards against
+	// unbounded input.
+	data, readErr := io.ReadAll(io.LimitReader(os.Stdin, 4096))
+	if readErr != nil {
+		return nil, readErr
+	}
+
+	return bytes.TrimSpace(data), nil
 }
