@@ -420,26 +420,55 @@ if [ $POLICY_EXIT_CODE -ne 0 ]; then
   POLICY_VALIDATION_FAILED=true
 fi
 
-# Validate expected policy output (warnings only, no exit)
+# Validate expected policy output (warnings only, no exit).
+# `spike policy list` prints one "Name: <policy>" block per policy;
+# policies are keyed by name, and the list shows no other fields.
 echo "$POLICY_OUTPUT" | grep -q "POLICIES" || \
   { echo "WARNING: Missing 'POLICIES' header in output"; POLICY_VALIDATION_FAILED=true; }
-echo "$POLICY_OUTPUT" | grep -qE '^ID[[:space:]]+NAME$' || \
-  { echo "WARNING: Missing 'ID NAME' header in output"; POLICY_VALIDATION_FAILED=true; }
-echo "$POLICY_OUTPUT" | grep -q "workload-can-read" || \
+echo "$POLICY_OUTPUT" | grep -q "Name: workload-can-read" || \
   { echo "WARNING: Missing 'workload-can-read' policy"; POLICY_VALIDATION_FAILED=true; }
-echo "$POLICY_OUTPUT" | grep -q "workload-can-write" || \
+echo "$POLICY_OUTPUT" | grep -q "Name: workload-can-write" || \
   { echo "WARNING: Missing 'workload-can-write' policy"; POLICY_VALIDATION_FAILED=true; }
-echo "$POLICY_OUTPUT" | grep -q "Permissions: read" || \
+
+# Permissions are only visible via `spike policy get`; the demo policies
+# carry one permission each (read and write, respectively). This also
+# exercises the get-by-name path end to end.
+POLICY_READ_OUTPUT=$(spike policy get workload-can-read 2>&1)
+POLICY_READ_EXIT_CODE=$?
+
+if [ $POLICY_READ_EXIT_CODE -ne 0 ]; then
+  echo "WARNING: Policy get workload-can-read failed" \
+    "with exit code $POLICY_READ_EXIT_CODE"
+  echo "Output:"
+  echo "$POLICY_READ_OUTPUT"
+  POLICY_VALIDATION_FAILED=true
+fi
+echo "$POLICY_READ_OUTPUT" | grep -q "Permissions: read" || \
   { echo "WARNING: Missing read permission"; POLICY_VALIDATION_FAILED=true; }
-echo "$POLICY_OUTPUT" | grep -q "Permissions: write" || \
+
+POLICY_WRITE_OUTPUT=$(spike policy get workload-can-write 2>&1)
+POLICY_WRITE_EXIT_CODE=$?
+
+if [ $POLICY_WRITE_EXIT_CODE -ne 0 ]; then
+  echo "WARNING: Policy get workload-can-write failed" \
+    "with exit code $POLICY_WRITE_EXIT_CODE"
+  echo "Output:"
+  echo "$POLICY_WRITE_OUTPUT"
+  POLICY_VALIDATION_FAILED=true
+fi
+echo "$POLICY_WRITE_OUTPUT" | grep -q "Permissions: write" || \
   { echo "WARNING: Missing write permission"; POLICY_VALIDATION_FAILED=true; }
 
 if [ "$POLICY_VALIDATION_FAILED" = true ]; then
   echo ""
   echo "=========================================="
   echo "POLICY VALIDATION FAILED (debug mode - continuing anyway)"
-  echo "Full policy output:"
+  echo "Full policy list output:"
   echo "$POLICY_OUTPUT"
+  echo "Full policy get output (workload-can-read):"
+  echo "$POLICY_READ_OUTPUT"
+  echo "Full policy get output (workload-can-write):"
+  echo "$POLICY_WRITE_OUTPUT"
   echo "=========================================="
 else
   echo "Policy verification passed."
