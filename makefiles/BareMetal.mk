@@ -38,6 +38,16 @@ build:
 build-spire:
 	./hack/bare-metal/build/build-spire.sh
 
+.PHONY: drill-recovery
+# Live recovery/restore drill: proves the break-the-glass runbook end
+# to end. Run it in a second terminal after `make start` has completed
+# cleanly. The drill kills Nexus and the Keepers, restores Nexus from
+# operator recovery shards, and verifies that a pre-crash secret reads
+# back. The Keepers stay down afterward; run `make kill` and then
+# `make start` to reset the environment.
+drill-recovery:
+	./hack/bare-metal/drill/recovery-drill.sh
+
 # Registry an entry to the SPIRE server for the demo app.
 demo-register-entry:
 	./examples/consume-secrets/demo-register-entry.sh
