@@ -79,6 +79,63 @@ fi
 # Your existing script continues here
 echo "Domain check passed. Continuing with the script..."
 
+# Preflight: make sure the SPIRE binaries this run needs are on PATH.
+# Failing here with clear guidance is far more helpful than a bare
+# "spire-server: command not found" surfacing later from the agent-token
+# or agent-start scripts. Only the binaries that the enabled steps actually
+# use are required, so external-SPIRE workflows that skip those steps are
+# not blocked.
+check_spire_binaries() {
+  local missing=()
+
+  # spire-server starts the server, generates the agent token, and
+  # registers entries.
+  if [ -z "$SPIKE_SKIP_SPIRE_SERVER_START" ] ||
+    [ -z "$SPIKE_SKIP_GENERATE_AGENT_TOKEN" ] ||
+    [ -z "$SPIKE_SKIP_REGISTER_ENTRIES" ]; then
+    if ! command -v spire-server >/dev/null 2>&1; then
+      missing+=("spire-server")
+    fi
+  fi
+
+  # spire-agent starts the SPIRE agent.
+  if [ -z "$SPIKE_SKIP_SPIRE_AGENT_START" ]; then
+    if ! command -v spire-agent >/dev/null 2>&1; then
+      missing+=("spire-agent")
+    fi
+  fi
+
+  if [ ${#missing[@]} -eq 0 ]; then
+    return 0
+  fi
+
+  echo "" >&2
+  echo "Error: required SPIRE binaries were not found on your PATH:" >&2
+  for m in "${missing[@]}"; do
+    echo "  - $m" >&2
+  done
+  echo "" >&2
+  echo "The bare-metal dev environment needs the SPIRE server and agent" >&2
+  echo "binaries on your PATH." >&2
+  echo "" >&2
+  echo "To build and install them (SPIRE v1.11.2 into /usr/local/bin):" >&2
+  echo "  make build-spire" >&2
+  echo "" >&2
+  echo "If you already have them elsewhere, add that directory to PATH:" >&2
+  echo "  export PATH=\"/path/to/spire/bin:\$PATH\"" >&2
+  echo "" >&2
+  echo "Then verify with:" >&2
+  echo "  command -v spire-server spire-agent" >&2
+  echo "" >&2
+  echo "See https://spike.ist/development/bare-metal/ for details." >&2
+  return 1
+}
+
+if ! check_spire_binaries; then
+  echo "SPIRE preflight check failed. Exiting..." >&2
+  exit 1
+fi
+
 # Helpers
 source ./hack/lib/bg.sh
 
@@ -102,32 +159,97 @@ if [ -z "$SPIKE_SKIP_SPIKE_BUILD" ]; then
   fi
 else
   echo "SPIKE_SKIP_SPIKE_BUILD is set, skipping SPIKE build."
+fi
 
-  # Only check for binaries if we're skipping the build step
-  echo "Checking for required SPIKE binaries..."
-  REQUIRED_BINARIES=("spike" "nexus" "keeper" "bootstrap")
-  MISSING_BINARIES=()
+# Preflight: make sure the SPIKE binaries are on PATH.
+#
+# build-spike.sh compiles them into ./bin, but this script and its child
+# scripts invoke them as bare commands (spike, nexus, keeper, bootstrap,
+# demo), so the bin directory must also be on PATH. The check runs after
+# the build step because on a fresh clone the binaries do not exist until
+# the build produces them. Failing here, before any SPIRE or SPIKE
+# process starts, is far more helpful than a bare "spike: command not
+# found" surfacing halfway through startup.
+#
+# Each name must also resolve to the binary in ./bin, not to an
+# unrelated tool that happens to share the name. The SPIRE entries pin
+# the exact binary path and hash (unix:path and unix:sha256 selectors),
+# so a lookalike elsewhere on PATH cannot obtain an identity and the
+# run fails in confusing ways later.
+check_spike_binaries() {
+  local missing=()
+  local shadowed=()
+  local found
+  local failed=0
 
-  for binary in "${REQUIRED_BINARIES[@]}"; do
-    if ! command -v "$binary" >/dev/null 2>&1; then
-      MISSING_BINARIES+=("$binary")
+  for b in spike nexus keeper bootstrap demo; do
+    found="$(command -v "$b" 2>/dev/null)"
+    if [ -z "$found" ]; then
+      missing+=("$b")
+    elif [ ! "$found" -ef "$(pwd)/bin/$b" ]; then
+      shadowed+=("$b -> $found")
     fi
   done
 
-  if [ ${#MISSING_BINARIES[@]} -gt 0 ]; then
-    echo "Error: The following required binaries are not found in PATH:"
-    for missing in "${MISSING_BINARIES[@]}"; do
-      echo "  - $missing"
+  if [ ${#missing[@]} -gt 0 ]; then
+    failed=1
+    echo "" >&2
+    echo "Error: required SPIKE binaries were not found on your PATH:" >&2
+    for m in "${missing[@]}"; do
+      echo "  - $m" >&2
     done
-    echo ""
-    echo "Please build SPIKE binaries first by running:"
-    echo "  ./hack/bare-metal/build/build-spike.sh"
-    echo ""
-    echo "Or unset SPIKE_SKIP_SPIKE_BUILD to build them automatically."
-    exit 1
+    echo "" >&2
+    echo "To build them into ./bin:" >&2
+    echo "  make build" >&2
+    echo "" >&2
+    echo "Then add the bin directory to your PATH:" >&2
+    echo "  export PATH=\"\$PATH:$(pwd)/bin\"" >&2
+    echo "" >&2
+    echo "Then verify with:" >&2
+    echo "  command -v spike nexus keeper bootstrap demo" >&2
+    echo "" >&2
+    echo "See https://spike.ist/development/bare-metal/ for details." >&2
   fi
 
-  echo "All required SPIKE binaries found."
+  if [ ${#shadowed[@]} -gt 0 ]; then
+    local label="Error"
+    if [ -n "$SPIKE_SKIP_REGISTER_ENTRIES" ]; then
+      label="Warning"
+    fi
+    echo "" >&2
+    echo "$label: PATH resolves these commands outside $(pwd)/bin:" >&2
+    for s in "${shadowed[@]}"; do
+      echo "  - $s" >&2
+    done
+    echo "" >&2
+    echo "SPIKE registers its workloads with SPIRE by exact binary" >&2
+    echo "path and hash, so the binaries above cannot obtain an" >&2
+    echo "identity even if they are copies of the SPIKE binaries." >&2
+    echo "" >&2
+    echo "Give $(pwd)/bin precedence for this shell:" >&2
+    echo "  export PATH=\"$(pwd)/bin:\$PATH\"" >&2
+    echo "" >&2
+    echo "Or remove/rename the conflicting binaries." >&2
+    if [ -z "$SPIKE_SKIP_REGISTER_ENTRIES" ]; then
+      failed=1
+    else
+      echo "" >&2
+      echo "WARNING: continuing because SPIKE_SKIP_REGISTER_ENTRIES" >&2
+      echo "is set; make sure your registered entries match the" >&2
+      echo "binaries listed above." >&2
+    fi
+  fi
+
+  if [ $failed -eq 0 ] && [ ${#shadowed[@]} -eq 0 ]; then
+    echo "All required SPIKE binaries found on PATH."
+  fi
+
+  return $failed
+}
+
+if ! check_spike_binaries; then
+  echo "SPIKE binary preflight check failed. Exiting..." >&2
+  exit 1
 fi
 
 # Start SPIRE server in background and save its PID
@@ -298,26 +420,55 @@ if [ $POLICY_EXIT_CODE -ne 0 ]; then
   POLICY_VALIDATION_FAILED=true
 fi
 
-# Validate expected policy output (warnings only, no exit)
+# Validate expected policy output (warnings only, no exit).
+# `spike policy list` prints one "Name: <policy>" block per policy;
+# policies are keyed by name, and the list shows no other fields.
 echo "$POLICY_OUTPUT" | grep -q "POLICIES" || \
   { echo "WARNING: Missing 'POLICIES' header in output"; POLICY_VALIDATION_FAILED=true; }
-echo "$POLICY_OUTPUT" | grep -qE '^ID[[:space:]]+NAME$' || \
-  { echo "WARNING: Missing 'ID NAME' header in output"; POLICY_VALIDATION_FAILED=true; }
-echo "$POLICY_OUTPUT" | grep -q "workload-can-read" || \
+echo "$POLICY_OUTPUT" | grep -q "Name: workload-can-read" || \
   { echo "WARNING: Missing 'workload-can-read' policy"; POLICY_VALIDATION_FAILED=true; }
-echo "$POLICY_OUTPUT" | grep -q "workload-can-write" || \
+echo "$POLICY_OUTPUT" | grep -q "Name: workload-can-write" || \
   { echo "WARNING: Missing 'workload-can-write' policy"; POLICY_VALIDATION_FAILED=true; }
-echo "$POLICY_OUTPUT" | grep -q "Permissions: read" || \
+
+# Permissions are only visible via `spike policy get`; the demo policies
+# carry one permission each (read and write, respectively). This also
+# exercises the get-by-name path end to end.
+POLICY_READ_OUTPUT=$(spike policy get workload-can-read 2>&1)
+POLICY_READ_EXIT_CODE=$?
+
+if [ $POLICY_READ_EXIT_CODE -ne 0 ]; then
+  echo "WARNING: Policy get workload-can-read failed" \
+    "with exit code $POLICY_READ_EXIT_CODE"
+  echo "Output:"
+  echo "$POLICY_READ_OUTPUT"
+  POLICY_VALIDATION_FAILED=true
+fi
+echo "$POLICY_READ_OUTPUT" | grep -q "Permissions: read" || \
   { echo "WARNING: Missing read permission"; POLICY_VALIDATION_FAILED=true; }
-echo "$POLICY_OUTPUT" | grep -q "Permissions: write" || \
+
+POLICY_WRITE_OUTPUT=$(spike policy get workload-can-write 2>&1)
+POLICY_WRITE_EXIT_CODE=$?
+
+if [ $POLICY_WRITE_EXIT_CODE -ne 0 ]; then
+  echo "WARNING: Policy get workload-can-write failed" \
+    "with exit code $POLICY_WRITE_EXIT_CODE"
+  echo "Output:"
+  echo "$POLICY_WRITE_OUTPUT"
+  POLICY_VALIDATION_FAILED=true
+fi
+echo "$POLICY_WRITE_OUTPUT" | grep -q "Permissions: write" || \
   { echo "WARNING: Missing write permission"; POLICY_VALIDATION_FAILED=true; }
 
 if [ "$POLICY_VALIDATION_FAILED" = true ]; then
   echo ""
   echo "=========================================="
   echo "POLICY VALIDATION FAILED (debug mode - continuing anyway)"
-  echo "Full policy output:"
+  echo "Full policy list output:"
   echo "$POLICY_OUTPUT"
+  echo "Full policy get output (workload-can-read):"
+  echo "$POLICY_READ_OUTPUT"
+  echo "Full policy get output (workload-can-write):"
+  echo "$POLICY_WRITE_OUTPUT"
   echo "=========================================="
 else
   echo "Policy verification passed."
@@ -416,7 +567,7 @@ echo "> Everything is set up."
 echo "> You can now experiment with SPIKE."
 echo ">"
 echo "<<"
-echo "> >> To begin, run './spike' on a separate terminal window."
+echo "> >> To begin, run 'spike' on a separate terminal window."
 echo "<<"
 echo ">"
 echo "> When you are done with your experiments, you can press 'Ctrl+C'"

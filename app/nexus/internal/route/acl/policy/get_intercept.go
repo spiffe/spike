@@ -20,21 +20,21 @@ import (
 //
 // The function performs the following validations in order:
 //   - Extracts and validates the peer SPIFFE ID from the request
-//   - Validates the policy ID format
+//   - Validates the policy name format
 //   - Checks if the peer has read permission for the policy access path
 //
 // If any validation fails, an appropriate error response is written to the
 // ResponseWriter and an error is returned.
 //
 // Parameters:
-//   - request: The policy read request containing the policy ID
+//   - request: The policy read request containing the policy name
 //   - w: The HTTP response writer for error responses
 //   - r: The HTTP request containing the peer SPIFFE ID
 //
 // Returns:
 //   - *sdkErrors.SDKError: nil if all validations pass,
 //     ErrAccessUnauthorized if authentication or authorization fails,
-//     ErrDataInvalidInput if policy ID validation fails
+//     ErrDataInvalidInput if policy name validation fails
 func guardPolicyReadRequest(
 	request reqres.PolicyReadRequest, w http.ResponseWriter, r *http.Request,
 ) *sdkErrors.SDKError {
@@ -47,7 +47,11 @@ func guardPolicyReadRequest(
 		return authErr
 	}
 
-	return net.RespondErrOnBadPolicyID(
-		request.ID, w, reqres.PolicyReadResponse{}.BadRequest(),
+	// SPIKE policies are keyed by name; the SDK's PolicyReadRequest still
+	// exposes that identifier as ID, so request.ID holds the policy name
+	// and must be validated as a name, not as a UUID. See issue #250 for
+	// the pending SDK field rename.
+	return net.RespondErrOnBadName(
+		request.ID, reqres.PolicyReadResponse{}.BadRequest(), w,
 	)
 }
