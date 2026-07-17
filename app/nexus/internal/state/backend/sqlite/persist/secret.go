@@ -228,6 +228,9 @@ func (s *DataStore) LoadAllSecrets(
 
 	validation.NonNilContextOrDie(ctx, fName)
 
+	ctx, cancel := operationContext(ctx)
+	defer cancel()
+
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 

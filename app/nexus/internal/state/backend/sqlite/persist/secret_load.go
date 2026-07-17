@@ -62,6 +62,9 @@ func (s *DataStore) loadSecretInternal(
 
 	validation.NonNilContextOrDie(ctx, fName)
 
+	ctx, cancel := operationContext(ctx)
+	defer cancel()
+
 	var secret kv.Value
 	var (
 		nonce                   []byte
