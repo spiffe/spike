@@ -149,6 +149,9 @@ func (s *DataStore) LoadPolicy(
 
 	validation.NonNilContextOrDie(ctx, fName)
 
+	ctx, cancel := operationContext(ctx)
+	defer cancel()
+
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
@@ -245,6 +248,9 @@ func (s *DataStore) LoadAllPolicies(
 	const fName = "LoadAllPolicies"
 
 	validation.NonNilContextOrDie(ctx, fName)
+
+	ctx, cancel := operationContext(ctx)
+	defer cancel()
 
 	s.mu.RLock()
 	defer s.mu.RUnlock()
