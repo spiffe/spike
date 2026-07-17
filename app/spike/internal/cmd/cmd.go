@@ -44,6 +44,14 @@ import (
 //	Initialize(source, "spiffe://example.org/pilot")
 //	Execute()
 func Initialize(source *workloadapi.X509Source, SPIFFEID string) {
+	// Cobra's Print family writes to OutOrStderr, so without an explicit
+	// output writer every piece of normal output (secret values included)
+	// lands on stderr, and shell redirection such as
+	// `spike secret get db/creds > creds.txt` yields an empty file.
+	// Route data output to stdout; the PrintErr family keeps writing to
+	// stderr, so errors stay separable. Subcommands inherit this writer.
+	rootCmd.SetOut(os.Stdout)
+
 	rootCmd.AddCommand(policy.NewCommand(source, SPIFFEID))
 	rootCmd.AddCommand(secret.NewCommand(source, SPIFFEID))
 	rootCmd.AddCommand(cipher.NewCommand(source, SPIFFEID))
