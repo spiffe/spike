@@ -5,9 +5,11 @@
 package persist
 
 import (
+	"fmt"
 	"os"
 	"testing"
 
+	"github.com/spiffe/spike-sdk-go/config/env"
 	"github.com/spiffe/spike-sdk-go/crypto"
 
 	"github.com/spiffe/spike/app/nexus/internal/state/backend/memory"
@@ -311,6 +313,25 @@ func BenchmarkBackend_Access(b *testing.B) {
 
 // Helper to clean environment between tests
 func TestMain(m *testing.M) {
+	// Point SPIKE_NEXUS_DATA_DIR at a per-run temporary directory before
+	// any test resolves the Nexus data folder. fs.NexusDataFolder
+	// memoizes its result with sync.Once, so the override must happen
+	// before the first call; doing it here isolates the whole package
+	// run from the real ~/.spike/data directory, whose database these
+	// tests used to delete out from under a live dev environment.
+	dir, mkErr := os.MkdirTemp("", "spike-state-persist-test-*")
+	if mkErr != nil {
+		fmt.Fprintln(os.Stderr,
+			"failed to create a temporary data directory:", mkErr)
+		os.Exit(1)
+	}
+
+	if setErr := os.Setenv(env.NexusDataDir, dir); setErr != nil {
+		_ = os.RemoveAll(dir)
+		fmt.Fprintln(os.Stderr, "failed to set "+env.NexusDataDir+":", setErr)
+		os.Exit(1)
+	}
+
 	// Run tests
 	code := m.Run()
 
@@ -318,5 +339,6 @@ func TestMain(m *testing.M) {
 	_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", "memory")
 	InitializeBackend(nil)
 
+	_ = os.RemoveAll(dir)
 	os.Exit(code)
 }
