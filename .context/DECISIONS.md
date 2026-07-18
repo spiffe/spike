@@ -51,6 +51,20 @@ For significant decisions:
 ✗ No real alternatives existed
 
 -->
+## [2026-07-17-080305] Config accessors crash fast on missing critical configuration
+
+**Status**: Accepted
+
+**Context**: A jira-era task proposed refactoring the env accessors (KeepersVal and friends) to return sentinel errors instead of calling log.FatalLn; on 2026-07-17 a full SDK brief was drafted for it and withdrawn the same day.
+
+**Decision**: Config accessors crash fast on missing critical configuration
+
+**Rationale**: The crash is intentional: without critical configuration such as SPIKE_NEXUS_KEEPER_PEERS, SPIKE cannot operate reliably, and failing fast beats limping along misconfigured. The accessors are testable through the SPIKE_STACK_TRACES_ON_LOG_FATAL panic-recover pattern, and the env-to-log circular dependency the original task cited dissolved when both packages moved into spike-sdk-go.
+
+**Consequence**: Do not propose returned-error refactors for critical-config accessors in spike or spike-sdk-go. New accessors for must-have configuration should follow the same crash-fast idiom, keeping the panic-mode escape hatch for tests.
+
+---
+
 ## [2026-06-13-125427] Pin Go toolchain to 1.26.4 and bump circl/go-jose/x/net to clear govulncheck
 
 **Status**: Accepted
