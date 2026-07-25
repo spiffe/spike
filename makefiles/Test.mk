@@ -66,3 +66,27 @@ audit:
 #   2. runs 'audit' target to perform code quality checks
 .PHONY: ci
 ci: test audit
+
+# Run the live, opt-in Pilot integration suite (specs/integration-tests.md,
+# Slice B). Requires a healthy `make start` environment (SPIRE, Nexus, and
+# the Keepers) and the spike binary on PATH. Non-destructive: it exercises a
+# CRUD and cipher smoke pass plus the Nexus-unreachable warning. The
+# integration build tag and SPIKE_INTEGRATION_TEST=1 keep these tests out of
+# the normal `make test`.
+# Usage: make integration-test
+.PHONY: integration-test
+integration-test:
+	SPIKE_INTEGRATION_TEST=1 go test -tags=integration -count=1 -v \
+		./app/spike/internal/cmd/integration/...
+
+# Run the integration suite including the DESTRUCTIVE uninitialized-Nexus
+# case, which kills Nexus and every Keeper and restarts Nexus alone. It
+# leaves the environment uninitialized (but cleans up the Nexus it spawned):
+# reset it with Ctrl+C on the make start terminal (or make kill), then
+# make start.
+# Usage: make integration-test-destructive
+.PHONY: integration-test-destructive
+integration-test-destructive:
+	SPIKE_INTEGRATION_TEST=1 SPIKE_INTEGRATION_DESTRUCTIVE=1 \
+		go test -tags=integration -count=1 -v \
+		./app/spike/internal/cmd/integration/...

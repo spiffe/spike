@@ -155,6 +155,69 @@
                 </li>
 
                 </ul>
+    <input class="tree-toggle" type="checkbox" id="recipes"
+               />
+        <label class="tree-toggle-label "
+               for="recipes">Recipes</label>
+
+        <ul class="subtree">
+            <li >
+                    <a href="https://spike.ist/recipes/choosing-a-backend-store/">Choosing a Backend Store: Memory, Lite, or SQLite</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/bootstrapping-spike/">Bootstrapping a Fresh SPIKE</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/root-key-keepers-recovery/">Where the Root Key Lives</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/storing-and-reading-secrets/">Storing and Reading Secrets</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/writing-access-policies/">Writing Access Policies</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/granting-a-workload-access/">Granting a Workload Access to Secrets</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/encryption-as-a-service/">Using SPIKE as an Encryption Service</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/break-the-glass-recovery/">Break-the-Glass Disaster Recovery</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/backup-and-restore/">Backup and Restore</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/deploying-spike/">Deploying SPIKE (Kubernetes and Bare-Metal)</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/production-hardening/">Production Hardening</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/troubleshooting/">Troubleshooting</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/go-sdk-integration/">Integrating the Go SDK</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/upgrading-spike/">Upgrading SPIKE</a>
+                </li>
+
+                </ul>
     <input class="tree-toggle" type="checkbox" id="using-spike"
                />
         <label class="tree-toggle-label "
@@ -260,13 +323,13 @@
                                                         <a href="https://spike.ist/operations/backup/#architecture-foundations-for-effective-backup-planning">Architecture Foundations for Effective Backup Planning</a>
                                                     </li>
                                                 <li>
-                                                        <a href="https://spike.ist/operations/backup/#backup-procedures">Backup procedures</a>
+                                                        <a href="https://spike.ist/operations/backup/#backup-procedures">Backup Procedures</a>
                                                     </li>
                                                 <li>
-                                                        <a href="https://spike.ist/operations/backup/#restore-procedures">Restore procedures</a>
+                                                        <a href="https://spike.ist/operations/backup/#restore-procedures">Restore Procedures</a>
                                                     </li>
                                                 <li>
-                                                        <a href="https://spike.ist/operations/backup/#backup-best-practices">Backup best practices</a>
+                                                        <a href="https://spike.ist/operations/backup/#backup-best-practices">Backup Best Practices</a>
                                                     </li>
                                                 <li>
                                                         <a href="https://spike.ist/operations/backup/#migration-limitations-and-planning">Migration Limitations and Planning</a>
@@ -281,67 +344,8 @@
                     <a href="https://spike.ist/operations/release/">SPIKE Relase Management</a>
                 </li>
 
-                </ul>
-    <input class="tree-toggle" type="checkbox" id="recipes"
-               />
-        <label class="tree-toggle-label "
-               for="recipes">Recipes</label>
-
-        <ul class="subtree">
-            <li >
-                    <a href="https://spike.ist/recipes/choosing-a-backend-store/">Choosing a backend store</a>
-                </li>
-
                 <li >
-                    <a href="https://spike.ist/recipes/bootstrapping-spike/">Bootstrapping a fresh SPIKE</a>
-                </li>
-
-                <li >
-                    <a href="https://spike.ist/recipes/root-key-keepers-recovery/">Where the root key lives</a>
-                </li>
-
-                <li >
-                    <a href="https://spike.ist/recipes/storing-and-reading-secrets/">Storing and reading secrets</a>
-                </li>
-
-                <li >
-                    <a href="https://spike.ist/recipes/writing-access-policies/">Writing access policies</a>
-                </li>
-
-                <li >
-                    <a href="https://spike.ist/recipes/granting-a-workload-access/">Granting a workload access to secrets</a>
-                </li>
-
-                <li >
-                    <a href="https://spike.ist/recipes/encryption-as-a-service/">Using SPIKE as an encryption service</a>
-                </li>
-
-                <li >
-                    <a href="https://spike.ist/recipes/break-the-glass-recovery/">Break-the-glass disaster recovery</a>
-                </li>
-
-                <li >
-                    <a href="https://spike.ist/recipes/backup-and-restore/">Backup and restore</a>
-                </li>
-
-                <li >
-                    <a href="https://spike.ist/recipes/deploying-spike/">Deploying SPIKE (Kubernetes and bare-metal)</a>
-                </li>
-
-                <li >
-                    <a href="https://spike.ist/recipes/production-hardening/">Production hardening</a>
-                </li>
-
-                <li >
-                    <a href="https://spike.ist/recipes/troubleshooting/">Troubleshooting</a>
-                </li>
-
-                <li >
-                    <a href="https://spike.ist/recipes/go-sdk-integration/">Integrating the Go SDK</a>
-                </li>
-
-                <li >
-                    <a href="https://spike.ist/recipes/upgrading-spike/">Upgrading SPIKE</a>
+                    <a href="https://spike.ist/operations/multi-tenancy/">Multi-Tenancy Deployment Patterns</a>
                 </li>
 
                 </ul>
@@ -851,9 +855,9 @@
 <p><strong>SPIKE</strong>, the Secure Production Identity Framework for Key Encryption, provides
 robust secrets management with strong identity controls. But even the most
 reliable systems need comprehensive backup and recovery plans. This guide
-explains how to properly back up, secure, and restore SPIKE deployments—ensuring
-your critical secrets infrastructure remains resilient against catastrophic
-failures.</p>
+explains how to properly back up, secure, and restore SPIKE deployments,
+ensuring your critical secrets infrastructure remains resilient against
+catastrophic failures.</p>
 <h2 id="architecture-foundations-for-effective-backup-planning">Architecture Foundations for Effective Backup Planning</h2>
 <p>SPIKE consists of three critical components, each requiring specific backup
 considerations:</p>
@@ -885,8 +889,8 @@ reconstruct</em>)</li>
 <li>For disaster recovery scenarios, administrators can create additional recovery
 shards</li>
 </ul>
-<h2 id="backup-procedures">Backup procedures</h2>
-<h3 id="sqlite-database-backup">SQLite database backup</h3>
+<h2 id="backup-procedures">Backup Procedures</h2>
+<h3 id="sqlite-database-backup">SQLite Database Backup</h3>
 <p>The SPIKE Nexus uses a SQLite database to store all encrypted secrets and
 metadata. This database is typically located in <code>~/.spike</code> on the Nexus server.</p>
 <pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="shellscript"><span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># 1. First, ensure consistent state by using SQLite&#39;s online backup API</span></span>
@@ -907,7 +911,7 @@ with the root key</li>
 <li>Use database-level locking through SQLite’s <code>.backup</code> command rather than
 direct file copying</li>
 </ul>
-<h3 id="root-key-and-cryptographic-material-backup">Root key and cryptographic material backup</h3>
+<h3 id="root-key-and-cryptographic-material-backup">Root Key and Cryptographic Material Backup</h3>
 <p>The root key is <strong>SPIKE</strong>’s most critical component. While it exists only in
 memory during normal operation, you must back it up for disaster recovery using
 Shamir’s Secret Sharing:</p>
@@ -925,7 +929,7 @@ hardware keys</em>)</li>
 <li>Implement strict access controls for shard access</li>
 <li>Document the threshold configuration (<em>e.g., “2 of 3 shards required”</em>)</li>
 </ol>
-<h3 id="configuration-and-other-components-backup">Configuration and other components backup</h3>
+<h3 id="configuration-and-other-components-backup">Configuration and Other Components Backup</h3>
 <p>Beyond the database and root key, back up these critical components:</p>
 <ol>
 <li>
@@ -936,7 +940,7 @@ hardware keys</em>)</li>
 <pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="shellscript"><span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># Back up SPIFFE registration entries</span></span>
 <span class="giallo-l"><span style="color: #FFCB6B;">spire-server</span><span style="color: #C3E88D;"> entry show</span><span style="color: #89DDFF;"> &gt;</span><span style="color: #C3E88D;"> /backup/spire_entries_</span><span style="color: #89DDFF;">$(</span><span style="color: #FFCB6B;">date</span><span style="color: #C3E88D;"> +%Y%m%d</span><span style="color: #89DDFF;">)</span><span style="color: #C3E88D;">.txt</span></span></code></pre></li>
 </ol>
-<h2 id="restore-procedures">Restore procedures</h2>
+<h2 id="restore-procedures">Restore Procedures</h2>
 <h3 id="prerequisites-for-restoration">Prerequisites for Restoration</h3>
 <p>Before beginning any restore operation, ensure:</p>
 <ol>
@@ -958,7 +962,7 @@ hardware keys</em>)</li>
 <p>All <strong>SPIKE</strong> services are properly installed on the target system</p>
 </li>
 </ol>
-<h3 id="root-key-restoration">Root key restoration</h3>
+<h3 id="root-key-restoration">Root Key Restoration</h3>
 <p>If both <strong>SPIKE Nexus</strong> and all <strong>SPIKE Keeper</strong>s are unavailable
 (<em>catastrophic failure</em>), follow this procedure:</p>
 <pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="shellscript"><span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># 1. Configure SPIKE Pilot for restore operations </span></span>
@@ -979,7 +983,7 @@ hardware keys</em>)</li>
 <li>Redistribute shards to available SPIKE Keeper instances</li>
 <li>Resume normal operation with the restored key</li>
 </ul>
-<h3 id="sqlite-database-restoration">SQLite database restoration</h3>
+<h3 id="sqlite-database-restoration">SQLite Database Restoration</h3>
 <p>To restore the SQLite database:</p>
 <ol>
 <li>
@@ -1001,21 +1005,21 @@ hardware keys</em>)</li>
 <p><strong>Note</strong>: After restoring the database, if <strong>SPIKE Nexus</strong> cannot automatically
 recover the root key from <strong>SPIKE Keeper</strong>s, you’ll need to perform the root
 key restoration procedure above.</p>
-<h3 id="verification-procedures">Verification procedures</h3>
+<h3 id="verification-procedures">Verification Procedures</h3>
 <p>After completing a restore operation, verify system integrity:</p>
 <pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="shellscript"><span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># Verify database integrity</span></span>
 <span class="giallo-l"><span style="color: #FFCB6B;">sqlite3</span><span style="color: #C3E88D;"> ~/.spike/data/spike.db</span><span style="color: #89DDFF;"> &quot;</span><span style="color: #C3E88D;">PRAGMA integrity_check;</span><span style="color: #89DDFF;">&quot;</span></span>
 <span class="giallo-l"></span>
 <span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># Test secret access to verify encryption/decryption is working</span></span>
-<span class="giallo-l"><span style="color: #FFCB6B;">spike</span><span style="color: #C3E88D;"> secret get path/to/test/secret</span></span></code></pre><h2 id="backup-best-practices">Backup best practices</h2>
-<h3 id="backup-frequency-and-scheduling">Backup frequency and scheduling</h3>
+<span class="giallo-l"><span style="color: #FFCB6B;">spike</span><span style="color: #C3E88D;"> secret get path/to/test/secret</span></span></code></pre><h2 id="backup-best-practices">Backup Best Practices</h2>
+<h3 id="backup-frequency-and-scheduling">Backup Frequency and Scheduling</h3>
 <table><thead><tr><th>Component</th><th>Recommended Frequency</th><th>Reasoning</th></tr></thead><tbody>
 <tr><td>SQLite Database</td><td>Daily</td><td>Captures secret changes promptly</td></tr>
 <tr><td>Root Key Shards</td><td>After initial setup and after any root key rotation</td><td>Critical security component</td></tr>
 <tr><td>Configuration</td><td>After any configuration change</td><td>Ensures you can recreate the environment</td></tr>
 <tr><td>SPIFFE Entries</td><td>After any identity changes</td><td>Required for workload authentication</td></tr>
 </tbody></table>
-<h3 id="backup-rotation-and-retention">Backup rotation and retention</h3>
+<h3 id="backup-rotation-and-retention">Backup Rotation and Retention</h3>
 <p>Implement a comprehensive retention policy:</p>
 <ul>
 <li><strong>Short-term backups</strong>: Keep daily backups for 14 days</li>
@@ -1047,7 +1051,7 @@ regularly.</p>
 <h2 id="migration-limitations-and-planning">Migration Limitations and Planning</h2>
 <p>While <strong>SPIKE</strong> currently lacks built-in migration tools, careful planning can
 facilitate future migrations.</p>
-<h3 id="current-migration-limitations">Current migration limitations</h3>
+<h3 id="current-migration-limitations">Current Migration Limitations</h3>
 <ul>
 <li>No direct database migration between different SPIKE versions</li>
 <li>Manual coordination is required for root key transfers</li>
@@ -1073,6 +1077,8 @@ any recovery scenario while maintaining the security guarantees that make
 <li><a href="https://spike.ist/operations/build/">SPIKE Cross-Platform Build</a></li>
 <li><a href="https://spike.ist/operations/production/">SPIKE Production Setup</a></li>
 <li><a href="https://spike.ist/operations/recovery/">SPIKE Recovery Procedures</a></li>
+<li><a href="https://spike.ist/operations/backup/">SPIKE Backup and Restore</a></li>
+<li><a href="https://spike.ist/operations/multi-tenancy/">Multi-Tenancy Deployment Patterns</a></li>
 <li><a href="https://spike.ist/operations/release/">SPIKE Release Management</a></li>
 </ul>
 <hr />

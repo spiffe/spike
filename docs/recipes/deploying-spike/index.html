@@ -6,7 +6,7 @@
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <link rel="icon" href="https://spike.ist/assets/spike-favicon-16x16.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
-    <title> SPIKE | Deploying SPIKE (Kubernetes and bare-metal) </title>
+    <title> SPIKE | Deploying SPIKE (Kubernetes and Bare-Metal) </title>
 </head>
 <body>
 
@@ -155,6 +155,100 @@
                 </li>
 
                 </ul>
+    <input class="tree-toggle" type="checkbox" id="recipes"
+               checked/>
+        <label class="tree-toggle-label "
+               for="recipes">Recipes</label>
+
+        <ul class="subtree">
+            <li >
+                    <a href="https://spike.ist/recipes/choosing-a-backend-store/">Choosing a Backend Store: Memory, Lite, or SQLite</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/bootstrapping-spike/">Bootstrapping a Fresh SPIKE</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/root-key-keepers-recovery/">Where the Root Key Lives</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/storing-and-reading-secrets/">Storing and Reading Secrets</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/writing-access-policies/">Writing Access Policies</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/granting-a-workload-access/">Granting a Workload Access to Secrets</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/encryption-as-a-service/">Using SPIKE as an Encryption Service</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/break-the-glass-recovery/">Break-the-Glass Disaster Recovery</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/backup-and-restore/">Backup and Restore</a>
+                </li>
+
+                <li class="active">
+                    <a href="https://spike.ist/recipes/deploying-spike/">Deploying SPIKE (Kubernetes and Bare-Metal)</a>
+                </li>
+
+                
+                        
+                        
+                            <ul id="toc">
+                                <li><a href="
+                                            https://spike.ist/recipes/deploying-spike/#deploying-spike-kubernetes-and-bare-metal">Deploying SPIKE (Kubernetes and Bare-Metal)</a>
+                                        <ul>
+                                                <li>
+                                                        <a href="https://spike.ist/recipes/deploying-spike/#problem">Problem</a>
+                                                    </li>
+                                                <li>
+                                                        <a href="https://spike.ist/recipes/deploying-spike/#tl-dr">TL;DR</a>
+                                                    </li>
+                                                <li>
+                                                        <a href="https://spike.ist/recipes/deploying-spike/#workflow">Workflow</a>
+                                                    </li>
+                                                <li>
+                                                        <a href="https://spike.ist/recipes/deploying-spike/#tips">Tips</a>
+                                                    </li>
+                                                <li>
+                                                        <a href="https://spike.ist/recipes/deploying-spike/#pitfalls">Pitfalls</a>
+                                                    </li>
+                                                <li>
+                                                        <a href="https://spike.ist/recipes/deploying-spike/#cross-links">Cross-Links</a>
+                                                    </li>
+                                                <li>
+                                                        <a href="https://spike.ist/recipes/deploying-spike/#what-s-next">What’s Next</a>
+                                                    </li>
+                                                </ul>
+                                        </li>
+                                </ul>
+                        <li >
+                    <a href="https://spike.ist/recipes/production-hardening/">Production Hardening</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/troubleshooting/">Troubleshooting</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/go-sdk-integration/">Integrating the Go SDK</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/upgrading-spike/">Upgrading SPIKE</a>
+                </li>
+
+                </ul>
     <input class="tree-toggle" type="checkbox" id="using-spike"
                />
         <label class="tree-toggle-label "
@@ -253,98 +347,8 @@
                     <a href="https://spike.ist/operations/release/">SPIKE Relase Management</a>
                 </li>
 
-                </ul>
-    <input class="tree-toggle" type="checkbox" id="recipes"
-               checked/>
-        <label class="tree-toggle-label "
-               for="recipes">Recipes</label>
-
-        <ul class="subtree">
-            <li >
-                    <a href="https://spike.ist/recipes/choosing-a-backend-store/">Choosing a backend store</a>
-                </li>
-
                 <li >
-                    <a href="https://spike.ist/recipes/bootstrapping-spike/">Bootstrapping a fresh SPIKE</a>
-                </li>
-
-                <li >
-                    <a href="https://spike.ist/recipes/root-key-keepers-recovery/">Where the root key lives</a>
-                </li>
-
-                <li >
-                    <a href="https://spike.ist/recipes/storing-and-reading-secrets/">Storing and reading secrets</a>
-                </li>
-
-                <li >
-                    <a href="https://spike.ist/recipes/writing-access-policies/">Writing access policies</a>
-                </li>
-
-                <li >
-                    <a href="https://spike.ist/recipes/granting-a-workload-access/">Granting a workload access to secrets</a>
-                </li>
-
-                <li >
-                    <a href="https://spike.ist/recipes/encryption-as-a-service/">Using SPIKE as an encryption service</a>
-                </li>
-
-                <li >
-                    <a href="https://spike.ist/recipes/break-the-glass-recovery/">Break-the-glass disaster recovery</a>
-                </li>
-
-                <li >
-                    <a href="https://spike.ist/recipes/backup-and-restore/">Backup and restore</a>
-                </li>
-
-                <li class="active">
-                    <a href="https://spike.ist/recipes/deploying-spike/">Deploying SPIKE (Kubernetes and bare-metal)</a>
-                </li>
-
-                
-                        
-                        
-                            <ul id="toc">
-                                <li><a href="
-                                            https://spike.ist/recipes/deploying-spike/#deploying-spike-kubernetes-and-bare-metal">Deploying SPIKE (Kubernetes and bare-metal)</a>
-                                        <ul>
-                                                <li>
-                                                        <a href="https://spike.ist/recipes/deploying-spike/#problem">Problem</a>
-                                                    </li>
-                                                <li>
-                                                        <a href="https://spike.ist/recipes/deploying-spike/#tl-dr">TL;DR</a>
-                                                    </li>
-                                                <li>
-                                                        <a href="https://spike.ist/recipes/deploying-spike/#workflow">Workflow</a>
-                                                    </li>
-                                                <li>
-                                                        <a href="https://spike.ist/recipes/deploying-spike/#tips">Tips</a>
-                                                    </li>
-                                                <li>
-                                                        <a href="https://spike.ist/recipes/deploying-spike/#pitfalls">Pitfalls</a>
-                                                    </li>
-                                                <li>
-                                                        <a href="https://spike.ist/recipes/deploying-spike/#cross-links">Cross-links</a>
-                                                    </li>
-                                                <li>
-                                                        <a href="https://spike.ist/recipes/deploying-spike/#what-s-next">What’s next</a>
-                                                    </li>
-                                                </ul>
-                                        </li>
-                                </ul>
-                        <li >
-                    <a href="https://spike.ist/recipes/production-hardening/">Production hardening</a>
-                </li>
-
-                <li >
-                    <a href="https://spike.ist/recipes/troubleshooting/">Troubleshooting</a>
-                </li>
-
-                <li >
-                    <a href="https://spike.ist/recipes/go-sdk-integration/">Integrating the Go SDK</a>
-                </li>
-
-                <li >
-                    <a href="https://spike.ist/recipes/upgrading-spike/">Upgrading SPIKE</a>
+                    <a href="https://spike.ist/operations/multi-tenancy/">Multi-Tenancy Deployment Patterns</a>
                 </li>
 
                 </ul>
@@ -850,7 +854,7 @@
 
         <article>
             
-        <h1 id="deploying-spike-kubernetes-and-bare-metal">Deploying SPIKE (Kubernetes and bare-metal)</h1>
+        <h1 id="deploying-spike-kubernetes-and-bare-metal">Deploying SPIKE (Kubernetes and Bare-Metal)</h1>
 <h2 id="problem">Problem</h2>
 <p>SPIKE is not a single binary you start. It is a small constellation of
 components on top of SPIRE: Nexus (the secret store), one or more Keepers (root-
@@ -883,7 +887,7 @@ idempotent.</li>
 <li><strong>Wait on the Nexus rollout.</strong> Once the keepers hold <code>threshold</code> shares,
 Nexus reconstructs the root key, initializes its backend, and goes Ready.</li>
 </ol>
-<h3 id="bare-metal">Bare-metal</h3>
+<h3 id="bare-metal">Bare-Metal</h3>
 <ol>
 <li><strong>Run SPIRE</strong> server and agent, and register the SPIKE component identities
 (the <code>hack/bare-metal/entry</code> scripts do this).</li>
@@ -923,7 +927,7 @@ Use a unique tag (or force a re-pull) when iterating on images.</li>
 <li><strong>Order is not negotiable.</strong> Keepers and Nexus before bootstrap; bootstrap
 before expecting Ready. Out of order, you chase phantom failures.</li>
 </ul>
-<h2 id="cross-links">Cross-links</h2>
+<h2 id="cross-links">Cross-Links</h2>
 <ul>
 <li><a href="/recipes/choosing-a-backend-store/">Choosing a backend store</a></li>
 <li><a href="/recipes/bootstrapping-spike/">Bootstrapping a fresh SPIKE</a></li>
@@ -933,7 +937,7 @@ before expecting Ready. Out of order, you chase phantom failures.</li>
 <a href="/development/bare-metal/">SPIKE on Linux</a>,
 <a href="/usage/configuration/">Configuration</a></li>
 </ul>
-<h2 id="what-s-next">What’s next</h2>
+<h2 id="what-s-next">What’s Next</h2>
 <p>Lock the deployment down before it carries real secrets:
 <a href="/recipes/production-hardening/">Production hardening</a>.</p>
 

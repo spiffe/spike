@@ -45,6 +45,16 @@ import (
 //
 // A policy matches when its SPIFFE ID pattern matches the requestor's ID and
 // its path pattern matches the requested path.
+//
+// Policy patterns are ordinary Go regular expressions and therefore match on
+// any substring unless the author anchors them. That is intended, and it
+// applies to every ordinary path. SPIKE's reserved system namespaces
+// (spike/system/acl, spike/system/secret, spike/system/cipher/exec) are the
+// exception: a policy grants access to those only when it describes the path
+// rather than merely containing it, and when its SPIFFE ID pattern is precise
+// enough to name the identities it covers. A policy that reaches a reserved
+// path only because its pattern appears there as a substring is ignored, and
+// the refusal is logged. See guardReservedSystemPaths.
 func CheckPolicyAccess(
 	peerSPIFFEID string, path string, wants []data.PolicyPermission,
 ) bool {
@@ -64,6 +74,21 @@ func CheckPolicyAccess(
 		}
 
 		if !policy.PathRegex.MatchString(path) {
+			continue
+		}
+
+		// Reserved system paths gate SPIKE's own privileged operations. A
+		// policy reaches them only by describing them deliberately; a pattern
+		// that merely contains one as a substring must not confer privileged
+		// access. This is enforced here as well as in UpsertPolicy so that
+		// policies stored before the rule existed, and policies recompiled by
+		// a backend on load, are both covered.
+		if isReservedSystemPath(path) &&
+			!policyMayReachReservedPath(policy, path) {
+			log.Warn(fName,
+				"message", "ignoring substring-only policy for reserved path",
+				"policy", policy.Name, "path", path,
+			)
 			continue
 		}
 
@@ -90,12 +115,15 @@ func CheckPolicyAccess(
 //
 // Returns:
 //   - data.Policy: The created or updated policy, including timestamps
-//   - *sdkErrors.SDKError: ErrEntityInvalid if the policy name is empty or
-//     regex patterns are invalid, ErrEntityLoadFailed or ErrEntitySaveFailed
-//     for backend errors
+//   - *sdkErrors.SDKError: ErrEntityInvalid if the policy name is empty, the
+//     regex patterns are invalid, or the policy reaches a reserved system
+//     path only by substring match; ErrEntityLoadFailed or
+//     ErrEntitySaveFailed for backend errors
 //
 // The function performs the following:
 //   - Compiles and stores regex patterns for SPIFFEIDPattern and PathPattern
+//   - Rejects policies that reach a reserved system namespace without
+//     describing it deliberately (see guardReservedSystemPaths)
 //   - For new policies: sets CreatedAt and UpdatedAt
 //   - For existing policies: preserves CreatedAt, updates UpdatedAt
 func UpsertPolicy(policy data.Policy) (data.Policy, *sdkErrors.SDKError) {
@@ -132,6 +160,12 @@ func UpsertPolicy(policy data.Policy) (data.Policy, *sdkErrors.SDKError) {
 		return data.Policy{}, pathPatternErr.Wrap(pathCompileErr)
 	}
 	policy.PathRegex = pathRegex
+
+	// Refuse to store a policy that would reach a reserved system namespace
+	// without anchoring both patterns. Ordinary paths are unaffected.
+	if guardErr := guardReservedSystemPaths(policy); guardErr != nil {
+		return data.Policy{}, guardErr
+	}
 
 	now := time.Now()
 

@@ -22,6 +22,46 @@ DO NOT UPDATE FOR:
 <!-- INDEX:END -->
 
 <!-- Add gotchas, tips, and lessons learned here -->
+## [2026-07-25-133240] Policy regex patterns are compiled at two sites, not one
+
+**Context**: Evaluating a proposed security patch that anchored policy patterns inside UpsertPolicy. It passed its own test but changed nothing in production.
+
+**Lesson**: UpsertPolicy in app/nexus/internal/state/base/policy.go compiles patterns once at authoring time, but app/nexus/internal/state/backend/sqlite/persist/regex.go recompiles them from the stored strings on EVERY load. CheckPolicyAccess -> ListPolicies -> LoadAllPolicies goes through that second site on every access check. The memory backend retains the struct UpsertPolicy built, so memory-backed tests hide the difference entirely.
+
+**Application**: Any change to how policy patterns are compiled, anchored, or validated must cover both compile sites, or be enforced at CheckPolicyAccess where all paths converge. Always add a SQLite-backed test alongside the memory-backed one; a green memory test proves nothing about production.
+
+---
+
+## [2026-07-18-110741] spiffe.Source without a SPIRE agent hangs forever; a malformed endpoint fails fast
+
+**Context**: The lifecycle integration test hung 148s at RestoreBackingStoreFromPilotShards' source creation: context.Background() with no dial timeout (the open Phase 5 SVID-timeout task, met in the wild).
+
+**Lesson**: SPIFFE_ENDPOINT_SOCKET=bogus://fail-fast makes source creation fail at address validation, instantly and deterministically.
+
+**Application**: Use the malformed endpoint in any test driving code that reaches for a SPIFFE source; pair with SPIKE_STACK_TRACES_ON_LOG_FATAL=true to recover the fatal.
+
+---
+
+## [2026-07-18-110741] SDK config/fs path resolvers are sync.Once-memoized; env overrides must happen in TestMain
+
+**Context**: The test-isolation work found per-test t.Setenv(SPIKE_NEXUS_DATA_DIR, ...) silently ineffective after the first resolution.
+
+**Lesson**: fs.NexusDataFolder and siblings memoize on first call for the process lifetime.
+
+**Application**: Any package whose tests touch SPIKE data or recovery paths needs the env override in TestMain before m.Run(), one temporary directory per package run.
+
+---
+
+## [2026-07-18-110741] make audit lint runs with CGO_ENABLED=0, so typed sqlite error inspection breaks it
+
+**Context**: The sqlite retry work used sqlite3.Error/ErrBusy from mattn/go-sqlite3; build and tests passed, then the gate failed: golangci-lint typechecks with CGO off, where mattn's typed API does not exist.
+
+**Lesson**: Detect transient sqlite failures by driver error strings (database is locked / database table is locked), never by mattn types.
+
+**Application**: Keep mattn/go-sqlite3 symbol references out of files that are not cgo-gated; anything else fails make audit.
+
+---
+
 ## [2026-06-13-170816] SPIKE k8s integration test was missing keeper bootstrap; plus a verify-path deadlock
 
 **Context**: minio-rolearn integration test (CI red on main, pre-existing) hangs because keepers are never seeded with root-key shares; SPIKE Nexus InitializeBackingStoreFromKeepers waits forever (retry.Forever, by design until keepers are hydrated). The spire helm chart registers the spike/bootstrap identity but ships no bootstrap workload, and hack/k8s/Bootstrap.yaml does not exist.

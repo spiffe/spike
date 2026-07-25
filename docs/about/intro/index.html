@@ -171,6 +171,69 @@
                 </li>
 
                 </ul>
+    <input class="tree-toggle" type="checkbox" id="recipes"
+               />
+        <label class="tree-toggle-label "
+               for="recipes">Recipes</label>
+
+        <ul class="subtree">
+            <li >
+                    <a href="https://spike.ist/recipes/choosing-a-backend-store/">Choosing a Backend Store: Memory, Lite, or SQLite</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/bootstrapping-spike/">Bootstrapping a Fresh SPIKE</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/root-key-keepers-recovery/">Where the Root Key Lives</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/storing-and-reading-secrets/">Storing and Reading Secrets</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/writing-access-policies/">Writing Access Policies</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/granting-a-workload-access/">Granting a Workload Access to Secrets</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/encryption-as-a-service/">Using SPIKE as an Encryption Service</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/break-the-glass-recovery/">Break-the-Glass Disaster Recovery</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/backup-and-restore/">Backup and Restore</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/deploying-spike/">Deploying SPIKE (Kubernetes and Bare-Metal)</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/production-hardening/">Production Hardening</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/troubleshooting/">Troubleshooting</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/go-sdk-integration/">Integrating the Go SDK</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/upgrading-spike/">Upgrading SPIKE</a>
+                </li>
+
+                </ul>
     <input class="tree-toggle" type="checkbox" id="using-spike"
                />
         <label class="tree-toggle-label "
@@ -269,67 +332,8 @@
                     <a href="https://spike.ist/operations/release/">SPIKE Relase Management</a>
                 </li>
 
-                </ul>
-    <input class="tree-toggle" type="checkbox" id="recipes"
-               />
-        <label class="tree-toggle-label "
-               for="recipes">Recipes</label>
-
-        <ul class="subtree">
-            <li >
-                    <a href="https://spike.ist/recipes/choosing-a-backend-store/">Choosing a backend store</a>
-                </li>
-
                 <li >
-                    <a href="https://spike.ist/recipes/bootstrapping-spike/">Bootstrapping a fresh SPIKE</a>
-                </li>
-
-                <li >
-                    <a href="https://spike.ist/recipes/root-key-keepers-recovery/">Where the root key lives</a>
-                </li>
-
-                <li >
-                    <a href="https://spike.ist/recipes/storing-and-reading-secrets/">Storing and reading secrets</a>
-                </li>
-
-                <li >
-                    <a href="https://spike.ist/recipes/writing-access-policies/">Writing access policies</a>
-                </li>
-
-                <li >
-                    <a href="https://spike.ist/recipes/granting-a-workload-access/">Granting a workload access to secrets</a>
-                </li>
-
-                <li >
-                    <a href="https://spike.ist/recipes/encryption-as-a-service/">Using SPIKE as an encryption service</a>
-                </li>
-
-                <li >
-                    <a href="https://spike.ist/recipes/break-the-glass-recovery/">Break-the-glass disaster recovery</a>
-                </li>
-
-                <li >
-                    <a href="https://spike.ist/recipes/backup-and-restore/">Backup and restore</a>
-                </li>
-
-                <li >
-                    <a href="https://spike.ist/recipes/deploying-spike/">Deploying SPIKE (Kubernetes and bare-metal)</a>
-                </li>
-
-                <li >
-                    <a href="https://spike.ist/recipes/production-hardening/">Production hardening</a>
-                </li>
-
-                <li >
-                    <a href="https://spike.ist/recipes/troubleshooting/">Troubleshooting</a>
-                </li>
-
-                <li >
-                    <a href="https://spike.ist/recipes/go-sdk-integration/">Integrating the Go SDK</a>
-                </li>
-
-                <li >
-                    <a href="https://spike.ist/recipes/upgrading-spike/">Upgrading SPIKE</a>
+                    <a href="https://spike.ist/operations/multi-tenancy/">Multi-Tenancy Deployment Patterns</a>
                 </li>
 
                 </ul>
@@ -852,8 +856,8 @@ for a <strong>zero-trust secrets management system</strong>.</p>
 mechanism to store and manage sensitive information, it is not a dedicated
 secrets management solution.</p>
 <p>Here’s why relying on Kubernetes secrets can be problematic:</p>
-<h3 id="limited-scope-portability">Limited Scope &amp; Portability</h3>
-<p>If a service outside Kubernetes—or in another cluster—needs access to a
+<h3 id="limited-scope-and-portability">Limited Scope and Portability</h3>
+<p>If a service outside Kubernetes (or in another cluster) needs access to a
 Kubernetes secret, it introduces significant authentication and authorization
 challenges.</p>
 <p>Kubernetes Secrets are designed to work within a single cluster, making it
@@ -866,7 +870,7 @@ single cluster.</p>
 <h3 id="static-nature-of-the-secrets">Static Nature of the Secrets</h3>
 <p>Kubernetes secrets are static once created. They are stored in <code>etcd</code> and
 injected into pods at startup, meaning updates require manual
-intervention—modifying the secret, redeploying affected applications, and
+intervention: modifying the secret, redeploying affected applications, and
 ensuring no stale or expired secrets remain in use.</p>
 <p>Updating a Kubernetes Secret does not automatically notify or reload the
 workloads consuming it. Applications typically need to be restarted or
@@ -879,7 +883,7 @@ can be tricky to enforce a platform-agnostic security policy that spans
 multiple environments. This often leads to fragmented governance and
 potential misconfigurations.</p>
 <p>A dedicated secrets manager offers dynamic cross-environment compatibility
-and stronger security controls—making it a better choice for modern,
+and stronger security controls, making it a better choice for modern,
 distributed architectures.</p>
 <h3 id="kubernetes-secrets-are-not-encrypted-by-default">Kubernetes Secrets Are Not Encrypted By Default</h3>
 <p>Kubernetes Secrets are stored in <code>etcd</code>, and unless encryption at rest is
@@ -903,7 +907,7 @@ cluster-contained workloads where:</p>
 <li>RBAC policies are well-configured to prevent accidental exposure.</li>
 </ul>
 <p>However, for any multi-cluster, dynamic, or <strong>zero-trust</strong> architecture, a
-dedicated secrets management solution is a better approach—providing
+dedicated secrets management solution is a better approach, providing
 fine-grained access control, cross-environment compatibility, and stronger
 security guarantees.</p>
 <p>That part taken care of, <a href="https://spike.ist/getting-started/quickstart/">we can get our hands dirty with <strong>SPIKE</strong> in the

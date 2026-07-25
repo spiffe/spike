@@ -56,7 +56,7 @@ import (
 //
 //	spike policy apply \
 //	    --name "web-service-policy" \
-//	    --spiffeid-pattern "spiffe://example\.org/web-service/.*" \
+//	    --spiffeid-pattern "^spiffe://example\.org/web-service/.*$" \
 //	    --path-pattern "^secrets/web/database$" \
 //	    --permissions "read,write"
 //
