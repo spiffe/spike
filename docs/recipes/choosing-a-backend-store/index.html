@@ -6,7 +6,7 @@
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <link rel="icon" href="https://spike.ist/assets/spike-favicon-16x16.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
-    <title> SPIKE | Choosing a backend store </title>
+    <title> SPIKE | Choosing a Backend Store: Memory, Lite, or SQLite </title>
 </head>
 <body>
 
@@ -155,6 +155,100 @@
                 </li>
 
                 </ul>
+    <input class="tree-toggle" type="checkbox" id="recipes"
+               checked/>
+        <label class="tree-toggle-label "
+               for="recipes">Recipes</label>
+
+        <ul class="subtree">
+            <li class="active">
+                    <a href="https://spike.ist/recipes/choosing-a-backend-store/">Choosing a Backend Store: Memory, Lite, or SQLite</a>
+                </li>
+
+                
+                        
+                        
+                            <ul id="toc">
+                                <li><a href="
+                                            https://spike.ist/recipes/choosing-a-backend-store/#choosing-a-backend-store-memory-lite-or-sqlite">Choosing a Backend Store: Memory, Lite, or SQLite</a>
+                                        <ul>
+                                                <li>
+                                                        <a href="https://spike.ist/recipes/choosing-a-backend-store/#problem">Problem</a>
+                                                    </li>
+                                                <li>
+                                                        <a href="https://spike.ist/recipes/choosing-a-backend-store/#tl-dr">TL;DR</a>
+                                                    </li>
+                                                <li>
+                                                        <a href="https://spike.ist/recipes/choosing-a-backend-store/#workflow">Workflow</a>
+                                                    </li>
+                                                <li>
+                                                        <a href="https://spike.ist/recipes/choosing-a-backend-store/#tips">Tips</a>
+                                                    </li>
+                                                <li>
+                                                        <a href="https://spike.ist/recipes/choosing-a-backend-store/#pitfalls">Pitfalls</a>
+                                                    </li>
+                                                <li>
+                                                        <a href="https://spike.ist/recipes/choosing-a-backend-store/#cross-links">Cross-Links</a>
+                                                    </li>
+                                                <li>
+                                                        <a href="https://spike.ist/recipes/choosing-a-backend-store/#what-s-next">What’s Next</a>
+                                                    </li>
+                                                </ul>
+                                        </li>
+                                </ul>
+                        <li >
+                    <a href="https://spike.ist/recipes/bootstrapping-spike/">Bootstrapping a Fresh SPIKE</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/root-key-keepers-recovery/">Where the Root Key Lives</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/storing-and-reading-secrets/">Storing and Reading Secrets</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/writing-access-policies/">Writing Access Policies</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/granting-a-workload-access/">Granting a Workload Access to Secrets</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/encryption-as-a-service/">Using SPIKE as an Encryption Service</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/break-the-glass-recovery/">Break-the-Glass Disaster Recovery</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/backup-and-restore/">Backup and Restore</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/deploying-spike/">Deploying SPIKE (Kubernetes and Bare-Metal)</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/production-hardening/">Production Hardening</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/troubleshooting/">Troubleshooting</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/go-sdk-integration/">Integrating the Go SDK</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/upgrading-spike/">Upgrading SPIKE</a>
+                </li>
+
+                </ul>
     <input class="tree-toggle" type="checkbox" id="using-spike"
                />
         <label class="tree-toggle-label "
@@ -253,98 +347,8 @@
                     <a href="https://spike.ist/operations/release/">SPIKE Relase Management</a>
                 </li>
 
-                </ul>
-    <input class="tree-toggle" type="checkbox" id="recipes"
-               checked/>
-        <label class="tree-toggle-label "
-               for="recipes">Recipes</label>
-
-        <ul class="subtree">
-            <li class="active">
-                    <a href="https://spike.ist/recipes/choosing-a-backend-store/">Choosing a backend store</a>
-                </li>
-
-                
-                        
-                        
-                            <ul id="toc">
-                                <li><a href="
-                                            https://spike.ist/recipes/choosing-a-backend-store/#choosing-a-backend-store-memory-lite-or-sqlite">Choosing a backend store: memory, lite, or sqlite</a>
-                                        <ul>
-                                                <li>
-                                                        <a href="https://spike.ist/recipes/choosing-a-backend-store/#problem">Problem</a>
-                                                    </li>
-                                                <li>
-                                                        <a href="https://spike.ist/recipes/choosing-a-backend-store/#tl-dr">TL;DR</a>
-                                                    </li>
-                                                <li>
-                                                        <a href="https://spike.ist/recipes/choosing-a-backend-store/#workflow">Workflow</a>
-                                                    </li>
-                                                <li>
-                                                        <a href="https://spike.ist/recipes/choosing-a-backend-store/#tips">Tips</a>
-                                                    </li>
-                                                <li>
-                                                        <a href="https://spike.ist/recipes/choosing-a-backend-store/#pitfalls">Pitfalls</a>
-                                                    </li>
-                                                <li>
-                                                        <a href="https://spike.ist/recipes/choosing-a-backend-store/#cross-links">Cross-links</a>
-                                                    </li>
-                                                <li>
-                                                        <a href="https://spike.ist/recipes/choosing-a-backend-store/#what-s-next">What’s next</a>
-                                                    </li>
-                                                </ul>
-                                        </li>
-                                </ul>
-                        <li >
-                    <a href="https://spike.ist/recipes/bootstrapping-spike/">Bootstrapping a fresh SPIKE</a>
-                </li>
-
                 <li >
-                    <a href="https://spike.ist/recipes/root-key-keepers-recovery/">Where the root key lives</a>
-                </li>
-
-                <li >
-                    <a href="https://spike.ist/recipes/storing-and-reading-secrets/">Storing and reading secrets</a>
-                </li>
-
-                <li >
-                    <a href="https://spike.ist/recipes/writing-access-policies/">Writing access policies</a>
-                </li>
-
-                <li >
-                    <a href="https://spike.ist/recipes/granting-a-workload-access/">Granting a workload access to secrets</a>
-                </li>
-
-                <li >
-                    <a href="https://spike.ist/recipes/encryption-as-a-service/">Using SPIKE as an encryption service</a>
-                </li>
-
-                <li >
-                    <a href="https://spike.ist/recipes/break-the-glass-recovery/">Break-the-glass disaster recovery</a>
-                </li>
-
-                <li >
-                    <a href="https://spike.ist/recipes/backup-and-restore/">Backup and restore</a>
-                </li>
-
-                <li >
-                    <a href="https://spike.ist/recipes/deploying-spike/">Deploying SPIKE (Kubernetes and bare-metal)</a>
-                </li>
-
-                <li >
-                    <a href="https://spike.ist/recipes/production-hardening/">Production hardening</a>
-                </li>
-
-                <li >
-                    <a href="https://spike.ist/recipes/troubleshooting/">Troubleshooting</a>
-                </li>
-
-                <li >
-                    <a href="https://spike.ist/recipes/go-sdk-integration/">Integrating the Go SDK</a>
-                </li>
-
-                <li >
-                    <a href="https://spike.ist/recipes/upgrading-spike/">Upgrading SPIKE</a>
+                    <a href="https://spike.ist/operations/multi-tenancy/">Multi-Tenancy Deployment Patterns</a>
                 </li>
 
                 </ul>
@@ -850,12 +854,12 @@
 
         <article>
             
-        <h1 id="choosing-a-backend-store-memory-lite-or-sqlite">Choosing a backend store: memory, lite, or sqlite</h1>
+        <h1 id="choosing-a-backend-store-memory-lite-or-sqlite">Choosing a Backend Store: Memory, Lite, or SQLite</h1>
 <h2 id="problem">Problem</h2>
 <p>SPIKE Nexus can run with one of three backend stores, set by
 <code>SPIKE_NEXUS_BACKEND_STORE</code>: <code>memory</code>, <code>lite</code>, or <code>sqlite</code>. They differ on two
-<strong>independent</strong> axes — whether secrets are <em>persisted</em>, and whether a <em>root key</em>
-(and therefore SPIKE Keepers) is required. Picking the wrong one leads to
+<strong>independent</strong> axes: whether secrets are <em>persisted</em>, and whether a <em>root
+key</em> (and therefore SPIKE Keepers) is required. Picking the wrong one leads to
 confusing failures: a Nexus that waits forever for keepers that were never
 deployed, or an in-memory store that silently loses everything on restart.</p>
 <h2 id="tl-dr">TL;DR</h2>
@@ -871,10 +875,10 @@ stores the ciphertext.</p>
 <p>Set the mode on SPIKE Nexus:</p>
 <pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="shellscript"><span class="giallo-l"><span style="color: #C792EA;">export</span><span> SPIKE_NEXUS_BACKEND_STORE</span><span style="color: #89DDFF;">=</span><span>sqlite</span><span style="color: #464B5D;font-style: italic;">   # or: lite | memory</span></span></code></pre>
 <ul>
-<li><strong>memory</strong> — Nexus initializes a volatile in-process store and <strong>does not
+<li><strong>memory</strong>: Nexus initializes a volatile in-process store and <strong>does not
 contact keepers</strong>. No bootstrap, no keepers, no root key. Nexus logs a
 “not for production” warning at startup. Restarting Nexus wipes all secrets.</li>
-<li><strong>lite</strong> and <strong>sqlite</strong> — Nexus recovers its root key from the SPIKE Keepers
+<li><strong>lite</strong> and <strong>sqlite</strong>: Nexus recovers its root key from the SPIKE Keepers
 on startup (Shamir reconstruction), so you must deploy keepers <strong>and</strong> seed
 them once via SPIKE Bootstrap. See
 <a href="/recipes/bootstrapping-spike/">Bootstrapping a fresh SPIKE</a>.
@@ -882,7 +886,7 @@ them once via SPIKE Bootstrap. See
 <li><strong>sqlite</strong> then opens/creates the encrypted database and serves the full
 secret + policy API.</li>
 <li><strong>lite</strong> keeps <strong>no</strong> local store (it embeds a no-op backend) and serves
-only the cipher API — it is an <em>encryption-only</em> service.</li>
+only the cipher API; it is an <em>encryption-only</em> service.</li>
 </ul>
 </li>
 </ul>
@@ -890,13 +894,13 @@ only the cipher API — it is an <em>encryption-only</em> service.</li>
 <ul>
 <li>The default is <code>sqlite</code>; you only need to set the variable to choose
 <code>lite</code> or <code>memory</code>.</li>
-<li><code>memory</code> is the only mode that runs standalone — no keepers, no bootstrap.
+<li><code>memory</code> is the only mode that runs standalone: no keepers, no bootstrap.
 Reach for it in unit/integration tests and quick local experiments.</li>
 <li>Use <code>lite</code> when secrets are stored externally (e.g. S3-compatible storage)
 and you just need SPIKE to encrypt/decrypt with a SPIFFE-gated key. See
 <a href="/recipes/encryption-as-a-service/">Using SPIKE as an encryption service</a>.</li>
 <li>For <code>sqlite</code>, point <code>SPIKE_NEXUS_DATA_DIR</code> at durable, access-controlled
-storage and back it up — see <a href="/recipes/backup-and-restore/">Backup and restore</a>.</li>
+storage and back it up. See <a href="/recipes/backup-and-restore/">Backup and restore</a>.</li>
 </ul>
 <h2 id="pitfalls">Pitfalls</h2>
 <ul>
@@ -904,7 +908,7 @@ storage and back it up — see <a href="/recipes/backup-and-restore/">Backup and
 root key from keepers on startup; only <code>memory</code> is keeper-free. If you deploy
 <code>lite</code> without seeded keepers, Nexus loops forever in keeper recovery and
 never becomes ready (see <a href="/recipes/troubleshooting/">Troubleshooting</a>).</li>
-<li><strong>“lite is an in-memory store.”</strong> It isn’t — <code>lite</code> has <em>no</em> store (it’s
+<li><strong>“lite is an in-memory store.”</strong> It isn’t; <code>lite</code> has <em>no</em> store (it’s
 encryption-only). The in-memory secret store is <code>memory</code>.</li>
 <li><strong><code>memory</code> and a root key are mutually exclusive.</strong> In <code>memory</code> mode the root
 key must be nil; passing one is treated as an initialization bug. Conversely
@@ -912,7 +916,7 @@ key must be nil; passing one is treated as an initialization bug. Conversely
 <li><strong><code>memory</code> loses data on restart.</strong> Never use it where you expect secrets to
 survive a process restart.</li>
 </ul>
-<h2 id="cross-links">Cross-links</h2>
+<h2 id="cross-links">Cross-Links</h2>
 <ul>
 <li><a href="/recipes/bootstrapping-spike/">Bootstrapping a fresh SPIKE</a></li>
 <li><a href="/recipes/root-key-keepers-recovery/">Where the root key lives: keepers, Shamir, and recovery</a></li>
@@ -920,7 +924,7 @@ survive a process restart.</li>
 <li>Reference: <a href="/usage/configuration/">Configuration</a> ·
 Architecture: <a href="/architecture/system-overview/">System overview</a></li>
 </ul>
-<h2 id="what-s-next">What’s next</h2>
+<h2 id="what-s-next">What’s Next</h2>
 <p>If you chose <code>lite</code> or <code>sqlite</code>, set up keepers and seed them:
 <a href="/recipes/bootstrapping-spike/">Bootstrapping a fresh SPIKE</a>.</p>
 

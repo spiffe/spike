@@ -155,6 +155,69 @@
                 </li>
 
                 </ul>
+    <input class="tree-toggle" type="checkbox" id="recipes"
+               />
+        <label class="tree-toggle-label "
+               for="recipes">Recipes</label>
+
+        <ul class="subtree">
+            <li >
+                    <a href="https://spike.ist/recipes/choosing-a-backend-store/">Choosing a Backend Store: Memory, Lite, or SQLite</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/bootstrapping-spike/">Bootstrapping a Fresh SPIKE</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/root-key-keepers-recovery/">Where the Root Key Lives</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/storing-and-reading-secrets/">Storing and Reading Secrets</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/writing-access-policies/">Writing Access Policies</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/granting-a-workload-access/">Granting a Workload Access to Secrets</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/encryption-as-a-service/">Using SPIKE as an Encryption Service</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/break-the-glass-recovery/">Break-the-Glass Disaster Recovery</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/backup-and-restore/">Backup and Restore</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/deploying-spike/">Deploying SPIKE (Kubernetes and Bare-Metal)</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/production-hardening/">Production Hardening</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/troubleshooting/">Troubleshooting</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/go-sdk-integration/">Integrating the Go SDK</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/upgrading-spike/">Upgrading SPIKE</a>
+                </li>
+
+                </ul>
     <input class="tree-toggle" type="checkbox" id="using-spike"
                checked/>
         <label class="tree-toggle-label "
@@ -253,67 +316,8 @@
                     <a href="https://spike.ist/operations/release/">SPIKE Relase Management</a>
                 </li>
 
-                </ul>
-    <input class="tree-toggle" type="checkbox" id="recipes"
-               />
-        <label class="tree-toggle-label "
-               for="recipes">Recipes</label>
-
-        <ul class="subtree">
-            <li >
-                    <a href="https://spike.ist/recipes/choosing-a-backend-store/">Choosing a backend store</a>
-                </li>
-
                 <li >
-                    <a href="https://spike.ist/recipes/bootstrapping-spike/">Bootstrapping a fresh SPIKE</a>
-                </li>
-
-                <li >
-                    <a href="https://spike.ist/recipes/root-key-keepers-recovery/">Where the root key lives</a>
-                </li>
-
-                <li >
-                    <a href="https://spike.ist/recipes/storing-and-reading-secrets/">Storing and reading secrets</a>
-                </li>
-
-                <li >
-                    <a href="https://spike.ist/recipes/writing-access-policies/">Writing access policies</a>
-                </li>
-
-                <li >
-                    <a href="https://spike.ist/recipes/granting-a-workload-access/">Granting a workload access to secrets</a>
-                </li>
-
-                <li >
-                    <a href="https://spike.ist/recipes/encryption-as-a-service/">Using SPIKE as an encryption service</a>
-                </li>
-
-                <li >
-                    <a href="https://spike.ist/recipes/break-the-glass-recovery/">Break-the-glass disaster recovery</a>
-                </li>
-
-                <li >
-                    <a href="https://spike.ist/recipes/backup-and-restore/">Backup and restore</a>
-                </li>
-
-                <li >
-                    <a href="https://spike.ist/recipes/deploying-spike/">Deploying SPIKE (Kubernetes and bare-metal)</a>
-                </li>
-
-                <li >
-                    <a href="https://spike.ist/recipes/production-hardening/">Production hardening</a>
-                </li>
-
-                <li >
-                    <a href="https://spike.ist/recipes/troubleshooting/">Troubleshooting</a>
-                </li>
-
-                <li >
-                    <a href="https://spike.ist/recipes/go-sdk-integration/">Integrating the Go SDK</a>
-                </li>
-
-                <li >
-                    <a href="https://spike.ist/recipes/upgrading-spike/">Upgrading SPIKE</a>
+                    <a href="https://spike.ist/operations/multi-tenancy/">Multi-Tenancy Deployment Patterns</a>
                 </li>
 
                 </ul>
@@ -878,7 +882,7 @@ the <code>spike policy apply</code> command safe to use in automation and GitOps
 <span class="giallo-l"><span style="color: #F07178;">permissions</span><span style="color: #89DDFF;">: [</span><span style="color: #C3E88D;">read</span><span style="color: #89DDFF;">,</span><span style="color: #C3E88D;"> list</span><span style="color: #89DDFF;">]</span></span></code></pre><h3 id="all-available-permissions">All Available Permissions</h3>
 <pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="yaml"><span class="giallo-l"><span style="color: #F07178;">name</span><span style="color: #89DDFF;">: &quot;</span><span style="color: #C3E88D;">admin-policy</span><span style="color: #89DDFF;">&quot;</span></span>
 <span class="giallo-l"><span style="color: #F07178;">spiffeidPattern</span><span style="color: #89DDFF;">: &quot;</span><span style="color: #C3E88D;">^spiffe://example</span><span>\\</span><span style="color: #C3E88D;">.org/admin$</span><span style="color: #89DDFF;">&quot;</span></span>
-<span class="giallo-l"><span style="color: #F07178;">pathPattern</span><span style="color: #89DDFF;">: &quot;</span><span style="color: #C3E88D;">secrets</span><span style="color: #89DDFF;">&quot;</span></span>
+<span class="giallo-l"><span style="color: #F07178;">pathPattern</span><span style="color: #89DDFF;">: &quot;</span><span style="color: #C3E88D;">^secrets/.*$</span><span style="color: #89DDFF;">&quot;</span></span>
 <span class="giallo-l"><span style="color: #F07178;">permissions</span><span style="color: #89DDFF;">:</span></span>
 <span class="giallo-l"><span style="color: #89DDFF;">  -</span><span style="color: #C3E88D;"> read</span><span style="color: #464B5D;font-style: italic;">    # Permission to read secrets</span></span>
 <span class="giallo-l"><span style="color: #89DDFF;">  -</span><span style="color: #C3E88D;"> write</span><span style="color: #464B5D;font-style: italic;">   # Permission to create, update, or delete secrets</span></span>
@@ -1060,7 +1064,7 @@ for machine-readable output.</p>
 <span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># Create a policy with multiple permissions</span></span>
 <span class="giallo-l"><span style="color: #FFCB6B;">spike</span><span style="color: #C3E88D;"> policy create</span><span> \</span></span>
 <span class="giallo-l"><span style="color: #C3E88D;">  --name=admin-service</span><span> \</span></span>
-<span class="giallo-l"><span style="color: #C3E88D;">  --path-pattern=</span><span style="color: #89DDFF;">&quot;</span><span style="color: #C3E88D;">secrets/</span><span style="color: #89DDFF;">&quot;</span><span> \</span></span>
+<span class="giallo-l"><span style="color: #C3E88D;">  --path-pattern=</span><span style="color: #89DDFF;">&quot;</span><span style="color: #C3E88D;">^secrets/.*$</span><span style="color: #89DDFF;">&quot;</span><span> \</span></span>
 <span class="giallo-l"><span style="color: #C3E88D;">  --spiffeid-pattern=</span><span style="color: #89DDFF;">&quot;</span><span style="color: #C3E88D;">^spiffe://example\.org/admin$</span><span style="color: #89DDFF;">&quot;</span><span> \</span></span>
 <span class="giallo-l"><span style="color: #C3E88D;">  --permissions=read,write,list</span></span>
 <span class="giallo-l"></span>
@@ -1079,20 +1083,85 @@ for machine-readable output.</p>
 <span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># Delete a policy and confirm deletion</span></span>
 <span class="giallo-l"><span style="color: #FFCB6B;">spike</span><span style="color: #C3E88D;"> policy delete --name=web-service</span></span></code></pre><h2 id="pattern-syntax">Pattern Syntax</h2>
 <p><strong>SPIKE</strong> policies support <strong>regular expression</strong> pattern matching for both
-SPIFFE IDs and resource paths:</p>
+SPIFFE IDs and resource paths. Both fields are compiled with Go’s <code>regexp</code>
+package and matched with <code>MatchString</code>.</p>
+<h3 id="patterns-match-substrings-unless-you-anchor-them">Patterns Match Substrings Unless You Anchor Them</h3>
+<p>This is the single most important thing to understand about SPIKE policies,
+and getting it wrong grants more access than you intended:</p>
+<blockquote>
+<p><strong>A policy pattern is a regular expression, not a glob and not a prefix.
+<code>MatchString</code> succeeds when the pattern matches <em>anywhere inside</em> the
+candidate string. Supplying the <code>^</code> and <code>$</code> anchors is your
+responsibility, and SPIKE does not add them for you.</strong></p>
+</blockquote>
+<p>An unanchored pattern therefore matches far more than it appears to:</p>
+<table><thead><tr><th>Pattern</th><th>Also matches (probably unintended)</th></tr></thead><tbody>
+<tr><td><code>secrets/db</code></td><td><code>global/secrets/db</code>, <code>secrets/db/local</code></td></tr>
+<tr><td><code>app/config</code></td><td><code>private-app/configs/master-key</code></td></tr>
+<tr><td><code>^secrets/</code></td><td><code>secrets/anything/at/any/depth</code></td></tr>
+<tr><td><code>tenants/acme</code></td><td><code>other/tenants/acme-archive</code></td></tr>
+</tbody></table>
+<p>The same applies to SPIFFE ID patterns. A policy written for
+<code>spiffe://example\.org/app</code> also matches
+<code>spiffe://example.org/app-attacker</code>.</p>
+<p>Anchor both ends to get what you meant:</p>
 <ul>
-<li>The pattern is compiled as a “<em>regular expression</em>”.</li>
+<li><code>^secrets/db$</code> matches <code>secrets/db</code> and nothing else. Neither
+<code>global/secrets/db</code> nor <code>secrets/db/local</code> will match.</li>
+<li><code>^secrets/db/.*$</code> matches everything beneath <code>secrets/db/</code>, and nothing
+outside it.</li>
+<li><code>^spiffe://example\.org/app$</code> matches that one workload identity, not
+<code>spiffe://example.org/app-attacker</code>.</li>
 </ul>
-<p>This would mean, for an exact match, you would need to include <code>^</code> and <code>$</code> in
-your patterns as well.</p>
-<p>For example:</p>
-<ul>
-<li><code>secrets/db</code> matches <code>global/secrets/db</code> and <code>secrets/db/local</code></li>
-<li>Whereas, <code>^secrets/db$</code> only matches <code>secrets/db</code> and nothing else
-(<em><code>global/secrets/db</code> and <code>secrets/db/local</code> will not match</em>)</li>
-</ul>
-<p>Thus, for precise control, you are encouraged to include <code>^</code> and <code>$</code> at the
-beginning and end of your patterns respectively for an exact match.</p>
+<h3 id="grant-the-smallest-set-that-works">Grant the Smallest Set That Works</h3>
+<p>Anchoring is necessary but not sufficient. <code>^.*$</code> is anchored and grants
+everything. Write the pattern that covers the paths the workload actually
+needs and no others, then widen it only when a concrete requirement forces
+you to.</p>
+<p>In order of preference:</p>
+<ol>
+<li>An exact path: <code>^secrets/db/creds$</code></li>
+<li>A bounded subtree: <code>^secrets/db/.*$</code></li>
+<li>A bounded set: <code>^secrets/db-[123]$</code></li>
+<li>A broad wildcard: <code>^secrets/.*$</code> (justify it)</li>
+<li>Everything: <code>^.*$</code> (almost never correct outside development)</li>
+</ol>
+<p>Remember also that patterns are matched against <strong>every</strong> policy on each
+request, and access is granted on the <strong>first match</strong>. There are no “deny”
+rules that can claw back an over-broad grant. The pattern is the whole of
+your access control.</p>
+<h3 id="reserved-system-namespaces">Reserved System Namespaces</h3>
+<p>SPIKE gates its own privileged operations behind three internal paths:</p>
+<table><thead><tr><th>Reserved path</th><th>Grants</th></tr></thead><tbody>
+<tr><td><code>spike/system/acl</code></td><td>Policy management (create, update, delete)</td></tr>
+<tr><td><code>spike/system/secret</code></td><td>System-level secret access</td></tr>
+<tr><td><code>spike/system/cipher/exec</code></td><td>Cipher operations</td></tr>
+</tbody></table>
+<p>Because unanchored patterns match substrings, a path pattern of <code>acl</code>,
+<code>system</code>, or <code>spike</code> would otherwise reach these paths by accident. A
+policy with <code>write</code> on <code>spike/system/acl</code> can create any policy at all,
+including one granting itself <code>super</code>, so an accident there is a full
+compromise of SPIKE’s access control.</p>
+<p>SPIKE therefore refuses any policy that reaches a reserved path only
+through substring matching. To grant access to a reserved namespace you
+must describe it deliberately:</p>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="shellscript"><span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># Rejected: &quot;acl&quot; reaches spike/system/acl only as a substring</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">spike</span><span style="color: #C3E88D;"> policy create --name=bad</span><span> \</span></span>
+<span class="giallo-l"><span style="color: #C3E88D;">  --path-pattern=</span><span style="color: #89DDFF;">&quot;</span><span style="color: #C3E88D;">acl</span><span style="color: #89DDFF;">&quot;</span><span> \</span></span>
+<span class="giallo-l"><span style="color: #C3E88D;">  --spiffeid-pattern=</span><span style="color: #89DDFF;">&quot;</span><span style="color: #C3E88D;">^spiffe://example\.org/audit$</span><span style="color: #89DDFF;">&quot;</span><span> \</span></span>
+<span class="giallo-l"><span style="color: #C3E88D;">  --permissions=write</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># Accepted: the intent is explicit</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">spike</span><span style="color: #C3E88D;"> policy create --name=policy-admin</span><span> \</span></span>
+<span class="giallo-l"><span style="color: #C3E88D;">  --path-pattern=</span><span style="color: #89DDFF;">&quot;</span><span style="color: #C3E88D;">^spike/system/acl$</span><span style="color: #89DDFF;">&quot;</span><span> \</span></span>
+<span class="giallo-l"><span style="color: #C3E88D;">  --spiffeid-pattern=</span><span style="color: #89DDFF;">&quot;</span><span style="color: #C3E88D;">^spiffe://example\.org/admin$</span><span style="color: #89DDFF;">&quot;</span><span> \</span></span>
+<span class="giallo-l"><span style="color: #C3E88D;">  --permissions=write</span></span></code></pre>
+<p>The SPIFFE ID pattern of such a policy must be anchored too, so that a
+delegation written for <code>spiffe://example.org/admin</code> cannot be claimed by
+<code>spiffe://example.org/admin-attacker</code>.</p>
+<p>This rule applies <strong>only</strong> to the three reserved paths above. Every other
+path keeps ordinary regular expression semantics, substring matching
+included.</p>
 <h2 id="how-regular-expressions-are-used-for-policy-matching">How Regular Expressions are Used For Policy Matching</h2>
 <p>More specifically, <strong>SPIKE</strong> compiles <strong>SPIFFE ID patterns</strong> and
 <strong>path patterns</strong> defined in the policies into <strong>regular
@@ -1102,13 +1171,22 @@ happens behind-the-scenes:</p>
 <pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="go"><span class="giallo-l"><span>pathRegex</span><span style="color: #89DDFF;">,</span><span> err</span><span style="color: #89DDFF;"> :=</span><span> regexp</span><span style="color: #89DDFF;">.</span><span style="color: #82AAFF;">Compile</span><span style="color: #89DDFF;">(</span><span>policy</span><span style="color: #89DDFF;">.</span><span>PathPattern</span><span style="color: #89DDFF;">)</span></span>
 <span class="giallo-l"><span style="color: #464B5D;font-style: italic;">// ... error handling omitted for brevity.</span></span>
 <span class="giallo-l"><span>policy</span><span style="color: #89DDFF;">.</span><span>PathRegex</span><span style="color: #89DDFF;"> =</span><span> pathRegex</span></span>
-<span class="giallo-l"><span style="color: #464B5D;font-style: italic;">// `pathRegEx` is used for policy validation.</span></span></code></pre>
-<p>As seen from the example above, both the path pattern and the SPIFFE ID
-pattern that are provided during policy creation which are used “<strong>AS IS</strong>” to
-create regular expression matchers. These patterns are compiled
-into Go’s built-in regex engine, ensuring that the matching process strictly
-adheres to the patterns defined in the policy, allowing for precise and flexible
-access control.</p>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;">// Later, when a workload requests a path:</span></span>
+<span class="giallo-l"><span>allowed</span><span style="color: #89DDFF;"> :=</span><span> policy</span><span style="color: #89DDFF;">.</span><span>PathRegex</span><span style="color: #89DDFF;">.</span><span style="color: #82AAFF;">MatchString</span><span style="color: #89DDFF;">(</span><span>requestedPath</span><span style="color: #89DDFF;">)</span></span></code></pre>
+<p>Both the path pattern and the SPIFFE ID pattern are used “<strong>AS IS</strong>”. SPIKE
+compiles exactly what you wrote, adds nothing to it, and matches with
+<code>MatchString</code>.</p>
+<p>Two consequences follow, and both are on you rather than on SPIKE:</p>
+<ul>
+<li><code>MatchString</code> reports whether the pattern matches <strong>anywhere within</strong> the
+subject. Without <code>^</code> and <code>$</code>, your pattern is a substring test.</li>
+<li>Any regular expression metacharacter you leave unescaped means what the
+regex engine says it means, not what it looks like. An unescaped <code>.</code>
+matches any character.</li>
+</ul>
+<p>The reserved system namespaces are the one place SPIKE overrides “as is”
+matching; see <a href="https://spike.ist/usage/commands/policy/#reserved-system-namespaces">Reserved System Namespaces</a>.</p>
 <h2 id="simplicity-is-the-key">Simplicity Is the Key</h2>
 <p>Because of the regular expression usage in SPIKE policies, a <code>policy create</code>
 operation can define more flexible matching patterns. However, keeping patterns
@@ -1121,23 +1199,42 @@ requested resource <strong>path</strong> are matched against these compiled <str
 expressions</strong>. This ensures that both identity and resource patterns follow the
 specified rules and allow for flexibility with wildcards or exact matches.</p>
 <h3 id="path-pattern-examples">Path Pattern Examples</h3>
-<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="plain"><span class="giallo-l"><span>^secrets/               # All resources in the secrets directory</span></span>
-<span class="giallo-l"><span>^secrets/database/      # Only resources in the database subdirectory  </span></span>
-<span class="giallo-l"><span>^secrets/database/creds # Only the specific creds resource</span></span>
+<p>Every example below is anchored at both ends. Leaving off the <code>$</code> is not a
+shorthand for “and everything under it”; it is a substring match that also
+accepts paths you did not intend.</p>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="plain"><span class="giallo-l"><span>^secrets/.*$               # Everything under secrets/</span></span>
+<span class="giallo-l"><span>^secrets/database/.*$      # Everything under secrets/database/</span></span>
+<span class="giallo-l"><span>^secrets/database/creds$   # Only that one resource, exactly</span></span>
 <span class="giallo-l"></span>
 <span class="giallo-l"><span># You can provide regular expressions for a more fine-tuned</span></span>
 <span class="giallo-l"><span># pattern match:</span></span>
-<span class="giallo-l"><span>^secrets/db-[123]$ # Matches secrets/db-2, but not secrets/db-4.</span></span></code></pre><h3 id="spiffe-id-pattern-examples">SPIFFE ID Pattern Examples</h3>
-<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="plain"><span class="giallo-l"><span>^spiffe://example\.org/             # Workloads in the example.org trust domain</span></span>
-<span class="giallo-l"><span>^spiffe://example\.org/web/         # Only web workloads</span></span>
-<span class="giallo-l"><span>^spiffe://example\.org/web/server$  # Only the specific web server workload</span></span></code></pre><h2 id="best-practices">Best Practices</h2>
+<span class="giallo-l"><span>^secrets/db-[123]$ # Matches secrets/db-2, but not secrets/db-4.</span></span></code></pre>
+<p>Compare the last one with its unanchored counterpart:</p>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="plain"><span class="giallo-l"><span>^secrets/database/creds    # WRONG: also matches secrets/database/creds-backup</span></span>
+<span class="giallo-l"><span>                           # and secrets/database/credsXYZ</span></span></code></pre><h3 id="spiffe-id-pattern-examples">SPIFFE ID Pattern Examples</h3>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="plain"><span class="giallo-l"><span>^spiffe://example\.org/.*$          # Any workload in the trust domain</span></span>
+<span class="giallo-l"><span>^spiffe://example\.org/web/.*$      # Any web workload</span></span>
+<span class="giallo-l"><span>^spiffe://example\.org/web/server$  # Only that one workload, exactly</span></span></code></pre>
+<p>Note the escaped dots. An unescaped <code>.</code> in a regular expression matches any
+character, so <code>spiffe://example.org/web</code> would also match
+<code>spiffe://example-org/web</code>.</p>
+<h2 id="best-practices">Best Practices</h2>
 <ul>
+<li><strong>Anchor every pattern</strong> with <code>^</code> at the start and <code>$</code> at the end, for
+both the path pattern and the SPIFFE ID pattern. SPIKE will not do this
+for you, and an unanchored pattern grants more than it appears to.</li>
+<li><strong>Escape literal dots</strong> in SPIFFE IDs: <code>example\.org</code>, not <code>example.org</code>.</li>
+<li><strong>Grant the smallest set that works.</strong> Prefer an exact path, then a
+bounded subtree, and treat a broad wildcard as something you have to
+justify.</li>
 <li>Follow the principle of least privilege when assigning permissions</li>
 <li>Use descriptive policy names that reflect their purpose</li>
 <li>Create separate policies for different workload types</li>
-<li>Use specific path patterns rather than overly broad ones</li>
-<li>Regularly audit and review your policies</li>
+<li>Regularly audit and review your policies, and re-read the patterns
+themselves rather than the policy names when you do</li>
 <li>Never assign <code>super</code> permissions unless absolutely necessary</li>
+<li>Keep patterns simple. A pattern you cannot read at a glance is a pattern
+whose blast radius you cannot assess.</li>
 </ul>
 <h2 id="technical-details">Technical Details</h2>
 <h3 id="permission-hierarchy">Permission Hierarchy</h3>
@@ -1155,8 +1252,13 @@ specified rules and allow for flexibility with wildcards or exact matches.</p>
 <li><strong>SPIKE Pilot</strong> (<code>spiffe://&lt;trustRoot&gt;/spike/pilot/*</code>) has full access to
 all operations, including policy management</li>
 <li><strong>Other workloads</strong> need a policy granting <code>write</code> permission on the
-system path <code>spike/system/acl</code></li>
+system path <code>spike/system/acl</code>. That policy must describe the reserved
+path deliberately and anchor its SPIFFE ID pattern; see
+<a href="https://spike.ist/usage/commands/policy/#reserved-system-namespaces">Reserved System Namespaces</a>.</li>
 </ol>
+<p>Delegating policy management is equivalent to granting administrative
+control over SPIKE, because the delegate can then write any policy at all,
+including one that grants itself <code>super</code> on every path.</p>
 <h3 id="encryption-at-rest">Encryption at Rest</h3>
 <p>Policy details are encrypted in the database using <strong>AES-256-GCM</strong>:</p>
 <p><strong>Encrypted fields:</strong></p>
@@ -1180,9 +1282,15 @@ to ensure atomicity.</p>
 <li>Loading all policies from the backing store</li>
 <li>For each policy, checking if the SPIFFE ID pattern matches the requestor</li>
 <li>If matched, checking if the path pattern matches the requested resource</li>
+<li>If the requested resource is a reserved system path, checking that the
+policy describes it deliberately rather than reaching it by substring</li>
 <li>If matched, checking if the policy grants the required permission</li>
 <li>Access is granted on <strong>first match</strong>; there are no “deny” policies</li>
 </ol>
+<p>Both pattern matches in steps 3 and 4 use <code>regexp.MatchString</code>, which
+succeeds on a substring match. A pattern that is not anchored with <code>^</code> and
+<code>$</code> will match more than it appears to. Step 5 applies to the three
+reserved namespaces only.</p>
 <p>Policies are loaded fresh from the database on each request to ensure
 changes take effect immediately.</p>
 <h3 id="regex-safety">Regex Safety</h3>
@@ -1192,16 +1300,27 @@ attacks.</p>
 <h2 id="common-errors">Common Errors</h2>
 <p><strong>Pattern validation failed:</strong></p>
 <pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="plain"><span class="giallo-l"><span>Error: Invalid SPIFFE ID pattern: &quot;spiffe://example.org/workload/*&quot;</span></span>
-<span class="giallo-l"><span>Use regex syntax: &quot;spiffe://example\.org/workload/.*&quot;</span></span></code></pre>
+<span class="giallo-l"><span>Use anchored regex syntax: &quot;^spiffe://example\.org/workload/.*$&quot;</span></span></code></pre>
+<p>Patterns are regular expressions, not globs. Replace <code>*</code> with <code>.*</code>, escape
+literal dots, and anchor both ends.</p>
 <p><strong>Unauthorized:</strong></p>
 <pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="plain"><span class="giallo-l"><span>Error: Permission denied</span></span>
 <span class="giallo-l"><span>Only SPIKE Pilot or workloads with write access to spike/system/acl</span></span>
 <span class="giallo-l"><span>can manage policies</span></span></code></pre>
 <p><strong>Path starts with a slash:</strong></p>
 <pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="plain"><span class="giallo-l"><span>Error: Invalid path pattern: &quot;/secrets/app/.*&quot;</span></span>
-<span class="giallo-l"><span>Paths are namespaces, remove leading slash: &quot;secrets/app/.*&quot;</span></span></code></pre>
+<span class="giallo-l"><span>Paths are namespaces, remove leading slash: &quot;^secrets/app/.*$&quot;</span></span></code></pre>
 <p><strong>Empty policy name:</strong></p>
 <pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="plain"><span class="giallo-l"><span>Error: Policy name cannot be empty</span></span></code></pre>
+<p><strong>Reserved system path reached by substring:</strong></p>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="plain"><span class="giallo-l"><span>Error: policy audit-reader reaches the reserved system path</span></span>
+<span class="giallo-l"><span>spike/system/acl only by substring match; anchor both patterns with</span></span>
+<span class="giallo-l"><span>^ and $ to grant access there deliberately</span></span></code></pre>
+<p>The path pattern matches one of SPIKE’s reserved namespaces without
+describing it. Either narrow the pattern so it no longer reaches
+<code>spike/system/*</code>, or, if delegating system access really is the intent,
+spell it out: <code>^spike/system/acl$</code> with an anchored SPIFFE ID pattern. See
+<a href="https://spike.ist/usage/commands/policy/#reserved-system-namespaces">Reserved System Namespaces</a>.</p>
 <hr />
 <h2 id="spike-command-index"><code>spike</code> Command Index</h2>
 <ul>

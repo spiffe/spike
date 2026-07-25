@@ -177,9 +177,31 @@ https://ctx.ist/recipes/build-a-knowledge-base/.
 SPIKE Policies use `SPIFFEIDPattern` and `PathPattern` fields. Those fields
 are regular expression Strings; NOT globs.
 
-- **For Policy SPIFFEID and Path patterns, ALWAYS use regex patterns, NOT globs**
-- ✅ Correct: `/path/to/.*`, `spiffe://example\.org/workload/.*`
-- ❌ Wrong: `/path/to/*`, `spiffe://example.org/workload/*`
+Two rules apply, and both matter:
+
+1. **Use regex syntax, not glob syntax.** Write `.*`, never `*`, and escape
+   literal dots.
+2. **Anchor both ends with `^` and `$`.** These patterns are matched with
+   `regexp.MatchString`, which succeeds on a substring match. SPIKE compiles
+   what you wrote and adds nothing. An unanchored pattern grants access far
+   beyond what it appears to say: `app/config` also matches
+   `private-app/configs/master-key`, and `spiffe://example\.org/app` also
+   matches `spiffe://example.org/app-attacker`.
+
+- ✅ Correct: `^path/to/.*$`, `^spiffe://example\.org/workload/.*$`
+- ❌ Wrong (glob): `path/to/*`, `spiffe://example.org/workload/*`
+- ❌ Wrong (unanchored): `path/to/.*`, `spiffe://example\.org/workload/.*`
+
+Prefer the narrowest pattern that satisfies the requirement: an exact path
+first, then a bounded subtree, and treat a broad wildcard as something that
+needs justifying.
+
+SPIKE reserves three internal namespaces (`spike/system/acl`,
+`spike/system/secret`, `spike/system/cipher/exec`). A policy that reaches
+one of them only through substring matching is rejected, because write
+access to `spike/system/acl` confers control over every policy in the
+system. To grant system access deliberately, spell the path out and anchor
+it: `^spike/system/acl$`.
 
 ### Paths used in Secrets and Policies are NOT Unix-like paths; they are Namespaces
 

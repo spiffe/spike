@@ -56,7 +56,7 @@ import (
 //
 //	Name: web-service-policy
 //	SPIFFE ID Pattern: ^spiffe://example\.org/web-service/.*$
-//	Path Pattern: ^/secrets/db/.*$
+//	Path Pattern: ^secrets/db/.*$
 //	Permissions: read, write
 //	Created At: 2024-01-01T00:00:00Z
 //	Created By: user-abc

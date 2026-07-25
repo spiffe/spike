@@ -51,6 +51,34 @@ For significant decisions:
 ✗ No real alternatives existed
 
 -->
+## [2026-07-25-133218] Reserve spike/system/* namespaces against substring-matching policy patterns
+
+**Status**: Accepted
+
+**Context**: A responsible disclosure reported unanchored policy regexes as an over-grant vulnerability. Substring matching by an unanchored regex is documented, intended behavior, but policy management is gated by CheckPolicyAccess against the literal path spike/system/acl, so a PathPattern of 'spike', 'system', or 'acl' matched that gate by substring and conferred control over every policy in the system.
+
+**Decision**: Reserve spike/system/* namespaces against substring-matching policy patterns
+
+**Rationale**: Implicit anchoring (the reporter's proposal) was rejected: it patched only UpsertPolicy while sqlite/persist/regex.go recompiles patterns on every load, so it fixed the memory backend and left SQLite exposed; and wrapping in ^(?:...)$ silently converts working ^-only prefix policies into denials. Instead the three reserved paths now require that a pattern DESCRIBE the path (its full-match form ^(?:p)$ still matches) rather than merely contain it. A purely syntactic ^...$ rule was implemented first and rejected because .* and ^.*$ are the same regex.
+
+**Consequence**: Enforced in both UpsertPolicy (authoring-time rejection) and CheckPolicyAccess (covers pre-existing stored policies and backend recompilation). Ordinary paths keep plain substring semantics. Policies that reached a reserved path via an unanchored pattern now fail loudly. See ADR-0033 and specs/policy-pattern-anchoring.md.
+
+---
+
+## [2026-07-18-110741] Bare-metal harness invokes SPIKE binaries via PATH, deliberately
+
+**Status**: Accepted
+
+**Context**: During the preflight work (2026-07-16) explicit-path invocation was proposed to eliminate name-collision risk with the generic binary names (spike, keeper, demo) and rejected; the rationale was never recorded.
+
+**Decision**: Bare-metal harness invokes SPIKE binaries via PATH, deliberately
+
+**Rationale**: Binaries on PATH are the user-facing convenience, and the harness sharing that resolution forces PATH setup early, keeping one consistent story. The preflight makes collisions loud through shadowing detection instead of eliminating them.
+
+**Consequence**: Do not re-propose explicit-path or prefixed binaries for the dev harness; extend the preflight if new failure modes appear.
+
+---
+
 ## [2026-07-17-080305] Config accessors crash fast on missing critical configuration
 
 **Status**: Accepted

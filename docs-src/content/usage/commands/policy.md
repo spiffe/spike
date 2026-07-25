@@ -86,7 +86,7 @@ permissions: [read, list]
 ```yaml
 name: "admin-policy"
 spiffeidPattern: "^spiffe://example\\.org/admin$"
-pathPattern: "secrets"
+pathPattern: "^secrets/.*$"
 permissions:
   - read    # Permission to read secrets
   - write   # Permission to create, update, or delete secrets
@@ -335,7 +335,7 @@ spike policy create \
 # Create a policy with multiple permissions
 spike policy create \
   --name=admin-service \
-  --path-pattern="secrets/" \
+  --path-pattern="^secrets/.*$" \
   --spiffeid-pattern="^spiffe://example\.org/admin$" \
   --permissions=read,write,list
 
@@ -357,22 +357,103 @@ spike policy delete --name=web-service
 
 ## Pattern Syntax
 
-**SPIKE** policies support **regular expression** pattern matching for both 
-SPIFFE IDs and resource paths:
+**SPIKE** policies support **regular expression** pattern matching for both
+SPIFFE IDs and resource paths. Both fields are compiled with Go's `regexp`
+package and matched with `MatchString`.
 
-- The pattern is compiled as a "*regular expression*".
+### Patterns Match Substrings Unless You Anchor Them
 
-This would mean, for an exact match, you would need to include `^` and `$` in
-your patterns as well.
+This is the single most important thing to understand about SPIKE policies,
+and getting it wrong grants more access than you intended:
 
-For example:
+> **A policy pattern is a regular expression, not a glob and not a prefix.
+> `MatchString` succeeds when the pattern matches *anywhere inside* the
+> candidate string. Supplying the `^` and `$` anchors is your
+> responsibility, and SPIKE does not add them for you.**
 
-* `secrets/db` matches `global/secrets/db` and `secrets/db/local`
-* Whereas, `^secrets/db$` only matches `secrets/db` and nothing else 
-  (*`global/secrets/db` and `secrets/db/local` will not match*)
+An unanchored pattern therefore matches far more than it appears to:
 
-Thus, for precise control, you are encouraged to include `^` and `$` at the 
-beginning and end of your patterns respectively for an exact match.
+| Pattern            | Also matches (probably unintended)                 |
+|--------------------|----------------------------------------------------|
+| `secrets/db`       | `global/secrets/db`, `secrets/db/local`            |
+| `app/config`       | `private-app/configs/master-key`                   |
+| `^secrets/`        | `secrets/anything/at/any/depth`                    |
+| `tenants/acme`     | `other/tenants/acme-archive`                       |
+
+The same applies to SPIFFE ID patterns. A policy written for
+`spiffe://example\.org/app` also matches
+`spiffe://example.org/app-attacker`.
+
+Anchor both ends to get what you meant:
+
+* `^secrets/db$` matches `secrets/db` and nothing else. Neither
+  `global/secrets/db` nor `secrets/db/local` will match.
+* `^secrets/db/.*$` matches everything beneath `secrets/db/`, and nothing
+  outside it.
+* `^spiffe://example\.org/app$` matches that one workload identity, not
+  `spiffe://example.org/app-attacker`.
+
+### Grant the Smallest Set That Works
+
+Anchoring is necessary but not sufficient. `^.*$` is anchored and grants
+everything. Write the pattern that covers the paths the workload actually
+needs and no others, then widen it only when a concrete requirement forces
+you to.
+
+In order of preference:
+
+1. An exact path: `^secrets/db/creds$`
+2. A bounded subtree: `^secrets/db/.*$`
+3. A bounded set: `^secrets/db-[123]$`
+4. A broad wildcard: `^secrets/.*$` (justify it)
+5. Everything: `^.*$` (almost never correct outside development)
+
+Remember also that patterns are matched against **every** policy on each
+request, and access is granted on the **first match**. There are no "deny"
+rules that can claw back an over-broad grant. The pattern is the whole of
+your access control.
+
+### Reserved System Namespaces
+
+SPIKE gates its own privileged operations behind three internal paths:
+
+| Reserved path              | Grants                                    |
+|----------------------------|-------------------------------------------|
+| `spike/system/acl`         | Policy management (create, update, delete)|
+| `spike/system/secret`      | System-level secret access                |
+| `spike/system/cipher/exec` | Cipher operations                         |
+
+Because unanchored patterns match substrings, a path pattern of `acl`,
+`system`, or `spike` would otherwise reach these paths by accident. A
+policy with `write` on `spike/system/acl` can create any policy at all,
+including one granting itself `super`, so an accident there is a full
+compromise of SPIKE's access control.
+
+SPIKE therefore refuses any policy that reaches a reserved path only
+through substring matching. To grant access to a reserved namespace you
+must describe it deliberately:
+
+```bash
+# Rejected: "acl" reaches spike/system/acl only as a substring
+spike policy create --name=bad \
+  --path-pattern="acl" \
+  --spiffeid-pattern="^spiffe://example\.org/audit$" \
+  --permissions=write
+
+# Accepted: the intent is explicit
+spike policy create --name=policy-admin \
+  --path-pattern="^spike/system/acl$" \
+  --spiffeid-pattern="^spiffe://example\.org/admin$" \
+  --permissions=write
+```
+
+The SPIFFE ID pattern of such a policy must be anchored too, so that a
+delegation written for `spiffe://example.org/admin` cannot be claimed by
+`spiffe://example.org/admin-attacker`.
+
+This rule applies **only** to the three reserved paths above. Every other
+path keeps ordinary regular expression semantics, substring matching
+included.
 
 ## How Regular Expressions are Used For Policy Matching
 
@@ -387,15 +468,25 @@ happens behind-the-scenes:
 pathRegex, err := regexp.Compile(policy.PathPattern)
 // ... error handling omitted for brevity.
 policy.PathRegex = pathRegex
-// `pathRegEx` is used for policy validation.
+
+// Later, when a workload requests a path:
+allowed := policy.PathRegex.MatchString(requestedPath)
 ```
 
-As seen from the example above, both the path pattern and the SPIFFE ID
-pattern that are provided during policy creation which are used "**AS IS**" to 
-create regular expression matchers. These patterns are compiled
-into Go's built-in regex engine, ensuring that the matching process strictly
-adheres to the patterns defined in the policy, allowing for precise and flexible
-access control.
+Both the path pattern and the SPIFFE ID pattern are used "**AS IS**". SPIKE
+compiles exactly what you wrote, adds nothing to it, and matches with
+`MatchString`.
+
+Two consequences follow, and both are on you rather than on SPIKE:
+
+* `MatchString` reports whether the pattern matches **anywhere within** the
+  subject. Without `^` and `$`, your pattern is a substring test.
+* Any regular expression metacharacter you leave unescaped means what the
+  regex engine says it means, not what it looks like. An unescaped `.`
+  matches any character.
+
+The reserved system namespaces are the one place SPIKE overrides "as is"
+matching; see [Reserved System Namespaces](#reserved-system-namespaces).
 
 ## Simplicity Is the Key
 
@@ -413,31 +504,56 @@ specified rules and allow for flexibility with wildcards or exact matches.
 
 ### Path Pattern Examples
 
+Every example below is anchored at both ends. Leaving off the `$` is not a
+shorthand for "and everything under it"; it is a substring match that also
+accepts paths you did not intend.
+
 ```txt
-^secrets/               # All resources in the secrets directory
-^secrets/database/      # Only resources in the database subdirectory  
-^secrets/database/creds # Only the specific creds resource
+^secrets/.*$               # Everything under secrets/
+^secrets/database/.*$      # Everything under secrets/database/
+^secrets/database/creds$   # Only that one resource, exactly
 
 # You can provide regular expressions for a more fine-tuned
 # pattern match:
 ^secrets/db-[123]$ # Matches secrets/db-2, but not secrets/db-4.
 ```
 
+Compare the last one with its unanchored counterpart:
+
+```txt
+^secrets/database/creds    # WRONG: also matches secrets/database/creds-backup
+                           # and secrets/database/credsXYZ
+```
+
 ### SPIFFE ID Pattern Examples
+
+```txt
+^spiffe://example\.org/.*$          # Any workload in the trust domain
+^spiffe://example\.org/web/.*$      # Any web workload
+^spiffe://example\.org/web/server$  # Only that one workload, exactly
 ```
-^spiffe://example\.org/             # Workloads in the example.org trust domain
-^spiffe://example\.org/web/         # Only web workloads
-^spiffe://example\.org/web/server$  # Only the specific web server workload
-```
+
+Note the escaped dots. An unescaped `.` in a regular expression matches any
+character, so `spiffe://example.org/web` would also match
+`spiffe://example-org/web`.
 
 ## Best Practices
 
+* **Anchor every pattern** with `^` at the start and `$` at the end, for
+  both the path pattern and the SPIFFE ID pattern. SPIKE will not do this
+  for you, and an unanchored pattern grants more than it appears to.
+* **Escape literal dots** in SPIFFE IDs: `example\.org`, not `example.org`.
+* **Grant the smallest set that works.** Prefer an exact path, then a
+  bounded subtree, and treat a broad wildcard as something you have to
+  justify.
 * Follow the principle of least privilege when assigning permissions
 * Use descriptive policy names that reflect their purpose
 * Create separate policies for different workload types
-* Use specific path patterns rather than overly broad ones
-* Regularly audit and review your policies
+* Regularly audit and review your policies, and re-read the patterns
+  themselves rather than the policy names when you do
 * Never assign `super` permissions unless absolutely necessary
+* Keep patterns simple. A pattern you cannot read at a glance is a pattern
+  whose blast radius you cannot assess.
 
 ## Technical Details
 
@@ -460,7 +576,13 @@ Policy management operations (create, update, delete) are authorized as follows:
 1. **SPIKE Pilot** (`spiffe://<trustRoot>/spike/pilot/*`) has full access to
    all operations, including policy management
 2. **Other workloads** need a policy granting `write` permission on the
-   system path `spike/system/acl`
+   system path `spike/system/acl`. That policy must describe the reserved
+   path deliberately and anchor its SPIFFE ID pattern; see
+   [Reserved System Namespaces](#reserved-system-namespaces).
+
+Delegating policy management is equivalent to granting administrative
+control over SPIKE, because the delegate can then write any policy at all,
+including one that grants itself `super` on every path.
 
 ### Encryption at Rest
 
@@ -487,8 +609,15 @@ When a secret is accessed, **SPIKE Nexus** evaluates policies by:
 2. Loading all policies from the backing store
 3. For each policy, checking if the SPIFFE ID pattern matches the requestor
 4. If matched, checking if the path pattern matches the requested resource
-5. If matched, checking if the policy grants the required permission
-6. Access is granted on **first match**; there are no "deny" policies
+5. If the requested resource is a reserved system path, checking that the
+   policy describes it deliberately rather than reaching it by substring
+6. If matched, checking if the policy grants the required permission
+7. Access is granted on **first match**; there are no "deny" policies
+
+Both pattern matches in steps 3 and 4 use `regexp.MatchString`, which
+succeeds on a substring match. A pattern that is not anchored with `^` and
+`$` will match more than it appears to. Step 5 applies to the three
+reserved namespaces only.
 
 Policies are loaded fresh from the database on each request to ensure
 changes take effect immediately.
@@ -504,8 +633,11 @@ attacks.
 **Pattern validation failed:**
 ```
 Error: Invalid SPIFFE ID pattern: "spiffe://example.org/workload/*"
-Use regex syntax: "spiffe://example\.org/workload/.*"
+Use anchored regex syntax: "^spiffe://example\.org/workload/.*$"
 ```
+
+Patterns are regular expressions, not globs. Replace `*` with `.*`, escape
+literal dots, and anchor both ends.
 
 **Unauthorized:**
 ```
@@ -517,13 +649,26 @@ can manage policies
 **Path starts with a slash:**
 ```
 Error: Invalid path pattern: "/secrets/app/.*"
-Paths are namespaces, remove leading slash: "secrets/app/.*"
+Paths are namespaces, remove leading slash: "^secrets/app/.*$"
 ```
 
 **Empty policy name:**
 ```
 Error: Policy name cannot be empty
 ```
+
+**Reserved system path reached by substring:**
+```
+Error: policy audit-reader reaches the reserved system path
+spike/system/acl only by substring match; anchor both patterns with
+^ and $ to grant access there deliberately
+```
+
+The path pattern matches one of SPIKE's reserved namespaces without
+describing it. Either narrow the pattern so it no longer reaches
+`spike/system/*`, or, if delegating system access really is the intent,
+spell it out: `^spike/system/acl$` with an anchored SPIFFE ID pattern. See
+[Reserved System Namespaces](#reserved-system-namespaces).
 
 ----
 

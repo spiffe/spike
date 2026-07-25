@@ -107,9 +107,24 @@ applying a YAML file).
 
   In a glob, `*` means "anything"; in regex it means "zero or more of the
   previous character." A glob-style pattern silently matches the wrong set.
+- **Unanchored patterns match substrings.** This is the other big one, and it
+  is quieter than the glob mistake because the policy appears to work.
+  `regexp.MatchString` succeeds when the pattern matches anywhere inside the
+  candidate, so `app/config` also grants `private-app/configs/master-key`, and
+  `spiffe://example\.org/app` also admits `spiffe://example.org/app-attacker`.
+  SPIKE compiles what you wrote and adds nothing; anchoring is your job.
+  Write `^app/config$`, or `^app/config/.*$` if you meant the subtree.
 - **Escape the dots in SPIFFE IDs.** `.` matches any character in regex. Write
   `example\.org`, not `example.org`, or the pattern will also match
   `exampleXorg`.
+- **`spike/system/*` is reserved.** SPIKE gates policy management behind
+  `spike/system/acl`, and system secret and cipher access behind
+  `spike/system/secret` and `spike/system/cipher/exec`. A path pattern of
+  `acl`, `system`, or `spike` would reach those by substring, so SPIKE
+  rejects any policy that touches them without describing them exactly.
+  Delegating policy management means writing `^spike/system/acl$` with an
+  anchored SPIFFE ID pattern, and it hands the delegate administrative
+  control over SPIKE.
 - **Paths are namespaces, not filesystem paths.** Match `^tenants/acme/.*$`,
   never `^/tenants/acme/.*$`. A leading slash is wrong here just as it is when
   storing secrets.

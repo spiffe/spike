@@ -1,0 +1,1223 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="/main.css">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link rel="icon" href="https://spike.ist/assets/spike-favicon-16x16.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+    <title> SPIKE | Multi-Tenancy Deployment Patterns </title>
+</head>
+<body>
+
+<main>
+    
+    <nav>
+  <script>
+    fetch('https://api.github.com/repos/spiffe/spike/releases/latest')
+        .then(response => response.json())
+        .then(data => {
+            const release = document.getElementById('release');
+            const icon = '<i class="bx bx-package"></i>';
+            release.href = data.name ? data.html_url : 'https://api.github.com/repos/spiffe/spike/releases';
+            release.innerHTML = icon + (data.name ? ' ' + data.name : ' Releases');
+        });
+</script>
+<div id="banner">
+    <a href="https://spike.ist">
+        <img id="banner-image" src="https://spike.ist/assets/spike-banner.png" alt="logo" />
+    </a>
+    <div id="banner-body">
+        <a class="banner-title" href="https://spike.ist">
+            SPIKE
+        </a>
+        <span class="banner-tagline">
+            Secure your secrets<br> with SPIFFE.
+        </span>
+        <a id="release" class="banner-link" href="https://github.com/spiffe/spike/releases">
+            <i class='bx bx-package'></i>
+        </a>
+        <a href="https://github.com/spiffe/spike" class="banner-link">
+            <i class='bx bxl-github'></i> GitHub
+        </a>
+
+    </div>
+</div>
+<style>
+   /* Banner on top of the nav */
+   #banner {
+        position: sticky;
+        background-color: var(--bg-primary);
+        z-index: 100;
+        top: 0;
+        display: flex;
+        flex-direction: row;
+        padding: 1rem;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        margin-bottom: 1rem;
+    }
+
+    #banner img {
+        width: 100px;
+        height: auto;
+    }
+
+    #banner-body {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        justify-content: space-between;
+        margin-left: 1rem;
+    }
+
+    .banner-title {
+        font-size: 1.75rem;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        margin-bottom: -15px;
+        font-family: var(--brand-font-family);
+    }
+    .banner-tagline {
+        font-size: 0.875rem;
+        color: var(--text-muted);
+        font-style: italic;
+    }
+
+    .banner-link {
+        display: flex;
+        gap: 0.5rem;
+        min-width: 84px;
+        font-size: 0.875rem;
+        font-weight: 300;
+        padding: 0.25rem 0.75rem;
+        border-radius: 4px;
+        background-color: var(--bg-interactive);
+        transition: all 0.2s ease;
+    }
+
+    .banner-link i {
+        font-size: 1.125rem;
+        color: var(--spike-blue);
+    }
+
+    .banner-link:hover {
+        background-color: var(--spike-blue);
+    }
+</style> <div id="trees">
+    <input class="tree-toggle" type="checkbox" id="about"
+               />
+        <label class="tree-toggle-label "
+               for="about">About</label>
+
+        <ul class="subtree">
+            <li >
+                    <a href="https://spike.ist/about/intro/">About SPIKE</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/about/project-status/">Project Maturity</a>
+                </li>
+
+                </ul>
+    <input class="tree-toggle" type="checkbox" id="community"
+               />
+        <label class="tree-toggle-label "
+               for="community">Community</label>
+
+        <ul class="subtree">
+            <li >
+                    <a href="https://spike.ist/community/hello/">Hello Universe</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/community/contact/">Contact Us</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/community/presentations/">Presentations and Demos</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/community/resources/">Resources</a>
+                </li>
+
+                </ul>
+    <input class="tree-toggle" type="checkbox" id="getting-started"
+               />
+        <label class="tree-toggle-label "
+               for="getting-started">Getting Started</label>
+
+        <ul class="subtree">
+            <li >
+                    <a href="https://spike.ist/getting-started/quickstart/">SPIKE Quickstart Guide</a>
+                </li>
+
+                </ul>
+    <input class="tree-toggle" type="checkbox" id="recipes"
+               />
+        <label class="tree-toggle-label "
+               for="recipes">Recipes</label>
+
+        <ul class="subtree">
+            <li >
+                    <a href="https://spike.ist/recipes/choosing-a-backend-store/">Choosing a Backend Store: Memory, Lite, or SQLite</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/bootstrapping-spike/">Bootstrapping a Fresh SPIKE</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/root-key-keepers-recovery/">Where the Root Key Lives</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/storing-and-reading-secrets/">Storing and Reading Secrets</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/writing-access-policies/">Writing Access Policies</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/granting-a-workload-access/">Granting a Workload Access to Secrets</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/encryption-as-a-service/">Using SPIKE as an Encryption Service</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/break-the-glass-recovery/">Break-the-Glass Disaster Recovery</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/backup-and-restore/">Backup and Restore</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/deploying-spike/">Deploying SPIKE (Kubernetes and Bare-Metal)</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/production-hardening/">Production Hardening</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/troubleshooting/">Troubleshooting</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/go-sdk-integration/">Integrating the Go SDK</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/upgrading-spike/">Upgrading SPIKE</a>
+                </li>
+
+                </ul>
+    <input class="tree-toggle" type="checkbox" id="using-spike"
+               />
+        <label class="tree-toggle-label "
+               for="using-spike">Using SPIKE</label>
+
+        <ul class="subtree">
+            <li >
+                    <a href="https://spike.ist/usage/configuration/">Configuring SPIKE</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/usage/cli/">SPIKE CLI</a>
+                </li>
+
+                </ul>
+    <input class="tree-toggle" type="checkbox" id="developing-spike"
+               />
+        <label class="tree-toggle-label "
+               for="developing-spike">Developing SPIKE</label>
+
+        <ul class="subtree">
+            <li >
+                    <a href="https://spike.ist/development/local-deployment/">SPIKE on Kubernetes</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/development/bare-metal/">SPIKE on Linux</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/development/sdk-integration/">SDK Integration Guide</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/development/api-docs/">API Documentation</a>
+                </li>
+
+                </ul>
+    <input class="tree-toggle" type="checkbox" id="spike-architecture"
+               />
+        <label class="tree-toggle-label "
+               for="spike-architecture">SPIKE Architecture</label>
+
+        <ul class="subtree">
+            <li >
+                    <a href="https://spike.ist/architecture/system-overview/">System Overview</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/architecture/security-model/">SPIKE Security Model</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/architecture/architectural-decision-records/">ADRs</a>
+                </li>
+
+                </ul>
+    <input class="tree-toggle" type="checkbox" id="tracking"
+               />
+        <label class="tree-toggle-label "
+               for="tracking">Tracking</label>
+
+        <ul class="subtree">
+            <li >
+                    <a href="https://spike.ist/tracking/changelog/">Changelog</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/tracking/snapshots/">Documentation Snapshots</a>
+                </li>
+
+                </ul>
+    <input class="tree-toggle" type="checkbox" id="operations"
+               checked/>
+        <label class="tree-toggle-label "
+               for="operations">Operations</label>
+
+        <ul class="subtree">
+            <li >
+                    <a href="https://spike.ist/operations/build/">SPIKE Cross-Platform Build</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/operations/production/">SPIKE Production Setup</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/operations/recovery/">SPIKE Recovery Procedures</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/operations/backup/">SPIKE Backup and Restore</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/operations/release/">SPIKE Relase Management</a>
+                </li>
+
+                <li class="active">
+                    <a href="https://spike.ist/operations/multi-tenancy/">Multi-Tenancy Deployment Patterns</a>
+                </li>
+
+                
+                        
+                        
+                            <ul id="toc">
+                                <li><a href="
+                                            https://spike.ist/operations/multi-tenancy/#multi-tenancy-deployment-patterns">Multi-Tenancy Deployment Patterns</a>
+                                        <ul>
+                                                <li>
+                                                        <a href="https://spike.ist/operations/multi-tenancy/#understanding-spike-s-single-tenant-model">Understanding SPIKE’s Single-Tenant Model</a>
+                                                    </li>
+                                                <li>
+                                                        <a href="https://spike.ist/operations/multi-tenancy/#when-you-need-multi-tenancy">When You Need Multi-Tenancy</a>
+                                                    </li>
+                                                <li>
+                                                        <a href="https://spike.ist/operations/multi-tenancy/#current-multi-tenancy-options">Current Multi-Tenancy Options</a>
+                                                    </li>
+                                                <li>
+                                                        <a href="https://spike.ist/operations/multi-tenancy/#comparison-matrix">Comparison Matrix</a>
+                                                    </li>
+                                                <li>
+                                                        <a href="https://spike.ist/operations/multi-tenancy/#future-scoped-pilot-instances">Future: Scoped Pilot Instances</a>
+                                                    </li>
+                                                <li>
+                                                        <a href="https://spike.ist/operations/multi-tenancy/#choosing-an-approach">Choosing an Approach</a>
+                                                    </li>
+                                                </ul>
+                                        </li>
+                                </ul>
+                        </ul>
+    </div>
+<style>
+    /* Navigation tree structure */
+    #trees {
+        padding: 0 1rem;
+    }
+
+    .tree-toggle {
+        display: none;
+    }
+
+    .tree-toggle:checked + .tree-toggle-label + .subtree {
+        display: block;
+    }
+
+    .tree-toggle-label {
+        display: block;
+        padding: 0.75rem 1rem;
+        margin: 0.25rem 0;
+        border-radius: 6px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .tree-toggle-label:hover {
+        background-color: rgba(0, 0, 0, 0.05);
+    }
+
+    .tree-toggle-label::before {
+        content: '▸';
+        display: inline-block;
+        margin-right: 0.5rem;
+        transition: transform 0.2s ease;
+    }
+
+    .tree-toggle:checked + .tree-toggle-label::before {
+        transform: rotate(90deg);
+    }
+
+    .subtree {
+        display: none;
+        margin: 0;
+        padding: 0 0 0 1rem;
+        list-style: none;
+    }
+
+    .subtree li {
+        margin: 0.25rem 0;
+    }
+
+    .subtree li a {
+        display: block;
+        padding: 0.5rem 1rem;
+        text-decoration: none;
+        border-radius: 4px;
+        font-size: 0.9375rem;
+        transition: all 0.2s ease;
+    }
+
+    .subtree li a:hover {
+        background-color: rgba(0, 0, 0, 0.05);
+    }
+
+    .subtree li.active a {
+        font-weight: 600;
+        background-color: rgba(0, 0, 0, 0.05);
+    }
+
+    /* Table of contents styling */
+    #toc {
+        margin: 0.5rem 0 0.5rem 1.5rem;
+        padding: 0;
+        list-style: none;
+        font-size: 0.875rem;
+    }
+
+    #toc li {
+        margin: 0.25rem 0;
+    }
+
+    #toc li a {
+        padding: 0.375rem 0.75rem;
+        opacity: 0.8;
+    }
+
+    #toc li a:hover {
+        opacity: 1;
+    }
+
+    #toc ul {
+        margin: 0.25rem 0 0.25rem 1rem;
+        padding: 0;
+        list-style: none;
+    }
+</style>
+</nav>
+<style>
+  nav {
+    position: sticky;
+    width: 300px;
+    height: 100vh;
+    top: 0;
+    max-height: 100vh;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 0, 0, 0.3) transparent;
+    z-index: 100;
+    box-shadow: 5px 0 20px var(--shadow-color);
+    border-right: 1px solid var(--border-color);
+    transition: transform 0.4s ease-in-out;
+    background-color: var(--bg-primary);
+  }
+
+  nav::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  nav::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  nav::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.3);
+    border-radius: 4px;
+    border: 2px solid transparent;
+  }
+
+  @media (max-width: 1300px) {
+    .nav-toggle {
+      display: none;
+    }
+
+    nav {
+      position: fixed;
+      transform: translateX(-100%);
+      width: 85%;
+      max-width: 300px;
+      height: calc(100vh - 57px);
+      top: 57px;
+    }
+
+    nav.active {
+      transform: translateX(0);
+    }
+  }
+</style>
+
+
+    <div class="content">
+        <div class="header">
+  <div class="header-content">
+    <button
+      id="mobile-nav-toggle"
+      aria-label="Toggle navigation"
+      class="mobile-only"
+    >
+      <i class="bx bx-menu"></i>
+    </button>
+    <script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const searchInput = document.querySelector(".search-input");
+    const overlay = document.querySelector(".overlay");
+    const searchResults = document.querySelector(".search-results");
+
+    function closeSearch() {
+      overlay.style.display = "none";
+      searchResults.style.display = "none";
+      searchInput.blur();
+    }
+
+    function openSearch() {
+      overlay.style.display = "block";
+      searchResults.style.display = "block";
+    }
+
+    searchInput.addEventListener("focus", openSearch);
+    overlay.addEventListener("click", closeSearch);
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        closeSearch();
+      }
+    });
+  });
+</script>
+<div class="overlay"></div>
+<input class="search-input" type="text" placeholder="Search..." />
+<div class="search-results">
+  <div class="search-results__header">
+    <span class="search-results__count">Waiting for input...</span>
+  </div>
+  <div class="search-results__items"></div>
+</div>
+
+<style>
+  .search-input {
+    width: 100%;
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background-color: var(--bg-interactive);
+    color: var(--text-primary);
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+    z-index: 101;
+  }
+
+  .search-input:focus {
+    outline: none;
+    border-color: var(--spike-blue);
+    background-color: var(--bg-primary);
+    box-shadow: 0 0 0 2px rgba(var(--spike-blue-rgb), 0.2);
+  }
+
+  .search-input::placeholder {
+    color: var(--text-muted);
+  }
+
+  .overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 100;
+  }
+
+  .search-results {
+    display: none;
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 100%;
+    max-width: 700px;
+    margin: 0.5rem auto;
+    background: var(--bg-primary);
+    border-radius: 8px;
+    box-shadow: 0px 4px 8px 3px rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--border-color);
+    z-index: 102;
+  }
+
+  .search-results__header {
+    padding: 0.75rem 1rem;
+    color: var(--text-muted);
+    font-size: 0.875rem;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .search-results__items {
+    max-height: 60vh;
+    overflow-y: auto;
+  }
+
+  .search-results__item {
+    display: block;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--border-color);
+    transition: background-color 0.2s ease;
+  }
+
+  .search-results__item:hover {
+    background-color: var(--bg-interactive);
+  }
+
+  .search-results__title {
+    color: var(--spike-blue);
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+  }
+
+  .search-results__preview {
+    color: var(--text-secondary);
+    font-size: 0.8125rem;
+    line-height: 1.4;
+  }
+
+  .search-results__preview b {
+    color: var(--spike-dark-green);
+    font-weight: 600;
+  }
+
+  .search-results__items::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  .search-results__items::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 4px;
+  }
+
+  /* Empty state */
+  .search-results__empty {
+    padding: 2rem 1rem;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.875rem;
+  }
+</style>
+
+    <a
+      href="https://github.com/spiffe/spike"
+      target="_blank"
+      rel="noopener"
+      class="github-star"
+    >
+      <i class="bx bx-star"></i>
+      <span>Star <strong>SPIKE</strong> on <strong>GitHub</strong></span>
+    </a>
+    <button id="theme-toggle" aria-label="Toggle theme">
+      <i class="bx bx-sun light-icon"></i>
+      <i class="bx bx-moon dark-icon"></i>
+    </button>
+  </div>
+</div>
+
+<style>
+  .header {
+    position: sticky;
+    top: 0;
+    background-color: var(--bg-primary);
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color);
+    box-shadow: 0 4px 6px -1px var(--shadow-color),
+      0 2px 4px -1px var(--shadow-color);
+    z-index: 101;
+  }
+
+  .header-content {
+    max-width: 800px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  #mobile-nav-toggle {
+    display: none;
+    background: none;
+    border: none;
+    padding: 0.5rem;
+    cursor: pointer;
+    color: var(--text-primary);
+    font-size: 1.5rem;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+  }
+
+  #mobile-nav-toggle i {
+    pointer-events: none;
+    display: block;
+  }
+
+  #mobile-nav-toggle:hover {
+    background-color: var(--bg-interactive);
+  }
+
+  @media (max-width: 1300px) {
+    #mobile-nav-toggle {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+    }
+  }
+
+  #theme-toggle {
+    background: none;
+    border: none;
+    padding: 0.5rem;
+    cursor: pointer;
+    color: var(--text-primary);
+    font-size: 1.25rem;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  #theme-toggle:hover {
+    background-color: var(--bg-interactive);
+  }
+
+  #theme-toggle:active {
+    background-color: var(--bg-secondary);
+  }
+
+  /* Show/hide icons based on theme */
+  [data-theme="dark"] .light-icon,
+  :root:not([data-theme="dark"]) .dark-icon {
+    display: none;
+  }
+
+  /* GitHub Star Button */
+  .github-star {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    color: white;
+    text-decoration: none;
+    background: linear-gradient(
+      135deg,
+      var(--spike-blue),
+      var(--spike-dark-green)
+    );
+    border-radius: 20px;
+    transition: all 0.2s ease;
+    font-size: 0.875rem;
+    white-space: nowrap;
+  }
+
+  .github-star:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(var(--spike-blue-rgb), 0.3);
+  }
+
+  .github-star i {
+    font-size: 1.1rem;
+    animation: starBounce 2s infinite;
+    color: #ffd700;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+  }
+
+  @keyframes starBounce {
+    0%,
+    100% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.2);
+    }
+  }
+
+  .github-star span {
+    white-space: nowrap;
+  }
+
+  @media (max-width: 768px) {
+    .github-star span {
+      display: none;
+    }
+
+    .github-star {
+      padding: 0.5rem;
+    }
+  }
+</style>
+
+<script>
+  // Theme toggle functionality
+  document.addEventListener("DOMContentLoaded", () => {
+    const themeToggle = document.getElementById("theme-toggle");
+
+    // Function to set theme
+    function setTheme(theme) {
+      document.documentElement.setAttribute("data-theme", theme);
+      localStorage.setItem("theme", theme);
+      
+      // Update banner image based on theme
+      const bannerImage = document.getElementById("banner-image");
+      if (bannerImage) {
+        bannerImage.src = theme === "dark" 
+          ? "/assets/spike-banner-dark-thin.png"
+          : "/assets/spike-banner-light-thin.png";
+      }
+    }
+
+    // Initialize theme
+    const savedTheme = localStorage.getItem("theme");
+    setTheme(savedTheme ? savedTheme : "dark");
+    // Discard system theme changes; the landing page is always dark, so
+    // it's better to transition to a dark-by-default theme.
+    // } else if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+    //   setTheme("dark");
+    // }
+
+    // Toggle theme on button click
+    themeToggle.addEventListener("click", () => {
+      const currentTheme = document.documentElement.getAttribute("data-theme");
+      const newTheme = currentTheme === "dark" ? "light" : "dark";
+      setTheme(newTheme);
+    });
+
+    // Discard system-theme changes.
+    // window
+    //   .matchMedia("(prefers-color-scheme: dark)")
+    //   .addEventListener("change", (e) => {
+    //     if (!localStorage.getItem("theme")) {
+    //       setTheme(e.matches ? "dark" : "light");
+    //     }
+    //   });
+  });
+</script>
+
+
+        <article>
+            
+        <h1 id="multi-tenancy-deployment-patterns">Multi-Tenancy Deployment Patterns</h1>
+<p>This guide describes strategies for deploying <strong>SPIKE</strong> in multi-tenant
+environments where multiple organizational units, teams, or customers need
+isolated secrets management.</p>
+<h2 id="understanding-spike-s-single-tenant-model">Understanding SPIKE’s Single-Tenant Model</h2>
+<p>By default, SPIKE operates with a single-tenant model:</p>
+<ul>
+<li><strong>SPIKE Pilot</strong> has a system SPIFFE ID that grants unrestricted access to all
+secrets and policies</li>
+<li>The operator (<em>anyone with access to SPIKE Pilot</em>) has full visibility across
+the entire secret store</li>
+<li>Policies control workload access but do not restrict administrative access</li>
+</ul>
+<p>This model works well when:</p>
+<ul>
+<li>A single team or organization manages all secrets</li>
+<li>The operator is trusted with visibility into all data</li>
+<li>There is no requirement for administrative isolation between groups</li>
+</ul>
+<h2 id="when-you-need-multi-tenancy">When You Need Multi-Tenancy</h2>
+<p>Consider multi-tenancy when:</p>
+<ul>
+<li><strong>Organizational boundaries</strong>: Different business units should not see each
+other’s secrets</li>
+<li><strong>Customer isolation</strong>: You are building a platform where customers expect
+data isolation</li>
+<li><strong>Compliance requirements</strong>: Regulations mandate administrative separation</li>
+<li><strong>Blast radius reduction</strong>: You want to limit the impact of credential
+compromise</li>
+<li><strong>Delegated administration</strong>: Tenant admins should manage their own scope
+without central operator involvement</li>
+</ul>
+<h2 id="current-multi-tenancy-options">Current Multi-Tenancy Options</h2>
+<p>SPIKE currently supports two approaches to multi-tenancy, each with different
+trade-offs.</p>
+<h3 id="option-1-separate-spike-deployments-strong-isolation">Option 1: Separate SPIKE Deployments (<em>Strong Isolation</em>)</h3>
+<p>Deploy independent SPIKE instances for each tenant, typically in separate
+Kubernetes namespaces or on separate infrastructure.</p>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="plain"><span class="giallo-l"><span>Tenant: PepsiCola                    Tenant: CocaCola</span></span>
+<span class="giallo-l"><span>namespace: pepsi-secrets             namespace: coca-secrets</span></span>
+<span class="giallo-l"><span>├── spike-nexus                      ├── spike-nexus</span></span>
+<span class="giallo-l"><span>├── spike-keeper (x3)                ├── spike-keeper (x3)</span></span>
+<span class="giallo-l"><span>├── spike-pilot                      ├── spike-pilot</span></span>
+<span class="giallo-l"><span>└── spike-bootstrap                  └── spike-bootstrap</span></span></code></pre><h4 id="kubernetes-example">Kubernetes Example</h4>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="yaml"><span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># pepsi-secrets namespace</span></span>
+<span class="giallo-l"><span style="color: #F07178;">apiVersion</span><span style="color: #89DDFF;">:</span><span style="color: #C3E88D;"> v1</span></span>
+<span class="giallo-l"><span style="color: #F07178;">kind</span><span style="color: #89DDFF;">:</span><span style="color: #C3E88D;"> Namespace</span></span>
+<span class="giallo-l"><span style="color: #F07178;">metadata</span><span style="color: #89DDFF;">:</span></span>
+<span class="giallo-l"><span style="color: #F07178;">  name</span><span style="color: #89DDFF;">:</span><span style="color: #C3E88D;"> pepsi-secrets</span></span>
+<span class="giallo-l"><span style="color: #F07178;">  labels</span><span style="color: #89DDFF;">:</span></span>
+<span class="giallo-l"><span style="color: #F07178;">    tenant</span><span style="color: #89DDFF;">:</span><span style="color: #C3E88D;"> pepsi</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">---</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># Deploy SPIKE components in this namespace</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># (Helm chart or manifests with namespace: pepsi-secrets)</span></span></code></pre><pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="yaml"><span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># coca-secrets namespace</span></span>
+<span class="giallo-l"><span style="color: #F07178;">apiVersion</span><span style="color: #89DDFF;">:</span><span style="color: #C3E88D;"> v1</span></span>
+<span class="giallo-l"><span style="color: #F07178;">kind</span><span style="color: #89DDFF;">:</span><span style="color: #C3E88D;"> Namespace</span></span>
+<span class="giallo-l"><span style="color: #F07178;">metadata</span><span style="color: #89DDFF;">:</span></span>
+<span class="giallo-l"><span style="color: #F07178;">  name</span><span style="color: #89DDFF;">:</span><span style="color: #C3E88D;"> coca-secrets</span></span>
+<span class="giallo-l"><span style="color: #F07178;">  labels</span><span style="color: #89DDFF;">:</span></span>
+<span class="giallo-l"><span style="color: #F07178;">    tenant</span><span style="color: #89DDFF;">:</span><span style="color: #C3E88D;"> coca</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">---</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># Deploy SPIKE components in this namespace</span></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># (Helm chart or manifests with namespace: coca-secrets)</span></span></code></pre><h4 id="spire-configuration">SPIRE Configuration</h4>
+<p>Each tenant deployment requires its own SPIRE registration entries. You can
+use the same SPIRE Server with different SPIFFE ID paths per tenant:</p>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="shellscript"><span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># Pepsi tenant SPIKE components</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">spire-server</span><span style="color: #C3E88D;"> entry create</span><span> \</span></span>
+<span class="giallo-l"><span style="color: #C3E88D;">  -spiffeID spiffe://example.org/tenant/pepsi/spike/nexus</span><span> \</span></span>
+<span class="giallo-l"><span style="color: #C3E88D;">  -parentID spiffe://example.org/spire/agent/k8s/pepsi-secrets</span><span> \</span></span>
+<span class="giallo-l"><span style="color: #C3E88D;">  -selector k8s:ns:pepsi-secrets</span><span> \</span></span>
+<span class="giallo-l"><span style="color: #C3E88D;">  -selector k8s:sa:spike-nexus</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">spire-server</span><span style="color: #C3E88D;"> entry create</span><span> \</span></span>
+<span class="giallo-l"><span style="color: #C3E88D;">  -spiffeID spiffe://example.org/tenant/pepsi/spike/pilot/role/superuser</span><span> \</span></span>
+<span class="giallo-l"><span style="color: #C3E88D;">  -parentID spiffe://example.org/spire/agent/k8s/pepsi-secrets</span><span> \</span></span>
+<span class="giallo-l"><span style="color: #C3E88D;">  -selector k8s:ns:pepsi-secrets</span><span> \</span></span>
+<span class="giallo-l"><span style="color: #C3E88D;">  -selector k8s:sa:spike-pilot</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># Coca tenant SPIKE components</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">spire-server</span><span style="color: #C3E88D;"> entry create</span><span> \</span></span>
+<span class="giallo-l"><span style="color: #C3E88D;">  -spiffeID spiffe://example.org/tenant/coca/spike/nexus</span><span> \</span></span>
+<span class="giallo-l"><span style="color: #C3E88D;">  -parentID spiffe://example.org/spire/agent/k8s/coca-secrets</span><span> \</span></span>
+<span class="giallo-l"><span style="color: #C3E88D;">  -selector k8s:ns:coca-secrets</span><span> \</span></span>
+<span class="giallo-l"><span style="color: #C3E88D;">  -selector k8s:sa:spike-nexus</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">spire-server</span><span style="color: #C3E88D;"> entry create</span><span> \</span></span>
+<span class="giallo-l"><span style="color: #C3E88D;">  -spiffeID spiffe://example.org/tenant/coca/spike/pilot/role/superuser</span><span> \</span></span>
+<span class="giallo-l"><span style="color: #C3E88D;">  -parentID spiffe://example.org/spire/agent/k8s/coca-secrets</span><span> \</span></span>
+<span class="giallo-l"><span style="color: #C3E88D;">  -selector k8s:ns:coca-secrets</span><span> \</span></span>
+<span class="giallo-l"><span style="color: #C3E88D;">  -selector k8s:sa:spike-pilot</span></span></code></pre><h4 id="environment-configuration">Environment Configuration</h4>
+<p>Each tenant’s SPIKE components need their own trust root configuration:</p>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="shellscript"><span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># Pepsi tenant</span></span>
+<span class="giallo-l"><span style="color: #C792EA;">export</span><span> SPIKE_TRUST_ROOT_NEXUS</span><span style="color: #89DDFF;">=&quot;</span><span style="color: #C3E88D;">tenant/pepsi</span><span style="color: #89DDFF;">&quot;</span></span>
+<span class="giallo-l"><span style="color: #C792EA;">export</span><span> SPIKE_TRUST_ROOT_PILOT</span><span style="color: #89DDFF;">=&quot;</span><span style="color: #C3E88D;">tenant/pepsi</span><span style="color: #89DDFF;">&quot;</span></span>
+<span class="giallo-l"><span style="color: #C792EA;">export</span><span> SPIKE_TRUST_ROOT_KEEPER</span><span style="color: #89DDFF;">=&quot;</span><span style="color: #C3E88D;">tenant/pepsi</span><span style="color: #89DDFF;">&quot;</span></span>
+<span class="giallo-l"><span style="color: #C792EA;">export</span><span> SPIKE_TRUST_ROOT_BOOTSTRAP</span><span style="color: #89DDFF;">=&quot;</span><span style="color: #C3E88D;">tenant/pepsi</span><span style="color: #89DDFF;">&quot;</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># Coca tenant</span></span>
+<span class="giallo-l"><span style="color: #C792EA;">export</span><span> SPIKE_TRUST_ROOT_NEXUS</span><span style="color: #89DDFF;">=&quot;</span><span style="color: #C3E88D;">tenant/coca</span><span style="color: #89DDFF;">&quot;</span></span>
+<span class="giallo-l"><span style="color: #C792EA;">export</span><span> SPIKE_TRUST_ROOT_PILOT</span><span style="color: #89DDFF;">=&quot;</span><span style="color: #C3E88D;">tenant/coca</span><span style="color: #89DDFF;">&quot;</span></span>
+<span class="giallo-l"><span style="color: #C792EA;">export</span><span> SPIKE_TRUST_ROOT_KEEPER</span><span style="color: #89DDFF;">=&quot;</span><span style="color: #C3E88D;">tenant/coca</span><span style="color: #89DDFF;">&quot;</span></span>
+<span class="giallo-l"><span style="color: #C792EA;">export</span><span> SPIKE_TRUST_ROOT_BOOTSTRAP</span><span style="color: #89DDFF;">=&quot;</span><span style="color: #C3E88D;">tenant/coca</span><span style="color: #89DDFF;">&quot;</span></span></code></pre><h4 id="characteristics">Characteristics</h4>
+<table><thead><tr><th>Aspect</th><th>Description</th></tr></thead><tbody>
+<tr><td>Isolation Level</td><td>Strong (complete separation)</td></tr>
+<tr><td>Operational Overhead</td><td>High (N deployments to manage)</td></tr>
+<tr><td>Resource Usage</td><td>Higher (duplicate components)</td></tr>
+<tr><td>Cross-Tenant Access</td><td>Impossible by design</td></tr>
+<tr><td>Central Management</td><td>None (each tenant is independent)</td></tr>
+<tr><td>Blast Radius</td><td>Limited to single tenant</td></tr>
+</tbody></table>
+<h4 id="when-to-use">When to Use</h4>
+<ul>
+<li>Tenants are external customers or competitors</li>
+<li>Regulatory requirements mandate complete isolation</li>
+<li>Tenants have different compliance requirements
+(<em>e.g., one needs FIPS, another does not</em>)</li>
+<li>You need different availability or backup policies per tenant</li>
+<li>Maximum security is more important than operational efficiency</li>
+</ul>
+<h4 id="best-practices">Best Practices</h4>
+<ol>
+<li><strong>Use GitOps</strong>: Template your SPIKE deployment manifests to reduce
+duplication</li>
+<li><strong>Centralize SPIRE Server</strong>: You can use a single SPIRE Server with
+per-tenant SPIFFE ID paths</li>
+<li><strong>Namespace isolation</strong>: Use Kubernetes NetworkPolicies to prevent
+cross-namespace communication</li>
+<li><strong>Separate storage</strong>: Each SPIKE Nexus should have its own database or
+storage path</li>
+<li><strong>Monitoring</strong>: Aggregate metrics and logs centrally with tenant labels</li>
+</ol>
+<h3 id="option-2-path-based-tenant-isolation-soft-isolation">Option 2: Path-Based Tenant Isolation (<em>Soft Isolation</em>)</h3>
+<p>Use a single <strong>SPIKE</strong> deployment with path conventions and policies to isolate
+tenant data. The central operator retains visibility across all tenants.</p>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="plain"><span class="giallo-l"><span>Single SPIKE Deployment</span></span>
+<span class="giallo-l"><span>├── spike-nexus</span></span>
+<span class="giallo-l"><span>├── spike-keeper (x3)</span></span>
+<span class="giallo-l"><span>├── spike-pilot          &lt;-- Central operator, sees all tenants</span></span>
+<span class="giallo-l"><span>└── spike-bootstrap</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span>Secret Paths:</span></span>
+<span class="giallo-l"><span>├── tenants/pepsi/db/credentials</span></span>
+<span class="giallo-l"><span>├── tenants/pepsi/api/keys</span></span>
+<span class="giallo-l"><span>├── tenants/coca/db/credentials</span></span>
+<span class="giallo-l"><span>└── tenants/coca/api/keys</span></span></code></pre><h4 id="policy-configuration">Policy Configuration</h4>
+<p>Create policies that restrict each tenant’s workloads to their own paths:</p>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="shellscript"><span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># Pepsi workloads can only access pepsi secrets</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">spike</span><span style="color: #C3E88D;"> policy create --name=pepsi-workload-read</span><span> \</span></span>
+<span class="giallo-l"><span style="color: #C3E88D;">  --path-pattern=</span><span style="color: #89DDFF;">&quot;</span><span style="color: #C3E88D;">^tenants/pepsi/.*$</span><span style="color: #89DDFF;">&quot;</span><span> \</span></span>
+<span class="giallo-l"><span style="color: #C3E88D;">  --spiffeid-pattern=</span><span style="color: #89DDFF;">&quot;</span><span style="color: #C3E88D;">^spiffe://example\.org/tenant/pepsi/workload/.*$</span><span style="color: #89DDFF;">&quot;</span><span> \</span></span>
+<span class="giallo-l"><span style="color: #C3E88D;">  --permissions=</span><span style="color: #89DDFF;">&quot;</span><span style="color: #C3E88D;">read</span><span style="color: #89DDFF;">&quot;</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">spike</span><span style="color: #C3E88D;"> policy create --name=pepsi-workload-write</span><span> \</span></span>
+<span class="giallo-l"><span style="color: #C3E88D;">  --path-pattern=</span><span style="color: #89DDFF;">&quot;</span><span style="color: #C3E88D;">^tenants/pepsi/.*$</span><span style="color: #89DDFF;">&quot;</span><span> \</span></span>
+<span class="giallo-l"><span style="color: #C3E88D;">  --spiffeid-pattern=</span><span style="color: #89DDFF;">&quot;</span><span style="color: #C3E88D;">^spiffe://example\.org/tenant/pepsi/workload/.*$</span><span style="color: #89DDFF;">&quot;</span><span> \</span></span>
+<span class="giallo-l"><span style="color: #C3E88D;">  --permissions=</span><span style="color: #89DDFF;">&quot;</span><span style="color: #C3E88D;">write</span><span style="color: #89DDFF;">&quot;</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># Coca workloads can only access coca secrets</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">spike</span><span style="color: #C3E88D;"> policy create --name=coca-workload-read</span><span> \</span></span>
+<span class="giallo-l"><span style="color: #C3E88D;">  --path-pattern=</span><span style="color: #89DDFF;">&quot;</span><span style="color: #C3E88D;">^tenants/coca/.*$</span><span style="color: #89DDFF;">&quot;</span><span> \</span></span>
+<span class="giallo-l"><span style="color: #C3E88D;">  --spiffeid-pattern=</span><span style="color: #89DDFF;">&quot;</span><span style="color: #C3E88D;">^spiffe://example\.org/tenant/coca/workload/.*$</span><span style="color: #89DDFF;">&quot;</span><span> \</span></span>
+<span class="giallo-l"><span style="color: #C3E88D;">  --permissions=</span><span style="color: #89DDFF;">&quot;</span><span style="color: #C3E88D;">read</span><span style="color: #89DDFF;">&quot;</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">spike</span><span style="color: #C3E88D;"> policy create --name=coca-workload-write</span><span> \</span></span>
+<span class="giallo-l"><span style="color: #C3E88D;">  --path-pattern=</span><span style="color: #89DDFF;">&quot;</span><span style="color: #C3E88D;">^tenants/coca/.*$</span><span style="color: #89DDFF;">&quot;</span><span> \</span></span>
+<span class="giallo-l"><span style="color: #C3E88D;">  --spiffeid-pattern=</span><span style="color: #89DDFF;">&quot;</span><span style="color: #C3E88D;">^spiffe://example\.org/tenant/coca/workload/.*$</span><span style="color: #89DDFF;">&quot;</span><span> \</span></span>
+<span class="giallo-l"><span style="color: #C3E88D;">  --permissions=</span><span style="color: #89DDFF;">&quot;</span><span style="color: #C3E88D;">write</span><span style="color: #89DDFF;">&quot;</span></span></code></pre><h4 id="tenant-admin-workloads">Tenant Admin Workloads</h4>
+<p>You can create “tenant admin” workloads that have broader permissions within
+their tenant’s scope:</p>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="shellscript"><span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># Pepsi admin workload can manage all pepsi secrets</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">spike</span><span style="color: #C3E88D;"> policy create --name=pepsi-admin</span><span> \</span></span>
+<span class="giallo-l"><span style="color: #C3E88D;">  --path-pattern=</span><span style="color: #89DDFF;">&quot;</span><span style="color: #C3E88D;">^tenants/pepsi/.*$</span><span style="color: #89DDFF;">&quot;</span><span> \</span></span>
+<span class="giallo-l"><span style="color: #C3E88D;">  --spiffeid-pattern=</span><span style="color: #89DDFF;">&quot;</span><span style="color: #C3E88D;">^spiffe://example\.org/tenant/pepsi/admin$</span><span style="color: #89DDFF;">&quot;</span><span> \</span></span>
+<span class="giallo-l"><span style="color: #C3E88D;">  --permissions=</span><span style="color: #89DDFF;">&quot;</span><span style="color: #C3E88D;">super</span><span style="color: #89DDFF;">&quot;</span></span>
+<span class="giallo-l"></span>
+<span class="giallo-l"><span style="color: #464B5D;font-style: italic;"># Coca admin workload can manage all coca secrets</span></span>
+<span class="giallo-l"><span style="color: #FFCB6B;">spike</span><span style="color: #C3E88D;"> policy create --name=coca-admin</span><span> \</span></span>
+<span class="giallo-l"><span style="color: #C3E88D;">  --path-pattern=</span><span style="color: #89DDFF;">&quot;</span><span style="color: #C3E88D;">^tenants/coca/.*$</span><span style="color: #89DDFF;">&quot;</span><span> \</span></span>
+<span class="giallo-l"><span style="color: #C3E88D;">  --spiffeid-pattern=</span><span style="color: #89DDFF;">&quot;</span><span style="color: #C3E88D;">^spiffe://example\.org/tenant/coca/admin$</span><span style="color: #89DDFF;">&quot;</span><span> \</span></span>
+<span class="giallo-l"><span style="color: #C3E88D;">  --permissions=</span><span style="color: #89DDFF;">&quot;</span><span style="color: #C3E88D;">super</span><span style="color: #89DDFF;">&quot;</span></span></code></pre>
+<p><strong>Important</strong>: These tenant admin workloads:</p>
+<ul>
+<li>Can read/write/list secrets within their tenant’s path</li>
+<li>Cannot see secrets outside their tenant’s path</li>
+<li>Cannot create or modify policies (<em>that requires SPIKE Pilot access</em>)</li>
+<li>Cannot perform recovery/restore operations</li>
+</ul>
+<h4 id="characteristics-1">Characteristics</h4>
+<table><thead><tr><th>Aspect</th><th>Description</th></tr></thead><tbody>
+<tr><td>Isolation Level</td><td>Weak (workloads isolated, operator sees all)</td></tr>
+<tr><td>Operational Overhead</td><td>Low (single deployment)</td></tr>
+<tr><td>Resource Usage</td><td>Lower (shared components)</td></tr>
+<tr><td>Cross-Tenant Access</td><td>Prevented by policy (for workloads)</td></tr>
+<tr><td>Central Management</td><td>Yes (single Pilot manages all)</td></tr>
+<tr><td>Blast Radius</td><td>Full system if Pilot is compromised</td></tr>
+</tbody></table>
+<h4 id="when-to-use-1">When to Use</h4>
+<ul>
+<li>Tenants are internal teams within the same organization</li>
+<li>A trusted central operator is acceptable</li>
+<li>You want simpler operations with a single deployment</li>
+<li>Workload isolation is sufficient (<em>admin visibility is acceptable</em>)</li>
+<li>You need cross-tenant visibility for auditing or compliance</li>
+</ul>
+<h4 id="best-practices-1">Best Practices</h4>
+<ol>
+<li><strong>Consistent path conventions</strong>: Establish and enforce a standard path
+structure (e.g., <code>tenants/{tenant-name}/{category}/{secret-name}</code>)</li>
+<li><strong>Policy naming conventions</strong>: Use clear names that indicate tenant scope
+(e.g., <code>{tenant}-{role}-{permission}</code>)</li>
+<li><strong>Regular policy audits</strong>: Review policies to ensure no accidental
+cross-tenant access</li>
+<li><strong>SPIFFE ID conventions</strong>: Structure workload SPIFFE IDs to include tenant
+information for easier policy matching</li>
+<li><strong>Documentation</strong>: Document the path structure and policy model for all
+tenant administrators</li>
+</ol>
+<h4 id="limitations">Limitations</h4>
+<ul>
+<li><strong>No administrative isolation</strong>: The central Pilot operator can see all
+tenants’ secrets</li>
+<li><strong>Policy misconfiguration risk</strong>: An incorrect regex pattern could leak
+secrets across tenants</li>
+<li><strong>No delegated policy management</strong>: Tenants cannot create their own policies</li>
+<li><strong>Single point of trust</strong>: Pilot credential compromise affects all tenants</li>
+</ul>
+<h2 id="comparison-matrix">Comparison Matrix</h2>
+<table><thead><tr><th>Capability</th><th>Separate Deployments</th><th>Path-Based Isolation</th></tr></thead><tbody>
+<tr><td>Workload isolation</td><td>Yes</td><td>Yes</td></tr>
+<tr><td>Administrative isolation</td><td>Yes</td><td>No</td></tr>
+<tr><td>Delegated policy management</td><td>Yes (per-tenant Pilot)</td><td>No</td></tr>
+<tr><td>Cross-tenant visibility</td><td>No</td><td>Yes (for operator)</td></tr>
+<tr><td>Resource efficiency</td><td>Lower</td><td>Higher</td></tr>
+<tr><td>Operational complexity</td><td>Higher</td><td>Lower</td></tr>
+<tr><td>Blast radius</td><td>Per-tenant</td><td>Full system</td></tr>
+<tr><td>Compliance suitability</td><td>Higher</td><td>Lower</td></tr>
+</tbody></table>
+<h2 id="future-scoped-pilot-instances">Future: Scoped Pilot Instances</h2>
+<p>A future enhancement
+<strong>Scoped Pilot Instances</strong> that would provide administrative isolation within
+a single SPIKE deployment:</p>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="plain"><span class="giallo-l"><span># Future capability (not yet implemented)</span></span>
+<span class="giallo-l"><span>spiffe://example.org/spike/pilot/scope/tenants/pepsi</span></span>
+<span class="giallo-l"><span>spiffe://example.org/spike/pilot/scope/tenants/coca</span></span></code></pre>
+<p>(see
+<a rel="external" href="https://github.com/spiffe/spike/issues/281">EPIC: Scoped SPIKE Pilot Instances for Multi-Tenancy</a>)</p>
+<p>Scoped Pilots would:</p>
+<ul>
+<li>Only see secrets and policies within their designated scope</li>
+<li>Only create policies for paths within their scope</li>
+<li>Provide delegated administration without full deployment separation</li>
+<li>Maintain a single Nexus/Keeper infrastructure</li>
+</ul>
+<p>This would offer a middle ground between the two current options, providing
+administrative isolation with lower operational overhead than separate
+deployments.</p>
+<h2 id="choosing-an-approach">Choosing an Approach</h2>
+<p>Use this decision tree to select the right approach:</p>
+<pre class="giallo" style="color: #BABED8; background-color: #0F111A;"><code data-lang="plain"><span class="giallo-l"><span>Do tenants require COMPLETE administrative isolation?</span></span>
+<span class="giallo-l"><span>|</span></span>
+<span class="giallo-l"><span>+-- YES --&gt; Are tenants external customers or competitors?</span></span>
+<span class="giallo-l"><span>|           |</span></span>
+<span class="giallo-l"><span>|           +-- YES --&gt; Separate Deployments (Option 1)</span></span>
+<span class="giallo-l"><span>|           |</span></span>
+<span class="giallo-l"><span>|           +-- NO --&gt; Wait for Scoped Pilots (ADR-0033)</span></span>
+<span class="giallo-l"><span>|                      or use Separate Deployments</span></span>
+<span class="giallo-l"><span>|</span></span>
+<span class="giallo-l"><span>+-- NO --&gt; Is a trusted central operator acceptable?</span></span>
+<span class="giallo-l"><span>           |</span></span>
+<span class="giallo-l"><span>           +-- YES --&gt; Path-Based Isolation (Option 2)</span></span>
+<span class="giallo-l"><span>           |</span></span>
+<span class="giallo-l"><span>           +-- NO --&gt; Separate Deployments (Option 1)</span></span></code></pre><p>&nbsp;</p>
+<hr />
+<ul>
+<li><a href="https://spike.ist/operations/build/">SPIKE Cross-Platform Build</a></li>
+<li><a href="https://spike.ist/operations/production/">SPIKE Production Setup</a></li>
+<li><a href="https://spike.ist/operations/recovery/">SPIKE Recovery Procedures</a></li>
+<li><a href="https://spike.ist/operations/backup/">SPIKE Backup and Restore</a></li>
+<li><a href="https://spike.ist/operations/multi-tenancy/">Multi-Tenancy Deployment Patterns</a></li>
+<li><a href="https://spike.ist/operations/release/">SPIKE Release Management</a></li>
+</ul>
+<hr />
+<ul>
+<li><a href="https://spike.ist/about/">About</a></li>
+<li><a href="https://spike.ist/community/">Community</a></li>
+<li><a href="https://spike.ist/getting-started/">Getting Started</a></li>
+<li><a href="https://spike.ist/usage/">Using SPIKE</a></li>
+<li><a href="https://spike.ist/development/">Developing SPIKE</a></li>
+<li><a href="https://spike.ist/architecture/">SPIKE Architecture</a></li>
+<li><a href="https://spike.ist/tracking/">Tracking</a></li>
+<li><a href="https://spike.ist/operations/">Operations</a></li>
+</ul>
+
+    
+        </article>
+
+        <footer id="footer">
+            Copyright © 2024-present <strong>SPIKE Contributors</strong>.<br>
+            <strong>SPIKE</strong>'s code
+            is distributed under <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache (v2.0)</a>.
+            <br>
+            The documentation on this website
+            is distributed under <a href="https://creativecommons.org/licenses/by/4.0/">CC-BY-4.0</a>.
+            <br><br>
+            We <strong>do not</strong> collect your data.
+            This site <strong>does not</strong> use any tracking cookies or scripts.
+        </footer>
+    </div>
+
+</main>
+
+
+    <script type="text/javascript" src="https://spike.ist/elasticlunr.min.js" defer></script>
+    <script type="text/javascript" src="https://spike.ist/search_index.en.js" defer></script>
+<script type="text/javascript" src="https://spike.ist/js.js" defer></script>
+</body>
+</html>
+<style>
+body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    font-family: var(--font-family);
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+}
+
+main {
+    width: 100vw;
+    max-width: 1920px;
+    display: flex;
+    flex-direction: row;
+    overflow: hidden;
+}
+
+#footer {
+    text-align: center;
+    padding: 2rem;
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    border-top: 1px solid var(--border-color);
+    margin-top: 2rem;
+}
+
+.content {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    height: 100vh;
+    overflow-y: auto;
+    background-color: var(--bg-primary);
+    line-height: 1.6;
+    border-left: 1px solid var(--border-color);
+}
+
+#footer a {
+    color: var(--spike-blue);
+    text-decoration: none;
+    transition: all 0.2s ease;
+    border-bottom: 1px solid transparent;
+    font-weight: 500;
+
+}
+
+#footer a:hover {
+    border-bottom-color: var(--spike-blue);
+}
+
+</style>

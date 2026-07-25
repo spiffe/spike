@@ -26,10 +26,10 @@ sequenceDiagram
 
     Validation->>Validation: Check policy name not empty
     Validation->>Validation: Validate SPIFFE ID pattern is regex
-    Note right of Validation: Must be valid regex<br/>NOT glob pattern<br/>Example: ".*" not "*"
+    Note right of Validation: Must be valid regex<br/>NOT glob pattern<br/>Example: ".*" not "*"<br/>Anchor both ends: "^...$"
 
     Validation->>Validation: Validate path pattern is regex
-    Note right of Validation: Must be valid regex<br/>Example: "secrets/.*"<br/>NOT "/secrets/*"
+    Note right of Validation: Must be valid regex<br/>Example: "^secrets/.*$"<br/>NOT "/secrets/*"<br/>Unanchored matches substrings
 
     Validation->>Validation: Validate permissions
     Note right of Validation: Valid: read, write,<br/>list, execute, super

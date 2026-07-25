@@ -6,7 +6,7 @@
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <link rel="icon" href="https://spike.ist/assets/spike-favicon-16x16.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
-    <title> SPIKE | Where the root key lives </title>
+    <title> SPIKE | Where the Root Key Lives </title>
 </head>
 <body>
 
@@ -155,6 +155,100 @@
                 </li>
 
                 </ul>
+    <input class="tree-toggle" type="checkbox" id="recipes"
+               checked/>
+        <label class="tree-toggle-label "
+               for="recipes">Recipes</label>
+
+        <ul class="subtree">
+            <li >
+                    <a href="https://spike.ist/recipes/choosing-a-backend-store/">Choosing a Backend Store: Memory, Lite, or SQLite</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/bootstrapping-spike/">Bootstrapping a Fresh SPIKE</a>
+                </li>
+
+                <li class="active">
+                    <a href="https://spike.ist/recipes/root-key-keepers-recovery/">Where the Root Key Lives</a>
+                </li>
+
+                
+                        
+                        
+                            <ul id="toc">
+                                <li><a href="
+                                            https://spike.ist/recipes/root-key-keepers-recovery/#where-the-root-key-lives-keepers-shamir-and-recovery">Where the Root Key Lives: Keepers, Shamir, and Recovery</a>
+                                        <ul>
+                                                <li>
+                                                        <a href="https://spike.ist/recipes/root-key-keepers-recovery/#problem">Problem</a>
+                                                    </li>
+                                                <li>
+                                                        <a href="https://spike.ist/recipes/root-key-keepers-recovery/#tl-dr">TL;DR</a>
+                                                    </li>
+                                                <li>
+                                                        <a href="https://spike.ist/recipes/root-key-keepers-recovery/#workflow-what-happens-automatically">Workflow (What Happens Automatically)</a>
+                                                    </li>
+                                                <li>
+                                                        <a href="https://spike.ist/recipes/root-key-keepers-recovery/#tips">Tips</a>
+                                                    </li>
+                                                <li>
+                                                        <a href="https://spike.ist/recipes/root-key-keepers-recovery/#pitfalls">Pitfalls</a>
+                                                    </li>
+                                                <li>
+                                                        <a href="https://spike.ist/recipes/root-key-keepers-recovery/#cross-links">Cross-Links</a>
+                                                    </li>
+                                                <li>
+                                                        <a href="https://spike.ist/recipes/root-key-keepers-recovery/#what-s-next">What’s Next</a>
+                                                    </li>
+                                                </ul>
+                                        </li>
+                                </ul>
+                        <li >
+                    <a href="https://spike.ist/recipes/storing-and-reading-secrets/">Storing and Reading Secrets</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/writing-access-policies/">Writing Access Policies</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/granting-a-workload-access/">Granting a Workload Access to Secrets</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/encryption-as-a-service/">Using SPIKE as an Encryption Service</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/break-the-glass-recovery/">Break-the-Glass Disaster Recovery</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/backup-and-restore/">Backup and Restore</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/deploying-spike/">Deploying SPIKE (Kubernetes and Bare-Metal)</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/production-hardening/">Production Hardening</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/troubleshooting/">Troubleshooting</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/go-sdk-integration/">Integrating the Go SDK</a>
+                </li>
+
+                <li >
+                    <a href="https://spike.ist/recipes/upgrading-spike/">Upgrading SPIKE</a>
+                </li>
+
+                </ul>
     <input class="tree-toggle" type="checkbox" id="using-spike"
                />
         <label class="tree-toggle-label "
@@ -253,98 +347,8 @@
                     <a href="https://spike.ist/operations/release/">SPIKE Relase Management</a>
                 </li>
 
-                </ul>
-    <input class="tree-toggle" type="checkbox" id="recipes"
-               checked/>
-        <label class="tree-toggle-label "
-               for="recipes">Recipes</label>
-
-        <ul class="subtree">
-            <li >
-                    <a href="https://spike.ist/recipes/choosing-a-backend-store/">Choosing a backend store</a>
-                </li>
-
                 <li >
-                    <a href="https://spike.ist/recipes/bootstrapping-spike/">Bootstrapping a fresh SPIKE</a>
-                </li>
-
-                <li class="active">
-                    <a href="https://spike.ist/recipes/root-key-keepers-recovery/">Where the root key lives</a>
-                </li>
-
-                
-                        
-                        
-                            <ul id="toc">
-                                <li><a href="
-                                            https://spike.ist/recipes/root-key-keepers-recovery/#where-the-root-key-lives-keepers-shamir-and-recovery">Where the root key lives: keepers, Shamir, and recovery</a>
-                                        <ul>
-                                                <li>
-                                                        <a href="https://spike.ist/recipes/root-key-keepers-recovery/#problem">Problem</a>
-                                                    </li>
-                                                <li>
-                                                        <a href="https://spike.ist/recipes/root-key-keepers-recovery/#tl-dr">TL;DR</a>
-                                                    </li>
-                                                <li>
-                                                        <a href="https://spike.ist/recipes/root-key-keepers-recovery/#workflow-what-happens-automatically">Workflow (what happens automatically)</a>
-                                                    </li>
-                                                <li>
-                                                        <a href="https://spike.ist/recipes/root-key-keepers-recovery/#tips">Tips</a>
-                                                    </li>
-                                                <li>
-                                                        <a href="https://spike.ist/recipes/root-key-keepers-recovery/#pitfalls">Pitfalls</a>
-                                                    </li>
-                                                <li>
-                                                        <a href="https://spike.ist/recipes/root-key-keepers-recovery/#cross-links">Cross-links</a>
-                                                    </li>
-                                                <li>
-                                                        <a href="https://spike.ist/recipes/root-key-keepers-recovery/#what-s-next">What’s next</a>
-                                                    </li>
-                                                </ul>
-                                        </li>
-                                </ul>
-                        <li >
-                    <a href="https://spike.ist/recipes/storing-and-reading-secrets/">Storing and reading secrets</a>
-                </li>
-
-                <li >
-                    <a href="https://spike.ist/recipes/writing-access-policies/">Writing access policies</a>
-                </li>
-
-                <li >
-                    <a href="https://spike.ist/recipes/granting-a-workload-access/">Granting a workload access to secrets</a>
-                </li>
-
-                <li >
-                    <a href="https://spike.ist/recipes/encryption-as-a-service/">Using SPIKE as an encryption service</a>
-                </li>
-
-                <li >
-                    <a href="https://spike.ist/recipes/break-the-glass-recovery/">Break-the-glass disaster recovery</a>
-                </li>
-
-                <li >
-                    <a href="https://spike.ist/recipes/backup-and-restore/">Backup and restore</a>
-                </li>
-
-                <li >
-                    <a href="https://spike.ist/recipes/deploying-spike/">Deploying SPIKE (Kubernetes and bare-metal)</a>
-                </li>
-
-                <li >
-                    <a href="https://spike.ist/recipes/production-hardening/">Production hardening</a>
-                </li>
-
-                <li >
-                    <a href="https://spike.ist/recipes/troubleshooting/">Troubleshooting</a>
-                </li>
-
-                <li >
-                    <a href="https://spike.ist/recipes/go-sdk-integration/">Integrating the Go SDK</a>
-                </li>
-
-                <li >
-                    <a href="https://spike.ist/recipes/upgrading-spike/">Upgrading SPIKE</a>
+                    <a href="https://spike.ist/operations/multi-tenancy/">Multi-Tenancy Deployment Patterns</a>
                 </li>
 
                 </ul>
@@ -850,7 +854,7 @@
 
         <article>
             
-        <h1 id="where-the-root-key-lives-keepers-shamir-and-recovery">Where the root key lives: keepers, Shamir, and recovery</h1>
+        <h1 id="where-the-root-key-lives-keepers-shamir-and-recovery">Where the Root Key Lives: Keepers, Shamir, and Recovery</h1>
 <h2 id="problem">Problem</h2>
 <p>SPIKE Nexus encrypts everything with a single <strong>root key</strong>. Where is that key,
 how does it survive a Nexus restart without a human typing it in, and why does
@@ -863,7 +867,7 @@ startup Nexus collects any <code>threshold</code> shares from the keepers and
 reconstructs the key in memory. Lose one keeper and the key still recovers;
 lose more than <code>N − threshold</code> and you fall back to
 <a href="/recipes/break-the-glass-recovery/">break-the-glass recovery</a>.</p>
-<h2 id="workflow-what-happens-automatically">Workflow (what happens automatically)</h2>
+<h2 id="workflow-what-happens-automatically">Workflow (What Happens Automatically)</h2>
 <ol>
 <li><strong>Bootstrap</strong> generates the root key, splits it into <code>SPIKE_NEXUS_SHAMIR_SHARES</code>
 shares, and seeds the keepers (one share each). See
@@ -876,12 +880,12 @@ opens its store and serves the API.</li>
 <li><strong>Ongoing sync:</strong> Nexus runs <code>SendShardsPeriodically</code>, re-pushing shares to
 the keepers on an interval so restarted/replaced keepers get re-hydrated.</li>
 <li><strong>Keeper restart:</strong> a keeper holds its share only in memory, so a restarted
-keeper is empty until Nexus re-syncs it — which is why a single keeper
+keeper is empty until Nexus re-syncs it, which is why a single keeper
 bouncing is harmless as long as <code>threshold</code> others are up.</li>
 </ol>
 <h2 id="tips">Tips</h2>
 <ul>
-<li><strong><code>memory</code> mode has no root key and no keepers</strong> — it’s the only standalone
+<li><strong><code>memory</code> mode has no root key and no keepers</strong>: it’s the only standalone
 mode. <code>lite</code> and <code>sqlite</code> always recover from keepers.</li>
 <li>Pick <code>shares</code>/<code>threshold</code> for your failure tolerance: you can lose up to
 <code>shares − threshold</code> keepers and still recover automatically.</li>
@@ -901,7 +905,7 @@ Nexus retries recovery indefinitely by design. See
 <li><strong>Keepers are not a secret store.</strong> They hold only root-key shares, never
 your secrets.</li>
 </ul>
-<h2 id="cross-links">Cross-links</h2>
+<h2 id="cross-links">Cross-Links</h2>
 <ul>
 <li><a href="/recipes/bootstrapping-spike/">Bootstrapping a fresh SPIKE</a></li>
 <li><a href="/recipes/break-the-glass-recovery/">Break-the-glass disaster recovery</a></li>
@@ -909,7 +913,7 @@ your secrets.</li>
 <li>Architecture: <a href="/architecture/system-overview/">System overview</a> ·
 <a href="/architecture/security-model/">Security model</a></li>
 </ul>
-<h2 id="what-s-next">What’s next</h2>
+<h2 id="what-s-next">What’s Next</h2>
 <p>Plan for the day the keepers can’t recover the key:
 <a href="/recipes/break-the-glass-recovery/">Break-the-glass disaster recovery</a>.</p>
 

@@ -115,6 +115,9 @@
         <loc>https://spike.ist/architecture/adrs/adr-0032/</loc>
     </url>
     <url>
+        <loc>https://spike.ist/architecture/adrs/adr-0033/</loc>
+    </url>
+    <url>
         <loc>https://spike.ist/architecture/architectural-decision-records/</loc>
     </url>
     <url>
@@ -167,6 +170,9 @@
     </url>
     <url>
         <loc>https://spike.ist/operations/build/</loc>
+    </url>
+    <url>
+        <loc>https://spike.ist/operations/multi-tenancy/</loc>
     </url>
     <url>
         <loc>https://spike.ist/operations/production/</loc>

@@ -141,8 +141,10 @@ fmt.Println(secret.Data["password"])
   - `connection refused` on SVID acquisition -> the SPIRE Agent socket is wrong
     or the agent is down.
 - **Policy patterns are regex.** `^spiffe://example\.org/acme/web$`, not
-  `spiffe://example.org/acme/web*`. Escape the dots; anchor the ends. See
-  [Writing access policies](/recipes/writing-access-policies/).
+  `spiffe://example.org/acme/web*`. Escape the dots; anchor the ends. Without
+  `^` and `$` the pattern is a substring test, so it also matches
+  `spiffe://example.org/acme/web-attacker` and grants access you did not
+  intend. See [Writing access policies](/recipes/writing-access-policies/).
 - **Paths are namespaces.** The policy path and the SDK path must agree, and
   neither starts with a slash: `tenants/acme/db/creds`.
 - **`GetSecret` returns a map.** Read the field you want from `secret.Data`
