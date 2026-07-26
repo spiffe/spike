@@ -22,6 +22,16 @@ DO NOT UPDATE FOR:
 <!-- INDEX:END -->
 
 <!-- Add gotchas, tips, and lessons learned here -->
+## [2026-07-25-194538] CI's Go - Lint job runs make audit, not make lint-go
+
+**Context**: CI on main failed at the 'Go - Lint' job while local 'make lint-go' was green throughout. The job name suggests golangci-lint, but .github/workflows/ci.yaml runs 'make audit'.
+
+**Lesson**: 'make audit' is a superset: go mod tidy -diff, go mod verify, gofmt check, go vet, staticcheck, govulncheck, and a CGO_ENABLED=0 golangci-lint run. 'make lint-go' is only the plain golangci-lint. A green 'make lint-go' therefore proves nothing about the CI lint job. Because govulncheck is in there, that job can also fail on a timer when a new advisory drops against an unchanged dependency graph, with no code change involved.
+
+**Application**: Run 'make audit' (not just 'make lint-go') before pushing anything that could touch the module graph, and when CI's lint job fails unexpectedly, check govulncheck first and compare go.mod between the passing and failing runs before assuming a code change caused it.
+
+---
+
 ## [2026-07-25-133240] Policy regex patterns are compiled at two sites, not one
 
 **Context**: Evaluating a proposed security patch that anchored policy patterns inside UpsertPolicy. It passed its own test but changed nothing in production.
