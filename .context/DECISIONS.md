@@ -51,6 +51,20 @@ For significant decisions:
 ✗ No real alternatives existed
 
 -->
+## [2026-07-25-194549] Vulnerability bar is zero CALLED findings, not zero total
+
+**Status**: Accepted
+
+**Context**: The 2026-06-13 remediation set the bar at 'zero vulnerabilities total, not merely zero called', clearing uncalled advisories too. GO-2026-5932 (golang.org/x/crypto/openpgp is unmaintained and unsafe by design) now makes that unreachable: it reports 'Fixed in: N/A' because the package is deprecated rather than patched, and it arrives transitively.
+
+**Decision**: Vulnerability bar is zero CALLED findings, not zero total
+
+**Rationale**: A criterion that cannot be met stops being a standard and starts being noise that gets waived by habit. Amending it explicitly keeps the gate meaningful. SPIKE does not call openpgp, so govulncheck exits 0 and CI passes with the finding present; vendoring or forking x/crypto to excise it costs more than the risk it removes.
+
+**Consequence**: The standing bar is zero CALLED vulnerabilities, plus a recorded justification in specs/vuln-remediation.md for every uncalled finding left in place. Clearing uncalled findings is still preferred wherever a fixed version exists. Revisit if an upstream stops depending on x/crypto/openpgp, or if the finding ever becomes reachable.
+
+---
+
 ## [2026-07-25-133218] Reserve spike/system/* namespaces against substring-matching policy patterns
 
 **Status**: Accepted
