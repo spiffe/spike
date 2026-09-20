@@ -22,7 +22,31 @@ DO NOT UPDATE FOR:
 <!-- INDEX:END -->
 
 <!-- Add gotchas, tips, and lessons learned here -->
-## [2026-09-20-104045] The chart's cel plugin checksum is amd64-only; arm64 spire-server crashes
+## [2026-09-20-124830] Chart 0.30 pins OIDC jwt_issuer; in-cluster clients break
+
+**Context**: First CI run against helm-charts-hardened spire 0.30.x: the MinIO
+chart's provisioning hook crash-looped and helm reported the MinIO post-install
+as timed out, while SPIRE and SPIKE were healthy. main had not run CI since July
+26, before 0.30.0 shipped.
+
+**Lesson**: Upstream commit 4f8ac5af (chart 0.30.0) sets jwt_issuer in the OIDC
+discovery provider config to https://oidc-discovery.<trust domain> unless
+global.spire.jwtIssuer (or the subchart's jwtIssuer) is set. The discovery
+document's issuer and jwks_uri then point at that host, which in-cluster relying
+parties cannot resolve; MinIO's 'mc idp openid add' fetches the keys during
+validation and fails. Under 0.29.0 the provider derived both from the request
+Host header.
+
+**Application**: For in-cluster OIDC consumers, set global.spire.jwtIssuer to
+the provider's in-cluster URL
+(http://spire-spiffe-oidc-discovery-provider.<ns>); the chart applies it to the
+SPIRE server and the provider together, so token issuer and discovery issuer
+agree. For public consumers set it to the ingress URL. Check the rendered
+spire-server and oidc ConfigMaps with helm template before installing.
+
+---
+
+## [2026-09-20-104045] Chart cel plugin checksum is amd64-only; arm64 crashes
 
 **Context**: Validating the SPIRE chart bump on an arm64 kind cluster:
 spire-server 1.15.3 crash-looped with 'failed to load plugin cel: checksums did

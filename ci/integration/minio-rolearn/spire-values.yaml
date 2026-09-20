@@ -1,3 +1,14 @@
+# Since chart 0.30.0 the OIDC discovery provider advertises a fixed JWT
+# issuer (default https://oidc-discovery.<trust domain>), and its discovery
+# document points jwks_uri at that host. Nothing inside the cluster resolves
+# it, so MinIO's provisioning ("mc idp openid add") cannot fetch the signing
+# keys and fails. Pinning the issuer to the in-cluster provider URL makes
+# the token issuer, the discovery issuer and the keys endpoint agree; the
+# provider allows the http scheme (allow_insecure_scheme is on by default).
+global:
+  spire:
+    jwtIssuer: http://spire-spiffe-oidc-discovery-provider.spire-server
+
 spire-server:
   enabled: true
   controllerManager:

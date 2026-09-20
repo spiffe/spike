@@ -87,6 +87,23 @@ and the quickstart example relied on the old defaults and now set them.
 The ID templates also became per-pod (`spike/nexus/<pod>`), which the
 SDK predicates accept by prefix.
 
+## Second Chart Behavior Change, Found by CI
+
+Chart 0.30.0 (upstream commit 4f8ac5af, "Configure jwt_issuer in SPIRE
+OIDC Provider") made the OIDC discovery provider advertise a fixed JWT
+issuer, `https://oidc-discovery.<trust domain>` by default, so its
+discovery document now points `jwks_uri` at that host. Nothing inside
+the cluster resolves it. The MinIO chart's provisioning hook, which
+registers the provider with `mc idp openid add`, fetches the keys as
+part of validation and fails, and helm reports the MinIO release's
+post-install as timed out. Under 0.29.0 the provider derived the issuer
+from the request's Host header, which was the reachable service name.
+The CI values now set `global.spire.jwtIssuer` to the in-cluster
+provider URL, which the chart feeds to both the SPIRE server (token
+issuer) and the provider (discovery issuer), so the two agree and the
+keys endpoint is reachable. main had not run CI since July 26, before
+0.30.0 existed, so this PR is the first run against 0.30.x.
+
 ## SPIKE Defects Found by Validation
 
 The chart's post-install bootstrap hook starts the instant the install
