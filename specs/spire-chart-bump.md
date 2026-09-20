@@ -176,8 +176,14 @@ nothing here.
      its SVID and the encrypt then decrypt round trip through Nexus
      returned the plaintext, using the committed test script's own
      commands.
-- Not validated here: the MinIO half of the harness (`mc` provisioning
-  Job and the S3 copy steps). The MinIO provisioning Job exhausted its
-  retries on this arm64 host, where the legacy Bitnami images run under
-  emulation; CI runs on amd64. The harness fixes made in passing (the CA
-  file name, architecture-aware asset downloads) apply on both.
+  5. First CI run of the PR (amd64): SPIRE and SPIKE healthy, MinIO's
+     provisioning hook crash-looping. Reproduced on kind: `mc` failed
+     with "lookup oidc-discovery.example.org: no such host" fetching
+     the keys, and the discovery document advertised that host as
+     issuer and `jwks_uri`. Fixed by pinning `global.spire.jwtIssuer`.
+  6. Same cluster, issuer pinned: the committed `setup.sh` and `test.sh`
+     both exit 0. Discovery document issuer and `jwks_uri` are the
+     in-cluster URL, MinIO provisioning `Completed`, S3 upload and
+     download ran, and the encrypt then decrypt round trip through
+     Nexus returned the plaintext. The MinIO failure in run 4 was this
+     same issuer problem, not arm64 emulation as first assumed.
