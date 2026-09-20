@@ -26,14 +26,14 @@ func TestToSecretMetadataSuccessResponse_EmptyVersions(t *testing.T) {
 
 	response := reqres.ValueToSecretMetadataSuccessResponse(secret)
 
-	if len(response.SecretMetadata.Versions) != 0 {
+	if len(response.Versions) != 0 {
 		t.Errorf("toSecretMetadataSuccessResponse() versions = %d, want 0",
-			len(response.SecretMetadata.Versions))
+			len(response.Versions))
 	}
 
-	if response.SecretMetadata.Metadata.MaxVersions != 10 {
+	if response.Metadata.MaxVersions != 10 {
 		t.Errorf("toSecretMetadataSuccessResponse() maxVersions = %d, want 10",
-			response.SecretMetadata.Metadata.MaxVersions)
+			response.Metadata.MaxVersions)
 	}
 }
 
@@ -60,12 +60,12 @@ func TestToSecretMetadataSuccessResponse_SingleVersion(t *testing.T) {
 
 	response := reqres.ValueToSecretMetadataSuccessResponse(secret)
 
-	if len(response.SecretMetadata.Versions) != 1 {
+	if len(response.Versions) != 1 {
 		t.Errorf("toSecretMetadataSuccessResponse() versions = %d, want 1",
-			len(response.SecretMetadata.Versions))
+			len(response.Versions))
 	}
 
-	v1, ok := response.SecretMetadata.Versions[1]
+	v1, ok := response.Versions[1]
 	if !ok {
 		t.Fatal("toSecretMetadataSuccessResponse() missing version 1")
 	}
@@ -83,7 +83,7 @@ func TestToSecretMetadataSuccessResponse_SingleVersion(t *testing.T) {
 	}
 
 	// Check metadata
-	meta := response.SecretMetadata.Metadata
+	meta := response.Metadata
 	if meta.CurrentVersion != 1 {
 		t.Errorf("metadata.CurrentVersion = %d, want 1", meta.CurrentVersion)
 	}
@@ -128,13 +128,13 @@ func TestToSecretMetadataSuccessResponse_MultipleVersions(t *testing.T) {
 
 	response := reqres.ValueToSecretMetadataSuccessResponse(secret)
 
-	if len(response.SecretMetadata.Versions) != 3 {
+	if len(response.Versions) != 3 {
 		t.Errorf("toSecretMetadataSuccessResponse() versions = %d, want 3",
-			len(response.SecretMetadata.Versions))
+			len(response.Versions))
 	}
 
 	// Check version 1 (deleted)
-	v1, ok := response.SecretMetadata.Versions[1]
+	v1, ok := response.Versions[1]
 	if !ok {
 		t.Fatal("missing version 1")
 	}
@@ -143,7 +143,7 @@ func TestToSecretMetadataSuccessResponse_MultipleVersions(t *testing.T) {
 	}
 
 	// Check version 2 (not deleted)
-	v2, v2Ok := response.SecretMetadata.Versions[2]
+	v2, v2Ok := response.Versions[2]
 	if !v2Ok {
 		t.Fatal("missing version 2")
 	}
@@ -152,7 +152,7 @@ func TestToSecretMetadataSuccessResponse_MultipleVersions(t *testing.T) {
 	}
 
 	// Check version 3 (current)
-	v3, v3Ok := response.SecretMetadata.Versions[3]
+	v3, v3Ok := response.Versions[3]
 	if !v3Ok {
 		t.Fatal("missing version 3")
 	}
@@ -161,7 +161,7 @@ func TestToSecretMetadataSuccessResponse_MultipleVersions(t *testing.T) {
 	}
 
 	// Check metadata reflects current state
-	meta := response.SecretMetadata.Metadata
+	meta := response.Metadata
 	if meta.CurrentVersion != 3 {
 		t.Errorf("metadata.CurrentVersion = %d, want 3", meta.CurrentVersion)
 	}

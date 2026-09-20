@@ -25,7 +25,8 @@
 //   - GetPolicy: Retrieve a policy by ID
 //   - DeletePolicy: Remove a policy
 //   - ListPolicies: List policies with optional filtering
-//   - CheckPolicyAccess: Evaluate if a SPIFFE ID has required permissions for a path
+//   - CheckPolicyAccess: Evaluate if a SPIFFE ID has required permissions for a
+//     path
 //
 // Access control:
 //

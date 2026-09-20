@@ -61,7 +61,7 @@ capabilities and showcase its innovative features.
 * [Secrets Resiliency with SPIKE: Self-Healing and Doomsday
   Recovery][spike-doomsday]:<br>
   Secrets management is critical, but what happens when everything fails? In 
-  this video, we explore **SPIKE**’s disaster recovery mechanisms, covering both 
+  this video, we explore **SPIKE**’s disaster recovery mechanisms, covering both
   self-healing capabilities and the manual break-the-glass recovery process.
 * [Federating Secrets with SPIFFE and SPIKE][spike-federated]:<br>
   In this demo, we show how you can deploy **SPIRE** and **SPIKE** from SPIFFE
@@ -69,8 +69,9 @@ capabilities and showcase its innovative features.
   the workload clusters can securely access secrets stored in the management
   cluster.
 * [SPIKE's Shamir's Secret Sharing with SPIFFE mTLS][spike-shamir]:<br>
-  This demo walks through how **SPIKE** leverages Shamir's Secret Sharing to split
-  the root key across multiple SPIKE Keeper nodes such that no single node holds 
+  This demo walks through how **SPIKE** leverages Shamir's Secret Sharing to
+  split
+  the root key across multiple SPIKE Keeper nodes such that no single node holds
   the full key. It also demonstrates how communications between **SPIKE
   Keeper**s and **SPIKE Nexus** are secured using SPIFFE-based mTLS to ensure
   authenticated, encrypted transport.

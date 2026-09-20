@@ -33,7 +33,8 @@ import (
 //
 // Command usage:
 //
-//	list [--format=<format>] [--path-pattern=<pattern> | --spiffeid-pattern=<pattern>]
+//	list [--format=<format>]
+//	     [--path-pattern=<pattern> | --spiffeid-pattern=<pattern>]
 //
 // Flags:
 //   - --format: Output format ("human" or "json", default is "human")
@@ -98,20 +99,26 @@ func newPolicyListCommand(
 		Short: "List policies, optionally filtering by path pattern or " +
 			"SPIFFE ID pattern",
 		Args: cobra.NoArgs,
-		Run: func(c *cobra.Command, args []string) {
+		RunE: func(c *cobra.Command, args []string) error {
 			spiffeid.IsPilotOperatorOrDie(SPIFFEID)
 
 			api := spike.NewWithSource(source)
 
 			ctx := context.Background()
 
-			policies, err := api.ListPolicies(ctx, SPIFFEIDPattern, pathPattern)
-			if stdout.HandleAPIError(c, err) {
-				return
+			policies, apiErr := api.ListPolicies(
+				ctx, SPIFFEIDPattern, pathPattern,
+			)
+			if apiErr != nil {
+				return stdout.APIError(c, apiErr)
 			}
 
-			output := formatPoliciesOutput(c, policies)
+			output, formatErr := formatPoliciesOutput(c, policies)
+			if formatErr != nil {
+				return formatErr
+			}
 			c.Println(output)
+			return nil
 		},
 	}
 

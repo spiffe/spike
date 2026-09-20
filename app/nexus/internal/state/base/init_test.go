@@ -5,7 +5,6 @@
 package base
 
 import (
-	"os"
 	"testing"
 
 	"github.com/spiffe/spike-sdk-go/config/env"
@@ -23,9 +22,13 @@ func TestInitialize_MemoryBackend_ValidKey(t *testing.T) {
 		// Create a valid test key
 		// testKey := createRandomTestKey(t)
 
-		// With the new defensive approach, memory backends MUST be initialized with nil keys
+		// With the new defensive approach, memory backends MUST be initialized with
+		// nil keys
 		// Passing a valid key to memory backend should cause log.FatalLn
-		t.Skip("Skipping test that would call log.FatalLn - memory backend must use nil key")
+		t.Skip(
+			"Skipping test that would call log.FatalLn - memory backend must use " +
+				"nil key",
+		)
 	})
 }
 
@@ -61,9 +64,14 @@ func TestInitialize_MemoryBackend_ZeroKey(t *testing.T) {
 		// Create a zero key
 		// zeroKey := &[crypto.AES256KeySize]byte{} // All zeros
 
-		// With the new defensive approach, memory backends MUST be initialized with nil keys
-		// Passing any non-nil key (including the zero key) to memory backend should cause log.FatalLn
-		t.Skip("Skipping test that would call log.FatalLn - memory backend must use nil key")
+		// With the new defensive approach, memory backends MUST be initialized with
+		// nil keys
+		// Passing any non-nil key (including the zero key) to memory backend should
+		// cause log.FatalLn
+		t.Skip(
+			"Skipping test that would call log.FatalLn - memory backend must use " +
+				"nil key",
+		)
 	})
 }
 
@@ -92,7 +100,9 @@ func TestInitialize_NonMemoryBackend_ValidKey(t *testing.T) {
 		// Verify the key was set correctly
 		rootKeyMu.RLock()
 		if rootKey[0] != 0x42 {
-			t.Errorf("Expected root key first byte to be 0x42, got 0x%02X", rootKey[0])
+			t.Errorf(
+				"Expected root key first byte to be 0x42, got 0x%02X", rootKey[0],
+			)
 		}
 		rootKeyMu.RUnlock()
 	})
@@ -107,7 +117,10 @@ func TestInitialize_NonMemoryBackend_NilKey(t *testing.T) {
 
 		// This test would call log.FatalLn which terminates the process
 		// We skip this test since it would terminate the test runner
-		t.Skip("Skipping test that would call log.FatalLn with nil key - would terminate process")
+		t.Skip(
+			"Skipping test that would call log.FatalLn with nil key - would " +
+				"terminate process",
+		)
 	})
 }
 
@@ -120,7 +133,10 @@ func TestInitialize_NonMemoryBackend_ZeroKey(t *testing.T) {
 
 		// This test would call log.FatalLn which terminates the process
 		// We skip this test since it would terminate the test runner
-		t.Skip("Skipping test that would call log.FatalLn with zero key - would terminate process")
+		t.Skip(
+			"Skipping test that would call log.FatalLn with zero key - would " +
+				"terminate process",
+		)
 	})
 }
 
@@ -178,8 +194,10 @@ func TestInitialize_KeyValidation(t *testing.T) {
 			isNilOrZero := key == nil || mem.Zeroed32(key)
 
 			if isNilOrZero == tt.isValid {
-				t.Errorf("Key validation mismatch: expected valid=%v, got isNilOrZero=%v",
-					tt.isValid, isNilOrZero)
+				t.Errorf(
+					"Key validation mismatch: expected valid=%v, got isNilOrZero=%v",
+					tt.isValid, isNilOrZero,
+				)
 			}
 		})
 	}
@@ -229,7 +247,9 @@ func TestInitialize_DifferentBackendTypes(t *testing.T) {
 					// Verify the key was actually set
 					rootKeyMu.RLock()
 					if rootKey[0] != 0x55 {
-						t.Errorf("Expected root key first byte to be 0x55, got 0x%02X", rootKey[0])
+						t.Errorf(
+							"Expected root key first byte to be 0x55, got 0x%02X", rootKey[0],
+						)
 					}
 					rootKeyMu.RUnlock()
 				}
@@ -286,8 +306,11 @@ func TestInitialize_KeyIndependence(t *testing.T) {
 		// Verify the internal root key wasn't affected
 		rootKeyMu.RLock()
 		if rootKey[0] != originalFirstByte {
-			t.Errorf("Root key should not be affected by changes to source key: expected 0x%02X, got 0x%02X",
-				originalFirstByte, rootKey[0])
+			t.Errorf(
+				"Root key should not be affected by changes to source key: "+
+					"expected 0x%02X, got 0x%02X",
+				originalFirstByte, rootKey[0],
+			)
 		}
 		rootKeyMu.RUnlock()
 	})
@@ -300,7 +323,8 @@ func TestInitialize_MemoryVersusNonMemoryBehavior(t *testing.T) {
 	// Test memory backend
 	resetRootKey()
 	withEnvironment(t, env.NexusBackendStore, "memory", func() {
-		Initialize(nil) // Memory backend MUST use nil key with the new defensive approach
+		// The memory backend MUST use a nil key with the defensive approach.
+		Initialize(nil)
 		memoryResult := RootKeyZero()
 		if !memoryResult {
 			t.Error("Memory backend should leave root key as zero")
@@ -323,15 +347,6 @@ func TestInitialize_MemoryVersusNonMemoryBehavior(t *testing.T) {
 
 func TestInitialize_EnvironmentVariableHandling(t *testing.T) {
 	// Test that the function properly reads environment variables
-	originalValue := os.Getenv(env.NexusBackendStore)
-	defer func() {
-		if originalValue != "" {
-			_ = os.Setenv(env.NexusBackendStore, originalValue)
-		} else {
-			_ = os.Unsetenv(env.NexusBackendStore)
-		}
-	}()
-
 	testCases := []string{"memory", "sqlite", "lite"}
 
 	for _, backendType := range testCases {
@@ -339,7 +354,7 @@ func TestInitialize_EnvironmentVariableHandling(t *testing.T) {
 			resetRootKey()
 			defer resetRootKey()
 
-			_ = os.Setenv(env.NexusBackendStore, backendType)
+			t.Setenv(env.NexusBackendStore, backendType)
 
 			// Verify the environment variable is read correctly
 			actualType := env.BackendStoreTypeVal()
@@ -373,16 +388,7 @@ func TestInitialize_EnvironmentVariableHandling(t *testing.T) {
 
 // Benchmark tests
 func BenchmarkInitialize_MemoryBackend(b *testing.B) {
-	// Save and restore environment variable
-	original := os.Getenv(env.NexusBackendStore)
-	_ = os.Setenv(env.NexusBackendStore, "memory")
-	defer func() {
-		if original != "" {
-			_ = os.Setenv(env.NexusBackendStore, original)
-		} else {
-			_ = os.Unsetenv(env.NexusBackendStore)
-		}
-	}()
+	b.Setenv(env.NexusBackendStore, "memory")
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -392,16 +398,7 @@ func BenchmarkInitialize_MemoryBackend(b *testing.B) {
 }
 
 func BenchmarkInitialize_NonMemoryBackend(b *testing.B) {
-	// Save and restore environment variable
-	original := os.Getenv(env.NexusBackendStore)
-	_ = os.Setenv(env.NexusBackendStore, "sqlite")
-	defer func() {
-		if original != "" {
-			_ = os.Setenv(env.NexusBackendStore, original)
-		} else {
-			_ = os.Unsetenv(env.NexusBackendStore)
-		}
-	}()
+	b.Setenv(env.NexusBackendStore, "sqlite")
 
 	testKey := createTestKeyWithPattern(0x44)
 

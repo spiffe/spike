@@ -47,7 +47,7 @@ to `0` disables core dumps. In the `systemd` service unit file, setting
 
 ### Memory Protection
 
-**SPIKE** uses memory locking to prevent memory from being swapped to disk. This 
+**SPIKE** uses memory locking to prevent memory from being swapped to disk. This
 ensures that the memory is not accessible to an attacker who has access to the 
 system.
 
@@ -130,7 +130,7 @@ control can cause data corruption or loss by modifying or deleting keys.
 You should restrict storage access outside **SPIKE Nexus** to avoid 
 unauthorized access or operations.
 
-Also, when using an external data store, although **SPIKE** assumes the store is 
+Also, when using an external data store, although **SPIKE** assumes the store is
 untrusted, yet, still, considering the following is important:
 
 * If this is a shared database with other services, who else has access to it
@@ -500,7 +500,7 @@ establish defense-in-depth practices, especially when an exposed root key
 provides the possibility to reveal encrypted secrets.
 
 If the memory is swapped, an attacker could potentially extract this 
-cryptographic key material from the swap file on the disk. This would compromise 
+cryptographic key material from the swap file on the disk. This would compromise
 the security of the system, as swap files are stored unencrypted on disk and 
 may persist even after the system is powered down.
 

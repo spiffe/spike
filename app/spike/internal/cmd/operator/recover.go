@@ -7,10 +7,10 @@ package operator
 import (
 	"context"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
-	"runtime"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -58,12 +58,11 @@ func newOperatorRecoverCommand(
 	var recoverCmd = &cobra.Command{
 		Use:   "recover",
 		Short: "Recover SPIKE Nexus (do this while SPIKE Nexus is healthy)",
-		Run: func(cmd *cobra.Command, args []string) {
+		RunE: func(cmd *cobra.Command, args []string) error {
 			spiffeid.IsPilotRecoverOrDie(SPIFFEID)
 
 			if source == nil {
-				cmd.PrintErrln("Error: SPIFFE X509 source is unavailable.")
-				return
+				return errors.New("SPIFFE X509 source is unavailable")
 			}
 
 			api := spike.NewWithSource(source)
@@ -79,13 +78,13 @@ func newOperatorRecoverCommand(
 			}()
 
 			if apiErr != nil {
-				cmd.PrintErrln("Error: Failed to retrieve recovery shards.")
-				return
+				return fmt.Errorf(
+					"failed to retrieve recovery shards: %w", apiErr,
+				)
 			}
 
 			if shards == nil {
-				cmd.PrintErrln("Error: No shards found.")
-				return
+				return errors.New("no shards found")
 			}
 
 			for _, shard := range shards {
@@ -97,8 +96,7 @@ func newOperatorRecoverCommand(
 					}
 				}
 				if emptyShard {
-					cmd.PrintErrln("Error: Empty shard found.")
-					return
+					return errors.New("empty shard found")
 				}
 			}
 
@@ -108,23 +106,20 @@ func newOperatorRecoverCommand(
 			// Clean the path to normalize it
 			cleanPath, absErr := filepath.Abs(filepath.Clean(recoverDir))
 			if absErr != nil {
-				cmd.PrintErrf("Error: %v\n", absErr)
-				return
+				return absErr
 			}
 
 			// Verify the path exists and is a directory
 			fileInfo, statErr := os.Stat(cleanPath)
 			if statErr != nil || !fileInfo.IsDir() {
-				cmd.PrintErrln("Error: Invalid recovery directory path.")
-				return
+				return errors.New("invalid recovery directory path")
 			}
 
 			// Ensure the cleaned path doesn't contain suspicious components
 			if strings.Contains(cleanPath, "..") ||
 				strings.Contains(cleanPath, "./") ||
 				strings.Contains(cleanPath, "//") {
-				cmd.PrintErrln("Error: Invalid recovery directory path.")
-				return
+				return errors.New("invalid recovery directory path")
 			}
 
 			// Ensure the recover directory is clean by
@@ -132,40 +127,49 @@ func newOperatorRecoverCommand(
 			if _, dirStatErr := os.Stat(recoverDir); dirStatErr == nil {
 				files, readErr := os.ReadDir(recoverDir)
 				if readErr != nil {
-					cmd.PrintErrf("Error: Failed to read recover directory: %v\n",
-						readErr)
-					return
+					return fmt.Errorf(
+						"failed to read recover directory: %w", readErr,
+					)
 				}
 
 				for _, file := range files {
 					if file.Name() != "" && filepath.Ext(file.Name()) == ".txt" &&
 						strings.HasPrefix(file.Name(), "spike.recovery") {
 						filePath := filepath.Join(recoverDir, file.Name())
-						_ = os.Remove(filePath)
+						if rmErr := os.Remove(filePath); rmErr != nil {
+							// Leaving a stale shard behind next to fresh ones
+							// is a security problem, not a cosmetic one.
+							return fmt.Errorf(
+								"failed to remove stale recovery file %s: %w",
+								filePath, rmErr,
+							)
+						}
 					}
 				}
 			}
 
-			// Save each shard to a file
+			// Save each shard to a file.
 			for i, shard := range shards {
-				filePath := fmt.Sprintf("%s/spike.recovery.%d.txt", recoverDir, i)
+				filePath := filepath.Join(
+					recoverDir, fmt.Sprintf("spike.recovery.%d.txt", i),
+				)
 
-				encodedShard := hex.EncodeToString(shard[:])
-
-				out := fmt.Sprintf("spike:%d:%s", i, encodedShard)
+				// Security: The shard is hex-encoded into a byte slice, never
+				// into a string. A string is immutable, so a string copy of
+				// the shard could not be zeroed after use.
+				encoded := make([]byte, hex.EncodedLen(len(shard)))
+				hex.Encode(encoded, shard[:])
+				out := append([]byte(fmt.Sprintf("spike:%d:", i)), encoded...)
 
 				// 0600 to be more restrictive.
-				writeErr := os.WriteFile(filePath, []byte(out), 0600)
+				writeErr := os.WriteFile(filePath, out, 0600)
 
-				// Security: Hint gc to reclaim memory.
-				encodedShard = "" // nolint:ineffassign
-				out = ""          // nolint:ineffassign
-				runtime.GC()
+				// Security: Erase the shard copies as soon as they are written.
+				mem.ClearBytes(encoded)
+				mem.ClearBytes(out)
 
 				if writeErr != nil {
-					cmd.PrintErrf("Error: Failed to save shard %d: %v\n",
-						i, writeErr)
-					return
+					return fmt.Errorf("failed to save shard %d: %w", i, writeErr)
 				}
 			}
 
@@ -185,6 +189,8 @@ func newOperatorRecoverCommand(
 			cmd.Println(
 				"  SPIKE Nexus in the unlikely event of a total system crash.")
 			cmd.Println("")
+
+			return nil
 		},
 	}
 

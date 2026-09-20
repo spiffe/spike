@@ -7,6 +7,9 @@ package policy
 import (
 	"bufio"
 	"context"
+	"errors"
+	"fmt"
+	"io"
 	"os"
 	"strings"
 
@@ -79,38 +82,43 @@ func newPolicyDeleteCommand(
         - A policy name as an argument: spike policy delete web-service-policy
         - A policy name with the --name flag:
           spike policy delete --name=my-policy`,
-		Run: func(c *cobra.Command, args []string) {
+		RunE: func(c *cobra.Command, args []string) error {
 			spiffeid.IsPilotOperatorOrDie(SPIFFEID)
 
 			api := spike.NewWithSource(source)
 
-			// TODO: Issue #250 - Using name as primary identifier.
-			// The SDK still uses 'id' field in the API call.
-			policyName, err := sendGetPolicyNameRequest(c, args, api)
-			if stdout.HandleAPIError(c, err) {
-				return
+			// Policies are identified by name. The SDK method still calls its
+			// parameter "id", but the value it expects is the policy name.
+			policyName, nameErr := sendGetPolicyNameRequest(c, args, api)
+			if nameErr != nil {
+				return stdout.APIError(c, nameErr)
 			}
 
 			// Confirm deletion
 			c.Printf("Are you sure you want to "+
 				"delete policy '%s'? (y/N): ", policyName)
 			reader := bufio.NewReader(os.Stdin)
-			confirm, _ := reader.ReadString('\n')
+			confirm, readErr := reader.ReadString('\n')
+			// An answer without a trailing newline arrives with io.EOF and
+			// is still an answer; any other read failure is not.
+			if readErr != nil && !errors.Is(readErr, io.EOF) {
+				return fmt.Errorf("failed to read confirmation: %w", readErr)
+			}
 			confirm = strings.TrimSpace(confirm)
 
 			if confirm != "y" && confirm != "Y" {
 				c.Println("Operation canceled.")
-				return
+				return nil
 			}
 
 			ctx := context.Background()
 
-			deleteErr := api.DeletePolicy(ctx, policyName)
-			if stdout.HandleAPIError(c, deleteErr) {
-				return
+			if deleteErr := api.DeletePolicy(ctx, policyName); deleteErr != nil {
+				return stdout.APIError(c, deleteErr)
 			}
 
 			c.Println("Policy deleted successfully.")
+			return nil
 		},
 	}
 

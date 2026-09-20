@@ -66,7 +66,7 @@ func UnlockRootKeySeed() {
 //
 // Security behavior:
 // The application will crash (via log.FatalErr) if:
-//   - The keeperID cannot be converted to an integer
+//   - The keeperID cannot be converted to an unsigned integer
 //   - No matching share is found for the specified keeper ID
 //
 // Parameters:
@@ -80,18 +80,31 @@ func KeeperShare(
 ) shamir.Share {
 	const fName = "keeperShare"
 
+	// Share IDs are unsigned scalars, so the keeper ID is parsed as an
+	// unsigned integer; a negative or non-numeric ID fails here rather than
+	// wrapping around in a conversion.
+	kid, err := strconv.ParseUint(keeperID, 10, 64)
+	if err != nil {
+		failErr := sdkErrors.ErrShamirInvalidIndex.Wrap(err)
+		failErr.Msg = fmt.Sprintf(
+			"failed to convert keeper ID to an unsigned integer: '%s'",
+			keeperID,
+		)
+		log.FatalErr(fName, *failErr)
+	}
+	// Share index zero is not a valid Shamir share; Nexus rejects it too.
+	if kid == 0 {
+		failErr := sdkErrors.ErrShamirInvalidIndex.Clone()
+		failErr.Msg = fmt.Sprintf(
+			"keeper ID must be a positive integer: '%s'", keeperID,
+		)
+		log.FatalErr(fName, *failErr)
+	}
+	keeperScalar := group.P256.NewScalar().SetUint64(kid)
+
 	var share shamir.Share
 	for _, sr := range rootShares {
-		kid, err := strconv.Atoi(keeperID)
-		if err != nil {
-			failErr := sdkErrors.ErrShamirInvalidIndex.Wrap(err)
-			failErr.Msg = fmt.Sprintf(
-				"failed to convert keeper ID to int: '%s'", keeperID,
-			)
-			log.FatalErr(fName, *failErr)
-		}
-
-		if sr.ID.IsEqual(group.P256.NewScalar().SetUint64(uint64(kid))) {
+		if sr.ID.IsEqual(keeperScalar) {
 			share = sr
 			break
 		}

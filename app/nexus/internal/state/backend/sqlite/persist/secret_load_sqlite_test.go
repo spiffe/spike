@@ -8,6 +8,8 @@ import (
 	"context"
 	"os"
 	"path/filepath"
+	"strconv"
+	"strings"
 	"testing"
 	"time"
 
@@ -23,9 +25,7 @@ func TestDataStore_loadSecretInternal_Success(t *testing.T) {
 	withSQLiteEnvironment(t, func() {
 		cleanupSQLiteDatabase(t)
 		store := createTestDataStore(t)
-		defer func(store *DataStore, c context.Context) {
-			_ = store.Close(c)
-		}(store, context.Background())
+		closeStoreOnCleanup(t, store)
 
 		ctx := context.Background()
 		path := "test/secret/path"
@@ -68,11 +68,15 @@ func TestDataStore_loadSecretInternal_Success(t *testing.T) {
 
 		// Check metadata
 		if secret.Metadata.CurrentVersion != 1 {
-			t.Errorf("Expected current version 1, got %d", secret.Metadata.CurrentVersion)
+			t.Errorf(
+				"Expected current version 1, got %d", secret.Metadata.CurrentVersion,
+			)
 		}
 
 		if secret.Metadata.OldestVersion != 1 {
-			t.Errorf("Expected oldest version 1, got %d", secret.Metadata.OldestVersion)
+			t.Errorf(
+				"Expected oldest version 1, got %d", secret.Metadata.OldestVersion,
+			)
 		}
 
 		if secret.Metadata.MaxVersions != 5 {
@@ -80,11 +84,19 @@ func TestDataStore_loadSecretInternal_Success(t *testing.T) {
 		}
 
 		if !secret.Metadata.CreatedTime.Equal(createdTime) {
-			t.Errorf("Expected created time %v, got %v", createdTime, secret.Metadata.CreatedTime)
+			t.Errorf(
+				"Expected created time %v, got %v",
+				createdTime,
+				secret.Metadata.CreatedTime,
+			)
 		}
 
 		if !secret.Metadata.UpdatedTime.Equal(updatedTime) {
-			t.Errorf("Expected updated time %v, got %v", updatedTime, secret.Metadata.UpdatedTime)
+			t.Errorf(
+				"Expected updated time %v, got %v",
+				updatedTime,
+				secret.Metadata.UpdatedTime,
+			)
 		}
 
 		// Check versions
@@ -100,7 +112,9 @@ func TestDataStore_loadSecretInternal_Success(t *testing.T) {
 		// Check version data
 		expectedData := versions[1]
 		if len(version.Data) != len(expectedData) {
-			t.Errorf("Expected %d data items, got %d", len(expectedData), len(version.Data))
+			t.Errorf(
+				"Expected %d data items, got %d", len(expectedData), len(version.Data),
+			)
 		}
 
 		for key, expectedValue := range expectedData {
@@ -109,7 +123,9 @@ func TestDataStore_loadSecretInternal_Success(t *testing.T) {
 				t.Errorf("Expected key '%s' to exist", key)
 			}
 			if actualValue != expectedValue {
-				t.Errorf("Expected '%s'='%s', got '%s'", key, expectedValue, actualValue)
+				t.Errorf(
+					"Expected '%s'='%s', got '%s'", key, expectedValue, actualValue,
+				)
 			}
 		}
 
@@ -123,9 +139,7 @@ func TestDataStore_loadSecretInternal_MultipleVersions(t *testing.T) {
 	withSQLiteEnvironment(t, func() {
 		cleanupSQLiteDatabase(t)
 		store := createTestDataStore(t)
-		defer func(store *DataStore, c context.Context) {
-			_ = store.Close(c)
-		}(store, context.Background())
+		closeStoreOnCleanup(t, store)
 
 		ctx := context.Background()
 		path := "test/multi/versions"
@@ -166,7 +180,9 @@ func TestDataStore_loadSecretInternal_MultipleVersions(t *testing.T) {
 
 		// Check metadata
 		if secret.Metadata.CurrentVersion != 3 {
-			t.Errorf("Expected current version 3, got %d", secret.Metadata.CurrentVersion)
+			t.Errorf(
+				"Expected current version 3, got %d", secret.Metadata.CurrentVersion,
+			)
 		}
 
 		// Check versions
@@ -198,7 +214,9 @@ func TestDataStore_loadSecretInternal_MultipleVersions(t *testing.T) {
 			t.Errorf("Expected v3 key='value3', got '%s'", version3.Data["key"])
 		}
 		if version3.Data["region"] != "us-east-1" {
-			t.Errorf("Expected v3 region='us-east-1', got '%s'", version3.Data["region"])
+			t.Errorf(
+				"Expected v3 region='us-east-1', got '%s'", version3.Data["region"],
+			)
 		}
 		if version3.DeletedTime != nil {
 			t.Error("Expected v3 DeletedTime to be nil")
@@ -210,9 +228,7 @@ func TestDataStore_loadSecretInternal_SecretNotFound(t *testing.T) {
 	withSQLiteEnvironment(t, func() {
 		cleanupSQLiteDatabase(t)
 		store := createTestDataStore(t)
-		defer func(store *DataStore, c context.Context) {
-			_ = store.Close(c)
-		}(store, context.Background())
+		closeStoreOnCleanup(t, store)
 
 		ctx := context.Background()
 		path := "nonexistent/secret"
@@ -220,7 +236,8 @@ func TestDataStore_loadSecretInternal_SecretNotFound(t *testing.T) {
 		// Execute the function
 		secret, err := store.loadSecretInternal(ctx, path)
 
-		// Verify results: should return ErrEntityNotFound for the non-existent secret
+		// Verify results: should return ErrEntityNotFound for the non-existent
+		// secret
 		if err == nil {
 			t.Error("Expected ErrEntityNotFound for non-existent secret")
 		}
@@ -239,9 +256,7 @@ func TestDataStore_loadSecretInternal_EmptyVersionsResult(t *testing.T) {
 	withSQLiteEnvironment(t, func() {
 		cleanupSQLiteDatabase(t)
 		store := createTestDataStore(t)
-		defer func(store *DataStore, c context.Context) {
-			_ = store.Close(c)
-		}(store, context.Background())
+		closeStoreOnCleanup(t, store)
 
 		ctx := context.Background()
 		path := "test/empty/versions"
@@ -283,9 +298,7 @@ func TestDataStore_loadSecretInternal_CorruptedData(t *testing.T) {
 	withSQLiteEnvironment(t, func() {
 		cleanupSQLiteDatabase(t)
 		store := createTestDataStore(t)
-		defer func(store *DataStore, c context.Context) {
-			_ = store.Close(c)
-		}(store, context.Background())
+		closeStoreOnCleanup(t, store)
 
 		ctx := context.Background()
 		path := "test/corrupted/data"
@@ -305,10 +318,12 @@ func TestDataStore_loadSecretInternal_CorruptedData(t *testing.T) {
 
 		// Insert corrupted version data (invalid nonce/encrypted combination)
 		invalidNonce := make([]byte, store.Cipher.NonceSize())
-		invalidEncrypted := []byte("invalid encrypted data that will fail decryption")
+		invalidEncrypted := []byte(
+			"invalid encrypted data that will fail decryption",
+		)
 
 		versionCreatedTime := createdTime.Add(1 * time.Hour)
-		_, err := store.db.ExecContext(ctx, ddl.QueryUpsertSecret,
+		_, err := store.db.ExecContext(ctx, ddl.QueryUpsertVersion,
 			path, 1, invalidNonce, invalidEncrypted, versionCreatedTime, nil)
 		if err != nil {
 			t.Fatalf("Failed to insert corrupted version: %v", err)
@@ -332,39 +347,95 @@ func TestDataStore_loadSecretInternal_CorruptedData(t *testing.T) {
 	})
 }
 
+// TestDataStore_loadSecretInternal_CorruptMetadata verifies that a metadata
+// row whose decrypted fields do not parse as integers is rejected with an
+// integrity error that names the field, and that no secret is returned.
+func TestDataStore_loadSecretInternal_CorruptMetadata(t *testing.T) {
+	withSQLiteEnvironment(t, func() {
+		cleanupSQLiteDatabase(t)
+		store := createTestDataStore(t)
+		closeStoreOnCleanup(t, store)
+
+		ctx := context.Background()
+		path := "test/corrupt/metadata"
+
+		now := time.Now().Truncate(time.Second)
+		healthy := rawSecretMetadata{
+			currentVersion: "1",
+			oldestVersion:  "1",
+			maxVersions:    "5",
+			createdTime:    strconv.FormatInt(now.Unix(), 10),
+			updatedTime:    strconv.FormatInt(now.Unix(), 10),
+		}
+
+		// Each case corrupts exactly one field. The loader must refuse the
+		// row instead of silently reading the field as zero.
+		cases := []struct {
+			name   string
+			mutate func(raw *rawSecretMetadata)
+		}{
+			{"current_version", func(r *rawSecretMetadata) {
+				r.currentVersion = "not-a-number"
+			}},
+			{"oldest_version", func(r *rawSecretMetadata) {
+				r.oldestVersion = ""
+			}},
+			{"created_time", func(r *rawSecretMetadata) {
+				r.createdTime = "2025-01-01"
+			}},
+			{"updated_time", func(r *rawSecretMetadata) {
+				r.updatedTime = "1.5"
+			}},
+			{"max_versions", func(r *rawSecretMetadata) {
+				r.maxVersions = "five"
+			}},
+		}
+
+		for _, tc := range cases {
+			t.Run(tc.name, func(t *testing.T) {
+				raw := healthy
+				tc.mutate(&raw)
+				insertRawEncryptedMetadata(ctx, t, store, path, raw)
+
+				secret, loadErr := store.loadSecretInternal(ctx, path)
+				if loadErr == nil {
+					t.Fatalf("expected an error for a corrupt %s", tc.name)
+					return
+				}
+				if !loadErr.Is(sdkErrors.ErrStateIntegrityCheck) {
+					t.Errorf("expected ErrStateIntegrityCheck, got: %v", loadErr)
+				}
+				if !strings.Contains(loadErr.Msg, tc.name) {
+					t.Errorf("expected the message to name %s, got: %q",
+						tc.name, loadErr.Msg)
+				}
+				if secret != nil {
+					t.Error("expected a nil secret for corrupt metadata")
+				}
+			})
+		}
+	})
+}
+
 // Benchmark test for performance with real SQLite
 func BenchmarkDataStore_loadSecretInternal(b *testing.B) {
-	// Set environment variables for SQLite backend
-	originalBackend := os.Getenv(env.NexusBackendStore)
-	originalSkipSchema := os.Getenv(env.NexusDBSkipSchemaCreation)
-
-	_ = os.Setenv(env.NexusBackendStore, "sqlite")
-	_ = os.Unsetenv(env.NexusDBSkipSchemaCreation)
-
-	defer func() {
-		if originalBackend != "" {
-			_ = os.Setenv(env.NexusBackendStore, originalBackend)
-		} else {
-			_ = os.Unsetenv(env.NexusBackendStore)
-		}
-		if originalSkipSchema != "" {
-			_ = os.Setenv(env.NexusDBSkipSchemaCreation, originalSkipSchema)
-		} else {
-			_ = os.Unsetenv(env.NexusDBSkipSchemaCreation)
-		}
-	}()
+	// Select the SQLite backend with schema creation enabled. b.Setenv
+	// restores the previous values when the benchmark ends; an empty
+	// value is what the SDK treats as "unset".
+	b.Setenv(env.NexusBackendStore, "sqlite")
+	b.Setenv(env.NexusDBSkipSchemaCreation, "")
 
 	// Clean up the database
 	dataDir := fs.NexusDataFolder()
 	dbPath := filepath.Join(dataDir, "spike.db")
-	if _, err := os.Stat(dbPath); err == nil {
-		_ = os.Remove(dbPath)
+	if _, statErr := os.Stat(dbPath); statErr == nil {
+		if rmErr := os.Remove(dbPath); rmErr != nil {
+			b.Fatalf("Failed to remove existing database %s: %v", dbPath, rmErr)
+		}
 	}
 
 	store := createTestDataStore(b)
-	defer func(store *DataStore, c context.Context) {
-		_ = store.Close(c)
-	}(store, context.Background())
+	closeStoreOnCleanup(b, store)
 
 	ctx := context.Background()
 	path := "benchmark/secret"

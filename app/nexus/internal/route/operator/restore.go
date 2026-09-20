@@ -109,8 +109,22 @@ func RouteRestore(
 		)
 	}
 
+	// guardRestoreRequest has already rejected any ID outside 1..1000, so
+	// the conversion cannot wrap. Convert once and compare as uint64.
+	if request.ID < 1 {
+		failErr := sdkErrors.ErrDataInvalidInput.Clone()
+		failErr.Msg = "shard ID must be positive"
+		if respondErr := net.Fail(
+			reqres.RestoreResponse{}.BadRequest(), w, http.StatusBadRequest,
+		); respondErr != nil {
+			return failErr.Wrap(respondErr)
+		}
+		return failErr
+	}
+	requestID := uint64(request.ID)
+
 	for _, shard := range shards {
-		if int(shard.ID) != request.ID {
+		if shard.ID != requestID {
 			continue
 		}
 
@@ -127,7 +141,7 @@ func RouteRestore(
 	}
 
 	shards = append(shards, crypto.ShamirShard{
-		ID:    uint64(request.ID),
+		ID:    requestID,
 		Value: request.Shard,
 	})
 

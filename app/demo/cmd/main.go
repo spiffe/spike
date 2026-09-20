@@ -9,10 +9,27 @@ import (
 	"fmt"
 
 	spike "github.com/spiffe/spike-sdk-go/api"
+	"github.com/spiffe/spike-sdk-go/log"
 )
 
+const appName = "SPIKE Demo"
+
+// say writes a line to stdout and terminates the program if the write fails.
+//
+// The demo has no purpose if it cannot show its output, so a failed write is
+// treated as fatal rather than ignored.
+//
+// Parameters:
+//   - args: The values to print, formatted as fmt.Println would.
+func say(args ...any) {
+	if _, err := fmt.Println(args...); err != nil {
+		log.FatalLn(appName, "message", "failed to write to stdout",
+			"err", err.Error())
+	}
+}
+
 func main() {
-	fmt.Println("SPIKE Demo")
+	say("SPIKE Demo")
 
 	// Make sure you register the demo app SPIRE Server registration entry
 	// first:
@@ -21,18 +38,18 @@ func main() {
 	// https://pkg.go.dev/github.com/spiffe/spike-sdk-go/api#New
 	api, connErr := spike.New() // Use the default Workload API Socket
 	if connErr != nil {
-		fmt.Println("Error connecting to SPIKE Nexus:", connErr.Error())
+		say("Error connecting to SPIKE Nexus:", connErr.Error())
 		return
 	}
 
-	fmt.Println("Connected to SPIKE Nexus.")
+	say("Connected to SPIKE Nexus.")
 
 	// https://pkg.go.dev/github.com/spiffe/spike-sdk-go/api#Close
 	defer func() {
 		// Close the connection when done
 		closeErr := api.Close()
 		if closeErr != nil {
-			fmt.Println("Error closing connection:", closeErr.Error())
+			say("Error closing connection:", closeErr.Error())
 		}
 	}()
 
@@ -48,7 +65,7 @@ func main() {
 		"password": "SPIKE_Rocks",
 	})
 	if putErr != nil {
-		fmt.Println("Error writing secret:", putErr.Error())
+		say("Error writing secret:", putErr.Error())
 		return
 	}
 
@@ -56,17 +73,17 @@ func main() {
 	// https://pkg.go.dev/github.com/spiffe/spike-sdk-go/api#GetSecret
 	secret, getErr := api.GetSecret(ctx, path)
 	if getErr != nil {
-		fmt.Println("Error reading secret:", getErr.Error())
+		say("Error reading secret:", getErr.Error())
 		return
 	}
 
 	if secret == nil {
-		fmt.Println("Secret not found.")
+		say("Secret not found.")
 		return
 	}
 
-	fmt.Println("Secret found:")
+	say("Secret found:")
 	for k, v := range secret.Data {
-		fmt.Printf("%s: %s\n", k, v)
+		say(k + ": " + v)
 	}
 }

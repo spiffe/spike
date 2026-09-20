@@ -284,9 +284,7 @@ func TestCheckPolicyAccess_ReservedGuardHoldsUnderSQLite(t *testing.T) {
 		resetRootKey()
 		Initialize(rootKey)
 
-		defer func() {
-			_ = persist.Backend().Close(ctx)
-		}()
+		defer closeBackend(t, ctx)
 
 		// Stored directly so it reaches the database despite the guard in
 		// UpsertPolicy, as a policy written before the guard existed would.

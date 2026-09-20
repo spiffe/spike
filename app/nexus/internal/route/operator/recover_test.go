@@ -7,7 +7,6 @@ package operator
 import (
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"testing"
 
 	"github.com/spiffe/spike-sdk-go/config/env"
@@ -16,18 +15,8 @@ import (
 )
 
 func TestRouteRecover_MemoryMode(t *testing.T) {
-	// Save original environment variables
-	originalStore := os.Getenv(env.NexusBackendStore)
-	defer func() {
-		if originalStore != "" {
-			_ = os.Setenv(env.NexusBackendStore, originalStore)
-		} else {
-			_ = os.Unsetenv(env.NexusBackendStore)
-		}
-	}()
-
-	// Set to memory mode
-	_ = os.Setenv(env.NexusBackendStore, "memory")
+	// Set to memory mode; t.Setenv restores the original value.
+	t.Setenv(env.NexusBackendStore, "memory")
 
 	// Verify the environment is set correctly
 	if env.BackendStoreTypeVal() != env.Memory {

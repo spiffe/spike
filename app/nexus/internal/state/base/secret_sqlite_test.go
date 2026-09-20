@@ -16,62 +16,9 @@ import (
 	"github.com/spiffe/spike-sdk-go/config/fs"
 	"github.com/spiffe/spike-sdk-go/crypto"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
-	"github.com/spiffe/spike-sdk-go/kv"
 
 	"github.com/spiffe/spike/app/nexus/internal/state/persist"
 )
-
-// createTestRootKey creates a test root key for SQLite backend
-func createTestRootKey(_ *testing.T) *[crypto.AES256KeySize]byte {
-	key := &[crypto.AES256KeySize]byte{}
-	// Use a predictable pattern for testing
-	for i := range key {
-		key[i] = byte(i % 256)
-	}
-	return key
-}
-
-// cleanupSQLiteDatabase removes the existing SQLite database to ensure
-// a clean test state
-func cleanupSQLiteDatabase(t *testing.T) {
-	dataDir := fs.NexusDataFolder()
-	dbPath := filepath.Join(dataDir, "spike.db")
-
-	// Remove the database file if it exists
-	if _, err := os.Stat(dbPath); err == nil {
-		t.Logf("Removing existing database at %s", dbPath)
-		if err := os.Remove(dbPath); err != nil {
-			t.Logf("Warning: Failed to remove existing database: %v", err)
-		}
-	}
-}
-
-// withSQLiteEnvironment sets up environment for SQLite testing
-func withSQLiteEnvironment(_ *testing.T, testFunc func()) {
-	// Save original environment variables
-	originalStore := os.Getenv(env.NexusBackendStore)
-	originalSkipSchema := os.Getenv(env.NexusDBSkipSchemaCreation)
-
-	// Ensure cleanup happens
-	defer func() {
-		if originalStore != "" {
-			_ = os.Setenv(env.NexusBackendStore, originalStore)
-		} else {
-			_ = os.Unsetenv(env.NexusBackendStore)
-		}
-		if originalSkipSchema != "" {
-			_ = os.Setenv(env.NexusDBSkipSchemaCreation, originalSkipSchema)
-		} else {
-			_ = os.Unsetenv(env.NexusDBSkipSchemaCreation)
-		}
-	}()
-
-	// Set to SQLite backend and ensure schema creation
-	_ = os.Setenv(env.NexusBackendStore, "sqlite")
-	_ = os.Unsetenv(env.NexusDBSkipSchemaCreation)
-
-	testFunc()
-}
 
 func TestSQLiteSecret_NewSecret(t *testing.T) {
 	withSQLiteEnvironment(t, func() {
@@ -99,9 +46,7 @@ func TestSQLiteSecret_NewSecret(t *testing.T) {
 		persist.InitializeBackend(rootKey)
 		Initialize(rootKey)
 
-		defer func() {
-			_ = persist.Backend().Close(ctx)
-		}()
+		defer closeBackend(t, ctx)
 
 		// Check what secrets exist immediately after initialization
 		// (should be empty for clean DB)
@@ -179,9 +124,7 @@ func TestSQLiteSecret_Persistence(t *testing.T) {
 		persist.InitializeBackend(rootKey)
 		Initialize(rootKey)
 
-		defer func() {
-			_ = persist.Backend().Close(ctx)
-		}()
+		defer closeBackend(t, ctx)
 
 		upsertErr := UpsertSecret(path, values)
 		if upsertErr != nil {
@@ -198,9 +141,7 @@ func TestSQLiteSecret_Persistence(t *testing.T) {
 		persist.InitializeBackend(rootKey)
 		Initialize(rootKey)
 
-		defer func() {
-			_ = persist.Backend().Close(ctx)
-		}()
+		defer closeBackend(t, ctx)
 
 		retrievedValues, getErr := GetSecret(path, 0)
 		if getErr != nil {
@@ -225,9 +166,7 @@ func TestSQLiteSecret_SimpleVersioning(t *testing.T) {
 		persist.InitializeBackend(rootKey)
 		Initialize(rootKey)
 
-		defer func() {
-			_ = persist.Backend().Close(ctx)
-		}()
+		defer closeBackend(t, ctx)
 
 		path := "test/simple-versioning"
 
@@ -304,15 +243,6 @@ func TestSQLiteSecret_SimpleVersioning(t *testing.T) {
 	})
 }
 
-// Helper function to get version numbers from a secret
-func getVersionNumbers(secret *kv.Value) []int {
-	versions := make([]int, 0, len(secret.Versions))
-	for v := range secret.Versions {
-		versions = append(versions, v)
-	}
-	return versions
-}
-
 func TestSQLiteSecret_VersionPersistence(t *testing.T) {
 	path := "test/sqlite-versions"
 
@@ -326,9 +256,7 @@ func TestSQLiteSecret_VersionPersistence(t *testing.T) {
 		persist.InitializeBackend(rootKey)
 		Initialize(rootKey)
 
-		defer func() {
-			_ = persist.Backend().Close(ctx)
-		}()
+		defer closeBackend(t, ctx)
 
 		// Create 3 versions
 		for i := 1; i <= 3; i++ {
@@ -364,9 +292,7 @@ func TestSQLiteSecret_VersionPersistence(t *testing.T) {
 		persist.InitializeBackend(rootKey)
 		Initialize(rootKey)
 
-		defer func() {
-			_ = persist.Backend().Close(ctx)
-		}()
+		defer closeBackend(t, ctx)
 
 		// First, get the raw secret to understand what versions exist
 		rawSecret, getRawErr := GetRawSecret(path, 0)
@@ -376,7 +302,9 @@ func TestSQLiteSecret_VersionPersistence(t *testing.T) {
 
 		t.Logf("Second session - Current version: %d",
 			rawSecret.Metadata.CurrentVersion)
-		t.Logf("Second session - Total versions stored: %d", len(rawSecret.Versions))
+		t.Logf(
+			"Second session - Total versions stored: %d", len(rawSecret.Versions),
+		)
 		for version := range rawSecret.Versions {
 			t.Logf("  - Version %d exists in second session", version)
 		}
@@ -424,9 +352,7 @@ func TestSQLiteSecret_EncryptionWithDifferentKeys(t *testing.T) {
 		persist.InitializeBackend(key1)
 		Initialize(key1)
 
-		defer func() {
-			_ = persist.Backend().Close(ctx)
-		}()
+		defer closeBackend(t, ctx)
 
 		upsertErr := UpsertSecret(path, values)
 		if upsertErr != nil {
@@ -447,9 +373,7 @@ func TestSQLiteSecret_EncryptionWithDifferentKeys(t *testing.T) {
 		persist.InitializeBackend(key2)
 		Initialize(key2)
 
-		defer func() {
-			_ = persist.Backend().Close(ctx)
-		}()
+		defer closeBackend(t, ctx)
 
 		// This should either fail or return decrypted garbage
 		// (depending on implementation)
@@ -473,9 +397,7 @@ func TestSQLiteSecret_EncryptionWithDifferentKeys(t *testing.T) {
 		persist.InitializeBackend(key1)
 		Initialize(key1)
 
-		defer func() {
-			_ = persist.Backend().Close(ctx)
-		}()
+		defer closeBackend(t, ctx)
 
 		retrievedValues, getErr := GetSecret(path, 0)
 		if getErr != nil {
@@ -492,31 +414,11 @@ func TestSQLiteSecret_EncryptionWithDifferentKeys(t *testing.T) {
 // Benchmark tests for SQLite
 func BenchmarkSQLiteUpsertSecret(b *testing.B) {
 	// Set environment variables for SQLite backend
-	originalBackend := os.Getenv(env.NexusBackendStore)
-	originalSkipSchema := os.Getenv(env.NexusDBSkipSchemaCreation)
-
-	_ = os.Setenv(env.NexusBackendStore, "sqlite")
-	_ = os.Unsetenv(env.NexusDBSkipSchemaCreation)
-
-	defer func() {
-		if originalBackend != "" {
-			_ = os.Setenv(env.NexusBackendStore, originalBackend)
-		} else {
-			_ = os.Unsetenv(env.NexusBackendStore)
-		}
-		if originalSkipSchema != "" {
-			_ = os.Setenv(env.NexusDBSkipSchemaCreation, originalSkipSchema)
-		} else {
-			_ = os.Unsetenv(env.NexusDBSkipSchemaCreation)
-		}
-	}()
+	b.Setenv(env.NexusBackendStore, "sqlite")
+	unsetEnv(b, env.NexusDBSkipSchemaCreation)
 
 	// Clean up the database
-	dataDir := fs.NexusDataFolder()
-	dbPath := filepath.Join(dataDir, "spike.db")
-	if _, err := os.Stat(dbPath); err == nil {
-		_ = os.Remove(dbPath)
-	}
+	cleanupSQLiteDatabase(b)
 
 	rootKey := &[crypto.AES256KeySize]byte{}
 	for i := range rootKey {
@@ -545,31 +447,11 @@ func BenchmarkSQLiteUpsertSecret(b *testing.B) {
 
 func BenchmarkSQLiteGetSecret(b *testing.B) {
 	// Set environment variables for SQLite backend
-	originalBackend := os.Getenv(env.NexusBackendStore)
-	originalSkipSchema := os.Getenv(env.NexusDBSkipSchemaCreation)
-
-	_ = os.Setenv(env.NexusBackendStore, "sqlite")
-	_ = os.Unsetenv(env.NexusDBSkipSchemaCreation)
-
-	defer func() {
-		if originalBackend != "" {
-			_ = os.Setenv(env.NexusBackendStore, originalBackend)
-		} else {
-			_ = os.Unsetenv(env.NexusBackendStore)
-		}
-		if originalSkipSchema != "" {
-			_ = os.Setenv(env.NexusDBSkipSchemaCreation, originalSkipSchema)
-		} else {
-			_ = os.Unsetenv(env.NexusDBSkipSchemaCreation)
-		}
-	}()
+	b.Setenv(env.NexusBackendStore, "sqlite")
+	unsetEnv(b, env.NexusDBSkipSchemaCreation)
 
 	// Clean up the database
-	dataDir := fs.NexusDataFolder()
-	dbPath := filepath.Join(dataDir, "spike.db")
-	if _, err := os.Stat(dbPath); err == nil {
-		_ = os.Remove(dbPath)
-	}
+	cleanupSQLiteDatabase(b)
 
 	rootKey := &[crypto.AES256KeySize]byte{}
 	for i := range rootKey {
@@ -586,7 +468,9 @@ func BenchmarkSQLiteGetSecret(b *testing.B) {
 		"username": "admin",
 		"password": "secret123",
 	}
-	_ = UpsertSecret(path, values)
+	if upsertErr := UpsertSecret(path, values); upsertErr != nil {
+		b.Fatalf("Failed to create the benchmark secret: %v", upsertErr)
+	}
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {

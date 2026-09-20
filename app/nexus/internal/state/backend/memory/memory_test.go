@@ -95,7 +95,9 @@ func TestInMemoryStore_StoreAndLoadSecret(t *testing.T) {
 	secret := kv.Value{
 		Versions: map[int]kv.Version{
 			1: {
-				Data:        map[string]string{"username": "admin", "password": "secret123"},
+				Data: map[string]string{
+					"username": "admin", "password": "secret123",
+				},
 				Version:     1,
 				CreatedTime: time.Now(),
 			},
@@ -136,7 +138,9 @@ func TestInMemoryStore_StoreAndLoadSecret(t *testing.T) {
 	}
 
 	if version1.Data["password"] != "secret123" {
-		t.Errorf("Expected password 'secret123', got '%s'", version1.Data["password"])
+		t.Errorf(
+			"Expected password 'secret123', got '%s'", version1.Data["password"],
+		)
 	}
 }
 
@@ -264,7 +268,9 @@ func TestInMemoryStore_StoreAndLoadPolicy(t *testing.T) {
 		Name:            "test-policy-1",
 		SPIFFEIDPattern: "^spiffe://example\\.org/app/.*$",
 		PathPattern:     "^app/secrets/.*$",
-		Permissions:     []data.PolicyPermission{data.PermissionRead, data.PermissionWrite},
+		Permissions: []data.PolicyPermission{
+			data.PermissionRead, data.PermissionWrite,
+		},
 	}
 
 	// Store the policy
@@ -410,7 +416,9 @@ func TestInMemoryStore_LoadAllPolicies(t *testing.T) {
 				name, expectedPolicy.Name, loadedPolicy.Name)
 		}
 
-		if !reflect.DeepEqual(loadedPolicy.Permissions, expectedPolicy.Permissions) {
+		if !reflect.DeepEqual(
+			loadedPolicy.Permissions, expectedPolicy.Permissions,
+		) {
 			t.Errorf("Permissions mismatch for %s: expected %v, got %v",
 				name, expectedPolicy.Permissions, loadedPolicy.Permissions)
 		}
@@ -465,8 +473,11 @@ func TestInMemoryStore_DeletePolicy(t *testing.T) {
 
 	// Verify policy no longer exists (LoadPolicy returns ErrEntityNotFound)
 	deletedPolicy, loadAfterDeleteErr := store.LoadPolicy(ctx, policy.Name)
-	if loadAfterDeleteErr == nil || !loadAfterDeleteErr.Is(sdkErrors.ErrEntityNotFound) {
-		t.Errorf("Expected ErrEntityNotFound after deletion, got: %v", loadAfterDeleteErr)
+	if loadAfterDeleteErr == nil ||
+		!loadAfterDeleteErr.Is(sdkErrors.ErrEntityNotFound) {
+		t.Errorf(
+			"Expected ErrEntityNotFound after deletion, got: %v", loadAfterDeleteErr,
+		)
 	}
 
 	if deletedPolicy != nil {
@@ -484,7 +495,10 @@ func TestInMemoryStore_DeleteNonExistentPolicy(t *testing.T) {
 
 	// Should not return error
 	if deleteErr != nil {
-		t.Errorf("DeletePolicy should not return error for non-existent policy: %v", deleteErr)
+		t.Errorf(
+			"DeletePolicy should not return error for non-existent policy: %v",
+			deleteErr,
+		)
 	}
 }
 
@@ -507,7 +521,9 @@ func TestInMemoryStore_ConcurrentSecretOperations(t *testing.T) {
 				secret := kv.Value{
 					Versions: map[int]kv.Version{
 						1: {
-							Data:    map[string]string{"data": fmt.Sprintf("value-%d-%d", goroutineID, j)},
+							Data: map[string]string{
+								"data": fmt.Sprintf("value-%d-%d", goroutineID, j),
+							},
 							Version: 1,
 						},
 					},
@@ -553,11 +569,15 @@ func TestInMemoryStore_ConcurrentPolicyOperations(t *testing.T) {
 			for j := 0; j < policiesPerGoroutine; j++ {
 				policyID := fmt.Sprintf("concurrent-policy-%d-%d", goroutineID, j)
 				policy := data.Policy{
-					ID:              policyID,
-					Name:            fmt.Sprintf("Concurrent Policy %d-%d", goroutineID, j),
-					SPIFFEIDPattern: fmt.Sprintf("spiffe://example\\.org/goroutine-%d/.*$", goroutineID),
-					PathPattern:     fmt.Sprintf("concurrent/%d/*", goroutineID),
-					Permissions:     []data.PolicyPermission{data.PermissionRead},
+					ID: policyID,
+					Name: fmt.Sprintf(
+						"Concurrent Policy %d-%d", goroutineID, j,
+					),
+					SPIFFEIDPattern: fmt.Sprintf(
+						"spiffe://example\\.org/goroutine-%d/.*$", goroutineID,
+					),
+					PathPattern: fmt.Sprintf("concurrent/%d/*", goroutineID),
+					Permissions: []data.PolicyPermission{data.PermissionRead},
 				}
 
 				err := store.StorePolicy(ctx, policy)
@@ -604,7 +624,9 @@ func TestInMemoryStore_MixedConcurrentOperations(t *testing.T) {
 					},
 				},
 			}
-			_ = store.StoreSecret(ctx, path, secret)
+			if storeErr := store.StoreSecret(ctx, path, secret); storeErr != nil {
+				t.Errorf("StoreSecret(%s) failed: %v", path, storeErr)
+			}
 		}
 	}()
 
@@ -620,7 +642,9 @@ func TestInMemoryStore_MixedConcurrentOperations(t *testing.T) {
 				PathPattern:     fmt.Sprintf("^mixed/%d/.*$", i),
 				Permissions:     []data.PolicyPermission{data.PermissionRead},
 			}
-			_ = store.StorePolicy(ctx, policy)
+			if storeErr := store.StorePolicy(ctx, policy); storeErr != nil {
+				t.Errorf("StorePolicy(%s) failed: %v", policy.ID, storeErr)
+			}
 		}
 	}()
 
@@ -629,8 +653,12 @@ func TestInMemoryStore_MixedConcurrentOperations(t *testing.T) {
 	go func() {
 		defer wg.Done()
 		for i := 0; i < 10; i++ {
-			_, _ = store.LoadAllSecrets(ctx)
-			_, _ = store.LoadAllPolicies(ctx)
+			if _, loadErr := store.LoadAllSecrets(ctx); loadErr != nil {
+				t.Errorf("LoadAllSecrets failed: %v", loadErr)
+			}
+			if _, loadErr := store.LoadAllPolicies(ctx); loadErr != nil {
+				t.Errorf("LoadAllPolicies failed: %v", loadErr)
+			}
 		}
 	}()
 
@@ -662,8 +690,10 @@ func TestInMemoryStore_MaxVersionsConfig(t *testing.T) {
 	store := NewInMemoryStore(testCipher, maxVersions)
 	ctx := context.Background()
 
-	// The kv.Config with MaxSecretVersions should be respected by the underlying kv.KV
-	// This is more of an integration test to ensure the config is passed correctly
+	// The kv.Config with MaxSecretVersions should be respected by the underlying
+	// kv.KV
+	// This is more of an integration test to ensure the config is passed
+	// correctly
 
 	// Store a secret (this tests that the KV was initialized with the config)
 	secret := kv.Value{

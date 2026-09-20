@@ -10,7 +10,7 @@ sort_by = "weight"
 
 # SPIKE Backup and Restore Guide
 
-**SPIKE**, the Secure Production Identity Framework for Key Encryption, provides 
+**SPIKE**, the Secure Production Identity Framework for Key Encryption, provides
 robust secrets management with strong identity controls. But even the most 
 reliable systems need comprehensive backup and recovery plans. This guide
 explains how to properly back up, secure, and restore SPIKE deployments,
@@ -26,7 +26,7 @@ considerations:
    and root key management. It stores encrypted secrets in a SQLite database 
    and communicates via an mTLS API.
 
-2. **SPIKE Keeper**: A redundancy mechanism holding Shamir Secret Sharing shards 
+2. **SPIKE Keeper**: A redundancy mechanism holding Shamir Secret Sharing shards
    of the root key in memory. Multiple Keeper instances provide resiliency, 
    requiring a configurable threshold of shards to reconstruct the root key.
 
@@ -42,7 +42,7 @@ The foundation of SPIKE's security model lies in its root key management:
   reconstruct*)
 * **SPIKE Keeper**s hold these shards in memory for automatic recovery if 
   **SPIKE Nexus** crashes
-* For disaster recovery scenarios, administrators can create additional recovery 
+* For disaster recovery scenarios, administrators can create additional recovery
   shards
 
 ## Backup Procedures
@@ -217,13 +217,15 @@ For root key recovery shards:
 * **Physical separation**: Store shards in different physical locations
 * **Access controls**: Implement strict controls with separation of duties
 * **Hardware security**: Consider HSMs or smart cards for shard storage
-* **Environmental protection**: Use fire/water-resistant safes for physical media
+* **Environmental protection**: Use fire/water-resistant safes for physical
+  media
 
 For database backups:
 
 - **Encryption**: Implement at-rest encryption for all backup files
 - **Access limitations**: Restrict backup access to authorized personnel only
-- **Immutability**: Consider WORM (Write Once Read Many) storage for critical backups
+- **Immutability**: Consider WORM (Write Once Read Many) storage for critical
+  backups
 - **Offline copies**: Maintain air-gapped copies of critical backups
 
 ## Migration Limitations and Planning

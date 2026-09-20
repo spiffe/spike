@@ -12,18 +12,8 @@ import (
 )
 
 func TestInitialize_SQLiteBackend(t *testing.T) {
-	// Save the original environment variable
-	originalStore := os.Getenv(env.NexusBackendStore)
-	defer func() {
-		if originalStore != "" {
-			_ = os.Setenv(env.NexusBackendStore, originalStore)
-		} else {
-			_ = os.Unsetenv(env.NexusBackendStore)
-		}
-	}()
-
-	// Set to SQLite backend
-	_ = os.Setenv(env.NexusBackendStore, "sqlite")
+	// Set to SQLite backend; t.Setenv restores the original value.
+	t.Setenv(env.NexusBackendStore, "sqlite")
 
 	// Verify the environment is set correctly
 	if env.BackendStoreTypeVal() != env.Sqlite {
@@ -36,22 +26,13 @@ func TestInitialize_SQLiteBackend(t *testing.T) {
 	//
 	// Both of these require SPIFFE infrastructure and network connectivity
 	// We skip this test since it would hang or fail without proper setup
-	t.Skip("Skipping SQLite backend test - requires SPIFFE infrastructure and network connectivity")
+	t.Skip("Skipping SQLite backend test - requires SPIFFE infrastructure " +
+		"and network connectivity")
 }
 
 func TestInitialize_LiteBackend(t *testing.T) {
-	// Save the original environment variable
-	originalStore := os.Getenv(env.NexusBackendStore)
-	defer func() {
-		if originalStore != "" {
-			_ = os.Setenv(env.NexusBackendStore, originalStore)
-		} else {
-			_ = os.Unsetenv(env.NexusBackendStore)
-		}
-	}()
-
-	// Set to Lite backend
-	_ = os.Setenv(env.NexusBackendStore, "lite")
+	// Set to Lite backend; t.Setenv restores the original value.
+	t.Setenv(env.NexusBackendStore, "lite")
 
 	// Verify the environment is set correctly
 	if env.BackendStoreTypeVal() != env.Lite {
@@ -64,22 +45,13 @@ func TestInitialize_LiteBackend(t *testing.T) {
 	//
 	// Both of these require SPIFFE infrastructure and network connectivity
 	// We skip this test since it would hang or fail without proper setup
-	t.Skip("Skipping Lite backend test - requires SPIFFE infrastructure and network connectivity")
+	t.Skip("Skipping Lite backend test - requires SPIFFE infrastructure " +
+		"and network connectivity")
 }
 
 func TestInitialize_MemoryBackend(t *testing.T) {
-	// Save the original environment variable
-	originalStore := os.Getenv(env.NexusBackendStore)
-	defer func() {
-		if originalStore != "" {
-			_ = os.Setenv(env.NexusBackendStore, originalStore)
-		} else {
-			_ = os.Unsetenv(env.NexusBackendStore)
-		}
-	}()
-
-	// Set to Memory backend
-	_ = os.Setenv(env.NexusBackendStore, "memory")
+	// Set to Memory backend; t.Setenv restores the original value.
+	t.Setenv(env.NexusBackendStore, "memory")
 
 	// Verify the environment is set correctly
 	if env.BackendStoreTypeVal() != env.Memory {
@@ -96,18 +68,8 @@ func TestInitialize_MemoryBackend(t *testing.T) {
 }
 
 func TestInitialize_InvalidBackend(t *testing.T) {
-	// Save the original environment variable
-	originalStore := os.Getenv(env.NexusBackendStore)
-	defer func() {
-		if originalStore != "" {
-			_ = os.Setenv(env.NexusBackendStore, originalStore)
-		} else {
-			_ = os.Unsetenv(env.NexusBackendStore)
-		}
-	}()
-
-	// Set to invalid backend
-	_ = os.Setenv(env.NexusBackendStore, "invalid")
+	// Set to an invalid backend; t.Setenv restores the original value.
+	t.Setenv(env.NexusBackendStore, "invalid")
 
 	// The Initialize function with an invalid backend would call log.FatalLn
 	// which calls os.Exit() and terminates the process
@@ -117,16 +79,6 @@ func TestInitialize_InvalidBackend(t *testing.T) {
 
 func TestBackendStoreTypeDetection(t *testing.T) {
 	// Test the backend store type detection logic used in Initialize()
-
-	// Save the original environment variable
-	originalStore := os.Getenv(env.NexusBackendStore)
-	defer func() {
-		if originalStore != "" {
-			_ = os.Setenv(env.NexusBackendStore, originalStore)
-		} else {
-			_ = os.Unsetenv(env.NexusBackendStore)
-		}
-	}()
 
 	tests := []struct {
 		name                           string
@@ -160,12 +112,13 @@ func TestBackendStoreTypeDetection(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", tt.backendStore)
+			t.Setenv(env.NexusBackendStore, tt.backendStore)
 
 			// Test backend type detection
 			backendType := env.BackendStoreTypeVal()
 			if backendType != tt.expectedType {
-				t.Errorf("Expected backend type %s, got %s", tt.expectedType, backendType)
+				t.Errorf("Expected backend type %s, got %s",
+					tt.expectedType, backendType)
 			}
 
 			// Test requireBackingStoreToBootstrap logic
@@ -207,33 +160,28 @@ func TestBackendStoreTypeConstants(t *testing.T) {
 }
 
 func TestEnvironmentVariableHandling(t *testing.T) {
-	// Test environment variable handling
-	originalStore := os.Getenv(env.NexusBackendStore)
-	defer func() {
-		if originalStore != "" {
-			_ = os.Setenv(env.NexusBackendStore, originalStore)
-		} else {
-			_ = os.Unsetenv(env.NexusBackendStore)
-		}
-	}()
-
-	// Test with unset environment variable (should have the default behavior)
-	_ = os.Unsetenv(env.NexusBackendStore)
+	// Test environment variable handling. t.Setenv registers the cleanup
+	// that restores the original value; the variable is then unset to
+	// exercise the default behavior.
+	t.Setenv(env.NexusBackendStore, "")
+	if unsetErr := os.Unsetenv(env.NexusBackendStore); unsetErr != nil {
+		t.Fatalf("Failed to unset %s: %v", env.NexusBackendStore, unsetErr)
+	}
 	defaultType := env.BackendStoreTypeVal()
 	t.Logf("Default backend store type: %s", string(defaultType))
 
 	// Test with valid values
 	validValues := []string{"sqlite", "lite", "memory"}
 	for _, value := range validValues {
-		_ = os.Setenv(env.NexusBackendStore, value)
+		t.Setenv(env.NexusBackendStore, value)
 		resultType := env.BackendStoreTypeVal()
 		if string(resultType) != value {
 			t.Errorf("Expected backend type %s, got %s", value, string(resultType))
 		}
 	}
 
-	// Test with invalid value
-	_ = os.Setenv(env.NexusBackendStore, "invalid")
+	// Test with an invalid value
+	t.Setenv(env.NexusBackendStore, "invalid")
 	invalidType := env.BackendStoreTypeVal()
 	t.Logf("Invalid backend store type returns: %s", string(invalidType))
 }

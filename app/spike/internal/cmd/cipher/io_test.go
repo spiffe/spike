@@ -27,7 +27,9 @@ func TestOpenInput_Stdin(t *testing.T) {
 	}
 
 	// Cleanup should be safe to call (should not close stdin)
-	cleanup()
+	if closeErr := cleanup(); closeErr != nil {
+		t.Errorf("cleanup() error = %v, want nil", closeErr)
+	}
 }
 
 func TestOpenInput_ValidFile(t *testing.T) {
@@ -36,7 +38,7 @@ func TestOpenInput_ValidFile(t *testing.T) {
 	tempFile := filepath.Join(tempDir, "test-input.txt")
 	content := []byte("test content for reading")
 
-	if err := os.WriteFile(tempFile, content, 0644); err != nil {
+	if err := os.WriteFile(tempFile, content, 0600); err != nil {
 		t.Fatalf("Failed to create test file: %v", err)
 	}
 
@@ -65,7 +67,9 @@ func TestOpenInput_ValidFile(t *testing.T) {
 	}
 
 	// Cleanup should close the file
-	cleanup()
+	if closeErr := cleanup(); closeErr != nil {
+		t.Errorf("cleanup() error = %v, want nil", closeErr)
+	}
 }
 
 func TestOpenInput_NonexistentFile(t *testing.T) {
@@ -101,7 +105,9 @@ func TestOpenOutput_Stdout(t *testing.T) {
 	}
 
 	// Cleanup should be safe to call (should not close stdout)
-	cleanup()
+	if closeErr := cleanup(); closeErr != nil {
+		t.Errorf("cleanup() error = %v, want nil", closeErr)
+	}
 }
 
 func TestOpenOutput_ValidFile(t *testing.T) {
@@ -134,10 +140,12 @@ func TestOpenOutput_ValidFile(t *testing.T) {
 	}
 
 	// Cleanup should close the file
-	cleanup()
+	if closeErr := cleanup(); closeErr != nil {
+		t.Errorf("cleanup() error = %v, want nil", closeErr)
+	}
 
 	// Verify content was written
-	data, readErr := os.ReadFile(tempFile)
+	data, readErr := os.ReadFile(filepath.Clean(tempFile))
 	if readErr != nil {
 		t.Errorf("Failed to read output file: %v", readErr)
 	}
@@ -170,7 +178,7 @@ func TestOpenInput_CleanupIdempotent(t *testing.T) {
 	tempDir := t.TempDir()
 	tempFile := filepath.Join(tempDir, "test-cleanup.txt")
 
-	if err := os.WriteFile(tempFile, []byte("test"), 0644); err != nil {
+	if err := os.WriteFile(tempFile, []byte("test"), 0600); err != nil {
 		t.Fatalf("Failed to create test file: %v", err)
 	}
 
@@ -179,9 +187,13 @@ func TestOpenInput_CleanupIdempotent(t *testing.T) {
 		t.Fatalf("openInput() error = %v", err)
 	}
 
-	// Calling cleanup multiple times should be safe
-	cleanup()
-	cleanup() // Should not panic
+	// The first call closes the file; later calls are no-ops.
+	if closeErr := cleanup(); closeErr != nil {
+		t.Errorf("first cleanup() error = %v, want nil", closeErr)
+	}
+	if closeErr := cleanup(); closeErr != nil {
+		t.Errorf("second cleanup() error = %v, want nil", closeErr)
+	}
 }
 
 func TestOpenOutput_CleanupIdempotent(t *testing.T) {
@@ -193,9 +205,13 @@ func TestOpenOutput_CleanupIdempotent(t *testing.T) {
 		t.Fatalf("openOutput() error = %v", err)
 	}
 
-	// Calling cleanup multiple times should be safe
-	cleanup()
-	cleanup() // Should not panic
+	// The first call closes the file; later calls are no-ops.
+	if closeErr := cleanup(); closeErr != nil {
+		t.Errorf("first cleanup() error = %v, want nil", closeErr)
+	}
+	if closeErr := cleanup(); closeErr != nil {
+		t.Errorf("second cleanup() error = %v, want nil", closeErr)
+	}
 }
 
 func TestOpenOutput_OverwritesExistingFile(t *testing.T) {
@@ -204,7 +220,7 @@ func TestOpenOutput_OverwritesExistingFile(t *testing.T) {
 
 	// Create a file with initial content
 	initialContent := "initial content that should be overwritten"
-	if err := os.WriteFile(tempFile, []byte(initialContent), 0644); err != nil {
+	if err := os.WriteFile(tempFile, []byte(initialContent), 0600); err != nil {
 		t.Fatalf("Failed to create test file: %v", err)
 	}
 
@@ -215,11 +231,18 @@ func TestOpenOutput_OverwritesExistingFile(t *testing.T) {
 
 	// Write new content
 	newContent := "new"
-	_, _ = out.Write([]byte(newContent))
-	cleanup()
+	if _, writeErr := out.Write([]byte(newContent)); writeErr != nil {
+		t.Fatalf("Failed to write to output: %v", writeErr)
+	}
+	if closeErr := cleanup(); closeErr != nil {
+		t.Fatalf("cleanup() error = %v", closeErr)
+	}
 
 	// Verify the file was overwritten (not appended)
-	data, _ := os.ReadFile(tempFile)
+	data, readErr := os.ReadFile(filepath.Clean(tempFile))
+	if readErr != nil {
+		t.Fatalf("Failed to read output file: %v", readErr)
+	}
 	if string(data) != newContent {
 		t.Errorf("File content = %q, want %q (file should be overwritten)",
 			string(data), newContent)

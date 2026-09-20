@@ -1,8 +1,41 @@
+#    \\ SPIKE: Secure your secrets with SPIFFE. — https://spike.ist/
+#  \\\\\ Copyright 2024-present SPIKE contributors.
+# \\\\\\\ SPDX-License-Identifier: Apache-2.0
+
+# golangci-lint v2 configuration.
+#
+# SPIKE handles secrets, so the lint bar is deliberately strict and
+# nothing is excluded wholesale:
+#
+# - No exclusion presets and no path exclusions. Every finding is
+#   assessed at the site; a suppression needs a //nolint directive
+#   with a written reason.
+# - errcheck runs without its built-in ignore list and also checks
+#   blank assignments and type assertions. An error that is not
+#   handled, returned, or logged is a bug.
+# - staticcheck runs every check, including the QF quick fixes.
+# - gosec is enabled.
+version: "2"
 linters:
   enable:
-    - errcheck
-    - gosimple
-    - govet
-    - ineffassign
-    - staticcheck
-    - unused
+    - gosec
+  exclusions:
+    rules:
+      # The opt-in CLI integration harness exists to exec the spike binary
+      # under test with per-test arguments, and to probe the live
+      # environment with pgrep/pkill. gosec G204 flags every subprocess
+      # whose command or arguments are variables, which such a harness can
+      # never satisfy by construction. Assessed and scoped to that one
+      # package and that one rule; nothing else is excluded.
+      - path: app/spike/internal/cmd/integration/
+        linters:
+          - gosec
+        text: "G204"
+  settings:
+    errcheck:
+      disable-default-exclusions: true
+      check-blank: true
+      check-type-assertions: true
+    staticcheck:
+      checks:
+        - all

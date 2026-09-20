@@ -140,7 +140,9 @@ func TestHTTPClientInteraction(t *testing.T) {
 			}
 
 			w.WriteHeader(http.StatusOK)
-			_, _ = w.Write([]byte("OK"))
+			if _, writeErr := w.Write([]byte("OK")); writeErr != nil {
+				t.Errorf("Failed to write the response: %v", writeErr)
+			}
 		}))
 	defer server.Close()
 
@@ -158,7 +160,9 @@ func TestHTTPClientInteraction(t *testing.T) {
 		t.Fatalf("Failed to send request: %v", doErr)
 	}
 	defer func(body io.ReadCloser) {
-		_ = body.Close()
+		if closeErr := body.Close(); closeErr != nil {
+			t.Errorf("Failed to close the response body: %v", closeErr)
+		}
 	}(resp.Body)
 
 	if resp.StatusCode != http.StatusOK {

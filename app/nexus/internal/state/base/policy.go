@@ -18,7 +18,8 @@ import (
 	"github.com/spiffe/spike/app/nexus/internal/state/persist"
 )
 
-// CheckPolicyAccess determines if a given SPIFFE ID has the required permissions for
+// CheckPolicyAccess determines if a given SPIFFE ID has the required
+// permissions for
 // a specific path. For SPIKE Pilot (a system workload), access is always
 // granted without policy checks. For other workloads, the function evaluates
 // against all defined policies using regular expression pattern matching.
@@ -27,7 +28,8 @@ import (
 // to read and modify secrets and policies.
 //
 // Note that elevated actions such as "recovery" and "restore" DO NOT use
-// CheckPolicyAccess for access control. These actions require exact actor SPIFFE ID
+// CheckPolicyAccess for access control. These actions require exact actor
+// SPIFFE ID
 // matches and cannot be overridden by policies.
 //
 // Parameters:

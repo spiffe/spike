@@ -7,101 +7,93 @@ package cipher
 import (
 	"context"
 	"encoding/base64"
-	"os"
+	"errors"
+	"fmt"
 
-	"github.com/spf13/cobra"
 	sdk "github.com/spiffe/spike-sdk-go/api"
-
-	"github.com/spiffe/spike/app/spike/internal/stdout"
 )
 
 // encryptStream performs stream-based encryption by reading from a file or
 // stdin and writing the encrypted ciphertext to a file or stdout.
 //
 // Parameters:
-//   - cmd: Cobra command for output
 //   - api: The SPIKE SDK API client
 //   - inFile: Input file path (empty string means stdin)
 //   - outFile: Output file path (empty string means stdout)
 //
-// The function prints errors directly to stderr and returns without error
-// propagation, following the CLI command pattern.
-func encryptStream(cmd *cobra.Command, api *sdk.API, inFile, outFile string) {
-	// Validate the input file exists before attempting encryption.
-	if inFile != "" {
-		if _, err := os.Stat(inFile); err != nil {
-			if os.IsNotExist(err) {
-				cmd.PrintErrf("Error: Input file does not exist: %s\n", inFile)
-				return
-			}
-			cmd.PrintErrf("Error: Cannot access input file: %s\n", inFile)
-			return
-		}
+// Returns:
+//   - error: The first failure, including a failed close of the input or
+//     output file; nil on success
+func encryptStream(api *sdk.API, inFile, outFile string) (err error) {
+	if checkErr := checkInputFile(inFile); checkErr != nil {
+		return checkErr
 	}
 
 	in, cleanupIn, inputErr := openInput(inFile)
-	defer cleanupIn() // safe: openInput returns noop on error.
 	if inputErr != nil {
-		cmd.PrintErrf("Error: %v\n", inputErr)
-		return
+		return inputErr
 	}
 
 	out, cleanupOut, outputErr := openOutput(outFile)
 	if outputErr != nil {
-		cmd.PrintErrf("Error: %v\n", outputErr)
-		return
+		return errors.Join(outputErr, closeAll(cleanupIn))
 	}
-	defer cleanupOut()
+	defer func() {
+		if closeErr := closeAll(cleanupOut, cleanupIn); closeErr != nil &&
+			err == nil {
+			err = closeErr
+		}
+	}()
 
-	ctx := context.Background()
-
-	ciphertext, apiErr := api.CipherEncryptStream(ctx, in)
-	if stdout.HandleAPIError(cmd, apiErr) {
-		return
+	ciphertext, apiErr := api.CipherEncryptStream(context.Background(), in)
+	if apiErr != nil {
+		return cipherAPIError(apiErr)
 	}
 
 	if _, writeErr := out.Write(ciphertext); writeErr != nil {
-		cmd.PrintErrf("Error: Failed to write ciphertext: %v\n", writeErr)
-		return
+		return fmt.Errorf("failed to write ciphertext: %w", writeErr)
 	}
+	return nil
 }
 
 // encryptJSON performs JSON-based encryption using base64-encoded plaintext
 // and writes the encrypted result to a file or stdout.
 //
 // Parameters:
-//   - cmd: Cobra command for output
 //   - api: The SPIKE SDK API client
 //   - plaintextB64: Base64-encoded plaintext
 //   - algorithm: Algorithm hint for encryption
 //   - outFile: Output file path (empty string means stdout)
 //
-// The function prints errors directly to stderr and returns without error
-// propagation, following the CLI command pattern.
-func encryptJSON(cmd *cobra.Command, api *sdk.API, plaintextB64, algorithm,
-	outFile string) {
-	plaintext, err := base64.StdEncoding.DecodeString(plaintextB64)
-	if err != nil {
-		cmd.PrintErrln("Error: Invalid --plaintext base64.")
-		return
+// Returns:
+//   - error: The first failure, including a failed close of the output
+//     file; nil on success
+func encryptJSON(api *sdk.API, plaintextB64, algorithm,
+	outFile string) (err error) {
+	plaintext, decodeErr := base64.StdEncoding.DecodeString(plaintextB64)
+	if decodeErr != nil {
+		return errors.New("invalid --plaintext base64")
 	}
 
 	out, cleanupOut, openErr := openOutput(outFile)
 	if openErr != nil {
-		cmd.PrintErrf("Error: %v\n", openErr)
-		return
+		return openErr
 	}
-	defer cleanupOut()
+	defer func() {
+		if closeErr := closeAll(cleanupOut); closeErr != nil && err == nil {
+			err = closeErr
+		}
+	}()
 
-	ctx := context.Background()
-
-	ciphertext, apiErr := api.CipherEncrypt(ctx, plaintext, algorithm)
-	if stdout.HandleAPIError(cmd, apiErr) {
-		return
+	ciphertext, apiErr := api.CipherEncrypt(
+		context.Background(), plaintext, algorithm,
+	)
+	if apiErr != nil {
+		return cipherAPIError(apiErr)
 	}
 
 	if _, writeErr := out.Write(ciphertext); writeErr != nil {
-		cmd.PrintErrf("Error: Failed to write ciphertext: %v\n", writeErr)
-		return
+		return fmt.Errorf("failed to write ciphertext: %w", writeErr)
 	}
+	return nil
 }

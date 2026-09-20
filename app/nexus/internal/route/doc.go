@@ -7,7 +7,8 @@
 // This package is organized into sub-packages by functional domain:
 //
 //   - base: Core routing logic, request dispatching, and guard utilities
-//   - bootstrap: Bootstrap verification endpoints (proof-of-possession protocol)
+//   - bootstrap: Bootstrap verification endpoints (proof-of-possession
+//     protocol)
 //   - cipher: Encryption and decryption endpoints (encryption-as-a-service)
 //   - operator: Disaster recovery endpoints (recover, restore)
 //   - secret: Secret management endpoints (CRUD operations with versioning)

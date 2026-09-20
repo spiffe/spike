@@ -9,6 +9,7 @@ import (
 	"os"
 
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
+	"github.com/spiffe/spike-sdk-go/log"
 
 	"github.com/spiffe/spike/app/spike/internal/cmd/cipher"
 	"github.com/spiffe/spike/app/spike/internal/cmd/operator"
@@ -65,14 +66,21 @@ func Initialize(source *workloadapi.X509Source, SPIFFEID string) {
 // The function handles command execution and error reporting:
 //   - Executes the root command (and any subcommands)
 //   - Returns successfully (exit code 0) if no errors occur
-//   - Prints errors to stderr and exits with code 1 on failure
+//   - Prints the error to stderr as "Error: <message>" and exits with code
+//     1 on failure. Every command handler returns its failure as an error,
+//     so a failed command never exits 0.
 //
 // Error handling:
-//   - Command errors are written to stderr
-//   - If stderr write fails, error is printed to stdout as fallback
+//   - The command error is written to stderr exactly once; the root command
+//     silences Cobra's own error and usage output
+//   - If the stderr write fails, the process terminates through the SDK
+//     logger with both the command error and the write error
 //   - Process exits with status code 1 on any error
 //
-// This function does not return on error; it terminates the process.
+// This function does not return on error; it terminates the process
+// through the SDK fatal helper. main must have routed the SDK logger to
+// the Pilot diagnostics log first (logfile.Route), so that the structured
+// failure record never reaches stdout.
 //
 // Example usage:
 //
@@ -85,17 +93,22 @@ func Initialize(source *workloadapi.X509Source, SPIFFEID string) {
 //	    Execute()  // Does not return on error
 //	}
 func Execute() {
+	const fName = "Execute"
+
 	var cmdErr error
 	if cmdErr = rootCmd.Execute(); cmdErr == nil {
 		return
 	}
 
-	// Try to write error to stderr
-	if _, err := fmt.Fprintf(os.Stderr, "%v\n", cmdErr); err != nil {
-		// Fallback to stdout if stderr is unavailable
-		_, _ = fmt.Fprintf(
-			os.Stdout, "Error: failed to write to stderr: %s\n", err.Error(),
-		)
+	if _, err := fmt.Fprintf(os.Stderr, "Error: %v\n", cmdErr); err != nil {
+		// The Pilot cannot reach its own stderr. There is no other channel
+		// to the user, so terminate with both errors on record.
+		log.FatalLn(fName, "message", "failed to write the error to stderr",
+			"err", err.Error(), "cmdErr", cmdErr.Error())
 	}
-	os.Exit(1)
+
+	// The human-readable message is already on stderr. The structured
+	// record goes to the Pilot diagnostics log (see the logfile package),
+	// never to stdout, and the process exits with status 1.
+	log.FatalLn(fName, "message", "command failed", "err", cmdErr.Error())
 }

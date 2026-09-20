@@ -21,7 +21,8 @@ import (
 // StoreSecret stores a secret at the specified path with its metadata and
 // versions. It performs the following operations atomically within a
 // transaction:
-//   - Encrypts and updates the secret metadata (current version, creation time, update time)
+//   - Encrypts and updates the secret metadata (current version, creation time,
+//     update time)
 //   - Stores all secret versions with their respective data encrypted using
 //     AES-GCM
 //
@@ -131,7 +132,7 @@ func (s *DataStore) StoreSecret(
 	return s.withSerializableTx(ctx, "StoreSecret",
 		func(tx *sql.Tx) *sdkErrors.SDKError {
 			// Update encrypted metadata
-			_, metaErr := tx.ExecContext(ctx, ddl.QueryUpdateSecretMetadata,
+			_, metaErr := tx.ExecContext(ctx, ddl.QueryUpsertMetadata,
 				path, metaNonce, encryptedCurrentVersion,
 				encryptedOldestVersion, encryptedCreatedTime,
 				encryptedUpdatedTime, encryptedMaxVersions,
@@ -142,7 +143,7 @@ func (s *DataStore) StoreSecret(
 
 			// Update versions
 			for _, ev := range encryptedVersions {
-				_, execErr := tx.ExecContext(ctx, ddl.QueryUpsertSecret,
+				_, execErr := tx.ExecContext(ctx, ddl.QueryUpsertVersion,
 					path, ev.version, ev.nonce, ev.encrypted,
 					ev.createdTime, ev.deletedTime)
 				if execErr != nil {

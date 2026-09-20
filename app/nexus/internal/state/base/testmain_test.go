@@ -5,11 +5,11 @@
 package base
 
 import (
-	"fmt"
 	"os"
 	"testing"
 
 	"github.com/spiffe/spike-sdk-go/config/env"
+	"github.com/spiffe/spike-sdk-go/log"
 )
 
 // TestMain points SPIKE_NEXUS_DATA_DIR at a per-run temporary directory
@@ -21,19 +21,28 @@ import (
 func TestMain(m *testing.M) {
 	dir, mkErr := os.MkdirTemp("", "spike-state-base-test-*")
 	if mkErr != nil {
-		fmt.Fprintln(os.Stderr,
-			"failed to create a temporary data directory:", mkErr)
-		os.Exit(1)
+		log.FatalLn("TestMain",
+			"message", "failed to create a temporary data directory",
+			"err", mkErr.Error())
 	}
 
 	if setErr := os.Setenv(env.NexusDataDir, dir); setErr != nil {
-		_ = os.RemoveAll(dir)
-		fmt.Fprintln(os.Stderr, "failed to set "+env.NexusDataDir+":", setErr)
-		os.Exit(1)
+		if rmErr := os.RemoveAll(dir); rmErr != nil {
+			log.Warn("TestMain",
+				"message", "failed to remove the temporary data directory",
+				"path", dir, "err", rmErr.Error())
+		}
+		log.FatalLn("TestMain",
+			"message", "failed to set "+env.NexusDataDir,
+			"err", setErr.Error())
 	}
 
 	code := m.Run()
 
-	_ = os.RemoveAll(dir)
+	if rmErr := os.RemoveAll(dir); rmErr != nil {
+		log.Warn("TestMain",
+			"message", "failed to remove the temporary data directory",
+			"path", dir, "err", rmErr.Error())
+	}
 	os.Exit(code)
 }

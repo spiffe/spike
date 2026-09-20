@@ -234,13 +234,14 @@ permissions:
 
 SPIKE repository has the following example policies for your convenience:
 
-* [`./examples/policies/sample-policy.yaml`][policy-example]---Basic policy example
-* [`./examples/policies/test-policies/basic-policy.yaml`][basic-policy]---Minimal 
-  policy
-* [`./examples/policies/test-policies/admin-policy.yaml`][admin-policy]---Full 
-  permissions policy
-* [`./examples/policies/test-policies/invalid-permissions.yaml`][invalid-perms]---Example 
-  with invalid permissions (for testing)
+* [`./examples/policies/sample-policy.yaml`][policy-example]:
+  Basic policy example
+* [`./examples/policies/test-policies/basic-policy.yaml`][basic-policy]:
+  Minimal policy
+* [`./examples/policies/test-policies/admin-policy.yaml`][admin-policy]:
+  Full permissions policy
+* [`./examples/policies/test-policies/invalid-permissions.yaml`][invalid-perms]:
+  Example with invalid permissions (for testing)
 
 [policy-example]: https://github.com/spiffe/spike/blob/main/examples/policies/sample-policy.yaml
 [basic-policy]: https://github.com/spiffe/spike/blob/main/examples/policies/test-policies/basic-policy.yaml

@@ -27,4 +27,8 @@ var rootCmd = &cobra.Command{
 	Short: appName + " - Secure your secrets with SPIFFE",
 	Long: appName + " v" + config.PilotVersion + `
 >> Secure your secrets with SPIFFE: https://spike.ist/ #`,
+	// Handlers return errors; Execute prints them once and exits non-zero.
+	// Without these, Cobra would print the error and the usage text too.
+	SilenceErrors: true,
+	SilenceUsage:  true,
 }

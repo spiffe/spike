@@ -81,7 +81,8 @@ ready.
 ## Cross-Links
 
 - [Choosing a backend store](/recipes/choosing-a-backend-store/)
-- [Where the root key lives: keepers, Shamir, and recovery](/recipes/root-key-keepers-recovery/)
+- [Where the root key lives: keepers, Shamir, and
+  recovery](/recipes/root-key-keepers-recovery/)
 - [Troubleshooting](/recipes/troubleshooting/) (Nexus stuck in keeper recovery)
 - Reference: [Configuration](/usage/configuration/)
 

@@ -77,9 +77,11 @@ Before submitting your pull request, we advise you to use the following:
 1. Check if your code changes will pass local tests
    (*i.e., `go test ./...` should exit with a `0` success status code*).
 2. Ensure your commit messages are descriptive. We follow the conventions
-   on [How to Write a Git Commit Message](http://chris.beams.io/posts/git-commit/).
+   on
+   [How to Write a Git Commit Message](http://chris.beams.io/posts/git-commit/).
    Be sure to include any related GitHub issue references in the commit message.
-   See [GFM syntax](https://guides.github.com/features/mastering-markdown/#GitHub-flavored-markdown)
+   See
+   [GFM syntax](https://guides.github.com/features/mastering-markdown/#GitHub-flavored-markdown)
    for referencing issues and commits.
 3. Check the commits and commit messages and ensure they are free from typos.
 

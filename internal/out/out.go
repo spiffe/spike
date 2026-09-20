@@ -2,10 +2,6 @@
 //  \\\\\ Copyright 2024-present SPIKE contributors.
 // \\\\\\\ SPDX-License-Identifier: Apache-2.0
 
-// Package out provides utility functions for application initialization output,
-// including banner display and memory locking operations. These functions are
-// typically called during the startup phase of SPIKE applications to provide
-// consistent initialization behavior across all components.
 package out
 
 import (
@@ -26,17 +22,26 @@ import (
 //   - appName: The name of the application (e.g., "SPIKE Nexus")
 //   - appVersion: The version string of the application (e.g., "1.0.0")
 func PrintBanner(appName, appVersion string) {
+	const fName = "PrintBanner"
+
 	if !env.BannerEnabledVal() {
 		return
 	}
 
-	fmt.Printf(`
+	_, err := fmt.Printf(`
    \\ SPIKE: Secure your secrets with SPIFFE. — https://spike.ist/
  \\\\\ Copyright 2024-present SPIKE contributors.
 \\\\\\\ SPDX-License-Identifier: Apache-2.0`+"\n\n"+
 		"%s v%s. | LOG LEVEL: %s; FIPS 140.3 Enabled: %v\n\n",
 		appName, appVersion, log.Level(), fips140.Enabled(),
 	)
+	if err != nil {
+		// The banner is informational, so a failed write does not stop
+		// the component; it is recorded so that a broken stdout is
+		// visible in the logs.
+		log.Warn(fName, "message", "failed to write the banner to stdout",
+			"err", err.Error())
+	}
 }
 
 // LogMemLock attempts to lock the application's memory to prevent sensitive

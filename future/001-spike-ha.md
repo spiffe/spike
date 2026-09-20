@@ -72,7 +72,8 @@ No leader election is needed because Nexus instances are stateless.
 
 Kubernetes Lease objects can provide leader election:
 
-- Reference: https://msalinas92.medium.com/deep-dive-into-kubernetes-leases-robust-leader-election-for-daemonsets-with-go-examples-f3b9a8858c49
+- Reference:
+  https://msalinas92.medium.com/deep-dive-into-kubernetes-leases-robust-leader-election-for-daemonsets-with-go-examples-f3b9a8858c49
 
 However, this adds complexity without significant benefit since multiple
 Nexus instances can serve requests simultaneously. Leader election is only

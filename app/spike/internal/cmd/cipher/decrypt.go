@@ -1,14 +1,19 @@
 //    \\ SPIKE: Secure your secrets with SPIFFE. — https://spike.ist/
-//  \\\\ Copyright 2024-present SPIKE contributors.
-// \\\\\\ SPDX-License-Identifier: Apache-2.0
+//  \\\\\ Copyright 2024-present SPIKE contributors.
+// \\\\\\\ SPDX-License-Identifier: Apache-2.0
 
 package cipher
 
 import (
+	"errors"
+
 	"github.com/spf13/cobra"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
 	sdk "github.com/spiffe/spike-sdk-go/api"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 	"github.com/spiffe/spike-sdk-go/spiffeid"
+
+	"github.com/spiffe/spike/app/spike/internal/cmd/flags"
 )
 
 // newDecryptCommand creates a Cobra command for decrypting data via SPIKE
@@ -27,8 +32,8 @@ import (
 //
 // Parameters:
 //   - source: SPIFFE X.509 SVID source for authentication. Can be nil if the
-//     Workload API connection is unavailable. If nil, the command will display
-//     a user-friendly error message and exit cleanly.
+//     Workload API connection is unavailable. If nil, the command returns a
+//     user-friendly error and the CLI exits non-zero.
 //   - SPIFFEID: The SPIFFE ID to authenticate with
 //
 // Returns:
@@ -47,33 +52,51 @@ func newDecryptCommand(
 	cmd := &cobra.Command{
 		Use:   "decrypt",
 		Short: "Decrypt file or stdin via SPIKE Nexus",
-		Run: func(cmd *cobra.Command, args []string) {
+		RunE: func(cmd *cobra.Command, args []string) error {
 			spiffeid.IsPilotOperatorOrDie(SPIFFEID)
 
 			if source == nil {
-				cmd.PrintErrln("Error: SPIFFE X509 source is unavailable.")
-				return
+				return errors.New("SPIFFE X509 source is unavailable")
 			}
 
 			api := sdk.NewWithSource(source)
 
-			inFile, _ := cmd.Flags().GetString("file")
-			outFile, _ := cmd.Flags().GetString("out")
-			versionStr, _ := cmd.Flags().GetString("version")
-			nonceB64, _ := cmd.Flags().GetString("nonce")
-			ciphertextB64, _ := cmd.Flags().GetString("ciphertext")
-			algorithm, _ := cmd.Flags().GetString("algorithm")
+			var (
+				inFile, outFile, versionStr, nonceB64 string
+				ciphertextB64, algorithm              string
+				flagErr                               *sdkErrors.SDKError
+			)
+			if inFile, flagErr = flags.String(cmd, "file"); flagErr != nil {
+				return flagErr
+			}
+			if outFile, flagErr = flags.String(cmd, "out"); flagErr != nil {
+				return flagErr
+			}
+			versionStr, flagErr = flags.String(cmd, "version")
+			if flagErr != nil {
+				return flagErr
+			}
+			if nonceB64, flagErr = flags.String(cmd, "nonce"); flagErr != nil {
+				return flagErr
+			}
+			ciphertextB64, flagErr = flags.String(cmd, "ciphertext")
+			if flagErr != nil {
+				return flagErr
+			}
+			algorithm, flagErr = flags.String(cmd, "algorithm")
+			if flagErr != nil {
+				return flagErr
+			}
 
 			jsonMode := versionStr != "" || nonceB64 != "" ||
 				ciphertextB64 != ""
 
 			if jsonMode {
-				decryptJSON(cmd, api, versionStr, nonceB64,
+				return decryptJSON(api, versionStr, nonceB64,
 					ciphertextB64, algorithm, outFile)
-				return
 			}
 
-			decryptStream(cmd, api, inFile, outFile)
+			return decryptStream(api, inFile, outFile)
 		},
 	}
 

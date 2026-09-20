@@ -7,6 +7,7 @@ package secret
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 
 	"github.com/spf13/cobra"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
@@ -53,22 +54,21 @@ func newSecretListCommand(
 	var listCmd = &cobra.Command{
 		Use:   "list",
 		Short: "List all secret paths",
-		Run: func(cmd *cobra.Command, args []string) {
+		RunE: func(cmd *cobra.Command, args []string) error {
 			spiffeid.IsPilotOperatorOrDie(SPIFFEID)
 
 			outputFormat, formatErr := format.GetFormat(cmd)
 			if formatErr != nil {
-				cmd.PrintErrf("Error: %v\n", formatErr)
-				return
+				return formatErr
 			}
 
 			api := spike.NewWithSource(source)
 
 			ctx := context.Background()
 
-			keys, err := api.ListSecretKeys(ctx)
-			if stdout.HandleAPIError(cmd, err) {
-				return
+			keys, apiErr := api.ListSecretKeys(ctx)
+			if apiErr != nil {
+				return stdout.APIError(cmd, apiErr)
 			}
 
 			isEmptyList := keys == nil || len(*keys) == 0
@@ -77,36 +77,36 @@ func newSecretListCommand(
 			case format.JSON:
 				if isEmptyList {
 					cmd.Println("[]")
-					return
+					return nil
 				}
 				output, marshalErr := json.MarshalIndent(keys, "", "  ")
 				if marshalErr != nil {
-					cmd.PrintErrf("Error formatting output: %v\n", marshalErr)
-					return
+					return fmt.Errorf("failed to format output: %w", marshalErr)
 				}
 				cmd.Println(string(output))
 
 			case format.YAML:
 				if isEmptyList {
 					cmd.Println("[]")
-					return
+					return nil
 				}
 				output, marshalErr := yaml.Marshal(keys)
 				if marshalErr != nil {
-					cmd.PrintErrf("Error formatting output: %v\n", marshalErr)
-					return
+					return fmt.Errorf("failed to format output: %w", marshalErr)
 				}
 				cmd.Print(string(output))
 
 			default: // format.Human
 				if isEmptyList {
 					cmd.Println("No secrets found.")
-					return
+					return nil
 				}
 				for _, key := range *keys {
 					cmd.Printf("- %s\n", key)
 				}
 			}
+
+			return nil
 		},
 	}
 

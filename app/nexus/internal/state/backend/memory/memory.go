@@ -283,7 +283,9 @@ func (s *Store) LoadAllPolicies(
 //
 // Returns:
 //   - *sdkErrors.SDKError: Always returns nil for in-memory storage
-func (s *Store) DeletePolicy(_ context.Context, name string) *sdkErrors.SDKError {
+func (s *Store) DeletePolicy(
+	_ context.Context, name string,
+) *sdkErrors.SDKError {
 	s.policyMu.Lock()
 	defer s.policyMu.Unlock()
 

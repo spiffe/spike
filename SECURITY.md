@@ -21,7 +21,8 @@ and we will also have a support plan for various major versions.
 We are very thankful for—and if desired, happy to credit—security researchers 
 and users who report vulnerabilities to the SPIKE community.
 
-Please send your vulnerability reports to [security@spike.ist](mailto:security@spike.ist).
+Please send your vulnerability reports to
+[security@spike.ist](mailto:security@spike.ist).
 
 We don't have an official turnover time, but if nobody gets back
 to you within a week, please send another email.
@@ -34,11 +35,13 @@ to take on it.
 
 * All reports are thoroughly investigated by SPIKE Maintainers.
 * Any vulnerability information shared will not be shared with others unless it 
-  is necessary to fix the issue. Information is shared only on a "*need to know*" 
+  is necessary to fix the issue. Information is shared only on a "*need to
+  know*"
   basis.
-* As the security issue moves through the identification and resolution process, 
+* As the security issue moves through the identification and resolution process,
   the reporter will be notified.
-* Additional questions about the vulnerability may also be asked of the reporter. 
+* Additional questions about the vulnerability may also be asked of the
+  reporter.
 
 Note that while SPIKE is very active, it is a vendor-neutral CNCF-overseen
 project maintained by volunteers, not by a single Company. As such, security 

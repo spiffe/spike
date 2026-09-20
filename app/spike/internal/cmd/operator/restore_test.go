@@ -50,7 +50,9 @@ func TestReadShardInput_NonInteractive(t *testing.T) {
 			os.Stdin = r
 			t.Cleanup(func() {
 				os.Stdin = original
-				_ = r.Close()
+				if closeErr := r.Close(); closeErr != nil {
+					t.Errorf("failed to close the pipe reader: %v", closeErr)
+				}
 			})
 
 			if _, writeErr := w.WriteString(tt.input); writeErr != nil {

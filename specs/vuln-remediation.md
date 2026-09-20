@@ -128,3 +128,73 @@ govulncheck exits non-zero.
   Results; the only residue is the unfixable GO-2026-5932 under Module
   Results.
 - `make test` passes on the upgraded graph; `go build ./...` clean.
+
+---
+
+# Round 3: GO-2026-6348 and GO-2026-6061 (2026-09-19)
+
+## Problem Statement
+
+While validating the Go 1.27.1 bump (`specs/go-1-27-bump.md`),
+`make audit` failed at govulncheck with two **called** vulnerabilities
+in `google.golang.org/grpc` v1.79.3:
+
+- GO-2026-6348 (HTTP/2 DATA frame fragmentation OOM), published
+  2026-09-15, fixed in v1.83.1.
+- GO-2026-6061 (xDS RBAC engine and HTTP/2 transport server),
+  published 2026-07-27, fixed in v1.82.1.
+
+Fixed versions were confirmed against the vuln.go.dev records, not
+taken from the scanner summary. Traces reach grpc through
+`spiffe.Source`/`spiffe.CloseSource` from `net.AcquireSource`
+(bootstrap), `persist.DataStore.Close` (nexus), and
+`recovery.RestoreBackingStoreFromPilotShards` (nexus).
+
+The same scan on base commit 42547a7e, with the same go1.27.1
+toolchain and govulncheck v1.8.0 (DB updated 2026-09-16), produced
+byte-identical output. As in Round 2, the break arrived on the
+advisory timer, not with a code change.
+
+## Proposed Solution
+
+1. `google.golang.org/grpc` v1.79.3 -> v1.83.2. v1.83.1 is the
+   minimal version fixing both called advisories; v1.83.2 is the
+   patch on the same line that also fixes the uncalled GO-2026-6443
+   (server panic on missing authority/Host headers, fixed in 1.82.2
+   and 1.83.2). v1.84.0 was available but not needed.
+2. `golang.org/x/crypto` v0.53.0 -> v0.56.0 to clear three uncalled
+   `x/crypto/ssh` advisories with fixed versions: GO-2026-6303 (fixed
+   0.55.0), GO-2026-6354 and GO-2026-6355 (fixed 0.56.0). This follows
+   the Round 2 bar: clear uncalled findings where a fix exists.
+3. `go mod tidy`. Transitive lifts: `github.com/spiffe/go-spiffe/v2`
+   v2.6.0 -> v2.7.0 (grpc-go's own `go.mod` requires it), `x/net`
+   v0.56.0 -> v0.58.0, `x/sys` v0.46.0 -> v0.47.0, `x/term` v0.44.0
+   -> v0.45.0, `x/text` v0.39.0 -> v0.41.0, `x/oauth2` v0.34.0 ->
+   v0.36.0, `genproto/googleapis/rpc` to the 2026-05-26 pseudo-version.
+
+## File Surface
+
+- `go.mod`, `go.sum` (modified). No application-code changes.
+
+## Error / Edge Cases
+
+- **GO-2026-5932 remains**, as recorded in Round 2: `x/crypto/openpgp`
+  is deprecated with `Fixed in: N/A`, uncalled, and reachable only
+  transitively. govulncheck exits 0 with it present.
+- **go-spiffe moved a minor version without being asked.** grpc-go
+  depends on go-spiffe, so MVS lifts SPIKE's direct requirement. The
+  full race suite passes on v2.7.0.
+
+## Non-Goals
+
+- No blanket `go get -u`; only the two named modules plus tidy.
+- Not vendoring or forking `x/crypto` to excise `openpgp`.
+
+## Verification
+
+- `make audit` exits 0 on go1.27.1: tidy -diff, verify, gofmt, vet,
+  staticcheck, govulncheck ("No vulnerabilities found" under Symbol
+  and Package Results; GO-2026-5932 the only Module Result), and the
+  golangci-lint v2 run (0 issues).
+- `make test` (race) passes on the upgraded graph: 22 packages ok,
+  350 passes, 0 failures. `go build ./...` and `make build` clean.

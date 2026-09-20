@@ -17,13 +17,15 @@ import (
 )
 
 func TestSendShardsToKeepers_NetworkDependentFunction(t *testing.T) {
-	// The sendShardsToKeepers function has multiple external dependencies that make it
-	// difficult to test without a significant infrastructure:
+	// The sendShardsToKeepers function has multiple external dependencies
+	// that make it difficult to test without a significant infrastructure:
 	// 1. Requires SPIFFE X509Source
 	// 2. Makes network calls via mTLS clients
 	// 3. Depends on state management for the root key
-	// 4. Calls computeShares() and sanityCheck() which have their own dependencies
-	t.Skip("Skipping sendShardsToKeepers test - requires SPIFFE infrastructure, network connectivity, and state management")
+	// 4. Calls computeShares() and sanityCheck() which have their own
+	//    dependencies
+	t.Skip("Skipping sendShardsToKeepers test - requires SPIFFE " +
+		"infrastructure, network connectivity, and state management")
 
 	// Note: To properly test this function, you would need to:
 	// 1. Mock the workloadapi.X509Source
@@ -62,7 +64,8 @@ func TestKeeperIDConversionLogic(t *testing.T) {
 
 			if tt.expectErr {
 				if err == nil {
-					t.Errorf("Expected error for keeper ID '%s', but got none", tt.keeperID)
+					t.Errorf("Expected error for keeper ID '%s', but got none",
+						tt.keeperID)
 				}
 			} else {
 				if err != nil {
@@ -108,13 +111,14 @@ func TestURLJoinPathForKeepers(t *testing.T) {
 			expectedPath:  string(apiUrl.KeeperContribute),
 			expectError:   false,
 		},
-		//{
-		//	name:          "invalid URL",
-		//	keeperAPIRoot: "not a valid url",
-		//	expectedPath:  string(apiUrl.KeeperContribute),
-		//	expectError:   true,
-		//},
-		// FIX-ME: address me.
+		{
+			// An unterminated IPv6 literal cannot be parsed, so the join
+			// fails; this is the branch sendShardsToKeepers guards.
+			name:          "invalid URL",
+			keeperAPIRoot: "http://[::1",
+			expectedPath:  string(apiUrl.KeeperContribute),
+			expectError:   true,
+		},
 	}
 
 	for _, tt := range tests {
@@ -125,7 +129,8 @@ func TestURLJoinPathForKeepers(t *testing.T) {
 
 			if tt.expectError {
 				if err == nil {
-					t.Errorf("Expected error for URL '%s', but got none", tt.keeperAPIRoot)
+					t.Errorf("Expected error for URL '%s', but got none",
+						tt.keeperAPIRoot)
 				}
 			} else {
 				if err != nil {
@@ -340,8 +345,8 @@ func TestKeeperMapOperations(t *testing.T) {
 	// Test map access
 	keeper1URL := keepers["1"]
 	if keeper1URL != "https://keeper1.example.com" {
-		t.Errorf("Expected keeper1 URL to be 'https://keeper1.example.com', got '%s'",
-			keeper1URL)
+		t.Errorf("Expected keeper1 URL to be 'https://keeper1.example.com', "+
+			"got '%s'", keeper1URL)
 	}
 
 	// Test a non-existent key

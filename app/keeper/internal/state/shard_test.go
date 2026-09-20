@@ -6,7 +6,6 @@ package state
 
 import (
 	"bytes"
-	"fmt"
 	"sync"
 	"testing"
 	"time"
@@ -157,10 +156,10 @@ func TestConcurrentSetShard(t *testing.T) {
 				testData := [crypto.AES256KeySize]byte{}
 				// Create a unique pattern for each goroutine
 				for k := range testData {
-					testData[k] = byte((id + j + k) % 256)
+					testData[k] = lowByte(id + j + k)
 				}
 				// Ensure it's not all zeros
-				testData[0] = byte(id + 1)
+				testData[0] = lowByte(id + 1)
 
 				SetShard(&testData)
 
@@ -232,9 +231,9 @@ func TestConcurrentReadWrite(t *testing.T) {
 				default:
 					testData := [crypto.AES256KeySize]byte{}
 					for j := range testData {
-						testData[j] = byte((id + j) % 256)
+						testData[j] = lowByte(id + j)
 					}
-					testData[0] = byte(id + 1) // Ensure non-zero
+					testData[0] = lowByte(id + 1) // Ensure non-zero
 					SetShard(&testData)
 				}
 			}
@@ -360,12 +359,15 @@ func TestZeroDetection(t *testing.T) {
 }
 
 func TestShardSize(t *testing.T) {
-	// Verify the shard has the correct size
+	// Verify the shard exists and has the correct size
 	RLockShard()
 	shardPtr := ShardNoSync()
 	RUnlockShard()
 
-	fmt.Println(*(shardPtr))
+	if shardPtr == nil {
+		t.Fatal("ShardNoSync() returned nil")
+		return
+	}
 
 	// noinspection GoBoolExpressions
 	if len(shardPtr) != crypto.AES256KeySize {

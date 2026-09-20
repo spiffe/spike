@@ -8,6 +8,8 @@ import (
 	"bytes"
 	"context"
 	"encoding/hex"
+	"errors"
+	"fmt"
 	"io"
 	"os"
 	"strconv"
@@ -62,13 +64,12 @@ func newOperatorRestoreCommand(
 	var restoreCmd = &cobra.Command{
 		Use:   "restore",
 		Short: "Restore SPIKE Nexus (do this if SPIKE Nexus cannot auto-recover)",
-		Run: func(cmd *cobra.Command, args []string) {
+		RunE: func(cmd *cobra.Command, args []string) error {
 			spiffeid.IsPilotRestoreOrDie(SPIFFEID)
 
 			shard, readErr := readShardInput(cmd)
 			if readErr != nil {
-				cmd.PrintErrf("Error: %v\n", readErr)
-				return
+				return readErr
 			}
 
 			api := spike.NewWithSource(source)
@@ -78,8 +79,7 @@ func newOperatorRestoreCommand(
 			// shard is in `spike:$id:$hex` format
 			shardParts := strings.SplitN(string(shard), ":", 3)
 			if len(shardParts) != 3 {
-				cmd.PrintErrln("Error: Invalid shard format.")
-				return
+				return errors.New("invalid shard format")
 			}
 
 			index := shardParts[1]
@@ -87,9 +87,9 @@ func newOperatorRestoreCommand(
 
 			// 32 bytes encoded in hex should be 64 characters
 			if len(hexData) != 64 {
-				cmd.PrintErrf("Error: Invalid hex shard length: %d (expected 64).\n",
-					len(hexData))
-				return
+				return fmt.Errorf(
+					"invalid hex shard length: %d (expected 64)", len(hexData),
+				)
 			}
 
 			decodedShard, decodeErr := hex.DecodeString(hexData)
@@ -106,16 +106,14 @@ func newOperatorRestoreCommand(
 			mem.ClearBytes(shard)
 
 			if decodeErr != nil {
-				cmd.PrintErrln("Error: Failed to decode recovery shard.")
-				return
+				return errors.New("failed to decode recovery shard")
 			}
 
 			if len(decodedShard) != crypto.AES256KeySize {
 				// Security: reset decodedShard immediately after use.
 				mem.ClearBytes(decodedShard)
-				cmd.PrintErrf("Error: Invalid shard length: %d (expected %d).\n",
+				return fmt.Errorf("invalid shard length: %d (expected %d)",
 					len(decodedShard), crypto.AES256KeySize)
-				return
 			}
 
 			for i := 0; i < crypto.AES256KeySize; i++ {
@@ -127,8 +125,7 @@ func newOperatorRestoreCommand(
 
 			ix, atoiErr := strconv.Atoi(index)
 			if atoiErr != nil {
-				cmd.PrintErrf("Error: Invalid shard index: %s\n", index)
-				return
+				return fmt.Errorf("invalid shard index: %s", index)
 			}
 
 			ctx := context.Background()
@@ -137,13 +134,13 @@ func newOperatorRestoreCommand(
 			// Security: reset shardToRestore immediately after recovery.
 			mem.ClearRawBytes(&shardToRestore)
 			if restoreErr != nil {
-				cmd.PrintErrln("Error: Failed to communicate with SPIKE Nexus.")
-				return
+				return fmt.Errorf(
+					"failed to communicate with SPIKE Nexus: %w", restoreErr,
+				)
 			}
 
 			if status == nil {
-				cmd.PrintErrln("Error: No status returned from SPIKE Nexus.")
-				return
+				return errors.New("no status returned from SPIKE Nexus")
 			}
 
 			if status.Restored {
@@ -161,6 +158,8 @@ func newOperatorRestoreCommand(
 						"again to provide the remaining shards.")
 				cmd.Println("")
 			}
+
+			return nil
 		},
 	}
 

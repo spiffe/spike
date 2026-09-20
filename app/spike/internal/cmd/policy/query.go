@@ -6,6 +6,7 @@ package policy
 
 import (
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
@@ -43,15 +44,19 @@ func readPolicyFromFile(
 ) (data.PolicySpec, *sdkErrors.SDKError) {
 	var policy data.PolicySpec
 
+	// The path is supplied by the operator on the command line; cleaning
+	// it normalizes separators and removes redundant elements.
+	cleanPath := filepath.Clean(filePath)
+
 	// Check if the file exists:
-	if _, err := os.Stat(filePath); os.IsNotExist(err) {
+	if _, err := os.Stat(cleanPath); os.IsNotExist(err) {
 		failErr := sdkErrors.ErrFSFileOpenFailed.Clone()
 		failErr.Msg = "file " + filePath + " does not exist"
 		return policy, failErr
 	}
 
 	// Read file content
-	df, err := os.ReadFile(filePath)
+	df, err := os.ReadFile(cleanPath)
 	if err != nil {
 		failErr := sdkErrors.ErrFSStreamReadFailed.Wrap(err)
 		failErr.Msg = "failed to read file " + filePath

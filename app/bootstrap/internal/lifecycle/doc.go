@@ -6,5 +6,6 @@
 //
 // This package provides utilities for determining whether the bootstrap
 // process should run and for marking bootstrap completion in Kubernetes
-// environments using ConfigMaps.
+// environments using ConfigMaps. It coordinates multiple bootstrap
+// instances so that bootstrap operations run exactly once per cluster.
 package lifecycle

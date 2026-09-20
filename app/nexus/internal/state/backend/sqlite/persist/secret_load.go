@@ -22,9 +22,11 @@ import (
 
 // loadSecretInternal retrieves a secret and all its versions from the database
 // for the specified path. It performs the actual database operations including
-// loading and decrypting metadata, fetching all versions, and decrypting the secret data.
+// loading and decrypting metadata, fetching all versions, and decrypting the
+// secret data.
 //
-// The function first queries and decrypts secret metadata (current version, timestamps),
+// The function first queries and decrypts secret metadata (current version,
+// timestamps),
 // then retrieves all versions of the secret, decrypts each version, and
 // reconstructs the complete secret structure.
 //
@@ -40,6 +42,8 @@ import (
 // Possible errors:
 //   - ErrEntityNotFound: If the secret does not exist at the specified path
 //   - ErrEntityLoadFailed: If loading secret metadata fails
+//   - ErrStateIntegrityCheck: If a decrypted metadata field is not a valid
+//     integer, or if the current version is missing from the versions map
 //   - ErrEntityQueryFailed: If querying versions fails or rows.Scan fails
 //   - ErrCryptoDecryptionFailed: If decrypting a version fails
 //   - ErrDataUnmarshalFailure: If unmarshaling JSON data fails
@@ -76,7 +80,7 @@ func (s *DataStore) loadSecretInternal(
 	)
 
 	// Load metadata
-	metaErr := s.db.QueryRowContext(ctx, ddl.QuerySecretMetadata, path).Scan(
+	metaErr := s.db.QueryRowContext(ctx, ddl.QueryLoadMetadata, path).Scan(
 		&nonce,
 		&encryptedCurrentVersion,
 		&encryptedOldestVersion,
@@ -124,17 +128,38 @@ func (s *DataStore) loadSecretInternal(
 		return nil, sdkErrors.ErrCryptoDecryptionFailed.Wrap(decryptErr)
 	}
 
-	// Decode into struct
-	secret.Metadata.CurrentVersion, _ = strconv.Atoi(string(currentVersionBytes))
-	secret.Metadata.OldestVersion, _ = strconv.Atoi(string(oldestVersionBytes))
+	// Decode into the struct. SPIKE wrote this plaintext itself, so a value
+	// that does not parse means the row is corrupt. A secret whose metadata
+	// cannot be trusted is not loaded.
+	currentVersion, parseErr := parseMetadataInt(
+		"current_version", currentVersionBytes)
+	if parseErr != nil {
+		return nil, parseErr
+	}
+	oldestVersion, parseErr := parseMetadataInt(
+		"oldest_version", oldestVersionBytes)
+	if parseErr != nil {
+		return nil, parseErr
+	}
+	createdSec, parseErr := parseMetadataInt64("created_time", createdBytes)
+	if parseErr != nil {
+		return nil, parseErr
+	}
+	updatedSec, parseErr := parseMetadataInt64("updated_time", updatedBytes)
+	if parseErr != nil {
+		return nil, parseErr
+	}
+	maxVersions, parseErr := parseMetadataInt(
+		"max_versions", maxVersionsBytes)
+	if parseErr != nil {
+		return nil, parseErr
+	}
 
-	createdSec, _ := strconv.ParseInt(string(createdBytes), 10, 64)
-	updatedSec, _ := strconv.ParseInt(string(updatedBytes), 10, 64)
-
+	secret.Metadata.CurrentVersion = currentVersion
+	secret.Metadata.OldestVersion = oldestVersion
 	secret.Metadata.CreatedTime = time.Unix(createdSec, 0)
 	secret.Metadata.UpdatedTime = time.Unix(updatedSec, 0)
-
-	secret.Metadata.MaxVersions, _ = strconv.Atoi(string(maxVersionsBytes))
+	secret.Metadata.MaxVersions = maxVersions
 
 	// Load versions
 	rows, queryErr := s.db.QueryContext(ctx, ddl.QuerySecretVersions, path)
@@ -203,4 +228,71 @@ func (s *DataStore) loadSecretInternal(
 	}
 
 	return &secret, nil
+}
+
+// parseMetadataInt decodes a decrypted secret-metadata field into an int.
+//
+// A value that does not parse indicates a corrupt row and is reported as an
+// integrity violation that names the offending field.
+//
+// Parameters:
+//   - field: The metadata field name, used in the error message.
+//   - raw: The decrypted plaintext of the field.
+//
+// Returns:
+//   - int: The parsed value.
+//   - *sdkErrors.SDKError: ErrStateIntegrityCheck if the value is not a valid
+//     integer, nil on success.
+func parseMetadataInt(
+	field string, raw []byte,
+) (int, *sdkErrors.SDKError) {
+	value, parseErr := strconv.Atoi(string(raw))
+	if parseErr != nil {
+		return 0, metadataIntegrityErr(field, parseErr)
+	}
+	return value, nil
+}
+
+// parseMetadataInt64 decodes a decrypted secret-metadata timestamp field
+// into an int64 of Unix seconds.
+//
+// A value that does not parse indicates a corrupt row and is reported as an
+// integrity violation that names the offending field.
+//
+// Parameters:
+//   - field: The metadata field name, used in the error message.
+//   - raw: The decrypted plaintext of the field.
+//
+// Returns:
+//   - int64: The parsed value.
+//   - *sdkErrors.SDKError: ErrStateIntegrityCheck if the value is not a valid
+//     integer, nil on success.
+func parseMetadataInt64(
+	field string, raw []byte,
+) (int64, *sdkErrors.SDKError) {
+	value, parseErr := strconv.ParseInt(string(raw), 10, 64)
+	if parseErr != nil {
+		return 0, metadataIntegrityErr(field, parseErr)
+	}
+	return value, nil
+}
+
+// metadataIntegrityErr builds the integrity error returned when a
+// secret-metadata field cannot be decoded.
+//
+// Wrap returns a fresh copy of the sentinel, so setting the message does not
+// touch the shared ErrStateIntegrityCheck value.
+//
+// Parameters:
+//   - field: The metadata field name to include in the message.
+//   - cause: The underlying parse error.
+//
+// Returns:
+//   - *sdkErrors.SDKError: ErrStateIntegrityCheck wrapping cause, with a
+//     message that names the field.
+func metadataIntegrityErr(field string, cause error) *sdkErrors.SDKError {
+	integrityErr := sdkErrors.ErrStateIntegrityCheck.Wrap(cause)
+	integrityErr.Msg = "data integrity violation: secret metadata field " +
+		field + " is not a valid integer"
+	return integrityErr
 }

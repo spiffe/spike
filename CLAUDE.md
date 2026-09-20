@@ -233,7 +233,7 @@ mentioned and suggest updates in that table.
 - Libraries should return errors, **not** call `os.Exit()`.
 
 SDKError sentinel values are used across the codebase. One thing to remember is
-these sentinels are global variables, and they are "mutable."  Use the `.Clone()`
+these sentinels are global variables, and they are "mutable." Use the `.Clone()`
 method if you want to create an error with a different message or code to use
 locally. We **try** not to return plain `error`s within the codebase and instead
 use `*sdkErrors.SDKError`.

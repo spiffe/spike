@@ -21,7 +21,7 @@ and demo recordings][demos].
 ## Detailed CLI Documentation
 
 The rest of this page focuses on providing a **practical** sense of how to use 
-the **SPIKE** command line interface. It's aimed at explaining its usage through 
+the **SPIKE** command line interface. It's aimed at explaining its usage through
 examples and common scenarios. Please note that it is not a normative or 
 exhaustive reference; for that, refer to the 
 [**SPIKE CLI Reference**][cli-list].
@@ -135,3 +135,16 @@ That's about it. You can use other **SPIKE** commands similarly.
 ----
 
 {{ toc_top() }}
+
+## Diagnostics Log
+
+SPIKE Pilot writes command output to stdout and error messages to stderr,
+so output can be redirected safely, for example `spike secret get db/creds
+> creds.txt`. Structured diagnostics for exceptional failures, such as the
+Pilot being unable to reach the SPIFFE Workload API, never go to stdout.
+They are appended to a well-known file instead:
+
+* `~/.spike/pilot.log` when a home directory is available;
+* `/tmp/.spike-$USER/pilot.log` otherwise.
+
+The file is created with `0600` permissions inside a `0700` directory.

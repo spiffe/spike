@@ -6,6 +6,8 @@ package policy
 
 import (
 	"context"
+	"fmt"
+	"strings"
 
 	"github.com/spf13/cobra"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
@@ -83,12 +85,13 @@ func newPolicyCreateCommand(
 
         Example:
         spike policy create --name=db-access
-          --path-pattern="^db/.*$" --spiffeid-pattern="^spiffe://example\.org/service/.*$"
+          --path-pattern="^db/.*$"
+          --spiffeid-pattern="^spiffe://example\.org/service/.*$"
           --permissions="read,write"
 
         Valid permissions: read, write, list, super`,
 		Args: cobra.NoArgs,
-		Run: func(c *cobra.Command, args []string) {
+		RunE: func(c *cobra.Command, args []string) error {
 			spiffeid.IsPilotOperatorOrDie(SPIFFEID)
 
 			api := spike.NewWithSource(source)
@@ -109,28 +112,24 @@ func newPolicyCreateCommand(
 			}
 
 			if len(missingFlags) > 0 {
-				c.PrintErrln("Error: All flags are required.")
-				for _, flag := range missingFlags {
-					c.PrintErrf("  --%s is missing\n", flag)
-				}
-				return
+				return fmt.Errorf("all flags are required; missing: --%s",
+					strings.Join(missingFlags, ", --"))
 			}
 
 			// Validate permissions
-			permissions, err := validatePermissions(permsStr)
-			if stdout.HandleAPIError(c, err) {
-				return
+			permissions, permErr := validatePermissions(permsStr)
+			if permErr != nil {
+				return stdout.APIError(c, permErr)
 			}
 
 			// Check if a policy with this name already exists
 			exists, apiErr := checkPolicyNameExists(api, name)
-			if stdout.HandleAPIError(c, apiErr) {
-				return
+			if apiErr != nil {
+				return stdout.APIError(c, apiErr)
 			}
 
 			if exists {
-				c.PrintErrf("Error: Policy '%s' already exists.\n", name)
-				return
+				return fmt.Errorf("policy '%s' already exists", name)
 			}
 
 			ctx := context.Background()
@@ -138,11 +137,12 @@ func newPolicyCreateCommand(
 			// Create policy
 			apiErr = api.CreatePolicy(ctx, name, SPIFFEIDPattern,
 				pathPattern, permissions)
-			if stdout.HandleAPIError(c, apiErr) {
-				return
+			if apiErr != nil {
+				return stdout.APIError(c, apiErr)
 			}
 
 			c.Println("Policy created successfully.")
+			return nil
 		},
 	}
 
@@ -151,7 +151,8 @@ func newPolicyCreateCommand(
 	cmd.Flags().StringVar(&pathPattern, "path-pattern", "",
 		"Resource path regexp pattern, e.g., '^secrets/.*$' (required)")
 	cmd.Flags().StringVar(&SPIFFEIDPattern, "spiffeid-pattern", "",
-		"SPIFFE ID regexp pattern, e.g., '^spiffe://example\\.org/service/.*$' (required)")
+		"SPIFFE ID regexp pattern, e.g., "+
+			"'^spiffe://example\\.org/service/.*$' (required)")
 	cmd.Flags().StringVar(&permsStr, "permissions", "",
 		"Comma-separated permissions: read, write, list, super (required)")
 

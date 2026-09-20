@@ -21,7 +21,7 @@ This means:
   community involvement.
 * **SPIKE** is not yet production-ready, and certain features or interfaces may 
   continue to evolve.
-* Stability and polish are improving, but users should expect occasional bugs or 
+* Stability and polish are improving, but users should expect occasional bugs or
   breaking changes.
 
 We invite developers and early adopters to explore, test, and contribute. Your

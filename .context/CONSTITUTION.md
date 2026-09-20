@@ -34,7 +34,8 @@ If you start something, you own it, you finish it.
 
 ## Context Integrity Invariants
 
-- [ ] **Never** modify or reason about a file based on partial or assumed content
+- [ ] **Never** modify or reason about a file based on partial or assumed
+  content
 - [ ] If a file is the subject of an operation, its relevant contents must be
   **fully understood** before acting
 - [ ] Sampling, guessing, or relying on prior assumptions instead of reading 
@@ -119,10 +120,13 @@ re-run = verify/redo all tasks in order.
 - [ ] **Never move tasks**: tasks stay in their Phase section permanently
 - [ ] **Never remove Phase headers**: Phase labels provide structure and order
 - [ ] **Never merge or collapse Phase sections**: each phase is a logical unit
-- [ ] **Never delete tasks**: mark as `[x]` completed, or `[-]` skipped with reason
-- [ ] **Use inline labels for status**: add `#in-progress` to task text, don't move it
+- [ ] **Never delete tasks**: mark as `[x]` completed, or `[-]` skipped with
+  reason
+- [ ] **Use inline labels for status**: add `#in-progress` to task text,
+  don't move it
 - [ ] **No "In Progress" / "Next Up" sections**: these encourage moving tasks
-- [ ] **Ask before restructuring**: if structure changes seem needed, ask the user first
+- [ ] **Ask before restructuring**: if structure changes seem needed, ask the
+  user first
 
 ## Context Preservation Invariants
 

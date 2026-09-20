@@ -23,7 +23,6 @@ import (
 // name; there is no separate ID). For JSON/YAML formats, it marshals the
 // policies to the appropriate structured format.
 //
-// If the format flag is invalid, it returns an error message.
 // If the "policies" list is empty, it returns an appropriate message based on
 // the format.
 //
@@ -32,13 +31,15 @@ import (
 //   - policies: The policy list items to format
 //
 // Returns:
-//   - string: The formatted output or error message
+//   - string: The formatted output; empty when an error is returned
+//   - error: An error if the format flag is invalid or the policies cannot
+//     be marshaled; nil otherwise
 func formatPoliciesOutput(
 	cmd *cobra.Command, policies *[]data.PolicyListItem,
-) string {
+) (string, error) {
 	outputFormat, formatErr := format.GetFormat(cmd)
 	if formatErr != nil {
-		return fmt.Sprintf("Error: %v", formatErr)
+		return "", formatErr
 	}
 
 	// Check if "policies" is nil or empty
@@ -47,38 +48,37 @@ func formatPoliciesOutput(
 	switch outputFormat {
 	case format.JSON:
 		if isEmptyList {
-			return "[]"
+			return "[]", nil
 		}
 		output, marshalErr := json.MarshalIndent(policies, "", "  ")
 		if marshalErr != nil {
-			return fmt.Sprintf("Error formatting output: %v", marshalErr)
+			return "", fmt.Errorf("failed to format output: %w", marshalErr)
 		}
-		return string(output)
+		return string(output), nil
 
 	case format.YAML:
 		if isEmptyList {
-			return "[]"
+			return "[]", nil
 		}
 		output, marshalErr := yaml.Marshal(policies)
 		if marshalErr != nil {
-			return fmt.Sprintf("Error formatting output: %v", marshalErr)
+			return "", fmt.Errorf("failed to format output: %w", marshalErr)
 		}
-		return string(output)
+		return string(output), nil
 
 	default: // format.Human
 		if isEmptyList {
-			return "No policies found."
+			return "No policies found.", nil
 		}
 
-		var result strings.Builder
-		result.WriteString("POLICIES\n========\n\n")
+		result := "POLICIES\n========\n\n"
 
 		for _, policy := range *policies {
-			result.WriteString(fmt.Sprintf("Name: %s\n", policy.Name))
-			result.WriteString("--------\n\n")
+			result += "Name: " + policy.Name + "\n"
+			result += "--------\n\n"
 		}
 
-		return result.String()
+		return result, nil
 	}
 }
 
@@ -87,60 +87,57 @@ func formatPoliciesOutput(
 //
 // Parameters:
 //   - cmd: The Cobra command containing the format flag
-//   - policy: The policy to format
+//   - policy: The policy to format; nil yields a "No policy found." message
 //
 // Returns:
-//   - string: The formatted policy or error message
-func formatPolicy(cmd *cobra.Command, policy *data.Policy) string {
+//   - string: The formatted policy; empty when an error is returned
+//   - error: An error if the format flag is invalid or the policy cannot be
+//     marshaled; nil otherwise
+func formatPolicy(
+	cmd *cobra.Command, policy *data.Policy,
+) (string, error) {
 	outputFormat, formatErr := format.GetFormat(cmd)
 	if formatErr != nil {
-		return fmt.Sprintf("Error: %v", formatErr)
+		return "", formatErr
 	}
 
 	if policy == nil {
-		return "No policy found."
+		return "No policy found.", nil
 	}
 
 	switch outputFormat {
 	case format.JSON:
 		output, marshalErr := json.MarshalIndent(policy, "", "  ")
 		if marshalErr != nil {
-			return fmt.Sprintf("Error formatting output: %v", marshalErr)
+			return "", fmt.Errorf("failed to format output: %w", marshalErr)
 		}
-		return string(output)
+		return string(output), nil
 
 	case format.YAML:
 		output, marshalErr := yaml.Marshal(policy)
 		if marshalErr != nil {
-			return fmt.Sprintf("Error formatting output: %v", marshalErr)
+			return "", fmt.Errorf("failed to format output: %w", marshalErr)
 		}
-		return string(output)
+		return string(output), nil
 
 	default: // format.Human
-		var result strings.Builder
-		result.WriteString("POLICY DETAILS\n=============\n\n")
-
-		result.WriteString(fmt.Sprintf("Name: %s\n", policy.Name))
-		result.WriteString(fmt.Sprintf("SPIFFE ID Pattern: %s\n",
-			policy.SPIFFEIDPattern))
-		result.WriteString(fmt.Sprintf("Path Pattern: %s\n",
-			policy.PathPattern))
-
 		perms := make([]string, 0, len(policy.Permissions))
 		for _, p := range policy.Permissions {
 			perms = append(perms, string(p))
 		}
 
-		result.WriteString(fmt.Sprintf("Permissions: %s\n",
-			strings.Join(perms, ", ")))
-		result.WriteString(fmt.Sprintf("Created At: %s\n",
-			policy.CreatedAt.Format(time.RFC3339)))
+		result := "POLICY DETAILS\n=============\n\n" +
+			"Name: " + policy.Name + "\n" +
+			"SPIFFE ID Pattern: " + policy.SPIFFEIDPattern + "\n" +
+			"Path Pattern: " + policy.PathPattern + "\n" +
+			"Permissions: " + strings.Join(perms, ", ") + "\n" +
+			"Created At: " + policy.CreatedAt.Format(time.RFC3339) + "\n"
 
 		if !policy.UpdatedAt.IsZero() {
-			result.WriteString(fmt.Sprintf("Updated At: %s\n",
-				policy.UpdatedAt.Format(time.RFC3339)))
+			result += "Updated At: " +
+				policy.UpdatedAt.Format(time.RFC3339) + "\n"
 		}
 
-		return result.String()
+		return result, nil
 	}
 }

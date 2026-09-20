@@ -55,7 +55,7 @@ When a workload attempts to access a secret in SPIKE:
    secret path
 4. If authorized, the secret is securely delivered to the workload
 
-This ensures that only authorized workloads can access specific secrets based on 
+This ensures that only authorized workloads can access specific secrets based on
 their verified identity, following zero-trust security principles.
 
 ## Path Syntax and Conventions
@@ -90,7 +90,7 @@ All secret paths must match the regex pattern:
 ^[a-zA-Z0-9._\-/()?+*|[\]{}\\]+$
 ```
 
-This pattern allows alphanumeric characters, dots, underscores, hyphens, forward 
+This pattern allows alphanumeric characters, dots, underscores, hyphens, forward
 slashes, parentheses, question marks, plus signs, asterisks, pipes, square 
 brackets, curly braces, and backslashes.
 
@@ -103,7 +103,8 @@ conventions are strongly recommended:
 * **Use forward slashes** to create hierarchical structures (like a file system)
 * **Use descriptive, hierarchical naming** to organize secrets logically
 * **Avoid double slashes** or other ambiguous path constructions
-* **Avoid special characters** when possible, even if they are technically allowed
+* **Avoid special characters** when possible, even if they are technically
+  allowed
 
 ### Example Valid Paths
 
@@ -265,7 +266,8 @@ spike secret delete secrets/app/config --versions=0,1,2
 spike secret undelete <path> [--versions=<versions>]
 ```
 
-Restores one or more previously deleted versions of a secret at the specified path.
+Restores one or more previously deleted versions of a secret at the specified
+path.
 
 #### Flags:
 
@@ -333,7 +335,8 @@ secrets/certificates/tls          # TLS certificates
 * Use separate paths for different environments (dev, staging, production)
 * Limit the number of key-value pairs in a single secret for better management
 * Use version history for auditing and rollback capability
-* Create specific policies that grant the minimum required access to each secret path
+* Create specific policies that grant the minimum required access to each secret
+  path
 * Regularly rotate sensitive secrets like API keys and passwords
 * Use secret delete and undelete for safe secret lifecycle management
 * Validate paths are properly formatted and follow naming conventions

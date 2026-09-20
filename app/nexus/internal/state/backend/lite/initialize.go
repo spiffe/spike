@@ -35,17 +35,29 @@ type Store struct {
 // The resulting backend provides encryption services without any persistent
 // storage functionality.
 //
+// The key size is fixed by the parameter type, so the only invalid input is
+// a nil key, which is rejected instead of dereferenced. An all-zero key is
+// accepted here; whether the root key has been populated is validated by
+// the caller, which owns the root key lifecycle.
+//
 // Parameters:
 //   - rootKey: A 256-bit (32-byte) AES key used for encryption/decryption
 //
 // Returns:
 //   - backend.Backend: An initialized lite backend with AES-GCM encryption
 //   - *sdkErrors.SDKError: nil on success, or one of the following errors:
+//   - sdkErrors.ErrRootKeyMissing if rootKey is nil
 //   - sdkErrors.ErrCryptoFailedToCreateCipher if AES cipher creation fails
 //   - sdkErrors.ErrCryptoFailedToCreateGCM if GCM mode initialization fails
 func New(rootKey *[crypto.AES256KeySize]byte) (
 	backend.Backend, *sdkErrors.SDKError,
 ) {
+	if rootKey == nil {
+		failErr := sdkErrors.ErrRootKeyMissing.Clone()
+		failErr.Msg = "cannot create the lite backend without a root key"
+		return nil, failErr
+	}
+
 	block, cipherErr := aes.NewCipher(rootKey[:])
 	if cipherErr != nil {
 		failErr := sdkErrors.ErrCryptoFailedToCreateCipher.Wrap(cipherErr)

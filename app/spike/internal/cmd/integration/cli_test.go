@@ -7,16 +7,15 @@
 package integration
 
 import (
-	"bytes"
-	"context"
 	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
-	"runtime"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/spiffe/spike-sdk-go/log"
 )
 
 // TestMain enforces the run-time gate. The `integration` build tag keeps
@@ -25,10 +24,15 @@ import (
 // up and may be probed. Without it the package runs no tests.
 func TestMain(m *testing.M) {
 	if os.Getenv("SPIKE_INTEGRATION_TEST") != "1" {
-		fmt.Fprintln(os.Stderr,
+		if _, err := fmt.Fprintln(os.Stderr,
 			"integration: set SPIKE_INTEGRATION_TEST=1 to run the live "+
 				"Pilot integration suite against a running `make start` "+
-				"environment; skipping.")
+				"environment; skipping."); err != nil {
+			// The skip notice could not be delivered; a silent skip would
+			// hide the gate, so fail instead of exiting 0 quietly.
+			log.FatalLn("TestMain", "message",
+				"failed to write the skip notice", "err", err.Error())
+		}
 		os.Exit(0)
 	}
 	os.Exit(m.Run())
@@ -42,107 +46,6 @@ type spikeResult struct {
 	stderr   string
 	exitCode int
 	timedOut bool
-}
-
-// runSpike execs the `spike` binary (resolved from PATH, honoring the
-// project's PATH-based harness convention) with the given args, optional
-// stdin, and any extra environment. The timeout bounds the call so a
-// command that hangs surfaces as timedOut rather than blocking the suite.
-func runSpike(
-	t *testing.T, timeout time.Duration, stdin []byte,
-	extraEnv []string, args ...string,
-) spikeResult {
-	t.Helper()
-
-	bin, lookErr := exec.LookPath("spike")
-	if lookErr != nil {
-		t.Fatalf("the 'spike' binary is not on PATH: %v "+
-			"(run make build and put ./bin on PATH)", lookErr)
-		return spikeResult{}
-	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), timeout)
-	defer cancel()
-
-	cmd := exec.CommandContext(ctx, bin, args...)
-	cmd.Env = append(os.Environ(), extraEnv...)
-	if stdin != nil {
-		cmd.Stdin = bytes.NewReader(stdin)
-	}
-
-	var outBuf, errBuf bytes.Buffer
-	cmd.Stdout = &outBuf
-	cmd.Stderr = &errBuf
-
-	_ = cmd.Run()
-
-	res := spikeResult{
-		stdout:   outBuf.String(),
-		stderr:   errBuf.String(),
-		timedOut: ctx.Err() == context.DeadlineExceeded,
-	}
-	if cmd.ProcessState != nil {
-		res.exitCode = cmd.ProcessState.ExitCode()
-	}
-	return res
-}
-
-// processRunning reports whether a process with the exact given name is
-// alive, via `pgrep -x` (exit 0 on a match).
-func processRunning(name string) bool {
-	return exec.Command("pgrep", "-x", name).Run() == nil
-}
-
-// requireHealthyEnv fails fast with a clear message when the live
-// environment is not up, rather than letting each command fail obscurely.
-func requireHealthyEnv(t *testing.T) {
-	t.Helper()
-	for _, proc := range []string{"nexus", "keeper", "spire-server"} {
-		if !processRunning(proc) {
-			t.Fatalf("%s is not running; start the environment with "+
-				"make start before running the live integration suite",
-				proc)
-			return
-		}
-	}
-}
-
-// waitFor polls cond until it returns true or the timeout elapses.
-func waitFor(timeout time.Duration, cond func() bool) bool {
-	deadline := time.Now().Add(timeout)
-	for time.Now().Before(deadline) {
-		if cond() {
-			return true
-		}
-		time.Sleep(500 * time.Millisecond)
-	}
-	return cond()
-}
-
-// repoRoot walks up from this test file to the module root (the directory
-// holding go.mod). `go test` runs with the working directory set to the
-// package directory, not the repository root, so repo-relative scripts such
-// as the startup helpers must be addressed by absolute path.
-func repoRoot(t *testing.T) string {
-	t.Helper()
-	_, file, _, ok := runtime.Caller(0)
-	if !ok {
-		t.Fatal("could not determine the test file path")
-		return ""
-	}
-	dir := filepath.Dir(file)
-	for {
-		if _, statErr := os.Stat(
-			filepath.Join(dir, "go.mod")); statErr == nil {
-			return dir
-		}
-		parent := filepath.Dir(dir)
-		if parent == dir {
-			t.Fatal("could not find the repository root (go.mod)")
-			return ""
-		}
-		dir = parent
-	}
 }
 
 // TestPilotSmokePass drives the everyday CLI surface against a healthy
@@ -303,8 +206,8 @@ func TestPilotDeniesWhenNexusUninitialized(t *testing.T) {
 
 	// 1. Crash: kill Nexus and every Keeper. pkill exits non-zero when
 	//    nothing matches, which is fine; only the wait below must succeed.
-	_ = exec.Command("pkill", "-x", "nexus").Run()
-	_ = exec.Command("pkill", "-x", "keeper").Run()
+	killProcess(t, "nexus")
+	killProcess(t, "keeper")
 	crashed := waitFor(20*time.Second, func() bool {
 		return !processRunning("nexus") && !processRunning("keeper")
 	})
@@ -342,8 +245,7 @@ func TestPilotDeniesWhenNexusUninitialized(t *testing.T) {
 	// up. `exec nexus` in start-nexus.sh means this PID is the Nexus itself.
 	t.Cleanup(func() {
 		if restart.Process != nil {
-			_ = restart.Process.Kill()
-			_ = restart.Wait()
+			stopProcess(t, restart)
 		}
 		t.Log("environment left uninitialized (Nexus and every Keeper " +
 			"down; SPIRE still up). Reset with: Ctrl+C the make start " +

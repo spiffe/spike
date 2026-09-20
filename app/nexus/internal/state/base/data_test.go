@@ -201,8 +201,11 @@ func TestSetRootKey_KeyIndependence(t *testing.T) {
 	// Verify the internal root key wasn't affected
 	rootKeyMu.RLock()
 	if rootKey[0] != originalValue {
-		t.Errorf("Root key should not be affected by changes to source key: expected 0x%02X, got 0x%02X",
-			originalValue, rootKey[0])
+		t.Errorf(
+			"Root key should not be affected by changes to source key: "+
+				"expected 0x%02X, got 0x%02X",
+			originalValue, rootKey[0],
+		)
 	}
 	rootKeyMu.RUnlock()
 
@@ -229,7 +232,11 @@ func TestRootKeyNoLock_ReturnsPointer(t *testing.T) {
 
 	// Verify it points to correct data
 	if (*ptr)[0] != 0x33 {
-		t.Errorf("RootKeyNoLock should return pointer to current key: expected 0x33, got 0x%02X", (*ptr)[0])
+		t.Errorf(
+			"RootKeyNoLock should return pointer to current key: expected 0x33, "+
+				"got 0x%02X",
+			(*ptr)[0],
+		)
 	}
 
 	// Verify it's the actual root key (modifying through pointer affects global)
@@ -238,7 +245,9 @@ func TestRootKeyNoLock_ReturnsPointer(t *testing.T) {
 
 	rootKeyMu.RLock()
 	if rootKey[1] != 0xDD {
-		t.Error("Modifying through RootKeyNoLock pointer should affect global root key")
+		t.Error(
+			"Modifying through RootKeyNoLock pointer should affect global root key",
+		)
 	}
 	rootKeyMu.RUnlock()
 
@@ -266,7 +275,7 @@ func TestConcurrentRootKeyAccess(t *testing.T) {
 	resetRootKey()
 
 	var wg sync.WaitGroup
-	numGoroutines := 10
+	const numGoroutines = 10
 	numOperations := 100
 
 	// Test concurrent reads using RootKeyZero
@@ -281,18 +290,18 @@ func TestConcurrentRootKeyAccess(t *testing.T) {
 	}
 	wg.Wait()
 
-	// Test concurrent writes using SetRootKey
-	// Note: Use goroutineID+1 to avoid creating zero-pattern keys which would
-	// trigger FatalErr (zero keys are rejected for security reasons)
+	// Test concurrent writes using SetRootKey. The patterns start at 1
+	// so that no goroutine builds the all-zero key, which SetRootKey
+	// rejects for security reasons.
 	wg.Add(numGoroutines)
-	for i := 0; i < numGoroutines; i++ {
-		go func(goroutineID int) {
+	for pattern := byte(1); pattern <= numGoroutines; pattern++ {
+		go func(pattern byte) {
 			defer wg.Done()
 			for j := 0; j < 10; j++ { // Fewer operations for writes
-				testKey := createPatternKey(byte(goroutineID + 1))
+				testKey := createPatternKey(pattern)
 				SetRootKey(testKey)
 			}
-		}(i)
+		}(pattern)
 	}
 	wg.Wait()
 

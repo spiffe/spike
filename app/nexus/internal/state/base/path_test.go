@@ -7,7 +7,6 @@ package base
 import (
 	"context"
 	"fmt"
-	"os"
 	"reflect"
 	"sort"
 	"testing"
@@ -30,12 +29,6 @@ func TestListKeys_EmptyBackend(t *testing.T) {
 			t.Errorf("Expected empty slice, got %d keys: %v", len(keys), keys)
 		}
 	})
-}
-
-// Helper function to reset the backend state for testing
-func resetBackendForTest() {
-	// This will be implemented to ensure a clean state between tests
-	// For now, we rely on initializing a fresh memory backend
 }
 
 func TestListKeys_SingleSecret(t *testing.T) {
@@ -328,7 +321,12 @@ func TestListKeys_DuplicatePaths(t *testing.T) {
 		}
 
 		if actualCount != expectedCount {
-			t.Errorf("Expected path %s to appear %d time(s), got %d", path, expectedCount, actualCount)
+			t.Errorf(
+				"Expected path %s to appear %d time(s), got %d",
+				path,
+				expectedCount,
+				actualCount,
+			)
 		}
 	})
 }
@@ -422,16 +420,7 @@ func TestListKeys_MemoryReuse(t *testing.T) {
 
 // Benchmark tests
 func BenchmarkListKeys_Empty(b *testing.B) {
-	// Save and restore environment variable
-	original := os.Getenv(env.NexusBackendStore)
-	_ = os.Setenv(env.NexusBackendStore, "memory")
-	defer func() {
-		if original != "" {
-			_ = os.Setenv(env.NexusBackendStore, original)
-		} else {
-			_ = os.Unsetenv(env.NexusBackendStore)
-		}
-	}()
+	b.Setenv(env.NexusBackendStore, "memory")
 
 	resetBackendForTest()
 	persist.InitializeBackend(nil)
@@ -443,15 +432,7 @@ func BenchmarkListKeys_Empty(b *testing.B) {
 }
 
 func BenchmarkListKeys_SmallSet(b *testing.B) {
-	original := os.Getenv(env.NexusBackendStore)
-	_ = os.Setenv(env.NexusBackendStore, "memory")
-	defer func() {
-		if original != "" {
-			_ = os.Setenv(env.NexusBackendStore, original)
-		} else {
-			_ = os.Unsetenv(env.NexusBackendStore)
-		}
-	}()
+	b.Setenv(env.NexusBackendStore, "memory")
 
 	resetBackendForTest()
 	persist.InitializeBackend(nil)
@@ -470,7 +451,9 @@ func BenchmarkListKeys_SmallSet(b *testing.B) {
 	// Set up a small set of secrets
 	for i := 0; i < 10; i++ {
 		path := fmt.Sprintf("/bench/secret-%d", i)
-		_ = backend.StoreSecret(ctx, path, testSecret)
+		if storeErr := backend.StoreSecret(ctx, path, testSecret); storeErr != nil {
+			b.Fatalf("Failed to store secret %s: %v", path, storeErr)
+		}
 	}
 
 	b.ResetTimer()
@@ -480,15 +463,7 @@ func BenchmarkListKeys_SmallSet(b *testing.B) {
 }
 
 func BenchmarkListKeys_LargeSet(b *testing.B) {
-	original := os.Getenv(env.NexusBackendStore)
-	_ = os.Setenv(env.NexusBackendStore, "memory")
-	defer func() {
-		if original != "" {
-			_ = os.Setenv(env.NexusBackendStore, original)
-		} else {
-			_ = os.Unsetenv(env.NexusBackendStore)
-		}
-	}()
+	b.Setenv(env.NexusBackendStore, "memory")
 
 	resetBackendForTest()
 	persist.InitializeBackend(nil)
@@ -507,7 +482,9 @@ func BenchmarkListKeys_LargeSet(b *testing.B) {
 	// Set up a large set of secrets
 	for i := 0; i < 1000; i++ {
 		path := fmt.Sprintf("bench/large/secret-%04d", i)
-		_ = backend.StoreSecret(ctx, path, testSecret)
+		if storeErr := backend.StoreSecret(ctx, path, testSecret); storeErr != nil {
+			b.Fatalf("Failed to store secret %s: %v", path, storeErr)
+		}
 	}
 
 	b.ResetTimer()

@@ -57,10 +57,12 @@ its operational state:
   encrypted, and password-protected medium.
 * Securely erase the ~/.spike/recover` folder.
 * Change the **SPIFFE ID** of **SPIKE Pilot** back using
- `./hack/bare-metal/entry/spire-server-entry-su-register.sh` or delete the registration
+ `./hack/bare-metal/entry/spire-server-entry-su-register.sh` or delete the
+ registration
  entry entirely for extra security.
 * You can create the entry back using 
-  `./hack/bare-metal/entry/spire-server-entry-su-register.sh` when you need to use 
+  `./hack/bare-metal/entry/spire-server-entry-su-register.sh` when you need to
+  use
   **SPIKE Pilot**.
 
 ### 2. During Complete System Failure
@@ -74,10 +76,12 @@ its operational state:
   its peer **SPIKE Keeper** instances to protect itself against future
   crashes.
 * Change the **SPIFFE ID** of **SPIKE Pilot** back using
-  `./hack/bare-metal/entry/spire-server-entry-su-register.sh` or delete the registration
+  `./hack/bare-metal/entry/spire-server-entry-su-register.sh` or delete the
+  registration
   entry entirely for extra security.
   * You can create the entry back using
-    `./hack/bare-metal/entry/spire-server-entry-su-register.sh` when you need to use
+    `./hack/bare-metal/entry/spire-server-entry-su-register.sh` when you need to
+    use
     **SPIKE Pilot**.
 
 1. Both **SPIKE Nexus**, **SPIKE Keeper** are unavailable, or the system is
@@ -107,7 +111,8 @@ The situation:
 
 * Both **SPIKE Nexus** and all **SPIKE Keeper** instances have crashed, there
   is no way to fetch the root key from **SPIKE Keeper**(s).
-* The system administrator has not used `spike operator recover` to create recovery 
+* The system administrator has not used `spike operator recover` to create
+  recovery
   shards, or they have lost access to the recovery shards.
 * Everyone has learned their lessons, and now it's time to reset the system
   and conduct an extensive "what went wrong / what should have been done" 
@@ -119,7 +124,8 @@ How to proceed:
   in the SQLite backing store.
 * Delete **SPIRE Server** registration entries.
 * Redeploy **SPIKE** using your preferred method.
-  * You can check out `./hack/bare-metal/startup/start.sh` to see a sample startup/deployment
+  * You can check out `./hack/bare-metal/startup/start.sh` to see a sample
+    startup/deployment
     script.
 * This is a complete system reset; you'll lose all data and all former
   configuration, including secret access policies.

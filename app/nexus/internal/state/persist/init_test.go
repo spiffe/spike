@@ -5,12 +5,12 @@
 package persist
 
 import (
-	"fmt"
 	"os"
 	"testing"
 
 	"github.com/spiffe/spike-sdk-go/config/env"
 	"github.com/spiffe/spike-sdk-go/crypto"
+	"github.com/spiffe/spike-sdk-go/log"
 
 	"github.com/spiffe/spike/app/nexus/internal/state/backend/memory"
 )
@@ -33,10 +33,14 @@ func TestInitializeBackend_Memory_WithNilKey(t *testing.T) {
 }
 
 func TestInitializeBackend_Memory_WithNonNilKey_ShouldFatal(t *testing.T) {
-	t.Skip("Skipping fatal condition test - InitializeBackend calls log.FatalLn which exits the process")
+	t.Skip(
+		"Skipping fatal condition test - InitializeBackend calls log.FatalLn " +
+			"which exits the process",
+	)
 
 	// This test cannot be run because log.FatalLn calls os.Exit() which would
-	// terminate the entire test process. The behavior is verified by manual testing
+	// terminate the entire test process. The behavior is verified by manual
+	// testing
 	// or integration tests that can handle process termination.
 	//
 	// Expected behavior: InitializeBackend panics/exits when memory backend
@@ -63,10 +67,14 @@ func TestInitializeBackend_SQLite_WithValidKey(t *testing.T) {
 }
 
 func TestInitializeBackend_SQLite_WithNilKey_ShouldPanic(t *testing.T) {
-	t.Skip("Skipping fatal condition test - InitializeBackend calls log.FatalLn which exits the process")
+	t.Skip(
+		"Skipping fatal condition test - InitializeBackend calls log.FatalLn " +
+			"which exits the process",
+	)
 
 	// This test cannot be run because log.FatalLn calls os.Exit() which would
-	// terminate the entire test process. The behavior is verified by manual testing
+	// terminate the entire test process. The behavior is verified by manual
+	// testing
 	// or integration tests that can handle process termination.
 	//
 	// Expected behavior: InitializeBackend panics/exits when sqlite backend
@@ -74,10 +82,14 @@ func TestInitializeBackend_SQLite_WithNilKey_ShouldPanic(t *testing.T) {
 }
 
 func TestInitializeBackend_SQLite_WithZeroKey_ShouldPanic(t *testing.T) {
-	t.Skip("Skipping fatal condition test - InitializeBackend calls log.FatalLn which exits the process")
+	t.Skip(
+		"Skipping fatal condition test - InitializeBackend calls log.FatalLn " +
+			"which exits the process",
+	)
 
 	// This test cannot be run because log.FatalLn calls os.Exit() which would
-	// terminate the entire test process. The behavior is verified by manual testing
+	// terminate the entire test process. The behavior is verified by manual
+	// testing
 	// or integration tests that can handle process termination.
 	//
 	// Expected behavior: InitializeBackend panics/exits when sqlite backend
@@ -104,10 +116,14 @@ func TestInitializeBackend_Lite_WithValidKey(t *testing.T) {
 }
 
 func TestInitializeBackend_Lite_WithNilKey_ShouldPanic(t *testing.T) {
-	t.Skip("Skipping fatal condition test - InitializeBackend calls log.FatalLn which exits the process")
+	t.Skip(
+		"Skipping fatal condition test - InitializeBackend calls log.FatalLn " +
+			"which exits the process",
+	)
 
 	// This test cannot be run because log.FatalLn calls os.Exit() which would
-	// terminate the entire test process. The behavior is verified by manual testing
+	// terminate the entire test process. The behavior is verified by manual
+	// testing
 	// or integration tests that can handle process termination.
 	//
 	// Expected behavior: InitializeBackend panics/exits when lite backend
@@ -115,7 +131,10 @@ func TestInitializeBackend_Lite_WithNilKey_ShouldPanic(t *testing.T) {
 }
 
 func TestInitializeBackend_UnknownType_DefaultsToMemory(t *testing.T) {
-	t.Skip("Skipping test - unknown types still require non-nil key due to validation logic, but default case creates memory backend")
+	t.Skip(
+		"Skipping test - unknown types still require non-nil key due to " +
+			"validation logic, but default case creates memory backend",
+	)
 
 	// This test reveals a logical inconsistency: unknown store types default to
 	// memory backend in the switch statement, but the validation at the top of
@@ -127,16 +146,26 @@ func TestInitializeBackend_UnknownType_DefaultsToMemory(t *testing.T) {
 	// logic prevents this from working with nil keys
 }
 
-func TestInitializeBackend_NoEnvironmentVariable_DefaultsToMemory(t *testing.T) {
-	t.Skip("Skipping test - empty environment variable still requires non-nil key due to validation logic, but default case creates memory backend")
+func TestInitializeBackend_NoEnvironmentVariable_DefaultsToMemory(
+	t *testing.T,
+) {
+	t.Skip(
+		"Skipping test - empty environment variable still requires non-nil key " +
+			"due to validation logic, but default case creates memory backend",
+	)
 
-	// This test reveals the same logical inconsistency: when the environment variable
-	// is empty, it defaults to memory backend in the switch statement, but the validation
-	// at the top of InitializeBackend requires non-nil keys for anything that's not env.Memory.
-	// Since empty string != env.Memory, it requires a non-nil key but then creates
+	// This test reveals the same logical inconsistency: when the environment
+	// variable
+	// is empty, it defaults to memory backend in the switch statement, but the
+	// validation
+	// at the top of InitializeBackend requires non-nil keys for anything that's
+	// not env.Memory.
+	// Since empty string != env.Memory, it requires a non-nil key but then
+	// creates
 	// a memory backend that doesn't need the key.
 	//
-	// Expected behavior: Empty environment variable defaults to memory backend, but validation
+	// Expected behavior: Empty environment variable defaults to memory backend,
+	// but validation
 	// logic prevents this from working with nil keys
 }
 
@@ -319,26 +348,29 @@ func TestMain(m *testing.M) {
 	// before the first call; doing it here isolates the whole package
 	// run from the real ~/.spike/data directory, whose database these
 	// tests used to delete out from under a live dev environment.
+	const fName = "TestMain"
+
 	dir, mkErr := os.MkdirTemp("", "spike-state-persist-test-*")
 	if mkErr != nil {
-		fmt.Fprintln(os.Stderr,
+		log.FatalLn(fName,
 			"failed to create a temporary data directory:", mkErr)
-		os.Exit(1)
 	}
 
 	if setErr := os.Setenv(env.NexusDataDir, dir); setErr != nil {
-		_ = os.RemoveAll(dir)
-		fmt.Fprintln(os.Stderr, "failed to set "+env.NexusDataDir+":", setErr)
-		os.Exit(1)
+		removeTempDir(dir)
+		log.FatalLn(fName, "failed to set "+env.NexusDataDir+":", setErr)
 	}
 
 	// Run tests
 	code := m.Run()
 
-	// Cleanup - reset to memory backend to avoid affecting other tests
-	_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", "memory")
+	// Cleanup: reset to the memory backend to avoid affecting other tests.
+	if setErr := os.Setenv(env.NexusBackendStore, "memory"); setErr != nil {
+		removeTempDir(dir)
+		log.FatalLn(fName, "failed to set "+env.NexusBackendStore+":", setErr)
+	}
 	InitializeBackend(nil)
 
-	_ = os.RemoveAll(dir)
+	removeTempDir(dir)
 	os.Exit(code)
 }

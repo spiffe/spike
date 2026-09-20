@@ -112,12 +112,16 @@ func BenchmarkInitializeSqliteBackend(b *testing.B) {
 	// Clean up before and after
 	dataDir := fs.NexusDataFolder()
 	dbPath := filepath.Join(dataDir, "spike.db")
-	if _, err := os.Stat(dbPath); err == nil {
-		_ = os.Remove(dbPath)
+	if _, statErr := os.Stat(dbPath); statErr == nil {
+		if rmErr := os.Remove(dbPath); rmErr != nil {
+			b.Fatalf("failed to remove %s: %v", dbPath, rmErr)
+		}
 	}
 	defer func() {
-		if _, err := os.Stat(dbPath); err == nil {
-			_ = os.Remove(dbPath)
+		if _, statErr := os.Stat(dbPath); statErr == nil {
+			if rmErr := os.Remove(dbPath); rmErr != nil {
+				b.Errorf("failed to remove %s: %v", dbPath, rmErr)
+			}
 		}
 	}()
 

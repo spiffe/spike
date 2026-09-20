@@ -7,18 +7,13 @@ package base
 import (
 	"context"
 	"fmt"
-	"os"
-	"path/filepath"
 	"reflect"
 	"sort"
 	"testing"
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/config/env"
-	"github.com/spiffe/spike-sdk-go/config/fs"
 	"github.com/spiffe/spike-sdk-go/crypto"
-
-	"github.com/spiffe/spike/app/nexus/internal/state/persist"
 )
 
 func TestSQLitePolicy_CreateAndGet(t *testing.T) {
@@ -30,9 +25,7 @@ func TestSQLitePolicy_CreateAndGet(t *testing.T) {
 		resetRootKey()
 		Initialize(rootKey)
 
-		defer func() {
-			_ = persist.Backend().Close(ctx)
-		}()
+		defer closeBackend(t, ctx)
 
 		// Create a test policy
 		policy := data.Policy{
@@ -59,13 +52,25 @@ func TestSQLitePolicy_CreateAndGet(t *testing.T) {
 			t.Errorf("Expected name %s, got %s", policy.Name, retrievedPolicy.Name)
 		}
 		if retrievedPolicy.SPIFFEIDPattern != policy.SPIFFEIDPattern {
-			t.Errorf("Expected SPIFFE ID pattern %s, got %s", policy.SPIFFEIDPattern, retrievedPolicy.SPIFFEIDPattern)
+			t.Errorf(
+				"Expected SPIFFE ID pattern %s, got %s",
+				policy.SPIFFEIDPattern,
+				retrievedPolicy.SPIFFEIDPattern,
+			)
 		}
 		if retrievedPolicy.PathPattern != policy.PathPattern {
-			t.Errorf("Expected pathPattern pattern %s, got %s", policy.PathPattern, retrievedPolicy.PathPattern)
+			t.Errorf(
+				"Expected pathPattern pattern %s, got %s",
+				policy.PathPattern,
+				retrievedPolicy.PathPattern,
+			)
 		}
 		if !reflect.DeepEqual(retrievedPolicy.Permissions, policy.Permissions) {
-			t.Errorf("Expected permissions %v, got %v", policy.Permissions, retrievedPolicy.Permissions)
+			t.Errorf(
+				"Expected permissions %v, got %v",
+				policy.Permissions,
+				retrievedPolicy.Permissions,
+			)
 		}
 	})
 }
@@ -76,7 +81,9 @@ func TestSQLitePolicy_Persistence(t *testing.T) {
 		Name:            policyName,
 		SPIFFEIDPattern: "^spiffe://example\\.org/service$",
 		PathPattern:     "^persistent/data/.*$",
-		Permissions:     []data.PolicyPermission{data.PermissionRead, data.PermissionWrite},
+		Permissions: []data.PolicyPermission{
+			data.PermissionRead, data.PermissionWrite,
+		},
 	}
 
 	// First session - create policy
@@ -88,9 +95,7 @@ func TestSQLitePolicy_Persistence(t *testing.T) {
 		resetRootKey()
 		Initialize(rootKey)
 
-		defer func() {
-			_ = persist.Backend().Close(ctx)
-		}()
+		defer closeBackend(t, ctx)
 
 		_, createErr := UpsertPolicy(policy)
 		if createErr != nil {
@@ -106,9 +111,7 @@ func TestSQLitePolicy_Persistence(t *testing.T) {
 		resetRootKey()
 		Initialize(rootKey)
 
-		defer func() {
-			_ = persist.Backend().Close(ctx)
-		}()
+		defer closeBackend(t, ctx)
 
 		// Retrieve the policy by name directly
 		retrievedPolicy, getErr := GetPolicy(policyName)
@@ -130,7 +133,8 @@ func TestSQLitePolicy_Persistence(t *testing.T) {
 		}
 		if retrievedPolicy.PathPattern != policy.PathPattern {
 			t.Errorf(
-				"Policy pathPattern pattern not persisted correctly: expected %s, got %s",
+				"Policy pathPattern pattern not persisted correctly: "+
+					"expected %s, got %s",
 				policy.PathPattern, retrievedPolicy.PathPattern,
 			)
 		}
@@ -152,9 +156,7 @@ func TestSQLitePolicy_ListPolicies(t *testing.T) {
 		resetRootKey()
 		Initialize(rootKey)
 
-		defer func() {
-			_ = persist.Backend().Close(ctx)
-		}()
+		defer closeBackend(t, ctx)
 
 		// Create multiple policies
 		policies := []data.Policy{
@@ -217,9 +219,7 @@ func TestSQLitePolicy_DeletePolicy(t *testing.T) {
 		resetRootKey()
 		Initialize(rootKey)
 
-		defer func() {
-			_ = persist.Backend().Close(ctx)
-		}()
+		defer closeBackend(t, ctx)
 
 		// Create policies
 		policies := []string{"keep-policy", "delete-policy-1", "delete-policy-2"}
@@ -289,9 +289,7 @@ func TestSQLitePolicy_CreateMultiplePolicies(t *testing.T) {
 		resetRootKey()
 		Initialize(rootKey)
 
-		defer func() {
-			_ = persist.Backend().Close(ctx)
-		}()
+		defer closeBackend(t, ctx)
 
 		// Create first policy
 		firstPolicy := data.Policy{
@@ -311,7 +309,9 @@ func TestSQLitePolicy_CreateMultiplePolicies(t *testing.T) {
 			Name:            "second-policy",
 			SPIFFEIDPattern: "spiffe://example\\.org/second",
 			PathPattern:     "second/pathPattern/.*",
-			Permissions:     []data.PolicyPermission{data.PermissionWrite, data.PermissionList},
+			Permissions: []data.PolicyPermission{
+				data.PermissionWrite, data.PermissionList,
+			},
 		}
 
 		createdSecond, createSecondErr := UpsertPolicy(secondPolicy)
@@ -352,7 +352,9 @@ func TestSQLitePolicy_CreateMultiplePolicies(t *testing.T) {
 			t.Errorf("Expected second policy pathPattern pattern %s, got %s",
 				secondPolicy.PathPattern, retrievedSecond.PathPattern)
 		}
-		if !reflect.DeepEqual(retrievedSecond.Permissions, secondPolicy.Permissions) {
+		if !reflect.DeepEqual(
+			retrievedSecond.Permissions, secondPolicy.Permissions,
+		) {
 			t.Errorf("Expected second policy permissions %v, got %v",
 				secondPolicy.Permissions, retrievedSecond.Permissions)
 		}
@@ -377,9 +379,7 @@ func TestSQLitePolicy_SpecialCharactersAndLongData(t *testing.T) {
 		resetRootKey()
 		Initialize(rootKey)
 
-		defer func() {
-			_ = persist.Backend().Close(ctx)
-		}()
+		defer closeBackend(t, ctx)
 
 		// Test with special characters and Unicode
 		policy := data.Policy{
@@ -402,20 +402,30 @@ func TestSQLitePolicy_SpecialCharactersAndLongData(t *testing.T) {
 		}
 
 		if retrievedPolicy.Name != policy.Name {
-			t.Errorf("Special character policy name not preserved: expected %s, got %s",
-				policy.Name, retrievedPolicy.Name)
+			t.Errorf(
+				"Special character policy name not preserved: expected %s, got %s",
+				policy.Name, retrievedPolicy.Name,
+			)
 		}
 		if retrievedPolicy.SPIFFEIDPattern != policy.SPIFFEIDPattern {
-			t.Errorf("Special character SPIFFE ID pattern not preserved: expected %s, got %s",
-				policy.SPIFFEIDPattern, retrievedPolicy.SPIFFEIDPattern)
+			t.Errorf(
+				"Special character SPIFFE ID pattern not preserved: "+
+					"expected %s, got %s",
+				policy.SPIFFEIDPattern, retrievedPolicy.SPIFFEIDPattern,
+			)
 		}
 		if retrievedPolicy.PathPattern != policy.PathPattern {
-			t.Errorf("Special character pathPattern pattern not preserved: expected %s, got %s",
-				policy.PathPattern, retrievedPolicy.PathPattern)
+			t.Errorf(
+				"Special character pathPattern pattern not preserved: "+
+					"expected %s, got %s",
+				policy.PathPattern, retrievedPolicy.PathPattern,
+			)
 		}
 		if !reflect.DeepEqual(retrievedPolicy.Permissions, policy.Permissions) {
-			t.Errorf("Special character permissions not preserved: expected %v, got %v",
-				policy.Permissions, retrievedPolicy.Permissions)
+			t.Errorf(
+				"Special character permissions not preserved: expected %v, got %v",
+				policy.Permissions, retrievedPolicy.Permissions,
+			)
 		}
 	})
 }
@@ -441,9 +451,7 @@ func TestSQLitePolicy_EncryptionWithDifferentKeys(t *testing.T) {
 		resetRootKey()
 		Initialize(key1)
 
-		defer func() {
-			_ = persist.Backend().Close(ctx)
-		}()
+		defer closeBackend(t, ctx)
 
 		createdPolicy, createErr := UpsertPolicy(policy)
 		if createErr != nil {
@@ -464,9 +472,7 @@ func TestSQLitePolicy_EncryptionWithDifferentKeys(t *testing.T) {
 		resetRootKey()
 		Initialize(key2)
 
-		defer func() {
-			_ = persist.Backend().Close(ctx)
-		}()
+		defer closeBackend(t, ctx)
 
 		// This should fail with the wrong key
 		_, getErr := GetPolicy(createdPolicyName)
@@ -485,16 +491,15 @@ func TestSQLitePolicy_EncryptionWithDifferentKeys(t *testing.T) {
 		resetRootKey()
 		Initialize(key1)
 
-		defer func() {
-			_ = persist.Backend().Close(ctx)
-		}()
+		defer closeBackend(t, ctx)
 
 		retrievedPolicy, getErr := GetPolicy(createdPolicyName)
 		if getErr != nil {
 			t.Fatalf("Failed to retrieve policy with original key: %v", getErr)
 		}
 
-		// Compare relevant fields (ignore generated fields like ID, CreatedAt, etc.)
+		// Compare relevant fields (ignore generated fields like ID, CreatedAt,
+		// etc.)
 		if retrievedPolicy.Name != policy.Name {
 			t.Errorf("Policy name corrupted: expected %s, got %s",
 				policy.Name, retrievedPolicy.Name)
@@ -523,9 +528,7 @@ func TestSQLitePolicy_ErrorHandling(t *testing.T) {
 		resetRootKey()
 		Initialize(rootKey)
 
-		defer func() {
-			_ = persist.Backend().Close(ctx)
-		}()
+		defer closeBackend(t, ctx)
 
 		// Test getting non-existent policy
 		_, getErr := GetPolicy("non-existent-policy-id")
@@ -557,31 +560,11 @@ func TestSQLitePolicy_ErrorHandling(t *testing.T) {
 // Benchmark tests for SQLite policy operations
 func BenchmarkSQLiteCreatePolicy(b *testing.B) {
 	// Set environment variables for SQLite backend
-	originalBackend := os.Getenv(env.NexusBackendStore)
-	originalSkipSchema := os.Getenv(env.NexusDBSkipSchemaCreation)
-
-	_ = os.Setenv(env.NexusBackendStore, "sqlite")
-	_ = os.Unsetenv(env.NexusDBSkipSchemaCreation)
-
-	defer func() {
-		if originalBackend != "" {
-			_ = os.Setenv(env.NexusBackendStore, originalBackend)
-		} else {
-			_ = os.Unsetenv(env.NexusBackendStore)
-		}
-		if originalSkipSchema != "" {
-			_ = os.Setenv(env.NexusDBSkipSchemaCreation, originalSkipSchema)
-		} else {
-			_ = os.Unsetenv(env.NexusDBSkipSchemaCreation)
-		}
-	}()
+	b.Setenv(env.NexusBackendStore, "sqlite")
+	unsetEnv(b, env.NexusDBSkipSchemaCreation)
 
 	// Clean up the database
-	dataDir := fs.NexusDataFolder()
-	dbPath := filepath.Join(dataDir, "spike.db")
-	if _, err := os.Stat(dbPath); err == nil {
-		_ = os.Remove(dbPath)
-	}
+	cleanupSQLiteDatabase(b)
 
 	rootKey := &[crypto.AES256KeySize]byte{}
 	for i := range rootKey {
@@ -609,31 +592,11 @@ func BenchmarkSQLiteCreatePolicy(b *testing.B) {
 
 func BenchmarkSQLiteGetPolicy(b *testing.B) {
 	// Set environment variables for SQLite backend
-	originalBackend := os.Getenv(env.NexusBackendStore)
-	originalSkipSchema := os.Getenv(env.NexusDBSkipSchemaCreation)
-
-	_ = os.Setenv(env.NexusBackendStore, "sqlite")
-	_ = os.Unsetenv(env.NexusDBSkipSchemaCreation)
-
-	defer func() {
-		if originalBackend != "" {
-			_ = os.Setenv(env.NexusBackendStore, originalBackend)
-		} else {
-			_ = os.Unsetenv(env.NexusBackendStore)
-		}
-		if originalSkipSchema != "" {
-			_ = os.Setenv(env.NexusDBSkipSchemaCreation, originalSkipSchema)
-		} else {
-			_ = os.Unsetenv(env.NexusDBSkipSchemaCreation)
-		}
-	}()
+	b.Setenv(env.NexusBackendStore, "sqlite")
+	unsetEnv(b, env.NexusDBSkipSchemaCreation)
 
 	// Clean up the database
-	dataDir := fs.NexusDataFolder()
-	dbPath := filepath.Join(dataDir, "spike.db")
-	if _, err := os.Stat(dbPath); err == nil {
-		_ = os.Remove(dbPath)
-	}
+	cleanupSQLiteDatabase(b)
 
 	rootKey := &[crypto.AES256KeySize]byte{}
 	for i := range rootKey {
@@ -651,18 +614,13 @@ func BenchmarkSQLiteGetPolicy(b *testing.B) {
 		PathPattern:     "benchmark/.*",
 		Permissions:     []data.PolicyPermission{data.PermissionRead},
 	}
-	_, _ = UpsertPolicy(policy)
-
-	// Get the policy ID before starting benchmark
-	allPolicies, listErr := ListPolicies()
-	if listErr != nil || len(allPolicies) == 0 {
-		b.Fatalf("Failed to find created policy for benchmark: %v", listErr)
+	if _, createErr := UpsertPolicy(policy); createErr != nil {
+		b.Fatalf("Failed to create the benchmark policy: %v", createErr)
 	}
-	policyID := allPolicies[0].ID // Use the first policy
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		_, getErr := GetPolicy(policyID)
+		_, getErr := GetPolicy(policyName)
 		if getErr != nil {
 			b.Fatalf("Benchmark failed: %v", getErr)
 		}

@@ -6,6 +6,7 @@ package secret
 
 import (
 	"context"
+	"fmt"
 	"strconv"
 	"strings"
 
@@ -14,6 +15,7 @@ import (
 	spike "github.com/spiffe/spike-sdk-go/api"
 	"github.com/spiffe/spike-sdk-go/spiffeid"
 
+	"github.com/spiffe/spike/app/spike/internal/cmd/flags"
 	"github.com/spiffe/spike/app/spike/internal/stdout"
 )
 
@@ -43,7 +45,7 @@ import (
 //
 //	spike secret delete secret/pass           # Deletes current version
 //	spike secret delete secret/pass -v 1,2,3  # Deletes specific versions
-//	spike secret delete secret/pass -v 0,1,2  # Deletes the current version plus 1,2
+//	spike secret delete secret/pass -v 0,1,2  # Deletes current plus 1 and 2
 //
 // The command performs trust to ensure:
 //   - Exactly one path argument is provided
@@ -66,17 +68,19 @@ Examples:
   spike secret delete secret/apocalyptica -v 0,1,2
   # Deletes current version plus versions 1 and 2`,
 		Args: cobra.ExactArgs(1),
-		Run: func(cmd *cobra.Command, args []string) {
+		RunE: func(cmd *cobra.Command, args []string) error {
 			spiffeid.IsPilotOperatorOrDie(SPIFFEID)
 
 			api := spike.NewWithSource(source)
 
 			path := args[0]
-			versions, _ := cmd.Flags().GetString("versions")
+			versions, flagErr := flags.String(cmd, "versions")
+			if flagErr != nil {
+				return flagErr
+			}
 
 			if !validSecretPath(path) {
-				cmd.PrintErrf("Error: Invalid secret path: %s\n", path)
-				return
+				return fmt.Errorf("invalid secret path: %s", path)
 			}
 
 			if versions == "" {
@@ -88,13 +92,11 @@ Examples:
 			for _, v := range versionList {
 				version, err := strconv.Atoi(strings.TrimSpace(v))
 				if err != nil {
-					cmd.PrintErrf("Error: Invalid version number: %s\n", v)
-					return
+					return fmt.Errorf("invalid version number: %s", v)
 				}
 
 				if version < 0 {
-					cmd.PrintErrf("Error: Negative version number: %s\n", v)
-					return
+					return fmt.Errorf("negative version number: %s", v)
 				}
 			}
 
@@ -111,12 +113,12 @@ Examples:
 
 			ctx := context.Background()
 
-			err := api.DeleteSecretVersions(ctx, path, vv)
-			if stdout.HandleAPIError(cmd, err) {
-				return
+			if apiErr := api.DeleteSecretVersions(ctx, path, vv); apiErr != nil {
+				return stdout.APIError(cmd, apiErr)
 			}
 
 			cmd.Println("OK")
+			return nil
 		},
 	}
 
