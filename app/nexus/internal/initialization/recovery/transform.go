@@ -11,7 +11,9 @@ import (
 	"strings"
 
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
+	"github.com/spiffe/spike-sdk-go/crypto"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
+	"github.com/spiffe/spike-sdk-go/security/mem"
 )
 
 // keeperURL joins a keeper API root with a keeper API path after validating
@@ -107,4 +109,16 @@ func unmarshalShardResponse(data []byte) (
 	}
 
 	return &res, nil
+}
+
+// resetShards zeroes every shard in the map and removes all entries, so the
+// next recovery round starts from an empty, consistent set.
+//
+// Parameters:
+//   - shards: The shards collected so far, keyed by keeper ID.
+func resetShards(shards map[string]*[crypto.AES256KeySize]byte) {
+	for id, shard := range shards {
+		mem.ClearRawBytes(shard)
+		delete(shards, id)
+	}
 }

@@ -95,6 +95,12 @@ func InitializeBackingStoreFromKeepers(source *workloadapi.X509Source) {
 			return false, sdkErrors.ErrRecoveryRetryFailed
 		}
 
+		// Each round collects a fresh, consistent set of shards. A shard kept
+		// from an earlier round could belong to a previous bootstrap (for
+		// example a retried bootstrap that re-seeded the Keepers with a new
+		// root key), and mixing it with fresh ones reconstructs a wrong key.
+		resetShards(successfulKeeperShards)
+
 		initSuccessful := iterateKeepersAndInitializeState(
 			source, successfulKeeperShards,
 		)

@@ -272,6 +272,19 @@ spike-pilot:
   enabled: true
 spire-server:
   enabled: true
+  controllerManager:
+    identities:
+      clusterSPIFFEIDs:
+        # The chart does not enable the SPIKE identities by default;
+        # without these the components never receive an SVID.
+        spike-nexus:
+          enabled: true
+        spike-keeper:
+          enabled: true
+        spike-pilot:
+          enabled: true
+        spike-bootstrap:
+          enabled: true
 spire-agent:
   enabled: true
 spiffe-csi-driver:

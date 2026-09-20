@@ -60,6 +60,11 @@ Checking the pins surfaced broken windows:
 
 - `hack/lib/versions.sh` (new), `makefiles/Kubernetes.mk`
   (`spire-versions`), `internal/layout/versions_test.go` (new)
+- `app/bootstrap/internal/net/readiness.go` (new, `waitForKeepers`),
+  `broadcast.go`; `app/nexus/internal/initialization/recovery/`
+  `recovery.go`, `transform.go` (`resetShards`); tests for both
+- `ci/integration/minio-rolearn/test.yaml` (assets chosen by the pod's
+  architecture), `test.sh` (CA file name matches `helper.conf`)
 - `hack/k8s/spike-install.sh`, `hack/k8s/spike-dev-install.sh`
 - `ci/integration/minio-rolearn/setup.sh`, `spire-values.yaml`;
   `bootstrap.yaml` removed
@@ -69,6 +74,44 @@ Checking the pins surfaced broken windows:
   `docs-src/content/development/bare-metal.md`,
   `docs-src/content/recipes/bootstrapping-spike.md` (the Kubernetes
   step now describes the chart hook)
+
+## Chart Behavior Change Found by Validation
+
+From 0.30.x the `spire-server` subchart no longer enables the SPIKE
+identities by default: `controllerManager.identities.clusterSPIFFEIDs.
+spike-{nexus,keeper,pilot,bootstrap}` render only when a values file
+sets `enabled: true` on each. Without them the SPIRE agent answers "No
+identity issued" and Nexus and Keeper die on their startup probes. The
+repository's `config/helm` values already set the flags; the CI values
+and the quickstart example relied on the old defaults and now set them.
+The ID templates also became per-pod (`spike/nexus/<pod>`), which the
+SDK predicates accept by prefix.
+
+## SPIKE Defects Found by Validation
+
+The chart's post-install bootstrap hook starts the instant the install
+returns, before the Keepers hold SVIDs. That exposed two defects in
+SPIKE itself, both fixed here:
+
+- **Bootstrap seeded a subset and gave up.** A first attempt reached only
+  the Keepers already listening, exhausted its per-Keeper retries, and
+  exited; the Job retry generated a new root key and seeded the rest. The
+  Keepers then held shares of two keys. `BroadcastKeepers` now waits,
+  before producing a single share, until every Keeper accepts a TCP
+  connection (`waitForKeepers`, bounded by
+  `SPIKE_BOOTSTRAP_KEEPER_TIMEOUT` per Keeper). A Keeper listens only
+  once it has its SVID, so this is the earliest moment a contribution can
+  succeed, and a timeout exits with nothing sent, so a retry is safe.
+- **Nexus combined shares from different rounds.** The recovery loop kept
+  every share it had ever fetched, so a share from an earlier bootstrap
+  was combined with a fresh one, reconstructing a wrong key that Nexus
+  then trusted, answering every verify call with "decryption failed".
+  Each round now starts from an empty, zeroed set (`resetShards`).
+
+With both fixes the chart hook is the bootstrap path for CI and for
+users, and the hand-written CI Job is gone. The CI values point the
+hook at the dev bootstrap image loaded into kind, so that image is under
+test as well.
 
 ## Error / Edge Cases
 
@@ -96,9 +139,28 @@ nothing here.
 - No change to the MinIO chart pin (`specs/minio-bitnami-image-
   relocation.md` owns it).
 
-## Verification
+## Verification (2026-09-20, kind v0.29.0, node v1.33.1, arm64 host)
 
-- `make test` and `make audit` unchanged and green (no Go changes).
-- The CI integration path run locally on a kind cluster with the same
-  node image as CI: `make docker-build`, image load, `setup.sh`,
-  `test.sh`. Result recorded below when run.
+- `make test` (race, uncached): 25 packages ok, 377 passes, 0 failures;
+  `make audit`: exit 0, 0 lint issues, no called vulnerabilities.
+- Four runs of the CI integration path with the dev images:
+  1. spire-server crash-looped: the chart's `cel` plugin checksum is the
+     amd64 binary's (arm64 host limitation; a local overlay with the
+     arm64 checksum was used from run 2 on, never committed).
+  2. Nexus and Keeper died on their startup probes: no ClusterSPIFFEID
+     for SPIKE components. Fixed by enabling the identities in the CI
+     values and the quickstart example.
+  3. SPIRE and SPIKE pods healthy, but the bootstrap hook timed out:
+     eight bootstrap attempts, Keepers holding shares of two keys, Nexus
+     answering verify with "decryption failed". Fixed in SPIKE (above).
+  4. Release `deployed`, bootstrap hook complete on its first attempt
+     with the marker ConfigMap written ~90 s after install, Nexus up
+     with zero restarts, all three Keepers running. The test pod fetched
+     its SVID and the encrypt then decrypt round trip through Nexus
+     returned the plaintext, using the committed test script's own
+     commands.
+- Not validated here: the MinIO half of the harness (`mc` provisioning
+  Job and the S3 copy steps). The MinIO provisioning Job exhausted its
+  retries on this arm64 host, where the legacy Bitnami images run under
+  emulation; CI runs on amd64. The harness fixes made in passing (the CA
+  file name, architecture-aware asset downloads) apply on both.

@@ -13,6 +13,7 @@ import (
 	apiUrl "github.com/spiffe/spike-sdk-go/api/url"
 	"github.com/spiffe/spike-sdk-go/crypto"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
+	"github.com/spiffe/spike-sdk-go/security/mem"
 )
 
 func TestShardURL_ValidInput(t *testing.T) {
@@ -467,5 +468,20 @@ func TestCryptoConstants(t *testing.T) {
 	// noinspection GoBoolExpressions
 	if len(shardPtr) != 32 {
 		t.Errorf("Expected shard pointer length 32, got %d", len(shardPtr))
+	}
+}
+
+func TestResetShards_ZeroesAndEmpties(t *testing.T) {
+	first := &[crypto.AES256KeySize]byte{1, 2, 3}
+	second := &[crypto.AES256KeySize]byte{4, 5, 6}
+	shards := map[string]*[crypto.AES256KeySize]byte{"1": first, "2": second}
+
+	resetShards(shards)
+
+	if len(shards) != 0 {
+		t.Errorf("expected an empty map, got %d entries", len(shards))
+	}
+	if !mem.Zeroed32(first) || !mem.Zeroed32(second) {
+		t.Error("expected the previous shard buffers to be zeroed")
 	}
 }

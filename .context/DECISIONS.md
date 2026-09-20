@@ -51,6 +51,36 @@ For significant decisions:
 ✗ No real alternatives existed
 
 -->
+## [2026-09-20-115836] Bootstrap waits for all Keepers; Nexus recovers per round
+
+**Status**: Accepted
+
+**Context**: On a kind cluster with chart 0.30.2 the post-install bootstrap hook
+ran eight times. Attempt one seeded only the Keeper that was listening and
+exited; attempt two generated a new root key and seeded all three. Nexus
+recovered from one old share plus one new share, cached a wrong key, and failed
+every verify with 'decryption failed'. The same failure took down the PR's
+integration job.
+
+**Decision**: Bootstrap waits for all Keepers; Nexus recovers per round
+
+**Rationale**: Two root causes, two fixes. Bootstrap: BroadcastKeepers now calls
+waitForKeepers before RootShares, dialing each Keeper until it accepts a TCP
+connection (bounded by SPIKE_BOOTSTRAP_KEEPER_TIMEOUT); nothing leaves the
+process until all listen, so a timeout and retry cannot split the set. Nexus:
+InitializeBackingStoreFromKeepers resets the shard map (zeroing buffers) at the
+start of every round, so a reconstruction only ever uses shares fetched
+together. Chosen over a CI-only Job with a wait, which would have hidden a
+defect every chart 0.30 user hits, and over disabling the hook, which the
+chart's global switch ties to spire-server's own hooks.
+
+**Consequence**: The chart hook is the supported bootstrap path; the CI's
+hand-written Job is removed and the hook runs the dev bootstrap image. Unit
+tests cover waitForKeepers, keeperAddress and resetShards; the kind run is the
+end-to-end proof. Spec: specs/spire-chart-bump.md.
+
+---
+
 ## [2026-09-20-101648] Pin SPIRE charts 0.30.2/0.6.1; CI uses the chart hook
 
 **Status**: Accepted

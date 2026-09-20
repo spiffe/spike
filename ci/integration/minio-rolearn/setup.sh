@@ -14,11 +14,10 @@ helm upgrade --install -n spire-server spire-crds spire-crds \
   --version "${SPIRE_CRDS_HELM_CHART_VERSION}" --create-namespace
 
 # The spike-nexus subchart runs the SPIKE Bootstrap as a post-install Helm
-# hook: it generates the root key, splits it into Shamir shares, and seeds
-# the Keepers, using the dev bootstrap image loaded into kind (see
-# spire-values.yaml). Helm waits for the hook, which succeeds only once the
-# Keepers are up and Nexus answers the proof-of-possession check, hence the
-# generous timeout.
+# hook with the dev bootstrap image loaded into kind (see spire-values.yaml).
+# The bootstrap waits until every Keeper listens before it produces a single
+# share, so a retried hook cannot leave the Keepers holding two keys. Helm
+# waits for the hook; the Keepers need their SVIDs first, hence the timeout.
 helm upgrade --install -n spire-server spire spire \
   --repo https://spiffe.github.io/helm-charts-hardened/ \
   --version "${SPIRE_HELM_CHART_VERSION}" --timeout 10m \

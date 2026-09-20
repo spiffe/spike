@@ -241,6 +241,14 @@ the name-based policy work.
   developers must override the checksum locally. Spec:
   `specs/spire-chart-bump.md`. #priority:medium #session:069e679b
   #branch:topic/volkan/go-bump #commit:39eaa7c3 #added:2026-09-20
+- [x] Pin SPIRE charts 0.30.2/0.6.1 and SPIRE v1.15.3 with one source of
+  truth (hack/lib/versions.sh, enforced by internal/layout); fix the
+  bootstrap seeding race and Nexus cross-round share mixing the kind
+  validation exposed; CI uses the chart's bootstrap hook. Spec:
+  `specs/spire-chart-bump.md`. #priority:high #session:069e679b
+  #branch:topic/volkan/go-bump #commit:3f401c25 #added:2026-09-20
+  #done:2026-09-20 (validated on kind: hook first-try, Nexus 0 restarts,
+  encrypt/decrypt round trip through Nexus; MinIO half not run on arm64)
 
 ## Blocked
 
