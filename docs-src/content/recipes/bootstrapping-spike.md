@@ -28,10 +28,13 @@ distributes one share to each keeper. Run it once after the keepers are up:
 ```bash
 # bare-metal
 make bootstrap
-
-# Kubernetes: run the spike-bootstrap workload (Job) with the bootstrap SVID
-kubectl apply -f bootstrap.yaml
 ```
+
+On Kubernetes there is nothing to run by hand: the `spike-nexus` subchart
+of the `spire` Helm chart runs SPIKE Bootstrap as a post-install and
+post-upgrade hook (`installAndUpgradeHook.enabled`, on by default). The
+hook Job records completion in a ConfigMap, so a repeated `helm upgrade`
+does not re-bootstrap; set `spike-nexus.bootstrap.force=true` to force it.
 
 After it succeeds, Nexus reconstructs the root key from the keepers and becomes
 ready.

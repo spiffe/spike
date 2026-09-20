@@ -11,7 +11,10 @@
 
 set -euo pipefail
 
-SPIRE_VERSION="v1.11.2"
+# SPIRE versions come from one place; see that file before changing a pin.
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=hack/lib/versions.sh
+. "${SCRIPT_DIR}/../../lib/versions.sh"
 
 # Clone into a temporary directory and always clean it up on exit, even on
 # failure. Leaving the clone behind would pollute the working tree and break

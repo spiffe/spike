@@ -27,7 +27,8 @@ export SPIKE_NEXUS_BACKEND_STORE="sqlite"
 export SPIKE_NEXUS_TLS_PORT=":8553"
 export SPIKE_NEXUS_API_URL="https://localhost:8553"
 export SPIKE_KEEPER_TLS_PORT=":8443"
-export SPIKE_NEXUS_KEEPER_PEERS='https://localhost:8443,https://localhost:8543,https://localhost:8643'
+export SPIKE_NEXUS_KEEPER_PEERS='https://localhost:8443,'\
+'https://localhost:8543,https://localhost:8643'
 
 # Trust configuration:
 export SPIKE_TRUST_ROOT="spike.ist"

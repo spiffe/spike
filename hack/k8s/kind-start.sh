@@ -11,7 +11,8 @@ shopt -s expand_aliases
 if ! command -v kind &> /dev/null
 then
   echo "Command 'kind' not found. Please install Kind first."
-  echo "You can install it from: https://kind.sigs.k8s.io/docs/user/quick-start/#installation"
+  echo "You can install it from:" \
+    "https://kind.sigs.k8s.io/docs/user/quick-start/#installation"
   exit 1
 fi
 
@@ -88,7 +89,8 @@ kubectl cluster-info --context kind-${CLUSTER_NAME}
 echo ""
 echo "Kind cluster '${CLUSTER_NAME}' is ready!"
 echo "To switch context: kubectl config use-context kind-${CLUSTER_NAME}"
-echo "To install ingress: kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/kind/deploy.yaml"
+echo "To install ingress: kubectl apply -f" \
+  "https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/kind/deploy.yaml"
 
 # Wait for the cluster to be ready
 echo "Waiting for cluster to be ready..."

@@ -7,7 +7,8 @@
 SPIFFE_ID="spiffe://spike.ist/spike/pilot/role/superuser"
 
 # Find the Entry ID for the given SPIFFE ID
-ENTRY_ID=$(spire-server entry show --spiffeID "$SPIFFE_ID" | awk '/Entry ID/ {print $NF}')
+ENTRY_ID=$(spire-server entry show --spiffeID "$SPIFFE_ID" |
+  awk '/Entry ID/ {print $NF}')
 
 # Check if an Entry ID was found
 if [ -z "$ENTRY_ID" ]; then

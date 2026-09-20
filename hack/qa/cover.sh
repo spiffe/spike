@@ -6,10 +6,9 @@
 
 go build ./...
 
-# FIXME: Remove -p 1 flag once issue with concurrent test isolation is resolved
 # Intentionally not using `-race` since all we care about is generating a
 # coverage report.
-go test -shuffle=on -coverprofile=coverage.txt -p 1 ./...
+go test -shuffle=on -coverprofile=coverage.txt ./...
 
 go tool cover -html=coverage.txt -o=coverage.html
 

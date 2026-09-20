@@ -4,36 +4,51 @@ SCRIPT="$(readlink -f "$0")"
 SCRIPTPATH="$(dirname "${SCRIPT}")"
 BASEPATH="${SCRIPTPATH}/../../../"
 
-helm upgrade --install -n spire-server spire-crds spire-crds --repo https://spiffe.github.io/helm-charts-hardened/ --create-namespace
-helm upgrade --install -n spire-server spire spire --repo https://spiffe.github.io/helm-charts-hardened/ -f "${SCRIPTPATH}/spire-values.yaml"
+# Chart versions are pinned so a CI run tests a known chart, not whatever
+# upstream published last. They come from the single source of truth.
+# shellcheck source=hack/lib/versions.sh
+. "${BASEPATH}/hack/lib/versions.sh"
 
-# Seed the SPIKE Keepers with the root-key shares. Without this, SPIKE Nexus
-# waits forever in InitializeBackingStoreFromKeepers and never becomes ready.
-# The spire chart registers the spike/bootstrap identity but ships no bootstrap
-# workload, so we supply it here. (No --wait on the install above: Nexus cannot
-# become ready until the keepers are seeded by this Job.)
-kubectl apply -f "${SCRIPTPATH}/bootstrap.yaml"
+helm upgrade --install -n spire-server spire-crds spire-crds \
+  --repo https://spiffe.github.io/helm-charts-hardened/ \
+  --version "${SPIRE_CRDS_HELM_CHART_VERSION}" --create-namespace
 
-#FIXME remove once upstream chart supports this
-kubectl patch statefulset -n spire-server spire-spike-nexus --type='strategic' -p '
+# The spike-nexus subchart runs the SPIKE Bootstrap as a post-install Helm
+# hook: it generates the root key, splits it into Shamir shares, and seeds
+# the Keepers, using the dev bootstrap image loaded into kind (see
+# spire-values.yaml). Helm waits for the hook, which succeeds only once the
+# Keepers are up and Nexus answers the proof-of-possession check, hence the
+# generous timeout.
+helm upgrade --install -n spire-server spire spire \
+  --repo https://spiffe.github.io/helm-charts-hardened/ \
+  --version "${SPIRE_HELM_CHART_VERSION}" --timeout 10m \
+  -f "${SCRIPTPATH}/spire-values.yaml"
+
+# The chart has no value for the lite-workload trust root yet (upstream ask
+# tracked in .context/TASKS.md), so it is patched in. The backend store is
+# set through the chart's backendStore value.
+kubectl patch statefulset -n spire-server spire-spike-nexus \
+  --type='strategic' -p '
 spec:
   template:
     spec:
       containers:
       - name: spire-spike-nexus
         env:
-        - name: SPIKE_NEXUS_BACKEND_STORE
-          value: lite
         - name: SPIKE_TRUST_ROOT_LITE_WORKLOAD
           value: example.org
 '
-kubectl rollout status statefulset/spire-spike-nexus -n spire-server --watch --timeout=5m
+kubectl rollout status statefulset/spire-spike-nexus -n spire-server \
+  --watch --timeout=5m
 kubectl apply -f "${SCRIPTPATH}/test.yaml"
 # Pin the chart version so the image tags stay aligned with the tags that
 # exist under docker.io/bitnamilegacy/* (see minio-values.yaml). An unpinned
 # install would float to the latest chart, whose newer image tags may not be
 # mirrored in the frozen legacy repository.
-helm upgrade --install minio -n minio --create-namespace --version 17.0.21 oci://registry-1.docker.io/bitnamicharts/minio -f "${SCRIPTPATH}/minio-values.yaml"
+helm upgrade --install minio -n minio --create-namespace --version 17.0.21 \
+  oci://registry-1.docker.io/bitnamicharts/minio \
+  -f "${SCRIPTPATH}/minio-values.yaml"
 kubectl rollout restart -n minio deployment/minio
 kubectl rollout status -n minio deployment/minio
-kubectl wait -l statefulset.kubernetes.io/pod-name=test-0 --for=condition=ready pod --timeout=-360s
+kubectl wait -l statefulset.kubernetes.io/pod-name=test-0 \
+  --for=condition=ready pod --timeout=-360s

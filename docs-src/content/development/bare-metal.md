@@ -162,7 +162,8 @@ echo 'export WORKSPACE="$HOME/-change_to_dev_dir-"' >> ~/.profile
 source ~/.profile
 echo $WORKSPACE
 cd $WORKSPACE
-git clone https://github.com/spiffe/spire && cd spire
+# Match the SPIRE version that hack/bare-metal/build/build-spire.sh builds.
+git clone --branch v1.15.3 https://github.com/spiffe/spire && cd spire
 make build
 ```
 

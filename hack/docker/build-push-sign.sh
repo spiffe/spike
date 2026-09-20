@@ -19,7 +19,8 @@ IMAGE_URL="$REGISTRY/$REPOSITORY/spike-$APP"
 
 # Validate required arguments
 if [ -z "$APP" ] || [ -z "$ARCH" ] || [ -z "$VERSION" ]; then
-  echo "Usage: ./build-push-sign.sh <app> <arch> <version> [registry] [repository]"
+  echo "Usage: ./build-push-sign.sh <app> <arch> <version>" \
+    "[registry] [repository]"
   echo "  <app>: pilot, keeper, or nexus"
   echo "  <arch>: linux/amd64 or linux/arm64"
   echo "  <version>: version tag (e.g., 1.2.3)"
@@ -35,19 +36,24 @@ case "$APP" in
     DESCRIPTION="SPIKE Pilot is the CLI tool for managing secrets in SPIKE."
     ;;
   keeper)
-    DESCRIPTION="SPIKE Keeper stores encrypted key shares for SPIKE Nexus root key recovery."
+    DESCRIPTION="SPIKE Keeper stores encrypted key shares for SPIKE Nexus"\
+" root key recovery."
     ;;
   nexus)
-    DESCRIPTION="SPIKE Nexus is the central secrets management service for SPIKE."
+    DESCRIPTION="SPIKE Nexus is the central secrets management service"\
+" for SPIKE."
     ;;
   demo)
-    DESCRIPTION="SPIKE Demo is a sample workload demonstrating SPIKE secrets retrieval."
+    DESCRIPTION="SPIKE Demo is a sample workload demonstrating SPIKE"\
+" secrets retrieval."
     ;;
   bootstrap)
-    DESCRIPTION="SPIKE Bootstrap initializes SPIKE Nexus by securely distributing root key shares to SPIKE Keepers."
+    DESCRIPTION="SPIKE Bootstrap initializes SPIKE Nexus by securely"\
+" distributing root key shares to SPIKE Keepers."
     ;;
   *)
-    DESCRIPTION="SPIKE is a lightweight secrets store that uses SPIFFE as its Identity Control Plane."
+    DESCRIPTION="SPIKE is a lightweight secrets store that uses SPIFFE as"\
+" its Identity Control Plane."
     ;;
 esac
 

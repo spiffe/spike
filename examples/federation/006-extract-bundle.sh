@@ -4,5 +4,6 @@
 #  \\\\\ Copyright 2024-present SPIKE contributors.
 # \\\\\\\ SPDX-License-Identifier: Apache-2.
 
-parallel-ssh -h hosts.txt -P -t 300 "cd WORKSPACE/spike;make demo-bundle-extract"
+parallel-ssh -h hosts.txt -P -t 300 \
+  "cd WORKSPACE/spike;make demo-bundle-extract"
 

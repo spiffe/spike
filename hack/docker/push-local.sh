@@ -12,12 +12,18 @@ set -e
 export SPIKE_VERSION="dev" # "dev" since this is a local build.
 export REGISTRY_PORT=5000
 
-# Tag the images for the MicroK8s registry (which runs on localhost:$REGISTRY_PORT)
-docker tag spike-keeper:$SPIKE_VERSION localhost:$REGISTRY_PORT/spike-keeper:$SPIKE_VERSION
-docker tag spike-nexus:$SPIKE_VERSION localhost:$REGISTRY_PORT/spike-nexus:$SPIKE_VERSION
-docker tag spike-pilot:$SPIKE_VERSION localhost:$REGISTRY_PORT/spike-pilot:$SPIKE_VERSION
-docker tag spike-demo:$SPIKE_VERSION localhost:$REGISTRY_PORT/spike-demo:$SPIKE_VERSION
-docker tag spike-bootstrap:$SPIKE_VERSION localhost:$REGISTRY_PORT/spike-bootstrap:$SPIKE_VERSION
+# Tag the images for the MicroK8s registry, which runs on
+# localhost:$REGISTRY_PORT.
+docker tag spike-keeper:$SPIKE_VERSION \
+  localhost:$REGISTRY_PORT/spike-keeper:$SPIKE_VERSION
+docker tag spike-nexus:$SPIKE_VERSION \
+  localhost:$REGISTRY_PORT/spike-nexus:$SPIKE_VERSION
+docker tag spike-pilot:$SPIKE_VERSION \
+  localhost:$REGISTRY_PORT/spike-pilot:$SPIKE_VERSION
+docker tag spike-demo:$SPIKE_VERSION \
+  localhost:$REGISTRY_PORT/spike-demo:$SPIKE_VERSION
+docker tag spike-bootstrap:$SPIKE_VERSION \
+  localhost:$REGISTRY_PORT/spike-bootstrap:$SPIKE_VERSION
 
 # Push the images to the MicroK8s registry
 docker push localhost:$REGISTRY_PORT/spike-keeper:$SPIKE_VERSION

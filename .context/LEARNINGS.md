@@ -22,6 +22,27 @@ DO NOT UPDATE FOR:
 <!-- INDEX:END -->
 
 <!-- Add gotchas, tips, and lessons learned here -->
+## [2026-09-20-104045] The chart's cel plugin checksum is amd64-only; arm64 spire-server crashes
+
+**Context**: Validating the SPIRE chart bump on an arm64 kind cluster:
+spire-server 1.15.3 crash-looped with 'failed to load plugin cel: checksums did
+not match' whenever spire-server.credentialComposer.cel.enabled is true (the CI
+values enable it for the MinIO groups claim).
+
+**Lesson**: helm-charts-hardened (0.26.1 and 0.30.2 alike) hard-codes one sha256
+in credentialComposer.cel.checksum for the plugin binary copied from the
+spire-credentialcomposer-cel image. The image is multi-arch, so the arm64 binary
+never matches. CI is amd64 and unaffected; any arm64 developer box (Spark, Apple
+silicon) hits it.
+
+**Application**: On arm64, override credentialComposer.cel.checksum with the
+sha256 of the arm64 binary (docker create --platform linux/arm64 the plugin
+image, docker cp the pluginPath, sha256sum) in a local values overlay. Do not
+commit the override; the fix belongs upstream (per-arch checksums), tracked in
+TASKS.
+
+---
+
 ## [2026-09-20-083424] SDK logger binds to os.Stdout lazily; no redirect
 
 **Context**: Replacing the Pilot's os.Exit(1) with log.FatalLn would have

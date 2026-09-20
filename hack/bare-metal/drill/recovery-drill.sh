@@ -78,7 +78,8 @@ ensure_superuser_role() {
   *)
     echo "drill: WARNING: could not determine the Pilot role;" >&2
     echo "drill: restore it manually with" >&2
-    echo "drill:   ./hack/bare-metal/entry/spire-server-entry-su-register.sh" >&2
+    echo "drill:   ./hack/bare-metal/entry/"\
+"spire-server-entry-su-register.sh" >&2
     ;;
   esac
 }

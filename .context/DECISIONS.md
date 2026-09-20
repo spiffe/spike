@@ -51,6 +51,39 @@ For significant decisions:
 ✗ No real alternatives existed
 
 -->
+## [2026-09-20-101648] Pin SPIRE charts 0.30.2/0.6.1; CI uses the chart hook
+
+**Status**: Accepted
+
+**Context**: Install scripts pinned spire 0.26.1 (SPIRE 1.12.4) and spire-crds
+0.5.0; upstream is 0.30.2 (SPIRE 1.15.3) and 0.6.1. spike-install.sh passed the
+spire version to the crds chart, which has no such version, so it failed
+outright. CI installed the chart unpinned and floated to 0.30.2 already. The CI
+setup ran its own bootstrap Job and patched two env vars into Nexus behind a
+FIXME; the 0.30.2 spike-nexus subchart runs a bootstrap hook by default and
+exposes backendStore.
+
+**Decision**: Pin SPIRE charts 0.30.2/0.6.1; CI uses the chart hook
+
+**Rationale**: Pinned both charts with separate version variables in both
+install scripts and in CI. Compatibility was checked against the chart archives:
+the only key rename is spike-nexus.trustRoot.keepers -> keeper (fixed in
+values-demo-mgmt.yaml); the never-rendered extraInitContainers blocks were
+removed; none of SPIRE's 1.12-1.15 removals touch the bare-metal plugins. CI now
+relies on the chart's post-install bootstrap hook with the dev bootstrap image
+loaded into kind (bootstrap.image pullPolicy Never, tag dev), which also tests
+the bootstrap image; the manual Job was deleted; only the
+SPIKE_TRUST_ROOT_LITE_WORKLOAD patch remains, because the chart has no value for
+it. Bare-metal SPIRE build and doc moved to v1.15.3 to match the chart's
+appVersion. spike-dev-install.sh defaults to upstream charts and compares the
+flag to 'true'.
+
+**Consequence**: Documented install paths match CI. The remaining CI patch is an
+upstream ask (TASKS). Validation: kind run of the CI integration path recorded
+in specs/spire-chart-bump.md.
+
+---
+
 ## [2026-09-20-091449] Guard scan: handlers by signature, no exempt lists
 
 **Status**: Accepted

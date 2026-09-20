@@ -284,10 +284,12 @@ Then deploy SPIKE using the following command:
 
 ```bash 
 helm upgrade --install spire-crds spire-crds \
-  --repo https://spiffe.github.io/helm-charts-hardened/
-  
+  --repo https://spiffe.github.io/helm-charts-hardened/ \
+  --version 0.6.1
+
 helm upgrade --install spiffe spire \
-  --repo https://spiffe.github.io/helm-charts-hardened \
+  --repo https://spiffe.github.io/helm-charts-hardened/ \
+  --version 0.30.2 \
   -f ./values.yaml # The values.yaml file we created earlier
 ```
 

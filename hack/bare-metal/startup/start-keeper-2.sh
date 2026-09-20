@@ -6,7 +6,8 @@
 shopt -s expand_aliases
 
 if ! command -v keeper &> /dev/null; then
-  echo "Error: 'keeper' command not found. Please ensure keeper is installed and in your PATH."
+  echo "Error: 'keeper' command not found." \
+    "Please ensure keeper is installed and in your PATH."
   exit 1
 fi
 

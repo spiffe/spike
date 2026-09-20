@@ -7,14 +7,21 @@
 # Installs SPIRE and SPIKE to the cluster.
 # Uses the local container registry for SPIKE images.
 
-# Configuration
-SPIKE_USE_LOCAL_CHARTS="${SPIKE_USE_LOCAL_CHARTS:-true}" # FIXME: should default to false after upstream helm is merged.
-SPIKE_LOCAL_CHARTS_PATH="${SPIKE_LOCAL_CHARTS_PATH:-$HOME/WORKSPACE/helm-charts-hardened}"
-SPIKE_LOCAL_CHARTS_VALUES_FILE="${SPIKE_LOCAL_CHARTS_VALUES_FILE:-./config/helm/values-local.yaml}"
-SPIKE_REMOTE_CHARTS_HELM_REPO="${SPIKE_REMOTE_CHARTS_HELM_REPO:-https://spiffe.github.io/helm-charts-hardened/}"
-SPIKE_REMOTE_CHARTS_VALUES_FILE="${SPIKE_REMOTE_CHARTS_VALUES_FILE:-./config/helm/values-local.yaml}"
-SPIKE_REMOTE_CHARTS_CRDS_VERSION="${SPIKE_REMOTE_CHARTS_CRDS_VERSION:-0.5.0}"
-SPIKE_REMOTE_CHARTS_SPIRE_VERSION="${SPIKE_REMOTE_CHARTS_SPIRE_VERSION:-0.26.1}"
+# Configuration. Each variable keeps the caller's value and falls back to
+# the default when unset or empty.
+DEFAULT_HELM_REPO="https://spiffe.github.io/helm-charts-hardened/"
+# SPIRE versions come from one place; see that file before changing a pin.
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=hack/lib/versions.sh
+. "${SCRIPT_DIR}/../lib/versions.sh"
+
+: "${SPIKE_USE_LOCAL_CHARTS:=false}"
+: "${SPIKE_LOCAL_CHARTS_PATH:=$HOME/WORKSPACE/helm-charts-hardened}"
+: "${SPIKE_LOCAL_CHARTS_VALUES_FILE:=./config/helm/values-local.yaml}"
+: "${SPIKE_REMOTE_CHARTS_HELM_REPO:=$DEFAULT_HELM_REPO}"
+: "${SPIKE_REMOTE_CHARTS_VALUES_FILE:=./config/helm/values-local.yaml}"
+: "${SPIKE_REMOTE_CHARTS_CRDS_VERSION:=$SPIRE_CRDS_HELM_CHART_VERSION}"
+: "${SPIKE_REMOTE_CHARTS_SPIRE_VERSION:=$SPIRE_HELM_CHART_VERSION}"
 
 set -e  # Exit on any error
 
@@ -70,7 +77,7 @@ install_chart() {
   shift 2
   local extra_args=("$@")
 
-  if [ -n "${SPIKE_USE_LOCAL_CHARTS}" ]; then
+  if [ "${SPIKE_USE_LOCAL_CHARTS}" = "true" ]; then
     echo "Using helm charts from the local helm-charts-hardened repo..."
 
     local output_file="./${release_name}-rendered.yaml"
@@ -86,7 +93,8 @@ install_chart() {
       # -f "$SPIKE_LOCAL_CHARTS_VALUES_FILE"
 
   else
-    echo "Using helm charts from the upstream https://github.com/spiffe/helm-charts-hardened repo"
+    echo "Using helm charts from the upstream" \
+      "https://github.com/spiffe/helm-charts-hardened repo"
 
     # Map chart names to version variables
     case "$chart_name" in

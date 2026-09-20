@@ -229,6 +229,18 @@ the name-based policy work.
   `specs/lint-hardening.md`.
   #priority:high #session:069e679b #branch:topic/volkan/go-bump
   #commit:42547a7e #added:2026-09-20 #done:2026-09-20
+- [ ] Upstream (helm-charts-hardened, spike-nexus subchart): add a value for
+  `SPIKE_TRUST_ROOT_LITE_WORKLOAD` (or a generic `extraEnv`) so the CI
+  integration setup can drop its `kubectl patch` of the Nexus StatefulSet.
+  Spec: `specs/spire-chart-bump.md`. #priority:medium #session:069e679b
+  #branch:topic/volkan/go-bump #commit:39eaa7c3 #added:2026-09-20
+- [ ] Upstream (helm-charts-hardened, spire-server subchart):
+  `credentialComposer.cel.checksum` is a single amd64 sha256, so
+  spire-server crash-loops on arm64 clusters when the cel composer is on.
+  Ask for per-architecture checksums (or a checksum map). Until then, arm64
+  developers must override the checksum locally. Spec:
+  `specs/spire-chart-bump.md`. #priority:medium #session:069e679b
+  #branch:topic/volkan/go-bump #commit:39eaa7c3 #added:2026-09-20
 
 ## Blocked
 
