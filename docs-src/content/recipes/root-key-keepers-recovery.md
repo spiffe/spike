@@ -28,7 +28,8 @@ lose more than `N − threshold` and you fall back to
 
 ## Workflow (What Happens Automatically)
 
-1. **Bootstrap** generates the root key, splits it into `SPIKE_NEXUS_SHAMIR_SHARES`
+1. **Bootstrap** generates the root key, splits it into
+   `SPIKE_NEXUS_SHAMIR_SHARES`
    shares, and seeds the keepers (one share each). See
    [Bootstrapping](/recipes/bootstrapping-spike/).
 2. **Nexus startup** (`lite`/`sqlite`): `InitializeBackingStoreFromKeepers`

@@ -13,22 +13,27 @@ sort_by = "weight"
 ## Recent
 
 * Added configurable retry backoff intervals for SPIKE Bootstrap keeper
-  communication. New environment variables `SPIKE_BOOTSTRAP_KEEPER_RETRY_INITIAL_INTERVAL`
+  communication. New environment variables
+  `SPIKE_BOOTSTRAP_KEEPER_RETRY_INITIAL_INTERVAL`
   (default 2s) and `SPIKE_BOOTSTRAP_KEEPER_RETRY_MAX_INTERVAL` (default 30s)
   allow operators to tune retry behavior during bootstrap.
 * SDK: `retry.WithMaxAttempts` now accepts optional `RetrierOption` parameters,
   enabling callers to customize backoff settings while maintaining backward
   compatibility.
 * Update documentation to reflect the new SPIKE architecture.
-* Fix occasional dangling process issues when `make start` does not exit cleanly.
+* Fix occasional dangling process issues when `make start` does not exit
+  cleanly.
 * SDK API methods now return cloned versions of sentinel *SDKErrors instead of
   returning the original reference. This prevents accidental mutation of the
   error values.
 * mem.Lock() does not print JSON error logs on CLI startup anymore.
 * moved some of the internal reusable feature from in-tree to SPIKE Go SDK.
-* binaries are now create at the ./bin folder instead of the root of the project.
-* log files are now created at the ./logs folder instead of the root of the project.
-* factored out some common validation and error handling logic from in-tree to the SDK.
+* binaries are now create at the ./bin folder instead of the root of the
+  project.
+* log files are now created at the ./logs folder instead of the root of the
+  project.
+* factored out some common validation and error handling logic from in-tree to
+  the SDK.
 
 ## [0.8.0] - 2025-11-28
 
@@ -43,7 +48,8 @@ sort_by = "weight"
   terminal.
 * "Encryption as a service" support for SPIKE Pilot. There is an outstanding
   issue for JSON mode; however, streaming mode works as expected.
-* `make start` includes additional smoke tests to ensure all SPIKE components are
+* `make start` includes additional smoke tests to ensure all SPIKE components
+  are
   in good shape and ready to roll.
 * Added extensive package documentation to ALL packages of SPIKE and 
   SPIKE Go SGK.
@@ -53,7 +59,8 @@ sort_by = "weight"
 * SDK: Significantly increased test coverage across all SDK packages with
   comprehensive unit and integration tests.
 * SDK: Enhanced documentation for the version numbering system---version numbers
-  start at 1, and `CurrentVersion == 0` indicates all versions have been deleted.
+  start at 1, and `CurrentVersion == 0` indicates all versions have been
+  deleted.
 * SDK: Updated `Delete()` documentation to clarify soft-delete behavior and that
   paths remain in storage even when all versions are deleted.
 * SDK: Added `HasValidVersions()` and `Empty()` helper methods to `kv.Value` for
@@ -93,7 +100,7 @@ sort_by = "weight"
 * Nexus: Comprehensive documentation updates for all secret management functions
   with accurate parameter names, return types, and behavioral details including
   soft-delete semantics and metadata update logic.
-* Nexus: Made `DeleteSecret` more defensive when finding the new current version 
+* Nexus: Made `DeleteSecret` more defensive when finding the new current version
   by removing unnecessary condition, improving code clarity and robustness.
 * **BREAKING**: Nexus: Fixed inconsistent error returns in memory backend - 
   `LoadSecret` now returns `ErrEntityNotFound` instead of `(nil, nil)` for 
@@ -139,9 +146,11 @@ sort_by = "weight"
 * SDK: Added nil validation to `CreateMTLSServer` functions with fail-fast 
   behavior for configuration errors.
 * SDK: Fixed resource management bug in `StreamPostWithContentType` where defer
-  was closing response body on the success path, causing callers to receive closed 
+  was closing response body on the success path, causing callers to receive
+  closed
   body.
-* SDK: Fixed critical bug in `Undelete` function that was ignoring the `versions`
+* SDK: Fixed critical bug in `Undelete` function that was ignoring the
+  `versions`
   parameter due to missing else clause.
 * Nexus: Added `OldestVersion` tracking to `UndeleteSecret` for consistency
   with `DeleteSecret`, ensuring metadata accurately reflects the oldest 
@@ -149,14 +158,16 @@ sort_by = "weight"
 * Nexus: Fixed bug in `UndeleteSecret` where undeleting a version higher than
   the current `CurrentVersion` did not update `CurrentVersion` to reflect the
   new highest active version, causing metadata inconsistency.
-* Nexus: Fixed critical bug in `UpsertSecret` where adding a new version when all
+* Nexus: Fixed critical bug in `UpsertSecret` where adding a new version when
+  all
   existing versions were deleted (CurrentVersion == 0) would create version 1,
   potentially colliding with an existing deleted version 1. Now correctly finds
   the highest existing version number and increments from there.
 * Nexus: Fixed resource leak in `internal/net/post.go` where response body
   close was deferred after body read instead of immediately after response
   obtained, causing leaks when read operations failed.
-* Nexus: Fixed a critical bug in secret route handlers where error paths were not
+* Nexus: Fixed a critical bug in secret route handlers where error paths were
+  not
   sending HTTP responses to clients. Added missing `net.Fail()` calls in
   `put_intercept.go` (3 locations) and `undelete.go` to ensure proper error
   responses.
@@ -324,7 +335,8 @@ elaborate, and potentially error-prone, consensus algorithms.
   enforce a consistent code style and some of these guidelines. `make audit`
   is also a part of the CI pipeline to ensure that the code is always compliant
   at every commit. In addition `make audit` also does vulnerability checks.
-* **BREAKING**: SPIKE Nexus now requires a separate initializer (SPIKE Bootstrap)
+* **BREAKING**: SPIKE Nexus now requires a separate initializer (SPIKE
+  Bootstrap)
   to begin its lifecycle. The user guides and relevant documentation have been
   updated to reflect this change.
 * Updated Go to the latest version (`1.24.6`).
@@ -424,8 +436,10 @@ elaborate, and potentially error-prone, consensus algorithms.
 
 * Added cache invalidation headers to all API responses.
 * For added security, we strip symbols during the build process now.
-* Implemented better memory protection with cleaning up memory when no longer needed.
-* SPIKE Nexus and SPIKE Keepers use `mlock` to avoid memory swapping when possible.
+* Implemented better memory protection with cleaning up memory when no longer
+  needed.
+* SPIKE Nexus and SPIKE Keepers use `mlock` to avoid memory swapping when
+  possible.
 * [Fixed `CVE-2025-22872`: golang.org/x/net vulnerable to Cross-site Scripting](https://github.com/spiffe/spike/security/dependabot/5)
 * [Fixed `CVE-2025-22870`: HTTP Proxy bypass using IPv6 Zone IDs in golang.org/x/net](https://github.com/spiffe/spike/security/dependabot/4)
 
@@ -519,7 +533,8 @@ disaster recovery.
 ### Security
 
 * [Fixed `CVE-2024-45337`: Misuse of ServerConfig.PublicKeyCallback may cause
-  authorization bypass in golang.org/x/crypto](https://github.com/spiffe/spike/security/dependabot/1)
+  authorization bypass in
+  golang.org/x/crypto](https://github.com/spiffe/spike/security/dependabot/1)
 * [Fixed `CVE-2024-45338`: Non-linear parsing of case-insensitive content in
   `golang.org/x/net/htm`](https://github.com/spiffe/spike/security/dependabot/2)
 
@@ -553,7 +568,8 @@ disaster recovery.
 * Compiled binaries targeting various platforms (x86, arm64, darwin, linux).
 * SPIKE is demoable; however, we need to update certain login and initialization
   flows.
-* In-memory secrets storage only (*using database as a backing store is coming up
+* In-memory secrets storage only (*using database as a backing store is coming
+  up
   next*)
 * Created a `jira.txt` to track things (*to avoid polluting GitHub issues
   unnecessarily*)

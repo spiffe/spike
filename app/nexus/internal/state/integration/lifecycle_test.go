@@ -5,13 +5,13 @@
 package integration
 
 import (
-	"fmt"
 	"os"
 	"testing"
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 	"github.com/spiffe/spike-sdk-go/config/env"
 	"github.com/spiffe/spike-sdk-go/crypto"
+	"github.com/spiffe/spike-sdk-go/log"
 	"github.com/spiffe/spike-sdk-go/security/mem"
 
 	"github.com/spiffe/spike/app/nexus/internal/initialization/recovery"
@@ -24,11 +24,12 @@ import (
 // store type is pinned to sqlite explicitly since the lifecycle under
 // test only exists for persistent backends.
 func TestMain(m *testing.M) {
+	const fName = "TestMain"
+
 	dir, mkErr := os.MkdirTemp("", "spike-state-integration-test-*")
 	if mkErr != nil {
-		fmt.Fprintln(os.Stderr,
+		log.FatalLn(fName,
 			"failed to create a temporary data directory:", mkErr)
-		os.Exit(1)
 	}
 
 	for key, value := range map[string]string{
@@ -36,15 +37,14 @@ func TestMain(m *testing.M) {
 		env.NexusBackendStore: "sqlite",
 	} {
 		if setErr := os.Setenv(key, value); setErr != nil {
-			_ = os.RemoveAll(dir)
-			fmt.Fprintln(os.Stderr, "failed to set "+key+":", setErr)
-			os.Exit(1)
+			removeTempDir(dir)
+			log.FatalLn(fName, "failed to set "+key+":", setErr)
 		}
 	}
 
 	code := m.Run()
 
-	_ = os.RemoveAll(dir)
+	removeTempDir(dir)
 	os.Exit(code)
 }
 
@@ -77,7 +77,8 @@ func TestStateLifecycle(t *testing.T) {
 		"username": "spike",
 		"password": "integration-v1",
 	}
-	if upsertErr := state.UpsertSecret(secretPath, secretValues); upsertErr != nil {
+	upsertErr := state.UpsertSecret(secretPath, secretValues)
+	if upsertErr != nil {
 		t.Fatalf("failed to upsert the secret: %v", upsertErr)
 		return
 	}
@@ -142,6 +143,10 @@ func TestStateLifecycle(t *testing.T) {
 	for idx, value := range shardMap {
 		if len(shards) == threshold {
 			break
+		}
+		if idx < 0 {
+			t.Fatalf("shard index %d is negative", idx)
+			return
 		}
 		shards = append(shards, crypto.ShamirShard{
 			ID:    uint64(idx),

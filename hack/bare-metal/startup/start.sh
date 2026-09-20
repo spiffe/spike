@@ -273,7 +273,8 @@ if [ -z "$SPIKE_SKIP_GENERATE_AGENT_TOKEN" ]; then
     exit 1
   fi
 else
-  echo "SPIKE_SKIP_GENERATE_AGENT_TOKEN is set, skipping agent token generation."
+  echo "SPIKE_SKIP_GENERATE_AGENT_TOKEN is set," \
+    "skipping agent token generation."
 fi
 
 if [ -z "$SPIKE_SKIP_REGISTER_ENTRIES" ]; then
@@ -387,13 +388,16 @@ fi
 echo "$DEMO_OUTPUT" | grep -q "SPIKE Demo" || \
   { echo "WARNING: Missing 'SPIKE Demo' in output"; VALIDATION_FAILED=true; }
 echo "$DEMO_OUTPUT" | grep -q "Connected to SPIKE Nexus." || \
-  { echo "WARNING: Missing 'Connected to SPIKE Nexus.' in output"; VALIDATION_FAILED=true; }
+  { echo "WARNING: Missing 'Connected to SPIKE Nexus.' in output"
+    VALIDATION_FAILED=true; }
 echo "$DEMO_OUTPUT" | grep -q "Secret found:" || \
   { echo "WARNING: Missing 'Secret found:' in output"; VALIDATION_FAILED=true; }
 echo "$DEMO_OUTPUT" | grep -q "password: SPIKE_Rocks" || \
-  { echo "WARNING: Missing expected password in output"; VALIDATION_FAILED=true; }
+  { echo "WARNING: Missing expected password in output"
+    VALIDATION_FAILED=true; }
 echo "$DEMO_OUTPUT" | grep -q "username: SPIKE" || \
-  { echo "WARNING: Missing expected username in output"; VALIDATION_FAILED=true; }
+  { echo "WARNING: Missing expected username in output"
+    VALIDATION_FAILED=true; }
 
 if [ "$VALIDATION_FAILED" = true ]; then
   echo ""
@@ -424,11 +428,14 @@ fi
 # `spike policy list` prints one "Name: <policy>" block per policy;
 # policies are keyed by name, and the list shows no other fields.
 echo "$POLICY_OUTPUT" | grep -q "POLICIES" || \
-  { echo "WARNING: Missing 'POLICIES' header in output"; POLICY_VALIDATION_FAILED=true; }
+  { echo "WARNING: Missing 'POLICIES' header in output"
+    POLICY_VALIDATION_FAILED=true; }
 echo "$POLICY_OUTPUT" | grep -q "Name: workload-can-read" || \
-  { echo "WARNING: Missing 'workload-can-read' policy"; POLICY_VALIDATION_FAILED=true; }
+  { echo "WARNING: Missing 'workload-can-read' policy"
+    POLICY_VALIDATION_FAILED=true; }
 echo "$POLICY_OUTPUT" | grep -q "Name: workload-can-write" || \
-  { echo "WARNING: Missing 'workload-can-write' policy"; POLICY_VALIDATION_FAILED=true; }
+  { echo "WARNING: Missing 'workload-can-write' policy"
+    POLICY_VALIDATION_FAILED=true; }
 
 # Permissions are only visible via `spike policy get`; the demo policies
 # carry one permission each (read and write, respectively). This also
@@ -477,13 +484,15 @@ fi
 echo ""
 echo "Verifying cipher (streaming mode - stdin/stdout)..."
 CIPHER_TEST_INPUT="Hello SPIKE Cipher Streaming Test"
-CIPHER_STREAM_OUTPUT=$(echo "$CIPHER_TEST_INPUT" | spike cipher encrypt | spike cipher decrypt 2>&1)
+CIPHER_STREAM_OUTPUT=$(echo "$CIPHER_TEST_INPUT" | spike cipher encrypt |
+  spike cipher decrypt 2>&1)
 CIPHER_STREAM_EXIT_CODE=$?
 
 CIPHER_STREAM_VALIDATION_FAILED=false
 
 if [ $CIPHER_STREAM_EXIT_CODE -ne 0 ]; then
-  echo "WARNING: Cipher streaming test failed with exit code $CIPHER_STREAM_EXIT_CODE"
+  echo "WARNING: Cipher streaming test failed with exit code" \
+    "$CIPHER_STREAM_EXIT_CODE"
   echo "Output:"
   echo "$CIPHER_STREAM_OUTPUT"
   CIPHER_STREAM_VALIDATION_FAILED=true
@@ -522,7 +531,8 @@ spike cipher encrypt -f "$CIPHER_TEMP_IN" -o "$CIPHER_TEMP_ENC" 2>&1
 CIPHER_FILE_ENCRYPT_EXIT_CODE=$?
 
 if [ $CIPHER_FILE_ENCRYPT_EXIT_CODE -ne 0 ]; then
-  echo "WARNING: Cipher file encrypt failed with exit code $CIPHER_FILE_ENCRYPT_EXIT_CODE"
+  echo "WARNING: Cipher file encrypt failed with exit code" \
+    "$CIPHER_FILE_ENCRYPT_EXIT_CODE"
   CIPHER_FILE_VALIDATION_FAILED=true
 fi
 
@@ -531,7 +541,8 @@ spike cipher decrypt -f "$CIPHER_TEMP_ENC" -o "$CIPHER_TEMP_DEC" 2>&1
 CIPHER_FILE_DECRYPT_EXIT_CODE=$?
 
 if [ $CIPHER_FILE_DECRYPT_EXIT_CODE -ne 0 ]; then
-  echo "WARNING: Cipher file decrypt failed with exit code $CIPHER_FILE_DECRYPT_EXIT_CODE"
+  echo "WARNING: Cipher file decrypt failed with exit code" \
+    "$CIPHER_FILE_DECRYPT_EXIT_CODE"
   CIPHER_FILE_VALIDATION_FAILED=true
 fi
 

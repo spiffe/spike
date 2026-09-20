@@ -62,7 +62,8 @@ setup_buildx
 
 # Build all components
 for component in "${COMPONENTS[@]}"; do
-  build_component "${component}" "${SPIKE_VERSION}" "${PLATFORMS}" "${OUTPUT_FLAG}"
+  build_component "${component}" "${SPIKE_VERSION}" "${PLATFORMS}" \
+    "${OUTPUT_FLAG}"
 done
 
 echo "All components built successfully!"

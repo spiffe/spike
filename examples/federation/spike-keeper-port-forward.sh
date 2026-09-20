@@ -38,7 +38,9 @@ check_pod_ready() {
 
   # Check if pod is ready
   local ready
-  ready=$(kubectl get pod "$pod_name" -n "$namespace" -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}' 2>/dev/null)
+  ready=$(kubectl get pod "$pod_name" -n "$namespace" \
+    -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}' \
+    2>/dev/null)
 
   if [[ "$ready" == "True" ]]; then
     return 0
@@ -73,7 +75,8 @@ wait_for_pod() {
 
     # Show pod status
     local phase
-    phase=$(kubectl get pod "$pod_name" -n "$namespace" -o jsonpath='{.status.phase}' 2>/dev/null || echo "Not Found")
+    phase=$(kubectl get pod "$pod_name" -n "$namespace" \
+      -o jsonpath='{.status.phase}' 2>/dev/null || echo "Not Found")
     echo -e "  Pod status: $phase (${elapsed}s elapsed)"
 
     sleep $RETRY_INTERVAL
@@ -88,13 +91,15 @@ check_service_exists() {
   if kubectl get svc "$service_name" -n "$namespace" &>/dev/null; then
     return 0
   else
-    echo -e "${RED}✗ Service $service_name not found in namespace $namespace${NC}"
+    echo -e "${RED}✗ Service $service_name not found in namespace"\
+" $namespace${NC}"
     return 1
   fi
 }
 
 # Main execution
-echo -e "${YELLOW}Starting port-forward setup for SPIFFE Spike Keepers...${NC}\n"
+echo -e "${YELLOW}Starting port-forward setup for SPIFFE Spike"\
+" Keepers...${NC}\n"
 
 # Define pods and their corresponding services and ports
 declare -A pod_configs=(
@@ -113,7 +118,8 @@ for pod_name in "${!pod_configs[@]}"; do
 done
 
 if [[ "$all_services_exist" != "true" ]]; then
-  echo -e "${RED}Not all required services exist. Please check your configuration.${NC}"
+  echo -e "${RED}Not all required services exist."\
+" Please check your configuration.${NC}"
   exit 1
 fi
 
@@ -139,15 +145,18 @@ echo -e "\n${GREEN}✓ All pods are ready. Starting port forwards...${NC}\n"
 # Start port-forward commands
 for pod_name in "${!pod_configs[@]}"; do
   local_port=${pod_configs[$pod_name]}
-  echo -e "${YELLOW}Starting port-forward for $pod_name on port $local_port...${NC}"
-  kubectl -n "$NAMESPACE" port-forward "svc/$pod_name" "$local_port:443" --address=0.0.0.0 &
+  echo -e "${YELLOW}Starting port-forward for $pod_name on port"\
+" $local_port...${NC}"
+  kubectl -n "$NAMESPACE" port-forward "svc/$pod_name" "$local_port:443" \
+    --address=0.0.0.0 &
 
   # Give it a moment to start
   sleep 1
 
   # Check if the port-forward process is still running
   if kill -0 $! 2>/dev/null; then
-    echo -e "${GREEN}✓ Port-forward for $pod_name started successfully (PID: $!)${NC}"
+    echo -e "${GREEN}✓ Port-forward for $pod_name started successfully"\
+" (PID: $!)${NC}"
   else
     echo -e "${RED}✗ Failed to start port-forward for $pod_name${NC}"
   fi

@@ -5,7 +5,6 @@
 package recovery
 
 import (
-	"os"
 	"testing"
 
 	"github.com/spiffe/spike-sdk-go/config/env"
@@ -127,9 +126,11 @@ func TestRestoreBackingStoreFromPilotShards_InvalidShards(t *testing.T) {
 
 func TestRestoreBackingStoreFromPilotShards_ValidInput(t *testing.T) {
 	// This test would hang without proper SPIFFE infrastructure setup
-	// as the function calls spiffe.Source() which tries to connect to SPIFFE workload API
+	// as the function calls spiffe.Source() which tries to connect to the
+	// SPIFFE workload API
 	// and then makes network calls to keepers
-	t.Skip("Skipping test that requires SPIFFE infrastructure and would hang on network calls")
+	t.Skip("Skipping test that requires SPIFFE infrastructure and would " +
+		"hang on network calls")
 
 	// Note: In a real test environment, you would:
 	// 1. Mock the spiffe.Source() function
@@ -267,32 +268,18 @@ func TestShamirShardSliceOperations(t *testing.T) {
 }
 
 func TestEnvironmentDependencies(t *testing.T) {
-	// Test that environment functions work as expected
-	originalThreshold := os.Getenv(env.NexusShamirThreshold)
-	originalShares := os.Getenv(env.NexusShamirShares)
-
-	defer func() {
-		if originalThreshold != "" {
-			_ = os.Setenv(env.NexusShamirThreshold, originalThreshold)
-		} else {
-			_ = os.Unsetenv(env.NexusShamirThreshold)
-		}
-		if originalShares != "" {
-			_ = os.Setenv(env.NexusShamirShares, originalShares)
-		} else {
-			_ = os.Unsetenv(env.NexusShamirShares)
-		}
-	}()
+	// Test that environment functions work as expected. t.Setenv restores
+	// the original values.
 
 	// Test ShamirThreshold
-	_ = os.Setenv(env.NexusShamirThreshold, "3")
+	t.Setenv(env.NexusShamirThreshold, "3")
 	threshold := env.ShamirThresholdVal()
 	if threshold != 3 {
 		t.Errorf("Expected threshold 3, got %d", threshold)
 	}
 
 	// Test ShamirShares
-	_ = os.Setenv(env.NexusShamirShares, "5")
+	t.Setenv(env.NexusShamirShares, "5")
 	shares := env.ShamirSharesVal()
 	if shares != 5 {
 		t.Errorf("Expected shares 5, got %d", shares)

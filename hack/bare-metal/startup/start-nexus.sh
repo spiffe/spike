@@ -8,9 +8,11 @@
 shopt -s expand_aliases
 
 if ! command -v nexus &> /dev/null; then
-  echo "Error: 'nexus' command not found. Please ensure nexus is installed and in your PATH."
+  echo "Error: 'nexus' command not found." \
+    "Please ensure nexus is installed and in your PATH."
   exit 1
 fi
 
-SPIKE_NEXUS_KEEPER_PEERS='https://localhost:8443,https://localhost:8543,https://localhost:8643' \
+SPIKE_NEXUS_KEEPER_PEERS='https://localhost:8443,https://localhost:8543,'\
+'https://localhost:8643' \
 exec nexus

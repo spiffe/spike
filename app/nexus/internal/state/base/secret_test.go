@@ -7,7 +7,6 @@ package base
 import (
 	"context"
 	"fmt"
-	"os"
 	"reflect"
 	"testing"
 
@@ -50,10 +49,14 @@ func TestUpsertSecret_NewSecret(t *testing.T) {
 		}
 
 		if rawSecret.Metadata.CurrentVersion != 1 {
-			t.Errorf("Expected current version 1, got %d", rawSecret.Metadata.CurrentVersion)
+			t.Errorf(
+				"Expected current version 1, got %d", rawSecret.Metadata.CurrentVersion,
+			)
 		}
 		if rawSecret.Metadata.OldestVersion != 1 {
-			t.Errorf("Expected oldest version 1, got %d", rawSecret.Metadata.OldestVersion)
+			t.Errorf(
+				"Expected oldest version 1, got %d", rawSecret.Metadata.OldestVersion,
+			)
 		}
 		if len(rawSecret.Versions) != 1 {
 			t.Errorf("Expected 1 version, got %d", len(rawSecret.Versions))
@@ -94,7 +97,9 @@ func TestUpsertSecret_ExistingSecret(t *testing.T) {
 		}
 
 		if !reflect.DeepEqual(currentValues, updatedValues) {
-			t.Errorf("Expected current values %v, got %v", updatedValues, currentValues)
+			t.Errorf(
+				"Expected current values %v, got %v", updatedValues, currentValues,
+			)
 		}
 
 		// Verify the previous version still exists
@@ -104,7 +109,9 @@ func TestUpsertSecret_ExistingSecret(t *testing.T) {
 		}
 
 		if !reflect.DeepEqual(previousValues, initialValues) {
-			t.Errorf("Expected previous values %v, got %v", initialValues, previousValues)
+			t.Errorf(
+				"Expected previous values %v, got %v", initialValues, previousValues,
+			)
 		}
 
 		// Verify metadata
@@ -114,10 +121,14 @@ func TestUpsertSecret_ExistingSecret(t *testing.T) {
 		}
 
 		if rawSecret.Metadata.CurrentVersion != 2 {
-			t.Errorf("Expected current version 2, got %d", rawSecret.Metadata.CurrentVersion)
+			t.Errorf(
+				"Expected current version 2, got %d", rawSecret.Metadata.CurrentVersion,
+			)
 		}
 		if rawSecret.Metadata.OldestVersion != 1 {
-			t.Errorf("Expected oldest version 1, got %d", rawSecret.Metadata.OldestVersion)
+			t.Errorf(
+				"Expected oldest version 1, got %d", rawSecret.Metadata.OldestVersion,
+			)
 		}
 	})
 }
@@ -148,17 +159,24 @@ func TestUpsertSecret_VersionPruning(t *testing.T) {
 			}
 
 			if len(rawSecret.Versions) != 3 {
-				t.Errorf("Expected 3 versions after pruning, got %d", len(rawSecret.Versions))
+				t.Errorf(
+					"Expected 3 versions after pruning, got %d", len(rawSecret.Versions),
+				)
 			}
 
 			// Verify the oldest version is correct (should be version 3)
 			if rawSecret.Metadata.OldestVersion != 3 {
-				t.Errorf("Expected oldest version 3, got %d", rawSecret.Metadata.OldestVersion)
+				t.Errorf(
+					"Expected oldest version 3, got %d", rawSecret.Metadata.OldestVersion,
+				)
 			}
 
 			// Verify the current version is correct (should be version 5)
 			if rawSecret.Metadata.CurrentVersion != 5 {
-				t.Errorf("Expected current version 5, got %d", rawSecret.Metadata.CurrentVersion)
+				t.Errorf(
+					"Expected current version 5, got %d",
+					rawSecret.Metadata.CurrentVersion,
+				)
 			}
 
 			// Verify old versions are gone
@@ -661,10 +679,14 @@ func TestGetRawSecret_WithMetadata(t *testing.T) {
 
 		// Verify metadata
 		if rawSecret.Metadata.CurrentVersion != 2 {
-			t.Errorf("Expected current version 2, got %d", rawSecret.Metadata.CurrentVersion)
+			t.Errorf(
+				"Expected current version 2, got %d", rawSecret.Metadata.CurrentVersion,
+			)
 		}
 		if rawSecret.Metadata.OldestVersion != 1 {
-			t.Errorf("Expected oldest version 1, got %d", rawSecret.Metadata.OldestVersion)
+			t.Errorf(
+				"Expected oldest version 1, got %d", rawSecret.Metadata.OldestVersion,
+			)
 		}
 		if len(rawSecret.Versions) != 2 {
 			t.Errorf("Expected 2 versions, got %d", len(rawSecret.Versions))
@@ -675,14 +697,18 @@ func TestGetRawSecret_WithMetadata(t *testing.T) {
 		if !exists {
 			t.Error("Version 1 should exist")
 		} else if v1.Data["version"] != "v1" {
-			t.Errorf("Expected version 1 to have value v1, got %s", v1.Data["version"])
+			t.Errorf(
+				"Expected version 1 to have value v1, got %s", v1.Data["version"],
+			)
 		}
 
 		v2, exists := rawSecret.Versions[2]
 		if !exists {
 			t.Error("Version 2 should exist")
 		} else if v2.Data["version"] != "v2" {
-			t.Errorf("Expected version 2 to have value v2, got %s", v2.Data["version"])
+			t.Errorf(
+				"Expected version 2 to have value v2, got %s", v2.Data["version"],
+			)
 		}
 	})
 }
@@ -730,7 +756,8 @@ func TestSecretOperations_ConcurrentAccess(t *testing.T) {
 		}
 
 		// Test that multiple operations work correctly
-		// Note: This is a simple test since the memory backend is not truly concurrent-safe,
+		// Note: This is a simple test since the memory backend is not truly
+		// concurrent-safe,
 		// But it tests the API works correctly in sequence
 
 		operations := []func() *sdkErrors.SDKError{
@@ -896,15 +923,7 @@ func TestSecretOperations_SpecialCharacters(t *testing.T) {
 
 // Benchmark tests
 func BenchmarkUpsertSecret_NewSecret(b *testing.B) {
-	original := os.Getenv(appEnv.NexusBackendStore)
-	_ = os.Setenv(appEnv.NexusBackendStore, "memory")
-	defer func() {
-		if original != "" {
-			_ = os.Setenv(appEnv.NexusBackendStore, original)
-		} else {
-			_ = os.Unsetenv(appEnv.NexusBackendStore)
-		}
-	}()
+	b.Setenv(appEnv.NexusBackendStore, "memory")
 
 	resetBackendForTest()
 	persist.InitializeBackend(nil)
@@ -917,20 +936,14 @@ func BenchmarkUpsertSecret_NewSecret(b *testing.B) {
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		path := fmt.Sprintf("/bench/secret-%d", i)
-		_ = UpsertSecret(path, values)
+		if upsertErr := UpsertSecret(path, values); upsertErr != nil {
+			b.Fatalf("Failed to upsert secret: %v", upsertErr)
+		}
 	}
 }
 
 func BenchmarkUpsertSecret_UpdateExisting(b *testing.B) {
-	original := os.Getenv(appEnv.NexusBackendStore)
-	_ = os.Setenv(appEnv.NexusBackendStore, "memory")
-	defer func() {
-		if original != "" {
-			_ = os.Setenv(appEnv.NexusBackendStore, original)
-		} else {
-			_ = os.Unsetenv(appEnv.NexusBackendStore)
-		}
-	}()
+	b.Setenv(appEnv.NexusBackendStore, "memory")
 
 	resetBackendForTest()
 	persist.InitializeBackend(nil)
@@ -942,7 +955,9 @@ func BenchmarkUpsertSecret_UpdateExisting(b *testing.B) {
 	}
 
 	// Create the initial secret
-	_ = UpsertSecret(path, initialValues)
+	if upsertErr := UpsertSecret(path, initialValues); upsertErr != nil {
+		b.Fatalf("Failed to create the initial secret: %v", upsertErr)
+	}
 
 	updatedValues := map[string]string{
 		"username": "admin",
@@ -952,20 +967,14 @@ func BenchmarkUpsertSecret_UpdateExisting(b *testing.B) {
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		updatedValues["counter"] = fmt.Sprintf("%d", i)
-		_ = UpsertSecret(path, updatedValues)
+		if upsertErr := UpsertSecret(path, updatedValues); upsertErr != nil {
+			b.Fatalf("Failed to update secret: %v", upsertErr)
+		}
 	}
 }
 
 func BenchmarkGetSecret(b *testing.B) {
-	original := os.Getenv(appEnv.NexusBackendStore)
-	_ = os.Setenv(appEnv.NexusBackendStore, "memory")
-	defer func() {
-		if original != "" {
-			_ = os.Setenv(appEnv.NexusBackendStore, original)
-		} else {
-			_ = os.Unsetenv(appEnv.NexusBackendStore)
-		}
-	}()
+	b.Setenv(appEnv.NexusBackendStore, "memory")
 
 	resetBackendForTest()
 	persist.InitializeBackend(nil)
@@ -976,24 +985,20 @@ func BenchmarkGetSecret(b *testing.B) {
 		"password": "secret123",
 	}
 
-	_ = UpsertSecret(path, values)
+	if upsertErr := UpsertSecret(path, values); upsertErr != nil {
+		b.Fatalf("Failed to create the benchmark secret: %v", upsertErr)
+	}
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		_, _ = GetSecret(path, 0)
+		if _, getErr := GetSecret(path, 0); getErr != nil {
+			b.Fatalf("Failed to get secret: %v", getErr)
+		}
 	}
 }
 
 func BenchmarkGetRawSecret(b *testing.B) {
-	original := os.Getenv(appEnv.NexusBackendStore)
-	_ = os.Setenv(appEnv.NexusBackendStore, "memory")
-	defer func() {
-		if original != "" {
-			_ = os.Setenv(appEnv.NexusBackendStore, original)
-		} else {
-			_ = os.Unsetenv(appEnv.NexusBackendStore)
-		}
-	}()
+	b.Setenv(appEnv.NexusBackendStore, "memory")
 
 	resetBackendForTest()
 	persist.InitializeBackend(nil)
@@ -1004,10 +1009,14 @@ func BenchmarkGetRawSecret(b *testing.B) {
 		"password": "secret123",
 	}
 
-	_ = UpsertSecret(path, values)
+	if upsertErr := UpsertSecret(path, values); upsertErr != nil {
+		b.Fatalf("Failed to create the benchmark secret: %v", upsertErr)
+	}
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		_, _ = GetRawSecret(path, 0)
+		if _, getErr := GetRawSecret(path, 0); getErr != nil {
+			b.Fatalf("Failed to get raw secret: %v", getErr)
+		}
 	}
 }

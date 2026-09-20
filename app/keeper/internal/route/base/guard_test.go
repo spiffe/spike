@@ -5,55 +5,30 @@
 package base
 
 import (
-	"go/ast"
-	"go/parser"
-	"go/token"
-	"os"
 	"path/filepath"
 	"strings"
 	"testing"
 )
 
-// TestAllRouteHandlersUseGuardFunctions verifies that all route handler
-// functions invoke guard functions for authorization checks.
-//
-// The test scans all Go files in the route subdirectories (excluding _test.go,
-// doc.go, and _intercept.go files) looking for functions that match the route
-// handler signature pattern (functions starting with "Route").
-//
-// For each route handler found, it verifies that one of the following patterns
-// is used:
-//  1. net.ReadParseAndGuard - the standard pattern for JSON routes
-//  2. A function call containing "guard" (case-insensitive) - for routes with
-//     custom guard patterns
-//
-// If any route handler is missing guard invocation, the test fails with a
-// descriptive error message.
+// TestAllRouteHandlersUseGuardFunctions scans every route package for
+// handlers that reach no guard. Handlers are recognized by signature and
+// delegates are followed, so there is no list of exempt files, names, or
+// directories to grow.
 func TestAllRouteHandlersUseGuardFunctions(t *testing.T) {
-	relPath := filepath.Join("..", "..", "route")
-	routeDir, err := filepath.Abs(relPath)
-	if err != nil {
-		t.Fatalf("Failed to get absolute path: %v", err)
+	routerDir, absErr := filepath.Abs(".")
+	if absErr != nil {
+		t.Fatalf("failed to resolve the router directory: %v", absErr)
 	}
+	routeDir := filepath.Dir(routerDir)
 
-	// Subdirectories containing route handlers
-	subDirs := []string{
-		"store",
-	}
-
-	var violations []string
-
-	for _, subDir := range subDirs {
-		dir := filepath.Join(routeDir, subDir)
-		violations = append(violations, checkDirectory(t, dir)...)
-	}
-
+	violations := scanRouteTree(t, routeDir, routerDir)
 	if len(violations) > 0 {
 		t.Errorf(
 			"Route handlers missing guard function invocation:\n%s\n\n"+
 				"All route handlers must either:\n"+
 				"  1. Call net.ReadParseAndGuard with a guard function, or\n"+
-				"  2. Call a guard function (e.g., guardXxxRequest) directly\n\n"+
+				"  2. Call a guard function (e.g., guardXxxRequest) directly,\n"+
+				"  3. Or delegate to a same-package function that does.\n\n"+
 				"This ensures authorization checks are performed for every "+
 				"request.",
 			strings.Join(violations, "\n"),
@@ -61,150 +36,75 @@ func TestAllRouteHandlersUseGuardFunctions(t *testing.T) {
 	}
 }
 
-// checkDirectory scans a directory for route handler files and checks each
-// handler for ReadParseAndGuard usage.
-func checkDirectory(t *testing.T, dir string) []string {
-	t.Helper()
+// TestGuardScan_FlagsUnguardedHandler proves the scan reports a handler
+// that reaches no guard, whatever its name or file.
+func TestGuardScan_FlagsUnguardedHandler(t *testing.T) {
+	dir := t.TempDir()
+	writeScanFixture(t, dir, "anything.go", `package fixture
 
-	var violations []string
+func Serve(
+	w http.ResponseWriter, r *http.Request, audit *journal.AuditEntry,
+) *sdkErrors.SDKError {
+	return nil
+}
+`)
 
-	entries, err := os.ReadDir(dir)
-	if err != nil {
-		t.Logf("Warning: could not read directory %s: %v", dir, err)
-		return violations
+	violations := checkDirectory(t, dir)
+	if len(violations) != 1 {
+		t.Fatalf("expected 1 violation, got %d: %v",
+			len(violations), violations)
 	}
-
-	for _, entry := range entries {
-		if entry.IsDir() {
-			continue
-		}
-
-		name := entry.Name()
-
-		// Skip non-Go files
-		if !strings.HasSuffix(name, ".go") {
-			continue
-		}
-
-		// Skip test files, doc files, and intercept files
-		if strings.HasSuffix(name, "_test.go") ||
-			name == "doc.go" ||
-			strings.HasSuffix(name, "_intercept.go") {
-			continue
-		}
-
-		filePath := filepath.Join(dir, name)
-		fileViolations := checkFile(t, filePath)
-		violations = append(violations, fileViolations...)
+	if !strings.HasSuffix(violations[0], "Serve") {
+		t.Errorf("violation does not name the handler: %q", violations[0])
 	}
-
-	return violations
 }
 
-// checkFile parses a Go file and checks all route handler functions for
-// guard function usage.
-func checkFile(t *testing.T, filePath string) []string {
-	t.Helper()
+// TestGuardScan_FollowsDelegates proves that a handler which hands the
+// request to a same-package function, by call or by value, is guarded
+// when that function reaches a guard.
+func TestGuardScan_FollowsDelegates(t *testing.T) {
+	dir := t.TempDir()
+	writeScanFixture(t, dir, "route.go", `package fixture
 
-	var violations []string
-
-	fset := token.NewFileSet()
-	node, err := parser.ParseFile(fset, filePath, nil, parser.ParseComments)
-	if err != nil {
-		t.Logf("Warning: could not parse file %s: %v", filePath, err)
-		return violations
-	}
-
-	for _, decl := range node.Decls {
-		funcDecl, ok := decl.(*ast.FuncDecl)
-		if !ok {
-			continue
-		}
-
-		// Check if this is a route handler function (starts with "Route")
-		if !strings.HasPrefix(funcDecl.Name.Name, "Route") {
-			continue
-		}
-
-		// Check if the function invokes a guard
-		if !invokesGuard(funcDecl) {
-			violations = append(violations,
-				"  - "+filePath+": "+funcDecl.Name.Name,
-			)
-		}
-	}
-
-	return violations
+func RouteByValue(
+	w http.ResponseWriter, r *http.Request, audit *journal.AuditEntry,
+) *sdkErrors.SDKError {
+	return net.DispatchByContentType(w, r, audit, handleJSON, handleStream)
 }
 
-// invokesGuard checks if a function declaration contains a guard invocation.
-// This includes:
-//   - Calls to net.ReadParseAndGuard (standard JSON route pattern)
-//   - Calls to functions starting with "guard" (custom guard patterns)
-//   - Calls to functions containing "Guard" in the name
-func invokesGuard(funcDecl *ast.FuncDecl) bool {
-	if funcDecl.Body == nil {
-		return false
-	}
+func RouteByCall(
+	w http.ResponseWriter, r *http.Request, audit *journal.AuditEntry,
+) *sdkErrors.SDKError {
+	return handleJSON(w, r, audit)
+}
+`)
+	writeScanFixture(t, dir, "handle.go", `package fixture
 
-	found := false
-	ast.Inspect(funcDecl.Body, func(n ast.Node) bool {
-		if found {
-			return false
-		}
-
-		callExpr, ok := n.(*ast.CallExpr)
-		if !ok {
-			return true
-		}
-
-		funcName := extractFunctionName(callExpr)
-		if funcName == "" {
-			return true
-		}
-
-		// Check for ReadParseAndGuard
-		if funcName == "ReadParseAndGuard" {
-			found = true
-			return false
-		}
-
-		// Check for guard functions (e.g., guardShardGetRequest)
-		if strings.HasPrefix(funcName, "guard") {
-			found = true
-			return false
-		}
-
-		// Check for functions containing "Guard" (e.g., ReadParseAndGuard)
-		if strings.Contains(funcName, "Guard") {
-			found = true
-			return false
-		}
-
-		return true
-	})
-
-	return found
+func handleJSON(w, r, audit any) *sdkErrors.SDKError {
+	return guardRequest(w, r, audit)
 }
 
-// extractFunctionName extracts the function name from a call expression.
-// Returns an empty string if the name cannot be determined.
-func extractFunctionName(callExpr *ast.CallExpr) string {
-	switch fn := callExpr.Fun.(type) {
-	case *ast.Ident:
-		// Direct function call: guardFoo()
-		return fn.Name
-	case *ast.SelectorExpr:
-		// Method or package call: net.ReadParseAndGuard()
-		return fn.Sel.Name
-	case *ast.IndexListExpr:
-		// Generic function call: net.ReadParseAndGuard[T, U]()
-		if sel, ok := fn.X.(*ast.SelectorExpr); ok {
-			return sel.Sel.Name
-		}
-		if ident, ok := fn.X.(*ast.Ident); ok {
-			return ident.Name
-		}
+func handleStream(w, r, audit any) *sdkErrors.SDKError {
+	return handleJSON(w, r, audit)
+}
+`)
+
+	if violations := checkDirectory(t, dir); len(violations) != 0 {
+		t.Errorf("expected no violations, got %v", violations)
 	}
-	return ""
+}
+
+// TestGuardScan_SeesHandlers fails when the scan finds no route handlers
+// at all, which would mean the signature match or the walk is broken and
+// TestAllRouteHandlersUseGuardFunctions is passing vacuously.
+func TestGuardScan_SeesHandlers(t *testing.T) {
+	routerDir, absErr := filepath.Abs(".")
+	if absErr != nil {
+		t.Fatalf("failed to resolve the router directory: %v", absErr)
+	}
+
+	if n := countRouteHandlers(t, filepath.Dir(routerDir), routerDir); n == 0 {
+		t.Fatal("the guard scan found no route handlers; " +
+			"the signature match or the walk is broken")
+	}
 }

@@ -49,12 +49,14 @@ CREATE INDEX IF NOT EXISTS idx_secrets_path ON secrets(path);
 CREATE INDEX IF NOT EXISTS idx_secrets_created_time ON secrets(created_time);
 `
 
-// QueryUpdateSecretMetadata is a SQL query for inserting or updating secret
-// metadata. It updates the current version, oldest version, max versions, and
-// updated time in conflict with the existing path.
-const QueryUpdateSecretMetadata = `
-INSERT INTO secret_metadata (path, nonce, encrypted_current_version, encrypted_oldest_version,
-  encrypted_created_time, encrypted_updated_time, encrypted_max_versions)
+// QueryUpsertMetadata is a SQL query for inserting or updating a row of the
+// `secret_metadata` table. On a conflict with an existing path it updates the
+// nonce, the current and oldest versions, the timestamps, and the maximum
+// number of versions.
+const QueryUpsertMetadata = `
+INSERT INTO secret_metadata (path, nonce, encrypted_current_version,
+  encrypted_oldest_version, encrypted_created_time, encrypted_updated_time,
+  encrypted_max_versions)
 VALUES (?, ?, ?, ?, ?, ?, ?)
 ON CONFLICT(path) DO UPDATE SET
     nonce = excluded.nonce,
@@ -65,10 +67,11 @@ ON CONFLICT(path) DO UPDATE SET
 	encrypted_max_versions = excluded.encrypted_max_versions
 `
 
-// QueryUpsertSecret is a SQL query for inserting or updating the `secrets`
-// records.
-const QueryUpsertSecret = `
-INSERT INTO secrets (path, version, nonce, encrypted_data, created_time, deleted_time)
+// QueryUpsertVersion is a SQL query for inserting or updating one version
+// row of the `secrets` table, keyed by path and version.
+const QueryUpsertVersion = `
+INSERT INTO secrets (path, version, nonce, encrypted_data, created_time,
+  deleted_time)
 VALUES (?, ?, ?, ?, ?, ?)
 ON CONFLICT(path, version) DO UPDATE SET
 	nonce = excluded.nonce,
@@ -76,9 +79,11 @@ ON CONFLICT(path, version) DO UPDATE SET
 	deleted_time = excluded.deleted_time
 `
 
-// QuerySecretMetadata is a SQL query to fetch metadata of a secret by its path.
-const QuerySecretMetadata = `
-SELECT nonce, encrypted_current_version, encrypted_oldest_version, encrypted_created_time, encrypted_updated_time, encrypted_max_versions
+// QueryLoadMetadata is a SQL query that fetches the `secret_metadata` row
+// for a path.
+const QueryLoadMetadata = `
+SELECT nonce, encrypted_current_version, encrypted_oldest_version,
+  encrypted_created_time, encrypted_updated_time, encrypted_max_versions
 FROM secret_metadata
 WHERE path = ?
 `

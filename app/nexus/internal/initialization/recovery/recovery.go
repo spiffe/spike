@@ -7,6 +7,7 @@ package recovery
 import (
 	"context"
 	"fmt"
+	"math"
 	"math/big"
 	"time"
 
@@ -93,6 +94,12 @@ func InitializeBackingStoreFromKeepers(source *workloadapi.X509Source) {
 			log.WarnErr(fName, warnErr)
 			return false, sdkErrors.ErrRecoveryRetryFailed
 		}
+
+		// Each round collects a fresh, consistent set of shards. A shard kept
+		// from an earlier round could belong to a previous bootstrap (for
+		// example a retried bootstrap that re-seeded the Keepers with a new
+		// root key), and mixing it with fresh ones reconstructs a wrong key.
+		resetShards(successfulKeeperShards)
 
 		initSuccessful := iterateKeepersAndInitializeState(
 			source, successfulKeeperShards,
@@ -360,6 +367,18 @@ func NewPilotRecoveryShards() map[int]*[crypto.AES256KeySize]byte {
 
 		bigInt := new(big.Int).SetBytes(bb)
 		ii := bigInt.Uint64()
+
+		// Shard IDs are small positive share indices. Zero is not a valid
+		// share index, and anything above math.MaxInt would wrap when used
+		// as a map key; both indicate corrupted shard generation.
+		if ii == 0 || ii > uint64(math.MaxInt) {
+			failErr := *sdkErrors.ErrDataInvalidInput.Clone()
+			failErr.Msg = "shard ID is out of range"
+			// Security: Erase the shard bytes before terminating.
+			mem.ClearBytes(contribution)
+			log.FatalErr(fName, failErr)
+			return nil
+		}
 
 		var rs [crypto.AES256KeySize]byte
 		copy(rs[:], contribution)

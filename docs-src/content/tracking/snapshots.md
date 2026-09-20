@@ -10,7 +10,8 @@ sort_by = "weight"
 
 # Documentation Snapshots
 
-The **GitHub** repository contains the latest documentation of **SPIKE** already.
+The **GitHub** repository contains the latest documentation of **SPIKE**
+already.
 
 ## Snapshots
 

@@ -7,8 +7,6 @@ package recovery
 import (
 	"context"
 	"encoding/json"
-	"net/url"
-	"strconv"
 
 	"github.com/cloudflare/circl/group"
 	"github.com/cloudflare/circl/secretsharing"
@@ -51,13 +49,9 @@ func sendShardsToKeepers(
 	const fName = "sendShardsToKeepers"
 
 	for keeperID, keeperAPIRoot := range keepers {
-		u, urlErr := url.JoinPath(
-			keeperAPIRoot, string(apiUrl.KeeperContribute),
-		)
+		u, urlErr := keeperURL(keeperAPIRoot, string(apiUrl.KeeperContribute))
 		if urlErr != nil {
-			warnErr := sdkErrors.ErrAPIBadRequest.Wrap(urlErr)
-			warnErr.Msg = "failed to join path"
-			log.WarnErr(fName, *warnErr)
+			log.WarnErr(fName, *urlErr)
 			continue
 		}
 
@@ -75,17 +69,20 @@ func sendShardsToKeepers(
 		// complicate the code further.
 		state.UnlockRootKey()
 
+		kid, kidErr := parseKeeperID(keeperID)
+		if kidErr != nil {
+			log.WarnErr(fName, *kidErr)
+			// Security: Ensure sensitive data is zeroed out.
+			rootSecret.SetUint64(0)
+			for i := range rootShares {
+				rootShares[i].Value.SetUint64(0)
+			}
+			continue
+		}
+
 		var share secretsharing.Share
 		for _, sr := range rootShares {
-			kid, atoiErr := strconv.Atoi(keeperID)
-			if atoiErr != nil {
-				warnErr := sdkErrors.ErrDataInvalidInput.Wrap(atoiErr)
-				warnErr.Msg = "failed to convert keeper id to int"
-				log.WarnErr(fName, *warnErr)
-				continue
-			}
-
-			if sr.ID.IsEqual(group.P256.NewScalar().SetUint64(uint64(kid))) {
+			if sr.ID.IsEqual(group.P256.NewScalar().SetUint64(kid)) {
 				share = sr
 				break
 			}
@@ -95,6 +92,11 @@ func sendShardsToKeepers(
 			warnErr := *sdkErrors.ErrEntityNotFound.Clone()
 			warnErr.Msg = "failed to find share for keeper"
 			log.WarnErr(fName, warnErr)
+			// Security: Ensure sensitive data is zeroed out.
+			rootSecret.SetUint64(0)
+			for i := range rootShares {
+				rootShares[i].Value.SetUint64(0)
+			}
 			continue
 		}
 

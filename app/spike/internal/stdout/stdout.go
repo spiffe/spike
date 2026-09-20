@@ -2,15 +2,14 @@
 //  \\\\\ Copyright 2024-present SPIKE contributors.
 // \\\\\\\ SPDX-License-Identifier: Apache-2.0
 
-// Package stdout provides utilities for printing formatted messages to
-// standard output. It contains functions for displaying notification and
-// status messages to users.
 package stdout
 
 import (
 	"fmt"
 	"os"
 	"sync"
+
+	"github.com/spiffe/spike-sdk-go/log"
 )
 
 // notReadyCallCount tracks how many times PrintNotReady has been called.
@@ -29,6 +28,8 @@ var (
 // avoids alarming users during normal startup delays while still providing
 // help when there is a real problem.
 func PrintNotReady() {
+	const fName = "PrintNotReady"
+
 	notReadyMu.Lock()
 	notReadyCallCount++
 	count := notReadyCallCount
@@ -54,6 +55,9 @@ func PrintNotReady() {
 	}
 
 	if _, err := fmt.Fprint(os.Stderr, msg); err != nil {
-		fmt.Println("failed to write to stderr: ", err.Error())
+		// The Pilot cannot reach its own stderr; do not exit 0 as if the
+		// user had been told.
+		log.FatalLn(fName, "message", "failed to write to stderr",
+			"err", err.Error())
 	}
 }

@@ -10,6 +10,8 @@ import (
 	"github.com/spf13/cobra"
 	spike "github.com/spiffe/spike-sdk-go/api"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
+
+	"github.com/spiffe/spike/app/spike/internal/cmd/flags"
 )
 
 // findPolicyByName searches for a policy with the given name and returns true
@@ -64,7 +66,10 @@ func sendGetPolicyNameRequest(cmd *cobra.Command,
 ) (string, *sdkErrors.SDKError) {
 	var policyName string
 
-	name, _ := cmd.Flags().GetString("name")
+	name, flagErr := flags.String(cmd, "name")
+	if flagErr != nil {
+		return "", flagErr
+	}
 
 	if len(args) > 0 {
 		policyName = args[0]

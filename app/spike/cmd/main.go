@@ -16,11 +16,25 @@ import (
 	"github.com/spiffe/spike-sdk-go/spiffe"
 
 	"github.com/spiffe/spike/app/spike/internal/cmd"
+	"github.com/spiffe/spike/app/spike/internal/logfile"
 )
 
 const appName = "SPIKE"
 
 func main() {
+	// Route the SDK logger to the Pilot diagnostics log before any other
+	// call can bind it to stdout: command output must stay clean.
+	if routeErr := logfile.Route(); routeErr != nil {
+		if _, err := fmt.Fprintf(os.Stderr,
+			"Error: cannot open the diagnostics log %s: %v\n",
+			logfile.Path(), routeErr,
+		); err != nil {
+			log.FatalLn(appName, "message", "failed to write to stderr",
+				"err", err.Error())
+		}
+		log.FatalErr(appName, *routeErr)
+	}
+
 	errMem := mem.Lock()
 	if errMem != nil {
 		if env.ShowMemoryWarningVal() {
@@ -28,7 +42,10 @@ func main() {
 Memory locking is not available.
 Consider disabling swap to enhance security.
  `); err != nil {
-				fmt.Println("failed to write to stderr: ", err.Error())
+				// The Pilot cannot reach its own stderr; treat this as a
+				// broken environment rather than continuing silently.
+				log.FatalLn(appName, "message", "failed to write to stderr",
+					"err", err.Error())
 			}
 		}
 	}

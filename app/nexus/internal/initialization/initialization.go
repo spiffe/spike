@@ -46,8 +46,9 @@ import (
 func Initialize(source *workloadapi.X509Source) {
 	const fName = "Initialize"
 
-	if requireBackingStoreToBootstrap := env.BackendStoreTypeVal() == env.Sqlite ||
-		env.BackendStoreTypeVal() == env.Lite; requireBackingStoreToBootstrap {
+	storeType := env.BackendStoreTypeVal()
+	if requireBackingStoreToBootstrap := storeType == env.Sqlite ||
+		storeType == env.Lite; requireBackingStoreToBootstrap {
 		// Initialize the backing store from SPIKE Keeper instances in the
 		// background so the caller can start the mTLS listener right away.
 		// While the root key is missing, the router only exposes the

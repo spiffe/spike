@@ -24,20 +24,26 @@ func TestInitializeLiteBackend_Success(t *testing.T) {
 }
 
 func TestInitializeLiteBackend_NilKey_ShouldFatal(t *testing.T) {
-	t.Skip("Skipping fatal condition test - initializeLiteBackend calls log.FatalLn which exits the process")
+	t.Skip(
+		"Skipping fatal condition test - initializeLiteBackend calls " +
+			"log.FatalLn which exits the process",
+	)
 
 	// This test cannot be run because log.FatalLn calls os.Exit() which would
-	// terminate the entire test process. The behavior is verified by manual testing
+	// terminate the entire test process. The behavior is verified by manual
+	// testing
 	// or integration tests that can handle process termination.
 	//
-	// Expected behavior: initializeLiteBackend panics/exits when called with a nil key
+	// Expected behavior: initializeLiteBackend panics/exits when called with a
+	// nil key
 }
 
 func TestInitializeLiteBackend_ZeroKey(t *testing.T) {
 	// Create a zero key
 	zeroKey := createZeroKey()
 
-	// Test with the zero key - this should work at the initializeLiteBackend level
+	// Test with the zero key - this should work at the initializeLiteBackend
+	// level
 	// (the validation happens in InitializeBackend, not here)
 	backend := initializeLiteBackend(zeroKey)
 
@@ -134,7 +140,12 @@ func TestInitializeLiteBackend_MultipleInitializations(t *testing.T) {
 	for i := 0; i < len(backends); i++ {
 		for j := i + 1; j < len(backends); j++ {
 			if backends[i] == backends[j] {
-				t.Errorf("Expected different backend instances, got same instance at positions %d and %d", i, j)
+				t.Errorf(
+					"Expected different backend instances, got same instance at "+
+						"positions %d and %d",
+					i,
+					j,
+				)
 			}
 		}
 	}
@@ -146,8 +157,8 @@ func TestInitializeLiteBackend_ConcurrentAccess(t *testing.T) {
 	results := make(chan interface{}, numGoroutines)
 
 	// Start multiple goroutines trying to initialize simultaneously
-	for i := 0; i < numGoroutines; i++ {
-		go func(id int) {
+	for i := range uint8(numGoroutines) {
+		go func(id uint8) {
 			defer func() {
 				if r := recover(); r != nil {
 					t.Errorf("Goroutine %d panicked: %v", id, r)
@@ -155,10 +166,12 @@ func TestInitializeLiteBackend_ConcurrentAccess(t *testing.T) {
 				done <- true
 			}()
 
-			// Each goroutine uses its own key to avoid any shared state issues
+			// Each goroutine uses its own key to avoid any shared state
+			// issues. Byte arithmetic wraps, which is the intended
+			// "(id + j) mod 256" pattern without an int-to-byte conversion.
 			key := &[crypto.AES256KeySize]byte{}
 			for j := range key {
-				key[j] = byte((id + j) % 256)
+				key[j] = byte(j) + id
 			}
 
 			backend := initializeLiteBackend(key)

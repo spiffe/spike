@@ -5,11 +5,11 @@
 package persist
 
 import (
-	"fmt"
 	"os"
 	"testing"
 
 	"github.com/spiffe/spike-sdk-go/config/env"
+	"github.com/spiffe/spike-sdk-go/log"
 )
 
 // TestMain points SPIKE_NEXUS_DATA_DIR at a per-run temporary directory
@@ -19,21 +19,21 @@ import (
 // real ~/.spike/data directory, whose database these tests used to
 // delete out from under a live dev environment.
 func TestMain(m *testing.M) {
+	const fName = "TestMain"
+
 	dir, mkErr := os.MkdirTemp("", "spike-sqlite-persist-test-*")
 	if mkErr != nil {
-		fmt.Fprintln(os.Stderr,
+		log.FatalLn(fName,
 			"failed to create a temporary data directory:", mkErr)
-		os.Exit(1)
 	}
 
 	if setErr := os.Setenv(env.NexusDataDir, dir); setErr != nil {
-		_ = os.RemoveAll(dir)
-		fmt.Fprintln(os.Stderr, "failed to set "+env.NexusDataDir+":", setErr)
-		os.Exit(1)
+		removeTempDir(dir)
+		log.FatalLn(fName, "failed to set "+env.NexusDataDir+":", setErr)
 	}
 
 	code := m.Run()
 
-	_ = os.RemoveAll(dir)
+	removeTempDir(dir)
 	os.Exit(code)
 }

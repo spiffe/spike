@@ -30,17 +30,15 @@ func TestNew_ValidKey(t *testing.T) {
 	}
 
 	if ds == nil {
-		t.Error("Expected non-nil Store")
+		t.Fatal("Expected non-nil Store")
+		return
 	}
-
-	// Verify it implements the Backend interface
-	// noinspection ALL
-	var _ backend.Backend = ds
 
 	// Verify the Store has a cipher
 	liteStore, ok := ds.(*Store)
 	if !ok {
 		t.Fatal("Expected Store type")
+		return
 	}
 
 	if liteStore.Cipher == nil {
@@ -48,53 +46,21 @@ func TestNew_ValidKey(t *testing.T) {
 	}
 }
 
-func TestNew_InvalidKey(t *testing.T) {
-	tests := []struct {
-		name    string
-		keySize int
-	}{
-		{"too short key (16 bytes)", 16},
-		//{"too short key (8 bytes)", 8},
-		//{"empty key", 0},
-		// FIX-ME: fix these!
+// TestNew_NilKey verifies that New rejects a nil root key instead of
+// dereferencing it. The key length is fixed by the parameter type, so a nil
+// pointer is the only structurally invalid input New can receive.
+func TestNew_NilKey(t *testing.T) {
+	ds, newErr := New(nil)
+	if newErr == nil {
+		t.Fatal("Expected an error for a nil root key, got nil")
+		return
 	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			// Create invalid key of wrong size
-			invalidKey := make([]byte, tt.keySize)
-			if len(invalidKey) > 0 {
-				if _, randErr := rand.Read(invalidKey); randErr != nil {
-					t.Fatalf("Failed to generate random key: %v", randErr)
-				}
-			}
-
-			// Pad or truncate to fit the expected array size for testing
-			var testKey [crypto.AES256KeySize]byte
-			copy(testKey[:], invalidKey)
-
-			// This should fail for keys that aren't valid AES-256
-			if tt.keySize < 16 {
-				// Keys smaller than AES-128 should fail
-				ds, newErr := New(&testKey)
-				if newErr == nil {
-					t.Errorf("Expected error with invalid key size %d, got nil", tt.keySize)
-				}
-				if ds != nil {
-					t.Errorf("Expected nil Store with invalid key, got: %v", ds)
-				}
-			} else {
-				// For this test, even though we're testing "invalid" keys,
-				// AES-256 key size is fixed, so this will actually work
-				// The test is more about the error handling path
-				ds, newErr := New(&testKey)
-				if newErr != nil {
-					t.Logf("Key creation failed as expected: %v", newErr)
-				} else if ds != nil {
-					t.Logf("Key creation succeeded (valid AES-256 key)")
-				}
-			}
-		})
+	if newErr.Code != sdkErrors.ErrRootKeyMissing.Code {
+		t.Errorf("Expected error code %q, got %q",
+			sdkErrors.ErrRootKeyMissing.Code, newErr.Code)
+	}
+	if ds != nil {
+		t.Errorf("Expected a nil Store for a nil root key, got: %v", ds)
 	}
 }
 
@@ -104,7 +70,10 @@ func TestNew_ZeroKey(t *testing.T) {
 
 	ds, newErr := New(zeroKey)
 	if newErr != nil {
-		t.Errorf("Zero key should be valid for AES (though not secure), got error: %v", newErr)
+		t.Errorf(
+			"Zero key should be valid for AES (though not secure), got error: %v",
+			newErr,
+		)
 	}
 
 	if ds == nil {
@@ -113,7 +82,11 @@ func TestNew_ZeroKey(t *testing.T) {
 
 	// Verify cipher is created even with a zero key
 	if ds != nil {
-		liteStore := ds.(*Store)
+		liteStore, ok := ds.(*Store)
+		if !ok {
+			t.Fatal("Expected Store type")
+			return
+		}
 		if liteStore.Cipher == nil {
 			t.Error("Expected cipher to be created even with zero key")
 		}
@@ -132,7 +105,11 @@ func TestDataStore_GetCipher(t *testing.T) {
 		t.Fatalf("Failed to create Store: %v", newErr)
 	}
 
-	liteStore := ds.(*Store)
+	liteStore, ok := ds.(*Store)
+	if !ok {
+		t.Fatal("Expected Store type")
+		return
+	}
 
 	// Test GetCipher method
 	cipher := liteStore.GetCipher()
@@ -259,7 +236,11 @@ func TestDataStore_CipherFunctionality(t *testing.T) {
 		t.Fatalf("Failed to create Store: %v", newErr)
 	}
 
-	liteStore := ds.(*Store)
+	liteStore, ok := ds.(*Store)
+	if !ok {
+		t.Fatal("Expected Store type")
+		return
+	}
 	cipher := liteStore.GetCipher()
 
 	// Test basic cipher properties
@@ -335,14 +316,17 @@ func TestDataStore_DifferentKeys_ProduceDifferentCiphers(t *testing.T) {
 	ciphertext2 := cipher2.Seal(nil, nonce, plaintext, nil)
 
 	// They should produce different ciphertext (different keys)
-	if len(ciphertext1) == len(ciphertext2) && string(ciphertext1) == string(ciphertext2) {
+	if len(ciphertext1) == len(ciphertext2) &&
+		string(ciphertext1) == string(ciphertext2) {
 		t.Error("Different keys should produce different ciphertext")
 	}
 
 	// Verify cipher1 cannot decrypt cipher2's output
 	_, openErr := cipher1.Open(nil, nonce, ciphertext2, nil)
 	if openErr == nil {
-		t.Error("Cipher with different key should not be able to decrypt ciphertext")
+		t.Error(
+			"Cipher with different key should not be able to decrypt ciphertext",
+		)
 	}
 }
 
@@ -358,7 +342,11 @@ func TestDataStore_EmbeddedNoopStore(t *testing.T) {
 		t.Fatalf("Failed to create Store: %v", newErr)
 	}
 
-	liteStore := ds.(*Store)
+	liteStore, ok := ds.(*Store)
+	if !ok {
+		t.Fatal("Expected Store type")
+		return
+	}
 
 	// Check that the embedded Store is accessible
 	// (This tests the struct composition)
@@ -384,8 +372,12 @@ func TestDataStore_EmbeddedNoopStore(t *testing.T) {
 	methods := []func() *sdkErrors.SDKError{
 		func() *sdkErrors.SDKError { return liteStore.Initialize(ctx) },
 		func() *sdkErrors.SDKError { return liteStore.Close(ctx) },
-		func() *sdkErrors.SDKError { return liteStore.StoreSecret(ctx, "path", testSecret) },
-		func() *sdkErrors.SDKError { return liteStore.StorePolicy(ctx, testPolicy) },
+		func() *sdkErrors.SDKError {
+			return liteStore.StoreSecret(ctx, "path", testSecret)
+		},
+		func() *sdkErrors.SDKError {
+			return liteStore.StorePolicy(ctx, testPolicy)
+		},
 		func() *sdkErrors.SDKError { return liteStore.DeletePolicy(ctx, "id") },
 	}
 
@@ -415,11 +407,17 @@ func TestDataStore_GCMProperties(t *testing.T) {
 	expectedOverhead := 16  // GCM authentication tag size
 
 	if cipher.NonceSize() != expectedNonceSize {
-		t.Errorf("Expected GCM nonce size %d, got %d", expectedNonceSize, cipher.NonceSize())
+		t.Errorf(
+			"Expected GCM nonce size %d, got %d",
+			expectedNonceSize,
+			cipher.NonceSize(),
+		)
 	}
 
 	if cipher.Overhead() != expectedOverhead {
-		t.Errorf("Expected GCM overhead %d, got %d", expectedOverhead, cipher.Overhead())
+		t.Errorf(
+			"Expected GCM overhead %d, got %d", expectedOverhead, cipher.Overhead(),
+		)
 	}
 }
 
@@ -464,44 +462,3 @@ func TestDataStore_MemoryManagement(t *testing.T) {
 		}
 	}
 }
-
-// FIX-ME: handle invalid cases.
-//func TestNew_CipherCreationFailure(t *testing.T) {
-//	// This test simulates cipher creation failure
-//	// In practice, aes.NewCipher only fails with invalid key lengths
-//	// But we test the error path by using the actual error conditions
-//
-//	tests := []struct {
-//		name    string
-//		keyData []byte
-//	}{
-//		{"key too short", make([]byte, 8)},       // Less than 16 bytes
-//		{"key invalid length", make([]byte, 15)}, // Not 16, 24, or 32
-//	}
-//
-//	for _, tt := range tests {
-//		t.Run(tt.name, func(t *testing.T) {
-//			// Fill with some data
-//			for i := range tt.keyData {
-//				tt.keyData[i] = byte(i)
-//			}
-//
-//			// Create array of correct size but with invalid data
-//			var testKey [crypto.AES256KeySize]byte
-//			copy(testKey[:], tt.keyData)
-//
-//			// Try to create cipher directly to see if it would fail
-//			_, err := aes.NewCipher(tt.keyData)
-//			if err != nil {
-//				// This key would indeed fail, so New() should also fail
-//				ds, newErr := New(&testKey)
-//				if newErr == nil {
-//					t.Errorf("Expected error for invalid key data, got nil")
-//				}
-//				if ds != nil {
-//					t.Errorf("Expected nil Store for invalid key, got: %v", ds)
-//				}
-//			}
-//		})
-//	}
-//}

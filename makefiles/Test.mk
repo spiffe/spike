@@ -48,7 +48,8 @@ test:
 #      (excluding ST1000, U1000 checks)
 #   6. govulncheck: scans for known security vulnerabilities
 #   7. golangci-lint: runs a comprehensive set of linters
-#      (follows the configuration in .golangci.yml)
+#      (follows the configuration in .golangci.yml); the integration build
+#      tag is set so the opt-in CLI harness is linted too
 .PHONY: audit
 audit:
 	go mod tidy -diff
@@ -57,7 +58,7 @@ audit:
 	go vet ./...
 	go run honnef.co/go/tools/cmd/staticcheck@latest -checks=all,-ST1000,-U1000 ./...
 	go run golang.org/x/vuln/cmd/govulncheck@latest ./...
-	CGO_ENABLED=0 go run github.com/golangci/golangci-lint/cmd/golangci-lint@latest run
+	CGO_ENABLED=0 go run github.com/golangci/golangci-lint/v2/cmd/golangci-lint@latest run --build-tags integration
 
 # Comprehensive set of checks to simulate a CI environment
 # Usage: make ci

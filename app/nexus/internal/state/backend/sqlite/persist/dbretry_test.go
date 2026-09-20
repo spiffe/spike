@@ -14,25 +14,6 @@ import (
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 )
 
-func newMemoryDataStore(t *testing.T) *DataStore {
-	db, openErr := sql.Open("sqlite3", ":memory:")
-	if openErr != nil {
-		t.Fatalf("failed to open an in-memory database: %v", openErr)
-		return nil
-	}
-	t.Cleanup(func() { _ = db.Close() })
-	return &DataStore{db: db}
-}
-
-// busyErr mimics how a SQLITE_BUSY failure ("database is locked" in the
-// mattn/go-sqlite3 driver) surfaces from the persist layer: wrapped in
-// an SDKError chain.
-func busyErr() *sdkErrors.SDKError {
-	return sdkErrors.ErrEntityQueryFailed.Wrap(
-		errors.New("database is locked"),
-	)
-}
-
 func TestTransientDBError(t *testing.T) {
 	tests := []struct {
 		name string

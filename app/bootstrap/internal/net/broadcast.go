@@ -68,6 +68,17 @@ func BroadcastKeepers(ctx context.Context, api *spike.API) {
 		return
 	}
 
+	// Nothing leaves this process until every Keeper accepts a connection.
+	// A Keeper listens only once it holds its SVID, so this is the earliest
+	// moment a contribution can succeed. Seeding a subset and exiting would
+	// leave the Keepers holding shares of two different root keys once a
+	// retry generates a new one, and Nexus would reconstruct a wrong key.
+	timeout := env.BootstrapKeeperTimeoutVal()
+	if waitErr := waitForKeepers(ctx, keepers, timeout); waitErr != nil {
+		log.FatalErr(fName, *waitErr)
+		return
+	}
+
 	state.LockRootKeySeed()
 	defer state.UnlockRootKeySeed()
 	// RootShares() generates the root key and splits it into shares.
@@ -75,7 +86,6 @@ func BroadcastKeepers(ctx context.Context, api *spike.API) {
 	rks := state.RootKeySeedNoLock()
 	rs := crypto.RootShares(rks)
 
-	timeout := env.BootstrapKeeperTimeoutVal()
 	maxRetries := env.BootstrapKeeperMaxRetriesVal()
 
 	for keeperID, keeperURL := range env.KeepersVal() {

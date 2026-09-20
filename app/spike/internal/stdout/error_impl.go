@@ -5,6 +5,7 @@
 package stdout
 
 import (
+	"errors"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -28,56 +29,46 @@ func getCommandGroup(c *cobra.Command) string {
 	return ""
 }
 
-// handlePolicyError handles policy-specific SDK errors.
+// policyError maps policy-specific SDK errors to user-facing errors.
 //
 // Parameters:
-//   - c: Cobra command for error output
-//   - err: The SDK error to check and handle
+//   - err: The SDK error to check
 //
 // Returns:
-//   - bool: true if the error was a policy-specific error and was handled,
-//     false otherwise
-func handlePolicyError(c *cobra.Command, err *sdkErrors.SDKError) bool {
+//   - error: The user-facing error if err is a policy-specific error, nil
+//     otherwise
+func policyError(err *sdkErrors.SDKError) error {
 	switch {
 	case err.Is(sdkErrors.ErrEntityNotFound):
-		c.PrintErrln("Error: Entity not found.")
-		return true
+		return errors.New("entity not found")
 	case err.Is(sdkErrors.ErrEntityInvalid):
-		c.PrintErrln("Error: Invalid entity.")
-		return true
+		return errors.New("invalid entity")
 	case err.Is(sdkErrors.ErrAPIPostFailed):
-		c.PrintErrln("Error: Operation failed.")
-		return true
+		return errors.New("operation failed")
 	case err.Is(sdkErrors.ErrEntityCreationFailed):
-		c.PrintErrln("Error: Failed to create resource.")
-		return true
+		return errors.New("failed to create resource")
 	}
-	return false
+	return nil
 }
 
-// handleCipherError handles cipher-specific SDK errors.
+// cipherError maps cipher-specific SDK errors to user-facing errors.
 //
 // Parameters:
-//   - c: Cobra command for error output
-//   - err: The SDK error to check and handle
+//   - err: The SDK error to check
 //
 // Returns:
-//   - bool: true if the error was a cipher-specific error and was handled,
-//     false otherwise
-func handleCipherError(c *cobra.Command, err *sdkErrors.SDKError) bool {
+//   - error: The user-facing error if err is a cipher-specific error, nil
+//     otherwise
+func cipherError(err *sdkErrors.SDKError) error {
 	switch {
 	case err.Is(sdkErrors.ErrCryptoEncryptionFailed):
-		c.PrintErrln("Error: Encryption operation failed.")
-		return true
+		return errors.New("encryption operation failed")
 	case err.Is(sdkErrors.ErrCryptoDecryptionFailed):
-		c.PrintErrln("Error: Decryption operation failed.")
-		return true
+		return errors.New("decryption operation failed")
 	case err.Is(sdkErrors.ErrCryptoCipherNotAvailable):
-		c.PrintErrln("Error: Cipher not available.")
-		return true
+		return errors.New("cipher not available")
 	case err.Is(sdkErrors.ErrCryptoInvalidEncryptionKeyLength):
-		c.PrintErrln("Error: Invalid encryption key length.")
-		return true
+		return errors.New("invalid encryption key length")
 	}
-	return false
+	return nil
 }

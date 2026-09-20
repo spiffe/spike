@@ -80,3 +80,13 @@ tail-keeper-1:
 
 tail-keeper-2:
 	kubectl logs spike-keeper-2 -n spike -f
+
+.PHONY: spire-versions
+# Prints the SPIRE chart and release versions SPIKE is pinned to. They live
+# in hack/lib/versions.sh; change them there and run `make test`, which
+# names any doc page that still shows an old version.
+spire-versions:
+	@. ./hack/lib/versions.sh && \
+	  echo "spire chart:      $$SPIRE_HELM_CHART_VERSION" && \
+	  echo "spire-crds chart: $$SPIRE_CRDS_HELM_CHART_VERSION" && \
+	  echo "SPIRE release:    $$SPIRE_VERSION"

@@ -5,6 +5,8 @@
 package stdout
 
 import (
+	"errors"
+
 	"github.com/spf13/cobra"
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 )
@@ -12,19 +14,23 @@ import (
 const commandGroupPolicy = "policy"
 const commandGroupCipher = "cipher"
 
-// HandleAPIError processes API errors and prints appropriate user-friendly
-// messages. It detects the command group (policy, secret, cipher) from the
-// Cobra command path and handles group-specific errors accordingly.
+// APIError translates an SDK error returned by an API call into the error a
+// command handler returns to Cobra. The text is the user-facing message; the
+// root command prints it to stderr and the process exits non-zero. It detects
+// the command group (policy, secret, cipher) from the Cobra command path and
+// maps group-specific errors accordingly.
 //
 // Parameters:
-//   - c: Cobra command for output and command group detection
+//   - c: Cobra command used for command group detection
 //   - err: The error returned from an API call
 //
 // Returns:
-//   - bool: true if an error was handled, false if no error
+//   - error: nil when err is nil; otherwise a non-nil error whose text is the
+//     message to show the user
 //
 // Common error types handled for all command groups:
-//   - ErrStateNotReady: System not initialized
+//   - ErrStateNotReady: System not initialized (the progressive not-ready
+//     notice is printed, and a short error is returned)
 //   - ErrDataMarshalFailure: Request serialization failure
 //   - ErrDataUnmarshalFailure: Response parsing failure
 //   - ErrAPINotFound: Resource not found
@@ -42,65 +48,54 @@ const commandGroupCipher = "cipher"
 //   - ErrCryptoEncryptionFailed, ErrCryptoDecryptionFailed,
 //     ErrCryptoCipherNotAvailable, ErrCryptoInvalidEncryptionKeyLength
 //
-// For any unhandled error types, the function falls back to displaying
-// the SDK error message directly.
+// Any other error is returned as is, so its SDK message reaches the user.
 //
 // Usage example:
 //
-//	secret, err := api.GetSecretVersion(path, version)
-//	if stdout.HandleAPIError(cmd, err) {
-//	    return
+//	secret, apiErr := api.GetSecretVersion(ctx, path, version)
+//	if apiErr != nil {
+//	    return stdout.APIError(cmd, apiErr)
 //	}
-func HandleAPIError(c *cobra.Command, err *sdkErrors.SDKError) bool {
+func APIError(c *cobra.Command, err *sdkErrors.SDKError) error {
 	if err == nil {
-		return false
+		return nil
 	}
 
 	// Common errors (all command groups)
 	switch {
 	case err.Is(sdkErrors.ErrStateNotReady):
 		PrintNotReady()
-		return true
+		return errors.New("SPIKE Nexus is not ready")
 	case err.Is(sdkErrors.ErrDataMarshalFailure):
-		c.PrintErrln("Error: Malformed request.")
-		return true
+		return errors.New("malformed request")
 	case err.Is(sdkErrors.ErrDataUnmarshalFailure):
-		c.PrintErrln("Error: Failed to parse API response.")
-		return true
+		return errors.New("failed to parse API response")
 	case err.Is(sdkErrors.ErrAPINotFound):
-		c.PrintErrln("Error: Resource not found.")
-		return true
+		return errors.New("resource not found")
 	case err.Is(sdkErrors.ErrAPIBadRequest):
-		c.PrintErrln("Error: Invalid request.")
-		return true
+		return errors.New("invalid request")
 	case err.Is(sdkErrors.ErrDataInvalidInput):
-		c.PrintErrln("Error: Invalid input provided.")
-		return true
+		return errors.New("invalid input provided")
 	case err.Is(sdkErrors.ErrNetPeerConnection):
-		c.PrintErrln("Error: Failed to connect to SPIKE Nexus.")
-		return true
+		return errors.New("failed to connect to SPIKE Nexus")
 	case err.Is(sdkErrors.ErrAccessUnauthorized):
-		c.PrintErrln("Error: Unauthorized access.")
-		return true
+		return errors.New("unauthorized access")
 	case err.Is(sdkErrors.ErrNetReadingResponseBody):
-		c.PrintErrln("Error: Failed to read response body.")
-		return true
+		return errors.New("failed to read response body")
 	}
 
 	// Command-group-specific errors
-	group := getCommandGroup(c)
-	switch group {
+	switch getCommandGroup(c) {
 	case commandGroupPolicy:
-		if handlePolicyError(c, err) {
-			return true
+		if groupErr := policyError(err); groupErr != nil {
+			return groupErr
 		}
 	case commandGroupCipher:
-		if handleCipherError(c, err) {
-			return true
+		if groupErr := cipherError(err); groupErr != nil {
+			return groupErr
 		}
 	}
 
-	// Fallback for any unhandled errors
-	c.PrintErrf("Error: %v\n", err)
-	return true
+	// Fallback for any unhandled errors: the SDK message reaches the user.
+	return err
 }

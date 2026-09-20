@@ -9,7 +9,8 @@
 # Usage: ./hack/scm/cleanup-branches.sh [--dry-run]
 #
 # Options:
-#   --dry-run    Show which branches would be deleted without actually deleting them
+#   --dry-run    Show which branches would be deleted without actually
+#                deleting them
 #
 # The script performs the following steps:
 #   1. Fetches the latest changes from origin
@@ -41,7 +42,8 @@ while [[ $# -gt 0 ]]; do
       echo "Usage: $0 [--dry-run]"
       echo ""
       echo "Options:"
-      echo "  --dry-run    Show which branches would be deleted without actually deleting them"
+      echo "  --dry-run    Show which branches would be deleted without" \
+        "actually deleting them"
       echo "  -h, --help   Show this help message"
       exit 0
       ;;
@@ -52,9 +54,12 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-echo -e "${BLUE}╔════════════════════════════════════════════════════════════════╗${NC}"
-echo -e "${BLUE}║         SPIKE SDK Go - Merged Branch Cleanup                   ║${NC}"
-echo -e "${BLUE}╚════════════════════════════════════════════════════════════════╝${NC}"
+echo -e "${BLUE}╔═══════════════════════════════════════════════════════"\
+"═════════╗${NC}"
+echo -e "${BLUE}║         SPIKE SDK Go - Merged Branch Cleanup          "\
+"         ║${NC}"
+echo -e "${BLUE}╚═══════════════════════════════════════════════════════"\
+"═════════╝${NC}"
 echo ""
 
 if [ "$DRY_RUN" = true ]; then
@@ -78,7 +83,8 @@ echo -e "${YELLOW}Finding branches merged to origin/main...${NC}"
 echo ""
 
 # Get list of merged branches (excluding HEAD and remote tracking refs)
-MERGED_BRANCHES=$(git branch --merged origin/main --format='%(refname:short)' 2>/dev/null || true)
+MERGED_BRANCHES=$(git branch --merged origin/main \
+  --format='%(refname:short)' 2>/dev/null || true)
 
 if [ -z "$MERGED_BRANCHES" ]; then
   echo -e "${GREEN}No merged branches found.${NC}"
@@ -100,7 +106,8 @@ is_protected() {
 DELETED_COUNT=0
 SKIPPED_COUNT=0
 
-echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"\
+"━━━━${NC}"
 
 for branch in $MERGED_BRANCHES; do
   # Skip if it's the current branch
@@ -125,7 +132,8 @@ for branch in $MERGED_BRANCHES; do
       echo -e "${GREEN}Deleted: ${branch}${NC}"
     else
       # Try force delete if regular delete fails
-      echo -e "${YELLOW}Branch ${branch} requires force delete, skipping (use git branch -D manually if needed)${NC}"
+      echo -e "${YELLOW}Branch ${branch} requires force delete, skipping"\
+" (use git branch -D manually if needed)${NC}"
       SKIPPED_COUNT=$((SKIPPED_COUNT + 1))
       continue
     fi
@@ -133,7 +141,8 @@ for branch in $MERGED_BRANCHES; do
   DELETED_COUNT=$((DELETED_COUNT + 1))
 done
 
-echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"\
+"━━━━${NC}"
 echo ""
 
 # Summary

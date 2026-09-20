@@ -4,12 +4,14 @@
 #  \\\\\ Copyright 2024-present SPIKE contributors.
 # \\\\\\\ SPDX-License-Identifier: Apache-2.0
 
-kubectl exec -n spike deploy/spiffe-spike-pilot -- spike policy create --name=workload-can-read-2 \
+kubectl exec -n spike deploy/spiffe-spike-pilot -- \
+ spike policy create --name=workload-can-read-2 \
  --path-pattern="^tenants/demo/db/.*$" \
  --spiffeid-pattern="^spiffe://workload\.spike\.ist/workload/.*$" \
  --permissions="read"
 
-kubectl exec -n spike deploy/spiffe-spike-pilot -- spike policy create --name=workload-can-write-2 \
+kubectl exec -n spike deploy/spiffe-spike-pilot -- \
+ spike policy create --name=workload-can-write-2 \
  --path-pattern="^tenants/demo/db/.*$" \
  --spiffeid-pattern="^spiffe://workload\.spike\.ist/workload/.*$" \
  --permissions="write"

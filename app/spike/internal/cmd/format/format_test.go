@@ -215,7 +215,9 @@ func TestGetFormat(t *testing.T) {
 				Short: "Test command",
 			}
 			AddFormatFlag(cmd)
-			_ = cmd.Flags().Set("format", tt.flagValue)
+			if setErr := cmd.Flags().Set("format", tt.flagValue); setErr != nil {
+				t.Fatalf("failed to set the format flag: %v", setErr)
+			}
 
 			got, err := GetFormat(cmd)
 			if (err != nil) != tt.wantErr {

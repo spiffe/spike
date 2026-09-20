@@ -7,7 +7,6 @@ package base
 import (
 	"errors"
 	"fmt"
-	"os"
 	"reflect"
 	"testing"
 	"time"
@@ -36,7 +35,8 @@ func TestCheckAccess_PilotAccess(t *testing.T) {
 		// SPIKE Pilot setup, but the code pathPattern will be tested
 		result := CheckPolicyAccess(pilotSPIFFEID, path, wants)
 
-		// Since we don't have actual pilot setup, this will test the policy matching pathPattern
+		// Since we don't have actual pilot setup, this will test the policy
+		// matching pathPattern
 		if result {
 			t.Log("Pilot access granted (unexpected in test environment)")
 		}
@@ -118,10 +118,12 @@ func TestCheckAccess_SpecificPatterns(t *testing.T) {
 				expectGrant: true,
 			},
 			{
-				name:        "matching spiffeid and path, multiple permissions",
-				SPIFFEID:    "spiffe://example.org/service-b",
-				path:        "app/config",
-				wants:       []data.PolicyPermission{data.PermissionRead, data.PermissionWrite},
+				name:     "matching spiffeid and path, multiple permissions",
+				SPIFFEID: "spiffe://example.org/service-b",
+				path:     "app/config",
+				wants: []data.PolicyPermission{
+					data.PermissionRead, data.PermissionWrite,
+				},
 				expectGrant: true,
 			},
 			{
@@ -167,7 +169,8 @@ func TestCheckAccess_SpecificPatterns(t *testing.T) {
 
 func TestCheckAccess_LoadPoliciesError(t *testing.T) {
 	// Test behavior when ListPolicies returns an error
-	// This is hard to test with real backend, but the function should return false
+	// This is hard to test with real backend, but the function should return
+	// false
 	// and log a warning when policies can't be loaded
 	withEnvironment(t, "SPIKE_NEXUS_BACKEND_STORE", "memory", func() {
 		resetBackendForTest()
@@ -366,7 +369,9 @@ func TestUpsertPolicy_InvalidRegexPatterns(t *testing.T) {
 						t.Errorf("Unexpected error for valid patterns: %v", createErr)
 					} else {
 						// Clean up successful creation
-						_ = DeletePolicy(createdPolicy.Name)
+						if deleteErr := DeletePolicy(createdPolicy.Name); deleteErr != nil {
+							t.Errorf("Failed to clean up policy: %v", deleteErr)
+						}
 					}
 				}
 			})
@@ -800,7 +805,9 @@ func TestListPoliciesBySPIFFEID_NoMatches(t *testing.T) {
 		}
 
 		// List policies with non-matching SPIFFE ID
-		matchingPolicies, listErr := ListPoliciesBySPIFFEIDPattern("spiffe://other\\.org/.*")
+		matchingPolicies, listErr := ListPoliciesBySPIFFEIDPattern(
+			"spiffe://other\\.org/.*",
+		)
 		if listErr != nil {
 			t.Fatalf("Failed to list policies by SPIFFE ID: %v", listErr)
 		}
@@ -871,15 +878,7 @@ func TestPolicyRegexCompilation(t *testing.T) {
 
 // Benchmark tests
 func BenchmarkCheckAccess_WildcardPolicy(b *testing.B) {
-	original := os.Getenv(env.NexusBackendStore)
-	_ = os.Setenv(env.NexusBackendStore, "memory")
-	defer func() {
-		if original != "" {
-			_ = os.Setenv(env.NexusBackendStore, original)
-		} else {
-			_ = os.Unsetenv(env.NexusBackendStore)
-		}
-	}()
+	b.Setenv(env.NexusBackendStore, "memory")
 
 	resetBackendForTest()
 	persist.InitializeBackend(nil)
@@ -892,7 +891,10 @@ func BenchmarkCheckAccess_WildcardPolicy(b *testing.B) {
 		Permissions:     []data.PolicyPermission{data.PermissionRead},
 	}
 
-	createdPolicy, _ := UpsertPolicy(policy)
+	createdPolicy, createErr := UpsertPolicy(policy)
+	if createErr != nil {
+		b.Fatalf("Failed to create the benchmark policy: %v", createErr)
+	}
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -900,19 +902,13 @@ func BenchmarkCheckAccess_WildcardPolicy(b *testing.B) {
 			"test/path", []data.PolicyPermission{data.PermissionRead})
 	}
 
-	_ = DeletePolicy(createdPolicy.Name)
+	if deleteErr := DeletePolicy(createdPolicy.Name); deleteErr != nil {
+		b.Errorf("Failed to clean up policy: %v", deleteErr)
+	}
 }
 
 func BenchmarkUpsertPolicy(b *testing.B) {
-	original := os.Getenv(env.NexusBackendStore)
-	_ = os.Setenv(env.NexusBackendStore, "memory")
-	defer func() {
-		if original != "" {
-			_ = os.Setenv(env.NexusBackendStore, original)
-		} else {
-			_ = os.Unsetenv(env.NexusBackendStore)
-		}
-	}()
+	b.Setenv(env.NexusBackendStore, "memory")
 
 	resetBackendForTest()
 	persist.InitializeBackend(nil)
@@ -928,27 +924,24 @@ func BenchmarkUpsertPolicy(b *testing.B) {
 			Permissions:     []data.PolicyPermission{data.PermissionRead},
 		}
 
-		createdPolicy, _ := UpsertPolicy(policy)
+		createdPolicy, createErr := UpsertPolicy(policy)
+		if createErr != nil {
+			b.Fatalf("Failed to create policy %d: %v", i, createErr)
+		}
 		createdPolicies = append(createdPolicies, createdPolicy.Name)
 	}
 	b.StopTimer()
 
 	// Clean up
 	for _, id := range createdPolicies {
-		_ = DeletePolicy(id)
+		if deleteErr := DeletePolicy(id); deleteErr != nil {
+			b.Errorf("Failed to clean up policy %s: %v", id, deleteErr)
+		}
 	}
 }
 
 func BenchmarkListPolicies(b *testing.B) {
-	original := os.Getenv(env.NexusBackendStore)
-	_ = os.Setenv(env.NexusBackendStore, "memory")
-	defer func() {
-		if original != "" {
-			_ = os.Setenv(env.NexusBackendStore, original)
-		} else {
-			_ = os.Unsetenv(env.NexusBackendStore)
-		}
-	}()
+	b.Setenv(env.NexusBackendStore, "memory")
 
 	resetBackendForTest()
 	persist.InitializeBackend(nil)
@@ -962,18 +955,25 @@ func BenchmarkListPolicies(b *testing.B) {
 			PathPattern:     ".*",
 			Permissions:     []data.PolicyPermission{data.PermissionRead},
 		}
-		createdPolicy, _ := UpsertPolicy(policy)
+		createdPolicy, createErr := UpsertPolicy(policy)
+		if createErr != nil {
+			b.Fatalf("Failed to create policy %d: %v", i, createErr)
+		}
 		createdPolicies = append(createdPolicies, createdPolicy.Name)
 	}
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		_, _ = ListPolicies()
+		if _, listErr := ListPolicies(); listErr != nil {
+			b.Fatalf("Failed to list policies: %v", listErr)
+		}
 	}
 	b.StopTimer()
 
 	// Clean up
 	for _, id := range createdPolicies {
-		_ = DeletePolicy(id)
+		if deleteErr := DeletePolicy(id); deleteErr != nil {
+			b.Errorf("Failed to clean up policy %s: %v", id, deleteErr)
+		}
 	}
 }

@@ -182,8 +182,9 @@ proper restoration.
   storage tool, like a password manager.
 * **Access Control**: Strictly limit access to the `recover` and `restore` roles
 * **Documentation**: Maintain secure documentation of recovery procedures
-* **Testing**: Regularly test the recovery process in non-production environments
-* **Multiple Administrators**: Distribute recovery shards among multiple trusted 
+* **Testing**: Regularly test the recovery process in non-production
+  environments
+* **Multiple Administrators**: Distribute recovery shards among multiple trusted
   administrators
 
 ## Security Considerations

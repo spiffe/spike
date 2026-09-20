@@ -61,7 +61,8 @@ export SPIKE_NEXUS_BACKEND_STORE=sqlite   # or: lite | memory
   and you just need SPIKE to encrypt/decrypt with a SPIFFE-gated key. See
   [Using SPIKE as an encryption service](/recipes/encryption-as-a-service/).
 - For `sqlite`, point `SPIKE_NEXUS_DATA_DIR` at durable, access-controlled
-  storage and back it up. See [Backup and restore](/recipes/backup-and-restore/).
+  storage and back it up. See
+  [Backup and restore](/recipes/backup-and-restore/).
 
 ## Pitfalls
 
@@ -80,7 +81,8 @@ export SPIKE_NEXUS_BACKEND_STORE=sqlite   # or: lite | memory
 ## Cross-Links
 
 - [Bootstrapping a fresh SPIKE](/recipes/bootstrapping-spike/)
-- [Where the root key lives: keepers, Shamir, and recovery](/recipes/root-key-keepers-recovery/)
+- [Where the root key lives: keepers, Shamir, and
+  recovery](/recipes/root-key-keepers-recovery/)
 - [Using SPIKE as an encryption service](/recipes/encryption-as-a-service/)
 - Reference: [Configuration](/usage/configuration/) ·
   Architecture: [System overview](/architecture/system-overview/)

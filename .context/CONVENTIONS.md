@@ -15,6 +15,7 @@ DO NOT UPDATE FOR:
 
 ## Naming
 
+- Exported and unexported functions never share a file
 - **Constants use semantic prefixes**: Group related constants with prefixes
   - `Dir*` for directories (`DirContext`, `DirArchive`)
   - `File*` for file paths (`FileSettings`, `FileClaudeMd`)
@@ -28,7 +29,8 @@ DO NOT UPDATE FOR:
 
 ## Patterns
 
-- **Centralize magic strings**: All repeated literals belong in a `config` or `constants` package
+- **Centralize magic strings**: All repeated literals belong in a `config` or
+  `constants` package
   - If a string appears in 3+ files, it needs a constant
   - If a string is used for comparison, it needs a constant
 - **Path construction**: Always use stdlib path joining
@@ -37,7 +39,7 @@ DO NOT UPDATE FOR:
   - Node: `path.join(dir, file)`
   - Never: `dir + "/" + file`
 - **Constants reference constants**: Self-referential definitions
-  - `FileType[UpdateTypeTask] = FilenameTask` not `FileType["task"] = "TASKS.md"`
+- `FileType[UpdateTypeTask] = FilenameTask` not `FileType["task"] = "TASKS.md"`
 - **Colocate related code**: Group by feature, not by type
   - `session/run.go`, `session/types.go`, `session/parse.go`
   - Not: `runners/session.go`, `types/session.go`, `parsers/session.go`
@@ -47,7 +49,8 @@ DO NOT UPDATE FOR:
 - **Colocate tests**: Test files live next to source files
   - `foo.go` → `foo_test.go` in same package
   - Not a separate `tests/` folder
-- **Test the unit, not the file**: One test file can test multiple related functions
+- **Test the unit, not the file**: One test file can test multiple related
+  functions
 - **Integration tests are separate**: `cli_test.go` for end-to-end binary tests
 
 ## Documentation
@@ -66,5 +69,6 @@ DO NOT UPDATE FOR:
   //   - Type: Description of return value
   func FunctionName(param1, param2 string) error
   ```
-- **Package doc in doc.go**: Each package gets a `doc.go` with package-level documentation
+- **Package doc in doc.go**: Each package gets a `doc.go` with package-level
+  documentation
 - **Copyright headers**: All source files get the project copyright header

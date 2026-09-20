@@ -8,23 +8,56 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 
 	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 )
 
+// closeOnce returns a cleanup function that closes the given closer the
+// first time it is called and reports the close error. Later calls are
+// no-ops that return nil, so callers may invoke the cleanup more than once.
+// A nil closer yields a cleanup that never does anything; this is how stdin
+// and stdout are protected from being closed.
+//
+// Parameters:
+//   - c: The closer to close, or nil for a cleanup that does nothing
+//   - sentinel: The SDK error to wrap a failed close in
+//   - what: A short description of the resource, used in the error message
+//
+// Returns:
+//   - func() *sdkErrors.SDKError: The cleanup function; it returns the
+//     wrapped close error on the first call if the close fails, and nil
+//     otherwise
+func closeOnce(
+	c io.Closer, sentinel *sdkErrors.SDKError, what string,
+) func() *sdkErrors.SDKError {
+	closed := false
+	return func() *sdkErrors.SDKError {
+		if c == nil || closed {
+			return nil
+		}
+		closed = true
+		if err := c.Close(); err != nil {
+			failErr := sentinel.Wrap(err)
+			failErr.Msg = fmt.Sprintf("failed to close %s", what)
+			return failErr
+		}
+		return nil
+	}
+}
+
 // openInput opens a file for reading or returns stdin if no file is
-// specified. The returned closer should be called to clean up resources.
+// specified. The returned cleanup function must be called to release the
+// file, and its error must be handled.
 //
 // Parameters:
 //   - inFile: Input file path (empty string means stdin)
 //
 // Returns:
 //   - io.ReadCloser: Reader for the input source
-//   - func(): Cleanup function to close the file (safe to call always)
-//   - error: File opening errors
-//
-// The cleanup function is safe to call even if stdin is used (it will only
-// close actual files, not stdin).
+//   - func() *sdkErrors.SDKError: Cleanup function that closes the file
+//     (safe to call more than once; it never closes stdin)
+//   - *sdkErrors.SDKError: File opening errors
 //
 // Example usage:
 //
@@ -32,45 +65,45 @@ import (
 //	if err != nil {
 //	    return err
 //	}
-//	defer cleanup()
-func openInput(inFile string) (io.ReadCloser, func(), *sdkErrors.SDKError) {
-	var in io.ReadCloser
-
-	if inFile != "" {
-		f, err := os.Open(inFile)
-		if err != nil {
-			failErr := sdkErrors.ErrFSFileOpenFailed.Wrap(err)
-			failErr.Msg = fmt.Sprintf("failed to open input file: %s", inFile)
-			return nil, func() {}, failErr
-		}
-		in = f
-	} else {
-		in = os.Stdin
+//	defer func() {
+//	    if closeErr := cleanup(); closeErr != nil && err == nil {
+//	        err = closeErr
+//	    }
+//	}()
+func openInput(
+	inFile string,
+) (io.ReadCloser, func() *sdkErrors.SDKError, *sdkErrors.SDKError) {
+	if inFile == "" {
+		return os.Stdin, closeOnce(nil, nil, ""), nil
 	}
 
-	cleanup := func() {
-		if in != os.Stdin {
-			// Best-effort close; nothing actionable if it fails.
-			_ = in.Close()
-		}
+	// The path is supplied by the operator on the command line; cleaning
+	// it normalizes separators and removes redundant elements.
+	f, err := os.Open(filepath.Clean(inFile))
+	if err != nil {
+		failErr := sdkErrors.ErrFSFileOpenFailed.Wrap(err)
+		failErr.Msg = fmt.Sprintf("failed to open input file: %s", inFile)
+		return nil, closeOnce(nil, nil, ""), failErr
 	}
 
-	return in, cleanup, nil
+	return f, closeOnce(
+		f, sdkErrors.ErrFSFileCloseFailed, "input file "+inFile,
+	), nil
 }
 
 // openOutput creates a file for writing or returns stdout if no file is
-// specified. The returned closer should be called to clean up resources.
+// specified. The returned cleanup function must be called to release the
+// file, and its error must be handled: a failed close on an output file can
+// mean that not all of the written data reached the disk.
 //
 // Parameters:
 //   - outFile: Output file path (empty string means stdout)
 //
 // Returns:
 //   - io.Writer: Writer for the output destination
-//   - func(): Cleanup function to close the file (safe to call always)
+//   - func() *sdkErrors.SDKError: Cleanup function that closes the file
+//     (safe to call more than once; it never closes stdout)
 //   - *sdkErrors.SDKError: File creation errors
-//
-// The cleanup function is safe to call even if stdout is used (it will only
-// close actual files, not stdout).
 //
 // Example usage:
 //
@@ -78,32 +111,30 @@ func openInput(inFile string) (io.ReadCloser, func(), *sdkErrors.SDKError) {
 //	if err != nil {
 //	    return err
 //	}
-//	defer cleanup()
-func openOutput(outFile string) (io.Writer, func(), *sdkErrors.SDKError) {
-	var out io.Writer
-	var outCloser io.Closer
-
-	if outFile != "" {
-		f, err := os.Create(outFile)
-		if err != nil {
-			// Using ErrFSFileOpenFailed for file creation errors as well,
-			// since it represents file access failures in general
-			failErr := sdkErrors.ErrFSFileOpenFailed.Wrap(err)
-			failErr.Msg = fmt.Sprintf("failed to create output file: %s", outFile)
-			return nil, func() {}, failErr
-		}
-		out = f
-		outCloser = f
-	} else {
-		out = os.Stdout
+//	defer func() {
+//	    if closeErr := cleanup(); closeErr != nil && err == nil {
+//	        err = closeErr
+//	    }
+//	}()
+func openOutput(
+	outFile string,
+) (io.Writer, func() *sdkErrors.SDKError, *sdkErrors.SDKError) {
+	if outFile == "" {
+		return os.Stdout, closeOnce(nil, nil, ""), nil
 	}
 
-	cleanup := func() {
-		if outCloser != nil {
-			// Best-effort close; nothing actionable if it fails.
-			_ = outCloser.Close()
-		}
+	// The path is supplied by the operator on the command line; cleaning
+	// it normalizes separators and removes redundant elements.
+	f, err := os.Create(filepath.Clean(outFile))
+	if err != nil {
+		// ErrFSFileOpenFailed covers file creation as well, since it
+		// represents file access failures in general.
+		failErr := sdkErrors.ErrFSFileOpenFailed.Wrap(err)
+		failErr.Msg = fmt.Sprintf("failed to create output file: %s", outFile)
+		return nil, closeOnce(nil, nil, ""), failErr
 	}
 
-	return out, cleanup, nil
+	return f, closeOnce(
+		f, sdkErrors.ErrFSFileCloseFailed, "output file "+outFile,
+	), nil
 }

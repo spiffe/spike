@@ -1,9 +1,31 @@
+# Since chart 0.30.0 the OIDC discovery provider advertises a fixed JWT
+# issuer (default https://oidc-discovery.<trust domain>), and its discovery
+# document points jwks_uri at that host. Nothing inside the cluster resolves
+# it, so MinIO's provisioning ("mc idp openid add") cannot fetch the signing
+# keys and fails. Pinning the issuer to the in-cluster provider URL makes
+# the token issuer, the discovery issuer and the keys endpoint agree; the
+# provider allows the http scheme (allow_insecure_scheme is on by default).
+global:
+  spire:
+    jwtIssuer: http://spire-spiffe-oidc-discovery-provider.spire-server
+
 spire-server:
   enabled: true
   controllerManager:
     enabled: true
     identities:
       clusterSPIFFEIDs:
+        # Since chart 0.30.x the SPIKE identities are not enabled by default;
+        # without these, Nexus, Keeper, Pilot and the bootstrap hook get no
+        # SVID and never come up.
+        spike-nexus:
+          enabled: true
+        spike-keeper:
+          enabled: true
+        spike-pilot:
+          enabled: true
+        spike-bootstrap:
+          enabled: true
         test-spike-lite:
           labels:
             app.kubernetes.io/instance: test
@@ -25,11 +47,15 @@ spire-server:
       enabled: true
       jwt:
         expression: |
-          spire.plugin.server.credentialcomposer.v1.ComposeWorkloadJWTSVIDResponse{
-            attributes: spire.plugin.server.credentialcomposer.v1.JWTSVIDAttributes{
+          spire.plugin.server.credentialcomposer.v1
+            .ComposeWorkloadJWTSVIDResponse{
+            attributes: spire.plugin.server.credentialcomposer.v1
+              .JWTSVIDAttributes{
               claims: request.attributes.claims.mapOverrideEntries(
-                request.spiffe_id.startsWith(spiffe_trust_domain + "/minio/")?
-                  {'groups': [request.spiffe_id.substring(spiffe_trust_domain.size() + 7)]}:
+                request.spiffe_id.startsWith(
+                  spiffe_trust_domain + "/minio/")?
+                  {'groups': [request.spiffe_id.substring(
+                    spiffe_trust_domain.size() + 7)]}:
                   {}
               )
             }
@@ -57,23 +83,6 @@ spike-keeper:
   image:
     pullPolicy: Never
     tag: dev
-  extraInitContainers:
-    - name: wait-for-spire
-      image: cgr.dev/chainguard/bash:latest
-      command:
-        - /bin/bash
-        - -c
-        - |
-          echo "Waiting for SPIRE agent socket..."
-          while [ ! -S /spiffe-workload-api/spire-agent.sock ]; do
-            echo "Socket not found, waiting..."
-            sleep 2
-          done
-          echo "SPIRE agent socket is ready"
-      volumeMounts:
-        - name: spiffe-workload-api
-          mountPath: /spiffe-workload-api
-          readOnly: true
 
 spike-nexus:
   enabled: true
@@ -81,20 +90,9 @@ spike-nexus:
     pullPolicy: Never
     tag: dev
   backendStore: lite
-  extraInitContainers:
-    - name: wait-for-spire
-      image: cgr.dev/chainguard/bash:latest
-      command:
-        - /bin/bash
-        - -c
-        - |
-          echo "Waiting for SPIRE agent socket..."
-          while [ ! -S /spiffe-workload-api/spire-agent.sock ]; do
-            echo "Socket not found, waiting..."
-            sleep 2
-          done
-          echo "SPIRE agent socket is ready"
-      volumeMounts:
-        - name: spiffe-workload-api
-          mountPath: /spiffe-workload-api
-          readOnly: true
+  # The chart's post-install bootstrap hook runs this image; it is the dev
+  # build loaded into kind, so the bootstrap image is under test too.
+  bootstrap:
+    image:
+      pullPolicy: Never
+      tag: dev

@@ -11,11 +11,13 @@ import (
 )
 
 const (
-	nonceFieldSecretMetadataCurrentVersion string = "secret_metadata.current_version"
-	nonceFieldSecretMetadataOldestVersion  string = "secret_metadata.oldest_version"
-	nonceFieldSecretMetadataCreatedTime    string = "secret_metadata.created_time"
-	nonceFieldSecretMetadataUpdatedTime    string = "secret_metadata.updated_time"
-	nonceFieldSecretMetadataMaxVersions    string = "secret_metadata.max_versions"
+	nonceFieldSecretMetadataCurrentVersion string = "secret_metadata." +
+		"current_version"
+	nonceFieldSecretMetadataOldestVersion string = "secret_metadata." +
+		"oldest_version"
+	nonceFieldSecretMetadataCreatedTime string = "secret_metadata.created_time"
+	nonceFieldSecretMetadataUpdatedTime string = "secret_metadata.updated_time"
+	nonceFieldSecretMetadataMaxVersions string = "secret_metadata.max_versions"
 )
 
 // fieldNonceSalts are fixed per-field salts (must match AES-GCM nonce size).
@@ -43,7 +45,9 @@ var fieldNonceSalts = map[string][]byte{
 //   - *sdkErrors.SDKError: An error if the field is unknown
 //     (ErrEntityInvalid) or if the nonce size does not match
 //     (ErrCryptoNonceSizeMismatch). Returns nil on success.
-func deriveFieldNonce(baseNonce []byte, field string) ([]byte, *sdkErrors.SDKError) {
+func deriveFieldNonce(
+	baseNonce []byte, field string,
+) ([]byte, *sdkErrors.SDKError) {
 	salt, ok := fieldNonceSalts[field]
 	if !ok {
 		failErr := *sdkErrors.ErrEntityInvalid.Clone()

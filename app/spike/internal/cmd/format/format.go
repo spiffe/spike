@@ -60,9 +60,15 @@ func AddFormatFlag(cmd *cobra.Command) {
 //
 // Returns:
 //   - OutputFormat: The parsed output format
-//   - error: An error if the format is invalid
+//   - error: An error if the flag cannot be read or the format is
+//     invalid
 func GetFormat(cmd *cobra.Command) (OutputFormat, error) {
-	formatStr, _ := cmd.Flags().GetString("format")
+	formatStr, flagErr := cmd.Flags().GetString("format")
+	if flagErr != nil {
+		return Human, fmt.Errorf(
+			"failed to read the --format flag: %w", flagErr,
+		)
+	}
 	return ParseFormat(formatStr)
 }
 

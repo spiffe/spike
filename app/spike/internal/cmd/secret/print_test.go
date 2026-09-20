@@ -5,12 +5,10 @@
 package secret
 
 import (
-	"bytes"
 	"strings"
 	"testing"
 	"time"
 
-	"github.com/spf13/cobra"
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 )
 
@@ -50,14 +48,6 @@ func TestFormatTime(t *testing.T) {
 			}
 		})
 	}
-}
-
-// createTestCommandWithBuffer creates a command with a captured output buffer.
-func createTestCommandWithBuffer() (*cobra.Command, *bytes.Buffer) {
-	buf := &bytes.Buffer{}
-	cmd := &cobra.Command{Use: "test"}
-	cmd.SetOut(buf)
-	return cmd, buf
 }
 
 func TestPrintSecretResponse_EmptyMetadata(t *testing.T) {

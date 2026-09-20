@@ -6,6 +6,7 @@ package policy
 
 import (
 	"context"
+	"errors"
 
 	"github.com/spf13/cobra"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
@@ -98,32 +99,35 @@ func newPolicyGetCommand(
         - A policy name with the --name flag: spike policy get --name=my-policy
 
         Use --format=json to get the output in JSON format.`,
-		Run: func(c *cobra.Command, args []string) {
+		RunE: func(c *cobra.Command, args []string) error {
 			spiffeid.IsPilotOperatorOrDie(SPIFFEID)
 
 			api := spike.NewWithSource(source)
 
-			// TODO: Issue #250 - Using name as primary identifier.
-			// The SDK still uses 'id' field in the API call.
-			policyName, err := sendGetPolicyNameRequest(c, args, api)
-			if stdout.HandleAPIError(c, err) {
-				return
+			// Policies are identified by name. The SDK method still calls its
+			// parameter "id", but the value it expects is the policy name.
+			policyName, nameErr := sendGetPolicyNameRequest(c, args, api)
+			if nameErr != nil {
+				return stdout.APIError(c, nameErr)
 			}
 
 			ctx := context.Background()
 
 			policy, apiErr := api.GetPolicy(ctx, policyName)
-			if stdout.HandleAPIError(c, apiErr) {
-				return
+			if apiErr != nil {
+				return stdout.APIError(c, apiErr)
 			}
 
 			if policy == nil {
-				c.PrintErrln("Error: Empty response from server.")
-				return
+				return errors.New("empty response from server")
 			}
 
-			output := formatPolicy(c, policy)
+			output, formatErr := formatPolicy(c, policy)
+			if formatErr != nil {
+				return formatErr
+			}
 			c.Println(output)
+			return nil
 		},
 	}
 

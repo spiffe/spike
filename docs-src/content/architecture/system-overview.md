@@ -212,7 +212,7 @@ breach the system, as a single shard is not enough to reconstruct the
 root key.
 
 The system's security can be tuned by configuring both the total number of 
-**SPIKE Keepers** and the **threshold** of required shards needed to reconstruct 
+**SPIKE Keepers** and the **threshold** of required shards needed to reconstruct
 the root key. 
 
 During system bootstrapping, **SPIKE Nexus** distributes these shards to the 
@@ -391,7 +391,8 @@ You can open the picture on a new tab for an enlarged version of it.
 
 > **Run `spike operator recover` as Soon as You Can**
 > 
-> You must back up the **root key** shards using `spike operator recover` **BEFORE** a 
+> You must back up the **root key** shards using `spike operator recover`
+> **BEFORE** a
 > disaster strikes.
 >
 > This is like having a spare key stored in a safe place before you lose your 
@@ -421,7 +422,8 @@ When disaster strikes:
 * Thus, automatic recovery is impossible and the system requires manual 
   recovery.
 
-In that case, the Operator uses `spike operator restore` to provide the previously 
+In that case, the Operator uses `spike operator restore` to provide the
+previously
 backed-up shards one at a time
 
 * **SPIKE Pilot** forwards the entered shard to **SPIKE Nexus**

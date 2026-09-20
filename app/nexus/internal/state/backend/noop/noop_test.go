@@ -54,7 +54,9 @@ func TestNoopStore_InitializeWithCancelledContext(t *testing.T) {
 	err := store.Initialize(ctx)
 
 	if err != nil {
-		t.Errorf("Initialize should return nil even with cancelled context, got: %v", err)
+		t.Errorf(
+			"Initialize should return nil even with cancelled context, got: %v", err,
+		)
 	}
 }
 
@@ -89,7 +91,9 @@ func TestNoopStore_CloseWithCancelledContext(t *testing.T) {
 	err := store.Close(ctx)
 
 	if err != nil {
-		t.Errorf("Close should return nil even with cancelled context, got: %v", err)
+		t.Errorf(
+			"Close should return nil even with cancelled context, got: %v", err,
+		)
 	}
 }
 
@@ -105,7 +109,10 @@ func TestNoopStore_LoadSecret(t *testing.T) {
 		{"simple path", "simple"},
 		{"nested path", "app/database/credentials"},
 		{"path with special chars", "app/service-1/api_key"},
-		{"very long path", "very/long/path/that/goes/deep/into/the/hierarchy/with/many/segments"},
+		{
+			"very long path",
+			"very/long/path/that/goes/deep/into/the/hierarchy/with/many/segments",
+		},
 	}
 
 	for _, tt := range tests {
@@ -131,11 +138,15 @@ func TestNoopStore_LoadSecretWithTimeout(t *testing.T) {
 	secret, err := store.LoadSecret(ctx, "test/path")
 
 	if err != nil {
-		t.Errorf("LoadSecret should return nil error even with timeout, got: %v", err)
+		t.Errorf(
+			"LoadSecret should return nil error even with timeout, got: %v", err,
+		)
 	}
 
 	if secret != nil {
-		t.Errorf("LoadSecret should return nil secret even with timeout, got: %v", secret)
+		t.Errorf(
+			"LoadSecret should return nil secret even with timeout, got: %v", secret,
+		)
 	}
 }
 
@@ -162,11 +173,16 @@ func TestNoopStore_LoadAllSecretsWithTimeout(t *testing.T) {
 	secrets, err := store.LoadAllSecrets(ctx)
 
 	if err != nil {
-		t.Errorf("LoadAllSecrets should return nil error even with timeout, got: %v", err)
+		t.Errorf(
+			"LoadAllSecrets should return nil error even with timeout, got: %v", err,
+		)
 	}
 
 	if secrets != nil {
-		t.Errorf("LoadAllSecrets should return nil map even with timeout, got: %v", secrets)
+		t.Errorf(
+			"LoadAllSecrets should return nil map even with timeout, got: %v",
+			secrets,
+		)
 	}
 }
 
@@ -190,7 +206,9 @@ func TestNoopStore_StoreSecret(t *testing.T) {
 			secret: kv.Value{
 				Versions: map[int]kv.Version{
 					1: {
-						Data:    map[string]string{"username": "admin", "password": "secret"},
+						Data: map[string]string{
+							"username": "admin", "password": "secret",
+						},
 						Version: 1,
 					},
 				},
@@ -283,11 +301,15 @@ func TestNoopStore_LoadPolicyWithTimeout(t *testing.T) {
 	policy, err := store.LoadPolicy(ctx, "test-policy")
 
 	if err != nil {
-		t.Errorf("LoadPolicy should return nil error even with timeout, got: %v", err)
+		t.Errorf(
+			"LoadPolicy should return nil error even with timeout, got: %v", err,
+		)
 	}
 
 	if policy != nil {
-		t.Errorf("LoadPolicy should return nil policy even with timeout, got: %v", policy)
+		t.Errorf(
+			"LoadPolicy should return nil policy even with timeout, got: %v", policy,
+		)
 	}
 }
 
@@ -314,11 +336,16 @@ func TestNoopStore_LoadAllPoliciesWithTimeout(t *testing.T) {
 	policies, err := store.LoadAllPolicies(ctx)
 
 	if err != nil {
-		t.Errorf("LoadAllPolicies should return nil error even with timeout, got: %v", err)
+		t.Errorf(
+			"LoadAllPolicies should return nil error even with timeout, got: %v", err,
+		)
 	}
 
 	if policies != nil {
-		t.Errorf("LoadAllPolicies should return nil map even with timeout, got: %v", policies)
+		t.Errorf(
+			"LoadAllPolicies should return nil map even with timeout, got: %v",
+			policies,
+		)
 	}
 }
 
@@ -351,7 +378,9 @@ func TestNoopStore_StorePolicy(t *testing.T) {
 				Name:            "Admin Policy",
 				SPIFFEIDPattern: "^spiffe://example\\.org/admin/.*$",
 				PathPattern:     "^admin/secret/.*$",
-				Permissions:     []data.PolicyPermission{data.PermissionRead, data.PermissionWrite, data.PermissionList},
+				Permissions: []data.PolicyPermission{
+					data.PermissionRead, data.PermissionWrite, data.PermissionList,
+				},
 			},
 		},
 	}
@@ -448,13 +477,18 @@ func TestNoopStore_ConcurrentOperations(t *testing.T) {
 			defer wg.Done()
 
 			// Test all methods concurrently
-			_ = store.Initialize(ctx)
-			_ = store.Close(ctx)
-			_, _ = store.LoadSecret(ctx, "concurrent/secret")
-			_, _ = store.LoadAllSecrets(ctx)
-			_, _ = store.LoadPolicy(ctx, "concurrent-policy")
-			_, _ = store.LoadAllPolicies(ctx)
-			_ = store.DeletePolicy(ctx, "concurrent-delete")
+			expectNoError(t, "Initialize", store.Initialize(ctx))
+			expectNoError(t, "Close", store.Close(ctx))
+			_, loadSecretErr := store.LoadSecret(ctx, "concurrent/secret")
+			expectNoError(t, "LoadSecret", loadSecretErr)
+			_, loadAllSecretsErr := store.LoadAllSecrets(ctx)
+			expectNoError(t, "LoadAllSecrets", loadAllSecretsErr)
+			_, loadPolicyErr := store.LoadPolicy(ctx, "concurrent-policy")
+			expectNoError(t, "LoadPolicy", loadPolicyErr)
+			_, loadAllPoliciesErr := store.LoadAllPolicies(ctx)
+			expectNoError(t, "LoadAllPolicies", loadAllPoliciesErr)
+			expectNoError(t, "DeletePolicy",
+				store.DeletePolicy(ctx, "concurrent-delete"))
 			store.GetCipher()
 
 			// Store operations
@@ -466,7 +500,8 @@ func TestNoopStore_ConcurrentOperations(t *testing.T) {
 					},
 				},
 			}
-			_ = store.StoreSecret(ctx, "concurrent/test", secret)
+			expectNoError(t, "StoreSecret",
+				store.StoreSecret(ctx, "concurrent/test", secret))
 
 			policy := data.Policy{
 				ID:              "concurrent-policy",
@@ -475,7 +510,7 @@ func TestNoopStore_ConcurrentOperations(t *testing.T) {
 				PathPattern:     "^concurrent/.*$",
 				Permissions:     []data.PolicyPermission{data.PermissionRead},
 			}
-			_ = store.StorePolicy(ctx, policy)
+			expectNoError(t, "StorePolicy", store.StorePolicy(ctx, policy))
 		}(i)
 	}
 
@@ -564,7 +599,9 @@ func TestNoopStore_MultipleInstances(t *testing.T) {
 			// Test cipher
 			cipher := store.GetCipher()
 			if cipher != nil {
-				t.Errorf("GetCipher should return nil on instance %d, got: %v", i, cipher)
+				t.Errorf(
+					"GetCipher should return nil on instance %d, got: %v", i, cipher,
+				)
 			}
 
 			// Close
@@ -591,22 +628,27 @@ func TestNoopStore_StressTest(t *testing.T) {
 		// Mix of all operations
 		switch i % 8 {
 		case 0:
-			_ = store.Initialize(ctx)
+			expectNoError(t, "Initialize", store.Initialize(ctx))
 		case 1:
-			_, _ = store.LoadSecret(ctx, "stress/test")
+			_, loadErr := store.LoadSecret(ctx, "stress/test")
+			expectNoError(t, "LoadSecret", loadErr)
 		case 2:
-			_, _ = store.LoadAllSecrets(ctx)
+			_, loadErr := store.LoadAllSecrets(ctx)
+			expectNoError(t, "LoadAllSecrets", loadErr)
 		case 3:
 			secret := kv.Value{
 				Versions: map[int]kv.Version{
 					1: {Data: map[string]string{"stress": "test"}, Version: 1},
 				},
 			}
-			_ = store.StoreSecret(ctx, "stress/test", secret)
+			expectNoError(t, "StoreSecret",
+				store.StoreSecret(ctx, "stress/test", secret))
 		case 4:
-			_, _ = store.LoadPolicy(ctx, "stress-policy")
+			_, loadErr := store.LoadPolicy(ctx, "stress-policy")
+			expectNoError(t, "LoadPolicy", loadErr)
 		case 5:
-			_, _ = store.LoadAllPolicies(ctx)
+			_, loadErr := store.LoadAllPolicies(ctx)
+			expectNoError(t, "LoadAllPolicies", loadErr)
 		case 6:
 			policy := data.Policy{
 				ID:              "stress-policy",
@@ -615,15 +657,16 @@ func TestNoopStore_StressTest(t *testing.T) {
 				PathPattern:     "^stress/.*$",
 				Permissions:     []data.PolicyPermission{data.PermissionRead},
 			}
-			_ = store.StorePolicy(ctx, policy)
+			expectNoError(t, "StorePolicy", store.StorePolicy(ctx, policy))
 		case 7:
-			_ = store.DeletePolicy(ctx, "stress-policy")
+			expectNoError(t, "DeletePolicy",
+				store.DeletePolicy(ctx, "stress-policy"))
 		}
 	}
 
 	// Final operations
 	store.GetCipher()
-	_ = store.Close(ctx)
+	expectNoError(t, "Close", store.Close(ctx))
 
 	t.Logf("Completed %d stress test operations successfully", numOperations)
 }

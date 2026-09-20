@@ -30,7 +30,8 @@ discuss the future goals of **SPIKE**.
 Everyone is welcome to join the **SPIKE** Contributor Sync:
 
 * **Date & Time:** Last Friday of every month at 8:15 AM (Pacific Time)
-* **Zoom Meeting Link:** [Join Here](https://us06web.zoom.us/j/84996375494?pwd=rmXv0fV2Ej0KVLkJosQlleYaIMrnub.1)
+* **Zoom Meeting Link:**
+  [Join Here](https://us06web.zoom.us/j/84996375494?pwd=rmXv0fV2Ej0KVLkJosQlleYaIMrnub.1)
 * **Meeting ID:** `849 9637 5494`
 * **Passcode:** `965019`
 -->
@@ -39,7 +40,8 @@ Everyone is welcome to join the **SPIKE** Contributor Sync:
 
 Open Source is better together.
 
-[Join **SPIFFE**'s Slack Workspace](https://slack.spiffe.io/) and let us change the
+[Join **SPIFFE**'s Slack Workspace](https://slack.spiffe.io/) and let us change
+the
 world together 🤘.
 
 ## Report a Security Vulnerability

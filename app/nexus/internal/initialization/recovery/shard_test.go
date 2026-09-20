@@ -12,6 +12,8 @@ import (
 	"github.com/spiffe/spike-sdk-go/api/entity/v1/reqres"
 	apiUrl "github.com/spiffe/spike-sdk-go/api/url"
 	"github.com/spiffe/spike-sdk-go/crypto"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
+	"github.com/spiffe/spike-sdk-go/security/mem"
 )
 
 func TestShardURL_ValidInput(t *testing.T) {
@@ -19,71 +21,56 @@ func TestShardURL_ValidInput(t *testing.T) {
 		name           string
 		keeperAPIRoot  string
 		expectedSuffix string
-		shouldBeEmpty  bool
 	}{
-		{
-			name:           "valid HTTP URL",
-			keeperAPIRoot:  "http://example.com",
-			expectedSuffix: string(apiUrl.KeeperShard),
-			shouldBeEmpty:  false,
-		},
 		{
 			name:           "valid HTTPS URL",
 			keeperAPIRoot:  "https://example.com",
 			expectedSuffix: string(apiUrl.KeeperShard),
-			shouldBeEmpty:  false,
 		},
 		{
 			name:           "URL with port",
 			keeperAPIRoot:  "https://example.com:8443",
 			expectedSuffix: string(apiUrl.KeeperShard),
-			shouldBeEmpty:  false,
 		},
 		{
 			name:           "URL with path",
 			keeperAPIRoot:  "https://example.com/api/v1",
 			expectedSuffix: string(apiUrl.KeeperShard),
-			shouldBeEmpty:  false,
 		},
 		{
 			name:           "URL ending with slash",
 			keeperAPIRoot:  "https://example.com/",
 			expectedSuffix: string(apiUrl.KeeperShard),
-			shouldBeEmpty:  false,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := apiUrl.ShardFromKeeperAPIRoot(tt.keeperAPIRoot)
+			result, urlErr := keeperURL(tt.keeperAPIRoot, tt.expectedSuffix)
+			if urlErr != nil {
+				t.Fatalf("Unexpected error for %q: %v", tt.keeperAPIRoot, urlErr)
+				return
+			}
+			if result == "" {
+				t.Error("Expected non-empty result")
+				return
+			}
 
-			if tt.shouldBeEmpty {
-				if result != "" {
-					t.Errorf("Expected empty result, got %s", result)
-				}
-			} else {
-				if result == "" {
-					t.Error("Expected non-empty result")
-					return
-				}
+			// Verify the result contains the keeper API root
+			if !containsBase(result, tt.keeperAPIRoot) {
+				t.Errorf("Result %s should contain base URL %s",
+					result, tt.keeperAPIRoot)
+			}
 
-				// Verify the result contains the keeper API root
-				if !containsBase(result, tt.keeperAPIRoot) {
-					t.Errorf("Result %s should contain base URL %s",
-						result, tt.keeperAPIRoot)
-				}
+			// Verify the result contains the keeper shard path
+			if !containsPath(result, tt.expectedSuffix) {
+				t.Errorf("Result %s should contain path %s",
+					result, tt.expectedSuffix)
+			}
 
-				// Verify the result contains the keeper shard path
-				if !containsPath(result, tt.expectedSuffix) {
-					t.Errorf("Result %s should contain path %s",
-						result, tt.expectedSuffix)
-				}
-
-				// Verify it's a valid URL
-				_, parseErr := url.Parse(result)
-				if parseErr != nil {
-					t.Errorf("Result should be valid URL: %v", parseErr)
-				}
+			// Verify it's a valid URL
+			if _, parseErr := url.Parse(result); parseErr != nil {
+				t.Errorf("Result should be valid URL: %v", parseErr)
 			}
 		})
 	}
@@ -96,29 +83,50 @@ func TestShardURL_InvalidInput(t *testing.T) {
 	}{
 		{
 			name:          "invalid URL with spaces",
-			keeperAPIRoot: "http://example .com",
+			keeperAPIRoot: "https://example .com",
 		},
 		{
 			name:          "invalid URL with newline",
-			keeperAPIRoot: "http://example.com\n",
+			keeperAPIRoot: "https://example.com\n",
 		},
-		//{
-		//	name:          "empty string",
-		//	keeperAPIRoot: "",
-		//},
-		// FIX-ME: keeper API root should not be empty; handle that case.
+		{
+			name:          "empty string",
+			keeperAPIRoot: "",
+		},
+		{
+			name:          "whitespace only",
+			keeperAPIRoot: "   ",
+		},
+		{
+			name:          "plain http is not allowed for mTLS",
+			keeperAPIRoot: "http://example.com",
+		},
+		{
+			name:          "relative path without a scheme",
+			keeperAPIRoot: "not a url",
+		},
+		{
+			name:          "scheme without a host",
+			keeperAPIRoot: "https://",
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := apiUrl.ShardFromKeeperAPIRoot(tt.keeperAPIRoot)
-
-			// Invalid inputs should yield the SDK's parse-error sentinel
-			// rather than a usable URL.
-			const parseErrSentinel = "parseError: Bad Keeper API Root"
-			if result != parseErrSentinel {
-				t.Errorf("Expected parse-error sentinel for invalid input,"+
-					" got %s", result)
+			result, urlErr := keeperURL(
+				tt.keeperAPIRoot, string(apiUrl.KeeperShard),
+			)
+			if urlErr == nil {
+				t.Fatalf("Expected an error for %q, got URL %q",
+					tt.keeperAPIRoot, result)
+				return
+			}
+			if urlErr.Code != sdkErrors.ErrDataInvalidInput.Code {
+				t.Errorf("Expected error code %q, got %q",
+					sdkErrors.ErrDataInvalidInput.Code, urlErr.Code)
+			}
+			if result != "" {
+				t.Errorf("Expected an empty URL on error, got %q", result)
 			}
 		})
 	}
@@ -179,22 +187,32 @@ func TestUnmarshalShardResponse_InvalidInput(t *testing.T) {
 			name: "malformed JSON",
 			data: []byte("{invalid json}"),
 		},
-		//{
-		//	name: "null JSON",
-		//	data: []byte("null"),
-		//},
-		//{
-		//	name: "wrong structure",
-		//	data: []byte(`{"wrong": "structure"}`),
-		//},
-		// FIX-ME: these two cases are legit failures and need to be addressed in the code.
+		{
+			name: "null JSON",
+			data: []byte("null"),
+		},
+		{
+			name: "wrong structure",
+			data: []byte(`{"wrong": "structure"}`),
+		},
+		{
+			name: "keeper error code",
+			data: []byte(`{"Err": "not_found"}`),
+		},
+		{
+			name: "trailing data",
+			data: []byte(`{"shard": null} {}`),
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result, _ := unmarshalShardResponse(tt.data)
+			result, unmarshalErr := unmarshalShardResponse(tt.data)
 
-			// Invalid input should return nil
+			// Invalid input should return an error and a nil result
+			if unmarshalErr == nil {
+				t.Error("Expected an error for invalid input")
+			}
 			if result != nil {
 				t.Errorf("Expected nil result for invalid input, got %+v",
 					result)
@@ -204,9 +222,11 @@ func TestUnmarshalShardResponse_InvalidInput(t *testing.T) {
 }
 
 func TestShardResponse_NetworkDependentFunction(t *testing.T) {
-	// The ShardGetResponse function makes network calls and requires SPIFFE infrastructure
+	// The ShardGetResponse function makes network calls and requires SPIFFE
+	// infrastructure
 	// We skip this test since it would hang or fail without proper setup
-	t.Skip("Skipping ShardGetResponse test - requires SPIFFE source and network connectivity")
+	t.Skip("Skipping ShardGetResponse test - requires SPIFFE source and " +
+		"network connectivity")
 
 	// Note: To properly test this function, you would need to:
 	// 1. Mock the network.CreateMTLSClientWithPredicate function
@@ -237,7 +257,8 @@ func TestShardRequestMarshaling(t *testing.T) {
 	}
 
 	// ShardRequest might be an empty struct, so just verify the process works
-	t.Logf("Successfully marshaled and unmarshaled ShardRequest: %s", string(data))
+	t.Logf("Successfully marshaled and unmarshaled ShardRequest: %s",
+		string(data))
 }
 
 func TestShardResponseStructure(t *testing.T) {
@@ -305,7 +326,8 @@ func TestShardResponseStructure(t *testing.T) {
 					return
 				}
 
-				// Compare shard pointers (they won't be the same after marshal/unmarshal)
+				// Compare shard pointers (they won't be the same after
+				// marshal/unmarshal)
 				if response.Shard != nil && unmarshaled.Shard != nil {
 					// noinspection GoBoolExpressions
 					if len(response.Shard) != len(unmarshaled.Shard) {
@@ -363,13 +385,15 @@ func TestURLJoinPath(t *testing.T) {
 			path:        "api/shard",
 			expectError: false,
 		},
-		//{
-		//	name:        "invalid base URL",
-		//	base:        "not a url",
-		//	path:        "api/shard",
-		//	expectError: true,
-		//},
-		// FIX-ME: this needs fixing.
+		{
+			// An unterminated IPv6 literal cannot be parsed, so the join
+			// fails. A bare string such as "not a url" is a valid relative
+			// path for url.JoinPath and is rejected by keeperURL instead.
+			name:        "invalid base URL",
+			base:        "http://[::1",
+			path:        "api/shard",
+			expectError: true,
+		},
 	}
 
 	for _, tt := range tests {
@@ -447,27 +471,17 @@ func TestCryptoConstants(t *testing.T) {
 	}
 }
 
-// Helper functions for URL testing
-func containsBase(fullURL, base string) bool {
-	// Simple check if the full URL starts with the base
-	// More sophisticated URL comparison could be implemented
-	return len(fullURL) >= len(base) && fullURL[:len(base)] == base
-}
+func TestResetShards_ZeroesAndEmpties(t *testing.T) {
+	first := &[crypto.AES256KeySize]byte{1, 2, 3}
+	second := &[crypto.AES256KeySize]byte{4, 5, 6}
+	shards := map[string]*[crypto.AES256KeySize]byte{"1": first, "2": second}
 
-func containsPath(fullURL, path string) bool {
-	// Simple check if the full URL contains the path
-	// This is a basic implementation for testing purposes
-	parsedURL, err := url.Parse(fullURL)
-	if err != nil {
-		return false
+	resetShards(shards)
+
+	if len(shards) != 0 {
+		t.Errorf("expected an empty map, got %d entries", len(shards))
 	}
-
-	// Clean the path from leading/trailing slashes for comparison
-	cleanPath := path
-	if len(cleanPath) > 0 && cleanPath[0] == '/' {
-		cleanPath = cleanPath[1:]
+	if !mem.Zeroed32(first) || !mem.Zeroed32(second) {
+		t.Error("expected the previous shard buffers to be zeroed")
 	}
-
-	return len(parsedURL.Path) > 0 &&
-		(parsedURL.Path[len(parsedURL.Path)-len(cleanPath):] == cleanPath)
 }

@@ -7,6 +7,8 @@ package secret
 import (
 	"context"
 	"encoding/json"
+	"errors"
+	"fmt"
 
 	"github.com/spf13/cobra"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
@@ -14,6 +16,7 @@ import (
 	"github.com/spiffe/spike-sdk-go/spiffeid"
 	"gopkg.in/yaml.v3"
 
+	"github.com/spiffe/spike/app/spike/internal/cmd/flags"
 	"github.com/spiffe/spike/app/spike/internal/cmd/format"
 	"github.com/spiffe/spike/app/spike/internal/stdout"
 )
@@ -61,52 +64,53 @@ func newSecretMetadataGetCommand(
 		Use:   "get <path>",
 		Short: "Gets secret metadata from the specified path",
 		Args:  cobra.ExactArgs(1),
-		Run: func(cmd *cobra.Command, args []string) {
+		RunE: func(cmd *cobra.Command, args []string) error {
 			spiffeid.IsPilotOperatorOrDie(SPIFFEID)
 
 			outputFormat, formatErr := format.GetFormat(cmd)
 			if formatErr != nil {
-				cmd.PrintErrf("Error: %v\n", formatErr)
-				return
+				return formatErr
 			}
 
 			api := spike.NewWithSource(source)
 
 			path := args[0]
-			version, _ := cmd.Flags().GetInt("version")
+			version, flagErr := flags.Int(cmd, "version")
+			if flagErr != nil {
+				return flagErr
+			}
 
 			ctx := context.Background()
 
-			secret, err := api.GetSecretMetadata(ctx, path, version)
-			if stdout.HandleAPIError(cmd, err) {
-				return
+			secret, apiErr := api.GetSecretMetadata(ctx, path, version)
+			if apiErr != nil {
+				return stdout.APIError(cmd, apiErr)
 			}
 
 			if secret == nil {
-				cmd.Println("Secret not found.")
-				return
+				return errors.New("secret not found")
 			}
 
 			switch outputFormat {
 			case format.JSON:
 				output, marshalErr := json.MarshalIndent(secret, "", "  ")
 				if marshalErr != nil {
-					cmd.PrintErrf("Error formatting output: %v\n", marshalErr)
-					return
+					return fmt.Errorf("failed to format output: %w", marshalErr)
 				}
 				cmd.Println(string(output))
 
 			case format.YAML:
 				output, marshalErr := yaml.Marshal(secret)
 				if marshalErr != nil {
-					cmd.PrintErrf("Error formatting output: %v\n", marshalErr)
-					return
+					return fmt.Errorf("failed to format output: %w", marshalErr)
 				}
 				cmd.Print(string(output))
 
 			default: // format.Human
 				printSecretResponse(cmd, secret)
 			}
+
+			return nil
 		},
 	}
 

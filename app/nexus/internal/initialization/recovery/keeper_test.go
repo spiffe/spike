@@ -5,27 +5,16 @@
 package recovery
 
 import (
-	"os"
-	"strconv"
 	"testing"
 
 	"github.com/spiffe/spike-sdk-go/config/env"
 	"github.com/spiffe/spike-sdk-go/crypto"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 )
 
 func TestIterateKeepersAndInitializeState_MemoryMode(t *testing.T) {
-	// Save original environment variables
-	originalStore := os.Getenv(env.NexusBackendStore)
-	defer func() {
-		if originalStore != "" {
-			_ = os.Setenv(env.NexusBackendStore, originalStore)
-		} else {
-			_ = os.Unsetenv(env.NexusBackendStore)
-		}
-	}()
-
-	// Set to memory mode
-	_ = os.Setenv("SPIKE_NEXUS_BACKEND_STORE", "memory")
+	// Set to memory mode; t.Setenv restores the original value.
+	t.Setenv(env.NexusBackendStore, "memory")
 
 	// Verify the environment is set correctly
 	if env.BackendStoreTypeVal() != env.Memory {
@@ -48,34 +37,12 @@ func TestIterateKeepersAndInitializeState_MemoryMode(t *testing.T) {
 }
 
 func TestIterateKeepersAndInitializeState_NonMemoryMode(t *testing.T) {
-	// Save original environment variables
-	originalStore := os.Getenv(env.NexusBackendStore)
-	originalKeeperPeers := os.Getenv(env.NexusKeeperPeers)
-	originalThreshold := os.Getenv(env.NexusShamirThreshold)
-
-	defer func() {
-		if originalStore != "" {
-			_ = os.Setenv(env.NexusBackendStore, originalStore)
-		} else {
-			_ = os.Unsetenv(env.NexusBackendStore)
-		}
-		if originalKeeperPeers != "" {
-			_ = os.Setenv(env.NexusKeeperPeers, originalKeeperPeers)
-		} else {
-			_ = os.Unsetenv(env.NexusKeeperPeers)
-		}
-		if originalThreshold != "" {
-			_ = os.Setenv(env.NexusShamirThreshold, originalThreshold)
-		} else {
-			_ = os.Unsetenv(env.NexusShamirThreshold)
-		}
-	}()
-
-	// Set to non-memory mode
-	_ = os.Setenv(env.NexusBackendStore, "sqlite")
-	_ = os.Setenv(env.NexusKeeperPeers,
-		"https://keeper1.example.com,https://keeper2.example.com") // Test keepers
-	_ = os.Setenv("SPIKE_NEXUS_SHAMIR_THRESHOLD", "2")
+	// Set to non-memory mode; t.Setenv restores the original values.
+	t.Setenv(env.NexusBackendStore, "sqlite")
+	// Test keepers
+	t.Setenv(env.NexusKeeperPeers,
+		"https://keeper1.example.com,https://keeper2.example.com")
+	t.Setenv(env.NexusShamirThreshold, "2")
 
 	// Verify the environment is set correctly
 	if env.BackendStoreTypeVal() == env.Memory {
@@ -88,7 +55,8 @@ func TestIterateKeepersAndInitializeState_NonMemoryMode(t *testing.T) {
 
 	// Should return false when network calls fail due to the nil source
 	if result {
-		t.Error("Expected false when network calls fail due to nil source/unreachable keepers")
+		t.Error("Expected false when network calls fail due to nil " +
+			"source/unreachable keepers")
 	}
 }
 
@@ -105,18 +73,8 @@ func TestIterateKeepersAndInitializeState_ShardMapHandling(t *testing.T) {
 	}
 	successfulKeeperShards["test-keeper"] = testShard
 
-	// Save the original environment
-	originalStore := os.Getenv(env.NexusBackendStore)
-	defer func() {
-		if originalStore != "" {
-			_ = os.Setenv(env.NexusBackendStore, originalStore)
-		} else {
-			_ = os.Unsetenv(env.NexusBackendStore)
-		}
-	}()
-
-	// Set to memory mode for a quick test
-	_ = os.Setenv(env.NexusBackendStore, "memory")
+	// Set to memory mode for a quick test; t.Setenv restores the original.
+	t.Setenv(env.NexusBackendStore, "memory")
 
 	// The map should not be modified in memory mode
 	originalLen := len(successfulKeeperShards)
@@ -137,36 +95,23 @@ func TestIterateKeepersAndInitializeState_ShardMapHandling(t *testing.T) {
 }
 
 func TestIterateKeepersAndInitializeState_ParameterValidation(t *testing.T) {
-	// Save the original environment
-	originalStore := os.Getenv(env.NexusBackendStore)
-	originalKeeperPeers := os.Getenv(env.NexusKeeperPeers)
-	defer func() {
-		if originalStore != "" {
-			_ = os.Setenv(env.NexusBackendStore, originalStore)
-		} else {
-			_ = os.Unsetenv(env.NexusBackendStore)
-		}
-		if originalKeeperPeers != "" {
-			_ = os.Setenv(env.NexusKeeperPeers, originalKeeperPeers)
-		} else {
-			_ = os.Unsetenv(env.NexusKeeperPeers)
-		}
-	}()
-
-	// Set to memory mode for testing
-	_ = os.Setenv(env.NexusBackendStore, "memory")
+	// Set to memory mode for testing; t.Setenv restores the originals.
+	t.Setenv(env.NexusBackendStore, "memory")
 
 	// Test with a nil source (should work in memory mode)
-	result := iterateKeepersAndInitializeState(nil, make(map[string]*[crypto.AES256KeySize]byte))
+	result := iterateKeepersAndInitializeState(
+		nil, make(map[string]*[crypto.AES256KeySize]byte),
+	)
 	if !result {
 		t.Error("Should work with nil source in memory mode")
 	}
 
-	_ = os.Setenv(env.NexusBackendStore, "sqlite")
-	_ = os.Setenv(env.NexusKeeperPeers, "https://localhost:8443")
+	t.Setenv(env.NexusBackendStore, "sqlite")
+	t.Setenv(env.NexusKeeperPeers, "https://localhost:8443")
 
 	// Test with a nil shards map (should not panic, just return false)
-	// The function gracefully handles nil maps by never reaching code that would panic
+	// The function gracefully handles nil maps by never reaching code that
+	// would panic
 	// since network calls will fail and no shards will be processed
 	result2 := iterateKeepersAndInitializeState(nil, nil)
 	if result2 {
@@ -196,7 +141,8 @@ func TestShamirShardStructure(t *testing.T) {
 
 	// noinspection GoBoolExpressions
 	if len(shard.Value) != crypto.AES256KeySize {
-		t.Errorf("Expected shard value size %d, got %d", crypto.AES256KeySize, len(shard.Value))
+		t.Errorf("Expected shard value size %d, got %d",
+			crypto.AES256KeySize, len(shard.Value))
 	}
 
 	// Verify data integrity
@@ -208,7 +154,8 @@ func TestShamirShardStructure(t *testing.T) {
 }
 
 func TestShamirShardSliceHandling(t *testing.T) {
-	// Test creating and manipulating slices of ShamirShard (as done in the function)
+	// Test creating and manipulating slices of ShamirShard (as done in the
+	// function)
 	shards := make([]crypto.ShamirShard, 0)
 
 	// Add some test shards
@@ -244,43 +191,49 @@ func TestShamirShardSliceHandling(t *testing.T) {
 		// Check the first byte of data (should be unique per shard)
 		expectedFirstByte := byte(i)
 		if shard.Value[0] != expectedFirstByte {
-			t.Errorf("Shard %d: expected first byte %d, got %d", i, expectedFirstByte, shard.Value[0])
+			t.Errorf("Shard %d: expected first byte %d, got %d",
+				i, expectedFirstByte, shard.Value[0])
 		}
 	}
 }
 
 func TestKeeperIDConversion(t *testing.T) {
-	// Test the string-to-integer conversion logic used in the function
+	// Test the keeper ID to share index conversion used by the recovery
+	// and shard distribution paths. Only positive integers are valid share
+	// indices.
 	tests := []struct {
 		name      string
 		keeperID  string
 		expectErr bool
-		expected  int
+		expected  uint64
 	}{
 		{"valid numeric ID", "123", false, 123},
 		{"single digit", "5", false, 5},
-		{"zero", "0", false, 0},
 		{"large number", "999999", false, 999999},
+		{"zero", "0", true, 0},
+		{"negative number", "-1", true, 0},
 		{"invalid non-numeric", "abc", true, 0},
 		{"empty string", "", true, 0},
 		{"mixed alphanumeric", "123abc", true, 0},
-		// {"negative number", "-1", true, 0}, // strconv.Atoi would handle this, but depends on requirements
-		// FIX-ME: keeper ids need to be stricter. add validation logic to the code.
-		// Maybe a better sanitization before the code even gets there.
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// This simulates the conversion done in iterateKeepersAndInitializeState
-			result, err := convertKeeperID(tt.keeperID)
+			result, err := parseKeeperID(tt.keeperID)
 
 			if tt.expectErr {
 				if err == nil {
-					t.Errorf("Expected error for keeper ID '%s', but got none", tt.keeperID)
+					t.Errorf("Expected error for keeper ID '%s', but got none",
+						tt.keeperID)
+					return
+				}
+				if !err.Is(sdkErrors.ErrDataInvalidInput) {
+					t.Errorf("Expected ErrDataInvalidInput, got %v", err)
 				}
 			} else {
 				if err != nil {
-					t.Errorf("Unexpected error for keeper ID '%s': %v", tt.keeperID, err)
+					t.Errorf("Unexpected error for keeper ID '%s': %v",
+						tt.keeperID, err)
 				}
 				if result != tt.expected {
 					t.Errorf("Expected result %d, got %d", tt.expected, result)
@@ -350,46 +303,23 @@ func TestShardMapOperations(t *testing.T) {
 	}
 }
 
-// Helper function to test keeper ID conversion (mimics the logic in the main function)
-func convertKeeperID(keeperID string) (int, error) {
-	// This mimics: id, err := strconv.Atoi(ix)
-	// from the iterateKeepersAndInitializeState function
-	return strconv.Atoi(keeperID)
-}
-
 func TestEnvironmentDependenciesKeeper(t *testing.T) {
-	// Test that environment functions work as expected
-
-	// Save original values
-	originalStore := os.Getenv(env.NexusBackendStore)
-	originalThreshold := os.Getenv(env.NexusShamirThreshold)
-
-	defer func() {
-		if originalStore != "" {
-			_ = os.Setenv(env.NexusBackendStore, originalStore)
-		} else {
-			_ = os.Unsetenv(env.NexusBackendStore)
-		}
-		if originalThreshold != "" {
-			_ = os.Setenv(env.NexusShamirThreshold, originalThreshold)
-		} else {
-			_ = os.Unsetenv(env.NexusShamirThreshold)
-		}
-	}()
+	// Test that environment functions work as expected. t.Setenv restores
+	// the original values.
 
 	// Test BackendStoreType detection
-	_ = os.Setenv(env.NexusBackendStore, "memory")
+	t.Setenv(env.NexusBackendStore, "memory")
 	if env.BackendStoreTypeVal() != env.Memory {
 		t.Error("Expected Memory backend type")
 	}
 
-	_ = os.Setenv(env.NexusBackendStore, "sqlite")
+	t.Setenv(env.NexusBackendStore, "sqlite")
 	if env.BackendStoreTypeVal() != env.Sqlite {
 		t.Error("Expected Sqlite backend type")
 	}
 
 	// Test ShamirThreshold function exists and returns a reasonable value
-	_ = os.Setenv(env.NexusShamirThreshold, "3")
+	t.Setenv(env.NexusShamirThreshold, "3")
 	threshold := env.ShamirThresholdVal()
 	if threshold < 1 {
 		t.Errorf("Expected threshold >= 1, got %d", threshold)

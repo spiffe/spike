@@ -15,7 +15,8 @@ For more information, [see the documentation][docs].
 
 ## The Elevator Pitch
 
-[**SPIKE**][spike] is a streamlined, highly reliable secrets store that leverages 
+[**SPIKE**][spike] is a streamlined, highly reliable secrets store that
+leverages
 [SPIFFE][spiffe] framework for strong, production-grade identity control. 
 
 Built with simplicity and high availability in mind, SPIKE empowers ops teams, 
@@ -26,14 +27,15 @@ Key components include:
 
 * **SPIKE Nexus**: The heart of SPIKE, handling secret encryption, decryption, 
   and root key management.
-* **SPIKE Keeper**: A redundancy mechanism that safely holds root keys in memory, 
+* **SPIKE Keeper**: A redundancy mechanism that safely holds root keys in
+  memory,
   enabling fast recovery if Nexus fails.
 * **SPIKE Pilot**: A secure CLI interface, translating commands into **mTLS** 
   API calls, reducing system vulnerability by containing all admin access.
 * **SPIKE Bootstrap**: An initialization app to securely bootstrap the entire
   system and deliver root key shards to **SPIKE Nexus**.
 
-With its minimal footprint and robust security, **SPIKE** provides peace of mind 
+With its minimal footprint and robust security, **SPIKE** provides peace of mind
 for your team and critical data resilience when it counts.
 
 ## Project Maturity: Development  ![Development Phase](https://github.com/spiffe/spiffe/blob/main/.img/maturity/dev.svg)

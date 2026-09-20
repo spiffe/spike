@@ -65,9 +65,9 @@
 // The package exports the following query constants:
 //
 //   - QueryInitialize: Schema creation (DDL)
-//   - QueryUpsertSecret: Insert or update a secret version
-//   - QueryUpdateSecretMetadata: Insert or update secret metadata
-//   - QuerySecretMetadata: Fetch metadata by path
+//   - QueryUpsertVersion: Insert or update one version row
+//   - QueryUpsertMetadata: Insert or update the metadata row
+//   - QueryLoadMetadata: Fetch the metadata row by path
 //   - QuerySecretVersions: Fetch all versions of a secret
 //   - QueryPathsFromMetadata: List all secret paths
 //   - QueryUpsertPolicy: Insert or update a policy

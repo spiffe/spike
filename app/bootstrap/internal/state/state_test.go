@@ -152,12 +152,12 @@ func TestShareIDConversion(t *testing.T) {
 			scalar := g.NewScalar().SetUint64(tc.id)
 
 			// Test conversion back to string (similar to what KeeperShare does)
-			kid, err := strconv.Atoi(tc.expected)
+			kid, err := strconv.ParseUint(tc.expected, 10, 64)
 			if err != nil {
 				t.Fatalf("Test setup error: %v", err)
 			}
 
-			expectedScalar := g.NewScalar().SetUint64(uint64(kid))
+			expectedScalar := g.NewScalar().SetUint64(kid)
 
 			if !scalar.IsEqual(expectedScalar) {
 				t.Errorf("ID conversion mismatch for %d", tc.id)

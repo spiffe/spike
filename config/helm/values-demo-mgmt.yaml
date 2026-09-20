@@ -68,7 +68,7 @@ spike-nexus:
     # SPIKE Keepers are in edge-1.spike-ist, and edge-2.spike.ist trust
     # domains. These trust domains also identify Edge-1, Edge-2,
     # and Edge-3 clusters.
-    keepers:
+    keeper:
     - "edge-1.spike.ist"
     - "edge-2.spike.ist"
     - "edge-3.spike.ist"

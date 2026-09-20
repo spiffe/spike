@@ -4,7 +4,7 @@
 
 **SPIKE Bootstrap** is a critical initialization service that generates and 
 distributes cryptographic root key shards to **SPIKE Keeper** instances using 
-[Shamir's Secret Sharing scheme][shamir]. It is responsible for establishing the 
+[Shamir's Secret Sharing scheme][shamir]. It is responsible for establishing the
 foundational cryptographic trust infrastructure for the SPIKE system.
 
 [shamir]: https://en.wikipedia.org/wiki/Shamir%27s_Secret_Sharing "Shamir's Secret Sharing"

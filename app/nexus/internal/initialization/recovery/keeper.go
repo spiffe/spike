@@ -18,6 +18,37 @@ import (
 	state "github.com/spiffe/spike/app/nexus/internal/state/base"
 )
 
+// parseKeeperID converts a keeper ID from the SPIKE_NEXUS_KEEPER_PEERS
+// configuration into a Shamir share index.
+//
+// Keeper IDs double as Shamir share indices, and a share index must be a
+// positive integer: index zero would evaluate the polynomial at the secret
+// itself, and a negative value would wrap around when converted to the
+// unsigned index type. Both are rejected here rather than silently
+// producing a wrong share.
+//
+// Parameters:
+//   - keeperID: The keeper ID string as it appears in the configuration
+//
+// Returns:
+//   - uint64: The share index, greater than zero
+//   - *sdkErrors.SDKError: ErrDataInvalidInput if the ID is not a positive
+//     integer, nil on success
+func parseKeeperID(keeperID string) (uint64, *sdkErrors.SDKError) {
+	id, atoiErr := strconv.Atoi(keeperID)
+	if atoiErr != nil {
+		failErr := sdkErrors.ErrDataInvalidInput.Wrap(atoiErr)
+		failErr.Msg = "failed to convert keeper ID to int"
+		return 0, failErr
+	}
+	if id <= 0 {
+		failErr := sdkErrors.ErrDataInvalidInput.Clone()
+		failErr.Msg = "keeper ID must be a positive integer: " + keeperID
+		return 0, failErr
+	}
+	return uint64(id), nil
+}
+
 // iterateKeepersAndInitializeState retrieves Shamir secret shards from multiple
 // SPIKE Keeper instances and attempts to reconstruct the root key when a
 // threshold number of shards is collected.
@@ -42,8 +73,8 @@ import (
 // Security considerations:
 //   - All sensitive data (shards, root key) is securely erased from memory
 //     after use
-//   - The function will fatal log and terminate if keeper IDs cannot be
-//     converted to integers
+//   - The function will fatal log and terminate if keeper IDs are not
+//     positive integers
 //   - Shards are validated to ensure they are not zeroed before being accepted
 //
 // The function performs the following steps:
@@ -85,7 +116,12 @@ func iterateKeepersAndInitializeState(
 			"id", keeperID, "url", keeperAPIRoot,
 		)
 
-		u := url.ShardFromKeeperAPIRoot(keeperAPIRoot)
+		u, urlErr := keeperURL(keeperAPIRoot, string(url.KeeperShard))
+		if urlErr != nil {
+			log.WarnErr(fName, *urlErr) // just log: will retry
+			continue
+		}
+
 		data, err := shardGetResponse(source, u)
 		if err != nil {
 			warnErr := sdkErrors.ErrNetPeerConnection.Wrap(err)
@@ -131,10 +167,10 @@ func iterateKeepersAndInitializeState(
 		// a threshold number of shards in memory.
 		ss := make([]crypto.ShamirShard, 0)
 		for ix, shard := range successfulKeeperShards {
-			id, err := strconv.Atoi(ix)
-			if err != nil {
+			id, idErr := parseKeeperID(ix)
+			if idErr != nil {
 				// Unlike URL misconfiguration (which we tolerate above), an
-				// unparseable keeper ID is fatal because:
+				// invalid keeper ID is fatal because:
 				// 1. We've already collected threshold shards. Skipping one now
 				//    means we'd need to re-fetch, but the same ID will fail
 				//    again.
@@ -144,14 +180,12 @@ func iterateKeepersAndInitializeState(
 				// 3. This same ID was used during bootstrap to store the shard.
 				//    If it was valid then but invalid now, the configuration
 				//    has been corrupted.
-				failErr := sdkErrors.ErrDataInvalidInput.Wrap(err)
-				failErr.Msg = "failed to convert keeper ID to int"
-				log.FatalErr(fName, *failErr)
+				log.FatalErr(fName, *idErr)
 				return false
 			}
 
 			ss = append(ss, crypto.ShamirShard{
-				ID:    uint64(id),
+				ID:    id,
 				Value: shard,
 			})
 		}

@@ -6,6 +6,7 @@ package secret
 
 import (
 	"context"
+	"fmt"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -59,7 +60,7 @@ func newSecretPutCommand(
 		Use:   "put <path> <key=value>...",
 		Short: "Put secrets at the specified path",
 		Args:  cobra.MinimumNArgs(2),
-		Run: func(cmd *cobra.Command, args []string) {
+		RunE: func(cmd *cobra.Command, args []string) error {
 			spiffeid.IsPilotOperatorOrDie(SPIFFEID)
 
 			api := spike.NewWithSource(source)
@@ -67,34 +68,29 @@ func newSecretPutCommand(
 			path := args[0]
 
 			if !validSecretPath(path) {
-				cmd.PrintErrf("Error: Invalid secret path: %s\n", path)
-				return
+				return fmt.Errorf("invalid secret path: %s", path)
 			}
 
+			// A malformed pair fails the whole command. Skipping it would
+			// store a subset of what the operator asked for and report OK.
 			kvPairs := args[1:]
 			values := make(map[string]string)
 			for _, kv := range kvPairs {
 				if !strings.Contains(kv, "=") {
-					cmd.PrintErrf("Error: Invalid key-value pair: %s\n", kv)
-					continue
+					return fmt.Errorf("invalid key-value pair: %s", kv)
 				}
 				kvs := strings.SplitN(kv, "=", 2)
 				values[kvs[0]] = kvs[1]
 			}
 
-			if len(values) == 0 {
-				cmd.Println("OK")
-				return
-			}
-
 			ctx := context.Background()
 
-			err := api.PutSecret(ctx, path, values)
-			if stdout.HandleAPIError(cmd, err) {
-				return
+			if apiErr := api.PutSecret(ctx, path, values); apiErr != nil {
+				return stdout.APIError(cmd, apiErr)
 			}
 
 			cmd.Println("OK")
+			return nil
 		},
 	}
 

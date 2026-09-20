@@ -10,7 +10,8 @@ import (
 	"sync"
 )
 
-// DataStore implements the backend.Backend interface providing encrypted storage
+// DataStore implements the backend.Backend interface providing encrypted
+// storage
 // capabilities using SQLite as the underlying database. It uses AES-GCM for
 // encryption and implements proper locking mechanisms for concurrent access.
 type DataStore struct {

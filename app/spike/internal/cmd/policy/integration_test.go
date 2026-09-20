@@ -7,6 +7,7 @@ package policy
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
@@ -107,7 +108,7 @@ func TestPolicySpecValidation(t *testing.T) {
 
 			filePath := filepath.Join(tempDir, "test-policy.yaml")
 			if writeErr := os.WriteFile(
-				filePath, []byte(yamlContent), 0644,
+				filePath, []byte(yamlContent), 0600,
 			); writeErr != nil {
 				t.Fatalf("Failed to create test file: %v", writeErr)
 			}
@@ -196,7 +197,7 @@ permissions:
 		t.Run(tt.name, func(t *testing.T) {
 			filePath := filepath.Join(tempDir, tt.name+".yaml")
 			if writeErr := os.WriteFile(
-				filePath, []byte(tt.yamlContent), 0644,
+				filePath, []byte(tt.yamlContent), 0600,
 			); writeErr != nil {
 				t.Fatalf("Failed to create test file: %v", writeErr)
 			}
@@ -215,14 +216,14 @@ permissions:
 				return
 			}
 
-			// Trim any trailing whitespace from SpiffeID for comparison
-			if len(policy.SpiffeIDPattern) > 0 && policy.SpiffeIDPattern[len(policy.SpiffeIDPattern)-1] == '\n' {
-				policy.SpiffeIDPattern = policy.SpiffeIDPattern[:len(policy.SpiffeIDPattern)-1]
-			}
-			if len(tt.expectValue.SpiffeIDPattern) > 0 &&
-				tt.expectValue.SpiffeIDPattern[len(tt.expectValue.SpiffeIDPattern)-1] == '\n' {
-				tt.expectValue.SpiffeIDPattern = tt.expectValue.SpiffeIDPattern[:len(tt.expectValue.SpiffeIDPattern)-1]
-			}
+			// Trim a trailing newline from the SPIFFE ID pattern before
+			// comparing.
+			policy.SpiffeIDPattern = strings.TrimSuffix(
+				policy.SpiffeIDPattern, "\n",
+			)
+			tt.expectValue.SpiffeIDPattern = strings.TrimSuffix(
+				tt.expectValue.SpiffeIDPattern, "\n",
+			)
 
 			if policy.Name != tt.expectValue.Name {
 				t.Errorf("Name = %v, want %v", policy.Name, tt.expectValue.Name)
@@ -232,7 +233,8 @@ permissions:
 					policy.SpiffeIDPattern, tt.expectValue.SpiffeIDPattern)
 			}
 			if policy.PathPattern != tt.expectValue.PathPattern {
-				t.Errorf("Path = %v, want %v", policy.PathPattern, tt.expectValue.PathPattern)
+				t.Errorf("Path = %v, want %v",
+					policy.PathPattern, tt.expectValue.PathPattern)
 			}
 			if len(policy.Permissions) != len(tt.expectValue.Permissions) {
 				t.Errorf("Permissions length = %d, want %d",

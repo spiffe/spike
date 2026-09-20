@@ -1,70 +1,105 @@
 //    \\ SPIKE: Secure your secrets with SPIFFE. — https://spike.ist/
-//  \\\\ Copyright 2024-present SPIKE contributors.
-// \\\\\\ SPDX-License-Identifier: Apache-2.0
+//  \\\\\ Copyright 2024-present SPIKE contributors.
+// \\\\\\\ SPDX-License-Identifier: Apache-2.0
 
 package cipher
 
 import (
 	"context"
 	"encoding/base64"
+	"errors"
+	"fmt"
 	"os"
 	"strconv"
 
-	"github.com/spf13/cobra"
 	sdk "github.com/spiffe/spike-sdk-go/api"
-
-	"github.com/spiffe/spike/app/spike/internal/stdout"
+	sdkErrors "github.com/spiffe/spike-sdk-go/errors"
 )
+
+// checkInputFile verifies that the input file exists and is accessible.
+// An empty path means stdin and needs no check.
+//
+// Parameters:
+//   - inFile: Input file path (empty string means stdin)
+//
+// Returns:
+//   - error: An error naming the file if it does not exist or cannot be
+//     accessed; nil otherwise
+func checkInputFile(inFile string) error {
+	if inFile == "" {
+		return nil
+	}
+	if _, err := os.Stat(inFile); err != nil {
+		if os.IsNotExist(err) {
+			return fmt.Errorf("input file does not exist: %s", inFile)
+		}
+		return fmt.Errorf("cannot access input file: %s: %w", inFile, err)
+	}
+	return nil
+}
+
+// closeAll runs the cleanup functions in order and returns the first close
+// error, if any. A failed close on an output file can mean that not all of
+// the written data reached the disk, so it is a failure of the command.
+//
+// Parameters:
+//   - cleanups: The cleanup functions to run, in order; every one of them
+//     runs even when an earlier one fails
+//
+// Returns:
+//   - error: The first close error encountered; nil when every cleanup
+//     succeeded
+func closeAll(cleanups ...func() *sdkErrors.SDKError) error {
+	var first error
+	for _, cleanup := range cleanups {
+		if closeErr := cleanup(); closeErr != nil && first == nil {
+			first = closeErr
+		}
+	}
+	return first
+}
 
 // decryptStream performs stream-based decryption by reading from a file or
 // stdin and writing the decrypted plaintext to a file or stdout.
 //
 // Parameters:
-//   - cmd: Cobra command for output
 //   - api: The SPIKE SDK API client
 //   - inFile: Input file path (empty string means stdin)
 //   - outFile: Output file path (empty string means stdout)
 //
-// The function prints errors directly to stderr and returns without error
-// propagation, following the CLI command pattern.
-func decryptStream(cmd *cobra.Command, api *sdk.API, inFile, outFile string) {
-	// Validate the input file exists before attempting decryption.
-	if inFile != "" {
-		if _, err := os.Stat(inFile); err != nil {
-			if os.IsNotExist(err) {
-				cmd.PrintErrf("Error: Input file does not exist: %s\n", inFile)
-				return
-			}
-			cmd.PrintErrf("Error: Cannot access input file: %s\n", inFile)
-			return
-		}
+// Returns:
+//   - error: The first failure, including a failed close of the input or
+//     output file; nil on success
+func decryptStream(api *sdk.API, inFile, outFile string) (err error) {
+	if checkErr := checkInputFile(inFile); checkErr != nil {
+		return checkErr
 	}
 
 	in, cleanupIn, inputErr := openInput(inFile)
 	if inputErr != nil {
-		cmd.PrintErrf("Error: %v\n", inputErr)
-		return
+		return inputErr
 	}
-	defer cleanupIn()
 
 	out, cleanupOut, outputErr := openOutput(outFile)
 	if outputErr != nil {
-		cmd.PrintErrf("Error: %v\n", outputErr)
-		return
+		return errors.Join(outputErr, closeAll(cleanupIn))
 	}
-	defer cleanupOut()
+	defer func() {
+		if closeErr := closeAll(cleanupOut, cleanupIn); closeErr != nil &&
+			err == nil {
+			err = closeErr
+		}
+	}()
 
-	ctx := context.Background()
-
-	plaintext, apiErr := api.CipherDecryptStream(ctx, in)
-	if stdout.HandleAPIError(cmd, apiErr) {
-		return
+	plaintext, apiErr := api.CipherDecryptStream(context.Background(), in)
+	if apiErr != nil {
+		return cipherAPIError(apiErr)
 	}
 
 	if _, writeErr := out.Write(plaintext); writeErr != nil {
-		cmd.PrintErrf("Error: Failed to write output: %v\n", writeErr)
-		return
+		return fmt.Errorf("failed to write output: %w", writeErr)
 	}
+	return nil
 }
 
 // decryptJSON performs JSON-based decryption using base64-encoded components
@@ -72,7 +107,6 @@ func decryptStream(cmd *cobra.Command, api *sdk.API, inFile, outFile string) {
 // or stdout.
 //
 // Parameters:
-//   - cmd: Cobra command for output
 //   - api: The SPIKE SDK API client
 //   - versionStr: Version byte as a string (0-255)
 //   - nonceB64: Base64-encoded nonce
@@ -80,47 +114,46 @@ func decryptStream(cmd *cobra.Command, api *sdk.API, inFile, outFile string) {
 //   - algorithm: Algorithm hint for decryption
 //   - outFile: Output file path (empty string means stdout)
 //
-// The function prints errors directly to stderr and returns without error
-// propagation, following the CLI command pattern.
-func decryptJSON(cmd *cobra.Command, api *sdk.API, versionStr, nonceB64,
-	ciphertextB64, algorithm, outFile string) {
+// Returns:
+//   - error: The first failure, including a failed close of the output
+//     file; nil on success
+func decryptJSON(api *sdk.API, versionStr, nonceB64, ciphertextB64,
+	algorithm, outFile string) (err error) {
 	v, atoiErr := strconv.Atoi(versionStr)
-	// version must be a valid byte value.
+	// The version must be a valid byte value.
 	if atoiErr != nil || v < 0 || v > 255 {
-		cmd.PrintErrln("Error: Invalid --version, must be 0-255.")
-		return
+		return errors.New("invalid --version, must be 0-255")
 	}
 
 	nonce, nonceErr := base64.StdEncoding.DecodeString(nonceB64)
 	if nonceErr != nil {
-		cmd.PrintErrln("Error: Invalid --nonce base64.")
-		return
+		return errors.New("invalid --nonce base64")
 	}
 
 	ciphertext, ciphertextErr := base64.StdEncoding.DecodeString(ciphertextB64)
 	if ciphertextErr != nil {
-		cmd.PrintErrln("Error: Invalid --ciphertext base64.")
-		return
+		return errors.New("invalid --ciphertext base64")
 	}
 
 	out, cleanupOut, openErr := openOutput(outFile)
 	if openErr != nil {
-		cmd.PrintErrf("Error: %v\n", openErr)
-		return
+		return openErr
 	}
-	defer cleanupOut()
-
-	ctx := context.Background()
+	defer func() {
+		if closeErr := closeAll(cleanupOut); closeErr != nil && err == nil {
+			err = closeErr
+		}
+	}()
 
 	plaintext, apiErr := api.CipherDecrypt(
-		ctx, byte(v), nonce, ciphertext, algorithm,
+		context.Background(), byte(v), nonce, ciphertext, algorithm,
 	)
-	if stdout.HandleAPIError(cmd, apiErr) {
-		return
+	if apiErr != nil {
+		return cipherAPIError(apiErr)
 	}
 
 	if _, writeErr := out.Write(plaintext); writeErr != nil {
-		cmd.PrintErrf("Error: Failed to write plaintext: %v\n", writeErr)
-		return
+		return fmt.Errorf("failed to write plaintext: %w", writeErr)
 	}
+	return nil
 }

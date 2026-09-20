@@ -58,7 +58,8 @@ func ParseOptions(opts map[backend.DatabaseConfigKey]any) (
 	if maxIdle, ok := opts[backend.KeyMaxIdleConns].(int); ok {
 		sqliteOpts.MaxIdleConns = maxIdle
 	}
-	if lifetime, ok := opts[backend.KeyConnMaxLifetimeSeconds].(time.Duration); ok {
+	lifetime, ok := opts[backend.KeyConnMaxLifetimeSeconds].(time.Duration)
+	if ok {
 		sqliteOpts.ConnMaxLifetime = lifetime
 	}
 

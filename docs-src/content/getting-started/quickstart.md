@@ -272,6 +272,19 @@ spike-pilot:
   enabled: true
 spire-server:
   enabled: true
+  controllerManager:
+    identities:
+      clusterSPIFFEIDs:
+        # The chart does not enable the SPIKE identities by default;
+        # without these the components never receive an SVID.
+        spike-nexus:
+          enabled: true
+        spike-keeper:
+          enabled: true
+        spike-pilot:
+          enabled: true
+        spike-bootstrap:
+          enabled: true
 spire-agent:
   enabled: true
 spiffe-csi-driver:
@@ -284,10 +297,12 @@ Then deploy SPIKE using the following command:
 
 ```bash 
 helm upgrade --install spire-crds spire-crds \
-  --repo https://spiffe.github.io/helm-charts-hardened/
-  
+  --repo https://spiffe.github.io/helm-charts-hardened/ \
+  --version 0.6.1
+
 helm upgrade --install spiffe spire \
-  --repo https://spiffe.github.io/helm-charts-hardened \
+  --repo https://spiffe.github.io/helm-charts-hardened/ \
+  --version 0.30.2 \
   -f ./values.yaml # The values.yaml file we created earlier
 ```
 

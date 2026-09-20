@@ -38,14 +38,18 @@ func TestVerifyPermissions_SuperPermissionJoker(t *testing.T) {
 			expected: true,
 		},
 		{
-			name:     "super grants multiple permissions",
-			haves:    []data.PolicyPermission{data.PermissionSuper},
-			wants:    []data.PolicyPermission{data.PermissionRead, data.PermissionWrite, data.PermissionList},
+			name:  "super grants multiple permissions",
+			haves: []data.PolicyPermission{data.PermissionSuper},
+			wants: []data.PolicyPermission{
+				data.PermissionRead, data.PermissionWrite, data.PermissionList,
+			},
 			expected: true,
 		},
 		{
-			name:     "super among other permissions",
-			haves:    []data.PolicyPermission{data.PermissionRead, data.PermissionSuper, data.PermissionWrite},
+			name: "super among other permissions",
+			haves: []data.PolicyPermission{
+				data.PermissionRead, data.PermissionSuper, data.PermissionWrite,
+			},
 			wants:    []data.PolicyPermission{data.PermissionList},
 			expected: true,
 		},
@@ -61,7 +65,9 @@ func TestVerifyPermissions_SuperPermissionJoker(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			result := validation.ValidatePolicyPermissions(tc.haves, tc.wants)
 			if result != tc.expected {
-				t.Errorf("Expected %v, got %v for case: %s", tc.expected, result, tc.name)
+				t.Errorf(
+					"Expected %v, got %v for case: %s", tc.expected, result, tc.name,
+				)
 			}
 		})
 	}
@@ -82,21 +88,31 @@ func TestVerifyPermissions_SpecificPermissions(t *testing.T) {
 			expected: true,
 		},
 		{
-			name:     "has all required permissions",
-			haves:    []data.PolicyPermission{data.PermissionRead, data.PermissionWrite, data.PermissionList},
-			wants:    []data.PolicyPermission{data.PermissionRead, data.PermissionWrite},
+			name: "has all required permissions",
+			haves: []data.PolicyPermission{
+				data.PermissionRead, data.PermissionWrite, data.PermissionList,
+			},
+			wants: []data.PolicyPermission{
+				data.PermissionRead, data.PermissionWrite,
+			},
 			expected: true,
 		},
 		{
-			name:     "missing one permission",
-			haves:    []data.PolicyPermission{data.PermissionRead, data.PermissionWrite},
-			wants:    []data.PolicyPermission{data.PermissionRead, data.PermissionList},
+			name: "missing one permission",
+			haves: []data.PolicyPermission{
+				data.PermissionRead, data.PermissionWrite,
+			},
+			wants: []data.PolicyPermission{
+				data.PermissionRead, data.PermissionList,
+			},
 			expected: false,
 		},
 		{
-			name:     "missing all permissions",
-			haves:    []data.PolicyPermission{data.PermissionRead},
-			wants:    []data.PolicyPermission{data.PermissionWrite, data.PermissionList},
+			name:  "missing all permissions",
+			haves: []data.PolicyPermission{data.PermissionRead},
+			wants: []data.PolicyPermission{
+				data.PermissionWrite, data.PermissionList,
+			},
 			expected: false,
 		},
 		{
@@ -106,8 +122,10 @@ func TestVerifyPermissions_SpecificPermissions(t *testing.T) {
 			expected: false,
 		},
 		{
-			name:     "non-empty haves, empty wants",
-			haves:    []data.PolicyPermission{data.PermissionRead, data.PermissionWrite},
+			name: "non-empty haves, empty wants",
+			haves: []data.PolicyPermission{
+				data.PermissionRead, data.PermissionWrite,
+			},
 			wants:    []data.PolicyPermission{},
 			expected: true,
 		},
@@ -123,7 +141,9 @@ func TestVerifyPermissions_SpecificPermissions(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			result := validation.ValidatePolicyPermissions(tc.haves, tc.wants)
 			if result != tc.expected {
-				t.Errorf("Expected %v, got %v for case: %s", tc.expected, result, tc.name)
+				t.Errorf(
+					"Expected %v, got %v for case: %s", tc.expected, result, tc.name,
+				)
 			}
 		})
 	}
@@ -138,21 +158,35 @@ func TestVerifyPermissions_SuperWithOtherPermissions(t *testing.T) {
 		expected bool
 	}{
 		{
-			name:     "super and read, wants write",
-			haves:    []data.PolicyPermission{data.PermissionSuper, data.PermissionRead},
-			wants:    []data.PolicyPermission{data.PermissionWrite},
-			expected: true, // `super` should grant `write` even though we don't explicitly have it
+			name: "super and read, wants write",
+			haves: []data.PolicyPermission{
+				data.PermissionSuper, data.PermissionRead,
+			},
+			wants: []data.PolicyPermission{data.PermissionWrite},
+			// `super` grants `write` even though it is not explicitly present.
+			expected: true,
 		},
 		{
-			name:     "read and super, wants multiple",
-			haves:    []data.PolicyPermission{data.PermissionRead, data.PermissionSuper},
-			wants:    []data.PolicyPermission{data.PermissionWrite, data.PermissionList},
+			name: "read and super, wants multiple",
+			haves: []data.PolicyPermission{
+				data.PermissionRead, data.PermissionSuper,
+			},
+			wants: []data.PolicyPermission{
+				data.PermissionWrite, data.PermissionList,
+			},
 			expected: true, // `super` should grant all
 		},
 		{
-			name:     "multiple permissions including super",
-			haves:    []data.PolicyPermission{data.PermissionRead, data.PermissionWrite, data.PermissionSuper, data.PermissionList},
-			wants:    []data.PolicyPermission{data.PermissionRead, data.PermissionWrite, data.PermissionList},
+			name: "multiple permissions including super",
+			haves: []data.PolicyPermission{
+				data.PermissionRead,
+				data.PermissionWrite,
+				data.PermissionSuper,
+				data.PermissionList,
+			},
+			wants: []data.PolicyPermission{
+				data.PermissionRead, data.PermissionWrite, data.PermissionList,
+			},
 			expected: true,
 		},
 	}
@@ -161,7 +195,9 @@ func TestVerifyPermissions_SuperWithOtherPermissions(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			result := validation.ValidatePolicyPermissions(tc.haves, tc.wants)
 			if result != tc.expected {
-				t.Errorf("Expected %v, got %v for case: %s", tc.expected, result, tc.name)
+				t.Errorf(
+					"Expected %v, got %v for case: %s", tc.expected, result, tc.name,
+				)
 			}
 		})
 	}
@@ -169,7 +205,9 @@ func TestVerifyPermissions_SuperWithOtherPermissions(t *testing.T) {
 
 func BenchmarkVerifyPermissions_WithSuper(b *testing.B) {
 	haves := []data.PolicyPermission{data.PermissionSuper}
-	wants := []data.PolicyPermission{data.PermissionRead, data.PermissionWrite, data.PermissionList}
+	wants := []data.PolicyPermission{
+		data.PermissionRead, data.PermissionWrite, data.PermissionList,
+	}
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -178,7 +216,9 @@ func BenchmarkVerifyPermissions_WithSuper(b *testing.B) {
 }
 
 func BenchmarkVerifyPermissions_WithoutSuper(b *testing.B) {
-	haves := []data.PolicyPermission{data.PermissionRead, data.PermissionWrite, data.PermissionList}
+	haves := []data.PolicyPermission{
+		data.PermissionRead, data.PermissionWrite, data.PermissionList,
+	}
 	wants := []data.PolicyPermission{data.PermissionRead, data.PermissionWrite}
 
 	b.ResetTimer()
@@ -191,9 +231,11 @@ func BenchmarkVerifyPermissions_LargePermissionSet(b *testing.B) {
 	// Test with a larger set of permissions to see performance impact
 	haves := []data.PolicyPermission{
 		data.PermissionRead, data.PermissionWrite, data.PermissionList,
-		data.PermissionRead, data.PermissionWrite, data.PermissionList, // duplicates to make it larger
+		// Duplicates make the set larger.
 		data.PermissionRead, data.PermissionWrite, data.PermissionList,
-		data.PermissionSuper, // super at the end to test worst-case for the joker check
+		data.PermissionRead, data.PermissionWrite, data.PermissionList,
+		// Super at the end tests the worst case for the joker check.
+		data.PermissionSuper,
 	}
 	wants := []data.PolicyPermission{data.PermissionRead, data.PermissionWrite}
 

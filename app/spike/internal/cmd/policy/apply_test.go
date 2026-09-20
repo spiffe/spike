@@ -83,7 +83,7 @@ permissions:
 			// Create a test file:
 			filePath := filepath.Join(tempDir, tt.fileName)
 			if writeErr := os.WriteFile(
-				filePath, []byte(tt.fileContent), 0644,
+				filePath, []byte(tt.fileContent), 0600,
 			); writeErr != nil {
 				t.Fatalf("Failed to create test file: %v", writeErr)
 			}

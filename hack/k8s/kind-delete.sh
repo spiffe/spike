@@ -21,7 +21,8 @@ fi
 # Check for Kind
 if ! command_exists kind; then
   echo "Error: Kind is not installed or not in PATH"
-  echo "Please install Kind from https://kind.sigs.k8s.io/docs/user/quick-start/#installation"
+  echo "Please install Kind from" \
+    "https://kind.sigs.k8s.io/docs/user/quick-start/#installation"
   exit 1
 fi
 

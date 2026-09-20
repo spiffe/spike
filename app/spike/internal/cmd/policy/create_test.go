@@ -68,7 +68,9 @@ permissions:
 				Name:            "full-access-policy",
 				SpiffeIDPattern: "^spiffe://example\\.org/admin/.*$",
 				PathPattern:     "^secrets/.*$",
-				Permissions:     []data.PolicyPermission{"read", "write", "list", "super"},
+				Permissions: []data.PolicyPermission{
+					"read", "write", "list", "super",
+				},
 			},
 			wantErr: false,
 		},
@@ -140,7 +142,7 @@ permissions: [
 			// Create a test file:
 			filePath := filepath.Join(tempDir, tt.fileName)
 			if writeErr := os.WriteFile(
-				filePath, []byte(tt.fileContent), 0644,
+				filePath, []byte(tt.fileContent), 0600,
 			); writeErr != nil {
 				t.Fatalf("Failed to create test file: %v", writeErr)
 			}
@@ -308,7 +310,9 @@ func TestGetPolicyFromFlags(t *testing.T) {
 				Name:            "admin-policy",
 				SpiffeIDPattern: "^spiffe://example\\.org/admin/.*$",
 				PathPattern:     "^.*$",
-				Permissions:     []data.PolicyPermission{"read", "write", "list", "super"},
+				Permissions: []data.PolicyPermission{
+					"read", "write", "list", "super",
+				},
 			},
 			wantErr: false,
 		},
@@ -577,7 +581,9 @@ func TestNewPolicyCreateCommand(t *testing.T) {
 
 	// Check if all required flags are present (create command
 	// only has flag-based input)
-	expectedFlags := []string{"name", "path-pattern", "spiffeid-pattern", "permissions"}
+	expectedFlags := []string{
+		"name", "path-pattern", "spiffeid-pattern", "permissions",
+	}
 	for _, flagName := range expectedFlags {
 		flag := cmd.Flags().Lookup(flagName)
 		if flag == nil {

@@ -7,6 +7,8 @@ package secret
 import (
 	"context"
 	"encoding/json"
+	"errors"
+	"fmt"
 
 	"github.com/spf13/cobra"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
@@ -14,6 +16,7 @@ import (
 	"github.com/spiffe/spike-sdk-go/spiffeid"
 	"gopkg.in/yaml.v3"
 
+	"github.com/spiffe/spike/app/spike/internal/cmd/flags"
 	"github.com/spiffe/spike/app/spike/internal/cmd/format"
 	"github.com/spiffe/spike/app/spike/internal/stdout"
 )
@@ -57,40 +60,39 @@ func newSecretGetCommand(
 		Use:   "get <path> [key]",
 		Short: "Get secrets from the specified path",
 		Args:  cobra.RangeArgs(1, 2),
-		Run: func(cmd *cobra.Command, args []string) {
+		RunE: func(cmd *cobra.Command, args []string) error {
 			spiffeid.IsPilotOperatorOrDie(SPIFFEID)
 
 			api := spike.NewWithSource(source)
 
 			path := args[0]
-			version, _ := cmd.Flags().GetInt("version")
+			version, flagErr := flags.Int(cmd, "version")
+			if flagErr != nil {
+				return flagErr
+			}
 
 			outputFormat, formatErr := format.GetFormat(cmd)
 			if formatErr != nil {
-				cmd.PrintErrf("Error: %v\n", formatErr)
-				return
+				return formatErr
 			}
 
 			if !validSecretPath(path) {
-				cmd.PrintErrf("Error: Invalid secret path: %s\n", path)
-				return
+				return fmt.Errorf("invalid secret path: %s", path)
 			}
 
 			ctx := context.Background()
 
-			secret, err := api.GetSecretVersion(ctx, path, version)
-			if stdout.HandleAPIError(cmd, err) {
-				return
+			secret, apiErr := api.GetSecretVersion(ctx, path, version)
+			if apiErr != nil {
+				return stdout.APIError(cmd, apiErr)
 			}
 
 			if secret == nil {
-				cmd.PrintErrln("Error: Secret not found.")
-				return
+				return errors.New("secret not found")
 			}
 
 			if secret.Data == nil {
-				cmd.PrintErrln("Error: Secret has no data.")
-				return
+				return errors.New("secret has no data")
 			}
 
 			d := secret.Data
@@ -113,9 +115,9 @@ func newSecretGetCommand(
 					}
 				}
 				if !found {
-					cmd.PrintErrln("Error: Key not found.")
+					return errors.New("key not found")
 				}
-				return
+				return nil
 			}
 
 			// For structured formats (JSON/YAML)
@@ -125,8 +127,7 @@ func newSecretGetCommand(
 			} else {
 				val, exists := d[key]
 				if !exists {
-					cmd.PrintErrln("Error: Key not found.")
-					return
+					return errors.New("key not found")
 				}
 				dataToFormat = val
 			}
@@ -135,19 +136,19 @@ func newSecretGetCommand(
 			case format.YAML:
 				b, marshalErr := yaml.Marshal(dataToFormat)
 				if marshalErr != nil {
-					cmd.PrintErrf("Error: %v\n", marshalErr)
-					return
+					return fmt.Errorf("failed to format output: %w", marshalErr)
 				}
 				cmd.Printf("%s\n", string(b))
 
 			case format.JSON:
 				b, marshalErr := json.MarshalIndent(dataToFormat, "", "    ")
 				if marshalErr != nil {
-					cmd.PrintErrf("Error: %v\n", marshalErr)
-					return
+					return fmt.Errorf("failed to format output: %w", marshalErr)
 				}
 				cmd.Printf("%s\n", string(b))
 			}
+
+			return nil
 		},
 	}
 

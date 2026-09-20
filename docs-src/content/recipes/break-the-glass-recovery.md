@@ -110,7 +110,8 @@ the exported shards encrypted, offline, and split across custodians.
 
 ## Cross-Links
 
-- [Where the root key lives: keepers, Shamir, and recovery](/recipes/root-key-keepers-recovery/)
+- [Where the root key lives: keepers, Shamir, and
+  recovery](/recipes/root-key-keepers-recovery/)
 - [Backup and restore](/recipes/backup-and-restore/)
 - [Bootstrapping a fresh SPIKE](/recipes/bootstrapping-spike/)
 - Reference: [Recovery operations](/operations/recovery/)

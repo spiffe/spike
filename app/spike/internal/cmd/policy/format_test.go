@@ -10,16 +10,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/spf13/cobra"
 	"github.com/spiffe/spike-sdk-go/api/entity/data"
 )
-
-// createTestCommandWithFormat creates a Cobra command with a format flag.
-func createTestCommandWithFormat(format string) *cobra.Command {
-	cmd := &cobra.Command{Use: "test"}
-	cmd.Flags().String("format", format, "Output format")
-	return cmd
-}
 
 func TestFormatPoliciesOutput_EmptyList(t *testing.T) {
 	tests := []struct {
@@ -63,7 +55,10 @@ func TestFormatPoliciesOutput_EmptyList(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			cmd := createTestCommandWithFormat(tt.format)
-			result := formatPoliciesOutput(cmd, tt.policies)
+			result, formatErr := formatPoliciesOutput(cmd, tt.policies)
+			if formatErr != nil {
+				t.Fatalf("formatPoliciesOutput() error = %v, want nil", formatErr)
+			}
 
 			if result != tt.expected {
 				t.Errorf("formatPoliciesOutput() = %q, want %q",
@@ -77,13 +72,21 @@ func TestFormatPoliciesOutput_InvalidFormat(t *testing.T) {
 	cmd := createTestCommandWithFormat("xml")
 	policies := &[]data.PolicyListItem{}
 
-	result := formatPoliciesOutput(cmd, policies)
+	result, formatErr := formatPoliciesOutput(cmd, policies)
 
-	if !strings.Contains(result, "Error: invalid format") {
-		t.Errorf("formatPoliciesOutput() should return error for invalid format")
+	if formatErr == nil {
+		t.Fatal("formatPoliciesOutput() error = nil, want an error")
 	}
-	if !strings.Contains(result, "xml") {
-		t.Errorf("formatPoliciesOutput() should mention the invalid format")
+	if result != "" {
+		t.Errorf("formatPoliciesOutput() = %q, want an empty string", result)
+	}
+	if !strings.Contains(formatErr.Error(), "invalid format") {
+		t.Errorf("formatPoliciesOutput() error = %q, want invalid format",
+			formatErr.Error())
+	}
+	if !strings.Contains(formatErr.Error(), "xml") {
+		t.Errorf("formatPoliciesOutput() error = %q, want it to name xml",
+			formatErr.Error())
 	}
 }
 
@@ -95,7 +98,10 @@ func TestFormatPoliciesOutput_HumanFormat(t *testing.T) {
 		},
 	}
 	cmd := createTestCommandWithFormat("human")
-	result := formatPoliciesOutput(cmd, policies)
+	result, formatErr := formatPoliciesOutput(cmd, policies)
+	if formatErr != nil {
+		t.Fatalf("formatPoliciesOutput() error = %v, want nil", formatErr)
+	}
 
 	normalized := normalizePolicyOutput(result)
 
@@ -127,7 +133,10 @@ func TestFormatPoliciesOutput_JSONFormat(t *testing.T) {
 	}
 
 	cmd := createTestCommandWithFormat("json")
-	result := formatPoliciesOutput(cmd, policies)
+	result, formatErr := formatPoliciesOutput(cmd, policies)
+	if formatErr != nil {
+		t.Fatalf("formatPoliciesOutput() error = %v, want nil", formatErr)
+	}
 
 	// Verify it's valid JSON
 	var decoded []data.PolicyListItem
@@ -158,7 +167,10 @@ func TestFormatPolicy_NilPolicy(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			cmd := createTestCommandWithFormat(tt.format)
-			result := formatPolicy(cmd, nil)
+			result, formatErr := formatPolicy(cmd, nil)
+			if formatErr != nil {
+				t.Fatalf("formatPolicy() error = %v, want nil", formatErr)
+			}
 
 			if result != tt.expected {
 				t.Errorf("formatPolicy(nil) = %q, want %q", result, tt.expected)
@@ -171,10 +183,17 @@ func TestFormatPolicy_InvalidFormat(t *testing.T) {
 	cmd := createTestCommandWithFormat("xml")
 	policy := &data.Policy{Name: "test"}
 
-	result := formatPolicy(cmd, policy)
+	result, formatErr := formatPolicy(cmd, policy)
 
-	if !strings.Contains(result, "Error: invalid format") {
-		t.Error("formatPolicy() should return error for invalid format")
+	if formatErr == nil {
+		t.Fatal("formatPolicy() error = nil, want an error")
+	}
+	if result != "" {
+		t.Errorf("formatPolicy() = %q, want an empty string", result)
+	}
+	if !strings.Contains(formatErr.Error(), "invalid format") {
+		t.Errorf("formatPolicy() error = %q, want invalid format",
+			formatErr.Error())
 	}
 }
 
@@ -191,7 +210,10 @@ func TestFormatPolicy_HumanFormat(t *testing.T) {
 	}
 
 	cmd := createTestCommandWithFormat("human")
-	result := formatPolicy(cmd, policy)
+	result, formatErr := formatPolicy(cmd, policy)
+	if formatErr != nil {
+		t.Fatalf("formatPolicy() error = %v, want nil", formatErr)
+	}
 
 	// Check header
 	if !strings.Contains(result, "POLICY DETAILS") {
@@ -226,7 +248,10 @@ func TestFormatPolicy_JSONFormat(t *testing.T) {
 	}
 
 	cmd := createTestCommandWithFormat("json")
-	result := formatPolicy(cmd, policy)
+	result, formatErr := formatPolicy(cmd, policy)
+	if formatErr != nil {
+		t.Fatalf("formatPolicy() error = %v, want nil", formatErr)
+	}
 
 	// Verify it's valid JSON
 	var decoded data.Policy
@@ -261,7 +286,10 @@ func TestFormatPoliciesOutput_MultiplePolicies(t *testing.T) {
 	}
 
 	cmd := createTestCommandWithFormat("human")
-	result := formatPoliciesOutput(cmd, policies)
+	result, formatErr := formatPoliciesOutput(cmd, policies)
+	if formatErr != nil {
+		t.Fatalf("formatPoliciesOutput() error = %v, want nil", formatErr)
+	}
 
 	normalized := normalizePolicyOutput(result)
 
@@ -301,7 +329,10 @@ func TestFormatPoliciesOutput_YAMLFormat(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			cmd := createTestCommandWithFormat(tt.format)
-			result := formatPoliciesOutput(cmd, policies)
+			result, formatErr := formatPoliciesOutput(cmd, policies)
+			if formatErr != nil {
+				t.Fatalf("formatPoliciesOutput() error = %v, want nil", formatErr)
+			}
 
 			// Check that output contains YAML-like content
 			if !strings.Contains(result, "id:") ||
@@ -335,11 +366,11 @@ func TestFormatPoliciesOutput_FormatAliases(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			cmd := createTestCommandWithFormat(tt.format)
-			result := formatPoliciesOutput(cmd, policies)
+			result, formatErr := formatPoliciesOutput(cmd, policies)
 
-			if strings.Contains(result, "Error:") && tt.shouldNotError {
-				t.Errorf("Format alias %q should not produce error: %s",
-					tt.format, result)
+			if formatErr != nil && tt.shouldNotError {
+				t.Errorf("Format alias %q should not produce an error: %v",
+					tt.format, formatErr)
 			}
 
 			if !strings.Contains(result, tt.shouldContain) {
@@ -373,7 +404,10 @@ func TestFormatPolicy_YAMLFormat(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			cmd := createTestCommandWithFormat(tt.format)
-			result := formatPolicy(cmd, policy)
+			result, formatErr := formatPolicy(cmd, policy)
+			if formatErr != nil {
+				t.Fatalf("formatPolicy() error = %v, want nil", formatErr)
+			}
 
 			// Check that output contains YAML-like content
 			if !strings.Contains(result, "id:") ||

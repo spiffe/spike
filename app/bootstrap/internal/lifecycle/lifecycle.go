@@ -2,9 +2,6 @@
 //  \\\\\ Copyright 2024-present SPIKE contributors.
 // \\\\\\\ SPDX-License-Identifier: Apache-2.0
 
-// Package lifecycle provides utilities for managing bootstrap state in
-// Kubernetes environments. It handles coordination between multiple bootstrap
-// instances to ensure bootstrap operations run exactly once per cluster.
 package lifecycle
 
 import (
@@ -24,7 +21,8 @@ import (
 )
 
 const k8sTrue = "true"
-const k8sServiceAccountNamespace = "/var/run/secrets/kubernetes.io/serviceaccount/namespace"
+const k8sServiceAccountNamespace = "/var/run/secrets/kubernetes.io/" +
+	"serviceaccount/namespace"
 const hostNameEnvVar = "HOSTNAME"
 
 const keyBootstrapCompleted = "bootstrap-completed"

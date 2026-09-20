@@ -35,9 +35,22 @@ spec:
         - |
           yum install -y tar gzip
           cd /tmp
-          curl https://dl.min.io/client/mc/release/linux-amd64/mc -o /bin/mc
-          curl -L https://github.com/spiffe/aws-spiffe-workload-helper/releases/download/v0.0.4/aws-spiffe-workload-helper_Linux_x86_64.tar.gz -o /tmp/aws-helper.tgz
-          curl -L https://github.com/spiffe/spiffe-helper/releases/download/v0.10.0/spiffe-helper_v0.10.0_Linux-x86_64.tar.gz -o helper.tgz
+          # Pick release assets for the pod's own architecture so this
+          # harness runs on amd64 CI runners and arm64 developer boxes alike.
+          case "$(uname -m)" in
+            x86_64)  MC_ARCH=amd64; HELPER_ARCH=x86_64; SH_ARCH=x86_64 ;;
+            aarch64) MC_ARCH=arm64; HELPER_ARCH=arm64;  SH_ARCH=arm64 ;;
+            *) echo "unsupported architecture: $(uname -m)"; exit 1 ;;
+          esac
+          GH=https://github.com/spiffe
+          AWS_REL="${GH}/aws-spiffe-workload-helper/releases/download/v0.0.4"
+          AWS_ASSET="aws-spiffe-workload-helper_Linux_${HELPER_ARCH}.tar.gz"
+          SH_REL="${GH}/spiffe-helper/releases/download/v0.10.0"
+          SH_ASSET="spiffe-helper_v0.10.0_Linux-${SH_ARCH}.tar.gz"
+          curl "https://dl.min.io/client/mc/release/linux-${MC_ARCH}/mc" \
+            -o /bin/mc
+          curl -L "${AWS_REL}/${AWS_ASSET}" -o /tmp/aws-helper.tgz
+          curl -L "${SH_REL}/${SH_ASSET}" -o helper.tgz
           tar -xvf aws-helper.tgz
           tar -xvf helper.tgz
           chmod +x /bin/mc

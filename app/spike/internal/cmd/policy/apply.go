@@ -6,6 +6,7 @@ package policy
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/spf13/cobra"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
@@ -116,7 +117,7 @@ func newPolicyApplyCommand(
 
         Valid permissions: read, write, list, super`,
 		Args: cobra.NoArgs,
-		Run: func(c *cobra.Command, args []string) {
+		RunE: func(c *cobra.Command, args []string) error {
 			spiffeid.IsPilotOperatorOrDie(SPIFFEID)
 
 			api := spike.NewWithSource(source)
@@ -126,18 +127,17 @@ func newPolicyApplyCommand(
 			// Determine if we're using file-based or flag-based input
 			if filePath != "" {
 				// Read policy from the YAML file
-				p, err := readPolicyFromFile(filePath)
-				if err != nil {
-					c.PrintErrf("Error reading policy file: %v\n", err)
-					return
+				p, readErr := readPolicyFromFile(filePath)
+				if readErr != nil {
+					return fmt.Errorf("failed to read policy file: %w", readErr)
 				}
 				policy = p
 			} else {
 				// Use flag-based input
 				p, flagErr := getPolicyFromFlags(name, SPIFFEIDPattern,
 					pathPattern, permsStr)
-				if stdout.HandleAPIError(c, flagErr) {
-					return
+				if flagErr != nil {
+					return stdout.APIError(c, flagErr)
 				}
 				policy = p
 			}
@@ -156,8 +156,8 @@ func newPolicyApplyCommand(
 
 			// Validate permissions
 			permissions, permErr := validatePermissions(ps)
-			if stdout.HandleAPIError(c, permErr) {
-				return
+			if permErr != nil {
+				return stdout.APIError(c, permErr)
 			}
 
 			ctx := context.Background()
@@ -165,11 +165,12 @@ func newPolicyApplyCommand(
 			// Apply policy using upsert semantics
 			policyErr := api.CreatePolicy(ctx, policy.Name, policy.SpiffeIDPattern,
 				policy.PathPattern, permissions)
-			if stdout.HandleAPIError(c, policyErr) {
-				return
+			if policyErr != nil {
+				return stdout.APIError(c, policyErr)
 			}
 
 			c.Printf("Policy '%s' applied successfully\n", policy.Name)
+			return nil
 		},
 	}
 

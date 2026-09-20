@@ -19,9 +19,11 @@ see [Configuration](/usage/configuration/) and the
 
 ## Concepts and Decisions
 
-- [Choosing a backend store: memory, lite, or sqlite](/recipes/choosing-a-backend-store/)
+- [Choosing a backend store: memory, lite, or
+  sqlite](/recipes/choosing-a-backend-store/)
 - [Bootstrapping a fresh SPIKE](/recipes/bootstrapping-spike/)
-- [Where the root key lives: keepers, Shamir, and recovery](/recipes/root-key-keepers-recovery/)
+- [Where the root key lives: keepers, Shamir, and
+  recovery](/recipes/root-key-keepers-recovery/)
 
 ## Day-to-Day Usage
 
