@@ -102,9 +102,10 @@ spike cipher encrypt --file secret.txt --out secret.enc
 spike cipher decrypt --file secret.enc --out secret.txt
 echo "sensitive data" | spike cipher encrypt | spike cipher decrypt
 
-# JSON mode (base64 input/output)
+# JSON mode (base64 input, JSON document output)
 spike cipher encrypt --plaintext $(echo -n "secret" | base64)
-spike cipher decrypt --ciphertext <base64> --nonce <base64> --version <n>
+# -> {"version":1,"nonce":"<base64>","ciphertext":"<base64>"}
+spike cipher decrypt --input '{"version":1,"nonce":"<base64>","ciphertext":"<base64>"}'
 ```
 
 ### Operator Functions

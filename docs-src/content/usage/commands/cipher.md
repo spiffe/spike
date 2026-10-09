@@ -57,7 +57,12 @@ This mode handles binary data transparently.
 #### JSON Mode
 
 When `--plaintext` is provided, the command accepts base64-encoded plaintext
-and returns a JSON-formatted encryption result.
+and prints a JSON document carrying everything decryption needs: the version
+as a JSON number, and the nonce and ciphertext as base64 strings.
+
+```json
+{"version":1,"nonce":"YWJj","ciphertext":"eHl6"}
+```
 
 #### Flags:
 
@@ -99,8 +104,11 @@ file or stdout. This mode handles binary data transparently.
 
 #### JSON Mode
 
-When `--version`, `--nonce`, or `--ciphertext` is provided, the command accepts
-base64-encoded encryption components and returns plaintext output.
+When `--input` is provided, the command accepts the JSON document printed by
+`spike cipher encrypt` and returns plaintext output. Alternatively, the three
+components can be passed as explicit flags; `--input` cannot be combined with
+those flags or with `--file`. `--algorithm` pairs with either form, since the
+document does not carry it.
 
 #### Flags:
 
@@ -111,6 +119,7 @@ base64-encoded encryption components and returns plaintext output.
 | `--version`    | Version byte (0-255) for JSON mode                   |
 | `--nonce`      | Base64-encoded nonce for JSON mode                   |
 | `--ciphertext` | Base64-encoded ciphertext for JSON mode              |
+| `--input`      | JSON document printed by `spike cipher encrypt`      |
 | `--algorithm`  | Algorithm hint for JSON mode                         |
 
 #### Examples:
@@ -127,6 +136,10 @@ spike cipher decrypt -f secret.enc -o secret.txt
 
 # Decrypt with JSON mode components
 spike cipher decrypt --version=1 --nonce="..." --ciphertext="..."
+
+# Round-trip: decrypt the document JSON mode encrypt printed
+spike cipher decrypt --input "$(spike cipher encrypt --plaintext 'c2VjcmV0')" \
+  --out secret.txt
 ```
 
 ## Use Cases

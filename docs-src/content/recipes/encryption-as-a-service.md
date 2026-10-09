@@ -56,18 +56,20 @@ need from it.
    ```
 
 4. **For programmatic callers, use JSON mode.** Encrypt accepts base64
-   `--plaintext` and returns the version byte, nonce, and ciphertext; decrypt
-   takes those three back:
+   `--plaintext` and prints a JSON document with the version (a JSON
+   number), and the nonce and ciphertext (base64 strings); decrypt takes
+   the document back via `--input`:
 
    ```bash
    spike cipher encrypt --plaintext "$(printf 'hello' | base64)"
-   # -> JSON with {version, nonce, ciphertext} (all base64)
+   # -> {"version":1,"nonce":"<base64>","ciphertext":"<base64>"}
 
    spike cipher decrypt \
-     --version 1 \
-     --nonce "<base64-nonce>" \
-     --ciphertext "<base64-ciphertext>"
+     --input '{"version":1,"nonce":"<base64-nonce>","ciphertext":"<base64-ciphertext>"}'
    ```
+
+   The three components can also be passed as explicit `--version`,
+   `--nonce`, and `--ciphertext` flags instead of `--input`.
 
 ## Tips
 
