@@ -100,7 +100,10 @@ func newDecryptCommand(
 			// so a bad invocation reports the actual mistake rather than
 			// the missing source. --algorithm is not a conflict: the
 			// document does not carry it, so it pairs with --input.
-			if inputJSON != "" {
+			// Changed rather than a non-empty value: an empty --input,
+			// say from a failed command substitution, must fail as a
+			// bad document instead of falling through to stream mode.
+			if cmd.Flags().Changed("input") {
 				conflicts := []struct {
 					flag  string
 					value string

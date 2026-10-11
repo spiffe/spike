@@ -5,6 +5,9 @@
 package cipher
 
 import (
+	"encoding/base64"
+	"encoding/json"
+	"errors"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -41,4 +44,46 @@ func newSilencedRoot(sub *cobra.Command) *cobra.Command {
 	}
 	root.AddCommand(sub)
 	return root
+}
+
+// isSyntaxError reports whether err wraps the error encoding/json returns
+// for input that is not JSON at all.
+//
+// Parameters:
+//   - err: The error to inspect
+//
+// Returns:
+//   - bool: true if err wraps a *json.SyntaxError
+func isSyntaxError(err error) bool {
+	var syntaxErr *json.SyntaxError
+	return errors.As(err, &syntaxErr)
+}
+
+// typeErrorOn returns a check that err wraps the encoding/json type error
+// for the named field, so a type error from a different field fails it.
+//
+// Parameters:
+//   - field: The JSON field the type error must name
+//
+// Returns:
+//   - func(error) bool: Reports whether its argument wraps a
+//     *json.UnmarshalTypeError for field
+func typeErrorOn(field string) func(error) bool {
+	return func(err error) bool {
+		var typeErr *json.UnmarshalTypeError
+		return errors.As(err, &typeErr) && typeErr.Field == field
+	}
+}
+
+// isBase64Error reports whether err wraps the error encoding/json returns
+// when a byte field is not valid base64.
+//
+// Parameters:
+//   - err: The error to inspect
+//
+// Returns:
+//   - bool: true if err wraps a base64.CorruptInputError
+func isBase64Error(err error) bool {
+	var base64Err base64.CorruptInputError
+	return errors.As(err, &base64Err)
 }
