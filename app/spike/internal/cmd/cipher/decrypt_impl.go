@@ -7,6 +7,7 @@ package cipher
 import (
 	"context"
 	"encoding/base64"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
@@ -100,6 +101,58 @@ func decryptStream(api *sdk.API, inFile, outFile string) (err error) {
 		return fmt.Errorf("failed to write output: %w", writeErr)
 	}
 	return nil
+}
+
+// parseEncryptedJSON parses the JSON document that JSON-mode encrypt
+// prints (an object naming the version, the nonce, and the ciphertext)
+// into the base64-encoded components that decryptJSON consumes, so that the
+// explicit --version/--nonce/--ciphertext flags and --input feed the same
+// validation and decryption path.
+//
+// The fields unmarshal into pointers: a missing key and an explicit null
+// both leave the pointer nil, while a present zero (version 0, an empty
+// nonce) does not, so a document cannot degrade a missing or nulled field
+// to that field's zero value. encoding/json decodes the base64 byte fields
+// along the way, so a document that cannot be parsed is reported against
+// --input.
+//
+// Parameters:
+//   - input: The JSON document, as printed by "cipher encrypt"
+//
+// Returns:
+//   - string: The version byte as a decimal string (0-255)
+//   - string: The base64-encoded nonce
+//   - string: The base64-encoded ciphertext
+//   - error: An error naming --input if the document is not valid JSON, a
+//     field is missing or null, or a field has the wrong type; nil
+//     otherwise
+func parseEncryptedJSON(
+	input string,
+) (version string, nonceB64 string, ciphertextB64 string, err error) {
+	var doc struct {
+		Version    *byte   `json:"version"`
+		Nonce      *[]byte `json:"nonce"`
+		Ciphertext *[]byte `json:"ciphertext"`
+	}
+	if unmarshalErr := json.Unmarshal([]byte(input), &doc); unmarshalErr != nil {
+		return "", "", "",
+			fmt.Errorf("invalid --input JSON: %w", unmarshalErr)
+	}
+	if doc.Version == nil {
+		return "", "", "",
+			errors.New(`invalid --input JSON: "version" is missing or null`)
+	}
+	if doc.Nonce == nil {
+		return "", "", "",
+			errors.New(`invalid --input JSON: "nonce" is missing or null`)
+	}
+	if doc.Ciphertext == nil {
+		return "", "", "",
+			errors.New(`invalid --input JSON: "ciphertext" is missing or null`)
+	}
+	return strconv.Itoa(int(*doc.Version)),
+		base64.StdEncoding.EncodeToString(*doc.Nonce),
+		base64.StdEncoding.EncodeToString(*doc.Ciphertext), nil
 }
 
 // decryptJSON performs JSON-based decryption using base64-encoded components

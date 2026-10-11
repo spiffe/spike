@@ -7,10 +7,12 @@ package cipher
 import (
 	"context"
 	"encoding/base64"
+	"encoding/json"
 	"errors"
 	"fmt"
 
 	sdk "github.com/spiffe/spike-sdk-go/api"
+	"github.com/spiffe/spike-sdk-go/api/entity/data"
 )
 
 // encryptStream performs stream-based encryption by reading from a file or
@@ -56,8 +58,28 @@ func encryptStream(api *sdk.API, inFile, outFile string) (err error) {
 	return nil
 }
 
+// marshalEncrypted renders an encryption result as the JSON document that
+// JSON mode prints: a single object naming the version, the nonce, and the
+// ciphertext, with the byte fields base64-encoded by encoding/json. A
+// trailing newline terminates the document so that the output is a
+// well-formed line, and so that "decrypt --input" can consume it verbatim.
+//
+// Parameters:
+//   - encrypted: The encryption result returned by the SDK
+//
+// Returns:
+//   - []byte: The JSON document, terminated by a newline
+//   - error: The marshalling failure, if any
+func marshalEncrypted(encrypted *data.EncryptedData) ([]byte, error) {
+	doc, marshalErr := json.Marshal(encrypted)
+	if marshalErr != nil {
+		return nil, marshalErr
+	}
+	return append(doc, '\n'), nil
+}
+
 // encryptJSON performs JSON-based encryption using base64-encoded plaintext
-// and writes the encrypted result to a file or stdout.
+// and writes the encrypted result as a JSON document to a file or stdout.
 //
 // Parameters:
 //   - api: The SPIKE SDK API client
@@ -85,15 +107,20 @@ func encryptJSON(api *sdk.API, plaintextB64, algorithm,
 		}
 	}()
 
-	ciphertext, apiErr := api.CipherEncrypt(
+	encrypted, apiErr := api.CipherEncrypt(
 		context.Background(), plaintext, algorithm,
 	)
 	if apiErr != nil {
 		return cipherAPIError(apiErr)
 	}
 
-	if _, writeErr := out.Write(ciphertext); writeErr != nil {
-		return fmt.Errorf("failed to write ciphertext: %w", writeErr)
+	doc, marshalErr := marshalEncrypted(encrypted)
+	if marshalErr != nil {
+		return fmt.Errorf("failed to encode encryption result: %w", marshalErr)
+	}
+
+	if _, writeErr := out.Write(doc); writeErr != nil {
+		return fmt.Errorf("failed to write JSON document: %w", writeErr)
 	}
 	return nil
 }

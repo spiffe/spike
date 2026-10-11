@@ -6,6 +6,7 @@ package cipher
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/spf13/cobra"
 	"github.com/spiffe/go-spiffe/v2/workloadapi"
@@ -24,11 +25,15 @@ import (
 //   - Writes decrypted plaintext to a file (--out) or stdout
 //   - Handles binary data transparently
 //
-// JSON Mode (when --version, --nonce, or --ciphertext is provided):
-//   - Accepts base64-encoded encryption components
-//   - Requires version byte (0-255), nonce, and ciphertext
+// JSON Mode (when --version, --nonce, --ciphertext, or --input is provided):
+//   - Accepts base64-encoded encryption components, or the JSON document
+//     printed by "cipher encrypt" via --input
+//   - Requires version byte (0-255), nonce, and ciphertext; the component
+//     flags and --input are alternative ways to supply them and cannot be
+//     combined with each other or with --file
 //   - Returns plaintext output
-//   - Allows algorithm specification via --algorithm flag
+//   - Allows algorithm specification via --algorithm flag, which pairs
+//     with either form (--input plus --algorithm is valid)
 //
 // Parameters:
 //   - source: SPIFFE X.509 SVID source for authentication. Can be nil if the
@@ -45,6 +50,8 @@ import (
 //   - --version: Version byte (0-255) for JSON mode
 //   - --nonce: Base64-encoded nonce for JSON mode
 //   - --ciphertext: Base64-encoded ciphertext for JSON mode
+//   - --input: JSON document printed by "cipher encrypt" for JSON mode;
+//     cannot be combined with --file, --version, --nonce, or --ciphertext
 //   - --algorithm: Algorithm hint for JSON mode
 func newDecryptCommand(
 	source *workloadapi.X509Source, SPIFFEID string,
@@ -55,15 +62,9 @@ func newDecryptCommand(
 		RunE: func(cmd *cobra.Command, args []string) error {
 			spiffeid.IsPilotOperatorOrDie(SPIFFEID)
 
-			if source == nil {
-				return errors.New("SPIFFE X509 source is unavailable")
-			}
-
-			api := sdk.NewWithSource(source)
-
 			var (
 				inFile, outFile, versionStr, nonceB64 string
-				ciphertextB64, algorithm              string
+				ciphertextB64, algorithm, inputJSON   string
 				flagErr                               *sdkErrors.SDKError
 			)
 			if inFile, flagErr = flags.String(cmd, "file"); flagErr != nil {
@@ -83,10 +84,56 @@ func newDecryptCommand(
 			if flagErr != nil {
 				return flagErr
 			}
+			inputJSON, flagErr = flags.String(cmd, "input")
+			if flagErr != nil {
+				return flagErr
+			}
 			algorithm, flagErr = flags.String(cmd, "algorithm")
 			if flagErr != nil {
 				return flagErr
 			}
+
+			// --input carries the whole document and is exclusive with
+			// the component flags and --file: mixing them would resolve
+			// per-field in ways the user cannot see. The conflicts are
+			// rejected in a fixed order and before the X509 source check
+			// so a bad invocation reports the actual mistake rather than
+			// the missing source. --algorithm is not a conflict: the
+			// document does not carry it, so it pairs with --input.
+			// Changed rather than a non-empty value: an empty --input,
+			// say from a failed command substitution, must fail as a
+			// bad document instead of falling through to stream mode.
+			if cmd.Flags().Changed("input") {
+				conflicts := []struct {
+					flag  string
+					value string
+				}{
+					{"--file", inFile},
+					{"--version", versionStr},
+					{"--nonce", nonceB64},
+					{"--ciphertext", ciphertextB64},
+				}
+				for _, conflict := range conflicts {
+					if conflict.value != "" {
+						return fmt.Errorf(
+							"--input and %s cannot be combined",
+							conflict.flag,
+						)
+					}
+				}
+				var parseErr error
+				versionStr, nonceB64, ciphertextB64, parseErr =
+					parseEncryptedJSON(inputJSON)
+				if parseErr != nil {
+					return parseErr
+				}
+			}
+
+			if source == nil {
+				return errors.New("SPIFFE X509 source is unavailable")
+			}
+
+			api := sdk.NewWithSource(source)
 
 			jsonMode := versionStr != "" || nonceB64 != "" ||
 				ciphertextB64 != ""
@@ -114,6 +161,11 @@ func newDecryptCommand(
 	)
 	cmd.Flags().String(
 		"ciphertext", "", "Ciphertext (base64) for JSON mode",
+	)
+	cmd.Flags().String(
+		"input", "",
+		"JSON document printed by 'encrypt' for JSON mode; exclusive "+
+			"with --file, --version, --nonce and --ciphertext",
 	)
 	cmd.Flags().String(
 		"algorithm", "", "Algorithm hint for JSON mode",
