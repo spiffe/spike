@@ -20,4 +20,4 @@ SPIRE_HELM_CHART_VERSION="0.30.2"
 SPIRE_CRDS_HELM_CHART_VERSION="0.6.1"
 
 # The SPIRE release tag built for the bare-metal environment.
-SPIRE_VERSION="v1.15.3"
+SPIRE_VERSION="v1.15.5"
