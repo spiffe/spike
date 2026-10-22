@@ -1,6 +1,6 @@
 module github.com/spiffe/spike
 
-go 1.27.1
+go 1.27.3
 
 require (
 	github.com/cloudflare/circl v1.6.3
