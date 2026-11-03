@@ -89,20 +89,16 @@ func UpsertSecret(path string, values map[string]string) *sdkErrors.SDKError {
 		}
 	} else {
 		// Existing secret - increment version
-		var newVersion int
-		if currentSecret.Metadata.CurrentVersion == 0 {
-			// All versions are deleted - find the highest existing version
-			// and increment to avoid collision with deleted versions
-			maxVersion := 0
-			for v := range currentSecret.Versions {
-				if v > maxVersion {
-					maxVersion = v
-				}
+		// Increment from the highest existing version, not from the current
+		// one: deleted versions can sit above the current version (or all
+		// versions can be deleted), and they must not be overwritten.
+		maxVersion := currentSecret.Metadata.CurrentVersion
+		for v := range currentSecret.Versions {
+			if v > maxVersion {
+				maxVersion = v
 			}
-			newVersion = maxVersion + 1
-		} else {
-			newVersion = currentSecret.Metadata.CurrentVersion + 1
 		}
+		newVersion := maxVersion + 1
 
 		// Add the new version
 		currentSecret.Versions[newVersion] = kv.Version{

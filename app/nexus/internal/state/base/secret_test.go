@@ -205,6 +205,78 @@ func TestUpsertSecret_VersionPruning(t *testing.T) {
 	})
 }
 
+func TestUpsertSecret_AfterDeletingCurrentVersion(t *testing.T) {
+	withEnvironment(t, "SPIKE_NEXUS_BACKEND_STORE", "memory", func() {
+		resetBackendForTest()
+		persist.InitializeBackend(nil)
+
+		path := "test/upsert-after-delete"
+
+		// Create versions 1, 2, and 3
+		for i := 1; i <= 3; i++ {
+			versionValues := map[string]string{
+				"version": fmt.Sprintf("v%d", i),
+			}
+			upsertErr := UpsertSecret(path, versionValues)
+			if upsertErr != nil {
+				t.Fatalf("Failed to create version %d: %v", i, upsertErr)
+			}
+		}
+
+		// Delete the current version (3); the current version becomes 2
+		deleteErr := DeleteSecret(path, []int{0})
+		if deleteErr != nil {
+			t.Fatalf("Failed to delete current version: %v", deleteErr)
+		}
+
+		// A new write must create version 4, not overwrite deleted version 3
+		upsertErr := UpsertSecret(path, map[string]string{"version": "v4"})
+		if upsertErr != nil {
+			t.Fatalf("Failed to create a new version: %v", upsertErr)
+		}
+
+		rawSecret, getRawErr := GetRawSecret(path, 0)
+		if getRawErr != nil {
+			t.Fatalf("Failed to retrieve raw secret: %v", getRawErr)
+		}
+
+		if rawSecret.Metadata.CurrentVersion != 4 {
+			t.Errorf(
+				"Expected current version to be 4, got %d",
+				rawSecret.Metadata.CurrentVersion,
+			)
+		}
+
+		// Verify version 3 keeps its data and stays deleted
+		version3, exists := rawSecret.Versions[3]
+		if !exists {
+			t.Fatal("Version 3 should still exist but be marked as deleted")
+		}
+		if version3.DeletedTime == nil {
+			t.Error("Version 3 should still be marked as deleted")
+		}
+		if version3.Data["version"] != "v3" {
+			t.Errorf(
+				"Expected version 3 to keep value v3, got %s",
+				version3.Data["version"],
+			)
+		}
+
+		// Verify undeleting version 3 restores its original data
+		undeleteErr := UndeleteSecret(path, []int{3})
+		if undeleteErr != nil {
+			t.Fatalf("Failed to undelete version 3: %v", undeleteErr)
+		}
+		values, getErr := GetSecret(path, 3)
+		if getErr != nil {
+			t.Fatalf("Failed to get version 3: %v", getErr)
+		}
+		if values["version"] != "v3" {
+			t.Errorf("Expected version 3 to be v3, got %s", values["version"])
+		}
+	})
+}
+
 func TestDeleteSecret_CurrentVersion(t *testing.T) {
 	withEnvironment(t, "SPIKE_NEXUS_BACKEND_STORE", "memory", func() {
 		resetBackendForTest()
