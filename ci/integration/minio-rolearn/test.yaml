@@ -43,7 +43,7 @@ spec:
             *) echo "unsupported architecture: $(uname -m)"; exit 1 ;;
           esac
           GH=https://github.com/spiffe
-          AWS_REL="${GH}/aws-spiffe-workload-helper/releases/download/v0.0.4"
+          AWS_REL="${GH}/aws-spiffe-workload-helper/releases/download/v0.0.7"
           AWS_ASSET="aws-spiffe-workload-helper_Linux_${HELPER_ARCH}.tar.gz"
           SH_REL="${GH}/spiffe-helper/releases/download/v0.10.0"
           SH_ASSET="spiffe-helper_v0.10.0_Linux-${SH_ARCH}.tar.gz"

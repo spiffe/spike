@@ -171,6 +171,7 @@ func VerifyInitialization(ctx context.Context, api *spike.API) {
 		return
 	}
 
+	//nolint:gosec // G407 cannot resolve the runtime gcm.NonceSize() length.
 	ciphertext := gcm.Seal(nil, nonce, []byte(randomText), nil)
 
 	// At this point we talk to SPIKE Nexus, and our expectation is SPIKE Nexus

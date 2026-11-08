@@ -163,7 +163,7 @@ source ~/.profile
 echo $WORKSPACE
 cd $WORKSPACE
 # Match the SPIRE version that hack/bare-metal/build/build-spire.sh builds.
-git clone --branch v1.15.3 https://github.com/spiffe/spire && cd spire
+git clone --branch v1.15.5 https://github.com/spiffe/spire && cd spire
 make build
 ```
 
